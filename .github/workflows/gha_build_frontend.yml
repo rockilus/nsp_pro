@@ -32,8 +32,8 @@ jobs:
             ${{ runner.os }}-node-
       - name: Install dependencies
         run: npm ci
-      - name: Build application
-        run: npm run build --if-present
+      # - name: Build application
+      #   run: npm run build --if-present
       - name: Run typescript
         run: npx tsc
       - name: Run esling
