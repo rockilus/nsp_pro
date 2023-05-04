@@ -1,0 +1,33 @@
+name: GitHub Actions Build - Backend
+
+on:
+  push:
+    branches: '**'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Static Analysis
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'poetry'
+      - name: Install dependencies
+        run: poetry install
+      - name: Run mypy
+        run: poetry run mypy src
+      - name: Run pylint
+        run: poetry run pylint src
+      - name: Run flake8
+        run: poetry run flake8 src

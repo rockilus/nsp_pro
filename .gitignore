@@ -1,0 +1,15 @@
+# Files
+.DS_Store
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Folders
+__pycache__/
+.pytest_cache/
+.vscode/
+.mypy_cache/
+.next/
+node_modules/
+
+# Environments
+venv_nsp
