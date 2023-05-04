@@ -5,9 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = __importDefault(require("react"));
 var ConfigDialog_1 = __importDefault(require("./ConfigDialog"));
+var SignUpDialog_1 = __importDefault(require("./SignUpDialog"));
 function Home() {
     return (<div>
       <ConfigDialog_1.default />
+      <SignUpDialog_1.default />
     </div>);
 }
 exports.default = Home;

@@ -27,12 +27,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __importStar(require("react"));
-var Add_1 = __importDefault(require("@mui/icons-material/Add"));
-var Chip_1 = __importDefault(require("@mui/material/Chip"));
-var IconChips = function (props) {
-    var handleClick = function () {
-        props.handleAddOptionNextStep();
+var SignUpTemplate_1 = __importDefault(require("./SignUpTemplate"));
+var Button_1 = __importDefault(require("@mui/material/Button"));
+var Dialog_1 = __importDefault(require("@mui/material/Dialog"));
+var DialogActions_1 = __importDefault(require("@mui/material/DialogActions"));
+function SignUpDialog() {
+    var _a = React.useState(false), open = _a[0], setOpen = _a[1];
+    var handleClickOpen = function () {
+        setOpen(true);
     };
-    return (<Chip_1.default icon={<Add_1.default />} onClick={handleClick} label="Add new option"/>);
-};
-exports.default = IconChips;
+    var handleClose = function () {
+        setOpen(false);
+    };
+    return (<div>
+      <Button_1.default variant="outlined" onClick={handleClickOpen}>
+        Sign Up
+      </Button_1.default>
+      <Dialog_1.default open={open} onClose={handleClose} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
+        <SignUpTemplate_1.default />
+        <DialogActions_1.default>
+          <Button_1.default onClick={handleClose} autoFocus>
+            Close
+          </Button_1.default>
+        </DialogActions_1.default>
+      </Dialog_1.default>
+    </div>);
+}
+exports.default = SignUpDialog;
