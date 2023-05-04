@@ -35,3 +35,18 @@ def create_new_user():
     except NotUniqueError as e:
         print(e)
         return jsonify({"error": f"{str(e)}"}), 404
+
+
+@user_routes.route("/signup", methods=["POST"])
+def signup():
+    user_info = request.get_json()
+    print(user_info)
+    return jsonify({"message": "received"}), 201
+    # try:
+    #     user_saved = user_db.create_user(**user_info)
+    #     print(user_saved["hospital"])
+    #     user_dict = user_saved.to_dict()
+    #     return jsonify(user_dict), 201
+    # except NotUniqueError as e:
+    #     print(e)
+    #     return jsonify({"error": f"{str(e)}"}), 404
