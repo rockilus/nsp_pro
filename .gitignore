@@ -10,6 +10,7 @@ __pycache__/
 .mypy_cache/
 .next/
 node_modules/
+dist/
 
 # Environments
 venv_nsp

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import ConfigTabs from "./ConfigTabs";
+import SignIn from "./SignInTemplate";
 
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -9,7 +9,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
-export default function ConfigDialog() {
+export default function SignUpDialog() {
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -23,7 +23,7 @@ export default function ConfigDialog() {
   return (
     <div>
       <Button variant="outlined" onClick={handleClickOpen}>
-        Configuration
+        Sign In
       </Button>
       <Dialog
         open={open}
@@ -31,7 +31,7 @@ export default function ConfigDialog() {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <ConfigTabs />
+        <SignIn />
         <DialogActions>
           <Button onClick={handleClose} autoFocus>
             Close
