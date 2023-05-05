@@ -15,6 +15,7 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 import { postSignUpRequest } from "../services/api";
+import { UserContext } from "../context/UserContext";
 
 function Copyright(props: any) {
   return (
@@ -41,6 +42,7 @@ export default function SignUp() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userContext, setUserContext] = useState(UserContext);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -52,6 +54,9 @@ export default function SignUp() {
     );
 
     console.log("response", response);
+    setUserContext((oldValues) => {
+      return { ...oldValues, access_token: response.access_token };
+    });
   };
 
   return (
