@@ -1,19 +1,19 @@
 import React from "react";
 
-import ConfigDialog from "./ConfigDialog";
-import LogoutButton from "./LogoutButton";
-import SignInDialog from "./SignInDialog";
-import SignUpDialog from "./SignUpDialog";
-import TestButton from "./TestButton";
+import ConfigTabs from "./ConfigTabs";
+import NavAppBar from "./NavAppBar";
+import { AuthProvider } from "../context/AuthContext";
+import { HospitalProvider } from "../context/HospitalContext";
 
 export default function Home() {
   return (
     <div>
-      <ConfigDialog />
-      <SignUpDialog />
-      <SignInDialog />
-      <TestButton />
-      <LogoutButton />
+      <AuthProvider>
+        <HospitalProvider>
+          <NavAppBar />
+          <ConfigTabs />
+        </HospitalProvider>
+      </AuthProvider>
     </div>
   );
 }

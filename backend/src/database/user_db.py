@@ -1,5 +1,6 @@
 from typing import Union
 
+from bson import ObjectId
 from database.db import DB
 from models import Hospital, User
 
@@ -18,6 +19,7 @@ class UserDB:
         hospital: Union[Hospital, None] = None,
     ) -> User:
         user = User(
+            _id=ObjectId(),
             first_name=first_name,
             last_name=last_name,
             email=email,
@@ -28,9 +30,10 @@ class UserDB:
         user_saved = user.save()
         return user_saved
 
-    def get_user_by_id(self, user_id):
+    def get_user_by_id(self, user_id: str) -> User:
         # pylint: disable=no-member
-        user = User.objects.get(id=user_id)
+        print("user_id in get_user_by_id:", user_id)
+        user = User.objects.get(_id=user_id)  # type: ignore
         return user
 
     def add_hospital_to_user(self, user: User, hospital: Hospital) -> User:

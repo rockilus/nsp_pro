@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -14,7 +14,7 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-import { postSignInRequest } from "../services/api";
+import { AuthContext } from "../context/AuthContext";
 
 function Copyright(props: any) {
   return (
@@ -36,15 +36,19 @@ function Copyright(props: any) {
 
 const theme = createTheme();
 
-export default function SignIn() {
+interface SignInTemplateProps {
+  handleCloseSignIn: () => void;
+}
+
+export default function SignInTemplate(props: SignInTemplateProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const authState = useContext(AuthContext);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const response = await postSignInRequest(email, password);
-
-    console.log("response", response);
+    await authState.signIn(email, password);
+    props.handleCloseSignIn();
   };
 
   return (
@@ -114,7 +118,7 @@ export default function SignIn() {
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link variant="body2" style={{ cursor: "pointer" }}>
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>

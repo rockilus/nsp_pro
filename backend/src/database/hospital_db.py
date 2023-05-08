@@ -1,6 +1,5 @@
+from bson import ObjectId
 from database.db import DB
-
-
 from models import Hospital, User
 
 
@@ -10,10 +9,22 @@ class HospitalDB:
         self.db = db
 
     def create_hospital(self, name: str, admin: User) -> Hospital:
+        # pylint: disable=protected-access
         hospital = Hospital(
+            _id=ObjectId(),
             name=name,
-            admin=[admin],
+            admin=[admin._id],
         )
+        hospital_saved = hospital.save()
+        return hospital_saved
+
+    def get_hospital_by_id(self, hospital_id: str) -> Hospital:
+        # pylint: disable=no-member
+        hospital = Hospital.objects.get(_id=hospital_id)  # type: ignore
+        return hospital
+
+    def add_option(self, option: str, hospital: Hospital) -> Hospital:
+        hospital.profile[option] = {}
         hospital_saved = hospital.save()
         return hospital_saved
 

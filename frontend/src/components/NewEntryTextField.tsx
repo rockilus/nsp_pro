@@ -1,14 +1,13 @@
-import * as React from "react";
+import React, { useContext, useState } from "react";
 
-import ValidateCancelChips from "./ValidateCancelChips";
-
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
+import Stack from "@mui/material/Stack";
+import CheckIcon from "@mui/icons-material/Check";
+import Chip from "@mui/material/Chip";
+import ClearIcon from "@mui/icons-material/Clear";
+
+import { HospitalContext } from "../context/HospitalContext";
 
 interface NewEntryTextFieldsProps {
   handleAddOptionNextStep: () => void;
@@ -16,6 +15,20 @@ interface NewEntryTextFieldsProps {
 }
 
 const NewEntryTextFields: React.FC<NewEntryTextFieldsProps> = (props) => {
+  const [newOption, setNewOption] = useState("");
+  const hospitalContext = useContext(HospitalContext);
+
+  const handleSubmitClick = async () => {
+    await hospitalContext.addOptionToProfile(
+      newOption,
+      hospitalContext.currentHospital._id
+    );
+    props.handleAddOptionNextStep();
+  };
+
+  const handleCancelClick = () => {
+    props.handleAddOptionPreviousStep();
+  };
   return (
     <React.Fragment>
       <Grid container spacing={3}>
@@ -27,34 +40,28 @@ const NewEntryTextFields: React.FC<NewEntryTextFieldsProps> = (props) => {
             label="New Option Label"
             fullWidth
             variant="standard"
+            value={newOption}
+            onChange={(e) => setNewOption(e.target.value)}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <ValidateCancelChips
-            handleAddOptionNextStep={props.handleAddOptionNextStep}
-            handleAddOptionPreviousStep={props.handleAddOptionPreviousStep}
-          />
+          <Stack spacing={1} alignItems="center">
+            <Stack direction="row" spacing={1}>
+              <Chip
+                icon={<CheckIcon />}
+                color="primary"
+                variant="outlined"
+                onClick={handleSubmitClick}
+              />
+              <Chip
+                icon={<ClearIcon />}
+                color="primary"
+                variant="outlined"
+                onClick={handleCancelClick}
+              />
+            </Stack>
+          </Stack>
         </Grid>
-        {/* <Grid item xs={12} sm={6}>
-            <TextField
-              required
-              id="optionValues"
-              name="optionValues"
-              label="Option values, separated by a comma"
-              fullWidth
-              variant="standard"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              required
-              id="additionalOptionValues"
-              name="additionalOptionValues"
-              label="Additional option values, separated by a comma"
-              fullWidth
-              variant="standard"
-            />
-          </Grid> */}
       </Grid>
     </React.Fragment>
   );

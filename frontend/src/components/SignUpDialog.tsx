@@ -5,35 +5,33 @@ import SignUp from "./SignUpTemplate";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import Link from "@mui/material/Link";
 
 export default function SignUpDialog() {
-  const [open, setOpen] = React.useState(false);
+  const [openSignUp, setOpenSignUp] = React.useState(false);
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  const handleClickOpenSignUp = () => {
+    setOpenSignUp(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleCloseSignUp = () => {
+    setOpenSignUp(false);
   };
 
   return (
     <div>
-      <Button variant="outlined" onClick={handleClickOpen}>
+      <Button color="inherit" onClick={handleClickOpenSignUp}>
         Sign Up
       </Button>
       <Dialog
-        open={open}
-        onClose={handleClose}
+        open={openSignUp}
+        onClose={handleCloseSignUp}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
         <SignUp />
         <DialogActions>
-          <Button onClick={handleClose} autoFocus>
+          <Button onClick={handleCloseSignUp} autoFocus>
             Close
           </Button>
         </DialogActions>

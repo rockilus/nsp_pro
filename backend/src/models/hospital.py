@@ -1,18 +1,26 @@
-from bson import ObjectId
+# from bson import ObjectId
 from mongoengine import Document
-from mongoengine.fields import ListField, ReferenceField, StringField
+from mongoengine.fields import (
+    DictField,
+    ListField,
+    ObjectIdField,
+    ReferenceField,
+    StringField,
+)
 
 
 class Hospital(Document):
-    _id = ObjectId()
+    _id = ObjectIdField(primary_key=True)
     name = StringField(required=True, unique=True)
     admin = ListField(ReferenceField("User"))
+    profile = DictField()
 
-    meta = {"collection": "user"}
+    meta = {"collection": "hospitals"}
 
     def to_dict(self):
         return {
             "_id": str(self._id),
             "name": self.name,
-            "admin": [user.to_dict() for user in self.admin],
+            "admin": [str(user["_id"]) for user in self.admin],
+            "profile": self.profile,
         }

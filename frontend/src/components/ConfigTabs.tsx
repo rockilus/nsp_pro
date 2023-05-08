@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from "react";
 
-import { fetchHospitalProfile } from "../services/api";
-
-import AddOptionChip from "./AddOptionChip";
-import NewEntryTextFields from "./NewEntryTextField";
-import OptionBlock from "./OptionBlock";
+import HospitalInfo from "./HospitalInfo";
+import HospitalProfile from "./HospitalProfile";
 
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
 interface TabPanelProps {
@@ -49,17 +45,17 @@ export default function ConfigTabs() {
     setValue(newValue);
   };
 
-  useEffect(() => {
-    async function fetchDataAsync() {
-      try {
-        const jsonData = await fetchHospitalProfile();
-        setHospitalProfile(jsonData);
-      } catch (error: any) {
-        setError(error.message);
-      }
-    }
-    fetchDataAsync();
-  }, []);
+  // useEffect(() => {
+  //   async function fetchDataAsync() {
+  //     try {
+  //       const jsonData = await fetchHospitalProfile();
+  //       setHospitalProfile(jsonData);
+  //     } catch (error: any) {
+  //       setError(error.message);
+  //     }
+  //   }
+  //   fetchDataAsync();
+  // }, []);
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -72,22 +68,20 @@ export default function ConfigTabs() {
           <Tab label="Hospital Profile" {...a11yProps(0)} />
           <Tab label="Doctors Profile" {...a11yProps(1)} />
           <Tab label="Parameters" {...a11yProps(2)} />
+          <Tab label="Hospital Info" {...a11yProps(3)} />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
-        <OptionBlock />
-        {/* <Typography variant="h6" gutterBottom>
-          Duty Options
-        </Typography>
-        <Typography variant="h6" gutterBottom>
-          Human Resources
-        </Typography> */}
+        <HospitalProfile />
       </TabPanel>
       <TabPanel value={value} index={1}>
         Item Two
       </TabPanel>
       <TabPanel value={value} index={2}>
         Item Three
+      </TabPanel>
+      <TabPanel value={value} index={3}>
+        <HospitalInfo />
       </TabPanel>
     </Box>
   );

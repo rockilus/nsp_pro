@@ -23,7 +23,8 @@ def signup():
         return jsonify({"message": "All entries are required"}), 400
     try:
         user_saved = user_db.create_user(**user_info)
-        response = jsonify({"msg": "signup successful"})
+        user_dict = user_saved.to_dict()
+        response = jsonify({"user": user_dict})
         # pylint: disable=protected-access
         access_token = create_access_token(identity=str(user_saved._id))
         set_access_cookies(response, access_token)
@@ -36,7 +37,6 @@ def signup():
 @user_routes.route("/signin", methods=["POST"])
 def signin():
     user_info = request.get_json()
-
     try:
         user = user_db.get_user_by_email(user_info["email"])
     except DoesNotExist:
@@ -44,7 +44,8 @@ def signin():
 
     if not user.check_password(user_info["password"]):
         return jsonify({"message": "Invalid username or password"}), 401
-    response = jsonify({"msg": "signin successful"})
+    user_dict = user.to_dict()
+    response = jsonify({"user": user_dict})
     # pylint: disable=protected-access
     access_token = create_access_token(identity=str(user._id))
     set_access_cookies(response, access_token)
@@ -73,8 +74,22 @@ def refresh_expiring_jwts(response):
         return response
 
 
-@user_routes.route("/protected", methods=["GET"])
+@user_routes.route("/user-details", methods=["GET"])
 @jwt_required()
 def protected():
-    # current_user = get_jwt_identity
-    return jsonify({"message": "You are authorized to view this page"}), 200
+    user_id = get_jwt_identity()
+    print("user_id:", user_id)
+    try:
+        user = user_db.get_user_by_id(user_id)
+        user_details = {
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "hospital": user.hospital,
+        }
+        response = jsonify(user_details)
+        return response, 200
+    except DoesNotExist:
+        print("user does not exist")
+        response = jsonify({"message": "User does not exist"})
+        return response, 404
