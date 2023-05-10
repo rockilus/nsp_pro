@@ -10,25 +10,27 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { HospitalContext } from "../context/HospitalContext";
 
 interface NewEntryTextFieldsProps {
-  handleAddOptionNextStep: () => void;
-  handleAddOptionPreviousStep: () => void;
+  dictPath: string[];
+  handleAddOptionCancel: () => void;
 }
 
-const NewEntryTextFields: React.FC<NewEntryTextFieldsProps> = (props) => {
+export default function NewEntryTextFields(props: NewEntryTextFieldsProps) {
   const [newOption, setNewOption] = useState("");
   const hospitalContext = useContext(HospitalContext);
 
   const handleSubmitClick = async () => {
-    await hospitalContext.addOptionToProfile(
+    hospitalContext.addOptionToProfile(
       newOption,
-      hospitalContext.currentHospital._id
+      props.dictPath,
+      hospitalContext.currentHospital?._id || ""
     );
-    props.handleAddOptionNextStep();
+    props.handleAddOptionCancel();
   };
 
   const handleCancelClick = () => {
-    props.handleAddOptionPreviousStep();
+    props.handleAddOptionCancel();
   };
+
   return (
     <React.Fragment>
       <Grid container spacing={3}>
@@ -65,6 +67,4 @@ const NewEntryTextFields: React.FC<NewEntryTextFieldsProps> = (props) => {
       </Grid>
     </React.Fragment>
   );
-};
-
-export default NewEntryTextFields;
+}

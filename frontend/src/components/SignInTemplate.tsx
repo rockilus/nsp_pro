@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -15,6 +15,7 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 import { AuthContext } from "../context/AuthContext";
+import { HospitalContext } from "../context/HospitalContext";
 
 function Copyright(props: any) {
   return (
@@ -41,15 +42,30 @@ interface SignInTemplateProps {
 }
 
 export default function SignInTemplate(props: SignInTemplateProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const authState = useContext(AuthContext);
+  const [email, setEmail] = useState("tim@tim.com");
+  const [password, setPassword] = useState("monkey");
+  const authContext = useContext(AuthContext);
+  const hospitalContext = useContext(HospitalContext);
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await authState.signIn(email, password);
+    await authContext.signIn(email, password);
+    console.log("authContext right after sign in", authContext);
+
     props.handleCloseSignIn();
   };
+
+  // useEffect(() => {
+  //   console.log("useEffect in SignInTemplate");
+  //   console.log("authContext right after sign in", authContext.currentUser);
+  //   if (authContext.currentUser) {
+  //     if (authContext.currentUser.hospital) {
+  //       hospitalContext.getHospital(authContext.currentUser.hospital);
+  //     }
+  //     props.handleCloseSignIn();
+  //   }
+  // }, [authContext.currentUser, hospitalContext, props]);
 
   return (
     <ThemeProvider theme={theme}>

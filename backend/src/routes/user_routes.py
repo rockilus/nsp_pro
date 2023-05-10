@@ -5,7 +5,7 @@ from flask_jwt_extended import (
     create_access_token,
     get_jwt,
     get_jwt_identity,
-    jwt_required,
+    # jwt_required,
     set_access_cookies,
     unset_jwt_cookies,
 )
@@ -44,6 +44,7 @@ def signin():
 
     if not user.check_password(user_info["password"]):
         return jsonify({"message": "Invalid username or password"}), 401
+
     user_dict = user.to_dict()
     response = jsonify({"user": user_dict})
     # pylint: disable=protected-access
@@ -74,22 +75,22 @@ def refresh_expiring_jwts(response):
         return response
 
 
-@user_routes.route("/user-details", methods=["GET"])
-@jwt_required()
-def protected():
-    user_id = get_jwt_identity()
-    print("user_id:", user_id)
-    try:
-        user = user_db.get_user_by_id(user_id)
-        user_details = {
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "email": user.email,
-            "hospital": user.hospital,
-        }
-        response = jsonify(user_details)
-        return response, 200
-    except DoesNotExist:
-        print("user does not exist")
-        response = jsonify({"message": "User does not exist"})
-        return response, 404
+# @user_routes.route("/user-details", methods=["GET"])
+# @jwt_required()
+# def protected():
+#     user_id = get_jwt_identity()
+#     print("user_id:", user_id)
+#     try:
+#         user = user_db.get_user_by_id(user_id)
+#         user_details = {
+#             "first_name": user.first_name,
+#             "last_name": user.last_name,
+#             "email": user.email,
+#             "hospital": user.hospital,
+#         }
+#         response = jsonify(user_details)
+#         return response, 200
+#     except DoesNotExist:
+#         print("user does not exist")
+#         response = jsonify({"message": "User does not exist"})
+#         return response, 404

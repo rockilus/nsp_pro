@@ -13,7 +13,7 @@ import {
 } from "../api/authentication";
 
 interface AuthState {
-  currentUser: Record<string, string>;
+  currentUser: Record<string, string> | null;
   isAuthenticated: boolean;
   error?: string;
   signUp: (
@@ -27,7 +27,7 @@ interface AuthState {
 }
 
 const initialAuthState: AuthState = {
-  currentUser: {},
+  currentUser: null,
   isAuthenticated: false,
   error: "",
   signUp: async () => {},

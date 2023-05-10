@@ -12,9 +12,23 @@ import LogoutButton from "./LogoutButton";
 import SignInDialog from "./SignInDialog";
 import SignUpDialog from "./SignUpDialog";
 import { AuthContext } from "../context/AuthContext";
+import { HospitalContext } from "../context/HospitalContext";
 
 export default function NavAppBar() {
   const authContext = useContext(AuthContext);
+  const hospitalContext = useContext(HospitalContext);
+
+  useEffect(() => {
+    console.log("useEffect in NavAppBar");
+    console.log("authContext right after sign in", authContext.currentUser);
+    if (
+      authContext.currentUser &&
+      authContext.currentUser.hospital &&
+      !hospitalContext.currentHospital
+    ) {
+      hospitalContext.getHospital(authContext.currentUser.hospital);
+    }
+  }, [authContext.currentUser, hospitalContext]);
 
   // useEffect(() => {
   //   if (!userContext.details) {

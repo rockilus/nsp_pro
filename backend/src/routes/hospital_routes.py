@@ -6,7 +6,7 @@ from scripts.setup_database import hospital_db, user_db
 hospital_routes = Blueprint("hospital_routes", __name__)
 
 
-@hospital_routes.route("/hospital-info", methods=["POST"])
+@hospital_routes.route("/create-hospital", methods=["POST"])
 @jwt_required()
 def create_new_hospital():
     hospital_info = request.get_json()
@@ -24,13 +24,14 @@ def create_new_hospital():
         )
         user_db.add_hospital_to_user(admin, hospital_saved)
         hospital_dict = hospital_saved.to_dict()
-        return jsonify(hospital_dict), 201
+        response = jsonify({"hospital": hospital_dict})
+        return response, 201
     except NotUniqueError as e:
         print(e)
         return jsonify({"error": f"{str(e)}"}), 404
 
 
-@hospital_routes.route("/hospital-profile", methods=["POST"])
+@hospital_routes.route("/option-hospital", methods=["POST", "DELETE"])
 @jwt_required()
 def add_option_to_profile():
     option_info = request.get_json()
@@ -43,11 +44,39 @@ def add_option_to_profile():
     except ValidationError as e:
         return jsonify({"error": f"{str(e)}"}), 404
     try:
-        hospital_saved = hospital_db.add_option(
-            option_info["option"], hospital
-        )
+        if request.method == "POST":
+            option = option_info["option"].lower().replace(" ", "_")
+            hospital_saved = hospital_db.add_profile_option(
+                option_info["dict_path"], option, hospital
+            )
+        elif request.method == "DELETE":
+            hospital_saved = hospital_db.delete_profile_option(
+                option_info["dict_path"], hospital
+            )
         hospital_dict = hospital_saved.to_dict()
-        return jsonify(hospital_dict), 201
+        response = jsonify({"hospital": hospital_dict})
+        return response, 201
+    except NotUniqueError as e:
+        print(e)
+        return jsonify({"error": f"{str(e)}"}), 404
+
+
+@hospital_routes.route("/hospital-info", methods=["POST"])
+@jwt_required()
+def get_hospital():
+    hospital_info = request.get_json()
+    print("hospital_info:", hospital_info)
+    try:
+        hospital = hospital_db.get_hospital_by_id(hospital_info["hospital_id"])
+    except DoesNotExist as e:
+        print(e)
+        return jsonify({"error": f"{str(e)}"}), 404
+    except ValidationError as e:
+        return jsonify({"error": f"{str(e)}"}), 404
+    try:
+        hospital_dict = hospital.to_dict()
+        response = jsonify({"hospital": hospital_dict})
+        return response, 201
     except NotUniqueError as e:
         print(e)
         return jsonify({"error": f"{str(e)}"}), 404

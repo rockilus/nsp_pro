@@ -6,20 +6,36 @@ import {
   useState,
 } from "react";
 
-import { postHospitalInfo, postHospitalOption } from "../api/configuration";
+import {
+  deleteHospitalOption,
+  postHospitalInfo,
+  postHospitalOption,
+  postHospitalInfoRequest,
+} from "../api/configuration";
 
 interface HospitalState {
-  currentHospital: Record<string, string>;
+  currentHospital: Record<string, string> | null;
   error?: string;
   createNewHospital: (name: string, userId: string) => Promise<void>;
-  addOptionToProfile: (option: string, hospitalId: string) => Promise<void>;
+  addOptionToProfile: (
+    option: string,
+    dictPath: string[],
+    hospitalId: string
+  ) => Promise<void>;
+  deleteOptionFromProfile: (
+    dictPath: string[],
+    hospitalId: string
+  ) => Promise<void>;
+  getHospital: (hospitalId: string) => Promise<void>;
 }
 
 const initialHospitalState: HospitalState = {
-  currentHospital: {},
+  currentHospital: null,
   error: "",
   createNewHospital: async () => {},
   addOptionToProfile: async () => {},
+  deleteOptionFromProfile: async () => {},
+  getHospital: async () => {},
 };
 
 export const HospitalContext =
@@ -37,29 +53,54 @@ export const HospitalProvider = (props: HospitalProviderProps) => {
     async (name: string, userId: string) => {
       const response = await postHospitalInfo(name, userId);
       setHospitalState((oldValues) => {
-        return { ...oldValues, currentHospital: response };
+        return { ...oldValues, currentHospital: response.hospital };
       });
     },
     []
   );
 
   const addOptionToProfile = useCallback(
-    async (option: string, hospitalId: string) => {
-      const response = await postHospitalOption(option, hospitalId);
+    async (option: string, dictPath: string[], hospitalId: string) => {
+      const response = await postHospitalOption(option, dictPath, hospitalId);
       setHospitalState((oldValues) => {
-        return { ...oldValues, currentHospital: response };
+        return { ...oldValues, currentHospital: response.hospital };
       });
     },
     []
   );
+
+  const deleteOptionFromProfile = useCallback(
+    async (dictPath: string[], hospitalId: string) => {
+      const response = await deleteHospitalOption(dictPath, hospitalId);
+      setHospitalState((oldValues) => {
+        return { ...oldValues, currentHospital: response.hospital };
+      });
+    },
+    []
+  );
+
+  const getHospital = useCallback(async (hospitalId: string) => {
+    const response = await postHospitalInfoRequest(hospitalId);
+    setHospitalState((oldValues) => {
+      return { ...oldValues, currentHospital: response.hospital };
+    });
+  }, []);
 
   const contextValue = useMemo(
     () => ({
       ...hospitalState,
       createNewHospital,
       addOptionToProfile,
+      deleteOptionFromProfile,
+      getHospital,
     }),
-    [hospitalState, createNewHospital, addOptionToProfile]
+    [
+      hospitalState,
+      createNewHospital,
+      addOptionToProfile,
+      deleteOptionFromProfile,
+      getHospital,
+    ]
   );
 
   return (

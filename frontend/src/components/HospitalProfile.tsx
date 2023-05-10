@@ -1,71 +1,42 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 
-import AddOptionChip from "./AddOptionChip";
-import NewEntryTextFields from "./NewEntryTextField";
-import { getHospitalProfile } from "../api/configuration";
-
+import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import ValidateCancelChips from "./ValidateCancelChips";
-import { Stack } from "@mui/material";
+import Chip from "@mui/material/Chip";
+
+import NewEntryTextFields from "./NewEntryTextField";
+import renderDictionary from "./RenderDictionary";
+import { HospitalContext } from "../context/HospitalContext";
 
 export default function HospitalProfile() {
-  const [addOptionStatus, setAddOptionStatus] = useState(0);
-  const [hospitalProfile, setHospitalProfile] = useState({});
+  const [addingOption, setAddingOption] = useState(false);
+  const hospitalContext = useContext(HospitalContext);
 
-  const handleAddOptionNextStep = () => {
-    setAddOptionStatus(addOptionStatus + 1);
+  const handleAddingOption = () => {
+    setAddingOption(true);
   };
 
-  const handleAddOptionPreviousStep = () => {
-    setAddOptionStatus(addOptionStatus - 1);
+  const handleAddOptionCancel = () => {
+    setAddingOption(false);
   };
-
-  const fetchHospitalProfile = async () => {
-    const response = await getHospitalProfile();
-    console.log("response useEffect", response);
-    setHospitalProfile(response);
-  };
-
-  //   useEffect(() => {
-  //     fetchHospitalProfile();
-  //   }, []);
 
   return (
     <Box>
-      {
-        [
-          <AddOptionChip
-            handleAddOptionNextStep={handleAddOptionNextStep}
-            key={0}
-          />,
-          <NewEntryTextFields
-            handleAddOptionNextStep={handleAddOptionNextStep}
-            handleAddOptionPreviousStep={handleAddOptionPreviousStep}
-            key={1}
-          />,
-        ][addOptionStatus]
-      }
+      {hospitalContext.currentHospital &&
+        typeof hospitalContext.currentHospital.profile === "object" &&
+        renderDictionary(hospitalContext.currentHospital.profile, 0, [])}
+      {addingOption ? (
+        <NewEntryTextFields
+          dictPath={[]}
+          handleAddOptionCancel={handleAddOptionCancel}
+        />
+      ) : (
+        <Chip
+          icon={<AddIcon />}
+          onClick={handleAddingOption}
+          label="Add new option"
+        />
+      )}
     </Box>
   );
-
-  //   return (
-  //     <Box>
-  //       <div>
-  //         <Typography variant="h6" gutterBottom>
-  //           Doctor Profile Options
-  //         </Typography>
-  //       </div>
-  //       {addOptionStatus === 1 && (
-  //         <NewEntryTextFields
-  //           handleAddOptionNextStep={handleAddOptionNextStep}
-  //           handleAddOptionPreviousStep={handleAddOptionPreviousStep}
-  //         />
-  //       )}
-  //       {addOptionStatus === 0 && (
-  //         <AddOptionChip handleAddOptionNextStep={handleAddOptionNextStep} />
-  //       )}
-  //     </Box>
-  //   );
 }

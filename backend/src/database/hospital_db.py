@@ -1,6 +1,10 @@
+from typing import Any, Dict, List
+
 from bson import ObjectId
 from database.db import DB
 from models import Hospital, User
+
+from exceptions import NoKeyProvidedError
 
 
 # pylint: disable=too-few-public-methods
@@ -23,44 +27,93 @@ class HospitalDB:
         hospital = Hospital.objects.get(_id=hospital_id)  # type: ignore
         return hospital
 
-    def add_option(self, option: str, hospital: Hospital) -> Hospital:
-        hospital.profile[option] = {}
+    def add_profile_option(
+        self, dict_path: List, option: str, hospital: Hospital
+    ) -> Hospital:
+        profile_updated = self.set_value_from_keys(
+            dict_path, option, hospital.profile
+        )
+        hospital.profile = profile_updated
         hospital_saved = hospital.save()
         return hospital_saved
 
+    def delete_profile_option(
+        self, dict_path: List, hospital: Hospital
+    ) -> Hospital:
+        profile_updated = self.delete_value_from_keys(
+            dict_path, hospital.profile
+        )
+        hospital.profile = profile_updated
+        hospital_saved = hospital.save()
+        return hospital_saved
 
-# import mongoengine
+    def set_value_from_keys(
+        self, keys: List[str], value: str, dict_: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        if len(keys) == 0:
+            dict_[value] = {}
+            return dict_
 
-# from models import Hospital
-# from database.db import DB
+        key = keys[0]
 
-# class HospitalDB(DB):
-#     def __init__(self, db_uri: str):
-#         super().__init__(db_uri)
+        if len(keys) == 1:
+            if isinstance(dict_, (str, int)):
+                dict_ = {dict_: value}
+                return dict_
 
-#     def create(self, name: str, address: str, phone: str, email: str):
-#         hospital = Hospital(name=name, address=address, phone=phone,
-#  email=email)
-#         hospital.save()
-#         return hospital
+            if key not in dict_.keys():
+                raise KeyError(f"Key {key} not found")
+            key_value = dict_.get(key)
+            if isinstance(key_value, dict):
+                dict_[key] = value
+            elif isinstance(key_value, list):
+                dict_[key].append(value)
+            elif isinstance(key_value, (str, int)):
+                dict_[key] = [key_value, value]
+            return dict_
 
-#     def get(self, id: str):
-#         return Hospital.objects(id=id).first()
+        if key not in dict_.keys():
+            raise KeyError(f"Key {key} not found")
 
-#     def get_all(self):
-#         return Hospital.objects
+        dict_[key] = self.set_value_from_keys(keys[1:], value, dict_[key])
 
-#     def update(self, id: str, name: str, address: str, phone: str,
-# email: str):
-#         hospital = self.get(id)
-#         hospital.name = name
-#         hospital.address = address
-#         hospital.phone = phone
-#         hospital.email = email
-#         hospital.save()
-#         return hospital
+        return dict_
 
-#     def delete(self, id: str):
-#         hospital = self.get(id)
-#         hospital.delete()
-#         return hospital
+    def delete_value_from_keys(
+        self, keys: List[str], dict_: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        if len(keys) == 0:
+            raise NoKeyProvidedError("No keys provided")
+
+        key = keys[0]
+
+        if key not in dict_.keys():
+            raise KeyError(f"Key {key} not found")
+
+        if len(keys) == 1:
+            del dict_[key]
+            return dict_
+
+        if len(keys) == 2:
+            key_value = dict_.get(key)
+            if isinstance(key_value, dict):
+                dict_[key][keys[1]] = {}
+            if isinstance(key_value, list):
+                dict_[key].remove(keys[1])
+                if len(dict_[key]) == 1:
+                    dict_[key] = dict_[key][0]
+                if len(dict_[key]) == 0:
+                    dict_[key] = {}
+            if isinstance(key_value, (str, int)):
+                dict_[key] = {}
+
+            return dict_
+
+        dict_[key] = self.delete_value_from_keys(keys[1:], dict_[key])
+
+        if len(keys) >= 2:
+            sub_key_value = dict_[key][keys[1]]
+            if isinstance(sub_key_value, dict) and len(sub_key_value) == 0:
+                dict_[key] = keys[1]
+
+        return dict_

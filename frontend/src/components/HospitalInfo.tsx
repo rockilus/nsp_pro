@@ -23,10 +23,12 @@ export default function HospitalInfo() {
     event.preventDefault();
     console.log("authContext.currentUser._id", authContext);
 
-    await hospitalContext.createNewHospital(
-      hospitalName,
-      authContext.currentUser._id
-    );
+    if (authContext.currentUser) {
+      await hospitalContext.createNewHospital(
+        hospitalName,
+        authContext.currentUser._id
+      );
+    }
   };
 
   //   const fetchHospitalInfo = async () => {
