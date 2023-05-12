@@ -53,6 +53,13 @@ class HospitalDB:
         # hospital_saved = hospital.save()
         return hospital
 
+    def save_parameter(
+        self, parameter: str, value: str, hospital: Hospital
+    ) -> Hospital:
+        setattr(hospital.parameters, parameter, value)
+        hospital_saved = hospital.save()
+        return hospital_saved
+
 
 def set_value_from_keys(
     keys: List[str], value: str, dict_: Dict[str, Any]
@@ -108,7 +115,8 @@ def delete_value_from_keys(
     if len(keys) == 2:
         key_value = dict_.get(key)
         if isinstance(key_value, dict):
-            dict_[key][keys[1]] = {}
+            del dict_[key][keys[1]]
+            # dict_[key][keys[1]] = {}
         if isinstance(key_value, list):
             dict_[key].remove(keys[1])
             if len(dict_[key]) == 1:

@@ -80,3 +80,28 @@ def get_hospital():
     except NotUniqueError as e:
         print(e)
         return jsonify({"error": f"{str(e)}"}), 404
+
+
+@hospital_routes.route("/parameter", methods=["POST"])
+@jwt_required()
+def update_parameter():
+    parameter_info = request.get_json()
+    try:
+        hospital = hospital_db.get_hospital_by_id(
+            parameter_info["hospital_id"]
+        )
+    except DoesNotExist as e:
+        print(e)
+        return jsonify({"error": f"{str(e)}"}), 404
+    except ValidationError as e:
+        return jsonify({"error": f"{str(e)}"}), 404
+    try:
+        parameter = parameter_info["parameter"]
+        value = int(parameter_info["value"])
+        hospital_saved = hospital_db.save_parameter(parameter, value, hospital)
+        hospital_dict = hospital_saved.to_dict()
+        response = jsonify({"hospital": hospital_dict})
+        return response, 201
+    except NotUniqueError as e:
+        print(e)
+        return jsonify({"error": f"{str(e)}"}), 404

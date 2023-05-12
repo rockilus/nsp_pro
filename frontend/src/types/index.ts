@@ -18,6 +18,7 @@ export interface Hospital {
   name: string;
   profile: Record<string, any>;
   profile_validation: Record<string, any>;
+  parameters: Record<string, any>;
 }
 
 //==============================================================================
@@ -70,4 +71,9 @@ export interface HospitalState {
     hospitalId: string
   ) => Promise<void>;
   getHospital: (hospitalId: string) => Promise<void>;
+  updateParameter: (
+    parameter: string,
+    value: string,
+    hospitalId: string
+  ) => Promise<void>;
 }

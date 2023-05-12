@@ -1,5 +1,7 @@
 import React, { useContext, useState } from "react";
 
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
@@ -49,18 +51,14 @@ export default function NewEntryTextFields(props: NewEntryTextFieldsProps) {
         <Grid item xs={12} sm={6}>
           <Stack spacing={1} alignItems="center">
             <Stack direction="row" spacing={1}>
-              <Chip
-                icon={<CheckIcon />}
-                color="primary"
-                variant="outlined"
+              <CheckCircleOutlineIcon
                 onClick={handleSubmitClick}
-              />
-              <Chip
-                icon={<ClearIcon />}
-                color="primary"
-                variant="outlined"
+                sx={{ cursor: "pointer" }}
+              ></CheckCircleOutlineIcon>
+              <CancelOutlinedIcon
                 onClick={handleCancelClick}
-              />
+                sx={{ cursor: "pointer" }}
+              ></CancelOutlinedIcon>
             </Stack>
           </Stack>
         </Grid>

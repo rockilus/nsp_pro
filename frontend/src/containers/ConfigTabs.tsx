@@ -7,6 +7,7 @@ import Box from "@mui/material/Box";
 import DoctorsProfile from "./DoctorsProfile";
 import HospitalInfo from "./HospitalInfo";
 import HospitalProfile from "./HospitalProfile";
+import Parameters from "./Parameters";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -46,18 +47,6 @@ export default function ConfigTabs() {
     setValue(newValue);
   };
 
-  // useEffect(() => {
-  //   async function fetchDataAsync() {
-  //     try {
-  //       const jsonData = await fetchHospitalProfile();
-  //       setHospitalProfile(jsonData);
-  //     } catch (error: any) {
-  //       setError(error.message);
-  //     }
-  //   }
-  //   fetchDataAsync();
-  // }, []);
-
   return (
     <Box sx={{ width: "100%" }}>
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
@@ -79,7 +68,7 @@ export default function ConfigTabs() {
         <DoctorsProfile />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        Item Three
+        <Parameters />
       </TabPanel>
       <TabPanel value={value} index={3}>
         <HospitalInfo />

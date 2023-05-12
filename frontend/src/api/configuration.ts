@@ -7,6 +7,7 @@ const hospitalInfoUrl = serverUrl + "/hospital-info";
 const createUserUrl = serverUrl + "/create-user";
 const hospitalUsersUrl = serverUrl + "/hospital-users";
 const userProfileUrl = serverUrl + "/user-profile";
+const updateParameterUrl = serverUrl + "/parameter";
 
 export async function postHospitalInfo(hospitalName: string, userId: string) {
   const options: RequestInit = {
@@ -193,6 +194,37 @@ export async function postUserProfile(
   };
   try {
     const response = await fetch(userProfileUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function postParameterUpdate(
+  parameter: string,
+  value: string,
+  hospitalId: string
+) {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      hospital_id: hospitalId,
+      parameter: parameter,
+      value: value,
+    }),
+  };
+  try {
+    const response = await fetch(updateParameterUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;

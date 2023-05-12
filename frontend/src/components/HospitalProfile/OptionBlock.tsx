@@ -1,6 +1,8 @@
 import React, { useState, useContext } from "react";
 
 import Chip from "@mui/material/Chip";
+import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
+import RemoveCircleOutlineOutlinedIcon from "@mui/icons-material/RemoveCircleOutlineOutlined";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
@@ -51,8 +53,14 @@ export default function OptionBlock(props: OptionBlockProps) {
         </Typography>
         {!addingOption && (
           <Stack direction="row" spacing={0}>
-            <Chip label="+" onClick={handleAddingOption} />
-            <Chip label="-" onClick={handleDeleteOption} />
+            <AddCircleOutlineOutlinedIcon
+              onClick={handleAddingOption}
+              sx={{ cursor: "pointer" }}
+            ></AddCircleOutlineOutlinedIcon>
+            <RemoveCircleOutlineOutlinedIcon
+              onClick={handleDeleteOption}
+              sx={{ cursor: "pointer" }}
+            ></RemoveCircleOutlineOutlinedIcon>
           </Stack>
         )}
       </Stack>

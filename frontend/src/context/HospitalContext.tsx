@@ -11,6 +11,7 @@ import {
   postHospitalInfo,
   postHospitalOption,
   postHospitalInfoRequest,
+  postParameterUpdate,
 } from "../api/configuration";
 import { HospitalState } from "../types/index";
 
@@ -21,6 +22,7 @@ const initialHospitalState: HospitalState = {
   addOptionToProfile: async () => {},
   deleteOptionFromProfile: async () => {},
   getHospital: async () => {},
+  updateParameter: async () => {},
 };
 
 export const HospitalContext =
@@ -71,6 +73,16 @@ export const HospitalProvider = (props: HospitalProviderProps) => {
     });
   }, []);
 
+  const updateParameter = useCallback(
+    async (parameter: string, value: string, hospitalId: string) => {
+      const response = await postParameterUpdate(parameter, value, hospitalId);
+      setHospitalState((prevState) => {
+        return { ...prevState, currentHospital: response.hospital };
+      });
+    },
+    []
+  );
+
   const contextValue = useMemo(
     () => ({
       ...hospitalState,
@@ -78,6 +90,7 @@ export const HospitalProvider = (props: HospitalProviderProps) => {
       addOptionToProfile,
       deleteOptionFromProfile,
       getHospital,
+      updateParameter,
     }),
     [
       hospitalState,
@@ -85,6 +98,7 @@ export const HospitalProvider = (props: HospitalProviderProps) => {
       addOptionToProfile,
       deleteOptionFromProfile,
       getHospital,
+      updateParameter,
     ]
   );
 
