@@ -4,8 +4,8 @@ import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 
-import NewEntryTextFields from "./NewEntryTextField";
-import renderDictionary from "./RenderDictionary";
+import NewEntryTextFields from "../components/HospitalProfile/NewEntryTextField";
+import renderDictionary from "../components/HospitalProfile/RenderDictionary";
 import { HospitalContext } from "../context/HospitalContext";
 
 export default function HospitalProfile() {

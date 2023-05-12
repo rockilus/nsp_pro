@@ -7,32 +7,22 @@ import {
 } from "react";
 
 import {
+  getUserDetails,
   postSignInRequest,
   postLogoutRequest,
   postSignUpRequest,
 } from "../api/authentication";
-
-interface AuthState {
-  currentUser: Record<string, string> | null;
-  isAuthenticated: boolean;
-  error?: string;
-  signUp: (
-    firstName: string,
-    lastName: string,
-    email: string,
-    password: string
-  ) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-}
+import { AuthState } from "../types/index";
 
 const initialAuthState: AuthState = {
   currentUser: null,
   isAuthenticated: false,
+  checkedAuth: false,
   error: "",
   signUp: async () => {},
   signIn: async () => {},
   logout: async () => {},
+  checkAuthStatus: async () => {},
 };
 
 export const AuthContext = createContext<AuthState>(initialAuthState);
@@ -84,8 +74,34 @@ export const AuthProvider = (props: AuthProviderProps) => {
     console.log("logout");
     const response = await postLogoutRequest();
     setAuthState((oldValues) => {
-      return { ...oldValues, currentUser: {}, isAuthenticated: false };
+      return { ...oldValues, currentUser: null, isAuthenticated: false };
     });
+  }, []);
+
+  const checkAuthStatus = useCallback(async () => {
+    console.log("checkAuthStatus");
+    const response = await getUserDetails();
+    console.log("response:", response);
+
+    if (response.user) {
+      setAuthState((oldValues) => {
+        return {
+          ...oldValues,
+          currentUser: response.user,
+          isAuthenticated: true,
+          checkedAuth: true,
+        };
+      });
+    } else {
+      setAuthState((oldValues) => {
+        return {
+          ...oldValues,
+          currentUser: null,
+          isAuthenticated: false,
+          checkedAuth: true,
+        };
+      });
+    }
   }, []);
 
   const contextValue = useMemo(
@@ -94,8 +110,9 @@ export const AuthProvider = (props: AuthProviderProps) => {
       signUp,
       signIn,
       logout,
+      checkAuthStatus,
     }),
-    [authState, signUp, signIn, logout]
+    [authState, signUp, signIn, logout, checkAuthStatus]
   );
 
   return (

@@ -8,47 +8,58 @@ import Stack from "@mui/material/Stack";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 
-import LogoutButton from "./LogoutButton";
-import SignInDialog from "./SignInDialog";
-import SignUpDialog from "./SignUpDialog";
+import LogoutButton from "../components/NavAppBar/LogoutButton";
+import SignInDialog from "../components/NavAppBar/SignInDialog";
+import SignUpDialog from "../components/NavAppBar/SignUpDialog";
 import { AuthContext } from "../context/AuthContext";
+import { DoctorsContext } from "../context/DoctorsContext";
 import { HospitalContext } from "../context/HospitalContext";
 
 export default function NavAppBar() {
   const authContext = useContext(AuthContext);
+  const doctorsContext = useContext(DoctorsContext);
   const hospitalContext = useContext(HospitalContext);
 
   useEffect(() => {
-    console.log("useEffect in NavAppBar");
+    console.log("useEffect in NavAppBar for AuthContext");
+    async function fetchUserDetails() {
+      await authContext.checkAuthStatus();
+    }
+    if (!authContext.isAuthenticated && !authContext.checkedAuth) {
+      console.log("calling checkAuthStatus");
+      fetchUserDetails();
+    }
+  }, [authContext]);
+
+  useEffect(() => {
+    async function fetchHospitalInfo(hospitalId: string) {
+      await hospitalContext.getHospital(hospitalId);
+    }
+
+    console.log("useEffect in NavAppBar for HospitalContext");
     console.log("authContext right after sign in", authContext.currentUser);
     if (
       authContext.currentUser &&
       authContext.currentUser.hospital &&
       !hospitalContext.currentHospital
     ) {
-      hospitalContext.getHospital(authContext.currentUser.hospital);
+      fetchHospitalInfo(authContext.currentUser.hospital);
     }
   }, [authContext.currentUser, hospitalContext]);
 
-  // useEffect(() => {
-  //   if (!userContext.details) {
-  //     console.log("user details do not exist");
-
-  //     async function fetchUserDetails() {
-  //       console.log("getting user details");
-  //       const response = await getUserDetails();
-  //       if (response) {
-  //         console.log(response);
-  //         setUserContext((oldValues: any) => {
-  //           return { ...oldValues, details: response };
-  //         });
-  //       }
-  //     }
-  //     fetchUserDetails();
-  //   } else {
-  //     console.log("user details already exist");
-  //   }
-  // }, [userContext.details, setUserContext]);
+  useEffect(() => {
+    console.log("useEffect in NavAppBar for DoctorsContext");
+    async function fetchDoctors(hospitalId: string) {
+      await doctorsContext.getHospitalUsers(hospitalId);
+    }
+    if (
+      hospitalContext.currentHospital &&
+      hospitalContext.currentHospital._id &&
+      !doctorsContext.currentDoctors
+    ) {
+      fetchDoctors(hospitalContext.currentHospital._id);
+    }
+  }, [hospitalContext.currentHospital, doctorsContext]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>

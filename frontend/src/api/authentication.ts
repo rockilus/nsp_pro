@@ -91,11 +91,23 @@ export async function getUserDetails() {
   };
   try {
     const response = await fetch(userDetailsUrl, options);
-    console.log("response", response);
+    console.log("response in fetch: ", response);
+
+    // {"msg":"Missing cookie \"access_token_cookie\""}
 
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;
+    } else if (response.status === 401) {
+      const jsonData = await response.json();
+      console.log("jsonData: ", jsonData);
+      if (jsonData.msg === 'Missing cookie "access_token_cookie"') {
+        return {};
+      } else if (jsonData.msg === "Token has expired") {
+        return {};
+      } else {
+        throw new Error("Request failed");
+      }
     } else if (response.status === 404) {
       return {};
     } else {

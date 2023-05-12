@@ -12,22 +12,7 @@ import {
   postHospitalOption,
   postHospitalInfoRequest,
 } from "../api/configuration";
-
-interface HospitalState {
-  currentHospital: Record<string, string> | null;
-  error?: string;
-  createNewHospital: (name: string, userId: string) => Promise<void>;
-  addOptionToProfile: (
-    option: string,
-    dictPath: string[],
-    hospitalId: string
-  ) => Promise<void>;
-  deleteOptionFromProfile: (
-    dictPath: string[],
-    hospitalId: string
-  ) => Promise<void>;
-  getHospital: (hospitalId: string) => Promise<void>;
-}
+import { HospitalState } from "../types/index";
 
 const initialHospitalState: HospitalState = {
   currentHospital: null,

@@ -14,6 +14,7 @@ class Hospital(Document):
     name = StringField(required=True, unique=True)
     admin = ListField(ReferenceField("User"))
     profile = DictField()
+    profile_validation = DictField()
 
     meta = {"collection": "hospitals"}
 
@@ -23,4 +24,5 @@ class Hospital(Document):
             "name": self.name,
             "admin": [str(user["_id"]) for user in self.admin],
             "profile": self.profile,
+            "profile_validation": self.profile_validation,
         }

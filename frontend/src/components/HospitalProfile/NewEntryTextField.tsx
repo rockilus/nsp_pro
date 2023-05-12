@@ -7,7 +7,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import Chip from "@mui/material/Chip";
 import ClearIcon from "@mui/icons-material/Clear";
 
-import { HospitalContext } from "../context/HospitalContext";
+import { HospitalContext } from "../../context/HospitalContext";
 
 interface NewEntryTextFieldsProps {
   dictPath: string[];

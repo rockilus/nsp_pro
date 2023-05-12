@@ -5,7 +5,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import NewEntryTextFields from "./NewEntryTextField";
-import { HospitalContext } from "../context/HospitalContext";
+import { HospitalContext } from "../../context/HospitalContext";
 
 const formatString = (inputString: string): string => {
   return inputString

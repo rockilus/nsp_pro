@@ -5,6 +5,7 @@ from flask_bcrypt import Bcrypt  # type: ignore
 from mongoengine import Document
 from mongoengine.fields import (
     BooleanField,
+    DictField,
     EmailField,
     ObjectIdField,
     ReferenceField,
@@ -19,9 +20,10 @@ class User(Document):
     first_name = StringField(required=True)
     last_name = StringField(required=True)
     email = EmailField(required=True, unique=True)
-    password = StringField(required=True)
+    password = StringField()
     hospital = ReferenceField("Hospital")
     active = BooleanField(default=False)
+    profile = DictField()
 
     meta = {"collection": "users"}
 
@@ -37,6 +39,7 @@ class User(Document):
             "password": self.password,
             "hospital": str(self.hospital["_id"]) if self.hospital else None,
             "active": self.active,
+            "profile": self.profile,
         }
 
     def encrypt_password(self, password: str) -> str:

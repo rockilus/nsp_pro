@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function LogoutButton() {
   const authContext = useContext(AuthContext);

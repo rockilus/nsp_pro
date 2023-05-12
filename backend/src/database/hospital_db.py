@@ -30,90 +30,112 @@ class HospitalDB:
     def add_profile_option(
         self, dict_path: List, option: str, hospital: Hospital
     ) -> Hospital:
-        profile_updated = self.set_value_from_keys(
+        profile_updated = set_value_from_keys(
             dict_path, option, hospital.profile
         )
         hospital.profile = profile_updated
+        hospital = self.update_profile_validation(hospital)
         hospital_saved = hospital.save()
         return hospital_saved
 
     def delete_profile_option(
         self, dict_path: List, hospital: Hospital
     ) -> Hospital:
-        profile_updated = self.delete_value_from_keys(
-            dict_path, hospital.profile
-        )
+        profile_updated = delete_value_from_keys(dict_path, hospital.profile)
         hospital.profile = profile_updated
+        hospital = self.update_profile_validation(hospital)
         hospital_saved = hospital.save()
         return hospital_saved
 
-    def set_value_from_keys(
-        self, keys: List[str], value: str, dict_: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        if len(keys) == 0:
-            dict_[value] = {}
+    def update_profile_validation(self, hospital: Hospital) -> Hospital:
+        profile_validation_dict = extractLists(hospital.profile)
+        hospital.profile_validation = profile_validation_dict
+        # hospital_saved = hospital.save()
+        return hospital
+
+
+def set_value_from_keys(
+    keys: List[str], value: str, dict_: Dict[str, Any]
+) -> Dict[str, Any]:
+    if len(keys) == 0:
+        dict_[value] = {}
+        return dict_
+
+    key = keys[0]
+
+    if len(keys) == 1:
+        if isinstance(dict_, (str, int)):
+            dict_ = {dict_: value}
             return dict_
 
-        key = keys[0]
-
-        if len(keys) == 1:
-            if isinstance(dict_, (str, int)):
-                dict_ = {dict_: value}
-                return dict_
-
-            if key not in dict_.keys():
-                raise KeyError(f"Key {key} not found")
-            key_value = dict_.get(key)
-            if isinstance(key_value, dict):
+        if key not in dict_.keys():
+            raise KeyError(f"Key {key} not found")
+        key_value = dict_.get(key)
+        if isinstance(key_value, dict):
+            if len(key_value) != 0:
+                dict_[key][value] = {}
+            else:
                 dict_[key] = value
-            elif isinstance(key_value, list):
-                dict_[key].append(value)
-            elif isinstance(key_value, (str, int)):
-                dict_[key] = [key_value, value]
-            return dict_
-
-        if key not in dict_.keys():
-            raise KeyError(f"Key {key} not found")
-
-        dict_[key] = self.set_value_from_keys(keys[1:], value, dict_[key])
-
+        elif isinstance(key_value, list):
+            dict_[key].append(value)
+        elif isinstance(key_value, (str, int)):
+            dict_[key] = [key_value, value]
         return dict_
 
-    def delete_value_from_keys(
-        self, keys: List[str], dict_: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        if len(keys) == 0:
-            raise NoKeyProvidedError("No keys provided")
+    if key not in dict_.keys():
+        raise KeyError(f"Key {key} not found")
 
-        key = keys[0]
+    dict_[key] = set_value_from_keys(keys[1:], value, dict_[key])
 
-        if key not in dict_.keys():
-            raise KeyError(f"Key {key} not found")
+    return dict_
 
-        if len(keys) == 1:
-            del dict_[key]
-            return dict_
 
-        if len(keys) == 2:
-            key_value = dict_.get(key)
-            if isinstance(key_value, dict):
-                dict_[key][keys[1]] = {}
-            if isinstance(key_value, list):
-                dict_[key].remove(keys[1])
-                if len(dict_[key]) == 1:
-                    dict_[key] = dict_[key][0]
-                if len(dict_[key]) == 0:
-                    dict_[key] = {}
-            if isinstance(key_value, (str, int)):
+def delete_value_from_keys(
+    keys: List[str], dict_: Dict[str, Any]
+) -> Dict[str, Any]:
+    if len(keys) == 0:
+        raise NoKeyProvidedError("No keys provided")
+
+    key = keys[0]
+
+    if key not in dict_.keys():
+        raise KeyError(f"Key {key} not found")
+
+    if len(keys) == 1:
+        del dict_[key]
+        return dict_
+
+    if len(keys) == 2:
+        key_value = dict_.get(key)
+        if isinstance(key_value, dict):
+            dict_[key][keys[1]] = {}
+        if isinstance(key_value, list):
+            dict_[key].remove(keys[1])
+            if len(dict_[key]) == 1:
+                dict_[key] = dict_[key][0]
+            if len(dict_[key]) == 0:
                 dict_[key] = {}
-
-            return dict_
-
-        dict_[key] = self.delete_value_from_keys(keys[1:], dict_[key])
-
-        if len(keys) >= 2:
-            sub_key_value = dict_[key][keys[1]]
-            if isinstance(sub_key_value, dict) and len(sub_key_value) == 0:
-                dict_[key] = keys[1]
+        if isinstance(key_value, (str, int)):
+            dict_[key] = {}
 
         return dict_
+
+    dict_[key] = delete_value_from_keys(keys[1:], dict_[key])
+
+    if len(keys) >= 2:
+        sub_key_value = dict_[key][keys[1]]
+        if isinstance(sub_key_value, dict) and len(sub_key_value) == 0:
+            dict_[key] = keys[1]
+
+    return dict_
+
+
+def extractLists(obj: Dict[str, Any]) -> Dict[str, Any]:
+    result = {}
+    for key, value in obj.items():
+        if isinstance(value, list):
+            result[key] = value
+        elif isinstance(value, dict):
+            sub_dict = extractLists(value)
+            result.update(sub_dict)
+    return result

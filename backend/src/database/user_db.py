@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Dict, List, Union
 
 from bson import ObjectId
 from database.db import DB
@@ -10,7 +10,47 @@ class UserDB:
         self.db = db
 
     # pylint: disable=too-many-arguments
-    def create_user(
+    def create_user_signup(
+        self,
+        first_name: str,
+        last_name: str,
+        email: str,
+        password: str,
+        hospital: Union[Hospital, None] = None,
+    ) -> User:
+        user = User(
+            _id=ObjectId(),
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            hospital=hospital,
+            active=True,
+        )
+        user.password = user.encrypt_password(password)
+        user_saved = user.save()
+        return user_saved
+
+    # to be implemented
+    def create_user_no_signup(
+        self,
+        first_name: str,
+        last_name: str,
+        email: str,
+        hospital: Union[Hospital, None] = None,
+    ) -> User:
+        user = User(
+            _id=ObjectId(),
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            hospital=hospital,
+            active=False,
+        )
+        user_saved = user.save()
+        return user_saved
+
+    # to be implemented
+    def existing_user_signup(
         self,
         first_name: str,
         last_name: str,
@@ -44,4 +84,14 @@ class UserDB:
     def get_user_by_email(self, email: str) -> User:
         # pylint: disable=no-member
         user = User.objects.get(email=email)  # type: ignore
+        return user
+
+    def get_user_for_hospital_id(self, hospital_id: str) -> List[User]:
+        # pylint: disable=no-member
+        users = User.objects.filter(hospital=hospital_id)  # type: ignore
+        return list(users)
+
+    def update_user_profile(self, user: User, profile: Dict) -> User:
+        user.profile = profile
+        user.save()
         return user

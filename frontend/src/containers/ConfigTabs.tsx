@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 
-import HospitalInfo from "./HospitalInfo";
-import HospitalProfile from "./HospitalProfile";
-
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+
+import DoctorsProfile from "./DoctorsProfile";
+import HospitalInfo from "./HospitalInfo";
+import HospitalProfile from "./HospitalProfile";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -75,7 +76,7 @@ export default function ConfigTabs() {
         <HospitalProfile />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        Item Two
+        <DoctorsProfile />
       </TabPanel>
       <TabPanel value={value} index={2}>
         Item Three

@@ -14,8 +14,8 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-import { AuthContext } from "../context/AuthContext";
-import { HospitalContext } from "../context/HospitalContext";
+import { AuthContext } from "../../context/AuthContext";
+import { HospitalContext } from "../../context/HospitalContext";
 
 function Copyright(props: any) {
   return (
