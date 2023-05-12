@@ -12,7 +12,7 @@ CORS(
     app,
     origins=["http://localhost:3000"],
     headers=["Content-Type"],
-    methods=["GET", "POST"],
+    methods=["GET", "POST", "DELETE"],
     supports_credentials=True,
 )
 # Change this to a secure secret key in production

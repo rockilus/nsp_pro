@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -14,7 +14,8 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-import { postSignInRequest } from "../services/api";
+import { AuthContext } from "../../context/AuthContext";
+import { HospitalContext } from "../../context/HospitalContext";
 
 function Copyright(props: any) {
   return (
@@ -36,16 +37,35 @@ function Copyright(props: any) {
 
 const theme = createTheme();
 
-export default function SignIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+interface SignInTemplateProps {
+  handleCloseSignIn: () => void;
+}
+
+export default function SignInTemplate(props: SignInTemplateProps) {
+  const [email, setEmail] = useState("tim@tim.com");
+  const [password, setPassword] = useState("monkey");
+  const authContext = useContext(AuthContext);
+  const hospitalContext = useContext(HospitalContext);
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const response = await postSignInRequest(email, password);
+    await authContext.signIn(email, password);
+    console.log("authContext right after sign in", authContext);
 
-    console.log("response", response);
+    props.handleCloseSignIn();
   };
+
+  // useEffect(() => {
+  //   console.log("useEffect in SignInTemplate");
+  //   console.log("authContext right after sign in", authContext.currentUser);
+  //   if (authContext.currentUser) {
+  //     if (authContext.currentUser.hospital) {
+  //       hospitalContext.getHospital(authContext.currentUser.hospital);
+  //     }
+  //     props.handleCloseSignIn();
+  //   }
+  // }, [authContext.currentUser, hospitalContext, props]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -114,7 +134,7 @@ export default function SignIn() {
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link variant="body2" style={{ cursor: "pointer" }}>
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>

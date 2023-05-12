@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -14,8 +14,7 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-import { postSignUpRequest } from "../services/api";
-import { UserContext } from "../context/UserContext";
+import { AuthContext } from "../../context/AuthContext";
 
 function Copyright(props: any) {
   return (
@@ -42,21 +41,11 @@ export default function SignUp() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userContext, setUserContext] = useState(UserContext);
+  const authContext = useContext(AuthContext);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const response = await postSignUpRequest(
-      firstName,
-      lastName,
-      email,
-      password
-    );
-
-    console.log("response", response);
-    setUserContext((oldValues) => {
-      return { ...oldValues, access_token: response.access_token };
-    });
+    await authContext.signUp(firstName, lastName, email, password);
   };
 
   return (
