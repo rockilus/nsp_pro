@@ -101,7 +101,6 @@ def create_user():
     try:
         hospital = hospital_db.get_hospital_by_id(user_info["hospital_id"])
     except DoesNotExist as e:
-        print(e)
         return jsonify({"error": f"{str(e)}"}), 404
     except ValidationError as e:
         return jsonify({"error": f"{str(e)}"}), 404
@@ -143,7 +142,6 @@ def update_user_profile():
     try:
         user = user_db.get_user_by_id(user_info["user_id"])
     except DoesNotExist as e:
-        print(e)
         return jsonify({"error": f"{str(e)}"}), 404
     except ValidationError as e:
         return jsonify({"error": f"{str(e)}"}), 404
