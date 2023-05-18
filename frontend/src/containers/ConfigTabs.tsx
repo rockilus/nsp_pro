@@ -8,6 +8,7 @@ import DoctorsProfile from "./DoctorsProfile";
 import HospitalInfo from "./HospitalInfo";
 import HospitalProfile from "./HospitalProfile";
 import Parameters from "./Parameters";
+import Schedule from "./Schedule";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -59,6 +60,8 @@ export default function ConfigTabs() {
           <Tab label="Doctors Profile" {...a11yProps(1)} />
           <Tab label="Parameters" {...a11yProps(2)} />
           <Tab label="Hospital Info" {...a11yProps(3)} />
+          <Tab label="Constraints" {...a11yProps(4)} />
+          <Tab label="Schedule" {...a11yProps(5)} />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
@@ -72,6 +75,12 @@ export default function ConfigTabs() {
       </TabPanel>
       <TabPanel value={value} index={3}>
         <HospitalInfo />
+      </TabPanel>
+      <TabPanel value={value} index={4}>
+        TO COME
+      </TabPanel>
+      <TabPanel value={value} index={5}>
+        <Schedule />
       </TabPanel>
     </Box>
   );

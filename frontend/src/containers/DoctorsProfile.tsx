@@ -25,6 +25,7 @@ export default function DoctorsProfile() {
         justifyContent="flex-start"
         alignItems="stretch"
       >
+        <NewDoctorForm />
         <RenderDoctorCards />
       </Grid>
     </Box>

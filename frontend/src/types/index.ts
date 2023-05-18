@@ -1,4 +1,5 @@
 import React from "react";
+import { Dayjs } from "dayjs";
 
 //==============================================================================
 // Items
@@ -19,6 +20,26 @@ export interface Hospital {
   profile: Record<string, any>;
   profile_validation: Record<string, any>;
   parameters: Record<string, any>;
+}
+
+export interface Schedule {
+  _id: string;
+  schedule_list: number[];
+  hospital: string;
+  users: string[];
+  shift_labels: string[];
+  user_labels: string[];
+}
+
+export interface ScheduleData {
+  _id: string;
+  date: string;
+  shift_type: number;
+  shift_type_label: string;
+  user_last_name: string;
+  schedule: string;
+  hospital: string;
+  user: string;
 }
 
 //==============================================================================
@@ -75,5 +96,21 @@ export interface HospitalState {
     parameter: string,
     value: string,
     hospitalId: string
+  ) => Promise<void>;
+}
+
+export interface ScheduleState {
+  currentSchedule: Schedule | null;
+  currentScheduleData: ScheduleData[] | null;
+  error?: string;
+  getScheduleXDays: (
+    hospitalId: string,
+    startDate: Dayjs,
+    numDays: number
+  ) => Promise<void>;
+  buildSchedule: (
+    hospitalId: string,
+    startDate: Dayjs,
+    endDate: Dayjs
   ) => Promise<void>;
 }
