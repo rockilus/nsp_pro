@@ -31,12 +31,6 @@ export default function HospitalInfo() {
     }
   };
 
-  //   const fetchHospitalInfo = async () => {
-  //     const response = await getHospitalInfo();
-  //     console.log("response useEffect", response);
-  //     setHospitalInfo(response);
-  //   };
-
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">

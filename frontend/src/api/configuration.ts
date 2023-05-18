@@ -1,3 +1,5 @@
+import { Dayjs } from "dayjs";
+
 import { getCookie } from "../utils/cookie";
 
 const serverUrl = "http://localhost:5000";
@@ -8,6 +10,8 @@ const createUserUrl = serverUrl + "/create-user";
 const hospitalUsersUrl = serverUrl + "/hospital-users";
 const userProfileUrl = serverUrl + "/user-profile";
 const updateParameterUrl = serverUrl + "/parameter";
+const getScheduleUrl = serverUrl + "/get-schedule";
+const buildScheduleUrl = serverUrl + "/build-schedule";
 
 export async function postHospitalInfo(hospitalName: string, userId: string) {
   const options: RequestInit = {
@@ -225,6 +229,68 @@ export async function postParameterUpdate(
   };
   try {
     const response = await fetch(updateParameterUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function postGetScheduleXDays(
+  hospitalId: string,
+  startDate: Dayjs,
+  numDays: number
+) {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      hospital_id: hospitalId,
+      start_date: startDate.format("YYYY-MM-DD"),
+      num_days: numDays,
+    }),
+  };
+  try {
+    const response = await fetch(getScheduleUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function postBuildSchedule(
+  hospitalId: string,
+  startDate: Dayjs,
+  endDate: Dayjs
+) {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      hospital_id: hospitalId,
+      start_date: startDate.format("YYYY-MM-DD"),
+      end_date: endDate.format("YYYY-MM-DD"),
+    }),
+  };
+  try {
+    const response = await fetch(buildScheduleUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;

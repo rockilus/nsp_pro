@@ -46,8 +46,16 @@ export const DoctorsProvider = (props: DoctorsProviderProps) => {
         email,
         hospitalId
       );
-      setDoctorsState((oldValues) => {
-        return { ...oldValues, currentDoctors: response.user };
+      setDoctorsState((prevState) => {
+        if (!prevState.currentDoctors) {
+          return prevState;
+        }
+        return {
+          ...prevState,
+          currentDoctors: prevState.currentDoctors.map((doctor) => {
+            return doctor._id === response.user._id ? response.user : doctor;
+          }),
+        };
       });
     },
     []
@@ -71,10 +79,6 @@ export const DoctorsProvider = (props: DoctorsProviderProps) => {
           ...prevState,
           currentDoctors: prevState.currentDoctors.map((doctor) => {
             return doctor._id === response.user._id ? response.user : doctor;
-            // if (doctor._id === response.user._id) {
-            //   return response.user;
-            // }
-            // return doctor;
           }),
         };
       });
