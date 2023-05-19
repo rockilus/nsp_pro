@@ -4,11 +4,13 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 
+import Constraints from "./Constraints";
 import DoctorsProfile from "./DoctorsProfile";
 import HospitalInfo from "./HospitalInfo";
 import HospitalProfile from "./HospitalProfile";
 import Parameters from "./Parameters";
 import Schedule from "./Schedule";
+import ScheduleManager from "../components/ScheduleManager/ScheduleManager";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -62,6 +64,7 @@ export default function ConfigTabs() {
           <Tab label="Hospital Info" {...a11yProps(3)} />
           <Tab label="Constraints" {...a11yProps(4)} />
           <Tab label="Schedule" {...a11yProps(5)} />
+          <Tab label="Schedule Manager" {...a11yProps(5)} />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
@@ -77,10 +80,13 @@ export default function ConfigTabs() {
         <HospitalInfo />
       </TabPanel>
       <TabPanel value={value} index={4}>
-        TO COME
+        <Constraints />
       </TabPanel>
       <TabPanel value={value} index={5}>
         <Schedule />
+      </TabPanel>
+      <TabPanel value={value} index={6}>
+        <ScheduleManager />
       </TabPanel>
     </Box>
   );

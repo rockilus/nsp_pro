@@ -24,11 +24,18 @@ export interface Hospital {
 
 export interface Schedule {
   _id: string;
+  name: string;
   schedule_list: number[];
+  start_date: string;
+  end_date: string;
+  build_date: string;
+  author: string;
   hospital: string;
   users: string[];
   shift_labels: string[];
   user_labels: string[];
+  override: string[];
+  active: boolean;
 }
 
 export interface ScheduleData {
@@ -101,6 +108,7 @@ export interface HospitalState {
 
 export interface ScheduleState {
   currentSchedule: Schedule | null;
+  currentScheduleList: Schedule[] | null;
   currentScheduleData: ScheduleData[] | null;
   error?: string;
   getScheduleXDays: (
@@ -108,8 +116,14 @@ export interface ScheduleState {
     startDate: Dayjs,
     numDays: number
   ) => Promise<void>;
+  getScheduleList: (
+    hospitalId: string,
+    startDate: Dayjs,
+    endDate: Dayjs
+  ) => Promise<void>;
   buildSchedule: (
     hospitalId: string,
+    authorId: string,
     startDate: Dayjs,
     endDate: Dayjs
   ) => Promise<void>;

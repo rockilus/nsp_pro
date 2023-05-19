@@ -8,10 +8,12 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { HospitalContext } from "../../context/HospitalContext";
 import { ScheduleContext } from "../../context/ScheduleContext";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function DatePickerValue() {
   const hospitalContext = useContext(HospitalContext);
   const scheduleContext = useContext(ScheduleContext);
+  const authContext = useContext(AuthContext);
   const [startDate, setStartDate] = useState<Dayjs>(dayjs());
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
 
@@ -23,9 +25,10 @@ export default function DatePickerValue() {
   // };
 
   const handleBuildSchedule = async () => {
-    if (hospitalContext.currentHospital) {
+    if (hospitalContext.currentHospital && authContext.currentUser) {
       await scheduleContext.buildSchedule(
         hospitalContext.currentHospital._id,
+        authContext.currentUser._id,
         startDate,
         endDate
       );

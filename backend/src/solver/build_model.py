@@ -119,6 +119,20 @@ class BuildModel:
                             self.model_data.obj_int_vars.append(excess)
                             self.model_data.obj_int_coeffs.append(over_penalty)
 
+        # Max working days per week.
+        for u in range(self.model_data.num_users):
+            for s in range(self.model_data.num_shifts_day):
+                for t in range(self.model_data.num_shift_types):
+                    for w in range(self.model_data.num_weeks):
+                        works = [
+                            self.model_data.work[
+                                u, w * self.model_data.num_days_week + d, s, t
+                            ]
+                            for d in range(self.model_data.num_days_week)
+                        ]
+                        max_days = self.model.NewIntVar(0, 5, "")
+                        self.model.Add(max_days == sum(works))  # type: ignore
+
     def create_objective(self) -> None:
         # Objective
         self.model.Minimize(

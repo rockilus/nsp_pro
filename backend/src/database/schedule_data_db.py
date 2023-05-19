@@ -32,14 +32,15 @@ class ScheduleDataDB:
         # .select_related("user")
         return list(schedule_data)
 
-    def get_schedule_by_schedule_id(
-        self, schedule_id: str, start_date: datetime, end_date: datetime
+    def get_schedule_data_by_schedule_ids(
+        self, schedule_ids: List[str], start_date: datetime, end_date: datetime
     ) -> List[Schedule]:
         # pylint: disable=no-member
         schedule_data = ScheduleData.objects(  # type: ignore
-            schedule=schedule_id,
+            schedule__in=schedule_ids,
             date__gte=start_date,
             date__lte=end_date,
-        ).select_related(max_depth=1)
+        )
+        # ).select_related(max_depth=1)
         # ).only("user")
         return list(schedule_data)

@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 from bson import ObjectId
 from ortools.sat.python import cp_model  # type: ignore
-from models import Schedule, ScheduleData
+from models import Schedule, ScheduleData, User
 from solver.build_model import ModelData
 
 
@@ -14,6 +14,7 @@ class Solution:
         model_data: ModelData,
         solver: cp_model.CpSolver,
         start_date: datetime,
+        author: User,
     ) -> None:
         self.model_data = model_data
         self.solver = solver
@@ -22,6 +23,7 @@ class Solution:
         self.hospital = self.model_data.hospital
         self.users = self.model_data.users
         self.start_date = start_date
+        self.author = author
 
     def build_np_solution(self) -> np.ndarray:
         schedule = np.zeros(
@@ -46,12 +48,20 @@ class Solution:
     def build_schedule(self) -> Schedule:
         return Schedule(
             _id=ObjectId(),
+            name="Schedule",
             schedule_list=self.build_np_solution().tolist(),
             start_date=self.start_date.date(),
+            end_date=(
+                self.start_date + timedelta(days=self.model_data.num_days)
+            ).date(),
+            build_date=datetime.now(),
+            author=self.author,
             hospital=self.hospital,
             users=self.users,
             shift_labels=self.shift_labels,
             user_labels=self.user_labels,
+            override=[],
+            active=True,
         )
 
     def build_schedule_data_list(
