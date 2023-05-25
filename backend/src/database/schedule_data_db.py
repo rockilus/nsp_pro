@@ -44,3 +44,34 @@ class ScheduleDataDB:
         # ).select_related(max_depth=1)
         # ).only("user")
         return list(schedule_data)
+
+    def set_schedule_main_to_false_by_hospital_id(
+        self, hospital_id: str, start_date: datetime, end_date: datetime
+    ) -> None:
+        # pylint: disable=no-member
+        ScheduleData.objects(  # type: ignore
+            hospital=hospital_id,
+            date__gte=start_date,
+            date__lte=end_date,
+        ).update(schedule_main=False)
+
+    def set_schedule_main_to_train_by_schedule_id(
+        self, schedule_id: str, dates: List[datetime]
+    ) -> None:
+        # pylint: disable=no-member
+        ScheduleData.objects(  # type: ignore
+            schedule=schedule_id,
+            date__in=dates,
+        ).update(schedule_main=False)
+
+    def get_main_schedule_data_by_hospital_id(
+        self, hospital_id: str, start_date: datetime, end_date: datetime
+    ) -> List[ScheduleData]:
+        # pylint: disable=no-member
+        schedule_data = ScheduleData.objects(  # type: ignore
+            hospital=hospital_id,
+            date__gte=start_date,
+            date__lte=end_date,
+            schedule_main=True,
+        )
+        return list(schedule_data)
