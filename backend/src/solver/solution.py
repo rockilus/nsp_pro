@@ -37,9 +37,7 @@ class Solution:
             for d in range(self.model_data.num_days):
                 for s in range(self.model_data.num_shifts_day):
                     for t in range(self.model_data.num_shift_types):
-                        if self.solver.BooleanValue(
-                            self.model_data.work[u, d, s, t]
-                        ):
+                        if self.solver.BooleanValue(self.model_data.work[u, d, s, t]):
                             schedule[u, d, s, t] = 1
         return schedule
 
@@ -54,18 +52,14 @@ class Solution:
             user_labels=self.user_labels,
         )
 
-    def build_schedule_data_list(
-        self, schedule: Schedule
-    ) -> List[ScheduleData]:
+    def build_schedule_data_list(self, schedule: Schedule) -> List[ScheduleData]:
         schedule_data_list = []
         date = self.start_date
         for d in range(self.model_data.num_days):
             for u in range(self.model_data.num_users):
                 for s in range(self.model_data.num_shifts_day):
                     for t in range(self.model_data.num_shift_types):
-                        if self.solver.BooleanValue(
-                            self.model_data.work[u, d, s, t]
-                        ):
+                        if self.solver.BooleanValue(self.model_data.work[u, d, s, t]):
                             schedule_data_list.append(
                                 ScheduleData(
                                     _id=ObjectId(),

@@ -4,9 +4,7 @@ from scripts.setup_database import hospital_db, user_db
 from solver import BuildModel, ModelData, Solution, Solver
 
 
-def run_solver(
-    hospital_id: str, start_date: datetime, end_date: datetime
-) -> Solution:
+def run_solver(hospital_id: str, start_date: datetime, end_date: datetime) -> Solution:
     num_days = (end_date - start_date).days + 1
     hospital = hospital_db.get_hospital_by_id(hospital_id)
     users = user_db.get_user_for_hospital_id(hospital_id)

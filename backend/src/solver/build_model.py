@@ -8,9 +8,7 @@ from utils import Constants
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-few-public-methods
 class ModelData:
-    def __init__(
-        self, hospital: Hospital, users: List[User], num_days: int
-    ) -> None:
+    def __init__(self, hospital: Hospital, users: List[User], num_days: int) -> None:
         self.hospital = hospital
         self.users = users
         self.num_users = len(users)
@@ -25,9 +23,7 @@ class ModelData:
         self.num_shift_types = len(self.shift_types)
         staffing_from_db = shift_types_from_db.get("on").get("staffing")
         if staffing_from_db is None:
-            raise KeyError(
-                "No key duty_options.on.staffing found in hospital.profile"
-            )
+            raise KeyError("No key duty_options.on.staffing found in hospital.profile")
         self.staffing = int(staffing_from_db)
         self.weekly_cover_demands = [
             (self.staffing,),  # Monday
@@ -70,9 +66,9 @@ class BuildModel:
             for d in range(self.model_data.num_days):
                 for s in range(self.model_data.num_shifts_day):
                     for t in range(self.model_data.num_shift_types):
-                        self.model_data.work[
-                            (u, d, s, t)
-                        ] = self.model.NewBoolVar(f"shift_n{u}d{d}s{s}t{t}")
+                        self.model_data.work[(u, d, s, t)] = self.model.NewBoolVar(
+                            f"shift_n{u}d{d}s{s}t{t}"
+                        )
 
     def create_constraints(self) -> None:
         # Exactly one shift per day.
@@ -96,16 +92,12 @@ class BuildModel:
                             for u in range(self.model_data.num_users)
                         ]
                         # Ignore Off shift.
-                        min_demand = self.model_data.weekly_cover_demands[d][
-                            t - 1
-                        ]
+                        min_demand = self.model_data.weekly_cover_demands[d][t - 1]
                         worked = self.model.NewIntVar(
                             min_demand, self.model_data.num_users, ""
                         )
                         self.model.Add(worked == sum(works))  # type: ignore
-                        over_penalty = self.model_data.excess_cover_penalties[
-                            s - 1
-                        ]
+                        over_penalty = self.model_data.excess_cover_penalties[s - 1]
                         if over_penalty > 0:
                             name = (
                                 "excess_demand("
@@ -123,8 +115,7 @@ class BuildModel:
         # Objective
         self.model.Minimize(
             sum(
-                self.model_data.obj_int_vars[i]
-                * self.model_data.obj_int_coeffs[i]
+                self.model_data.obj_int_vars[i] * self.model_data.obj_int_coeffs[i]
                 for i in range(len(self.model_data.obj_int_vars))
             )
         )

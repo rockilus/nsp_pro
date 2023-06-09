@@ -19,7 +19,5 @@ class ScheduleDB:
 
     def get_schedule_by_hospital_id(self, hospital_id: str) -> List[Schedule]:
         # pylint: disable=no-member
-        schedules = Schedule.objects.filter(  # type: ignore
-            hospital=hospital_id
-        )
+        schedules = Schedule.objects.filter(hospital=hospital_id)  # type: ignore
         return list(schedules)
