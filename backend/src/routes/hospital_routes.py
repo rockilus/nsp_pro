@@ -87,9 +87,7 @@ def get_hospital():
 def update_parameter():
     parameter_info = request.get_json()
     try:
-        hospital = hospital_db.get_hospital_by_id(
-            parameter_info["hospital_id"]
-        )
+        hospital = hospital_db.get_hospital_by_id(parameter_info["hospital_id"])
     except DoesNotExist as e:
         print(e)
         return jsonify({"error": f"{str(e)}"}), 404

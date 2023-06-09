@@ -30,17 +30,13 @@ class HospitalDB:
     def add_profile_option(
         self, dict_path: List, option: str, hospital: Hospital
     ) -> Hospital:
-        profile_updated = set_value_from_keys(
-            dict_path, option, hospital.profile
-        )
+        profile_updated = set_value_from_keys(dict_path, option, hospital.profile)
         hospital.profile = profile_updated
         hospital = self.update_profile_validation(hospital)
         hospital_saved = hospital.save()
         return hospital_saved
 
-    def delete_profile_option(
-        self, dict_path: List, hospital: Hospital
-    ) -> Hospital:
+    def delete_profile_option(self, dict_path: List, hospital: Hospital) -> Hospital:
         profile_updated = delete_value_from_keys(dict_path, hospital.profile)
         hospital.profile = profile_updated
         hospital = self.update_profile_validation(hospital)
@@ -97,9 +93,7 @@ def set_value_from_keys(
     return dict_
 
 
-def delete_value_from_keys(
-    keys: List[str], dict_: Dict[str, Any]
-) -> Dict[str, Any]:
+def delete_value_from_keys(keys: List[str], dict_: Dict[str, Any]) -> Dict[str, Any]:
     if len(keys) == 0:
         raise NoKeyProvidedError("No keys provided")
 
