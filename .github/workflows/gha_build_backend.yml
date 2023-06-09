@@ -43,34 +43,15 @@ jobs:
     - name: Install dependencies
       run: poetry install
 
-  lint:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
     - name: Lint with flake8
       run: poetry run flake8 src
 
-  black:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
     - name: Check coding styles with black
       run: poetry run black --check src
   
-  pylint:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
     - name: Check with pylint
       run: poetry run pylint src
   
-  mypy:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
     - uses: actions/checkout@v2
     - name: Check types with
       run: poetry run mypy src
