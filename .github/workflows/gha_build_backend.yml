@@ -11,11 +11,11 @@ on:
     branches: [ main ]
     
 jobs:
-  setup:
+  check:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10']
+        python-version: [3.9, '3.10', '3.11']
         poetry-version: [1.5.1]
 
     steps:
