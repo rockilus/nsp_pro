@@ -27,5 +27,5 @@ class ScheduleDB:
             start_date__lte=end_date,
             end_date__gte=start_date,
             active=True,
-        )
+        ).order_by("-build_date")
         return list(schedules)

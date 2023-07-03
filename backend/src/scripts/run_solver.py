@@ -7,11 +7,10 @@ from solver import BuildModel, ModelData, Solution, Solver
 def run_solver(
     hospital_id: str, author_id: str, start_date: datetime, end_date: datetime
 ) -> Solution:
-    num_days = (end_date - start_date).days + 1
     hospital = hospital_db.get_hospital_by_id(hospital_id)
     users = user_db.get_user_for_hospital_id(hospital_id)
     author = user_db.get_user_by_id(author_id)
-    model_data = ModelData(hospital, users, num_days)
+    model_data = ModelData(hospital, users, start_date, end_date)
     build_model = BuildModel(model_data)
     model = build_model()
     solver = Solver().solve(model)

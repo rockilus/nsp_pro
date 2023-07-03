@@ -299,6 +299,16 @@ variables {
   domain: 1
 }
 variables {
+  name: "shift_n0d30s0t0"
+  domain: 0
+  domain: 1
+}
+variables {
+  name: "shift_n0d30s0t1"
+  domain: 0
+  domain: 1
+}
+variables {
   name: "shift_n1d0s0t0"
   domain: 0
   domain: 1
@@ -595,6 +605,16 @@ variables {
 }
 variables {
   name: "shift_n1d29s0t1"
+  domain: 0
+  domain: 1
+}
+variables {
+  name: "shift_n1d30s0t0"
+  domain: 0
+  domain: 1
+}
+variables {
+  name: "shift_n1d30s0t1"
   domain: 0
   domain: 1
 }
@@ -899,6 +919,16 @@ variables {
   domain: 1
 }
 variables {
+  name: "shift_n2d30s0t0"
+  domain: 0
+  domain: 1
+}
+variables {
+  name: "shift_n2d30s0t1"
+  domain: 0
+  domain: 1
+}
+variables {
   name: "shift_n3d0s0t0"
   domain: 0
   domain: 1
@@ -1199,6 +1229,16 @@ variables {
   domain: 1
 }
 variables {
+  name: "shift_n3d30s0t0"
+  domain: 0
+  domain: 1
+}
+variables {
+  name: "shift_n3d30s0t1"
+  domain: 0
+  domain: 1
+}
+variables {
   domain: 2
   domain: 4
 }
@@ -1449,6 +1489,37 @@ variables {
   name: "excess_demand(day=27, shift=0, type=1)"
   domain: 0
   domain: 2
+}
+variables {
+  domain: 2
+  domain: 4
+}
+variables {
+  name: "excess_demand(day=28, shift=0, type=1)"
+  domain: 0
+  domain: 2
+}
+variables {
+  domain: 2
+  domain: 4
+}
+variables {
+  name: "excess_demand(day=29, shift=0, type=1)"
+  domain: 0
+  domain: 2
+}
+variables {
+  domain: 2
+  domain: 4
+}
+variables {
+  name: "excess_demand(day=30, shift=0, type=1)"
+  domain: 0
+  domain: 2
+}
+variables {
+  domain: 0
+  domain: 5
 }
 variables {
   domain: 0
@@ -2299,115 +2370,35 @@ constraints {
   }
 }
 constraints {
-  linear {
-    vars: 181
-    vars: 121
-    vars: 61
-    vars: 1
-    vars: 240
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: 1
-    domain: 0
-    domain: 0
+  exactly_one {
+    literals: 240
+    literals: 241
   }
 }
 constraints {
-  linear {
-    vars: 240
-    vars: 241
-    coeffs: -1
-    coeffs: 1
-    domain: -2
-    domain: -2
+  exactly_one {
+    literals: 242
+    literals: 243
   }
 }
 constraints {
-  linear {
-    vars: 183
-    vars: 123
-    vars: 63
-    vars: 3
-    vars: 242
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: 1
-    domain: 0
-    domain: 0
+  exactly_one {
+    literals: 244
+    literals: 245
   }
 }
 constraints {
-  linear {
-    vars: 242
-    vars: 243
-    coeffs: -1
-    coeffs: 1
-    domain: -2
-    domain: -2
-  }
-}
-constraints {
-  linear {
-    vars: 185
-    vars: 125
-    vars: 65
-    vars: 5
-    vars: 244
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: 1
-    domain: 0
-    domain: 0
-  }
-}
-constraints {
-  linear {
-    vars: 244
-    vars: 245
-    coeffs: -1
-    coeffs: 1
-    domain: -2
-    domain: -2
+  exactly_one {
+    literals: 246
+    literals: 247
   }
 }
 constraints {
   linear {
     vars: 187
-    vars: 127
-    vars: 67
-    vars: 7
-    vars: 246
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: 1
-    domain: 0
-    domain: 0
-  }
-}
-constraints {
-  linear {
-    vars: 246
-    vars: 247
-    coeffs: -1
-    coeffs: 1
-    domain: -2
-    domain: -2
-  }
-}
-constraints {
-  linear {
-    vars: 189
-    vars: 129
-    vars: 69
-    vars: 9
+    vars: 125
+    vars: 63
+    vars: 1
     vars: 248
     coeffs: -1
     coeffs: -1
@@ -2430,10 +2421,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 191
-    vars: 131
-    vars: 71
-    vars: 11
+    vars: 189
+    vars: 127
+    vars: 65
+    vars: 3
     vars: 250
     coeffs: -1
     coeffs: -1
@@ -2456,10 +2447,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 193
-    vars: 133
-    vars: 73
-    vars: 13
+    vars: 191
+    vars: 129
+    vars: 67
+    vars: 5
     vars: 252
     coeffs: -1
     coeffs: -1
@@ -2482,10 +2473,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 195
-    vars: 135
-    vars: 75
-    vars: 15
+    vars: 193
+    vars: 131
+    vars: 69
+    vars: 7
     vars: 254
     coeffs: -1
     coeffs: -1
@@ -2508,10 +2499,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 197
-    vars: 137
-    vars: 77
-    vars: 17
+    vars: 195
+    vars: 133
+    vars: 71
+    vars: 9
     vars: 256
     coeffs: -1
     coeffs: -1
@@ -2534,10 +2525,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 199
-    vars: 139
-    vars: 79
-    vars: 19
+    vars: 197
+    vars: 135
+    vars: 73
+    vars: 11
     vars: 258
     coeffs: -1
     coeffs: -1
@@ -2560,10 +2551,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 201
-    vars: 141
-    vars: 81
-    vars: 21
+    vars: 199
+    vars: 137
+    vars: 75
+    vars: 13
     vars: 260
     coeffs: -1
     coeffs: -1
@@ -2586,10 +2577,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 203
-    vars: 143
-    vars: 83
-    vars: 23
+    vars: 201
+    vars: 139
+    vars: 77
+    vars: 15
     vars: 262
     coeffs: -1
     coeffs: -1
@@ -2612,10 +2603,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 205
-    vars: 145
-    vars: 85
-    vars: 25
+    vars: 203
+    vars: 141
+    vars: 79
+    vars: 17
     vars: 264
     coeffs: -1
     coeffs: -1
@@ -2638,10 +2629,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 207
-    vars: 147
-    vars: 87
-    vars: 27
+    vars: 205
+    vars: 143
+    vars: 81
+    vars: 19
     vars: 266
     coeffs: -1
     coeffs: -1
@@ -2664,10 +2655,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 209
-    vars: 149
-    vars: 89
-    vars: 29
+    vars: 207
+    vars: 145
+    vars: 83
+    vars: 21
     vars: 268
     coeffs: -1
     coeffs: -1
@@ -2690,10 +2681,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 211
-    vars: 151
-    vars: 91
-    vars: 31
+    vars: 209
+    vars: 147
+    vars: 85
+    vars: 23
     vars: 270
     coeffs: -1
     coeffs: -1
@@ -2716,10 +2707,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 213
-    vars: 153
-    vars: 93
-    vars: 33
+    vars: 211
+    vars: 149
+    vars: 87
+    vars: 25
     vars: 272
     coeffs: -1
     coeffs: -1
@@ -2742,10 +2733,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 215
-    vars: 155
-    vars: 95
-    vars: 35
+    vars: 213
+    vars: 151
+    vars: 89
+    vars: 27
     vars: 274
     coeffs: -1
     coeffs: -1
@@ -2768,10 +2759,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 217
-    vars: 157
-    vars: 97
-    vars: 37
+    vars: 215
+    vars: 153
+    vars: 91
+    vars: 29
     vars: 276
     coeffs: -1
     coeffs: -1
@@ -2794,10 +2785,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 219
-    vars: 159
-    vars: 99
-    vars: 39
+    vars: 217
+    vars: 155
+    vars: 93
+    vars: 31
     vars: 278
     coeffs: -1
     coeffs: -1
@@ -2820,10 +2811,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 221
-    vars: 161
-    vars: 101
-    vars: 41
+    vars: 219
+    vars: 157
+    vars: 95
+    vars: 33
     vars: 280
     coeffs: -1
     coeffs: -1
@@ -2846,10 +2837,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 223
-    vars: 163
-    vars: 103
-    vars: 43
+    vars: 221
+    vars: 159
+    vars: 97
+    vars: 35
     vars: 282
     coeffs: -1
     coeffs: -1
@@ -2872,10 +2863,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 225
-    vars: 165
-    vars: 105
-    vars: 45
+    vars: 223
+    vars: 161
+    vars: 99
+    vars: 37
     vars: 284
     coeffs: -1
     coeffs: -1
@@ -2898,10 +2889,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 227
-    vars: 167
-    vars: 107
-    vars: 47
+    vars: 225
+    vars: 163
+    vars: 101
+    vars: 39
     vars: 286
     coeffs: -1
     coeffs: -1
@@ -2924,10 +2915,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 229
-    vars: 169
-    vars: 109
-    vars: 49
+    vars: 227
+    vars: 165
+    vars: 103
+    vars: 41
     vars: 288
     coeffs: -1
     coeffs: -1
@@ -2950,10 +2941,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 231
-    vars: 171
-    vars: 111
-    vars: 51
+    vars: 229
+    vars: 167
+    vars: 105
+    vars: 43
     vars: 290
     coeffs: -1
     coeffs: -1
@@ -2976,10 +2967,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 233
-    vars: 173
-    vars: 113
-    vars: 53
+    vars: 231
+    vars: 169
+    vars: 107
+    vars: 45
     vars: 292
     coeffs: -1
     coeffs: -1
@@ -3002,10 +2993,10 @@ constraints {
 }
 constraints {
   linear {
-    vars: 235
-    vars: 175
-    vars: 115
-    vars: 55
+    vars: 233
+    vars: 171
+    vars: 109
+    vars: 47
     vars: 294
     coeffs: -1
     coeffs: -1
@@ -3028,21 +3019,15 @@ constraints {
 }
 constraints {
   linear {
-    vars: 12
-    vars: 10
-    vars: 8
-    vars: 6
-    vars: 4
-    vars: 2
-    vars: 0
+    vars: 235
+    vars: 173
+    vars: 111
+    vars: 49
     vars: 296
     coeffs: -1
     coeffs: -1
     coeffs: -1
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
     domain: 0
     domain: 0
@@ -3050,43 +3035,25 @@ constraints {
 }
 constraints {
   linear {
-    vars: 26
-    vars: 24
-    vars: 22
-    vars: 20
-    vars: 18
-    vars: 16
-    vars: 14
+    vars: 296
     vars: 297
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
-    domain: 0
-    domain: 0
+    domain: -2
+    domain: -2
   }
 }
 constraints {
   linear {
-    vars: 40
-    vars: 38
-    vars: 36
-    vars: 34
-    vars: 32
-    vars: 30
-    vars: 28
+    vars: 237
+    vars: 175
+    vars: 113
+    vars: 51
     vars: 298
     coeffs: -1
     coeffs: -1
     coeffs: -1
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
     domain: 0
     domain: 0
@@ -3094,43 +3061,25 @@ constraints {
 }
 constraints {
   linear {
-    vars: 54
-    vars: 52
-    vars: 50
-    vars: 48
-    vars: 46
-    vars: 44
-    vars: 42
+    vars: 298
     vars: 299
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
-    domain: 0
-    domain: 0
+    domain: -2
+    domain: -2
   }
 }
 constraints {
   linear {
-    vars: 13
-    vars: 11
-    vars: 9
-    vars: 7
-    vars: 5
-    vars: 3
-    vars: 1
+    vars: 239
+    vars: 177
+    vars: 115
+    vars: 53
     vars: 300
     coeffs: -1
     coeffs: -1
     coeffs: -1
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
     domain: 0
     domain: 0
@@ -3138,43 +3087,25 @@ constraints {
 }
 constraints {
   linear {
-    vars: 27
-    vars: 25
-    vars: 23
-    vars: 21
-    vars: 19
-    vars: 17
-    vars: 15
+    vars: 300
     vars: 301
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
-    domain: 0
-    domain: 0
+    domain: -2
+    domain: -2
   }
 }
 constraints {
   linear {
-    vars: 41
-    vars: 39
-    vars: 37
-    vars: 35
-    vars: 33
-    vars: 31
-    vars: 29
+    vars: 241
+    vars: 179
+    vars: 117
+    vars: 55
     vars: 302
     coeffs: -1
     coeffs: -1
     coeffs: -1
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
     domain: 0
     domain: 0
@@ -3182,43 +3113,25 @@ constraints {
 }
 constraints {
   linear {
-    vars: 55
-    vars: 53
-    vars: 51
-    vars: 49
-    vars: 47
-    vars: 45
-    vars: 43
+    vars: 302
     vars: 303
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
-    domain: 0
-    domain: 0
+    domain: -2
+    domain: -2
   }
 }
 constraints {
   linear {
-    vars: 72
-    vars: 70
-    vars: 68
-    vars: 66
-    vars: 64
-    vars: 62
-    vars: 60
+    vars: 243
+    vars: 181
+    vars: 119
+    vars: 57
     vars: 304
     coeffs: -1
     coeffs: -1
     coeffs: -1
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
     domain: 0
     domain: 0
@@ -3226,43 +3139,25 @@ constraints {
 }
 constraints {
   linear {
-    vars: 86
-    vars: 84
-    vars: 82
-    vars: 80
-    vars: 78
-    vars: 76
-    vars: 74
+    vars: 304
     vars: 305
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
-    domain: 0
-    domain: 0
+    domain: -2
+    domain: -2
   }
 }
 constraints {
   linear {
-    vars: 100
-    vars: 98
-    vars: 96
-    vars: 94
-    vars: 92
-    vars: 90
-    vars: 88
+    vars: 245
+    vars: 183
+    vars: 121
+    vars: 59
     vars: 306
     coeffs: -1
     coeffs: -1
     coeffs: -1
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
     domain: 0
     domain: 0
@@ -3270,43 +3165,25 @@ constraints {
 }
 constraints {
   linear {
-    vars: 114
-    vars: 112
-    vars: 110
-    vars: 108
-    vars: 106
-    vars: 104
-    vars: 102
+    vars: 306
     vars: 307
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
-    domain: 0
-    domain: 0
+    domain: -2
+    domain: -2
   }
 }
 constraints {
   linear {
-    vars: 73
-    vars: 71
-    vars: 69
-    vars: 67
-    vars: 65
-    vars: 63
+    vars: 247
+    vars: 185
+    vars: 123
     vars: 61
     vars: 308
     coeffs: -1
     coeffs: -1
     coeffs: -1
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
     domain: 0
     domain: 0
@@ -3314,43 +3191,25 @@ constraints {
 }
 constraints {
   linear {
-    vars: 87
-    vars: 85
-    vars: 83
-    vars: 81
-    vars: 79
-    vars: 77
-    vars: 75
+    vars: 308
     vars: 309
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
-    domain: 0
-    domain: 0
+    domain: -2
+    domain: -2
   }
 }
 constraints {
   linear {
-    vars: 101
-    vars: 99
-    vars: 97
-    vars: 95
-    vars: 93
-    vars: 91
-    vars: 89
+    vars: 6
+    vars: 4
+    vars: 2
+    vars: 0
     vars: 310
     coeffs: -1
     coeffs: -1
     coeffs: -1
     coeffs: -1
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: 1
     domain: 0
     domain: 0
@@ -3358,13 +3217,13 @@ constraints {
 }
 constraints {
   linear {
-    vars: 115
-    vars: 113
-    vars: 111
-    vars: 109
-    vars: 107
-    vars: 105
-    vars: 103
+    vars: 20
+    vars: 18
+    vars: 16
+    vars: 14
+    vars: 12
+    vars: 10
+    vars: 8
     vars: 311
     coeffs: -1
     coeffs: -1
@@ -3380,13 +3239,13 @@ constraints {
 }
 constraints {
   linear {
-    vars: 132
-    vars: 130
-    vars: 128
-    vars: 126
-    vars: 124
-    vars: 122
-    vars: 120
+    vars: 34
+    vars: 32
+    vars: 30
+    vars: 28
+    vars: 26
+    vars: 24
+    vars: 22
     vars: 312
     coeffs: -1
     coeffs: -1
@@ -3402,13 +3261,13 @@ constraints {
 }
 constraints {
   linear {
-    vars: 146
-    vars: 144
-    vars: 142
-    vars: 140
-    vars: 138
-    vars: 136
-    vars: 134
+    vars: 48
+    vars: 46
+    vars: 44
+    vars: 42
+    vars: 40
+    vars: 38
+    vars: 36
     vars: 313
     coeffs: -1
     coeffs: -1
@@ -3424,17 +3283,11 @@ constraints {
 }
 constraints {
   linear {
-    vars: 160
-    vars: 158
-    vars: 156
-    vars: 154
-    vars: 152
-    vars: 150
-    vars: 148
+    vars: 7
+    vars: 5
+    vars: 3
+    vars: 1
     vars: 314
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
     coeffs: -1
     coeffs: -1
     coeffs: -1
@@ -3446,13 +3299,13 @@ constraints {
 }
 constraints {
   linear {
-    vars: 174
-    vars: 172
-    vars: 170
-    vars: 168
-    vars: 166
-    vars: 164
-    vars: 162
+    vars: 21
+    vars: 19
+    vars: 17
+    vars: 15
+    vars: 13
+    vars: 11
+    vars: 9
     vars: 315
     coeffs: -1
     coeffs: -1
@@ -3468,13 +3321,13 @@ constraints {
 }
 constraints {
   linear {
-    vars: 133
-    vars: 131
-    vars: 129
-    vars: 127
-    vars: 125
-    vars: 123
-    vars: 121
+    vars: 35
+    vars: 33
+    vars: 31
+    vars: 29
+    vars: 27
+    vars: 25
+    vars: 23
     vars: 316
     coeffs: -1
     coeffs: -1
@@ -3490,13 +3343,13 @@ constraints {
 }
 constraints {
   linear {
-    vars: 147
-    vars: 145
-    vars: 143
-    vars: 141
-    vars: 139
-    vars: 137
-    vars: 135
+    vars: 49
+    vars: 47
+    vars: 45
+    vars: 43
+    vars: 41
+    vars: 39
+    vars: 37
     vars: 317
     coeffs: -1
     coeffs: -1
@@ -3512,14 +3365,30 @@ constraints {
 }
 constraints {
   linear {
-    vars: 161
-    vars: 159
-    vars: 157
-    vars: 155
-    vars: 153
-    vars: 151
-    vars: 149
+    vars: 68
+    vars: 66
+    vars: 64
+    vars: 62
     vars: 318
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 82
+    vars: 80
+    vars: 78
+    vars: 76
+    vars: 74
+    vars: 72
+    vars: 70
+    vars: 319
     coeffs: -1
     coeffs: -1
     coeffs: -1
@@ -3534,14 +3403,282 @@ constraints {
 }
 constraints {
   linear {
-    vars: 175
+    vars: 96
+    vars: 94
+    vars: 92
+    vars: 90
+    vars: 88
+    vars: 86
+    vars: 84
+    vars: 320
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 110
+    vars: 108
+    vars: 106
+    vars: 104
+    vars: 102
+    vars: 100
+    vars: 98
+    vars: 321
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 69
+    vars: 67
+    vars: 65
+    vars: 63
+    vars: 322
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 83
+    vars: 81
+    vars: 79
+    vars: 77
+    vars: 75
+    vars: 73
+    vars: 71
+    vars: 323
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 97
+    vars: 95
+    vars: 93
+    vars: 91
+    vars: 89
+    vars: 87
+    vars: 85
+    vars: 324
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 111
+    vars: 109
+    vars: 107
+    vars: 105
+    vars: 103
+    vars: 101
+    vars: 99
+    vars: 325
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 130
+    vars: 128
+    vars: 126
+    vars: 124
+    vars: 326
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 144
+    vars: 142
+    vars: 140
+    vars: 138
+    vars: 136
+    vars: 134
+    vars: 132
+    vars: 327
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 158
+    vars: 156
+    vars: 154
+    vars: 152
+    vars: 150
+    vars: 148
+    vars: 146
+    vars: 328
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 172
+    vars: 170
+    vars: 168
+    vars: 166
+    vars: 164
+    vars: 162
+    vars: 160
+    vars: 329
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 131
+    vars: 129
+    vars: 127
+    vars: 125
+    vars: 330
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 145
+    vars: 143
+    vars: 141
+    vars: 139
+    vars: 137
+    vars: 135
+    vars: 133
+    vars: 331
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 159
+    vars: 157
+    vars: 155
+    vars: 153
+    vars: 151
+    vars: 149
+    vars: 147
+    vars: 332
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
     vars: 173
     vars: 171
     vars: 169
     vars: 167
     vars: 165
     vars: 163
-    vars: 319
+    vars: 161
+    vars: 333
     coeffs: -1
     coeffs: -1
     coeffs: -1
@@ -3560,13 +3697,7 @@ constraints {
     vars: 190
     vars: 188
     vars: 186
-    vars: 184
-    vars: 182
-    vars: 180
-    vars: 320
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
+    vars: 334
     coeffs: -1
     coeffs: -1
     coeffs: -1
@@ -3585,7 +3716,7 @@ constraints {
     vars: 198
     vars: 196
     vars: 194
-    vars: 321
+    vars: 335
     coeffs: -1
     coeffs: -1
     coeffs: -1
@@ -3607,7 +3738,7 @@ constraints {
     vars: 212
     vars: 210
     vars: 208
-    vars: 322
+    vars: 336
     coeffs: -1
     coeffs: -1
     coeffs: -1
@@ -3629,7 +3760,7 @@ constraints {
     vars: 226
     vars: 224
     vars: 222
-    vars: 323
+    vars: 337
     coeffs: -1
     coeffs: -1
     coeffs: -1
@@ -3648,13 +3779,7 @@ constraints {
     vars: 191
     vars: 189
     vars: 187
-    vars: 185
-    vars: 183
-    vars: 181
-    vars: 324
-    coeffs: -1
-    coeffs: -1
-    coeffs: -1
+    vars: 338
     coeffs: -1
     coeffs: -1
     coeffs: -1
@@ -3673,7 +3798,7 @@ constraints {
     vars: 199
     vars: 197
     vars: 195
-    vars: 325
+    vars: 339
     coeffs: -1
     coeffs: -1
     coeffs: -1
@@ -3695,7 +3820,7 @@ constraints {
     vars: 213
     vars: 211
     vars: 209
-    vars: 326
+    vars: 340
     coeffs: -1
     coeffs: -1
     coeffs: -1
@@ -3717,8 +3842,28 @@ constraints {
     vars: 227
     vars: 225
     vars: 223
-    vars: 327
+    vars: 341
     coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: -1
+    coeffs: 1
+    domain: 0
+    domain: 0
+  }
+}
+constraints {
+  linear {
+    vars: 247
+    vars: 245
+    vars: 243
+    vars: 241
+    vars: 239
+    vars: 237
+    vars: 342
     coeffs: -1
     coeffs: -1
     coeffs: -1

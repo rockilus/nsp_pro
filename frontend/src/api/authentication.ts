@@ -1,6 +1,7 @@
 import { getCookie } from "../utils/cookie";
 
-const serverUrl = "http://localhost:5000";
+// const serverUrl = "http://localhost:5000";
+const serverUrl = "http://127.0.0.1:5000";
 const signUpUrl = serverUrl + "/signup";
 const signInUrl = serverUrl + "/signin";
 const logoutUrl = serverUrl + "/logout";
