@@ -11,6 +11,7 @@ const hospitalUsersUrl = serverUrl + "/hospital-users";
 const userProfileUrl = serverUrl + "/user-profile";
 const updateParameterUrl = serverUrl + "/parameter";
 const getScheduleUrl = serverUrl + "/get-schedule";
+const getScheduleListUrl = serverUrl + "/get-schedule-list";
 const buildScheduleUrl = serverUrl + "/build-schedule";
 
 export async function postHospitalInfo(hospitalName: string, userId: string) {
@@ -271,7 +272,7 @@ export async function postGetScheduleXDays(
   }
 }
 
-export async function postBuildSchedule(
+export async function postGetScheduleList(
   hospitalId: string,
   startDate: Dayjs,
   endDate: Dayjs
@@ -285,6 +286,39 @@ export async function postBuildSchedule(
     },
     body: JSON.stringify({
       hospital_id: hospitalId,
+      start_date: startDate.format("YYYY-MM-DD"),
+      end_date: endDate.format("YYYY-MM-DD"),
+    }),
+  };
+  try {
+    const response = await fetch(getScheduleListUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function postBuildSchedule(
+  hospitalId: string,
+  authorId: string,
+  startDate: Dayjs,
+  endDate: Dayjs
+) {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      hospital_id: hospitalId,
+      author_id: authorId,
       start_date: startDate.format("YYYY-MM-DD"),
       end_date: endDate.format("YYYY-MM-DD"),
     }),

@@ -42,7 +42,7 @@ interface SignInTemplateProps {
 }
 
 export default function SignInTemplate(props: SignInTemplateProps) {
-  const [email, setEmail] = useState("tim@tim.com");
+  const [email, setEmail] = useState("a@b.com");
   const [password, setPassword] = useState("monkey");
   const authContext = useContext(AuthContext);
   const hospitalContext = useContext(HospitalContext);

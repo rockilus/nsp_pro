@@ -7,14 +7,20 @@ import {
 } from "react";
 import { Dayjs } from "dayjs";
 
-import { postGetScheduleXDays, postBuildSchedule } from "../api/configuration";
+import {
+  postGetScheduleXDays,
+  postGetScheduleList,
+  postBuildSchedule,
+} from "../api/configuration";
 import { ScheduleState } from "../types/index";
 
 const initialScheduleState: ScheduleState = {
   currentSchedule: null,
+  currentScheduleList: null,
   currentScheduleData: null,
   error: "",
   getScheduleXDays: async () => {},
+  getScheduleList: async () => {},
   buildSchedule: async () => {},
 };
 
@@ -47,9 +53,37 @@ export const ScheduleProvider = (props: ScheduleProviderProps) => {
     []
   );
 
-  const buildSchedule = useCallback(
+  const getScheduleList = useCallback(
     async (hospitalId: string, startDate: Dayjs, endDate: Dayjs) => {
-      const response = await postBuildSchedule(hospitalId, startDate, endDate);
+      const response = await postGetScheduleList(
+        hospitalId,
+        startDate,
+        endDate
+      );
+      setScheduleState((oldValues) => {
+        return {
+          ...oldValues,
+          currentScheduleList: response.schedule_list,
+          currentScheduleData: response.schedule_data_list,
+        };
+      });
+    },
+    []
+  );
+
+  const buildSchedule = useCallback(
+    async (
+      hospitalId: string,
+      authorId: string,
+      startDate: Dayjs,
+      endDate: Dayjs
+    ) => {
+      const response = await postBuildSchedule(
+        hospitalId,
+        authorId,
+        startDate,
+        endDate
+      );
       setScheduleState((oldValues) => {
         return { ...oldValues, currentSchedule: response.schedule };
       });
@@ -61,9 +95,10 @@ export const ScheduleProvider = (props: ScheduleProviderProps) => {
     () => ({
       ...scheduleState,
       getScheduleXDays,
+      getScheduleList,
       buildSchedule,
     }),
-    [scheduleState, getScheduleXDays, buildSchedule]
+    [scheduleState, getScheduleXDays, getScheduleList, buildSchedule]
   );
 
   return (

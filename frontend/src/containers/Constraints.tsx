@@ -2,10 +2,9 @@ import React from "react";
 
 import Grid from "@mui/material/Grid";
 
-import DateRangePickerValue from "../components/Schedule/DateRangePicker";
-import ScheduleDisplay from "../components/Schedule/ScheduleDisplay";
+import AddConstaint from "../components/Constraints/AddConstraint";
 
-export default function Schedule() {
+export default function Constraints() {
   return (
     <Grid
       container
@@ -15,10 +14,10 @@ export default function Schedule() {
       spacing={2}
     >
       <Grid item xs={12}>
-        <DateRangePickerValue />
+        <AddConstaint />
       </Grid>
       <Grid item xs={12}>
-        <ScheduleDisplay />
+        Constraints to come here
       </Grid>
     </Grid>
   );

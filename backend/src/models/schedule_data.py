@@ -1,5 +1,6 @@
 from mongoengine import Document
 from mongoengine.fields import (
+    BooleanField,
     DateTimeField,
     IntField,
     ObjectIdField,
@@ -14,6 +15,7 @@ class ScheduleData(Document):
     shift_type = IntField(required=True)
     shift_type_label = StringField(required=True)
     user_last_name = StringField(required=True)
+    schedule_main = BooleanField(required=True, default=False)
     schedule = ReferenceField("Schedule")
     hospital = ReferenceField("Hospital")
     user = ReferenceField("User")
