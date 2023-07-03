@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Dict, List
 
-from models import Hospital, User
 from ortools.sat.python import cp_model  # type: ignore
+from models import Hospital, User
 from utils import Constants
 
 
