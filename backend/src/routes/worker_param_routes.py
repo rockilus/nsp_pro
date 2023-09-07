@@ -19,9 +19,7 @@ def create_worker_param():
     worker_params = worker_param_db.create_worker_param(
         name, label, entry_type, entry_options
     )
-    worker_params_dict = [
-        worker_param.to_dict() for worker_param in worker_params
-    ]
+    worker_params_dict = [worker_param.to_dict() for worker_param in worker_params]
     response = jsonify({"worker_params": worker_params_dict})
     return response, 200
 
@@ -31,9 +29,7 @@ def get_worker_params():
     worker_params = worker_param_db.get_worker_params()
     if not worker_params:
         worker_params = worker_param_db.create_default_worker_params()
-    worker_params_dict = [
-        worker_param.to_dict() for worker_param in worker_params
-    ]
+    worker_params_dict = [worker_param.to_dict() for worker_param in worker_params]
     print("worker_params_dict:", worker_params_dict)
     response = jsonify({"worker_params": worker_params_dict})
     return response, 200
@@ -67,10 +63,8 @@ def delete_worker_param():
         worker_param = worker_param_db.get_worker_param_by_id(
             info_received["worker_param_id"]
         )
-        worker_properties = (
-            worker_property_db.get_worker_properties_by_worker_param(
-                worker_param
-            )
+        worker_properties = worker_property_db.get_worker_properties_by_worker_param(
+            worker_param
         )
         worker_property_db.delete_worker_properties(worker_properties)
         worker_param_db.delete_worker_param(worker_param)
