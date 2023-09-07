@@ -1,7 +1,11 @@
+from routes.shift_param_routes import shift_param_routes
+from routes.shift_routes import shift_routes
 from routes.worker_param_routes import worker_param_routes
 from routes.worker_routes import worker_routes
 
 __all__ = [
+    "shift_param_routes",
+    "shift_routes",
     "worker_param_routes",
     "worker_routes",
 ]
