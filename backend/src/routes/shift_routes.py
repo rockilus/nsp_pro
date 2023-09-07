@@ -36,8 +36,7 @@ def create_shift():
 def get_shifts():
     shifts = shift_db.get_shifts()
     shifts_properties = [
-        shift_property_db.get_shift_properties_by_shift(shift)
-        for shift in shifts
+        shift_property_db.get_shift_properties_by_shift(shift) for shift in shifts
     ]
     shifts_dict = [shift.to_dict() for shift in shifts]
     shifts_properties_dict = [
@@ -64,10 +63,8 @@ def edit_shift_property():
     try:
         shift = shift_db.get_shift_by_id(shift_id)
         shift_param = shift_param_db.get_shift_param_by_id(shift_param_id)
-        shift_property = (
-            shift_property_db.get_shift_property_by_shift_and_param(
-                shift, shift_param
-            )
+        shift_property = shift_property_db.get_shift_property_by_shift_and_param(
+            shift, shift_param
         )
         if not shift_property:
             updated_shift_property = shift_property_db.create_shift_property(
@@ -78,9 +75,7 @@ def edit_shift_property():
                 shift_property, value
             )
         updated_shift_property_dict = updated_shift_property.to_dict()
-        response = jsonify(
-            {"updated_shift_property": updated_shift_property_dict}
-        )
+        response = jsonify({"updated_shift_property": updated_shift_property_dict})
         return response, 200
     # pylint: disable=broad-except
     except Exception as e:  # noqa: E722
@@ -93,9 +88,7 @@ def delete_shift():
     shift_id_received = request.get_json()
     try:
         shift = shift_db.get_shift_by_id(shift_id_received["shift_id"])
-        shift_properties = shift_property_db.get_shift_properties_by_shift(
-            shift
-        )
+        shift_properties = shift_property_db.get_shift_properties_by_shift(shift)
         shift_property_db.delete_shift_properties(shift_properties)
         shift_db.delete_shift(shift)
         return jsonify({"message": "shift deleted"}), 200
