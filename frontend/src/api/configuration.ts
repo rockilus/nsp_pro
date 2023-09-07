@@ -2,7 +2,8 @@ import { Dayjs } from "dayjs";
 
 import { getCookie } from "../utils/cookie";
 
-const serverUrl = "http://localhost:5000";
+// const serverUrl = "http://localhost:5000";
+const serverUrl = "http://127.0.0.1:5000";
 const optionHospitalUrl = serverUrl + "/option-hospital";
 const createHospitalUrl = serverUrl + "/create-hospital";
 const hospitalInfoUrl = serverUrl + "/hospital-info";
@@ -13,6 +14,14 @@ const updateParameterUrl = serverUrl + "/parameter";
 const getScheduleUrl = serverUrl + "/get-schedule";
 const getScheduleListUrl = serverUrl + "/get-schedule-list";
 const buildScheduleUrl = serverUrl + "/build-schedule";
+const addWorkerParamUrl = serverUrl + "/create-worker-param";
+const getWorkerParamsUrl = serverUrl + "/get-worker-params";
+const updatedWorkerParamUrl = serverUrl + "/update-worker-param";
+const deleteWorkerParamUrl = serverUrl + "/delete-worker-param";
+const createWorkerUrl = serverUrl + "/create-worker";
+const getWorkersUrl = serverUrl + "/get-workers";
+const updateWorkerPropertyUrl = serverUrl + "/update-worker-property";
+const deleteWorkerUrl = serverUrl + "/delete-worker";
 
 export async function postHospitalInfo(hospitalName: string, userId: string) {
   const options: RequestInit = {
@@ -325,6 +334,232 @@ export async function postBuildSchedule(
   };
   try {
     const response = await fetch(buildScheduleUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+// Worker Param
+
+export async function serverPostCreateWorkerParam(
+  label: string,
+  entryType: string,
+  entryOptions: string[]
+) {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      label: label,
+      entry_type: entryType,
+      entry_options: entryOptions,
+    }),
+  };
+  try {
+    const response = await fetch(addWorkerParamUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverGetWorkerParams() {
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+  });
+
+  const options: RequestInit = {
+    method: "GET",
+    credentials: "include" as RequestCredentials,
+    headers: headers,
+  };
+
+  try {
+    const response = await fetch(getWorkerParamsUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      console.log("response getWorkerParams", jsonData);
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverPostUpdateWorkerParam(
+  workerParamId: string,
+  label: string,
+  entryType: string,
+  entryOptions: string[]
+) {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      worker_param_id: workerParamId,
+      label: label,
+      entry_type: entryType,
+      entry_options: entryOptions,
+    }),
+  };
+  try {
+    const response = await fetch(updatedWorkerParamUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverDeleteWorkerParam(workerParamId: string) {
+  console.log("deleteWorker", workerParamId);
+
+  const options: RequestInit = {
+    method: "DELETE",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      worker_param_id: workerParamId,
+    }),
+  };
+  try {
+    const response = await fetch(deleteWorkerParamUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+// Worker
+
+export async function serverPostCreateWorker() {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+  };
+  try {
+    const response = await fetch(createWorkerUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverGetWorkers() {
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+  });
+
+  const options: RequestInit = {
+    method: "GET",
+    credentials: "include" as RequestCredentials,
+    headers: headers,
+  };
+
+  try {
+    const response = await fetch(getWorkersUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverPostUpdateWorkerProperty(
+  workerId: string,
+  workerParamId: string,
+  value: any
+) {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      worker_id: workerId,
+      worker_param_id: workerParamId,
+      value: value,
+    }),
+  };
+  try {
+    const response = await fetch(updateWorkerPropertyUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverDeleteWorker(workerId: string) {
+  console.log("deleteWorker", workerId);
+
+  const options: RequestInit = {
+    method: "DELETE",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      worker_id: workerId,
+    }),
+  };
+  try {
+    const response = await fetch(deleteWorkerUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;
