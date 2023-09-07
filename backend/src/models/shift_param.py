@@ -6,6 +6,7 @@ from mongoengine.fields import (
 )
 
 
+# pylint: disable=R0801
 class ShiftParam(Document):
     meta = {"collection": "shift_params"}
     _id = ObjectIdField(primary_key=True)
