@@ -54,6 +54,7 @@ def update_worker_param():
         worker_param_updated_dict = worker_param_updated.to_dict()
         response = jsonify({"worker_param": worker_param_updated_dict})
         return response, 200
+    # pylint: disable=broad-except
     except Exception as e:
         print(e)
         return jsonify({"error": "Worker param not found"}), 404
@@ -74,6 +75,7 @@ def delete_worker_param():
         worker_property_db.delete_worker_properties(worker_properties)
         worker_param_db.delete_worker_param(worker_param)
         return jsonify({"message": "Worker deleted"}), 200
+    # pylint: disable=broad-except
     except Exception as e:
         print(e)
         return jsonify({"error": f"{str(e)}"}), 404

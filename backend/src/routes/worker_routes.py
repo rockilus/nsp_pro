@@ -1,3 +1,4 @@
+from bson import ObjectId
 from flask import Blueprint, jsonify, request
 from mongoengine import NotUniqueError
 from scripts.setup_database import (
@@ -5,24 +6,14 @@ from scripts.setup_database import (
     worker_param_db,
     worker_property_db,
 )
-from bson import ObjectId
 
 worker_routes = Blueprint("worker_routes", __name__)
 
 
 @worker_routes.route("/create-worker", methods=["POST"])
 def create_worker():
-    # worker_received = request.get_json()
-
     try:
         worker_created = worker_db.create_worker()
-
-        # for k, v in worker_received.items():
-        #     worker_param = worker_param_db.get_worker_param_by_id(k)
-        #     worker_property_db.create_worker_property(
-        #         worker_created, worker_param, v
-        #     )
-
         worker_dict = worker_created.to_dict()
         worker_properties = worker_property_db.get_worker_properties_by_worker(
             worker_created
@@ -97,7 +88,8 @@ def edit_worker_property():
             {"updated_worker_property": updated_worker_property_dict}
         )
         return response, 200
-    except Exception as e:
+    # pylint: disable=broad-except
+    except Exception as e:  # noqa: E722
         print(e)
         return jsonify({"error": f"{str(e)}"}), 404
 
@@ -113,6 +105,7 @@ def delete_worker():
         worker_property_db.delete_worker_properties(worker_properties)
         worker_db.delete_worker(worker)
         return jsonify({"message": "Worker deleted"}), 200
+    # pylint: disable=broad-except
     except Exception as e:
         print(e)
         return jsonify({"error": f"{str(e)}"}), 404
@@ -122,5 +115,7 @@ def is_valid_objectid(objectid_str: str) -> bool:
     try:
         ObjectId(objectid_str)
         return True
-    except:
+    # pylint: disable=broad-except
+    # pylint: disable=bare-except
+    except:  # noqa: E722
         return False

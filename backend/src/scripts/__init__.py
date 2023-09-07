@@ -19,5 +19,5 @@ __all__ = [
     "schedule_db",
     "user_db",
     "worker_db",
-    "worker_params_db",
+    "worker_param_db",
 ]

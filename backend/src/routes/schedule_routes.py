@@ -113,20 +113,14 @@ def build_and_save_main_schedule(
     schedule_list = schedule_db.get_schedules_by_hospital_id(
         hospital_id, start_date, end_date
     )
-    schedule_selection = build_schedule_selection(
-        schedule_list, start_date, end_date
-    )
+    schedule_selection = build_schedule_selection(schedule_list, start_date, end_date)
     schedule_data_db.set_schedule_main_to_false_by_hospital_id(
         hospital_id, start_date, end_date
     )
     for schedule_id, dates in schedule_selection.items():
-        schedule_data_db.set_schedule_main_to_train_by_schedule_id(
-            schedule_id, dates
-        )
-    schedule_data_list = (
-        schedule_data_db.get_main_schedule_data_by_hospital_id(
-            hospital_id, start_date, end_date
-        )
+        schedule_data_db.set_schedule_main_to_train_by_schedule_id(schedule_id, dates)
+    schedule_data_list = schedule_data_db.get_main_schedule_data_by_hospital_id(
+        hospital_id, start_date, end_date
     )
     schedule_data_dict_list = [
         schedule_data.to_dict() for schedule_data in schedule_data_list
@@ -153,8 +147,7 @@ def build_schedule_selection(
 ) -> Dict[str, List[datetime]]:
     schedule_selection: Dict[str, List[datetime]] = {}
     for day in (
-        start_date + timedelta(n)
-        for n in range((end_date - start_date).days + 1)
+        start_date + timedelta(n) for n in range((end_date - start_date).days + 1)
     ):
         selected_schedule = select_latest_schedule_for_day(schedule_list, day)
         if selected_schedule:

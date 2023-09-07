@@ -29,9 +29,7 @@ class WorkerPropertyDB:
         worker: Worker,
     ) -> List[WorkerProperty]:
         # pylint: disable=no-member
-        worker_properties = WorkerProperty.objects.filter(  # type: ignore
-            worker=worker
-        )
+        worker_properties = WorkerProperty.objects.filter(worker=worker)  # type: ignore
         return list(worker_properties)
 
     def get_worker_properties_by_worker_param(
@@ -44,9 +42,7 @@ class WorkerPropertyDB:
         )
         return list(worker_properties)
 
-    def get_worker_property_by_id(
-        self, worker_property_id: str
-    ) -> WorkerProperty:
+    def get_worker_property_by_id(self, worker_property_id: str) -> WorkerProperty:
         # pylint: disable=no-member
         print("worker_id in get_worker_by_id:", worker_property_id)
         worker_property = WorkerProperty.objects.get(  # type: ignore
@@ -76,8 +72,6 @@ class WorkerPropertyDB:
         worker_property_saved = worker_property.save()
         return worker_property_saved
 
-    def delete_worker_properties(
-        self, worker_properties: List[WorkerProperty]
-    ) -> None:
+    def delete_worker_properties(self, worker_properties: List[WorkerProperty]) -> None:
         for worker_property in worker_properties:
             worker_property.delete()
