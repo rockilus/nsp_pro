@@ -33,7 +33,7 @@ export const WorkersProvider = (props: WorkersProviderProps) => {
   const [workersState, setWorkersState] =
     useState<WorkersState>(initialWorkersState);
 
-  const postCreateWorker = useCallback(async (worker: Record<string, any>) => {
+  const postCreateWorker = useCallback(async () => {
     console.log("createWorker called");
 
     const response = await serverPostCreateWorker();
@@ -78,7 +78,7 @@ export const WorkersProvider = (props: WorkersProviderProps) => {
 
           let found = false;
           const updatedWorkerProperties = worker.worker_properties.map(
-            (workerProperty) => {
+            (workerProperty: Record<string, any>) => {
               if (workerProperty._id !== response.updated_worker_property._id) {
                 return workerProperty;
               } else if (

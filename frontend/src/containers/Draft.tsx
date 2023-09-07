@@ -2,7 +2,7 @@ import * as React from "react";
 
 import Box from "@mui/material/Box";
 
-import WorkerConfig from "../components/DraftComponents/WorkerConfig";
+import WorkerConfig from "../components/ConfigTables/WorkerConfig";
 
 export default function Draft() {
   return (

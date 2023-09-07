@@ -2,15 +2,13 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 
 import Box from "@mui/material/Box";
 
-import TableTemplate from "./TableTemplate";
-import DrawerTemplate from "./DrawerTemplate";
+import TableTemplate from "../TableTemplate/TableTemplate";
 
-import { Column } from "../../types/index";
 import { WorkerParamsContext } from "../../context/WorkerParamsContext";
 import { WorkersContext } from "../../context/WorkersContext";
 
 export default function WorkerConfig() {
-  const [columns, setColumns] = useState<Column[]>([]);
+  const [columns, setColumns] = useState<Record<string, any>[]>([]);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
 
   const [filters, setFilters] = useState([]);

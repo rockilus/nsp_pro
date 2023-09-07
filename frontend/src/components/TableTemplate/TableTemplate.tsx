@@ -12,13 +12,12 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
-import { Column } from "../../types/index";
 import BodyCellTemplate from "./BodyCellTemplate";
 import HeadCellTemplate from "./HeadCellTemplate";
 import DrawerTemplate from "./DrawerTemplate";
 
 interface Props {
-  columns: Column[];
+  columns: Record<string, any>[];
   rows: Record<string, any>[];
   handleAddColumn: (
     label: string,
@@ -47,8 +46,7 @@ export default function TableTemplate({
   handleEditBodyCell,
   handleDeleteRow,
 }: Props) {
-  const [headEditing, setHeadEditing] = useState("");
-  const [bodyEditing, setBodyEditing] = useState({});
+  const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const toggleDrawer = () => {

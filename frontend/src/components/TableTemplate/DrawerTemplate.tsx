@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
@@ -13,8 +13,6 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-
-import { WorkerParamsContext } from "../../context/WorkerParamsContext";
 
 interface Props {
   drawerOpen: boolean;
@@ -42,7 +40,6 @@ export default function DrawerTemplate({
   const [entryType, setEntryType] = useState("");
   const [listOptions, setListOptions] = useState<string[]>([]);
   const [newOption, setNewOption] = useState<string>("");
-  const workerParamsContext = useContext(WorkerParamsContext);
 
   const handleAddConfirm = async () => {
     await handleAddColumn(label, entryType, listOptions);

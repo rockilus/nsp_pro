@@ -4,15 +4,10 @@ import AbcIcon from "@mui/icons-material/Abc";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
 import ListIcon from "@mui/icons-material/List";
 import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
 import NumbersIcon from "@mui/icons-material/Numbers";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TableCell from "@mui/material/TableCell";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
 import EditColumnTemplate from "./EditColumnTemplate";
@@ -45,6 +40,13 @@ export default function HeadCellTemplate({
   const [entryOptionsState, setEntryOptionsState] = useState(entryOptions);
 
   const open = Boolean(anchorEl);
+
+  const iconsPrefix: Record<string, React.ReactNode> = {
+    str: <AbcIcon color="disabled" fontSize="small" />,
+    int: <NumbersIcon color="disabled" fontSize="small" />,
+    bool: <CheckBoxIcon color="disabled" fontSize="small" />,
+    list: <ListIcon color="disabled" fontSize="small" />,
+  };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -81,13 +83,6 @@ export default function HeadCellTemplate({
     setEntryTypeState(entryType);
     setEntryOptionsState(entryOptions);
     handleClose();
-  };
-
-  const iconsPrefix = {
-    str: <AbcIcon color="disabled" fontSize="small" />,
-    int: <NumbersIcon color="disabled" fontSize="small" />,
-    bool: <CheckBoxIcon color="disabled" fontSize="small" />,
-    list: <ListIcon color="disabled" fontSize="small" />,
   };
 
   const cellContent = () => (
