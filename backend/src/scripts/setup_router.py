@@ -4,9 +4,6 @@ from flask import Flask
 from flask_cors import CORS  # type: ignore
 from flask_jwt_extended import JWTManager
 from routes import (
-    hospital_routes,
-    schedule_routes,
-    user_routes,
     worker_param_routes,
     worker_routes,
 )
@@ -26,9 +23,6 @@ app.config["JWT_COOKIE_SECURE"] = False
 app.config["JWT_SECRET_KEY"] = "your-secret-key"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 
-app.register_blueprint(schedule_routes)
-app.register_blueprint(hospital_routes)
-app.register_blueprint(user_routes)
 app.register_blueprint(worker_routes)
 app.register_blueprint(worker_param_routes)
 

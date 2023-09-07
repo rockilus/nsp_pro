@@ -6,8 +6,8 @@ from mongoengine.fields import (
 )
 
 
-class WorkerParam(Document):
-    meta = {"collection": "worker_params"}
+class ShiftParam(Document):
+    meta = {"collection": "shift_params"}
     _id = ObjectIdField(primary_key=True)
     name = StringField(required=True)
     label = StringField(required=True)

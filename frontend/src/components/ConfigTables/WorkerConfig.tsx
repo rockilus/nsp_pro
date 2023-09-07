@@ -11,7 +11,6 @@ export default function WorkerConfig() {
   const [columns, setColumns] = useState<Record<string, any>[]>([]);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
 
-  const [filters, setFilters] = useState([]);
   const workerParamsContext = useContext(WorkerParamsContext);
   const workersContext = useContext(WorkersContext);
 

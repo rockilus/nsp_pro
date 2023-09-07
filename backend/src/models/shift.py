@@ -2,8 +2,8 @@ from mongoengine import Document
 from mongoengine.fields import ObjectIdField
 
 
-class Worker(Document):
-    meta = {"collection": "workers"}
+class Shift(Document):
+    meta = {"collection": "shifts"}
     _id = ObjectIdField(primary_key=True)
 
     def to_dict(self):

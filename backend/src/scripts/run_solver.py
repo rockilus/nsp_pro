@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from scripts.setup_database import hospital_db, user_db
+# from scripts.setup_database import hospital_db, user_db
 from solver import BuildModel, ModelData, Solution, Solver
 
 
