@@ -5,6 +5,8 @@ from ortools.sat.python import cp_model  # type: ignore
 from models import Hospital, User
 from utils import Constants
 
+# https://github.com/google/or-tools/blob/stable/examples/python/shift_scheduling_sat.py
+
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-few-public-methods
@@ -35,7 +37,9 @@ class ModelData:
             "staffing"
         )
         if staffing_from_db is None:
-            raise KeyError("No key duty_options.on.staffing found in hospital.profile")
+            raise KeyError(
+                "No key duty_options.on.staffing found in hospital.profile"
+            )
         self.staffing = int(staffing_from_db)
         self.weekly_cover_demands = [
             (self.staffing,),  # Monday
@@ -78,9 +82,9 @@ class BuildModel:
             for d in range(self.model_data.num_days):
                 for s in range(self.model_data.num_shifts_day):
                     for t in range(self.model_data.num_shift_types):
-                        self.model_data.work[(u, d, s, t)] = self.model.NewBoolVar(
-                            f"shift_n{u}d{d}s{s}t{t}"
-                        )
+                        self.model_data.work[
+                            (u, d, s, t)
+                        ] = self.model.NewBoolVar(f"shift_n{u}d{d}s{s}t{t}")
 
     def create_constraints(self) -> None:
         # Exactly one shift per day.
@@ -149,7 +153,8 @@ class BuildModel:
         # Objective
         self.model.Minimize(
             sum(
-                self.model_data.obj_int_vars[i] * self.model_data.obj_int_coeffs[i]
+                self.model_data.obj_int_vars[i]
+                * self.model_data.obj_int_coeffs[i]
                 for i in range(len(self.model_data.obj_int_vars))
             )
         )

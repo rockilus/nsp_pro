@@ -1,0 +1,34 @@
+{
+    "for": {
+        "sub_variable": [
+            "worker",
+            "day"
+        ],
+        "operator": [
+            "equal",
+            "equal"
+        ],
+        "value": [
+            "all",
+            "all"
+        ]
+    },
+    "when": {
+        "sub_variable": [
+            "slot",
+            "shift"
+        ],
+        "operator": [
+            "equal",
+            "equal"
+        ],
+        "value": [
+            "all",
+            "all"
+        ]
+    },
+    "then": {
+        "operator": "AddExactlyOne",
+        "value": "None"
+    }
+}

@@ -5,6 +5,8 @@ from scripts.setup_database import (
     schedule_data_db,
     schedule_db,
     user_db,
+    worker_db,
+    worker_param_db,
 )
 from scripts.setup_router import jwt
 
@@ -16,4 +18,6 @@ __all__ = [
     "schedule_data_db",
     "schedule_db",
     "user_db",
+    "worker_db",
+    "worker_params_db",
 ]

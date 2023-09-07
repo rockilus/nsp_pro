@@ -2,12 +2,12 @@
 from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (
     DictField,
+    EmbeddedDocumentField,
+    IntField,
     ListField,
     ObjectIdField,
     ReferenceField,
     StringField,
-    IntField,
-    EmbeddedDocumentField,
 )
 
 
