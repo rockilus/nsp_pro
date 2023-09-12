@@ -1,5 +1,9 @@
 from database import (
     DB,
+    ConstraintDB,
+    ConstraintParamDB,
+    ConstraintParamOptionDB,
+    ConstraintVariableDB,
     ShiftDB,
     ShiftParamDB,
     ShiftPropertyDB,
@@ -17,3 +21,7 @@ shift_property_db = ShiftPropertyDB(db)
 worker_db = WorkerDB(db)
 worker_param_db = WorkerParamDB(db)
 worker_property_db = WorkerPropertyDB(db)
+constraint_param_db = ConstraintParamDB(db)
+constraint_param_option_db = ConstraintParamOptionDB(db)
+constraint_db = ConstraintDB(db)
+constraint_variable_db = ConstraintVariableDB(db)

@@ -4,346 +4,30 @@ import { getCookie } from "../utils/cookie";
 
 // const serverUrl = "http://localhost:5000";
 const serverUrl = "http://127.0.0.1:5000";
-const optionHospitalUrl = serverUrl + "/option-hospital";
-const createHospitalUrl = serverUrl + "/create-hospital";
-const hospitalInfoUrl = serverUrl + "/hospital-info";
-const createUserUrl = serverUrl + "/create-user";
-const hospitalUsersUrl = serverUrl + "/hospital-users";
-const userProfileUrl = serverUrl + "/user-profile";
-const updateParameterUrl = serverUrl + "/parameter";
-const getScheduleUrl = serverUrl + "/get-schedule";
-const getScheduleListUrl = serverUrl + "/get-schedule-list";
-const buildScheduleUrl = serverUrl + "/build-schedule";
+
+// Worker Param
 const addWorkerParamUrl = serverUrl + "/create-worker-param";
 const getWorkerParamsUrl = serverUrl + "/get-worker-params";
 const updatedWorkerParamUrl = serverUrl + "/update-worker-param";
 const deleteWorkerParamUrl = serverUrl + "/delete-worker-param";
+
+// Worker
 const createWorkerUrl = serverUrl + "/create-worker";
 const getWorkersUrl = serverUrl + "/get-workers";
 const updateWorkerPropertyUrl = serverUrl + "/update-worker-property";
 const deleteWorkerUrl = serverUrl + "/delete-worker";
 
-export async function postHospitalInfo(hospitalName: string, userId: string) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      hospital_name: hospitalName,
-      user_id: userId,
-    }),
-  };
-  try {
-    const response = await fetch(createHospitalUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
+// Shift Param
+const addShiftParamUrl = serverUrl + "/create-shift-param";
+const getShiftParamsUrl = serverUrl + "/get-shift-params";
+const updatedShiftParamUrl = serverUrl + "/update-shift-param";
+const deleteShiftParamUrl = serverUrl + "/delete-shift-param";
 
-export async function postHospitalOption(
-  option: string,
-  dictPath: string[],
-  hospitalId: string
-) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      option: option,
-      dict_path: dictPath,
-      hospital_id: hospitalId,
-    }),
-  };
-  try {
-    const response = await fetch(optionHospitalUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function deleteHospitalOption(
-  dictPath: string[],
-  hospitalId: string
-) {
-  const options: RequestInit = {
-    method: "DELETE",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      dict_path: dictPath,
-      hospital_id: hospitalId,
-    }),
-  };
-  try {
-    const response = await fetch(optionHospitalUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function postHospitalInfoRequest(hospitalId: string) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({ hospital_id: hospitalId }),
-  };
-  try {
-    const response = await fetch(hospitalInfoUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function postCreateUser(
-  firstName: string,
-  lastName: string,
-  email: string,
-  hospitalId: string
-) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      first_name: firstName,
-      last_name: lastName,
-      email: email,
-      hospital_id: hospitalId,
-    }),
-  };
-  try {
-    const response = await fetch(createUserUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function postHospitalUsersRequest(hospitalId: string) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      hospital_id: hospitalId,
-    }),
-  };
-  try {
-    const response = await fetch(hospitalUsersUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function postUserProfile(
-  profile: Record<string, any>,
-  userId: string
-) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      user_id: userId,
-      profile: profile,
-    }),
-  };
-  try {
-    const response = await fetch(userProfileUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function postParameterUpdate(
-  parameter: string,
-  value: string,
-  hospitalId: string
-) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      hospital_id: hospitalId,
-      parameter: parameter,
-      value: value,
-    }),
-  };
-  try {
-    const response = await fetch(updateParameterUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function postGetScheduleXDays(
-  hospitalId: string,
-  startDate: Dayjs,
-  numDays: number
-) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      hospital_id: hospitalId,
-      start_date: startDate.format("YYYY-MM-DD"),
-      num_days: numDays,
-    }),
-  };
-  try {
-    const response = await fetch(getScheduleUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function postGetScheduleList(
-  hospitalId: string,
-  startDate: Dayjs,
-  endDate: Dayjs
-) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      hospital_id: hospitalId,
-      start_date: startDate.format("YYYY-MM-DD"),
-      end_date: endDate.format("YYYY-MM-DD"),
-    }),
-  };
-  try {
-    const response = await fetch(getScheduleListUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function postBuildSchedule(
-  hospitalId: string,
-  authorId: string,
-  startDate: Dayjs,
-  endDate: Dayjs
-) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      hospital_id: hospitalId,
-      author_id: authorId,
-      start_date: startDate.format("YYYY-MM-DD"),
-      end_date: endDate.format("YYYY-MM-DD"),
-    }),
-  };
-  try {
-    const response = await fetch(buildScheduleUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
+// Shift
+const createShiftUrl = serverUrl + "/create-shift";
+const getShiftsUrl = serverUrl + "/get-shifts";
+const updateShiftPropertyUrl = serverUrl + "/update-shift-property";
+const deleteShiftUrl = serverUrl + "/delete-shift";
 
 // Worker Param
 
@@ -560,6 +244,232 @@ export async function serverDeleteWorker(workerId: string) {
   };
   try {
     const response = await fetch(deleteWorkerUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+// Shift Param
+
+export async function serverPostCreateShiftParam(
+  label: string,
+  entryType: string,
+  entryOptions: string[]
+) {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      label: label,
+      entry_type: entryType,
+      entry_options: entryOptions,
+    }),
+  };
+  try {
+    const response = await fetch(addShiftParamUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverGetShiftParams() {
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+  });
+
+  const options: RequestInit = {
+    method: "GET",
+    credentials: "include" as RequestCredentials,
+    headers: headers,
+  };
+
+  try {
+    const response = await fetch(getShiftParamsUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      console.log("response getShiftParams", jsonData);
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverPostUpdateShiftParam(
+  shiftParamId: string,
+  label: string,
+  entryType: string,
+  entryOptions: string[]
+) {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      shift_param_id: shiftParamId,
+      label: label,
+      entry_type: entryType,
+      entry_options: entryOptions,
+    }),
+  };
+  try {
+    const response = await fetch(updatedShiftParamUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverDeleteShiftParam(shiftParamId: string) {
+  console.log("deleteShift", shiftParamId);
+
+  const options: RequestInit = {
+    method: "DELETE",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      shift_param_id: shiftParamId,
+    }),
+  };
+  try {
+    const response = await fetch(deleteShiftParamUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+// Shift
+
+export async function serverPostCreateShift() {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+  };
+  try {
+    const response = await fetch(createShiftUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverGetShifts() {
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+  });
+
+  const options: RequestInit = {
+    method: "GET",
+    credentials: "include" as RequestCredentials,
+    headers: headers,
+  };
+
+  try {
+    const response = await fetch(getShiftsUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverPostUpdateShiftProperty(
+  shiftId: string,
+  shiftParamId: string,
+  value: any
+) {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      shift_id: shiftId,
+      shift_param_id: shiftParamId,
+      value: value,
+    }),
+  };
+  try {
+    const response = await fetch(updateShiftPropertyUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverDeleteShift(shiftId: string) {
+  console.log("deleteShift", shiftId);
+
+  const options: RequestInit = {
+    method: "DELETE",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      shift_id: shiftId,
+    }),
+  };
+  try {
+    const response = await fetch(deleteShiftUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;

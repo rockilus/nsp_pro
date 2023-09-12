@@ -6,6 +6,10 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import Draft from "./Draft";
 import { WorkerParamsProvider } from "../context/WorkerParamsContext";
 import { WorkersProvider } from "../context/WorkersContext";
+import { ShiftParamsProvider } from "../context/ShiftParamsContext";
+import { ShiftsProvider } from "../context/ShiftsContext";
+import { ConstraintParamsProvider } from "../context/ConstraintParamsContext";
+import { ConstraintsProvider } from "../context/ConstraintsContext";
 
 export default function Home() {
   return (
@@ -13,7 +17,15 @@ export default function Home() {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <WorkerParamsProvider>
           <WorkersProvider>
-            <Draft />
+            <ShiftParamsProvider>
+              <ShiftsProvider>
+                <ConstraintParamsProvider>
+                  <ConstraintsProvider>
+                    <Draft />
+                  </ConstraintsProvider>
+                </ConstraintParamsProvider>
+              </ShiftsProvider>
+            </ShiftParamsProvider>
           </WorkersProvider>
         </WorkerParamsProvider>
       </LocalizationProvider>
