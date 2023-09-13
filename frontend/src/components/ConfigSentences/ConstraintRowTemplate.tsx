@@ -102,6 +102,14 @@ export default function ConstraintRowTemplate({
           />
         </Menu>
       </TableCell>
+      <TableCell component="th" scope="row">
+        <Typography variant="body2" color="text.secondary">
+          {row.constraint.soft_or_hard +
+            (row.constraint.soft_or_hard === "soft"
+              ? " (" + row.constraint.soft_priority + ")"
+              : "")}
+        </Typography>
+      </TableCell>
       <TableCell component="th" scope="row" align="right">
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button onClick={() => handleDeleteRow(row._id)}>

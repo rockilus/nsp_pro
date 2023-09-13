@@ -33,8 +33,8 @@ class ConstraintParamOptionDB:
             _id=ObjectId(),
             constraint_type="sequence",
             operator_options=["at_least", "at_most"],
-            timing_options=["per"],
-            ref_var_value_options=["week"],
+            timing_options=["consecutive"],
+            ref_var_value_options=["off", "morning", "afternoon", "night"],
             constraint_param=constraint_param,
         )
         constraint_param_option_ord = ConstraintParamOption(

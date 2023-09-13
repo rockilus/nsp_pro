@@ -41,7 +41,7 @@ class Constraint(Document):
         choices=["add", "sum", "sequence", "order"], required=True
     )
     operator = StringField(
-        choices=["equal", "at_least", "at_most"],
+        choices=["equal", "at_least", "at_most", "no"],
         default="equal",
     )
     target_value = IntField(default=0)

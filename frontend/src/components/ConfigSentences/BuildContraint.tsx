@@ -28,57 +28,6 @@ export default function BuildConstraint({
   console.log("constraint in BuildConstraint: ", constraint);
   console.log("target in BuildConstraint: ", constraint);
 
-  // const [constraintType, setConstraintType] = useState(
-  //   constraint.constraint.constraint_type !== undefined
-  //     ? constraint.constraint.constraint_type
-  //     : ""
-  // );
-  // const [softOrHard, setSoftOrHard] = useState(
-  //   constraint.constraint.soft_or_hard !== undefined
-  //     ? constraint.constraint.soft_or_hard
-  //     : ""
-  // );
-  // const [softPriority, setSoftPriority] = useState(
-  //   constraint.constraint.soft_priority !== undefined
-  //     ? constraint.constraint.soft_priority
-  //     : ""
-  // );
-
-  // const [quantity, setQuantity] = useState(
-  //   constraint.constraint_definition.quantity !== undefined
-  //     ? constraint.constraint_definition.quantity
-  //     : ""
-  // );
-  // const [quantifiedVariable, setQuantifiedVariable] = useState(
-  //   constraint.constraint_definition.quantified_variable !== undefined
-  //     ? constraint.constraint_definition.quantified_variable
-  //     : ""
-  // );
-  // const [varValue, setVarValue] = useState(
-  //   constraint.constraint_definition.var_value !== undefined
-  //     ? constraint.constraint_definition.var_value
-  //     : ""
-  // );
-  // const [timing, setTiming] = useState(
-  //   constraint.constraint_definition.timing !== undefined
-  //     ? constraint.constraint_definition.timing
-  //     : ""
-  // );
-  // const [operator, setOperator] = useState(
-  //   constraint.constraint_definition.operator !== undefined
-  //     ? constraint.constraint_definition.operator
-  //     : ""
-  // );
-  // const [referenceVariable, setReferenceVariable] = useState(
-  //   constraint.constraint_definition.reference_variable !== undefined
-  //     ? constraint.constraint_definition.reference_variable
-  //     : ""
-  // );
-  // const [refVarValue, setRefVarValue] = useState(
-  //   constraint.constraint_definition.ref_var_value !== undefined
-  //     ? constraint.constraint_definition.ref_var_value
-  //     : ""
-  // );
   const [constraintType, setConstraintType] = useState(
     constraint.constraint?.constraint_type || ""
   );
@@ -110,6 +59,12 @@ export default function BuildConstraint({
   const [refVarValue, setRefVarValue] = useState(
     constraint.constraint_definition?.ref_var_value || ""
   );
+  const [otherVariable, setOtherVariable] = useState(
+    constraint.constraint_definition?.other_variable || ""
+  );
+  const [otherVarValue, setOtherVarValue] = useState(
+    constraint.constraint_definition?.other_var_value || ""
+  );
 
   const searchConstraintParamOption = (searchValue: string) => {
     return constraintParams.constraint_param_options.find(
@@ -132,6 +87,8 @@ export default function BuildConstraint({
         operator: operator,
         reference_variable: referenceVariable,
         ref_var_value: refVarValue,
+        other_variable: otherVariable,
+        other_var_value: otherVarValue,
       },
     };
     await handleAddRow(constraintDict);
@@ -223,10 +180,14 @@ export default function BuildConstraint({
           setQuantity={setQuantity}
           quantifiedVariable={quantifiedVariable}
           setQuantifiedVariable={setQuantifiedVariable}
-          varValue={varValue}
-          setVarValue={setVarValue}
+          timing={timing}
+          setTiming={setTiming}
           operator={operator}
           setOperator={setOperator}
+          referenceVariable={referenceVariable}
+          setReferenceVariable={setReferenceVariable}
+          refVarValue={refVarValue}
+          setRefVarValue={setRefVarValue}
         />
       )}
       {constraintType === "order" && (
@@ -245,6 +206,10 @@ export default function BuildConstraint({
           setReferenceVariable={setReferenceVariable}
           refVarValue={refVarValue}
           setRefVarValue={setRefVarValue}
+          otherVariable={otherVariable}
+          setOtherVariable={setOtherVariable}
+          otherVarValue={otherVarValue}
+          setOtherVarValue={setOtherVarValue}
         />
       )}
       {constraintType === "" && <Box sx={{ height: 56 }}></Box>}

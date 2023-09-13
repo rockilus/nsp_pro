@@ -13,10 +13,14 @@ interface Props {
   setQuantity: React.Dispatch<React.SetStateAction<number>>;
   quantifiedVariable: string;
   setQuantifiedVariable: React.Dispatch<React.SetStateAction<string>>;
-  varValue: string;
-  setVarValue: React.Dispatch<React.SetStateAction<string>>;
+  timing: string;
+  setTiming: React.Dispatch<React.SetStateAction<string>>;
   operator: string;
   setOperator: React.Dispatch<React.SetStateAction<string>>;
+  referenceVariable: string;
+  setReferenceVariable: React.Dispatch<React.SetStateAction<string>>;
+  refVarValue: string;
+  setRefVarValue: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function SeqTypeTemplate({
@@ -26,10 +30,14 @@ export default function SeqTypeTemplate({
   setQuantity,
   quantifiedVariable,
   setQuantifiedVariable,
-  varValue,
-  setVarValue,
+  timing,
+  setTiming,
   operator,
   setOperator,
+  referenceVariable,
+  setReferenceVariable,
+  refVarValue,
+  setRefVarValue,
 }: Props) {
   // const variableOptions: Record<string, string> = {
   //   worker: "worker",
@@ -53,6 +61,7 @@ export default function SeqTypeTemplate({
   // };
 
   // [At most] [2] consecutive [shift_0]
+  // [At most] [2] [consecutive] [days] [shift] [off]
 
   return (
     <Box sx={{ display: "flex", flexDirection: "row" }}>
@@ -68,7 +77,12 @@ export default function SeqTypeTemplate({
         onChange={(e) => setQuantity(e.target.value)}
         sx={{ minWidth: 80 }}
       />
-      <Typography>consecutive</Typography>
+      <BasicSelect
+        label="Timing"
+        options={constraintParamOption.timing_options}
+        value={timing}
+        setValue={setTiming}
+      />
       <BasicSelect
         label="Variable"
         options={variableOptions}
@@ -76,10 +90,16 @@ export default function SeqTypeTemplate({
         setValue={setQuantifiedVariable}
       />
       <BasicSelect
+        label="Variable"
+        options={variableOptions}
+        value={referenceVariable}
+        setValue={setReferenceVariable}
+      />
+      <BasicSelect
         label="Variable Value"
-        options={varValueOptions}
-        value={varValue}
-        setValue={setVarValue}
+        options={constraintParamOption.ref_var_value_options}
+        value={refVarValue}
+        setValue={setRefVarValue}
       />
     </Box>
   );

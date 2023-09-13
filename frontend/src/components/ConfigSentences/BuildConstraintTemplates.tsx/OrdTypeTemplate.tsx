@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 
 import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 
 import BasicSelect from "../../Utils/BasicSelect";
 
@@ -19,6 +21,10 @@ interface Props {
   setReferenceVariable: React.Dispatch<React.SetStateAction<string>>;
   refVarValue: string;
   setRefVarValue: React.Dispatch<React.SetStateAction<string>>;
+  otherVariable: string;
+  setOtherVariable: React.Dispatch<React.SetStateAction<string>>;
+  otherVarValue: string;
+  setOtherVarValue: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function OrdTypeTemplate({
@@ -36,6 +42,10 @@ export default function OrdTypeTemplate({
   setReferenceVariable,
   refVarValue,
   setRefVarValue,
+  otherVariable,
+  setOtherVariable,
+  otherVarValue,
+  setOtherVarValue,
 }: Props) {
   // const variableOptions: Record<string, string> = {
   //   worker: "worker",
@@ -55,7 +65,8 @@ export default function OrdTypeTemplate({
 
   const refVarValueOptions: string[] = ["off", "morning", "afternoon", "night"];
 
-  // [No] [shift_1] after [shift_3]
+  // [No] [shift_1] for [1] [day] [after] [shift_3]
+  // [No] [shift_1] on [day] [1] [after] [shift_3]
 
   return (
     <Box sx={{ display: "flex", flexDirection: "row" }}>
@@ -77,6 +88,27 @@ export default function OrdTypeTemplate({
         value={varValue}
         setValue={setVarValue}
       />
+      <Typography variant="body1" sx={{ alignSelf: "center", mx: 1 }}>
+        on
+      </Typography>
+      {/* <BasicSelect
+        label="Variable Value"
+        options={refVarValueOptions}
+        value={refVarValue}
+        setValue={setRefVarValue}
+      /> */}
+      <BasicSelect
+        label="Variable"
+        options={variableOptions}
+        value={referenceVariable}
+        setValue={setReferenceVariable}
+      />
+      <TextField
+        label="Quantity"
+        value={refVarValue}
+        onChange={(e) => setRefVarValue(e.target.value)}
+        sx={{ minWidth: 80 }}
+      />
       <BasicSelect
         label="Timing"
         options={constraintParamOption.timing_options}
@@ -86,14 +118,14 @@ export default function OrdTypeTemplate({
       <BasicSelect
         label="Variable"
         options={variableOptions}
-        value={referenceVariable}
-        setValue={setReferenceVariable}
+        value={otherVariable}
+        setValue={setOtherVariable}
       />
       <BasicSelect
         label="Variable Value"
         options={refVarValueOptions}
-        value={refVarValue}
-        setValue={setRefVarValue}
+        value={otherVarValue}
+        setValue={setOtherVarValue}
       />
     </Box>
   );

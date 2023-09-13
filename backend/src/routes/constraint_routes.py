@@ -193,13 +193,21 @@ def build_constraint(
         "day": [],
         "shift": ["off", "morning", "afternoon", "night"],
     }
+    penalty = {
+        "low": 3,
+        "medium": 7,
+        "high": 20,
+    }
 
     constraint = {}
     for key in constraint_keys:
         if key in constraint_inputs:
             constraint[key] = constraint_inputs[key]
-        if key == "hard_constraint":
+        elif key == "hard_constraint":
             constraint[key] = constraint_inputs["soft_or_hard"] == "hard"
+        elif key == "penalty" and constraint_inputs["soft_priority"] != "":
+            constraint[key] = penalty[constraint_inputs["soft_priority"]]
+
     constraint_variables = {
         "worker": {
             "param": "worker",
@@ -212,25 +220,45 @@ def build_constraint(
         },
     }
     for key, value in constraint_definition.items():
-        if key == "quantity":
+        if key in ["timing", "reference_variable", "other_variable"]:
+            continue
+        elif key == "quantity":
             constraint["target_value"] = value
-        if key == "operator":
+        elif key == "operator" and value != "":
             constraint["operator"] = value
         elif (
             key == "quantified_variable"
             and constraint_inputs["constraint_type"] != "sum"
         ):
             constraint_variables[value]["intra"] = True
-        if key == "var_value":
+        elif key == "var_value" and value != "":
             var = constraint_definition["quantified_variable"]
-            constraint_variables[var]["operator"] = "equal"
             constraint_variables[var]["value"] = variables[var].index(value)
-        if key == "ref_var_value":
-            if constraint_definition["reference_variable"] == "day":
-                if value == "week":
-                    constraint_variables["day"]["operator"] = "interval"
-                    constraint_variables["day"]["value"] = 0
-                    constraint_variables["day"]["interval"] = 7
+            if constraint_inputs["constraint_type"] == "order":
+                constraint_variables[var]["operator"] = "pair"
+            else:
+                constraint_variables[var]["operator"] = "equal"
+        elif key == "ref_var_value" and value != "":
+            var = constraint_definition["reference_variable"]
+            if var == "day":
+                if constraint_inputs["constraint_type"] == "order":
+                    constraint_variables[var]["operator"] = "offset"
+                    constraint_variables[var]["interval"] = value
+                elif value == "week":
+                    constraint_variables[var]["operator"] = "interval"
+                    constraint_variables[var]["value"] = 0
+                    constraint_variables[var]["interval"] = 7
+            elif var == "shift":
+                constraint_variables[var]["operator"] = "equal"
+                constraint_variables[var]["value"] = variables[var].index(
+                    value
+                )
+        elif key == "other_var_value" and value != "":
+            var = constraint_definition["other_variable"]
+            if var == "shift":
+                constraint_variables[var]["other_value"] = variables[
+                    var
+                ].index(value)
 
     return constraint, constraint_variables
 
@@ -238,6 +266,11 @@ def build_constraint(
 def build_constraint_front(
     constraint: Dict, constraint_variables: List[Dict]
 ) -> Dict:
+    penalty = {
+        "low": 3,
+        "medium": 7,
+        "high": 20,
+    }
     if constraint["constraint_type"] == "add":
         constraint_front = {
             "constraint": {
@@ -245,7 +278,14 @@ def build_constraint_front(
                 "soft_or_hard": "hard"
                 if constraint["hard_constraint"]
                 else "soft",
-                "soft_priority": "",
+                "soft_priority": next(
+                    (
+                        key
+                        for key, val in penalty.items()
+                        if val == constraint["penalty"]
+                    ),
+                    "",
+                ),
             },
             "constraint_definition": {
                 "quantity": constraint["target_value"],
@@ -262,6 +302,8 @@ def build_constraint_front(
                 "operator": "",
                 "reference_variable": "day",
                 "ref_var_value": "",
+                "other_variable": "",
+                "other_var_value": "",
             },
             "constraint_string": build_constraint_string(
                 constraint, constraint_variables
@@ -276,7 +318,14 @@ def build_constraint_front(
                 "soft_or_hard": "hard"
                 if constraint["hard_constraint"]
                 else "soft",
-                "soft_priority": "",
+                "soft_priority": next(
+                    (
+                        key
+                        for key, val in penalty.items()
+                        if val == constraint["penalty"]
+                    ),
+                    "",
+                ),
             },
             "constraint_definition": {
                 "quantity": constraint["target_value"],
@@ -288,7 +337,7 @@ def build_constraint_front(
                     ),
                     "",
                 ),
-                "var_value": get_var_value(constraint_variables),
+                "var_value": get_var_value(constraint, constraint_variables),
                 "timing": "per",
                 "operator": constraint["operator"],
                 "reference_variable": next(
@@ -299,7 +348,116 @@ def build_constraint_front(
                     ),
                     "",
                 ),
-                "ref_var_value": get_ref_var_value(constraint_variables),
+                "ref_var_value": get_ref_var_value(
+                    constraint, constraint_variables
+                ),
+                "other_variable": "",
+                "other_var_value": "",
+            },
+            "constraint_string": build_constraint_string(
+                constraint, constraint_variables
+            ),
+            "_id": constraint["_id"],
+            "active": constraint["active"],
+        }
+    if constraint["constraint_type"] == "sequence":
+        constraint_front = {
+            "constraint": {
+                "constraint_type": constraint["constraint_type"],
+                "soft_or_hard": "hard"
+                if constraint["hard_constraint"]
+                else "soft",
+                "soft_priority": next(
+                    (
+                        key
+                        for key, val in penalty.items()
+                        if val == constraint["penalty"]
+                    ),
+                    "",
+                ),
+            },
+            "constraint_definition": {
+                "quantity": constraint["target_value"],
+                "quantified_variable": next(
+                    (
+                        d["param"]
+                        for d in constraint_variables
+                        if d["intra"] is True
+                    ),
+                    "",
+                ),
+                "var_value": "",
+                "timing": "consecutive",
+                "operator": constraint["operator"],
+                "reference_variable": next(
+                    (
+                        d["param"]
+                        for d in constraint_variables
+                        if d["operator"] == "equal"
+                    ),
+                    "",
+                ),
+                "ref_var_value": get_ref_var_value(
+                    constraint, constraint_variables
+                ),
+                "other_variable": "",
+                "other_var_value": "",
+            },
+            "constraint_string": build_constraint_string(
+                constraint, constraint_variables
+            ),
+            "_id": constraint["_id"],
+            "active": constraint["active"],
+        }
+    if constraint["constraint_type"] == "order":
+        constraint_front = {
+            "constraint": {
+                "constraint_type": constraint["constraint_type"],
+                "soft_or_hard": "hard"
+                if constraint["hard_constraint"]
+                else "soft",
+                "soft_priority": next(
+                    (
+                        key
+                        for key, val in penalty.items()
+                        if val == constraint["penalty"]
+                    ),
+                    "",
+                ),
+            },
+            "constraint_definition": {
+                "quantity": constraint["target_value"],
+                "quantified_variable": next(
+                    (
+                        d["param"]
+                        for d in constraint_variables
+                        if d["intra"] is True
+                    ),
+                    "",
+                ),
+                "var_value": get_var_value(constraint, constraint_variables),
+                "timing": "after",
+                "operator": constraint["operator"],
+                "reference_variable": next(
+                    (
+                        d["param"]
+                        for d in constraint_variables
+                        if d["operator"] == "offset"
+                    ),
+                    "",
+                ),
+                "ref_var_value": get_ref_var_value(
+                    constraint, constraint_variables
+                ),
+                "other_variable": next(
+                    (
+                        d["param"]
+                        for d in constraint_variables
+                        if d["intra"] is True
+                    ),
+                    "",
+                ),
+                "other_var_value": get_other_var_value(constraint_variables),
             },
             "constraint_string": build_constraint_string(
                 constraint, constraint_variables
@@ -331,7 +489,7 @@ def build_constraint_string(
         )
         constraint_string_list.append("per")
         constraint_string_list.append("day")
-    if constraint["constraint_type"] == "sum":
+    elif constraint["constraint_type"] == "sum":
         constraint_string_list.append(
             str(constraint["operator"]).capitalize().replace("_", " ")
         )
@@ -346,7 +504,9 @@ def build_constraint_string(
                 "",
             )
         )
-        constraint_string_list.append(get_var_value(constraint_variables))
+        constraint_string_list.append(
+            get_var_value(constraint, constraint_variables)
+        )
         constraint_string_list.append("per")
         constraint_string_list.append(
             next(
@@ -358,31 +518,153 @@ def build_constraint_string(
                 "",
             )
         )
-        constraint_string_list.append(get_ref_var_value(constraint_variables))
+        constraint_string_list.append(
+            get_ref_var_value(constraint, constraint_variables)
+        )
+    elif constraint["constraint_type"] == "sequence":
+        constraint_string_list.append(
+            str(constraint["operator"]).capitalize().replace("_", " ")
+        )
+        constraint_string_list.append(str(constraint["target_value"]))
+        constraint_string_list.append("consecutive")
+        constraint_string_list.append(
+            next(
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["intra"] is True
+                ),
+                "",
+            )
+        )
+        constraint_string_list.append(
+            next(
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["operator"] == "equal"
+                ),
+                "",
+            )
+        )
+        constraint_string_list.append(
+            get_ref_var_value(constraint, constraint_variables)
+        )
+    elif constraint["constraint_type"] == "order":
+        constraint_string_list.append(
+            str(constraint["operator"]).capitalize().replace("_", " ")
+        )
+        constraint_string_list.append(
+            next(
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["intra"] is True
+                ),
+                "",
+            )
+        )
+        constraint_string_list.append(
+            get_var_value(constraint, constraint_variables)
+        )
+        constraint_string_list.append("on")
+        constraint_string_list.append(
+            next(
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["operator"] == "offset"
+                ),
+                "",
+            )
+        )
+        constraint_string_list.append(
+            str(get_ref_var_value(constraint, constraint_variables))
+        )
+        constraint_string_list.append("after")
+        constraint_string_list.append(
+            next(
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["intra"] is True
+                ),
+                "",
+            )
+        )
+        constraint_string_list.append(
+            get_other_var_value(constraint_variables)
+        )
     constraint_string = " ".join(constraint_string_list)
     return constraint_string
 
 
-def get_var_value(constraint_variables: List[Dict]) -> str:
+def get_var_value(constraint: Dict, constraint_variables: List[Dict]) -> str:
+    variables = {
+        "worker": [],
+        "day": [],
+        "shift": ["off", "morning", "afternoon", "night"],
+    }
+    if constraint["constraint_type"] == "order":
+        constraint_var = next(
+            (d for d in constraint_variables if d["intra"] is True), {}
+        )
+        var_value = variables[constraint_var["param"]][constraint_var["value"]]
+    else:
+        constraint_var = next(
+            (d for d in constraint_variables if d["operator"] == "equal"),
+            {},
+        )
+        var_value = variables[constraint_var["param"]][constraint_var["value"]]
+    return var_value
+
+
+def get_ref_var_value(
+    constraint: Dict, constraint_variables: List[Dict]
+) -> str:
+    ref_var_value = ""
+    variables = {
+        "worker": [],
+        "day": [],
+        "shift": ["off", "morning", "afternoon", "night"],
+    }
+    if constraint["constraint_type"] == "sum":
+        constraint_var = next(
+            (d for d in constraint_variables if d["operator"] == "interval"),
+            {},
+        )
+        ref_var_value = ""
+        if constraint_var["value"] == 0 and constraint_var["interval"] == 7:
+            ref_var_value = "week"
+    elif constraint["constraint_type"] == "sequence":
+        constraint_var = next(
+            (d for d in constraint_variables if d["operator"] == "equal"),
+            {},
+        )
+        ref_var_value = variables[constraint_var["param"]][
+            constraint_var["value"]
+        ]
+    elif constraint["constraint_type"] == "order":
+        constraint_var = next(
+            (d for d in constraint_variables if d["operator"] == "offset"),
+            {},
+        )
+        ref_var_value = constraint_var["interval"]
+
+    return ref_var_value
+
+
+def get_other_var_value(constraint_variables: List[Dict]) -> str:
     variables = {
         "worker": [],
         "day": [],
         "shift": ["off", "morning", "afternoon", "night"],
     }
     constraint_var = next(
-        (d for d in constraint_variables if d["operator"] == "equal"),
+        (d for d in constraint_variables if d["intra"] is True),
         {},
     )
-    var_value = variables[constraint_var["param"]][constraint_var["value"]]
-    return var_value
-
-
-def get_ref_var_value(constraint_variables: List[Dict]) -> str:
-    constraint_var = next(
-        (d for d in constraint_variables if d["operator"] == "interval"),
-        {},
-    )
-    ref_var_value = ""
-    if constraint_var["value"] == 0 and constraint_var["interval"] == 7:
-        ref_var_value = "week"
-    return ref_var_value
+    other_var_value = variables[constraint_var["param"]][
+        constraint_var["other_value"]
+    ]
+    return other_var_value
