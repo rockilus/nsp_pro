@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
 
 import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 import TableTemplate from "../TableTemplate/TableTemplate";
 
@@ -131,7 +132,9 @@ export default function WorkerConfig() {
 
   return (
     <Box style={{ width: "100%" }}>
-      <h1>Workers Configuration</h1>
+      <Typography variant="h4" align="left">
+        Workers Configuration
+      </Typography>
       <TableTemplate
         columns={columns}
         rows={rows}
