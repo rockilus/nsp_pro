@@ -11,16 +11,13 @@ import { ConstraintsContext } from "../../context/ConstraintsContext";
 import ConstraintTableTemplate from "./ConstraintTableTemplate";
 
 export default function ConstraintConfig() {
-  const [columns, setColumns] = useState<Record<string, any>[]>([
+  const [columns, setColumns] = useState<string[]>([
     "checkBox",
     "constraint_string",
     "editDelete",
   ]);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
-
-  const [addingConstraint, setAddingConstraint] = useState(false);
   const [constraintParams, setConstraintParams] = useState({});
-  const [constraints, setConstraints] = useState<Record<string, any>[]>([]);
 
   const constraintParamsContext = useContext(ConstraintParamsContext);
   const constraintsContext = useContext(ConstraintsContext);
@@ -50,7 +47,6 @@ export default function ConstraintConfig() {
       fetchConstraints();
     }
     if (constraintsContext.currentConstraints) {
-      setConstraints(constraintsContext.currentConstraints);
       setRows(constraintsContext.currentConstraints);
     }
   }, [constraintsContext]);

@@ -35,7 +35,8 @@ export default function AddTypeTemplate({
       <TextField
         label="Quantity"
         value={quantity}
-        onChange={(e) => setQuantity(e.target.value)}
+        type="number"
+        onChange={(e) => setQuantity(parseInt(e.target.value))}
         sx={{ minWidth: 80 }}
       />
       <BasicSelect

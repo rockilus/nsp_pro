@@ -19,7 +19,7 @@ interface Props {
   constraintParams: Record<string, any>;
   row: Record<string, any>;
   handleEditRow: (rowId: string, constraint: Record<string, any>) => void;
-  handleEditRowStatus: (rowId: string, active: bool) => void;
+  handleEditRowStatus: (rowId: string, active: boolean) => void;
   handleDeleteRow: (rowId: string) => void;
 }
 

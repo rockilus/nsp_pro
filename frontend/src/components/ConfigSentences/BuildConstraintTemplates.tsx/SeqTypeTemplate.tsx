@@ -19,8 +19,8 @@ interface Props {
   setOperator: React.Dispatch<React.SetStateAction<string>>;
   referenceVariable: string;
   setReferenceVariable: React.Dispatch<React.SetStateAction<string>>;
-  refVarValue: string;
-  setRefVarValue: React.Dispatch<React.SetStateAction<string>>;
+  refVarValue: string | number;
+  setRefVarValue: React.Dispatch<React.SetStateAction<string | number>>;
 }
 
 export default function SeqTypeTemplate({
@@ -74,7 +74,8 @@ export default function SeqTypeTemplate({
       <TextField
         label="Quantity"
         value={quantity}
-        onChange={(e) => setQuantity(e.target.value)}
+        type="number"
+        onChange={(e) => setQuantity(parseInt(e.target.value))}
         sx={{ minWidth: 80 }}
       />
       <BasicSelect

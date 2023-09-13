@@ -56,7 +56,7 @@ export default function BuildConstraint({
   const [referenceVariable, setReferenceVariable] = useState(
     constraint.constraint_definition?.reference_variable || ""
   );
-  const [refVarValue, setRefVarValue] = useState(
+  const [refVarValue, setRefVarValue] = useState<string | number>(
     constraint.constraint_definition?.ref_var_value || ""
   );
   const [otherVariable, setOtherVariable] = useState(
@@ -68,7 +68,7 @@ export default function BuildConstraint({
 
   const searchConstraintParamOption = (searchValue: string) => {
     return constraintParams.constraint_param_options.find(
-      (item) => item.constraint_type === searchValue
+      (item: Record<string, any>) => item.constraint_type === searchValue
     );
   };
 

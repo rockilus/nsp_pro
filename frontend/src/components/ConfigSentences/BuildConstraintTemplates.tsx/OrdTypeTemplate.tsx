@@ -19,8 +19,8 @@ interface Props {
   setOperator: React.Dispatch<React.SetStateAction<string>>;
   referenceVariable: string;
   setReferenceVariable: React.Dispatch<React.SetStateAction<string>>;
-  refVarValue: string;
-  setRefVarValue: React.Dispatch<React.SetStateAction<string>>;
+  refVarValue: string | number;
+  setRefVarValue: React.Dispatch<React.SetStateAction<string | number>>;
   otherVariable: string;
   setOtherVariable: React.Dispatch<React.SetStateAction<string>>;
   otherVarValue: string;
@@ -91,12 +91,6 @@ export default function OrdTypeTemplate({
       <Typography variant="body1" sx={{ alignSelf: "center", mx: 1 }}>
         on
       </Typography>
-      {/* <BasicSelect
-        label="Variable Value"
-        options={refVarValueOptions}
-        value={refVarValue}
-        setValue={setRefVarValue}
-      /> */}
       <BasicSelect
         label="Variable"
         options={variableOptions}
@@ -106,7 +100,8 @@ export default function OrdTypeTemplate({
       <TextField
         label="Quantity"
         value={refVarValue}
-        onChange={(e) => setRefVarValue(e.target.value)}
+        type="number"
+        onChange={(e) => setRefVarValue(parseInt(e.target.value))}
         sx={{ minWidth: 80 }}
       />
       <BasicSelect

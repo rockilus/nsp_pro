@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 
 import AddIcon from "@mui/icons-material/Add";
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import DeleteIcon from "@mui/icons-material/Delete";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -16,12 +13,12 @@ import ConstraintDrawerTemplate from "./ConstraintDrawerTemplate";
 import ConstraintRowTemplate from "./ConstraintRowTemplate";
 
 interface Props {
-  columns: Record<string, any>[];
+  columns: string[];
   rows: Record<string, any>[];
   constraintParams: Record<string, any>;
   handleAddRow: (newRow: Record<string, any>) => void;
   handleEditRow: (rowId: string, constraint: Record<string, any>) => void;
-  handleEditRowStatus: (rowId: string, active: bool) => void;
+  handleEditRowStatus: (rowId: string, active: boolean) => void;
   handleDeleteRow: (id: string) => void;
 }
 
@@ -43,8 +40,6 @@ export default function ConstraintTableTemplate({
 
   return (
     <>
-      {/* {console.log("columns in TableTemplate: ", typeof columns, columns)}
-      {console.log("rows in TableTemplate: ", typeof rows, rows)} */}
       <TableContainer component={Paper} style={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableBody>
@@ -57,24 +52,6 @@ export default function ConstraintTableTemplate({
                 handleEditRowStatus={handleEditRowStatus}
                 handleDeleteRow={handleDeleteRow}
               />
-              //   <TableRow
-              //     key={rowIndex}
-              //     sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              //   >
-              //     <TableCell component="th" scope="row" sx={{ maxWidth: 0 }}>
-              //       <Checkbox checked={row.active} />
-              //     </TableCell>
-              //     <TableCell component="th" scope="row">
-              //       {row.constraint_string}
-              //     </TableCell>
-              //     <TableCell component="th" scope="row" align="right">
-              //       <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-              //         <Button onClick={() => handleDeleteRow(row._id)}>
-              //           <DeleteIcon />
-              //         </Button>
-              //       </Box>
-              //     </TableCell>
-              //   </TableRow>
             ))}
             <TableRow>
               <TableCell colSpan={columns.length}>

@@ -9,7 +9,7 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 interface Props {
   label: string;
   options: string[];
-  value: string;
+  value: string | number;
   setValue: (value: string) => void;
 }
 
@@ -30,7 +30,7 @@ export default function BasicSelect({
         <Select
           labelId="demo-simple-select-label"
           id="demo-simple-select"
-          value={value}
+          value={value.toString()}
           label={label}
           onChange={handleChange}
         >
