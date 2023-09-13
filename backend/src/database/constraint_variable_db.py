@@ -9,6 +9,7 @@ class ConstraintVariableDB:
     def __init__(self, db: DB):
         self.db = db
 
+    # pylint: disable=too-many-arguments
     def create_constraint_variable(
         self,
         constraint: Constraint,
@@ -52,6 +53,7 @@ class ConstraintVariableDB:
         )
         return constraint_variable
 
+    # pyling: disable=too-many-arguments
     def update_constraint_variable(
         self,
         constraint_variable: ConstraintVariable,

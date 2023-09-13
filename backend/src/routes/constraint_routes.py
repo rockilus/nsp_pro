@@ -1,11 +1,9 @@
-from typing import Dict, List, Union
-
 from bson import ObjectId
-from constraint_transform import build_constraint, build_constraint_front
 from flask import Blueprint, jsonify, request
-from models import Constraint, ConstraintVariable
 from mongoengine import NotUniqueError
 from scripts.setup_database import constraint_db, constraint_variable_db
+
+from constraint_transform import build_constraint, build_constraint_front
 
 constraint_routes = Blueprint("constraint_routes", __name__)
 
@@ -43,26 +41,19 @@ def create_constraint():
 def get_constraints():
     constraints = constraint_db.get_constraints()
     constraints_variables = [
-        constraint_variable_db.get_constraint_variables_by_constraint(
-            constraint
-        )
+        constraint_variable_db.get_constraint_variables_by_constraint(constraint)
         for constraint in constraints
     ]
     constraints_dict = [constraint.to_dict() for constraint in constraints]
     constraints_variables_dict = [
-        [
-            constraint_variable.to_dict()
-            for constraint_variable in constraint_variables
-        ]
+        [constraint_variable.to_dict() for constraint_variable in constraint_variables]
         for constraint_variables in constraints_variables
     ]
     constraints_response = []
     for constraint, constraint_variables in zip(
         constraints_dict, constraints_variables_dict
     ):
-        constraint_front = build_constraint_front(
-            constraint, constraint_variables
-        )
+        constraint_front = build_constraint_front(constraint, constraint_variables)
         constraints_response.append(constraint_front)
     response = jsonify({"constraints": constraints_response})
     return response, 200
@@ -70,6 +61,7 @@ def get_constraints():
 
 @constraint_routes.route("/update-constraint", methods=["POST"])
 def update_constraint():
+    # pylint: disable=too-many-locals
     input_received = request.get_json()
     constraint_id = input_received["constraint_id"]
     constraint_input = input_received["constraint"]
@@ -80,9 +72,7 @@ def update_constraint():
         )
         constraint = constraint_db.get_constraint_by_id(constraint_id)
         constraint_variables = (
-            constraint_variable_db.get_constraint_variables_by_constraint(
-                constraint
-            )
+            constraint_variable_db.get_constraint_variables_by_constraint(constraint)
         )
         constraint_updated = constraint_db.update_constraint(
             constraint=constraint, **new_constraint
@@ -152,13 +142,9 @@ def delete_constraint():
     try:
         constraint = constraint_db.get_constraint_by_id(constraint_id)
         constraint_variables = (
-            constraint_variable_db.get_constraint_variables_by_constraint(
-                constraint
-            )
+            constraint_variable_db.get_constraint_variables_by_constraint(constraint)
         )
-        constraint_variable_db.delete_constraint_variables(
-            constraint_variables
-        )
+        constraint_variable_db.delete_constraint_variables(constraint_variables)
         constraint_db.delete_constraint(constraint)
         return jsonify({"message": "constraint deleted"}), 200
     # pylint: disable=broad-except,R0801

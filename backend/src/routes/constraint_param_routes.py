@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 from scripts.setup_database import (
     constraint_param_db,
     constraint_param_option_db,
@@ -12,13 +12,9 @@ def get_constraint_params():
     # try:
     constraint_param = constraint_param_db.get_constraint_params()
     if not constraint_param:
-        constraint_param = (
-            constraint_param_db.create_default_constraint_params()
-        )
-    constraint_param_options = (
-        constraint_param_option_db.get_constraint_param_options(
-            constraint_param
-        )
+        constraint_param = constraint_param_db.create_default_constraint_params()
+    constraint_param_options = constraint_param_option_db.get_constraint_param_options(
+        constraint_param
     )
     if not constraint_param_options:
         constraint_param_options = (

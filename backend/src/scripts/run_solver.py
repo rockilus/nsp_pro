@@ -17,7 +17,7 @@ var_params = {
 
 
 def run_solver() -> None:
-    build_model = BuildModel(var_params, constraints)
+    build_model = BuildModel(var_params, [])
     build_model.build_variables()
     build_model.build_constraints()
     build_model.add_objective()

@@ -9,6 +9,7 @@ class ConstraintDB:
     def __init__(self, db: DB):
         self.db = db
 
+    # pylint: disable=too-many-arguments
     def create_constraint(
         self,
         constraint_type: str,
@@ -43,6 +44,7 @@ class ConstraintDB:
         constraint = Constraint.objects.get(_id=constraint_id)  # type: ignore
         return constraint
 
+    # pyling: disable=too-many-arguments
     def update_constraint(
         self,
         constraint: Constraint,

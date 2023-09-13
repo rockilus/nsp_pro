@@ -1,9 +1,10 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 
 
+# pylint: disable=too-many-branches
 def build_constraint(
     constraint_inputs: Dict, constraint_definition: Dict
-) -> List[Union[Dict, List[Dict]]]:
+) -> Tuple[Dict, Dict]:
     constraint_keys = [
         "constraint_type",  # constraint
         "operator",  # constraint_definition
@@ -12,7 +13,7 @@ def build_constraint(
         "penalty",  # constraint
         "active",
     ]
-    variables = {
+    variables: Dict[str, List] = {
         "worker": [],
         "day": [],
         "shift": ["off", "morning", "afternoon", "night"],
@@ -32,7 +33,7 @@ def build_constraint(
         elif key == "penalty" and constraint_inputs["soft_priority"] != "":
             constraint[key] = penalty[constraint_inputs["soft_priority"]]
 
-    constraint_variables = {
+    constraint_variables: Dict[str, Dict[str, Union[str, int, bool]]] = {
         "worker": {
             "param": "worker",
         },
@@ -46,7 +47,7 @@ def build_constraint(
     for key, value in constraint_definition.items():
         if key in ["timing", "reference_variable", "other_variable"]:
             continue
-        elif key == "quantity":
+        if key == "quantity":
             constraint["target_value"] = value
         elif key == "operator" and value != "":
             constraint["operator"] = value
@@ -74,14 +75,10 @@ def build_constraint(
                     constraint_variables[var]["interval"] = 7
             elif var == "shift":
                 constraint_variables[var]["operator"] = "equal"
-                constraint_variables[var]["value"] = variables[var].index(
-                    value
-                )
+                constraint_variables[var]["value"] = variables[var].index(value)
         elif key == "other_var_value" and value != "":
             var = constraint_definition["other_variable"]
             if var == "shift":
-                constraint_variables[var]["other_value"] = variables[
-                    var
-                ].index(value)
+                constraint_variables[var]["other_value"] = variables[var].index(value)
 
     return constraint, constraint_variables
