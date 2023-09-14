@@ -7,7 +7,7 @@ import { ConstraintParamsContext } from "../../context/ConstraintParamsContext";
 import { ConstraintsContext } from "../../context/ConstraintsContext";
 import ConstraintTableTemplate from "./ConstraintTableTemplate";
 
-export default function ConstraintConfig() {
+export default function TimetableConfig() {
   const [columns, setColumns] = useState<string[]>([
     "checkBox",
     "constraint_string",

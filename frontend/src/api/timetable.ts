@@ -1,41 +1,108 @@
-import { Dayjs } from "dayjs";
-
 import { getCookie } from "../utils/cookie";
 
-// const serverUrl = "http://localhost:5000";
 const serverUrl = "http://127.0.0.1:5000";
 
-// Worker Param
-const addWorkerParamUrl = serverUrl + "/create-worker-param";
-const getWorkerParamsUrl = serverUrl + "/get-worker-params";
-const updateWorkerParamUrl = serverUrl + "/update-worker-param";
-const deleteWorkerParamUrl = serverUrl + "/delete-worker-param";
+// TimeTable
+const createTimetableUrl = serverUrl + "/create-timetable";
+const getTimetablesUrl = serverUrl + "/get-timetable";
+// const updateTimetableUrl = serverUrl + "/update-timetable";
+const deleteTimetableUrl = serverUrl + "/delete-timetable";
 
-// Worker
-const createWorkerUrl = serverUrl + "/create-worker";
-const getWorkersUrl = serverUrl + "/get-workers";
-const deleteWorkerUrl = serverUrl + "/delete-worker";
+// TimeTable Time
+const createTimetableTimeUrl = serverUrl + "/create-timetable-time";
+const getTimetableTimesUrl = serverUrl + "/get-timetable-times";
+const updateTimetableTimeUrl = serverUrl + "/update-timetable-time";
+const deleteTimetableTimeUrl = serverUrl + "/delete-timetable-time";
 
-// Worker Property
-const updateWorkerPropertyUrl = serverUrl + "/update-worker-property";
+// TimeTable Category
+const createTimetableCategoryUrl = serverUrl + "/create-timetable-category";
+const getTimetableCategoriesUrl = serverUrl + "/get-timetable-categories";
+const updateTimetableCategoryUrl = serverUrl + "/update-timetable-category";
+const deleteTimetableCategoryUrl = serverUrl + "/delete-timetable-category";
 
-// Shift Param
-const createShiftParamUrl = serverUrl + "/create-shift-param";
-const getShiftParamsUrl = serverUrl + "/get-shift-params";
-const updateShiftParamUrl = serverUrl + "/update-shift-param";
-const deleteShiftParamUrl = serverUrl + "/delete-shift-param";
+// TimeTable Property
+const createTimetablePropertyUrl = serverUrl + "/create-timetable-property";
+const getTimetablePropertiesUrl = serverUrl + "/get-timetable-properties";
+const updateTimetablePropertyUrl = serverUrl + "/update-timetable-property";
+const deleteTimetablePropertyUrl = serverUrl + "/delete-timetable-property";
 
-// Shift
-const createShiftUrl = serverUrl + "/create-shift";
-const getShiftsUrl = serverUrl + "/get-shifts";
-const deleteShiftUrl = serverUrl + "/delete-shift";
+// Timetable
+export async function serverPostCreateTimetable() {
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+  };
+  try {
+    const response = await fetch(createTimetableUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
 
-// Shift Property
-const updateShiftPropertyUrl = serverUrl + "/update-shift-property";
+export async function serverGetTimetables() {
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+  });
 
-// Worker Param
+  const options: RequestInit = {
+    method: "GET",
+    credentials: "include" as RequestCredentials,
+    headers: headers,
+  };
 
-export async function serverPostCreateWorkerParam(
+  try {
+    const response = await fetch(getTimetablesUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function serverDeleteTimetable(timetableId: string) {
+  console.log("deleteTimetable", timetableId);
+
+  const options: RequestInit = {
+    method: "DELETE",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
+    },
+    body: JSON.stringify({
+      timetable_id: timetableId,
+    }),
+  };
+  try {
+    const response = await fetch(deleteTimetableUrl, options);
+    if (response.ok) {
+      const jsonData = await response.json();
+      return jsonData;
+    } else {
+      throw new Error("Request failed");
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+// TimeTable Time
+export async function serverPostCreateTimetableTime(
   label: string,
   entryType: string,
   entryOptions: string[]
@@ -53,7 +120,7 @@ export async function serverPostCreateWorkerParam(
     }),
   };
   try {
-    const response = await fetch(addWorkerParamUrl, options);
+    const response = await fetch(createTimetableTimeUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
 
@@ -66,7 +133,7 @@ export async function serverPostCreateWorkerParam(
   }
 }
 
-export async function serverGetWorkerParams() {
+export async function serverGetTimetableTimes() {
   const headers = new Headers({
     "Content-Type": "application/json",
     "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
@@ -79,10 +146,10 @@ export async function serverGetWorkerParams() {
   };
 
   try {
-    const response = await fetch(getWorkerParamsUrl, options);
+    const response = await fetch(getTimetableTimesUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
-      console.log("response getWorkerParams", jsonData);
+      console.log("response getTimetableTimes", jsonData);
       return jsonData;
     } else {
       throw new Error("Request failed");
@@ -92,8 +159,8 @@ export async function serverGetWorkerParams() {
   }
 }
 
-export async function serverPostUpdateWorkerParam(
-  workerParamId: string,
+export async function serverPostUpdateTimetableTime(
+  timetableTimeId: string,
   label: string,
   entryType: string,
   entryOptions: string[]
@@ -106,14 +173,14 @@ export async function serverPostUpdateWorkerParam(
       "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
     },
     body: JSON.stringify({
-      worker_param_id: workerParamId,
+      timetable_time_id: timetableTimeId,
       label: label,
       entry_type: entryType,
       entry_options: entryOptions,
     }),
   };
   try {
-    const response = await fetch(updateWorkerParamUrl, options);
+    const response = await fetch(updateTimetableTimeUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;
@@ -125,8 +192,8 @@ export async function serverPostUpdateWorkerParam(
   }
 }
 
-export async function serverDeleteWorkerParam(workerParamId: string) {
-  console.log("deleteWorker", workerParamId);
+export async function serverDeleteTimetableTime(timetableTimeId: string) {
+  console.log("deleteShift", timetableTimeId);
 
   const options: RequestInit = {
     method: "DELETE",
@@ -136,11 +203,11 @@ export async function serverDeleteWorkerParam(workerParamId: string) {
       "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
     },
     body: JSON.stringify({
-      worker_param_id: workerParamId,
+      timetable_time_id: timetableTimeId,
     }),
   };
   try {
-    const response = await fetch(deleteWorkerParamUrl, options);
+    const response = await fetch(deleteTimetableTimeUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;
@@ -152,116 +219,8 @@ export async function serverDeleteWorkerParam(workerParamId: string) {
   }
 }
 
-// Worker
-
-export async function serverPostCreateWorker() {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-  };
-  try {
-    const response = await fetch(createWorkerUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function serverGetWorkers() {
-  const headers = new Headers({
-    "Content-Type": "application/json",
-    "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-  });
-
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: headers,
-  };
-
-  try {
-    const response = await fetch(getWorkersUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function serverPostUpdateWorkerProperty(
-  workerId: string,
-  workerParamId: string,
-  value: any
-) {
-  const options: RequestInit = {
-    method: "POST",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      worker_id: workerId,
-      worker_param_id: workerParamId,
-      value: value,
-    }),
-  };
-  try {
-    const response = await fetch(updateWorkerPropertyUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-export async function serverDeleteWorker(workerId: string) {
-  console.log("deleteWorker", workerId);
-
-  const options: RequestInit = {
-    method: "DELETE",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
-    },
-    body: JSON.stringify({
-      worker_id: workerId,
-    }),
-  };
-  try {
-    const response = await fetch(deleteWorkerUrl, options);
-    if (response.ok) {
-      const jsonData = await response.json();
-      return jsonData;
-    } else {
-      throw new Error("Request failed");
-    }
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-}
-
-// Shift Param
-
-export async function serverPostCreateShiftParam(
+// TimeTable Category
+export async function serverPostCreateTimetableCategory(
   label: string,
   entryType: string,
   entryOptions: string[]
@@ -279,7 +238,7 @@ export async function serverPostCreateShiftParam(
     }),
   };
   try {
-    const response = await fetch(createShiftParamUrl, options);
+    const response = await fetch(createTimetableCategoryUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
 
@@ -292,7 +251,7 @@ export async function serverPostCreateShiftParam(
   }
 }
 
-export async function serverGetShiftParams() {
+export async function serverGetTimetableCategorys() {
   const headers = new Headers({
     "Content-Type": "application/json",
     "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
@@ -305,10 +264,10 @@ export async function serverGetShiftParams() {
   };
 
   try {
-    const response = await fetch(getShiftParamsUrl, options);
+    const response = await fetch(getTimetableCategoriesUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
-      console.log("response getShiftParams", jsonData);
+      console.log("response getTimetableCategorys", jsonData);
       return jsonData;
     } else {
       throw new Error("Request failed");
@@ -318,8 +277,8 @@ export async function serverGetShiftParams() {
   }
 }
 
-export async function serverPostUpdateShiftParam(
-  shiftParamId: string,
+export async function serverPostUpdateTimetableCategory(
+  timetableCategoryId: string,
   label: string,
   entryType: string,
   entryOptions: string[]
@@ -332,14 +291,14 @@ export async function serverPostUpdateShiftParam(
       "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
     },
     body: JSON.stringify({
-      shift_param_id: shiftParamId,
+      timetable_category_id: timetableCategoryId,
       label: label,
       entry_type: entryType,
       entry_options: entryOptions,
     }),
   };
   try {
-    const response = await fetch(updateShiftParamUrl, options);
+    const response = await fetch(updateTimetableCategoryUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;
@@ -351,8 +310,10 @@ export async function serverPostUpdateShiftParam(
   }
 }
 
-export async function serverDeleteShiftParam(shiftParamId: string) {
-  console.log("deleteShift", shiftParamId);
+export async function serverDeleteTimetableCategory(
+  timetableCategoryId: string
+) {
+  console.log("deleteShift", timetableCategoryId);
 
   const options: RequestInit = {
     method: "DELETE",
@@ -362,11 +323,11 @@ export async function serverDeleteShiftParam(shiftParamId: string) {
       "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
     },
     body: JSON.stringify({
-      shift_param_id: shiftParamId,
+      timetable_category_id: timetableCategoryId,
     }),
   };
   try {
-    const response = await fetch(deleteShiftParamUrl, options);
+    const response = await fetch(deleteTimetableCategoryUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;
@@ -378,21 +339,29 @@ export async function serverDeleteShiftParam(shiftParamId: string) {
   }
 }
 
-// Shift
-
-export async function serverPostCreateShift() {
+// Timetable Property
+export async function serverPostCreateTimetableProperty(
+  label: string,
+  entryType: string,
+  entryOptions: string[]
+) {
   const options: RequestInit = {
     method: "POST",
     credentials: "include" as RequestCredentials,
     headers: {
       "Content-Type": "application/json",
-      "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
     },
+    body: JSON.stringify({
+      label: label,
+      entry_type: entryType,
+      entry_options: entryOptions,
+    }),
   };
   try {
-    const response = await fetch(createShiftUrl, options);
+    const response = await fetch(createTimetablePropertyUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
+
       return jsonData;
     } else {
       throw new Error("Request failed");
@@ -402,7 +371,7 @@ export async function serverPostCreateShift() {
   }
 }
 
-export async function serverGetShifts() {
+export async function serverGetTimetablePropertys() {
   const headers = new Headers({
     "Content-Type": "application/json",
     "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
@@ -415,9 +384,10 @@ export async function serverGetShifts() {
   };
 
   try {
-    const response = await fetch(getShiftsUrl, options);
+    const response = await fetch(getTimetablePropertiesUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
+      console.log("response getTimetablePropertys", jsonData);
       return jsonData;
     } else {
       throw new Error("Request failed");
@@ -427,10 +397,11 @@ export async function serverGetShifts() {
   }
 }
 
-export async function serverPostUpdateShiftProperty(
-  shiftId: string,
-  shiftParamId: string,
-  value: any
+export async function serverPostUpdateTimetableProperty(
+  timetablePropertyId: string,
+  label: string,
+  entryType: string,
+  entryOptions: string[]
 ) {
   const options: RequestInit = {
     method: "POST",
@@ -440,13 +411,14 @@ export async function serverPostUpdateShiftProperty(
       "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
     },
     body: JSON.stringify({
-      shift_id: shiftId,
-      shift_param_id: shiftParamId,
-      value: value,
+      timetable_property_id: timetablePropertyId,
+      label: label,
+      entry_type: entryType,
+      entry_options: entryOptions,
     }),
   };
   try {
-    const response = await fetch(updateShiftPropertyUrl, options);
+    const response = await fetch(updateTimetablePropertyUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;
@@ -458,8 +430,10 @@ export async function serverPostUpdateShiftProperty(
   }
 }
 
-export async function serverDeleteShift(shiftId: string) {
-  console.log("deleteShift", shiftId);
+export async function serverDeleteTimetableProperty(
+  timetablePropertyId: string
+) {
+  console.log("deleteShift", timetablePropertyId);
 
   const options: RequestInit = {
     method: "DELETE",
@@ -469,11 +443,11 @@ export async function serverDeleteShift(shiftId: string) {
       "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
     },
     body: JSON.stringify({
-      shift_id: shiftId,
+      timetable_property_id: timetablePropertyId,
     }),
   };
   try {
-    const response = await fetch(deleteShiftUrl, options);
+    const response = await fetch(deleteTimetablePropertyUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;

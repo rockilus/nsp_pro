@@ -7,7 +7,9 @@ from constraint_transform.constraint_utils import (
 )
 
 
-def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -> Dict:
+def build_constraint_front(
+    constraint: Dict, constraint_variables: List[Dict]
+) -> Dict:
     penalty = {
         "low": 3,
         "medium": 7,
@@ -17,7 +19,9 @@ def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -
         constraint_front = {
             "constraint": {
                 "constraint_type": constraint["constraint_type"],
-                "soft_or_hard": "hard" if constraint["hard_constraint"] else "soft",
+                "soft_or_hard": "hard"
+                if constraint["hard_constraint"]
+                else "soft",
                 "soft_priority": next(
                     (
                         key
@@ -30,7 +34,11 @@ def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -
             "constraint_definition": {
                 "quantity": constraint["target_value"],
                 "quantified_variable": next(
-                    (d["param"] for d in constraint_variables if d["intra"] is True),
+                    (
+                        d["param"]
+                        for d in constraint_variables
+                        if d["intra"] is True
+                    ),
                     "",
                 ),
                 "var_value": "",
@@ -51,7 +59,9 @@ def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -
         constraint_front = {
             "constraint": {
                 "constraint_type": constraint["constraint_type"],
-                "soft_or_hard": "hard" if constraint["hard_constraint"] else "soft",
+                "soft_or_hard": "hard"
+                if constraint["hard_constraint"]
+                else "soft",
                 "soft_priority": next(
                     (
                         key
@@ -82,7 +92,9 @@ def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -
                     ),
                     "",
                 ),
-                "ref_var_value": get_ref_var_value(constraint, constraint_variables),
+                "ref_var_value": get_ref_var_value(
+                    constraint, constraint_variables
+                ),
                 "other_variable": "",
                 "other_var_value": "",
             },
@@ -96,7 +108,9 @@ def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -
         constraint_front = {
             "constraint": {
                 "constraint_type": constraint["constraint_type"],
-                "soft_or_hard": "hard" if constraint["hard_constraint"] else "soft",
+                "soft_or_hard": "hard"
+                if constraint["hard_constraint"]
+                else "soft",
                 "soft_priority": next(
                     (
                         key
@@ -109,7 +123,11 @@ def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -
             "constraint_definition": {
                 "quantity": constraint["target_value"],
                 "quantified_variable": next(
-                    (d["param"] for d in constraint_variables if d["intra"] is True),
+                    (
+                        d["param"]
+                        for d in constraint_variables
+                        if d["intra"] is True
+                    ),
                     "",
                 ),
                 "var_value": "",
@@ -123,7 +141,9 @@ def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -
                     ),
                     "",
                 ),
-                "ref_var_value": get_ref_var_value(constraint, constraint_variables),
+                "ref_var_value": get_ref_var_value(
+                    constraint, constraint_variables
+                ),
                 "other_variable": "",
                 "other_var_value": "",
             },
@@ -137,7 +157,9 @@ def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -
         constraint_front = {
             "constraint": {
                 "constraint_type": constraint["constraint_type"],
-                "soft_or_hard": "hard" if constraint["hard_constraint"] else "soft",
+                "soft_or_hard": "hard"
+                if constraint["hard_constraint"]
+                else "soft",
                 "soft_priority": next(
                     (
                         key
@@ -150,7 +172,11 @@ def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -
             "constraint_definition": {
                 "quantity": constraint["target_value"],
                 "quantified_variable": next(
-                    (d["param"] for d in constraint_variables if d["intra"] is True),
+                    (
+                        d["param"]
+                        for d in constraint_variables
+                        if d["intra"] is True
+                    ),
                     "",
                 ),
                 "var_value": get_var_value(constraint, constraint_variables),
@@ -164,9 +190,15 @@ def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -
                     ),
                     "",
                 ),
-                "ref_var_value": get_ref_var_value(constraint, constraint_variables),
+                "ref_var_value": get_ref_var_value(
+                    constraint, constraint_variables
+                ),
                 "other_variable": next(
-                    (d["param"] for d in constraint_variables if d["intra"] is True),
+                    (
+                        d["param"]
+                        for d in constraint_variables
+                        if d["intra"] is True
+                    ),
                     "",
                 ),
                 "other_var_value": get_other_var_value(constraint_variables),
@@ -180,14 +212,22 @@ def build_constraint_front(constraint: Dict, constraint_variables: List[Dict]) -
     return constraint_front
 
 
-def build_constraint_string(constraint: Dict, constraint_variables: List[Dict]) -> str:
+def build_constraint_string(
+    constraint: Dict, constraint_variables: List[Dict]
+) -> str:
     constraint_string_list = []
     if constraint["constraint_type"] == "add":
-        constraint_string_list.append(str(constraint["constraint_type"]).capitalize())
+        constraint_string_list.append(
+            str(constraint["constraint_type"]).capitalize()
+        )
         constraint_string_list.append(str(constraint["target_value"]))
         constraint_string_list.append(
             next(
-                (d["param"] for d in constraint_variables if d["intra"] is True),
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["intra"] is True
+                ),
                 "",
             )
         )
@@ -200,11 +240,17 @@ def build_constraint_string(constraint: Dict, constraint_variables: List[Dict]) 
         constraint_string_list.append(str(constraint["target_value"]))
         constraint_string_list.append(
             next(
-                (d["param"] for d in constraint_variables if d["operator"] == "equal"),
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["operator"] == "equal"
+                ),
                 "",
             )
         )
-        constraint_string_list.append(get_var_value(constraint, constraint_variables))
+        constraint_string_list.append(
+            get_var_value(constraint, constraint_variables)
+        )
         constraint_string_list.append("per")
         constraint_string_list.append(
             next(
@@ -227,13 +273,21 @@ def build_constraint_string(constraint: Dict, constraint_variables: List[Dict]) 
         constraint_string_list.append("consecutive")
         constraint_string_list.append(
             next(
-                (d["param"] for d in constraint_variables if d["intra"] is True),
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["intra"] is True
+                ),
                 "",
             )
         )
         constraint_string_list.append(
             next(
-                (d["param"] for d in constraint_variables if d["operator"] == "equal"),
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["operator"] == "equal"
+                ),
                 "",
             )
         )
@@ -246,15 +300,25 @@ def build_constraint_string(constraint: Dict, constraint_variables: List[Dict]) 
         )
         constraint_string_list.append(
             next(
-                (d["param"] for d in constraint_variables if d["intra"] is True),
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["intra"] is True
+                ),
                 "",
             )
         )
-        constraint_string_list.append(get_var_value(constraint, constraint_variables))
+        constraint_string_list.append(
+            get_var_value(constraint, constraint_variables)
+        )
         constraint_string_list.append("on")
         constraint_string_list.append(
             next(
-                (d["param"] for d in constraint_variables if d["operator"] == "offset"),
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["operator"] == "offset"
+                ),
                 "",
             )
         )
@@ -264,10 +328,16 @@ def build_constraint_string(constraint: Dict, constraint_variables: List[Dict]) 
         constraint_string_list.append("after")
         constraint_string_list.append(
             next(
-                (d["param"] for d in constraint_variables if d["intra"] is True),
+                (
+                    d["param"]
+                    for d in constraint_variables
+                    if d["intra"] is True
+                ),
                 "",
             )
         )
-        constraint_string_list.append(get_other_var_value(constraint_variables))
+        constraint_string_list.append(
+            get_other_var_value(constraint_variables)
+        )
     constraint_string = " ".join(constraint_string_list)
     return constraint_string
