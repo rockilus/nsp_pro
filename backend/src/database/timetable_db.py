@@ -31,5 +31,14 @@ class TimetableDB:
         timetable = Timetable.objects.get(_id=timetable_id)  # type: ignore
         return timetable
 
+    def update_timetable(
+        self,
+        label: str,
+        timetable: Timetable,
+    ) -> Timetable:
+        timetable.label = label
+        timetable_saved = timetable.save()
+        return timetable_saved
+
     def delete_timetable(self, timetable: Timetable) -> None:
         timetable.delete()

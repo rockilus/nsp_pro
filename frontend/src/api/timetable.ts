@@ -104,8 +104,7 @@ export async function serverDeleteTimetable(timetableId: string) {
 // TimeTable Time
 export async function serverPostCreateTimetableTime(
   label: string,
-  entryType: string,
-  entryOptions: string[]
+  timetableId: string
 ) {
   const options: RequestInit = {
     method: "POST",
@@ -115,8 +114,7 @@ export async function serverPostCreateTimetableTime(
     },
     body: JSON.stringify({
       label: label,
-      entry_type: entryType,
-      entry_options: entryOptions,
+      timetable_id: timetableId,
     }),
   };
   try {
@@ -161,9 +159,7 @@ export async function serverGetTimetableTimes() {
 
 export async function serverPostUpdateTimetableTime(
   timetableTimeId: string,
-  label: string,
-  entryType: string,
-  entryOptions: string[]
+  label: string
 ) {
   const options: RequestInit = {
     method: "POST",
@@ -175,8 +171,6 @@ export async function serverPostUpdateTimetableTime(
     body: JSON.stringify({
       timetable_time_id: timetableTimeId,
       label: label,
-      entry_type: entryType,
-      entry_options: entryOptions,
     }),
   };
   try {
@@ -222,8 +216,7 @@ export async function serverDeleteTimetableTime(timetableTimeId: string) {
 // TimeTable Category
 export async function serverPostCreateTimetableCategory(
   label: string,
-  entryType: string,
-  entryOptions: string[]
+  timetableId: string
 ) {
   const options: RequestInit = {
     method: "POST",
@@ -233,8 +226,7 @@ export async function serverPostCreateTimetableCategory(
     },
     body: JSON.stringify({
       label: label,
-      entry_type: entryType,
-      entry_options: entryOptions,
+      timetable_id: timetableId,
     }),
   };
   try {
@@ -251,7 +243,7 @@ export async function serverPostCreateTimetableCategory(
   }
 }
 
-export async function serverGetTimetableCategorys() {
+export async function serverGetTimetableCategories() {
   const headers = new Headers({
     "Content-Type": "application/json",
     "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
@@ -279,9 +271,7 @@ export async function serverGetTimetableCategorys() {
 
 export async function serverPostUpdateTimetableCategory(
   timetableCategoryId: string,
-  label: string,
-  entryType: string,
-  entryOptions: string[]
+  label: string
 ) {
   const options: RequestInit = {
     method: "POST",
@@ -293,8 +283,6 @@ export async function serverPostUpdateTimetableCategory(
     body: JSON.stringify({
       timetable_category_id: timetableCategoryId,
       label: label,
-      entry_type: entryType,
-      entry_options: entryOptions,
     }),
   };
   try {
@@ -342,8 +330,9 @@ export async function serverDeleteTimetableCategory(
 // Timetable Property
 export async function serverPostCreateTimetableProperty(
   label: string,
-  entryType: string,
-  entryOptions: string[]
+  timetableId: string,
+  timetableCategoryId: string,
+  timetableTimeId: string
 ) {
   const options: RequestInit = {
     method: "POST",
@@ -353,8 +342,9 @@ export async function serverPostCreateTimetableProperty(
     },
     body: JSON.stringify({
       label: label,
-      entry_type: entryType,
-      entry_options: entryOptions,
+      timetable_id: timetableId,
+      timetable_category_id: timetableCategoryId,
+      timetable_time_id: timetableTimeId,
     }),
   };
   try {
@@ -371,7 +361,7 @@ export async function serverPostCreateTimetableProperty(
   }
 }
 
-export async function serverGetTimetablePropertys() {
+export async function serverGetTimetableProperties() {
   const headers = new Headers({
     "Content-Type": "application/json",
     "X-CSRF-TOKEN": getCookie("csrf_access_token") || "",
@@ -399,9 +389,7 @@ export async function serverGetTimetablePropertys() {
 
 export async function serverPostUpdateTimetableProperty(
   timetablePropertyId: string,
-  label: string,
-  entryType: string,
-  entryOptions: string[]
+  label: string
 ) {
   const options: RequestInit = {
     method: "POST",
@@ -413,8 +401,6 @@ export async function serverPostUpdateTimetableProperty(
     body: JSON.stringify({
       timetable_property_id: timetablePropertyId,
       label: label,
-      entry_type: entryType,
-      entry_options: entryOptions,
     }),
   };
   try {

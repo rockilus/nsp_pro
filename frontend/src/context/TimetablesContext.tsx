@@ -7,128 +7,69 @@ import {
 } from "react";
 
 import {
-  serverPostCreateWorker,
-  serverGetWorkers,
-  serverPostUpdateWorkerProperty,
-  serverDeleteWorker,
-} from "../api/configuration";
-import { WorkersState } from "../types/index";
+  serverGetTimetables,
+  serverPostCreateTimetable,
+  serverDeleteTimetable,
+} from "../api/timetable";
+import { TimetablesState } from "../types/index";
 
-const initialWorkersState: WorkersState = {
-  currentWorkers: null,
+const initialTimetablesState: TimetablesState = {
+  currentTimetables: null,
   error: "",
-  postCreateWorker: async () => {},
-  getWorkers: async () => {},
-  postUpdateWorkerProperty: async () => {},
-  deleteWorker: async () => {},
+  postCreateTimetable: async () => {},
+  getTimetables: async () => {},
+  deleteTimetable: async () => {},
 };
 
-export const WorkersContext = createContext<WorkersState>(initialWorkersState);
+export const TimetablesContext = createContext<TimetablesState>(
+  initialTimetablesState
+);
 
-interface WorkersProviderProps {
+interface TimetablesProviderProps {
   children: ReactNode;
 }
 
-export const WorkersProvider = (props: WorkersProviderProps) => {
-  const [workersState, setWorkersState] =
-    useState<WorkersState>(initialWorkersState);
-
-  const postCreateWorker = useCallback(async () => {
-    console.log("createWorker called");
-
-    const response = await serverPostCreateWorker();
-
-    setWorkersState((prevState) => {
-      if (!prevState.currentWorkers) {
-        return prevState;
-      }
-      return {
-        ...prevState,
-        currentWorkers: [...prevState.currentWorkers, response.worker],
-      };
-    });
-  }, []);
-
-  const getWorkers = useCallback(async () => {
-    const response = await serverGetWorkers();
-    setWorkersState((oldValues) => {
-      return { ...oldValues, currentWorkers: response.workers };
-    });
-  }, []);
-
-  const postUpdateWorkerProperty = useCallback(
-    async (workerId: string, workerParamId: string, value: any) => {
-      console.log("postUpdateWorkerProperty called");
-
-      const response = await serverPostUpdateWorkerProperty(
-        workerId,
-        workerParamId,
-        value
-      );
-
-      setWorkersState((prevState) => {
-        if (!prevState.currentWorkers) {
-          return prevState;
-        }
-
-        const updatedWorkers = prevState.currentWorkers.map((worker) => {
-          if (worker.worker._id !== workerId) {
-            return worker;
-          }
-
-          let found = false;
-          const updatedWorkerProperties = worker.worker_properties.map(
-            (workerProperty: Record<string, any>) => {
-              if (workerProperty._id !== response.updated_worker_property._id) {
-                return workerProperty;
-              } else if (
-                workerProperty._id === response.updated_worker_property._id
-              ) {
-                console.log("workerProperty: ", workerProperty);
-                console.log(
-                  "response.updated_worker_property: ",
-                  response.updated_worker_property
-                );
-                found = true;
-                return response.updated_worker_property;
-              }
-            }
-          );
-          if (!found) {
-            updatedWorkerProperties.push(response.updated_worker_property);
-          }
-
-          const updatedWorker = {
-            ...worker,
-            worker_properties: updatedWorkerProperties,
-          };
-          return updatedWorker;
-        });
-
-        console.log("prevState: ", prevState);
-        console.log("updatedWorkers: ", updatedWorkers);
-
-        return {
-          ...prevState,
-          currentWorkers: updatedWorkers,
-        };
-      });
-    },
-    []
+export const TimetablesProvider = (props: TimetablesProviderProps) => {
+  const [timetablesState, setTimetablesState] = useState<TimetablesState>(
+    initialTimetablesState
   );
 
-  const deleteWorker = useCallback(async (workerId: string) => {
-    console.log("deleteWorker called");
-    const response = await serverDeleteWorker(workerId);
-
-    setWorkersState((prevState) => {
-      if (!prevState.currentWorkers) {
+  const postCreateTimetable = useCallback(async () => {
+    const response = await serverPostCreateTimetable();
+    setTimetablesState((prevState) => {
+      if (!prevState.currentTimetables) {
         return prevState;
       }
       return {
         ...prevState,
-        currentWorkers: prevState.currentWorkers.filter(
-          (worker) => worker.worker._id !== workerId
+        currentTimetables: [...prevState.currentTimetables, response.timetable],
+      };
+    });
+    const { timetable_categories, timetable_times } = response;
+    return { timetable_categories, timetable_times };
+  }, []);
+
+  const getTimetables = useCallback(async () => {
+    const response = await serverGetTimetables();
+    setTimetablesState((oldValues) => {
+      return { ...oldValues, currentTimetables: response.timetables };
+    });
+    const { timetable_categories, timetable_times, timetable_properties } =
+      response;
+    return { timetable_categories, timetable_times, timetable_properties };
+  }, []);
+
+  const deleteTimetable = useCallback(async (timetableId: string) => {
+    const response = await serverDeleteTimetable(timetableId);
+
+    setTimetablesState((prevState) => {
+      if (!prevState.currentTimetables) {
+        return prevState;
+      }
+      return {
+        ...prevState,
+        currentTimetables: prevState.currentTimetables.filter(
+          (timetable) => timetable.timetable._id !== timetableId
         ),
       };
     });
@@ -136,24 +77,17 @@ export const WorkersProvider = (props: WorkersProviderProps) => {
 
   const contextValue = useMemo(
     () => ({
-      ...workersState,
-      postCreateWorker,
-      getWorkers,
-      postUpdateWorkerProperty,
-      deleteWorker,
+      ...timetablesState,
+      postCreateTimetable,
+      getTimetables,
+      deleteTimetable,
     }),
-    [
-      workersState,
-      postCreateWorker,
-      getWorkers,
-      postUpdateWorkerProperty,
-      deleteWorker,
-    ]
+    [timetablesState, postCreateTimetable, getTimetables, deleteTimetable]
   );
 
   return (
-    <WorkersContext.Provider value={contextValue}>
+    <TimetablesContext.Provider value={contextValue}>
       {props.children}
-    </WorkersContext.Provider>
+    </TimetablesContext.Provider>
   );
 };

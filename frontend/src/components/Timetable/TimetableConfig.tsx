@@ -1,89 +1,197 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 
+import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
-import { ConstraintParamsContext } from "../../context/ConstraintParamsContext";
-import { ConstraintsContext } from "../../context/ConstraintsContext";
-import ConstraintTableTemplate from "./ConstraintTableTemplate";
+import TableTemplate from "../TableTemplate/TableTemplate";
 
-export default function TimetableConfig() {
-  const [columns, setColumns] = useState<string[]>([
-    "checkBox",
-    "constraint_string",
-    "editDelete",
-  ]);
+import { TimetablesContext } from "../../context/TimetablesContext";
+import { TimetableTimesContext } from "../../context/TimetableTimesContext";
+import { TimetableCategoriesContext } from "../../context/TimetableCategoriesContext";
+import { TimetablePropertiesContext } from "../../context/TimetablePropertiesContext";
+
+export default function WorkerConfig() {
+  const [columns, setColumns] = useState<Record<string, any>[]>([]);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
-  const [constraintParams, setConstraintParams] = useState({});
 
-  const constraintParamsContext = useContext(ConstraintParamsContext);
-  const constraintsContext = useContext(ConstraintsContext);
+  const timetablesContext = useContext(TimetablesContext);
+  const timetableTimesContext = useContext(TimetableTimesContext);
+  const timetableCategoriesContext = useContext(TimetableCategoriesContext);
+  const timetablePropertiesContext = useContext(TimetablePropertiesContext);
+
+  const buildRows = useCallback(() => {
+    const newRows = [];
+    if (timetableCategoriesContext.currentTimetableCategories) {
+      for (let category of timetableCategoriesContext.currentTimetableCategories) {
+        if (timetablePropertiesContext.currentTimetableProperties) {
+          const properties =
+            timetablePropertiesContext.currentTimetableProperties[category._id];
+          const rowSpan = properties.length;
+          for (let property of properties) {
+            let row: Record<string, any> = {};
+            for (let column of columns) {
+              const property = worker["worker_properties"].find(
+                (p: Record<string, any>) => p.worker_param === column._id
+              );
+              row[column.name] = property ? property.value || "" : "";
+            }
+            row["_id"] = worker["worker"]["_id"];
+            newRows.push(row);
+          }
+        }
+      }
+      setRows(newRows);
+    }
+  }, [columns, workersContext?.currentWorkers]);
 
   useEffect(() => {
-    async function fetchConstraintParams() {
-      await constraintParamsContext.getConstraintParams();
+    async function fetchTimetables() {
+      const { timetable_times, timetable_categories, timetable_properties } =
+        await timetablesContext.getTimetables();
+      return { timetable_times, timetable_categories, timetable_properties };
     }
-    if (!constraintParamsContext.currentConstraintParams) {
-      fetchConstraintParams();
+    if (!timetablesContext.currentTimetables) {
+      const { timetable_times, timetable_categories, timetable_properties } =
+        fetchTimetables();
+      timetableCategoriesContext.addToTimetableCategory(timetable_categories);
+      timetableTimesContext.addToTimetableTime(timetable_times);
+      timetablePropertiesContext.addToTimetableProperty(timetable_properties);
     }
-    if (constraintParamsContext.currentConstraintParams) {
-      console.log(
-        "ConstraintParams: ",
-        constraintParamsContext.currentConstraintParams
-      );
-
-      setConstraintParams(constraintParamsContext.currentConstraintParams);
+    if (timetableCategoriesContext.currentTimetableCategories) {
+      setColumns(timetableCategoriesContext.currentTimetableCategories);
     }
-  }, [constraintParamsContext]);
-
-  useEffect(() => {
-    async function fetchConstraints() {
-      await constraintsContext.getConstraints();
+    if (
+      timetableCategoriesContext.currentTimetableCategories &&
+      timetablePropertiesContext.currentTimetableProperties &&
+      columns.length
+    ) {
+      buildRows();
     }
-    if (!constraintsContext.currentConstraints) {
-      fetchConstraints();
-    }
-    if (constraintsContext.currentConstraints) {
-      setRows(constraintsContext.currentConstraints);
-    }
-  }, [constraintsContext]);
+  }, [
+    timetablesContext,
+    timetableCategoriesContext,
+    timetableTimesContext,
+    timetablePropertiesContext,
+    columns,
+    buildRows,
+  ]);
 
-  const handleAddRow = async (constraint: Record<string, any>) => {
-    console.log("handleAddRow called: ");
+  // useEffect(() => {
+  //   async function fetchWorkers() {
+  //     await workersContext.getWorkers();
+  //   }
+  //   if (!workersContext.currentWorkers) {
+  //     fetchWorkers();
+  //   }
+  //   if (workersContext.currentWorkers) {
+  //     setRows(workersContext.currentWorkers);
+  //   }
+  // }, [workersContext]);
 
-    await constraintsContext.postCreateConstraint(constraint);
-  };
+  // useEffect(() => {
+  //   if (columns.length > 0 && workersContext.currentWorkers) {
+  //     buildRows();
+  //   }
+  // }, [columns, workersContext, buildRows]);
 
-  const handleEditRow = async (
-    constraintId: string,
-    constraint: Record<string, any>
-  ) => {
-    await constraintsContext.postUpdateConstraint(constraintId, constraint);
-  };
+  // Columns
 
-  const handleEditRowStatus = async (constraintId: string, active: boolean) => {
-    console.log("handleEditRowStatus called: ", constraintId, active);
-    await constraintsContext.postUpdateConstraintStatus(constraintId, active);
-  };
+  // const handleAddColumn = async (
+  //   label: string,
+  //   entryType: string,
+  //   entryOptions: string[]
+  // ) => {
+  //   await workerParamsContext.postCreateWorkerParam(
+  //     label,
+  //     entryType,
+  //     entryOptions
+  //   );
+  // };
 
-  const handleDeleteRow = async (constraintId: string) => {
-    await constraintsContext.deleteConstraint(constraintId);
+  // const handleEditHeadCell = async (
+  //   workerParamId: string,
+  //   label: string,
+  //   entryType: string,
+  //   entryOptions: string[]
+  // ) => {
+  //   console.log(
+  //     "handleEditCell called: ",
+  //     workerParamId,
+  //     label,
+  //     entryType,
+  //     entryOptions
+  //   );
+  //   await workerParamsContext.postUpdateWorkerParam(
+  //     workerParamId,
+  //     label,
+  //     entryType,
+  //     entryOptions
+  //   );
+  // };
+
+  // const handleDeleteColumn = async (workerParamId: string) => {
+  //   console.log("handleDeleteColumn called: ", workerParamId);
+  //   await workerParamsContext.deleteWorkerParam(workerParamId);
+  // };
+
+  // // Rows
+
+  // const handleAddRow = async () => {
+  //   console.log("handleAddRow called: ");
+
+  //   await workersContext.postCreateWorker();
+  // };
+
+  // const handleEditBodyCell = async (
+  //   workerId: string,
+  //   workerParamId: string,
+  //   value: any
+  // ) => {
+  //   console.log("handleEditCell called: ", workerId, workerParamId, value);
+  //   await workersContext.postUpdateWorkerProperty(
+  //     workerId,
+  //     workerParamId,
+  //     value
+  //   );
+  // };
+
+  // const handleDeleteRow = async (workerId: string) => {
+  //   console.log("handleDeleteRow called: ", workerId);
+
+  //   await workersContext.deleteWorker(workerId);
+  // };
+
+  const handleCreateTimetable = async () => {
+    const { timetable_times, timetable_categories } =
+      await timetablesContext.postCreateTimetable();
+    console.log("timetable_categories: ", timetable_categories);
+    console.log("timetable_times: ", timetable_times);
+
+    timetableCategoriesContext.addToTimetableCategory(timetable_categories);
+    timetableTimesContext.addToTimetableTime(timetable_times);
   };
 
   return (
     <Box style={{ width: "100%" }}>
       <Typography variant="h4" align="left">
-        Constraints Configuration
+        Timetables Configuration
       </Typography>
-      <ConstraintTableTemplate
+      {/* <TableTemplate
         columns={columns}
         rows={rows}
-        constraintParams={constraintParams}
+        handleAddColumn={handleAddColumn}
+        handleEditHeadCell={handleEditHeadCell}
+        handleDeleteColumn={handleDeleteColumn}
         handleAddRow={handleAddRow}
-        handleEditRow={handleEditRow}
-        handleEditRowStatus={handleEditRowStatus}
+        handleEditBodyCell={handleEditBodyCell}
         handleDeleteRow={handleDeleteRow}
-      />
+      /> */}
+      <Button onClick={handleCreateTimetable}>
+        <AddIcon />
+        New
+      </Button>
     </Box>
   );
 }

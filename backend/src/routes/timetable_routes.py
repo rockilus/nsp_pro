@@ -5,6 +5,7 @@ from scripts.setup_database import (
     timetable_db,
     timetable_category_db,
     timetable_property_db,
+    timetable_time_db,
 )
 
 timetable_routes = Blueprint("timetable_routes", __name__)
@@ -14,21 +15,26 @@ timetable_routes = Blueprint("timetable_routes", __name__)
 def create_timetable():
     try:
         timetable_created = timetable_db.create_timetable()
-        timetable_dict = timetable_created.to_dict()
-        timetable_properties = (
-            timetable_property_db.get_timetable_properties_by_timetable(
+        timetable_times_created = (
+            timetable_time_db.create_default_timetable_times(timetable_created)
+        )
+        timetable_category_created = (
+            timetable_category_db.create_default_timetable_category(
                 timetable_created
             )
         )
-        timetable_properties_dict = [
-            timetable_property.to_dict()
-            for timetable_property in timetable_properties
+        timetable_dict = timetable_created.to_dict()
+        timetable_times_dict = [
+            timetable_time.to_dict()
+            for timetable_time in timetable_times_created
         ]
+        timetable_category_dict = timetable_category_created.to_dict()
         timetable_response = {
             "timetable": timetable_dict,
-            "timetable_properties": timetable_properties_dict,
+            "timetable_times": timetable_times_dict,
+            "timetable_categories": [timetable_category_dict],
         }
-        response = jsonify({"timetable": timetable_response})
+        response = jsonify(timetable_response)
         return response, 200
     except NotUniqueError as e:
         print(e)

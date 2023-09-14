@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from ortools.sat.python import cp_model  # type: ignore
+from solver.build_model import BuildModel
 
 
 class ModelSolver:
@@ -20,11 +21,12 @@ class ModelSolver:
     def print_solution(self) -> None:
         shifts = ["O", "M", "A", "N"]
 
-        if self.status == cp_model.OPTIMAL or self.status == cp_model.FEASIBLE:
+        if self.status in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+            # if self.status == cp_model.OPTIMAL or self.status == cp_model.FEASIBLE:
             print()
             header = "          "
             # for w in range(num_weeks):
-            for w in range(2):
+            for _ in range(2):
                 header += "M T W T F S S "
             print(header)
             # for e in range(num_employees):
@@ -36,7 +38,7 @@ class ModelSolver:
                     for s in range(4):
                         if self.solver.BooleanValue(self.work[e, d, s]):
                             schedule += shifts[s] + " "
-                print("worker %i: %s" % (e, schedule))
+                print(f"worker {e}: {schedule}")
             print()
             print("Penalties:")
             for i, var in enumerate(self.obj_bool_vars):
@@ -50,7 +52,8 @@ class ModelSolver:
             for i, var in enumerate(self.obj_int_vars):
                 if self.solver.Value(var) > 0:
                     print(
-                        f"  {var.Name()} violated by {self.solver.Value(var)}, linear penalty={self.obj_int_coeffs[i]}"
+                        # pylint: disable=line-too-long
+                        f"  {var.Name()} violated by {self.solver.Value(var)}, linear penalty={self.obj_int_coeffs[i]}"  # noqa: E501
                     )
 
         print()

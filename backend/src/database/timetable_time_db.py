@@ -29,8 +29,10 @@ class TimetableTimeDB:
             )
             timetable_time.save()
         # pylint: disable=no-member
-        timetable_times = TimetableTime.objects.all()  # type: ignore
-        return timetable_times
+        timetable_times = TimetableTime.objects.filter(  # type: ignore
+            timetable=timetable
+        )
+        return list(timetable_times)
 
     def create_timetable_time(
         self,
