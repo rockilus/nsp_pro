@@ -50,6 +50,18 @@ class TimetableCategoryDB:
         )
         return timetable_category
 
+    def get_timetable_categories_by_timetable(
+        self,
+        timetable: Timetable,
+    ) -> List[TimetableCategory]:
+        # pylint: disable=no-member
+        timetable_categories = (
+            TimetableCategory.objects.filter(  # type: ignore
+                timetable=timetable
+            )
+        )
+        return list(timetable_categories)
+
     def update_timetable_category(
         self,
         timetable_category: TimetableCategory,

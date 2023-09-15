@@ -89,8 +89,7 @@ class TimetablePropertyDB:
         timetable_property_saved = timetable_property.save()
         return timetable_property_saved
 
-    def delete_timetable_properties(
-        self, timetable_properties: List[TimetableProperty]
+    def delete_timetable_property(
+        self, timetable_property: TimetableProperty
     ) -> None:
-        for timetable_property in timetable_properties:
-            timetable_property.delete()
+        timetable_property.delete()

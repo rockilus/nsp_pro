@@ -29,7 +29,6 @@ export async function serverGetConstraintParams() {
     const response = await fetch(getContraintParamsUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
-      console.log("response getContraintParams", jsonData);
       return jsonData;
     } else {
       throw new Error("Request failed");
@@ -43,8 +42,6 @@ export async function serverGetConstraintParams() {
 export async function serverPostCreateConstraint(
   constraint: Record<string, unknown>
 ) {
-  console.log("constraint: ", constraint);
-
   const options: RequestInit = {
     method: "POST",
     credentials: "include" as RequestCredentials,
@@ -96,8 +93,6 @@ export async function serverPostUpdateConstraint(
   constraintId: string,
   constraint: Record<string, unknown>
 ) {
-  console.log("constraint: ", constraint);
-
   const options: RequestInit = {
     method: "POST",
     credentials: "include" as RequestCredentials,
@@ -153,8 +148,6 @@ export async function serverPostUpdateConstraintStatus(
 }
 
 export async function serverDeleteConstraint(constraintId: string) {
-  console.log("deleteConstraint", constraintId);
-
   const options: RequestInit = {
     method: "DELETE",
     credentials: "include" as RequestCredentials,

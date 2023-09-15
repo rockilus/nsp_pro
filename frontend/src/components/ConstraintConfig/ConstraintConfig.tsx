@@ -27,11 +27,6 @@ export default function ConstraintConfig() {
       fetchConstraintParams();
     }
     if (constraintParamsContext.currentConstraintParams) {
-      console.log(
-        "ConstraintParams: ",
-        constraintParamsContext.currentConstraintParams
-      );
-
       setConstraintParams(constraintParamsContext.currentConstraintParams);
     }
   }, [constraintParamsContext]);

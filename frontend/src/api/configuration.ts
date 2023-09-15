@@ -82,7 +82,6 @@ export async function serverGetWorkerParams() {
     const response = await fetch(getWorkerParamsUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
-      console.log("response getWorkerParams", jsonData);
       return jsonData;
     } else {
       throw new Error("Request failed");
@@ -126,8 +125,6 @@ export async function serverPostUpdateWorkerParam(
 }
 
 export async function serverDeleteWorkerParam(workerParamId: string) {
-  console.log("deleteWorker", workerParamId);
-
   const options: RequestInit = {
     method: "DELETE",
     credentials: "include" as RequestCredentials,
@@ -233,8 +230,6 @@ export async function serverPostUpdateWorkerProperty(
 }
 
 export async function serverDeleteWorker(workerId: string) {
-  console.log("deleteWorker", workerId);
-
   const options: RequestInit = {
     method: "DELETE",
     credentials: "include" as RequestCredentials,
@@ -308,7 +303,6 @@ export async function serverGetShiftParams() {
     const response = await fetch(getShiftParamsUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
-      console.log("response getShiftParams", jsonData);
       return jsonData;
     } else {
       throw new Error("Request failed");
@@ -352,8 +346,6 @@ export async function serverPostUpdateShiftParam(
 }
 
 export async function serverDeleteShiftParam(shiftParamId: string) {
-  console.log("deleteShift", shiftParamId);
-
   const options: RequestInit = {
     method: "DELETE",
     credentials: "include" as RequestCredentials,
@@ -459,8 +451,6 @@ export async function serverPostUpdateShiftProperty(
 }
 
 export async function serverDeleteShift(shiftId: string) {
-  console.log("deleteShift", shiftId);
-
   const options: RequestInit = {
     method: "DELETE",
     credentials: "include" as RequestCredentials,

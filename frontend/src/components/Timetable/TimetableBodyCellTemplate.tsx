@@ -1,6 +1,8 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 
+import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -8,43 +10,45 @@ import Select from "@mui/material/Select";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
 
+import TimetableAddCellTemplate from "./TimetableAddCellTemplate";
+
 interface Props {
-  columnId: string;
-  rowId: string;
-  columnName: string;
-  entryType: string;
-  entryOptions: string[];
-  value: any;
+  cellInfo: Record<string, any>;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
   handleEditCell: (rowId: string, columnId: string, value: any) => void;
+  handleAddCell: (
+    value: string,
+    timetableId: string,
+    timetableCategoryId: string,
+    timetableTimeId: string
+  ) => void;
 }
 
 export default function TimetableBodyCellTemplate({
-  columnId,
-  rowId,
-  columnName,
-  entryType,
-  entryOptions,
-  value,
+  cellInfo,
   editing,
   setEditing,
   handleEditCell,
+  handleAddCell,
 }: Props) {
-  const [entryValue, setEntryValue] = useState(value);
+  const [entryValue, setEntryValue] = useState(cellInfo?.value || "No Value");
+  const [addingCell, setAddingCell] = useState(false);
+  const entryOptions = ["Morning", "Afternoon", "Night"];
 
   const handleEditConfirm = async () => {
-    console.log("handleEdit");
-    if (entryValue !== value) {
-      await handleEditCell(rowId, columnId, entryValue);
-    }
-    setEditing({});
-    setEntryValue(value);
+    // console.log("handleEdit");
+    // if (entryValue !== value) {
+    //   await handleEditCell(rowId, columnId, entryValue);
+    // }
+    // setEditing({});
+    // setEntryValue(value);
   };
 
   const handleEditCancel = () => {
-    setEditing({});
-    setEntryValue(value);
+    // console.log("handleEditCancel");
+    // setEditing({});
+    // setEntryValue(value);
   };
 
   const selectFieldBool = () => (
@@ -102,56 +106,40 @@ export default function TimetableBodyCellTemplate({
     </Box>
   );
 
+  // console.log("cellInfo: ", cellInfo);
+
   return (
     <>
       <TableCell
-        key={columnId}
+        key={cellInfo._id}
         component="th"
         scope="row"
-        onClick={() => setEditing({ [rowId]: columnId })}
+        rowSpan={cellInfo?.rowSpan || 1}
+        // onClick={() => setEditing({ [rowId]: columnId })}
       >
-        {editing ? (
-          entryType === "list" ? (
-            selectField()
-          ) : entryType === "bool" ? (
-            selectFieldBool()
-          ) : entryType === "int" ? (
-            <TextField
-              fullWidth
-              type="number"
-              name={columnName}
-              value={entryValue}
-              onChange={(e) => setEntryValue(e.target.value)}
-              onBlur={handleEditConfirm}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleEditConfirm();
-                } else if (e.key === "Escape") {
-                  handleEditCancel();
-                }
-              }}
-              autoFocus
-            />
-          ) : (
-            <TextField
-              fullWidth
-              type="text"
-              name={columnName}
-              value={entryValue}
-              onChange={(e) => setEntryValue(e.target.value)}
-              onBlur={handleEditConfirm}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleEditConfirm();
-                } else if (e.key === "Escape") {
-                  handleEditCancel();
-                }
-              }}
-              autoFocus
-            />
-          )
+        {cellInfo._id === "addPropertyRow" ? (
+          <TimetableAddCellTemplate
+            cellInfo={cellInfo}
+            handleAddCell={handleAddCell}
+          />
+        ) : editing ? (
+          selectField()
         ) : (
-          entryValue
+          <TextField
+            fullWidth
+            type="text"
+            value={entryValue}
+            onChange={(e) => setEntryValue(e.target.value)}
+            onBlur={handleEditConfirm}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleEditConfirm();
+              } else if (e.key === "Escape") {
+                handleEditCancel();
+              }
+            }}
+            autoFocus
+          />
         )}
       </TableCell>
     </>

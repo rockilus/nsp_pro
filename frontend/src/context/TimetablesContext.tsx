@@ -45,8 +45,6 @@ export const TimetablesProvider = (props: TimetablesProviderProps) => {
         currentTimetables: [...prevState.currentTimetables, response.timetable],
       };
     });
-    const { timetable_categories, timetable_times } = response;
-    return { timetable_categories, timetable_times };
   }, []);
 
   const getTimetables = useCallback(async () => {
@@ -54,9 +52,6 @@ export const TimetablesProvider = (props: TimetablesProviderProps) => {
     setTimetablesState((oldValues) => {
       return { ...oldValues, currentTimetables: response.timetables };
     });
-    const { timetable_categories, timetable_times, timetable_properties } =
-      response;
-    return { timetable_categories, timetable_times, timetable_properties };
   }, []);
 
   const deleteTimetable = useCallback(async (timetableId: string) => {

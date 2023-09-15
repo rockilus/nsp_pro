@@ -4,7 +4,7 @@ const serverUrl = "http://127.0.0.1:5000";
 
 // TimeTable
 const createTimetableUrl = serverUrl + "/create-timetable";
-const getTimetablesUrl = serverUrl + "/get-timetable";
+const getTimetablesUrl = serverUrl + "/get-timetables";
 // const updateTimetableUrl = serverUrl + "/update-timetable";
 const deleteTimetableUrl = serverUrl + "/delete-timetable";
 
@@ -75,8 +75,6 @@ export async function serverGetTimetables() {
 }
 
 export async function serverDeleteTimetable(timetableId: string) {
-  console.log("deleteTimetable", timetableId);
-
   const options: RequestInit = {
     method: "DELETE",
     credentials: "include" as RequestCredentials,
@@ -147,7 +145,6 @@ export async function serverGetTimetableTimes() {
     const response = await fetch(getTimetableTimesUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
-      console.log("response getTimetableTimes", jsonData);
       return jsonData;
     } else {
       throw new Error("Request failed");
@@ -187,8 +184,6 @@ export async function serverPostUpdateTimetableTime(
 }
 
 export async function serverDeleteTimetableTime(timetableTimeId: string) {
-  console.log("deleteShift", timetableTimeId);
-
   const options: RequestInit = {
     method: "DELETE",
     credentials: "include" as RequestCredentials,
@@ -259,7 +254,6 @@ export async function serverGetTimetableCategories() {
     const response = await fetch(getTimetableCategoriesUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
-      console.log("response getTimetableCategorys", jsonData);
       return jsonData;
     } else {
       throw new Error("Request failed");
@@ -301,8 +295,6 @@ export async function serverPostUpdateTimetableCategory(
 export async function serverDeleteTimetableCategory(
   timetableCategoryId: string
 ) {
-  console.log("deleteShift", timetableCategoryId);
-
   const options: RequestInit = {
     method: "DELETE",
     credentials: "include" as RequestCredentials,
@@ -329,7 +321,7 @@ export async function serverDeleteTimetableCategory(
 
 // Timetable Property
 export async function serverPostCreateTimetableProperty(
-  label: string,
+  value: string,
   timetableId: string,
   timetableCategoryId: string,
   timetableTimeId: string
@@ -341,7 +333,7 @@ export async function serverPostCreateTimetableProperty(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      label: label,
+      value: value,
       timetable_id: timetableId,
       timetable_category_id: timetableCategoryId,
       timetable_time_id: timetableTimeId,
@@ -377,7 +369,6 @@ export async function serverGetTimetableProperties() {
     const response = await fetch(getTimetablePropertiesUrl, options);
     if (response.ok) {
       const jsonData = await response.json();
-      console.log("response getTimetablePropertys", jsonData);
       return jsonData;
     } else {
       throw new Error("Request failed");
@@ -419,8 +410,6 @@ export async function serverPostUpdateTimetableProperty(
 export async function serverDeleteTimetableProperty(
   timetablePropertyId: string
 ) {
-  console.log("deleteShift", timetablePropertyId);
-
   const options: RequestInit = {
     method: "DELETE",
     credentials: "include" as RequestCredentials,

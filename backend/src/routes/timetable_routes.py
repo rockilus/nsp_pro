@@ -33,6 +33,7 @@ def create_timetable():
             "timetable": timetable_dict,
             "timetable_times": timetable_times_dict,
             "timetable_categories": [timetable_category_dict],
+            "timetable_properties": [],
         }
         response = jsonify(timetable_response)
         return response, 200
@@ -43,30 +44,67 @@ def create_timetable():
 
 @timetable_routes.route("/get-timetables", methods=["GET"])
 def get_timetables():
-    timetables = timetable_db.get_timetables()
-    timetables_properties = [
-        timetable_property_db.get_timetable_properties_by_timetable(timetable)
-        for timetable in timetables
-    ]
-    timetables_dict = [timetable.to_dict() for timetable in timetables]
-    timetables_properties_dict = [
-        [
-            timetable_property.to_dict()
-            for timetable_property in timetable_properties
+    try:
+        timetables = timetable_db.get_timetables()
+        timetables_times = [
+            timetable_time_db.get_timetable_times_by_timetable(timetable)
+            for timetable in timetables
         ]
-        for timetable_properties in timetables_properties
-    ]
-    timetables_response = []
-    for timetable, timetable_properties in zip(
-        timetables_dict, timetables_properties_dict
-    ):
-        timetable_dict = {
-            "timetable": timetable,
-            "timetable_properties": timetable_properties,
-        }
-        timetables_response.append(timetable_dict)
-    response = jsonify({"timetables": timetables_response})
-    return response, 200
+        timetables_categories = [
+            timetable_category_db.get_timetable_categories_by_timetable(
+                timetable
+            )
+            for timetable in timetables
+        ]
+        timetables_properties = [
+            timetable_property_db.get_timetable_properties_by_timetable(
+                timetable
+            )
+            for timetable in timetables
+        ]
+        timetables_dict = [timetable.to_dict() for timetable in timetables]
+        timetables_times_dict = [
+            [timetable_time.to_dict() for timetable_time in timetable_times]
+            for timetable_times in timetables_times
+        ]
+        timetables_categories_dict = [
+            [
+                timetable_category.to_dict()
+                for timetable_category in timetable_categories
+            ]
+            for timetable_categories in timetables_categories
+        ]
+        timetables_properties_dict = [
+            [
+                timetable_property.to_dict()
+                for timetable_property in timetable_properties
+            ]
+            for timetable_properties in timetables_properties
+        ]
+        timetables_response = []
+        for (
+            timetable,
+            timetable_times,
+            timetable_categories,
+            timetable_properties,
+        ) in zip(
+            timetables_dict,
+            timetables_times_dict,
+            timetables_categories_dict,
+            timetables_properties_dict,
+        ):
+            timetable_dict = {
+                "timetable": timetable,
+                "timetable_times": timetable_times,
+                "timetable_categories": timetable_categories,
+                "timetable_properties": timetable_properties,
+            }
+            timetables_response.append(timetable_dict)
+        response = jsonify({"timetables": timetables_response})
+        return response, 200
+    except NotUniqueError as e:
+        print(e)
+        return jsonify({"error": f"{str(e)}"}), 404
 
 
 @timetable_routes.route("/update-timetable-property", methods=["POST"])
@@ -110,17 +148,30 @@ def edit_timetable_property():
 
 @timetable_routes.route("/delete-timetable", methods=["DELETE"])
 def delete_timetable():
-    timetable_id_received = request.get_json()
+    info_received = request.get_json()
     try:
         timetable = timetable_db.get_timetable_by_id(
-            timetable_id_received["timetable_id"]
+            info_received["timetable_id"]
+        )
+        timetable_times = timetable_time_db.get_timetable_times_by_timetable(
+            timetable
+        )
+        timetable_categories = (
+            timetable_category_db.get_timetable_categories_by_timetable(
+                timetable
+            )
         )
         timetable_properties = (
             timetable_property_db.get_timetable_properties_by_timetable(
                 timetable
             )
         )
-        timetable_property_db.delete_timetable_properties(timetable_properties)
+        for timetable_property in timetable_properties:
+            timetable_property_db.delete_timetable_property(timetable_property)
+        for timetable_category in timetable_categories:
+            timetable_category_db.delete_timetable_category(timetable_category)
+        for timetable_time in timetable_times:
+            timetable_time_db.delete_timetable_time(timetable_time)
         timetable_db.delete_timetable(timetable)
         return jsonify({"message": "Worker deleted"}), 200
     # pylint: disable=broad-except

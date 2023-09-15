@@ -104,8 +104,8 @@ export interface ConstraintsState {
 export interface TimetablesState {
   currentTimetables: Record<string, any>[] | null;
   error?: string;
-  postCreateTimetable: () => Promise<Record<string, any>>;
-  getTimetables: () => Promise<Record<string, any>>;
+  postCreateTimetable: () => Promise<void>;
+  getTimetables: () => Promise<void>;
   deleteTimetable: (timetableId: string) => Promise<void>;
 }
 
@@ -122,7 +122,6 @@ export interface TimetableCategoriesState {
     timetableCategoryId: string
   ) => Promise<void>;
   deleteTimetableCategory: (timetableCategoryId: string) => Promise<void>;
-  addToTimetableCategory: (timetableCategories: Record<string, any>[]) => void;
 }
 
 export interface TimetableTimesState {
@@ -138,7 +137,6 @@ export interface TimetableTimesState {
     timetableTimeId: string
   ) => Promise<void>;
   deleteTimetableTime: (timetableTimeId: string) => Promise<void>;
-  addToTimetableTime: (timetableTimes: Record<string, any>[]) => void;
 }
 
 export interface TimetablePropertiesState {
@@ -149,12 +147,11 @@ export interface TimetablePropertiesState {
     timetableId: string,
     timetableCategoryId: string,
     timetableTimeId: string
-  ) => Promise<void>;
+  ) => Record<string, any>;
   getTimetableProperties: () => Promise<void>;
   postUpdateTimetableProperty: (
     label: string,
     timetablePropertyId: string
   ) => Promise<void>;
   deleteTimetableProperty: (timetablePropertyId: string) => Promise<void>;
-  addToTimetableProperty: (timetableProperties: Record<string, any>[]) => void;
 }

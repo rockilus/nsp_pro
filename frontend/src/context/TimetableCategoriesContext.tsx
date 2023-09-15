@@ -21,7 +21,6 @@ const initialTimetableCategoriesState: TimetableCategoriesState = {
   getTimetableCategories: async () => {},
   postUpdateTimetableCategory: async () => {},
   deleteTimetableCategory: async () => {},
-  addToTimetableCategory: () => {},
 };
 
 export const TimetableCategoriesContext =
@@ -121,24 +120,6 @@ export const TimetableCategoriesProvider = (
     []
   );
 
-  const addToTimetableCategory = useCallback(
-    (timetableCategories: Record<string, any>[]) => {
-      setTimetableCategoriesState((prevState) => {
-        if (!prevState.currentTimetableCategories) {
-          return prevState;
-        }
-        return {
-          ...prevState,
-          currentTimetableCategories: [
-            ...prevState.currentTimetableCategories,
-            ...timetableCategories,
-          ],
-        };
-      });
-    },
-    []
-  );
-
   const contextValue = useMemo(
     () => ({
       ...timetableCategoriesState,
@@ -146,7 +127,6 @@ export const TimetableCategoriesProvider = (
       getTimetableCategories,
       postUpdateTimetableCategory,
       deleteTimetableCategory,
-      addToTimetableCategory,
     }),
     [
       timetableCategoriesState,
@@ -154,7 +134,6 @@ export const TimetableCategoriesProvider = (
       getTimetableCategories,
       postUpdateTimetableCategory,
       deleteTimetableCategory,
-      addToTimetableCategory,
     ]
   );
 

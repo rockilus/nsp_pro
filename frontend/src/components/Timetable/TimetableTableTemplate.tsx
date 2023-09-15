@@ -34,6 +34,12 @@ interface Props {
   handleAddRow: (newRow: Record<string, any>) => void;
   handleEditBodyCell: (rowId: string, columnId: string, value: any) => void;
   handleDeleteRow: (id: string) => void;
+  handleAddCell: (
+    value: string,
+    timetableId: string,
+    timetableCategoryId: string,
+    timetableTimeId: string
+  ) => void;
 }
 
 export default function TimetableTableTemplate({
@@ -45,6 +51,7 @@ export default function TimetableTableTemplate({
   handleAddRow,
   handleEditBodyCell,
   handleDeleteRow,
+  handleAddCell,
 }: Props) {
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -85,20 +92,19 @@ export default function TimetableTableTemplate({
                 key={rowIndex}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
-                {columns.map((column, colIndex) => (
-                  <TimetableBodyCellTemplate
-                    key={colIndex}
-                    columnId={column._id}
-                    rowId={row._id}
-                    columnName={column.name}
-                    entryType={column.entry_type}
-                    entryOptions={column.entry_options}
-                    value={row[column.name]}
-                    editing={bodyEditing[row._id] === column._id}
-                    setEditing={setBodyEditing}
-                    handleEditCell={handleEditBodyCell}
-                  />
-                ))}
+                {columns.map(
+                  (column, colIndex) =>
+                    row[column.label] && (
+                      <TimetableBodyCellTemplate
+                        key={colIndex}
+                        cellInfo={row[column.label]}
+                        editing={bodyEditing[row._id] === column._id}
+                        setEditing={setBodyEditing}
+                        handleEditCell={handleEditBodyCell}
+                        handleAddCell={handleAddCell}
+                      />
+                    )
+                )}
                 <TableCell component="th" scope="row">
                   <Box sx={{ display: "flex" }}>
                     <Button onClick={() => handleDeleteRow(row._id)}>

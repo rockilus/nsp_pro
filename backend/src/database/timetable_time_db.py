@@ -64,6 +64,16 @@ class TimetableTimeDB:
         )
         return timetable_time
 
+    def get_timetable_times_by_timetable(
+        self,
+        timetable: Timetable,
+    ) -> List[TimetableTime]:
+        # pylint: disable=no-member
+        timetable_times = TimetableTime.objects.filter(  # type: ignore
+            timetable=timetable
+        )
+        return list(timetable_times)
+
     def update_timetable_time(
         self,
         timetable_time: TimetableTime,

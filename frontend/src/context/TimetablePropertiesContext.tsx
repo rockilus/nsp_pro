@@ -21,7 +21,6 @@ const initialTimetablePropertiesState: TimetablePropertiesState = {
   getTimetableProperties: async () => {},
   postUpdateTimetableProperty: async () => {},
   deleteTimetableProperty: async () => {},
-  addToTimetableProperty: () => {},
 };
 
 export const TimetablePropertiesContext =
@@ -39,30 +38,32 @@ export const TimetablePropertiesProvider = (
 
   const postCreateTimetableProperty = useCallback(
     async (
-      label: string,
+      value: string,
       timetableId: string,
       timetableCategoryId: string,
       timetableTimeId: string
     ) => {
       const response = await serverPostCreateTimetableProperty(
-        label,
+        value,
         timetableId,
         timetableCategoryId,
         timetableTimeId
       );
 
-      setTimetablePropertiesState((prevState) => {
-        if (!prevState.currentTimetableProperties) {
-          return prevState;
-        }
-        return {
-          ...prevState,
-          currentTimetableProperties: [
-            ...prevState.currentTimetableProperties,
-            response.timetableProperty,
-          ],
-        };
-      });
+      // setTimetablePropertiesState((prevState) => {
+      //   if (!prevState.currentTimetableProperties) {
+      //     return prevState;
+      //   }
+      //   return {
+      //     ...prevState,
+      //     currentTimetableProperties: [
+      //       ...prevState.currentTimetableProperties,
+      //       response.timetableProperty,
+      //     ],
+      //   };
+      // });
+
+      return response.timetable_property;
     },
     []
   );
@@ -128,24 +129,6 @@ export const TimetablePropertiesProvider = (
     []
   );
 
-  const addToTimetableProperty = useCallback(
-    (timetableProperties: Record<string, any>[]) => {
-      setTimetablePropertiesState((prevState) => {
-        if (!prevState.currentTimetableProperties) {
-          return prevState;
-        }
-        return {
-          ...prevState,
-          currentTimetableProperties: [
-            ...prevState.currentTimetableProperties,
-            ...timetableProperties,
-          ],
-        };
-      });
-    },
-    []
-  );
-
   const contextValue = useMemo(
     () => ({
       ...timetablePropertiesState,
@@ -153,7 +136,6 @@ export const TimetablePropertiesProvider = (
       getTimetableProperties,
       postUpdateTimetableProperty,
       deleteTimetableProperty,
-      addToTimetableProperty,
     }),
     [
       timetablePropertiesState,
@@ -161,7 +143,6 @@ export const TimetablePropertiesProvider = (
       getTimetableProperties,
       postUpdateTimetableProperty,
       deleteTimetableProperty,
-      addToTimetableProperty,
     ]
   );
 
