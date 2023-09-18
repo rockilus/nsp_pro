@@ -9,6 +9,10 @@ from scripts.setup_database import (
     shift_db,
     shift_param_db,
     shift_property_db,
+    timetable_category_db,
+    timetable_db,
+    timetable_property_db,
+    timetable_time_db,
     worker_db,
     worker_param_db,
 )
@@ -25,6 +29,10 @@ __all__ = [
     "shift_db",
     "shift_param_db",
     "shift_property_db",
+    "timetable_category_db",
+    "timetable_db",
+    "timetable_property_db",
+    "timetable_time_db",
     "worker_db",
     "worker_param_db",
 ]

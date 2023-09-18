@@ -8,7 +8,7 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 
 interface Props {
   label: string;
-  options: string[];
+  options: string[] | number[];
   value: string | number;
   setValue: (value: string) => void;
 }

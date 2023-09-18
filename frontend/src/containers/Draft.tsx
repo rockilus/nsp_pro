@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import ConstraintConfig from "../components/ConstraintConfig/ConstraintConfig";
 import ShiftConfig from "../components/ConfigTables/ShiftConfig";
 import WorkerConfig from "../components/ConfigTables/WorkerConfig";
+import TimetableConfig from "../components/Timetable/TimetableConfig";
 
 export default function Draft() {
   return (
@@ -12,6 +13,7 @@ export default function Draft() {
       <WorkerConfig />
       <ShiftConfig />
       <ConstraintConfig />
+      <TimetableConfig />
     </Box>
   );
 }

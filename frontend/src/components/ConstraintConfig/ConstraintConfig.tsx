@@ -1,11 +1,8 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
-import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
-import NewConstraint from "./BuildContraint";
 import { ConstraintParamsContext } from "../../context/ConstraintParamsContext";
 import { ConstraintsContext } from "../../context/ConstraintsContext";
 import ConstraintTableTemplate from "./ConstraintTableTemplate";
@@ -30,11 +27,6 @@ export default function ConstraintConfig() {
       fetchConstraintParams();
     }
     if (constraintParamsContext.currentConstraintParams) {
-      console.log(
-        "ConstraintParams: ",
-        constraintParamsContext.currentConstraintParams
-      );
-
       setConstraintParams(constraintParamsContext.currentConstraintParams);
     }
   }, [constraintParamsContext]);
@@ -50,20 +42,6 @@ export default function ConstraintConfig() {
       setRows(constraintsContext.currentConstraints);
     }
   }, [constraintsContext]);
-
-  // const handleAddConstraint = useCallback(
-  //   async (
-  //     constraint: Record<string, any>,
-  //     constraintDefinition: Record<string, any>
-  //   ) => {
-  //     console.log("createConstraint called");
-  //     await constraintsContext.postCreateConstraint(
-  //       constraint,
-  //       constraintDefinition
-  //     );
-  //   },
-  //   []
-  // );
 
   const handleAddRow = async (constraint: Record<string, any>) => {
     console.log("handleAddRow called: ");
@@ -101,18 +79,6 @@ export default function ConstraintConfig() {
         handleEditRowStatus={handleEditRowStatus}
         handleDeleteRow={handleDeleteRow}
       />
-      {/* {addingConstraint ? (
-        <NewConstraint
-          constraintParams={constraintParams}
-          setAddingConstraint={setAddingConstraint}
-          handleAddConstraint={handleAddConstraint}
-        />
-      ) : (
-        <Button onClick={() => setAddingConstraint(true)}>
-          <AddIcon />
-          New Constraint
-        </Button>
-      )} */}
     </Box>
   );
 }

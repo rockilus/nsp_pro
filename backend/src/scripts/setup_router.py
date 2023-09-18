@@ -8,6 +8,8 @@ from routes import (
     constraint_routes,
     shift_param_routes,
     shift_routes,
+    timetable_property_routes,
+    timetable_routes,
     worker_param_routes,
     worker_routes,
 )
@@ -33,6 +35,8 @@ app.register_blueprint(worker_routes)
 app.register_blueprint(worker_param_routes)
 app.register_blueprint(constraint_param_routes)
 app.register_blueprint(constraint_routes)
+app.register_blueprint(timetable_routes)
+app.register_blueprint(timetable_property_routes)
 
 jwt = JWTManager(app)
 
