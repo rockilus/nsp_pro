@@ -152,6 +152,6 @@ export interface TimetablePropertiesState {
   postUpdateTimetableProperty: (
     label: string,
     timetablePropertyId: string
-  ) => Promise<void>;
+  ) => Record<string, any>;
   deleteTimetableProperty: (timetablePropertyId: string) => Promise<void>;
 }

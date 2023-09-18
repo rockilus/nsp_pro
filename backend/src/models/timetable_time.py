@@ -3,6 +3,7 @@ from mongoengine.fields import ObjectIdField, ReferenceField, StringField
 
 
 class TimetableTime(Document):
+    # pylint: disable=R0801
     meta = {"collection": "timetable_times"}
     _id = ObjectIdField(primary_key=True)
     label = StringField(required=True)

@@ -21,7 +21,6 @@ const initialTimetableTimesState: TimetableTimesState = {
   getTimetableTimes: async () => {},
   postUpdateTimetableTime: async () => {},
   deleteTimetableTime: async () => {},
-  addToTimetableTime: () => {},
 };
 
 export const TimetableTimesContext = createContext<TimetableTimesState>(
@@ -113,24 +112,6 @@ export const TimetableTimesProvider = (props: TimetableTimesProviderProps) => {
     });
   }, []);
 
-  const addToTimetableTime = useCallback(
-    (timetableTimes: Record<string, any>[]) => {
-      setTimetableTimesState((prevState) => {
-        if (!prevState.currentTimetableTimes) {
-          return prevState;
-        }
-        return {
-          ...prevState,
-          currentTimetableTimes: [
-            ...prevState.currentTimetableTimes,
-            ...timetableTimes,
-          ],
-        };
-      });
-    },
-    []
-  );
-
   const contextValue = useMemo(
     () => ({
       ...timetableTimesState,
@@ -138,7 +119,6 @@ export const TimetableTimesProvider = (props: TimetableTimesProviderProps) => {
       getTimetableTimes,
       postUpdateTimetableTime,
       deleteTimetableTime,
-      addToTimetableTime,
     }),
     [
       timetableTimesState,
@@ -146,7 +126,6 @@ export const TimetableTimesProvider = (props: TimetableTimesProviderProps) => {
       getTimetableTimes,
       postUpdateTimetableTime,
       deleteTimetableTime,
-      addToTimetableTime,
     ]
   );
 

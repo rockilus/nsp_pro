@@ -380,7 +380,7 @@ export async function serverGetTimetableProperties() {
 
 export async function serverPostUpdateTimetableProperty(
   timetablePropertyId: string,
-  label: string
+  value: string
 ) {
   const options: RequestInit = {
     method: "POST",
@@ -391,7 +391,7 @@ export async function serverPostUpdateTimetableProperty(
     },
     body: JSON.stringify({
       timetable_property_id: timetablePropertyId,
-      label: label,
+      value: value,
     }),
   };
   try {

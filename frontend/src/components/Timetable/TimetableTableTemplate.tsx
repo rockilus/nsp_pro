@@ -31,7 +31,6 @@ interface Props {
     entryOptions: string[]
   ) => void;
   handleDeleteColumn: (columnId: string) => void;
-  handleAddRow: (newRow: Record<string, any>) => void;
   handleEditBodyCell: (rowId: string, columnId: string, value: any) => void;
   handleDeleteRow: (id: string) => void;
   handleAddCell: (
@@ -40,6 +39,8 @@ interface Props {
     timetableCategoryId: string,
     timetableTimeId: string
   ) => void;
+  handleUpdateCell: (timetablePropertyId: string, value: string) => void;
+  handleDeleteCell: (timetablePropertyId: string) => void;
 }
 
 export default function TimetableTableTemplate({
@@ -48,10 +49,11 @@ export default function TimetableTableTemplate({
   handleAddColumn,
   handleEditHeadCell,
   handleDeleteColumn,
-  handleAddRow,
   handleEditBodyCell,
   handleDeleteRow,
   handleAddCell,
+  handleUpdateCell,
+  handleDeleteCell,
 }: Props) {
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -94,14 +96,13 @@ export default function TimetableTableTemplate({
               >
                 {columns.map(
                   (column, colIndex) =>
-                    row[column.label] && (
+                    row[column._id] && (
                       <TimetableBodyCellTemplate
                         key={colIndex}
-                        cellInfo={row[column.label]}
-                        editing={bodyEditing[row._id] === column._id}
-                        setEditing={setBodyEditing}
-                        handleEditCell={handleEditBodyCell}
+                        cellInfo={row[column._id]}
                         handleAddCell={handleAddCell}
+                        handleUpdateCell={handleUpdateCell}
+                        handleDeleteCell={handleDeleteCell}
                       />
                     )
                 )}
@@ -114,14 +115,6 @@ export default function TimetableTableTemplate({
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow>
-              <TableCell colSpan={columns.length}>
-                <Button onClick={handleAddRow}>
-                  <AddIcon />
-                  New
-                </Button>
-              </TableCell>
-            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>

@@ -11,7 +11,6 @@ import { TimetablesContext } from "../../context/TimetablesContext";
 import { TimetableTimesContext } from "../../context/TimetableTimesContext";
 import { TimetableCategoriesContext } from "../../context/TimetableCategoriesContext";
 import { TimetablePropertiesContext } from "../../context/TimetablePropertiesContext";
-import { log } from "util";
 
 interface Props {
   timetableInfo: Record<string, any>;
@@ -61,14 +60,14 @@ export default function TimetableProcess({ timetableInfo }: Props) {
               row["category"] = { ...category };
               categoryCellAdded = true;
             }
-            if (column.label !== "category") {
+            if (column._id !== "category") {
               // Search for the first item with age = 30
               const index = propertiesWithAdd.findIndex(
                 (property) => property.timetable_time === column._id
               );
               const propertyFound =
                 index !== -1 ? propertiesWithAdd.splice(index, 1)[0] : null;
-              row[column.label] = propertyFound ? propertyFound : {};
+              row[column._id] = propertyFound ? propertyFound : {};
             }
           }
           row["_id"] = category["_id"];
@@ -101,7 +100,7 @@ export default function TimetableProcess({ timetableInfo }: Props) {
   const buildAddRow = (categoryId: string) => {
     const addRow: Record<string, any>[] = [];
     for (let column of columns) {
-      if (column.label === "category") {
+      if (column._id === "category") {
         continue;
       }
       const newAddRow: Record<string, any> = {};
@@ -115,7 +114,7 @@ export default function TimetableProcess({ timetableInfo }: Props) {
   };
 
   useEffect(() => {
-    setColumns([{ label: "category", _id: "category" }, ...timetableTimes]);
+    setColumns([{ label: "", _id: "category" }, ...timetableTimes]);
   }, [timetableTimes]);
 
   useEffect(() => {
@@ -209,6 +208,37 @@ export default function TimetableProcess({ timetableInfo }: Props) {
     });
   };
 
+  const handleUpdateCell = async (
+    timetablePropertyId: string,
+    value: string
+  ) => {
+    const timetablePropertyUpdated =
+      await timetablePropertiesContext.postUpdateTimetableProperty(
+        timetablePropertyId,
+        value
+      );
+    setTimetableProperties((prevState) => {
+      return prevState.map((property) => {
+        if (property._id !== timetablePropertyId) {
+          return property;
+        } else {
+          return timetablePropertyUpdated;
+        }
+      });
+    });
+  };
+
+  const handleDeleteCell = async (timetablePropertyId: string) => {
+    await timetablePropertiesContext.deleteTimetableProperty(
+      timetablePropertyId
+    );
+    setTimetableProperties((prevState) => {
+      return prevState.filter(
+        (property) => property._id !== timetablePropertyId
+      );
+    });
+  };
+
   return (
     <Box style={{ width: "100%" }}>
       <Box style={{ display: "flex", justifyContent: "space-between" }}>
@@ -225,10 +255,11 @@ export default function TimetableProcess({ timetableInfo }: Props) {
         handleAddColumn={handleAddColumn}
         handleEditHeadCell={handleEditHeadCell}
         handleDeleteColumn={handleDeleteColumn}
-        handleAddRow={handleAddRow}
         handleEditBodyCell={handleEditBodyCell}
         handleDeleteRow={handleDeleteRow}
         handleAddCell={handleAddCell}
+        handleUpdateCell={handleUpdateCell}
+        handleDeleteCell={handleDeleteCell}
       />
     </Box>
   );

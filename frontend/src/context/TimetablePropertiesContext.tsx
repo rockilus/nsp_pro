@@ -79,10 +79,10 @@ export const TimetablePropertiesProvider = (
   }, []);
 
   const postUpdateTimetableProperty = useCallback(
-    async (timetablePropertyId: string, label: string) => {
+    async (timetablePropertyId: string, value: string) => {
       const response = await serverPostUpdateTimetableProperty(
         timetablePropertyId,
-        label
+        value
       );
 
       setTimetablePropertiesState((prevState) => {
@@ -95,7 +95,7 @@ export const TimetablePropertiesProvider = (
             if (timetableProperty._id !== timetablePropertyId) {
               return timetableProperty;
             } else {
-              return response.timetableProperty;
+              return response.timetable_property_updated;
             }
           });
 
@@ -104,6 +104,7 @@ export const TimetablePropertiesProvider = (
           currentTimetableProperties: updatedTimetableProperties,
         };
       });
+      return response.timetable_property_updated;
     },
     []
   );

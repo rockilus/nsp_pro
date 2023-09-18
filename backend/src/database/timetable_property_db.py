@@ -36,10 +36,8 @@ class TimetablePropertyDB:
         timetable: Timetable,
     ) -> List[TimetableProperty]:
         # pylint: disable=no-member
-        timetable_properties = (
-            TimetableProperty.objects.filter(  # type: ignore
-                timetable=timetable
-            )
+        timetable_properties = TimetableProperty.objects.filter(  # type: ignore
+            timetable=timetable
         )
         return list(timetable_properties)
 
@@ -48,10 +46,8 @@ class TimetablePropertyDB:
         timetable_category: TimetableCategory,
     ) -> List[TimetableProperty]:
         # pylint: disable=no-member
-        timetable_properties = (
-            TimetableProperty.objects.filter(  # type: ignore
-                timetable_category=timetable_category
-            )
+        timetable_properties = TimetableProperty.objects.filter(  # type: ignore
+            timetable_category=timetable_category
         )
         return list(timetable_properties)
 
@@ -72,9 +68,7 @@ class TimetablePropertyDB:
     ) -> TimetableProperty:
         # pylint: disable=no-member
         timetable_property = (
-            TimetableProperty.objects.filter(  # type: ignore
-                timetable=timetable
-            )
+            TimetableProperty.objects.filter(timetable=timetable)  # type: ignore
             .filter(timetable_category=timetable_category)
             .first()
         )
@@ -89,7 +83,5 @@ class TimetablePropertyDB:
         timetable_property_saved = timetable_property.save()
         return timetable_property_saved
 
-    def delete_timetable_property(
-        self, timetable_property: TimetableProperty
-    ) -> None:
+    def delete_timetable_property(self, timetable_property: TimetableProperty) -> None:
         timetable_property.delete()

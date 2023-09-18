@@ -55,10 +55,8 @@ class TimetableCategoryDB:
         timetable: Timetable,
     ) -> List[TimetableCategory]:
         # pylint: disable=no-member
-        timetable_categories = (
-            TimetableCategory.objects.filter(  # type: ignore
-                timetable=timetable
-            )
+        timetable_categories = TimetableCategory.objects.filter(  # type: ignore
+            timetable=timetable
         )
         return list(timetable_categories)
 
