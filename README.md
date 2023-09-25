@@ -18,3 +18,10 @@ npm run dev
 ```
 
 Then go play on http://localhost:3000
+
+## Automated Testing
+### Backend
+Lint and unit test
+```
+cd backend && make check
+```
