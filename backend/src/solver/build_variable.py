@@ -17,9 +17,7 @@ from scripts.setup_database import (
 class BuildVariable:
     def get_variable_params_dict(self) -> List:
         variable = variable_db.get_variable()
-        variable_params = variable_param_db.get_variable_params_by_variable(
-            variable
-        )
+        variable_params = variable_param_db.get_variable_params_by_variable(variable)
         variable_params_dict = [
             variable_param.to_dict() for variable_param in variable_params
         ]
@@ -57,12 +55,8 @@ class BuildVariable:
                     worker, worker_param_last_name
                 )
             )
-            worker_property_first_name_dict = (
-                worker_property_first_name.to_dict()
-            )
-            worker_property_last_name_dict = (
-                worker_property_last_name.to_dict()
-            )
+            worker_property_first_name_dict = worker_property_first_name.to_dict()
+            worker_property_last_name_dict = worker_property_last_name.to_dict()
             worker_out = (
                 worker_property_first_name_dict["value"]
                 + " "
@@ -75,9 +69,7 @@ class BuildVariable:
         shifts = shift_db.get_shifts()
         shifts_out = []
         for shift in shifts:
-            shift_param_name = shift_param_db.get_shift_param_by_name(
-                "shift_name"
-            )
+            shift_param_name = shift_param_db.get_shift_param_by_name("shift_name")
             shift_property_name = (
                 shift_property_db.get_shift_property_by_shift_and_param(
                     shift, shift_param_name
@@ -105,9 +97,7 @@ class BuildVariable:
         return variable
 
     def get_variable_params(self, variable: Variable) -> List[VariableParam]:
-        variable_params = variable_param_db.get_variable_params_by_variable(
-            variable
-        )
+        variable_params = variable_param_db.get_variable_params_by_variable(variable)
         return variable_params
 
     def create_variable_params(
