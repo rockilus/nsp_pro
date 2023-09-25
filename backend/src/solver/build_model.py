@@ -44,17 +44,20 @@ class BuildModel:
         for constraint, constraint_variables in zip(
             self.constraints, self.constraints_variables
         ):
-            constraints_variables = self.get_constraints_variables(
+            constraints_works = self.get_constraints_variables(
                 constraint, constraint_variables
             )
-            self.add_constraints_to_model(constraint, constraints_variables)
+            self.add_constraints_to_model(
+                constraint, constraint_variables, constraints_works
+            )
 
     def get_constraints_variables(
         self, constraint: Dict, constraint_variables: List[Dict]
     ) -> List[List]:
         inter_var_list = []
         intra_var_list = []
-        var_order = []
+        var_order_inter = []
+        var_order_intra = []
         for constraint_variable in constraint_variables:
             var_param: Dict = next(
                 (
@@ -64,15 +67,17 @@ class BuildModel:
                 ),
                 {},
             )
-            var_order.append(var_param["index"])
             var_list = BuildModel.build_var_list(
                 constraint_variable, len(var_param["value_options"])
             )
             if constraint_variable["intra"]:
+                var_order_intra.append(var_param["index"])
                 intra_var_list.append(var_list)
             else:
+                var_order_inter.append(var_param["index"])
                 inter_var_list.append(var_list)
 
+        var_order = var_order_inter + var_order_intra
         inter_coordinates = list(
             itertools.product(*[inter_var for inter_var in inter_var_list])
         )
@@ -80,9 +85,9 @@ class BuildModel:
             itertools.product(*[intra_var for intra_var in intra_var_list])
         )
 
-        constraints_variables = []
+        constraints_works = []
         for inter_coordinate in inter_coordinates:
-            constraint_variables = []
+            works = []
             for intra_coordinate in intra_coordinates:
                 coordinates_random = tuple(
                     itertools.chain(inter_coordinate, intra_coordinate)
@@ -93,25 +98,21 @@ class BuildModel:
                 coordinate_expanded = BuildModel.expand_coordinates(
                     coordinates_ordered, constraint["constraint_type"]
                 )
-                constraint_variables += [
-                    self.work[ce] for ce in coordinate_expanded
-                ]
-            constraints_variables.append(constraint_variables)
+                works += [self.work[ce] for ce in coordinate_expanded]
+            constraints_works.append(works)
         # print("checkpoint")
 
-        return constraints_variables
+        return constraints_works
 
     @staticmethod
-    def build_var_list(
-        constraint_variable: Dict, sample_size: int
-    ) -> List[int]:
+    def build_var_list(constraint_variable: Dict, sample_size: int) -> List:
         operator = constraint_variable["operator"]
         if operator == "all":
-            var_list = list(range(sample_size))
+            return list(range(sample_size))
         elif operator == "equal":
-            var_list = [constraint_variable["value"]]
+            return [constraint_variable["value"]]
         elif operator == "modulo":
-            var_list = list(
+            return list(
                 range(
                     constraint_variable["value"],
                     sample_size,
@@ -119,7 +120,7 @@ class BuildModel:
                 )
             )
         elif operator == "interval":
-            var_list = [
+            return [
                 list(range(i, i + constraint_variable["interval"]))
                 for i in range(
                     constraint_variable["value"],
@@ -128,14 +129,14 @@ class BuildModel:
                 )
             ]
         elif operator == "pair":
-            var_list = [
+            return [
                 [
                     constraint_variable["value"],
                     constraint_variable["other_value"],
                 ]
             ]
         elif operator == "offset":
-            var_list = [
+            return [
                 [i, i + constraint_variable["interval"]]
                 for i in range(
                     0,
@@ -144,14 +145,13 @@ class BuildModel:
             ]
         else:
             raise ValueError("operator not recognized for target_params")
-        return var_list if var_list else []
 
     @staticmethod
     def expand_coordinates(
         coordinates_ordered: Tuple, constraint_type: str
     ) -> List[Tuple]:
         expanded_coordinates = [coordinates_ordered]
-        if constraint_type == "causality":
+        if constraint_type == "order":
             list_indices = [
                 i
                 for i, coord in enumerate(coordinates_ordered)
@@ -178,85 +178,87 @@ class BuildModel:
                     expanded_coordinates = new_coordinates
         return expanded_coordinates
 
-    # pylint: disable=too-many-branches
     def add_constraints_to_model(
         self,
         constraint: Dict,
-        constraints_variables: List[List],
+        constraint_variables: List[Dict],
+        constraints_works: List[List],
     ) -> None:
         constraint_type = constraint["constraint_type"]
         if constraint_type == "add":
-            for constraint_variables in constraints_variables:
+            for constraint_works in constraints_works:
                 self.model.Add(
-                    sum(constraint_variables) == constraint["target_value"]
+                    sum(constraint_works) == constraint["target_value"]
                 )
         elif constraint_type == "sum":
             if constraint["hard_constraint"]:
-                for constraint_variables in constraints_variables:
-                    self.add_hard_sum_constraint(
-                        constraint_variables, constraint
-                    )
+                for constraint_works in constraints_works:
+                    self.add_hard_sum_constraint(constraint_works, constraint)
             else:
-                for constraint_variables in constraints_variables:
+                for constraint_works in constraints_works:
                     (
                         target_params_label,
                         target_params_value,
-                    ) = BuildModel.get_target_params_label_value(constraint)
+                    ) = BuildModel.get_target_params_label_value(
+                        constraint, constraint_variables
+                    )
                     self.add_soft_sum_constraint(
-                        constraint_variables,
+                        constraint_works,
                         constraint,
                         target_params_label,
                         target_params_value,
                     )
         elif constraint_type == "sequence":
             if constraint["hard_constraint"]:
-                for constraint_variables in constraints_variables:
+                for constraint_works in constraints_works:
                     self.add_hard_sequence_constraint(
-                        constraint_variables, constraint
+                        constraint_works, constraint
                     )
             else:
-                for constraint_variables in constraints_variables:
+                for constraint_works in constraints_works:
                     (
                         target_params_label,
                         target_params_value,
-                    ) = BuildModel.get_target_params_label_value(constraint)
+                    ) = BuildModel.get_target_params_label_value(
+                        constraint, constraints_variables
+                    )
                     self.add_soft_sequence_constraint(
-                        constraint_variables,
+                        constraint_works,
                         constraint,
                         target_params_label,
                         target_params_value,
                     )
         elif constraint_type == "order":
-            for constraint_variables in constraints_variables:
-                self.add_order_constraint(constraint_variables, constraint)
+            for constraint_works in constraints_works:
+                self.add_order_constraint(constraint_works, constraint)
         elif constraint_type == "request":
-            for constraint_variables in constraints_variables:
+            for constraint_works in constraints_works:
                 self.add_request_objetive(
-                    constraint_variables,
+                    constraint_works,
                     constraint["penalty"],
                 )
         else:
             raise ValueError("constraint_type not in model")
 
     @staticmethod
-    def get_target_params_label_value(constraint: Dict) -> Tuple[List, List]:
+    def get_target_params_label_value(
+        constraint: Dict, constraint_variables: List[Dict]
+    ) -> Tuple[List, List]:
         # pylint: disable=too-many-branches
         if constraint["constraint_type"] in [
-            "min_max_sum",
-            "min_max_sequence",
+            "sum",
+            "sequence",
         ]:
-            target_params_label = [
-                key
-                for key, value in constraint["inter_params"].items()
-                if value["operator"] == "equal"
+            target_vars: List[Dict] = [
+                var
+                for var in constraint_variables
+                if var["operator"] == "equal"
             ]
-            target_params_value = [
-                constraint["inter_params"][key]["value"]
-                for key in target_params_label
-            ]
+            target_vars_label = [var["param"] for var in target_vars]
+            target_vars_value = [var["value"] for var in target_vars]
         else:
             raise ValueError("constraint_type not in compatible")
-        return target_params_label, target_params_value
+        return target_vars_label, target_vars_value
 
     def add_hard_sum_constraint(
         self,
@@ -289,8 +291,14 @@ class BuildModel:
         ]
         min_values = [min(column) for column in zip(*works_tuples)]
         max_values = [max(column) for column in zip(*works_tuples)]
-        prefix = f"sum_constraint{'_'.join(f'{str(mini)}:{str(maxi)}' for mini, maxi in zip(min_values, max_values))}"
-        target_params = f"{'/'.join(f'{label}_{str(value)}' for label, value in zip(target_params_label, target_params_value))}"
+        prefix = "sum_constraint" + "_".join(
+            f"{str(mini)}:{str(maxi)}"
+            for mini, maxi in zip(min_values, max_values)
+        )
+        target_params = "/".join(
+            f"{label}_{str(value)}"
+            for label, value in zip(target_params_label, target_params_value)
+        )
 
         target_value = constraint["target_value"]
         penalty = constraint["penalty"]
@@ -372,8 +380,14 @@ class BuildModel:
         ]
         min_values = [min(column) for column in zip(*works_tuples)]
         max_values = [max(column) for column in zip(*works_tuples)]
-        prefix = f"sequence_constraint{'_'.join(f'{str(mini)}:{str(maxi)}' for mini, maxi in zip(min_values, max_values))}"
-        target_params = f"{'/'.join(f'{label}_{str(value)}' for label, value in zip(target_params_label, target_params_value))}"
+        prefix = "sequence_constraint" + "_".join(
+            f"{str(mini)}:{str(maxi)}"
+            for mini, maxi in zip(min_values, max_values)
+        )
+        target_params = "/".join(
+            f"{label}_{str(value)}"
+            for label, value in zip(target_params_label, target_params_value)
+        )
 
         target_value = constraint["target_value"]
         penalty = constraint["penalty"]
@@ -387,7 +401,10 @@ class BuildModel:
                         span = BuildModel.negated_bounded_span(
                             works, start, length
                         )
-                        name = f"-> {target_params} under_span(start={start}, length={length}) of soft_min={target_value}"
+                        name = (
+                            f"-> {target_params} under_span(start={start}, "
+                            + f"length={length}) of soft_min={target_value}"
+                        )
                         lit = self.model.NewBoolVar(prefix + name)
                         span.append(lit)
                         self.model.AddBoolOr(span)
@@ -404,7 +421,10 @@ class BuildModel:
                         span = BuildModel.negated_bounded_span(
                             works, start, length
                         )
-                        name = f"-> {target_params} over_span(start={start}, length={length}) of soft_max={target_value}"
+                        name = (
+                            f"-> {target_params} over_span(start={start}, "
+                            + f"length={length}) of soft_max={target_value}"
+                        )
                         lit = self.model.NewBoolVar(prefix + name)
                         span.append(lit)
                         self.model.AddBoolOr(span)
