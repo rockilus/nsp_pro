@@ -43,6 +43,22 @@ export default function TimetableProcess({ timetableInfo }: Props) {
       categoriesArray: Record<string, any>[],
       propertiesArray: Record<string, any>[]
     ) => {
+      const buildAddRow = (categoryId: string) => {
+        const addRow: Record<string, any>[] = [];
+        for (let column of columns) {
+          if (column._id === "category") {
+            continue;
+          }
+          const newAddRow: Record<string, any> = {};
+          newAddRow["timetable"] = timetable._id;
+          newAddRow["timetable_time"] = column._id;
+          newAddRow["timetable_category"] = categoryId;
+          newAddRow["_id"] = "addPropertyRow";
+          addRow.push(newAddRow);
+        }
+        return addRow;
+      };
+
       const newRows = [];
       const propertiesDict = buildProperties(categoriesArray, propertiesArray);
       for (let category of categoriesArray) {
@@ -78,7 +94,7 @@ export default function TimetableProcess({ timetableInfo }: Props) {
       }
       setRows(newRows);
     },
-    [columns]
+    [columns, timetable._id]
   );
 
   const buildProperties = (
@@ -95,22 +111,6 @@ export default function TimetableProcess({ timetableInfo }: Props) {
       );
     }
     return properties;
-  };
-
-  const buildAddRow = (categoryId: string) => {
-    const addRow: Record<string, any>[] = [];
-    for (let column of columns) {
-      if (column._id === "category") {
-        continue;
-      }
-      const newAddRow: Record<string, any> = {};
-      newAddRow["timetable"] = timetable._id;
-      newAddRow["timetable_time"] = column._id;
-      newAddRow["timetable_category"] = categoryId;
-      newAddRow["_id"] = "addPropertyRow";
-      addRow.push(newAddRow);
-    }
-    return addRow;
   };
 
   useEffect(() => {

@@ -1,13 +1,17 @@
-name: GitHub Actions Build - Frontend
+name: Frontend - Check
 
 on:
   push:
     branches: '**'
+    paths:
+      - 'frontent/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'frontend/**'
 
 jobs:
-  build_frontend:
+  lint:
     runs-on: ubuntu-latest
     name: Static Analysis
     defaults:
@@ -34,5 +38,5 @@ jobs:
         run: npm ci
       - name: Run typescript
         run: npx tsc
-      - name: Run esling
-        run: npx eslint
+      - name: Lint
+        run: npm run lint
