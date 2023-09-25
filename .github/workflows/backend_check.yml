@@ -8,12 +8,17 @@ on:
   push:
     branches: '**'
     # branches: [ main ]
+    paths:
+      - 'backend/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'backend/**'
     
 jobs:
   check:
     runs-on: ubuntu-latest
+    name: Check
     strategy:
       matrix:
         python-version: [3.9, '3.10', '3.11']
@@ -44,15 +49,6 @@ jobs:
     - name: Install dependencies
       run: poetry install
 
-    - name: Check coding styles with flake8
-      run: poetry run flake8 src
-
-    - name: Check coding styles with black
-      run: poetry run black --check src
-  
-    - name: Check with pylint
-      run: poetry run pylint src
-  
-    - name: Check types with
-      run: poetry run mypy src
+    - name: Run checks
+      run: make check
   
