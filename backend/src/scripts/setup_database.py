@@ -11,6 +11,8 @@ from database import (
     TimetableDB,
     TimetablePropertyDB,
     TimetableTimeDB,
+    VariableDB,
+    VariableParamDB,
     WorkerDB,
     WorkerParamDB,
     WorkerPropertyDB,
@@ -33,3 +35,5 @@ timetable_db = TimetableDB(db)
 timetable_time_db = TimetableTimeDB(db)
 timetable_category_db = TimetableCategoryDB(db)
 timetable_property_db = TimetablePropertyDB(db)
+variable_db = VariableDB(db)
+variable_param_db = VariableParamDB(db)

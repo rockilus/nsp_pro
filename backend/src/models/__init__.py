@@ -9,6 +9,8 @@ from models.timetable import Timetable
 from models.timetable_category import TimetableCategory
 from models.timetable_property import TimetableProperty
 from models.timetable_time import TimetableTime
+from models.variable import Variable
+from models.variable_param import VariableParam
 from models.worker import Worker
 from models.worker_param import WorkerParam
 from models.worker_property import WorkerProperty
@@ -25,6 +27,8 @@ __all__ = [
     "TimetableCategory",
     "TimetableProperty",
     "TimetableTime",
+    "Variable",
+    "VariableParam",
     "Worker",
     "WorkerParam",
     "WorkerProperty",

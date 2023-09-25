@@ -59,6 +59,14 @@ class ShiftParamDB:
         shift_param = ShiftParam.objects.get(_id=shift_param_id)  # type: ignore
         return shift_param
 
+    def get_shift_param_by_name(
+        self,
+        shift_param_name: str,
+    ) -> ShiftParam:
+        # pylint: disable=no-member
+        shift_param = ShiftParam.objects.get(name=shift_param_name)  # type: ignore
+        return shift_param
+
     def update_shift_param(
         self,
         shift_param: ShiftParam,

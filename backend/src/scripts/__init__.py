@@ -13,8 +13,11 @@ from scripts.setup_database import (
     timetable_db,
     timetable_property_db,
     timetable_time_db,
+    variable_db,
+    variable_param_db,
     worker_db,
     worker_param_db,
+    worker_property_db,
 )
 from scripts.setup_router import jwt
 
@@ -33,6 +36,9 @@ __all__ = [
     "timetable_db",
     "timetable_property_db",
     "timetable_time_db",
+    "variable_db",
+    "variable_param_db",
     "worker_db",
     "worker_param_db",
+    "worker_property_db",
 ]
