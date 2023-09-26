@@ -1,3 +1,4 @@
+import os
 from database import (
     DB,
     ConstraintDB,
@@ -16,7 +17,9 @@ from database import (
     WorkerPropertyDB,
 )
 
-database_uri = "mongodb://localhost:27017/nsp_pro"
+database_uri = (
+    f"mongodb://localhost:27017/{os.getenv('ENV_SITUATION', default='nsp_pro')}"
+)
 
 db = DB(database_uri)
 shift_db = ShiftDB(db)
