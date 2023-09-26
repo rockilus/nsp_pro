@@ -22,7 +22,7 @@ Then go play on http://localhost:3000
 ## Automated Testing
 Make sure you have run installation instructions first.
 ### Backend
-Lint and unit test:
+Lint and unit test
 ```
 cd backend && make check
 ```
