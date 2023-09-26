@@ -22,7 +22,6 @@ class ModelSolver:
         shifts = ["O", "M", "A", "N"]
 
         if self.status in (cp_model.OPTIMAL, cp_model.FEASIBLE):
-            # if self.status == cp_model.OPTIMAL or self.status == cp_model.FEASIBLE:
             print()
             header = "          "
             # for w in range(num_weeks):

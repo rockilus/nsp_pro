@@ -66,6 +66,14 @@ class WorkerParamDB:
         worker_param = WorkerParam.objects.get(_id=worker_param_id)  # type: ignore
         return worker_param
 
+    def get_worker_param_by_name(
+        self,
+        worker_param_name: str,
+    ) -> WorkerParam:
+        # pylint: disable=no-member
+        worker_param = WorkerParam.objects.get(name=worker_param_name)  # type: ignore
+        return worker_param
+
     def update_worker_param(
         self,
         worker_param: WorkerParam,

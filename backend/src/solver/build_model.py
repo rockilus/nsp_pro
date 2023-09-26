@@ -6,11 +6,17 @@ from ortools.sat.python import cp_model  # type: ignore
 
 
 class BuildModel:
-    def __init__(self, var_params: Dict, constraints: List) -> None:
+    def __init__(
+        self,
+        var_params: List[Dict],
+        constraints: List,
+        constraints_variables: List,
+    ) -> None:
         self.model = cp_model.CpModel()
         self.work: Dict[Tuple, Dict] = {}
         self.var_params = var_params
         self.constraints = constraints
+        self.constraints_variables = constraints_variables
         self.var_string = "work"
         self.obj_int_vars: List[cp_model.IntVar] = []
         self.obj_int_coeffs: List[int] = []
@@ -18,12 +24,14 @@ class BuildModel:
         self.obj_bool_coeffs: List[int] = []
 
     def build_variables(self) -> None:
-        sorted_var_params = dict(
-            sorted(self.var_params.items(), key=lambda item: item[1]["index"])
-        )
+        sorted_var_params = sorted(self.var_params, key=lambda x: x["index"])
+
         coordinates = list(
             itertools.product(
-                *[range(sorted_var_params[k]["value"]) for k in sorted_var_params]
+                *[
+                    range(len(var_param["value_options"]))
+                    for var_param in sorted_var_params
+                ]
             )
         )
         for coordinate in coordinates:
@@ -33,61 +41,119 @@ class BuildModel:
         # print("done")
 
     def build_constraints(self) -> None:
-        for constraint in self.constraints:
-            self.add_constraints(constraint)
+        for constraint, constraint_variables in zip(
+            self.constraints, self.constraints_variables
+        ):
+            constraints_works = self.build_constraints_works_list(
+                constraint, constraint_variables
+            )
+            self.add_constraints_to_model(
+                constraint, constraint_variables, constraints_works
+            )
 
-    def add_constraints(self, constraint: Dict) -> None:
-        constraints_variables = self.get_constraints_variables(constraint)
-        self.add_constraints_to_model(constraint, constraints_variables)
-        # print("done")
-
-    def get_constraints_variables(self, constraint: Dict) -> List[List]:
-        coordinates_order = []
+    def build_constraints_works_list(
+        self, constraint: Dict, constraint_variables: List[Dict]
+    ) -> List[List]:
         (
-            inter_params_dict,
-            new_coordinates_order,
-        ) = self.build_constraints_coordinates(constraint["inter_params"])
-        coordinates_order += new_coordinates_order
-        (
-            intra_params_dict,
-            new_coordinates_order,
-        ) = self.build_constraints_coordinates(constraint["intra_params"])
-        coordinates_order += new_coordinates_order
+            inter_var_list,
+            intra_var_list,
+            var_order,
+        ) = self.build_constraint_variables_lists(constraint_variables)
 
-        # pylint: disable=consider-using-dict-items
-        inter_coordinates = list(
-            itertools.product(*[inter_params_dict[k] for k in inter_params_dict])
-        )
-        # pylint: disable=consider-using-dict-items
-        intra_coordinates = list(
-            itertools.product(*[intra_params_dict[k] for k in intra_params_dict])
-        )
+        inter_coordinates = list(itertools.product(*inter_var_list))
+        intra_coordinates = list(itertools.product(*intra_var_list))
 
-        constraints_variables = []
+        constraints_works = []
         for inter_coordinate in inter_coordinates:
-            constraint_variables = []
+            works = []
             for intra_coordinate in intra_coordinates:
                 coordinates_random = tuple(
                     itertools.chain(inter_coordinate, intra_coordinate)
                 )
-                coordinates_ordered = tuple(
-                    coordinates_random[i] for i in coordinates_order
-                )
+                coordinates_ordered = tuple(coordinates_random[i] for i in var_order)
                 coordinate_expanded = BuildModel.expand_coordinates(
                     coordinates_ordered, constraint["constraint_type"]
                 )
-                constraint_variables += [self.work[ce] for ce in coordinate_expanded]
-            constraints_variables.append(constraint_variables)
-        # print("checkpoint")
+                works += [self.work[ce] for ce in coordinate_expanded]
+            constraints_works.append(works)
+        return constraints_works
 
-        return constraints_variables
+    def build_constraint_variables_lists(
+        self, constraint_variables: List[Dict]
+    ) -> Tuple[List, List, List]:
+        inter_var_list = []
+        intra_var_list = []
+        var_order_inter = []
+        var_order_intra = []
+        for constraint_variable in constraint_variables:
+            var_param: Dict = next(
+                (
+                    var_param
+                    for var_param in self.var_params
+                    if var_param["name"] == constraint_variable["param"]
+                ),
+                {},
+            )
+            var_list = BuildModel.build_var_list(
+                constraint_variable, len(var_param["value_options"])
+            )
+            if constraint_variable["intra"]:
+                var_order_intra.append(var_param["index"])
+                intra_var_list.append(var_list)
+            else:
+                var_order_inter.append(var_param["index"])
+                inter_var_list.append(var_list)
+
+        var_order = var_order_inter + var_order_intra
+        return inter_var_list, intra_var_list, var_order
+
+    @staticmethod
+    def build_var_list(constraint_variable: Dict, sample_size: int) -> List:
+        operator = constraint_variable["operator"]
+        if operator == "all":
+            return list(range(sample_size))
+        if operator == "equal":
+            return [constraint_variable["value"]]
+        if operator == "modulo":
+            return list(
+                range(
+                    constraint_variable["value"],
+                    sample_size,
+                    constraint_variable["interval"],
+                )
+            )
+        if operator == "interval":
+            return [
+                list(range(i, i + constraint_variable["interval"]))
+                for i in range(
+                    constraint_variable["value"],
+                    sample_size,
+                    constraint_variable["interval"],
+                )
+            ]
+        if operator == "pair":
+            return [
+                [
+                    constraint_variable["value"],
+                    constraint_variable["other_value"],
+                ]
+            ]
+        if operator == "offset":
+            return [
+                [i, i + constraint_variable["interval"]]
+                for i in range(
+                    0,
+                    sample_size - constraint_variable["interval"],
+                )
+            ]
+        raise ValueError("operator not recognized for target_params")
 
     @staticmethod
     def expand_coordinates(
         coordinates_ordered: Tuple, constraint_type: str
     ) -> List[Tuple]:
         expanded_coordinates = [coordinates_ordered]
-        if constraint_type == "causality":
+        if constraint_type == "order":
             list_indices = [
                 i
                 for i, coord in enumerate(coordinates_ordered)
@@ -114,149 +180,121 @@ class BuildModel:
                     expanded_coordinates = new_coordinates
         return expanded_coordinates
 
-    def build_constraints_coordinates(
-        self, params: Dict
-    ) -> Tuple[Dict[str, List], List]:
-        params_dict = {}
-        coordinates_order = []
-        for label, options in params.items():
-            operator = options["operator"]
-            coordinates_order.append(self.var_params[label]["index"])
-            # pylint: disable=too-many-branches
-            if operator == "all":
-                params_dict[label] = list(range(self.var_params[label]["value"]))
-            elif operator == "equal":
-                params_dict[label] = [options["value"]]
-            elif operator == "modulo":
-                params_dict[label] = list(
-                    range(
-                        options["value"],
-                        self.var_params[label]["value"],
-                        options["interval"],
-                    )
-                )
-            elif operator == "interval":
-                params_dict[label] = [
-                    list(range(i, i + options["interval"]))  # type: ignore
-                    for i in range(
-                        options["value"],
-                        self.var_params[label]["value"],
-                        options["interval"],
-                    )
-                ]
-            elif operator == "pair":
-                params_dict[label] = [
-                    [options["value"], options["other_value"]]  # type: ignore
-                ]
-            elif operator == "offset":
-                params_dict[label] = [
-                    [i, i + options["interval"]]  # type: ignore
-                    for i in range(
-                        0,
-                        self.var_params[label]["value"] - options["interval"],
-                    )
-                ]
-            else:
-                raise ValueError("operator not recognized for target_params")
-        return params_dict, coordinates_order
-
-    # pylint: disable=too-many-branches
     def add_constraints_to_model(
         self,
         constraint: Dict,
-        constraints_variables: List[List],
+        constraint_variables: List[Dict],
+        constraints_works: List[List],
     ) -> None:
         constraint_type = constraint["constraint_type"]
-        if constraint_type == "add_exactly_one":
-            for constraint_variables in constraints_variables:
-                self.model.AddExactlyOne(constraint_variables)
-        elif constraint_type == "add":
-            for constraint_variables in constraints_variables:
-                self.model.Add(sum(constraint_variables) == constraint["target_value"])
-        elif constraint_type == "min_max_sum":
-            for constraint_variables in constraints_variables:
-                (
-                    target_params_label,
-                    target_params_value,
-                ) = BuildModel.get_target_params_label_value(constraint)
-                self.add_soft_sum_constraint(
-                    constraint_variables,
-                    constraint["hard_min"],
-                    constraint["soft_min"],
-                    constraint["soft_min_penalty"],
-                    constraint["soft_max"],
-                    constraint["hard_max"],
-                    constraint["soft_max_penalty"],
-                    target_params_label,
-                    target_params_value,
-                )
-        elif constraint_type == "min_max_sequence":
-            for constraint_variables in constraints_variables:
-                (
-                    target_params_label,
-                    target_params_value,
-                ) = BuildModel.get_target_params_label_value(constraint)
-                self.add_soft_sequence_constraint(
-                    constraint_variables,
-                    constraint["hard_min"],
-                    constraint["soft_min"],
-                    constraint["soft_min_penalty"],
-                    constraint["soft_max"],
-                    constraint["hard_max"],
-                    constraint["soft_max_penalty"],
-                    target_params_label,
-                    target_params_value,
-                )
-        elif constraint_type == "causality":
-            for constraint_variables in constraints_variables:
-                self.add_causality_constraint(
-                    constraint_variables,
-                    constraint["hard_constraint"],
-                    constraint["penalty"],
-                )
+        if constraint_type == "add":
+            for constraint_works in constraints_works:
+                self.model.Add(sum(constraint_works) == constraint["target_value"])
+        elif constraint_type == "sum":
+            self.add_sum_constraint(constraint, constraint_variables, constraints_works)
+        elif constraint_type == "sequence":
+            self.add_sequence_constraint(
+                constraint, constraint_variables, constraints_works
+            )
+        elif constraint_type == "order":
+            for constraint_works in constraints_works:
+                self.add_order_constraint(constraint_works, constraint)
         elif constraint_type == "request":
-            for constraint_variables in constraints_variables:
+            for constraint_works in constraints_works:
                 self.add_request_objetive(
-                    constraint_variables,
+                    constraint_works,
                     constraint["penalty"],
                 )
         else:
             raise ValueError("constraint_type not in model")
 
+    def add_sum_constraint(
+        self,
+        constraint: Dict,
+        constraint_variables: List,
+        constraints_works: List,
+    ) -> None:
+        if constraint["hard_constraint"]:
+            for constraint_works in constraints_works:
+                self.add_hard_sum_constraint(constraint_works, constraint)
+        else:
+            for constraint_works in constraints_works:
+                (
+                    target_params_label,
+                    target_params_value,
+                ) = BuildModel.get_target_params_label_value(
+                    constraint, constraint_variables
+                )
+                self.add_soft_sum_constraint(
+                    constraint_works,
+                    constraint,
+                    target_params_label,
+                    target_params_value,
+                )
+
+    def add_sequence_constraint(
+        self,
+        constraint: Dict,
+        constraint_variables: List,
+        constraints_works: List,
+    ) -> None:
+        if constraint["hard_constraint"]:
+            for constraint_works in constraints_works:
+                self.add_hard_sequence_constraint(constraint_works, constraint)
+        else:
+            for constraint_works in constraints_works:
+                (
+                    target_params_label,
+                    target_params_value,
+                ) = BuildModel.get_target_params_label_value(
+                    constraint, constraint_variables
+                )
+                self.add_soft_sequence_constraint(
+                    constraint_works,
+                    constraint,
+                    target_params_label,
+                    target_params_value,
+                )
+
     @staticmethod
-    def get_target_params_label_value(constraint: Dict) -> Tuple[List, List]:
+    def get_target_params_label_value(
+        constraint: Dict, constraint_variables: List[Dict]
+    ) -> Tuple[List, List]:
         # pylint: disable=too-many-branches
         if constraint["constraint_type"] in [
-            "min_max_sum",
-            "min_max_sequence",
+            "sum",
+            "sequence",
         ]:
-            target_params_label = [
-                key
-                for key, value in constraint["inter_params"].items()
-                if value["operator"] == "equal"
+            target_vars: List[Dict] = [
+                var for var in constraint_variables if var["operator"] == "equal"
             ]
-            target_params_value = [
-                constraint["inter_params"][key]["value"] for key in target_params_label
-            ]
+            target_vars_label = [var["param"] for var in target_vars]
+            target_vars_value = [var["value"] for var in target_vars]
         else:
             raise ValueError("constraint_type not in compatible")
-        return target_params_label, target_params_value
+        return target_vars_label, target_vars_value
 
-    # pylint: disable=too-many-arguments, too-many-locals
+    def add_hard_sum_constraint(
+        self,
+        works: List[cp_model.IntVar],
+        constraint: Dict,
+    ) -> None:
+        target_value = constraint["target_value"]
+        if constraint["operator"] == "equal":
+            sum_var = self.model.NewIntVar(target_value, target_value, "")
+        elif constraint["operator"] == "at_least":
+            sum_var = self.model.NewIntVar(target_value, len(works), "")
+        elif constraint["operator"] == "at_most":
+            sum_var = self.model.NewIntVar(0, target_value, "")
+        self.model.Add(sum_var == sum(works))
+
     def add_soft_sum_constraint(
         self,
         works: List[cp_model.IntVar],
-        hard_min: int,
-        soft_min: int,
-        min_cost: int,
-        soft_max: int,
-        hard_max: int,
-        max_cost: int,
+        constraint: Dict,
         target_params_label: List[str],
         target_params_value: List[int],
     ) -> None:
-        cost_variables = []
-        cost_coefficients = []
         works_tuples = [
             key
             for key, value in self.work.items()
@@ -265,57 +303,68 @@ class BuildModel:
         ]
         min_values = [min(column) for column in zip(*works_tuples)]
         max_values = [max(column) for column in zip(*works_tuples)]
-        # pylint: disable=line-too-long
-        prefix = f"sum_constraint{'_'.join(f'{str(mini)}:{str(maxi)}' for mini, maxi in zip(min_values, max_values))}"  # noqa: E501
-        target_params = f"{'/'.join(f'{label}_{str(value)}' for label, value in zip(target_params_label, target_params_value))}"  # noqa: E501
+        prefix = "sum_constraint" + "_".join(
+            f"{str(mini)}:{str(maxi)}" for mini, maxi in zip(min_values, max_values)
+        )
+        target_params = "/".join(
+            f"{label}_{str(value)}"
+            for label, value in zip(target_params_label, target_params_value)
+        )
 
-        sum_var = self.model.NewIntVar(hard_min, hard_max, "")
-        # This adds the hard constraints on the sum.
-        self.model.Add(sum_var == sum(works))
+        target_value = constraint["target_value"]
+        penalty = constraint["penalty"]
+        if penalty != 0:
+            if (
+                constraint["operator"] == "at_least"
+                or constraint["operator"] == "equal"
+            ):
+                delta = self.model.NewIntVar(-len(works), len(works), "")
+                self.model.Add(delta == target_value - sum(works))
+                excess = self.model.NewIntVar(
+                    0,
+                    len(works),
+                    prefix + f" -> {target_params} under_sum of {target_value}",
+                )
+                self.model.AddMaxEquality(excess, [delta, 0])
+                self.obj_int_vars.append(excess)
+                self.obj_int_coeffs.append(penalty)
+            if constraint["operator"] == "at_most" or constraint["operator"] == "equal":
+                delta = self.model.NewIntVar(-len(works), len(works), "")
+                self.model.Add(delta == sum(works) - target_value)
+                excess = self.model.NewIntVar(
+                    0,
+                    len(works),
+                    prefix + f"-> {target_params} over_sum of {target_value}",
+                )
+                self.model.AddMaxEquality(excess, [delta, 0])
+                self.obj_int_vars.append(excess)
+                self.obj_int_coeffs.append(penalty)
 
-        # Penalize sums below the soft_min target.
-        if soft_min > hard_min and min_cost > 0:
-            delta = self.model.NewIntVar(-len(works), len(works), "")
-            self.model.Add(delta == soft_min - sum_var)
-            # TODO(user): Compare efficiency with only excess >= soft_min - sum_var.
-            excess = self.model.NewIntVar(
-                0,
-                7,
-                prefix + f" -> {target_params} under_sum of {soft_min}",
-            )
-            self.model.AddMaxEquality(excess, [delta, 0])
-            cost_variables.append(excess)
-            cost_coefficients.append(min_cost)
+    def add_hard_sequence_constraint(
+        self,
+        works: List[cp_model.IntVar],
+        constraint: Dict,
+    ) -> None:
+        target_value = constraint["target_value"]
+        if constraint["operator"] == "at_least" or constraint["operator"] == "equal":
+            for length in range(1, target_value):
+                for start in range(len(works) - length + 1):
+                    self.model.AddBoolOr(
+                        BuildModel.negated_bounded_span(works, start, length)
+                    )
+        if constraint["operator"] == "at_most" or constraint["operator"] == "equal":
+            for start in range(len(works) - target_value):
+                self.model.AddBoolOr(
+                    [works[i].Not() for i in range(start, start + target_value + 1)]
+                )
 
-        # Penalize sums above the soft_max target.
-        if soft_max < hard_max and max_cost > 0:
-            delta = self.model.NewIntVar(-7, 7, "")
-            self.model.Add(delta == sum_var - soft_max)
-            excess = self.model.NewIntVar(
-                0, 7, prefix + f"-> {target_params} over_sum of {soft_max}"
-            )
-            self.model.AddMaxEquality(excess, [delta, 0])
-            cost_variables.append(excess)
-            cost_coefficients.append(max_cost)
-
-        self.obj_int_vars.extend(cost_variables)
-        self.obj_int_coeffs.extend(cost_coefficients)
-
-    # pylint: disable=too-many-arguments, too-many-locals
     def add_soft_sequence_constraint(
         self,
         works: List[cp_model.IntVar],
-        hard_min: int,
-        soft_min: int,
-        min_cost: int,
-        soft_max: int,
-        hard_max: int,
-        max_cost: int,
+        constraint: Dict,
         target_params_label: List[str],
         target_params_value: List[int],
     ) -> None:
-        cost_literals = []
-        cost_coefficients = []
         works_tuples = [
             key
             for key, value in self.work.items()
@@ -324,54 +373,52 @@ class BuildModel:
         ]
         min_values = [min(column) for column in zip(*works_tuples)]
         max_values = [max(column) for column in zip(*works_tuples)]
-        # pylint: disable=line-too-long
-        prefix = f"sequence_constraint{'_'.join(f'{str(mini)}:{str(maxi)}' for mini, maxi in zip(min_values, max_values))}"  # noqa: E501
-        target_params = f"{'/'.join(f'{label}_{str(value)}' for label, value in zip(target_params_label, target_params_value))}"  # noqa: E501
+        prefix = "sequence_constraint" + "_".join(
+            f"{str(mini)}:{str(maxi)}" for mini, maxi in zip(min_values, max_values)
+        )
+        target_params = "/".join(
+            f"{label}_{str(value)}"
+            for label, value in zip(target_params_label, target_params_value)
+        )
 
-        # Forbid sequences that are too short.
-        for length in range(1, hard_min):
-            for start in range(len(works) - length + 1):
-                self.model.AddBoolOr(
-                    BuildModel.negated_bounded_span(works, start, length)
-                )
-
-        # Penalize sequences that are below the soft limit.
-        if min_cost > 0:
-            for length in range(hard_min, soft_min):
-                for start in range(len(works) - length + 1):
-                    span = BuildModel.negated_bounded_span(works, start, length)
-                    # pylint: disable=line-too-long
-                    name = f"-> {target_params} under_span(start={start}, length={length}) of soft_min={soft_min}"  # noqa: E501
-                    lit = self.model.NewBoolVar(prefix + name)
-                    span.append(lit)
-                    self.model.AddBoolOr(span)
-                    cost_literals.append(lit)
-                    # We filter exactly the sequence with a short length.
-                    # The penalty is proportional to the delta with soft_min.
-                    cost_coefficients.append(min_cost * (soft_min - length))
-
-        # Penalize sequences that are above the soft limit.
-        if max_cost > 0:
-            for length in range(soft_max + 1, hard_max + 1):
-                for start in range(len(works) - length + 1):
-                    span = BuildModel.negated_bounded_span(works, start, length)
-                    # pylint: disable=line-too-long
-                    name = f"-> {target_params} over_span(start={start}, length={length}) of soft_max={soft_max}"  # noqa: E501
-                    lit = self.model.NewBoolVar(prefix + name)
-                    span.append(lit)
-                    self.model.AddBoolOr(span)
-                    cost_literals.append(lit)
-                    # Cost paid is max_cost * excess length.
-                    cost_coefficients.append(max_cost * (length - soft_max))
-
-        # Just forbid any sequence of true variables with length hard_max + 1
-        for start in range(len(works) - hard_max):
-            self.model.AddBoolOr(
-                [works[i].Not() for i in range(start, start + hard_max + 1)]
-            )
-
-        self.obj_bool_vars.extend(cost_literals)
-        self.obj_bool_coeffs.extend(cost_coefficients)
+        if constraint["penalty"] != 0:
+            if (
+                constraint["operator"] == "at_least"
+                or constraint["operator"] == "equal"
+            ):
+                for length in range(0, constraint["target_value"]):
+                    for start in range(len(works) - length + 1):
+                        span = BuildModel.negated_bounded_span(works, start, length)
+                        name = (
+                            f"-> {target_params} under_span(start={start}, "
+                            + f"length={length}) of soft_min="
+                            + str(constraint["target_value"])
+                        )
+                        lit = self.model.NewBoolVar(prefix + name)
+                        span.append(lit)
+                        self.model.AddBoolOr(span)
+                        self.obj_bool_vars.append(lit)
+                        self.obj_bool_coeffs.append(
+                            constraint["penalty"]
+                            * (constraint["target_value"] - length)
+                        )
+            if constraint["operator"] == "at_most" or constraint["operator"] == "equal":
+                for length in range(constraint["target_value"] + 1, len(works) + 1):
+                    for start in range(len(works) - length + 1):
+                        span = BuildModel.negated_bounded_span(works, start, length)
+                        name = (
+                            f"-> {target_params} over_span(start={start}, "
+                            + f"length={length}) of soft_max="
+                            + str(constraint["target_value"])
+                        )
+                        lit = self.model.NewBoolVar(prefix + name)
+                        span.append(lit)
+                        self.model.AddBoolOr(span)
+                        self.obj_bool_vars.append(lit)
+                        self.obj_bool_coeffs.append(
+                            constraint["penalty"]
+                            * (length - constraint["target_value"])
+                        )
 
     @staticmethod
     def negated_bounded_span(
@@ -388,8 +435,8 @@ class BuildModel:
             sequence.append(works[start + length])
         return sequence
 
-    def add_causality_constraint(
-        self, works: List[cp_model.IntVar], hard_constraint: bool, cost: int
+    def add_order_constraint(
+        self, works: List[cp_model.IntVar], constraint: Dict
     ) -> None:
         works_tuples = [
             key
@@ -398,7 +445,7 @@ class BuildModel:
             if value == work_search
         ]
         transition = [work.Not() for work in works]
-        if hard_constraint:
+        if constraint["hard_constraint"]:
             self.model.AddBoolOr(transition)
         else:
             trans_var = self.model.NewBoolVar(
@@ -407,12 +454,14 @@ class BuildModel:
             transition.append(trans_var)
             self.model.AddBoolOr(transition)
             self.obj_bool_vars.append(trans_var)
-            self.obj_bool_coeffs.append(cost)
+            self.obj_bool_coeffs.append(constraint["penalty"])
 
-    def add_request_objetive(self, works: List[cp_model.IntVar], cost: int) -> None:
+    def add_request_objetive(
+        self, works: List[cp_model.IntVar], constraint: Dict
+    ) -> None:
         for work in works:
             self.obj_bool_vars.append(work)
-            self.obj_bool_coeffs.append(cost)
+            self.obj_bool_coeffs.append(constraint["penalty"])
 
     def add_objective(self) -> None:
         self.model.Minimize(
