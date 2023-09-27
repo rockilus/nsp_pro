@@ -1,21 +1,18 @@
-from flask import Blueprint
-from engine import (
-    Engine,
-    Inputs,
-    VariableInfo,
+import random
+
+from engine.engine import Engine
+from engine.inputs_outputs import (
     Coverage,
-    Requests,
-    FixAssignments,
     Custom,
+    FixAssignments,
+    Inputs,
+    Requests,
     ShiftDemand,
+    VariableInfo,
 )
 
-solver_routes = Blueprint("solver_routes", __name__)
 
-
-@solver_routes.route("/solver", methods=["GET"])
-def solver():
-    # pylint: disable=R0801
+def test_engine_solve_return_expected_assigment_coverage():
     engine = Engine()
     variable_info = VariableInfo(
         workers=["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"],
@@ -23,12 +20,13 @@ def solver():
         end_date="2023-10-15",
         shifts=["s0", "s1", "s2", "s3"],
     )
+    target_coverage = random.randint(1, 8)
     coverage = Coverage(
         coverage=[
             ShiftDemand(
-                date="2023-10-08",
-                shift_id="s1",
-                quantity=3,
+                date="2023-10-02",
+                shift_id="s0",
+                quantity=target_coverage,
             ),
         ]
     )
@@ -45,7 +43,8 @@ def solver():
     )
 
     outputs = engine.solve(inputs)
-    print(outputs)
+    assignments = outputs.solution.solution
 
-    response = {"msg": "all good"}
-    return response, 200
+    count = sum(1 for a in assignments if a.date == "2023-10-02" and a.shift_id == "s0")
+
+    assert count == target_coverage
