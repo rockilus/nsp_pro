@@ -8,7 +8,7 @@ const baseApiUrl = "http://localhost:5000";
 // TimeTable
 const apiUrlCoverages = `${baseApiUrl}/coverages`;
 
-type CoverageState = {
+type CoverageStateT = {
   coverages: CoverageT[];
   fetchCoverages: () => void;
   addCoverage: (coverage: CoverageT) => void;
@@ -25,7 +25,7 @@ const toCoverageT = (data: any) => {
     return cov;
 }
 
-export const useCoverageStore = create<CoverageState>()((set) => ({
+export const useCoverageStore = create<CoverageStateT>()((set) => ({
   coverages: [],
 
   fetchCoverages: async () => {
