@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import CoverageEditableView from './CoverageEditableView';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -7,27 +7,39 @@ import AddIcon from '@mui/icons-material/Add';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { CoverageT, ShiftT } from './types';
+import { useCoverageStore } from '../../stores/coverageStore';
 
 type CoveragePanelProps = {
     shifts: ShiftT[];
 };
 
 const CoveragePanel: React.FC<CoveragePanelProps> = ({shifts}) => {
-    const [coverages, setCoverages] = useState<CoverageT[]>([]);
+    // remote interactions via stores
+    const coverages = useCoverageStore(state => state.coverages);
+    const fetchCoverages = useCoverageStore(state => state.fetchCoverages);
+    const addCoverage = useCoverageStore(state => state.addCoverage);
+    const updateCoverage = useCoverageStore(state => state.updateCoverage);
+    
+    
+    // local states via states
     const [selectedCoverage, setSelectedCoverage] = useState<CoverageT | undefined>(undefined);
     const [isNewCoverage, setIsNewCoverage] = useState<boolean>(false);
 
-    // handlers
+    // Fetch coverages from the API on mount
+    useEffect(() => {
+        fetchCoverages();
+    }, [fetchCoverages]);
+
+    // handlers for callbacks
     const handleCoverageChange = (updatedCoverage: CoverageT) => {
-        setCoverages(prevCoverages => 
-            prevCoverages.map(coverage => 
-                coverage.id === updatedCoverage.id ? updatedCoverage : coverage
-            )
-        );
+        if (isNewCoverage) {
+            addCoverage(updatedCoverage);
+        } else {
+            updateCoverage(updatedCoverage);
+        }
     };
 
     const handleSelectCoverage = (coverage: CoverageT) => {
-        console.log("Selecting coverage", coverage);
         setSelectedCoverage(coverage);
         setIsNewCoverage(false);
     };
@@ -42,11 +54,6 @@ const CoveragePanel: React.FC<CoveragePanelProps> = ({shifts}) => {
         };
         setSelectedCoverage(newCoverage);
         setIsNewCoverage(true);
-    };
-
-    const handleSaveNewCoverage = (newCoverage: CoverageT) => {
-        setCoverages(prev => [...prev, newCoverage]);
-        setIsNewCoverage(false);
     };
     
 
@@ -90,7 +97,7 @@ return (
         {selectedCoverage && (
             <CoverageEditableView
                 coverage={selectedCoverage}
-                onChange={isNewCoverage ? handleSaveNewCoverage : handleCoverageChange}
+                onChange={handleCoverageChange}
                 shifts={shifts} />
         )}
     </Box>

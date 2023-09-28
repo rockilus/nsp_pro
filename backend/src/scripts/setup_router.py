@@ -4,6 +4,7 @@ from flask import Flask
 from flask_cors import CORS  # type: ignore
 from flask_jwt_extended import JWTManager
 from routes import (
+    coverage_routes,
     constraint_param_routes,
     constraint_routes,
     shift_param_routes,
@@ -39,6 +40,7 @@ app.register_blueprint(constraint_routes)
 app.register_blueprint(timetable_routes)
 app.register_blueprint(timetable_property_routes)
 app.register_blueprint(solver_routes)
+app.register_blueprint(coverage_routes)
 
 jwt = JWTManager(app)
 

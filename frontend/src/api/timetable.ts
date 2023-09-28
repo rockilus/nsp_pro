@@ -15,6 +15,7 @@ const updateTimetableTimeUrl = serverUrl + "/update-timetable-time";
 const deleteTimetableTimeUrl = serverUrl + "/delete-timetable-time";
 
 // TimeTable Category
+const timetableCategoryUrl = serverUrl + "/timetable-category";
 const createTimetableCategoryUrl = serverUrl + "/create-timetable-category";
 const getTimetableCategoriesUrl = serverUrl + "/get-timetable-categories";
 const updateTimetableCategoryUrl = serverUrl + "/update-timetable-category";

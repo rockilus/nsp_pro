@@ -1,4 +1,7 @@
-.PHONY: lint test check
+.PHONY: lint test check format
+
+format:
+	poetry run black src
 
 lint:
 	poetry run flake8 src
