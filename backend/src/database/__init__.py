@@ -15,6 +15,7 @@ from database.variable_param_db import VariableParamDB
 from database.worker_db import WorkerDB
 from database.worker_param_db import WorkerParamDB
 from database.worker_property_db import WorkerPropertyDB
+from database.coverage_db import CoverageDB
 
 # from database.parameters_db import ParametersDB
 
@@ -23,6 +24,7 @@ __all__ = [
     "ConstraintParamDB",
     "ConstraintParamOptionDB",
     "ConstraintVariableDB",
+    "CoverageDB",
     "DB",
     "ShiftDB",
     "ShiftParamDB",

@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Backend",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/src/main.py",
+            "env": {
+                "FLASK_DEBUG": "1",
+                "ENV_SITUATION": "nsp_pro"
+            },
+            "console": "integratedTerminal",
+            "python": "/Users/avaschalde/Library/Caches/pypoetry/virtualenvs/nsp-pro-Fo1Q-cVc-py3.10/bin/python"
+        }
+    ]
+}

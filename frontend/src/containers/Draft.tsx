@@ -18,7 +18,6 @@ import { ShiftT } from "../components/Coverage/types";
 export default function Draft() {
   const shiftParamsContext = React.useContext(ShiftParamsContext);
   const shiftsContext = React.useContext(ShiftsContext);
-  console.log("shiftParamsContext", shiftParamsContext);
 
   const findShiftName = (s: any) => {
     const shiftNameParamId = shiftParamsContext.currentShiftParams?.find(p => p.name === "shift_name")?._id
@@ -41,8 +40,6 @@ export default function Draft() {
     return shift;
   }) : []
 
-  console.log('shiftsForCoverage', shiftsForCoverage);
-  
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <Button variant="contained" color="primary" onClick={serverGetSolver}>
