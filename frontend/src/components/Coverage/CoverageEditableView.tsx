@@ -6,16 +6,12 @@ import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox
 
 
 import { useEffect, useState } from "react";
+import { CoverageT, ShiftT } from './types';
 
-type Shift = {
-    id: string;
-    name: string;
-    // ... any other properties of a shift
-};
 
 type CoverageEditableViewProps = {
     coverage: CoverageT;
-    shifts: Shift[];
+    shifts: ShiftT[];
     onChange: (updatedCoverage: CoverageT) => void;
 };
 

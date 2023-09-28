@@ -10,7 +10,6 @@ import { ShiftParamsProvider } from "../context/ShiftParamsContext";
 import { ShiftsProvider } from "../context/ShiftsContext";
 import { ConstraintParamsProvider } from "../context/ConstraintParamsContext";
 import { ConstraintsProvider } from "../context/ConstraintsContext";
-import CoveragePanel from "../components/Coverage/CoveragePanel";
 
 export default function Home() {
   return (
@@ -22,14 +21,13 @@ export default function Home() {
               <ShiftsProvider>
                 <ConstraintParamsProvider>
                   <ConstraintsProvider>
-                            <Draft />
+                    <Draft />
                   </ConstraintsProvider>
                 </ConstraintParamsProvider>
               </ShiftsProvider>
             </ShiftParamsProvider>
           </WorkersProvider>
         </WorkerParamsProvider>
-        <CoveragePanel/>
       </LocalizationProvider>
     </div>
   );

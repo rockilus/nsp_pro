@@ -6,81 +6,14 @@ import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-
-
-const shifts: Shift[] = [
-    {
-        id: "morning",
-        name: "Morning Lala",
-    },
-    {
-        id: "afternoon",
-        name: "Afternoon Siesta",
-    },
-    {
-        id: "evening",
-        name: "Evening zz",
-    },
-    {
-        id: "night",
-        name: "Nighty night",
-    },
-]
-
-const initialCoverage: CoverageT = {
-    id: "1",
-    name: "Week 1 Coverage",
-    dateStart: new Date(), // today's date
-    dateEnd: new Date(new Date().setDate(new Date().getDate() + 6)), // 6 days from today
-    shiftDemands: [
-        {
-            dayIndex: 0, // Sunday
-            shiftId: "morning",
-            quantity: 2
-        },
-        {
-            dayIndex: 1, // Monday
-            shiftId: "evening",
-            quantity: 3
-        },
-        {
-            dayIndex: 5, // Friday
-            shiftId: "night",
-            quantity: 1
-        }
-    ]
-};
-
-const initialCoverage2: CoverageT = {
-    id: "2",
-    name: "XMas Coverage",
-    dateStart: new Date(), // today's date
-    dateEnd: new Date(new Date().setDate(new Date().getDate() + 6)), // 6 days from today
-    shiftDemands: [
-        {
-            dayIndex: 0, // Sunday
-            shiftId: "night",
-            quantity: 2
-        },
-        {
-            dayIndex: 1, // Monday
-            shiftId: "night",
-            quantity: 3
-        },
-        {
-            dayIndex: 5, // Friday
-            shiftId: "night",
-            quantity: 1
-        }
-    ]
-};
+import { CoverageT, ShiftT } from './types';
 
 type CoveragePanelProps = {
-    // any props that you want to pass from a parent component
+    shifts: ShiftT[];
 };
 
-const CoveragePanel: React.FC<CoveragePanelProps> = () => {
-    const [coverages, setCoverages] = useState<CoverageT[]>([initialCoverage, initialCoverage2]);
+const CoveragePanel: React.FC<CoveragePanelProps> = ({shifts}) => {
+    const [coverages, setCoverages] = useState<CoverageT[]>([]);
     const [selectedCoverage, setSelectedCoverage] = useState<CoverageT | undefined>(undefined);
     const [isNewCoverage, setIsNewCoverage] = useState<boolean>(false);
 
@@ -101,7 +34,7 @@ const CoveragePanel: React.FC<CoveragePanelProps> = () => {
 
     const handleCreateNewCoverage = () => {
         const newCoverage: CoverageT = {
-            id: Date.now(), // Temporary unique ID, replace with real ID from the backend if needed
+            id: `id-${Date.now()}`, // Temporary unique ID, replace with real ID from the backend if needed
             name: '',
             dateStart: new Date(),
             dateEnd: new Date(),

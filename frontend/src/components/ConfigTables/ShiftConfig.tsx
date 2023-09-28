@@ -11,9 +11,11 @@ import { ShiftsContext } from "../../context/ShiftsContext";
 export default function ShiftConfig() {
   const [columns, setColumns] = useState<Record<string, any>[]>([]);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
-
+  
   const shiftParamsContext = useContext(ShiftParamsContext);
   const shiftsContext = useContext(ShiftsContext);
+  
+  console.log("shiftsContext.currentShifts", shiftsContext.currentShifts);
 
   const buildRows = useCallback(() => {
     const newRows = [];
