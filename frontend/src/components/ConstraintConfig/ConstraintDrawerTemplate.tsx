@@ -38,7 +38,7 @@ export default function ConstraintDrawerTemplate({
           }}
         >
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            New Contraint
+            New Constraint
           </Typography>
           <CancelIcon
             onClick={toggleDrawer}

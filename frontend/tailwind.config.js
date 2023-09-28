@@ -1,10 +1,15 @@
 /** @type {import('tailwindcss').Config} */
+// https://mui.com/material-ui/guides/interoperability/#tailwind-css
 module.exports = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  corePlugins: {
+    preflight: false,
+  },
+  important: '#root',
   theme: {
     extend: {
       backgroundImage: {

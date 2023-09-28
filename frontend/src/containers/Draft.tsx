@@ -6,7 +6,6 @@ import Button from "@mui/material/Button";
 import ConstraintConfig from "../components/ConstraintConfig/ConstraintConfig";
 import ShiftConfig from "../components/ConfigTables/ShiftConfig";
 import WorkerConfig from "../components/ConfigTables/WorkerConfig";
-import TimetableConfig from "../components/Timetable/TimetableConfig";
 
 import { serverGetSolver } from "../api/solver";
 
@@ -19,7 +18,6 @@ export default function Draft() {
       <WorkerConfig />
       <ShiftConfig />
       <ConstraintConfig />
-      <TimetableConfig />
     </Box>
   );
 }
