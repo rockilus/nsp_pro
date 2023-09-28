@@ -1,33 +1,6 @@
 //==============================================================================
-// Items
-//==============================================================================
-
-import { time } from "console";
-
-// export interface WorkerParam {
-//   _id: string;
-//   name: string;
-//   label: string;
-//   entry_type: string;
-//   entry_options: string[];
-// }
-
-//==============================================================================
 // State
 //==============================================================================
-
-export interface WorkersState {
-  currentWorkers: Record<string, any>[] | null;
-  error?: string;
-  postCreateWorker: () => Promise<void>;
-  getWorkers: () => Promise<void>;
-  postUpdateWorkerProperty: (
-    workerId: string,
-    workerParamId: string,
-    value: string
-  ) => Promise<void>;
-  deleteWorker: (workerId: string) => Promise<void>;
-}
 
 export interface WorkerParamsState {
   currentWorkerParams: Record<string, any>[] | null;
