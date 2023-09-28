@@ -7,6 +7,7 @@ from engine.output import Output
 
 
 class Engine:
+    # pylint: disable=too-few-public-methods
     def solve(self, inputs: Inputs) -> Outputs:
         workers = inputs.variable_info.workers
         days = Engine._build_day_coordinates(
@@ -22,9 +23,7 @@ class Engine:
         return output.build_outputs()
 
     @staticmethod
-    def _build_day_coordinates(
-        start_date_iso: str, end_date_iso: str
-    ) -> List[str]:
+    def _build_day_coordinates(start_date_iso: str, end_date_iso: str) -> List[str]:
         date_format = "%Y-%m-%d"
         start_date = datetime.fromisoformat(start_date_iso)
         end_date = datetime.fromisoformat(end_date_iso)
