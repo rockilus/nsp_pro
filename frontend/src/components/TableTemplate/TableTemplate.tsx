@@ -53,6 +53,9 @@ export default function TableTemplate({
     setDrawerOpen(!drawerOpen);
   };
 
+  console.log("columns in TableTemplate: ", typeof columns, columns);
+  console.log("rows in TableTemplate: ", typeof rows, rows);
+
   return (
     <>
       {/* {console.log("columns in TableTemplate: ", typeof columns, columns)}

@@ -6,33 +6,53 @@ import Typography from "@mui/material/Typography";
 import TableTemplate from "../TableTemplate/TableTemplate";
 
 import { WorkerParamsContext } from "../../context/WorkerParamsContext";
-import { WorkersContext } from "../../context/WorkersContext";
+import { useWorkerStore } from "../../stores/workerStore";
+import { WorkerPropertyT } from "./types";
 
 export default function WorkerConfig() {
   const [columns, setColumns] = useState<Record<string, any>[]>([]);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
 
   const workerParamsContext = useContext(WorkerParamsContext);
-  const workersContext = useContext(WorkersContext);
+
+  const workers = useWorkerStore((state) => state.workers);
+  const fetchWorkers = useWorkerStore((state) => state.fetchWorkers);
+  const addWorker = useWorkerStore((state) => state.addWorker);
+  const updateWorkerProperty = useWorkerStore(
+    (state) => state.updateWorkerProperty
+  );
+  const deleteWorker = useWorkerStore((state) => state.deleteWorker);
 
   const buildRows = useCallback(() => {
     const newRows = [];
-    if (workersContext.currentWorkers) {
-      for (let worker of workersContext.currentWorkers) {
+    if (workers) {
+      for (let worker of workers) {
         let row: Record<string, any> = {};
         for (let column of columns) {
-          const property = worker["worker_properties"].find(
-            (p: Record<string, any>) => p.worker_param === column._id
+          const workerProperty = worker.workerProperties.find(
+            (p) => p.workerDimensionId === column._id
           );
-          row[column.name] = property ? property.value || "" : "";
+          row[column.name] = workerProperty ? workerProperty.value || "" : "";
         }
-        row["_id"] = worker["worker"]["_id"];
+        row["_id"] = worker.id;
         newRows.push(row);
       }
       setRows(newRows);
     }
-  }, [columns, workersContext?.currentWorkers]);
+  }, [columns, workers]);
 
+  // workers useEffects
+  useEffect(() => {
+    fetchWorkers();
+  }, [fetchWorkers]);
+
+  useEffect(() => {
+    if (columns.length > 0 && workers) {
+      buildRows();
+    }
+  }, [columns, workers, buildRows]);
+
+  // workerDimensions useEffects
   useEffect(() => {
     async function fetchWorkerParams() {
       await workerParamsContext.getWorkerParams();
@@ -44,24 +64,6 @@ export default function WorkerConfig() {
       setColumns(workerParamsContext.currentWorkerParams);
     }
   }, [workerParamsContext]);
-
-  useEffect(() => {
-    async function fetchWorkers() {
-      await workersContext.getWorkers();
-    }
-    if (!workersContext.currentWorkers) {
-      fetchWorkers();
-    }
-    if (workersContext.currentWorkers) {
-      setRows(workersContext.currentWorkers);
-    }
-  }, [workersContext]);
-
-  useEffect(() => {
-    if (columns.length > 0 && workersContext.currentWorkers) {
-      buildRows();
-    }
-  }, [columns, workersContext, buildRows]);
 
   // Columns
 
@@ -106,28 +108,25 @@ export default function WorkerConfig() {
   // Rows
 
   const handleAddRow = async () => {
-    console.log("handleAddRow called: ");
-
-    await workersContext.postCreateWorker();
+    await addWorker();
   };
 
   const handleEditBodyCell = async (
     workerId: string,
-    workerParamId: string,
+    workerDimensionId: string,
     value: any
   ) => {
-    console.log("handleEditCell called: ", workerId, workerParamId, value);
-    await workersContext.postUpdateWorkerProperty(
-      workerId,
-      workerParamId,
-      value
-    );
+    const updatedWorkerProperty: WorkerPropertyT = {
+      id: "",
+      value: value,
+      workerId: workerId,
+      workerDimensionId: workerDimensionId,
+    };
+    await updateWorkerProperty(updatedWorkerProperty);
   };
 
   const handleDeleteRow = async (workerId: string) => {
-    console.log("handleDeleteRow called: ", workerId);
-
-    await workersContext.deleteWorker(workerId);
+    await deleteWorker(workerId);
   };
 
   return (
