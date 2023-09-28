@@ -5,12 +5,12 @@ from datetime import date
 
 @dataclass
 class ShiftDemand:
-    dayIndex: int
-    shiftId: str
+    day_index: int
+    shift_id: str
     quantity: int
 
     def __post_init__(self):
-        if not 0 <= self.dayIndex <= 6:
+        if not 0 <= self.day_index <= 6:
             raise ValueError("dayIndex must be between 0 and 6")
 
 
@@ -18,6 +18,6 @@ class ShiftDemand:
 class Coverage:
     id: str
     name: str
-    dateStart: date
-    dateEnd: date
-    shiftDemands: List[ShiftDemand]
+    date_start: date
+    date_end: date
+    shift_demands: List[ShiftDemand]

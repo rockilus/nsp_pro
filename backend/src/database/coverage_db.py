@@ -15,14 +15,18 @@ class CoverageDB:
         self.db = db
 
     def create_coverage(
-        self, name: str, dateStart: date, dateEnd: date, shiftDemands: List[ShiftDemand]
+        self,
+        name: str,
+        date_start: date,
+        date_end: date,
+        shift_demands: List[ShiftDemand],
     ) -> Coverage:
         coverage = CoverageDocument(
             id=str(ObjectId()),
             name=name,
-            dateStart=dateStart,
-            dateEnd=dateEnd,
-            shiftDemands=shiftDemands,
+            dateStart=date_start,
+            dateEnd=date_end,
+            shiftDemands=shift_demands,
         )
         coverage_saved = coverage.save()
         return _from_mongo_coverage(coverage_saved)
@@ -51,8 +55,8 @@ class CoverageDB:
 # Mappers
 def _to_mongo_shift_demand(dataclass_obj: ShiftDemand) -> ShiftDemandDocument:
     return ShiftDemandDocument(
-        dayIndex=dataclass_obj.dayIndex,
-        shiftId=dataclass_obj.shiftId,
+        dayIndex=dataclass_obj.day_index,
+        shiftId=dataclass_obj.shift_id,
         quantity=dataclass_obj.quantity,
     )
 
@@ -61,17 +65,17 @@ def _to_mongo_coverage(dataclass_obj: Coverage) -> CoverageDocument:
     return CoverageDocument(
         id=dataclass_obj.id,
         name=dataclass_obj.name,
-        dateStart=dataclass_obj.dateStart,
-        dateEnd=dataclass_obj.dateEnd,
+        dateStart=dataclass_obj.date_start,
+        dateEnd=dataclass_obj.date_end,
         shiftDemands=[
-            _to_mongo_shift_demand(shift) for shift in dataclass_obj.shiftDemands
+            _to_mongo_shift_demand(shift) for shift in dataclass_obj.shift_demands
         ],
     )
 
 
 def _from_mongo_shift_demand(doc_obj: ShiftDemandDocument) -> ShiftDemand:
     return ShiftDemand(
-        dayIndex=doc_obj.dayIndex, shiftId=doc_obj.shiftId, quantity=doc_obj.quantity
+        day_index=doc_obj.dayIndex, shift_id=doc_obj.shiftId, quantity=doc_obj.quantity
     )
 
 
@@ -79,9 +83,9 @@ def _from_mongo_coverage(doc_obj: CoverageDocument) -> Coverage:
     return Coverage(
         id=doc_obj.id,
         name=doc_obj.name,
-        dateStart=doc_obj.dateStart,
-        dateEnd=doc_obj.dateEnd,
-        shiftDemands=[
+        date_start=doc_obj.dateStart,
+        date_end=doc_obj.dateEnd,
+        shift_demands=[
             _from_mongo_shift_demand(shift) for shift in doc_obj.shiftDemands
         ],
     )
