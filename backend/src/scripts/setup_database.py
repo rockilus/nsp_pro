@@ -5,6 +5,7 @@ from database import (
     ConstraintParamDB,
     ConstraintParamOptionDB,
     ConstraintVariableDB,
+    CoverageDB,
     ShiftDB,
     ShiftParamDB,
     ShiftPropertyDB,
@@ -25,6 +26,7 @@ database_uri = (
 
 db = DB(database_uri)
 shift_db = ShiftDB(db)
+coverage_db = CoverageDB(db)
 shift_param_db = ShiftParamDB(db)
 shift_property_db = ShiftPropertyDB(db)
 worker_db = WorkerDB(db)

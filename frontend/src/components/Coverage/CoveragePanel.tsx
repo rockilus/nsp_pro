@@ -65,7 +65,7 @@ return (
         {/* Render a list of coverages */}
         <Box display="flex" flexDirection="row" gap={1}>
             <Select
-                value={selectedCoverage?.id || ''}
+                value={selectedCoverage?.id || "initial"}
                 onChange={(e) => {
                     const selectedId = e.target.value as string;
                     const selectedCoverage = coverages.find(c => c.id === selectedId);
@@ -76,6 +76,9 @@ return (
                 variant="outlined"
                 size="small"
             >
+                <MenuItem value="initial" disabled>
+                    Select Coverage
+                </MenuItem>
                 {coverages.map(coverage => (
                     <MenuItem key={coverage.id} value={coverage.id}>
                         {coverage.name}

@@ -1,75 +1,56 @@
+from dataclasses import asdict
+import humps
+
 from flask import Blueprint, jsonify, request
+from core.coverage import Coverage, ShiftDemand
+from scripts.setup_database import coverage_db
 
 coverage_routes = Blueprint("coverage_routes", __name__)
-
-"""
-shifts
-[
-    {
-        "id": "65115b1d0a76afd775b91c63",
-        "name": "morning"
-    },
-    {
-        "id": "65143d3e50ca08a4fa65fdf9",
-        "name": "afternoon"
-    },
-    {
-        "id": "65143d4450ca08a4fa65fdfb",
-        "name": "night"
-    }
-]
-"""
-
-# Dummy database
-coverages_db = [
-    {
-        "id": "cov-1",
-        "name": "Normal Coverage",
-        "dateStart": "2023-09-27",
-        "dateEnd": "2023-12-31",
-        "shiftDemands": [
-            {
-                "dayIndex": 0,
-                "shiftId": "65115b1d0a76afd775b91c63",
-                "quantity": 2,
-            },
-            {
-                "dayIndex": 1,
-                "shiftId": "65115b1d0a76afd775b91c63",
-                "quantity": 1,
-            },
-        ],
-    }
-]
 
 
 @coverage_routes.route("/coverages", methods=["GET"])
 def get_coverages():
-    return jsonify(coverages_db), 200
+    coverages = coverage_db.get_coverages()
+    out = [coverage_to_dict(c) for c in coverages]
+    return jsonify(out), 200
 
 
 @coverage_routes.route("/coverages", methods=["POST"])
 def create_coverage():
     new_coverage = request.json
-    coverages_db.append(new_coverage)
-    return jsonify(new_coverage), 201
+    cov = coverage_db.create_coverage(
+        name=new_coverage["name"],
+        date_start=new_coverage["dateStart"],
+        date_end=new_coverage["dateEnd"],
+        shift_demands=new_coverage["shiftDemands"],
+    )
+    return jsonify(coverage_to_dict(cov)), 201
 
 
 @coverage_routes.route("/coverages/<coverage_id>", methods=["PUT"])
 def update_coverage(coverage_id):
-    updated_coverage = request.json
-    for index, coverage in enumerate(coverages_db):
-        if coverage["id"] == coverage_id:
-            coverages_db[index] = updated_coverage
-            return jsonify(updated_coverage), 200
-    return jsonify({"message": "Coverage not found"}), 404
+    existing_cov = coverage_db.get_coverage_by_id(coverage_id)
+    if not existing_cov:
+        return {"message": "Coverage does not exist"}, 404
+    updated_coverage = dict_to_coverage(request.json)
+    cov = coverage_db.update_coverage(updated_coverage)
+    return jsonify(coverage_to_dict(cov)), 200
 
 
 @coverage_routes.route("/coverages/<coverage_id>", methods=["DELETE"])
 def delete_coverage(coverage_id):
-    # pylint: disable=W0603
-    global coverages_db
-    coverages_db = [
-        coverage for coverage in coverages_db if coverage["id"] != coverage_id
-    ]
+    coverage_db.delete_coverage(coverage_id)
     return jsonify({"message": "Coverage deleted successfully"}), 200
+
+
+def coverage_to_dict(coverage: Coverage) -> dict:
+    data = asdict(coverage)
+    return humps.camelize(data)
+
+
+def dict_to_coverage(data: dict) -> Coverage:
+    data_snake = humps.decamelize(data)
+    data_snake["shift_demands"] = [
+        ShiftDemand(**humps.decamelize(d)) for d in data_snake["shift_demands"]
+    ]
+    return Coverage(**data_snake)
