@@ -2,10 +2,8 @@ from flask import Blueprint
 from engine import (
     Engine,
     Inputs,
-    VariableInfo,
+    VariableSpace,
     Coverage,
-    Requests,
-    FixAssignments,
     Custom,
     ShiftDemand,
 )
@@ -17,7 +15,7 @@ solver_routes = Blueprint("solver_routes", __name__)
 def solver():
     # pylint: disable=R0801
     engine = Engine()
-    variable_info = VariableInfo(
+    variable_space = VariableSpace(
         workers=["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"],
         start_date="2023-10-02",
         end_date="2023-10-15",
@@ -32,15 +30,15 @@ def solver():
             ),
         ]
     )
-    requests = Requests(requests=[])
-    fix_assignments = FixAssignments(fix_assignments=[])
+    requests = []
+    fix_assignments = []
     custom = Custom(custom_constraints=[])
 
     inputs = Inputs(
-        variable_info=variable_info,
+        variable_space=variable_space,
         coverage=coverage,
         requests=requests,
-        fix_assignments=fix_assignments,
+        fixed_assignments=fix_assignments,
         custom=custom,
     )
 

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class VariableInfo:
+class VariableSpace:
     workers: List[str]
     start_date: str
     end_date: str
@@ -35,20 +35,10 @@ class Request:
 
 
 @dataclass
-class Requests:
-    requests: List[Request]
-
-
-@dataclass
 class Assignment:
     worker_id: str
     date: str
     shift_id: str
-
-
-@dataclass
-class FixAssignments:
-    fix_assignments: List[Assignment]
 
 
 @dataclass
@@ -99,10 +89,10 @@ class Custom:
 
 @dataclass
 class Inputs:
-    variable_info: VariableInfo
+    variable_space: VariableSpace
     coverage: Coverage
-    requests: Requests
-    fix_assignments: FixAssignments
+    requests: List[Request]
+    fixed_assignments: List[Assignment]
     custom: Custom
 
 

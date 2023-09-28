@@ -9,11 +9,11 @@ from engine.output import Output
 class Engine:
     # pylint: disable=too-few-public-methods
     def solve(self, inputs: Inputs) -> Outputs:
-        workers = inputs.variable_info.workers
+        workers = inputs.variable_space.workers
         days = Engine._build_day_coordinates(
-            inputs.variable_info.start_date, inputs.variable_info.end_date
+            inputs.variable_space.start_date, inputs.variable_space.end_date
         )
-        shifts = inputs.variable_info.shifts
+        shifts = inputs.variable_space.shifts
         model = Model(workers, days, shifts)
         model.build_variables()
         model.add_exactly_one_shift_per_day_constraint()
