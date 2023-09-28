@@ -10,10 +10,6 @@ import { ShiftParamsProvider } from "../context/ShiftParamsContext";
 import { ShiftsProvider } from "../context/ShiftsContext";
 import { ConstraintParamsProvider } from "../context/ConstraintParamsContext";
 import { ConstraintsProvider } from "../context/ConstraintsContext";
-import { TimetablesProvider } from "../context/TimetablesContext";
-import { TimetableCategoriesProvider } from "../context/TimetableCategoriesContext";
-import { TimetableTimesProvider } from "../context/TimetableTimesContext";
-import { TimetablePropertiesProvider } from "../context/TimetablePropertiesContext";
 
 export default function Home() {
   return (
@@ -25,15 +21,7 @@ export default function Home() {
               <ShiftsProvider>
                 <ConstraintParamsProvider>
                   <ConstraintsProvider>
-                    <TimetablesProvider>
-                      <TimetableCategoriesProvider>
-                        <TimetableTimesProvider>
-                          <TimetablePropertiesProvider>
-                            <Draft />
-                          </TimetablePropertiesProvider>
-                        </TimetableTimesProvider>
-                      </TimetableCategoriesProvider>
-                    </TimetablesProvider>
+                    <Draft />
                   </ConstraintsProvider>
                 </ConstraintParamsProvider>
               </ShiftsProvider>

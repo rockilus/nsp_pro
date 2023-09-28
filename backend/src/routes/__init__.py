@@ -7,8 +7,10 @@ from routes.timetable_property_routes import timetable_property_routes
 from routes.timetable_routes import timetable_routes
 from routes.worker_param_routes import worker_param_routes
 from routes.worker_routes import worker_routes
+from routes.coverage_routes import coverage_routes
 
 __all__ = [
+    "coverage_routes",
     "constraint_param_routes",
     "constraint_routes",
     "shift_param_routes",
