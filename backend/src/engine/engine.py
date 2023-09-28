@@ -9,7 +9,7 @@ from engine.output import Output
 class Engine:
     def solve(self, inputs: Inputs) -> Outputs:
         workers = inputs.variable_info.workers
-        days = Engine.build_day_coordinates(
+        days = Engine._build_day_coordinates(
             inputs.variable_info.start_date, inputs.variable_info.end_date
         )
         shifts = inputs.variable_info.shifts
@@ -22,7 +22,9 @@ class Engine:
         return output.build_outputs()
 
     @staticmethod
-    def build_day_coordinates(start_date_iso: str, end_date_iso: str) -> List[str]:
+    def _build_day_coordinates(
+        start_date_iso: str, end_date_iso: str
+    ) -> List[str]:
         date_format = "%Y-%m-%d"
         start_date = datetime.fromisoformat(start_date_iso)
         end_date = datetime.fromisoformat(end_date_iso)
