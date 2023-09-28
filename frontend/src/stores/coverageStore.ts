@@ -1,9 +1,9 @@
-
 // coverageStore.ts
-import { create } from 'zustand';
-import { CoverageT } from '../components/Coverage/types';
+import { create } from "zustand";
+import { CoverageT } from "../components/Coverage/types";
 
-const baseApiUrl = "http://localhost:5000";
+// const baseApiUrl = "http://localhost:5000";
+const baseApiUrl = "http://127.0.0.1:5000";
 
 // TimeTable
 const apiUrlCoverages = `${baseApiUrl}/coverages`;
@@ -17,13 +17,13 @@ type CoverageStateT = {
 };
 
 const toCoverageT = (data: any) => {
-    const cov: CoverageT = {
-        ...data,
-        dateStart: new Date(data.dateStart),
-        dateEnd: new Date(data.dateEnd),
-    };
-    return cov;
-}
+  const cov: CoverageT = {
+    ...data,
+    dateStart: new Date(data.dateStart),
+    dateEnd: new Date(data.dateEnd),
+  };
+  return cov;
+};
 
 export const useCoverageStore = create<CoverageStateT>()((set) => ({
   coverages: [],
@@ -32,7 +32,7 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
     try {
       const response = await fetch(apiUrlCoverages); // Adjust API endpoint as needed
       const data = await response.json();
-      const coverages = data.map(toCoverageT)
+      const coverages = data.map(toCoverageT);
       set({ coverages });
     } catch (error) {
       console.error("Failed to fetch coverages:", error);
@@ -42,9 +42,9 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
   addCoverage: async (coverage) => {
     try {
       const response = await fetch(apiUrlCoverages, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(coverage),
       });
@@ -59,9 +59,9 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
   updateCoverage: async (updatedCoverage) => {
     try {
       await fetch(`${apiUrlCoverages}/${updatedCoverage.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(updatedCoverage),
       });
@@ -78,7 +78,7 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
   deleteCoverage: async (id) => {
     try {
       await fetch(`${apiUrlCoverages}/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       set((state) => ({
         coverages: state.coverages.filter((c) => c.id !== id),

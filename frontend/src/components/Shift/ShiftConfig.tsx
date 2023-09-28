@@ -6,32 +6,50 @@ import Typography from "@mui/material/Typography";
 import TableTemplate from "../TableTemplate/TableTemplate";
 
 import { ShiftParamsContext } from "../../context/ShiftParamsContext";
-import { ShiftsContext } from "../../context/ShiftsContext";
+import { useShiftStore } from "../../stores/shiftStore";
+import { ShiftPropertyT } from "./types";
 
 export default function ShiftConfig() {
   const [columns, setColumns] = useState<Record<string, any>[]>([]);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
 
   const shiftParamsContext = useContext(ShiftParamsContext);
-  const shiftsContext = useContext(ShiftsContext);
+
+  const shifts = useShiftStore((state) => state.shifts);
+  const fetchShifts = useShiftStore((state) => state.fetchShifts);
+  const addShift = useShiftStore((state) => state.addShift);
+  const updateShiftProperty = useShiftStore(
+    (state) => state.updateShiftProperty
+  );
+  const deleteShift = useShiftStore((state) => state.deleteShift);
 
   const buildRows = useCallback(() => {
     const newRows = [];
-    if (shiftsContext.currentShifts) {
-      for (let shift of shiftsContext.currentShifts) {
+    if (shifts) {
+      for (let shift of shifts) {
         let row: Record<string, any> = {};
         for (let column of columns) {
-          const property = shift["shift_properties"].find(
-            (p: Record<string, any>) => p.shift_param === column._id
+          const shiftProperty = shift.shiftProperties.find(
+            (p) => p.shiftDimensionId === column._id
           );
-          row[column.name] = property ? property.value || "" : "";
+          row[column.name] = shiftProperty ? shiftProperty.value || "" : "";
         }
-        row["_id"] = shift["shift"]["_id"];
+        row["_id"] = shift.id;
         newRows.push(row);
       }
       setRows(newRows);
     }
-  }, [columns, shiftsContext?.currentShifts]);
+  }, [columns, shifts]);
+
+  useEffect(() => {
+    fetchShifts();
+  }, [fetchShifts]);
+
+  useEffect(() => {
+    if (columns.length > 0 && shifts) {
+      buildRows();
+    }
+  }, [columns, shifts, buildRows]);
 
   useEffect(() => {
     async function fetchShiftParams() {
@@ -44,24 +62,6 @@ export default function ShiftConfig() {
       setColumns(shiftParamsContext.currentShiftParams);
     }
   }, [shiftParamsContext]);
-
-  useEffect(() => {
-    async function fetchShifts() {
-      await shiftsContext.getShifts();
-    }
-    if (!shiftsContext.currentShifts) {
-      fetchShifts();
-    }
-    if (shiftsContext.currentShifts) {
-      setRows(shiftsContext.currentShifts);
-    }
-  }, [shiftsContext]);
-
-  useEffect(() => {
-    if (columns.length > 0 && shiftsContext.currentShifts) {
-      buildRows();
-    }
-  }, [columns, shiftsContext, buildRows]);
 
   // Columns
 
@@ -106,24 +106,25 @@ export default function ShiftConfig() {
   // Rows
 
   const handleAddRow = async () => {
-    console.log("handleAddRow called: ");
-
-    await shiftsContext.postCreateShift();
+    await addShift();
   };
 
   const handleEditBodyCell = async (
     shiftId: string,
-    shiftParamId: string,
+    shiftDimensionId: string,
     value: any
   ) => {
-    console.log("handleEditCell called: ", shiftId, shiftParamId, value);
-    await shiftsContext.postUpdateShiftProperty(shiftId, shiftParamId, value);
+    const updatedShiftProperty: ShiftPropertyT = {
+      id: "",
+      value: value,
+      shiftId: shiftId,
+      shiftDimensionId: shiftDimensionId,
+    };
+    await updateShiftProperty(updatedShiftProperty);
   };
 
   const handleDeleteRow = async (shiftId: string) => {
-    console.log("handleDeleteRow called: ", shiftId);
-
-    await shiftsContext.deleteShift(shiftId);
+    await deleteShift(shiftId);
   };
 
   return (
