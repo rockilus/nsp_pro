@@ -1,19 +1,23 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, {
+  use,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 import TableTemplate from "../TableTemplate/TableTemplate";
 
-import { ShiftParamsContext } from "../../context/ShiftParamsContext";
 import { useShiftStore } from "../../stores/shiftStore";
-import { ShiftPropertyT } from "./types";
+import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
+import { ShiftPropertyT, ShiftDimensionT } from "./types";
 
 export default function ShiftConfig() {
   const [columns, setColumns] = useState<Record<string, any>[]>([]);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
-
-  const shiftParamsContext = useContext(ShiftParamsContext);
 
   const shifts = useShiftStore((state) => state.shifts);
   const fetchShifts = useShiftStore((state) => state.fetchShifts);
@@ -23,6 +27,22 @@ export default function ShiftConfig() {
   );
   const deleteShift = useShiftStore((state) => state.deleteShift);
 
+  const shiftDimensions = useShiftDimensionStore(
+    (state) => state.shiftDimensions
+  );
+  const fetchShiftDimensions = useShiftDimensionStore(
+    (state) => state.fetchShiftDimensions
+  );
+  const addShiftDimension = useShiftDimensionStore(
+    (state) => state.addShiftDimension
+  );
+  const updateShiftDimension = useShiftDimensionStore(
+    (state) => state.updateShiftDimension
+  );
+  const deleteShiftDimension = useShiftDimensionStore(
+    (state) => state.deleteShiftDimension
+  );
+
   const buildRows = useCallback(() => {
     const newRows = [];
     if (shifts) {
@@ -30,7 +50,7 @@ export default function ShiftConfig() {
         let row: Record<string, any> = {};
         for (let column of columns) {
           const shiftProperty = shift.shiftProperties.find(
-            (p) => p.shiftDimensionId === column._id
+            (p) => p.shiftDimensionId === column.id
           );
           row[column.name] = shiftProperty ? shiftProperty.value || "" : "";
         }
@@ -52,16 +72,14 @@ export default function ShiftConfig() {
   }, [columns, shifts, buildRows]);
 
   useEffect(() => {
-    async function fetchShiftParams() {
-      await shiftParamsContext.getShiftParams();
+    fetchShiftDimensions();
+  }, [fetchShiftDimensions]);
+
+  useEffect(() => {
+    if (shiftDimensions) {
+      setColumns(shiftDimensions);
     }
-    if (!shiftParamsContext.currentShiftParams) {
-      fetchShiftParams();
-    }
-    if (shiftParamsContext.currentShiftParams) {
-      setColumns(shiftParamsContext.currentShiftParams);
-    }
-  }, [shiftParamsContext]);
+  }, [shiftDimensions]);
 
   // Columns
 
@@ -70,37 +88,34 @@ export default function ShiftConfig() {
     entryType: string,
     entryOptions: string[]
   ) => {
-    await shiftParamsContext.postCreateShiftParam(
-      label,
-      entryType,
-      entryOptions
-    );
+    const newShiftDimension: ShiftDimensionT = {
+      id: "",
+      name: "",
+      label: label,
+      entryType: entryType,
+      entryOptions: entryOptions,
+    };
+    await addShiftDimension(newShiftDimension);
   };
 
   const handleEditHeadCell = async (
-    shiftParamId: string,
+    shiftDimensionId: string,
     label: string,
     entryType: string,
     entryOptions: string[]
   ) => {
-    console.log(
-      "handleEditCell called: ",
-      shiftParamId,
-      label,
-      entryType,
-      entryOptions
-    );
-    await shiftParamsContext.postUpdateShiftParam(
-      shiftParamId,
-      label,
-      entryType,
-      entryOptions
-    );
+    const updatedShiftDimension: ShiftDimensionT = {
+      id: shiftDimensionId,
+      name: "",
+      label: label,
+      entryType: entryType,
+      entryOptions: entryOptions,
+    };
+    await updateShiftDimension(updatedShiftDimension);
   };
 
-  const handleDeleteColumn = async (shiftParamId: string) => {
-    console.log("handleDeleteColumn called: ", shiftParamId);
-    await shiftParamsContext.deleteShiftParam(shiftParamId);
+  const handleDeleteColumn = async (shiftDimensionId: string) => {
+    await deleteShiftDimension(shiftDimensionId);
   };
 
   // Rows

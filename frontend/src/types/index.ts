@@ -2,56 +2,6 @@
 // State
 //==============================================================================
 
-export interface WorkerParamsState {
-  currentWorkerParams: Record<string, any>[] | null;
-  // currentWorkerParams: WorkerParam[] | null;
-  error?: string;
-  postCreateWorkerParam: (
-    label: string,
-    entry_type: string,
-    entry_options: string[]
-  ) => Promise<void>;
-  getWorkerParams: () => Promise<void>;
-  postUpdateWorkerParam: (
-    workerParamId: string,
-    label: string,
-    entry_type: string,
-    entry_options: string[]
-  ) => Promise<void>;
-  deleteWorkerParam: (workerParamId: string) => Promise<void>;
-}
-
-export interface ShiftsState {
-  currentShifts: Record<string, any>[] | null;
-  error?: string;
-  postCreateShift: () => Promise<void>;
-  getShifts: () => Promise<void>;
-  postUpdateShiftProperty: (
-    shiftId: string,
-    shiftParamId: string,
-    value: string
-  ) => Promise<void>;
-  deleteShift: (shiftId: string) => Promise<void>;
-}
-
-export interface ShiftParamsState {
-  currentShiftParams: Record<string, any>[] | null;
-  error?: string;
-  postCreateShiftParam: (
-    label: string,
-    entry_type: string,
-    entry_options: string[]
-  ) => Promise<void>;
-  getShiftParams: () => Promise<void>;
-  postUpdateShiftParam: (
-    shiftParamId: string,
-    label: string,
-    entry_type: string,
-    entry_options: string[]
-  ) => Promise<void>;
-  deleteShiftParam: (shiftParamId: string) => Promise<void>;
-}
-
 export interface ConstraintParamsState {
   currentConstraintParams: Record<string, any>[] | null;
   error?: string;

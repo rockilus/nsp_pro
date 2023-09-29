@@ -9,23 +9,25 @@ import WorkerConfig from "../components/Worker/WorkerConfig";
 import CoveragePanel from "../components/Coverage/CoveragePanel";
 
 import { serverGetSolver } from "../api/solver";
-import { ShiftParamsContext } from "../context/ShiftParamsContext";
 import { ShiftT } from "../components/Coverage/types";
 import { useShiftStore } from "../stores/shiftStore";
+import { useShiftDimensionStore } from "../stores/shiftDimensionStore";
 
 export default function Draft() {
-  const shiftParamsContext = React.useContext(ShiftParamsContext);
   const shifts = useShiftStore((state) => state.shifts);
+  const shiftDimensions = useShiftDimensionStore(
+    (state) => state.shiftDimensions
+  );
 
   const findShiftName = (s: any) => {
-    const shiftNameParamId = shiftParamsContext.currentShiftParams?.find(
+    const shiftDimensionNameId = shiftDimensions?.find(
       (p) => p.name === "shift_name"
-    )?._id;
-    if (!shiftNameParamId) {
+    )?.id;
+    if (!shiftDimensionNameId) {
       throw Error("Shift params should have shift_name");
     }
     const shiftPropForShiftName = s.shiftProperties.find(
-      (p: any) => p.shiftDimensionId === shiftNameParamId
+      (p: any) => p.shiftDimensionId === shiftDimensionNameId
     );
     if (!shiftPropForShiftName) {
       return "No shift name";
@@ -46,8 +48,6 @@ export default function Draft() {
         return shift;
       })
     : [];
-
-  console.log("shiftsForCoverage", shiftsForCoverage);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>

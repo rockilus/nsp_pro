@@ -30,7 +30,7 @@ class ShiftParamDB:
         label: str,
         entry_type: str,
         entry_options: List[str],
-    ) -> List[ShiftParam]:
+    ) -> ShiftParam:
         # pylint: disable=R0801
         shift_param = ShiftParam(
             _id=ObjectId(),
@@ -39,10 +39,8 @@ class ShiftParamDB:
             entry_type=entry_type,
             entry_options=entry_options,
         )
-        shift_param.save()
-        # pylint: disable=no-member
-        shift_params = ShiftParam.objects.all()  # type: ignore
-        return list(shift_params)
+        shift_param_saved = shift_param.save()
+        return shift_param_saved
 
     def get_shift_params(
         self,
@@ -68,13 +66,16 @@ class ShiftParamDB:
         return shift_param
 
     def update_shift_param(
+        # pylint: disable=too-many-arguments
         self,
         shift_param: ShiftParam,
         label: str,
+        name: str,
         entry_type: str,
         entry_options: List[str],
     ) -> ShiftParam:
         shift_param.label = label
+        shift_param.name = name
         shift_param.entry_type = entry_type
         shift_param.entry_options = entry_options
         shift_param.save()

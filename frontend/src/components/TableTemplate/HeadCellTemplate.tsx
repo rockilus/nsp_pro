@@ -57,7 +57,6 @@ export default function HeadCellTemplate({
   };
 
   const handleEditConfirm = async () => {
-    console.log("handleEdit: ", columnId);
     if (
       entryValue !== value ||
       entryTypeState !== entryType ||
@@ -77,8 +76,6 @@ export default function HeadCellTemplate({
   };
 
   const handleEditCancel = () => {
-    console.log("handleEditCancel");
-
     setEntryValue(value);
     setEntryTypeState(entryType);
     setEntryOptionsState(entryOptions);
