@@ -5,10 +5,6 @@ from models.constraint_variable import ConstraintVariable
 from models.shift import Shift
 from models.shift_param import ShiftParam
 from models.shift_property import ShiftProperty
-from models.timetable import Timetable
-from models.timetable_category import TimetableCategory
-from models.timetable_property import TimetableProperty
-from models.timetable_time import TimetableTime
 from models.variable import Variable
 from models.variable_param import VariableParam
 from models.worker import Worker
@@ -23,10 +19,6 @@ __all__ = [
     "Shift",
     "ShiftParam",
     "ShiftProperty",
-    "Timetable",
-    "TimetableCategory",
-    "TimetableProperty",
-    "TimetableTime",
     "Variable",
     "VariableParam",
     "Worker",

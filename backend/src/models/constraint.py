@@ -3,7 +3,6 @@ from mongoengine.fields import (
     BooleanField,
     IntField,
     ObjectIdField,
-    ReferenceField,
     StringField,
 )
 
@@ -22,8 +21,6 @@ class Constraint(Document):
     hard_constraint = BooleanField(default=False)
     penalty = IntField(default=0)
     active = BooleanField(default=True)
-    origin = StringField(choices=["constraint", "timetable"], default="constraint")
-    timetable_property = ReferenceField("TimetableProperty")
 
     def to_dict(self):
         return {
@@ -34,8 +31,4 @@ class Constraint(Document):
             "hard_constraint": self.hard_constraint,
             "penalty": self.penalty,
             "active": self.active,
-            "origin": self.origin,
-            "timetable_property": str(self.timetable_property["_id"])
-            if self.timetable_property
-            else "",
         }

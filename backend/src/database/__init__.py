@@ -6,10 +6,6 @@ from database.db import DB
 from database.shift_db import ShiftDB
 from database.shift_param_db import ShiftParamDB
 from database.shift_property_db import ShiftPropertyDB
-from database.timetable_category_db import TimetableCategoryDB
-from database.timetable_db import TimetableDB
-from database.timetable_property_db import TimetablePropertyDB
-from database.timetable_time_db import TimetableTimeDB
 from database.variable_db import VariableDB
 from database.variable_param_db import VariableParamDB
 from database.worker_db import WorkerDB
@@ -29,10 +25,6 @@ __all__ = [
     "ShiftDB",
     "ShiftParamDB",
     "ShiftPropertyDB",
-    "TimetableCategoryDB",
-    "TimetableDB",
-    "TimetablePropertyDB",
-    "TimetableTimeDB",
     "VariableDB",
     "VariableParamDB",
     "WorkerDB",
