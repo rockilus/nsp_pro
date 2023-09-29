@@ -1,11 +1,9 @@
+from typing import List
+
 from bson import ObjectId
 from flask import Blueprint, jsonify, request
 from mongoengine import NotUniqueError
-from scripts.setup_database import (
-    shift_db,
-    shift_param_db,
-    shift_property_db,
-)
+from scripts.setup_database import shift_db, shift_param_db, shift_property_db
 
 shift_routes = Blueprint("shift_routes", __name__)
 
@@ -22,10 +20,10 @@ def create_shift():
             shift_property.to_dict() for shift_property in shift_properties
         ]
         shift_response = {
-            "shift": shift_dict,
-            "shift_properties": shift_properties_dict,
+            "id": shift_dict["_id"],
+            "shiftProperties": shift_properties_to_api(shift_properties_dict),
         }
-        response = jsonify({"shift": shift_response})
+        response = jsonify(shift_response)
         return response, 200
     except NotUniqueError as e:
         print(e)
@@ -46,19 +44,19 @@ def get_shifts():
     shifts_response = []
     for shift, shift_properties in zip(shifts_dict, shifts_properties_dict):
         shift_dict = {
-            "shift": shift,
-            "shift_properties": shift_properties,
+            "id": shift["_id"],
+            "shiftProperties": shift_properties_to_api(shift_properties),
         }
         shifts_response.append(shift_dict)
-    response = jsonify({"shifts": shifts_response})
+    response = jsonify(shifts_response)
     return response, 200
 
 
 @shift_routes.route("/update-shift-property", methods=["POST"])
 def edit_shift_property():
     input_received = request.get_json()
-    shift_id = input_received["shift_id"]
-    shift_param_id = input_received["shift_param_id"]
+    shift_id = input_received["shiftId"]
+    shift_param_id = input_received["shiftDimensionId"]
     value = input_received["value"]
     try:
         shift = shift_db.get_shift_by_id(shift_id)
@@ -75,7 +73,10 @@ def edit_shift_property():
                 shift_property, value
             )
         updated_shift_property_dict = updated_shift_property.to_dict()
-        response = jsonify({"updated_shift_property": updated_shift_property_dict})
+        updated_shift_property_dict_api = shift_properties_to_api(
+            [updated_shift_property_dict]
+        )[0]
+        response = jsonify(updated_shift_property_dict_api)
         return response, 200
     # pylint: disable=broad-except
     except Exception as e:  # noqa: E722
@@ -87,7 +88,7 @@ def edit_shift_property():
 def delete_shift():
     shift_id_received = request.get_json()
     try:
-        shift = shift_db.get_shift_by_id(shift_id_received["shift_id"])
+        shift = shift_db.get_shift_by_id(shift_id_received["id"])
         shift_properties = shift_property_db.get_shift_properties_by_shift(shift)
         shift_property_db.delete_shift_properties(shift_properties)
         shift_db.delete_shift(shift)
@@ -107,3 +108,16 @@ def is_valid_objectid(objectid_str: str) -> bool:
     # pylint: disable=bare-except
     except:  # noqa: E722
         return False
+
+
+def shift_properties_to_api(shift_properties: List) -> List:
+    shift_properties_api = []
+    for shift_property in shift_properties:
+        shift_property_api = {
+            "id": shift_property["_id"],
+            "value": shift_property["value"],
+            "shiftId": shift_property["shift"],
+            "shiftDimensionId": shift_property["shift_param"],
+        }
+        shift_properties_api.append(shift_property_api)
+    return shift_properties_api
