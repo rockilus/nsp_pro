@@ -5,15 +5,13 @@ import Typography from "@mui/material/Typography";
 
 import TableTemplate from "../TableTemplate/TableTemplate";
 
-import { WorkerParamsContext } from "../../context/WorkerParamsContext";
 import { useWorkerStore } from "../../stores/workerStore";
-import { WorkerPropertyT } from "./types";
+import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
+import { WorkerPropertyT, WorkerDimensionT } from "./types";
 
 export default function WorkerConfig() {
   const [columns, setColumns] = useState<Record<string, any>[]>([]);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
-
-  const workerParamsContext = useContext(WorkerParamsContext);
 
   const workers = useWorkerStore((state) => state.workers);
   const fetchWorkers = useWorkerStore((state) => state.fetchWorkers);
@@ -23,6 +21,22 @@ export default function WorkerConfig() {
   );
   const deleteWorker = useWorkerStore((state) => state.deleteWorker);
 
+  const workerDimensions = useWorkerDimensionStore(
+    (state) => state.workerDimensions
+  );
+  const fetchWorkerDimensions = useWorkerDimensionStore(
+    (state) => state.fetchWorkerDimensions
+  );
+  const addWorkerDimension = useWorkerDimensionStore(
+    (state) => state.addWorkerDimension
+  );
+  const updateWorkerDimension = useWorkerDimensionStore(
+    (state) => state.updateWorkerDimension
+  );
+  const deleteWorkerDimension = useWorkerDimensionStore(
+    (state) => state.deleteWorkerDimension
+  );
+
   const buildRows = useCallback(() => {
     const newRows = [];
     if (workers) {
@@ -30,7 +44,7 @@ export default function WorkerConfig() {
         let row: Record<string, any> = {};
         for (let column of columns) {
           const workerProperty = worker.workerProperties.find(
-            (p) => p.workerDimensionId === column._id
+            (p) => p.workerDimensionId === column.id
           );
           row[column.name] = workerProperty ? workerProperty.value || "" : "";
         }
@@ -41,7 +55,6 @@ export default function WorkerConfig() {
     }
   }, [columns, workers]);
 
-  // workers useEffects
   useEffect(() => {
     fetchWorkers();
   }, [fetchWorkers]);
@@ -52,18 +65,15 @@ export default function WorkerConfig() {
     }
   }, [columns, workers, buildRows]);
 
-  // workerDimensions useEffects
   useEffect(() => {
-    async function fetchWorkerParams() {
-      await workerParamsContext.getWorkerParams();
+    fetchWorkerDimensions();
+  }, [fetchWorkerDimensions]);
+
+  useEffect(() => {
+    if (workerDimensions) {
+      setColumns(workerDimensions);
     }
-    if (!workerParamsContext.currentWorkerParams) {
-      fetchWorkerParams();
-    }
-    if (workerParamsContext.currentWorkerParams) {
-      setColumns(workerParamsContext.currentWorkerParams);
-    }
-  }, [workerParamsContext]);
+  }, [workerDimensions]);
 
   // Columns
 
@@ -72,37 +82,34 @@ export default function WorkerConfig() {
     entryType: string,
     entryOptions: string[]
   ) => {
-    await workerParamsContext.postCreateWorkerParam(
-      label,
-      entryType,
-      entryOptions
-    );
+    const newWorkerDimension: WorkerDimensionT = {
+      id: "",
+      name: "",
+      label: label,
+      entryType: entryType,
+      entryOptions: entryOptions,
+    };
+    await addWorkerDimension(newWorkerDimension);
   };
 
   const handleEditHeadCell = async (
-    workerParamId: string,
+    workerDimensionId: string,
     label: string,
     entryType: string,
     entryOptions: string[]
   ) => {
-    console.log(
-      "handleEditCell called: ",
-      workerParamId,
-      label,
-      entryType,
-      entryOptions
-    );
-    await workerParamsContext.postUpdateWorkerParam(
-      workerParamId,
-      label,
-      entryType,
-      entryOptions
-    );
+    const updatedWorkerDimension: WorkerDimensionT = {
+      id: workerDimensionId,
+      name: "",
+      label: label,
+      entryType: entryType,
+      entryOptions: entryOptions,
+    };
+    await updateWorkerDimension(updatedWorkerDimension);
   };
 
-  const handleDeleteColumn = async (workerParamId: string) => {
-    console.log("handleDeleteColumn called: ", workerParamId);
-    await workerParamsContext.deleteWorkerParam(workerParamId);
+  const handleDeleteColumn = async (workerDimensionId: string) => {
+    await deleteWorkerDimension(workerDimensionId);
   };
 
   // Rows

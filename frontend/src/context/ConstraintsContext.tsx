@@ -40,8 +40,6 @@ export const ConstraintsProvider = (props: ConstraintsProviderProps) => {
 
   const postCreateConstraint = useCallback(
     async (constraint: Record<string, any>) => {
-      console.log("createConstraint called");
-
       const response = await serverPostCreateConstraint(constraint);
 
       setConstraintsState((prevState) => {
@@ -69,8 +67,6 @@ export const ConstraintsProvider = (props: ConstraintsProviderProps) => {
 
   const postUpdateConstraint = useCallback(
     async (constraintId: string, constraint: Record<string, any>) => {
-      console.log("postUpdateConstraint called");
-
       const response = await serverPostUpdateConstraint(
         constraintId,
         constraint
@@ -132,7 +128,6 @@ export const ConstraintsProvider = (props: ConstraintsProviderProps) => {
   );
 
   const deleteConstraint = useCallback(async (constraintId: string) => {
-    console.log("deleteConstraint called");
     const response = await serverDeleteConstraint(constraintId);
 
     setConstraintsState((prevState) => {

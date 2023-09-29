@@ -38,7 +38,7 @@ class WorkerParamDB:
         label: str,
         entry_type: str,
         entry_options: List[str],
-    ) -> List[WorkerParam]:
+    ) -> WorkerParam:
         worker_param = WorkerParam(
             _id=ObjectId(),
             name=name,
@@ -46,10 +46,8 @@ class WorkerParamDB:
             entry_type=entry_type,
             entry_options=entry_options,
         )
-        worker_param.save()
-        # pylint: disable=no-member
-        worker_params = WorkerParam.objects.all()  # type: ignore
-        return list(worker_params)
+        worker_param_saved = worker_param.save()
+        return worker_param_saved
 
     def get_worker_params(
         self,
@@ -75,13 +73,16 @@ class WorkerParamDB:
         return worker_param
 
     def update_worker_param(
+        # pylint: disable=too-many-arguments
         self,
         worker_param: WorkerParam,
         label: str,
+        name: str,
         entry_type: str,
         entry_options: List[str],
     ) -> WorkerParam:
         worker_param.label = label
+        worker_param.name = name
         worker_param.entry_type = entry_type
         worker_param.entry_options = entry_options
         worker_param.save()

@@ -25,9 +25,6 @@ export default function BuildConstraint({
   handleEditRow,
   editMode,
 }: Props) {
-  console.log("constraint in BuildConstraint: ", constraint);
-  console.log("target in BuildConstraint: ", constraint);
-
   const [constraintType, setConstraintType] = useState(
     constraint.constraint?.constraint_type || ""
   );

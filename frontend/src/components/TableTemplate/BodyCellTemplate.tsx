@@ -34,7 +34,6 @@ export default function BodyCellTemplate({
   const [entryValue, setEntryValue] = useState(value);
 
   const handleEditConfirm = async () => {
-    console.log("handleEdit");
     if (entryValue !== value) {
       await handleEditCell(rowId, columnId, entryValue);
     }

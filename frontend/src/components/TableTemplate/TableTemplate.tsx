@@ -53,13 +53,8 @@ export default function TableTemplate({
     setDrawerOpen(!drawerOpen);
   };
 
-  console.log("columns in TableTemplate: ", typeof columns, columns);
-  console.log("rows in TableTemplate: ", typeof rows, rows);
-
   return (
     <>
-      {/* {console.log("columns in TableTemplate: ", typeof columns, columns)}
-      {console.log("rows in TableTemplate: ", typeof rows, rows)} */}
       <TableContainer component={Paper} style={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -67,9 +62,9 @@ export default function TableTemplate({
               {columns.map((column, colIndex) => (
                 <HeadCellTemplate
                   key={colIndex}
-                  columnId={column._id}
-                  entryType={column.entry_type}
-                  entryOptions={column.entry_options}
+                  columnId={column.id}
+                  entryType={column.entryType}
+                  entryOptions={column.entryOptions}
                   value={column.label}
                   handleEditCell={handleEditHeadCell}
                   handleDeleteColumn={handleDeleteColumn}
@@ -91,13 +86,13 @@ export default function TableTemplate({
                 {columns.map((column, colIndex) => (
                   <BodyCellTemplate
                     key={colIndex}
-                    columnId={column._id}
+                    columnId={column.id}
                     rowId={row._id}
                     columnName={column.name}
-                    entryType={column.entry_type}
-                    entryOptions={column.entry_options}
+                    entryType={column.entryType}
+                    entryOptions={column.entryOptions}
                     value={row[column.name]}
-                    editing={bodyEditing[row._id] === column._id}
+                    editing={bodyEditing[row._id] === column.id}
                     setEditing={setBodyEditing}
                     handleEditCell={handleEditBodyCell}
                   />

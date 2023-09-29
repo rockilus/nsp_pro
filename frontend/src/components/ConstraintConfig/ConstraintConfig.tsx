@@ -44,8 +44,6 @@ export default function ConstraintConfig() {
   }, [constraintsContext]);
 
   const handleAddRow = async (constraint: Record<string, any>) => {
-    console.log("handleAddRow called: ");
-
     await constraintsContext.postCreateConstraint(constraint);
   };
 
@@ -57,7 +55,6 @@ export default function ConstraintConfig() {
   };
 
   const handleEditRowStatus = async (constraintId: string, active: boolean) => {
-    console.log("handleEditRowStatus called: ", constraintId, active);
     await constraintsContext.postUpdateConstraintStatus(constraintId, active);
   };
 
