@@ -9,10 +9,6 @@ from database import (
     ShiftDB,
     ShiftParamDB,
     ShiftPropertyDB,
-    TimetableCategoryDB,
-    TimetableDB,
-    TimetablePropertyDB,
-    TimetableTimeDB,
     VariableDB,
     VariableParamDB,
     WorkerDB,
@@ -36,9 +32,5 @@ constraint_param_db = ConstraintParamDB(db)
 constraint_param_option_db = ConstraintParamOptionDB(db)
 constraint_db = ConstraintDB(db)
 constraint_variable_db = ConstraintVariableDB(db)
-timetable_db = TimetableDB(db)
-timetable_time_db = TimetableTimeDB(db)
-timetable_category_db = TimetableCategoryDB(db)
-timetable_property_db = TimetablePropertyDB(db)
 variable_db = VariableDB(db)
 variable_param_db = VariableParamDB(db)
