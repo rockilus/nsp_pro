@@ -2,8 +2,8 @@ from dataclasses import asdict
 from typing import Dict
 
 import humps
-from core.worker import WorkerDimension
 from flask import Blueprint, jsonify, request
+from core.worker import WorkerDimension
 from scripts.setup_database import worker_dimension_db, worker_property_db
 
 worker_dimension_routes = Blueprint("worker_dimension_routes", __name__)
@@ -32,10 +32,8 @@ def create_worker_dimension():
 def get_worker_dimensions():
     worker_dimensions = worker_dimension_db.get_worker_dimensions()
     if not worker_dimensions:
-        worker_dimensions = (
-            worker_dimension_db.create_default_worker_dimensions()
-        )
-    response = jsonify([dataclass_to_dict(wp) for wp in worker_dimensions])
+        worker_dimensions = worker_dimension_db.create_default_worker_dimensions()
+    response = jsonify([dataclass_to_dict(wd) for wd in worker_dimensions])
     return response, 200
 
 

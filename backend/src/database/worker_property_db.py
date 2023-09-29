@@ -34,10 +34,10 @@ class WorkerPropertyDB:
         worker: Worker,
     ) -> List[WorkerProperty]:
         # pylint: disable=no-member
-        worker_properties = WorkerPropertyDocument.objects.filter(worker=worker.id)  # type: ignore
-        return [
-            _from_mongo_worker_property(wp) for wp in list(worker_properties)
-        ]
+        worker_properties = WorkerPropertyDocument.objects.filter(  # type: ignore
+            worker=worker.id
+        )
+        return [_from_mongo_worker_property(wp) for wp in list(worker_properties)]
 
     def get_worker_properties_by_worker_dimension(
         self,
@@ -47,13 +47,9 @@ class WorkerPropertyDB:
         worker_properties = WorkerPropertyDocument.objects.filter(  # type: ignore
             worker_dimension=worker_dimension
         )
-        return [
-            _from_mongo_worker_property(wp) for wp in list(worker_properties)
-        ]
+        return [_from_mongo_worker_property(wp) for wp in list(worker_properties)]
 
-    def get_worker_property_by_id(
-        self, worker_property_id: str
-    ) -> WorkerProperty:
+    def get_worker_property_by_id(self, worker_property_id: str) -> WorkerProperty:
         # pylint: disable=no-member
         worker_property = WorkerPropertyDocument.objects.get(  # type: ignore
             _id=worker_property_id
@@ -64,18 +60,14 @@ class WorkerPropertyDB:
         self,
         worker: Worker,
         worker_dimension: WorkerDimension,
-    ) -> WorkerProperty:
+    ) -> Union[WorkerProperty, None]:
         # pylint: disable=no-member
         worker_property = (
             WorkerPropertyDocument.objects.filter(worker=worker.id)  # type: ignore
             .filter(worker_dimension=worker_dimension.id)
             .first()
         )
-        return (
-            _from_mongo_worker_property(worker_property)
-            if worker_property
-            else None
-        )
+        return _from_mongo_worker_property(worker_property) if worker_property else None
 
     def update_worker_property(
         self,
@@ -109,8 +101,8 @@ def _to_mongo_worker_property(
     dataclass_obj: WorkerProperty,
 ) -> WorkerPropertyDocument:
     # pylint: disable=no-member
-    worker = WorkerDocument.objects.get(id=dataclass_obj.worker_id)
-    worker_dimension = WorkerDimensionDocument.objects.get(
+    worker = WorkerDocument.objects.get(id=dataclass_obj.worker_id)  # type: ignore
+    worker_dimension = WorkerDimensionDocument.objects.get(  # type: ignore
         id=dataclass_obj.worker_dimension_id
     )
     return WorkerPropertyDocument(

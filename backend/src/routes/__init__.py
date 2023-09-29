@@ -1,6 +1,6 @@
 from routes.constraint_param_routes import constraint_param_routes
 from routes.constraint_routes import constraint_routes
-from routes.shift_param_routes import shift_param_routes
+from routes.shift_dimension_routes import shift_dimension_routes
 from routes.shift_routes import shift_routes
 from routes.solver_routes import solver_routes
 from routes.worker_dimension_routes import worker_dimension_routes
@@ -11,7 +11,7 @@ __all__ = [
     "coverage_routes",
     "constraint_param_routes",
     "constraint_routes",
-    "shift_param_routes",
+    "shift_dimension_routes",
     "shift_routes",
     "solver_routes",
     "worker_dimension_routes",

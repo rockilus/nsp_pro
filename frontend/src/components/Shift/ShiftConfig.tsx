@@ -54,7 +54,7 @@ export default function ShiftConfig() {
           );
           row[column.name] = shiftProperty ? shiftProperty.value || "" : "";
         }
-        row["_id"] = shift.id;
+        row["id"] = shift.id;
         newRows.push(row);
       }
       setRows(newRows);

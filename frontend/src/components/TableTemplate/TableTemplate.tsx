@@ -53,8 +53,6 @@ export default function TableTemplate({
     setDrawerOpen(!drawerOpen);
   };
 
-  console.log("TableTemplate", columns, rows);
-
   return (
     <>
       <TableContainer component={Paper} style={{ width: "100%" }}>

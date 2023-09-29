@@ -1,33 +1,28 @@
-from typing import List
+from dataclasses import asdict
+from typing import Dict, Union
 
-from bson import ObjectId
+import humps
 from flask import Blueprint, jsonify, request
-from mongoengine import NotUniqueError
-from scripts.setup_database import shift_db, shift_param_db, shift_property_db
+from core.shift import Shift, ShiftProperty
+from scripts.setup_database import (
+    shift_db,
+    shift_dimension_db,
+    shift_property_db,
+)
 
 shift_routes = Blueprint("shift_routes", __name__)
 
 
 @shift_routes.route("/create-shift", methods=["POST"])
 def create_shift():
-    try:
-        shift_created = shift_db.create_shift()
-        shift_dict = shift_created.to_dict()
-        shift_properties = shift_property_db.get_shift_properties_by_shift(
-            shift_created
-        )
-        shift_properties_dict = [
-            shift_property.to_dict() for shift_property in shift_properties
-        ]
-        shift_response = {
-            "id": shift_dict["_id"],
-            "shiftProperties": shift_properties_to_api(shift_properties_dict),
-        }
-        response = jsonify(shift_response)
-        return response, 200
-    except NotUniqueError as e:
-        print(e)
-        return jsonify({"error": f"{str(e)}"}), 404
+    shift_created = shift_db.create_shift()
+    shift_properties = shift_property_db.get_shift_properties_by_shift(shift_created)
+    shift_response = {
+        "id": shift_created.id,
+        "shiftProperties": [dataclass_to_dict(sp) for sp in shift_properties],
+    }
+    response = jsonify(shift_response)
+    return response, 200
 
 
 @shift_routes.route("/get-shifts", methods=["GET"])
@@ -36,16 +31,11 @@ def get_shifts():
     shifts_properties = [
         shift_property_db.get_shift_properties_by_shift(shift) for shift in shifts
     ]
-    shifts_dict = [shift.to_dict() for shift in shifts]
-    shifts_properties_dict = [
-        [shift_property.to_dict() for shift_property in shift_properties]
-        for shift_properties in shifts_properties
-    ]
     shifts_response = []
-    for shift, shift_properties in zip(shifts_dict, shifts_properties_dict):
+    for shift, shift_properties in zip(shifts, shifts_properties):
         shift_dict = {
-            "id": shift["_id"],
-            "shiftProperties": shift_properties_to_api(shift_properties),
+            "id": shift.id,
+            "shiftProperties": [dataclass_to_dict(sp) for sp in shift_properties],
         }
         shifts_response.append(shift_dict)
     response = jsonify(shifts_response)
@@ -56,68 +46,37 @@ def get_shifts():
 def edit_shift_property():
     input_received = request.get_json()
     shift_id = input_received["shiftId"]
-    shift_param_id = input_received["shiftDimensionId"]
+    shift_dimension_id = input_received["shiftDimensionId"]
     value = input_received["value"]
-    try:
-        shift = shift_db.get_shift_by_id(shift_id)
-        shift_param = shift_param_db.get_shift_param_by_id(shift_param_id)
-        shift_property = shift_property_db.get_shift_property_by_shift_and_param(
-            shift, shift_param
+    shift = shift_db.get_shift_by_id(shift_id)
+    shift_dimension = shift_dimension_db.get_shift_dimension_by_id(shift_dimension_id)
+    shift_property = shift_property_db.get_shift_property_by_shift_and_dimension(
+        shift, shift_dimension
+    )
+    if not shift_property:
+        updated_shift_property = shift_property_db.create_shift_property(
+            shift, shift_dimension, value
         )
-        if not shift_property:
-            updated_shift_property = shift_property_db.create_shift_property(
-                shift, shift_param, value
-            )
-        else:
-            updated_shift_property = shift_property_db.update_shift_property(
-                shift_property, value
-            )
-        updated_shift_property_dict = updated_shift_property.to_dict()
-        updated_shift_property_dict_api = shift_properties_to_api(
-            [updated_shift_property_dict]
-        )[0]
-        response = jsonify(updated_shift_property_dict_api)
-        return response, 200
-    # pylint: disable=broad-except
-    except Exception as e:  # noqa: E722
-        print(e)
-        return jsonify({"error": f"{str(e)}"}), 404
+    else:
+        shift_property.value = value
+        updated_shift_property = shift_property_db.update_shift_property(shift_property)
+    response = jsonify(dataclass_to_dict(updated_shift_property))
+    return response, 200
 
 
 @shift_routes.route("/delete-shift", methods=["DELETE"])
 def delete_shift():
     shift_id_received = request.get_json()
-    try:
-        shift = shift_db.get_shift_by_id(shift_id_received["id"])
-        shift_properties = shift_property_db.get_shift_properties_by_shift(shift)
-        shift_property_db.delete_shift_properties(shift_properties)
-        shift_db.delete_shift(shift)
-        return jsonify({"message": "shift deleted"}), 200
-    # pylint: disable=broad-except,R0801
-    except Exception as e:
-        print(e)
-        return jsonify({"error": f"{str(e)}"}), 404
+    shift_property_db.delete_shift_properties_by_shift_id(shift_id_received["id"])
+    shift_db.delete_shift(shift_id_received["id"])
+    return jsonify({"message": "shift deleted"}), 200
 
 
-def is_valid_objectid(objectid_str: str) -> bool:
-    # pylint: disable=R0801
-    try:
-        ObjectId(objectid_str)
-        return True
-    # pylint: disable=broad-except
-    # pylint: disable=bare-except
-    except:  # noqa: E722
-        return False
+def dataclass_to_dict(obj: Union[Shift, ShiftProperty]) -> Dict:
+    data = asdict(obj)
+    return humps.camelize(data)
 
 
-def shift_properties_to_api(shift_properties: List) -> List:
-    shift_properties_api = []
-    for shift_property in shift_properties:
-        shift_property_api = {
-            "id": shift_property["_id"],
-            "value": shift_property["value"],
-            "shiftId": shift_property["shift"],
-            "shiftDimensionId": shift_property["shift_param"],
-        }
-        shift_properties_api.append(shift_property_api)
-    return shift_properties_api
+def dict_to_shift_property(data: dict) -> ShiftProperty:
+    data_snake = humps.decamelize(data)
+    return ShiftProperty(**data_snake)

@@ -2,8 +2,8 @@ from dataclasses import asdict
 from typing import Dict, Union
 
 import humps
-from core.worker import Worker, WorkerProperty
 from flask import Blueprint, jsonify, request
+from core.worker import Worker, WorkerProperty
 from scripts.setup_database import (
     worker_db,
     worker_dimension_db,
@@ -21,9 +21,7 @@ def create_worker():
     )
     worker_response = {
         "id": worker_created.id,
-        "workerProperties": [
-            dataclass_to_dict(wp) for wp in worker_properties
-        ],
+        "workerProperties": [dataclass_to_dict(wp) for wp in worker_properties],
     }
     response = jsonify(worker_response)
     return response, 200
@@ -33,16 +31,13 @@ def create_worker():
 def get_workers():
     workers = worker_db.get_workers()
     workers_properties = [
-        worker_property_db.get_worker_properties_by_worker(worker)
-        for worker in workers
+        worker_property_db.get_worker_properties_by_worker(worker) for worker in workers
     ]
     workers_response = []
     for worker, worker_properties in zip(workers, workers_properties):
         worker_dict = {
             "id": worker.id,
-            "workerProperties": [
-                dataclass_to_dict(wp) for wp in worker_properties
-            ],
+            "workerProperties": [dataclass_to_dict(wp) for wp in worker_properties],
         }
         workers_response.append(worker_dict)
     response = jsonify(workers_response)
@@ -59,10 +54,8 @@ def edit_worker_property():
     worker_dimension = worker_dimension_db.get_worker_dimension_by_id(
         worker_dimension_id
     )
-    worker_property = (
-        worker_property_db.get_worker_property_by_worker_and_dimension(
-            worker, worker_dimension
-        )
+    worker_property = worker_property_db.get_worker_property_by_worker_and_dimension(
+        worker, worker_dimension
     )
     if not worker_property:
         updated_worker_property = worker_property_db.create_worker_property(
@@ -80,9 +73,7 @@ def edit_worker_property():
 @worker_routes.route("/delete-worker", methods=["DELETE"])
 def delete_worker():
     worker_id_received = request.get_json()
-    worker_property_db.delete_worker_properties_by_worker_id(
-        worker_id_received["id"]
-    )
+    worker_property_db.delete_worker_properties_by_worker_id(worker_id_received["id"])
     worker_db.delete_worker(worker_id_received["id"])
     return jsonify({"message": "Worker deleted"}), 200
 

@@ -7,7 +7,7 @@ from routes import (
     coverage_routes,
     constraint_param_routes,
     constraint_routes,
-    shift_param_routes,
+    shift_dimension_routes,
     shift_routes,
     solver_routes,
     worker_dimension_routes,
@@ -30,7 +30,7 @@ app.config["JWT_SECRET_KEY"] = "your-secret-key"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 
 app.register_blueprint(shift_routes)
-app.register_blueprint(shift_param_routes)
+app.register_blueprint(shift_dimension_routes)
 app.register_blueprint(worker_routes)
 app.register_blueprint(worker_dimension_routes)
 app.register_blueprint(constraint_param_routes)

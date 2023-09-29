@@ -1,9 +1,9 @@
 from typing import List
 
 from bson import ObjectId
+from core.worker import WorkerDimension
 from database.db import DB
 from models import WorkerDimension as WorkerDimensionDocument
-from core.worker import WorkerDimension
 
 
 class WorkerDimensionDB:
@@ -31,9 +31,7 @@ class WorkerDimensionDB:
         worker_dimension_last_name.save()
         # pylint: disable=no-member
         worker_dimensions = WorkerDimensionDocument.objects.all()  # type: ignore
-        return [
-            _from_mongo_worker_dimension(wp) for wp in list(worker_dimensions)
-        ]
+        return [_from_mongo_worker_dimension(wd) for wd in list(worker_dimensions)]
 
     def create_worker_dimension(
         self,
@@ -57,16 +55,16 @@ class WorkerDimensionDB:
     ) -> List[WorkerDimension]:
         # pylint: disable=no-member
         worker_dimensions = WorkerDimensionDocument.objects.all()  # type: ignore
-        return [
-            _from_mongo_worker_dimension(wp) for wp in list(worker_dimensions)
-        ]
+        return [_from_mongo_worker_dimension(wd) for wd in list(worker_dimensions)]
 
     def get_worker_dimension_by_id(
         self,
         worker_dimension_id: str,
     ) -> WorkerDimension:
         # pylint: disable=no-member
-        worker_dimension = WorkerDimensionDocument.objects.get(id=worker_dimension_id)  # type: ignore
+        worker_dimension = WorkerDimensionDocument.objects.get(  # type: ignore
+            id=worker_dimension_id
+        )
         return _from_mongo_worker_dimension(worker_dimension)
 
     def get_worker_dimension_by_name(
@@ -74,7 +72,9 @@ class WorkerDimensionDB:
         worker_dimension_name: str,
     ) -> WorkerDimension:
         # pylint: disable=no-member
-        worker_dimension = WorkerDimensionDocument.objects.get(name=worker_dimension_name)  # type: ignore
+        worker_dimension = WorkerDimensionDocument.objects.get(  # type: ignore
+            name=worker_dimension_name
+        )
         return _from_mongo_worker_dimension(worker_dimension)
 
     def update_worker_dimension(
@@ -89,7 +89,7 @@ class WorkerDimensionDB:
         worker_dimension_id: str,
     ) -> None:
         # pylint: disable=no-member
-        worker_dimension = WorkerDimensionDocument.objects.get(
+        worker_dimension = WorkerDimensionDocument.objects.get(  # type: ignore
             id=worker_dimension_id
         )
         worker_dimension.delete()

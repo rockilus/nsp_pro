@@ -5,7 +5,7 @@ from database.constraint_variable_db import ConstraintVariableDB
 from database.coverage_db import CoverageDB
 from database.db import DB
 from database.shift_db import ShiftDB
-from database.shift_param_db import ShiftParamDB
+from database.shift_dimension_db import ShiftDimensionDB
 from database.shift_property_db import ShiftPropertyDB
 from database.variable_db import VariableDB
 from database.variable_param_db import VariableParamDB
@@ -23,7 +23,7 @@ __all__ = [
     "CoverageDB",
     "DB",
     "ShiftDB",
-    "ShiftParamDB",
+    "ShiftDimensionDB",
     "ShiftPropertyDB",
     "VariableDB",
     "VariableParamDB",

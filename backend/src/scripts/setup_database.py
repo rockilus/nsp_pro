@@ -7,7 +7,7 @@ from database import (
     ConstraintVariableDB,
     CoverageDB,
     ShiftDB,
-    ShiftParamDB,
+    ShiftDimensionDB,
     ShiftPropertyDB,
     VariableDB,
     VariableParamDB,
@@ -16,12 +16,14 @@ from database import (
     WorkerPropertyDB,
 )
 
-database_uri = f"mongodb://localhost:27017/{os.getenv('ENV_SITUATION', default='nsp_pro')}"
+database_uri = (
+    f"mongodb://localhost:27017/{os.getenv('ENV_SITUATION', default='nsp_pro')}"
+)
 
 db = DB(database_uri)
 shift_db = ShiftDB(db)
 coverage_db = CoverageDB(db)
-shift_param_db = ShiftParamDB(db)
+shift_dimension_db = ShiftDimensionDB(db)
 shift_property_db = ShiftPropertyDB(db)
 worker_db = WorkerDB(db)
 worker_dimension_db = WorkerDimensionDB(db)
