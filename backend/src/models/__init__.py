@@ -8,7 +8,7 @@ from models.shift_property import ShiftProperty
 from models.variable import Variable
 from models.variable_param import VariableParam
 from models.worker import Worker
-from models.worker_param import WorkerParam
+from models.worker_dimension import WorkerDimension
 from models.worker_property import WorkerProperty
 
 __all__ = [
@@ -22,6 +22,6 @@ __all__ = [
     "Variable",
     "VariableParam",
     "Worker",
-    "WorkerParam",
+    "WorkerDimension",
     "WorkerProperty",
 ]

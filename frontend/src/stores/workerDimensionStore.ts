@@ -9,10 +9,10 @@ const baseApiUrl = "http://127.0.0.1:5000";
 
 // WITH OLD API
 // Worker Dimension
-const createWorkerDimensionUrl = baseApiUrl + "/create-worker-param";
-const getWorkerDimensionsUrl = baseApiUrl + "/get-worker-params";
-const updateWorkerDimensionUrl = baseApiUrl + "/update-worker-param";
-const deleteWorkerDimensionUrl = baseApiUrl + "/delete-worker-param";
+const createWorkerDimensionUrl = baseApiUrl + "/create-worker-dimension";
+const getWorkerDimensionsUrl = baseApiUrl + "/get-worker-dimensions";
+const updateWorkerDimensionUrl = baseApiUrl + "/update-worker-dimension";
+const deleteWorkerDimensionUrl = baseApiUrl + "/delete-worker-dimension";
 
 type WorkerDimensionStateT = {
   workerDimensions: WorkerDimensionT[];

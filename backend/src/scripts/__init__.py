@@ -12,7 +12,7 @@ from scripts.setup_database import (
     variable_db,
     variable_param_db,
     worker_db,
-    worker_param_db,
+    worker_dimension_db,
     worker_property_db,
 )
 from scripts.setup_router import jwt
@@ -31,6 +31,6 @@ __all__ = [
     "variable_db",
     "variable_param_db",
     "worker_db",
-    "worker_param_db",
+    "worker_dimension_db",
     "worker_property_db",
 ]

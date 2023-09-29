@@ -43,12 +43,15 @@ export default function WorkerConfig() {
       for (let worker of workers) {
         let row: Record<string, any> = {};
         for (let column of columns) {
+          console.log("column", column);
+          console.log("worker", worker);
+
           const workerProperty = worker.workerProperties.find(
             (p) => p.workerDimensionId === column.id
           );
           row[column.name] = workerProperty ? workerProperty.value || "" : "";
         }
-        row["_id"] = worker.id;
+        row["id"] = worker.id;
         newRows.push(row);
       }
       setRows(newRows);

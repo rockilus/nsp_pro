@@ -2,7 +2,8 @@ from typing import List
 
 from bson import ObjectId
 from database.db import DB
-from models import Worker
+from models import Worker as WorkerDocument
+from core.worker import Worker
 
 
 class WorkerDB:
@@ -12,24 +13,38 @@ class WorkerDB:
     def create_worker(
         self,
     ) -> Worker:
-        worker = Worker(
-            _id=ObjectId(),
+        worker = WorkerDocument(
+            id=str(ObjectId()),
         )
         worker_saved = worker.save()
-        return worker_saved
+        return _from_mongo_worker(worker_saved)
 
     def get_workers(
         self,
     ) -> List[Worker]:
         # pylint: disable=no-member
-        workers = Worker.objects.all()  # type: ignore
-        return list(workers)
+        workers = WorkerDocument.objects.all()  # type: ignore
+        return [_from_mongo_worker(w) for w in list(workers)]
 
     def get_worker_by_id(self, worker_id: str) -> Worker:
         # pylint: disable=no-member
-        print("worker_id in get_worker_by_id:", worker_id)
-        worker = Worker.objects.get(_id=worker_id)  # type: ignore
-        return worker
+        worker = WorkerDocument.objects.get(id=worker_id)  # type: ignore
+        return _from_mongo_worker(worker)
 
-    def delete_worker(self, worker: Worker) -> None:
+    def delete_worker(self, worker_id: str) -> None:
+        # pylint: disable=no-member
+        worker = WorkerDocument.objects.get(id=worker_id)  # type: ignore
         worker.delete()
+
+
+# Mappers
+def to_mongo_worker(dataclass_obj: Worker) -> WorkerDocument:
+    return WorkerDocument(
+        id=dataclass_obj.id,
+    )
+
+
+def _from_mongo_worker(doc_obj: WorkerDocument) -> Worker:
+    return Worker(
+        id=doc_obj.id,
+    )
