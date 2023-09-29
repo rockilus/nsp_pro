@@ -50,7 +50,7 @@ def update_shift_dimension():
 @shift_dimension_routes.route("/delete-shift-dimension", methods=["DELETE"])
 def delete_shift_dimension():
     info_received = request.get_json()
-    shift_property_db.delete_shift_properties_by_shift_id(info_received["id"])
+    shift_property_db.delete_shift_properties_by_shift_dimension_id(info_received["id"])
     shift_dimension_db.delete_shift_dimension(info_received["id"])
     return jsonify({"message": "shift deleted"}), 200
 
