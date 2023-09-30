@@ -13,16 +13,15 @@ shift_dimension_routes = Blueprint("shift_dimension_routes", __name__)
 def create_shift_dimension():
     new_shift_dimension = request.get_json()
     if (
-        "label" in new_shift_dimension
+        "name" in new_shift_dimension
         and "entryType" in new_shift_dimension
         and "entryOptions" in new_shift_dimension
     ):
-        label = new_shift_dimension["label"]
+        name = new_shift_dimension["name"]
         entry_type = new_shift_dimension["entryType"]
         entry_options = new_shift_dimension["entryOptions"]
-        name = label.lower().replace(" ", "_")
     shift_dimension = shift_dimension_db.create_shift_dimension(
-        name, label, entry_type, entry_options
+        name, entry_type, entry_options
     )
     response = jsonify(dataclass_to_dict(shift_dimension))
     return response, 200
@@ -41,7 +40,6 @@ def get_shift_dimensions():
 def update_shift_dimension():
     info_received = request.get_json()
     shift_dimension = dict_to_shift_dimension(info_received)
-    shift_dimension.name = shift_dimension.label.lower().replace(" ", "_")
     shift_dimension_updated = shift_dimension_db.update_shift_dimension(shift_dimension)
     response = jsonify(dataclass_to_dict(shift_dimension_updated))
     return response, 200

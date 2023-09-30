@@ -15,8 +15,7 @@ class ShiftDimensionDB:
     ) -> List[ShiftDimension]:
         shift_dimension_first_name = ShiftDimensionDocument(
             id=str(ObjectId()),
-            name="shift_name",
-            label="Shift Name",
+            name="Shift Name",
             entry_type="str",
             entry_options=[],
         )
@@ -28,7 +27,6 @@ class ShiftDimensionDB:
     def create_shift_dimension(
         self,
         name: str,
-        label: str,
         entry_type: str,
         entry_options: List[str],
     ) -> ShiftDimension:
@@ -36,7 +34,6 @@ class ShiftDimensionDB:
         shift_dimension = ShiftDimensionDocument(
             id=str(ObjectId()),
             name=name,
-            label=label,
             entry_type=entry_type,
             entry_options=entry_options,
         )
@@ -94,7 +91,6 @@ def to_mongo_shift_dimension(
         # pylint: disable=R0801
         id=dataclass_obj.id,
         name=dataclass_obj.name,
-        label=dataclass_obj.label,
         entry_type=dataclass_obj.entry_type,
         entry_options=dataclass_obj.entry_options,
     )
@@ -107,7 +103,6 @@ def _from_mongo_shift_dimension(
         # pylint: disable=R0801
         id=doc_obj.id,
         name=doc_obj.name,
-        label=doc_obj.label,
         entry_type=doc_obj.entry_type,
         entry_options=[*doc_obj.entry_options],
     )

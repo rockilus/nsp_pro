@@ -11,6 +11,5 @@ class ShiftDimension(Document):
 
     id = StringField(primary_key=True, required=True)
     name = StringField(required=True)
-    label = StringField(required=True)
     entry_type = StringField(required=True)
     entry_options = ListField(StringField())

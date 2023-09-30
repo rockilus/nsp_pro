@@ -1,7 +1,6 @@
 export type WorkerDimensionT = {
   id: string;
   name: string;
-  label: string;
   entryType: string;
   entryOptions: string[];
 };

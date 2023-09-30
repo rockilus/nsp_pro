@@ -12,7 +12,6 @@ class Shift:
 class ShiftDimension:
     id: str
     name: str
-    label: str
     entry_type: str
     entry_options: List[str]
 

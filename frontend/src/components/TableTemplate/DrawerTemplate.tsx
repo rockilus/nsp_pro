@@ -18,7 +18,7 @@ interface Props {
   drawerOpen: boolean;
   toggleDrawer: () => void;
   handleAddColumn: (
-    label: string,
+    name: string,
     entryType: string,
     entryOptions: string[]
   ) => void;
@@ -36,13 +36,13 @@ export default function DrawerTemplate({
   toggleDrawer,
   handleAddColumn,
 }: Props) {
-  const [label, setLabel] = useState("");
+  const [name, setName] = useState("");
   const [entryType, setEntryType] = useState("");
   const [listOptions, setListOptions] = useState<string[]>([]);
   const [newOption, setNewOption] = useState<string>("");
 
   const handleAddConfirm = async () => {
-    await handleAddColumn(label, entryType, listOptions);
+    await handleAddColumn(name, entryType, listOptions);
     toggleDrawer();
   };
 
@@ -137,8 +137,8 @@ export default function DrawerTemplate({
             id="outlined-basic"
             label="Property Name"
             variant="outlined"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             fullWidth
           />
         </ListItem>

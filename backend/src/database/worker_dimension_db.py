@@ -15,15 +15,13 @@ class WorkerDimensionDB:
     ) -> List[WorkerDimension]:
         worker_dimension_first_name = WorkerDimensionDocument(
             id=str(ObjectId()),
-            name="first_name",
-            label="First Name",
+            name="First Name",
             entry_type="str",
             entry_options=[],
         )
         worker_dimension_last_name = WorkerDimensionDocument(
             id=str(ObjectId()),
-            name="last_name",
-            label="Last Name",
+            name="Last Name",
             entry_type="str",
             entry_options=[],
         )
@@ -36,14 +34,12 @@ class WorkerDimensionDB:
     def create_worker_dimension(
         self,
         name: str,
-        label: str,
         entry_type: str,
         entry_options: List[str],
     ) -> WorkerDimension:
         worker_dimension = WorkerDimensionDocument(
             id=str(ObjectId()),
             name=name,
-            label=label,
             entry_type=entry_type,
             entry_options=entry_options,
         )
@@ -104,7 +100,6 @@ def to_mongo_worker_dimension(
     return WorkerDimensionDocument(
         id=dataclass_obj.id,
         name=dataclass_obj.name,
-        label=dataclass_obj.label,
         entry_type=dataclass_obj.entry_type,
         entry_options=dataclass_obj.entry_options,
     )
@@ -116,7 +111,6 @@ def _from_mongo_worker_dimension(
     return WorkerDimension(
         id=doc_obj.id,
         name=doc_obj.name,
-        label=doc_obj.label,
         entry_type=doc_obj.entry_type,
         entry_options=[*doc_obj.entry_options],
     )
