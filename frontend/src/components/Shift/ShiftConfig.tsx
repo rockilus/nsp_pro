@@ -84,14 +84,13 @@ export default function ShiftConfig() {
   // Columns
 
   const handleAddColumn = async (
-    label: string,
+    name: string,
     entryType: string,
     entryOptions: string[]
   ) => {
     const newShiftDimension: ShiftDimensionT = {
       id: "",
-      name: "",
-      label: label,
+      name: name,
       entryType: entryType,
       entryOptions: entryOptions,
     };
@@ -100,14 +99,13 @@ export default function ShiftConfig() {
 
   const handleEditHeadCell = async (
     shiftDimensionId: string,
-    label: string,
+    name: string,
     entryType: string,
     entryOptions: string[]
   ) => {
     const updatedShiftDimension: ShiftDimensionT = {
       id: shiftDimensionId,
-      name: "",
-      label: label,
+      name: name,
       entryType: entryType,
       entryOptions: entryOptions,
     };

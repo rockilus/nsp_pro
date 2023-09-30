@@ -13,16 +13,15 @@ worker_dimension_routes = Blueprint("worker_dimension_routes", __name__)
 def create_worker_dimension():
     new_worker_dimension = request.get_json()
     if (
-        "label" in new_worker_dimension
+        "name" in new_worker_dimension
         and "entryType" in new_worker_dimension
         and "entryOptions" in new_worker_dimension
     ):
-        label = new_worker_dimension["label"]
+        name = new_worker_dimension["name"]
         entry_type = new_worker_dimension["entryType"]
         entry_options = new_worker_dimension["entryOptions"]
-        name = label.lower().replace(" ", "_")
     worker_dimension = worker_dimension_db.create_worker_dimension(
-        name, label, entry_type, entry_options
+        name, entry_type, entry_options
     )
     response = jsonify(dataclass_to_dict(worker_dimension))
     return response, 200
@@ -41,7 +40,6 @@ def get_worker_dimensions():
 def update_worker_dimension():
     info_received = request.get_json()
     worker_dimension = dict_to_worker_dimension(info_received)
-    worker_dimension.name = worker_dimension.label.lower().replace(" ", "_")
     worker_dimension_updated = worker_dimension_db.update_worker_dimension(
         worker_dimension
     )

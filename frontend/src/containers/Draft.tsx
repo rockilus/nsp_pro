@@ -21,7 +21,7 @@ export default function Draft() {
 
   const findShiftName = (s: any) => {
     const shiftDimensionNameId = shiftDimensions?.find(
-      (p) => p.name === "shift_name"
+      (p) => p.name === "Shift Name"
     )?.id;
     if (!shiftDimensionNameId) {
       throw Error("Shift params should have shift_name");

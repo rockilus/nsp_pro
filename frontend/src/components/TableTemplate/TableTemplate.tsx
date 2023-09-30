@@ -20,7 +20,7 @@ interface Props {
   columns: Record<string, any>[];
   rows: Record<string, any>[];
   handleAddColumn: (
-    label: string,
+    name: string,
     entryType: string,
     entryOptions: string[]
   ) => void;
@@ -65,7 +65,7 @@ export default function TableTemplate({
                   columnId={column.id}
                   entryType={column.entryType}
                   entryOptions={column.entryOptions}
-                  value={column.label}
+                  value={column.name}
                   handleEditCell={handleEditHeadCell}
                   handleDeleteColumn={handleDeleteColumn}
                 />

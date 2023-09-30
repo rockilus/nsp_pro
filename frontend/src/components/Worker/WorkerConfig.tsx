@@ -78,14 +78,13 @@ export default function WorkerConfig() {
   // Columns
 
   const handleAddColumn = async (
-    label: string,
+    name: string,
     entryType: string,
     entryOptions: string[]
   ) => {
     const newWorkerDimension: WorkerDimensionT = {
       id: "",
-      name: "",
-      label: label,
+      name: name,
       entryType: entryType,
       entryOptions: entryOptions,
     };
@@ -94,14 +93,13 @@ export default function WorkerConfig() {
 
   const handleEditHeadCell = async (
     workerDimensionId: string,
-    label: string,
+    name: string,
     entryType: string,
     entryOptions: string[]
   ) => {
     const updatedWorkerDimension: WorkerDimensionT = {
       id: workerDimensionId,
-      name: "",
-      label: label,
+      name: name,
       entryType: entryType,
       entryOptions: entryOptions,
     };

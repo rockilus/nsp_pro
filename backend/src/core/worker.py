@@ -11,7 +11,6 @@ class Worker:
 class WorkerDimension:
     id: str
     name: str
-    label: str
     entry_type: str
     entry_options: List[str]
 
