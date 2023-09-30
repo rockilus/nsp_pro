@@ -1,10 +1,10 @@
 from mongoengine import Document
 from mongoengine.fields import (
-    ObjectIdField,
-    IntField,
-    StringField,
-    ReferenceField,
     BooleanField,
+    IntField,
+    ObjectIdField,
+    ReferenceField,
+    StringField,
 )
 
 

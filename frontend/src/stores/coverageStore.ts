@@ -11,7 +11,7 @@ const apiUrlCoverages = `${baseApiUrl}/coverages`;
 type CoverageStateT = {
   coverages: CoverageT[];
   fetchCoverages: () => void;
-  addCoverage: (coverage: CoverageT) => void;
+  addCoverage: (coverage: CoverageT) => Promise<CoverageT>;
   updateCoverage: (updatedCoverage: CoverageT) => void;
   deleteCoverage: (id: string) => void;
 };
@@ -51,8 +51,9 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
       const data = await response.json();
       const newCoverage = toCoverageT(data);
       set((state) => ({ coverages: [...state.coverages, newCoverage] }));
+      return newCoverage;
     } catch (error) {
-      console.error("Failed to add coverage:", error);
+      throw Error(`Failed to add coverage: ${error}`);
     }
   },
 

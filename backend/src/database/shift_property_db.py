@@ -1,6 +1,7 @@
 from typing import List, Union
 
 from bson import ObjectId
+
 from core.shift import Shift, ShiftDimension, ShiftProperty
 from database.db import DB
 from database.shift_db import to_mongo_shift

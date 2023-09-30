@@ -31,9 +31,11 @@ const CoveragePanel: React.FC<CoveragePanelProps> = ({shifts}) => {
     }, [fetchCoverages]);
 
     // handlers for callbacks
-    const handleCoverageChange = (updatedCoverage: CoverageT) => {
+    const handleCoverageChange = async (updatedCoverage: CoverageT) => {
         if (isNewCoverage) {
-            addCoverage(updatedCoverage);
+            const newCoverage = await addCoverage(updatedCoverage);
+            setSelectedCoverage(newCoverage);
+            setIsNewCoverage(false);  // Reset this flag after addingaddCoverage(updatedCoverage);
         } else {
             updateCoverage(updatedCoverage);
         }
@@ -45,11 +47,13 @@ const CoveragePanel: React.FC<CoveragePanelProps> = ({shifts}) => {
     };
 
     const handleCreateNewCoverage = () => {
+        const now = new Date();
+        const startOfDayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
         const newCoverage: CoverageT = {
             id: `id-${Date.now()}`, // Temporary unique ID, replace with real ID from the backend if needed
             name: '',
-            dateStart: new Date(),
-            dateEnd: new Date(),
+            dateStart: startOfDayUTC,
+            dateEnd:startOfDayUTC,
             shiftDemands: []
         };
         setSelectedCoverage(newCoverage);

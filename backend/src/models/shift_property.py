@@ -1,9 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import (
-    DynamicField,
-    ReferenceField,
-    StringField,
-)
+from mongoengine.fields import DynamicField, ReferenceField, StringField
 
 
 class ShiftProperty(Document):

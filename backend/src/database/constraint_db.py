@@ -1,6 +1,7 @@
 from typing import List
 
 from bson import ObjectId
+
 from database.db import DB
 from models import Constraint
 

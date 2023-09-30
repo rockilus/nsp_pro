@@ -1,55 +1,48 @@
 from dataclasses import asdict
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 import humps
-from flask import Blueprint, jsonify, request
+from fastapi import APIRouter, Body
+
 from core.worker import Worker, WorkerProperty
-from scripts.setup_database import (
-    worker_db,
-    worker_dimension_db,
-    worker_property_db,
-)
+from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
 
-worker_routes = Blueprint("worker_routes", __name__)
+router = APIRouter()
 
 
-@worker_routes.route("/create-worker", methods=["POST"])
-def create_worker():
+@router.post("/create-worker")
+def create_worker() -> Dict:
     worker_created = worker_db.create_worker()
     worker_properties = worker_property_db.get_worker_properties_by_worker(
         worker_created
     )
-    worker_response = {
+    return {
         "id": worker_created.id,
         "workerProperties": [dataclass_to_dict(wp) for wp in worker_properties],
     }
-    response = jsonify(worker_response)
-    return response, 200
 
 
-@worker_routes.route("/get-workers", methods=["GET"])
-def get_workers():
+@router.get("/get-workers", response_model=List[Dict])
+def get_workers() -> List[Dict]:
     workers = worker_db.get_workers()
     workers_properties = [
         worker_property_db.get_worker_properties_by_worker(worker) for worker in workers
     ]
-    workers_response = []
-    for worker, worker_properties in zip(workers, workers_properties):
-        worker_dict = {
+    return [
+        {
             "id": worker.id,
             "workerProperties": [dataclass_to_dict(wp) for wp in worker_properties],
         }
-        workers_response.append(worker_dict)
-    response = jsonify(workers_response)
-    return response, 200
+        for worker, worker_properties in zip(workers, workers_properties)
+    ]
 
 
-@worker_routes.route("/update-worker-property", methods=["POST"])
-def edit_worker_property():
-    input_received = request.get_json()
-    worker_id = input_received["workerId"]
-    worker_dimension_id = input_received["workerDimensionId"]
-    value = input_received["value"]
+@router.post("/update-worker-property")
+def edit_worker_property(
+    worker_id: str = Body(..., alias="workerId"),
+    worker_dimension_id: str = Body(..., alias="workerDimensionId"),
+    value: str = Body(...),
+) -> Dict:
     worker = worker_db.get_worker_by_id(worker_id)
     worker_dimension = worker_dimension_db.get_worker_dimension_by_id(
         worker_dimension_id
@@ -57,6 +50,7 @@ def edit_worker_property():
     worker_property = worker_property_db.get_worker_property_by_worker_and_dimension(
         worker, worker_dimension
     )
+
     if not worker_property:
         updated_worker_property = worker_property_db.create_worker_property(
             worker, worker_dimension, value
@@ -66,16 +60,14 @@ def edit_worker_property():
         updated_worker_property = worker_property_db.update_worker_property(
             worker_property
         )
-    response = jsonify(dataclass_to_dict(updated_worker_property))
-    return response, 200
+    return dataclass_to_dict(updated_worker_property)
 
 
-@worker_routes.route("/delete-worker", methods=["DELETE"])
-def delete_worker():
-    worker_id_received = request.get_json()
-    worker_property_db.delete_worker_properties_by_worker_id(worker_id_received["id"])
-    worker_db.delete_worker(worker_id_received["id"])
-    return jsonify({"message": "Worker deleted"}), 200
+@router.delete("/delete-worker")
+def delete_worker(worker_id: str = Body(..., embed=True)) -> Dict:
+    worker_property_db.delete_worker_properties_by_worker_id(worker_id)
+    worker_db.delete_worker(worker_id)
+    return {"message": "Worker deleted"}
 
 
 def dataclass_to_dict(obj: Union[Worker, WorkerProperty]) -> Dict:

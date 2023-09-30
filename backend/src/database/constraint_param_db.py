@@ -1,4 +1,5 @@
 from bson import ObjectId
+
 from database.db import DB
 from models import ConstraintParam
 

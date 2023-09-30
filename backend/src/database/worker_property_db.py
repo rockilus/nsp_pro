@@ -1,6 +1,7 @@
 from typing import List, Union
 
 from bson import ObjectId
+
 from core.worker import Worker, WorkerDimension, WorkerProperty
 from database.db import DB
 from database.worker_db import to_mongo_worker

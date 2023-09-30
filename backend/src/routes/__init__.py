@@ -1,19 +1,19 @@
-from routes.constraint_param_routes import constraint_param_routes
-from routes.constraint_routes import constraint_routes
-from routes.shift_dimension_routes import shift_dimension_routes
-from routes.shift_routes import shift_routes
-from routes.solver_routes import solver_routes
-from routes.worker_dimension_routes import worker_dimension_routes
-from routes.worker_routes import worker_routes
-from routes.coverage_routes import coverage_routes
+from routes.constraint_param_routes import router as router_constraint_param
+from routes.constraint_routes import router as router_constraint
+from routes.coverage_routes import router as router_coverage
+from routes.shift_dimension_routes import router as router_shift_dimension
+from routes.shift_routes import router as router_shift
+from routes.solver_routes import router as router_solver
+from routes.worker_dimension_routes import router as router_worker_dimension
+from routes.worker_routes import router as router_worker
 
 __all__ = [
-    "coverage_routes",
-    "constraint_param_routes",
-    "constraint_routes",
-    "shift_dimension_routes",
-    "shift_routes",
-    "solver_routes",
-    "worker_dimension_routes",
-    "worker_routes",
+    "router_coverage",
+    "router_constraint_param",
+    "router_constraint",
+    "router_shift_dimension",
+    "router_shift",
+    "router_solver",
+    "router_worker_dimension",
+    "router_worker",
 ]

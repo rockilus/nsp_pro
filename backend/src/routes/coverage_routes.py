@@ -1,55 +1,70 @@
 from dataclasses import asdict
-import humps
+from typing import List
 
-from flask import Blueprint, jsonify, request
+import humps
+from fastapi import APIRouter, HTTPException
+from pydantic import TypeAdapter
+
 from core.coverage import Coverage, ShiftDemand
+from routes.api_model import CoverageMessage, CreateCoverageRequest
 from scripts.setup_database import coverage_db
 
-coverage_routes = Blueprint("coverage_routes", __name__)
+router = APIRouter()
 
 
-@coverage_routes.route("/coverages", methods=["GET"])
-def get_coverages():
+@router.get("/coverages")
+def get_coverages() -> List[CoverageMessage]:
     coverages = coverage_db.get_coverages()
-    out = [coverage_to_dict(c) for c in coverages]
-    return jsonify(out), 200
+    return [coverage_to_api_msg(c) for c in coverages]
 
 
-@coverage_routes.route("/coverages", methods=["POST"])
-def create_coverage():
-    new_coverage = request.json
+@router.post("/coverages", status_code=201)
+def create_coverage(req: CreateCoverageRequest) -> CoverageMessage:
+    shift_demands = [
+        ShiftDemand(day_index=d.dayIndex, shift_id=d.shiftId, quantity=d.quantity)
+        for d in req.shiftDemands
+    ]
+
     cov = coverage_db.create_coverage(
-        name=new_coverage["name"],
-        date_start=new_coverage["dateStart"],
-        date_end=new_coverage["dateEnd"],
-        shift_demands=new_coverage["shiftDemands"],
+        name=req.name,
+        date_start=req.dateStart,
+        date_end=req.dateEnd,
+        shift_demands=shift_demands,
     )
-    return jsonify(coverage_to_dict(cov)), 201
+
+    response = coverage_to_api_msg(cov)
+    return response
 
 
-@coverage_routes.route("/coverages/<coverage_id>", methods=["PUT"])
-def update_coverage(coverage_id):
+@router.put("/coverages/{coverage_id}")
+def update_coverage(coverage_id: str, updated_coverage: CoverageMessage):
+    cov_data = api_msg_to_coverage(updated_coverage)
+
     existing_cov = coverage_db.get_coverage_by_id(coverage_id)
     if not existing_cov:
-        return {"message": "Coverage does not exist"}, 404
-    updated_coverage = dict_to_coverage(request.json)
-    cov = coverage_db.update_coverage(updated_coverage)
-    return jsonify(coverage_to_dict(cov)), 200
+        raise HTTPException(status_code=404, detail="Coverage does not exist")
+
+    cov = coverage_db.update_coverage(cov_data)
+
+    response = coverage_to_api_msg(cov)
+    return response
 
 
-@coverage_routes.route("/coverages/<coverage_id>", methods=["DELETE"])
-def delete_coverage(coverage_id):
+@router.delete("/coverages/{coverage_id}")
+def delete_coverage(coverage_id: str):
     coverage_db.delete_coverage(coverage_id)
-    return jsonify({"message": "Coverage deleted successfully"}), 200
+    return {"message": "Coverage deleted successfully"}
 
 
-def coverage_to_dict(coverage: Coverage) -> dict:
+def coverage_to_api_msg(coverage: Coverage) -> CoverageMessage:
     data = asdict(coverage)
-    return humps.camelize(data)
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(CoverageMessage)
+    return validator.validate_python(as_dict)
 
 
-def dict_to_coverage(data: dict) -> Coverage:
-    data_snake = humps.decamelize(data)
+def api_msg_to_coverage(msg: CoverageMessage) -> Coverage:
+    data_snake = humps.decamelize(msg.model_dump())
     data_snake["shift_demands"] = [
         ShiftDemand(**humps.decamelize(d)) for d in data_snake["shift_demands"]
     ]

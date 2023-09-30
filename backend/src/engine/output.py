@@ -1,4 +1,5 @@
 from ortools.sat.python import cp_model  # type: ignore
+
 from engine.inputs_outputs import (
     Assignment,
     ConstraintBreaches,

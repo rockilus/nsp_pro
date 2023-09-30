@@ -1,10 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import (
-    BooleanField,
-    IntField,
-    ObjectIdField,
-    StringField,
-)
+from mongoengine.fields import BooleanField, IntField, ObjectIdField, StringField
 
 
 class Constraint(Document):

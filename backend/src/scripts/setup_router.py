@@ -1,73 +1,44 @@
-from datetime import timedelta
+import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from flask import Flask
-from flask_cors import CORS  # type: ignore
-from flask_jwt_extended import JWTManager
 from routes import (
-    coverage_routes,
-    constraint_param_routes,
-    constraint_routes,
-    shift_dimension_routes,
-    shift_routes,
-    solver_routes,
-    worker_dimension_routes,
-    worker_routes,
+    router_constraint,
+    router_constraint_param,
+    router_coverage,
+    router_shift,
+    router_shift_dimension,
+    router_solver,
+    router_worker,
+    router_worker_dimension,
 )
 
-app = Flask(__name__)
-CORS(
-    app,
-    origins=["http://localhost:3000"],
-    headers=["Content-Type"],
-    methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    supports_credentials=True,
+app = FastAPI()
+
+# CORS
+origins = [
+    "http://localhost:3000",  # Add other origins if needed
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-# Change this to a secure secret key in production
-app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
-# Should be true for production
-app.config["JWT_COOKIE_SECURE"] = False
-app.config["JWT_SECRET_KEY"] = "your-secret-key"
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 
-app.register_blueprint(shift_routes)
-app.register_blueprint(shift_dimension_routes)
-app.register_blueprint(worker_routes)
-app.register_blueprint(worker_dimension_routes)
-app.register_blueprint(constraint_param_routes)
-app.register_blueprint(constraint_routes)
-app.register_blueprint(solver_routes)
-app.register_blueprint(coverage_routes)
+# app.include_router(router_coverage, prefix="/api/v1", tags=["coverage"])
 
-jwt = JWTManager(app)
+app.include_router(router_coverage)
+app.include_router(router_constraint_param)
+app.include_router(router_constraint)
+app.include_router(router_shift_dimension)
+app.include_router(router_shift)
+app.include_router(router_solver)
+app.include_router(router_worker_dimension)
+app.include_router(router_worker)
 
 
-def run_router() -> None:
-    app.run()
-
-
-# from flask import Flask, jsonify, request
-# from flask_jwt_extended import (
-#     JWTManager,
-#     jwt_required,
-#     create_access_token,
-#     get_jwt_identity,
-#     get_raw_jwt,
-# )
-# from flask_bcrypt import Bcrypt
-# from mongoengine import connect, Document, StringField, BooleanField
-
-# app = Flask(__name__)
-# app.config[
-#     "JWT_SECRET_KEY"
-# ] = "your-secret-key"  # Change this to a secure secret key in production
-# app.config["MONGODB_SETTINGS"] = {
-#     "db": "your-database-name",
-#     "host": "your-mongodb-connection-url",
-# }
-
-# bcrypt = Bcrypt(app)
-# jwt = JWTManager(app)
-# connect(
-#     db=app.config["MONGODB_SETTINGS"]["db"],
-#     host=app.config["MONGODB_SETTINGS"]["host"],
-# )
+def run_router():
+    uvicorn.run("scripts.setup_router:app", host="0.0.0.0", port=5000, reload=True)

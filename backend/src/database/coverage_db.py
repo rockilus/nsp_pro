@@ -1,13 +1,12 @@
-from datetime import date
+from datetime import date, datetime
 from typing import List
 
 from bson import ObjectId
+
 from core.coverage import Coverage, ShiftDemand
-from models.coverage import (
-    Coverage as CoverageDocument,
-    ShiftDemand as ShiftDemandDocument,
-)
 from database.db import DB
+from models.coverage import Coverage as CoverageDocument
+from models.coverage import ShiftDemand as ShiftDemandDocument
 
 
 class CoverageDB:
@@ -21,12 +20,13 @@ class CoverageDB:
         date_end: date,
         shift_demands: List[ShiftDemand],
     ) -> Coverage:
+        shift_demands_docs = [_to_mongo_shift_demand(d) for d in shift_demands]
         coverage = CoverageDocument(
             id=str(ObjectId()),
             name=name,
             dateStart=date_start,
             dateEnd=date_end,
-            shiftDemands=shift_demands,
+            shiftDemands=shift_demands_docs,
         )
         coverage_saved = coverage.save()
         return _from_mongo_coverage(coverage_saved)
@@ -62,11 +62,16 @@ def _to_mongo_shift_demand(dataclass_obj: ShiftDemand) -> ShiftDemandDocument:
 
 
 def _to_mongo_coverage(dataclass_obj: Coverage) -> CoverageDocument:
+    date_start_datetime = datetime.combine(
+        dataclass_obj.date_start, datetime.min.time()
+    )
+    date_end_datetime = datetime.combine(dataclass_obj.date_end, datetime.min.time())
+
     return CoverageDocument(
         id=dataclass_obj.id,
         name=dataclass_obj.name,
-        dateStart=dataclass_obj.date_start,
-        dateEnd=dataclass_obj.date_end,
+        dateStart=date_start_datetime,
+        dateEnd=date_end_datetime,
         shiftDemands=[
             _to_mongo_shift_demand(shift) for shift in dataclass_obj.shift_demands
         ],
