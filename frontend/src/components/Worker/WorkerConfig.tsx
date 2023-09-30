@@ -48,7 +48,7 @@ export default function WorkerConfig() {
           );
           row[column.name] = workerProperty ? workerProperty.value || "" : "";
         }
-        row["_id"] = worker.id;
+        row["id"] = worker.id;
         newRows.push(row);
       }
       setRows(newRows);

@@ -87,19 +87,19 @@ export default function TableTemplate({
                   <BodyCellTemplate
                     key={colIndex}
                     columnId={column.id}
-                    rowId={row._id}
+                    rowId={row.id}
                     columnName={column.name}
                     entryType={column.entryType}
                     entryOptions={column.entryOptions}
                     value={row[column.name]}
-                    editing={bodyEditing[row._id] === column.id}
+                    editing={bodyEditing[row.id] === column.id}
                     setEditing={setBodyEditing}
                     handleEditCell={handleEditBodyCell}
                   />
                 ))}
                 <TableCell component="th" scope="row">
                   <Box sx={{ display: "flex" }}>
-                    <Button onClick={() => handleDeleteRow(row._id)}>
+                    <Button onClick={() => handleDeleteRow(row.id)}>
                       <DeleteIcon />
                     </Button>
                   </Box>

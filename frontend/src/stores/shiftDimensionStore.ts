@@ -9,10 +9,10 @@ const baseApiUrl = "http://127.0.0.1:5000";
 
 // WITH OLD API
 // Shift Dimension
-const createShiftDimensionUrl = baseApiUrl + "/create-shift-param";
-const getShiftDimensionsUrl = baseApiUrl + "/get-shift-params";
-const updateShiftDimensionUrl = baseApiUrl + "/update-shift-param";
-const deleteShiftDimensionUrl = baseApiUrl + "/delete-shift-param";
+const createShiftDimensionUrl = baseApiUrl + "/create-shift-dimension";
+const getShiftDimensionsUrl = baseApiUrl + "/get-shift-dimensions";
+const updateShiftDimensionUrl = baseApiUrl + "/update-shift-dimension";
+const deleteShiftDimensionUrl = baseApiUrl + "/delete-shift-dimension";
 
 type ShiftDimensionStateT = {
   shiftDimensions: ShiftDimensionT[];

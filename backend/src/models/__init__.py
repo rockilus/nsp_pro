@@ -3,12 +3,12 @@ from models.constraint_param import ConstraintParam
 from models.constraint_param_option import ConstraintParamOption
 from models.constraint_variable import ConstraintVariable
 from models.shift import Shift
-from models.shift_param import ShiftParam
+from models.shift_dimension import ShiftDimension
 from models.shift_property import ShiftProperty
 from models.variable import Variable
 from models.variable_param import VariableParam
 from models.worker import Worker
-from models.worker_param import WorkerParam
+from models.worker_dimension import WorkerDimension
 from models.worker_property import WorkerProperty
 
 __all__ = [
@@ -17,11 +17,11 @@ __all__ = [
     "ConstraintParamOption",
     "ConstraintVariable",
     "Shift",
-    "ShiftParam",
+    "ShiftDimension",
     "ShiftProperty",
     "Variable",
     "VariableParam",
     "Worker",
-    "WorkerParam",
+    "WorkerDimension",
     "WorkerProperty",
 ]
