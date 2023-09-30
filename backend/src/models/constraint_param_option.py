@@ -1,10 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import (
-    ListField,
-    ObjectIdField,
-    ReferenceField,
-    StringField,
-)
+from mongoengine.fields import ListField, ObjectIdField, ReferenceField, StringField
 
 
 class ConstraintParamOption(Document):

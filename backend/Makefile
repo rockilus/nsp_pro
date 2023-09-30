@@ -1,6 +1,8 @@
 .PHONY: lint test check format
 
 format:
+	poetry run isort .
+	poetry run autoflake --remove-all-unused-imports --in-place --recursive .
 	poetry run black src
 
 lint:

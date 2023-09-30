@@ -1,6 +1,7 @@
 from typing import List
 
 from bson import ObjectId
+
 from core.worker import Worker
 from database.db import DB
 from models import Worker as WorkerDocument

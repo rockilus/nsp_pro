@@ -1,8 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import (
-    ListField,
-    StringField,
-)
+from mongoengine.fields import ListField, StringField
 
 
 # pylint: disable=R0801

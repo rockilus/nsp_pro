@@ -1,4 +1,4 @@
-from typing import Dict, List, Union, Tuple
+from typing import Dict, List, Tuple, Union
 
 
 # pylint: disable=too-many-branches

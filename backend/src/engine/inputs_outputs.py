@@ -1,6 +1,5 @@
-from typing import List, Literal
 from dataclasses import dataclass
-
+from typing import List, Literal
 
 ##############################
 # Inputs

@@ -15,10 +15,8 @@ from scripts.setup_database import (
     worker_dimension_db,
     worker_property_db,
 )
-from scripts.setup_router import jwt
 
 __all__ = [
-    "jwt",
     "run_app",
     # "run_solver",
     "constraint_db",

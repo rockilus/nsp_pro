@@ -1,22 +1,20 @@
-from bson import ObjectId
-from flask import Blueprint, jsonify, request
+from fastapi import APIRouter, Body, HTTPException, status
 from mongoengine import NotUniqueError
-from scripts.setup_database import constraint_db, constraint_variable_db
 
 from constraint_transform import build_constraint, build_constraint_front
+from scripts.setup_database import constraint_db, constraint_variable_db
 
-constraint_routes = Blueprint("constraint_routes", __name__)
+router = APIRouter()
 
 
-@constraint_routes.route("/create-constraint", methods=["POST"])
-def create_constraint():
-    info_received = request.get_json()
+@router.post("/create-constraint", status_code=status.HTTP_201_CREATED)
+async def create_constraint(info_received: dict = Body(...)):
     try:
         constraint, constraint_variables = build_constraint(
             info_received["constraint"], info_received["constraint_definition"]
         )
         constraint_created = constraint_db.create_constraint(**constraint)
-        constraint_variables = [
+        persisted_constraint_variables = [
             constraint_variable_db.create_constraint_variable(
                 **constraint_variable, constraint=constraint_created
             )
@@ -25,20 +23,18 @@ def create_constraint():
         constraint_dict = constraint_created.to_dict()
         constraint_variables_dict = [
             constraint_variable.to_dict()
-            for constraint_variable in constraint_variables
+            for constraint_variable in persisted_constraint_variables
         ]
         constraint_response = build_constraint_front(
             constraint_dict, constraint_variables_dict
         )
-        response = jsonify({"constraint": constraint_response})
-        return response, 200
+        return {"constraint": constraint_response}
     except NotUniqueError as e:
-        print(e)
-        return jsonify({"error": f"{str(e)}"}), 404
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
-@constraint_routes.route("/get-constraints", methods=["GET"])
-def get_constraints():
+@router.get("/get-constraints")
+async def get_constraints():
     constraints = constraint_db.get_constraints()
     constraints_variables = [
         constraint_variable_db.get_constraint_variables_by_constraint(constraint)
@@ -55,14 +51,11 @@ def get_constraints():
     ):
         constraint_front = build_constraint_front(constraint, constraint_variables)
         constraints_response.append(constraint_front)
-    response = jsonify({"constraints": constraints_response})
-    return response, 200
+    return {"constraints": constraints_response}
 
 
-@constraint_routes.route("/update-constraint", methods=["POST"])
-def update_constraint():
-    # pylint: disable=too-many-locals
-    input_received = request.get_json()
+@router.post("/update-constraint")
+async def update_constraint(input_received: dict = Body(...)):
     constraint_id = input_received["constraint_id"]
     constraint_input = input_received["constraint"]
     try:
@@ -96,17 +89,13 @@ def update_constraint():
         constraint_response = build_constraint_front(
             constraint_updated_dict, constraint_variables_updated_dict
         )
-        response = jsonify({"constraint": constraint_response})
-        return response, 200
-    # pylint: disable=broad-except
-    except Exception as e:  # noqa: E722
-        print(e)
-        return jsonify({"error": f"{str(e)}"}), 404
+        return {"constraint": constraint_response}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
-@constraint_routes.route("/update-constraint-status", methods=["POST"])
-def update_constraint_status():
-    input_received = request.get_json()
+@router.post("/update-constraint-status")
+async def update_constraint_status(input_received: dict = Body(...)):
     constraint_id = input_received["constraint_id"]
     new_status = input_received["active"]
     try:
@@ -127,17 +116,13 @@ def update_constraint_status():
         constraint_response = build_constraint_front(
             constraint_updated_dict, constraint_variables_dict
         )
-        response = jsonify({"constraint": constraint_response})
-        return response, 200
-    # pylint: disable=broad-except
-    except Exception as e:  # noqa: E722
-        print(e)
-        return jsonify({"error": f"{str(e)}"}), 404
+        return {"constraint": constraint_response}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
-@constraint_routes.route("/delete-constraint", methods=["DELETE"])
-def delete_constraint():
-    input_received = request.get_json()
+@router.delete("/delete-constraint")
+async def delete_constraint(input_received: dict = Body(...)):
     constraint_id = input_received["constraint_id"]
     try:
         constraint = constraint_db.get_constraint_by_id(constraint_id)
@@ -146,19 +131,6 @@ def delete_constraint():
         )
         constraint_variable_db.delete_constraint_variables(constraint_variables)
         constraint_db.delete_constraint(constraint)
-        return jsonify({"message": "constraint deleted"}), 200
-    # pylint: disable=broad-except,R0801
+        return {"message": "constraint deleted"}
     except Exception as e:
-        print(e)
-        return jsonify({"error": f"{str(e)}"}), 404
-
-
-def is_valid_objectid(objectid_str: str) -> bool:
-    # pylint: disable=R0801
-    try:
-        ObjectId(objectid_str)
-        return True
-    # pylint: disable=broad-except
-    # pylint: disable=bare-except
-    except:  # noqa: E722
-        return False
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e

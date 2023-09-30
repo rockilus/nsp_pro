@@ -2,6 +2,7 @@
 from typing import Dict, List, Tuple
 
 from ortools.sat.python import cp_model  # type: ignore
+
 from engine.inputs_outputs import ShiftDemand
 from engine.types import Objective
 

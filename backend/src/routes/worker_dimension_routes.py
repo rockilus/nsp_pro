@@ -1,60 +1,50 @@
 from dataclasses import asdict
-from typing import Dict
+from typing import Dict, List
 
 import humps
-from flask import Blueprint, jsonify, request
+from fastapi import APIRouter, Body
+
 from core.worker import WorkerDimension
 from scripts.setup_database import worker_dimension_db, worker_property_db
 
-worker_dimension_routes = Blueprint("worker_dimension_routes", __name__)
+router = APIRouter()
 
 
-@worker_dimension_routes.route("/create-worker-dimension", methods=["POST"])
-def create_worker_dimension():
-    new_worker_dimension = request.get_json()
-    if (
-        "name" in new_worker_dimension
-        and "entryType" in new_worker_dimension
-        and "entryOptions" in new_worker_dimension
-    ):
-        name = new_worker_dimension["name"]
-        entry_type = new_worker_dimension["entryType"]
-        entry_options = new_worker_dimension["entryOptions"]
+@router.post("/create-worker-dimension")
+def create_worker_dimension(
+    name: str = Body(...),
+    entry_type: str = Body(..., alias="entryType"),
+    entry_options: List[str] = Body(..., alias="entryOptions"),
+) -> Dict:
     worker_dimension = worker_dimension_db.create_worker_dimension(
         name, entry_type, entry_options
     )
-    response = jsonify(dataclass_to_dict(worker_dimension))
-    return response, 200
+    return dataclass_to_dict(worker_dimension)
 
 
-@worker_dimension_routes.route("/get-worker-dimensions", methods=["GET"])
-def get_worker_dimensions():
+@router.get("/get-worker-dimensions", response_model=List[Dict])
+def get_worker_dimensions() -> List[Dict]:
     worker_dimensions = worker_dimension_db.get_worker_dimensions()
     if not worker_dimensions:
         worker_dimensions = worker_dimension_db.create_default_worker_dimensions()
-    response = jsonify([dataclass_to_dict(wd) for wd in worker_dimensions])
-    return response, 200
+    return [dataclass_to_dict(wd) for wd in worker_dimensions]
 
 
-@worker_dimension_routes.route("/update-worker-dimension", methods=["POST"])
-def update_worker_dimension():
-    info_received = request.get_json()
-    worker_dimension = dict_to_worker_dimension(info_received)
+@router.post("/update-worker-dimension")
+def update_worker_dimension(worker_dimension: WorkerDimension) -> Dict:
     worker_dimension_updated = worker_dimension_db.update_worker_dimension(
         worker_dimension
     )
-    response = jsonify(dataclass_to_dict(worker_dimension_updated))
-    return response, 200
+    return dataclass_to_dict(worker_dimension_updated)
 
 
-@worker_dimension_routes.route("/delete-worker-dimension", methods=["DELETE"])
-def delete_worker_dimension():
-    info_received = request.get_json()
+@router.delete("/delete-worker-dimension")
+def delete_worker_dimension(worker_dimension_id: str) -> Dict:
     worker_property_db.delete_worker_properties_by_worker_dimension_id(
-        info_received["id"]
+        worker_dimension_id
     )
-    worker_dimension_db.delete_worker_dimension(info_received["id"])
-    return jsonify({"message": "Worker deleted"}), 200
+    worker_dimension_db.delete_worker_dimension(worker_dimension_id)
+    return {"message": "Worker deleted"}
 
 
 def dataclass_to_dict(obj: WorkerDimension) -> Dict:

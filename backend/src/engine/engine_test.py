@@ -1,13 +1,7 @@
 import random
 
 from engine.engine import Engine
-from engine.inputs_outputs import (
-    Coverage,
-    Custom,
-    Inputs,
-    ShiftDemand,
-    VariableSpace,
-)
+from engine.inputs_outputs import Coverage, Custom, Inputs, ShiftDemand, VariableSpace
 
 
 def test_engine_solve_return_expected_assigment_coverage():

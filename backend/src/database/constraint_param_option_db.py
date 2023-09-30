@@ -1,8 +1,9 @@
 from typing import List
 
 from bson import ObjectId
+
 from database.db import DB
-from models import ConstraintParamOption, ConstraintParam
+from models import ConstraintParam, ConstraintParamOption
 
 
 class ConstraintParamOptionDB:
