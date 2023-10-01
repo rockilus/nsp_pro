@@ -9,12 +9,12 @@ const baseApiUrl = "http://127.0.0.1:5000";
 
 // WITH OLD API
 // Worker
-const createWorkerUrl = baseApiUrl + "/create-worker";
-const getWorkersUrl = baseApiUrl + "/get-workers";
-const deleteWorkerUrl = baseApiUrl + "/delete-worker";
+const createWorkerUrl = baseApiUrl + "/workers";
+const getWorkersUrl = baseApiUrl + "/workers";
+const deleteWorkerUrl = (workerId: string) => `${baseApiUrl}/workers/${workerId}`;
 
 // Worker Property
-const updateWorkerPropertyUrl = baseApiUrl + "/update-worker-property";
+const updateWorkerPropertyUrl = (workerId: string, workerDimensionId: string) => `${baseApiUrl}/workers/${workerId}/properties/${workerDimensionId}`;
 
 type WorkerStateT = {
   workers: WorkerT[];
@@ -64,12 +64,12 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
 
   updateWorkerProperty: async (updatedWorkerProperty) => {
     try {
-      const response = await fetch(updateWorkerPropertyUrl, {
-        method: "POST",
+      const response = await fetch(updateWorkerPropertyUrl(updatedWorkerProperty.workerId, updatedWorkerProperty.workerDimensionId), {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedWorkerProperty),
+        body: JSON.stringify(updatedWorkerProperty.value),
       });
       const data = await response.json();
       const newWorkerProperty: WorkerPropertyT = data; // check if this works
@@ -98,7 +98,7 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
 
   deleteWorker: async (id) => {
     try {
-      await fetch(deleteWorkerUrl, {
+      await fetch(deleteWorkerUrl(id), {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

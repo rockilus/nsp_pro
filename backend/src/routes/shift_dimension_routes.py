@@ -10,7 +10,7 @@ from scripts.setup_database import shift_dimension_db, shift_property_db
 router = APIRouter()
 
 
-@router.post("/create-shift-dimension")
+@router.post("/shift-dimensions")
 def create_shift_dimension(
     name: str = Body(...),
     entryType: str = Body(...),
@@ -22,7 +22,7 @@ def create_shift_dimension(
     return dataclass_to_dict(shift_dimension)
 
 
-@router.get("/get-shift-dimensions")
+@router.get("/shift-dimensions")
 def get_shift_dimensions():
     shift_dimensions = shift_dimension_db.get_shift_dimensions()
     if not shift_dimensions:
@@ -30,14 +30,18 @@ def get_shift_dimensions():
     return [dataclass_to_dict(sd) for sd in shift_dimensions]
 
 
-@router.post("/update-shift-dimension")
-def update_shift_dimension(shift_dimension_data: Dict = Body(...)):
+@router.put("/shift-dimensions/{shift_dimension_id}")
+def update_shift_dimension(
+    # pylint: disable=W0613
+    shift_dimension_id: str,
+    shift_dimension_data: Dict = Body(...),
+):
     shift_dimension = dict_to_shift_dimension(shift_dimension_data)
     updated_shift_dimension = shift_dimension_db.update_shift_dimension(shift_dimension)
     return dataclass_to_dict(updated_shift_dimension)
 
 
-@router.delete("/delete-shift-dimension/{shift_dimension_id}")
+@router.delete("/shift-dimensions/{shift_dimension_id}")
 def delete_shift_dimension(shift_dimension_id: str):
     shift_property_db.delete_shift_properties_by_shift_dimension_id(shift_dimension_id)
     shift_dimension_db.delete_shift_dimension(shift_dimension_id)

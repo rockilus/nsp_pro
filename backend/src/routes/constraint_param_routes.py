@@ -5,7 +5,7 @@ from scripts.setup_database import constraint_param_db, constraint_param_option_
 router = APIRouter()
 
 
-@router.get("/get-constraint-params")
+@router.get("/constraint-params")
 def get_constraint_params():
     constraint_param = constraint_param_db.get_constraint_params()
 

@@ -9,10 +9,10 @@ const baseApiUrl = "http://127.0.0.1:5000";
 
 // WITH OLD API
 // Shift Dimension
-const createShiftDimensionUrl = baseApiUrl + "/create-shift-dimension";
-const getShiftDimensionsUrl = baseApiUrl + "/get-shift-dimensions";
-const updateShiftDimensionUrl = baseApiUrl + "/update-shift-dimension";
-const deleteShiftDimensionUrl = baseApiUrl + "/delete-shift-dimension";
+const createShiftDimensionUrl = baseApiUrl + "/shift-dimensions";
+const getShiftDimensionsUrl = baseApiUrl + "/shift-dimensions";
+const updateShiftDimensionUrl = (shift_dim_id: string) => `${baseApiUrl}/shift-dimensions/${shift_dim_id}`;
+const deleteShiftDimensionUrl = (shift_dim_id: string) => `${baseApiUrl}/shift-dimensions/${shift_dim_id}`;
 
 type ShiftDimensionStateT = {
   shiftDimensions: ShiftDimensionT[];
@@ -65,8 +65,8 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
 
   updateShiftDimension: async (updatedShiftDimension) => {
     try {
-      const response = await fetch(updateShiftDimensionUrl, {
-        method: "POST",
+      const response = await fetch(updateShiftDimensionUrl(updatedShiftDimension.id), {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -88,7 +88,7 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
 
   deleteShiftDimension: async (id) => {
     try {
-      await fetch(deleteShiftDimensionUrl, {
+      await fetch(deleteShiftDimensionUrl(id), {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

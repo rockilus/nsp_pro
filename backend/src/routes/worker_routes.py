@@ -10,7 +10,7 @@ from scripts.setup_database import worker_db, worker_dimension_db, worker_proper
 router = APIRouter()
 
 
-@router.post("/create-worker")
+@router.post("/workers")
 def create_worker() -> Dict:
     worker_created = worker_db.create_worker()
     worker_properties = worker_property_db.get_worker_properties_by_worker(
@@ -22,7 +22,7 @@ def create_worker() -> Dict:
     }
 
 
-@router.get("/get-workers", response_model=List[Dict])
+@router.get("/workers", response_model=List[Dict])
 def get_workers() -> List[Dict]:
     workers = worker_db.get_workers()
     workers_properties = [
@@ -37,10 +37,10 @@ def get_workers() -> List[Dict]:
     ]
 
 
-@router.post("/update-worker-property")
+@router.put("/workers/{worker_id}/properties/{worker_dimension_id}")
 def edit_worker_property(
-    worker_id: str = Body(..., alias="workerId"),
-    worker_dimension_id: str = Body(..., alias="workerDimensionId"),
+    worker_id: str,
+    worker_dimension_id: str,
     value: str = Body(...),
 ) -> Dict:
     worker = worker_db.get_worker_by_id(worker_id)
@@ -63,7 +63,7 @@ def edit_worker_property(
     return dataclass_to_dict(updated_worker_property)
 
 
-@router.delete("/delete-worker")
+@router.delete("/workers")
 def delete_worker(worker_id: str = Body(..., embed=True)) -> Dict:
     worker_property_db.delete_worker_properties_by_worker_id(worker_id)
     worker_db.delete_worker(worker_id)

@@ -9,10 +9,10 @@ const baseApiUrl = "http://127.0.0.1:5000";
 
 // WITH OLD API
 // Worker Dimension
-const createWorkerDimensionUrl = baseApiUrl + "/create-worker-dimension";
-const getWorkerDimensionsUrl = baseApiUrl + "/get-worker-dimensions";
-const updateWorkerDimensionUrl = baseApiUrl + "/update-worker-dimension";
-const deleteWorkerDimensionUrl = baseApiUrl + "/delete-worker-dimension";
+const createWorkerDimensionUrl = baseApiUrl + "/worker-dimensions";
+const getWorkerDimensionsUrl = baseApiUrl + "/worker-dimensions";
+const updateWorkerDimensionUrl = (workerDimensionId: string) => `${baseApiUrl}/worker-dimensions/${workerDimensionId}`;
+const deleteWorkerDimensionUrl = (workerDimensionId: string) => `${baseApiUrl}/worker-dimensions/${workerDimensionId}`;
 
 type WorkerDimensionStateT = {
   workerDimensions: WorkerDimensionT[];
@@ -66,8 +66,8 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
 
     updateWorkerDimension: async (updatedWorkerDimension) => {
       try {
-        const response = await fetch(updateWorkerDimensionUrl, {
-          method: "POST",
+        const response = await fetch(updateWorkerDimensionUrl(updatedWorkerDimension.id), {
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
@@ -89,7 +89,7 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
 
     deleteWorkerDimension: async (id) => {
       try {
-        await fetch(deleteWorkerDimensionUrl, {
+        await fetch(deleteWorkerDimensionUrl(id), {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",

@@ -3,14 +3,14 @@ import { getCookie } from "../utils/cookie";
 const serverUrl = "http://127.0.0.1:5000";
 
 // ConstraintParam
-const getContraintParamsUrl = serverUrl + "/get-constraint-params";
+const getContraintParamsUrl = serverUrl + "/constraint-params";
 
 // Constraint
-const createConstraintUrl = serverUrl + "/create-constraint";
-const getConstraintsUrl = serverUrl + "/get-constraints";
-const updateConstraintUrl = serverUrl + "/update-constraint";
-const updateConstraintStatusUrl = serverUrl + "/update-constraint-status";
-const deleteConstraintUrl = serverUrl + "/delete-constraint";
+const createConstraintUrl = serverUrl + "/constraints";
+const getConstraintsUrl = serverUrl + "/constraints";
+const updateConstraintUrl = serverUrl + "/constraints";
+const updateConstraintStatusUrl = (constraintId: string) => `${serverUrl}/constraints/${constraintId}/status`;
+const deleteConstraintUrl = (constraintId: string) => `${serverUrl}/constraints/${constraintId}`;
 
 // ConstraintParam
 export async function serverGetConstraintParams() {
@@ -94,7 +94,7 @@ export async function serverPostUpdateConstraint(
   constraint: Record<string, unknown>
 ) {
   const options: RequestInit = {
-    method: "POST",
+    method: "PUT",
     credentials: "include" as RequestCredentials,
     headers: {
       "Content-Type": "application/json",
@@ -123,7 +123,7 @@ export async function serverPostUpdateConstraintStatus(
   active: boolean
 ) {
   const options: RequestInit = {
-    method: "POST",
+    method: "PUT",
     credentials: "include" as RequestCredentials,
     headers: {
       "Content-Type": "application/json",
@@ -135,7 +135,7 @@ export async function serverPostUpdateConstraintStatus(
     }),
   };
   try {
-    const response = await fetch(updateConstraintStatusUrl, options);
+    const response = await fetch(updateConstraintStatusUrl(constraintId), options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;
@@ -160,7 +160,7 @@ export async function serverDeleteConstraint(constraintId: string) {
     }),
   };
   try {
-    const response = await fetch(deleteConstraintUrl, options);
+    const response = await fetch(deleteConstraintUrl(constraintId), options);
     if (response.ok) {
       const jsonData = await response.json();
       return jsonData;

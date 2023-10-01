@@ -9,12 +9,12 @@ const baseApiUrl = "http://127.0.0.1:5000";
 
 // WITH OLD API
 // Shift
-const createShiftUrl = baseApiUrl + "/create-shift";
-const getShiftsUrl = baseApiUrl + "/get-shifts";
-const deleteShiftUrl = baseApiUrl + "/delete-shift";
+const createShiftUrl = baseApiUrl + "/shifts";
+const getShiftsUrl = baseApiUrl + "/shifts";
+const deleteShiftUrl = (shiftId: string) => `${baseApiUrl}/shifts/${shiftId}`;
 
 // Shift Property
-const updateShiftPropertyUrl = baseApiUrl + "/update-shift-property";
+const updateShiftPropertyUrl = (shiftId: string, shiftDimensionId: string) => `${baseApiUrl}/shifts/${shiftId}/properties/${shiftDimensionId}`;
 
 type ShiftStateT = {
   shifts: ShiftT[];
@@ -64,12 +64,12 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
 
   updateShiftProperty: async (updatedShiftProperty) => {
     try {
-      const response = await fetch(updateShiftPropertyUrl, {
-        method: "POST",
+      const response = await fetch(updateShiftPropertyUrl(updatedShiftProperty.shiftId, updatedShiftProperty.shiftDimensionId), {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedShiftProperty),
+        body: JSON.stringify(updatedShiftProperty.value),
       });
       const data = await response.json();
       const newShiftProperty: ShiftPropertyT = data; // check if this works
@@ -98,7 +98,7 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
 
   deleteShift: async (id) => {
     try {
-      await fetch(deleteShiftUrl, {
+      await fetch(deleteShiftUrl(id), {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

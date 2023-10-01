@@ -7,7 +7,7 @@ from scripts.setup_database import constraint_db, constraint_variable_db
 router = APIRouter()
 
 
-@router.post("/create-constraint", status_code=status.HTTP_201_CREATED)
+@router.post("/constraints", status_code=status.HTTP_201_CREATED)
 async def create_constraint(info_received: dict = Body(...)):
     try:
         constraint, constraint_variables = build_constraint(
@@ -33,7 +33,7 @@ async def create_constraint(info_received: dict = Body(...)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
-@router.get("/get-constraints")
+@router.get("/constraints")
 async def get_constraints():
     constraints = constraint_db.get_constraints()
     constraints_variables = [
@@ -54,8 +54,8 @@ async def get_constraints():
     return {"constraints": constraints_response}
 
 
-@router.post("/update-constraint")
-async def update_constraint(input_received: dict = Body(...)):
+@router.put("/constraints")
+async def update_constraints(input_received: dict = Body(...)):
     constraint_id = input_received["constraint_id"]
     constraint_input = input_received["constraint"]
     try:
@@ -94,9 +94,10 @@ async def update_constraint(input_received: dict = Body(...)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
-@router.post("/update-constraint-status")
-async def update_constraint_status(input_received: dict = Body(...)):
-    constraint_id = input_received["constraint_id"]
+@router.put("/constraints/{constraint_id}/status")
+async def update_constraint_status(
+    constraint_id: str, input_received: dict = Body(...)
+):
     new_status = input_received["active"]
     try:
         constraint = constraint_db.get_constraint_by_id(constraint_id)
@@ -121,9 +122,8 @@ async def update_constraint_status(input_received: dict = Body(...)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
-@router.delete("/delete-constraint")
-async def delete_constraint(input_received: dict = Body(...)):
-    constraint_id = input_received["constraint_id"]
+@router.delete("/constraints/{constraint_id}")
+async def delete_constraint(constraint_id: str):
     try:
         constraint = constraint_db.get_constraint_by_id(constraint_id)
         constraint_variables = (
