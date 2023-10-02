@@ -10,7 +10,7 @@ from scripts.setup_database import shift_db, shift_dimension_db, shift_property_
 router = APIRouter()
 
 
-@router.post("/create-shift")
+@router.post("/shifts")
 def create_shift():
     shift_created = shift_db.create_shift()
     shift_properties = shift_property_db.get_shift_properties_by_shift(shift_created)
@@ -20,7 +20,7 @@ def create_shift():
     }
 
 
-@router.get("/get-shifts")
+@router.get("/shifts")
 def get_shifts():
     shifts = shift_db.get_shifts()
     shifts_properties = [
@@ -36,12 +36,10 @@ def get_shifts():
     return shifts_response
 
 
-@router.post("/update-shift-property")
-def edit_shift_property(
-    shiftId: str = Body(...), shiftDimensionId: str = Body(...), value: str = Body(...)
-):
-    shift = shift_db.get_shift_by_id(shiftId)
-    shift_dimension = shift_dimension_db.get_shift_dimension_by_id(shiftDimensionId)
+@router.put("/shifts/{shift_id}/properties/{shift_dimension_id}")
+def edit_shift_property(shift_id: str, shift_dimension_id: str, value: str = Body(...)):
+    shift = shift_db.get_shift_by_id(shift_id)
+    shift_dimension = shift_dimension_db.get_shift_dimension_by_id(shift_dimension_id)
     shift_property = shift_property_db.get_shift_property_by_shift_and_dimension(
         shift, shift_dimension
     )
@@ -55,7 +53,7 @@ def edit_shift_property(
     return dataclass_to_dict(updated_shift_property)
 
 
-@router.delete("/delete-shift/{shift_id}")
+@router.delete("/shifts/{shift_id}")
 def delete_shift(shift_id: str):
     shift_property_db.delete_shift_properties_by_shift_id(shift_id)
     shift_db.delete_shift(shift_id)
