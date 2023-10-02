@@ -140,7 +140,6 @@ export default function WorkerConfig() {
     value: any,
     defaultColumn: boolean
   ) => {
-    console.log(workerId, workerDimensionId, value, defaultColumn);
     if (defaultColumn) {
       const updatedWorker: WorkerT = {
         id: workerId,

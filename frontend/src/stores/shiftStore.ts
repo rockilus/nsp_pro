@@ -3,23 +3,13 @@ import { create } from "zustand";
 import { ShiftT, ShiftPropertyT } from "../components/Shift/types";
 
 const baseApiUrl = "http://127.0.0.1:5000";
-
-// Shift
-// const apiUrlShifts = `${baseApiUrl}/shifts`;
-
-// WITH OLD API
-// Shift
-const createShiftUrl = baseApiUrl + "/shifts";
-const getShiftsUrl = baseApiUrl + "/shifts";
-const deleteShiftUrl = (shiftId: string) => `${baseApiUrl}/shifts/${shiftId}`;
-
-// Shift Property
-const updateShiftPropertyUrl = (shiftId: string, shiftDimensionId: string) => `${baseApiUrl}/shifts/${shiftId}/properties/${shiftDimensionId}`;
+const apiUrlShifts = `${baseApiUrl}/shifts`;
 
 type ShiftStateT = {
   shifts: ShiftT[];
   fetchShifts: () => void;
   addShift: () => void;
+  updateShift: (updatedShift: ShiftT) => void;
   updateShiftProperty: (updatedShiftProperty: ShiftPropertyT) => void;
   deleteShift: (id: string) => void;
 };
@@ -36,9 +26,8 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
       },
     };
     try {
-      const response = await fetch(getShiftsUrl, options); // Adjust API endpoint as needed
-      const data = await response.json();
-      const shifts = data; //check if this works
+      const response = await fetch(apiUrlShifts, options); // Adjust API endpoint as needed
+      const shifts: ShiftT[] = await response.json();
       set({ shifts });
     } catch (error) {
       console.error("Failed to fetch shifts:", error);
@@ -48,31 +37,51 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
   // Here I keep POST for the convention, but there is no body
   addShift: async () => {
     try {
-      const response = await fetch(createShiftUrl, {
+      const response = await fetch(apiUrlShifts, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
       });
-      const data = await response.json();
-      const newShift: ShiftT = data; // check if this works
+      const newShift: ShiftT = await response.json();
       set((state) => ({ shifts: [...state.shifts, newShift] }));
     } catch (error) {
       console.error("Failed to add shift:", error);
     }
   },
 
-  updateShiftProperty: async (updatedShiftProperty) => {
+  updateShift: async (updatedshift) => {
     try {
-      const response = await fetch(updateShiftPropertyUrl(updatedShiftProperty.shiftId, updatedShiftProperty.shiftDimensionId), {
+      await fetch(`${apiUrlShifts}/${updatedshift.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedShiftProperty.value),
+        body: JSON.stringify(updatedshift),
       });
-      const data = await response.json();
-      const newShiftProperty: ShiftPropertyT = data; // check if this works
+      set((state) => ({
+        shifts: state.shifts.map((w) =>
+          w.id === updatedshift.id ? updatedshift : w
+        ),
+      }));
+    } catch (error) {
+      console.error("Failed to update shift:", error);
+    }
+  },
+
+  updateShiftProperty: async (updatedShiftProperty) => {
+    try {
+      const response = await fetch(
+        `${apiUrlShifts}/${updatedShiftProperty.shiftId}/properties/${updatedShiftProperty.shiftDimensionId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedShiftProperty.value),
+        }
+      );
+      const newShiftProperty: ShiftPropertyT = await response.json();
       set((state) => ({
         shifts: state.shifts.map((shift) =>
           shift.id === newShiftProperty.shiftId
@@ -98,7 +107,7 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
 
   deleteShift: async (id) => {
     try {
-      await fetch(deleteShiftUrl(id), {
+      await fetch(`${apiUrlShifts}/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

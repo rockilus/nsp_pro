@@ -1,10 +1,4 @@
-import React, {
-  use,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { useRef, useCallback, useEffect, useState } from "react";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -13,15 +7,27 @@ import TableTemplate from "../TableTemplate/TableTemplate";
 
 import { useShiftStore } from "../../stores/shiftStore";
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
-import { ShiftPropertyT, ShiftDimensionT } from "./types";
+import { ShiftT, ShiftPropertyT, ShiftDimensionT } from "./types";
 
 export default function ShiftConfig() {
-  const [columns, setColumns] = useState<Record<string, any>[]>([]);
+  const defaultColumns = [
+    {
+      id: "",
+      name: "Name",
+      entryType: "str",
+      entryOptions: [],
+      defaultColumn: true,
+    },
+  ];
+  const defaultColumnsRef = useRef(defaultColumns);
+
+  const [columns, setColumns] = useState<Record<string, any>[]>(defaultColumns);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
 
   const shifts = useShiftStore((state) => state.shifts);
   const fetchShifts = useShiftStore((state) => state.fetchShifts);
   const addShift = useShiftStore((state) => state.addShift);
+  const updateShift = useShiftStore((state) => state.updateShift);
   const updateShiftProperty = useShiftStore(
     (state) => state.updateShiftProperty
   );
@@ -48,7 +54,8 @@ export default function ShiftConfig() {
     if (shifts) {
       for (let shift of shifts) {
         let row: Record<string, any> = {};
-        for (let column of columns) {
+        row["Name"] = shift.name;
+        for (let column of columns.filter((c) => !c.defaultColumn)) {
           const shiftProperty = shift.shiftProperties.find(
             (p) => p.shiftDimensionId === column.id
           );
@@ -77,7 +84,12 @@ export default function ShiftConfig() {
 
   useEffect(() => {
     if (shiftDimensions) {
-      setColumns(shiftDimensions);
+      setColumns(() => {
+        const newColumns = shiftDimensions.map((dimension) => {
+          return { ...dimension, defaultColumn: false };
+        });
+        return [...defaultColumnsRef.current, ...newColumns];
+      });
     }
   }, [shiftDimensions]);
 
@@ -125,15 +137,25 @@ export default function ShiftConfig() {
   const handleEditBodyCell = async (
     shiftId: string,
     shiftDimensionId: string,
-    value: any
+    value: any,
+    defaultColumn: boolean
   ) => {
-    const updatedShiftProperty: ShiftPropertyT = {
-      id: "",
-      value: value,
-      shiftId: shiftId,
-      shiftDimensionId: shiftDimensionId,
-    };
-    await updateShiftProperty(updatedShiftProperty);
+    if (defaultColumn) {
+      const updatedShift: ShiftT = {
+        id: shiftId,
+        name: value,
+        shiftProperties: [],
+      };
+      await updateShift(updatedShift);
+    } else {
+      const updatedShiftProperty: ShiftPropertyT = {
+        id: "",
+        value: value,
+        shiftId: shiftId,
+        shiftDimensionId: shiftDimensionId,
+      };
+      await updateShiftProperty(updatedShiftProperty);
+    }
   };
 
   const handleDeleteRow = async (shiftId: string) => {

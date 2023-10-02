@@ -14,5 +14,6 @@ export type ShiftPropertyT = {
 
 export type ShiftT = {
   id: string;
+  name: string;
   shiftProperties: ShiftPropertyT[];
 };

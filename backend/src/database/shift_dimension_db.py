@@ -11,20 +11,6 @@ class ShiftDimensionDB:
     def __init__(self, db: DB):
         self.db = db
 
-    def create_default_shift_dimensions(
-        self,
-    ) -> List[ShiftDimension]:
-        shift_dimension_first_name = ShiftDimensionDocument(
-            id=str(ObjectId()),
-            name="Shift Name",
-            entry_type="str",
-            entry_options=[],
-        )
-        shift_dimension_first_name.save()
-        # pylint: disable=no-member
-        shift_dimensions = ShiftDimensionDocument.objects.all()  # type: ignore
-        return [_from_mongo_shift_dimension(sd) for sd in list(shift_dimensions)]
-
     def create_shift_dimension(
         self,
         name: str,
