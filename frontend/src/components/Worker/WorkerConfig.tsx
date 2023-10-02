@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -7,15 +7,27 @@ import TableTemplate from "../TableTemplate/TableTemplate";
 
 import { useWorkerStore } from "../../stores/workerStore";
 import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
-import { WorkerPropertyT, WorkerDimensionT } from "./types";
+import { WorkerT, WorkerPropertyT, WorkerDimensionT } from "./types";
 
 export default function WorkerConfig() {
-  const [columns, setColumns] = useState<Record<string, any>[]>([]);
+  const defaultColumns = [
+    {
+      id: "",
+      name: "Name",
+      entryType: "str",
+      entryOptions: [],
+      defaultColumn: true,
+    },
+  ];
+  const defaultColumnsRef = useRef(defaultColumns);
+
+  const [columns, setColumns] = useState<Record<string, any>[]>(defaultColumns);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
 
   const workers = useWorkerStore((state) => state.workers);
   const fetchWorkers = useWorkerStore((state) => state.fetchWorkers);
   const addWorker = useWorkerStore((state) => state.addWorker);
+  const updateWorker = useWorkerStore((state) => state.updateWorker);
   const updateWorkerProperty = useWorkerStore(
     (state) => state.updateWorkerProperty
   );
@@ -42,7 +54,8 @@ export default function WorkerConfig() {
     if (workers) {
       for (let worker of workers) {
         let row: Record<string, any> = {};
-        for (let column of columns) {
+        row["Name"] = worker.name;
+        for (let column of columns.filter((c) => !c.defaultColumn)) {
           const workerProperty = worker.workerProperties.find(
             (p) => p.workerDimensionId === column.id
           );
@@ -71,7 +84,12 @@ export default function WorkerConfig() {
 
   useEffect(() => {
     if (workerDimensions) {
-      setColumns(workerDimensions);
+      setColumns(() => {
+        const newColumns = workerDimensions.map((dimension) => {
+          return { ...dimension, defaultColumn: false };
+        });
+        return [...defaultColumnsRef.current, ...newColumns];
+      });
     }
   }, [workerDimensions]);
 
@@ -119,15 +137,26 @@ export default function WorkerConfig() {
   const handleEditBodyCell = async (
     workerId: string,
     workerDimensionId: string,
-    value: any
+    value: any,
+    defaultColumn: boolean
   ) => {
-    const updatedWorkerProperty: WorkerPropertyT = {
-      id: "",
-      value: value,
-      workerId: workerId,
-      workerDimensionId: workerDimensionId,
-    };
-    await updateWorkerProperty(updatedWorkerProperty);
+    console.log(workerId, workerDimensionId, value, defaultColumn);
+    if (defaultColumn) {
+      const updatedWorker: WorkerT = {
+        id: workerId,
+        name: value,
+        workerProperties: [],
+      };
+      await updateWorker(updatedWorker);
+    } else {
+      const updatedWorkerProperty: WorkerPropertyT = {
+        id: "",
+        value: value,
+        workerId: workerId,
+        workerDimensionId: workerDimensionId,
+      };
+      await updateWorkerProperty(updatedWorkerProperty);
+    }
   };
 
   const handleDeleteRow = async (workerId: string) => {

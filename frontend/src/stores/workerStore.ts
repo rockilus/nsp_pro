@@ -3,23 +3,13 @@ import { create } from "zustand";
 import { WorkerT, WorkerPropertyT } from "../components/Worker/types";
 
 const baseApiUrl = "http://127.0.0.1:5000";
-
-// Worker
-// const apiUrlWorkers = `${baseApiUrl}/workers`;
-
-// WITH OLD API
-// Worker
-const createWorkerUrl = baseApiUrl + "/workers";
-const getWorkersUrl = baseApiUrl + "/workers";
-const deleteWorkerUrl = (workerId: string) => `${baseApiUrl}/workers/${workerId}`;
-
-// Worker Property
-const updateWorkerPropertyUrl = (workerId: string, workerDimensionId: string) => `${baseApiUrl}/workers/${workerId}/properties/${workerDimensionId}`;
+const apiUrlWorkers = baseApiUrl + "/workers";
 
 type WorkerStateT = {
   workers: WorkerT[];
   fetchWorkers: () => void;
   addWorker: () => void;
+  updateWorker: (updatedWorker: WorkerT) => void;
   updateWorkerProperty: (updatedWorkerProperty: WorkerPropertyT) => void;
   deleteWorker: (id: string) => void;
 };
@@ -36,7 +26,7 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
       },
     };
     try {
-      const response = await fetch(getWorkersUrl, options); // Adjust API endpoint as needed
+      const response = await fetch(apiUrlWorkers, options); // Adjust API endpoint as needed
       const data = await response.json();
       const workers = data; //check if this works
       set({ workers });
@@ -48,7 +38,7 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
   // Here I keep POST for the convention, but there is no body
   addWorker: async () => {
     try {
-      const response = await fetch(createWorkerUrl, {
+      const response = await fetch(apiUrlWorkers, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -62,15 +52,39 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
     }
   },
 
-  updateWorkerProperty: async (updatedWorkerProperty) => {
+  updateWorker: async (updatedworker) => {
+    console.log("updatedworker", updatedworker);
+
     try {
-      const response = await fetch(updateWorkerPropertyUrl(updatedWorkerProperty.workerId, updatedWorkerProperty.workerDimensionId), {
+      await fetch(`${apiUrlWorkers}/${updatedworker.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedWorkerProperty.value),
+        body: JSON.stringify(updatedworker),
       });
+      set((state) => ({
+        workers: state.workers.map((w) =>
+          w.id === updatedworker.id ? updatedworker : w
+        ),
+      }));
+    } catch (error) {
+      console.error("Failed to update worker:", error);
+    }
+  },
+
+  updateWorkerProperty: async (updatedWorkerProperty) => {
+    try {
+      const response = await fetch(
+        `${apiUrlWorkers}/${updatedWorkerProperty.workerId}/properties/${updatedWorkerProperty.workerDimensionId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedWorkerProperty.value),
+        }
+      );
       const data = await response.json();
       const newWorkerProperty: WorkerPropertyT = data; // check if this works
       set((state) => ({
@@ -98,7 +112,7 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
 
   deleteWorker: async (id) => {
     try {
-      await fetch(deleteWorkerUrl(id), {
+      await fetch(`${baseApiUrl}/workers/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

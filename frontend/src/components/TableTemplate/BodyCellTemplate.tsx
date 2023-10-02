@@ -15,9 +15,15 @@ interface Props {
   entryType: string;
   entryOptions: string[];
   value: any;
+  defaultColumn: boolean;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
-  handleEditCell: (rowId: string, columnId: string, value: any) => void;
+  handleEditCell: (
+    rowId: string,
+    columnId: string,
+    value: any,
+    defaultColumn: boolean
+  ) => void;
 }
 
 export default function BodyCellTemplate({
@@ -27,6 +33,7 @@ export default function BodyCellTemplate({
   entryType,
   entryOptions,
   value,
+  defaultColumn,
   editing,
   setEditing,
   handleEditCell,
@@ -35,7 +42,7 @@ export default function BodyCellTemplate({
 
   const handleEditConfirm = async () => {
     if (entryValue !== value) {
-      await handleEditCell(rowId, columnId, entryValue);
+      await handleEditCell(rowId, columnId, entryValue, defaultColumn);
     }
     setEditing({});
     setEntryValue(value);

@@ -5,6 +5,7 @@ from typing import List, Union
 @dataclass
 class Worker:
     id: str
+    name: str
 
 
 @dataclass

@@ -6,3 +6,4 @@ class Worker(Document):
     meta = {"collection": "workers"}
 
     id = StringField(primary_key=True, required=True)
+    name = StringField()

@@ -11,27 +11,6 @@ class WorkerDimensionDB:
     def __init__(self, db: DB):
         self.db = db
 
-    def create_default_worker_dimensions(
-        self,
-    ) -> List[WorkerDimension]:
-        worker_dimension_first_name = WorkerDimensionDocument(
-            id=str(ObjectId()),
-            name="First Name",
-            entry_type="str",
-            entry_options=[],
-        )
-        worker_dimension_last_name = WorkerDimensionDocument(
-            id=str(ObjectId()),
-            name="Last Name",
-            entry_type="str",
-            entry_options=[],
-        )
-        worker_dimension_first_name.save()
-        worker_dimension_last_name.save()
-        # pylint: disable=no-member
-        worker_dimensions = WorkerDimensionDocument.objects.all()  # type: ignore
-        return [_from_mongo_worker_dimension(wd) for wd in list(worker_dimensions)]
-
     def create_worker_dimension(
         self,
         name: str,
