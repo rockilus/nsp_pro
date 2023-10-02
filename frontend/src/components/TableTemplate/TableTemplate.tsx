@@ -32,7 +32,12 @@ interface Props {
   ) => void;
   handleDeleteColumn: (columnId: string) => void;
   handleAddRow: (newRow: Record<string, any>) => void;
-  handleEditBodyCell: (rowId: string, columnId: string, value: any) => void;
+  handleEditBodyCell: (
+    rowId: string,
+    columnId: string,
+    value: any,
+    defaultColumn: boolean
+  ) => void;
   handleDeleteRow: (id: string) => void;
 }
 
@@ -66,6 +71,7 @@ export default function TableTemplate({
                   entryType={column.entryType}
                   entryOptions={column.entryOptions}
                   value={column.name}
+                  defaultColumn={column.defaultColumn}
                   handleEditCell={handleEditHeadCell}
                   handleDeleteColumn={handleDeleteColumn}
                 />
@@ -92,6 +98,7 @@ export default function TableTemplate({
                     entryType={column.entryType}
                     entryOptions={column.entryOptions}
                     value={row[column.name]}
+                    defaultColumn={column.defaultColumn}
                     editing={bodyEditing[row.id] === column.id}
                     setEditing={setBodyEditing}
                     handleEditCell={handleEditBodyCell}

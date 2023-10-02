@@ -14,5 +14,6 @@ export type WorkerPropertyT = {
 
 export type WorkerT = {
   id: string;
+  name: string;
   workerProperties: WorkerPropertyT[];
 };

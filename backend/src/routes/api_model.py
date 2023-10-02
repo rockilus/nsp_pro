@@ -23,3 +23,23 @@ class CoverageMessage(BaseModel):
     dateStart: date
     dateEnd: date
     shiftDemands: List[ShiftDemandMessage]
+
+
+class WorkerPropertyMessage(BaseModel):
+    id: str
+    value: str
+    workerDimensionId: str
+    workerId: str
+
+
+class WorkerMessage(BaseModel):
+    id: str
+    name: str
+    workerProperties: List[WorkerPropertyMessage]
+
+
+class WorkerDimensionMessage(BaseModel):
+    id: str
+    name: str
+    entryType: str
+    entryOptions: List[str]

@@ -17,6 +17,7 @@ interface Props {
   value: any;
   entryType: string;
   entryOptions: string[];
+  defaultColumn: boolean;
   handleEditCell: (
     columnId: string,
     value: string,
@@ -31,6 +32,7 @@ export default function HeadCellTemplate({
   value,
   entryType,
   entryOptions,
+  defaultColumn,
   handleEditCell,
   handleDeleteColumn,
 }: Props) {
@@ -49,7 +51,9 @@ export default function HeadCellTemplate({
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+    if (!defaultColumn) {
+      setAnchorEl(event.currentTarget);
+    }
   };
 
   const handleClose = () => {
