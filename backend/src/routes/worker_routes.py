@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import humps
 from fastapi import APIRouter, Body, HTTPException
@@ -13,36 +13,28 @@ router = APIRouter()
 
 
 @router.post("/workers")
-def create_worker() -> Dict:
+def create_worker() -> WorkerMessage:
     worker_created = worker_db.create_worker()
     worker_properties = worker_property_db.get_worker_properties_by_worker(
         worker_created
     )
-    response = {
-        **dataclass_to_dict(worker_created),
-        "workerProperties": [dataclass_to_dict(wp) for wp in worker_properties],
-    }
-    return response
+    return worker_and_properties_to_api_msg(worker_created, worker_properties)
 
 
-@router.get("/workers", response_model=List[Dict])
-def get_workers() -> List[Dict]:
+@router.get("/workers")
+def get_workers() -> List[WorkerMessage]:
     workers = worker_db.get_workers()
     workers_properties = [
         worker_property_db.get_worker_properties_by_worker(worker) for worker in workers
     ]
-    response = [
-        {
-            **dataclass_to_dict(worker),
-            "workerProperties": [dataclass_to_dict(wp) for wp in worker_properties],
-        }
-        for worker, worker_properties in zip(workers, workers_properties)
+    return [
+        worker_and_properties_to_api_msg(w, wp)
+        for w, wp in zip(workers, workers_properties)
     ]
-    return response
 
 
 @router.put("/workers/{worker_id}")
-def edit_worker(worker_id: str, worker: WorkerMessage) -> Dict:
+def update_worker(worker_id: str, worker: WorkerMessage) -> WorkerMessage:
     existing_worker = worker_db.get_worker_by_id(worker_id)
     if not existing_worker:
         raise HTTPException(status_code=404, detail="Worker does not exist")
@@ -51,18 +43,15 @@ def edit_worker(worker_id: str, worker: WorkerMessage) -> Dict:
     worker_properties = worker_property_db.get_worker_properties_by_worker(
         updated_worker
     )
-    return {
-        **dataclass_to_dict(updated_worker),
-        "workerProperties": [dataclass_to_dict(wp) for wp in worker_properties],
-    }
+    return worker_and_properties_to_api_msg(updated_worker, worker_properties)
 
 
 @router.put("/workers/{worker_id}/properties/{worker_dimension_id}")
-def edit_worker_property(
+def update_worker_property(
     worker_id: str,
     worker_dimension_id: str,
     value: str = Body(...),
-) -> Dict:
+) -> WorkerPropertyMessage:
     worker = worker_db.get_worker_by_id(worker_id)
     worker_dimension = worker_dimension_db.get_worker_dimension_by_id(
         worker_dimension_id
@@ -80,7 +69,7 @@ def edit_worker_property(
         updated_worker_property = worker_property_db.update_worker_property(
             worker_property
         )
-    return dataclass_to_dict(updated_worker_property)
+    return worker_property_to_api_msg(updated_worker_property)
 
 
 @router.delete("/workers/{worker_id}")
@@ -88,16 +77,6 @@ def delete_worker(worker_id: str) -> Dict:
     worker_property_db.delete_worker_properties_by_worker_id(worker_id)
     worker_db.delete_worker(worker_id)
     return {"message": "Worker deleted"}
-
-
-def dataclass_to_dict(obj: Union[Worker, WorkerProperty]) -> Dict:
-    data = asdict(obj)
-    return humps.camelize(data)
-
-
-def dict_to_worker_property(data: dict) -> WorkerProperty:
-    data_snake = humps.decamelize(data)
-    return WorkerProperty(**data_snake)
 
 
 def dict_to_worker(data: dict) -> Worker:

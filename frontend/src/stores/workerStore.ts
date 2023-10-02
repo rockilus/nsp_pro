@@ -27,8 +27,7 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
     };
     try {
       const response = await fetch(apiUrlWorkers, options); // Adjust API endpoint as needed
-      const data = await response.json();
-      const workers = data; //check if this works
+      const workers: WorkerT[] = await response.json();
       set({ workers });
     } catch (error) {
       console.error("Failed to fetch workers:", error);
@@ -44,8 +43,7 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
           "Content-Type": "application/json",
         },
       });
-      const data = await response.json();
-      const newWorker: WorkerT = data; // check if this works
+      const newWorker: WorkerT = await response.json();
       set((state) => ({ workers: [...state.workers, newWorker] }));
     } catch (error) {
       console.error("Failed to add worker:", error);
@@ -53,8 +51,6 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
   },
 
   updateWorker: async (updatedworker) => {
-    console.log("updatedworker", updatedworker);
-
     try {
       await fetch(`${apiUrlWorkers}/${updatedworker.id}`, {
         method: "PUT",
@@ -85,8 +81,7 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
           body: JSON.stringify(updatedWorkerProperty.value),
         }
       );
-      const data = await response.json();
-      const newWorkerProperty: WorkerPropertyT = data; // check if this works
+      const newWorkerProperty: WorkerPropertyT = await response.json();
       set((state) => ({
         workers: state.workers.map((worker) =>
           worker.id === newWorkerProperty.workerId
@@ -112,7 +107,7 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
 
   deleteWorker: async (id) => {
     try {
-      await fetch(`${baseApiUrl}/workers/${id}`, {
+      await fetch(`${apiUrlWorkers}/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

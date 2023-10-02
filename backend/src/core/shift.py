@@ -5,6 +5,7 @@ from typing import List, Union
 @dataclass
 class Shift:
     id: str
+    name: str
 
 
 @dataclass

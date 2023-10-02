@@ -43,3 +43,23 @@ class WorkerDimensionMessage(BaseModel):
     name: str
     entryType: str
     entryOptions: List[str]
+
+
+class ShiftPropertyMessage(BaseModel):
+    id: str
+    value: str
+    shiftDimensionId: str
+    shiftId: str
+
+
+class ShiftMessage(BaseModel):
+    id: str
+    name: str
+    shiftProperties: List[ShiftPropertyMessage]
+
+
+class ShiftDimensionMessage(BaseModel):
+    id: str
+    name: str
+    entryType: str
+    entryOptions: List[str]

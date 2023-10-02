@@ -19,31 +19,11 @@ export default function Draft() {
     (state) => state.shiftDimensions
   );
 
-  const findShiftName = (s: any) => {
-    const shiftDimensionNameId = shiftDimensions?.find(
-      (p) => p.name === "Shift Name"
-    )?.id;
-    if (!shiftDimensionNameId) {
-      throw Error("Shift params should have shift_name");
-    }
-    const shiftPropForShiftName = s.shiftProperties.find(
-      (p: any) => p.shiftDimensionId === shiftDimensionNameId
-    );
-    if (!shiftPropForShiftName) {
-      return "No shift name";
-      // throw Error(
-      //   `Shift should have property for param id ${shiftNameParamId}`
-      // );
-    }
-
-    return shiftPropForShiftName.value;
-  };
-
   const shiftsForCoverage = shifts
     ? shifts.map((s) => {
         const shift: ShiftT = {
           id: s.id,
-          name: findShiftName(s),
+          name: s.name,
         };
         return shift;
       })
