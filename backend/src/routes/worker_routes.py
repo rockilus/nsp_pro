@@ -7,7 +7,11 @@ from pydantic import TypeAdapter
 
 from core.worker import Worker, WorkerProperty
 from routes.api_model import WorkerMessage, WorkerPropertyMessage
-from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
+from scripts.setup_database import (
+    worker_db,
+    worker_dimension_db,
+    worker_property_db,
+)
 
 router = APIRouter()
 
@@ -25,7 +29,8 @@ def create_worker() -> WorkerMessage:
 def get_workers() -> List[WorkerMessage]:
     workers = worker_db.get_workers()
     workers_properties = [
-        worker_property_db.get_worker_properties_by_worker(worker) for worker in workers
+        worker_property_db.get_worker_properties_by_worker(worker)
+        for worker in workers
     ]
     return [
         worker_and_properties_to_api_msg(w, wp)
@@ -56,8 +61,10 @@ def update_worker_property(
     worker_dimension = worker_dimension_db.get_worker_dimension_by_id(
         worker_dimension_id
     )
-    worker_property = worker_property_db.get_worker_property_by_worker_and_dimension(
-        worker, worker_dimension
+    worker_property = (
+        worker_property_db.get_worker_property_by_worker_and_dimension(
+            worker, worker_dimension
+        )
     )
 
     if not worker_property:
@@ -77,11 +84,6 @@ def delete_worker(worker_id: str) -> Dict:
     worker_property_db.delete_worker_properties_by_worker_id(worker_id)
     worker_db.delete_worker(worker_id)
     return {"message": "Worker deleted"}
-
-
-def dict_to_worker(data: dict) -> Worker:
-    data_snake = humps.decamelize(data)
-    return Worker(**data_snake)
 
 
 def worker_property_to_api_msg(
@@ -108,5 +110,7 @@ def worker_and_properties_to_api_msg(
 
 def api_msg_to_worker(msg: WorkerMessage) -> Worker:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake = {k: v for k, v in data_snake.items() if k != "worker_properties"}
+    data_snake = {
+        k: v for k, v in data_snake.items() if k != "worker_properties"
+    }
     return Worker(**data_snake)

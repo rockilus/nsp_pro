@@ -4,6 +4,7 @@ from typing import List
 from pydantic import BaseModel
 
 
+# Coverage
 class ShiftDemandMessage(BaseModel):
     dayIndex: int
     shiftId: str
@@ -25,6 +26,7 @@ class CoverageMessage(BaseModel):
     shiftDemands: List[ShiftDemandMessage]
 
 
+# Worker
 class WorkerPropertyMessage(BaseModel):
     id: str
     value: str
@@ -45,6 +47,7 @@ class WorkerDimensionMessage(BaseModel):
     entryOptions: List[str]
 
 
+# Shift
 class ShiftPropertyMessage(BaseModel):
     id: str
     value: str
@@ -63,3 +66,34 @@ class ShiftDimensionMessage(BaseModel):
     name: str
     entryType: str
     entryOptions: List[str]
+
+
+# Schedule
+class AssignmentMessage(BaseModel):
+    id: str
+    workerId: str
+    date: date
+    shiftId: str
+    scheduleId: str
+
+
+class ConstraintBreachMessage(BaseModel):
+    constraintId: str
+    workers: List[str]
+    dates: List[date]
+    shifts: List[str]
+    value: int
+    penalty: int
+
+
+class CommentsMessage(BaseModel):
+    constraintBreaches: List[ConstraintBreachMessage]
+    missingCoverageDates: List[date]
+
+
+class ScheduleMessage(BaseModel):
+    id: str
+    startDate: date
+    endDate: date
+    assignments: List[AssignmentMessage]
+    comments: CommentsMessage
