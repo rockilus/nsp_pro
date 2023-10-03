@@ -1,19 +1,36 @@
-// workerStore.ts
 import { create } from "zustand";
-import { WorkerT, WorkerPropertyT } from "../components/Worker/types";
+import { ScheduleT, AssignmentT } from "../components/Schedule/types";
 
 const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlSolver = baseApiUrl + "/solver";
+const apiUrlSchedule = baseApiUrl + "/schedule";
 
-type SolverStateT = {
-  solver: SolverT;
-  fetchSolver: () => void;
+type ScheduleStateT = {
+  schedule: ScheduleT;
+  fetchSchedule: () => void;
 };
 
-export const useSolverStore = create<SolverStateT>()((set) => ({
-  solver: undefined,
+const toAssignmentT = (data: any) => {
+  const assignment: AssignmentT = {
+    ...data,
+    date: new Date(data.date),
+  };
+  return assignment;
+};
 
-  fetchSolver: async () => {
+const toScheduleT = (data: any) => {
+  const schedule: ScheduleT = {
+    ...data,
+    startDate: new Date(data.startDate),
+    endDate: new Date(data.endDate),
+    assignments: data.assignments.map(toAssignmentT),
+  };
+  return schedule;
+};
+
+export const useScheduleStore = create<ScheduleStateT>()((set) => ({
+  schedule: undefined,
+
+  fetchSchedule: async () => {
     const options: RequestInit = {
       method: "GET",
       credentials: "include" as RequestCredentials,
@@ -22,11 +39,12 @@ export const useSolverStore = create<SolverStateT>()((set) => ({
       },
     };
     try {
-      const response = await fetch(apiUrlSolver, options);
-      const solver: SolverT = await response.json();
-      set({ solver });
+      const response = await fetch(apiUrlSchedule, options);
+      const data = await response.json();
+      const schedule: ScheduleT = toScheduleT(data);
+      set({ schedule });
     } catch (error) {
-      console.error("Failed to fetch solver:", error);
+      console.error("Failed to fetch schedule:", error);
     }
   },
 }));

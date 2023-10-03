@@ -19,7 +19,7 @@ from scripts.setup_database import coverage_db, shift_db, worker_db
 router = APIRouter()
 
 
-@router.get("/solver")
+@router.get("/schedule")
 def solver() -> ScheduleMessage:
     workers = worker_db.get_workers()
     shifts = shift_db.get_shifts()
