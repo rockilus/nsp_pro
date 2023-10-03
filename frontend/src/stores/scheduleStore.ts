@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import { ScheduleT, AssignmentT } from "../components/Schedule/types";
+import {
+  ScheduleT,
+  AssignmentT,
+  CommentsT,
+} from "../components/Schedule/types";
 
 const baseApiUrl = "http://127.0.0.1:5000";
 const apiUrlSchedule = baseApiUrl + "/schedule";
@@ -28,7 +32,16 @@ const toScheduleT = (data: any) => {
 };
 
 export const useScheduleStore = create<ScheduleStateT>()((set) => ({
-  schedule: undefined,
+  schedule: {
+    id: "",
+    startDate: new Date(0),
+    endDate: new Date(0),
+    assignments: [],
+    comments: {
+      constraintBreaches: [],
+      missingCoverageDates: [],
+    } as CommentsT,
+  },
 
   fetchSchedule: async () => {
     const options: RequestInit = {

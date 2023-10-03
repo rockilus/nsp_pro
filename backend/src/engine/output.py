@@ -1,13 +1,9 @@
 from typing import List
 
-from engine.inputs_outputs import (
-    Assignment,
-    Comments,
-    ConstraintBreach,
-    Outputs,
-)
-from engine.model import Model
 from ortools.sat.python import cp_model  # type: ignore
+
+from engine.inputs_outputs import Assignment, Comments, ConstraintBreach, Outputs
+from engine.model import Model
 
 
 class Output:
@@ -33,9 +29,7 @@ class Output:
         assignments = []
         for variable, bool_var in self.model.variables.items():
             if self.model.solver.BooleanValue(bool_var):
-                assignments.append(
-                    Assignment(variable[0], variable[1], variable[2])
-                )
+                assignments.append(Assignment(variable[0], variable[1], variable[2]))
         return assignments
 
     def build_constraint_breaches(self) -> List[ConstraintBreach]:

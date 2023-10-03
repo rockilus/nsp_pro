@@ -15,34 +15,44 @@ interface Props {
 }
 
 export default function ScheduleConfig({ workers, shifts }: Props) {
-  const [columns, setColumns] = useState<(string | Date)[]>([]);
+  const [columns, setColumns] = useState<Record<string, any>[]>([]);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
   const [shiftSchedule, setShiftSchedule] = useState<boolean>(true);
 
   const schedule = useScheduleStore((state) => state.schedule);
   const fetchSchedule = useScheduleStore((state) => state.fetchSchedule);
 
-  const buildDatesArray = (startDate: Date, endDate: Date): Date[] => {
-    const dates = [];
+  const buildColumnHeaders = (
+    startDate: Date,
+    endDate: Date
+  ): Record<string, any>[] => {
+    const columns = [{ date: new Date(0), name: "" }];
     let currentDate = startDate;
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    };
     while (currentDate <= endDate) {
-      dates.push(new Date(currentDate));
+      const column = {
+        date: new Date(currentDate),
+        name: new Intl.DateTimeFormat("en-US", options).format(currentDate),
+      };
+      columns.push({ ...column });
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    return dates;
+    return columns;
   };
 
   const buildShiftRows = useCallback(() => {
     const newRows = [];
-    const dateColumns = columns
-      .filter((c) => c instanceof Date)
-      .map((c) => c as Date);
+    const dateColumns = columns.filter((c) => c.date.getTime() !== 0);
     for (let shift of shifts.filter((s) => s.name !== "Off")) {
       const shiftAssignments = schedule.assignments.filter(
         (a) => a.shiftId === shift.id
       );
       const assignments = dateColumns.map((d) =>
-        shiftAssignments.filter((a) => a.date.getTime() === d.getTime())
+        shiftAssignments.filter((a) => a.date.getTime() === d.date.getTime())
       );
       const rowSpan = assignments.reduce(
         (max, arr) => Math.max(max, arr.length),
@@ -54,7 +64,7 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
           row.push({
             rowSpan: rowSpan,
             value: shift.name,
-            column: "",
+            column: new Date(0),
           });
         for (let j = 0; j < dateColumns.length; j++) {
           const assignment = assignments[j][i];
@@ -63,7 +73,7 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
             : "";
           const rowContent = {
             value: workerName,
-            column: dateColumns[j],
+            column: dateColumns[j].date,
           };
 
           row.push({
@@ -85,21 +95,21 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
       );
       const rowHeader = {
         value: worker.name,
-        column: "",
+        column: new Date(0),
       };
       row.push({
         ...rowHeader,
       });
-      for (let column of columns.filter((c) => c instanceof Date)) {
+      for (let column of columns.filter((c) => c.date.getTime() !== 0)) {
         const assignment = assignments.find(
-          (a) => a.date.getTime() === column.getTime()
+          (a) => a.date.getTime() === column.date.getTime()
         );
         const shiftName = assignment
           ? shifts.find((s) => s.id === assignment.shiftId)?.name || ""
           : "";
         const rowContent = {
           value: shiftName,
-          column: column,
+          column: column.date,
         };
         row.push({
           ...rowContent,
@@ -126,10 +136,7 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
 
   useEffect(() => {
     if (schedule) {
-      setColumns([
-        "",
-        ...buildDatesArray(schedule.startDate, schedule.endDate),
-      ]);
+      setColumns(buildColumnHeaders(schedule.startDate, schedule.endDate));
     }
   }, [schedule]);
 

@@ -3,16 +3,18 @@ from datetime import timedelta
 from typing import List, Tuple
 
 import humps
+from fastapi import APIRouter
+from pydantic import TypeAdapter
+
 from core.coverage import Coverage
 from core.schedule import Assignment, Comments, Schedule
 from core.shift import Shift
 from core.worker import Worker
+from engine import Assignment as AssignmentEngine
 from engine import Coverage as CoverageEngine
-from engine import Custom, Engine, Inputs, Outputs
+from engine import Custom, Engine, Inputs, Outputs, Request
 from engine import ShiftDemand as ShiftDemandEngine
 from engine import VariableSpace
-from fastapi import APIRouter, Body, HTTPException
-from pydantic import TypeAdapter
 from routes.api_model import AssignmentMessage, ScheduleMessage
 from scripts.setup_database import coverage_db, shift_db, worker_db
 
@@ -42,9 +44,7 @@ def build_shift_demands(coverages: List[Coverage]) -> List[ShiftDemandEngine]:
     shift_demands = []
     for coverage in coverages:
         for day in range((coverage.date_end - coverage.date_start).days + 1):
-            date = (coverage.date_start + timedelta(days=day)).strftime(
-                "%Y-%m-%d"
-            )
+            date = (coverage.date_start + timedelta(days=day)).strftime("%Y-%m-%d")
             for shift_demand in coverage.shift_demands:
                 if shift_demand.day_index == day:
                     shift_demands.append(
@@ -72,8 +72,8 @@ def from_core_to_inputs(
     shift_demands = build_shift_demands(coverages)
     # pylint: disable=R0801
     coverage = CoverageEngine(shift_demands)
-    requests = []
-    fix_assignments = []
+    requests: List[Request] = []
+    fix_assignments: List[AssignmentEngine] = []
     custom = Custom(custom_constraints=[])
     inputs = Inputs(
         variable_space=variable_space,
@@ -95,8 +95,7 @@ def from_outputs_to_core(
         comments=Comments([], []),
     )
     assignments = [
-        Assignment(**asdict(a), id="", schedule_id="")
-        for a in outputs.assignments
+        Assignment(**asdict(a), id="", schedule_id="") for a in outputs.assignments
     ]
     return schedule, assignments
 

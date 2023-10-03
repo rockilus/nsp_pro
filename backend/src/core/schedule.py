@@ -11,6 +11,7 @@ class Assignment:
     schedule_id: str
 
 
+# pylint: disable=R0801
 @dataclass
 class ConstraintBreach:
     constraint_id: str

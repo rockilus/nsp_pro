@@ -9,7 +9,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
 interface Props {
-  columns: (string | Date)[];
+  columns: Record<string, any>[];
   rows: Record<string, any>[];
 }
 
@@ -23,7 +23,7 @@ export default function ScheduleTable({ columns, rows }: Props) {
           <TableRow>
             {columns.map((column, colIndex) => (
               <TableCell key={colIndex} component="th" scope="row">
-                {typeof column === "string" ? column : column.toISOString()}
+                {column.name}
               </TableCell>
             ))}
           </TableRow>
@@ -35,7 +35,11 @@ export default function ScheduleTable({ columns, rows }: Props) {
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
             >
               {columns.map((column, colIndex) => {
-                const cell = row.find((c) => c.column === column) || null;
+                const cell =
+                  row.find(
+                    (r: Record<string, any>) =>
+                      r.column.getTime() === column.date.getTime()
+                  ) || null;
                 // console.log("row", row, "column", column);
                 // console.log("cell", cell);
 
@@ -52,7 +56,6 @@ export default function ScheduleTable({ columns, rows }: Props) {
                   )
                 );
               })}
-              ;
             </TableRow>
           ))}
         </TableBody>
