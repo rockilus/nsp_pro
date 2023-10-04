@@ -34,7 +34,7 @@ def test_engine_solve_return_expected_assigment_coverage():
     )
     engine = Engine()
     outputs = engine.solve(inputs)
-    assignments = outputs.solution.solution
+    assignments = outputs.assignments
 
     count = sum(1 for a in assignments if a.date == "2023-10-02" and a.shift_id == "s0")
 

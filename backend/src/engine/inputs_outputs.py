@@ -100,12 +100,6 @@ class Inputs:
 
 
 @dataclass
-class Solution:
-    solution_exist: bool
-    solution: List[Assignment]
-
-
-@dataclass
 class ConstraintBreach:
     constraint_id: str
     workers: List[str]
@@ -116,30 +110,13 @@ class ConstraintBreach:
 
 
 @dataclass
-class ConstraintBreaches:
+class Comments:
     constraint_breaches: List[ConstraintBreach]
-
-
-@dataclass
-class InterSolution:
-    index: int
-    time: float
-    objective_value: float
-
-
-@dataclass
-class MetaData:
-    status: Literal["UNKNOWN", "MODEL_INVALID", "FEASIBLE", "INFEASIBLE", "OPTIMAL"]
-    status_code: int
-    conflicts: int
-    branches: int
-    wall_time: float
-    objective_value: float
-    solution_path: List[InterSolution]
+    missing_coverage_dates: List[str]
 
 
 @dataclass
 class Outputs:
-    solution: Solution
-    constraint_breaches: ConstraintBreaches
-    meta_data: MetaData
+    solution_exist: bool
+    assignments: List[Assignment]
+    comments: Comments

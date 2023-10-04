@@ -6,9 +6,9 @@ from routes import (
     router_constraint,
     router_constraint_param,
     router_coverage,
+    router_schedule,
     router_shift,
     router_shift_dimension,
-    router_solver,
     router_worker,
     router_worker_dimension,
 )
@@ -35,7 +35,7 @@ app.include_router(router_constraint_param)
 app.include_router(router_constraint)
 app.include_router(router_shift_dimension)
 app.include_router(router_shift)
-app.include_router(router_solver)
+app.include_router(router_schedule)
 app.include_router(router_worker_dimension)
 app.include_router(router_worker)
 

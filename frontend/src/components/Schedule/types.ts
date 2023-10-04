@@ -1,0 +1,30 @@
+export type AssignmentT = {
+  id: string;
+  workerId: string;
+  date: Date;
+  shiftId: string;
+  scheduleId: string;
+};
+
+export type CommentsT = {
+  constraintBreaches: string[];
+  missingCoverageDates: Date[];
+};
+
+export type ScheduleT = {
+  id: string;
+  startDate: Date;
+  endDate: Date;
+  assignments: AssignmentT[];
+  comments: CommentsT;
+};
+
+export type ShiftScheduleT = {
+  id: string;
+  name: string;
+};
+
+export type WorkerScheduleT = {
+  id: string;
+  name: string;
+};

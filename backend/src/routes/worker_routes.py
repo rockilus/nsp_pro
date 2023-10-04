@@ -79,11 +79,6 @@ def delete_worker(worker_id: str) -> Dict:
     return {"message": "Worker deleted"}
 
 
-def dict_to_worker(data: dict) -> Worker:
-    data_snake = humps.decamelize(data)
-    return Worker(**data_snake)
-
-
 def worker_property_to_api_msg(
     worker_property: WorkerProperty,
 ) -> WorkerPropertyMessage:
