@@ -44,12 +44,12 @@ def build_shift_demands(coverages: List[Coverage]) -> List[ShiftDemandEngine]:
     shift_demands = []
     for coverage in coverages:
         for day in range((coverage.date_end - coverage.date_start).days + 1):
-            date = (coverage.date_start + timedelta(days=day)).strftime("%Y-%m-%d")
+            date = coverage.date_start + timedelta(days=day)
             for shift_demand in coverage.shift_demands:
-                if shift_demand.day_index == day:
+                if shift_demand.day_index == date.weekday():
                     shift_demands.append(
                         ShiftDemandEngine(
-                            date=date,
+                            date=date.strftime("%Y-%m-%d"),
                             shift_id=shift_demand.shift_id,
                             quantity=shift_demand.quantity,
                         )
