@@ -1,3 +1,5 @@
+import { type } from "os";
+
 export type AssignmentT = {
   id: string;
   workerId: string;
@@ -27,4 +29,18 @@ export type ShiftScheduleT = {
 export type WorkerScheduleT = {
   id: string;
   name: string;
+};
+
+export type ColumnT = {
+  date: Date;
+  name: string;
+  noCoverage: boolean;
+};
+
+export type RowT = CellT[];
+
+export type CellT = {
+  date: Date;
+  value: string;
+  rowSpan: number;
 };

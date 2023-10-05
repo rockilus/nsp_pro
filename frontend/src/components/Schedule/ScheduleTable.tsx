@@ -8,13 +8,17 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
+import { ColumnT, RowT } from "./types";
+
 interface Props {
-  columns: Record<string, any>[];
-  rows: Record<string, any>[];
+  columns: ColumnT[];
+  rows: RowT[];
 }
 
 export default function ScheduleTable({ columns, rows }: Props) {
-  //   console.log("columns", columns, "rows", rows);
+  // console.log("columns", columns, "rows", rows);
+
+  const noCoverageColor: string = "#FDEDEC";
 
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
@@ -22,7 +26,16 @@ export default function ScheduleTable({ columns, rows }: Props) {
         <TableHead>
           <TableRow>
             {columns.map((column, colIndex) => (
-              <TableCell key={colIndex} component="th" scope="row">
+              <TableCell
+                key={colIndex}
+                component="th"
+                scope="row"
+                sx={{
+                  backgroundColor: column.noCoverage
+                    ? noCoverageColor
+                    : "inherit",
+                }}
+              >
                 {column.name}
               </TableCell>
             ))}
@@ -36,22 +49,22 @@ export default function ScheduleTable({ columns, rows }: Props) {
             >
               {columns.map((column, colIndex) => {
                 const cell =
-                  row.find(
-                    (r: Record<string, any>) =>
-                      r.column.getTime() === column.date.getTime()
-                  ) || null;
-                // console.log("row", row, "column", column);
-                // console.log("cell", cell);
-
+                  row.find((c) => c.date.getTime() === column.date.getTime()) ||
+                  null;
                 return (
                   cell && (
                     <TableCell
                       key={rowIndex + colIndex}
                       component="th"
                       scope="row"
-                      rowSpan={cell?.rowSpan || 1}
+                      rowSpan={cell.rowSpan}
+                      sx={{
+                        backgroundColor: column.noCoverage
+                          ? noCoverageColor
+                          : "inherit",
+                      }}
                     >
-                      {cell?.value || ""}
+                      {cell.value}
                     </TableCell>
                   )
                 );

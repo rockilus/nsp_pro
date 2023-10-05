@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from datetime import timedelta
+from datetime import datetime, timedelta, time
 from typing import List, Tuple
 
 import humps
@@ -30,6 +30,12 @@ def solver() -> ScheduleMessage:
     engine = Engine()
     outputs = engine.solve(inputs)
     schedule, assignments = from_outputs_to_core(inputs, outputs)
+    no_cov_date = build_no_coverage_date(
+        inputs.variable_space.start_date,
+        inputs.variable_space.end_date,
+        coverages,
+    )
+    schedule.comments.missing_coverage_dates = no_cov_date
     return schedule_and_assignments_to_api_msg(schedule, assignments)
 
 
@@ -55,6 +61,26 @@ def build_shift_demands(coverages: List[Coverage]) -> List[ShiftDemandEngine]:
                         )
                     )
     return shift_demands
+
+
+def build_no_coverage_date(
+    start_date_iso: str, end_date_iso: str, coverages: List[Coverage]
+) -> List[str]:
+    date_format = "%Y-%m-%d"
+    start_date = datetime.fromisoformat(start_date_iso)
+    end_date = datetime.fromisoformat(end_date_iso)
+    delta = end_date - start_date
+    no_cov_date = [
+        start_date + timedelta(days=i) for i in range(delta.days + 1)
+    ]
+    for coverage in coverages:
+        for day in range((coverage.date_end - coverage.date_start).days + 1):
+            date = coverage.date_start + timedelta(days=day)
+            if date in no_cov_date:
+                no_cov_date.remove(datetime.combine(date, time.min))
+                if len(no_cov_date) == 0:
+                    return []
+    return [date.strftime(date_format) for date in no_cov_date]
 
 
 def from_core_to_inputs(
@@ -92,10 +118,14 @@ def from_outputs_to_core(
         id="",
         start_date=inputs.variable_space.start_date,
         end_date=inputs.variable_space.end_date,
-        comments=Comments([], []),
+        comments=Comments(
+            constraint_breaches=[],
+            missing_coverage_dates=[],
+        ),
     )
     assignments = [
-        Assignment(**asdict(a), id="", schedule_id="") for a in outputs.assignments
+        Assignment(**asdict(a), id="", schedule_id="")
+        for a in outputs.assignments
     ]
     return schedule, assignments
 
