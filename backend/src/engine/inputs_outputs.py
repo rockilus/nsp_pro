@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 from typing import List, Literal
 
 ##############################
@@ -8,8 +9,8 @@ from typing import List, Literal
 @dataclass
 class VariableSpace:
     workers: List[str]
-    start_date: str
-    end_date: str
+    start_date: date
+    end_date: date
     shifts: List[str]
 
 
@@ -28,7 +29,7 @@ class Coverage:
 @dataclass
 class Request:
     worker_id: str
-    date: str
+    date: date
     shift_id: str
     priority: Literal["low", "medium", "high"]
 
@@ -36,7 +37,7 @@ class Request:
 @dataclass
 class Assignment:
     worker_id: str
-    date: str
+    date: date
     shift_id: str
 
 
@@ -99,11 +100,12 @@ class Inputs:
 # Outputs
 
 
+# pylint: disable=R0801
 @dataclass
 class ConstraintBreach:
     constraint_id: str
     workers: List[str]
-    dates: List[str]
+    dates: List[date]
     shifts: List[str]
     value: int
     penalty: int
@@ -112,7 +114,7 @@ class ConstraintBreach:
 @dataclass
 class Comments:
     constraint_breaches: List[ConstraintBreach]
-    missing_coverage_dates: List[str]
+    missing_coverage_dates: List[date]
 
 
 @dataclass

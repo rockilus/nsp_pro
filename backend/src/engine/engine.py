@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, timedelta
 from typing import List
 
 from engine.inputs_outputs import Inputs, Outputs
@@ -23,10 +23,8 @@ class Engine:
         return output.build_outputs()
 
     @staticmethod
-    def _build_day_coordinates(start_date_iso: str, end_date_iso: str) -> List[str]:
+    def _build_day_coordinates(start_date: date, end_date: date) -> List[str]:
         date_format = "%Y-%m-%d"
-        start_date = datetime.fromisoformat(start_date_iso)
-        end_date = datetime.fromisoformat(end_date_iso)
         delta = end_date - start_date
         dates = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
         return [date.strftime(date_format) for date in dates]

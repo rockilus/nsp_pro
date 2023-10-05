@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 from typing import List
 
 
@@ -6,7 +7,7 @@ from typing import List
 class Assignment:
     id: str
     worker_id: str
-    date: str
+    date: date
     shift_id: str
     schedule_id: str
 
@@ -16,7 +17,7 @@ class Assignment:
 class ConstraintBreach:
     constraint_id: str
     workers: List[str]
-    dates: List[str]
+    dates: List[date]
     shifts: List[str]
     value: int
     penalty: int
@@ -25,12 +26,12 @@ class ConstraintBreach:
 @dataclass
 class Comments:
     constraint_breaches: List[ConstraintBreach]
-    missing_coverage_dates: List[str]
+    missing_coverage_dates: List[date]
 
 
 @dataclass
 class Schedule:
     id: str
-    start_date: str
-    end_date: str
+    start_date: date
+    end_date: date
     comments: Comments
