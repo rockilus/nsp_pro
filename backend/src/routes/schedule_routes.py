@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from datetime import datetime, timedelta, time
+from datetime import datetime, time, timedelta
 from typing import List, Tuple
 
 import humps
@@ -70,9 +70,7 @@ def build_no_coverage_date(
     start_date = datetime.fromisoformat(start_date_iso)
     end_date = datetime.fromisoformat(end_date_iso)
     delta = end_date - start_date
-    no_cov_date = [
-        start_date + timedelta(days=i) for i in range(delta.days + 1)
-    ]
+    no_cov_date = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
     for coverage in coverages:
         for day in range((coverage.date_end - coverage.date_start).days + 1):
             date = coverage.date_start + timedelta(days=day)
@@ -124,8 +122,7 @@ def from_outputs_to_core(
         ),
     )
     assignments = [
-        Assignment(**asdict(a), id="", schedule_id="")
-        for a in outputs.assignments
+        Assignment(**asdict(a), id="", schedule_id="") for a in outputs.assignments
     ]
     return schedule, assignments
 
