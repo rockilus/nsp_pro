@@ -13,6 +13,7 @@ import { ShiftT } from "../components/Coverage/types";
 import { ShiftScheduleT, WorkerScheduleT } from "../components/Schedule/types";
 import { useShiftStore } from "../stores/shiftStore";
 import { useWorkerStore } from "../stores/workerStore";
+import ConstraintPanel from "../components/CustomConstraint/ConstraintPanel";
 
 export default function Draft() {
   const shifts = useShiftStore((state) => state.shifts);
@@ -52,6 +53,7 @@ export default function Draft() {
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <WorkerConfig />
       <ShiftConfig />
+      <ConstraintPanel/>
       {shiftsForCoverage.length > 0 && (
         <CoveragePanel shifts={shiftsForCoverage} />
       )}
