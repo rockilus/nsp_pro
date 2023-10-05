@@ -1,5 +1,4 @@
-from . import \
-    Constants  # Adjust the import path based on where your original code is
+from . import Constants  # Adjust the import path based on where your original code is
 
 
 def test_num_days_week():

@@ -51,8 +51,6 @@ export default function ShiftConfig() {
   );
 
   const buildColumns = useCallback((): ColumnT[] => {
-    console.log("shiftDimensions in buildColumns", shiftDimensions);
-
     const newColumns = shiftDimensions.map((dimension) => {
       return { ...dimension, defaultColumn: false };
     });
@@ -60,9 +58,6 @@ export default function ShiftConfig() {
   }, [shiftDimensions]);
 
   const buildRows = useCallback((): RowT[] => {
-    console.log("columns in buildRows", columns);
-    console.log("shiftDimensions in buildRows", shiftDimensions);
-
     const newRows: RowT[] = [];
     for (let shift of shifts) {
       let row: RowT = [];
@@ -95,9 +90,7 @@ export default function ShiftConfig() {
   }, [fetchShifts]);
 
   useEffect(() => {
-    console.log("rows useEffect");
-
-    if (columns.length > defaultColumns.length && shifts) {
+    if (columns.length > 0 && shifts) {
       setRows(buildRows());
     }
   }, [columns, shifts, buildRows]);
@@ -107,8 +100,6 @@ export default function ShiftConfig() {
   }, [fetchShiftDimensions]);
 
   useEffect(() => {
-    console.log("columns useEffect");
-
     if (shiftDimensions) {
       setColumns(buildColumns());
     }
@@ -117,10 +108,6 @@ export default function ShiftConfig() {
   // Columns
 
   const handleAddColumn = async (newColumn: ColumnT) => {
-    console.log("handleAddColumn");
-
-    console.log("newColumn", newColumn);
-
     const newShiftDimension: ShiftDimensionT = {
       id: "",
       name: newColumn.name,
