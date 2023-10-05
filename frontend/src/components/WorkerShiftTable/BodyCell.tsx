@@ -8,49 +8,36 @@ import Select from "@mui/material/Select";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
 
+import { ColumnT, CellT } from "./types";
+
 interface Props {
-  columnId: string;
-  rowId: string;
-  columnName: string;
-  entryType: string;
-  entryOptions: string[];
-  value: any;
-  defaultColumn: boolean;
+  cell: CellT;
+  column: ColumnT;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
-  handleEditCell: (
-    rowId: string,
-    columnId: string,
-    value: any,
-    defaultColumn: boolean
-  ) => void;
+  handleEditCell: (updatedCell: CellT, defaultColumn: boolean) => void;
 }
 
-export default function BodyCellTemplate({
-  columnId,
-  rowId,
-  columnName,
-  entryType,
-  entryOptions,
-  value,
-  defaultColumn,
+export default function BodyCell({
+  cell,
+  column,
   editing,
   setEditing,
   handleEditCell,
 }: Props) {
-  const [entryValue, setEntryValue] = useState(value);
+  const [valueState, setValueState] = useState(cell.value);
 
   const handleEditConfirm = async () => {
-    if (entryValue !== value) {
-      await handleEditCell(rowId, columnId, entryValue, defaultColumn);
+    if (valueState !== cell.value) {
+      const updatedCell = { ...cell, value: valueState };
+      await handleEditCell(updatedCell, column.defaultColumn);
     }
     setEditing({});
-    setEntryValue(value);
   };
 
   const handleEditCancel = () => {
     setEditing({});
-    setEntryValue(value);
+    setValueState(cell.value);
   };
 
   const selectFieldBool = () => (
@@ -60,9 +47,9 @@ export default function BodyCellTemplate({
         <Select
           labelId="demo-simple-select-label"
           id="demo-simple-select"
-          value={entryValue}
+          value={valueState}
           label="Property Type"
-          onChange={(e) => setEntryValue(e.target.value)}
+          onChange={(e) => setValueState(e.target.value)}
           onBlur={handleEditConfirm}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -86,9 +73,9 @@ export default function BodyCellTemplate({
         <Select
           labelId="demo-simple-select-label"
           id="demo-simple-select"
-          value={entryValue}
+          value={valueState}
           label="Property Type"
-          onChange={(e) => setEntryValue(e.target.value)}
+          onChange={(e) => setValueState(e.target.value)}
           onBlur={handleEditConfirm}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -98,7 +85,7 @@ export default function BodyCellTemplate({
             }
           }}
         >
-          {entryOptions.map((item, index) => (
+          {column.entryOptions.map((item, index) => (
             <MenuItem value={item} key={index}>
               {item}
             </MenuItem>
@@ -111,23 +98,23 @@ export default function BodyCellTemplate({
   return (
     <>
       <TableCell
-        key={columnId}
+        key={column.id}
         component="th"
         scope="row"
-        onClick={() => setEditing({ [rowId]: columnId })}
+        onClick={() => setEditing({ [cell.rowId]: column.id })}
       >
         {editing ? (
-          entryType === "list" ? (
+          column.entryType === "list" ? (
             selectField()
-          ) : entryType === "bool" ? (
+          ) : column.entryType === "bool" ? (
             selectFieldBool()
-          ) : entryType === "int" ? (
+          ) : column.entryType === "int" ? (
             <TextField
               fullWidth
               type="number"
-              name={columnName}
-              value={entryValue}
-              onChange={(e) => setEntryValue(e.target.value)}
+              name={column.name}
+              value={valueState}
+              onChange={(e) => setValueState(e.target.value)}
               onBlur={handleEditConfirm}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -142,9 +129,9 @@ export default function BodyCellTemplate({
             <TextField
               fullWidth
               type="text"
-              name={columnName}
-              value={entryValue}
-              onChange={(e) => setEntryValue(e.target.value)}
+              name={column.name}
+              value={valueState}
+              onChange={(e) => setValueState(e.target.value)}
               onBlur={handleEditConfirm}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -157,7 +144,7 @@ export default function BodyCellTemplate({
             />
           )
         ) : (
-          entryValue
+          cell.value
         )}
       </TableCell>
     </>

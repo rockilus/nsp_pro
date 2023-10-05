@@ -16,8 +16,6 @@ interface Props {
 }
 
 export default function ScheduleTable({ columns, rows }: Props) {
-  // console.log("columns", columns, "rows", rows);
-
   const noCoverageColor: string = "#FDEDEC";
 
   return (

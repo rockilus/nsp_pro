@@ -3,16 +3,17 @@ import React, { useCallback, useEffect, useState, useRef } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
-import TableTemplate from "../TableTemplate/TableTemplate";
+import WorkerShiftTable from "../WorkerShiftTable/WorkerShiftTable";
 
 import { useWorkerStore } from "../../stores/workerStore";
 import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
 import { WorkerT, WorkerPropertyT, WorkerDimensionT } from "./types";
+import { ColumnT, RowT, CellT } from "../WorkerShiftTable/types";
 
 export default function WorkerConfig() {
-  const defaultColumns = [
+  const defaultColumns: ColumnT[] = [
     {
-      id: "",
+      id: "defaultColumnId",
       name: "Name",
       entryType: "str",
       entryOptions: [],
@@ -21,8 +22,8 @@ export default function WorkerConfig() {
   ];
   const defaultColumnsRef = useRef(defaultColumns);
 
-  const [columns, setColumns] = useState<Record<string, any>[]>(defaultColumns);
-  const [rows, setRows] = useState<Record<string, any>[]>([]);
+  const [columns, setColumns] = useState<ColumnT[]>(defaultColumns);
+  const [rows, setRows] = useState<RowT[]>([]);
 
   const workers = useWorkerStore((state) => state.workers);
   const fetchWorkers = useWorkerStore((state) => state.fetchWorkers);
@@ -49,23 +50,39 @@ export default function WorkerConfig() {
     (state) => state.deleteWorkerDimension
   );
 
-  const buildRows = useCallback(() => {
-    const newRows = [];
-    if (workers) {
-      for (let worker of workers) {
-        let row: Record<string, any> = {};
-        row["Name"] = worker.name;
-        for (let column of columns.filter((c) => !c.defaultColumn)) {
-          const workerProperty = worker.workerProperties.find(
-            (p) => p.workerDimensionId === column.id
-          );
-          row[column.name] = workerProperty ? workerProperty.value || "" : "";
-        }
-        row["id"] = worker.id;
-        newRows.push(row);
+  const buildColumns = useCallback((): ColumnT[] => {
+    const newColumns: ColumnT[] = workerDimensions.map((dimension) => {
+      return { ...dimension, defaultColumn: false };
+    });
+    return [...defaultColumnsRef.current, ...newColumns];
+  }, [workerDimensions]);
+
+  const buildRows = useCallback((): RowT[] => {
+    const newRows: RowT[] = [];
+    for (let worker of workers) {
+      let row: RowT = [];
+      const newDefaultCell: CellT = {
+        id: "defaultCellId",
+        value: worker.name,
+        columnId: "defaultColumnId",
+        rowId: worker.id,
+      };
+      row.push(newDefaultCell);
+      for (let column of columns.filter((c) => !c.defaultColumn)) {
+        const workerProperty = worker.workerProperties.find(
+          (p) => p.workerDimensionId === column.id
+        );
+        const newCell: CellT = {
+          id: workerProperty ? workerProperty.id : "",
+          value: workerProperty ? workerProperty.value : "",
+          columnId: column.id,
+          rowId: worker.id,
+        };
+        row.push(newCell);
       }
-      setRows(newRows);
+      newRows.push(row.slice());
     }
+    return newRows;
   }, [columns, workers]);
 
   useEffect(() => {
@@ -74,7 +91,7 @@ export default function WorkerConfig() {
 
   useEffect(() => {
     if (columns.length > 0 && workers) {
-      buildRows();
+      setRows(buildRows());
     }
   }, [columns, workers, buildRows]);
 
@@ -84,48 +101,34 @@ export default function WorkerConfig() {
 
   useEffect(() => {
     if (workerDimensions) {
-      setColumns(() => {
-        const newColumns = workerDimensions.map((dimension) => {
-          return { ...dimension, defaultColumn: false };
-        });
-        return [...defaultColumnsRef.current, ...newColumns];
-      });
+      setColumns(buildColumns());
     }
-  }, [workerDimensions]);
+  }, [workerDimensions, buildColumns]);
 
   // Columns
 
-  const handleAddColumn = async (
-    name: string,
-    entryType: string,
-    entryOptions: string[]
-  ) => {
+  const handleAddColumn = async (newColumn: ColumnT) => {
     const newWorkerDimension: WorkerDimensionT = {
       id: "",
-      name: name,
-      entryType: entryType,
-      entryOptions: entryOptions,
+      name: newColumn.name,
+      entryType: newColumn.entryType,
+      entryOptions: newColumn.entryOptions,
     };
     await addWorkerDimension(newWorkerDimension);
   };
 
-  const handleEditHeadCell = async (
-    workerDimensionId: string,
-    name: string,
-    entryType: string,
-    entryOptions: string[]
-  ) => {
+  const handleEditHeadCell = async (updatedColumn: ColumnT) => {
     const updatedWorkerDimension: WorkerDimensionT = {
-      id: workerDimensionId,
-      name: name,
-      entryType: entryType,
-      entryOptions: entryOptions,
+      id: updatedColumn.id,
+      name: updatedColumn.name,
+      entryType: updatedColumn.entryType,
+      entryOptions: updatedColumn.entryOptions,
     };
     await updateWorkerDimension(updatedWorkerDimension);
   };
 
-  const handleDeleteColumn = async (workerDimensionId: string) => {
-    await deleteWorkerDimension(workerDimensionId);
+  const handleDeleteColumn = async (columnId: string) => {
+    await deleteWorkerDimension(columnId);
   };
 
   // Rows
@@ -135,31 +138,29 @@ export default function WorkerConfig() {
   };
 
   const handleEditBodyCell = async (
-    workerId: string,
-    workerDimensionId: string,
-    value: any,
+    updatedCell: CellT,
     defaultColumn: boolean
   ) => {
     if (defaultColumn) {
       const updatedWorker: WorkerT = {
-        id: workerId,
-        name: value,
+        id: updatedCell.rowId,
+        name: updatedCell.value.toString(),
         workerProperties: [],
       };
       await updateWorker(updatedWorker);
     } else {
       const updatedWorkerProperty: WorkerPropertyT = {
-        id: "",
-        value: value,
-        workerId: workerId,
-        workerDimensionId: workerDimensionId,
+        id: updatedCell.id,
+        value: updatedCell.value,
+        workerId: updatedCell.rowId,
+        workerDimensionId: updatedCell.columnId,
       };
       await updateWorkerProperty(updatedWorkerProperty);
     }
   };
 
-  const handleDeleteRow = async (workerId: string) => {
-    await deleteWorker(workerId);
+  const handleDeleteRow = async (rowId: string) => {
+    await deleteWorker(rowId);
   };
 
   return (
@@ -167,7 +168,7 @@ export default function WorkerConfig() {
       <Typography variant="h4" align="left">
         Workers Configuration
       </Typography>
-      <TableTemplate
+      <WorkerShiftTable
         columns={columns}
         rows={rows}
         handleAddColumn={handleAddColumn}
