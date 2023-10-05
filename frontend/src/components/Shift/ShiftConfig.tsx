@@ -3,16 +3,17 @@ import React, { useRef, useCallback, useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
-import TableTemplate from "../TableTemplate/TableTemplate";
+import WorkerShiftTable from "../WorkerShiftTable/WorkerShiftTable";
 
 import { useShiftStore } from "../../stores/shiftStore";
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
 import { ShiftT, ShiftPropertyT, ShiftDimensionT } from "./types";
+import { ColumnT, RowT, CellT } from "../WorkerShiftTable/types";
 
 export default function ShiftConfig() {
-  const defaultColumns = [
+  const defaultColumns: ColumnT[] = [
     {
-      id: "",
+      id: "defaultColumnId",
       name: "Name",
       entryType: "str",
       entryOptions: [],
@@ -21,8 +22,8 @@ export default function ShiftConfig() {
   ];
   const defaultColumnsRef = useRef(defaultColumns);
 
-  const [columns, setColumns] = useState<Record<string, any>[]>(defaultColumns);
-  const [rows, setRows] = useState<Record<string, any>[]>([]);
+  const [columns, setColumns] = useState<ColumnT[]>(defaultColumns);
+  const [rows, setRows] = useState<RowT[]>([]);
 
   const shifts = useShiftStore((state) => state.shifts);
   const fetchShifts = useShiftStore((state) => state.fetchShifts);
@@ -49,23 +50,44 @@ export default function ShiftConfig() {
     (state) => state.deleteShiftDimension
   );
 
-  const buildRows = useCallback(() => {
-    const newRows = [];
-    if (shifts) {
-      for (let shift of shifts) {
-        let row: Record<string, any> = {};
-        row["Name"] = shift.name;
-        for (let column of columns.filter((c) => !c.defaultColumn)) {
-          const shiftProperty = shift.shiftProperties.find(
-            (p) => p.shiftDimensionId === column.id
-          );
-          row[column.name] = shiftProperty ? shiftProperty.value || "" : "";
-        }
-        row["id"] = shift.id;
-        newRows.push(row);
+  const buildColumns = useCallback((): ColumnT[] => {
+    console.log("shiftDimensions in buildColumns", shiftDimensions);
+
+    const newColumns = shiftDimensions.map((dimension) => {
+      return { ...dimension, defaultColumn: false };
+    });
+    return [...defaultColumnsRef.current, ...newColumns];
+  }, [shiftDimensions]);
+
+  const buildRows = useCallback((): RowT[] => {
+    console.log("columns in buildRows", columns);
+    console.log("shiftDimensions in buildRows", shiftDimensions);
+
+    const newRows: RowT[] = [];
+    for (let shift of shifts) {
+      let row: RowT = [];
+      const newDefaultCell: CellT = {
+        id: "defaultCellId",
+        value: shift.name,
+        columnId: "defaultColumnId",
+        rowId: shift.id,
+      };
+      row.push(newDefaultCell);
+      for (let column of columns.filter((c) => !c.defaultColumn)) {
+        const shiftProperty = shift.shiftProperties.find(
+          (p) => p.shiftDimensionId === column.id
+        );
+        const newCell: CellT = {
+          id: shiftProperty ? shiftProperty.id : "",
+          value: shiftProperty ? shiftProperty.value : "",
+          columnId: column.id,
+          rowId: shift.id,
+        };
+        row.push(newCell);
       }
-      setRows(newRows);
+      newRows.push(row.slice());
     }
+    return newRows;
   }, [columns, shifts]);
 
   useEffect(() => {
@@ -73,8 +95,10 @@ export default function ShiftConfig() {
   }, [fetchShifts]);
 
   useEffect(() => {
-    if (columns.length > 0 && shifts) {
-      buildRows();
+    console.log("rows useEffect");
+
+    if (columns.length > defaultColumns.length && shifts) {
+      setRows(buildRows());
     }
   }, [columns, shifts, buildRows]);
 
@@ -83,49 +107,41 @@ export default function ShiftConfig() {
   }, [fetchShiftDimensions]);
 
   useEffect(() => {
+    console.log("columns useEffect");
+
     if (shiftDimensions) {
-      setColumns(() => {
-        const newColumns = shiftDimensions.map((dimension) => {
-          return { ...dimension, defaultColumn: false };
-        });
-        return [...defaultColumnsRef.current, ...newColumns];
-      });
+      setColumns(buildColumns());
     }
-  }, [shiftDimensions]);
+  }, [shiftDimensions, buildColumns]);
 
   // Columns
 
-  const handleAddColumn = async (
-    name: string,
-    entryType: string,
-    entryOptions: string[]
-  ) => {
+  const handleAddColumn = async (newColumn: ColumnT) => {
+    console.log("handleAddColumn");
+
+    console.log("newColumn", newColumn);
+
     const newShiftDimension: ShiftDimensionT = {
       id: "",
-      name: name,
-      entryType: entryType,
-      entryOptions: entryOptions,
+      name: newColumn.name,
+      entryType: newColumn.entryType,
+      entryOptions: newColumn.entryOptions,
     };
     await addShiftDimension(newShiftDimension);
   };
 
-  const handleEditHeadCell = async (
-    shiftDimensionId: string,
-    name: string,
-    entryType: string,
-    entryOptions: string[]
-  ) => {
+  const handleEditHeadCell = async (updatedColumn: ColumnT) => {
     const updatedShiftDimension: ShiftDimensionT = {
-      id: shiftDimensionId,
-      name: name,
-      entryType: entryType,
-      entryOptions: entryOptions,
+      id: updatedColumn.id,
+      name: updatedColumn.name,
+      entryType: updatedColumn.entryType,
+      entryOptions: updatedColumn.entryOptions,
     };
     await updateShiftDimension(updatedShiftDimension);
   };
 
-  const handleDeleteColumn = async (shiftDimensionId: string) => {
-    await deleteShiftDimension(shiftDimensionId);
+  const handleDeleteColumn = async (columnId: string) => {
+    await deleteShiftDimension(columnId);
   };
 
   // Rows
@@ -135,31 +151,29 @@ export default function ShiftConfig() {
   };
 
   const handleEditBodyCell = async (
-    shiftId: string,
-    shiftDimensionId: string,
-    value: any,
+    updatedCell: CellT,
     defaultColumn: boolean
   ) => {
     if (defaultColumn) {
       const updatedShift: ShiftT = {
-        id: shiftId,
-        name: value,
+        id: updatedCell.rowId,
+        name: updatedCell.value.toString(),
         shiftProperties: [],
       };
       await updateShift(updatedShift);
     } else {
       const updatedShiftProperty: ShiftPropertyT = {
         id: "",
-        value: value,
-        shiftId: shiftId,
-        shiftDimensionId: shiftDimensionId,
+        value: updatedCell.value,
+        shiftId: updatedCell.rowId,
+        shiftDimensionId: updatedCell.columnId,
       };
       await updateShiftProperty(updatedShiftProperty);
     }
   };
 
-  const handleDeleteRow = async (shiftId: string) => {
-    await deleteShift(shiftId);
+  const handleDeleteRow = async (rowId: string) => {
+    await deleteShift(rowId);
   };
 
   return (
@@ -167,7 +181,7 @@ export default function ShiftConfig() {
       <Typography variant="h4" align="left">
         Shifts Configuration
       </Typography>
-      <TableTemplate
+      <WorkerShiftTable
         columns={columns}
         rows={rows}
         handleAddColumn={handleAddColumn}

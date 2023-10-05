@@ -50,18 +50,19 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
     }
   },
 
-  updateWorker: async (updatedworker) => {
+  updateWorker: async (updatedWorker) => {
     try {
-      await fetch(`${apiUrlWorkers}/${updatedworker.id}`, {
+      const response = await fetch(`${apiUrlWorkers}/${updatedWorker.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedworker),
+        body: JSON.stringify(updatedWorker),
       });
+      const newWorker: WorkerT = await response.json();
       set((state) => ({
         workers: state.workers.map((w) =>
-          w.id === updatedworker.id ? updatedworker : w
+          w.id === updatedWorker.id ? newWorker : w
         ),
       }));
     } catch (error) {

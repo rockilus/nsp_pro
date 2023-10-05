@@ -10,36 +10,26 @@ import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
 import Typography from "@mui/material/Typography";
 
-import EditColumnTemplate from "./EditColumnTemplate";
+import UpdateColumnHeader from "./UpdateColumnHeader";
+import { ColumnT } from "./types";
 
 interface Props {
-  columnId: string;
-  value: any;
-  entryType: string;
-  entryOptions: string[];
-  defaultColumn: boolean;
-  handleEditCell: (
-    columnId: string,
-    value: string,
-    entryType: string,
-    entryOptions: string[]
-  ) => void;
+  column: ColumnT;
+  handleEditCell: (updatedColumn: ColumnT) => void;
   handleDeleteColumn: (columnId: string) => void;
 }
 
-export default function HeadCellTemplate({
-  columnId,
-  value,
-  entryType,
-  entryOptions,
-  defaultColumn,
+export default function HeadCell({
+  column,
   handleEditCell,
   handleDeleteColumn,
 }: Props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [entryValue, setEntryValue] = useState(value);
-  const [entryTypeState, setEntryTypeState] = useState(entryType);
-  const [entryOptionsState, setEntryOptionsState] = useState(entryOptions);
+  const [nameState, setNameState] = useState(column.name);
+  const [entryTypeState, setEntryTypeState] = useState(column.entryType);
+  const [entryOptionsState, setEntryOptionsState] = useState(
+    column.entryOptions
+  );
 
   const open = Boolean(anchorEl);
 
@@ -51,7 +41,7 @@ export default function HeadCellTemplate({
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (!defaultColumn) {
+    if (!column.defaultColumn) {
       setAnchorEl(event.currentTarget);
     }
   };
@@ -62,27 +52,29 @@ export default function HeadCellTemplate({
 
   const handleEditConfirm = async () => {
     if (
-      entryValue !== value ||
-      entryTypeState !== entryType ||
-      entryOptionsState !== entryOptions
+      nameState !== column.name ||
+      entryTypeState !== column.entryType ||
+      entryOptionsState !== column.entryOptions
     ) {
-      await handleEditCell(
-        columnId,
-        entryValue,
-        entryTypeState,
-        entryOptionsState
-      );
+      const updatedColumn: ColumnT = {
+        id: column.id,
+        name: nameState,
+        entryType: entryTypeState,
+        entryOptions: entryOptionsState,
+        defaultColumn: column.defaultColumn,
+      };
+      await handleEditCell(updatedColumn);
     }
-    setEntryValue(value);
-    setEntryTypeState(entryType);
-    setEntryOptionsState(entryOptions);
+    setNameState(column.name);
+    setEntryTypeState(column.entryType);
+    setEntryOptionsState(column.entryOptions);
     handleClose();
   };
 
   const handleEditCancel = () => {
-    setEntryValue(value);
-    setEntryTypeState(entryType);
-    setEntryOptionsState(entryOptions);
+    setNameState(column.name);
+    setEntryTypeState(column.entryType);
+    setEntryOptionsState(column.entryOptions);
     handleClose();
   };
 
@@ -95,14 +87,14 @@ export default function HeadCellTemplate({
       }}
     >
       <Typography variant="body2" color="text.secondary" align="left">
-        {value}
+        {column.name}
       </Typography>
-      {iconsPrefix[entryType]}
+      {iconsPrefix[column.entryType]}
     </Box>
   );
 
   return (
-    <TableCell key={columnId} component="th" scope="row">
+    <TableCell key={column.id} component="th" scope="row">
       <Button
         id="basic-button"
         aria-controls={open ? "basic-menu" : undefined}
@@ -131,12 +123,12 @@ export default function HeadCellTemplate({
           "aria-labelledby": "basic-button",
         }}
       >
-        <EditColumnTemplate
-          columnId={columnId}
-          value={entryValue}
+        <UpdateColumnHeader
+          columnId={column.id}
+          name={nameState}
           entryType={entryTypeState}
           entryOptions={entryOptionsState}
-          setEntryValue={setEntryValue}
+          setNameState={setNameState}
           setEntryType={setEntryTypeState}
           setEntryOptions={setEntryOptionsState}
           handleDeleteColumn={handleDeleteColumn}

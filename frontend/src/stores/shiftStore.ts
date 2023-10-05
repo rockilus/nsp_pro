@@ -50,18 +50,19 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
     }
   },
 
-  updateShift: async (updatedshift) => {
+  updateShift: async (updatedShift) => {
     try {
-      await fetch(`${apiUrlShifts}/${updatedshift.id}`, {
+      const response = await fetch(`${apiUrlShifts}/${updatedShift.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedshift),
+        body: JSON.stringify(updatedShift),
       });
+      const newShift: ShiftT = await response.json();
       set((state) => ({
         shifts: state.shifts.map((w) =>
-          w.id === updatedshift.id ? updatedshift : w
+          w.id === updatedShift.id ? newShift : w
         ),
       }));
     } catch (error) {

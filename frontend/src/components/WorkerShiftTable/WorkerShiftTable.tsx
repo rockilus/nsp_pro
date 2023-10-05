@@ -12,36 +12,23 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
-import BodyCellTemplate from "./BodyCellTemplate";
-import HeadCellTemplate from "./HeadCellTemplate";
-import DrawerTemplate from "./DrawerTemplate";
+import BodyCell from "./BodyCell";
+import HeadCell from "./HeadCell";
+import CreateDrawer from "./CreateDrawer";
+import { ColumnT, RowT, CellT } from "./types";
 
 interface Props {
-  columns: Record<string, any>[];
-  rows: Record<string, any>[];
-  handleAddColumn: (
-    name: string,
-    entryType: string,
-    entryOptions: string[]
-  ) => void;
-  handleEditHeadCell: (
-    columnId: string,
-    value: any,
-    entryType: string,
-    entryOptions: string[]
-  ) => void;
+  columns: ColumnT[];
+  rows: RowT[];
+  handleAddColumn: (newColumn: ColumnT) => void;
+  handleEditHeadCell: (updatedColumn: ColumnT) => void;
   handleDeleteColumn: (columnId: string) => void;
   handleAddRow: (newRow: Record<string, any>) => void;
-  handleEditBodyCell: (
-    rowId: string,
-    columnId: string,
-    value: any,
-    defaultColumn: boolean
-  ) => void;
-  handleDeleteRow: (id: string) => void;
+  handleEditBodyCell: (updatedCell: CellT, defaultColumn: boolean) => void;
+  handleDeleteRow: (rowId: string) => void;
 }
 
-export default function TableTemplate({
+export default function WorkerShiftTable({
   columns,
   rows,
   handleAddColumn,
@@ -65,13 +52,9 @@ export default function TableTemplate({
           <TableHead>
             <TableRow>
               {columns.map((column, colIndex) => (
-                <HeadCellTemplate
+                <HeadCell
                   key={colIndex}
-                  columnId={column.id}
-                  entryType={column.entryType}
-                  entryOptions={column.entryOptions}
-                  value={column.name}
-                  defaultColumn={column.defaultColumn}
+                  column={column}
                   handleEditCell={handleEditHeadCell}
                   handleDeleteColumn={handleDeleteColumn}
                 />
@@ -89,24 +72,24 @@ export default function TableTemplate({
                 key={rowIndex}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
-                {columns.map((column, colIndex) => (
-                  <BodyCellTemplate
-                    key={colIndex}
-                    columnId={column.id}
-                    rowId={row.id}
-                    columnName={column.name}
-                    entryType={column.entryType}
-                    entryOptions={column.entryOptions}
-                    value={row[column.name]}
-                    defaultColumn={column.defaultColumn}
-                    editing={bodyEditing[row.id] === column.id}
-                    setEditing={setBodyEditing}
-                    handleEditCell={handleEditBodyCell}
-                  />
-                ))}
+                {columns.map((column, colIndex) => {
+                  const cell = row.find((c) => c.columnId === column.id);
+                  return (
+                    cell && (
+                      <BodyCell
+                        key={colIndex}
+                        cell={cell}
+                        column={column}
+                        editing={bodyEditing[cell.rowId] === column.id}
+                        setEditing={setBodyEditing}
+                        handleEditCell={handleEditBodyCell}
+                      />
+                    )
+                  );
+                })}
                 <TableCell component="th" scope="row">
                   <Box sx={{ display: "flex" }}>
-                    <Button onClick={() => handleDeleteRow(row.id)}>
+                    <Button onClick={() => handleDeleteRow(row[0].rowId)}>
                       <DeleteIcon />
                     </Button>
                   </Box>
@@ -124,7 +107,7 @@ export default function TableTemplate({
           </TableBody>
         </Table>
       </TableContainer>
-      <DrawerTemplate
+      <CreateDrawer
         drawerOpen={drawerOpen}
         toggleDrawer={toggleDrawer}
         handleAddColumn={handleAddColumn}

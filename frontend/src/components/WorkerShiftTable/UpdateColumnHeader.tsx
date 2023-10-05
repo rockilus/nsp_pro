@@ -1,27 +1,28 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import CancelIcon from "@mui/icons-material/Cancel";
-import Drawer from "@mui/material/Drawer";
-import Button from "@mui/material/Button";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import MenuItem from "@mui/material/MenuItem";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
+import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
+import DialogColumnDelete from "./DialogColumnDelete";
+
 interface Props {
-  drawerOpen: boolean;
-  toggleDrawer: () => void;
-  handleAddColumn: (
-    name: string,
-    entryType: string,
-    entryOptions: string[]
-  ) => void;
+  columnId: string;
+  name: string;
+  entryType: string;
+  entryOptions: string[];
+  setNameState: React.Dispatch<React.SetStateAction<string>>;
+  setEntryType: React.Dispatch<React.SetStateAction<string>>;
+  setEntryOptions: React.Dispatch<React.SetStateAction<string[]>>;
+  handleDeleteColumn: (columnId: string) => void;
 }
 
 const propertyTypes = {
@@ -31,24 +32,17 @@ const propertyTypes = {
   list: "List",
 };
 
-export default function DrawerTemplate({
-  drawerOpen,
-  toggleDrawer,
-  handleAddColumn,
+export default function UpdateColumnHeader({
+  columnId,
+  name: value,
+  entryType,
+  entryOptions,
+  setNameState,
+  setEntryType,
+  setEntryOptions,
+  handleDeleteColumn,
 }: Props) {
-  const [name, setName] = useState("");
-  const [entryType, setEntryType] = useState("");
-  const [listOptions, setListOptions] = useState<string[]>([]);
   const [newOption, setNewOption] = useState<string>("");
-
-  const handleAddConfirm = async () => {
-    await handleAddColumn(name, entryType, listOptions);
-    toggleDrawer();
-  };
-
-  const handleChange = (event: SelectChangeEvent) => {
-    setEntryType(event.target.value as string);
-  };
 
   const selectField = () => (
     <Box sx={{ minWidth: 120, width: "100%" }}>
@@ -59,7 +53,7 @@ export default function DrawerTemplate({
           id="demo-simple-select"
           value={entryType}
           label="Property Type"
-          onChange={handleChange}
+          onChange={(e) => setEntryType(e.target.value)}
         >
           {Object.keys(propertyTypes).map((key) => (
             <MenuItem value={key} key={key}>
@@ -73,7 +67,7 @@ export default function DrawerTemplate({
 
   const addListOptions = () => (
     <Box sx={{ minWidth: 120, width: "100%" }}>
-      {listOptions.map((option, index) => (
+      {entryOptions.map((option, index) => (
         <ListItem key={index}>
           <Typography variant="body1" sx={{ width: "100%" }}>
             {option}
@@ -82,8 +76,8 @@ export default function DrawerTemplate({
             color="disabled"
             sx={{ cursor: "pointer", marginLeft: "10px" }}
             onClick={() => {
-              listOptions.splice(index, 1);
-              setListOptions([...listOptions]);
+              entryOptions.splice(index, 1);
+              setEntryOptions([...entryOptions]);
             }}
           />
         </ListItem>
@@ -104,7 +98,7 @@ export default function DrawerTemplate({
             if (newOption === "") {
               return;
             }
-            setListOptions([...listOptions, newOption]);
+            setEntryOptions([...entryOptions, newOption]);
             setNewOption("");
           }}
         />
@@ -112,33 +106,16 @@ export default function DrawerTemplate({
     </Box>
   );
 
-  const drawerContent = () => (
+  return (
     <Box sx={{ width: 350 }} role="presentation">
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          pt: 2,
-          pr: 2,
-          pl: 2,
-        }}
-      >
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          New Property
-        </Typography>
-        <CancelIcon
-          onClick={toggleDrawer}
-          sx={{ color: "text.secondary", cursor: "pointer" }}
-        />
-      </Box>
       <List>
         <ListItem key={"name"}>
           <TextField
             id="outlined-basic"
             label="Property Name"
             variant="outlined"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={value}
+            onChange={(e) => setNameState(e.target.value)}
             fullWidth
           />
         </ListItem>
@@ -147,23 +124,12 @@ export default function DrawerTemplate({
       {entryType === "list" && (
         <ListItem key={"list_options"}>{addListOptions()}</ListItem>
       )}
-
-      <Button
-        variant="contained"
-        color="primary"
-        sx={{
-          marginLeft: "16px",
-        }}
-        onClick={handleAddConfirm}
-      >
-        Add
-      </Button>
+      <ListItem key={"button"}>
+        <DialogColumnDelete
+          columnId={columnId}
+          handleDeleteColumn={handleDeleteColumn}
+        />
+      </ListItem>
     </Box>
-  );
-
-  return (
-    <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer}>
-      {drawerContent()}
-    </Drawer>
   );
 }
