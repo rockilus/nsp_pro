@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from datetime import datetime, time, timedelta
+from datetime import date, timedelta
 from typing import List, Tuple
 
 import humps
@@ -39,23 +39,24 @@ def solver() -> ScheduleMessage:
     return schedule_and_assignments_to_api_msg(schedule, assignments)
 
 
-def get_start_end_dates(coverages: list[Coverage]) -> tuple[str, str]:
-    date_format = "%Y-%m-%d"
+def get_start_end_dates(
+    coverages: list[Coverage],
+) -> tuple[date, date]:
     start_date = min(c.date_start for c in coverages)
     end_date = max(c.date_end for c in coverages)
-    return start_date.strftime(date_format), end_date.strftime(date_format)
+    return start_date, end_date
 
 
 def build_shift_demands(coverages: List[Coverage]) -> List[ShiftDemandEngine]:
     shift_demands = []
     for coverage in coverages:
         for day in range((coverage.date_end - coverage.date_start).days + 1):
-            date = coverage.date_start + timedelta(days=day)
+            cov_date = coverage.date_start + timedelta(days=day)
             for shift_demand in coverage.shift_demands:
-                if shift_demand.day_index == date.weekday():
+                if shift_demand.day_index == cov_date.weekday():
                     shift_demands.append(
                         ShiftDemandEngine(
-                            date=date.strftime("%Y-%m-%d"),
+                            date=cov_date.strftime("%Y-%m-%d"),
                             shift_id=shift_demand.shift_id,
                             quantity=shift_demand.quantity,
                         )
@@ -64,21 +65,18 @@ def build_shift_demands(coverages: List[Coverage]) -> List[ShiftDemandEngine]:
 
 
 def build_no_coverage_date(
-    start_date_iso: str, end_date_iso: str, coverages: List[Coverage]
-) -> List[str]:
-    date_format = "%Y-%m-%d"
-    start_date = datetime.fromisoformat(start_date_iso)
-    end_date = datetime.fromisoformat(end_date_iso)
+    start_date: date, end_date: date, coverages: List[Coverage]
+) -> List[date]:
     delta = end_date - start_date
     no_cov_date = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
     for coverage in coverages:
         for day in range((coverage.date_end - coverage.date_start).days + 1):
-            date = coverage.date_start + timedelta(days=day)
-            if date in no_cov_date:
-                no_cov_date.remove(datetime.combine(date, time.min))
+            cov_date = coverage.date_start + timedelta(days=day)
+            if cov_date in no_cov_date:
+                no_cov_date.remove(cov_date)
                 if len(no_cov_date) == 0:
                     return []
-    return [date.strftime(date_format) for date in no_cov_date]
+    return no_cov_date
 
 
 def from_core_to_inputs(

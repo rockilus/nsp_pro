@@ -1,3 +1,4 @@
+from datetime import date
 from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
@@ -29,11 +30,17 @@ class Output:
         assignments = []
         for variable, bool_var in self.model.variables.items():
             if self.model.solver.BooleanValue(bool_var):
-                assignments.append(Assignment(variable[0], variable[1], variable[2]))
+                assignments.append(
+                    Assignment(
+                        variable[0],
+                        date.fromisoformat(variable[1]),
+                        variable[2],
+                    )
+                )
         return assignments
 
     def build_constraint_breaches(self) -> List[ConstraintBreach]:
         return []
 
-    def build_missing_coverage_dates(self) -> List[str]:
+    def build_missing_coverage_dates(self) -> List[date]:
         return []

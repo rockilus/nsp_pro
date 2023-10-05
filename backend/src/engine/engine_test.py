@@ -1,4 +1,5 @@
 import random
+from datetime import date
 
 from engine.engine import Engine
 from engine.inputs_outputs import Coverage, Custom, Inputs, ShiftDemand, VariableSpace
@@ -7,8 +8,8 @@ from engine.inputs_outputs import Coverage, Custom, Inputs, ShiftDemand, Variabl
 def test_engine_solve_return_expected_assigment_coverage():
     variable_space = VariableSpace(
         workers=["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"],
-        start_date="2023-10-02",
-        end_date="2023-10-15",
+        start_date=date.fromisoformat("2023-10-02"),
+        end_date=date.fromisoformat("2023-10-15"),
         shifts=["s0", "s1", "s2", "s3"],
     )
     target_coverage = random.randint(1, 8)
@@ -36,6 +37,10 @@ def test_engine_solve_return_expected_assigment_coverage():
     outputs = engine.solve(inputs)
     assignments = outputs.assignments
 
-    count = sum(1 for a in assignments if a.date == "2023-10-02" and a.shift_id == "s0")
+    count = sum(
+        1
+        for a in assignments
+        if a.date == date.fromisoformat("2023-10-02") and a.shift_id == "s0"
+    )
 
     assert count == target_coverage
