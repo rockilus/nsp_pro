@@ -21,12 +21,23 @@ const toAssignmentT = (data: any) => {
   return assignment;
 };
 
+const toCommentsT = (data: any) => {
+  const comments: CommentsT = {
+    ...data,
+    missingCoverageDates: data.missingCoverageDates.map(
+      (isoDate: string) => new Date(isoDate)
+    ),
+  };
+  return comments;
+};
+
 const toScheduleT = (data: any) => {
   const schedule: ScheduleT = {
     ...data,
     startDate: new Date(data.startDate),
     endDate: new Date(data.endDate),
     assignments: data.assignments.map(toAssignmentT),
+    comments: toCommentsT(data.comments),
   };
   return schedule;
 };

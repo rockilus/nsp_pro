@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 
 import ScheduleTable from "./ScheduleTable";
 
-import { ShiftScheduleT, WorkerScheduleT } from "./types";
+import { ShiftScheduleT, WorkerScheduleT, ColumnT, RowT, CellT } from "./types";
 import { useScheduleStore } from "../../stores/scheduleStore";
 
 interface Props {
@@ -15,37 +15,42 @@ interface Props {
 }
 
 export default function ScheduleConfig({ workers, shifts }: Props) {
-  const [columns, setColumns] = useState<Record<string, any>[]>([]);
-  const [rows, setRows] = useState<Record<string, any>[]>([]);
+  const [columns, setColumns] = useState<ColumnT[]>([]);
+  const [rows, setRows] = useState<RowT[]>([]);
   const [shiftSchedule, setShiftSchedule] = useState<boolean>(true);
 
   const schedule = useScheduleStore((state) => state.schedule);
   const fetchSchedule = useScheduleStore((state) => state.fetchSchedule);
 
-  const buildColumnHeaders = (
-    startDate: Date,
-    endDate: Date
-  ): Record<string, any>[] => {
-    const columns = [{ date: new Date(0), name: "" }];
-    let currentDate = startDate;
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    };
-    while (currentDate <= endDate) {
-      const column = {
-        date: new Date(currentDate),
-        name: new Intl.DateTimeFormat("en-US", options).format(currentDate),
+  const buildColumnHeaders = useCallback(
+    (startDate: Date, endDate: Date): ColumnT[] => {
+      const columns: ColumnT[] = [
+        { date: new Date(0), name: "", noCoverage: false },
+      ];
+      let currentDate = startDate;
+      const options: Intl.DateTimeFormatOptions = {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
       };
-      columns.push({ ...column });
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    return columns;
-  };
+      while (currentDate <= endDate) {
+        const column: ColumnT = {
+          date: new Date(currentDate),
+          name: new Intl.DateTimeFormat("en-US", options).format(currentDate),
+          noCoverage: schedule.comments.missingCoverageDates.some(
+            (date) => date.getTime() === currentDate.getTime()
+          ),
+        };
+        columns.push({ ...column });
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      return columns;
+    },
+    [schedule.comments.missingCoverageDates]
+  );
 
-  const buildShiftRows = useCallback(() => {
-    const newRows = [];
+  const buildShiftRows = useCallback((): RowT[] => {
+    const newRows: RowT[] = [];
     const dateColumns = columns.filter((c) => c.date.getTime() !== 0);
     for (let shift of shifts.filter((s) => s.name !== "Off")) {
       const shiftAssignments = schedule.assignments.filter(
@@ -59,25 +64,28 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
         0
       );
       for (let i = 0; i < rowSpan; i++) {
-        const row = [];
-        i === 0 &&
-          row.push({
-            rowSpan: rowSpan,
+        const row: RowT = [];
+        if (i === 0) {
+          const newHeaderCell: CellT = {
+            date: new Date(0),
             value: shift.name,
-            column: new Date(0),
-          });
+            rowSpan: rowSpan,
+          };
+          row.push(newHeaderCell);
+        }
         for (let j = 0; j < dateColumns.length; j++) {
           const assignment = assignments[j][i];
           const workerName = assignment
             ? workers.find((w) => w.id === assignment.workerId)?.name || ""
             : "";
-          const rowContent = {
+          const newCell: CellT = {
+            date: dateColumns[j].date,
             value: workerName,
-            column: dateColumns[j].date,
+            rowSpan: 1,
           };
 
           row.push({
-            ...rowContent,
+            ...newCell,
           });
         }
         newRows.push(row.slice());
@@ -86,19 +94,20 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
     return newRows;
   }, [columns, schedule, workers, shifts]);
 
-  const buildWorkerRows = useCallback(() => {
-    const newRows = [];
+  const buildWorkerRows = useCallback((): RowT[] => {
+    const newRows: RowT[] = [];
     for (let worker of workers) {
-      const row = [];
+      const row: RowT = [];
       const assignments = schedule.assignments.filter(
         (a) => a.workerId === worker.id
       );
-      const rowHeader = {
+      const newHeaderCell: CellT = {
+        date: new Date(0),
         value: worker.name,
-        column: new Date(0),
+        rowSpan: 1,
       };
       row.push({
-        ...rowHeader,
+        ...newHeaderCell,
       });
       for (let column of columns.filter((c) => c.date.getTime() !== 0)) {
         const assignment = assignments.find(
@@ -107,12 +116,13 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
         const shiftName = assignment
           ? shifts.find((s) => s.id === assignment.shiftId)?.name || ""
           : "";
-        const rowContent = {
+        const newCell: CellT = {
+          date: column.date,
           value: shiftName,
-          column: column.date,
+          rowSpan: 1,
         };
         row.push({
-          ...rowContent,
+          ...newCell,
         });
       }
       newRows.push(row.slice());
@@ -138,16 +148,13 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
     if (schedule) {
       setColumns(buildColumnHeaders(schedule.startDate, schedule.endDate));
     }
-  }, [schedule]);
+  }, [schedule, buildColumnHeaders]);
 
   return (
     <Box style={{ width: "100%" }}>
       <Typography variant="h4" align="left">
         Schedule
       </Typography>
-      {/* <Button variant="contained" color="primary" onClick={fetchSchedule}>
-        Solver
-      </Button> */}
       <Button
         variant="contained"
         color="primary"
