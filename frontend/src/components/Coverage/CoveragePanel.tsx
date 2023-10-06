@@ -19,6 +19,7 @@ const CoveragePanel: React.FC<CoveragePanelProps> = ({ shifts }) => {
   const fetchCoverages = useCoverageStore((state) => state.fetchCoverages);
   const addCoverage = useCoverageStore((state) => state.addCoverage);
   const updateCoverage = useCoverageStore((state) => state.updateCoverage);
+  const deleteCoverage = useCoverageStore((state) => state.deleteCoverage);
 
   // local states via states
   const [selectedCoverage, setSelectedCoverage] = useState<
@@ -75,6 +76,19 @@ const CoveragePanel: React.FC<CoveragePanelProps> = ({ shifts }) => {
     setIsNewCoverage(true);
   };
 
+  const handleCancel = () => {
+    setSelectedCoverage(undefined);
+    setIsNewCoverage(false);
+  };
+
+  const handleDelete = () => {
+    if (selectedCoverage) {
+      deleteCoverage(selectedCoverage.id);
+      setSelectedCoverage(undefined);
+      setIsNewCoverage(false);
+    }
+  };
+
   return (
     <Box display="flex" flexDirection="column" gap={1}>
       <Typography variant="h4" align="left">
@@ -121,11 +135,22 @@ const CoveragePanel: React.FC<CoveragePanelProps> = ({ shifts }) => {
       </Box>
 
       {selectedCoverage && (
-        <CoverageEditableView
-          coverage={selectedCoverage}
-          onChange={handleCoverageChange}
-          shifts={shifts}
-        />
+        <>
+          <CoverageEditableView
+            coverage={selectedCoverage}
+            onChange={handleCoverageChange}
+            shifts={shifts}
+          />
+          {isNewCoverage ? (
+            <Button variant="contained" color="primary" onClick={handleCancel}>
+              Cancel
+            </Button>
+          ) : (
+            <Button variant="contained" color="primary" onClick={handleDelete}>
+              Delete
+            </Button>
+          )}
+        </>
       )}
     </Box>
   );

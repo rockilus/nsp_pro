@@ -13,17 +13,20 @@ class ShiftDemandMessage(BaseModel):
 
 class CreateCoverageRequest(BaseModel):
     name: str
-    dateStart: date
-    dateEnd: date
     shiftDemands: List[ShiftDemandMessage]
 
 
 class CoverageMessage(BaseModel):
     id: str
     name: str
-    dateStart: date
-    dateEnd: date
     shiftDemands: List[ShiftDemandMessage]
+
+
+class CoverageSelectorMessage(BaseModel):
+    id: str
+    coverageId: str
+    startDate: date
+    endDate: date
 
 
 # Worker

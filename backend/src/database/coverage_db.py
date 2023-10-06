@@ -1,4 +1,3 @@
-from datetime import date, datetime
 from typing import List
 
 from bson import ObjectId
@@ -16,16 +15,12 @@ class CoverageDB:
     def create_coverage(
         self,
         name: str,
-        date_start: date,
-        date_end: date,
         shift_demands: List[ShiftDemand],
     ) -> Coverage:
         shift_demands_docs = [_to_mongo_shift_demand(d) for d in shift_demands]
         coverage = CoverageDocument(
             id=str(ObjectId()),
             name=name,
-            dateStart=date_start,
-            dateEnd=date_end,
             shiftDemands=shift_demands_docs,
         )
         coverage_saved = coverage.save()
@@ -42,7 +37,7 @@ class CoverageDB:
         return _from_mongo_coverage(coverage)
 
     def update_coverage(self, coverage: Coverage) -> Coverage:
-        document = _to_mongo_coverage(coverage)
+        document = to_mongo_coverage(coverage)
         document_saved = document.save()
         return _from_mongo_coverage(document_saved)
 
@@ -61,17 +56,10 @@ def _to_mongo_shift_demand(dataclass_obj: ShiftDemand) -> ShiftDemandDocument:
     )
 
 
-def _to_mongo_coverage(dataclass_obj: Coverage) -> CoverageDocument:
-    date_start_datetime = datetime.combine(
-        dataclass_obj.date_start, datetime.min.time()
-    )
-    date_end_datetime = datetime.combine(dataclass_obj.date_end, datetime.min.time())
-
+def to_mongo_coverage(dataclass_obj: Coverage) -> CoverageDocument:
     return CoverageDocument(
         id=dataclass_obj.id,
         name=dataclass_obj.name,
-        dateStart=date_start_datetime,
-        dateEnd=date_end_datetime,
         shiftDemands=[
             _to_mongo_shift_demand(shift) for shift in dataclass_obj.shift_demands
         ],
@@ -80,7 +68,9 @@ def _to_mongo_coverage(dataclass_obj: Coverage) -> CoverageDocument:
 
 def _from_mongo_shift_demand(doc_obj: ShiftDemandDocument) -> ShiftDemand:
     return ShiftDemand(
-        day_index=doc_obj.dayIndex, shift_id=doc_obj.shiftId, quantity=doc_obj.quantity
+        day_index=doc_obj.dayIndex,
+        shift_id=doc_obj.shiftId,
+        quantity=doc_obj.quantity,
     )
 
 
@@ -88,8 +78,6 @@ def _from_mongo_coverage(doc_obj: CoverageDocument) -> Coverage:
     return Coverage(
         id=doc_obj.id,
         name=doc_obj.name,
-        date_start=doc_obj.dateStart,
-        date_end=doc_obj.dateEnd,
         shift_demands=[
             _from_mongo_shift_demand(shift) for shift in doc_obj.shiftDemands
         ],

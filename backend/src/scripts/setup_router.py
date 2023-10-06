@@ -6,6 +6,7 @@ from routes import (
     router_constraint,
     router_constraint_param,
     router_coverage,
+    router_coverage_selector,
     router_schedule,
     router_shift,
     router_shift_dimension,
@@ -30,9 +31,10 @@ app.add_middleware(
 
 # app.include_router(router_coverage, prefix="/api/v1", tags=["coverage"])
 
-app.include_router(router_coverage)
 app.include_router(router_constraint_param)
 app.include_router(router_constraint)
+app.include_router(router_coverage)
+app.include_router(router_coverage_selector)
 app.include_router(router_shift_dimension)
 app.include_router(router_shift)
 app.include_router(router_schedule)

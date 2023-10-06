@@ -7,6 +7,7 @@ import ShiftConfig from "../components/Shift/ShiftConfig";
 import WorkerConfig from "../components/Worker/WorkerConfig";
 import CoveragePanel from "../components/Coverage/CoveragePanel";
 import ScheduleConfig from "../components/Schedule/ScheduleConfig";
+import CoverageSelectorConfig from "../components/CoverageSelector/CoverageSelectorConfig";
 
 import { ShiftT } from "../components/Coverage/types";
 import { ShiftScheduleT, WorkerScheduleT } from "../components/Schedule/types";
@@ -54,6 +55,7 @@ export default function Draft() {
       {shiftsForCoverage.length > 0 && (
         <CoveragePanel shifts={shiftsForCoverage} />
       )}
+      <CoverageSelectorConfig />
       {/* <ConstraintConfig /> */}
       <ScheduleConfig workers={workersForSchedule} shifts={shiftsForSchedule} />
     </Box>
