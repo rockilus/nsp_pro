@@ -27,8 +27,6 @@ def create_coverage(req: CreateCoverageRequest) -> CoverageMessage:
 
     cov = coverage_db.create_coverage(
         name=req.name,
-        date_start=req.dateStart,
-        date_end=req.dateEnd,
         shift_demands=shift_demands,
     )
 

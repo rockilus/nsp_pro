@@ -18,6 +18,12 @@ class ShiftDemand:
 class Coverage:
     id: str
     name: str
-    date_start: date
-    date_end: date
     shift_demands: List[ShiftDemand]
+
+
+@dataclass
+class CoverageSelector:
+    id: str
+    coverage_id: str
+    start_date: date
+    end_date: date

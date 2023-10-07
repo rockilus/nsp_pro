@@ -1,11 +1,5 @@
 from mongoengine import Document, EmbeddedDocument
-from mongoengine.fields import (
-    DateTimeField,
-    EmbeddedDocumentField,
-    IntField,
-    ListField,
-    StringField,
-)
+from mongoengine.fields import EmbeddedDocumentField, IntField, ListField, StringField
 
 
 class ShiftDemand(EmbeddedDocument):
@@ -15,10 +9,8 @@ class ShiftDemand(EmbeddedDocument):
 
 
 class Coverage(Document):
-    meta = {"collection": "coverage"}
+    meta = {"collection": "coverages"}
 
     id = StringField(primary_key=True, required=True)
     name = StringField(required=True)
-    dateStart = DateTimeField(required=True)
-    dateEnd = DateTimeField(required=True)
     shiftDemands = ListField(EmbeddedDocumentField(ShiftDemand))
