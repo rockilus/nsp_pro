@@ -6,11 +6,13 @@ import pytest
 
 from engine.engine import Engine
 from engine.inputs_outputs import (
+    Assignment,
     ConstraintSum,
     Coverage,
     Custom,
     Inputs,
     Outputs,
+    Request,
     ShiftDemand,
     VariableSpace,
     VarSumDay,
@@ -29,8 +31,8 @@ class TestEngine:
             shifts=["s0", "s1", "s2", "s3"],
         )
         coverage = Coverage([])
-        requests = []
-        fix_assignments = []
+        requests: List[Request] = []
+        fix_assignments: List[Assignment] = []
         custom = Custom(constraints_sum=[])
         inputs = Inputs(
             variable_space=variable_space,
@@ -44,7 +46,7 @@ class TestEngine:
     @pytest.fixture
     def engine_solve(self, inputs: Inputs) -> Callable[[Inputs], Outputs]:
         engine = Engine()
-        return lambda inputs=inputs: engine.solve(inputs)
+        return lambda inputs=inputs: engine.solve(inputs)  # type: ignore
 
 
 class TestCoverage(TestEngine):

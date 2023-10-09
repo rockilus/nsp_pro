@@ -10,9 +10,7 @@ from engine.types import Objective
 
 class Model:
     # pylint: disable=too-many-instance-attributes
-    def __init__(
-        self, workers: List[str], days: List[str], shifts: List[str]
-    ) -> None:
+    def __init__(self, workers: List[str], days: List[str], shifts: List[str]) -> None:
         self.workers = workers
         self.days = days
         self.shifts = shifts
@@ -27,9 +25,9 @@ class Model:
         for worker in self.workers:
             for day in self.days:
                 for shift in self.shifts:
-                    self.variables[
-                        (worker, day, shift)
-                    ] = self.model.NewBoolVar(f"{worker}_{day}_{shift}")
+                    self.variables[(worker, day, shift)] = self.model.NewBoolVar(
+                        f"{worker}_{day}_{shift}"
+                    )
 
     def add_exactly_one_shift_per_day_constraint(self) -> None:
         for worker in self.workers:
@@ -52,131 +50,121 @@ class Model:
     def add_custom_constraints(self, custom: Custom) -> None:
         self._add_sum_constraints(custom.constraints_sum)
 
-    def _add_sum_constraints(
-        self, constraints_sum: List[ConstraintSum]
-    ) -> None:
+    def _add_sum_constraints(self, constraints_sum: List[ConstraintSum]) -> None:
         for constraint_sum in constraints_sum:
-            if constraint_sum.worker_var.selector == "all":
-                w_vars = self.workers
-            else:
-                raise NotImplementedError(
-                    f"Worker selector {constraint_sum.worker_var.selector} "
-                    + "not implemented"
-                )
-            if constraint_sum.day_var.selector == "week":
-                week_length = 7
-                d_indexes = [
-                    list(range(i, i + 7))
-                    for i in range(
-                        0,
-                        len(self.days),
-                        week_length,
-                    )
-                ]
-                d_vars = [
-                    [self.days[i] for i in d_index] for d_index in d_indexes
-                ]
-            else:
-                raise NotImplementedError(
-                    f"Day selector {constraint_sum.day_var.selector} "
-                    + "not implemented"
-                )
-            if constraint_sum.shift_var.selector == "equal":
-                s_vars = [constraint_sum.shift_var.target]
-            else:
-                raise NotImplementedError(
-                    f"Shift selector {constraint_sum.shift_var.selector} "
-                    + "not implemented"
-                )
-            constraints_vars = []
+            w_vars, d_vars, s_vars = self._get_vars_coordinates(constraint_sum)
             for w in w_vars:
                 for s in s_vars:
                     for week in d_vars:
-                        constraint_vars = [
-                            self.variables[w, d, s] for d in week
-                        ]
-                        constraints_vars.append(constraint_vars)
-            if constraint_sum.hard:
-                for cstr_vars in constraints_vars:
-                    if constraint_sum.operator == "less_than_or_equal":
-                        sum_var = self.model.NewIntVar(
-                            0, constraint_sum.target_value, ""
+                        constraint_vars = [self.variables[w, d, s] for d in week]
+                        self._add_constraint_sum_to_model(
+                            constraint_sum, constraint_vars
                         )
-                    elif constraint_sum.operator == "equal":
-                        sum_var = self.model.NewIntVar(
-                            constraint_sum.target_value,
-                            constraint_sum.target_value,
-                            "",
-                        )
-                    elif constraint_sum.operator == "greater_than_or_equal":
-                        sum_var = self.model.NewIntVar(
-                            constraint_sum.target_value, len(cstr_vars), ""
-                        )
-                    else:
-                        raise NotImplementedError(
-                            f"Sum constraint operator {constraint_sum.operator} "
-                            + "not implemented"
-                        )
-                    self.model.Add(sum_var == sum(cstr_vars))
+
+    def _get_vars_coordinates(
+        self, constraint_sum: ConstraintSum
+    ) -> Tuple[List[str], List[List[str]], List[str]]:
+        if constraint_sum.worker_var.selector == "all":
+            w_vars = self.workers
+        else:
+            raise NotImplementedError(
+                f"Worker selector {constraint_sum.worker_var.selector} "
+                + "not implemented"
+            )
+        if constraint_sum.day_var.selector == "week":
+            week_length = 7
+            d_indexes = [
+                list(range(i, i + 7))
+                for i in range(
+                    0,
+                    len(self.days),
+                    week_length,
+                )
+            ]
+            d_vars = [[self.days[i] for i in d_index] for d_index in d_indexes]
+        else:
+            raise NotImplementedError(
+                f"Day selector {constraint_sum.day_var.selector} " + "not implemented"
+            )
+        if constraint_sum.shift_var.selector == "equal":
+            s_vars = [constraint_sum.shift_var.target]
+        else:
+            raise NotImplementedError(
+                f"Shift selector {constraint_sum.shift_var.selector} "
+                + "not implemented"
+            )
+        return w_vars, d_vars, s_vars
+
+    def _add_constraint_sum_to_model(
+        self, constraint_sum: ConstraintSum, cstr_vars: List[cp_model.IntVar]
+    ) -> None:
+        print(type(cstr_vars[0]))
+        if constraint_sum.hard:
+            if constraint_sum.operator == "less_than_or_equal":
+                sum_var = self.model.NewIntVar(0, constraint_sum.target_value, "")
+            elif constraint_sum.operator == "equal":
+                sum_var = self.model.NewIntVar(
+                    constraint_sum.target_value,
+                    constraint_sum.target_value,
+                    "",
+                )
+            elif constraint_sum.operator == "greater_than_or_equal":
+                sum_var = self.model.NewIntVar(
+                    constraint_sum.target_value, len(cstr_vars), ""
+                )
             else:
-                if constraint_sum.penalty != 0:
-                    for cstr_vars in constraints_vars:
-                        var_name = json.dumps(
-                            {
-                                "constraint_id": constraint_sum.id,
-                                "cstr_vars": [var.Name() for var in cstr_vars],
-                            }
-                        )
-                        if constraint_sum.operator == "less_than_or_equal":
-                            delta = self.model.NewIntVar(
-                                -len(cstr_vars), len(cstr_vars), ""
-                            )
-                            self.model.Add(
-                                delta
-                                == sum(cstr_vars) - constraint_sum.target_value
-                            )
-                            excess = self.model.NewIntVar(
-                                0,
-                                len(cstr_vars),
-                                var_name,
-                            )
-                            self.model.AddMaxEquality(excess, [delta, 0])
-                            self.obj.int_vars.append(excess)
-                            self.obj.int_coeffs.append(constraint_sum.penalty)
-                        elif constraint_sum.operator == "equal":
-                            delta = self.model.NewIntVar(
-                                -len(cstr_vars), len(cstr_vars), ""
-                            )
-                            self.model.Add(
-                                delta
-                                == sum(cstr_vars) - constraint_sum.target_value
-                            )
-                            excess = self.model.NewIntVar(
-                                -len(cstr_vars),
-                                len(cstr_vars),
-                                var_name,
-                            )
-                            self.model.AddAbsEquality(excess, delta)
-                            self.obj.int_vars.append(excess)
-                            self.obj.int_coeffs.append(constraint_sum.penalty)
-                        elif (
-                            constraint_sum.operator == "greater_than_or_equal"
-                        ):
-                            delta = self.model.NewIntVar(
-                                -len(cstr_vars), len(cstr_vars), ""
-                            )
-                            self.model.Add(
-                                delta
-                                == constraint_sum.target_value - sum(cstr_vars)
-                            )
-                            excess = self.model.NewIntVar(
-                                0,
-                                len(cstr_vars),
-                                var_name,
-                            )
-                            self.model.AddMaxEquality(excess, [delta, 0])
-                            self.obj.int_vars.append(excess)
-                            self.obj.int_coeffs.append(constraint_sum.penalty)
+                raise NotImplementedError(
+                    f"Sum constraint operator {constraint_sum.operator} "
+                    + "not implemented"
+                )
+            self.model.Add(sum_var == sum(cstr_vars))
+        else:
+            if constraint_sum.penalty != 0:
+                var_name = json.dumps(
+                    {
+                        "constraint_id": constraint_sum.id,
+                        "cstr_vars": [var.Name() for var in cstr_vars],
+                    }
+                )
+                if constraint_sum.operator == "less_than_or_equal":
+                    delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
+                    self.model.Add(
+                        delta == sum(cstr_vars) - constraint_sum.target_value
+                    )
+                    excess = self.model.NewIntVar(
+                        0,
+                        len(cstr_vars),
+                        var_name,
+                    )
+                    self.model.AddMaxEquality(excess, [delta, 0])
+                    self.obj.int_vars.append(excess)
+                    self.obj.int_coeffs.append(constraint_sum.penalty)
+                elif constraint_sum.operator == "equal":
+                    delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
+                    self.model.Add(
+                        delta == sum(cstr_vars) - constraint_sum.target_value
+                    )
+                    excess = self.model.NewIntVar(
+                        -len(cstr_vars),
+                        len(cstr_vars),
+                        var_name,
+                    )
+                    self.model.AddAbsEquality(excess, delta)
+                    self.obj.int_vars.append(excess)
+                    self.obj.int_coeffs.append(constraint_sum.penalty)
+                elif constraint_sum.operator == "greater_than_or_equal":
+                    delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
+                    self.model.Add(
+                        delta == constraint_sum.target_value - sum(cstr_vars)
+                    )
+                    excess = self.model.NewIntVar(
+                        0,
+                        len(cstr_vars),
+                        var_name,
+                    )
+                    self.model.AddMaxEquality(excess, [delta, 0])
+                    self.obj.int_vars.append(excess)
+                    self.obj.int_coeffs.append(constraint_sum.penalty)
 
     def add_objective(self) -> None:
         self.model.Minimize(
