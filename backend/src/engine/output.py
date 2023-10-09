@@ -1,16 +1,11 @@
+import json
 from datetime import date
 from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.inputs_outputs import (
-    Assignment,
-    ConstraintBreach,
-    Outputs,
-)
+from engine.inputs_outputs import Assignment, ConstraintBreach, Outputs
 from engine.model import Model
-
-import json
 
 
 class Output:

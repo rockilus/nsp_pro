@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
+import json
 from typing import Dict, List, Tuple
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.inputs_outputs import ShiftDemand, Custom, ConstraintSum
+from engine.inputs_outputs import ConstraintSum, Custom, ShiftDemand
 from engine.types import Objective
-
-import json
 
 
 class Model:
@@ -61,7 +60,8 @@ class Model:
                 w_vars = self.workers
             else:
                 raise NotImplementedError(
-                    f"Worker selector {constraint_sum.worker_var.selector} not implemented"
+                    f"Worker selector {constraint_sum.worker_var.selector} "
+                    + "not implemented"
                 )
             if constraint_sum.day_var.selector == "week":
                 week_length = 7
@@ -78,13 +78,15 @@ class Model:
                 ]
             else:
                 raise NotImplementedError(
-                    f"Day selector {constraint_sum.day_var.selector} not implemented"
+                    f"Day selector {constraint_sum.day_var.selector} "
+                    + "not implemented"
                 )
             if constraint_sum.shift_var.selector == "equal":
                 s_vars = [constraint_sum.shift_var.target]
             else:
                 raise NotImplementedError(
-                    f"Shift selector {constraint_sum.shift_var.selector} not implemented"
+                    f"Shift selector {constraint_sum.shift_var.selector} "
+                    + "not implemented"
                 )
             constraints_vars = []
             for w in w_vars:
@@ -112,12 +114,19 @@ class Model:
                         )
                     else:
                         raise NotImplementedError(
-                            f"Sum constraint operator {constraint_sum.operator} not implemented"
+                            f"Sum constraint operator {constraint_sum.operator} "
+                            + "not implemented"
                         )
                     self.model.Add(sum_var == sum(cstr_vars))
             else:
-                if constraint_sum.penalty not in [0, None]:
+                if constraint_sum.penalty != 0:
                     for cstr_vars in constraints_vars:
+                        var_name = json.dumps(
+                            {
+                                "constraint_id": constraint_sum.id,
+                                "cstr_vars": [var.Name() for var in cstr_vars],
+                            }
+                        )
                         if constraint_sum.operator == "less_than_or_equal":
                             delta = self.model.NewIntVar(
                                 -len(cstr_vars), len(cstr_vars), ""
@@ -125,15 +134,6 @@ class Model:
                             self.model.Add(
                                 delta
                                 == sum(cstr_vars) - constraint_sum.target_value
-                            )
-                            print("var name", cstr_vars[0].Name())
-                            var_name = json.dumps(
-                                {
-                                    "constraint_id": constraint_sum.id,
-                                    "cstr_vars": [
-                                        var.Name() for var in cstr_vars
-                                    ],
-                                }
                             )
                             excess = self.model.NewIntVar(
                                 0,
@@ -154,9 +154,9 @@ class Model:
                             excess = self.model.NewIntVar(
                                 -len(cstr_vars),
                                 len(cstr_vars),
-                                "string to come for excess",
+                                var_name,
                             )
-                            self.model.AddMaxEquality(excess, [delta, 0])
+                            self.model.AddAbsEquality(excess, delta)
                             self.obj.int_vars.append(excess)
                             self.obj.int_coeffs.append(constraint_sum.penalty)
                         elif (
@@ -172,7 +172,7 @@ class Model:
                             excess = self.model.NewIntVar(
                                 0,
                                 len(cstr_vars),
-                                "string to come for excess",
+                                var_name,
                             )
                             self.model.AddMaxEquality(excess, [delta, 0])
                             self.obj.int_vars.append(excess)

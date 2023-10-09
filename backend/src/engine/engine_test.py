@@ -1,245 +1,438 @@
 import random
 from datetime import date, timedelta
-from typing import List
+from typing import Callable, List
+
+import pytest
 
 from engine.engine import Engine
 from engine.inputs_outputs import (
+    ConstraintSum,
     Coverage,
     Custom,
     Inputs,
+    Outputs,
     ShiftDemand,
     VariableSpace,
-    ConstraintSum,
-    VarSumWorker,
     VarSumDay,
     VarSumShift,
+    VarSumWorker,
 )
 
 
-def test_engine_solve_return_expected_assigment_coverage():
-    variable_space = VariableSpace(
-        workers=["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"],
-        start_date=date.fromisoformat("2023-10-02"),
-        end_date=date.fromisoformat("2023-10-15"),
-        shifts=["s0", "s1", "s2", "s3"],
-    )
-    target_coverage = random.randint(1, 8)
-    coverage = Coverage(
-        coverage=[
-            ShiftDemand(
-                date="2023-10-02",
-                shift_id="s0",
-                quantity=target_coverage,
-            ),
-        ]
-    )
-    requests = []
-    fix_assignments = []
-    custom = Custom(constraints_sum=[])
+class TestEngine:
+    @pytest.fixture
+    def inputs(self) -> Inputs:
+        variable_space = VariableSpace(
+            workers=["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"],
+            start_date=date.fromisoformat("2023-10-02"),
+            end_date=date.fromisoformat("2023-10-15"),
+            shifts=["s0", "s1", "s2", "s3"],
+        )
+        coverage = Coverage([])
+        requests = []
+        fix_assignments = []
+        custom = Custom(constraints_sum=[])
+        inputs = Inputs(
+            variable_space=variable_space,
+            coverage=coverage,
+            requests=requests,
+            fixed_assignments=fix_assignments,
+            custom=custom,
+        )
+        return inputs
 
-    inputs = Inputs(
-        variable_space=variable_space,
-        coverage=coverage,
-        requests=requests,
-        fixed_assignments=fix_assignments,
-        custom=custom,
-    )
-    engine = Engine()
-    outputs = engine.solve(inputs)
-    assignments = outputs.assignments
-
-    count = sum(
-        1
-        for a in assignments
-        if a.date == date.fromisoformat("2023-10-02") and a.shift_id == "s0"
-    )
-
-    assert count == target_coverage
+    @pytest.fixture
+    def engine_solve(self, inputs: Inputs) -> Callable[[Inputs], Outputs]:
+        engine = Engine()
+        return lambda inputs=inputs: engine.solve(inputs)
 
 
-def test_engine_solve_return_expected_constraint_sum_for_less_than_or_equal_hard():
-    start_date = date.fromisoformat("2023-10-02")
-    end_date = date.fromisoformat("2023-10-15")
-    workers = ["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"]
-    variable_space = VariableSpace(
-        workers=workers,
-        start_date=start_date,
-        end_date=end_date,
-        shifts=["s0", "s1", "s2", "s3"],
-    )
-    coverage = Coverage(coverage=[])
-    requests = []
-    fix_assignments = []
+class TestCoverage(TestEngine):
+    def test_expected_assigment_coverage(
+        self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
+    ) -> None:
+        target_coverage = random.randint(1, 8)
+        coverage = Coverage(
+            coverage=[
+                ShiftDemand(
+                    date="2023-10-02",
+                    shift_id="s0",
+                    quantity=target_coverage,
+                ),
+            ]
+        )
+        inputs.coverage = coverage
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
 
-    # At least one shift off per week
-    target_off = random.randint(1, 5)
-    var_um_worker = VarSumWorker(selector="all")
-    var_sum_day = VarSumDay(selector="week")
-    var_sum_shift = VarSumShift(selector="equal", target="s0")
-    constraint_sum = ConstraintSum(
-        id="at_least_one_shift_off_per_week",
-        operator="less_than_or_equal",
-        worker_var=var_um_worker,
-        day_var=var_sum_day,
-        shift_var=var_sum_shift,
-        target_value=target_off,
-        hard=True,
-        penalty=None,
-    )
-    custom = Custom(
-        constraints_sum=[
-            constraint_sum,
-        ]
-    )
-
-    inputs = Inputs(
-        variable_space=variable_space,
-        coverage=coverage,
-        requests=requests,
-        fixed_assignments=fix_assignments,
-        custom=custom,
-    )
-    engine = Engine()
-    outputs = engine.solve(inputs)
-    assignments = outputs.assignments
-
-    dates_weeks = get_dates_weeks(start_date, end_date)
-
-    counts = [
-        sum(
+        count = sum(
             1
             for a in assignments
-            if a.worker_id == w and a.date in week and a.shift_id == "s0"
+            if a.date == date.fromisoformat("2023-10-02") and a.shift_id == "s0"
         )
-        for week in dates_weeks
-        for w in workers
-    ]
 
-    assert max(counts) <= target_off
+        assert count == target_coverage
 
 
-def test_engine_solve_return_expected_constraint_sum_for_equal_hard():
-    start_date = date.fromisoformat("2023-10-02")
-    end_date = date.fromisoformat("2023-10-15")
-    workers = ["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"]
-    variable_space = VariableSpace(
-        workers=workers,
-        start_date=start_date,
-        end_date=end_date,
-        shifts=["s0", "s1", "s2", "s3"],
-    )
-    coverage = Coverage(coverage=[])
-    requests = []
-    fix_assignments = []
+class TestConstraintSum:
+    @pytest.fixture
+    def custom_hard(self) -> Custom:
+        return Custom(
+            constraints_sum=[
+                ConstraintSum(
+                    id="constraint_sum_hard",
+                    operator="less_than_or_equal",
+                    worker_var=VarSumWorker(selector="all"),
+                    day_var=VarSumDay(selector="week"),
+                    shift_var=VarSumShift(selector="equal", target="s0"),
+                    target_value=4,
+                    hard=True,
+                    penalty=0,
+                )
+            ]
+        )
 
-    # At least one shift off per week
-    target_off = random.randint(1, 5)
-    var_um_worker = VarSumWorker(selector="all")
-    var_sum_day = VarSumDay(selector="week")
-    var_sum_shift = VarSumShift(selector="equal", target="s0")
-    constraint_sum = ConstraintSum(
-        id="at_least_one_shift_off_per_week",
-        operator="equal",
-        worker_var=var_um_worker,
-        day_var=var_sum_day,
-        shift_var=var_sum_shift,
-        target_value=target_off,
-        hard=True,
-        penalty=None,
-    )
-    custom = Custom(
-        constraints_sum=[
-            constraint_sum,
+    @pytest.fixture
+    def custom_soft(self) -> Custom:
+        return Custom(
+            constraints_sum=[
+                ConstraintSum(
+                    id="constraint_sum_soft",
+                    operator="less_than_or_equal",
+                    worker_var=VarSumWorker(selector="all"),
+                    day_var=VarSumDay(selector="week"),
+                    shift_var=VarSumShift(selector="equal", target="s0"),
+                    target_value=2,
+                    hard=False,
+                    penalty=20,
+                )
+            ]
+        )
+
+    @pytest.fixture
+    def custom_hard_soft_conflict(self) -> Custom:
+        return Custom(
+            constraints_sum=[
+                ConstraintSum(
+                    id="constraint_sum_hard",
+                    operator="equal",
+                    worker_var=VarSumWorker(selector="all"),
+                    day_var=VarSumDay(selector="week"),
+                    shift_var=VarSumShift(selector="equal", target="s0"),
+                    target_value=4,
+                    hard=True,
+                    penalty=0,
+                ),
+                ConstraintSum(
+                    id="constraint_sum_soft",
+                    operator="less_than_or_equal",
+                    worker_var=VarSumWorker(selector="all"),
+                    day_var=VarSumDay(selector="week"),
+                    shift_var=VarSumShift(selector="equal", target="s0"),
+                    target_value=2,
+                    hard=False,
+                    penalty=20,
+                ),
+            ]
+        )
+
+
+class TestConstraintSumHard(TestEngine, TestConstraintSum):
+    def test_expected_assignment_for_less_than_or_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard: Custom,
+    ) -> None:
+        # At least 4 shift off per week
+        inputs.custom = custom_hard
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        dates_weeks = get_dates_weeks(
+            inputs.variable_space.start_date, inputs.variable_space.end_date
+        )
+        constraint_sum = custom_hard.constraints_sum[0]
+
+        counts = [
+            sum(
+                1
+                for a in assignments
+                if a.worker_id == w
+                and a.date in week
+                and a.shift_id == constraint_sum.shift_var.target
+            )
+            for week in dates_weeks
+            for w in inputs.variable_space.workers
         ]
-    )
 
-    inputs = Inputs(
-        variable_space=variable_space,
-        coverage=coverage,
-        requests=requests,
-        fixed_assignments=fix_assignments,
-        custom=custom,
-    )
-    engine = Engine()
-    outputs = engine.solve(inputs)
-    assignments = outputs.assignments
+        assert max(counts) <= constraint_sum.target_value
 
-    dates_weeks = get_dates_weeks(start_date, end_date)
+    def test_expected_assignment_for_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard: Custom,
+    ) -> None:
+        # Exactly 4 shift off per week
+        inputs.custom = custom_hard
+        inputs.custom.constraints_sum[0].operator = "equal"
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
 
-    counts = [
-        sum(
-            1
-            for a in assignments
-            if a.worker_id == w and a.date in week and a.shift_id == "s0"
+        dates_weeks = get_dates_weeks(
+            inputs.variable_space.start_date, inputs.variable_space.end_date
         )
-        for week in dates_weeks
-        for w in workers
-    ]
+        constraint_sum = inputs.custom.constraints_sum[0]
 
-    assert all(count == target_off for count in counts)
-
-
-def test_engine_solve_return_expected_constraint_sum_for_greater_than_or_equal_hard():
-    start_date = date.fromisoformat("2023-10-02")
-    end_date = date.fromisoformat("2023-10-15")
-    workers = ["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"]
-    variable_space = VariableSpace(
-        workers=workers,
-        start_date=start_date,
-        end_date=end_date,
-        shifts=["s0", "s1", "s2", "s3"],
-    )
-    coverage = Coverage(coverage=[])
-    requests = []
-    fix_assignments = []
-
-    # At least one shift off per week
-    target_off = random.randint(1, 5)
-    var_um_worker = VarSumWorker(selector="all")
-    var_sum_day = VarSumDay(selector="week")
-    var_sum_shift = VarSumShift(selector="equal", target="s0")
-    constraint_sum = ConstraintSum(
-        id="at_least_one_shift_off_per_week",
-        operator="greater_than_or_equal",
-        worker_var=var_um_worker,
-        day_var=var_sum_day,
-        shift_var=var_sum_shift,
-        target_value=target_off,
-        hard=True,
-        penalty=None,
-    )
-    custom = Custom(
-        constraints_sum=[
-            constraint_sum,
+        counts = [
+            sum(
+                1
+                for a in assignments
+                if a.worker_id == w
+                and a.date in week
+                and a.shift_id == constraint_sum.shift_var.target
+            )
+            for week in dates_weeks
+            for w in inputs.variable_space.workers
         ]
-    )
 
-    inputs = Inputs(
-        variable_space=variable_space,
-        coverage=coverage,
-        requests=requests,
-        fixed_assignments=fix_assignments,
-        custom=custom,
-    )
-    engine = Engine()
-    outputs = engine.solve(inputs)
-    assignments = outputs.assignments
+        assert all(count == constraint_sum.target_value for count in counts)
 
-    dates_weeks = get_dates_weeks(start_date, end_date)
+    def test_expected_assignment_for_greater_than_or_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard: Custom,
+    ) -> None:
+        # At most 4 shift off per week
+        inputs.custom = custom_hard
+        inputs.custom.constraints_sum[0].operator = "greater_than_or_equal"
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
 
-    counts = [
-        sum(
-            1
-            for a in assignments
-            if a.worker_id == w and a.date in week and a.shift_id == "s0"
+        dates_weeks = get_dates_weeks(
+            inputs.variable_space.start_date, inputs.variable_space.end_date
         )
-        for week in dates_weeks
-        for w in workers
-    ]
+        constraint_sum = inputs.custom.constraints_sum[0]
 
-    assert min(counts) >= target_off
+        counts = [
+            sum(
+                1
+                for a in assignments
+                if a.worker_id == w
+                and a.date in week
+                and a.shift_id == constraint_sum.shift_var.target
+            )
+            for week in dates_weeks
+            for w in inputs.variable_space.workers
+        ]
+
+        assert min(counts) >= constraint_sum.target_value
 
 
+class TestConstraintSumSoft(TestEngine, TestConstraintSum):
+    def test_expected_assignment_for_less_than_or_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_soft: Custom,
+    ) -> None:
+        # At least 4 shift off per week
+        inputs.custom = custom_soft
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        dates_weeks = get_dates_weeks(
+            inputs.variable_space.start_date, inputs.variable_space.end_date
+        )
+        constraint_sum = custom_soft.constraints_sum[0]
+
+        counts = [
+            sum(
+                1
+                for a in assignments
+                if a.worker_id == w
+                and a.date in week
+                and a.shift_id == constraint_sum.shift_var.target
+            )
+            for week in dates_weeks
+            for w in inputs.variable_space.workers
+        ]
+
+        assert max(counts) <= constraint_sum.target_value
+
+    def test_expected_assignment_for_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_soft: Custom,
+    ) -> None:
+        # Exactly 4 shift off per week
+        inputs.custom = custom_soft
+        inputs.custom.constraints_sum[0].operator = "equal"
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        dates_weeks = get_dates_weeks(
+            inputs.variable_space.start_date, inputs.variable_space.end_date
+        )
+        constraint_sum = inputs.custom.constraints_sum[0]
+
+        counts = [
+            sum(
+                1
+                for a in assignments
+                if a.worker_id == w
+                and a.date in week
+                and a.shift_id == constraint_sum.shift_var.target
+            )
+            for week in dates_weeks
+            for w in inputs.variable_space.workers
+        ]
+
+        assert all(count == constraint_sum.target_value for count in counts)
+
+    def test_expected_assignment_for_greater_than_or_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_soft: Custom,
+    ) -> None:
+        # At most 4 shift off per week
+        inputs.custom = custom_soft
+        inputs.custom.constraints_sum[0].operator = "greater_than_or_equal"
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        dates_weeks = get_dates_weeks(
+            inputs.variable_space.start_date, inputs.variable_space.end_date
+        )
+        constraint_sum = inputs.custom.constraints_sum[0]
+
+        counts = [
+            sum(
+                1
+                for a in assignments
+                if a.worker_id == w
+                and a.date in week
+                and a.shift_id == constraint_sum.shift_var.target
+            )
+            for week in dates_weeks
+            for w in inputs.variable_space.workers
+        ]
+
+        assert min(counts) >= constraint_sum.target_value
+
+    def test_expected_assignment_for_hard_soft_conflict(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard_soft_conflict: Custom,
+    ) -> None:
+        # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
+        inputs.custom = custom_hard_soft_conflict
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        dates_weeks = get_dates_weeks(
+            inputs.variable_space.start_date, inputs.variable_space.end_date
+        )
+        constraint_sum_hard = inputs.custom.constraints_sum[0]
+
+        counts = [
+            sum(
+                1
+                for a in assignments
+                if a.worker_id == w
+                and a.date in week
+                and a.shift_id == constraint_sum_hard.shift_var.target
+            )
+            for week in dates_weeks
+            for w in inputs.variable_space.workers
+        ]
+
+        assert all(count == constraint_sum_hard.target_value for count in counts)
+
+    def test_expected_objective_for_hard_soft_conflict(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard_soft_conflict: Custom,
+    ) -> None:
+        # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
+        inputs.custom = custom_hard_soft_conflict
+        outputs = engine_solve(inputs)
+
+        dates_weeks = get_dates_weeks(
+            inputs.variable_space.start_date, inputs.variable_space.end_date
+        )
+        constraint_sum_hard = inputs.custom.constraints_sum[0]
+        constraint_sum_soft = inputs.custom.constraints_sum[1]
+
+        assert outputs.objective_value == constraint_sum_soft.penalty * len(
+            inputs.variable_space.workers
+        ) * len(dates_weeks) * abs(
+            constraint_sum_hard.target_value - constraint_sum_soft.target_value
+        )
+
+    def test_expected_constraint_breaches_variables_for_hard_soft_conflict(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard_soft_conflict: Custom,
+    ) -> None:
+        # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
+        inputs.custom = custom_hard_soft_conflict
+        outputs = engine_solve(inputs)
+
+        dates_weeks = get_dates_weeks(
+            inputs.variable_space.start_date, inputs.variable_space.end_date
+        )
+        constraint_sum_hard = inputs.custom.constraints_sum[0]
+
+        expected_variables = [
+            [[w, d, constraint_sum_hard.shift_var.target] for d in week]
+            for week in dates_weeks
+            for w in inputs.variable_space.workers
+        ]
+
+        # all constraint_breaches' variables are in expected_variables
+        assert all(
+            any(cb_variable in exp_variables for exp_variables in expected_variables)
+            for cb in outputs.constraint_breaches
+            for cb_variable in cb.variables
+        )
+        # all expected_variables are in constraint_breaches' variables
+        assert all(
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+            for exp_variables in expected_variables
+            for exp_variable in exp_variables
+        )
+
+    def test_expected_constraint_breaches_value_diff_for_hard_soft_conflict(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard_soft_conflict: Custom,
+    ) -> None:
+        # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
+        inputs.custom = custom_hard_soft_conflict
+        outputs = engine_solve(inputs)
+
+        constraint_sum_hard = inputs.custom.constraints_sum[0]
+        constraint_sum_soft = inputs.custom.constraints_sum[1]
+
+        expected_value_diff = (
+            constraint_sum_hard.target_value - constraint_sum_soft.target_value
+        )
+
+        assert all(
+            cb.value_diff == expected_value_diff for cb in outputs.constraint_breaches
+        )
+
+
+# pylint: disable=R0801
 def get_dates_weeks(start_date: date, end_date: date) -> List[List[date]]:
     delta = end_date - start_date
     dates = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
@@ -254,240 +447,3 @@ def get_dates_weeks(start_date: date, end_date: date) -> List[List[date]]:
     ]
     dates_weeks = [[dates[i] for i in d_index] for d_index in d_indexes]
     return dates_weeks
-
-
-def test_engine_solve_return_expected_constraint_sum_for_less_than_or_equal_soft():
-    start_date = date.fromisoformat("2023-10-02")
-    end_date = date.fromisoformat("2023-10-15")
-    workers = ["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"]
-    variable_space = VariableSpace(
-        workers=workers,
-        start_date=start_date,
-        end_date=end_date,
-        shifts=["s0", "s1", "s2", "s3"],
-    )
-    coverage = Coverage(coverage=[])
-    requests = []
-    fix_assignments = []
-
-    # At least one shift off per week
-    target_hard = 4
-    target_soft = 2
-    penalty = 20
-    var_um_worker = VarSumWorker(selector="all")
-    var_sum_day = VarSumDay(selector="week")
-    var_sum_shift = VarSumShift(selector="equal", target="s0")
-    constraint_sum_hard = ConstraintSum(
-        id="at_least_one_shift_off_per_week",
-        operator="equal",
-        worker_var=var_um_worker,
-        day_var=var_sum_day,
-        shift_var=var_sum_shift,
-        target_value=target_hard,
-        hard=True,
-        penalty=None,
-    )
-    constraint_sum_soft = ConstraintSum(
-        id="at_least_one_shift_off_per_week",
-        operator="less_than_or_equal",
-        worker_var=var_um_worker,
-        day_var=var_sum_day,
-        shift_var=var_sum_shift,
-        target_value=target_soft,
-        hard=False,
-        penalty=penalty,
-    )
-    custom = Custom(
-        constraints_sum=[
-            constraint_sum_hard,
-            constraint_sum_soft,
-        ]
-    )
-
-    inputs = Inputs(
-        variable_space=variable_space,
-        coverage=coverage,
-        requests=requests,
-        fixed_assignments=fix_assignments,
-        custom=custom,
-    )
-    engine = Engine()
-    outputs = engine.solve(inputs)
-    assignments = outputs.assignments
-
-    dates_weeks = get_dates_weeks(start_date, end_date)
-
-    counts = [
-        sum(
-            1
-            for a in assignments
-            if a.worker_id == w and a.date in week and a.shift_id == "s0"
-        )
-        for week in dates_weeks
-        for w in workers
-    ]
-
-    assert all(count == target_hard for count in counts)
-    assert outputs.objective_value == penalty * len(workers) * len(
-        dates_weeks
-    ) * abs(target_hard - target_soft)
-
-
-def test_engine_solve_return_expected_constraint_breaches_variables_constraint_sum_for_less_than_or_equal_soft():
-    start_date = date.fromisoformat("2023-10-02")
-    end_date = date.fromisoformat("2023-10-15")
-    workers = ["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"]
-    variable_space = VariableSpace(
-        workers=workers,
-        start_date=start_date,
-        end_date=end_date,
-        shifts=["s0", "s1", "s2", "s3"],
-    )
-    coverage = Coverage(coverage=[])
-    requests = []
-    fix_assignments = []
-
-    # At least one shift off per week
-    target_hard = 4
-    target_soft = 2
-    penalty = 20
-    target_shift = "s0"
-    var_um_worker = VarSumWorker(selector="all")
-    var_sum_day = VarSumDay(selector="week")
-    var_sum_shift = VarSumShift(selector="equal", target=target_shift)
-    constraint_sum_hard = ConstraintSum(
-        id="at_least_one_shift_off_per_week",
-        operator="equal",
-        worker_var=var_um_worker,
-        day_var=var_sum_day,
-        shift_var=var_sum_shift,
-        target_value=target_hard,
-        hard=True,
-        penalty=None,
-    )
-    constraint_sum_soft = ConstraintSum(
-        id="at_least_one_shift_off_per_week",
-        operator="less_than_or_equal",
-        worker_var=var_um_worker,
-        day_var=var_sum_day,
-        shift_var=var_sum_shift,
-        target_value=target_soft,
-        hard=False,
-        penalty=penalty,
-    )
-    custom = Custom(
-        constraints_sum=[
-            constraint_sum_hard,
-            constraint_sum_soft,
-        ]
-    )
-
-    inputs = Inputs(
-        variable_space=variable_space,
-        coverage=coverage,
-        requests=requests,
-        fixed_assignments=fix_assignments,
-        custom=custom,
-    )
-    engine = Engine()
-    outputs = engine.solve(inputs)
-
-    dates_weeks = get_dates_weeks(start_date, end_date)
-
-    expected_variables = [
-        [[w, d, target_shift] for d in week]
-        for week in dates_weeks
-        for w in workers
-    ]
-
-    # all constraint_breaches' variables are in expected_variables
-    assert all(
-        [
-            any(
-                cb_variable in exp_variables
-                for exp_variables in expected_variables
-            )
-            for cb in outputs.constraint_breaches
-            for cb_variable in cb.variables
-        ]
-    )
-    # all expected_variables are in constraint_breaches' variables
-    assert all(
-        [
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
-            for exp_variables in expected_variables
-            for exp_variable in exp_variables
-        ]
-    )
-
-
-def test_engine_solve_return_expected_constraint_breaches_value_diff_constraint_sum_for_less_than_or_equal_soft():
-    start_date = date.fromisoformat("2023-10-02")
-    end_date = date.fromisoformat("2023-10-15")
-    workers = ["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"]
-    variable_space = VariableSpace(
-        workers=workers,
-        start_date=start_date,
-        end_date=end_date,
-        shifts=["s0", "s1", "s2", "s3"],
-    )
-    coverage = Coverage(coverage=[])
-    requests = []
-    fix_assignments = []
-
-    # At least one shift off per week
-    target_hard = 4
-    target_soft = 2
-    penalty = 20
-    target_shift = "s0"
-    var_um_worker = VarSumWorker(selector="all")
-    var_sum_day = VarSumDay(selector="week")
-    var_sum_shift = VarSumShift(selector="equal", target=target_shift)
-    constraint_sum_hard = ConstraintSum(
-        id="at_least_one_shift_off_per_week",
-        operator="equal",
-        worker_var=var_um_worker,
-        day_var=var_sum_day,
-        shift_var=var_sum_shift,
-        target_value=target_hard,
-        hard=True,
-        penalty=None,
-    )
-    constraint_sum_soft = ConstraintSum(
-        id="at_least_one_shift_off_per_week",
-        operator="less_than_or_equal",
-        worker_var=var_um_worker,
-        day_var=var_sum_day,
-        shift_var=var_sum_shift,
-        target_value=target_soft,
-        hard=False,
-        penalty=penalty,
-    )
-    custom = Custom(
-        constraints_sum=[
-            constraint_sum_hard,
-            constraint_sum_soft,
-        ]
-    )
-
-    inputs = Inputs(
-        variable_space=variable_space,
-        coverage=coverage,
-        requests=requests,
-        fixed_assignments=fix_assignments,
-        custom=custom,
-    )
-    engine = Engine()
-    outputs = engine.solve(inputs)
-
-    expected_value_diff = target_hard - target_soft
-
-    assert all(
-        [
-            cb.value_diff == expected_value_diff
-            for cb in outputs.constraint_breaches
-        ]
-    )

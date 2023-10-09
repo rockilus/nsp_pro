@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
-from typing import List, Literal, Optional, Union
+from typing import List, Literal, Union
 
 ##############################
 # Inputs
@@ -70,7 +70,7 @@ class ConstraintSum:
     shift_var: VarSumShift
     target_value: int
     hard: bool
-    penalty: Optional[Literal["low", "medium", "high"]] = None
+    penalty: int = field(default=0)
 
 
 @dataclass
