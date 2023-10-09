@@ -7,6 +7,8 @@ import pytest
 from engine.engine import Engine
 from engine.inputs_outputs import (
     Assignment,
+    ConstraintOrd,
+    ConstraintSeq,
     ConstraintSum,
     Coverage,
     Custom,
@@ -15,6 +17,10 @@ from engine.inputs_outputs import (
     Request,
     ShiftDemand,
     VariableSpace,
+    VarOrdShift,
+    VarOrdWorker,
+    VarSeqShift,
+    VarSeqWorker,
     VarSumDay,
     VarSumShift,
     VarSumWorker,
@@ -33,7 +39,7 @@ class TestEngine:
         coverage = Coverage([])
         requests: List[Request] = []
         fix_assignments: List[Assignment] = []
-        custom = Custom(constraints_sum=[])
+        custom = Custom(constraints_sum=[], constraints_seq=[], constraints_ord=[])
         inputs = Inputs(
             variable_space=variable_space,
             coverage=coverage,
@@ -91,7 +97,9 @@ class TestConstraintSum:
                     hard=True,
                     penalty=0,
                 )
-            ]
+            ],
+            constraints_seq=[],
+            constraints_ord=[],
         )
 
     @pytest.fixture
@@ -108,7 +116,9 @@ class TestConstraintSum:
                     hard=False,
                     penalty=20,
                 )
-            ]
+            ],
+            constraints_seq=[],
+            constraints_ord=[],
         )
 
     @pytest.fixture
@@ -135,7 +145,9 @@ class TestConstraintSum:
                     hard=False,
                     penalty=20,
                 ),
-            ]
+            ],
+            constraints_seq=[],
+            constraints_ord=[],
         )
 
 
@@ -146,7 +158,7 @@ class TestConstraintSumHard(TestEngine, TestConstraintSum):
         engine_solve: Callable[[Inputs], Outputs],
         custom_hard: Custom,
     ) -> None:
-        # At least 4 shift off per week
+        # At most 4 shift off per week
         inputs.custom = custom_hard
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -207,7 +219,7 @@ class TestConstraintSumHard(TestEngine, TestConstraintSum):
         engine_solve: Callable[[Inputs], Outputs],
         custom_hard: Custom,
     ) -> None:
-        # At most 4 shift off per week
+        # At least 4 shift off per week
         inputs.custom = custom_hard
         inputs.custom.constraints_sum[0].operator = "greater_than_or_equal"
         outputs = engine_solve(inputs)
@@ -240,7 +252,7 @@ class TestConstraintSumSoft(TestEngine, TestConstraintSum):
         engine_solve: Callable[[Inputs], Outputs],
         custom_soft: Custom,
     ) -> None:
-        # At least 4 shift off per week
+        # At most 4 shift off per week
         inputs.custom = custom_soft
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -301,7 +313,7 @@ class TestConstraintSumSoft(TestEngine, TestConstraintSum):
         engine_solve: Callable[[Inputs], Outputs],
         custom_soft: Custom,
     ) -> None:
-        # At most 4 shift off per week
+        # At least 4 shift off per week
         inputs.custom = custom_soft
         inputs.custom.constraints_sum[0].operator = "greater_than_or_equal"
         outputs = engine_solve(inputs)
@@ -434,6 +446,750 @@ class TestConstraintSumSoft(TestEngine, TestConstraintSum):
         )
 
 
+class TestConstraintSeq:
+    @pytest.fixture
+    def custom_hard(self) -> Custom:
+        return Custom(
+            constraints_sum=[],
+            constraints_seq=[
+                ConstraintSeq(
+                    id="constraint_seq_hard",
+                    operator="less_than_or_equal",
+                    worker_var=VarSeqWorker(selector="all"),
+                    shift_var=VarSeqShift(selector="equal", target="s0"),
+                    target_value=4,
+                    hard=True,
+                    penalty=0,
+                )
+            ],
+            constraints_ord=[],
+        )
+
+    @pytest.fixture
+    def custom_soft(self) -> Custom:
+        return Custom(
+            constraints_sum=[],
+            constraints_seq=[
+                ConstraintSeq(
+                    id="constraint_seq_soft",
+                    operator="less_than_or_equal",
+                    worker_var=VarSeqWorker(selector="all"),
+                    shift_var=VarSeqShift(selector="equal", target="s0"),
+                    target_value=2,
+                    hard=False,
+                    penalty=20,
+                )
+            ],
+            constraints_ord=[],
+        )
+
+    @pytest.fixture
+    def custom_hard_soft_conflict(self) -> Custom:
+        return Custom(
+            constraints_sum=[],
+            constraints_seq=[
+                ConstraintSeq(
+                    id="constraint_seq_hard",
+                    operator="equal",
+                    worker_var=VarSeqWorker(selector="all"),
+                    shift_var=VarSeqShift(selector="equal", target="s0"),
+                    target_value=4,
+                    hard=True,
+                    penalty=0,
+                ),
+                ConstraintSeq(
+                    id="constraint_seq_soft",
+                    operator="less_than_or_equal",
+                    worker_var=VarSeqWorker(selector="all"),
+                    shift_var=VarSeqShift(selector="equal", target="s0"),
+                    target_value=2,
+                    hard=False,
+                    penalty=20,
+                ),
+            ],
+            constraints_ord=[],
+        )
+
+
+class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
+    def test_expected_assignment_for_less_than_or_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard: Custom,
+    ) -> None:
+        # At most 4 shift off in a row
+        inputs.custom = custom_hard
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        constraint_seq = custom_hard.constraints_seq[0]
+        counts = [
+            max_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            for w in inputs.variable_space.workers
+        ]
+
+        assert max(counts) <= constraint_seq.target_value
+
+    def test_expected_assignment_for_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard: Custom,
+    ) -> None:
+        # Exactly 4 shift off per week
+        inputs.custom = custom_hard
+        inputs.custom.constraints_sum[0].operator = "equal"
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        dates_weeks = get_dates_weeks(
+            inputs.variable_space.start_date, inputs.variable_space.end_date
+        )
+        constraint_sum = inputs.custom.constraints_sum[0]
+
+        counts = [
+            sum(
+                1
+                for a in assignments
+                if a.worker_id == w
+                and a.date in week
+                and a.shift_id == constraint_sum.shift_var.target
+            )
+            for week in dates_weeks
+            for w in inputs.variable_space.workers
+        ]
+
+        assert all(count == constraint_sum.target_value for count in counts)
+
+    def test_expected_assignment_for_greater_than_or_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard: Custom,
+    ) -> None:
+        # At least 4 shift off per week
+        inputs.custom = custom_hard
+        inputs.custom.constraints_seq[0].operator = "greater_than_or_equal"
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        constraint_seq = custom_hard.constraints_seq[0]
+        counts = [
+            min_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            for w in inputs.variable_space.workers
+        ]
+
+        assert min(counts) >= constraint_seq.target_value
+
+
+class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
+    def test_expected_assignment_for_less_than_or_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_soft: Custom,
+    ) -> None:
+        # At most 4 shift off in a row
+        inputs.custom = custom_soft
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        constraint_seq = custom_soft.constraints_seq[0]
+        counts = [
+            max_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            for w in inputs.variable_space.workers
+        ]
+
+        assert max(counts) <= constraint_seq.target_value
+
+    def test_expected_assignment_for_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_soft: Custom,
+    ) -> None:
+        # Exactly 4 shift off per week
+        inputs.custom = custom_soft
+        inputs.custom.constraints_sum[0].operator = "equal"
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        dates_weeks = get_dates_weeks(
+            inputs.variable_space.start_date, inputs.variable_space.end_date
+        )
+        constraint_sum = inputs.custom.constraints_sum[0]
+
+        counts = [
+            sum(
+                1
+                for a in assignments
+                if a.worker_id == w
+                and a.date in week
+                and a.shift_id == constraint_sum.shift_var.target
+            )
+            for week in dates_weeks
+            for w in inputs.variable_space.workers
+        ]
+
+        assert all(count == constraint_sum.target_value for count in counts)
+
+    def test_expected_assignment_for_greater_than_or_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_soft: Custom,
+    ) -> None:
+        # At least 4 shift off per week
+        inputs.custom = custom_soft
+        inputs.custom.constraints_seq[0].operator = "greater_than_or_equal"
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        constraint_seq = custom_soft.constraints_seq[0]
+        counts = [
+            min_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            for w in inputs.variable_space.workers
+        ]
+
+        assert min(counts) >= constraint_seq.target_value
+
+
+class TestConstraintOrd:
+    @pytest.fixture
+    def custom_hard(self) -> Custom:
+        return Custom(
+            constraints_sum=[],
+            constraints_seq=[],
+            constraints_ord=[
+                ConstraintOrd(
+                    id="constraint_ord_hard",
+                    operator="no",
+                    worker_var=VarOrdWorker(selector="all"),
+                    shift_var=VarOrdShift(previous="s1", next="s0"),
+                    hard=True,
+                    penalty=0,
+                )
+            ],
+        )
+
+    @pytest.fixture
+    def custom_soft(self) -> Custom:
+        return Custom(
+            constraints_sum=[],
+            constraints_seq=[],
+            constraints_ord=[
+                ConstraintOrd(
+                    id="constraint_ord_soft",
+                    operator="no",
+                    worker_var=VarOrdWorker(selector="all"),
+                    shift_var=VarOrdShift(previous="s0", next="s1"),
+                    hard=False,
+                    penalty=20,
+                )
+            ],
+        )
+
+    @pytest.fixture
+    def custom_hard_soft_conflict(self) -> Custom:
+        return Custom(
+            constraints_sum=[],
+            constraints_seq=[],
+            constraints_ord=[
+                ConstraintOrd(
+                    id="constraint_ord_hard",
+                    operator="no",
+                    worker_var=VarOrdWorker(selector="all"),
+                    shift_var=VarOrdShift(previous="s0", next="s1"),
+                    hard=True,
+                    penalty=0,
+                ),
+                ConstraintOrd(
+                    id="constraint_seq_soft",
+                    operator="yes",
+                    worker_var=VarOrdWorker(selector="all"),
+                    shift_var=VarOrdShift(previous="s0", next="s1"),
+                    hard=False,
+                    penalty=20,
+                ),
+            ],
+        )
+
+
+class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
+    def test_expected_assignment_for_no(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard: Custom,
+    ) -> None:
+        # No shift s0 after shift s1
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+            ),
+        ]
+        inputs.custom = custom_hard
+        inputs.fixed_assignments = fixed_assignments
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        next_assignment = [
+            a
+            for a in assignments
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date == fixed_assignments[0].date + timedelta(days=1)
+        ][0]
+        assert next_assignment.shift_id != custom_hard.constraints_ord[0].shift_var.next
+
+    def test_expected_assignment_for_yes(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard: Custom,
+    ) -> None:
+        # No shift s0 after shift s1
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+            ),
+        ]
+        inputs.custom = custom_hard
+        inputs.custom.constraints_ord[0].operator = "yes"
+        inputs.custom.constraints_ord[0].shift_var.next = "s3"
+        inputs.fixed_assignments = fixed_assignments
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        next_assignment = [
+            a
+            for a in assignments
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date == fixed_assignments[0].date + timedelta(days=1)
+        ][0]
+        assert next_assignment.shift_id == custom_hard.constraints_ord[0].shift_var.next
+
+    def test_no_solution_if_conflict(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard: Custom,
+    ) -> None:
+        # No shift s0 after shift s1
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+            ),
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-03"),
+                shift_id="s0",
+            ),
+        ]
+        inputs.custom = custom_hard
+        inputs.fixed_assignments = fixed_assignments
+        outputs = engine_solve(inputs)
+
+        assert not outputs.solution_exist and len(outputs.assignments) == 0
+
+
+class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
+    def test_expected_assignment_for_no(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_soft: Custom,
+    ) -> None:
+        # No shift s0 after shift s1
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+            ),
+        ]
+        inputs.custom = custom_soft
+        inputs.fixed_assignments = fixed_assignments
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        next_assignment = [
+            a
+            for a in assignments
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date == fixed_assignments[0].date + timedelta(days=1)
+        ][0]
+        assert next_assignment.shift_id != custom_soft.constraints_ord[0].shift_var.next
+
+    def test_expected_assignment_for_yes(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_soft: Custom,
+    ) -> None:
+        # Shift s3 after shift s1
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+            ),
+        ]
+        inputs.custom = custom_soft
+        inputs.custom.constraints_ord[0].operator = "yes"
+        inputs.custom.constraints_ord[0].shift_var.next = "s3"
+        inputs.fixed_assignments = fixed_assignments
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        next_assignment = [
+            a
+            for a in assignments
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date == fixed_assignments[0].date + timedelta(days=1)
+        ][0]
+        assert next_assignment.shift_id == custom_soft.constraints_ord[0].shift_var.next
+
+    def test_expected_assignment_for_hard_soft_conflict(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard_soft_conflict: Custom,
+    ) -> None:
+        # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+            ),
+        ]
+        inputs.custom = custom_hard_soft_conflict
+        inputs.fixed_assignments = fixed_assignments
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        next_assignment = [
+            a
+            for a in assignments
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date == fixed_assignments[0].date + timedelta(days=1)
+        ][0]
+        assert (
+            next_assignment.shift_id
+            != custom_hard_soft_conflict.constraints_ord[0].shift_var.next
+        )
+
+    def test_expected_objective_for_hard_soft_conflict(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard_soft_conflict: Custom,
+    ) -> None:
+        # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+            ),
+        ]
+        inputs.custom = custom_hard_soft_conflict
+        inputs.fixed_assignments = fixed_assignments
+        outputs = engine_solve(inputs)
+
+        assert (
+            outputs.objective_value
+            == custom_hard_soft_conflict.constraints_ord[1].penalty
+        )
+
+    def test_expected_constraint_breaches_variables_for_hard_soft_conflict(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard_soft_conflict: Custom,
+    ) -> None:
+        # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+            ),
+        ]
+        inputs.custom = custom_hard_soft_conflict
+        inputs.fixed_assignments = fixed_assignments
+        outputs = engine_solve(inputs)
+
+        constraint_ord_soft = custom_hard_soft_conflict.constraints_ord[1]
+
+        expected_variables = [
+            [
+                fixed_assignments[0].worker_id,
+                fixed_assignments[0].date,
+                constraint_ord_soft.shift_var.previous,
+            ],
+            [
+                fixed_assignments[0].worker_id,
+                fixed_assignments[0].date + timedelta(days=1),
+                constraint_ord_soft.shift_var.next,
+            ],
+        ]
+
+        # all constraint_breaches' variables are in expected_variables
+        assert all(
+            any(cb_variable in exp_variables for exp_variables in expected_variables)
+            for cb in outputs.constraint_breaches
+            for cb_variable in cb.variables
+        )
+        # all expected_variables are in constraint_breaches' variables
+        assert all(
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+            for exp_variables in expected_variables
+            for exp_variable in exp_variables
+        )
+
+    def test_expected_constraint_breaches_value_diff_for_hard_soft_conflict(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        custom_hard_soft_conflict: Custom,
+    ) -> None:
+        # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+            ),
+        ]
+        inputs.custom = custom_hard_soft_conflict
+        inputs.fixed_assignments = fixed_assignments
+        outputs = engine_solve(inputs)
+
+        constraint_ord_soft = custom_hard_soft_conflict.constraints_ord[1]
+
+        assert outputs.objective_value == constraint_ord_soft.penalty
+
+
+class TestFixedAssignments(TestEngine):
+    def test_expected_assignment_for_fixed_assignments(
+        self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
+    ) -> None:
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s0",
+            ),
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-03"),
+                shift_id="s1",
+            ),
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-04"),
+                shift_id="s2",
+            ),
+        ]
+        inputs.fixed_assignments = fixed_assignments
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        assert all(a in assignments for a in fixed_assignments)
+
+    def test_no_solution_if_fixed_assignment_conflict(
+        self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
+    ) -> None:
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s0",
+            ),
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+            ),
+        ]
+        inputs.fixed_assignments = fixed_assignments
+        outputs = engine_solve(inputs)
+
+        assert not outputs.solution_exist and len(outputs.assignments) == 0
+
+
+class TestRequest(TestEngine):
+    def test_expected_assignment_for_request(
+        self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
+    ) -> None:
+        requests = [
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s0",
+                penalty=-2,
+            ),
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-03"),
+                shift_id="s1",
+                penalty=-2,
+            ),
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-04"),
+                shift_id="s2",
+                penalty=-2,
+            ),
+        ]
+        inputs.requests = requests
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        target_assignments = [
+            Assignment(
+                worker_id=r.worker_id,
+                date=r.date,
+                shift_id=r.shift_id,
+            )
+            for r in requests
+        ]
+
+        assert all(a in assignments for a in target_assignments)
+
+    def test_objective_if_requests_fullfilled(
+        self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
+    ) -> None:
+        requests = [
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s0",
+                penalty=-2,
+            ),
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-03"),
+                shift_id="s1",
+                penalty=-3,
+            ),
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-04"),
+                shift_id="s2",
+                penalty=-4,
+            ),
+        ]
+        inputs.requests = requests
+        outputs = engine_solve(inputs)
+
+        assert outputs.objective_value == sum(r.penalty for r in requests)
+
+    def test_objective_if_requests_not_fullfilled(
+        self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
+    ) -> None:
+        fixed_assignments = [
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+            ),
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-03"),
+                shift_id="s2",
+            ),
+            Assignment(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-04"),
+                shift_id="s3",
+            ),
+        ]
+        requests = [
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s0",
+                penalty=-2,
+            ),
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-03"),
+                shift_id="s1",
+                penalty=-3,
+            ),
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-04"),
+                shift_id="s2",
+                penalty=-4,
+            ),
+        ]
+        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
+        outputs = engine_solve(inputs)
+
+        assert outputs.objective_value == 0
+
+    def test_expected_assignment_for_request_conflict(
+        self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
+    ) -> None:
+        requests = [
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s0",
+                penalty=-2,
+            ),
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+                penalty=-4,
+            ),
+        ]
+        inputs.requests = requests
+        outputs = engine_solve(inputs)
+
+        target_assignment = Assignment(
+            worker_id=requests[1].worker_id,
+            date=requests[1].date,
+            shift_id=requests[1].shift_id,
+        )
+
+        assert target_assignment in outputs.assignments
+
+    def test_objective_for_request_conflict(
+        self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
+    ) -> None:
+        requests = [
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s0",
+                penalty=-2,
+            ),
+            Request(
+                worker_id="w0",
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s1",
+                penalty=-4,
+            ),
+        ]
+        inputs.requests = requests
+        outputs = engine_solve(inputs)
+
+        assert outputs.objective_value == requests[1].penalty
+
+
 # pylint: disable=R0801
 def get_dates_weeks(start_date: date, end_date: date) -> List[List[date]]:
     delta = end_date - start_date
@@ -449,3 +1205,36 @@ def get_dates_weeks(start_date: date, end_date: date) -> List[List[date]]:
     ]
     dates_weeks = [[dates[i] for i in d_index] for d_index in d_indexes]
     return dates_weeks
+
+
+def max_consecutive_shift_count(
+    assignments: List[Assignment], worker_id: str, shift_id: str
+) -> int:
+    max_count = 0
+    count = 0
+    target_assignments = [a for a in assignments if a.worker_id == worker_id]
+    sorted_assignments = sorted(target_assignments, key=lambda a: a.date)
+    for a in sorted_assignments:
+        if a.shift_id == shift_id:
+            count += 1
+            max_count = max(max_count, count)
+        else:
+            count = 0
+    return max_count
+
+
+def min_consecutive_shift_count(
+    assignments: List[Assignment], worker_id: str, shift_id: str
+) -> int:
+    min_count = float("inf")
+    count = 0
+    target_assignments = [a for a in assignments if a.worker_id == worker_id]
+    sorted_assignments = sorted(target_assignments, key=lambda a: a.date)
+    for a in sorted_assignments:
+        if a.shift_id == shift_id:
+            count += 1
+        else:
+            min_count = min(min_count, count)
+            count = 0
+    min_count = min(min_count, count)
+    return min_count if min_count != float("inf") else 0

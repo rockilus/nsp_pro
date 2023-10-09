@@ -31,7 +31,7 @@ class Request:
     worker_id: str
     date: date
     shift_id: str
-    priority: Literal["low", "medium", "high"]
+    penalty: int
 
 
 @dataclass
@@ -58,6 +58,28 @@ class VarSumShift:
 
 
 @dataclass
+class VarSeqWorker:
+    selector: Literal["all"]
+
+
+@dataclass
+class VarSeqShift:
+    selector: Literal["equal"]
+    target: str
+
+
+@dataclass
+class VarOrdWorker:
+    selector: Literal["all"]
+
+
+@dataclass
+class VarOrdShift:
+    previous: str
+    next: str
+
+
+@dataclass
 class ConstraintSum:
     id: str
     operator: Literal[
@@ -74,8 +96,35 @@ class ConstraintSum:
 
 
 @dataclass
+class ConstraintSeq:
+    id: str
+    operator: Literal[
+        "less_than_or_equal",
+        "equal",
+        "greater_than_or_equal",
+    ]
+    worker_var: VarSeqWorker
+    shift_var: VarSeqShift
+    target_value: int
+    hard: bool
+    penalty: int = field(default=0)
+
+
+@dataclass
+class ConstraintOrd:
+    id: str
+    operator: Literal["yes", "no"]
+    worker_var: VarOrdWorker
+    shift_var: VarOrdShift
+    hard: bool
+    penalty: int = field(default=0)
+
+
+@dataclass
 class Custom:
     constraints_sum: List[ConstraintSum]
+    constraints_seq: List[ConstraintSeq]
+    constraints_ord: List[ConstraintOrd]
 
 
 @dataclass
