@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Literal
+from typing import List, Literal, Optional, Union
 
 ##############################
 # Inputs
@@ -42,49 +42,40 @@ class Assignment:
 
 
 @dataclass
-class WCoordinate:
-    selector: Literal["all", "equal"]
-    worker_id: str
-    intra: bool
+class VarSumWorker:
+    selector: Literal["all"]
 
 
 @dataclass
-class DCoordinate:
-    selector: Literal["all", "modulo", "interval"]
-    value: str
-    other_value: str
-    intra: bool
+class VarSumDay:
+    selector: Literal["week"]
 
 
 @dataclass
-class SCoordinate:
-    selector: Literal["all", "equal", "pair"]
-    shift_id: str
-    other_shift_id: str
-    intra: bool
+class VarSumShift:
+    selector: Literal["equal"]
+    target: str
 
 
 @dataclass
-class Constraint:
-    type: Literal["sum", "sequence", "order"]
-    operator: Literal["equal", "at_least", "at_most", "no"]
+class ConstraintSum:
+    id: str
+    operator: Literal[
+        "less_than_or_equal",
+        "equal",
+        "greater_than_or_equal",
+    ]
+    worker_var: VarSumWorker
+    day_var: VarSumDay
+    shift_var: VarSumShift
     target_value: int
     hard: bool
-    penalty: Literal["low", "medium", "high"]
-    constraint_id: str
-
-
-@dataclass
-class CustomConstraint:
-    w_coordinate: WCoordinate
-    d_coordinate: DCoordinate
-    s_coordinate: SCoordinate
-    Constraint: Constraint
+    penalty: Optional[Literal["low", "medium", "high"]] = None
 
 
 @dataclass
 class Custom:
-    custom_constraints: List[CustomConstraint]
+    constraints_sum: List[ConstraintSum]
 
 
 @dataclass
@@ -104,21 +95,14 @@ class Inputs:
 @dataclass
 class ConstraintBreach:
     constraint_id: str
-    workers: List[str]
-    dates: List[date]
-    shifts: List[str]
-    value: int
+    variables: List[List[Union[str, date]]]
+    value_diff: int
     penalty: int
-
-
-@dataclass
-class Comments:
-    constraint_breaches: List[ConstraintBreach]
-    missing_coverage_dates: List[date]
 
 
 @dataclass
 class Outputs:
     solution_exist: bool
     assignments: List[Assignment]
-    comments: Comments
+    objective_value: int
+    constraint_breaches: List[ConstraintBreach]

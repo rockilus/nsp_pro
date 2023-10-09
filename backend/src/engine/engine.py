@@ -18,6 +18,8 @@ class Engine:
         model.build_variables()
         model.add_exactly_one_shift_per_day_constraint()
         model.add_coverage_constraints(inputs.coverage.coverage)
+        model.add_custom_constraints(inputs.custom)
+        model.add_objective()
         model.solve()
         output = Output(model)
         return output.build_outputs()
