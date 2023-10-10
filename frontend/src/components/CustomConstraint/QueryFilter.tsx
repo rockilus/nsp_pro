@@ -195,7 +195,7 @@ const QueryFilter: React.FC<QueryFilterProps> = ({ data, onFiltersReady }) => {
   // Call callback as soon as list updates
   useEffect(() => {
     onFiltersReady(filters);
-  }, [filters])
+  }, [filters, onFiltersReady])
 
   return (
     <div>

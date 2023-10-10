@@ -46,9 +46,18 @@ function ConstraintPanel() {
     setConstraints([...constraints, newConstraint])
   }
 
+  const formDayFilterSentence = (dayFilter: DayFilter) => {
+    const dayText = dayFilter.day === 'any' ? 'Any day' : `Day N+${dayFilter.day}`;
+    const filterTexts = dayFilter.filters.map(filter => `${filter.column} ${filter.operator} ${filter.value}`).join(' and ');
+    return `${dayText}: ${filterTexts}`;
+  };
+  
   const formConstraintSentence = (constraint: Constraint) => {
-    return `${constraint.name}: When constraint ${JSON.stringify(constraint.when)} on ${constraint.on}, Then constraint ${JSON.stringify(constraint.then)} should happen on day ${constraint.daysAfter}`;
+    const whenPart = constraint.when.map(formDayFilterSentence).join(' and ');
+    const thenPart = constraint.then.map(formDayFilterSentence).join(' and ');
+    return `${constraint.name}: When ${whenPart}, Then ${thenPart}`;
   }
+  
 
   return (
     <>

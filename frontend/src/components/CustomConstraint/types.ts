@@ -23,11 +23,16 @@ interface Config {
   columns: Dimension[];
 }
 
+type DayIdT = 'any' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+interface DayFilter {
+  day: DayIdT | number; // 'day ID' or specific relative day (0 for the same day, 1 for next day, etc.)
+  filters: QueryFilter[];
+};
+
 interface Constraint {
   name: string;
-  when: QueryFilter[]; // list connected by "and", "or" not supported
-  on: string;
-  then: QueryFilter[]; // list connected by "and", "or" not supported
-  daysAfter: string;
+  when: DayFilter[]; 
+  then: DayFilter[];
 }
   
