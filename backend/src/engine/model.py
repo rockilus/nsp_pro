@@ -2,6 +2,7 @@
 import json
 from typing import Dict, List, Tuple, Union
 
+from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.inputs_outputs import (
@@ -75,7 +76,17 @@ class Model:
                 r.shift_id,
                 r.penalty,
             )
-            self.obj.bool_vars.append(self.variables[w, d, s])
+            cstr_vars = [self.variables[w, d, s]]
+            var_name = json.dumps(
+                {
+                    "constraint_id": r.id,
+                    "cstr_vars": [var.Name() for var in cstr_vars],
+                }
+            )
+            lit = self.model.NewBoolVar(var_name)
+            cstr_vars.append(lit)
+            self.model.AddBoolOr(cstr_vars)
+            self.obj.bool_vars.append(lit)
             self.obj.bool_coeffs.append(p)
 
     def _add_sum_constraints(self, constraints_sum: List[ConstraintSum]) -> None:
@@ -232,17 +243,22 @@ class Model:
                 for start in range(len(cstr_vars) - constraint_seq.target_value):
                     self.model.AddBoolOr(
                         [
-                            cstr_vars[i]
+                            cstr_vars[i].Not()
                             for i in range(
                                 start, start + constraint_seq.target_value + 1
                             )
                         ]
                     )
+                for length in range(1, constraint_seq.target_value):
+                    for start in range(len(cstr_vars) - length + 1):
+                        self.model.AddBoolOr(
+                            self._negated_bounded_span(cstr_vars, start, length)
+                        )
             elif constraint_seq.operator == "greater_than_or_equal":
                 for length in range(1, constraint_seq.target_value):
                     for start in range(len(cstr_vars) - length + 1):
                         self.model.AddBoolOr(
-                            Model._negated_bounded_span(cstr_vars, start, length)
+                            self._negated_bounded_span(cstr_vars, start, length)
                         )
             else:
                 raise NotImplementedError(
@@ -251,18 +267,22 @@ class Model:
                 )
         else:
             if constraint_seq.penalty != 0:
-                var_name = json.dumps(
-                    {
-                        "constraint_id": constraint_seq.id,
-                        "cstr_vars": [var.Name() for var in cstr_vars],
-                    }
-                )
                 if constraint_seq.operator == "less_than_or_equal":
                     for length in range(
                         constraint_seq.target_value + 1, len(cstr_vars) + 1
                     ):
                         for start in range(len(cstr_vars) - length + 1):
                             span = Model._negated_bounded_span(cstr_vars, start, length)
+                            var_name = json.dumps(
+                                {
+                                    "constraint_id": constraint_seq.id,
+                                    "cstr_vars": [
+                                        var.Not().Name()
+                                        for var in span
+                                        if isinstance(var, cp_model._NotBooleanVariable)
+                                    ],
+                                }
+                            )
                             lit = self.model.NewBoolVar(var_name)
                             span.append(lit)
                             self.model.AddBoolOr(span)
@@ -272,22 +292,64 @@ class Model:
                                 * (length - constraint_seq.target_value)
                             )
                 elif constraint_seq.operator == "equal":
-                    delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
-                    self.model.Add(
-                        delta == sum(cstr_vars) - constraint_seq.target_value
-                    )
-                    excess = self.model.NewIntVar(
-                        -len(cstr_vars),
-                        len(cstr_vars),
-                        var_name,
-                    )
-                    self.model.AddAbsEquality(excess, delta)
-                    self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(constraint_seq.penalty)
-                elif constraint_seq.operator == "greater_than_or_equal":
-                    for length in range(0, constraint_seq.target_value):
+                    for length in range(
+                        constraint_seq.target_value + 1, len(cstr_vars) + 1
+                    ):
                         for start in range(len(cstr_vars) - length + 1):
                             span = Model._negated_bounded_span(cstr_vars, start, length)
+                            var_name = json.dumps(
+                                {
+                                    "constraint_id": constraint_seq.id,
+                                    "cstr_vars": [
+                                        var.Not().Name()
+                                        for var in span
+                                        if isinstance(var, cp_model._NotBooleanVariable)
+                                    ],
+                                }
+                            )
+                            lit = self.model.NewBoolVar(var_name)
+                            span.append(lit)
+                            self.model.AddBoolOr(span)
+                            self.obj.bool_vars.append(lit)
+                            self.obj.bool_coeffs.append(
+                                constraint_seq.penalty
+                                * (length - constraint_seq.target_value)
+                            )
+                    for length in range(1, constraint_seq.target_value):
+                        for start in range(len(cstr_vars) - length + 1):
+                            span = Model._negated_bounded_span(cstr_vars, start, length)
+                            var_name = json.dumps(
+                                {
+                                    "constraint_id": constraint_seq.id,
+                                    "cstr_vars": [
+                                        var.Not().Name()
+                                        for var in span
+                                        if isinstance(var, cp_model._NotBooleanVariable)
+                                    ],
+                                }
+                            )
+                            lit = self.model.NewBoolVar(var_name)
+                            span.append(lit)
+                            self.model.AddBoolOr(span)
+                            self.obj.bool_vars.append(lit)
+                            self.obj.bool_coeffs.append(
+                                constraint_seq.penalty
+                                * (constraint_seq.target_value - length)
+                            )
+                elif constraint_seq.operator == "greater_than_or_equal":
+                    for length in range(1, constraint_seq.target_value):
+                        for start in range(len(cstr_vars) - length + 1):
+                            span = Model._negated_bounded_span(cstr_vars, start, length)
+                            var_name = json.dumps(
+                                {
+                                    "constraint_id": constraint_seq.id,
+                                    "cstr_vars": [
+                                        var.Not().Name()
+                                        for var in span
+                                        if isinstance(var, cp_model._NotBooleanVariable)
+                                    ],
+                                }
+                            )
                             lit = self.model.NewBoolVar(var_name)
                             span.append(lit)
                             self.model.AddBoolOr(span)
@@ -339,26 +401,13 @@ class Model:
         cstr_vars: List[cp_model.IntVar], start: int, length: int
     ) -> List[cp_model.IntVar]:
         sequence = []
-        # Left border (start of works, or works[start - 1])
         if start > 0:
             sequence.append(cstr_vars[start - 1])
         for i in range(length):
             sequence.append(cstr_vars[start + i].Not())
-        # Right border (end of works or works[start + length])
         if start + length < len(cstr_vars):
             sequence.append(cstr_vars[start + length])
         return sequence
-
-    # sequence = []
-    # # Left border (start of works, or works[start - 1])
-    # if start > 0:
-    #     sequence.append(works[start - 1])
-    # for i in range(length):
-    #     sequence.append(works[start + i].Not())
-    # # Right border (end of works or works[start + length])
-    # if start + length < len(works):
-    #     sequence.append(works[start + length])
-    # return sequence
 
     def add_objective(self) -> None:
         self.model.Minimize(
@@ -373,4 +422,7 @@ class Model:
         )
 
     def solve(self) -> cp_model.CpSolver:
+        params = "max_time_in_seconds:10.0"
+        if params:
+            text_format.Parse(params, self.solver.parameters)
         self.status = self.solver.Solve(self.model, self.solution_printer)

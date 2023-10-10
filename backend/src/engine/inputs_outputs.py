@@ -28,6 +28,7 @@ class Coverage:
 
 @dataclass
 class Request:
+    id: str
     worker_id: str
     date: date
     shift_id: str
