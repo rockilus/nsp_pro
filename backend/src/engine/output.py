@@ -1,9 +1,10 @@
+import json
 from datetime import date
 from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.inputs_outputs import Assignment, Comments, ConstraintBreach, Outputs
+from engine.inputs_outputs import Assignment, ConstraintBreach, Outputs
 from engine.model import Model
 
 
@@ -20,11 +21,11 @@ class Output:
             assignments = self.build_solution()
         else:
             assignments = []
-        comments = Comments(
-            constraint_breaches=self.build_constraint_breaches(),
-            missing_coverage_dates=self.build_missing_coverage_dates(),
+        objective_value = self.model.solver.ObjectiveValue()
+        constraint_breaches = self.build_constraint_breaches()
+        return Outputs(
+            solution_exist, assignments, objective_value, constraint_breaches
         )
-        return Outputs(solution_exist, assignments, comments)
 
     def build_solution(self) -> List[Assignment]:
         assignments = []
@@ -40,7 +41,38 @@ class Output:
         return assignments
 
     def build_constraint_breaches(self) -> List[ConstraintBreach]:
-        return []
+        constraint_breaches = []
+        print("Penalties:")
+        for i, var in enumerate(self.model.obj.bool_vars):
+            if self.model.solver.BooleanValue(var):
+                # penalty = self.model.obj.bool_coeffs[i]
+                # if penalty > 0:
+                #     print(f"{var.Name()} violated, penalty={penalty}")
+                # else:
+                #     print(f"{var.Name()} fulfilled, gain={-penalty}")
+                var_name = json.loads(var.Name())
+                variables = [var.split("_") for var in var_name["cstr_vars"]]
+                for variable in variables:
+                    variable[1] = date.fromisoformat(variable[1])
+                constraint_breach = ConstraintBreach(
+                    constraint_id=var_name["constraint_id"],
+                    variables=variables,
+                    value_diff=self.model.solver.Value(var),
+                    penalty=self.model.obj.bool_coeffs[i],
+                )
+                constraint_breaches.append(constraint_breach)
 
-    def build_missing_coverage_dates(self) -> List[date]:
-        return []
+        for i, var in enumerate(self.model.obj.int_vars):
+            if self.model.solver.Value(var) > 0:
+                var_name = json.loads(var.Name())
+                variables = [var.split("_") for var in var_name["cstr_vars"]]
+                for variable in variables:
+                    variable[1] = date.fromisoformat(variable[1])
+                constraint_breach = ConstraintBreach(
+                    constraint_id=var_name["constraint_id"],
+                    variables=variables,
+                    value_diff=self.model.solver.Value(var),
+                    penalty=self.model.obj.int_coeffs[i],
+                )
+                constraint_breaches.append(constraint_breach)
+        return constraint_breaches

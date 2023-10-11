@@ -112,7 +112,7 @@ def from_core_to_inputs(
     coverage = CoverageEngine(shift_demands)
     requests: List[Request] = []
     fix_assignments: List[AssignmentEngine] = []
-    custom = Custom(custom_constraints=[])
+    custom = Custom(constraints_sum=[], constraints_ord=[], constraints_seq=[])
     inputs = Inputs(
         variable_space=variable_space,
         coverage=coverage,

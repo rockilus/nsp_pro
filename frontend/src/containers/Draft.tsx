@@ -56,7 +56,7 @@ export default function Draft() {
         <CoveragePanel shifts={shiftsForCoverage} />
       )}
       <CoverageSelectorConfig />
-      {/* <ConstraintConfig /> */}
+      <ConstraintConfig />
       <ScheduleConfig workers={workersForSchedule} shifts={shiftsForSchedule} />
     </Box>
   );
