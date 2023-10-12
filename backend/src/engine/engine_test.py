@@ -27,7 +27,12 @@ class TestEngine:
         coverage = Coverage([])
         requests: List[Request] = []
         fix_assignments: List[Assignment] = []
-        custom = Custom(constraints_sum=[], constraints_seq=[], constraints_ord=[])
+        custom = Custom(
+            constraints_sum=[],
+            constraints_seq=[],
+            constraints_ord=[],
+            constraints_fil=[],
+        )
         inputs = Inputs(
             variable_space=variable_space,
             coverage=coverage,

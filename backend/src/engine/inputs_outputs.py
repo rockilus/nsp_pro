@@ -88,6 +88,25 @@ class VarOrdShift:
 
 
 @dataclass
+class VarFilWorker:
+    operator: Literal["in_target", "out_target"]
+    selector: Literal["all", "list"]
+    target: List[str]
+
+
+@dataclass
+class VarFilDay:
+    selector: Literal["all"]
+
+
+@dataclass
+class VarFilShift:
+    operator: Literal["in_target", "out_target"]
+    selector: Literal["all", "list"]
+    target: List[str]
+
+
+@dataclass
 class ConstraintSum:
     id: str
     operator: Literal[
@@ -130,10 +149,21 @@ class ConstraintOrd:
 
 
 @dataclass
+class ConstraintFil:
+    id: str
+    worker_var: VarFilWorker
+    day_var: VarFilDay
+    shift_var: VarFilShift
+    hard: bool
+    penalty: int = field(default=0)
+
+
+@dataclass
 class Custom:
     constraints_sum: List[ConstraintSum]
     constraints_seq: List[ConstraintSeq]
     constraints_ord: List[ConstraintOrd]
+    constraints_fil: List[ConstraintFil]
 
 
 @dataclass
