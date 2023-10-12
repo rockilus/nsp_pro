@@ -145,8 +145,7 @@ class TestConstraintFilHard(TestEngine, TestConstraintFil):
         assignments_target_w = [
             assignment
             for assignment in assignments
-            if assignment.worker_id
-            not in constraint_fil_hard.worker_var.target
+            if assignment.worker_id not in constraint_fil_hard.worker_var.target
         ]
 
         assert all(
@@ -182,8 +181,7 @@ class TestConstraintFilHard(TestEngine, TestConstraintFil):
         assignments_target_w = [
             assignment
             for assignment in assignments
-            if assignment.worker_id
-            not in constraint_fil_hard.worker_var.target
+            if assignment.worker_id not in constraint_fil_hard.worker_var.target
         ]
 
         assert all(
@@ -290,8 +288,7 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         assignments_target_w = [
             assignment
             for assignment in assignments
-            if assignment.worker_id
-            not in constraint_fil_soft.worker_var.target
+            if assignment.worker_id not in constraint_fil_soft.worker_var.target
         ]
 
         assert all(
@@ -327,8 +324,7 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         assignments_target_w = [
             assignment
             for assignment in assignments
-            if assignment.worker_id
-            not in constraint_fil_soft.worker_var.target
+            if assignment.worker_id not in constraint_fil_soft.worker_var.target
         ]
 
         assert all(
@@ -384,11 +380,7 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         assert outputs.objective_value == constraint_fil_soft.penalty * len(
             constraint_fil_soft.worker_var.target
         ) * (
-            (
-                inputs.variable_space.end_date
-                - inputs.variable_space.start_date
-            ).days
-            + 1
+            (inputs.variable_space.end_date - inputs.variable_space.start_date).days + 1
         )
 
     def test_expected_constraint_breaches_variables_for_hard_soft_conflict(
@@ -427,10 +419,7 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variable in expected_variables
         )
 
