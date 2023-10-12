@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import json
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
 from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
@@ -91,7 +91,7 @@ class Model:
 
     def _add_sum_constraints(self, constraints_sum: List[ConstraintSum]) -> None:
         for constraint_sum in constraints_sum:
-            w_vars, d_vars, s_vars = self._get_vars_coordinates(constraint_sum)
+            w_vars, d_vars, s_vars = self._get_vars_coordinates_sum(constraint_sum)
             for w in w_vars:
                 for s in s_vars:
                     for week in d_vars:
@@ -102,7 +102,7 @@ class Model:
 
     def _add_seq_constraints(self, constraints_seq: List[ConstraintSeq]) -> None:
         for constraint_seq in constraints_seq:
-            w_vars, d_vars, s_vars = self._get_vars_coordinates(constraint_seq)
+            w_vars, d_vars, s_vars = self._get_vars_coordinates_seq(constraint_seq)
             for w in w_vars:
                 for s in s_vars:
                     constraint_vars = []
@@ -112,43 +112,39 @@ class Model:
 
     def _add_ord_constraints(self, constraints_ord: List[ConstraintOrd]) -> None:
         for constraint_ord in constraints_ord:
-            for w in self.workers:
-                for d1, d2 in zip(self.days, self.days[1:]):
+            w_vars, d_vars = self._get_vars_coordinates_ord(constraint_ord)
+            for w in w_vars:
+                for d1, d2 in d_vars:
                     constraint_vars = [
-                        self.variables[w, d1, constraint_ord.shift_var.previous],
-                        self.variables[w, d2, constraint_ord.shift_var.next],
+                        self.variables[w, d1, constraint_ord.shift_var.reference],
+                        self.variables[w, d2, constraint_ord.shift_var.relative],
                     ]
                     self._add_constraint_ord_to_model(constraint_ord, constraint_vars)
 
-    def _get_vars_coordinates(
-        self, constraint: Union[ConstraintSum, ConstraintSeq]
-    ) -> Tuple[List[str], Union[List[str], List[List[str]]], List[str]]:
+    def _get_vars_coordinates_sum(
+        self, constraint: ConstraintSum
+    ) -> Tuple[List[str], List[List[str]], List[str]]:
         if constraint.worker_var.selector == "all":
             w_vars = self.workers
         else:
             raise NotImplementedError(
                 f"Worker selector {constraint.worker_var.selector} " + "not implemented"
             )
-        if isinstance(constraint, ConstraintSum) and constraint.day_var:
-            if constraint.day_var.selector == "week":
-                week_length = 7
-                d_indexes = [
-                    list(range(i, i + 7))
-                    for i in range(
-                        0,
-                        len(self.days),
-                        week_length,
-                    )
-                ]
-                d_vars: Union[List[str], List[List[str]]] = [
-                    [self.days[i] for i in d_index] for d_index in d_indexes
-                ]
-            else:
-                raise NotImplementedError(
-                    f"Day selector {constraint.day_var.selector} " + "not implemented"
+        if constraint.day_var.selector == "week":
+            week_length = 7
+            d_indexes = [
+                list(range(i, i + 7))
+                for i in range(
+                    0,
+                    len(self.days),
+                    week_length,
                 )
+            ]
+            d_vars = [[self.days[i] for i in d_index] for d_index in d_indexes]
         else:
-            d_vars = self.days
+            raise NotImplementedError(
+                f"Day selector {constraint.day_var.selector} " + "not implemented"
+            )
         if constraint.shift_var.selector == "equal":
             s_vars = [constraint.shift_var.target]
         else:
@@ -156,6 +152,66 @@ class Model:
                 f"Shift selector {constraint.shift_var.selector} " + "not implemented"
             )
         return w_vars, d_vars, s_vars
+
+    def _get_vars_coordinates_seq(
+        self, constraint: ConstraintSeq
+    ) -> Tuple[List[str], List[str], List[str]]:
+        if constraint.worker_var.selector == "all":
+            w_vars = self.workers
+        else:
+            raise NotImplementedError(
+                f"Worker selector {constraint.worker_var.selector} " + "not implemented"
+            )
+        d_vars = self.days
+        if constraint.shift_var.selector == "equal":
+            s_vars = [constraint.shift_var.target]
+        else:
+            raise NotImplementedError(
+                f"Shift selector {constraint.shift_var.selector} " + "not implemented"
+            )
+        return w_vars, d_vars, s_vars
+
+    def _get_vars_coordinates_ord(
+        self, constraint: ConstraintOrd
+    ) -> Tuple[List[str], List[List[str]]]:
+        week_length = 7
+        if constraint.worker_var.selector == "all":
+            w_vars = self.workers
+        else:
+            raise NotImplementedError(
+                f"Worker selector {constraint.worker_var.selector} " + "not implemented"
+            )
+        d_vars: List[List[str]] = []
+        if constraint.day_var.selector == "all":
+            for i in range(
+                abs(min(constraint.day_var.interval, 0)),
+                len(self.days) - max(constraint.day_var.interval, 0),
+            ):
+                d_vars.append(
+                    [self.days[i], self.days[i + constraint.day_var.interval]]
+                )
+        elif constraint.day_var.selector == "week_day_index":
+            start = (
+                constraint.day_var.target
+                if (constraint.day_var.target + constraint.day_var.interval >= 0)
+                else constraint.day_var.target + week_length
+            )
+            for i in range(
+                start,
+                len(self.days) - max(constraint.day_var.interval, 0),
+                week_length,
+            ):
+                d_vars.append(
+                    [
+                        self.days[i],
+                        self.days[i + constraint.day_var.interval],
+                    ]
+                )
+        else:
+            raise NotImplementedError(
+                f"Day selector {constraint.day_var.selector} " + "not implemented"
+            )
+        return w_vars, d_vars
 
     def _add_constraint_sum_to_model(
         self, constraint_sum: ConstraintSum, cstr_vars: List[cp_model.IntVar]
