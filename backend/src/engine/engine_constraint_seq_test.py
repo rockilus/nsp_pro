@@ -7,7 +7,6 @@ from engine.engine_test import TestEngine
 from engine.inputs_outputs import (
     Assignment,
     ConstraintSeq,
-    Custom,
     Inputs,
     Outputs,
     Request,
@@ -19,66 +18,27 @@ from engine.inputs_outputs import (
 # pylint: disable=R0801
 class TestConstraintSeq:
     @pytest.fixture
-    def custom_hard(self) -> Custom:
-        return Custom(
-            constraints_sum=[],
-            constraints_seq=[
-                ConstraintSeq(
-                    id="constraint_seq_hard",
-                    operator="less_than_or_equal",
-                    worker_var=VarSeqWorker(selector="all"),
-                    shift_var=VarSeqShift(selector="equal", target="s0"),
-                    target_value=4,
-                    hard=True,
-                    penalty=0,
-                )
-            ],
-            constraints_ord=[],
+    def constraint_seq_hard(self) -> ConstraintSeq:
+        return ConstraintSeq(
+            id="constraint_seq_hard",
+            operator="less_than_or_equal",
+            worker_var=VarSeqWorker(selector="all"),
+            shift_var=VarSeqShift(selector="equal", target="s0"),
+            target_value=4,
+            hard=True,
+            penalty=0,
         )
 
     @pytest.fixture
-    def custom_soft(self) -> Custom:
-        return Custom(
-            constraints_sum=[],
-            constraints_seq=[
-                ConstraintSeq(
-                    id="constraint_seq_soft",
-                    operator="less_than_or_equal",
-                    worker_var=VarSeqWorker(selector="all"),
-                    shift_var=VarSeqShift(selector="equal", target="s0"),
-                    target_value=2,
-                    hard=False,
-                    penalty=20,
-                )
-            ],
-            constraints_ord=[],
-        )
-
-    @pytest.fixture
-    def custom_hard_soft_conflict(self) -> Custom:
-        return Custom(
-            constraints_sum=[],
-            constraints_seq=[
-                ConstraintSeq(
-                    id="constraint_seq_hard",
-                    operator="equal",
-                    worker_var=VarSeqWorker(selector="all"),
-                    shift_var=VarSeqShift(selector="equal", target="s0"),
-                    target_value=4,
-                    hard=True,
-                    penalty=0,
-                ),
-                ConstraintSeq(
-                    id="constraint_seq_soft",
-                    operator="less_than_or_equal",
-                    worker_var=VarSeqWorker(selector="all"),
-                    shift_var=VarSeqShift(selector="equal", target="s0"),
-                    target_value=2,
-                    hard=False,
-                    penalty=20,
-                ),
-            ],
-            constraints_ord=[],
+    def constraint_seq_soft(self) -> ConstraintSeq:
+        return ConstraintSeq(
+            id="constraint_seq_soft",
+            operator="less_than_or_equal",
+            worker_var=VarSeqWorker(selector="all"),
+            shift_var=VarSeqShift(selector="equal", target="s0"),
+            target_value=2,
+            hard=False,
+            penalty=20,
         )
 
 
@@ -87,26 +47,27 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard: Custom,
+        constraint_seq_hard: ConstraintSeq,
     ) -> None:
         # At most 4 shift off in a row
-        inputs.custom = custom_hard
+        inputs.custom.constraints_seq = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        constraint_seq = inputs.custom.constraints_seq[0]
         counts = [
-            max_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            max_consecutive_shift_count(
+                assignments, w, constraint_seq_hard.shift_var.target
+            )
             for w in inputs.variable_space.workers
         ]
 
-        assert max(counts) <= constraint_seq.target_value
+        assert max(counts) <= constraint_seq_hard.target_value
 
     def test_expected_assignment_for_equal(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard: Custom,
+        constraint_seq_hard: ConstraintSeq,
     ) -> None:
         # Exactly 4 shift off per week
         fixed_assignments = [
@@ -152,25 +113,27 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
             ),
         ]
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom = custom_hard
-        inputs.custom.constraints_seq[0].operator = "equal"
+        constraint_seq_hard.operator = "equal"
+        inputs.custom.constraints_seq = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        constraint_seq = inputs.custom.constraints_seq[0]
-
         counts_max = [
-            max_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            max_consecutive_shift_count(
+                assignments, w, constraint_seq_hard.shift_var.target
+            )
             for w in inputs.variable_space.workers
         ]
         counts_min = [
-            min_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            min_consecutive_shift_count(
+                assignments, w, constraint_seq_hard.shift_var.target
+            )
             for w in inputs.variable_space.workers
         ]
 
         assert all(
-            count_min == constraint_seq.target_value
-            and count_max == constraint_seq.target_value
+            count_min == constraint_seq_hard.target_value
+            and count_max == constraint_seq_hard.target_value
             for count_min, count_max in zip(counts_min, counts_max)
         )
 
@@ -178,7 +141,7 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard: Custom,
+        constraint_seq_hard: ConstraintSeq,
     ) -> None:
         # At least 4 shift off per week
         fixed_assignments = [
@@ -224,24 +187,25 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
             ),
         ]
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom = custom_hard
-        inputs.custom.constraints_seq[0].operator = "greater_than_or_equal"
+        constraint_seq_hard.operator = "greater_than_or_equal"
+        inputs.custom.constraints_seq = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        constraint_seq = inputs.custom.constraints_seq[0]
         counts = [
-            min_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            min_consecutive_shift_count(
+                assignments, w, constraint_seq_hard.shift_var.target
+            )
             for w in inputs.variable_space.workers
         ]
 
-        assert min(counts) >= constraint_seq.target_value
+        assert min(counts) >= constraint_seq_hard.target_value
 
     def test_less_than_or_equal_with_fixed_assignments(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard: Custom,
+        constraint_seq_hard: ConstraintSeq,
     ) -> None:
         fixed_assignments = [
             Assignment(
@@ -282,7 +246,7 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
         ]
 
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom = custom_hard
+        inputs.custom.constraints_seq = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -292,7 +256,7 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard: Custom,
+        constraint_seq_hard: ConstraintSeq,
     ) -> None:
         fixed_assignments = [
             Assignment(
@@ -333,9 +297,9 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
         ]
 
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom = custom_hard
-        inputs.custom.constraints_seq[0].operator = "greater_than_or_equal"
-        inputs.custom.constraints_seq[0].shift_var.target = "s1"
+        constraint_seq_hard.operator = "greater_than_or_equal"
+        constraint_seq_hard.shift_var.target = "s1"
+        inputs.custom.constraints_seq = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -345,7 +309,7 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard: Custom,
+        constraint_seq_hard: ConstraintSeq,
     ) -> None:
         # At most 4 shift off in a row, with request for 5
         requests = [
@@ -386,25 +350,25 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
             ),
         ]
         inputs.requests = requests
-
-        inputs.custom = custom_hard
+        inputs.custom.constraints_seq = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        constraint_seq = inputs.custom.constraints_seq[0]
         counts = [
-            max_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            max_consecutive_shift_count(
+                assignments, w, constraint_seq_hard.shift_var.target
+            )
             for w in inputs.variable_space.workers
         ]
 
-        assert max(counts) <= constraint_seq.target_value
+        assert max(counts) <= constraint_seq_hard.target_value
         assert outputs.objective_value == 1
 
     def test_equal_with_requests_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard: Custom,
+        constraint_seq_hard: ConstraintSeq,
     ) -> None:
         # Exaclty 4 shift off in a row, with request for 3 and 5
         requests = [
@@ -466,24 +430,27 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
             ),
         ]
         inputs.requests = requests
-        inputs.custom = custom_hard
-        inputs.custom.constraints_seq[0].operator = "equal"
+        constraint_seq_hard.operator = "equal"
+        inputs.custom.constraints_seq = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        constraint_seq = inputs.custom.constraints_seq[0]
         counts_min = [
-            min_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            min_consecutive_shift_count(
+                assignments, w, constraint_seq_hard.shift_var.target
+            )
             for w in ["w0", "w1"]
         ]
         counts_max = [
-            max_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            max_consecutive_shift_count(
+                assignments, w, constraint_seq_hard.shift_var.target
+            )
             for w in ["w0", "w1"]
         ]
 
         assert all(
-            count_min == constraint_seq.target_value
-            and count_max == constraint_seq.target_value
+            count_min == constraint_seq_hard.target_value
+            and count_max == constraint_seq_hard.target_value
             for count_min, count_max in zip(counts_min, counts_max)
         )
         assert outputs.objective_value == 1
@@ -492,7 +459,7 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard: Custom,
+        constraint_seq_hard: ConstraintSeq,
     ) -> None:
         # At lest 4 shift off in a row, with request for 3
         requests = [
@@ -519,18 +486,16 @@ class TestConstraintSeqHard(TestEngine, TestConstraintSeq):
             ),
         ]
         inputs.requests = requests
-
-        inputs.custom = custom_hard
-        inputs.custom.constraints_seq[0].operator = "greater_than_or_equal"
+        constraint_seq_hard.operator = "greater_than_or_equal"
+        inputs.custom.constraints_seq = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        constraint_seq = inputs.custom.constraints_seq[0]
         count = min_consecutive_shift_count(
-            assignments, "w0", constraint_seq.shift_var.target
+            assignments, "w0", constraint_seq_hard.shift_var.target
         )
 
-        assert count <= constraint_seq.target_value
+        assert count <= constraint_seq_hard.target_value
         assert outputs.objective_value == 0
 
 
@@ -539,26 +504,27 @@ class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_soft: Custom,
+        constraint_seq_soft: ConstraintSeq,
     ) -> None:
         # At most 4 shift off in a row
-        inputs.custom = custom_soft
+        inputs.custom.constraints_seq = [constraint_seq_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        constraint_seq = inputs.custom.constraints_seq[0]
         counts = [
-            max_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            max_consecutive_shift_count(
+                assignments, w, constraint_seq_soft.shift_var.target
+            )
             for w in inputs.variable_space.workers
         ]
 
-        assert max(counts) <= constraint_seq.target_value
+        assert max(counts) <= constraint_seq_soft.target_value
 
     def test_expected_assignment_for_equal(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_soft: Custom,
+        constraint_seq_soft: ConstraintSeq,
     ) -> None:
         # Exactly 4 shift off per week
         fixed_assignments = [
@@ -604,25 +570,27 @@ class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
             ),
         ]
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom = custom_soft
-        inputs.custom.constraints_seq[0].operator = "equal"
+        constraint_seq_soft.operator = "equal"
+        inputs.custom.constraints_seq = [constraint_seq_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        constraint_seq = inputs.custom.constraints_seq[0]
-
         counts_max = [
-            max_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            max_consecutive_shift_count(
+                assignments, w, constraint_seq_soft.shift_var.target
+            )
             for w in inputs.variable_space.workers
         ]
         counts_min = [
-            min_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            min_consecutive_shift_count(
+                assignments, w, constraint_seq_soft.shift_var.target
+            )
             for w in inputs.variable_space.workers
         ]
 
         assert all(
-            count_min == constraint_seq.target_value
-            and count_max == constraint_seq.target_value
+            count_min == constraint_seq_soft.target_value
+            and count_max == constraint_seq_soft.target_value
             for count_min, count_max in zip(counts_min, counts_max)
         )
 
@@ -630,7 +598,7 @@ class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_soft: Custom,
+        constraint_seq_soft: ConstraintSeq,
     ) -> None:
         # At least 4 shift off per week
         fixed_assignments = [
@@ -676,24 +644,26 @@ class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
             ),
         ]
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom = custom_soft
-        inputs.custom.constraints_seq[0].operator = "greater_than_or_equal"
+        constraint_seq_soft.operator = "greater_than_or_equal"
+        inputs.custom.constraints_seq = [constraint_seq_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        constraint_seq = inputs.custom.constraints_seq[0]
         counts = [
-            min_consecutive_shift_count(assignments, w, constraint_seq.shift_var.target)
+            min_consecutive_shift_count(
+                assignments, w, constraint_seq_soft.shift_var.target
+            )
             for w in inputs.variable_space.workers
         ]
 
-        assert min(counts) >= constraint_seq.target_value
+        assert min(counts) >= constraint_seq_soft.target_value
 
     def test_expected_assignment_for_hard_soft_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard_soft_conflict: Custom,
+        constraint_seq_hard: ConstraintSeq,
+        constraint_seq_soft: ConstraintSeq,
     ) -> None:
         # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
         fixed_assignments = [
@@ -704,11 +674,13 @@ class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
             ),
         ]
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom = custom_hard_soft_conflict
+        constraint_seq_hard.operator = "equal"
+        inputs.custom.constraints_seq = [
+            constraint_seq_hard,
+            constraint_seq_soft,
+        ]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
-
-        constraint_seq_hard = inputs.custom.constraints_seq[0]
 
         count_min = min_consecutive_shift_count(
             assignments,
@@ -730,7 +702,8 @@ class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard_soft_conflict: Custom,
+        constraint_seq_hard: ConstraintSeq,
+        constraint_seq_soft: ConstraintSeq,
     ) -> None:
         # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
         fixed_assignments = [
@@ -741,11 +714,12 @@ class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
             ),
         ]
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom = custom_hard_soft_conflict
+        constraint_seq_hard.operator = "equal"
+        inputs.custom.constraints_seq = [
+            constraint_seq_hard,
+            constraint_seq_soft,
+        ]
         outputs = engine_solve(inputs)
-
-        constraint_seq_hard = inputs.custom.constraints_seq[0]
-        constraint_seq_soft = inputs.custom.constraints_seq[1]
 
         assert outputs.objective_value == constraint_seq_soft.penalty * (
             constraint_seq_hard.target_value - constraint_seq_soft.target_value
@@ -755,7 +729,8 @@ class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard_soft_conflict: Custom,
+        constraint_seq_hard: ConstraintSeq,
+        constraint_seq_soft: ConstraintSeq,
     ) -> None:
         # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
         fixed_assignments = [
@@ -766,7 +741,11 @@ class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
             ),
         ]
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom = custom_hard_soft_conflict
+        constraint_seq_hard.operator = "equal"
+        inputs.custom.constraints_seq = [
+            constraint_seq_hard,
+            constraint_seq_soft,
+        ]
         outputs = engine_solve(inputs)
 
         expected_variables = [
@@ -808,7 +787,8 @@ class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        custom_hard_soft_conflict: Custom,
+        constraint_seq_hard: ConstraintSeq,
+        constraint_seq_soft: ConstraintSeq,
     ) -> None:
         # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
         fixed_assignments = [
@@ -819,7 +799,11 @@ class TestConstraintSeqSoft(TestEngine, TestConstraintSeq):
             ),
         ]
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom = custom_hard_soft_conflict
+        constraint_seq_hard.operator = "equal"
+        inputs.custom.constraints_seq = [
+            constraint_seq_hard,
+            constraint_seq_soft,
+        ]
         outputs = engine_solve(inputs)
 
         for cb in outputs.constraint_breaches:

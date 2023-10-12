@@ -7,6 +7,7 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.inputs_outputs import (
     Assignment,
+    ConstraintFil,
     ConstraintOrd,
     ConstraintSeq,
     ConstraintSum,
@@ -60,6 +61,7 @@ class Model:
         self._add_sum_constraints(custom.constraints_sum)
         self._add_seq_constraints(custom.constraints_seq)
         self._add_ord_constraints(custom.constraints_ord)
+        self._add_fil_constraints(custom.constraints_fil)
 
     def add_fixed_assignments(self, fixed_assignments: List[Assignment]) -> None:
         date_format = "%Y-%m-%d"
@@ -120,6 +122,16 @@ class Model:
                         self.variables[w, d2, constraint_ord.shift_var.relative],
                     ]
                     self._add_constraint_ord_to_model(constraint_ord, constraint_vars)
+
+    def _add_fil_constraints(self, constraints_fil: List[ConstraintFil]) -> None:
+        for constraint_fil in constraints_fil:
+            w_vars, d_vars, s_vars = self._get_vars_coordinates_fil(constraint_fil)
+            for w in w_vars:
+                for d in d_vars:
+                    for s in s_vars:
+                        self._add_constraint_fil_to_model(
+                            constraint_fil, self.variables[w, d, s]
+                        )
 
     def _get_vars_coordinates_sum(
         self, constraint: ConstraintSum
@@ -212,6 +224,44 @@ class Model:
                 f"Day selector {constraint.day_var.selector} " + "not implemented"
             )
         return w_vars, d_vars
+
+    def _get_vars_coordinates_fil(
+        self, constraint: ConstraintFil
+    ) -> Tuple[List[str], List[str], List[str]]:
+        if constraint.worker_var.selector == "all":
+            w_vars = self.workers
+        elif constraint.worker_var.selector == "list":
+            if constraint.worker_var.operator == "in_target":
+                w_vars = constraint.worker_var.target
+            elif constraint.worker_var.operator == "out_target":
+                w_vars = [
+                    w for w in self.workers if w not in constraint.worker_var.target
+                ]
+            else:
+                raise NotImplementedError(
+                    f"Worker operator {constraint.worker_var.operator} "
+                    + "not implemented"
+                )
+        else:
+            raise NotImplementedError(
+                f"Worker selector {constraint.worker_var.selector} " + "not implemented"
+            )
+        if constraint.day_var.selector == "all":
+            d_vars = self.days
+        if constraint.shift_var.selector == "all":
+            s_vars = self.shifts
+        elif constraint.shift_var.selector == "list":
+            if constraint.shift_var.operator == "in_target":
+                s_vars = constraint.shift_var.target
+            elif constraint.shift_var.operator == "out_target":
+                s_vars = [
+                    s for s in self.shifts if s not in constraint.shift_var.target
+                ]
+        else:
+            raise NotImplementedError(
+                f"Shift selector {constraint.shift_var.selector} " + "not implemented"
+            )
+        return w_vars, d_vars, s_vars
 
     def _add_constraint_sum_to_model(
         self, constraint_sum: ConstraintSum, cstr_vars: List[cp_model.IntVar]
@@ -431,6 +481,27 @@ class Model:
                 self.model.AddBoolOr(transition)
                 self.obj.bool_vars.append(trans_var)
                 self.obj.bool_coeffs.append(constraint_ord.penalty)
+
+    def _add_constraint_fil_to_model(
+        self, constraint_fil: ConstraintFil, cstr_var: cp_model.IntVar
+    ) -> None:
+        if constraint_fil.hard:
+            self.model.Add(cstr_var == 0)
+        else:
+            if constraint_fil.penalty != 0:
+                cstr_vars: List[cp_model.IntVar] = [cstr_var]
+                var_name = json.dumps(
+                    {
+                        "constraint_id": constraint_fil.id,
+                        "cstr_vars": [var.Name() for var in cstr_vars],
+                    }
+                )
+                cstr_vars = [var.Not() for var in cstr_vars]
+                lit = self.model.NewBoolVar(var_name)
+                cstr_vars.append(lit)
+                self.model.AddBoolOr(cstr_vars)
+                self.obj.bool_vars.append(lit)
+                self.obj.bool_coeffs.append(constraint_fil.penalty)
 
     @staticmethod
     def _negated_bounded_span(
