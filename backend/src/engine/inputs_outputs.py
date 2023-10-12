@@ -75,9 +75,16 @@ class VarOrdWorker:
 
 
 @dataclass
+class VarOrdDay:
+    selector: Literal["all", "week_day_index"]
+    interval: int
+    target: int
+
+
+@dataclass
 class VarOrdShift:
-    previous: str
-    next: str
+    reference: str
+    relative: str
 
 
 @dataclass
@@ -116,6 +123,7 @@ class ConstraintOrd:
     id: str
     operator: Literal["yes", "no"]
     worker_var: VarOrdWorker
+    day_var: VarOrdDay
     shift_var: VarOrdShift
     hard: bool
     penalty: int = field(default=0)
