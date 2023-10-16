@@ -5,18 +5,18 @@ import pytest
 
 from engine.engine_test import TestEngine
 from engine.inputs_outputs import (
+    ConstraintFai,
+    Coverage,
     Inputs,
     Outputs,
-    ConstraintFai,
+    ShiftDemand,
     VarFaiDay,
     VarFaiShift,
     VarFaiWorker,
-    Coverage,
-    ShiftDemand,
 )
 
 
-# pylint: disable=R0801
+# pylint: disable=R0801, R0903
 class TestConstraintFai:
     @pytest.fixture
     def constraint_fai_soft(self) -> ConstraintFai:
@@ -52,10 +52,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(target_shifts)
@@ -95,10 +92,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(target_shifts)
@@ -113,10 +107,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
             for w in inputs.variable_space.workers
         ]
 
-        assert all(
-            count <= target_count + 1 and count >= target_count - 1
-            for count in counts
-        )
+        assert all(abs(count - target_count) <= 1 for count in counts)
 
     def test_expected_objective_worker_all_day_all_shift_all_perfect(
         self,
@@ -159,10 +150,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(target_shifts)
@@ -219,10 +207,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variable in expected_variables
         )
 
@@ -250,10 +235,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(constraint_fai_soft.shift_var.target)
@@ -296,10 +278,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(constraint_fai_soft.shift_var.target)
@@ -315,10 +294,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
             for w in inputs.variable_space.workers
         ]
 
-        assert all(
-            count <= target_count + 1 and count >= target_count - 1
-            for count in counts
-        )
+        assert all(abs(count - target_count) <= 1 for count in counts)
 
     def test_expected_objective_worker_all_day_all_shift_list_perfect(
         self,
@@ -365,10 +341,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(constraint_fai_soft.shift_var.target)
@@ -428,10 +401,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variable in expected_variables
         )
 
@@ -459,10 +429,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(coverage_shifts)
@@ -504,10 +471,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(coverage_shifts)
@@ -522,10 +486,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
             for w in constraint_fai_soft.worker_var.target
         ]
 
-        assert all(
-            count <= target_count + 1 and count >= target_count - 1
-            for count in counts
-        )
+        assert all(abs(count - target_count) <= 1 for count in counts)
 
     def test_expected_objective_worker_list_day_all_shift_all_perfect(
         self,
@@ -574,10 +535,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(coverage_shifts)
@@ -599,7 +557,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
 
         assert outputs.objective_value == expected_objective
 
-    def test_expected_constraint_breaches_worker_all_day_all_shift_all_non_perfect(
+    def test_expected_constraint_breaches_worker_list_day_all_shift_all_non_perfect(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
@@ -638,10 +596,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variable in expected_variables
         )
 
@@ -749,10 +704,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
             for w in inputs.variable_space.workers
         ]
 
-        assert all(
-            count <= target_count + 1 and count >= target_count - 1
-            for count in counts
-        )
+        assert all(abs(count - target_count) <= 1 for count in counts)
 
     def test_expected_objective_worker_all_day_modulo_shift_all_perfect(
         self,
@@ -880,10 +832,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variable in expected_variables
         )
 
@@ -911,9 +860,7 @@ def build_day_list(start_date: date, end_date: date) -> List[date]:
     return [start_date + timedelta(days=i) for i in range(delta.days + 1)]
 
 
-def count_days_with_index(
-    start_date: date, end_date: date, day_index: int
-) -> int:
+def count_days_with_index(start_date: date, end_date: date, day_index: int) -> int:
     count = 0
     current_date = start_date
     while current_date <= end_date:

@@ -59,19 +59,16 @@ def build_shift_demands(
     for coverage_selector in coverage_selectors:
         if coverage_selector.coverage_id == "":
             continue
-        coverage = coverage_db.get_coverage_by_id(
-            coverage_selector.coverage_id
-        )
+        coverage = coverage_db.get_coverage_by_id(coverage_selector.coverage_id)
         for day in range(
-            (coverage_selector.end_date - coverage_selector.start_date).days
-            + 1
+            (coverage_selector.end_date - coverage_selector.start_date).days + 1
         ):
             cov_date = coverage_selector.start_date + timedelta(days=day)
             for shift_demand in coverage.shift_demands:
                 if shift_demand.day_index == cov_date.weekday():
                     shift_demands.append(
                         ShiftDemandEngine(
-                            date=cov_date.strftime("%Y-%m-%d"),
+                            date=cov_date,
                             shift_id=shift_demand.shift_id,
                             quantity=shift_demand.quantity,
                         )
@@ -85,13 +82,10 @@ def build_no_coverage_date(
     coverage_selectors: List[CoverageSelector],
 ) -> List[date]:
     delta = end_date - start_date
-    no_cov_date = [
-        start_date + timedelta(days=i) for i in range(delta.days + 1)
-    ]
+    no_cov_date = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
     for coverage_selector in coverage_selectors:
         for day in range(
-            (coverage_selector.end_date - coverage_selector.start_date).days
-            + 1
+            (coverage_selector.end_date - coverage_selector.start_date).days + 1
         ):
             cov_date = coverage_selector.start_date + timedelta(days=day)
             if cov_date in no_cov_date:
@@ -148,8 +142,7 @@ def from_outputs_to_core(
         ),
     )
     assignments = [
-        Assignment(**asdict(a), id="", schedule_id="")
-        for a in outputs.assignments
+        Assignment(**asdict(a), id="", schedule_id="") for a in outputs.assignments
     ]
     return schedule, assignments
 
