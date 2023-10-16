@@ -16,7 +16,7 @@ class VariableSpace:
 
 @dataclass
 class ShiftDemand:
-    date: str
+    date: date
     shift_id: str
     quantity: int
 
@@ -107,6 +107,24 @@ class VarFilShift:
 
 
 @dataclass
+class VarFaiWorker:
+    selector: Literal["all", "list"]
+    target: List[str]
+
+
+@dataclass
+class VarFaiDay:
+    selector: Literal["all", "week_day_index"]
+    target: int
+
+
+@dataclass
+class VarFaiShift:
+    selector: Literal["all", "list"]
+    target: List[str]
+
+
+@dataclass
 class ConstraintSum:
     id: str
     operator: Literal[
@@ -159,11 +177,21 @@ class ConstraintFil:
 
 
 @dataclass
+class ConstraintFai:
+    id: str
+    worker_var: VarFaiWorker
+    day_var: VarFaiDay
+    shift_var: VarFaiShift
+    penalty: int = field(default=0)
+
+
+@dataclass
 class Custom:
     constraints_sum: List[ConstraintSum]
     constraints_seq: List[ConstraintSeq]
     constraints_ord: List[ConstraintOrd]
     constraints_fil: List[ConstraintFil]
+    constraints_fai: List[ConstraintFai]
 
 
 @dataclass
