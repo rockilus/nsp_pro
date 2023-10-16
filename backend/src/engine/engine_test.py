@@ -32,6 +32,7 @@ class TestEngine:
             constraints_seq=[],
             constraints_ord=[],
             constraints_fil=[],
+            constraints_fai=[],
         )
         inputs = Inputs(
             variable_space=variable_space,

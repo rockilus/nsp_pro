@@ -68,7 +68,7 @@ def build_shift_demands(
                 if shift_demand.day_index == cov_date.weekday():
                     shift_demands.append(
                         ShiftDemandEngine(
-                            date=cov_date.strftime("%Y-%m-%d"),
+                            date=cov_date,
                             shift_id=shift_demand.shift_id,
                             quantity=shift_demand.quantity,
                         )
@@ -117,6 +117,7 @@ def from_core_to_inputs(
         constraints_ord=[],
         constraints_seq=[],
         constraints_fil=[],
+        constraints_fai=[],
     )
     inputs = Inputs(
         variable_space=variable_space,

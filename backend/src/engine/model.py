@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 import json
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 
 from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.inputs_outputs import (
     Assignment,
+    ConstraintFai,
     ConstraintFil,
     ConstraintOrd,
     ConstraintSeq,
     ConstraintSum,
     Custom,
+    Inputs,
     Request,
     ShiftDemand,
 )
@@ -31,6 +33,15 @@ class Model:
         self.solution_printer = cp_model.ObjectiveSolutionPrinter()
         self.status = 0
 
+    def set_up_model(self, inputs: Inputs) -> None:
+        self.build_variables()
+        self.add_exactly_one_shift_per_day_constraint()
+        self.add_coverage_constraints(inputs.coverage.coverage)
+        self.add_custom_constraints(inputs.custom, inputs.coverage.coverage)
+        self.add_fixed_assignments(inputs.fixed_assignments)
+        self.add_requests(inputs.requests)
+        self.add_objective()
+
     def build_variables(self) -> None:
         for worker in self.workers:
             for day in self.days:
@@ -47,9 +58,14 @@ class Model:
                 )
 
     def add_coverage_constraints(self, coverage: List[ShiftDemand]) -> None:
+        date_format = "%Y-%m-%d"
         for shift_demand in coverage:
             c_variables: List[cp_model.IntVar] = [
-                self.variables[w, shift_demand.date, shift_demand.shift_id]
+                self.variables[
+                    w,
+                    shift_demand.date.strftime(date_format),
+                    shift_demand.shift_id,
+                ]
                 for w in self.workers
             ]
             sum_var = self.model.NewIntVar(
@@ -57,11 +73,14 @@ class Model:
             )
             self.model.Add(sum_var == sum(c_variables))
 
-    def add_custom_constraints(self, custom: Custom) -> None:
+    def add_custom_constraints(
+        self, custom: Custom, coverage: List[ShiftDemand]
+    ) -> None:
         self._add_sum_constraints(custom.constraints_sum)
         self._add_seq_constraints(custom.constraints_seq)
         self._add_ord_constraints(custom.constraints_ord)
         self._add_fil_constraints(custom.constraints_fil)
+        self._add_fai_constraints(custom.constraints_fai, coverage)
 
     def add_fixed_assignments(self, fixed_assignments: List[Assignment]) -> None:
         date_format = "%Y-%m-%d"
@@ -132,6 +151,32 @@ class Model:
                         self._add_constraint_fil_to_model(
                             constraint_fil, self.variables[w, d, s]
                         )
+
+    def _add_fai_constraints(
+        self, constraints_fai: List[ConstraintFai], coverage: List[ShiftDemand]
+    ) -> None:
+        shifts_in_coverage = set(
+            shift_demand.shift_id
+            for shift_demand in coverage
+            if shift_demand.quantity > 0
+        )
+        for constraint_fai in constraints_fai:
+            w_vars, d_vars, s_vars = self._get_vars_coordinates_fai(
+                constraint_fai, shifts_in_coverage
+            )
+            constraints_vars = [
+                [self.variables[w, d, s] for d in d_vars for s in s_vars]
+                for w in w_vars
+            ]
+            total_coverage = sum(
+                Model._get_total_coverage_shifts(coverage, s, d_vars) for s in s_vars
+            )
+            target_average = total_coverage / len(w_vars)
+
+            for constraint_vars in constraints_vars:
+                self._add_constraint_fai_to_model(
+                    constraint_fai, constraint_vars, target_average
+                )
 
     def _get_vars_coordinates_sum(
         self, constraint: ConstraintSum
@@ -257,6 +302,39 @@ class Model:
                 s_vars = [
                     s for s in self.shifts if s not in constraint.shift_var.target
                 ]
+        else:
+            raise NotImplementedError(
+                f"Shift selector {constraint.shift_var.selector} " + "not implemented"
+            )
+        return w_vars, d_vars, s_vars
+
+    def _get_vars_coordinates_fai(
+        self, constraint: ConstraintFai, shifts_in_coverage: Set[str]
+    ) -> Tuple[List[str], List[str], List[str]]:
+        week_length = 7
+        if constraint.worker_var.selector == "all":
+            w_vars = self.workers
+        elif constraint.worker_var.selector == "list":
+            w_vars = constraint.worker_var.target
+        else:
+            raise NotImplementedError(
+                f"Worker selector {constraint.worker_var.selector} " + "not implemented"
+            )
+        if constraint.day_var.selector == "all":
+            d_vars = self.days
+        elif constraint.day_var.selector == "week_day_index":
+            d_vars = [
+                self.days[i]
+                for i in range(
+                    constraint.day_var.target,
+                    len(self.days),
+                    week_length,
+                )
+            ]
+        if constraint.shift_var.selector == "all":
+            s_vars = [s for s in self.shifts if s in shifts_in_coverage]
+        elif constraint.shift_var.selector == "list":
+            s_vars = constraint.shift_var.target
         else:
             raise NotImplementedError(
                 f"Shift selector {constraint.shift_var.selector} " + "not implemented"
@@ -503,6 +581,63 @@ class Model:
                 self.obj.bool_vars.append(lit)
                 self.obj.bool_coeffs.append(constraint_fil.penalty)
 
+    def _add_constraint_fai_to_model(
+        self,
+        constraint_fai: ConstraintFai,
+        cstr_vars: List[cp_model.IntVar],
+        target_average: float,
+    ) -> None:
+        if constraint_fai.penalty != 0:
+            target_average_int = int(target_average)
+            var_name = json.dumps(
+                {
+                    "constraint_id": constraint_fai.id,
+                    "cstr_vars": [var.Name() for var in cstr_vars],
+                }
+            )
+            delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
+            self.model.Add(delta == sum(cstr_vars) - target_average_int)
+            excess = self.model.NewIntVar(
+                -len(cstr_vars),
+                len(cstr_vars),
+                var_name,
+            )
+            self.model.AddAbsEquality(excess, delta)
+            self.obj.int_vars.append(excess)
+            self.obj.int_coeffs.append(constraint_fai.penalty)
+            if target_average != target_average_int:
+                delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
+                self.model.Add(delta == sum(cstr_vars) - target_average_int - 1)
+                excess = self.model.NewIntVar(
+                    -len(cstr_vars),
+                    len(cstr_vars),
+                    var_name,
+                )
+                self.model.AddAbsEquality(excess, delta)
+                self.obj.int_vars.append(excess)
+                self.obj.int_coeffs.append(constraint_fai.penalty)
+
+            # delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
+            # self.model.Add(delta == sum(cstr_vars) - target_average)
+            # excess = self.model.NewIntVar(
+            #     -len(cstr_vars),
+            #     len(cstr_vars),
+            #     var_name,
+            # )
+            # self.model.AddAbsEquality(excess, delta)
+
+            # delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
+            # self.model.Add(delta == sum(cstr_vars) - target_average)
+            # excess = self.model.NewIntVar(
+            #     0,
+            #     len(cstr_vars) * len(cstr_vars),
+            #     var_name,
+            # )
+            # self.model.AddMultiplicationEquality(excess, [delta, delta])
+
+            # self.obj.int_vars.append(excess)
+            # self.obj.int_coeffs.append(constraint_fai.penalty)
+
     @staticmethod
     def _negated_bounded_span(
         cstr_vars: List[cp_model.IntVar], start: int, length: int
@@ -515,6 +650,18 @@ class Model:
         if start + length < len(cstr_vars):
             sequence.append(cstr_vars[start + length])
         return sequence
+
+    @staticmethod
+    def _get_total_coverage_shifts(
+        coverage: List[ShiftDemand], shift_id: str, days: List[str]
+    ) -> int:
+        date_format = "%Y-%m-%d"
+        return sum(
+            shift_demand.quantity
+            for shift_demand in coverage
+            if shift_demand.shift_id == shift_id
+            and shift_demand.date.strftime(date_format) in days
+        )
 
     def add_objective(self) -> None:
         self.model.Minimize(

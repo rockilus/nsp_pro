@@ -42,7 +42,8 @@ class Output:
 
     def build_constraint_breaches(self) -> List[ConstraintBreach]:
         constraint_breaches = []
-        print("Penalties:")
+        print(f"Branches: {self.model.solver.NumBranches()}")
+        print(f"Wall time: {self.model.solver.WallTime()} s")
         for i, var in enumerate(self.model.obj.bool_vars):
             if self.model.solver.BooleanValue(var):
                 # penalty = self.model.obj.bool_coeffs[i]
