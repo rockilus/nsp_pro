@@ -5,41 +5,24 @@ import pytest
 
 from engine.engine_test import TestEngine
 from engine.inputs_outputs import (
+    Assignment,
+    ConstraintEve,
     ConstraintFai,
     Coverage,
     Inputs,
     Outputs,
     ShiftDemand,
-    VarFaiDay,
-    VarFaiShift,
-    VarFaiWorker,
-    ConstraintSum,
-    VarSumDay,
-    VarSumShift,
-    VarSumWorker,
-    ConstraintEve,
     VarEveDay,
     VarEveShift,
     VarEveWorker,
-    Assignment,
+    VarFaiDay,
+    VarFaiShift,
+    VarFaiWorker,
 )
 
 
 # pylint: disable=R0801, R0903
 class TestConstraintEve:
-    @pytest.fixture
-    def constraint_sum_hard(self) -> ConstraintSum:
-        return ConstraintSum(
-            id="constraint_sum_hard",
-            operator="equal",
-            worker_var=VarSumWorker(selector="equal", target="w0"),
-            day_var=VarSumDay(selector="all"),
-            shift_var=VarSumShift(selector="equal", target="s0"),
-            target_value=5,
-            hard=True,
-            penalty=0,
-        )
-
     @pytest.fixture
     def constraint_eve_soft(self) -> ConstraintEve:
         return ConstraintEve(
@@ -64,57 +47,7 @@ class TestConstraintEve:
 
 
 class TestConstraintEveSoft(TestEngine, TestConstraintEve):
-    def test_expected_assignment_day_all_to_move_to_sum_tests(
-        self,
-        inputs: Inputs,
-        engine_solve: Callable[[Inputs], Outputs],
-        constraint_sum_hard: ConstraintSum,
-    ) -> None:
-        # Worker w0 works 5 times shift s0
-        inputs.custom.constraints_sum = [constraint_sum_hard]
-        outputs = engine_solve(inputs)
-        assignments = outputs.assignments
-
-        count = sum(
-            1
-            for a in assignments
-            if a.worker_id == constraint_sum_hard.worker_var.target
-            and a.shift_id == constraint_sum_hard.shift_var.target
-        )
-
-        assert count == constraint_sum_hard.target_value
-
-    def test_expected_assignment_day_period_to_move_to_sum_tests(
-        self,
-        inputs: Inputs,
-        engine_solve: Callable[[Inputs], Outputs],
-        constraint_sum_hard: ConstraintSum,
-    ) -> None:
-        # Worker w0 works 5 times shift s0 during first week (between
-        # 2023-10-02 and 2023-10-08)
-        constraint_sum_hard.day_var.selector = "period"
-        constraint_sum_hard.day_var.start_date = date.fromisoformat(
-            "2023-10-02"
-        )
-        constraint_sum_hard.day_var.end_date = date.fromisoformat("2023-10-08")
-        inputs.custom.constraints_sum = [constraint_sum_hard]
-        outputs = engine_solve(inputs)
-        assignments = outputs.assignments
-
-        count = sum(
-            1
-            for a in assignments
-            if a.worker_id == constraint_sum_hard.worker_var.target
-            and a.date
-            in build_day_list(
-                constraint_sum_hard.day_var.start_date,
-                constraint_sum_hard.day_var.end_date,
-            )
-            and a.shift_id == constraint_sum_hard.shift_var.target
-        )
-
-        assert count == constraint_sum_hard.target_value
-
+    # pylint: disable=too-many-locals
     def test_expected_assignment(
         self,
         inputs: Inputs,
@@ -150,9 +83,7 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         counts = []
         for i, p_len in enumerate(period_lengths):
             cum_days = sum(period_lengths[:i])
-            start_date = inputs.variable_space.start_date + timedelta(
-                days=cum_days
-            )
+            start_date = inputs.variable_space.start_date + timedelta(days=cum_days)
             end_date = start_date + timedelta(days=p_len - 1)
             count = sum(
                 1
@@ -166,6 +97,7 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
 
         assert all(count <= 1 for count in counts)
 
+    # pylint: disable=too-many-locals
     def test_expected_assignment_with_fixed_assignment(
         self,
         inputs: Inputs,
@@ -210,9 +142,7 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         counts = []
         for i, p_len in enumerate(period_lengths):
             cum_days = sum(period_lengths[:i])
-            start_date = inputs.variable_space.start_date + timedelta(
-                days=cum_days
-            )
+            start_date = inputs.variable_space.start_date + timedelta(days=cum_days)
             end_date = start_date + timedelta(days=p_len - 1)
             count = sum(
                 1
@@ -226,6 +156,7 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
 
         assert all(count <= 1 for count in counts)
 
+    # pylint: disable=too-many-locals
     def test_expected_assignment_with_fixed_assignment_conflict(
         self,
         inputs: Inputs,
@@ -275,9 +206,7 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         counts = []
         for i, p_len in enumerate(period_lengths):
             cum_days = sum(period_lengths[:i])
-            start_date = inputs.variable_space.start_date + timedelta(
-                days=cum_days
-            )
+            start_date = inputs.variable_space.start_date + timedelta(days=cum_days)
             end_date = start_date + timedelta(days=p_len - 1)
             count = sum(
                 1
@@ -369,6 +298,7 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
 
         assert objective_eve == constraint_eve_soft.penalty
 
+    # pylint: disable=too-many-locals
     def test_expected_constraint_breaches_with_fixed_assignment_conflict(
         self,
         inputs: Inputs,
@@ -416,7 +346,7 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         period_lengths = integer_division_list(num_days, target_count)
         start_date = inputs.variable_space.start_date
         end_date = start_date + timedelta(days=period_lengths[0] - 1)
-        target_days = [day for day in build_day_list(start_date, end_date)]
+        target_days = list(build_day_list(start_date, end_date))
 
         expected_variables = [
             [
@@ -472,7 +402,5 @@ def build_coverage(
 def integer_division_list(numerator: int, denominator: int) -> List[int]:
     quotient = numerator // denominator
     remainder = numerator % denominator
-    result = [quotient + 1] * remainder + [quotient] * (
-        denominator - remainder
-    )
+    result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
     return result

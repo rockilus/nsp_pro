@@ -21,7 +21,7 @@ class TestConstraintSum:
         return ConstraintSum(
             id="constraint_sum_hard",
             operator="less_than_or_equal",
-            worker_var=VarSumWorker(selector="all"),
+            worker_var=VarSumWorker(selector="all", target=""),
             day_var=VarSumDay(selector="week"),
             shift_var=VarSumShift(selector="equal", target="s0"),
             target_value=4,
@@ -34,7 +34,7 @@ class TestConstraintSum:
         return ConstraintSum(
             id="constraint_sum_soft",
             operator="less_than_or_equal",
-            worker_var=VarSumWorker(selector="all"),
+            worker_var=VarSumWorker(selector="all", target=""),
             day_var=VarSumDay(selector="week"),
             shift_var=VarSumShift(selector="equal", target="s0"),
             target_value=2,
@@ -132,6 +132,62 @@ class TestConstraintSumHard(TestEngine, TestConstraintSum):
         ]
 
         assert min(counts) >= constraint_sum_hard.target_value
+
+    def test_expected_assignment_for_equal_worker_equal_day_all_shift_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        constraint_sum_hard: ConstraintSum,
+    ) -> None:
+        # Worker w0 works 4 times shift s0
+        constraint_sum_hard.operator = "equal"
+        constraint_sum_hard.worker_var.selector = "equal"
+        constraint_sum_hard.worker_var.target = "w0"
+        constraint_sum_hard.day_var.selector = "all"
+        inputs.custom.constraints_sum = [constraint_sum_hard]
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        count = sum(
+            1
+            for a in assignments
+            if a.worker_id == constraint_sum_hard.worker_var.target
+            and a.shift_id == constraint_sum_hard.shift_var.target
+        )
+
+        assert count == constraint_sum_hard.target_value
+
+    def test_expected_assignment_for_equal_worker_equal_day_period_shift_equal(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        constraint_sum_hard: ConstraintSum,
+    ) -> None:
+        # Worker w0 works 4 times shift s0 during first week (between
+        # 2023-10-02 and 2023-10-08)
+        constraint_sum_hard.operator = "equal"
+        constraint_sum_hard.worker_var.selector = "equal"
+        constraint_sum_hard.worker_var.target = "w0"
+        constraint_sum_hard.day_var.selector = "period"
+        constraint_sum_hard.day_var.start_date = date.fromisoformat("2023-10-02")
+        constraint_sum_hard.day_var.end_date = date.fromisoformat("2023-10-08")
+        inputs.custom.constraints_sum = [constraint_sum_hard]
+        outputs = engine_solve(inputs)
+        assignments = outputs.assignments
+
+        count = sum(
+            1
+            for a in assignments
+            if a.worker_id == constraint_sum_hard.worker_var.target
+            and a.date
+            in build_day_list(
+                constraint_sum_hard.day_var.start_date,
+                constraint_sum_hard.day_var.end_date,
+            )
+            and a.shift_id == constraint_sum_hard.shift_var.target
+        )
+
+        assert count == constraint_sum_hard.target_value
 
 
 class TestConstraintSumSoft(TestEngine, TestConstraintSum):
@@ -361,3 +417,8 @@ def get_dates_weeks(start_date: date, end_date: date) -> List[List[date]]:
     ]
     dates_weeks = [[dates[i] for i in d_index] for d_index in d_indexes]
     return dates_weeks
+
+
+def build_day_list(start_date: date, end_date: date) -> List[date]:
+    delta = end_date - start_date
+    return [start_date + timedelta(days=i) for i in range(delta.days + 1)]

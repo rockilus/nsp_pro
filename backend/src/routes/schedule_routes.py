@@ -118,6 +118,7 @@ def from_core_to_inputs(
         constraints_seq=[],
         constraints_fil=[],
         constraints_fai=[],
+        constraints_eve=[],
     )
     inputs = Inputs(
         variable_space=variable_space,
