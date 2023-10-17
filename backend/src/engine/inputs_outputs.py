@@ -44,12 +44,15 @@ class Assignment:
 
 @dataclass
 class VarSumWorker:
-    selector: Literal["all"]
+    selector: Literal["all", "equal"]
+    target: str
 
 
 @dataclass
 class VarSumDay:
-    selector: Literal["week"]
+    selector: Literal["all", "week", "period"]
+    start_date: date = field(default_factory=date.today)
+    end_date: date = field(default_factory=date.today)
 
 
 @dataclass
@@ -125,6 +128,24 @@ class VarFaiShift:
 
 
 @dataclass
+class VarEveWorker:
+    selector: Literal["all", "equal"]
+    target: str
+    num_eligible_workers: int
+
+
+@dataclass
+class VarEveDay:
+    selector: Literal["all"]
+
+
+@dataclass
+class VarEveShift:
+    selector: Literal["equal"]
+    target: str
+
+
+@dataclass
 class ConstraintSum:
     id: str
     operator: Literal[
@@ -186,12 +207,22 @@ class ConstraintFai:
 
 
 @dataclass
+class ConstraintEve:
+    id: str
+    worker_var: VarEveWorker
+    day_var: VarEveDay
+    shift_var: VarEveShift
+    penalty: int = field(default=0)
+
+
+@dataclass
 class Custom:
     constraints_sum: List[ConstraintSum]
     constraints_seq: List[ConstraintSeq]
     constraints_ord: List[ConstraintOrd]
     constraints_fil: List[ConstraintFil]
     constraints_fai: List[ConstraintFai]
+    constraints_eve: List[ConstraintEve]
 
 
 @dataclass

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+from datetime import date, timedelta
 from typing import Dict, List, Set, Tuple
 
 from google.protobuf import text_format  # type: ignore
@@ -7,6 +8,7 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.inputs_outputs import (
     Assignment,
+    ConstraintEve,
     ConstraintFai,
     ConstraintFil,
     ConstraintOrd,
@@ -16,6 +18,9 @@ from engine.inputs_outputs import (
     Inputs,
     Request,
     ShiftDemand,
+    VarSumDay,
+    VarSumShift,
+    VarSumWorker,
 )
 from engine.types import Objective
 
@@ -81,6 +86,7 @@ class Model:
         self._add_ord_constraints(custom.constraints_ord)
         self._add_fil_constraints(custom.constraints_fil)
         self._add_fai_constraints(custom.constraints_fai, coverage)
+        self._add_eve_constraints(custom.constraints_eve, coverage)
 
     def add_fixed_assignments(self, fixed_assignments: List[Assignment]) -> None:
         date_format = "%Y-%m-%d"
@@ -115,8 +121,8 @@ class Model:
             w_vars, d_vars, s_vars = self._get_vars_coordinates_sum(constraint_sum)
             for w in w_vars:
                 for s in s_vars:
-                    for week in d_vars:
-                        constraint_vars = [self.variables[w, d, s] for d in week]
+                    for period in d_vars:
+                        constraint_vars = [self.variables[w, d, s] for d in period]
                         self._add_constraint_sum_to_model(
                             constraint_sum, constraint_vars
                         )
@@ -168,26 +174,58 @@ class Model:
                 [self.variables[w, d, s] for d in d_vars for s in s_vars]
                 for w in w_vars
             ]
-            total_coverage = sum(
-                Model._get_total_coverage_shifts(coverage, s, d_vars) for s in s_vars
+            target_average = Model._get_average_nb_shifts_per_worker(
+                coverage, len(w_vars), d_vars, s_vars
             )
-            target_average = total_coverage / len(w_vars)
 
             for constraint_vars in constraints_vars:
                 self._add_constraint_fai_to_model(
                     constraint_fai, constraint_vars, target_average
                 )
 
+    def _add_eve_constraints(
+        self, constraints_eve: List[ConstraintEve], coverage: List[ShiftDemand]
+    ) -> None:
+        shifts_in_coverage = set(
+            shift_demand.shift_id
+            for shift_demand in coverage
+            if shift_demand.quantity > 0
+        )
+        constraints_sum = []
+        for constraint_eve in constraints_eve:
+            w_vars, d_vars, s_vars = self._get_vars_coordinates_eve(
+                constraint_eve, shifts_in_coverage
+            )
+            target_average = Model._get_average_nb_shifts_per_worker(
+                coverage,
+                constraint_eve.worker_var.num_eligible_workers,
+                d_vars,
+                s_vars,
+            )
+            period_lengths = Model.integer_division_list(
+                len(self.days), int(target_average)
+            )
+            for w in w_vars:
+                constraints_sum += self.convert_constraint_eve_to_constraints_sum(
+                    constraint_eve, w, s_vars[0], period_lengths
+                )
+        self._add_sum_constraints(constraints_sum)
+
     def _get_vars_coordinates_sum(
         self, constraint: ConstraintSum
     ) -> Tuple[List[str], List[List[str]], List[str]]:
+        date_format = "%Y-%m-%d"
         if constraint.worker_var.selector == "all":
             w_vars = self.workers
+        elif constraint.worker_var.selector == "equal":
+            w_vars = [constraint.worker_var.target]
         else:
             raise NotImplementedError(
                 f"Worker selector {constraint.worker_var.selector} " + "not implemented"
             )
-        if constraint.day_var.selector == "week":
+        if constraint.day_var.selector == "all":
+            d_vars = [self.days]
+        elif constraint.day_var.selector == "week":
             week_length = 7
             d_indexes = [
                 list(range(i, i + 7))
@@ -198,6 +236,21 @@ class Model:
                 )
             ]
             d_vars = [[self.days[i] for i in d_index] for d_index in d_indexes]
+        elif constraint.day_var.selector == "period":
+            period = [
+                constraint.day_var.start_date + timedelta(days=i)
+                for i in range(
+                    (constraint.day_var.end_date - constraint.day_var.start_date).days
+                    + 1
+                )
+            ]
+            d_vars = [
+                [
+                    day.strftime(date_format)
+                    for day in period
+                    if day.strftime(date_format) in self.days
+                ]
+            ]
         else:
             raise NotImplementedError(
                 f"Day selector {constraint.day_var.selector} " + "not implemented"
@@ -335,6 +388,29 @@ class Model:
             s_vars = [s for s in self.shifts if s in shifts_in_coverage]
         elif constraint.shift_var.selector == "list":
             s_vars = constraint.shift_var.target
+        else:
+            raise NotImplementedError(
+                f"Shift selector {constraint.shift_var.selector} " + "not implemented"
+            )
+        return w_vars, d_vars, s_vars
+
+    def _get_vars_coordinates_eve(
+        self, constraint: ConstraintEve, shifts_in_coverage: Set[str]
+    ) -> Tuple[List[str], List[str], List[str]]:
+        if constraint.worker_var.selector == "all":
+            w_vars = self.workers
+        elif constraint.worker_var.selector == "equal":
+            w_vars = [constraint.worker_var.target]
+        else:
+            raise NotImplementedError(
+                f"Worker selector {constraint.worker_var.selector} " + "not implemented"
+            )
+        if constraint.day_var.selector == "all":
+            d_vars = self.days
+        if constraint.shift_var.selector == "all":
+            s_vars = [s for s in self.shifts if s in shifts_in_coverage]
+        elif constraint.shift_var.selector == "equal":
+            s_vars = [constraint.shift_var.target]
         else:
             raise NotImplementedError(
                 f"Shift selector {constraint.shift_var.selector} " + "not implemented"
@@ -638,6 +714,36 @@ class Model:
             # self.obj.int_vars.append(excess)
             # self.obj.int_coeffs.append(constraint_fai.penalty)
 
+    def convert_constraint_eve_to_constraints_sum(
+        self,
+        constraint_eve: ConstraintEve,
+        target_worker: str,
+        target_shift: str,
+        period_lengths: List[int],
+    ) -> List[ConstraintSum]:
+        constraints_sum = []
+        for index, period_length in enumerate(period_lengths):
+            cum_days = sum(period_lengths[:index])
+            start_date = date.fromisoformat(self.days[0]) + timedelta(days=cum_days)
+            end_date = start_date + timedelta(days=period_length - 1)
+            constraints_sum.append(
+                ConstraintSum(
+                    id=constraint_eve.id,
+                    operator="less_than_or_equal",
+                    worker_var=VarSumWorker(selector="equal", target=target_worker),
+                    day_var=VarSumDay(
+                        selector="period",
+                        start_date=start_date,
+                        end_date=end_date,
+                    ),
+                    shift_var=VarSumShift(selector="equal", target=target_shift),
+                    target_value=1,
+                    hard=False,
+                    penalty=constraint_eve.penalty,
+                )
+            )
+        return constraints_sum
+
     @staticmethod
     def _negated_bounded_span(
         cstr_vars: List[cp_model.IntVar], start: int, length: int
@@ -652,7 +758,7 @@ class Model:
         return sequence
 
     @staticmethod
-    def _get_total_coverage_shifts(
+    def _get_total_coverage_shift(
         coverage: List[ShiftDemand], shift_id: str, days: List[str]
     ) -> int:
         date_format = "%Y-%m-%d"
@@ -662,6 +768,26 @@ class Model:
             if shift_demand.shift_id == shift_id
             and shift_demand.date.strftime(date_format) in days
         )
+
+    @staticmethod
+    def _get_average_nb_shifts_per_worker(
+        coverage: List[ShiftDemand],
+        num_eligible_workers: int,
+        days: List[str],
+        shifts: List[str],
+    ) -> float:
+        total_coverage = sum(
+            Model._get_total_coverage_shift(coverage, s, days) for s in shifts
+        )
+        target_average = total_coverage / num_eligible_workers
+        return target_average
+
+    @staticmethod
+    def integer_division_list(numerator: int, denominator: int) -> List[int]:
+        quotient = numerator // denominator
+        remainder = numerator % denominator
+        result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
+        return result
 
     def add_objective(self) -> None:
         self.model.Minimize(
