@@ -8,9 +8,10 @@ import WorkerConfig from "../components/Worker/WorkerConfig";
 import CoveragePanel from "../components/Coverage/CoveragePanel";
 import ScheduleConfig from "../components/Schedule/ScheduleConfig";
 import CoverageSelectorConfig from "../components/CoverageSelector/CoverageSelectorConfig";
+import FixedAssignmentConfig from "../components/FixedAssignment/FixedAssignmentConfig";
 
 import { ShiftT } from "../components/Coverage/types";
-import { ShiftScheduleT, WorkerScheduleT } from "../components/Schedule/types";
+import { ShiftIdNameT, WorkerIdNameT } from "../components/Schedule/types";
 import { useShiftStore } from "../stores/shiftStore";
 import { useWorkerStore } from "../stores/workerStore";
 
@@ -28,9 +29,9 @@ export default function Draft() {
       })
     : [];
 
-  const shiftsForSchedule = shifts
+  const shiftsIdName = shifts
     ? shifts.map((s) => {
-        const shift: ShiftScheduleT = {
+        const shift: ShiftIdNameT = {
           id: s.id,
           name: s.name,
         };
@@ -38,9 +39,9 @@ export default function Draft() {
       })
     : [];
 
-  const workersForSchedule = workers
+  const workersIdName = workers
     ? workers.map((w) => {
-        const worker: WorkerScheduleT = {
+        const worker: WorkerIdNameT = {
           id: w.id,
           name: w.name,
         };
@@ -57,7 +58,8 @@ export default function Draft() {
       )}
       <CoverageSelectorConfig />
       <ConstraintConfig />
-      <ScheduleConfig workers={workersForSchedule} shifts={shiftsForSchedule} />
+      <ScheduleConfig workers={workersIdName} shifts={shiftsIdName} />
+      <FixedAssignmentConfig workers={workersIdName} shifts={shiftsIdName} />
     </Box>
   );
 }

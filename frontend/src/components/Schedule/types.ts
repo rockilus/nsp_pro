@@ -21,12 +21,12 @@ export type ScheduleT = {
   comments: CommentsT;
 };
 
-export type ShiftScheduleT = {
+export type ShiftIdNameT = {
   id: string;
   name: string;
 };
 
-export type WorkerScheduleT = {
+export type WorkerIdNameT = {
   id: string;
   name: string;
 };

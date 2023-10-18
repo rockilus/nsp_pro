@@ -15,13 +15,13 @@ from datetime import datetime
 router = APIRouter()
 
 
-@router.get("/fixed_assignments")
+@router.get("/fixed-assignments")
 def get_fixed_assignments() -> List[FixedAssignmentMessage]:
     fixed_assignments = fixed_assignment_db.get_fixed_assignments()
     return [fixed_assignment_to_api_msg(fa) for fa in fixed_assignments]
 
 
-@router.post("/fixed_assignments", status_code=201)
+@router.post("/fixed-assignments", status_code=201)
 def create_fixed_assignment(
     req: FixedAssignmentMessage,
 ) -> FixedAssignmentMessage:
@@ -39,7 +39,7 @@ def create_fixed_assignment(
     return response
 
 
-@router.put("/fixed_assignments/{fixed_assignment_id}")
+@router.put("/fixed-assignments/{fixed_assignment_id}")
 def update_fixed_assignment(
     fixed_assignment_id: str, updated_fixed_assignment: FixedAssignmentMessage
 ):
@@ -59,7 +59,7 @@ def update_fixed_assignment(
     return response
 
 
-@router.delete("/fixed_assignments/{fixed_assignment_id}")
+@router.delete("/fixed-assignments/{fixed_assignment_id}")
 def delete_fixed_assignment(fixed_assignment_id: str):
     fixed_assignment_db.delete_fixed_assignment(fixed_assignment_id)
     return {"message": "FixedAssignment deleted successfully"}
