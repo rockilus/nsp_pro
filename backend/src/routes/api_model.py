@@ -100,3 +100,11 @@ class ScheduleMessage(BaseModel):
     endDate: date
     assignments: List[AssignmentMessage]
     comments: CommentsMessage
+
+
+# Fixed Assignement
+class FixedAssignmentMessage(BaseModel):
+    id: str
+    workerId: str
+    date: date
+    shiftId: str

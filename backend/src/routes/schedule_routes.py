@@ -10,6 +10,7 @@ from core.coverage import CoverageSelector
 from core.schedule import Assignment, Comments, Schedule
 from core.shift import Shift
 from core.worker import Worker
+from core.fixed_assignment import FixedAssignment
 from engine import Assignment as AssignmentEngine
 from engine import Coverage as CoverageEngine
 from engine import Custom, Engine, Inputs, Outputs, Request
@@ -21,6 +22,7 @@ from scripts.setup_database import (
     coverage_selector_db,
     shift_db,
     worker_db,
+    fixed_assignment_db,
 )
 
 router = APIRouter()
@@ -31,7 +33,10 @@ def solver() -> ScheduleMessage:
     workers = worker_db.get_workers()
     shifts = shift_db.get_shifts()
     coverage_selectors = coverage_selector_db.get_coverage_selectors()
-    inputs = from_core_to_inputs(workers, shifts, coverage_selectors)
+    fixed_assignments = fixed_assignment_db.get_fixed_assignments()
+    inputs = from_core_to_inputs(
+        workers, shifts, coverage_selectors, fixed_assignments
+    )
     engine = Engine()
     outputs = engine.solve(inputs)
     schedule, assignments = from_outputs_to_core(inputs, outputs)
@@ -59,9 +64,12 @@ def build_shift_demands(
     for coverage_selector in coverage_selectors:
         if coverage_selector.coverage_id == "":
             continue
-        coverage = coverage_db.get_coverage_by_id(coverage_selector.coverage_id)
+        coverage = coverage_db.get_coverage_by_id(
+            coverage_selector.coverage_id
+        )
         for day in range(
-            (coverage_selector.end_date - coverage_selector.start_date).days + 1
+            (coverage_selector.end_date - coverage_selector.start_date).days
+            + 1
         ):
             cov_date = coverage_selector.start_date + timedelta(days=day)
             for shift_demand in coverage.shift_demands:
@@ -82,10 +90,13 @@ def build_no_coverage_date(
     coverage_selectors: List[CoverageSelector],
 ) -> List[date]:
     delta = end_date - start_date
-    no_cov_date = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
+    no_cov_date = [
+        start_date + timedelta(days=i) for i in range(delta.days + 1)
+    ]
     for coverage_selector in coverage_selectors:
         for day in range(
-            (coverage_selector.end_date - coverage_selector.start_date).days + 1
+            (coverage_selector.end_date - coverage_selector.start_date).days
+            + 1
         ):
             cov_date = coverage_selector.start_date + timedelta(days=day)
             if cov_date in no_cov_date:
@@ -99,6 +110,7 @@ def from_core_to_inputs(
     workers: List[Worker],
     shifts: List[Shift],
     coverage_selectors: List[CoverageSelector],
+    fixed_assignments: List[FixedAssignment],
 ) -> Inputs:
     start_date, end_date = get_start_end_dates(coverage_selectors)
     variable_space = VariableSpace(
@@ -107,12 +119,17 @@ def from_core_to_inputs(
         end_date=end_date,
         shifts=[shift.id for shift in shifts],
     )
-    shift_demands = build_shift_demands(coverage_selectors)
+    shift_demands_engine = build_shift_demands(coverage_selectors)
     # pylint: disable=R0801
-    coverage = CoverageEngine(shift_demands)
-    requests: List[Request] = []
-    fix_assignments: List[AssignmentEngine] = []
-    custom = Custom(
+    cov_engine = CoverageEngine(shift_demands_engine)
+    req_engine: List[Request] = []
+    fa_engine = [
+        AssignmentEngine(
+            worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id
+        )
+        for fa in fixed_assignments
+    ]
+    custom_engine = Custom(
         constraints_sum=[],
         constraints_ord=[],
         constraints_seq=[],
@@ -122,10 +139,10 @@ def from_core_to_inputs(
     )
     inputs = Inputs(
         variable_space=variable_space,
-        coverage=coverage,
-        requests=requests,
-        fixed_assignments=fix_assignments,
-        custom=custom,
+        coverage=cov_engine,
+        requests=req_engine,
+        fixed_assignments=fa_engine,
+        custom=custom_engine,
     )
     return inputs
 
@@ -143,7 +160,8 @@ def from_outputs_to_core(
         ),
     )
     assignments = [
-        Assignment(**asdict(a), id="", schedule_id="") for a in outputs.assignments
+        Assignment(**asdict(a), id="", schedule_id="")
+        for a in outputs.assignments
     ]
     return schedule, assignments
 
