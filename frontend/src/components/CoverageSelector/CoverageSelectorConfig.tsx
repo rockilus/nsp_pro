@@ -163,9 +163,11 @@ export default function CoverageSelectorConfig() {
                     }
                   />
                 </TableCell>
-                <TableCell component="th" scope="row">
-                  {selectCoverage(coverageSelector)}
-                </TableCell>
+                {coverages && (
+                  <TableCell component="th" scope="row">
+                    {selectCoverage(coverageSelector)}
+                  </TableCell>
+                )}
                 <TableCell component="th" scope="row">
                   <Box sx={{ display: "flex" }}>
                     <Button

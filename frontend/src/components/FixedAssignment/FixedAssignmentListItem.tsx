@@ -9,6 +9,7 @@ import FixedAssignmentButton from "./FixedAssignmentButton";
 import { FixedAssignmentT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
+import { Box } from "@mui/material";
 
 interface Props {
   fixedAssignment: FixedAssignmentT;
@@ -65,7 +66,7 @@ export default function FixedAssignmentListItem({
   return (
     <ListItem
       secondaryAction={
-        <>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
           <FixedAssignmentButton
             buttonElement={editButton()}
             fixedAssignment={fixedAssignment}
@@ -79,7 +80,7 @@ export default function FixedAssignmentListItem({
           >
             <DeleteIcon />
           </IconButton>
-        </>
+        </Box>
       }
     >
       <ListItemText primary={stringState} />
