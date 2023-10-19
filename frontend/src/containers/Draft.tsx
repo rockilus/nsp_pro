@@ -8,7 +8,7 @@ import WorkerConfig from "../components/Worker/WorkerConfig";
 import CoveragePanel from "../components/Coverage/CoveragePanel";
 import ScheduleConfig from "../components/Schedule/ScheduleConfig";
 import CoverageSelectorConfig from "../components/CoverageSelector/CoverageSelectorConfig";
-import FixedAssignmentConfig from "../components/FixedAssignment/FixedAssignmentConfig";
+import FARConfig from "../components/FixedAssignmentRequest/FARConfig";
 
 import { ShiftT } from "../components/Coverage/types";
 import { ShiftIdNameT, WorkerIdNameT } from "../components/Schedule/types";
@@ -58,8 +58,8 @@ export default function Draft() {
       )}
       <CoverageSelectorConfig />
       <ConstraintConfig />
+      <FARConfig workers={workersIdName} shifts={shiftsIdName} />
       <ScheduleConfig workers={workersIdName} shifts={shiftsIdName} />
-      <FixedAssignmentConfig workers={workersIdName} shifts={shiftsIdName} />
     </Box>
   );
 }

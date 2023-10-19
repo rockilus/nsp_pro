@@ -3,20 +3,20 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Menu from "@mui/material/Menu";
 
-import FixedAssignmentPanel from "./FixedAssignmentPanel";
-import { FixedAssignmentT } from "./types";
+import FARPanel from "./FARPanel";
+import { FarT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
   buttonElement: React.ReactNode;
-  fixedAssignment: FixedAssignmentT;
+  far: FarT;
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
 }
 
-export default function FixedAssignmentButton({
+export default function FARButton({
   buttonElement,
-  fixedAssignment,
+  far,
   workers,
   shifts,
 }: Props) {
@@ -51,8 +51,8 @@ export default function FixedAssignmentButton({
           },
         }}
       >
-        <FixedAssignmentPanel
-          fixedAssignment={fixedAssignment}
+        <FARPanel
+          far={far}
           workers={workers}
           shifts={shifts}
           handleClose={handleClose}
