@@ -7,6 +7,7 @@ from routes import (
     router_constraint_param,
     router_coverage,
     router_coverage_selector,
+    router_fixed_assignment,
     router_schedule,
     router_shift,
     router_shift_dimension,
@@ -40,6 +41,7 @@ app.include_router(router_shift)
 app.include_router(router_schedule)
 app.include_router(router_worker_dimension)
 app.include_router(router_worker)
+app.include_router(router_fixed_assignment)
 
 
 def run_router():

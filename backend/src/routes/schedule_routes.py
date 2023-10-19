@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from pydantic import TypeAdapter
 
 from core.coverage import CoverageSelector
+from core.fixed_assignment import FixedAssignment
 from core.schedule import Assignment, Comments, Schedule
 from core.shift import Shift
 from core.worker import Worker
@@ -19,6 +20,7 @@ from routes.api_model import AssignmentMessage, ScheduleMessage
 from scripts.setup_database import (
     coverage_db,
     coverage_selector_db,
+    fixed_assignment_db,
     shift_db,
     worker_db,
 )
@@ -31,7 +33,8 @@ def solver() -> ScheduleMessage:
     workers = worker_db.get_workers()
     shifts = shift_db.get_shifts()
     coverage_selectors = coverage_selector_db.get_coverage_selectors()
-    inputs = from_core_to_inputs(workers, shifts, coverage_selectors)
+    fixed_assignments = fixed_assignment_db.get_fixed_assignments()
+    inputs = from_core_to_inputs(workers, shifts, coverage_selectors, fixed_assignments)
     engine = Engine()
     outputs = engine.solve(inputs)
     schedule, assignments = from_outputs_to_core(inputs, outputs)
@@ -99,6 +102,7 @@ def from_core_to_inputs(
     workers: List[Worker],
     shifts: List[Shift],
     coverage_selectors: List[CoverageSelector],
+    fixed_assignments: List[FixedAssignment],
 ) -> Inputs:
     start_date, end_date = get_start_end_dates(coverage_selectors)
     variable_space = VariableSpace(
@@ -107,12 +111,15 @@ def from_core_to_inputs(
         end_date=end_date,
         shifts=[shift.id for shift in shifts],
     )
-    shift_demands = build_shift_demands(coverage_selectors)
+    shift_demands_engine = build_shift_demands(coverage_selectors)
     # pylint: disable=R0801
-    coverage = CoverageEngine(shift_demands)
-    requests: List[Request] = []
-    fix_assignments: List[AssignmentEngine] = []
-    custom = Custom(
+    cov_engine = CoverageEngine(shift_demands_engine)
+    req_engine: List[Request] = []
+    fa_engine = [
+        AssignmentEngine(worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id)
+        for fa in fixed_assignments
+    ]
+    custom_engine = Custom(
         constraints_sum=[],
         constraints_ord=[],
         constraints_seq=[],
@@ -122,10 +129,10 @@ def from_core_to_inputs(
     )
     inputs = Inputs(
         variable_space=variable_space,
-        coverage=coverage,
-        requests=requests,
-        fixed_assignments=fix_assignments,
-        custom=custom,
+        coverage=cov_engine,
+        requests=req_engine,
+        fixed_assignments=fa_engine,
+        custom=custom_engine,
     )
     return inputs
 

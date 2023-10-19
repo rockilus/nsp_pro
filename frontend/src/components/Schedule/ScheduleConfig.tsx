@@ -6,12 +6,12 @@ import Typography from "@mui/material/Typography";
 
 import ScheduleTable from "./ScheduleTable";
 
-import { ShiftScheduleT, WorkerScheduleT, ColumnT, RowT, CellT } from "./types";
+import { ShiftIdNameT, WorkerIdNameT, ColumnT, RowT, CellT } from "./types";
 import { useScheduleStore } from "../../stores/scheduleStore";
 
 interface Props {
-  workers: WorkerScheduleT[];
-  shifts: ShiftScheduleT[];
+  workers: WorkerIdNameT[];
+  shifts: ShiftIdNameT[];
 }
 
 export default function ScheduleConfig({ workers, shifts }: Props) {

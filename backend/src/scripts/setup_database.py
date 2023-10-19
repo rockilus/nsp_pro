@@ -8,6 +8,7 @@ from database import (
     ConstraintVariableDB,
     CoverageDB,
     CoverageSelectorDB,
+    FixedAssignmentDB,
     ShiftDB,
     ShiftDimensionDB,
     ShiftPropertyDB,
@@ -23,17 +24,18 @@ database_uri = (
 )
 
 db = DB(database_uri)
-shift_db = ShiftDB(db)
+constraint_db = ConstraintDB(db)
+constraint_param_db = ConstraintParamDB(db)
+constraint_param_option_db = ConstraintParamOptionDB(db)
+constraint_variable_db = ConstraintVariableDB(db)
 coverage_db = CoverageDB(db)
 coverage_selector_db = CoverageSelectorDB(db)
+fixed_assignment_db = FixedAssignmentDB(db)
+shift_db = ShiftDB(db)
 shift_dimension_db = ShiftDimensionDB(db)
 shift_property_db = ShiftPropertyDB(db)
+variable_db = VariableDB(db)
+variable_param_db = VariableParamDB(db)
 worker_db = WorkerDB(db)
 worker_dimension_db = WorkerDimensionDB(db)
 worker_property_db = WorkerPropertyDB(db)
-constraint_param_db = ConstraintParamDB(db)
-constraint_param_option_db = ConstraintParamOptionDB(db)
-constraint_db = ConstraintDB(db)
-constraint_variable_db = ConstraintVariableDB(db)
-variable_db = VariableDB(db)
-variable_param_db = VariableParamDB(db)
