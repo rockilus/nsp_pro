@@ -9,6 +9,7 @@ from database import (
     CoverageDB,
     CoverageSelectorDB,
     FixedAssignmentDB,
+    RequestDB,
     ShiftDB,
     ShiftDimensionDB,
     ShiftPropertyDB,
@@ -31,6 +32,7 @@ constraint_variable_db = ConstraintVariableDB(db)
 coverage_db = CoverageDB(db)
 coverage_selector_db = CoverageSelectorDB(db)
 fixed_assignment_db = FixedAssignmentDB(db)
+request_db = RequestDB(db)
 shift_db = ShiftDB(db)
 shift_dimension_db = ShiftDimensionDB(db)
 shift_property_db = ShiftPropertyDB(db)
