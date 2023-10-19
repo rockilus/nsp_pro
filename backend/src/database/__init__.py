@@ -6,6 +6,7 @@ from database.coverage_db import CoverageDB
 from database.coverage_selector_db import CoverageSelectorDB
 from database.db import DB
 from database.fixed_assignment_db import FixedAssignmentDB
+from database.request_db import RequestDB
 from database.shift_db import ShiftDB
 from database.shift_dimension_db import ShiftDimensionDB
 from database.shift_property_db import ShiftPropertyDB
@@ -26,6 +27,7 @@ __all__ = [
     "CoverageSelectorDB",
     "DB",
     "FixedAssignmentDB",
+    "RequestDB",
     "ShiftDB",
     "ShiftDimensionDB",
     "ShiftPropertyDB",

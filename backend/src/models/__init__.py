@@ -5,6 +5,7 @@ from models.constraint_variable import ConstraintVariable
 from models.coverage import Coverage
 from models.coverage_selector import CoverageSelector
 from models.fixed_assignment import FixedAssignment
+from models.request import Request
 from models.shift import Shift
 from models.shift_dimension import ShiftDimension
 from models.shift_property import ShiftProperty
@@ -22,6 +23,7 @@ __all__ = [
     "Coverage",
     "CoverageSelector",
     "FixedAssignment",
+    "Request",
     "Shift",
     "ShiftDimension",
     "ShiftProperty",

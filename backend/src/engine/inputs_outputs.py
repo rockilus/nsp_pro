@@ -26,6 +26,7 @@ class Coverage:
     coverage: List[ShiftDemand]
 
 
+# pylint: disable=R0801
 @dataclass
 class Request:
     id: str

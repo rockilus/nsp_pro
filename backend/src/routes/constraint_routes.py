@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Body, HTTPException, status
 from mongoengine import NotUniqueError
 
-from constraint_transform import build_constraint, build_constraint_front
 from scripts.setup_database import constraint_db, constraint_variable_db
+from services import build_constraint, build_constraint_front
 
 router = APIRouter()
 

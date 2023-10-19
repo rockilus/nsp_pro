@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from constraint_transform.constraint_utils import (
+from services.constraint_services.constraint_utils import (
     get_other_var_value,
     get_ref_var_value,
     get_var_value,

@@ -108,3 +108,12 @@ class FixedAssignmentMessage(BaseModel):
     workerId: str
     date: date
     shiftId: str
+
+
+# Request
+class RequestMessage(BaseModel):
+    id: str
+    workerId: str
+    date: date
+    shiftId: str
+    priority: str

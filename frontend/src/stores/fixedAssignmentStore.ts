@@ -1,6 +1,6 @@
 // fixedAssignmentStore.ts
 import { create } from "zustand";
-import { FixedAssignmentT } from "../components/FixedAssignment/types";
+import { FixedAssignmentT } from "../components/FixedAssignmentRequest/types";
 
 // const baseApiUrl = "http://localhost:5000";
 const baseApiUrl = "http://127.0.0.1:5000";
