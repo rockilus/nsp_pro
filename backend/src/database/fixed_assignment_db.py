@@ -2,6 +2,7 @@ from datetime import date, datetime
 from typing import List
 
 from bson import ObjectId
+
 from core.fixed_assignment import FixedAssignment
 from core.shift import Shift
 from core.worker import Worker
@@ -35,15 +36,13 @@ class FixedAssignmentDB:
     def get_fixed_assignments(self) -> List[FixedAssignment]:
         # pylint: disable=no-member
         fixed_assignments = FixedAssignmentDocument.objects.all()  # type: ignore
-        return [
-            _from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)
-        ]
+        return [_from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)]
 
-    def get_fixed_assignment_by_id(
-        self, fixed_assignment_id: str
-    ) -> FixedAssignment:
+    def get_fixed_assignment_by_id(self, fixed_assignment_id: str) -> FixedAssignment:
         # pylint: disable=no-member
-        fixed_assignment = FixedAssignmentDocument.objects.get(id=fixed_assignment_id)  # type: ignore
+        fixed_assignment = FixedAssignmentDocument.objects.get(  # type: ignore
+            id=fixed_assignment_id
+        )
         return _from_mongo_fixed_assignment(fixed_assignment)
 
     def update_fixed_assignment(
@@ -55,7 +54,9 @@ class FixedAssignmentDB:
 
     def delete_fixed_assignment(self, fixed_assignment_id: str) -> None:
         # pylint: disable=no-member
-        fixed_assignment = FixedAssignmentDocument.objects.get(id=fixed_assignment_id)  # type: ignore
+        fixed_assignment = FixedAssignmentDocument.objects.get(  # type: ignore
+            id=fixed_assignment_id
+        )
         fixed_assignment.delete()
 
 

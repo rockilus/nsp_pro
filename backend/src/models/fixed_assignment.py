@@ -1,5 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import StringField, DateTimeField, ReferenceField
+from mongoengine.fields import DateTimeField, ReferenceField, StringField
 
 
 class FixedAssignment(Document):

@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from datetime import datetime
 from typing import List
 
 import humps
@@ -6,11 +7,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import TypeAdapter
 
 from core.fixed_assignment import FixedAssignment
-from routes.api_model import (
-    FixedAssignmentMessage,
-)
+from routes.api_model import FixedAssignmentMessage
 from scripts.setup_database import fixed_assignment_db, shift_db, worker_db
-from datetime import datetime
 
 router = APIRouter()
 
@@ -45,13 +43,9 @@ def update_fixed_assignment(
 ):
     fa_data = api_msg_to_fixed_assignment(updated_fixed_assignment)
 
-    existing_fa = fixed_assignment_db.get_fixed_assignment_by_id(
-        fixed_assignment_id
-    )
+    existing_fa = fixed_assignment_db.get_fixed_assignment_by_id(fixed_assignment_id)
     if not existing_fa:
-        raise HTTPException(
-            status_code=404, detail="FixedAssignment does not exist"
-        )
+        raise HTTPException(status_code=404, detail="FixedAssignment does not exist")
 
     fixed_assignment = fixed_assignment_db.update_fixed_assignment(fa_data)
 
@@ -78,7 +72,5 @@ def api_msg_to_fixed_assignment(
     msg: FixedAssignmentMessage,
 ) -> FixedAssignment:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["date"] = datetime.combine(
-        data_snake["date"], datetime.min.time()
-    )
+    data_snake["date"] = datetime.combine(data_snake["date"], datetime.min.time())
     return FixedAssignment(**data_snake)

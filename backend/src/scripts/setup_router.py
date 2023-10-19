@@ -7,12 +7,12 @@ from routes import (
     router_constraint_param,
     router_coverage,
     router_coverage_selector,
+    router_fixed_assignment,
     router_schedule,
     router_shift,
     router_shift_dimension,
     router_worker,
     router_worker_dimension,
-    router_fixed_assignment,
 )
 
 app = FastAPI()
@@ -45,6 +45,4 @@ app.include_router(router_fixed_assignment)
 
 
 def run_router():
-    uvicorn.run(
-        "scripts.setup_router:app", host="127.0.0.1", port=5000, reload=True
-    )
+    uvicorn.run("scripts.setup_router:app", host="127.0.0.1", port=5000, reload=True)

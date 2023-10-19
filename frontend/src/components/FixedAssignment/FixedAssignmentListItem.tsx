@@ -66,9 +66,6 @@ export default function FixedAssignmentListItem({
     <ListItem
       secondaryAction={
         <>
-          {/* <IconButton edge="end" aria-label="edit" sx={{ marginRight: 0 }}>
-            <EditIcon />
-          </IconButton> */}
           <FixedAssignmentButton
             buttonElement={editButton()}
             fixedAssignment={fixedAssignment}

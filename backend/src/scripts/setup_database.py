@@ -19,7 +19,9 @@ from database import (
     WorkerPropertyDB,
 )
 
-database_uri = f"mongodb://localhost:27017/{os.getenv('ENV_SITUATION', default='nsp_pro')}"
+database_uri = (
+    f"mongodb://localhost:27017/{os.getenv('ENV_SITUATION', default='nsp_pro')}"
+)
 
 db = DB(database_uri)
 constraint_db = ConstraintDB(db)
