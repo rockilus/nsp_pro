@@ -31,6 +31,7 @@ class RequestDB:
             date=target_date,
             shift=to_mongo_shift(shift),
             priority=priority,
+            status="pending",
         )
         request_saved = request.save()
         return _from_mongo_request(request_saved)
@@ -44,6 +45,13 @@ class RequestDB:
         # pylint: disable=no-member
         request = RequestDocument.objects.get(id=request_id)  # type: ignore
         return _from_mongo_request(request)
+
+    def get_requests_by_dates(self, start_date: date, end_date: date) -> List[Request]:
+        # pylint: disable=no-member
+        requests = RequestDocument.objects.filter(  # type: ignore
+            date__gte=start_date, date__lte=end_date
+        )
+        return [_from_mongo_request(r) for r in list(requests)]
 
     def update_request(self, request: Request) -> Request:
         document = to_mongo_request(request)
@@ -69,17 +77,19 @@ def to_mongo_request(
         date=dataclass_obj.date,
         shift=shift,
         priority=dataclass_obj.priority,
+        status=dataclass_obj.status,
     )
 
 
 def _from_mongo_request(
     doc_obj: RequestDocument,
 ) -> Request:
-    date_datetime = datetime.combine(doc_obj.date, datetime.min.time())
+    date_datetime = datetime.combine(doc_obj.date, datetime.min.time()).date()
     return Request(
         id=doc_obj.id,
         worker_id=doc_obj.worker.id,
         date=date_datetime,
         shift_id=doc_obj.shift.id,
         priority=doc_obj.priority,
+        status=doc_obj.status,
     )

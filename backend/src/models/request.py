@@ -10,3 +10,8 @@ class Request(Document):
     date = DateTimeField(required=True)
     shift = ReferenceField("Shift")
     priority = StringField(required=True, choices=["low", "medium", "high"])
+    status = StringField(
+        required=True,
+        choices=["pending", "approved", "rejected", "disabled"],
+        default="pending",
+    )

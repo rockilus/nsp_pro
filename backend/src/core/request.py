@@ -9,3 +9,4 @@ class Request:
     date: date
     shift_id: str
     priority: str
+    status: str

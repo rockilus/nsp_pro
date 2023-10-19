@@ -17,7 +17,12 @@ from scripts.setup_database import (
     shift_db,
     worker_db,
 )
-from services import build_no_coverage_date, from_core_to_inputs, from_outputs_to_core
+from services import (
+    build_no_coverage_date,
+    from_core_to_inputs,
+    from_outputs_to_core,
+    update_far_status,
+)
 
 router = APIRouter()
 
@@ -53,6 +58,7 @@ def solver() -> ScheduleMessage:
         coverage_selectors,
     )
     schedule.comments.missing_coverage_dates = no_cov_date
+    update_far_status(schedule, assignments)
     return schedule_and_assignments_to_api_msg(schedule, assignments)
 
 

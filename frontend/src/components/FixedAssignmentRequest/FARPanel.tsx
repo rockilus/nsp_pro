@@ -43,6 +43,7 @@ export default function FARPanel({ far, workers, shifts, handleClose }: Props) {
     shiftId: far.shiftId,
     priority: far.priority,
     isFA: far.isFA,
+    status: far.status,
   });
 
   const addFixedAssignment = useFixedAssignmentStore(

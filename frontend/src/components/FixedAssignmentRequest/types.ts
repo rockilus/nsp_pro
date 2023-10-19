@@ -3,6 +3,7 @@ export type FixedAssignmentT = {
   workerId: string;
   date: Date;
   shiftId: string;
+  status: string; // pending, approved, rejected, disabled
 };
 
 export type RequestT = {
@@ -11,6 +12,7 @@ export type RequestT = {
   date: Date;
   shiftId: string;
   priority: string;
+  status: string;
 };
 
 export type FarT = {
@@ -20,4 +22,5 @@ export type FarT = {
   shiftId: string;
   priority: string;
   isFA: boolean;
+  status: string;
 };
