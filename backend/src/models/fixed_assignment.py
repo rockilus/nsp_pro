@@ -9,3 +9,8 @@ class FixedAssignment(Document):
     worker = ReferenceField("Worker")
     date = DateTimeField(required=True)
     shift = ReferenceField("Shift")
+    status = StringField(
+        required=True,
+        choices=["pending", "approved", "rejected", "disabled"],
+        default="pending",
+    )

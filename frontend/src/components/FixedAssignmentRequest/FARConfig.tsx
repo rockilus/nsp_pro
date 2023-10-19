@@ -100,6 +100,7 @@ export default function FARConfig({ workers, shifts }: Props) {
           shiftId: "",
           priority: "",
           isFA: true,
+          status: "pending",
         }}
         workers={workers}
         shifts={shifts}

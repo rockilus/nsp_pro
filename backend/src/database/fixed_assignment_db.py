@@ -29,6 +29,7 @@ class FixedAssignmentDB:
             worker=to_mongo_worker(worker),
             date=target_date,
             shift=to_mongo_shift(shift),
+            status="pending",
         )
         fixed_assignment_saved = fixed_assignment.save()
         return _from_mongo_fixed_assignment(fixed_assignment_saved)
@@ -44,6 +45,15 @@ class FixedAssignmentDB:
             id=fixed_assignment_id
         )
         return _from_mongo_fixed_assignment(fixed_assignment)
+
+    def get_fixed_assignments_by_dates(
+        self, start_date: date, end_date: date
+    ) -> List[FixedAssignment]:
+        # pylint: disable=no-member
+        fixed_assignments = FixedAssignmentDocument.objects.filter(  # type: ignore
+            date__gte=start_date, date__lte=end_date
+        )
+        return [_from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)]
 
     def update_fixed_assignment(
         self, fixed_assignment: FixedAssignment
@@ -72,16 +82,18 @@ def to_mongo_fixed_assignment(
         worker=worker,
         date=dataclass_obj.date,
         shift=shift,
+        status=dataclass_obj.status,
     )
 
 
 def _from_mongo_fixed_assignment(
     doc_obj: FixedAssignmentDocument,
 ) -> FixedAssignment:
-    date_datetime = datetime.combine(doc_obj.date, datetime.min.time())
+    date_datetime = datetime.combine(doc_obj.date, datetime.min.time()).date()
     return FixedAssignment(
         id=doc_obj.id,
         worker_id=doc_obj.worker.id,
         date=date_datetime,
         shift_id=doc_obj.shift.id,
+        status=doc_obj.status,
     )

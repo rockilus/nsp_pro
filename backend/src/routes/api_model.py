@@ -108,6 +108,7 @@ class FixedAssignmentMessage(BaseModel):
     workerId: str
     date: date
     shiftId: str
+    status: str
 
 
 # Request
@@ -117,3 +118,4 @@ class RequestMessage(BaseModel):
     date: date
     shiftId: str
     priority: str
+    status: str

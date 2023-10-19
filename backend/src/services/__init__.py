@@ -11,6 +11,7 @@ from services.constraint_services.constraint_utils import (
 from services.schedule_services.core_to_engine import from_core_to_inputs
 from services.schedule_services.engine_to_core import from_outputs_to_core
 from services.schedule_services.inputs_processing import build_no_coverage_date
+from services.schedule_services.outputs_processing import update_far_status
 
 __all__ = [
     "build_constraint",
@@ -22,4 +23,5 @@ __all__ = [
     "from_core_to_inputs",
     "from_outputs_to_core",
     "build_no_coverage_date",
+    "update_far_status",
 ]

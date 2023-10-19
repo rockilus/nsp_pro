@@ -78,6 +78,16 @@ export default function FARListItem({ far, workers, shifts }: Props) {
           <DeleteIcon />
         </IconButton>
       }
+      style={{
+        backgroundColor:
+          far.status === "approved"
+            ? "#d4edda"
+            : far.status === "rejected"
+            ? "#f8d7da"
+            : "transparent",
+      }}
+      // style={{ backgroundColor: "#f8d7da" }}
+      // style={{ backgroundColor: "transparent" }}
     >
       <FARButton
         buttonElement={editButton()}

@@ -8,6 +8,8 @@ import ScheduleTable from "./ScheduleTable";
 
 import { ShiftIdNameT, WorkerIdNameT, ColumnT, RowT, CellT } from "./types";
 import { useScheduleStore } from "../../stores/scheduleStore";
+import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
+import { useRequestStore } from "../../stores/RequestStore";
 
 interface Props {
   workers: WorkerIdNameT[];
@@ -21,6 +23,10 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
 
   const schedule = useScheduleStore((state) => state.schedule);
   const fetchSchedule = useScheduleStore((state) => state.fetchSchedule);
+  const fetchFixedAssignments = useFixedAssignmentStore(
+    (state) => state.fetchFixedAssignments
+  );
+  const fetchRequests = useRequestStore((state) => state.fetchRequests);
 
   const buildColumnHeaders = useCallback(
     (startDate: Date, endDate: Date): ColumnT[] => {
@@ -133,6 +139,13 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
   useEffect(() => {
     fetchSchedule();
   }, [fetchSchedule]);
+
+  useEffect(() => {
+    if (schedule) {
+      fetchFixedAssignments();
+      fetchRequests();
+    }
+  }, [fetchFixedAssignments, fetchRequests, schedule]);
 
   useEffect(() => {
     if (columns.length > 0 && schedule) {
