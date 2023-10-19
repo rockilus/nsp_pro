@@ -99,7 +99,13 @@ export default function CoverageSelectorConfig() {
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
-            value={coverageSelector.coverageId}
+            value={
+              coverages.find(
+                (coverage) => coverage.id === coverageSelector.coverageId
+              )
+                ? coverageSelector.coverageId
+                : ""
+            }
             label="Coverage"
             onChange={(e) => handleUpdateCoverageId(e, coverageSelector)}
           >
@@ -163,11 +169,9 @@ export default function CoverageSelectorConfig() {
                     }
                   />
                 </TableCell>
-                {coverages && (
-                  <TableCell component="th" scope="row">
-                    {selectCoverage(coverageSelector)}
-                  </TableCell>
-                )}
+                <TableCell component="th" scope="row">
+                  {selectCoverage(coverageSelector)}
+                </TableCell>
                 <TableCell component="th" scope="row">
                   <Box sx={{ display: "flex" }}>
                     <Button
