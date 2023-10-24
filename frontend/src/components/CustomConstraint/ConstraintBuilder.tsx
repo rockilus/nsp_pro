@@ -157,7 +157,7 @@ const ConstraintBuilder: React.FC<ConstraintBuilderProps> = ({ data, onConstrain
                   label="Day"
                   type="number"
                   value={dayFilter.day}
-                  onChange={(e) => updateDay('when', index, e.target.value as number)}
+                  onChange={(e) => updateDay('when', index, parseInt(e.target.value))}
                   fullWidth
                   />
               ) : (
@@ -186,7 +186,7 @@ const ConstraintBuilder: React.FC<ConstraintBuilderProps> = ({ data, onConstrain
               label="Day"
               type="number"
               value={dayFilter.day}
-              onChange={(e) => updateDay('then', index, e.target.value as number)}
+              onChange={(e) => updateDay('then', index, parseInt(e.target.value))}
               fullWidth
               />
           ) : (
