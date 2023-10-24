@@ -7,14 +7,14 @@ def build_tree() -> TreeNode:
 
     day_node = TreeNode(
         name="day",
-        parent_options=[s.name for s in shifts],
+        parent_options=[s.id for s in shifts],
         options=["week"],
         children=[],
     )
     shift_node = TreeNode(
-        name="shift",
+        name="shift_id",
         parent_options=[f"{i}" for i in range(10)],
-        options=[s.name for s in shifts],
+        options=[s.id for s in shifts],
         children=[day_node],
     )
     quantity_node = TreeNode(

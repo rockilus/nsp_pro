@@ -4,11 +4,14 @@ import Box from "@mui/material/Box";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 
-import { TreeNodeT, ConstraintBlockT } from "./types";
+import { TreeNodeT, BuildBlockT } from "./types";
+import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
   tree: TreeNodeT;
-  newBuild: ConstraintBlockT[];
+  newBuild: BuildBlockT[];
+  workers: WorkerIdNameT[];
+  shifts: ShiftIdNameT[];
   addBlock: (name: string, option: string | number) => void;
   setAtLeaf: (atLeaf: boolean) => void;
 }
@@ -16,6 +19,8 @@ interface Props {
 export default function TreeNavigation({
   tree,
   newBuild,
+  workers,
+  shifts,
   addBlock,
   setAtLeaf,
 }: Props) {
@@ -25,11 +30,9 @@ export default function TreeNavigation({
   };
 
   const getValue = () => {
-    const [name, option] = newBuild[0]
-      ? Object.entries(newBuild[0])[0]
-      : [null, null];
-    if (name && name === tree.name) {
-      return option;
+    const buildBlock = newBuild[0] ? newBuild[0] : null;
+    if (buildBlock && buildBlock.name === tree.name) {
+      return buildBlock.value;
     } else {
       return "";
     }
@@ -42,19 +45,12 @@ export default function TreeNavigation({
     return child;
   };
 
-  return (
-    <Box sx={{ display: "flex", flexDirection: "row", width: "100%" }}>
+  const selectOther = () => {
+    return (
       <Select
         value={getValue()}
         label={tree.name}
         onChange={(e) => handleOptionChange(e.target.value as string)}
-        MenuProps={{
-          PaperProps: {
-            style: {
-              width: 300, // Set the width of the menu items here
-            },
-          },
-        }}
       >
         {tree.options.map((option) => (
           <MenuItem key={option} value={option}>
@@ -62,10 +58,52 @@ export default function TreeNavigation({
           </MenuItem>
         ))}
       </Select>
+    );
+  };
+
+  const selectWorker = () => {
+    return (
+      <Select
+        value={getValue()}
+        label="Worker"
+        onChange={(e) => handleOptionChange(e.target.value as string)}
+      >
+        {workers.map((worker) => (
+          <MenuItem key={worker.id} value={worker.id}>
+            {worker.name}
+          </MenuItem>
+        ))}
+      </Select>
+    );
+  };
+
+  const selectShift = () => {
+    return (
+      <Select
+        value={getValue()}
+        label="Shift"
+        onChange={(e) => handleOptionChange(e.target.value as string)}
+      >
+        {shifts.map((shift) => (
+          <MenuItem key={shift.id} value={shift.id}>
+            {shift.name}
+          </MenuItem>
+        ))}
+      </Select>
+    );
+  };
+
+  return (
+    <Box sx={{ display: "flex", flexDirection: "row", width: "100%" }}>
+      {tree.name === "worker_id" && selectWorker()}
+      {tree.name === "shift_id" && selectShift()}
+      {tree.name !== "worker_id" && tree.name !== "shift_id" && selectOther()}
       {getChild() && (
         <TreeNavigation
           tree={getChild()}
           newBuild={newBuild.slice(1)}
+          workers={workers}
+          shifts={shifts}
           addBlock={addBlock}
           setAtLeaf={setAtLeaf}
         />

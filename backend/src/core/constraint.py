@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Union
+from typing import List, Union, Dict
 
 
 @dataclass
@@ -43,15 +43,31 @@ class ConstraintSeq:
 
 
 @dataclass
+class BuildBlock:
+    name: str
+    value: Union[str, int]
+
+
+@dataclass
+class ConstraintBuild:
+    id: str
+    build_blocks: List[BuildBlock]
+    active: bool
+
+
+@dataclass
 class Constraint:
     id: str
-    constraint: Union[ConstraintSum, ConstraintSeq]
+    constraint_type: str
+    operator: str
+    target_value: int
     worker_var: VarWorker
     day_var: VarDay
     shift_var: VarShift
     active: bool
     hard: bool
     penalty: int
+    build_blocks: List[BuildBlock]
 
 
 @dataclass

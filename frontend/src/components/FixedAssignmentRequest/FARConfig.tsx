@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import FARButton from "./FARButton";
 import FARList from "./FARList";
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
-import { useRequestStore } from "../../stores/RequestStore";
+import { useRequestStore } from "../../stores/requestStore";
 import { FixedAssignmentT, RequestT, FarT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 

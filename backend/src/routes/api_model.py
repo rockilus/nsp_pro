@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List
+from typing import List, Dict, Union
 
 from pydantic import BaseModel
 
@@ -122,8 +122,19 @@ class RequestMessage(BaseModel):
 
 
 # Constraint
-class TreeNode(BaseModel):
+class BuildBlockMessage(BaseModel):
+    name: str
+    value: Union[str, int]
+
+
+class ConstraintMessage(BaseModel):
+    id: str
+    buildBlocks: List[BuildBlockMessage]
+    active: bool
+
+
+class TreeNodeMessage(BaseModel):
     name: str
     parentOptions: List[str]
     options: List[str]
-    children: List["TreeNode"]
+    children: List["TreeNodeMessage"]

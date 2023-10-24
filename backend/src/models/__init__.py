@@ -1,10 +1,11 @@
 from models.constraint import (
+    BuildBlock,
     Constraint,
-    ConstraintSum,
     ConstraintSeq,
-    VarWorker,
+    ConstraintSum,
     VarDay,
     VarShift,
+    VarWorker,
 )
 from models.constraint_param import ConstraintParam
 from models.constraint_param_option import ConstraintParamOption
@@ -23,6 +24,7 @@ from models.worker_dimension import WorkerDimension
 from models.worker_property import WorkerProperty
 
 __all__ = [
+    "BuildBlock",
     "Constraint",
     "ConstraintSum",
     "ConstraintSeq",

@@ -12,7 +12,7 @@ from mongoengine.fields import (
     ReferenceField,
     StringField,
     EmbeddedDocumentField,
-    GenericEmbeddedDocumentField,
+    DynamicField,
 )
 
 
@@ -40,6 +40,11 @@ class VarShift(EmbeddedDocument):
     target = ListField(ReferenceField("Shift"), default=[])
     reference = ReferenceField("Shift")
     relative = ReferenceField("Shift")
+
+
+class BuildBlock(EmbeddedDocument):
+    name = StringField(required=True)
+    value = DynamicField(required=True)
 
 
 class ConstraintSum(EmbeddedDocument):
@@ -73,12 +78,21 @@ class Constraint(Document):
 
     id = StringField(primary_key=True, required=True)
     # rename to aggregator
-    constraint = GenericEmbeddedDocumentField(
-        choices=[ConstraintSum, ConstraintSeq]
+    constraint_type = StringField(required=True, choices=["sum", "seq"])
+    operator = StringField(
+        choices=[
+            "less_than_or_equal",
+            "equal",
+            "greater_than_or_equal",
+            "yes",
+            "no",
+        ],
     )
+    target_value = IntField(default=0)
     worker_var = EmbeddedDocumentField(VarWorker)
     day_var = EmbeddedDocumentField(VarDay)
     shift_var = EmbeddedDocumentField(VarShift)
-    active = BooleanField(default=True)
     hard = BooleanField(required=True)
     penalty = IntField(default=0)
+    active = BooleanField(default=True)
+    build_blocks = ListField(EmbeddedDocumentField(BuildBlock))

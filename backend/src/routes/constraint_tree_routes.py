@@ -4,7 +4,7 @@ import humps
 from core.constraint import TreeNode
 from fastapi import APIRouter
 from pydantic import TypeAdapter
-from routes.api_model import TreeNode as TreeNodeMessage
+from routes.api_model import TreeNodeMessage
 from services import build_tree
 
 router = APIRouter()

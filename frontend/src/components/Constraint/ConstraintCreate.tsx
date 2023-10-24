@@ -3,25 +3,45 @@ import React, { useState, useEffect } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+
 import TreeNavigation from "./TreeNavigation";
-import { TreeNodeT, ConstraintBlockT } from "./types";
+import { useConstraintStore } from "../../stores/constraintStore";
+import { TreeNodeT, BuildBlockT, ConstraintT } from "./types";
+import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
   tree: TreeNodeT;
+  workers: WorkerIdNameT[];
+  shifts: ShiftIdNameT[];
 }
 
-export default function ConstraintCreate({ tree }: Props) {
-  const [newBuild, setNewBuild] = useState<ConstraintBlockT[]>([]);
+export default function ConstraintCreate({ tree, workers, shifts }: Props) {
+  const [newBuild, setNewBuild] = useState<BuildBlockT[]>([]);
   const [atLeaf, setAtLeaf] = useState<boolean>(false);
 
+  const addConstraint = useConstraintStore((state) => state.addConstraint);
+  const updateConstraint = useConstraintStore(
+    (state) => state.updateConstraint
+  );
+
   const addBlock = (name: string, option: string | number) => {
-    const index = newBuild.findIndex((item) => item[name] !== undefined);
+    const newBlock: BuildBlockT = { name: name, value: option };
+    const index = newBuild.findIndex((item) => item.name === name);
     if (index !== -1) {
       const updatedNewBuild = newBuild.slice(0, index);
-      setNewBuild([...updatedNewBuild, { [name]: option }]);
+      setNewBuild([...updatedNewBuild, newBlock]);
     } else {
-      setNewBuild((old) => [...old, { [name]: option }]);
+      setNewBuild((old) => [...old, newBlock]);
     }
+  };
+
+  const handleCreate = () => {
+    const constraint: ConstraintT = {
+      id: "",
+      buildBlocks: newBuild,
+      active: true,
+    };
+    addConstraint(constraint);
   };
 
   return (
@@ -29,6 +49,8 @@ export default function ConstraintCreate({ tree }: Props) {
       <TreeNavigation
         tree={tree}
         newBuild={newBuild}
+        workers={workers}
+        shifts={shifts}
         addBlock={addBlock}
         setAtLeaf={setAtLeaf}
       />
@@ -37,6 +59,7 @@ export default function ConstraintCreate({ tree }: Props) {
         color="primary"
         disabled={!atLeaf}
         startIcon={<AddIcon />}
+        onClick={handleCreate}
       >
         Create
       </Button>

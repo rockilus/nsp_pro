@@ -8,7 +8,7 @@ const apiUrlConstraints = baseApiUrl + "/constraints";
 type ConstraintStateT = {
   constraints: ConstraintT[];
   fetchConstraints: () => void;
-  addConstraint: () => void;
+  addConstraint: (constraint: ConstraintT) => void;
   updateConstraint: (updatedConstraint: ConstraintT) => void;
   deleteConstraint: (id: string) => void;
 };
@@ -33,19 +33,23 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
     }
   },
 
-  // Here I keep POST for the convention, but there is no body
-  addConstraint: async () => {
+  addConstraint: async (constraint) => {
+    console.log(constraint);
+
     try {
       const response = await fetch(apiUrlConstraints, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(constraint),
       });
-      const newConstraint: ConstraintT = await response.json();
-      set((state) => ({ constraints: [...state.constraints, newConstraint] }));
+      const newConstraint = await response.json();
+      set((state) => ({
+        constraints: [...state.constraints, newConstraint],
+      }));
     } catch (error) {
-      console.error("Failed to add constraint:", error);
+      throw Error(`Failed to add constraint: ${error}`);
     }
   },
 

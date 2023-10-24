@@ -1,23 +1,97 @@
-from typing import Dict, List, Tuple, Union
+from datetime import date
+from typing import List, Union
+
 from core.constraint import (
+    BuildBlock,
     Constraint,
-    ConstraintSeq,
-    ConstraintSum,
+    ConstraintBuild,
     VarDay,
     VarShift,
     VarWorker,
 )
-from datetime import date
 
 
-def build_constraint_sum(input) -> Constraint:
-    pass
-
-
-def build_constraint(input) -> Constraint:
-    if input["constraint_type"] == "sum":
-        constraint = build_constraint_sum(input)
+def build_constraint_sum(constraint_build: ConstraintBuild) -> Constraint:
+    var_worker = VarWorker(
+        operator="",
+        selector="all",
+        target_ids=[],
+        num_eligible_workers=0,
+    )
+    var_day = VarDay(
+        selector=get_block_value_from_name(
+            "day", constraint_build.build_blocks
+        ),
+        target=[],
+        start_date=date.today(),
+        end_date=date.today(),
+        interval=0,
+    )
+    var_shift = VarShift(
+        operator="",
+        selector="equal",
+        target_ids=[
+            get_block_value_from_name(
+                "shift_id", constraint_build.build_blocks
+            )
+        ],
+        reference_id="",
+        relative_id="",
+    )
+    constraint = Constraint(
+        id=constraint_build.id,
+        constraint_type="sum",
+        operator=convert_operator(
+            get_block_value_from_name(
+                "operator", constraint_build.build_blocks
+            )
+            .lower()
+            .replace(" ", "_")
+        ),
+        target_value=get_block_value_from_name(
+            "quantity", constraint_build.build_blocks
+        ),
+        worker_var=var_worker,
+        day_var=var_day,
+        shift_var=var_shift,
+        active=constraint_build.active,
+        hard=True,
+        penalty=0,
+        build_blocks=constraint_build.build_blocks,
+    )
     return constraint
+
+
+def build_constraint(constraint_build: ConstraintBuild) -> Constraint:
+    constraint_type = ""
+    for block in constraint_build.build_blocks:
+        type_key = "type"
+        if type_key == block.name:
+            constraint_type = block.value
+            break
+    if constraint_type == "sum":
+        constraint = build_constraint_sum(constraint_build)
+    return constraint
+
+
+def get_block_value_from_name(
+    block_name: str, build_blocks: List[BuildBlock]
+) -> Union[str, int]:
+    for block in build_blocks:
+        if block.name == block_name:
+            return block.value
+    raise ValueError(f"Block name {block_name} not found")
+
+
+def convert_operator(operator: str) -> str:
+    if operator in ["less_than_or_equal", "at_most"]:
+        return "less_than_or_equal"
+    elif operator in ["equal", "exactly"]:
+        return "equal"
+    elif operator in ["greater_than_or_equal", "at_least"]:
+        return "greater_than_or_equal"
+    else:
+        raise ValueError(f"Operator {operator} not recognized")
 
 
 # # pylint: disable=too-many-branches

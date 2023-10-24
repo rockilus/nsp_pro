@@ -16,7 +16,7 @@ import WorkIcon from "@mui/icons-material/Work";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
-import { useRequestStore } from "../../stores/RequestStore";
+import { useRequestStore } from "../../stores/requestStore";
 import { FixedAssignmentT, RequestT, FarT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 

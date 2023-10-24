@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 import ConstraintCreate from "./ConstraintCreate";
+import ConstraintList from "./ConstraintList";
 import { useConstraintStore } from "../../stores/constraintStore";
 import { useConstraintTreeStore } from "../../stores/constraintTreeStore";
 import { ConstraintT, TreeNodeT } from "./types";
@@ -46,7 +47,16 @@ export default function ConstraintConfig({ workers, shifts }: Props) {
       <Typography variant="h4" align="left">
         Constraints Configuration
       </Typography>
-      <ConstraintCreate tree={constraintTree} />
+      <ConstraintCreate
+        tree={constraintTree}
+        workers={workers}
+        shifts={shifts}
+      />
+      <ConstraintList
+        constraints={constraints}
+        workers={workers}
+        shifts={shifts}
+      />
     </Box>
   );
 }
