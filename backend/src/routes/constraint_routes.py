@@ -2,7 +2,7 @@ from fastapi import APIRouter, Body, HTTPException, status
 from mongoengine import NotUniqueError
 
 from scripts.setup_database import constraint_db, constraint_variable_db
-from services import build_constraint, build_constraint_front
+from services import build_constraint, build_constraint_front, build_tree
 
 router = APIRouter()
 
@@ -30,26 +30,35 @@ async def create_constraint(info_received: dict = Body(...)):
         )
         return {"constraint": constraint_response}
     except NotUniqueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        ) from e
 
 
 @router.get("/constraints")
 async def get_constraints():
     constraints = constraint_db.get_constraints()
     constraints_variables = [
-        constraint_variable_db.get_constraint_variables_by_constraint(constraint)
+        constraint_variable_db.get_constraint_variables_by_constraint(
+            constraint
+        )
         for constraint in constraints
     ]
     constraints_dict = [constraint.to_dict() for constraint in constraints]
     constraints_variables_dict = [
-        [constraint_variable.to_dict() for constraint_variable in constraint_variables]
+        [
+            constraint_variable.to_dict()
+            for constraint_variable in constraint_variables
+        ]
         for constraint_variables in constraints_variables
     ]
     constraints_response = []
     for constraint, constraint_variables in zip(
         constraints_dict, constraints_variables_dict
     ):
-        constraint_front = build_constraint_front(constraint, constraint_variables)
+        constraint_front = build_constraint_front(
+            constraint, constraint_variables
+        )
         constraints_response.append(constraint_front)
     return {"constraints": constraints_response}
 
@@ -65,7 +74,9 @@ async def update_constraints(input_received: dict = Body(...)):
         )
         constraint = constraint_db.get_constraint_by_id(constraint_id)
         constraint_variables = (
-            constraint_variable_db.get_constraint_variables_by_constraint(constraint)
+            constraint_variable_db.get_constraint_variables_by_constraint(
+                constraint
+            )
         )
         constraint_updated = constraint_db.update_constraint(
             constraint=constraint, **new_constraint
@@ -91,7 +102,9 @@ async def update_constraints(input_received: dict = Body(...)):
         )
         return {"constraint": constraint_response}
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        ) from e
 
 
 @router.put("/constraints/{constraint_id}/status")
@@ -119,7 +132,9 @@ async def update_constraint_status(
         )
         return {"constraint": constraint_response}
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        ) from e
 
 
 @router.delete("/constraints/{constraint_id}")
@@ -127,10 +142,16 @@ async def delete_constraint(constraint_id: str):
     try:
         constraint = constraint_db.get_constraint_by_id(constraint_id)
         constraint_variables = (
-            constraint_variable_db.get_constraint_variables_by_constraint(constraint)
+            constraint_variable_db.get_constraint_variables_by_constraint(
+                constraint
+            )
         )
-        constraint_variable_db.delete_constraint_variables(constraint_variables)
+        constraint_variable_db.delete_constraint_variables(
+            constraint_variables
+        )
         constraint_db.delete_constraint(constraint)
         return {"message": "constraint deleted"}
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        ) from e

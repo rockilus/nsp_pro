@@ -6,12 +6,13 @@ import Drawer from "@mui/material/Drawer";
 import Typography from "@mui/material/Typography";
 
 import BuildConstraint from "./BuildContraint";
+import { ConstraintT } from "./types";
 
 interface Props {
   drawerOpen: boolean;
   toggleDrawer: () => void;
   constraintParams: Record<string, any>;
-  handleAddRow: (newRow: Record<string, any>) => void;
+  handleAddRow: (newRow: ConstraintT) => void;
 }
 
 export default function ConstraintDrawerTemplate({
@@ -20,7 +21,7 @@ export default function ConstraintDrawerTemplate({
   constraintParams,
   handleAddRow,
 }: Props) {
-  const handleAddConfirm = async (newRow: Record<string, any>) => {
+  const handleAddConfirm = async (newRow: ConstraintT) => {
     await handleAddRow(newRow);
     toggleDrawer();
   };

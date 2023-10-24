@@ -11,12 +11,13 @@ import TableRow from "@mui/material/TableRow";
 
 import ConstraintDrawerTemplate from "./ConstraintDrawerTemplate";
 import ConstraintRowTemplate from "./ConstraintRowTemplate";
+import { ConstraintT } from "./types";
 
 interface Props {
   columns: string[];
   rows: Record<string, any>[];
   constraintParams: Record<string, any>;
-  handleAddRow: (newRow: Record<string, any>) => void;
+  handleAddRow: (newRow: ConstraintT) => void;
   handleEditRow: (rowId: string, constraint: Record<string, any>) => void;
   handleEditRowStatus: (rowId: string, active: boolean) => void;
   handleDeleteRow: (id: string) => void;

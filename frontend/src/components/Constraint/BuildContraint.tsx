@@ -9,11 +9,12 @@ import BasicSelect from "../Utils/BasicSelect";
 import OrdTypeTemplate from "./BuildConstraintTemplates.tsx/OrdTypeTemplate";
 import SeqTypeTemplate from "./BuildConstraintTemplates.tsx/SeqTypeTemplate";
 import SumTypeTemplate from "./BuildConstraintTemplates.tsx/SumTypeTemplate";
+import { ConstraintT } from "./types";
 
 interface Props {
   constraintParams: Record<string, any>;
   constraint: Record<string, any>;
-  handleAddRow: (newRow: Record<string, any>) => void;
+  handleAddRow: (newRow: ConstraintT) => void;
   handleEditRow: (rowId: string, constraint: Record<string, any>) => void;
   editMode: boolean;
 }
@@ -70,6 +71,14 @@ export default function BuildConstraint({
   };
 
   const handleBuildAndAddConstraint = async () => {
+    const constraint: ConstraintT = {
+      id: "",
+      name: "",
+      type: constraintType,
+      hard: softOrHard,
+      priority: softPriority,
+      active: true,
+    };
     const constraintDict = {
       constraint: {
         constraint_type: constraintType,
@@ -88,7 +97,7 @@ export default function BuildConstraint({
         other_var_value: otherVarValue,
       },
     };
-    await handleAddRow(constraintDict);
+    await handleAddRow(constraint);
   };
 
   const handleEditConstraint = async () => {

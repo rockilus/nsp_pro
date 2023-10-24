@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes import (
     router_constraint,
     router_constraint_param,
+    router_constraint_tree,
     router_coverage,
     router_coverage_selector,
     router_fixed_assignment,
@@ -35,6 +36,7 @@ app.add_middleware(
 
 app.include_router(router_constraint)
 app.include_router(router_constraint_param)
+app.include_router(router_constraint_tree)
 app.include_router(router_coverage)
 app.include_router(router_coverage_selector)
 app.include_router(router_fixed_assignment)
@@ -47,4 +49,6 @@ app.include_router(router_worker_dimension)
 
 
 def run_router():
-    uvicorn.run("scripts.setup_router:app", host="127.0.0.1", port=5000, reload=True)
+    uvicorn.run(
+        "scripts.setup_router:app", host="127.0.0.1", port=5000, reload=True
+    )

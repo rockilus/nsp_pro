@@ -51,9 +51,6 @@ export default function FARConfig({ workers, shifts }: Props) {
         ...requests.map(RequestoFar),
       ];
       return fars.sort((a, b) => {
-        // const dateA = new Date(a.date);
-        // const dateB = new Date(b.date);
-        // return dateA.getTime() - dateB.getTime();
         return a.date.getTime() - b.date.getTime();
       });
     },
@@ -89,7 +86,7 @@ export default function FARConfig({ workers, shifts }: Props) {
   return (
     <Box style={{ width: "100%" }}>
       <Typography variant="h4" align="left">
-        FixedAssignment Selection
+        Fixed Assignments and Requests
       </Typography>
       <FARButton
         buttonElement={createButton()}

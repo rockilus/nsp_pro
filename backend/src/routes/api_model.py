@@ -119,3 +119,11 @@ class RequestMessage(BaseModel):
     shiftId: str
     priority: str
     status: str
+
+
+# Constraint
+class TreeNode(BaseModel):
+    name: str
+    parentOptions: List[str]
+    options: List[str]
+    children: List["TreeNode"]
