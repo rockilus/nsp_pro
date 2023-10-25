@@ -7,7 +7,7 @@ from engine.engine import Engine
 from engine.inputs_outputs import (
     Assignment,
     Coverage,
-    Custom,
+    Constraint,
     Inputs,
     Outputs,
     Request,
@@ -27,20 +27,13 @@ class TestEngine:
         coverage = Coverage([])
         requests: List[Request] = []
         fix_assignments: List[Assignment] = []
-        custom = Custom(
-            constraints_sum=[],
-            constraints_seq=[],
-            constraints_ord=[],
-            constraints_fil=[],
-            constraints_fai=[],
-            constraints_eve=[],
-        )
+        constraints: List[Constraint] = []
         inputs = Inputs(
             variable_space=variable_space,
             coverage=coverage,
             requests=requests,
             fixed_assignments=fix_assignments,
-            custom=custom,
+            constraints=constraints,
         )
         return inputs
 

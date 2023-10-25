@@ -22,7 +22,7 @@ def build_constraint_sum(constraint_build: ConstraintBuild) -> Constraint:
         selector=get_block_value_from_name(
             "day", constraint_build.build_blocks
         ),
-        target=[],
+        target=0,
         start_date=date.today(),
         end_date=date.today(),
         interval=0,

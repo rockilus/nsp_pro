@@ -217,13 +217,50 @@ class ConstraintEve:
 
 
 @dataclass
-class Custom:
-    constraints_sum: List[ConstraintSum]
-    constraints_seq: List[ConstraintSeq]
-    constraints_ord: List[ConstraintOrd]
-    constraints_fil: List[ConstraintFil]
-    constraints_fai: List[ConstraintFai]
-    constraints_eve: List[ConstraintEve]
+class VarWorker:
+    operator: Literal["", "in_target", "out_target"]
+    selector: Literal["all", "equal"]
+    target: List[str]
+    num_eligible_workers: int
+
+
+# Check if we can replace target with start and end dates
+@dataclass
+class VarDay:
+    selector: Literal["all", "week", "period", "week_day_index"]
+    target: int
+    start_date: date
+    end_date: date
+    interval: int
+
+
+@dataclass
+class VarShift:
+    operator: Literal["", "in_target", "out_target"]
+    selector: Literal["all", "equal"]
+    target: List[str]
+    reference: str
+    relative: str
+
+
+@dataclass
+class Constraint:
+    id: str
+    constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
+    operator: Literal[
+        "",
+        "less_than_or_equal",
+        "equal",
+        "greater_than_or_equal",
+        "yes",
+        "no",
+    ]
+    target_value: int
+    worker_var: VarWorker
+    day_var: VarDay
+    shift_var: VarShift
+    hard: bool
+    penalty: int
 
 
 @dataclass
@@ -232,7 +269,7 @@ class Inputs:
     coverage: Coverage
     requests: List[Request]
     fixed_assignments: List[Assignment]
-    custom: Custom
+    constraints: List[Constraint]
 
 
 ##############################

@@ -28,7 +28,7 @@ class VarDay(EmbeddedDocument):
     selector = StringField(
         required=True, choices=["all", "week", "period", "week_day_index"]
     )
-    target = ListField(DateTimeField(), default=[])
+    target = IntField(default=0)
     start_date = DateTimeField(default=datetime.now())
     end_date = DateTimeField(default=datetime.now())
     interval = IntField(default=0)

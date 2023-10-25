@@ -14,7 +14,7 @@ class VarWorker:
 @dataclass
 class VarDay:
     selector: str
-    target: List[date]
+    target: int
     start_date: date
     end_date: date
     interval: int

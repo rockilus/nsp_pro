@@ -5,55 +5,87 @@ import pytest
 
 from engine.engine_test import TestEngine
 from engine.inputs_outputs import (
-    ConstraintFil,
+    Constraint,
     Inputs,
     Outputs,
     Request,
-    VarFilDay,
-    VarFilShift,
-    VarFilWorker,
+    VarDay,
+    VarShift,
+    VarWorker,
 )
 
 
 # pylint: disable=R0801
-class TestConstraintFil:
+class TestConstraint:
     @pytest.fixture
-    def constraint_fil_hard(self) -> ConstraintFil:
-        return ConstraintFil(
+    def constraint_fil_hard(self) -> Constraint:
+        return Constraint(
             id="constraint_fil_hard",
-            worker_var=VarFilWorker(
-                operator="in_target", selector="list", target=["w0", "w1"]
+            constraint_type="fil",
+            operator="",
+            target_value=0,
+            worker_var=VarWorker(
+                operator="in_target",
+                selector="equal",
+                target=["w0", "w1"],
+                num_eligible_workers=0,
             ),
-            day_var=VarFilDay(selector="all"),
-            shift_var=VarFilShift(
-                operator="in_target", selector="list", target=["s0", "s1"]
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                operator="in_target",
+                selector="equal",
+                target=["s0", "s1"],
+                reference="",
+                relative="",
             ),
             hard=True,
             penalty=0,
         )
 
     @pytest.fixture
-    def constraint_fil_soft(self) -> ConstraintFil:
-        return ConstraintFil(
+    def constraint_fil_soft(self) -> Constraint:
+        return Constraint(
             id="constraint_fil_soft",
-            worker_var=VarFilWorker(
-                operator="in_target", selector="list", target=["w0", "w1"]
+            constraint_type="fil",
+            operator="",
+            target_value=0,
+            worker_var=VarWorker(
+                operator="in_target",
+                selector="equal",
+                target=["w0", "w1"],
+                num_eligible_workers=0,
             ),
-            day_var=VarFilDay(selector="all"),
-            shift_var=VarFilShift(
-                operator="in_target", selector="list", target=["s0", "s1"]
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                operator="in_target",
+                selector="equal",
+                target=["s0", "s1"],
+                reference="",
+                relative="",
             ),
             hard=False,
             penalty=20,
         )
 
 
-class TestConstraintFilHard(TestEngine, TestConstraintFil):
+class TestConstraintHard(TestEngine, TestConstraint):
     def test_expected_assignment_worker_in_target_shift_in_target(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_hard: ConstraintFil,
+        constraint_fil_hard: Constraint,
     ) -> None:
         # No worker w0 or w1 should be assigned to shift s0 or s1
         requests = [
@@ -67,7 +99,7 @@ class TestConstraintFilHard(TestEngine, TestConstraintFil):
         ]
 
         inputs.requests = requests
-        inputs.custom.constraints_fil = [constraint_fil_hard]
+        inputs.constraints = [constraint_fil_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -87,7 +119,7 @@ class TestConstraintFilHard(TestEngine, TestConstraintFil):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_hard: ConstraintFil,
+        constraint_fil_hard: Constraint,
     ) -> None:
         # No worker w0 or w1 should be assigned to shift other than s0 or s1
         # = Worker w0 and w1 should be assigned to shift s0 or s1
@@ -103,7 +135,7 @@ class TestConstraintFilHard(TestEngine, TestConstraintFil):
 
         inputs.requests = requests
         constraint_fil_hard.shift_var.operator = "out_target"
-        inputs.custom.constraints_fil = [constraint_fil_hard]
+        inputs.constraints = [constraint_fil_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -123,7 +155,7 @@ class TestConstraintFilHard(TestEngine, TestConstraintFil):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_hard: ConstraintFil,
+        constraint_fil_hard: Constraint,
     ) -> None:
         # Worker other than w0 and w1 should be assigned to shift other than s0 or s1
         requests = [
@@ -138,14 +170,15 @@ class TestConstraintFilHard(TestEngine, TestConstraintFil):
 
         inputs.requests = requests
         constraint_fil_hard.worker_var.operator = "out_target"
-        inputs.custom.constraints_fil = [constraint_fil_hard]
+        inputs.constraints = [constraint_fil_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
         assignments_target_w = [
             assignment
             for assignment in assignments
-            if assignment.worker_id not in constraint_fil_hard.worker_var.target
+            if assignment.worker_id
+            not in constraint_fil_hard.worker_var.target
         ]
 
         assert all(
@@ -158,7 +191,7 @@ class TestConstraintFilHard(TestEngine, TestConstraintFil):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_hard: ConstraintFil,
+        constraint_fil_hard: Constraint,
     ) -> None:
         # Worker other than w0 and w1 should be assigned to shift s0 or s1
         requests = [
@@ -174,14 +207,15 @@ class TestConstraintFilHard(TestEngine, TestConstraintFil):
         inputs.requests = requests
         constraint_fil_hard.worker_var.operator = "out_target"
         constraint_fil_hard.shift_var.operator = "out_target"
-        inputs.custom.constraints_fil = [constraint_fil_hard]
+        inputs.constraints = [constraint_fil_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
         assignments_target_w = [
             assignment
             for assignment in assignments
-            if assignment.worker_id not in constraint_fil_hard.worker_var.target
+            if assignment.worker_id
+            not in constraint_fil_hard.worker_var.target
         ]
 
         assert all(
@@ -191,12 +225,12 @@ class TestConstraintFilHard(TestEngine, TestConstraintFil):
         assert outputs.objective_value == 1
 
 
-class TestConstraintFilSoft(TestEngine, TestConstraintFil):
+class TestConstraintSoft(TestEngine, TestConstraint):
     def test_expected_assignment_worker_in_target_shift_in_target(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_soft: ConstraintFil,
+        constraint_fil_soft: Constraint,
     ) -> None:
         # No worker w0 or w1 should be assigned to shift s0 or s1
         requests = [
@@ -210,7 +244,7 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         ]
 
         inputs.requests = requests
-        inputs.custom.constraints_fil = [constraint_fil_soft]
+        inputs.constraints = [constraint_fil_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -230,7 +264,7 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_soft: ConstraintFil,
+        constraint_fil_soft: Constraint,
     ) -> None:
         # No worker w0 or w1 should be assigned to shift other than s0 or s1
         # = Worker w0 and w1 should be assigned to shift s0 or s1
@@ -246,7 +280,7 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
 
         inputs.requests = requests
         constraint_fil_soft.shift_var.operator = "out_target"
-        inputs.custom.constraints_fil = [constraint_fil_soft]
+        inputs.constraints = [constraint_fil_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -266,7 +300,7 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_soft: ConstraintFil,
+        constraint_fil_soft: Constraint,
     ) -> None:
         # Worker other than w0 and w1 should be assigned to shift other than s0 or s1
         requests = [
@@ -281,14 +315,15 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
 
         inputs.requests = requests
         constraint_fil_soft.worker_var.operator = "out_target"
-        inputs.custom.constraints_fil = [constraint_fil_soft]
+        inputs.constraints = [constraint_fil_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
         assignments_target_w = [
             assignment
             for assignment in assignments
-            if assignment.worker_id not in constraint_fil_soft.worker_var.target
+            if assignment.worker_id
+            not in constraint_fil_soft.worker_var.target
         ]
 
         assert all(
@@ -301,7 +336,7 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_soft: ConstraintFil,
+        constraint_fil_soft: Constraint,
     ) -> None:
         # Worker other than w0 and w1 should be assigned to shift s0 or s1
         requests = [
@@ -317,14 +352,15 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         inputs.requests = requests
         constraint_fil_soft.worker_var.operator = "out_target"
         constraint_fil_soft.shift_var.operator = "out_target"
-        inputs.custom.constraints_fil = [constraint_fil_soft]
+        inputs.constraints = [constraint_fil_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
         assignments_target_w = [
             assignment
             for assignment in assignments
-            if assignment.worker_id not in constraint_fil_soft.worker_var.target
+            if assignment.worker_id
+            not in constraint_fil_soft.worker_var.target
         ]
 
         assert all(
@@ -337,13 +373,13 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_hard: ConstraintFil,
-        constraint_fil_soft: ConstraintFil,
+        constraint_fil_hard: Constraint,
+        constraint_fil_soft: Constraint,
     ) -> None:
         # No worker w0 or w1 should be assigned to shift s0 or s1 (hard)
         # Worker w0 and w1 should be assigned to shift s0 or s1 (soft)
         constraint_fil_hard.shift_var.operator = "out_target"
-        inputs.custom.constraints_fil = [
+        inputs.constraints = [
             constraint_fil_hard,
             constraint_fil_soft,
         ]
@@ -365,13 +401,13 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_hard: ConstraintFil,
-        constraint_fil_soft: ConstraintFil,
+        constraint_fil_hard: Constraint,
+        constraint_fil_soft: Constraint,
     ) -> None:
         # No worker w0 or w1 should be assigned to shift s0 or s1 (hard)
         # Worker w0 and w1 should be assigned to shift s0 or s1 (soft)
         constraint_fil_hard.shift_var.operator = "out_target"
-        inputs.custom.constraints_fil = [
+        inputs.constraints = [
             constraint_fil_hard,
             constraint_fil_soft,
         ]
@@ -380,20 +416,24 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         assert outputs.objective_value == constraint_fil_soft.penalty * len(
             constraint_fil_soft.worker_var.target
         ) * (
-            (inputs.variable_space.end_date - inputs.variable_space.start_date).days + 1
+            (
+                inputs.variable_space.end_date
+                - inputs.variable_space.start_date
+            ).days
+            + 1
         )
 
     def test_expected_constraint_breaches_variables_for_hard_soft_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_hard: ConstraintFil,
-        constraint_fil_soft: ConstraintFil,
+        constraint_fil_hard: Constraint,
+        constraint_fil_soft: Constraint,
     ) -> None:
         # No worker w0 or w1 should be assigned to shift s0 or s1 (hard)
         # Worker w0 and w1 should be assigned to shift s0 or s1 (soft)
         constraint_fil_hard.shift_var.operator = "out_target"
-        inputs.custom.constraints_fil = [
+        inputs.constraints = [
             constraint_fil_hard,
             constraint_fil_soft,
         ]
@@ -419,7 +459,10 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+            any(
+                exp_variable in cb.variables
+                for cb in outputs.constraint_breaches
+            )
             for exp_variable in expected_variables
         )
 
@@ -427,13 +470,13 @@ class TestConstraintFilSoft(TestEngine, TestConstraintFil):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fil_hard: ConstraintFil,
-        constraint_fil_soft: ConstraintFil,
+        constraint_fil_hard: Constraint,
+        constraint_fil_soft: Constraint,
     ) -> None:
         # No worker w0 or w1 should be assigned to shift s0 or s1 (hard)
         # Worker w0 and w1 should be assigned to shift s0 or s1 (soft)
         constraint_fil_hard.shift_var.operator = "out_target"
-        inputs.custom.constraints_fil = [
+        inputs.constraints = [
             constraint_fil_hard,
             constraint_fil_soft,
         ]

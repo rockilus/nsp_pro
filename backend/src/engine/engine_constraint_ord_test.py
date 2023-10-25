@@ -2,53 +2,84 @@ from datetime import date, timedelta
 from typing import Callable
 
 import pytest
-
 from engine.engine_test import TestEngine
 from engine.inputs_outputs import (
     Assignment,
-    ConstraintOrd,
+    Constraint,
     Inputs,
     Outputs,
     Request,
-    VarOrdDay,
-    VarOrdShift,
-    VarOrdWorker,
+    VarDay,
+    VarShift,
+    VarWorker,
 )
 
 
 # pylint: disable=R0801
-class TestConstraintOrd:
+class TestConstraint:
     @pytest.fixture
-    def constraint_ord_hard(self) -> ConstraintOrd:
-        return ConstraintOrd(
+    def constraint_ord_hard(self) -> Constraint:
+        return Constraint(
             id="constraint_ord_hard",
+            constraint_type="ord",
             operator="no",
-            worker_var=VarOrdWorker(selector="all"),
-            day_var=VarOrdDay(selector="all", interval=1, target=0),
-            shift_var=VarOrdShift(reference="s1", relative="s0"),
+            target_value=0,
+            worker_var=VarWorker(
+                operator="", selector="all", target=[], num_eligible_workers=0
+            ),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=1,
+            ),
+            shift_var=VarShift(
+                operator="",
+                selector="all",
+                target=[],
+                reference="s1",
+                relative="s0",
+            ),
             hard=True,
             penalty=0,
         )
 
     @pytest.fixture
-    def constraint_ord_soft(self) -> ConstraintOrd:
-        return ConstraintOrd(
+    def constraint_ord_soft(self) -> Constraint:
+        return Constraint(
             id="constraint_ord_soft",
+            constraint_type="ord",
             operator="no",
-            worker_var=VarOrdWorker(selector="all"),
-            day_var=VarOrdDay(selector="all", interval=1, target=0),
-            shift_var=VarOrdShift(reference="s1", relative="s0"),
+            target_value=0,
+            worker_var=VarWorker(
+                operator="", selector="all", target=[], num_eligible_workers=0
+            ),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=1,
+            ),
+            shift_var=VarShift(
+                operator="",
+                selector="all",
+                target=[],
+                reference="s1",
+                relative="s0",
+            ),
             hard=False,
             penalty=20,
         )
 
 
-class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
+class TestConstraintHard(TestEngine, TestConstraint):
     def test_expected_assignment_for_no(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 after shift s1
         fixed_assignments = [
@@ -58,7 +89,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
                 shift_id="s1",
             ),
         ]
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -69,13 +100,15 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative
+        assert (
+            next_assignment.shift_id != constraint_ord_hard.shift_var.relative
+        )
 
     def test_expected_assignment_for_yes(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 after shift s1
         fixed_assignments = [
@@ -87,7 +120,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         ]
         constraint_ord_hard.operator = "yes"
         constraint_ord_hard.shift_var.relative = "s3"
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -98,13 +131,15 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert next_assignment.shift_id == constraint_ord_hard.shift_var.relative
+        assert (
+            next_assignment.shift_id == constraint_ord_hard.shift_var.relative
+        )
 
     def test_no_solution_for_no_if_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 after shift s1
         fixed_assignments = [
@@ -119,7 +154,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
                 shift_id="s0",
             ),
         ]
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
 
@@ -129,7 +164,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 after shift s1
         fixed_assignments = [
@@ -144,7 +179,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
                 shift_id="s1",
             ),
         ]
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         constraint_ord_hard.operator = "yes"
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
@@ -155,7 +190,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days after shift s1
         fixed_assignments = [
@@ -171,7 +206,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
             ),
         ]
         constraint_ord_hard.day_var.interval = 3
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -188,7 +223,8 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative
@@ -199,7 +235,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days after shift s1
         fixed_assignments = [
@@ -216,7 +252,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         ]
         constraint_ord_hard.operator = "yes"
         constraint_ord_hard.day_var.interval = 3
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -233,7 +269,8 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative
@@ -244,7 +281,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days after shift s1
         fixed_assignments = [
@@ -260,7 +297,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
             ),
         ]
         constraint_ord_hard.day_var.interval = -3
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -277,7 +314,8 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative
@@ -288,7 +326,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days after shift s1
         fixed_assignments = [
@@ -305,7 +343,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         ]
         constraint_ord_hard.operator = "yes"
         constraint_ord_hard.day_var.interval = -3
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -322,7 +360,8 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative
@@ -333,7 +372,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days after shift s1 on week day index 0
         fixed_assignments = [
@@ -363,7 +402,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
                 shift_id="s1",
             ),
         ]
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         constraint_ord_hard.day_var.selector = "week_day_index"
         constraint_ord_hard.day_var.interval = 3
         constraint_ord_hard.day_var.target = 0
@@ -386,7 +425,8 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative
@@ -397,7 +437,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # Shift s0 three days after shift s1 on week day index 0
         fixed_assignments = [
@@ -430,7 +470,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         constraint_ord_hard.operator = "yes"
         constraint_ord_hard.day_var.selector = "week_day_index"
         constraint_ord_hard.day_var.interval = 3
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         constraint_ord_hard.day_var.target = 0
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
@@ -449,7 +489,8 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative
@@ -460,7 +501,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days before shift s1 on week day index 0
         fixed_assignments = [
@@ -493,7 +534,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         constraint_ord_hard.day_var.selector = "week_day_index"
         constraint_ord_hard.day_var.interval = -3
         constraint_ord_hard.day_var.target = 0
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -511,7 +552,8 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative
@@ -522,7 +564,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
+        constraint_ord_hard: Constraint,
     ) -> None:
         # Shift s0 three days before shift s1 on week day index 0
         fixed_assignments = [
@@ -556,7 +598,7 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         constraint_ord_hard.day_var.selector = "week_day_index"
         constraint_ord_hard.day_var.interval = 3
         constraint_ord_hard.day_var.target = 0
-        inputs.custom.constraints_ord = [constraint_ord_hard]
+        inputs.constraints = [constraint_ord_hard]
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -574,7 +616,8 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id
+            and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative
@@ -582,12 +625,12 @@ class TestConstraintOrdHard(TestEngine, TestConstraintOrd):
         )
 
 
-class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
+class TestConstraintSoft(TestEngine, TestConstraint):
     def test_expected_assignment_for_no(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_soft: ConstraintOrd,
+        constraint_ord_soft: Constraint,
     ) -> None:
         # No shift s0 after shift s1
         fixed_assignments = [
@@ -606,7 +649,7 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
                 penalty=1,
             ),
         ]
-        inputs.custom.constraints_ord = [constraint_ord_soft]
+        inputs.constraints = [constraint_ord_soft]
         inputs.fixed_assignments = fixed_assignments
         inputs.requests = requests
         outputs = engine_solve(inputs)
@@ -618,14 +661,16 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert next_assignment.shift_id != constraint_ord_soft.shift_var.relative
+        assert (
+            next_assignment.shift_id != constraint_ord_soft.shift_var.relative
+        )
         assert outputs.objective_value == 1
 
     def test_expected_assignment_for_yes(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_soft: ConstraintOrd,
+        constraint_ord_soft: Constraint,
     ) -> None:
         # Shift s3 after shift s1
         fixed_assignments = [
@@ -646,7 +691,7 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
         ]
         constraint_ord_soft.operator = "yes"
         constraint_ord_soft.shift_var.relative = "s3"
-        inputs.custom.constraints_ord = [constraint_ord_soft]
+        inputs.constraints = [constraint_ord_soft]
         inputs.fixed_assignments = fixed_assignments
         inputs.requests = requests
         outputs = engine_solve(inputs)
@@ -658,15 +703,17 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert next_assignment.shift_id == constraint_ord_soft.shift_var.relative
+        assert (
+            next_assignment.shift_id == constraint_ord_soft.shift_var.relative
+        )
         assert outputs.objective_value == 1
 
     def test_expected_assignment_for_hard_soft_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
-        constraint_ord_soft: ConstraintOrd,
+        constraint_ord_hard: Constraint,
+        constraint_ord_soft: Constraint,
     ) -> None:
         # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
         fixed_assignments = [
@@ -677,7 +724,7 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
             ),
         ]
         constraint_ord_soft.operator = "yes"
-        inputs.custom.constraints_ord = [
+        inputs.constraints = [
             constraint_ord_hard,
             constraint_ord_soft,
         ]
@@ -691,14 +738,16 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative
+        assert (
+            next_assignment.shift_id != constraint_ord_hard.shift_var.relative
+        )
 
     def test_expected_objective_for_hard_soft_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
-        constraint_ord_soft: ConstraintOrd,
+        constraint_ord_hard: Constraint,
+        constraint_ord_soft: Constraint,
     ) -> None:
         # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
         fixed_assignments = [
@@ -709,7 +758,7 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
             ),
         ]
         constraint_ord_soft.operator = "yes"
-        inputs.custom.constraints_ord = [
+        inputs.constraints = [
             constraint_ord_hard,
             constraint_ord_soft,
         ]
@@ -722,8 +771,8 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
-        constraint_ord_soft: ConstraintOrd,
+        constraint_ord_hard: Constraint,
+        constraint_ord_soft: Constraint,
     ) -> None:
         # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
         fixed_assignments = [
@@ -734,7 +783,7 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
             ),
         ]
         constraint_ord_soft.operator = "yes"
-        inputs.custom.constraints_ord = [
+        inputs.constraints = [
             constraint_ord_hard,
             constraint_ord_soft,
         ]
@@ -762,7 +811,10 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+            any(
+                exp_variable in cb.variables
+                for cb in outputs.constraint_breaches
+            )
             for exp_variable in expected_variables
         )
 
@@ -770,8 +822,8 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_ord_hard: ConstraintOrd,
-        constraint_ord_soft: ConstraintOrd,
+        constraint_ord_hard: Constraint,
+        constraint_ord_soft: Constraint,
     ) -> None:
         # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
         fixed_assignments = [
@@ -782,7 +834,7 @@ class TestConstraintOrdSoft(TestEngine, TestConstraintOrd):
             ),
         ]
         constraint_ord_soft.operator = "yes"
-        inputs.custom.constraints_ord = [
+        inputs.constraints = [
             constraint_ord_hard,
             constraint_ord_soft,
         ]

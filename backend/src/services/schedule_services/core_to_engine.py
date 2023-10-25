@@ -8,7 +8,7 @@ from core.shift import Shift
 from core.worker import Worker
 from engine import Assignment as AssignmentEngine
 from engine import Coverage as CoverageEngine
-from engine import Custom, Inputs
+from engine import Constraint, Inputs
 from engine import Request as RequestEngine
 from engine import ShiftDemand as ShiftDemandEngine
 from engine import VariableSpace
@@ -36,10 +36,12 @@ def from_core_to_inputs(
     cov_engine = CoverageEngine(shift_demands_engine)
     req_engine = [_build_request_engine(req) for req in requests]
     fa_engine = [
-        AssignmentEngine(worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id)
+        AssignmentEngine(
+            worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id
+        )
         for fa in fixed_assignments
     ]
-    custom_engine = Custom(
+    custom_engine = Constraint(
         constraints_sum=[],
         constraints_ord=[],
         constraints_seq=[],
@@ -52,7 +54,7 @@ def from_core_to_inputs(
         coverage=cov_engine,
         requests=req_engine,
         fixed_assignments=fa_engine,
-        custom=custom_engine,
+        constraints=custom_engine,
     )
     return inputs
 

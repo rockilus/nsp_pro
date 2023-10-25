@@ -5,41 +5,62 @@ import pytest
 
 from engine.engine_test import TestEngine
 from engine.inputs_outputs import (
-    ConstraintFai,
+    Constraint,
     Coverage,
     Inputs,
     Outputs,
     ShiftDemand,
-    VarFaiDay,
-    VarFaiShift,
-    VarFaiWorker,
+    VarDay,
+    VarShift,
+    VarWorker,
 )
 
 
 # pylint: disable=R0801, R0903
-class TestConstraintFai:
+class TestConstraint:
     @pytest.fixture
-    def constraint_fai_soft(self) -> ConstraintFai:
-        return ConstraintFai(
+    def constraint_fai_soft(self) -> Constraint:
+        return Constraint(
             id="constraint_fai_soft",
-            worker_var=VarFaiWorker(selector="all", target=[]),
-            day_var=VarFaiDay(selector="all", target=0),
-            shift_var=VarFaiShift(selector="all", target=[]),
+            constraint_type="fai",
+            operator="",
+            target_value=0,
+            worker_var=VarWorker(
+                operator="",
+                selector="all",
+                target=[],
+                num_eligible_workers=0,
+            ),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                operator="",
+                selector="all",
+                target=[],
+                reference="",
+                relative="",
+            ),
+            hard=False,
             penalty=2,
         )
 
 
-class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
+class TestConstraintSoft(TestEngine, TestConstraint):
     def test_expected_assignment_worker_all_day_all_shift_all_perfect(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 56 shifts across 8 workers, i.e. 7 shifts per worker
         target_shifts = ["s0", "s1"]
         quantity = 2
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -52,7 +73,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
+                (
+                    inputs.variable_space.end_date
+                    - inputs.variable_space.start_date
+                ).days
                 + 1
             )
             * len(target_shifts)
@@ -73,13 +97,13 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 28 shifts across 8 workers, i.e. 3.5 shifts per
         # worker. Objective is therefore to have 3 or 4 shifts per worker.
         target_shifts = ["s0", "s1"]
         quantity = 1
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -92,7 +116,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
+                (
+                    inputs.variable_space.end_date
+                    - inputs.variable_space.start_date
+                ).days
                 + 1
             )
             * len(target_shifts)
@@ -113,12 +140,12 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 56 shifts across 8 workers, i.e. 7 shifts per worker
         target_shifts = ["s0", "s1"]
         quantity = 2
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -133,11 +160,11 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         target_shifts = ["s0", "s1"]
         quantity = 1
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -150,7 +177,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
+                (
+                    inputs.variable_space.end_date
+                    - inputs.variable_space.start_date
+                ).days
                 + 1
             )
             * len(target_shifts)
@@ -176,11 +206,11 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         target_shifts = ["s0", "s1"]
         quantity = 1
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -207,7 +237,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+            any(
+                exp_variable in cb.variables
+                for cb in outputs.constraint_breaches
+            )
             for exp_variable in expected_variables
         )
 
@@ -215,14 +248,14 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 56 shifts across 8 workers, i.e. 7 shifts per worker
         coverage_shifts = ["s0", "s1", "s2"]
         quantity = 2
-        constraint_fai_soft.shift_var.selector = "list"
+        constraint_fai_soft.shift_var.selector = "equal"
         constraint_fai_soft.shift_var.target = ["s0", "s1"]
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -235,7 +268,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
+                (
+                    inputs.variable_space.end_date
+                    - inputs.variable_space.start_date
+                ).days
                 + 1
             )
             * len(constraint_fai_soft.shift_var.target)
@@ -257,15 +293,15 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 28 shifts across 8 workers, i.e. 3.5 shifts per
         # worker. Objective is therefore to have 3 or 4 shifts per worker.
         coverage_shifts = ["s0", "s1", "s2"]
         quantity = 1
-        constraint_fai_soft.shift_var.selector = "list"
+        constraint_fai_soft.shift_var.selector = "equal"
         constraint_fai_soft.shift_var.target = ["s0", "s1"]
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -278,7 +314,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
+                (
+                    inputs.variable_space.end_date
+                    - inputs.variable_space.start_date
+                ).days
                 + 1
             )
             * len(constraint_fai_soft.shift_var.target)
@@ -300,14 +339,14 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 56 shifts across 8 workers, i.e. 7 shifts per worker
         coverage_shifts = ["s0", "s1", "s2"]
         quantity = 2
-        constraint_fai_soft.shift_var.selector = "list"
+        constraint_fai_soft.shift_var.selector = "equal"
         constraint_fai_soft.shift_var.target = ["s0", "s1"]
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -322,13 +361,13 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         coverage_shifts = ["s0", "s1", "s2"]
         quantity = 1
-        constraint_fai_soft.shift_var.selector = "list"
+        constraint_fai_soft.shift_var.selector = "equal"
         constraint_fai_soft.shift_var.target = ["s0", "s1"]
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -341,7 +380,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
+                (
+                    inputs.variable_space.end_date
+                    - inputs.variable_space.start_date
+                ).days
                 + 1
             )
             * len(constraint_fai_soft.shift_var.target)
@@ -368,13 +410,13 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         coverage_shifts = ["s0", "s1", "s2"]
         quantity = 1
-        constraint_fai_soft.shift_var.selector = "list"
+        constraint_fai_soft.shift_var.selector = "equal"
         constraint_fai_soft.shift_var.target = ["s0", "s1"]
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -401,7 +443,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+            any(
+                exp_variable in cb.variables
+                for cb in outputs.constraint_breaches
+            )
             for exp_variable in expected_variables
         )
 
@@ -409,14 +454,14 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 28 shifts across 4 workers, i.e. 7 shifts per worker
         coverage_shifts = ["s0", "s1"]
         quantity = 1
-        constraint_fai_soft.worker_var.selector = "list"
+        constraint_fai_soft.worker_var.selector = "equal"
         constraint_fai_soft.worker_var.target = ["w0", "w1", "w2", "w3"]
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -429,7 +474,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
+                (
+                    inputs.variable_space.end_date
+                    - inputs.variable_space.start_date
+                ).days
                 + 1
             )
             * len(coverage_shifts)
@@ -450,15 +498,15 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 28 shifts across 5 workers, i.e. 5.6 shifts per
         # worker. Objective is therefore to have 5 or 6 shifts per worker.
         coverage_shifts = ["s0", "s1"]
         quantity = 1
-        constraint_fai_soft.worker_var.selector = "list"
+        constraint_fai_soft.worker_var.selector = "equal"
         constraint_fai_soft.worker_var.target = ["w0", "w1", "w2", "w3", "w4"]
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -471,7 +519,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
+                (
+                    inputs.variable_space.end_date
+                    - inputs.variable_space.start_date
+                ).days
                 + 1
             )
             * len(coverage_shifts)
@@ -492,14 +543,14 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 28 shifts across 4 workers, i.e. 7 shifts per worker
         coverage_shifts = ["s0", "s1"]
         quantity = 1
-        constraint_fai_soft.worker_var.selector = "list"
+        constraint_fai_soft.worker_var.selector = "equal"
         constraint_fai_soft.worker_var.target = ["w0", "w1", "w2", "w3"]
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -514,15 +565,15 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 28 shifts across 5 workers, i.e. 5.6 shifts per
         # worker. Objective is therefore to have 5 or 6 shifts per worker.
         coverage_shifts = ["s0", "s1"]
         quantity = 1
-        constraint_fai_soft.worker_var.selector = "list"
+        constraint_fai_soft.worker_var.selector = "equal"
         constraint_fai_soft.worker_var.target = ["w0", "w1", "w2", "w3", "w4"]
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -535,7 +586,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         target_count = (
             quantity
             * (
-                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
+                (
+                    inputs.variable_space.end_date
+                    - inputs.variable_space.start_date
+                ).days
                 + 1
             )
             * len(coverage_shifts)
@@ -561,15 +615,15 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 28 shifts across 5 workers, i.e. 5.6 shifts per
         # worker. Objective is therefore to have 5 or 6 shifts per worker.
         coverage_shifts = ["s0", "s1"]
         quantity = 1
-        constraint_fai_soft.worker_var.selector = "list"
+        constraint_fai_soft.worker_var.selector = "equal"
         constraint_fai_soft.worker_var.target = ["w0", "w1", "w2", "w3", "w4"]
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -596,7 +650,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+            any(
+                exp_variable in cb.variables
+                for cb in outputs.constraint_breaches
+            )
             for exp_variable in expected_variables
         )
 
@@ -604,7 +661,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 8 shifts on Mondays across 8 workers, i.e. 1 shifts
         # per worker
@@ -612,7 +669,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         quantity = 2
         constraint_fai_soft.day_var.selector = "week_day_index"
         constraint_fai_soft.day_var.target = 0
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -657,7 +714,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 12 shifts on Mondays across 8 workers, i.e. 1.5 shifts
         # per worker
@@ -665,7 +722,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         quantity = 2
         constraint_fai_soft.day_var.selector = "week_day_index"
         constraint_fai_soft.day_var.target = 0
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -710,7 +767,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 8 shifts on Mondays across 8 workers, i.e. 1 shifts
         # per worker
@@ -718,7 +775,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         quantity = 2
         constraint_fai_soft.day_var.selector = "week_day_index"
         constraint_fai_soft.day_var.target = 0
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -733,7 +790,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 12 shifts on Mondays across 8 workers, i.e. 1.5 shifts
         # per worker
@@ -741,7 +798,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         quantity = 2
         constraint_fai_soft.day_var.selector = "week_day_index"
         constraint_fai_soft.day_var.target = 0
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -791,7 +848,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
+        constraint_fai_soft: Constraint,
     ) -> None:
         # Total demand of 12 shifts on Mondays across 8 workers, i.e. 1.5 shifts
         # per worker
@@ -799,7 +856,7 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         quantity = 2
         constraint_fai_soft.day_var.selector = "week_day_index"
         constraint_fai_soft.day_var.target = 0
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -832,7 +889,10 @@ class TestConstraintFaiSoft(TestEngine, TestConstraintFai):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+            any(
+                exp_variable in cb.variables
+                for cb in outputs.constraint_breaches
+            )
             for exp_variable in expected_variables
         )
 
@@ -860,7 +920,9 @@ def build_day_list(start_date: date, end_date: date) -> List[date]:
     return [start_date + timedelta(days=i) for i in range(delta.days + 1)]
 
 
-def count_days_with_index(start_date: date, end_date: date, day_index: int) -> int:
+def count_days_with_index(
+    start_date: date, end_date: date, day_index: int
+) -> int:
     count = 0
     current_date = start_date
     while current_date <= end_date:
