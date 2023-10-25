@@ -6,6 +6,7 @@ from typing import Dict, List, Set, Tuple
 from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
 
+import os
 from engine.inputs_outputs import (
     Assignment,
     Constraint,
@@ -230,7 +231,7 @@ class Model:
         elif constraint.day_var.selector == "week":
             week_length = 7
             d_indexes = [
-                list(range(i, i + 7))
+                list(range(i, min(i + 7, len(self.days))))
                 for i in range(
                     0,
                     len(self.days),
@@ -837,3 +838,13 @@ class Model:
         if params:
             text_format.Parse(params, self.solver.parameters)
         self.status = self.solver.Solve(self.model, self.solution_printer)
+
+    def save_to_text(self, directory_path: str) -> None:
+        model_file_path = os.path.join(directory_path, "model.txt")
+        model_file_path_alt = os.path.join(directory_path, "model_alt.txt")
+        # solver_file_path = os.path.join(directory_path, "solver.txt")
+        with open(model_file_path, "w", encoding="utf-8") as text_file:
+            text_file.write(str(self.model))
+        self.model.ExportToFile(model_file_path_alt)
+        # with open(solver_file_path, "w", encoding="utf-8") as text_file:
+        #     text_file.write(str(self.solution_printer))

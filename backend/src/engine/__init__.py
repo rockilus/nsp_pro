@@ -1,7 +1,6 @@
 from engine.engine import Engine
 from engine.inputs_outputs import (
     Assignment,
-    ConstraintSum,
     Coverage,
     Constraint,
     Inputs,
@@ -9,14 +8,13 @@ from engine.inputs_outputs import (
     Request,
     ShiftDemand,
     VariableSpace,
-    VarSumDay,
-    VarSumShift,
-    VarSumWorker,
+    VarDay,
+    VarShift,
+    VarWorker,
 )
 
 __all__ = [
     "Assignment",
-    "ConstraintSum",
     "Coverage",
     "Constraint",
     "Engine",
@@ -25,7 +23,7 @@ __all__ = [
     "Request",
     "ShiftDemand",
     "VariableSpace",
-    "VarSumDay",
-    "VarSumShift",
-    "VarSumWorker",
+    "VarDay",
+    "VarShift",
+    "VarWorker",
 ]
