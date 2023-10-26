@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes import (
     router_constraint,
-    router_constraint_param,
     router_constraint_tree,
     router_coverage,
     router_coverage_selector,
@@ -35,7 +34,6 @@ app.add_middleware(
 # app.include_router(router_coverage, prefix="/api/v1", tags=["coverage"])
 
 app.include_router(router_constraint)
-app.include_router(router_constraint_param)
 app.include_router(router_constraint_tree)
 app.include_router(router_coverage)
 app.include_router(router_coverage_selector)

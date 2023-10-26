@@ -3,9 +3,6 @@ import os
 from database import (
     DB,
     ConstraintDB,
-    ConstraintParamDB,
-    ConstraintParamOptionDB,
-    ConstraintVariableDB,
     CoverageDB,
     CoverageSelectorDB,
     FixedAssignmentDB,
@@ -21,14 +18,11 @@ from database import (
 )
 
 database_uri = (
-    f"mongodb://localhost:27017/{os.getenv('ENV_SITUATION', default='nsp_pro')}"
+    "mongodb://localhost:27017/" + f"{os.getenv('ENV_SITUATION', default='nsp_pro')}"
 )
 
 db = DB(database_uri)
 constraint_db = ConstraintDB(db)
-constraint_param_db = ConstraintParamDB(db)
-constraint_param_option_db = ConstraintParamOptionDB(db)
-constraint_variable_db = ConstraintVariableDB(db)
 coverage_db = CoverageDB(db)
 coverage_selector_db = CoverageSelectorDB(db)
 fixed_assignment_db = FixedAssignmentDB(db)

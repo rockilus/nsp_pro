@@ -1,4 +1,3 @@
-from routes.constraint_param_routes import router as router_constraint_param
 from routes.constraint_routes import router as router_constraint
 from routes.constraint_tree_routes import router as router_constraint_tree
 from routes.coverage_routes import router as router_coverage
@@ -12,7 +11,6 @@ from routes.worker_dimension_routes import router as router_worker_dimension
 from routes.worker_routes import router as router_worker
 
 __all__ = [
-    "router_constraint_param",
     "router_constraint",
     "router_constraint_tree",
     "router_coverage",

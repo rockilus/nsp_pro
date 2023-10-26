@@ -20,7 +20,6 @@ class VarWorker(EmbeddedDocument):
     num_eligible_workers = IntField(default=0)
 
 
-# Check if we can replace target with start and end dates
 class VarDay(EmbeddedDocument):
     selector = StringField(
         required=True, choices=["all", "week", "period", "week_day_index"]

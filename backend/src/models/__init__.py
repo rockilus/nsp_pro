@@ -1,7 +1,4 @@
 from models.constraint import BuildBlock, Constraint, VarDay, VarShift, VarWorker
-from models.constraint_param import ConstraintParam
-from models.constraint_param_option import ConstraintParamOption
-from models.constraint_variable import ConstraintVariable
 from models.coverage import Coverage
 from models.coverage_selector import CoverageSelector
 from models.fixed_assignment import FixedAssignment
@@ -21,9 +18,6 @@ __all__ = [
     "VarWorker",
     "VarDay",
     "VarShift",
-    "ConstraintParam",
-    "ConstraintParamOption",
-    "ConstraintVariable",
     "Coverage",
     "CoverageSelector",
     "FixedAssignment",
