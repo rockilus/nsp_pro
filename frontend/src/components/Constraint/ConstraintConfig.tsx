@@ -1,13 +1,14 @@
 import React, { useEffect } from "react";
 
+import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
-import ConstraintCreate from "./ConstraintCreate";
 import ConstraintList from "./ConstraintList";
+import ConstraintButton from "./ConstraintButton";
 import { useConstraintStore } from "../../stores/constraintStore";
 import { useConstraintTreeStore } from "../../stores/constraintTreeStore";
-import { ConstraintT, TreeNodeT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
@@ -23,13 +24,6 @@ export default function ConstraintConfig({ workers, shifts }: Props) {
   const fetchConstraints = useConstraintStore(
     (state) => state.fetchConstraints
   );
-  const addConstraint = useConstraintStore((state) => state.addConstraint);
-  const updateConstraint = useConstraintStore(
-    (state) => state.updateConstraint
-  );
-  const deleteConstraint = useConstraintStore(
-    (state) => state.deleteConstraint
-  );
   const fetchConstraintTree = useConstraintTreeStore(
     (state) => state.fetchConstraintTree
   );
@@ -42,17 +36,26 @@ export default function ConstraintConfig({ workers, shifts }: Props) {
     fetchConstraintTree();
   }, [fetchConstraintTree]);
 
+  const createButton = () => {
+    return (
+      <Button variant="contained" color="primary" startIcon={<AddIcon />}>
+        Create
+      </Button>
+    );
+  };
+
   return (
     <Box style={{ width: "100%" }}>
       <Typography variant="h4" align="left">
         Constraints Configuration
       </Typography>
-      <ConstraintCreate
+      <ConstraintButton
+        buttonElement={createButton()}
         constraint={{
           id: "",
           buildBlocks: [],
           hard: true,
-          priority: "no",
+          priority: "",
           active: true,
         }}
         tree={constraintTree}
@@ -61,6 +64,7 @@ export default function ConstraintConfig({ workers, shifts }: Props) {
       />
       <ConstraintList
         constraints={constraints}
+        tree={constraintTree}
         workers={workers}
         shifts={shifts}
       />

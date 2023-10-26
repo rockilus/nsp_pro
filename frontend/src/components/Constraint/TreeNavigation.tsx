@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 import Box from "@mui/material/Box";
 import MenuItem from "@mui/material/MenuItem";
@@ -51,6 +51,7 @@ export default function TreeNavigation({
         value={getValue()}
         label={tree.name}
         onChange={(e) => handleOptionChange(e.target.value as string)}
+        sx={{ display: "inline-block", minWidth: "100px" }}
       >
         {tree.options.map((option) => (
           <MenuItem key={option} value={option}>
