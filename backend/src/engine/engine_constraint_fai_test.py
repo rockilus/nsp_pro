@@ -73,10 +73,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(target_shifts)
@@ -116,10 +113,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(target_shifts)
@@ -177,10 +171,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(target_shifts)
@@ -237,10 +228,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variable in expected_variables
         )
 
@@ -268,10 +256,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(constraint_fai_soft.shift_var.target)
@@ -314,10 +299,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(constraint_fai_soft.shift_var.target)
@@ -380,10 +362,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(constraint_fai_soft.shift_var.target)
@@ -443,10 +422,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variable in expected_variables
         )
 
@@ -474,10 +450,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(coverage_shifts)
@@ -519,10 +492,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(coverage_shifts)
@@ -586,10 +556,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         target_count = (
             quantity
             * (
-                (
-                    inputs.variable_space.end_date
-                    - inputs.variable_space.start_date
-                ).days
+                (inputs.variable_space.end_date - inputs.variable_space.start_date).days
                 + 1
             )
             * len(coverage_shifts)
@@ -650,10 +617,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variable in expected_variables
         )
 
@@ -889,10 +853,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variable in expected_variables
         )
 
@@ -920,9 +881,7 @@ def build_day_list(start_date: date, end_date: date) -> List[date]:
     return [start_date + timedelta(days=i) for i in range(delta.days + 1)]
 
 
-def count_days_with_index(
-    start_date: date, end_date: date, day_index: int
-) -> int:
+def count_days_with_index(start_date: date, end_date: date, day_index: int) -> int:
     count = 0
     current_date = start_date
     while current_date <= end_date:

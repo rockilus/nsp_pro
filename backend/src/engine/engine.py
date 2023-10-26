@@ -18,7 +18,8 @@ class Engine:
         model.set_up_model(inputs)
         model.solve()
         model.save_to_text(
-            "/Users/felipekharaba/Documents/Documents – Felipe’s MacBook Pro/Coding courses/Projects/nsp_pro/backend/src/engine/"
+            "/Users/felipekharaba/Documents/Documents – Felipe’s MacBook Pro/"
+            + "Coding courses/Projects/nsp_pro/backend/src/engine/"
         )
         output = Output(model)
         return output.build_outputs()

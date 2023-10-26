@@ -2,6 +2,7 @@ from datetime import date, timedelta
 from typing import Callable
 
 import pytest
+
 from engine.engine_test import TestEngine
 from engine.inputs_outputs import (
     Assignment,
@@ -100,9 +101,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert (
-            next_assignment.shift_id != constraint_ord_hard.shift_var.relative
-        )
+        assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative
 
     def test_expected_assignment_for_yes(
         self,
@@ -131,9 +130,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert (
-            next_assignment.shift_id == constraint_ord_hard.shift_var.relative
-        )
+        assert next_assignment.shift_id == constraint_ord_hard.shift_var.relative
 
     def test_no_solution_for_no_if_conflict(
         self,
@@ -223,8 +220,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative
@@ -269,8 +265,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative
@@ -314,8 +309,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative
@@ -360,8 +354,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative
@@ -425,8 +418,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative
@@ -489,8 +481,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative
@@ -552,8 +543,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative
@@ -616,8 +606,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date in dates
+            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative
@@ -661,9 +650,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert (
-            next_assignment.shift_id != constraint_ord_soft.shift_var.relative
-        )
+        assert next_assignment.shift_id != constraint_ord_soft.shift_var.relative
         assert outputs.objective_value == 1
 
     def test_expected_assignment_for_yes(
@@ -703,9 +690,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert (
-            next_assignment.shift_id == constraint_ord_soft.shift_var.relative
-        )
+        assert next_assignment.shift_id == constraint_ord_soft.shift_var.relative
         assert outputs.objective_value == 1
 
     def test_expected_assignment_for_hard_soft_conflict(
@@ -738,9 +723,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert (
-            next_assignment.shift_id != constraint_ord_hard.shift_var.relative
-        )
+        assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative
 
     def test_expected_objective_for_hard_soft_conflict(
         self,
@@ -811,10 +794,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variable in expected_variables
         )
 

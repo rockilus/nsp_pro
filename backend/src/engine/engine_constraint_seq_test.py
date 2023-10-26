@@ -10,8 +10,8 @@ from engine.inputs_outputs import (
     Inputs,
     Outputs,
     Request,
-    VarShift,
     VarDay,
+    VarShift,
     VarWorker,
 )
 
@@ -801,10 +801,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variable in expected_variables
         )
 

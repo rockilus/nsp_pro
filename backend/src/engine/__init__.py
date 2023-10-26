@@ -1,14 +1,14 @@
 from engine.engine import Engine
 from engine.inputs_outputs import (
     Assignment,
-    Coverage,
     Constraint,
+    Coverage,
     Inputs,
     Outputs,
     Request,
     ShiftDemand,
-    VariableSpace,
     VarDay,
+    VariableSpace,
     VarShift,
     VarWorker,
 )

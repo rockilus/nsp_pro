@@ -8,9 +8,9 @@ from engine.inputs_outputs import (
     Constraint,
     Inputs,
     Outputs,
-    VarWorker,
     VarDay,
     VarShift,
+    VarWorker,
 )
 
 
@@ -131,9 +131,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             for w in inputs.variable_space.workers
         ]
 
-        assert all(
-            count == constraint_sum_hard.target_value for count in counts
-        )
+        assert all(count == constraint_sum_hard.target_value for count in counts)
 
     def test_expected_assignment_for_greater_than_or_equal(
         self,
@@ -201,9 +199,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_sum_hard.worker_var.selector = "equal"
         constraint_sum_hard.worker_var.target = ["w0"]
         constraint_sum_hard.day_var.selector = "period"
-        constraint_sum_hard.day_var.start_date = date.fromisoformat(
-            "2023-10-02"
-        )
+        constraint_sum_hard.day_var.start_date = date.fromisoformat("2023-10-02")
         constraint_sum_hard.day_var.end_date = date.fromisoformat("2023-10-08")
         inputs.constraints = [constraint_sum_hard]
         outputs = engine_solve(inputs)
@@ -282,9 +278,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             for w in inputs.variable_space.workers
         ]
 
-        assert all(
-            count == constraint_sum_soft.target_value for count in counts
-        )
+        assert all(count == constraint_sum_soft.target_value for count in counts)
 
     def test_expected_assignment_for_greater_than_or_equal(
         self,
@@ -349,9 +343,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             for w in inputs.variable_space.workers
         ]
 
-        assert all(
-            count == constraint_sum_hard.target_value for count in counts
-        )
+        assert all(count == constraint_sum_hard.target_value for count in counts)
 
     def test_expected_objective_for_hard_soft_conflict(
         self,
@@ -406,19 +398,13 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         # all constraint_breaches' variables are in expected_variables
         assert all(
-            any(
-                cb_variable in exp_variables
-                for exp_variables in expected_variables
-            )
+            any(cb_variable in exp_variables for exp_variables in expected_variables)
             for cb in outputs.constraint_breaches
             for cb_variable in cb.variables
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variables in expected_variables
             for exp_variable in exp_variables
         )
@@ -443,8 +429,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         )
 
         assert all(
-            cb.value_diff == expected_value_diff
-            for cb in outputs.constraint_breaches
+            cb.value_diff == expected_value_diff for cb in outputs.constraint_breaches
         )
 
 

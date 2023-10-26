@@ -118,9 +118,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         counts = []
         for i, p_len in enumerate(period_lengths):
             cum_days = sum(period_lengths[:i])
-            start_date = inputs.variable_space.start_date + timedelta(
-                days=cum_days
-            )
+            start_date = inputs.variable_space.start_date + timedelta(days=cum_days)
             end_date = start_date + timedelta(days=p_len - 1)
             count = sum(
                 1
@@ -178,9 +176,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         counts = []
         for i, p_len in enumerate(period_lengths):
             cum_days = sum(period_lengths[:i])
-            start_date = inputs.variable_space.start_date + timedelta(
-                days=cum_days
-            )
+            start_date = inputs.variable_space.start_date + timedelta(days=cum_days)
             end_date = start_date + timedelta(days=p_len - 1)
             count = sum(
                 1
@@ -243,9 +239,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         counts = []
         for i, p_len in enumerate(period_lengths):
             cum_days = sum(period_lengths[:i])
-            start_date = inputs.variable_space.start_date + timedelta(
-                days=cum_days
-            )
+            start_date = inputs.variable_space.start_date + timedelta(days=cum_days)
             end_date = start_date + timedelta(days=p_len - 1)
             count = sum(
                 1
@@ -438,7 +432,5 @@ def build_coverage(
 def integer_division_list(numerator: int, denominator: int) -> List[int]:
     quotient = numerator // denominator
     remainder = numerator % denominator
-    result = [quotient + 1] * remainder + [quotient] * (
-        denominator - remainder
-    )
+    result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
     return result
