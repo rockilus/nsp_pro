@@ -2,7 +2,7 @@ import * as React from "react";
 
 import Box from "@mui/material/Box";
 
-import ConstraintConfig from "../components/ConstraintConfig/ConstraintConfig";
+import ConstraintConfig from "../components/Constraint/ConstraintConfig";
 import ShiftConfig from "../components/Shift/ShiftConfig";
 import WorkerConfig from "../components/Worker/WorkerConfig";
 import CoveragePanel from "../components/Coverage/CoveragePanel";
@@ -51,13 +51,13 @@ export default function Draft() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
+      <ConstraintConfig workers={workers} shifts={shifts} />
       <WorkerConfig />
       <ShiftConfig />
       {shiftsForCoverage.length > 0 && (
         <CoveragePanel shifts={shiftsForCoverage} />
       )}
       <CoverageSelectorConfig />
-      <ConstraintConfig />
       <FARConfig workers={workersIdName} shifts={shiftsIdName} />
       <ScheduleConfig workers={workersIdName} shifts={shiftsIdName} />
     </Box>

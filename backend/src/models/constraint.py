@@ -1,29 +1,73 @@
-from mongoengine import Document
-from mongoengine.fields import BooleanField, IntField, ObjectIdField, StringField
+from datetime import datetime
+
+from mongoengine import Document, EmbeddedDocument
+from mongoengine.fields import (
+    BooleanField,
+    DateTimeField,
+    DynamicField,
+    EmbeddedDocumentField,
+    IntField,
+    ListField,
+    ReferenceField,
+    StringField,
+)
 
 
+class VarWorker(EmbeddedDocument):
+    operator = StringField(choices=["", "in_target", "out_target"], default="")
+    selector = StringField(required=True, choices=["all", "equal"])
+    target = ListField(ReferenceField("Worker"), default=[])
+    num_eligible_workers = IntField(default=0)
+
+
+# Check if we can replace target with start and end dates
+class VarDay(EmbeddedDocument):
+    selector = StringField(
+        required=True, choices=["all", "week", "period", "week_day_index"]
+    )
+    target = IntField(default=0)
+    start_date = DateTimeField(default=datetime.now())
+    end_date = DateTimeField(default=datetime.now())
+    interval = IntField(default=0)
+
+
+class VarShift(EmbeddedDocument):
+    operator = StringField(choices=["", "in_target", "out_target"], default="")
+    selector = StringField(choices=["", "all", "equal"], default="")
+    target = ListField(ReferenceField("Shift"), default=[])
+    reference = ReferenceField("Shift")
+    relative = ReferenceField("Shift")
+
+
+class BuildBlock(EmbeddedDocument):
+    name = StringField(required=True)
+    value = DynamicField(required=True)
+
+
+# replace constraint/aggregator with type string
 class Constraint(Document):
     meta = {"collection": "constraints"}
-    _id = ObjectIdField(primary_key=True)
+
+    id = StringField(primary_key=True, required=True)
+    # rename to aggregator
     constraint_type = StringField(
-        choices=["add", "sum", "sequence", "order"], required=True
+        required=True, choices=["sum", "seq", "ord", "fil", "fai", "eve"]
     )
     operator = StringField(
-        choices=["equal", "at_least", "at_most", "no"],
-        default="equal",
+        choices=[
+            "",
+            "less_than_or_equal",
+            "equal",
+            "greater_than_or_equal",
+            "yes",
+            "no",
+        ],
     )
     target_value = IntField(default=0)
-    hard_constraint = BooleanField(default=False)
-    penalty = IntField(default=0)
+    worker_var = EmbeddedDocumentField(VarWorker, required=True)
+    day_var = EmbeddedDocumentField(VarDay, required=True)
+    shift_var = EmbeddedDocumentField(VarShift, required=True)
+    hard = BooleanField(required=True)
+    priority = StringField(choices=["no", "low", "medium", "high"], default="no")
     active = BooleanField(default=True)
-
-    def to_dict(self):
-        return {
-            "_id": str(self._id),
-            "constraint_type": self.constraint_type,
-            "operator": self.operator,
-            "target_value": self.target_value,
-            "hard_constraint": self.hard_constraint,
-            "penalty": self.penalty,
-            "active": self.active,
-        }
+    build_blocks = ListField(EmbeddedDocumentField(BuildBlock))

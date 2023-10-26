@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 from datetime import date, timedelta
 from typing import Dict, List, Set, Tuple
 
@@ -8,19 +9,13 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.inputs_outputs import (
     Assignment,
-    ConstraintEve,
-    ConstraintFai,
-    ConstraintFil,
-    ConstraintOrd,
-    ConstraintSeq,
-    ConstraintSum,
-    Custom,
+    Constraint,
     Inputs,
     Request,
     ShiftDemand,
-    VarSumDay,
-    VarSumShift,
-    VarSumWorker,
+    VarDay,
+    VarShift,
+    VarWorker,
 )
 from engine.types import Objective
 
@@ -42,7 +37,7 @@ class Model:
         self.build_variables()
         self.add_exactly_one_shift_per_day_constraint()
         self.add_coverage_constraints(inputs.coverage.coverage)
-        self.add_custom_constraints(inputs.custom, inputs.coverage.coverage)
+        self.add_custom_constraints(inputs.constraints, inputs.coverage.coverage)
         self.add_fixed_assignments(inputs.fixed_assignments)
         self.add_requests(inputs.requests)
         self.add_objective()
@@ -79,14 +74,21 @@ class Model:
             self.model.Add(sum_var == sum(c_variables))
 
     def add_custom_constraints(
-        self, custom: Custom, coverage: List[ShiftDemand]
+        self, constraints: List[Constraint], coverage: List[ShiftDemand]
     ) -> None:
-        self._add_sum_constraints(custom.constraints_sum)
-        self._add_seq_constraints(custom.constraints_seq)
-        self._add_ord_constraints(custom.constraints_ord)
-        self._add_fil_constraints(custom.constraints_fil)
-        self._add_fai_constraints(custom.constraints_fai, coverage)
-        self._add_eve_constraints(custom.constraints_eve, coverage)
+        for constraint in constraints:
+            if constraint.constraint_type == "sum":
+                self._add_sum_constraint(constraint)
+            elif constraint.constraint_type == "seq":
+                self._add_seq_constraint(constraint)
+            elif constraint.constraint_type == "ord":
+                self._add_ord_constraint(constraint)
+            elif constraint.constraint_type == "fil":
+                self._add_fil_constraint(constraint)
+            elif constraint.constraint_type == "fai":
+                self._add_fai_constraint(constraint, coverage)
+            elif constraint.constraint_type == "eve":
+                self._add_eve_constraint(constraint, coverage)
 
     def add_fixed_assignments(self, fixed_assignments: List[Assignment]) -> None:
         date_format = "%Y-%m-%d"
@@ -116,109 +118,100 @@ class Model:
             self.obj.bool_vars.append(lit)
             self.obj.bool_coeffs.append(p)
 
-    def _add_sum_constraints(self, constraints_sum: List[ConstraintSum]) -> None:
-        for constraint_sum in constraints_sum:
-            w_vars, d_vars, s_vars = self._get_vars_coordinates_sum(constraint_sum)
-            for w in w_vars:
-                for s in s_vars:
-                    for period in d_vars:
-                        constraint_vars = [self.variables[w, d, s] for d in period]
-                        self._add_constraint_sum_to_model(
-                            constraint_sum, constraint_vars
-                        )
+    def _add_sum_constraint(self, constraint: Constraint) -> None:
+        w_vars, d_vars, s_vars = self._get_vars_coordinates_sum(constraint)
+        for w in w_vars:
+            for s in s_vars:
+                for period in d_vars:
+                    constraint_vars = [self.variables[w, d, s] for d in period]
+                    self._add_constraint_sum_to_model(constraint, constraint_vars)
 
-    def _add_seq_constraints(self, constraints_seq: List[ConstraintSeq]) -> None:
-        for constraint_seq in constraints_seq:
-            w_vars, d_vars, s_vars = self._get_vars_coordinates_seq(constraint_seq)
-            for w in w_vars:
-                for s in s_vars:
-                    constraint_vars = []
-                    for d in d_vars:
-                        constraint_vars.append(self.variables[w, d, s])
-                self._add_constraint_seq_to_model(constraint_seq, constraint_vars)
-
-    def _add_ord_constraints(self, constraints_ord: List[ConstraintOrd]) -> None:
-        for constraint_ord in constraints_ord:
-            w_vars, d_vars = self._get_vars_coordinates_ord(constraint_ord)
-            for w in w_vars:
-                for d1, d2 in d_vars:
-                    constraint_vars = [
-                        self.variables[w, d1, constraint_ord.shift_var.reference],
-                        self.variables[w, d2, constraint_ord.shift_var.relative],
-                    ]
-                    self._add_constraint_ord_to_model(constraint_ord, constraint_vars)
-
-    def _add_fil_constraints(self, constraints_fil: List[ConstraintFil]) -> None:
-        for constraint_fil in constraints_fil:
-            w_vars, d_vars, s_vars = self._get_vars_coordinates_fil(constraint_fil)
-            for w in w_vars:
+    def _add_seq_constraint(self, constraint: Constraint) -> None:
+        w_vars, d_vars, s_vars = self._get_vars_coordinates_seq(constraint)
+        for w in w_vars:
+            for s in s_vars:
+                constraint_vars = []
                 for d in d_vars:
-                    for s in s_vars:
-                        self._add_constraint_fil_to_model(
-                            constraint_fil, self.variables[w, d, s]
-                        )
+                    constraint_vars.append(self.variables[w, d, s])
+            self._add_constraint_seq_to_model(constraint, constraint_vars)
 
-    def _add_fai_constraints(
-        self, constraints_fai: List[ConstraintFai], coverage: List[ShiftDemand]
+    def _add_ord_constraint(self, constraint: Constraint) -> None:
+        w_vars, d_vars = self._get_vars_coordinates_ord(constraint)
+        for w in w_vars:
+            for d1, d2 in d_vars:
+                constraint_vars = [
+                    self.variables[w, d1, constraint.shift_var.reference],
+                    self.variables[w, d2, constraint.shift_var.relative],
+                ]
+                self._add_constraint_ord_to_model(constraint, constraint_vars)
+
+    def _add_fil_constraint(self, constraint: Constraint) -> None:
+        w_vars, d_vars, s_vars = self._get_vars_coordinates_fil(constraint)
+        for w in w_vars:
+            for d in d_vars:
+                for s in s_vars:
+                    self._add_constraint_fil_to_model(
+                        constraint, self.variables[w, d, s]
+                    )
+
+    def _add_fai_constraint(
+        self, constraint: Constraint, coverage: List[ShiftDemand]
     ) -> None:
         shifts_in_coverage = set(
             shift_demand.shift_id
             for shift_demand in coverage
             if shift_demand.quantity > 0
         )
-        for constraint_fai in constraints_fai:
-            w_vars, d_vars, s_vars = self._get_vars_coordinates_fai(
-                constraint_fai, shifts_in_coverage
-            )
-            constraints_vars = [
-                [self.variables[w, d, s] for d in d_vars for s in s_vars]
-                for w in w_vars
-            ]
-            target_average = Model._get_average_nb_shifts_per_worker(
-                coverage, len(w_vars), d_vars, s_vars
+        w_vars, d_vars, s_vars = self._get_vars_coordinates_fai(
+            constraint, shifts_in_coverage
+        )
+        constraints_vars = [
+            [self.variables[w, d, s] for d in d_vars for s in s_vars] for w in w_vars
+        ]
+        target_average = Model._get_average_nb_shifts_per_worker(
+            coverage, len(w_vars), d_vars, s_vars
+        )
+
+        for constraint_vars in constraints_vars:
+            self._add_constraint_fai_to_model(
+                constraint, constraint_vars, target_average
             )
 
-            for constraint_vars in constraints_vars:
-                self._add_constraint_fai_to_model(
-                    constraint_fai, constraint_vars, target_average
-                )
-
-    def _add_eve_constraints(
-        self, constraints_eve: List[ConstraintEve], coverage: List[ShiftDemand]
+    def _add_eve_constraint(
+        self, constraint: Constraint, coverage: List[ShiftDemand]
     ) -> None:
         shifts_in_coverage = set(
             shift_demand.shift_id
             for shift_demand in coverage
             if shift_demand.quantity > 0
         )
-        constraints_sum = []
-        for constraint_eve in constraints_eve:
-            w_vars, d_vars, s_vars = self._get_vars_coordinates_eve(
-                constraint_eve, shifts_in_coverage
+        w_vars, d_vars, s_vars = self._get_vars_coordinates_eve(
+            constraint, shifts_in_coverage
+        )
+        target_average = Model._get_average_nb_shifts_per_worker(
+            coverage,
+            constraint.worker_var.num_eligible_workers,
+            d_vars,
+            s_vars,
+        )
+        period_lengths = Model.integer_division_list(
+            len(self.days), int(target_average)
+        )
+        for w in w_vars:
+            constraints_sum = self.convert_constraint_eve_to_constraints_sum(
+                constraint, w, s_vars[0], period_lengths
             )
-            target_average = Model._get_average_nb_shifts_per_worker(
-                coverage,
-                constraint_eve.worker_var.num_eligible_workers,
-                d_vars,
-                s_vars,
-            )
-            period_lengths = Model.integer_division_list(
-                len(self.days), int(target_average)
-            )
-            for w in w_vars:
-                constraints_sum += self.convert_constraint_eve_to_constraints_sum(
-                    constraint_eve, w, s_vars[0], period_lengths
-                )
-        self._add_sum_constraints(constraints_sum)
+            for constraint_sum in constraints_sum:
+                self._add_sum_constraint(constraint_sum)
 
     def _get_vars_coordinates_sum(
-        self, constraint: ConstraintSum
+        self, constraint: Constraint
     ) -> Tuple[List[str], List[List[str]], List[str]]:
         date_format = "%Y-%m-%d"
         if constraint.worker_var.selector == "all":
             w_vars = self.workers
         elif constraint.worker_var.selector == "equal":
-            w_vars = [constraint.worker_var.target]
+            w_vars = constraint.worker_var.target
         else:
             raise NotImplementedError(
                 f"Worker selector {constraint.worker_var.selector} " + "not implemented"
@@ -228,7 +221,7 @@ class Model:
         elif constraint.day_var.selector == "week":
             week_length = 7
             d_indexes = [
-                list(range(i, i + 7))
+                list(range(i, min(i + 7, len(self.days))))
                 for i in range(
                     0,
                     len(self.days),
@@ -256,7 +249,7 @@ class Model:
                 f"Day selector {constraint.day_var.selector} " + "not implemented"
             )
         if constraint.shift_var.selector == "equal":
-            s_vars = [constraint.shift_var.target]
+            s_vars = constraint.shift_var.target
         else:
             raise NotImplementedError(
                 f"Shift selector {constraint.shift_var.selector} " + "not implemented"
@@ -264,7 +257,7 @@ class Model:
         return w_vars, d_vars, s_vars
 
     def _get_vars_coordinates_seq(
-        self, constraint: ConstraintSeq
+        self, constraint: Constraint
     ) -> Tuple[List[str], List[str], List[str]]:
         if constraint.worker_var.selector == "all":
             w_vars = self.workers
@@ -274,7 +267,7 @@ class Model:
             )
         d_vars = self.days
         if constraint.shift_var.selector == "equal":
-            s_vars = [constraint.shift_var.target]
+            s_vars = constraint.shift_var.target
         else:
             raise NotImplementedError(
                 f"Shift selector {constraint.shift_var.selector} " + "not implemented"
@@ -282,7 +275,7 @@ class Model:
         return w_vars, d_vars, s_vars
 
     def _get_vars_coordinates_ord(
-        self, constraint: ConstraintOrd
+        self, constraint: Constraint
     ) -> Tuple[List[str], List[List[str]]]:
         week_length = 7
         if constraint.worker_var.selector == "all":
@@ -324,11 +317,11 @@ class Model:
         return w_vars, d_vars
 
     def _get_vars_coordinates_fil(
-        self, constraint: ConstraintFil
+        self, constraint: Constraint
     ) -> Tuple[List[str], List[str], List[str]]:
         if constraint.worker_var.selector == "all":
             w_vars = self.workers
-        elif constraint.worker_var.selector == "list":
+        elif constraint.worker_var.selector == "equal":
             if constraint.worker_var.operator == "in_target":
                 w_vars = constraint.worker_var.target
             elif constraint.worker_var.operator == "out_target":
@@ -348,7 +341,7 @@ class Model:
             d_vars = self.days
         if constraint.shift_var.selector == "all":
             s_vars = self.shifts
-        elif constraint.shift_var.selector == "list":
+        elif constraint.shift_var.selector == "equal":
             if constraint.shift_var.operator == "in_target":
                 s_vars = constraint.shift_var.target
             elif constraint.shift_var.operator == "out_target":
@@ -362,12 +355,12 @@ class Model:
         return w_vars, d_vars, s_vars
 
     def _get_vars_coordinates_fai(
-        self, constraint: ConstraintFai, shifts_in_coverage: Set[str]
+        self, constraint: Constraint, shifts_in_coverage: Set[str]
     ) -> Tuple[List[str], List[str], List[str]]:
         week_length = 7
         if constraint.worker_var.selector == "all":
             w_vars = self.workers
-        elif constraint.worker_var.selector == "list":
+        elif constraint.worker_var.selector == "equal":
             w_vars = constraint.worker_var.target
         else:
             raise NotImplementedError(
@@ -386,7 +379,7 @@ class Model:
             ]
         if constraint.shift_var.selector == "all":
             s_vars = [s for s in self.shifts if s in shifts_in_coverage]
-        elif constraint.shift_var.selector == "list":
+        elif constraint.shift_var.selector == "equal":
             s_vars = constraint.shift_var.target
         else:
             raise NotImplementedError(
@@ -395,12 +388,12 @@ class Model:
         return w_vars, d_vars, s_vars
 
     def _get_vars_coordinates_eve(
-        self, constraint: ConstraintEve, shifts_in_coverage: Set[str]
+        self, constraint: Constraint, shifts_in_coverage: Set[str]
     ) -> Tuple[List[str], List[str], List[str]]:
         if constraint.worker_var.selector == "all":
             w_vars = self.workers
         elif constraint.worker_var.selector == "equal":
-            w_vars = [constraint.worker_var.target]
+            w_vars = constraint.worker_var.target
         else:
             raise NotImplementedError(
                 f"Worker selector {constraint.worker_var.selector} " + "not implemented"
@@ -410,7 +403,7 @@ class Model:
         if constraint.shift_var.selector == "all":
             s_vars = [s for s in self.shifts if s in shifts_in_coverage]
         elif constraint.shift_var.selector == "equal":
-            s_vars = [constraint.shift_var.target]
+            s_vars = constraint.shift_var.target
         else:
             raise NotImplementedError(
                 f"Shift selector {constraint.shift_var.selector} " + "not implemented"
@@ -418,40 +411,38 @@ class Model:
         return w_vars, d_vars, s_vars
 
     def _add_constraint_sum_to_model(
-        self, constraint_sum: ConstraintSum, cstr_vars: List[cp_model.IntVar]
+        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
     ) -> None:
-        if constraint_sum.hard:
-            if constraint_sum.operator == "less_than_or_equal":
-                sum_var = self.model.NewIntVar(0, constraint_sum.target_value, "")
-            elif constraint_sum.operator == "equal":
+        if constraint.hard:
+            if constraint.operator == "less_than_or_equal":
+                sum_var = self.model.NewIntVar(0, constraint.target_value, "")
+            elif constraint.operator == "equal":
                 sum_var = self.model.NewIntVar(
-                    constraint_sum.target_value,
-                    constraint_sum.target_value,
+                    constraint.target_value,
+                    constraint.target_value,
                     "",
                 )
-            elif constraint_sum.operator == "greater_than_or_equal":
+            elif constraint.operator == "greater_than_or_equal":
                 sum_var = self.model.NewIntVar(
-                    constraint_sum.target_value, len(cstr_vars), ""
+                    constraint.target_value, len(cstr_vars), ""
                 )
             else:
                 raise NotImplementedError(
-                    f"Sum constraint operator {constraint_sum.operator} "
+                    f"Sum constraint operator {constraint.operator} "
                     + "not implemented"
                 )
             self.model.Add(sum_var == sum(cstr_vars))
         else:
-            if constraint_sum.penalty != 0:
+            if constraint.penalty != 0:
                 var_name = json.dumps(
                     {
-                        "constraint_id": constraint_sum.id,
+                        "constraint_id": constraint.id,
                         "cstr_vars": [var.Name() for var in cstr_vars],
                     }
                 )
-                if constraint_sum.operator == "less_than_or_equal":
+                if constraint.operator == "less_than_or_equal":
                     delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
-                    self.model.Add(
-                        delta == sum(cstr_vars) - constraint_sum.target_value
-                    )
+                    self.model.Add(delta == sum(cstr_vars) - constraint.target_value)
                     excess = self.model.NewIntVar(
                         0,
                         len(cstr_vars),
@@ -459,12 +450,10 @@ class Model:
                     )
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(constraint_sum.penalty)
-                elif constraint_sum.operator == "equal":
+                    self.obj.int_coeffs.append(constraint.penalty)
+                elif constraint.operator == "equal":
                     delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
-                    self.model.Add(
-                        delta == sum(cstr_vars) - constraint_sum.target_value
-                    )
+                    self.model.Add(delta == sum(cstr_vars) - constraint.target_value)
                     excess = self.model.NewIntVar(
                         -len(cstr_vars),
                         len(cstr_vars),
@@ -472,12 +461,10 @@ class Model:
                     )
                     self.model.AddAbsEquality(excess, delta)
                     self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(constraint_sum.penalty)
-                elif constraint_sum.operator == "greater_than_or_equal":
+                    self.obj.int_coeffs.append(constraint.penalty)
+                elif constraint.operator == "greater_than_or_equal":
                     delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
-                    self.model.Add(
-                        delta == constraint_sum.target_value - sum(cstr_vars)
-                    )
+                    self.model.Add(delta == constraint.target_value - sum(cstr_vars))
                     excess = self.model.NewIntVar(
                         0,
                         len(cstr_vars),
@@ -485,80 +472,80 @@ class Model:
                     )
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(constraint_sum.penalty)
+                    self.obj.int_coeffs.append(constraint.penalty)
 
     def _add_constraint_seq_to_model(
-        self, constraint_seq: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
+        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
     ) -> None:
-        if constraint_seq.hard:
-            if constraint_seq.operator == "less_than_or_equal":
+        if constraint.hard:
+            if constraint.operator == "less_than_or_equal":
                 self._add_constraint_seq_less_than_or_equal_hard_to_model(
-                    constraint_seq, cstr_vars
+                    constraint, cstr_vars
                 )
-            elif constraint_seq.operator == "equal":
+            elif constraint.operator == "equal":
                 self._add_constraint_seq_less_than_or_equal_hard_to_model(
-                    constraint_seq, cstr_vars
+                    constraint, cstr_vars
                 )
                 self._add_constraint_seq_greater_than_or_equal_hard_to_model(
-                    constraint_seq, cstr_vars
+                    constraint, cstr_vars
                 )
-            elif constraint_seq.operator == "greater_than_or_equal":
+            elif constraint.operator == "greater_than_or_equal":
                 self._add_constraint_seq_greater_than_or_equal_hard_to_model(
-                    constraint_seq, cstr_vars
+                    constraint, cstr_vars
                 )
             else:
                 raise NotImplementedError(
-                    f"Sum constraint operator {constraint_seq.operator} "
+                    f"Sum constraint operator {constraint.operator} "
                     + "not implemented"
                 )
         else:
-            if constraint_seq.penalty != 0:
-                if constraint_seq.operator == "less_than_or_equal":
+            if constraint.penalty != 0:
+                if constraint.operator == "less_than_or_equal":
                     self._add_constraint_seq_less_than_or_equal_soft_to_model(
-                        constraint_seq, cstr_vars
+                        constraint, cstr_vars
                     )
-                elif constraint_seq.operator == "equal":
+                elif constraint.operator == "equal":
                     self._add_constraint_seq_less_than_or_equal_soft_to_model(
-                        constraint_seq, cstr_vars
+                        constraint, cstr_vars
                     )
                     self._add_constraint_seq_greater_than_or_equal_soft_to_model(
-                        constraint_seq, cstr_vars
+                        constraint, cstr_vars
                     )
-                elif constraint_seq.operator == "greater_than_or_equal":
+                elif constraint.operator == "greater_than_or_equal":
                     self._add_constraint_seq_greater_than_or_equal_soft_to_model(
-                        constraint_seq, cstr_vars
+                        constraint, cstr_vars
                     )
 
     def _add_constraint_seq_less_than_or_equal_hard_to_model(
-        self, constraint_seq: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
+        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
     ) -> None:
-        for start in range(len(cstr_vars) - constraint_seq.target_value):
+        for start in range(len(cstr_vars) - constraint.target_value):
             self.model.AddBoolOr(
                 [
                     cstr_vars[i].Not()
-                    for i in range(start, start + constraint_seq.target_value + 1)
+                    for i in range(start, start + constraint.target_value + 1)
                 ]
             )
 
     def _add_constraint_seq_greater_than_or_equal_hard_to_model(
-        self, constraint_seq: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
+        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
     ) -> None:
-        for length in range(1, constraint_seq.target_value):
+        for length in range(1, constraint.target_value):
             for start in range(len(cstr_vars) - length + 1):
                 self.model.AddBoolOr(
                     self._negated_bounded_span(cstr_vars, start, length)
                 )
 
     def _add_constraint_seq_less_than_or_equal_soft_to_model(
-        self, constraint_seq: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
+        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
     ) -> None:
-        for length in range(constraint_seq.target_value + 1, len(cstr_vars) + 1):
+        for length in range(constraint.target_value + 1, len(cstr_vars) + 1):
             for start in range(len(cstr_vars) - length + 1):
                 span = Model._negated_bounded_span(cstr_vars, start, length)
                 # pylint: disable=protected-access
                 var_name = json.dumps(
                     {
-                        "constraint_id": constraint_seq.id,
+                        "constraint_id": constraint.id,
                         "cstr_vars": [
                             var.Not().Name()
                             for var in span
@@ -571,19 +558,19 @@ class Model:
                 self.model.AddBoolOr(span)
                 self.obj.bool_vars.append(lit)
                 self.obj.bool_coeffs.append(
-                    constraint_seq.penalty * (length - constraint_seq.target_value)
+                    constraint.penalty * (length - constraint.target_value)
                 )
 
     def _add_constraint_seq_greater_than_or_equal_soft_to_model(
-        self, constraint_seq: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
+        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
     ) -> None:
-        for length in range(1, constraint_seq.target_value):
+        for length in range(1, constraint.target_value):
             for start in range(len(cstr_vars) - length + 1):
                 span = Model._negated_bounded_span(cstr_vars, start, length)
                 # pylint: disable=protected-access
                 var_name = json.dumps(
                     {
-                        "constraint_id": constraint_seq.id,
+                        "constraint_id": constraint.id,
                         "cstr_vars": [
                             var.Not().Name()
                             for var in span
@@ -596,57 +583,57 @@ class Model:
                 self.model.AddBoolOr(span)
                 self.obj.bool_vars.append(lit)
                 self.obj.bool_coeffs.append(
-                    constraint_seq.penalty * (constraint_seq.target_value - length)
+                    constraint.penalty * (constraint.target_value - length)
                 )
 
     def _add_constraint_ord_to_model(
-        self, constraint_ord: ConstraintOrd, cstr_vars: List[cp_model.IntVar]
+        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
     ) -> None:
-        if constraint_ord.hard:
-            if constraint_ord.operator == "yes":
+        if constraint.hard:
+            if constraint.operator == "yes":
                 transition = [cstr_vars[0].Not(), cstr_vars[1]]
-            elif constraint_ord.operator == "no":
+            elif constraint.operator == "no":
                 transition = [cstr_var.Not() for cstr_var in cstr_vars]
             else:
                 raise NotImplementedError(
-                    f"Sum constraint operator {constraint_ord.operator} "
+                    f"Sum constraint operator {constraint.operator} "
                     + "not implemented"
                 )
             self.model.AddBoolOr(transition)
         else:
-            if constraint_ord.penalty != 0:
+            if constraint.penalty != 0:
                 var_name = json.dumps(
                     {
-                        "constraint_id": constraint_ord.id,
+                        "constraint_id": constraint.id,
                         "cstr_vars": [var.Name() for var in cstr_vars],
                     }
                 )
-                if constraint_ord.operator == "yes":
+                if constraint.operator == "yes":
                     transition = [cstr_vars[0].Not(), cstr_vars[1]]
-                elif constraint_ord.operator == "no":
+                elif constraint.operator == "no":
                     transition = [cstr_var.Not() for cstr_var in cstr_vars]
                 else:
                     raise NotImplementedError(
-                        f"Sum constraint operator {constraint_ord.operator} "
+                        f"Sum constraint operator {constraint.operator} "
                         + "not implemented"
                     )
                 trans_var = self.model.NewBoolVar(var_name)
                 transition.append(trans_var)
                 self.model.AddBoolOr(transition)
                 self.obj.bool_vars.append(trans_var)
-                self.obj.bool_coeffs.append(constraint_ord.penalty)
+                self.obj.bool_coeffs.append(constraint.penalty)
 
     def _add_constraint_fil_to_model(
-        self, constraint_fil: ConstraintFil, cstr_var: cp_model.IntVar
+        self, constraint: Constraint, cstr_var: cp_model.IntVar
     ) -> None:
-        if constraint_fil.hard:
+        if constraint.hard:
             self.model.Add(cstr_var == 0)
         else:
-            if constraint_fil.penalty != 0:
+            if constraint.penalty != 0:
                 cstr_vars: List[cp_model.IntVar] = [cstr_var]
                 var_name = json.dumps(
                     {
-                        "constraint_id": constraint_fil.id,
+                        "constraint_id": constraint.id,
                         "cstr_vars": [var.Name() for var in cstr_vars],
                     }
                 )
@@ -655,19 +642,19 @@ class Model:
                 cstr_vars.append(lit)
                 self.model.AddBoolOr(cstr_vars)
                 self.obj.bool_vars.append(lit)
-                self.obj.bool_coeffs.append(constraint_fil.penalty)
+                self.obj.bool_coeffs.append(constraint.penalty)
 
     def _add_constraint_fai_to_model(
         self,
-        constraint_fai: ConstraintFai,
+        constraint: Constraint,
         cstr_vars: List[cp_model.IntVar],
         target_average: float,
     ) -> None:
-        if constraint_fai.penalty != 0:
+        if constraint.penalty != 0:
             target_average_int = int(target_average)
             var_name = json.dumps(
                 {
-                    "constraint_id": constraint_fai.id,
+                    "constraint_id": constraint.id,
                     "cstr_vars": [var.Name() for var in cstr_vars],
                 }
             )
@@ -680,7 +667,7 @@ class Model:
             )
             self.model.AddAbsEquality(excess, delta)
             self.obj.int_vars.append(excess)
-            self.obj.int_coeffs.append(constraint_fai.penalty)
+            self.obj.int_coeffs.append(constraint.penalty)
             if target_average != target_average_int:
                 delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
                 self.model.Add(delta == sum(cstr_vars) - target_average_int - 1)
@@ -691,55 +678,48 @@ class Model:
                 )
                 self.model.AddAbsEquality(excess, delta)
                 self.obj.int_vars.append(excess)
-                self.obj.int_coeffs.append(constraint_fai.penalty)
-
-            # delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
-            # self.model.Add(delta == sum(cstr_vars) - target_average)
-            # excess = self.model.NewIntVar(
-            #     -len(cstr_vars),
-            #     len(cstr_vars),
-            #     var_name,
-            # )
-            # self.model.AddAbsEquality(excess, delta)
-
-            # delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
-            # self.model.Add(delta == sum(cstr_vars) - target_average)
-            # excess = self.model.NewIntVar(
-            #     0,
-            #     len(cstr_vars) * len(cstr_vars),
-            #     var_name,
-            # )
-            # self.model.AddMultiplicationEquality(excess, [delta, delta])
-
-            # self.obj.int_vars.append(excess)
-            # self.obj.int_coeffs.append(constraint_fai.penalty)
+                self.obj.int_coeffs.append(constraint.penalty)
 
     def convert_constraint_eve_to_constraints_sum(
         self,
-        constraint_eve: ConstraintEve,
+        constraint: Constraint,
         target_worker: str,
         target_shift: str,
         period_lengths: List[int],
-    ) -> List[ConstraintSum]:
+    ) -> List[Constraint]:
         constraints_sum = []
         for index, period_length in enumerate(period_lengths):
             cum_days = sum(period_lengths[:index])
             start_date = date.fromisoformat(self.days[0]) + timedelta(days=cum_days)
             end_date = start_date + timedelta(days=period_length - 1)
             constraints_sum.append(
-                ConstraintSum(
-                    id=constraint_eve.id,
+                Constraint(
+                    id=constraint.id,
+                    constraint_type="sum",
                     operator="less_than_or_equal",
-                    worker_var=VarSumWorker(selector="equal", target=target_worker),
-                    day_var=VarSumDay(
+                    target_value=1,
+                    worker_var=VarWorker(
+                        operator="",
+                        selector="equal",
+                        target=[target_worker],
+                        num_eligible_workers=0,
+                    ),
+                    day_var=VarDay(
                         selector="period",
+                        target=0,
                         start_date=start_date,
                         end_date=end_date,
+                        interval=0,
                     ),
-                    shift_var=VarSumShift(selector="equal", target=target_shift),
-                    target_value=1,
+                    shift_var=VarShift(
+                        operator="",
+                        selector="equal",
+                        target=[target_shift],
+                        reference="",
+                        relative="",
+                    ),
                     hard=False,
-                    penalty=constraint_eve.penalty,
+                    penalty=constraint.penalty,
                 )
             )
         return constraints_sum
@@ -806,3 +786,13 @@ class Model:
         if params:
             text_format.Parse(params, self.solver.parameters)
         self.status = self.solver.Solve(self.model, self.solution_printer)
+
+    def save_to_text(self, directory_path: str) -> None:
+        model_file_path = os.path.join(directory_path, "model.txt")
+        model_file_path_alt = os.path.join(directory_path, "model_alt.txt")
+        # solver_file_path = os.path.join(directory_path, "solver.txt")
+        with open(model_file_path, "w", encoding="utf-8") as text_file:
+            text_file.write(str(self.model))
+        self.model.ExportToFile(model_file_path_alt)
+        # with open(solver_file_path, "w", encoding="utf-8") as text_file:
+        #     text_file.write(str(self.solution_printer))

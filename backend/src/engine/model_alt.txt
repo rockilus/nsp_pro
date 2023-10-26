@@ -1,0 +1,1026 @@
+variables { name: "w0_2023-10-02_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-02_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-02_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-02_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-03_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-03_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-03_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-03_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-04_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-04_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-04_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-04_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-05_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-05_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-05_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-05_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-06_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-06_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-06_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-06_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-07_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-07_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-07_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-07_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-08_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-08_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-08_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-08_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-09_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-09_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-09_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-09_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-10_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-10_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-10_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-10_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-11_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-11_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-11_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-11_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-12_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-12_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-12_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-12_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-13_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-13_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-13_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-13_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-14_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-14_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-14_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-14_s3" domain: [0, 1] }
+variables { name: "w0_2023-10-15_s0" domain: [0, 1] }
+variables { name: "w0_2023-10-15_s1" domain: [0, 1] }
+variables { name: "w0_2023-10-15_s2" domain: [0, 1] }
+variables { name: "w0_2023-10-15_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-02_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-02_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-02_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-02_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-03_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-03_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-03_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-03_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-04_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-04_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-04_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-04_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-05_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-05_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-05_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-05_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-06_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-06_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-06_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-06_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-07_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-07_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-07_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-07_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-08_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-08_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-08_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-08_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-09_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-09_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-09_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-09_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-10_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-10_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-10_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-10_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-11_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-11_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-11_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-11_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-12_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-12_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-12_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-12_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-13_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-13_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-13_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-13_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-14_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-14_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-14_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-14_s3" domain: [0, 1] }
+variables { name: "w1_2023-10-15_s0" domain: [0, 1] }
+variables { name: "w1_2023-10-15_s1" domain: [0, 1] }
+variables { name: "w1_2023-10-15_s2" domain: [0, 1] }
+variables { name: "w1_2023-10-15_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-02_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-02_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-02_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-02_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-03_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-03_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-03_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-03_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-04_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-04_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-04_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-04_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-05_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-05_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-05_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-05_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-06_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-06_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-06_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-06_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-07_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-07_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-07_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-07_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-08_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-08_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-08_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-08_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-09_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-09_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-09_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-09_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-10_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-10_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-10_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-10_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-11_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-11_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-11_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-11_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-12_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-12_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-12_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-12_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-13_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-13_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-13_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-13_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-14_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-14_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-14_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-14_s3" domain: [0, 1] }
+variables { name: "w2_2023-10-15_s0" domain: [0, 1] }
+variables { name: "w2_2023-10-15_s1" domain: [0, 1] }
+variables { name: "w2_2023-10-15_s2" domain: [0, 1] }
+variables { name: "w2_2023-10-15_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-02_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-02_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-02_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-02_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-03_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-03_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-03_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-03_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-04_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-04_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-04_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-04_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-05_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-05_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-05_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-05_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-06_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-06_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-06_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-06_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-07_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-07_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-07_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-07_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-08_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-08_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-08_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-08_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-09_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-09_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-09_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-09_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-10_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-10_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-10_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-10_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-11_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-11_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-11_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-11_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-12_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-12_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-12_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-12_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-13_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-13_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-13_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-13_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-14_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-14_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-14_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-14_s3" domain: [0, 1] }
+variables { name: "w3_2023-10-15_s0" domain: [0, 1] }
+variables { name: "w3_2023-10-15_s1" domain: [0, 1] }
+variables { name: "w3_2023-10-15_s2" domain: [0, 1] }
+variables { name: "w3_2023-10-15_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-02_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-02_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-02_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-02_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-03_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-03_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-03_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-03_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-04_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-04_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-04_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-04_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-05_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-05_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-05_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-05_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-06_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-06_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-06_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-06_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-07_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-07_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-07_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-07_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-08_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-08_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-08_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-08_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-09_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-09_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-09_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-09_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-10_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-10_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-10_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-10_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-11_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-11_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-11_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-11_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-12_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-12_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-12_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-12_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-13_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-13_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-13_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-13_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-14_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-14_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-14_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-14_s3" domain: [0, 1] }
+variables { name: "w4_2023-10-15_s0" domain: [0, 1] }
+variables { name: "w4_2023-10-15_s1" domain: [0, 1] }
+variables { name: "w4_2023-10-15_s2" domain: [0, 1] }
+variables { name: "w4_2023-10-15_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-02_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-02_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-02_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-02_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-03_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-03_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-03_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-03_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-04_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-04_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-04_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-04_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-05_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-05_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-05_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-05_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-06_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-06_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-06_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-06_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-07_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-07_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-07_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-07_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-08_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-08_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-08_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-08_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-09_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-09_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-09_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-09_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-10_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-10_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-10_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-10_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-11_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-11_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-11_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-11_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-12_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-12_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-12_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-12_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-13_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-13_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-13_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-13_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-14_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-14_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-14_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-14_s3" domain: [0, 1] }
+variables { name: "w5_2023-10-15_s0" domain: [0, 1] }
+variables { name: "w5_2023-10-15_s1" domain: [0, 1] }
+variables { name: "w5_2023-10-15_s2" domain: [0, 1] }
+variables { name: "w5_2023-10-15_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-02_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-02_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-02_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-02_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-03_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-03_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-03_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-03_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-04_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-04_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-04_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-04_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-05_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-05_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-05_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-05_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-06_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-06_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-06_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-06_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-07_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-07_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-07_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-07_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-08_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-08_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-08_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-08_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-09_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-09_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-09_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-09_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-10_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-10_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-10_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-10_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-11_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-11_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-11_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-11_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-12_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-12_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-12_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-12_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-13_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-13_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-13_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-13_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-14_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-14_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-14_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-14_s3" domain: [0, 1] }
+variables { name: "w6_2023-10-15_s0" domain: [0, 1] }
+variables { name: "w6_2023-10-15_s1" domain: [0, 1] }
+variables { name: "w6_2023-10-15_s2" domain: [0, 1] }
+variables { name: "w6_2023-10-15_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-02_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-02_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-02_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-02_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-03_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-03_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-03_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-03_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-04_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-04_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-04_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-04_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-05_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-05_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-05_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-05_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-06_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-06_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-06_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-06_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-07_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-07_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-07_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-07_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-08_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-08_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-08_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-08_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-09_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-09_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-09_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-09_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-10_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-10_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-10_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-10_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-11_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-11_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-11_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-11_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-12_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-12_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-12_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-12_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-13_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-13_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-13_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-13_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-14_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-14_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-14_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-14_s3" domain: [0, 1] }
+variables { name: "w7_2023-10-15_s0" domain: [0, 1] }
+variables { name: "w7_2023-10-15_s1" domain: [0, 1] }
+variables { name: "w7_2023-10-15_s2" domain: [0, 1] }
+variables { name: "w7_2023-10-15_s3" domain: [0, 1] }
+variables { name: "{\"constraint_id\": \"request\", \"cstr_vars\": [\"w0_2023-10-02_s0\"]}" domain: [0, 1] }
+constraints {
+  exactly_one {
+    literals: [0, 1, 2, 3]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [4, 5, 6, 7]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [8, 9, 10, 11]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [12, 13, 14, 15]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [16, 17, 18, 19]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [20, 21, 22, 23]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [24, 25, 26, 27]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [28, 29, 30, 31]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [32, 33, 34, 35]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [36, 37, 38, 39]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [40, 41, 42, 43]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [44, 45, 46, 47]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [48, 49, 50, 51]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [52, 53, 54, 55]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [56, 57, 58, 59]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [60, 61, 62, 63]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [64, 65, 66, 67]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [68, 69, 70, 71]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [72, 73, 74, 75]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [76, 77, 78, 79]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [80, 81, 82, 83]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [84, 85, 86, 87]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [88, 89, 90, 91]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [92, 93, 94, 95]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [96, 97, 98, 99]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [100, 101, 102, 103]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [104, 105, 106, 107]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [108, 109, 110, 111]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [112, 113, 114, 115]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [116, 117, 118, 119]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [120, 121, 122, 123]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [124, 125, 126, 127]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [128, 129, 130, 131]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [132, 133, 134, 135]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [136, 137, 138, 139]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [140, 141, 142, 143]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [144, 145, 146, 147]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [148, 149, 150, 151]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [152, 153, 154, 155]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [156, 157, 158, 159]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [160, 161, 162, 163]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [164, 165, 166, 167]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [168, 169, 170, 171]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [172, 173, 174, 175]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [176, 177, 178, 179]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [180, 181, 182, 183]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [184, 185, 186, 187]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [188, 189, 190, 191]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [192, 193, 194, 195]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [196, 197, 198, 199]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [200, 201, 202, 203]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [204, 205, 206, 207]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [208, 209, 210, 211]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [212, 213, 214, 215]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [216, 217, 218, 219]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [220, 221, 222, 223]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [224, 225, 226, 227]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [228, 229, 230, 231]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [232, 233, 234, 235]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [236, 237, 238, 239]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [240, 241, 242, 243]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [244, 245, 246, 247]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [248, 249, 250, 251]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [252, 253, 254, 255]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [256, 257, 258, 259]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [260, 261, 262, 263]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [264, 265, 266, 267]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [268, 269, 270, 271]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [272, 273, 274, 275]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [276, 277, 278, 279]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [280, 281, 282, 283]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [284, 285, 286, 287]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [288, 289, 290, 291]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [292, 293, 294, 295]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [296, 297, 298, 299]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [300, 301, 302, 303]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [304, 305, 306, 307]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [308, 309, 310, 311]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [312, 313, 314, 315]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [316, 317, 318, 319]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [320, 321, 322, 323]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [324, 325, 326, 327]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [328, 329, 330, 331]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [332, 333, 334, 335]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [336, 337, 338, 339]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [340, 341, 342, 343]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [344, 345, 346, 347]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [348, 349, 350, 351]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [352, 353, 354, 355]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [356, 357, 358, 359]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [360, 361, 362, 363]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [364, 365, 366, 367]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [368, 369, 370, 371]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [372, 373, 374, 375]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [376, 377, 378, 379]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [380, 381, 382, 383]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [384, 385, 386, 387]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [388, 389, 390, 391]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [392, 393, 394, 395]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [396, 397, 398, 399]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [400, 401, 402, 403]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [404, 405, 406, 407]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [408, 409, 410, 411]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [412, 413, 414, 415]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [416, 417, 418, 419]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [420, 421, 422, 423]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [424, 425, 426, 427]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [428, 429, 430, 431]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [432, 433, 434, 435]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [436, 437, 438, 439]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [440, 441, 442, 443]
+  }
+}
+constraints {
+  exactly_one {
+    literals: [444, 445, 446, 447]
+  }
+}
+constraints {
+  linear {
+    vars: [1]
+    coeffs: [1]
+    domain: [1, 1]
+  }
+}
+constraints {
+  bool_or {
+    literals: [0, 448]
+  }
+}
+objective {
+  vars: [448]
+  scaling_factor: 1
+  coeffs: [2]
+}

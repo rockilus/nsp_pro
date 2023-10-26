@@ -15,7 +15,7 @@ import FARButton from "./FARButton";
 import { FarT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
-import { useRequestStore } from "../../stores/RequestStore";
+import { useRequestStore } from "../../stores/requestStore";
 
 interface Props {
   far: FarT;

@@ -6,67 +6,102 @@ import pytest
 from engine.engine_test import TestEngine
 from engine.inputs_outputs import (
     Assignment,
-    ConstraintEve,
-    ConstraintFai,
+    Constraint,
     Coverage,
     Inputs,
     Outputs,
     ShiftDemand,
-    VarEveDay,
-    VarEveShift,
-    VarEveWorker,
-    VarFaiDay,
-    VarFaiShift,
-    VarFaiWorker,
+    VarDay,
+    VarShift,
+    VarWorker,
 )
 
 
 # pylint: disable=R0801, R0903
-class TestConstraintEve:
+class TestConstraint:
     @pytest.fixture
-    def constraint_eve_soft(self) -> ConstraintEve:
-        return ConstraintEve(
+    def constraint_eve_soft(self) -> Constraint:
+        return Constraint(
             id="constraint_eve_soft",
-            worker_var=VarEveWorker(
-                selector="equal", target="w0", num_eligible_workers=8
+            constraint_type="eve",
+            operator="",
+            target_value=0,
+            worker_var=VarWorker(
+                operator="",
+                selector="equal",
+                target=["w0"],
+                num_eligible_workers=8,
             ),
-            day_var=VarEveDay(selector="all"),
-            shift_var=VarEveShift(selector="equal", target="s0"),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                operator="",
+                selector="equal",
+                target=["s0"],
+                reference="",
+                relative="",
+            ),
+            hard=False,
             penalty=1,
         )
 
     @pytest.fixture
-    def constraint_fai_soft(self) -> ConstraintFai:
-        return ConstraintFai(
+    def constraint_fai_soft(self) -> Constraint:
+        return Constraint(
             id="constraint_fai_soft",
-            worker_var=VarFaiWorker(selector="all", target=[]),
-            day_var=VarFaiDay(selector="all", target=0),
-            shift_var=VarFaiShift(selector="all", target=[]),
+            constraint_type="fai",
+            operator="",
+            target_value=0,
+            worker_var=VarWorker(
+                operator="",
+                selector="all",
+                target=[],
+                num_eligible_workers=0,
+            ),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                operator="",
+                selector="all",
+                target=[],
+                reference="",
+                relative="",
+            ),
+            hard=False,
             penalty=2,
         )
 
 
-class TestConstraintEveSoft(TestEngine, TestConstraintEve):
+class TestConstraintSoft(TestEngine, TestConstraint):
     # pylint: disable=too-many-locals
     def test_expected_assignment(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
-        constraint_eve_soft: ConstraintEve,
+        constraint_fai_soft: Constraint,
+        constraint_eve_soft: Constraint,
     ) -> None:
         # Total demand of 42 shifts s0 across 8 workers, i.e. 5.25 shifts per
         # worker. Shifts must be spread evenly for worker w0
         target_shifts = ["s0"]
         quantity = 3
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
             target_shifts,
             quantity,
         )
-        inputs.custom.constraints_eve = [constraint_eve_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -102,8 +137,8 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
-        constraint_eve_soft: ConstraintEve,
+        constraint_fai_soft: Constraint,
+        constraint_eve_soft: Constraint,
     ) -> None:
         # Total demand of 42 shifts s0 across 8 workers, i.e. 5.25 shifts per
         # worker. Shifts must be spread evenly for worker w0. One fixed
@@ -118,14 +153,13 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         target_shifts = ["s0"]
         quantity = 3
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
             target_shifts,
             quantity,
         )
-        inputs.custom.constraints_eve = [constraint_eve_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -161,8 +195,8 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
-        constraint_eve_soft: ConstraintEve,
+        constraint_fai_soft: Constraint,
+        constraint_eve_soft: Constraint,
     ) -> None:
         # Total demand of 42 shifts s0 across 8 workers, i.e. 5.25 shifts per
         # worker. Shifts must be spread evenly for worker w0. Two fixed
@@ -182,14 +216,13 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         target_shifts = ["s0"]
         quantity = 3
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
             target_shifts,
             quantity,
         )
-        inputs.custom.constraints_eve = [constraint_eve_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -211,10 +244,10 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
             count = sum(
                 1
                 for a in assignments
-                if a.worker_id == constraint_eve_soft.worker_var.target
+                if a.worker_id in constraint_eve_soft.worker_var.target
                 and a.date >= start_date
                 and a.date <= end_date
-                and a.shift_id == constraint_eve_soft.shift_var.target
+                and a.shift_id in constraint_eve_soft.shift_var.target
             )
             counts.append(count)
 
@@ -230,14 +263,14 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
-        constraint_eve_soft: ConstraintEve,
+        constraint_fai_soft: Constraint,
+        constraint_eve_soft: Constraint,
     ) -> None:
         # Total demand of 42 shifts s0 across 8 workers, i.e. 5.25 shifts per
         # worker. Shifts must be spread evenly for worker w0
         target_shifts = ["s0"]
         quantity = 3
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -247,7 +280,7 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         outputs_ex_eve = engine_solve(inputs)
         objective_ex_eve = outputs_ex_eve.objective_value
 
-        inputs.custom.constraints_eve = [constraint_eve_soft]
+        inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         outputs_with_eve = engine_solve(inputs)
         objective_with_eve = outputs_with_eve.objective_value
 
@@ -259,8 +292,8 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
-        constraint_eve_soft: ConstraintEve,
+        constraint_fai_soft: Constraint,
+        constraint_eve_soft: Constraint,
     ) -> None:
         # Total demand of 42 shifts s0 across 8 workers, i.e. 5.25 shifts per
         # worker. Shifts must be spread evenly for worker w0. Two fixed
@@ -280,7 +313,7 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         target_shifts = ["s0"]
         quantity = 3
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
@@ -290,7 +323,7 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         outputs_ex_eve = engine_solve(inputs)
         objective_ex_eve = outputs_ex_eve.objective_value
 
-        inputs.custom.constraints_eve = [constraint_eve_soft]
+        inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         outputs_with_eve = engine_solve(inputs)
         objective_with_eve = outputs_with_eve.objective_value
 
@@ -303,8 +336,8 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
-        constraint_fai_soft: ConstraintFai,
-        constraint_eve_soft: ConstraintEve,
+        constraint_fai_soft: Constraint,
+        constraint_eve_soft: Constraint,
     ) -> None:
         # Total demand of 42 shifts s0 across 8 workers, i.e. 5.25 shifts per
         # worker. Shifts must be spread evenly for worker w0. Two fixed
@@ -324,14 +357,13 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         target_shifts = ["s0"]
         quantity = 3
         inputs.fixed_assignments = fixed_assignments
-        inputs.custom.constraints_fai = [constraint_fai_soft]
+        inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.start_date,
             inputs.variable_space.end_date,
             target_shifts,
             quantity,
         )
-        inputs.custom.constraints_eve = [constraint_eve_soft]
         outputs = engine_solve(inputs)
 
         num_days = (
@@ -349,12 +381,10 @@ class TestConstraintEveSoft(TestEngine, TestConstraintEve):
         target_days = list(build_day_list(start_date, end_date))
 
         expected_variables = [
-            [
-                constraint_eve_soft.worker_var.target,
-                d,
-                constraint_eve_soft.shift_var.target,
-            ]
+            [w, d, s]
+            for w in constraint_eve_soft.worker_var.target
             for d in target_days
+            for s in constraint_eve_soft.shift_var.target
         ]
 
         constraint_breaches_eve = [

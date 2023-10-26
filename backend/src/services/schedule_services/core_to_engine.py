@@ -1,28 +1,34 @@
 from datetime import date, timedelta
 from typing import List, Union
 
+from core.constraint import Constraint, VarDay, VarShift, VarWorker
 from core.coverage import Coverage, CoverageSelector
 from core.fixed_assignment import FixedAssignment
 from core.request import Request
 from core.shift import Shift
 from core.worker import Worker
 from engine import Assignment as AssignmentEngine
+from engine import Constraint as ConstraintEngine
 from engine import Coverage as CoverageEngine
-from engine import Custom, Inputs
+from engine import Inputs
 from engine import Request as RequestEngine
 from engine import ShiftDemand as ShiftDemandEngine
+from engine import VarDay as VarDayEngine
 from engine import VariableSpace
+from engine import VarShift as VarShiftEngine
+from engine import VarWorker as VarWorkerEngine
 from services.schedule_services.penalty_map import penalty_map
 
 
 # pylint: disable=too-many-arguments
-def from_core_to_inputs(
+def core_to_engine_inputs(
     workers: List[Worker],
     shifts: List[Shift],
     coverage_selectors: List[CoverageSelector],
     coverages: List[Union[Coverage, None]],
     fixed_assignments: List[FixedAssignment],
     requests: List[Request],
+    constraints: List[Constraint],
 ) -> Inputs:
     start_date, end_date = _get_start_end_dates(coverage_selectors)
     variable_space = VariableSpace(
@@ -31,28 +37,15 @@ def from_core_to_inputs(
         end_date=end_date,
         shifts=[shift.id for shift in shifts],
     )
-    shift_demands_engine = _build_shift_demands(coverage_selectors, coverages)
-    # pylint: disable=R0801
-    cov_engine = CoverageEngine(shift_demands_engine)
-    req_engine = [_build_request_engine(req) for req in requests]
-    fa_engine = [
-        AssignmentEngine(worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id)
-        for fa in fixed_assignments
-    ]
-    custom_engine = Custom(
-        constraints_sum=[],
-        constraints_ord=[],
-        constraints_seq=[],
-        constraints_fil=[],
-        constraints_fai=[],
-        constraints_eve=[],
-    )
     inputs = Inputs(
         variable_space=variable_space,
-        coverage=cov_engine,
-        requests=req_engine,
-        fixed_assignments=fa_engine,
-        custom=custom_engine,
+        coverage=CoverageEngine(_build_shift_demands(coverage_selectors, coverages)),
+        requests=[_core_to_engine_request(req) for req in requests],
+        fixed_assignments=[
+            AssignmentEngine(worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id)
+            for fa in fixed_assignments
+        ],
+        constraints=[_core_to_engine_constraint(c) for c in constraints],
     )
     return inputs
 
@@ -87,11 +80,54 @@ def _build_shift_demands(
     return shift_demands
 
 
-def _build_request_engine(request: Request) -> RequestEngine:
+def _core_to_engine_request(request: Request) -> RequestEngine:
     return RequestEngine(
         id=request.id,
         worker_id=request.worker_id,
         date=request.date,
         shift_id=request.shift_id,
-        penalty=getattr(penalty_map.request, "low"),
+        penalty=getattr(penalty_map.request, request.priority),
+    )
+
+
+def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
+    return ConstraintEngine(
+        id=constraint.id,
+        constraint_type=constraint.constraint_type,
+        operator=constraint.operator,
+        target_value=constraint.target_value,
+        worker_var=_core_to_engine_var_worker(constraint.worker_var),
+        day_var=_core_to_engine_var_day(constraint.day_var),
+        shift_var=_core_to_engine_var_shift(constraint.shift_var),
+        hard=constraint.hard,
+        penalty=getattr(penalty_map.constraint, constraint.priority),
+    )
+
+
+def _core_to_engine_var_worker(var_worker: VarWorker) -> VarWorkerEngine:
+    return VarWorkerEngine(
+        operator=var_worker.operator,
+        selector=var_worker.selector,
+        target=var_worker.target_ids,
+        num_eligible_workers=var_worker.num_eligible_workers,
+    )
+
+
+def _core_to_engine_var_day(var_day: VarDay) -> VarDayEngine:
+    return VarDayEngine(
+        selector=var_day.selector,
+        target=var_day.target,
+        start_date=var_day.start_date,
+        end_date=var_day.end_date,
+        interval=var_day.interval,
+    )
+
+
+def _core_to_engine_var_shift(var_shift: VarShift) -> VarShiftEngine:
+    return VarShiftEngine(
+        operator=var_shift.operator,
+        selector=var_shift.selector,
+        target=var_shift.target_ids,
+        reference=var_shift.reference_id,
+        relative=var_shift.relative_id,
     )

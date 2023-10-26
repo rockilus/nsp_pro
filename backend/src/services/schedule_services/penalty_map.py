@@ -1,17 +1,22 @@
-from dataclasses import dataclass
-
-
-@dataclass
-class RequestPenaltyMap:
-    low: int
-    medium: int
-    high: int
+from dataclasses import dataclass, field
 
 
 @dataclass
 class PenaltyMap:
-    request: RequestPenaltyMap
+    low: int
+    medium: int
+    high: int
+    no: int = field(default=0)
 
 
-request_penalty_map = RequestPenaltyMap(low=1, medium=2, high=3)
-penalty_map = PenaltyMap(request=request_penalty_map)
+@dataclass
+class PenaltyMaps:
+    request: PenaltyMap
+    constraint: PenaltyMap
+
+
+request_penalty_map = PenaltyMap(low=1, medium=2, high=3)
+constraint_penalty_map = PenaltyMap(low=1, medium=2, high=3)
+penalty_map = PenaltyMaps(
+    request=request_penalty_map, constraint=constraint_penalty_map
+)

@@ -9,7 +9,7 @@ import ScheduleTable from "./ScheduleTable";
 import { ShiftIdNameT, WorkerIdNameT, ColumnT, RowT, CellT } from "./types";
 import { useScheduleStore } from "../../stores/scheduleStore";
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
-import { useRequestStore } from "../../stores/RequestStore";
+import { useRequestStore } from "../../stores/requestStore";
 
 interface Props {
   workers: WorkerIdNameT[];
