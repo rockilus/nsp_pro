@@ -38,9 +38,7 @@ def solver() -> ScheduleMessage:
         if coverage_selector.coverage_id == "":
             coverages.append(None)
             continue
-        coverage = coverage_db.get_coverage_by_id(
-            coverage_selector.coverage_id
-        )
+        coverage = coverage_db.get_coverage_by_id(coverage_selector.coverage_id)
         coverages.append(coverage)
     fixed_assignments = fixed_assignment_db.get_fixed_assignments()
     requests = request_db.get_requests()
