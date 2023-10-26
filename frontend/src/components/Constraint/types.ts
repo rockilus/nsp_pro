@@ -1,12 +1,14 @@
 export type ConstraintT = {
   id: string;
   buildBlocks: BuildBlockT[];
+  hard: boolean;
+  priority: string;
   active: boolean;
 };
 
 export type TreeNodeT = {
   name: string;
-  parentOptions: string[];
+  parentOptions: Array<string | number>;
   options: string[];
   children: TreeNodeT[];
 };

@@ -10,6 +10,7 @@ from core.schedule import Assignment, Schedule
 from engine import Engine
 from routes.api_model import AssignmentMessage, ScheduleMessage
 from scripts.setup_database import (
+    constraint_db,
     coverage_db,
     coverage_selector_db,
     fixed_assignment_db,
@@ -19,7 +20,7 @@ from scripts.setup_database import (
 )
 from services import (
     build_no_coverage_date,
-    from_core_to_inputs,
+    core_to_engine_inputs,
     from_outputs_to_core,
     update_far_status,
 )
@@ -37,17 +38,21 @@ def solver() -> ScheduleMessage:
         if coverage_selector.coverage_id == "":
             coverages.append(None)
             continue
-        coverage = coverage_db.get_coverage_by_id(coverage_selector.coverage_id)
+        coverage = coverage_db.get_coverage_by_id(
+            coverage_selector.coverage_id
+        )
         coverages.append(coverage)
     fixed_assignments = fixed_assignment_db.get_fixed_assignments()
     requests = request_db.get_requests()
-    inputs = from_core_to_inputs(
+    constraints = constraint_db.get_constraints_active()
+    inputs = core_to_engine_inputs(
         workers,
         shifts,
         coverage_selectors,
         coverages,
         fixed_assignments,
         requests,
+        constraints,
     )
     engine = Engine()
     outputs = engine.solve(inputs)

@@ -1,16 +1,11 @@
 from mongoengine import Document
-from mongoengine.fields import (
-    ListField,
-    ObjectIdField,
-)
+from mongoengine.fields import ListField, ObjectIdField
 
 
 class ConstraintParam(Document):
     meta = {"collection": "constraint_params"}
     _id = ObjectIdField(primary_key=True)
-    constraint_types_options = ListField(
-        default=["add", "sum", "sequence", "order"]
-    )
+    constraint_types_options = ListField(default=["add", "sum", "sequence", "order"])
     soft_or_hard_options = ListField(default=["hard", "soft"])
     soft_priority_options = ListField(default=["low", "medium", "high"])
     variable_options = ListField(default=["worker", "day", "shift"])

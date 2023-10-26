@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List, Dict, Union
+from typing import List, Union
 
 from pydantic import BaseModel
 
@@ -130,6 +130,8 @@ class BuildBlockMessage(BaseModel):
 class ConstraintMessage(BaseModel):
     id: str
     buildBlocks: List[BuildBlockMessage]
+    hard: bool
+    priority: str
     active: bool
 
 

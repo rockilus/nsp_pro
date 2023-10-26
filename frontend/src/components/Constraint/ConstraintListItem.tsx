@@ -41,7 +41,11 @@ export default function ConstraintListItem({
           (worker) => worker.id === block.value
         )?.name;
         stringArray.push(workerName);
-      } else if (block.name === "shift_id") {
+      } else if (
+        ["shift_id", "shift_id_reference", "shift_id_relative"].includes(
+          block.name
+        )
+      ) {
         const shiftName = shifts.find(
           (shift) => shift.id === block.value
         )?.name;

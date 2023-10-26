@@ -48,6 +48,13 @@ export default function ConstraintConfig({ workers, shifts }: Props) {
         Constraints Configuration
       </Typography>
       <ConstraintCreate
+        constraint={{
+          id: "",
+          buildBlocks: [],
+          hard: true,
+          priority: "no",
+          active: true,
+        }}
         tree={constraintTree}
         workers={workers}
         shifts={shifts}

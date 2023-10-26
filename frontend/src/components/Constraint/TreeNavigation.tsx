@@ -9,7 +9,7 @@ import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
   tree: TreeNodeT;
-  newBuild: BuildBlockT[];
+  buildBlocks: BuildBlockT[];
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
   addBlock: (name: string, option: string | number) => void;
@@ -18,7 +18,7 @@ interface Props {
 
 export default function TreeNavigation({
   tree,
-  newBuild,
+  buildBlocks,
   workers,
   shifts,
   addBlock,
@@ -30,7 +30,7 @@ export default function TreeNavigation({
   };
 
   const getValue = () => {
-    const buildBlock = newBuild[0] ? newBuild[0] : null;
+    const buildBlock = buildBlocks[0] ? buildBlocks[0] : null;
     if (buildBlock && buildBlock.name === tree.name) {
       return buildBlock.value;
     } else {
@@ -96,12 +96,19 @@ export default function TreeNavigation({
   return (
     <Box sx={{ display: "flex", flexDirection: "row", width: "100%" }}>
       {tree.name === "worker_id" && selectWorker()}
-      {tree.name === "shift_id" && selectShift()}
-      {tree.name !== "worker_id" && tree.name !== "shift_id" && selectOther()}
+      {["shift_id", "shift_id_reference", "shift_id_relative"].includes(
+        tree.name
+      ) && selectShift()}
+      {![
+        "worker_id",
+        "shift_id",
+        "shift_id_reference",
+        "shift_id_relative",
+      ].includes(tree.name) && selectOther()}
       {getChild() && (
         <TreeNavigation
-          tree={getChild()}
-          newBuild={newBuild.slice(1)}
+          tree={getChild() as TreeNodeT}
+          buildBlocks={buildBlocks.slice(1)}
           workers={workers}
           shifts={shifts}
           addBlock={addBlock}

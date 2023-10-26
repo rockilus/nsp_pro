@@ -1,18 +1,15 @@
 from datetime import datetime
 
-from mongoengine import (
-    Document,
-    EmbeddedDocument,
-)
+from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (
     BooleanField,
     DateTimeField,
+    DynamicField,
+    EmbeddedDocumentField,
     IntField,
     ListField,
     ReferenceField,
     StringField,
-    EmbeddedDocumentField,
-    DynamicField,
 )
 
 
@@ -47,40 +44,18 @@ class BuildBlock(EmbeddedDocument):
     value = DynamicField(required=True)
 
 
-class ConstraintSum(EmbeddedDocument):
-    operator = StringField(
-        required=True,
-        choices=[
-            "less_than_or_equal",
-            "equal",
-            "greater_than_or_equal",
-        ],
-    )
-    target_value = IntField(required=True)
-
-
-class ConstraintSeq(Document):
-    id = str
-    operator = StringField(
-        required=True,
-        choices=[
-            "less_than_or_equal",
-            "equal",
-            "greater_than_or_equal",
-        ],
-    )
-    target_value = IntField(required=True)
-
-
 # replace constraint/aggregator with type string
 class Constraint(Document):
     meta = {"collection": "constraints"}
 
     id = StringField(primary_key=True, required=True)
     # rename to aggregator
-    constraint_type = StringField(required=True, choices=["sum", "seq"])
+    constraint_type = StringField(
+        required=True, choices=["sum", "seq", "ord", "fil", "fai", "eve"]
+    )
     operator = StringField(
         choices=[
+            "",
             "less_than_or_equal",
             "equal",
             "greater_than_or_equal",
@@ -89,10 +64,10 @@ class Constraint(Document):
         ],
     )
     target_value = IntField(default=0)
-    worker_var = EmbeddedDocumentField(VarWorker)
-    day_var = EmbeddedDocumentField(VarDay)
-    shift_var = EmbeddedDocumentField(VarShift)
+    worker_var = EmbeddedDocumentField(VarWorker, required=True)
+    day_var = EmbeddedDocumentField(VarDay, required=True)
+    shift_var = EmbeddedDocumentField(VarShift, required=True)
     hard = BooleanField(required=True)
-    penalty = IntField(default=0)
+    priority = StringField(choices=["no", "low", "medium", "high"], default="no")
     active = BooleanField(default=True)
     build_blocks = ListField(EmbeddedDocumentField(BuildBlock))

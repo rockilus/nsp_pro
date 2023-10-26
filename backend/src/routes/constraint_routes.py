@@ -1,12 +1,13 @@
+from dataclasses import asdict
+
 import humps
 from fastapi import APIRouter, HTTPException
 from pydantic import TypeAdapter
-from dataclasses import asdict
 
-from scripts.setup_database import constraint_db, constraint_variable_db
-from services import build_constraint, build_constraint_front
-from routes.api_model import ConstraintMessage, BuildBlockMessage
-from core.constraint import ConstraintBuild, BuildBlock, Constraint
+from core.constraint import BuildBlock, Constraint, ConstraintBuild
+from routes.api_model import ConstraintMessage
+from scripts.setup_database import constraint_db
+from services import build_constraint
 
 router = APIRouter()
 
@@ -34,9 +35,7 @@ def update_constraint(
 
     existing_c = constraint_db.get_constraint_by_id(constraint_id)
     if not existing_c:
-        raise HTTPException(
-            status_code=404, detail="Constraint does not exist"
-        )
+        raise HTTPException(status_code=404, detail="Constraint does not exist")
 
     constraint = build_constraint(cb_data)
     constraint = constraint_db.update_constraint(constraint)
@@ -57,6 +56,8 @@ def constraint_to_api_msg(
     constraint_build = ConstraintBuild(
         id=constraint.id,
         build_blocks=constraint.build_blocks,
+        hard=constraint.hard,
+        priority=constraint.priority,
         active=constraint.active,
     )
     data = asdict(constraint_build)

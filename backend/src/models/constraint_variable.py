@@ -5,10 +5,7 @@ from mongoengine.fields import (
     ObjectIdField,
     ReferenceField,
     StringField,
-    ListField,
-    DateTimeField,
 )
-from datetime import datetime
 
 
 class ConstraintVariable(Document):

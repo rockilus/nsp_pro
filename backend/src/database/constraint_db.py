@@ -1,26 +1,17 @@
 from datetime import datetime
 from typing import List
 
-from core.constraint import (
-    BuildBlock,
-    Constraint,
-    ConstraintSeq,
-    ConstraintSum,
-    VarDay,
-    VarShift,
-    VarWorker,
-)
+from bson import ObjectId
+
+from core.constraint import BuildBlock, Constraint, VarDay, VarShift, VarWorker
 from database.db import DB
 from models import BuildBlock as BuildBlockDocument
 from models import Constraint as ConstraintDocument
-from models import ConstraintSeq as ConstraintSeqDocument
-from models import ConstraintSum as ConstraintSumDocument
 from models import Shift as ShiftDocument
 from models import VarDay as VarDayDocument
 from models import VarShift as VarShiftDocument
 from models import VarWorker as VarWorkerDocument
 from models import Worker as WorkerDocument
-from bson import ObjectId
 
 
 class ConstraintDB:
@@ -44,6 +35,13 @@ class ConstraintDB:
         constraints = ConstraintDocument.objects.all()  # type: ignore
         return [_from_mongo_constraint(c) for c in list(constraints)]
 
+    def get_constraints_active(
+        self,
+    ) -> List[Constraint]:
+        # pylint: disable=no-member
+        constraints = ConstraintDocument.objects.filter(active=True)  # type: ignore
+        return [_from_mongo_constraint(c) for c in list(constraints)]
+
     def get_constraint_by_id(self, constraint_id: str) -> Constraint:
         # pylint: disable=no-member
         constraint = ConstraintDocument.objects.get(id=constraint_id)  # type: ignore
@@ -60,7 +58,9 @@ class ConstraintDB:
 
     def delete_constraint(self, constraint_id: str) -> None:
         # pylint: disable=no-member
-        constraint_doc = ConstraintDocument.objects.get(id=constraint_id)  # type: ignore
+        constraint_doc = ConstraintDocument.objects.get(  # type: ignore
+            id=constraint_id
+        )
         constraint_doc.delete()
 
 
@@ -69,7 +69,9 @@ def to_mongo_var_worker(dataclass_obj: VarWorker) -> VarWorkerDocument:
     workers = []
     if len(dataclass_obj.target_ids) > 0:
         # pylint: disable=no-member
-        workers = WorkerDocument.objects.get(id__in=dataclass_obj.target_ids)  # type: ignore
+        workers = WorkerDocument.objects.get(  # type: ignore
+            id__in=dataclass_obj.target_ids
+        )
     return VarWorkerDocument(
         operator=dataclass_obj.operator,
         selector=dataclass_obj.selector,
@@ -94,40 +96,26 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
     relative_s = None
     if len(dataclass_obj.target_ids) > 0:
         # pylint: disable=no-member
-        shifts = [ShiftDocument.objects.get(id__in=dataclass_obj.target_ids)]  # type: ignore
+        shifts = [
+            ShiftDocument.objects.get(id__in=dataclass_obj.target_ids)  # type: ignore
+        ]
     if dataclass_obj.reference_id != "":
         # pylint: disable=no-member
-        reference_s = ShiftDocument.objects.get(id=dataclass_obj.reference_id)  # type: ignore
+        reference_s = ShiftDocument.objects.get(  # type: ignore
+            id=dataclass_obj.reference_id
+        )
     if dataclass_obj.relative_id != "":
         # pylint: disable=no-member
-        relative_s = ShiftDocument.objects.get(id=dataclass_obj.relative_id)  # type: ignore
+        relative_s = ShiftDocument.objects.get(  # type: ignore
+            id=dataclass_obj.relative_id
+        )
     return VarShiftDocument(
-        operator=dataclass_obj.operator
-        if dataclass_obj.operator != ""
-        else None,
+        operator=dataclass_obj.operator if dataclass_obj.operator != "" else None,
         selector=dataclass_obj.selector,
         target=shifts,
         reference=reference_s,
         relative=relative_s,
     )
-
-
-# def to_mongo_constraint_sum(
-#     dataclass_obj: ConstraintSum,
-# ) -> ConstraintSumDocument:
-#     return ConstraintSumDocument(
-#         operator=dataclass_obj.operator,
-#         target_value=dataclass_obj.target_value,
-#     )
-
-
-# def to_mongo_constraint_seq(
-#     dataclass_obj: ConstraintSeq,
-# ) -> ConstraintSeqDocument:
-#     return ConstraintSeqDocument(
-#         operator=dataclass_obj.operator,
-#         target_value=dataclass_obj.target_value,
-#     )
 
 
 def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
@@ -143,7 +131,7 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
         day_var=day_var,
         shift_var=shift_var,
         hard=dataclass_obj.hard,
-        penalty=dataclass_obj.penalty,
+        priority=dataclass_obj.priority,
         active=dataclass_obj.active,
         build_blocks=[
             BuildBlockDocument(
@@ -158,8 +146,8 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
 
 def _from_mongo_var_worker(doc_obj: VarWorkerDocument) -> VarWorker:
     return VarWorker(
-        operator=doc_obj.operator,
-        selector=doc_obj.selector,
+        operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
+        selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
         target_ids=[w.id for w in doc_obj.target],
         num_eligible_workers=doc_obj.num_eligible_workers,
     )
@@ -167,36 +155,22 @@ def _from_mongo_var_worker(doc_obj: VarWorkerDocument) -> VarWorker:
 
 def _from_mongo_var_day(doc_obj: VarDayDocument) -> VarDay:
     return VarDay(
-        selector=doc_obj.selector,
-        target=[
-            datetime.combine(d, datetime.min.time()).date()
-            for d in doc_obj.target
-        ],
-        start_date=datetime.combine(
-            doc_obj.start_date, datetime.min.time()
-        ).date(),
-        end_date=datetime.combine(
-            doc_obj.end_date, datetime.min.time()
-        ).date(),
+        selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
+        target=doc_obj.target,
+        start_date=datetime.combine(doc_obj.start_date, datetime.min.time()).date(),
+        end_date=datetime.combine(doc_obj.end_date, datetime.min.time()).date(),
         interval=doc_obj.interval,
     )
 
 
 def _from_mongo_var_shift(doc_obj: VarShiftDocument) -> VarShift:
     return VarShift(
-        operator=doc_obj.operator,
-        selector=doc_obj.selector,
+        operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
+        selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
         target_ids=[s.id for s in doc_obj.target],
         reference_id=doc_obj.reference.id if doc_obj.reference else "",
         relative_id=doc_obj.relative.id if doc_obj.relative else "",
     )
-
-
-# def _from_mongo_build_block(doc_obj: BuildBlockDocument) -> BuildBlock:
-#     return BuildBlock(
-#         name=doc_obj.name,
-#         value=doc_obj.value,
-#     )
 
 
 def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
@@ -205,14 +179,14 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
     shift_var = _from_mongo_var_shift(doc_obj.shift_var)
     constraint = Constraint(
         id=str(doc_obj.id),
-        constraint_type=doc_obj.constraint_type,
-        operator=doc_obj.operator,
+        constraint_type=doc_obj.constraint_type,  # type: ignore
+        operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
         target_value=doc_obj.target_value,
         worker_var=worker_var,
         day_var=day_var,
         shift_var=shift_var,
         hard=doc_obj.hard,
-        penalty=doc_obj.penalty,
+        priority=doc_obj.priority,
         active=doc_obj.active,
         build_blocks=[
             BuildBlock(
