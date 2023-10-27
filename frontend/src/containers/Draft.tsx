@@ -9,6 +9,7 @@ import WorkerConfig from "../components/Worker/WorkerConfig";
 import CoverageTab from "../components/Coverage/CoverageTab";
 import CoverageSelectorConfig from "../components/CoverageSelector/CoverageSelectorConfig";
 import FARConfig from "../components/FixedAssignmentRequest/FARConfig";
+import SimpleConstraintPanel from "../components/SimpleConstraint/SimpleConstraintPanel";
 
 import { ShiftT } from "../components/Coverage/types";
 import { ShiftDefaultT } from "../components/Shift/types";
@@ -57,6 +58,7 @@ export default function Draft() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
+      <SimpleConstraintPanel/>
       <ConstraintConfig workers={workers} shifts={shifts} />
       <WorkerConfig />
       <ShiftConfig />
