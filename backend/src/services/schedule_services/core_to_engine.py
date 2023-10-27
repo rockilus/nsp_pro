@@ -100,7 +100,10 @@ def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
         day_var=_core_to_engine_var_day(constraint.day_var),
         shift_var=_core_to_engine_var_shift(constraint.shift_var),
         hard=constraint.hard,
-        penalty=getattr(penalty_map.constraint, constraint.priority),
+        penalty=getattr(
+            penalty_map.constraint,
+            constraint.priority if constraint.priority != "" else "no",
+        ),
     )
 
 

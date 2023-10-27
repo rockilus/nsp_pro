@@ -4,17 +4,19 @@ import List from "@mui/material/List";
 import Grid from "@mui/material/Grid";
 
 import ConstraintListItem from "./ConstraintListItem";
-import { ConstraintT } from "./types";
+import { ConstraintT, TreeNodeT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
   constraints: ConstraintT[];
+  tree: TreeNodeT;
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
 }
 
 export default function ConstraintList({
   constraints,
+  tree,
   workers,
   shifts,
 }: Props) {
@@ -27,6 +29,7 @@ export default function ConstraintList({
               <ConstraintListItem
                 key={constraint.id}
                 constraint={constraint}
+                tree={tree}
                 workers={workers}
                 shifts={shifts}
               />

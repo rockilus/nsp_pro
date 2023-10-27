@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
-import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CloseIcon from "@mui/icons-material/Close";
@@ -20,18 +19,20 @@ interface Props {
   tree: TreeNodeT;
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
+  handleClose: () => void;
 }
 
-export default function ConstraintCreate({
+export default function ConstraintPanel({
   constraint,
   tree,
   workers,
   shifts,
+  handleClose,
 }: Props) {
   const [constraintState, setConstraintState] =
     useState<ConstraintT>(constraint);
   const [atLeaf, setAtLeaf] = useState<boolean>(false);
-  const [hardPanel, setHardPanel] = useState<boolean>(true);
+  const [hardPanel, setHardPanel] = useState<boolean>(constraint.hard);
 
   const addConstraint = useConstraintStore((state) => state.addConstraint);
   const updateConstraint = useConstraintStore(
@@ -68,8 +69,12 @@ export default function ConstraintCreate({
     }
   };
 
+  const handleDelete = () => {
+    deleteConstraint(constraintState.id);
+  };
+
   const handleSwitchHS = () => {
-    const priority = hardPanel ? "no" : constraint.priority;
+    const priority = hardPanel ? "" : constraint.priority;
     setHardPanel(!hardPanel);
     setConstraintState({
       ...constraint,
@@ -115,6 +120,7 @@ export default function ConstraintCreate({
                 priority: e.target.value as string,
               })
             }
+            sx={{ width: "10em" }}
           >
             {priorityOptions.map((option, index) => (
               <MenuItem key={index} value={option}>
@@ -142,22 +148,38 @@ export default function ConstraintCreate({
         }}
       >
         {selectHardSoft()}
-        <IconButton
-          // onClick={handleClose}
-          sx={{ marginRight: 2 }}
-        >
+        <IconButton onClick={handleClose} sx={{ marginRight: 2 }}>
           <CloseIcon color="disabled" />
         </IconButton>
       </Box>
-      <TreeNavigation
-        tree={tree}
-        buildBlocks={constraintState.buildBlocks}
-        workers={workers}
-        shifts={shifts}
-        addBlock={addBlock}
-        setAtLeaf={setAtLeaf}
-      />
-      {!constraintState.hard && (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          width: "100%",
+          marginLeft: 2,
+          marginBottom: 1,
+        }}
+      >
+        <TreeNavigation
+          tree={tree}
+          buildBlocks={constraintState.buildBlocks}
+          workers={workers}
+          shifts={shifts}
+          addBlock={addBlock}
+          setAtLeaf={setAtLeaf}
+        />
+      </Box>
+      {constraintState.hard ? (
+        <Box
+          sx={{
+            height: 56,
+            width: "100%",
+            marginBottom: 1,
+          }}
+        ></Box>
+      ) : (
         <Box
           sx={{
             display: "flex",
@@ -171,15 +193,34 @@ export default function ConstraintCreate({
           {selectPriority()}
         </Box>
       )}
-      <Button
-        variant="contained"
-        color="primary"
-        disabled={!atLeaf}
-        startIcon={<AddIcon />}
-        onClick={handleSave}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          width: "100%",
+        }}
       >
-        Create
-      </Button>
+        {constraint.id !== "" && (
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ marginRight: 2 }}
+            onClick={handleDelete}
+          >
+            Delete
+          </Button>
+        )}
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ marginRight: 2 }}
+          onClick={handleSave}
+        >
+          Save
+        </Button>
+      </Box>
     </Box>
   );
 }

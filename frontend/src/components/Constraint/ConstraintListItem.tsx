@@ -5,21 +5,24 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
 import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
 
-import { ConstraintT } from "./types";
+import ConstraintButton from "./ConstraintButton";
+import { ConstraintT, TreeNodeT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 import { useConstraintStore } from "../../stores/constraintStore";
 
 interface Props {
   constraint: ConstraintT;
+  tree: TreeNodeT;
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
 }
 
 export default function ConstraintListItem({
   constraint,
+  tree,
   workers,
   shifts,
 }: Props) {
@@ -75,7 +78,16 @@ export default function ConstraintListItem({
   const editButton = () => {
     return (
       <ListItemButton>
-        <Typography variant="caption">{stringState}</Typography>
+        {/* <Box sx={{ display: "flex", gap: 2 }}>
+          <Typography variant="caption">{stringState}</Typography>
+          <Typography variant="caption">
+            {constraint.hard ? "Hard" : `Soft (${constraint.priority})`}
+          </Typography>
+        </Box> */}
+        <ListItemText
+          primary={stringState}
+          secondary={constraint.hard ? "Hard" : `Soft (${constraint.priority})`}
+        />
       </ListItemButton>
     );
   };
@@ -89,21 +101,15 @@ export default function ConstraintListItem({
       }
     >
       <ListItemIcon>
-        <Checkbox
-          // edge="start"
-          checked={constraint.active}
-          onClick={handleToggle}
-          // tabIndex={-1}
-          // disableRipple
-        />
+        <Checkbox checked={constraint.active} onClick={handleToggle} />
       </ListItemIcon>
-      {editButton()}
-      {/* <FARButton
+      <ConstraintButton
         buttonElement={editButton()}
-        far={constraint}
+        constraint={constraint}
+        tree={tree}
         workers={workers}
         shifts={shifts}
-      /> */}
+      />
     </ListItem>
   );
 }
