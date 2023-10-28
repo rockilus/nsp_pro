@@ -67,6 +67,6 @@ class Constraint(Document):
     day_var = EmbeddedDocumentField(VarDay, required=True)
     shift_var = EmbeddedDocumentField(VarShift, required=True)
     hard = BooleanField(required=True)
-    priority = StringField(choices=["no", "low", "medium", "high"], default="no")
+    priority = StringField(choices=["", "low", "medium", "high"], default="")
     active = BooleanField(default=True)
     build_blocks = ListField(EmbeddedDocumentField(BuildBlock))

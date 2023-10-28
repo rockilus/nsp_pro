@@ -67,6 +67,7 @@ export default function ConstraintPanel({
     } else {
       updateConstraint(constraintState);
     }
+    handleClose();
   };
 
   const handleDelete = () => {
