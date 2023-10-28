@@ -23,6 +23,8 @@ from services.schedule_services.penalty_map import penalty_map
 # pylint: disable=too-many-arguments
 def core_to_engine_inputs(
     workers: List[Worker],
+    start_date: date,
+    end_date: date,
     shifts: List[Shift],
     coverage_selectors: List[CoverageSelector],
     coverages: List[Union[Coverage, None]],
@@ -30,7 +32,7 @@ def core_to_engine_inputs(
     requests: List[Request],
     constraints: List[Constraint],
 ) -> Inputs:
-    start_date, end_date = _get_start_end_dates(coverage_selectors)
+    # start_date, end_date = _get_start_end_dates(coverage_selectors)
     variable_space = VariableSpace(
         workers=[worker.id for worker in workers],
         start_date=start_date,

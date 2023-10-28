@@ -44,3 +44,8 @@ export type CellT = {
   value: string;
   rowSpan: number;
 };
+
+export type ScheduleOptionsT = {
+  startDate: Date;
+  endDate: Date;
+};

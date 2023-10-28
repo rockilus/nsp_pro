@@ -1,68 +1,62 @@
 from dataclasses import asdict
-from typing import List, Union
+from datetime import datetime
+from typing import List
 
 import humps
 from fastapi import APIRouter
 from pydantic import TypeAdapter
 
-from core.coverage import Coverage
-from core.schedule import Assignment, Schedule
-from engine import Engine
-from routes.api_model import AssignmentMessage, ScheduleMessage
-from scripts.setup_database import (
-    constraint_db,
-    coverage_db,
-    coverage_selector_db,
-    fixed_assignment_db,
-    request_db,
-    shift_db,
-    worker_db,
-)
-from services import (
-    build_no_coverage_date,
-    core_to_engine_inputs,
-    from_outputs_to_core,
-    update_far_status,
-)
+from core.schedule import Assignment, Schedule, ScheduleOptions
+from routes.api_model import AssignmentMessage, ScheduleMessage, ScheduleOptionsMessage
+from services import create_schedule as create_schedule_service
 
 router = APIRouter()
 
 
-@router.get("/schedule")
-def solver() -> ScheduleMessage:
-    workers = worker_db.get_workers()
-    shifts = shift_db.get_shifts()
-    coverage_selectors = coverage_selector_db.get_coverage_selectors()
-    coverages: List[Union[Coverage, None]] = []
-    for coverage_selector in coverage_selectors:
-        if coverage_selector.coverage_id == "":
-            coverages.append(None)
-            continue
-        coverage = coverage_db.get_coverage_by_id(coverage_selector.coverage_id)
-        coverages.append(coverage)
-    fixed_assignments = fixed_assignment_db.get_fixed_assignments()
-    requests = request_db.get_requests()
-    constraints = constraint_db.get_constraints_active()
-    inputs = core_to_engine_inputs(
-        workers,
-        shifts,
-        coverage_selectors,
-        coverages,
-        fixed_assignments,
-        requests,
-        constraints,
-    )
-    engine = Engine()
-    outputs = engine.solve(inputs)
-    schedule, assignments = from_outputs_to_core(inputs, outputs)
-    no_cov_date = build_no_coverage_date(
-        inputs.variable_space.start_date,
-        inputs.variable_space.end_date,
-        coverage_selectors,
-    )
-    schedule.comments.missing_coverage_dates = no_cov_date
-    update_far_status(schedule, assignments)
+@router.post("/schedule", status_code=201)
+def create_schedule(req: ScheduleOptionsMessage) -> ScheduleMessage:
+    so_data = api_msg_to_schedule_options(req)
+    schedule, assignments = create_schedule_service(so_data)
     return schedule_and_assignments_to_api_msg(schedule, assignments)
+
+
+# @router.get("/schedule")
+# def solver() -> ScheduleMessage:
+#     workers = worker_db.get_workers()
+#     shifts = shift_db.get_shifts()
+#     coverage_selectors = coverage_selector_db.get_coverage_selectors()
+#     coverages: List[Union[Coverage, None]] = []
+#     for coverage_selector in coverage_selectors:
+#         if coverage_selector.coverage_id == "":
+#             coverages.append(None)
+#             continue
+#         coverage = coverage_db.get_coverage_by_id(
+#             coverage_selector.coverage_id
+#         )
+#         coverages.append(coverage)
+#     fixed_assignments = fixed_assignment_db.get_fixed_assignments()
+#     requests = request_db.get_requests()
+#     constraints = constraint_db.get_constraints_active()
+#     inputs = core_to_engine_inputs(
+#         workers,
+#         shifts,
+#         coverage_selectors,
+#         coverages,
+#         fixed_assignments,
+#         requests,
+#         constraints,
+#     )
+#     engine = Engine()
+#     outputs = engine.solve(inputs)
+#     schedule, assignments = from_outputs_to_core(inputs, outputs)
+#     no_cov_date = build_no_coverage_date(
+#         inputs.variable_space.start_date,
+#         inputs.variable_space.end_date,
+#         coverage_selectors,
+#     )
+#     schedule.comments.missing_coverage_dates = no_cov_date
+#     update_far_status(schedule, assignments)
+#     return schedule_and_assignments_to_api_msg(schedule, assignments)
 
 
 def assignment_to_api_msg(
@@ -89,3 +83,17 @@ def api_msg_to_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake = {k: v for k, v in data_snake.items() if k != "assignments"}
     return Schedule(**data_snake)
+
+
+# pylint: disable=R0801
+def api_msg_to_schedule_options(
+    msg: ScheduleOptionsMessage,
+) -> ScheduleOptions:
+    data_snake = humps.decamelize(msg.model_dump())
+    data_snake["start_date"] = datetime.combine(
+        data_snake["start_date"], datetime.min.time()
+    )
+    data_snake["end_date"] = datetime.combine(
+        data_snake["end_date"], datetime.min.time()
+    )
+    return ScheduleOptions(**data_snake)
