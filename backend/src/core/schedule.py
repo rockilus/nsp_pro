@@ -35,3 +35,9 @@ class Schedule:
     start_date: date
     end_date: date
     comments: Comments
+
+
+@dataclass
+class ScheduleOptions:
+    start_date: date
+    end_date: date

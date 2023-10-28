@@ -140,3 +140,8 @@ class TreeNodeMessage(BaseModel):
     parentOptions: List[str]
     options: List[str]
     children: List["TreeNodeMessage"]
+
+
+class ScheduleOptionsMessage(BaseModel):
+    startDate: date
+    endDate: date

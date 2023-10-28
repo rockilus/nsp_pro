@@ -3,6 +3,7 @@ import {
   ScheduleT,
   AssignmentT,
   CommentsT,
+  ScheduleOptionsT,
 } from "../components/Schedule/types";
 
 const baseApiUrl = "http://127.0.0.1:5000";
@@ -11,6 +12,7 @@ const apiUrlSchedule = baseApiUrl + "/schedule";
 type ScheduleStateT = {
   schedule: ScheduleT;
   fetchSchedule: () => void;
+  addSchedule: (scheduleOptions: ScheduleOptionsT) => void;
 };
 
 const toAssignmentT = (data: any) => {
@@ -69,6 +71,23 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       set({ schedule });
     } catch (error) {
       console.error("Failed to fetch schedule:", error);
+    }
+  },
+
+  addSchedule: async (scheduleOptions) => {
+    try {
+      const response = await fetch(apiUrlSchedule, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(scheduleOptions),
+      });
+      const data = await response.json();
+      const schedule: ScheduleT = toScheduleT(data);
+      set({ schedule });
+    } catch (error) {
+      throw Error(`Failed to add schedule: ${error}`);
     }
   },
 }));

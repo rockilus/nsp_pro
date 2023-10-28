@@ -1,12 +1,20 @@
 import React, { useCallback, useEffect, useState } from "react";
+import dayjs from "dayjs";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import ScheduleTable from "./ScheduleTable";
-
-import { ShiftIdNameT, WorkerIdNameT, ColumnT, RowT, CellT } from "./types";
+import {
+  ShiftIdNameT,
+  WorkerIdNameT,
+  ColumnT,
+  RowT,
+  CellT,
+  ScheduleOptionsT,
+} from "./types";
 import { useScheduleStore } from "../../stores/scheduleStore";
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
 import { useRequestStore } from "../../stores/requestStore";
@@ -21,8 +29,20 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
   const [rows, setRows] = useState<RowT[]>([]);
   const [shiftSchedule, setShiftSchedule] = useState<boolean>(true);
 
+  const dateToTimeZero = (date: Date): Date => {
+    return new Date(
+      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0)
+    );
+  };
+
+  const [scheduleOptions, setScheduleOptions] = useState<ScheduleOptionsT>({
+    startDate: dateToTimeZero(new Date(Date.UTC(2023, 9, 2, 0, 0, 0))),
+    endDate: dateToTimeZero(new Date(Date.UTC(2023, 9, 15, 0, 0, 0))),
+  });
+
   const schedule = useScheduleStore((state) => state.schedule);
-  const fetchSchedule = useScheduleStore((state) => state.fetchSchedule);
+  // const fetchSchedule = useScheduleStore((state) => state.fetchSchedule);
+  const addSchedule = useScheduleStore((state) => state.addSchedule);
   const fetchFixedAssignments = useFixedAssignmentStore(
     (state) => state.fetchFixedAssignments
   );
@@ -136,9 +156,9 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
     return newRows;
   }, [columns, schedule, workers, shifts]);
 
-  useEffect(() => {
-    fetchSchedule();
-  }, [fetchSchedule]);
+  // useEffect(() => {
+  //   fetchSchedule();
+  // }, [fetchSchedule]);
 
   useEffect(() => {
     if (schedule) {
@@ -168,6 +188,33 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
       <Typography variant="h4" align="left">
         Schedule
       </Typography>
+      <Box>
+        <DatePicker
+          value={dayjs(scheduleOptions.startDate)}
+          onChange={(newValue) =>
+            setScheduleOptions({
+              ...scheduleOptions,
+              startDate: dateToTimeZero(newValue?.toDate() || new Date()),
+            })
+          }
+        />
+        <DatePicker
+          value={dayjs(scheduleOptions.endDate)}
+          onChange={(newValue) =>
+            setScheduleOptions({
+              ...scheduleOptions,
+              endDate: dateToTimeZero(newValue?.toDate() || new Date()),
+            })
+          }
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => addSchedule(scheduleOptions)}
+        >
+          Solve
+        </Button>
+      </Box>
       <Button
         variant="contained"
         color="primary"
