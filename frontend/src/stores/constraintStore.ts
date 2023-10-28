@@ -34,8 +34,6 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
   },
 
   addConstraint: async (constraint) => {
-    console.log(constraint);
-
     try {
       const response = await fetch(apiUrlConstraints, {
         method: "POST",

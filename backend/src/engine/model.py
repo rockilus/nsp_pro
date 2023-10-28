@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Dict, List, Set, Tuple
 
 from google.protobuf import text_format  # type: ignore
@@ -219,15 +219,10 @@ class Model:
         if constraint.day_var.selector == "all":
             d_vars = [self.days]
         elif constraint.day_var.selector == "week":
-            week_length = 7
-            d_indexes = [
-                list(range(i, min(i + 7, len(self.days))))
-                for i in range(
-                    0,
-                    len(self.days),
-                    week_length,
-                )
-            ]
+            weekday_first_day = datetime.strptime(self.days[0], date_format).weekday()
+            d_indexes = Model.build_weeks_day_index_list(
+                weekday_first_day, len(self.days)
+            )
             d_vars = [[self.days[i] for i in d_index] for d_index in d_indexes]
         elif constraint.day_var.selector == "period":
             period = [
@@ -768,6 +763,24 @@ class Model:
         remainder = numerator % denominator
         result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
         return result
+
+    @staticmethod
+    def build_weeks_day_index_list(
+        first_day_index: int, num_days: int
+    ) -> List[List[int]]:
+        week_length = 7
+        weeks = []
+        week_start_index = 0
+        while week_start_index < num_days:
+            if week_start_index == 0:
+                week_end_index = min(
+                    week_start_index + week_length - first_day_index, num_days
+                )
+            else:
+                week_end_index = min(week_start_index + week_length, num_days)
+            weeks.append(list(range(week_start_index, week_end_index)))
+            week_start_index = week_end_index
+        return weeks
 
     def add_objective(self) -> None:
         self.model.Minimize(

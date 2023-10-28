@@ -19,13 +19,15 @@ class Output:
         )
         if solution_exist:
             assignments = self.build_solution()
-        else:
-            assignments = []
-        objective_value = self.model.solver.ObjectiveValue()
-        constraint_breaches = self.build_constraint_breaches()
-        return Outputs(
-            solution_exist, assignments, objective_value, constraint_breaches
-        )
+            objective_value = self.model.solver.ObjectiveValue()
+            constraint_breaches = self.build_constraint_breaches()
+            return Outputs(
+                solution_exist,
+                assignments,
+                objective_value,
+                constraint_breaches,
+            )
+        return Outputs(solution_exist, [], 0, [])
 
     def build_solution(self) -> List[Assignment]:
         assignments = []
@@ -44,6 +46,7 @@ class Output:
         constraint_breaches = []
         print(f"Branches: {self.model.solver.NumBranches()}")
         print(f"Wall time: {self.model.solver.WallTime()} s")
+        # var_debug = {k: v for k, v in self.model.variables.items()}
         for i, var in enumerate(self.model.obj.bool_vars):
             if self.model.solver.BooleanValue(var):
                 # penalty = self.model.obj.bool_coeffs[i]
