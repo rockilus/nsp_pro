@@ -71,4 +71,22 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       console.error("Failed to fetch schedule:", error);
     }
   },
+
+  addSchedule: async (startDate, endDate) => {
+    try {
+      const response = await fetch(apiUrlSchedules, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(schedule),
+      });
+      const newSchedule = await response.json();
+      set((state) => ({
+        schedules: [...state.schedules, newSchedule],
+      }));
+    } catch (error) {
+      throw Error(`Failed to add schedule: ${error}`);
+    }
+  },
 }));

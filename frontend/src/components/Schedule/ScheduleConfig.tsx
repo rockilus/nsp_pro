@@ -3,9 +3,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import ScheduleTable from "./ScheduleTable";
-
 import { ShiftIdNameT, WorkerIdNameT, ColumnT, RowT, CellT } from "./types";
 import { useScheduleStore } from "../../stores/scheduleStore";
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
@@ -168,6 +168,33 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
       <Typography variant="h4" align="left">
         Schedule
       </Typography>
+      <Box>
+        <DatePicker
+          value={dayjs(coverageSelector.startDate)}
+          onChange={(newValue) =>
+            handleUpdateCoverageSelector({
+              ...coverageSelector,
+              startDate: dateToTimeZero(newValue?.toDate() || new Date()),
+            })
+          }
+        />
+        <DatePicker
+          value={dayjs(coverageSelector.startDate)}
+          onChange={(newValue) =>
+            handleUpdateCoverageSelector({
+              ...coverageSelector,
+              startDate: dateToTimeZero(newValue?.toDate() || new Date()),
+            })
+          }
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setShiftSchedule(!shiftSchedule)}
+        >
+          Solve
+        </Button>
+      </Box>
       <Button
         variant="contained"
         color="primary"
