@@ -18,7 +18,7 @@ type OptionT = {
 type ArgDefinition = {
   name: string;
   label: string;
-  type: 'select' | 'number' | 'text' | 'selectShift';
+  type: 'select' | 'number' | 'text' | 'selectShifts';
   options?: OptionT[];
   placeholder?: string;
 }
@@ -32,7 +32,7 @@ const functions: FunctionDefinition[] = [
       {
         name: 'shift_id',
         label: 'Shift',
-        type: 'selectShift',
+        type: 'selectShifts',
       },
       {
         name: 'day',
@@ -68,7 +68,7 @@ const functions: FunctionDefinition[] = [
       {
         name: 'shift_id',
         label: 'Shift',
-        type: 'selectShift',
+        type: 'selectShifts',
       },
       {
         name: 'day',
@@ -107,7 +107,7 @@ const functions: FunctionDefinition[] = [
         // should be shift_id, also should support multiple shift selection
         name: 'shift_id_reference', 
         label: 'Shift',
-        type: 'selectShift',
+        type: 'selectShifts',
       },
       {
         name: 'operator',
@@ -121,7 +121,7 @@ const functions: FunctionDefinition[] = [
       {
         name: 'shift_id_relative', 
         label: 'Other Shift',
-        type: 'selectShift',
+        type: 'selectShifts',
       },
       {
         name: 'quantity',
@@ -132,8 +132,8 @@ const functions: FunctionDefinition[] = [
     ],
   },
   {
-    name: 'SELECT_SHIFT',
-    label: 'SELECT_SHIFT',
+    name: 'SELECT_SHIFTS',
+    label: 'SELECT_SHIFTS',
     args: [
       {
         name: 'dimension',
@@ -251,13 +251,7 @@ const SelectShift: React.FC<SelectShiftProps> = ({ shifts, shiftDimensions, onCh
 
 interface BlockOutT {
   name: 'type' | 'timing' | 'quantity' | 'operator' | 'shift_id';
-  value: string | number;
-}
-
-interface Suggestion {
-  value: any;
-  label: string;
-  type: 'val' | 'func';
+  value: string | number | string[];
 }
 
 interface FormulaInputProps {
@@ -339,14 +333,13 @@ const parseInput = (inputValue: string) => {
 
 type ComparatorT = 'equal' | 'not equal';
 
-const SELECT_SHIFT = (
+const SELECT_SHIFTS = (
   dimensionName: string, 
   comparator: ComparatorT, 
   value: string, 
   shifts: ShiftT[], 
   shiftDimensions: ShiftDimensionT[]
-): string => {
-  let matchedShift = null;
+): string[] => {
   
   const checkComparator = (propertyValue: string | number | boolean, targetValue: string): boolean => {
     switch (comparator) {
@@ -359,19 +352,22 @@ const SELECT_SHIFT = (
     }
   };
 
+  let matchedShifts: ShiftT[] = [];
+
   if (dimensionName === 'name') {
-    matchedShift = shifts.find(shift => checkComparator(shift.name, value));
+    matchedShifts = shifts.filter(shift => checkComparator(shift.name, value));
   } else {
     // Find the corresponding dimension ID based on its name
     const dimension = shiftDimensions.find(d => d.name === dimensionName);
-    if (!dimension) return '';  // If no matching dimension is found, return early
-    matchedShift = shifts.find(shift => {
+    if (!dimension) return [];  // If no matching dimension is found, return early
+    matchedShifts = shifts.filter(shift => {
       const property = shift.shiftProperties.find(p => p.shiftDimensionId === dimension.id);
       if (!property) return false;
       return checkComparator(property.value, value);
     });
   }
-  return matchedShift ? matchedShift.id : '';
+  
+  return matchedShifts.map(shift => shift.id);
 };
 
 interface ParsedNode {
@@ -391,9 +387,9 @@ const resolveFunctions = (parsedFunction: ParsedNode, shifts: ShiftT[], shiftDim
       return resolveFunctions(arg, shifts, shiftDimensions);
     }
 
-    // If the argument type is selectShift but there are no arguments, we assume it's a shift name
-    if (funcDef.args[index].type === 'selectShift' && arg.args.length == 0) {
-      return SELECT_SHIFT('name', 'equal', arg.value, shifts, shiftDimensions);
+    // If the argument type is selectShifts but there are no arguments, we assume it's a shift name
+    if (funcDef.args[index].type === 'selectShifts' && arg.args.length == 0) {
+      return SELECT_SHIFTS('name', 'equal', arg.value, shifts, shiftDimensions);
     }
 
     return arg.value;
@@ -401,9 +397,9 @@ const resolveFunctions = (parsedFunction: ParsedNode, shifts: ShiftT[], shiftDim
 
   // Here we have a special case where we want to run the function to resolve the shift id
   // We might need to split such functions from root constraint functions
-  if (parsedFunction.value === 'SELECT_SHIFT') {
+  if (parsedFunction.value === 'SELECT_SHIFTS') {
     const [dimension, comparator, value] = resolvedArgs;
-    return SELECT_SHIFT(dimension, comparator, value, shifts, shiftDimensions);
+    return SELECT_SHIFTS(dimension, comparator, value, shifts, shiftDimensions);
   }
 
   return resolvedArgs;
@@ -468,23 +464,35 @@ const SentenceBuilder: React.FC<SentenceBuilderProps> = ({ shifts, shiftDimensio
       return;
     }
 
+    console.log('parsedInput', parsedInput);
+
     const resolvedArgs = resolveFunctions(parsedInput, shifts, shiftDimensions);
     if (!resolvedArgs) {
       console.error("Error resolving function arguments.");
       return;
     }
 
+    console.log('resolvedArgs', resolvedArgs);
+
     const blockOuts: BlockOutT[] = functionDefinition.args.map((arg, index) => ({
       name: arg.name as 'type' | 'timing' | 'quantity' | 'operator' | 'shift_id',
       value: resolvedArgs[index]
     }));
+
+    for (let i = 0; i < blockOuts.length; i++) {
+      const blockOut = blockOuts[i];
+      if (blockOut.name === 'shift_id' && blockOut.value instanceof Array && blockOut.value.length > 0) {
+        console.log("Selecting first shift id since we don't support multiple shift selection yet");
+        blockOut.value = blockOut.value[0];
+      }
+    }
 
     blockOuts.push({
       name: 'type',
       value: functionDefinition.name,
     });
 
-    console.log(blockOuts);
+    console.log('blockOuts before applying shift id selection', blockOuts);
     onSubmit(blockOuts);
   };
 
@@ -556,7 +564,7 @@ const ConstraintBuilder: React.FC<ConstraintBuilderProps> = ({ shifts, shiftDime
   
   const renderArgComponent = (arg: ArgDefinition, argValue: string | number | string[]) => {
     switch (arg.type) {
-      case 'selectShift':
+      case 'selectShifts':
         return (
           <>
             <SelectShift
