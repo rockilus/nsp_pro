@@ -9,16 +9,18 @@ import WorkerConfig from "../components/Worker/WorkerConfig";
 import CoverageTab from "../components/Coverage/CoverageTab";
 import CoverageSelectorConfig from "../components/CoverageSelector/CoverageSelectorConfig";
 import FARConfig from "../components/FixedAssignmentRequest/FARConfig";
-import SimpleConstraintPanel from "../components/SimpleConstraint/SimpleConstraintPanel";
+import FunctionConstraintPanel from "../components/FunctionConstraint/FunctionConstraintPanel";
 
 import { ShiftT } from "../components/Coverage/types";
 import { ShiftDefaultT } from "../components/Shift/types";
 import { ShiftIdNameT, WorkerIdNameT } from "../components/Schedule/types";
 import { useShiftStore } from "../stores/shiftStore";
 import { useWorkerStore } from "../stores/workerStore";
+import { useShiftDimensionStore } from "../stores/shiftDimensionStore";
 
 export default function Draft() {
   const shifts = useShiftStore((state) => state.shifts);
+  const shiftDimensions = useShiftDimensionStore((state) => state.shiftDimensions);
   const workers = useWorkerStore((state) => state.workers);
 
   const shiftDefaults = shifts
@@ -58,7 +60,10 @@ export default function Draft() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <SimpleConstraintPanel/>
+      <FunctionConstraintPanel 
+        shifts={shifts}
+        shiftDimensions={shiftDimensions}
+      />
       <ConstraintConfig workers={workers} shifts={shifts} />
       <WorkerConfig />
       <ShiftConfig />

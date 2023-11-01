@@ -33,6 +33,7 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
     }
   },
 
+  // TODO need type here for constraint
   addConstraint: async (constraint) => {
     try {
       const response = await fetch(apiUrlConstraints, {

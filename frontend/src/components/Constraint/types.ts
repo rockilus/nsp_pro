@@ -14,6 +14,6 @@ export type TreeNodeT = {
 };
 
 export type BuildBlockT = {
-  name: string;
+  name: 'type' | 'operator' | 'quantity' | 'shift_id' | 'timing';
   value: string | number;
 };
