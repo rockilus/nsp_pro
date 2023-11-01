@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Box, Button, FormControl, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, FormControl, InputLabel, List, ListItem, ListItemText, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { useConstraintStore } from "../../stores/constraintStore";
 import { ShiftDimensionT, ShiftT } from "../Shift/types";
 
-type FunctionDefinition = {
+type FunctionDefinitionT = {
   name: string;
   label: string;
   args: ArgDefinition[];
+  description: string;
+  examples: {formula: string, explanation: string}[];
 }
 
 type OptionT = {
@@ -24,10 +26,21 @@ type ArgDefinition = {
 }
 
 // this can come from the API later on
-const functions: FunctionDefinition[] = [
+const functions: FunctionDefinitionT[] = [
   {
     name: 'sequence',
     label: 'CONSECUTIVE',
+    description: 'This function is for a constraint about consecutive shifts.',
+    examples: [
+      {
+        formula: `CONSECUTIVE('Off';'week';2;'at most')`,
+        explanation: `This constraint will ensure that the shift named 'Off' will be scheduled at most 2 consecutive days in a week.`
+      },
+      {
+        formula: `CONSECUTIVE(SELECT_SHIFTS('Group';'equal';'Off');'week';2;'at most')`,
+        explanation: `This constraint will ensure that any combination of shifts with group 'Off' will be scheduled at most 2 consecutive days in a week.`
+      },
+    ],
     args: [
       {
         name: 'shift_id',
@@ -64,6 +77,13 @@ const functions: FunctionDefinition[] = [
   {
     name: 'sum',
     label: 'SUM',
+    description: 'This function is for a constraint about the sum of shifts.',
+    examples: [
+      {
+        formula: `SUM('Shift name';'week';2;'at most')`,
+        explanation: `This constraint will ensure that the shift named 'Shift name' will be scheduled at most 2 days in a week.`
+      },
+    ],
     args: [
       {
         name: 'shift_id',
@@ -102,6 +122,13 @@ const functions: FunctionDefinition[] = [
     // to return shift_id,day 
     name: 'order',
     label: 'WHEN_THEN',
+    description: 'This function is for a constraint about the order of shifts.',
+    examples: [
+      {
+        formula: `WHEN_THEN('Shift name';'yes';'Shift name 2';2)`,
+        explanation: `This constraint will ensure that the shift named 'Shift name' will be scheduled before the shift named 'Shift name 2' by 2 days.`
+      },
+    ],
     args: [
       {
         // should be shift_id, also should support multiple shift selection
@@ -134,6 +161,13 @@ const functions: FunctionDefinition[] = [
   {
     name: 'SELECT_SHIFTS',
     label: 'SELECT_SHIFTS',
+    description: 'This function helps selecting shifts based on a condition.',
+    examples: [
+      {
+        formula: `SELECT_SHIFTS('name';'equal';'Shift name')`,
+        explanation: `This function will return the shift ids of all shifts with name 'Shift name'.`
+      },
+    ],
     args: [
       {
         name: 'dimension',
@@ -438,6 +472,69 @@ const validateFunction = (parsedInput: { value: string, args: any[] } , function
   return true;
 };
 
+type FunctionDocumentationProps = {
+  functions: FunctionDefinitionT[];
+};
+
+const FunctionDocumentation: React.FC<FunctionDocumentationProps> = ({ functions }) => {
+  const [selectedFunctionName, setSelectedFunctionName] = useState(functions[0]?.name || '');
+
+  const selectedFunction = functions.find(func => func.name === selectedFunctionName);
+
+  return (
+    <Box mt={3}>
+      <Card variant="outlined">
+        <CardContent>
+          <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Typography variant="h4" component="div">
+              <Select
+                value={selectedFunctionName}
+                onChange={(e) => setSelectedFunctionName(e.target.value as string)}
+                variant="standard"
+                style={{ marginLeft: '8px' }}
+              >
+                {functions.map(func => (
+                  <MenuItem key={func.name} value={func.name}>{func.label}</MenuItem>
+                ))}
+              </Select>
+            </Typography>
+          </Box>
+
+          {selectedFunction && (
+            <>
+              <Typography variant="body1" mt={2}>{selectedFunction.description}</Typography>
+
+              <Typography variant="h6" style={{ marginTop: '12px' }}>Examples:</Typography>
+              {selectedFunction.examples.map((example, index) => (
+                <Box key={index} mt={2}>
+                  <Box component="pre" bgcolor="#f5f5f5" p={1} borderRadius={1}>
+                    {example.formula}
+                  </Box>
+                  <Typography variant="body2" style={{ marginTop: '8px' }}>
+                    <strong>Explanation:</strong> {example.explanation}
+                  </Typography>
+                </Box>
+              ))}
+
+              <Typography variant="h6" style={{ marginTop: '12px' }}>Arguments:</Typography>
+              <List dense>
+                {selectedFunction.args.map(arg => (
+                  <ListItem key={arg.name}>
+                    <ListItemText 
+                      primary={`${arg.label} (${arg.type})${arg.type === 'select' ? `: ${arg.options.map(opt => opt.label).join(', ')}` : ''}`} 
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </Box>
+  );
+};
+
+
 interface SentenceBuilderProps {
   shifts: ShiftT[];
   shiftDimensions: ShiftDimensionT[];
@@ -445,6 +542,8 @@ interface SentenceBuilderProps {
 }
 
 const SentenceBuilder: React.FC<SentenceBuilderProps> = ({ shifts, shiftDimensions, onSubmit }) => {
+  const [showDocs, setShowDocs] = useState(false);
+  
   const handleSubmit = (inputValue: string) => {
     const parsedInput = parseInput(inputValue);
     if (!parsedInput) {
@@ -498,7 +597,14 @@ const SentenceBuilder: React.FC<SentenceBuilderProps> = ({ shifts, shiftDimensio
 
   return (
     <div>
-      <FormulaInput onSubmit={handleSubmit} />
+      <Box mb={2}>
+        <FormulaInput onSubmit={handleSubmit} />
+      </Box>
+
+      <Button color="secondary" onClick={() => setShowDocs(!showDocs)}>
+        {showDocs ? 'Hide Documentation' : 'Show Documentation'}
+      </Button>
+      {showDocs && <FunctionDocumentation functions={functions} />}
     </div>
   );
 };
@@ -511,7 +617,7 @@ interface ConstraintBuilderProps {
 }
 
 const ConstraintBuilder: React.FC<ConstraintBuilderProps> = ({ shifts, shiftDimensions, onSubmit }) => {
-  const [selectedFunction, setSelectedFunction] = useState<FunctionDefinition | null>(null);
+  const [selectedFunction, setSelectedFunction] = useState<FunctionDefinitionT | null>(null);
   const [args, setArgs] = useState<{ [key: string]: string | number | string[] }>({});
   const [isComplete, setIsComplete] = useState<boolean>(false);
 
@@ -676,7 +782,7 @@ const ConstraintPanel: React.FC<ConstraintPanelProps> = ({ shifts, shiftDimensio
   }
   
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: '200px', }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: '50px', }}>
       <SentenceBuilder 
         shifts={shifts} 
         shiftDimensions={shiftDimensions}
