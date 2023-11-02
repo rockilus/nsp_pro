@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import List
 
 from bson import ObjectId
+import mongoengine
+from mongoengine.base import datastructures
 
 from core.constraint import BuildBlock, Constraint, VarDay, VarShift, VarWorker
 from database.db import DB
@@ -25,8 +27,9 @@ class ConstraintDB:
     ) -> Constraint:
         constraint_doc = to_mongo_constraint(constraint)
         constraint_doc.id = str(ObjectId())
-        constraint_saved = constraint_doc.save()
-        return _from_mongo_constraint(constraint_saved)
+        constraint_doc_saved = constraint_doc.save()
+        constraint_saved = _from_mongo_constraint(constraint_doc_saved)
+        return constraint_saved
 
     def get_constraints(
         self,
@@ -96,9 +99,7 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
     relative_s = None
     if len(dataclass_obj.target_ids) > 0:
         # pylint: disable=no-member
-        shifts = [
-            ShiftDocument.objects.get(id__in=dataclass_obj.target_ids)  # type: ignore
-        ]
+        shifts = ShiftDocument.objects(id__in=dataclass_obj.target_ids)  # type: ignore
     if dataclass_obj.reference_id != "":
         # pylint: disable=no-member
         reference_s = ShiftDocument.objects.get(  # type: ignore
@@ -109,13 +110,14 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
         relative_s = ShiftDocument.objects.get(  # type: ignore
             id=dataclass_obj.relative_id
         )
-    return VarShiftDocument(
+    doc = VarShiftDocument(
         operator=dataclass_obj.operator if dataclass_obj.operator != "" else None,
         selector=dataclass_obj.selector,
         target=shifts,
         reference=reference_s,
         relative=relative_s,
     )
+    return doc
 
 
 def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
@@ -191,7 +193,7 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
         build_blocks=[
             BuildBlock(
                 name=b.name,
-                value=b.value,
+                value=b.value if not isinstance(b.value, datastructures.BaseList) else list(b.value)
             )
             for b in doc_obj.build_blocks
         ],

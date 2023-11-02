@@ -27,12 +27,11 @@ def build_constraint_sum(constraint_build: ConstraintBuild) -> Constraint:
         end_date=date.today(),
         interval=0,
     )
+    target_shift_ids = get_block_value_from_name("shift_id", constraint_build.build_blocks)
     var_shift = VarShift(
         operator="",
         selector="equal",
-        target_ids=[
-            str(get_block_value_from_name("shift_id", constraint_build.build_blocks))
-        ],
+        target_ids=target_shift_ids,
         reference_id="",
         relative_id="",
     )
@@ -72,12 +71,11 @@ def build_constraint_seq(constraint_build: ConstraintBuild) -> Constraint:
         end_date=date.today(),
         interval=0,
     )
+    target_shift_ids = get_block_value_from_name("shift_id", constraint_build.build_blocks)
     var_shift = VarShift(
         operator="",
         selector="equal",
-        target_ids=[
-            str(get_block_value_from_name("shift_id", constraint_build.build_blocks))
-        ],
+        target_ids=target_shift_ids,
         reference_id="",
         relative_id="",
     )

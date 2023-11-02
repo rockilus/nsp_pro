@@ -32,7 +32,7 @@ class VarShift:
 @dataclass
 class BuildBlock:
     name: str
-    value: Union[str, int]
+    value: Union[str, int, List[str]] 
 
 
 @dataclass

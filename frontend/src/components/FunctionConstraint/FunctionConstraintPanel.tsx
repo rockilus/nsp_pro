@@ -441,7 +441,7 @@ const resolveFunctions = (parsedFunction: ParsedNode, shifts: ShiftT[], shiftDim
 
 
 
-const validateFunction = (parsedInput: { value: string, args: any[] } , functionDefinition: FunctionDefinition) => {
+const validateFunction = (parsedInput: { value: string, args: any[] } , functionDefinition: FunctionDefinitionT) => {
   if (parsedInput.value !== functionDefinition.label) {
     throw new Error(`Function name mismatch: ${parsedInput.value} !== ${functionDefinition.name}`);
   }
@@ -578,13 +578,13 @@ const SentenceBuilder: React.FC<SentenceBuilderProps> = ({ shifts, shiftDimensio
       value: resolvedArgs[index]
     }));
 
-    for (let i = 0; i < blockOuts.length; i++) {
-      const blockOut = blockOuts[i];
-      if (blockOut.name === 'shift_id' && blockOut.value instanceof Array && blockOut.value.length > 0) {
-        console.log("Selecting first shift id since we don't support multiple shift selection yet");
-        blockOut.value = blockOut.value[0];
-      }
-    }
+    // for (let i = 0; i < blockOuts.length; i++) {
+    //   const blockOut = blockOuts[i];
+    //   if (blockOut.name === 'shift_id' && blockOut.value instanceof Array && blockOut.value.length > 0) {
+    //     console.log("Selecting first shift id since we don't support multiple shift selection yet");
+    //     blockOut.value = blockOut.value[0];
+    //   }
+    // }
 
     blockOuts.push({
       name: 'type',

@@ -174,7 +174,7 @@ class RequestMessage(BaseModel):
 # Constraint
 class BuildBlockMessage(BaseModel):
     name: str
-    value: Union[str, int]
+    value: Union[str, int, List[str]]
 
 
 class ConstraintMessage(BaseModel):
