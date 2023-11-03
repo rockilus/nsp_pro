@@ -13,21 +13,21 @@ class Output:
         self.model = model
 
     def build_outputs(self) -> Outputs:
-        solution_exist = self.model.status in (
+        is_solution = self.model.status in (
             cp_model.OPTIMAL,
             cp_model.FEASIBLE,
         )
-        if solution_exist:
+        if is_solution:
             assignments = self.build_solution()
             objective_value = self.model.solver.ObjectiveValue()
             constraint_breaches = self.build_constraint_breaches()
             return Outputs(
-                solution_exist,
+                is_solution,
                 assignments,
                 objective_value,
                 constraint_breaches,
             )
-        return Outputs(solution_exist, [], 0, [])
+        return Outputs(is_solution, [], 0, [])
 
     def build_solution(self) -> List[Assignment]:
         assignments = []

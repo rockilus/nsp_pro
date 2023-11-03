@@ -62,6 +62,7 @@ export default function ScheduleTab({ workers, shifts }: Props) {
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "row" }}>
         <ScheduleOptions
+          schedule={schedule}
           shiftSchedule={shiftSchedule}
           displayCBs={displayCBs}
           addSchedule={addSchedule}

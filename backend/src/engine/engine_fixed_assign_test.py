@@ -51,4 +51,4 @@ class TestFixedAssignments(TestEngine):
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
 
-        assert not outputs.solution_exist and len(outputs.assignments) == 0
+        assert not outputs.is_solution and len(outputs.assignments) == 0
