@@ -1,11 +1,16 @@
 from dataclasses import asdict
 from typing import List, Tuple
 
-from core.schedule import Assignment, Comments, Schedule
+from bson import ObjectId
+
+from core.schedule import Assignment, Comments, ConstraintBreach, Schedule
+from engine import Assignment as AssignmentEngine
+from engine import ConstraintBreach as ConstraintBreachEngine
 from engine import Inputs, Outputs
+from scripts.setup_database import constraint_db, shift_db, worker_db
 
 
-def from_outputs_to_core(
+def engine_to_core_outputs(
     inputs: Inputs, outputs: Outputs
 ) -> Tuple[Schedule, List[Assignment]]:
     schedule = Schedule(
@@ -13,7 +18,10 @@ def from_outputs_to_core(
         start_date=inputs.variable_space.start_date,
         end_date=inputs.variable_space.end_date,
         comments=Comments(
-            constraint_breaches=[],
+            constraint_breaches=[
+                _engine_to_core_constraint_breach(cb, outputs.assignments)
+                for cb in outputs.constraint_breaches
+            ],
             missing_coverage_dates=[],
         ),
     )
@@ -21,3 +29,69 @@ def from_outputs_to_core(
         Assignment(**asdict(a), id="", schedule_id="") for a in outputs.assignments
     ]
     return schedule, assignments
+
+
+def _engine_to_core_constraint_breach(
+    cb: ConstraintBreachEngine, assignments: List[AssignmentEngine]
+) -> ConstraintBreach:
+    constraint = constraint_db.get_constraint_by_id(cb.constraint_id)
+    if constraint.constraint_type == "sum":
+        # 1 shift off too many/short on period Oct 2 - Oct 8
+        workers_id = set(v[0] for v in cb.variables)
+        dates = set(v[1] for v in cb.variables)
+        start_date, end_date = min(dates), max(dates)
+        shifts_id = set(v[2] for v in cb.variables)
+        workers = [worker_db.get_worker_by_id(w_id) for w_id in workers_id]
+        shifts = [shift_db.get_shift_by_id(s_id) for s_id in shifts_id]
+        count = sum(
+            1
+            for a in assignments
+            if a.worker_id in workers_id and a.date in dates and a.shift_id in shifts_id
+        )
+        diff = count - constraint.target_value
+        string_list = [
+            str(abs(diff)),
+            "shifts" if abs(diff) > 1 else "shift",
+            " ".join([s.name for s in shifts]),
+            "too many" if diff > 0 else "short",
+            "on period",
+            f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}",
+            "for",
+            " ".join([w.name for w in workers]),
+        ]
+    elif constraint.constraint_type == "seq":
+        # 1 shift off consecutive too many/short on period Oct 2 - Oct 8
+        workers_id = set(v[0] for v in cb.variables)
+        dates = set(v[1] for v in cb.variables)
+        start_date, end_date = min(dates), max(dates)
+        shifts_id = set(v[2] for v in cb.variables)
+        workers = [worker_db.get_worker_by_id(w_id) for w_id in workers_id]
+        shifts = [shift_db.get_shift_by_id(s_id) for s_id in shifts_id]
+        count = sum(
+            1
+            for a in assignments
+            if a.worker_id in workers_id and a.date in dates and a.shift_id in shifts_id
+        )
+        diff = count - constraint.target_value
+        string_list = [
+            str(abs(diff)),
+            "shifts" if abs(diff) > 1 else "shift",
+            " ".join([s.name for s in shifts]),
+            "consecutive",
+            "too many" if diff > 0 else "short",
+            "on period" if len(dates) > 1 else "on",
+            f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}"
+            if len(dates) > 1
+            else f"{start_date.strftime('%b %d')}",
+            "for",
+            " ".join([w.name for w in workers]),
+        ]
+    else:
+        string_list = [f"{constraint.constraint_type} constraint not implemented yet"]
+
+    return ConstraintBreach(
+        id=str(ObjectId()),
+        constraint_id=cb.constraint_id,
+        variables=cb.variables,
+        description=" ".join(string_list),
+    )

@@ -13,7 +13,7 @@ from scripts.setup_database import (
     worker_db,
 )
 from services.schedule_services.core_to_engine import core_to_engine_inputs
-from services.schedule_services.engine_to_core import from_outputs_to_core
+from services.schedule_services.engine_to_core import engine_to_core_outputs
 from services.schedule_services.inputs_processing import build_no_coverage_date
 from services.schedule_services.outputs_processing import update_far_status
 
@@ -48,7 +48,7 @@ def create_schedule(
     )
     engine = Engine()
     outputs = engine.solve(inputs)
-    schedule, assignments = from_outputs_to_core(inputs, outputs)
+    schedule, assignments = engine_to_core_outputs(inputs, outputs)
     no_cov_date = build_no_coverage_date(
         inputs.variable_space.start_date,
         inputs.variable_space.end_date,

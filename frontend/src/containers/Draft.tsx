@@ -4,9 +4,9 @@ import Box from "@mui/material/Box";
 
 import ConstraintConfig from "../components/Constraint/ConstraintConfig";
 import ShiftConfig from "../components/Shift/ShiftConfig";
+import ScheduleTab from "../components/Schedule/ScheduleTab";
 import WorkerConfig from "../components/Worker/WorkerConfig";
 import CoveragePanel from "../components/Coverage/CoveragePanel";
-import ScheduleConfig from "../components/Schedule/ScheduleConfig";
 import CoverageSelectorConfig from "../components/CoverageSelector/CoverageSelectorConfig";
 import FARConfig from "../components/FixedAssignmentRequest/FARConfig";
 
@@ -59,7 +59,7 @@ export default function Draft() {
       )}
       <CoverageSelectorConfig />
       <FARConfig workers={workersIdName} shifts={shiftsIdName} />
-      <ScheduleConfig workers={workersIdName} shifts={shiftsIdName} />
+      <ScheduleTab workers={workersIdName} shifts={shiftsIdName} />
     </Box>
   );
 }

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List
+from typing import List, Tuple
 
 
 @dataclass
@@ -15,12 +15,10 @@ class Assignment:
 # pylint: disable=R0801
 @dataclass
 class ConstraintBreach:
+    id: str
     constraint_id: str
-    workers: List[str]
-    dates: List[date]
-    shifts: List[str]
-    value: int
-    penalty: int
+    variables: List[Tuple[str, date, str]]
+    description: str
 
 
 @dataclass

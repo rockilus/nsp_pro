@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List, Union
+from typing import List, Tuple, Union
 
 from pydantic import BaseModel
 
@@ -81,12 +81,10 @@ class AssignmentMessage(BaseModel):
 
 
 class ConstraintBreachMessage(BaseModel):
+    id: str
     constraintId: str
-    workers: List[str]
-    dates: List[date]
-    shifts: List[str]
-    value: int
-    penalty: int
+    variables: List[Tuple[str, date, str]]
+    description: str
 
 
 class CommentsMessage(BaseModel):
