@@ -92,6 +92,6 @@ def _engine_to_core_constraint_breach(
     return ConstraintBreach(
         id=str(ObjectId()),
         constraint_id=cb.constraint_id,
-        variables=[tuple(v) for v in cb.variables],
+        variables=cb.variables,
         description=" ".join(string_list),
     )

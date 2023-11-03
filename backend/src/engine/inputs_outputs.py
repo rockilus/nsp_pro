@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Literal, Union
+from typing import List, Literal, Tuple
 
 ##############################
 # Inputs
@@ -107,7 +107,7 @@ class Inputs:
 @dataclass
 class ConstraintBreach:
     constraint_id: str
-    variables: List[List[Union[str, date]]]
+    variables: List[Tuple[str, date, str]]
     value_diff: int
     penalty: int
 
