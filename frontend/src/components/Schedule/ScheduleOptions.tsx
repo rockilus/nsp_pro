@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -10,9 +11,10 @@ import Switch from "@mui/material/Switch";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
-import { ScheduleOptionsT } from "./types";
+import { ScheduleOptionsT, ScheduleT } from "./types";
 
 interface Props {
+  schedule: ScheduleT;
   shiftSchedule: boolean;
   displayCBs: boolean;
   addSchedule: (scheduleOptions: ScheduleOptionsT) => void;
@@ -21,13 +23,16 @@ interface Props {
 }
 
 export default function ScheduleOptions({
+  schedule,
   shiftSchedule,
   displayCBs,
   addSchedule,
   switchScheduleDisplay,
   switchDisplayCBs,
-  addCBDisplayed,
 }: Props) {
+  const statusList = ["Solved", "No solution", "Soft breached"];
+  const colorList = ["success", "error", "warning"];
+
   const dateToTimeZero = (date: Date): Date => {
     return new Date(
       Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0)
@@ -69,6 +74,22 @@ export default function ScheduleOptions({
       >
         Solve
       </Button>
+      <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
+      <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+        <Typography variant="body2" align="left">
+          Status:
+        </Typography>
+        <Chip
+          label={schedule.status}
+          color={
+            (colorList[statusList.indexOf(schedule.status)] as
+              | "success"
+              | "error"
+              | "warning") || "default"
+          }
+          sx={{ marginLeft: 1 }}
+        />
+      </Box>
       <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
       <Typography variant="subtitle1" align="left">
         Display options

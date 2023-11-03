@@ -33,6 +33,7 @@ class Schedule:
     start_date: date
     end_date: date
     comments: Comments
+    status: str
 
 
 @dataclass

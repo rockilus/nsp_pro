@@ -24,6 +24,7 @@ export type ScheduleT = {
   id: string;
   startDate: Date;
   endDate: Date;
+  status: string;
   assignments: AssignmentT[];
   comments: CommentsT;
 };

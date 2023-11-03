@@ -155,7 +155,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
 
-        assert not outputs.solution_exist and len(outputs.assignments) == 0
+        assert not outputs.is_solution and len(outputs.assignments) == 0
 
     def test_no_solution_for_yes_if_conflict(
         self,
@@ -181,7 +181,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
 
-        assert not outputs.solution_exist and len(outputs.assignments) == 0
+        assert not outputs.is_solution and len(outputs.assignments) == 0
 
     def test_expected_assignment_for_no_interval_plus_three(
         self,

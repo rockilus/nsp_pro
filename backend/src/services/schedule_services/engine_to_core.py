@@ -13,10 +13,19 @@ from scripts.setup_database import constraint_db, shift_db, worker_db
 def engine_to_core_outputs(
     inputs: Inputs, outputs: Outputs
 ) -> Tuple[Schedule, List[Assignment]]:
+    status = "Not solved"
+    if outputs.is_solution:
+        if len(outputs.constraint_breaches) == 0:
+            status = "Solved"
+        else:
+            status = "Soft breached"
+    else:
+        status = "No solution"
     schedule = Schedule(
         id="",
         start_date=inputs.variable_space.start_date,
         end_date=inputs.variable_space.end_date,
+        status=status,
         comments=Comments(
             constraint_breaches=[
                 _engine_to_core_constraint_breach(cb, outputs.assignments)

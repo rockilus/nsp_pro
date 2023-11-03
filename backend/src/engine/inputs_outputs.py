@@ -114,7 +114,7 @@ class ConstraintBreach:
 
 @dataclass
 class Outputs:
-    solution_exist: bool
+    is_solution: bool
     assignments: List[Assignment]
     objective_value: int
     constraint_breaches: List[ConstraintBreach]

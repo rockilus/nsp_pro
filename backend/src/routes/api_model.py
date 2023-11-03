@@ -96,6 +96,7 @@ class ScheduleMessage(BaseModel):
     id: str
     startDate: date
     endDate: date
+    status: str
     assignments: List[AssignmentMessage]
     comments: CommentsMessage
 
