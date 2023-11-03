@@ -6,8 +6,20 @@ import humps
 from fastapi import APIRouter
 from pydantic import TypeAdapter
 
-from core.schedule import Assignment, Schedule, ScheduleOptions
-from routes.api_model import AssignmentMessage, ScheduleMessage, ScheduleOptionsMessage
+from core.schedule import (
+    Assignment,
+    Comments,
+    ConstraintBreach,
+    Schedule,
+    ScheduleOptions,
+)
+from routes.api_model import (
+    AssignmentMessage,
+    CommentsMessage,
+    ConstraintBreachMessage,
+    ScheduleMessage,
+    ScheduleOptionsMessage,
+)
 from services import create_schedule as create_schedule_service
 
 router = APIRouter()
@@ -59,9 +71,26 @@ def create_schedule(req: ScheduleOptionsMessage) -> ScheduleMessage:
 #     return schedule_and_assignments_to_api_msg(schedule, assignments)
 
 
-def assignment_to_api_msg(
-    assignment: Assignment,
-) -> AssignmentMessage:
+def constraint_breach_to_api_msg(
+    constraint_breach: ConstraintBreach,
+) -> ConstraintBreachMessage:
+    data = asdict(constraint_breach)
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(ConstraintBreachMessage)
+    return validator.validate_python(as_dict)
+
+
+def comments_to_api_msg(comments: Comments) -> CommentsMessage:
+    data = asdict(comments)
+    data["constraint_breaches"] = [
+        constraint_breach_to_api_msg(cb) for cb in comments.constraint_breaches
+    ]
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(CommentsMessage)
+    return validator.validate_python(as_dict)
+
+
+def assignment_to_api_msg(assignment: Assignment) -> AssignmentMessage:
     data = asdict(assignment)
     as_dict = humps.camelize(data)
     validator = TypeAdapter(AssignmentMessage)
@@ -71,9 +100,9 @@ def assignment_to_api_msg(
 def schedule_and_assignments_to_api_msg(
     schedule: Schedule, assignments: List[Assignment]
 ) -> ScheduleMessage:
-    assignments_message = [assignment_to_api_msg(a) for a in assignments]
     data = asdict(schedule)
-    data["assignments"] = assignments_message
+    data["assignments"] = [assignment_to_api_msg(a) for a in assignments]
+    data["comments"] = comments_to_api_msg(schedule.comments)
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ScheduleMessage)
     return validator.validate_python(as_dict)

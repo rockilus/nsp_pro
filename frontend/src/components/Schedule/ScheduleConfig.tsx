@@ -1,10 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import dayjs from "dayjs";
-
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import ScheduleTable from "./ScheduleTable";
 import {
@@ -13,40 +7,69 @@ import {
   ColumnT,
   RowT,
   CellT,
-  ScheduleOptionsT,
+  AssignmentT,
+  ScheduleT,
 } from "./types";
-import { useScheduleStore } from "../../stores/scheduleStore";
-import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
-import { useRequestStore } from "../../stores/requestStore";
 
 interface Props {
+  schedule: ScheduleT;
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
+  shiftSchedule: boolean;
+  displayCBs: boolean;
+  CBsDisplayed: string[];
 }
 
-export default function ScheduleConfig({ workers, shifts }: Props) {
+export default function ScheduleConfig({
+  schedule,
+  workers,
+  shifts,
+  shiftSchedule,
+  displayCBs,
+  CBsDisplayed,
+}: Props) {
   const [columns, setColumns] = useState<ColumnT[]>([]);
   const [rows, setRows] = useState<RowT[]>([]);
-  const [shiftSchedule, setShiftSchedule] = useState<boolean>(true);
 
-  const dateToTimeZero = (date: Date): Date => {
-    return new Date(
-      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0)
-    );
-  };
-
-  const [scheduleOptions, setScheduleOptions] = useState<ScheduleOptionsT>({
-    startDate: dateToTimeZero(new Date(Date.UTC(2023, 9, 2, 0, 0, 0))),
-    endDate: dateToTimeZero(new Date(Date.UTC(2023, 9, 15, 0, 0, 0))),
-  });
-
-  const schedule = useScheduleStore((state) => state.schedule);
-  // const fetchSchedule = useScheduleStore((state) => state.fetchSchedule);
-  const addSchedule = useScheduleStore((state) => state.addSchedule);
-  const fetchFixedAssignments = useFixedAssignmentStore(
-    (state) => state.fetchFixedAssignments
+  const isAssignmentInConflictWorker = useCallback(
+    (assignment: AssignmentT): boolean => {
+      const foundCB = schedule.comments.constraintBreaches.find((cb) =>
+        cb.variables.some(
+          (variable) =>
+            variable[0] === assignment.workerId &&
+            variable[1].getTime() === assignment.date.getTime()
+        )
+      );
+      return displayCBs && foundCB ? CBsDisplayed.includes(foundCB.id) : false;
+    },
+    [schedule, displayCBs, CBsDisplayed]
   );
-  const fetchRequests = useRequestStore((state) => state.fetchRequests);
+
+  // console.log("CBsDisplayed", CBsDisplayed);
+
+  const isAssignmentInConflictShift = useCallback(
+    (assignment: AssignmentT): boolean => {
+      const foundCB = schedule.comments.constraintBreaches.find((cb) =>
+        cb.variables.some(
+          (variable) =>
+            variable[1].getTime() === assignment.date.getTime() &&
+            variable[2] === assignment.shiftId
+        )
+      );
+      return displayCBs && foundCB ? CBsDisplayed.includes(foundCB.id) : false;
+      // return schedule.comments.constraintBreaches.some(
+      //   (cb) =>
+      //     displayCBs &&
+      //     cb.displaySchedule &&
+      //     cb.variables.some(
+      //       (variable) =>
+      //         assignment.date.getTime() === variable[1].getTime() &&
+      //         assignment.shiftId === variable[2]
+      //     )
+      // );
+    },
+    [schedule, displayCBs, CBsDisplayed]
+  );
 
   const buildColumnHeaders = useCallback(
     (startDate: Date, endDate: Date): ColumnT[] => {
@@ -96,6 +119,8 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
             date: new Date(0),
             value: shift.name,
             rowSpan: rowSpan,
+            noCoverage: false,
+            constraintBreach: false,
           };
           row.push(newHeaderCell);
         }
@@ -108,6 +133,10 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
             date: dateColumns[j].date,
             value: workerName,
             rowSpan: 1,
+            noCoverage: dateColumns[j].noCoverage,
+            constraintBreach: assignment
+              ? isAssignmentInConflictShift(assignment)
+              : false,
           };
 
           row.push({
@@ -118,7 +147,7 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
       }
     }
     return newRows;
-  }, [columns, schedule, workers, shifts]);
+  }, [columns, schedule, workers, shifts, isAssignmentInConflictShift]);
 
   const buildWorkerRows = useCallback((): RowT[] => {
     const newRows: RowT[] = [];
@@ -131,6 +160,8 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
         date: new Date(0),
         value: worker.name,
         rowSpan: 1,
+        noCoverage: false,
+        constraintBreach: false,
       };
       row.push({
         ...newHeaderCell,
@@ -146,6 +177,10 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
           date: column.date,
           value: shiftName,
           rowSpan: 1,
+          noCoverage: column.noCoverage,
+          constraintBreach: assignment
+            ? isAssignmentInConflictWorker(assignment)
+            : false,
         };
         row.push({
           ...newCell,
@@ -154,18 +189,7 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
       newRows.push(row.slice());
     }
     return newRows;
-  }, [columns, schedule, workers, shifts]);
-
-  // useEffect(() => {
-  //   fetchSchedule();
-  // }, [fetchSchedule]);
-
-  useEffect(() => {
-    if (schedule) {
-      fetchFixedAssignments();
-      fetchRequests();
-    }
-  }, [fetchFixedAssignments, fetchRequests, schedule]);
+  }, [columns, schedule, workers, shifts, isAssignmentInConflictWorker]);
 
   useEffect(() => {
     if (columns.length > 0 && schedule) {
@@ -183,46 +207,5 @@ export default function ScheduleConfig({ workers, shifts }: Props) {
     }
   }, [schedule, buildColumnHeaders]);
 
-  return (
-    <Box style={{ width: "100%" }}>
-      <Typography variant="h4" align="left">
-        Schedule
-      </Typography>
-      <Box>
-        <DatePicker
-          value={dayjs(scheduleOptions.startDate)}
-          onChange={(newValue) =>
-            setScheduleOptions({
-              ...scheduleOptions,
-              startDate: dateToTimeZero(newValue?.toDate() || new Date()),
-            })
-          }
-        />
-        <DatePicker
-          value={dayjs(scheduleOptions.endDate)}
-          onChange={(newValue) =>
-            setScheduleOptions({
-              ...scheduleOptions,
-              endDate: dateToTimeZero(newValue?.toDate() || new Date()),
-            })
-          }
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => addSchedule(scheduleOptions)}
-        >
-          Solve
-        </Button>
-      </Box>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => setShiftSchedule(!shiftSchedule)}
-      >
-        Shift/Worker
-      </Button>
-      <ScheduleTable columns={columns} rows={rows} />
-    </Box>
-  );
+  return <ScheduleTable columns={columns} rows={rows} />;
 }

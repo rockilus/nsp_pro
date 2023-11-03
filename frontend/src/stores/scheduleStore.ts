@@ -4,6 +4,7 @@ import {
   AssignmentT,
   CommentsT,
   ScheduleOptionsT,
+  ConstraintBreachT,
 } from "../components/Schedule/types";
 
 const baseApiUrl = "http://127.0.0.1:5000";
@@ -23,9 +24,20 @@ const toAssignmentT = (data: any) => {
   return assignment;
 };
 
+const toConstraintBreachT = (data: any) => {
+  const constraintBreach: ConstraintBreachT = {
+    ...data,
+    variables: data.variables.map((variable: any) => {
+      const variableDate = new Date(variable[1]);
+      return [variable[0], variableDate, variable[2]];
+    }),
+  };
+  return constraintBreach;
+};
+
 const toCommentsT = (data: any) => {
   const comments: CommentsT = {
-    ...data,
+    constraintBreaches: data.constraintBreaches.map(toConstraintBreachT),
     missingCoverageDates: data.missingCoverageDates.map(
       (isoDate: string) => new Date(isoDate)
     ),

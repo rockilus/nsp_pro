@@ -8,8 +8,15 @@ export type AssignmentT = {
   scheduleId: string;
 };
 
+export type ConstraintBreachT = {
+  id: string;
+  constraintId: string;
+  variables: [string, Date, string][];
+  description: string;
+};
+
 export type CommentsT = {
-  constraintBreaches: string[];
+  constraintBreaches: ConstraintBreachT[];
   missingCoverageDates: Date[];
 };
 
@@ -43,6 +50,8 @@ export type CellT = {
   date: Date;
   value: string;
   rowSpan: number;
+  noCoverage: boolean;
+  constraintBreach: boolean;
 };
 
 export type ScheduleOptionsT = {

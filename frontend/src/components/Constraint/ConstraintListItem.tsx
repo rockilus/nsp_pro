@@ -78,12 +78,6 @@ export default function ConstraintListItem({
   const editButton = () => {
     return (
       <ListItemButton>
-        {/* <Box sx={{ display: "flex", gap: 2 }}>
-          <Typography variant="caption">{stringState}</Typography>
-          <Typography variant="caption">
-            {constraint.hard ? "Hard" : `Soft (${constraint.priority})`}
-          </Typography>
-        </Box> */}
         <ListItemText
           primary={stringState}
           secondary={constraint.hard ? "Hard" : `Soft (${constraint.priority})`}

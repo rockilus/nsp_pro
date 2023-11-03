@@ -8,6 +8,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
+import ScheduleCell from "./ScheduleCell";
 import { ColumnT, RowT } from "./types";
 
 interface Props {
@@ -17,6 +18,8 @@ interface Props {
 
 export default function ScheduleTable({ columns, rows }: Props) {
   const noCoverageColor: string = "#FDEDEC";
+
+  // console.log("columns", columns);
 
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
@@ -50,21 +53,7 @@ export default function ScheduleTable({ columns, rows }: Props) {
                   row.find((c) => c.date.getTime() === column.date.getTime()) ||
                   null;
                 return (
-                  cell && (
-                    <TableCell
-                      key={rowIndex + colIndex}
-                      component="th"
-                      scope="row"
-                      rowSpan={cell.rowSpan}
-                      sx={{
-                        backgroundColor: column.noCoverage
-                          ? noCoverageColor
-                          : "inherit",
-                      }}
-                    >
-                      {cell.value}
-                    </TableCell>
-                  )
+                  cell && <ScheduleCell key={rowIndex + colIndex} cell={cell} />
                 );
               })}
             </TableRow>
