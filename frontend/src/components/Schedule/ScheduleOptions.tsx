@@ -30,8 +30,13 @@ export default function ScheduleOptions({
   switchScheduleDisplay,
   switchDisplayCBs,
 }: Props) {
-  const statusList = ["Solved", "No solution", "Soft breached"];
-  const colorList = ["success", "error", "warning"];
+  const statusList = [
+    "Solved",
+    "No solution",
+    "Soft breached",
+    "Hard breached",
+  ];
+  const colorList = ["success", "error", "warning", "error"];
 
   const dateToTimeZero = (date: Date): Date => {
     return new Date(

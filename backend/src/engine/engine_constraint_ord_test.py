@@ -43,6 +43,7 @@ class TestConstraint:
                 relative="s0",
             ),
             hard=True,
+            hard_to_soft=False,
             penalty=0,
         )
 
@@ -71,6 +72,7 @@ class TestConstraint:
                 relative="s0",
             ),
             hard=False,
+            hard_to_soft=False,
             penalty=20,
         )
 
@@ -635,6 +637,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s0",
+                hard_to_soft=False,
                 penalty=1,
             ),
         ]
@@ -673,6 +676,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s0",
+                hard_to_soft=False,
                 penalty=1,
             ),
         ]
@@ -774,16 +778,16 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
 
         expected_variables = [
-            [
+            (
                 fixed_assignments[0].worker_id,
                 fixed_assignments[0].date,
                 constraint_ord_soft.shift_var.reference,
-            ],
-            [
+            ),
+            (
                 fixed_assignments[0].worker_id,
                 fixed_assignments[0].date + timedelta(days=1),
                 constraint_ord_soft.shift_var.relative,
-            ],
+            ),
         ]
 
         # all constraint_breaches' variables are in expected_variables

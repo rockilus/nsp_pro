@@ -45,9 +45,7 @@ def core_to_engine_inputs(
     )
     inputs = Inputs(
         variable_space=variable_space,
-        coverage=CoverageEngine(
-            _build_shift_demands(coverage_selectors, coverages)
-        ),
+        coverage=CoverageEngine(_build_shift_demands(coverage_selectors, coverages)),
         requests=r_engine,
         fixed_assignments=fa_engine,
         constraints=[_core_to_engine_constraint(c) for c in constraints],
@@ -107,9 +105,7 @@ def _core_to_engine_requests_and_fixed_assignments(
             )
     else:
         fa_engine = [
-            AssignmentEngine(
-                worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id
-            )
+            AssignmentEngine(worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id)
             for fa in fixed_assignments
         ]
     return r_engine, fa_engine

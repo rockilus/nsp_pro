@@ -29,13 +29,11 @@ export default function ScheduleTab({ workers, shifts }: Props) {
   );
   const fetchRequests = useRequestStore((state) => state.fetchRequests);
 
-  const addCBDisplayed = (id: string) => {
-    console.log("addCBDisplayed", id);
-
-    setCBsDisplayed([...CBsDisplayed, id]);
+  const addCBsDisplayed = (ids: string[]) => {
+    setCBsDisplayed(Array.from(new Set([...CBsDisplayed, ...ids])));
   };
-  const removeCBDisplayed = (id: string) => {
-    setCBsDisplayed(CBsDisplayed.filter((cbId) => cbId !== id));
+  const removeCBsDisplayed = (ids: string[]) => {
+    setCBsDisplayed(CBsDisplayed.filter((cbId) => !ids.includes(cbId)));
   };
 
   // useEffect(() => {
@@ -82,8 +80,8 @@ export default function ScheduleTab({ workers, shifts }: Props) {
           CBsDisplayed={CBsDisplayed}
           workers={workers}
           shifts={shifts}
-          addCBDisplayed={addCBDisplayed}
-          removeCBDisplayed={removeCBDisplayed}
+          addCBsDisplayed={addCBsDisplayed}
+          removeCBsDisplayed={removeCBsDisplayed}
         />
       </Box>
     </Box>

@@ -9,6 +9,7 @@ import {
   CellT,
   AssignmentT,
   ScheduleT,
+  ConstraintBreachT,
 } from "./types";
 
 interface Props {
@@ -31,44 +32,38 @@ export default function ScheduleConfig({
   const [columns, setColumns] = useState<ColumnT[]>([]);
   const [rows, setRows] = useState<RowT[]>([]);
 
-  const isAssignmentInConflictWorker = useCallback(
-    (assignment: AssignmentT): boolean => {
-      const foundCB = schedule.comments.constraintBreaches.find((cb) =>
+  const assignmentInConflictsWorker = useCallback(
+    (assignment: AssignmentT): ConstraintBreachT[] => {
+      return schedule.comments.constraintBreaches.filter((cb) =>
         cb.variables.some(
           (variable) =>
             variable[0] === assignment.workerId &&
             variable[1].getTime() === assignment.date.getTime()
         )
       );
-      return displayCBs && foundCB ? CBsDisplayed.includes(foundCB.id) : false;
     },
-    [schedule, displayCBs, CBsDisplayed]
+    [schedule]
   );
 
-  // console.log("CBsDisplayed", CBsDisplayed);
-
-  const isAssignmentInConflictShift = useCallback(
-    (assignment: AssignmentT): boolean => {
-      const foundCB = schedule.comments.constraintBreaches.find((cb) =>
-        cb.variables.some(
-          (variable) =>
-            variable[1].getTime() === assignment.date.getTime() &&
-            variable[2] === assignment.shiftId
-        )
+  const assignmentConflictsShift = useCallback(
+    (assignment: AssignmentT): ConstraintBreachT[] => {
+      return schedule.comments.constraintBreaches.filter(
+        (cb) =>
+          (cb.category === "constraint" &&
+            cb.variables.some(
+              (variable) =>
+                variable[1].getTime() === assignment.date.getTime() &&
+                variable[2] === assignment.shiftId
+            )) ||
+          (["fixed_assignment", "request"].includes(cb.category) &&
+            cb.variables.some(
+              (variable) =>
+                variable[0] === assignment.workerId &&
+                variable[1].getTime() === assignment.date.getTime()
+            ))
       );
-      return displayCBs && foundCB ? CBsDisplayed.includes(foundCB.id) : false;
-      // return schedule.comments.constraintBreaches.some(
-      //   (cb) =>
-      //     displayCBs &&
-      //     cb.displaySchedule &&
-      //     cb.variables.some(
-      //       (variable) =>
-      //         assignment.date.getTime() === variable[1].getTime() &&
-      //         assignment.shiftId === variable[2]
-      //     )
-      // );
     },
-    [schedule, displayCBs, CBsDisplayed]
+    [schedule]
   );
 
   const buildColumnHeaders = useCallback(
@@ -120,7 +115,7 @@ export default function ScheduleConfig({
             value: shift.name,
             rowSpan: rowSpan,
             noCoverage: false,
-            constraintBreach: false,
+            constraintBreach: [],
           };
           row.push(newHeaderCell);
         }
@@ -135,8 +130,8 @@ export default function ScheduleConfig({
             rowSpan: 1,
             noCoverage: dateColumns[j].noCoverage,
             constraintBreach: assignment
-              ? isAssignmentInConflictShift(assignment)
-              : false,
+              ? assignmentConflictsShift(assignment)
+              : [],
           };
 
           row.push({
@@ -147,7 +142,7 @@ export default function ScheduleConfig({
       }
     }
     return newRows;
-  }, [columns, schedule, workers, shifts, isAssignmentInConflictShift]);
+  }, [columns, schedule, workers, shifts, assignmentConflictsShift]);
 
   const buildWorkerRows = useCallback((): RowT[] => {
     const newRows: RowT[] = [];
@@ -161,7 +156,7 @@ export default function ScheduleConfig({
         value: worker.name,
         rowSpan: 1,
         noCoverage: false,
-        constraintBreach: false,
+        constraintBreach: [],
       };
       row.push({
         ...newHeaderCell,
@@ -179,8 +174,8 @@ export default function ScheduleConfig({
           rowSpan: 1,
           noCoverage: column.noCoverage,
           constraintBreach: assignment
-            ? isAssignmentInConflictWorker(assignment)
-            : false,
+            ? assignmentInConflictsWorker(assignment)
+            : [],
         };
         row.push({
           ...newCell,
@@ -189,7 +184,7 @@ export default function ScheduleConfig({
       newRows.push(row.slice());
     }
     return newRows;
-  }, [columns, schedule, workers, shifts, isAssignmentInConflictWorker]);
+  }, [columns, schedule, workers, shifts, assignmentInConflictsWorker]);
 
   useEffect(() => {
     if (columns.length > 0 && schedule) {
@@ -207,5 +202,12 @@ export default function ScheduleConfig({
     }
   }, [schedule, buildColumnHeaders]);
 
-  return <ScheduleTable columns={columns} rows={rows} />;
+  return (
+    <ScheduleTable
+      columns={columns}
+      rows={rows}
+      displayCBs={displayCBs}
+      CBsDisplayed={CBsDisplayed}
+    />
+  );
 }

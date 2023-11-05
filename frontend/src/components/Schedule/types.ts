@@ -54,7 +54,7 @@ export type CellT = {
   value: string;
   rowSpan: number;
   noCoverage: boolean;
-  constraintBreach: boolean;
+  constraintBreach: ConstraintBreachT[];
 };
 
 export type ScheduleOptionsT = {
