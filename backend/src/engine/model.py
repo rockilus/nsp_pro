@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
+from dataclasses import asdict
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Set, Tuple
 
@@ -17,7 +18,7 @@ from engine.inputs_outputs import (
     VarShift,
     VarWorker,
 )
-from engine.types import Objective
+from engine.types import Objective, VarName
 
 
 class Model:
@@ -107,11 +108,19 @@ class Model:
             )
             cstr_vars: List[cp_model.IntVar] = [self.variables[w, d, s]]
             var_name = json.dumps(
-                {
-                    "constraint_id": r.id,
-                    "cstr_vars": [var.Name() for var in cstr_vars],
-                }
+                asdict(
+                    VarName(
+                        constraint_id=r.id,
+                        cstr_vars=[var.Name() for var in cstr_vars],
+                    )
+                )
             )
+            # var_name = json.dumps(
+            #     {
+            #         "constraint_id": r.id,
+            #         "cstr_vars": [var.Name() for var in cstr_vars],
+            #     }
+            # )
             lit = self.model.NewBoolVar(var_name)
             cstr_vars.append(lit)
             self.model.AddBoolOr(cstr_vars)
