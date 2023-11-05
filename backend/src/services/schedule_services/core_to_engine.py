@@ -18,6 +18,7 @@ from engine import VariableSpace
 from engine import VarShift as VarShiftEngine
 from engine import VarWorker as VarWorkerEngine
 from services.schedule_services.penalty_map import penalty_map
+from utils.contants import Constants
 
 
 # pylint: disable=too-many-arguments
@@ -32,7 +33,26 @@ def core_to_engine_inputs(
     requests: List[Request],
     constraints: List[Constraint],
 ) -> Inputs:
-    # start_date, end_date = _get_start_end_dates(coverage_selectors)
+    assignments_fa = []
+    for fa in fixed_assignments:
+        if Constants.HARD_TO_SOFT:
+            requests.append(
+                Request(
+                    id=fa.id,
+                    worker_id=fa.worker_id,
+                    date=fa.date,
+                    shift_id=fa.shift_id,
+                    priority="hard",
+                    status=fa.status,
+                )
+            )
+        else:
+            assignments_fa.append(
+                AssignmentEngine(
+                    worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id
+                )
+            )
+
     variable_space = VariableSpace(
         workers=[worker.id for worker in workers],
         start_date=start_date,
@@ -43,21 +63,10 @@ def core_to_engine_inputs(
         variable_space=variable_space,
         coverage=CoverageEngine(_build_shift_demands(coverage_selectors, coverages)),
         requests=[_core_to_engine_request(req) for req in requests],
-        fixed_assignments=[
-            AssignmentEngine(worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id)
-            for fa in fixed_assignments
-        ],
+        fixed_assignments=assignments_fa,
         constraints=[_core_to_engine_constraint(c) for c in constraints],
     )
     return inputs
-
-
-def _get_start_end_dates(
-    coverage_selectors: list[CoverageSelector],
-) -> tuple[date, date]:
-    start_date = min(c.start_date for c in coverage_selectors)
-    end_date = max(c.end_date for c in coverage_selectors)
-    return start_date, end_date
 
 
 def _build_shift_demands(
@@ -93,6 +102,7 @@ def _core_to_engine_request(request: Request) -> RequestEngine:
 
 
 def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
+    hard_to_soft = Constants.HARD_TO_SOFT
     return ConstraintEngine(
         id=constraint.id,
         constraint_type=constraint.constraint_type,
@@ -101,10 +111,15 @@ def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
         worker_var=_core_to_engine_var_worker(constraint.worker_var),
         day_var=_core_to_engine_var_day(constraint.day_var),
         shift_var=_core_to_engine_var_shift(constraint.shift_var),
-        hard=constraint.hard,
+        hard=constraint.hard if not hard_to_soft else False,
         penalty=getattr(
             penalty_map.constraint,
             constraint.priority if constraint.priority != "" else "no",
+        )
+        if not hard_to_soft and constraint.hard
+        else getattr(
+            penalty_map.constraint,
+            "hard",
         ),
     )
 

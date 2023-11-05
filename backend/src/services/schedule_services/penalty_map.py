@@ -7,6 +7,7 @@ class PenaltyMap:
     medium: int
     high: int
     no: int = field(default=0)
+    hard: int = field(default=1000)
 
 
 @dataclass

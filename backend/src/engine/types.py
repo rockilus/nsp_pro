@@ -10,3 +10,9 @@ class Objective:
     int_coeffs: List[int] = field(default_factory=list)
     bool_vars: List[cp_model.IntVar] = field(default_factory=list)
     bool_coeffs: List[int] = field(default_factory=list)
+
+
+@dataclass
+class VarName:
+    constraint_id: str
+    cstr_vars: List[str]
