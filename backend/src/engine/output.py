@@ -2,10 +2,10 @@ import json
 from datetime import date
 from typing import List
 
-from ortools.sat.python import cp_model  # type: ignore
-
 from engine.inputs_outputs import Assignment, ConstraintBreach, Outputs
 from engine.model import Model
+from engine.types import VarName
+from ortools.sat.python import cp_model  # type: ignore
 
 
 class Output:
@@ -49,18 +49,16 @@ class Output:
         # var_debug = {k: v for k, v in self.model.variables.items()}
         for i, var in enumerate(self.model.obj.bool_vars):
             if self.model.solver.BooleanValue(var):
-                # penalty = self.model.obj.bool_coeffs[i]
-                # if penalty > 0:
-                #     print(f"{var.Name()} violated, penalty={penalty}")
-                # else:
-                #     print(f"{var.Name()} fulfilled, gain={-penalty}")
-                var_name = json.loads(var.Name())
-                variables = [var.split("_") for var in var_name["cstr_vars"]]
-                for variable in variables:
-                    variable[1] = date.fromisoformat(variable[1])
+                var_name = VarName(**json.loads(var.Name()))
+                variables = [
+                    (v[0], date.fromisoformat(v[1]), v[2])
+                    for v in [v.split("_") for v in var_name.cstr_vars]
+                ]
                 constraint_breach = ConstraintBreach(
-                    constraint_id=var_name["constraint_id"],
+                    constraint_id=var_name.constraint_id,
+                    category=var_name.category,
                     variables=variables,
+                    hard_to_soft=var_name.hard_to_soft,
                     value_diff=self.model.solver.Value(var),
                     penalty=self.model.obj.bool_coeffs[i],
                 )
@@ -68,13 +66,16 @@ class Output:
 
         for i, var in enumerate(self.model.obj.int_vars):
             if self.model.solver.Value(var) > 0:
-                var_name = json.loads(var.Name())
-                variables = [var.split("_") for var in var_name["cstr_vars"]]
-                for variable in variables:
-                    variable[1] = date.fromisoformat(variable[1])
+                var_name = VarName(**json.loads(var.Name()))
+                variables = [
+                    (v[0], date.fromisoformat(v[1]), v[2])
+                    for v in [v.split("_") for v in var_name.cstr_vars]
+                ]
                 constraint_breach = ConstraintBreach(
-                    constraint_id=var_name["constraint_id"],
+                    constraint_id=var_name.constraint_id,
+                    category=var_name.category,
                     variables=variables,
+                    hard_to_soft=var_name.hard_to_soft,
                     value_diff=self.model.solver.Value(var),
                     penalty=self.model.obj.int_coeffs[i],
                 )

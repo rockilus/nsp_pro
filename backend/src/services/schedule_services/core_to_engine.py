@@ -33,25 +33,9 @@ def core_to_engine_inputs(
     requests: List[Request],
     constraints: List[Constraint],
 ) -> Inputs:
-    assignments_fa = []
-    for fa in fixed_assignments:
-        if Constants.HARD_TO_SOFT:
-            requests.append(
-                Request(
-                    id=fa.id,
-                    worker_id=fa.worker_id,
-                    date=fa.date,
-                    shift_id=fa.shift_id,
-                    priority="hard",
-                    status=fa.status,
-                )
-            )
-        else:
-            assignments_fa.append(
-                AssignmentEngine(
-                    worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id
-                )
-            )
+    r_engine, fa_engine = _core_to_engine_requests_and_fixed_assignments(
+        requests, fixed_assignments
+    )
 
     variable_space = VariableSpace(
         workers=[worker.id for worker in workers],
@@ -61,9 +45,11 @@ def core_to_engine_inputs(
     )
     inputs = Inputs(
         variable_space=variable_space,
-        coverage=CoverageEngine(_build_shift_demands(coverage_selectors, coverages)),
-        requests=[_core_to_engine_request(req) for req in requests],
-        fixed_assignments=assignments_fa,
+        coverage=CoverageEngine(
+            _build_shift_demands(coverage_selectors, coverages)
+        ),
+        requests=r_engine,
+        fixed_assignments=fa_engine,
         constraints=[_core_to_engine_constraint(c) for c in constraints],
     )
     return inputs
@@ -94,11 +80,39 @@ def _build_shift_demands(
 def _core_to_engine_request(request: Request) -> RequestEngine:
     return RequestEngine(
         id=request.id,
+        hard_to_soft=False,
         worker_id=request.worker_id,
         date=request.date,
         shift_id=request.shift_id,
         penalty=getattr(penalty_map.request, request.priority),
     )
+
+
+def _core_to_engine_requests_and_fixed_assignments(
+    requests: List[Request], fixed_assignments: List[FixedAssignment]
+) -> tuple[List[RequestEngine], List[AssignmentEngine]]:
+    r_engine = [_core_to_engine_request(req) for req in requests]
+    fa_engine = []
+    if Constants.HARD_TO_SOFT:
+        for fa in fixed_assignments:
+            r_engine.append(
+                RequestEngine(
+                    id=fa.id,
+                    hard_to_soft=True,
+                    worker_id=fa.worker_id,
+                    date=fa.date,
+                    shift_id=fa.shift_id,
+                    penalty=getattr(penalty_map.request, "hard"),
+                )
+            )
+    else:
+        fa_engine = [
+            AssignmentEngine(
+                worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id
+            )
+            for fa in fixed_assignments
+        ]
+    return r_engine, fa_engine
 
 
 def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
@@ -112,6 +126,7 @@ def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
         day_var=_core_to_engine_var_day(constraint.day_var),
         shift_var=_core_to_engine_var_shift(constraint.shift_var),
         hard=constraint.hard if not hard_to_soft else False,
+        hard_to_soft=hard_to_soft and constraint.hard,
         penalty=getattr(
             penalty_map.constraint,
             constraint.priority if constraint.priority != "" else "no",

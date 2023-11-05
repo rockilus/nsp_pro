@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Literal
 
 from ortools.sat.python import cp_model  # type: ignore
 
@@ -15,4 +15,6 @@ class Objective:
 @dataclass
 class VarName:
     constraint_id: str
+    category: Literal["request", "fixed_assignment", "constraint"]
     cstr_vars: List[str]
+    hard_to_soft: bool

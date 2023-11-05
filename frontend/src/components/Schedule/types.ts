@@ -11,7 +11,9 @@ export type AssignmentT = {
 export type ConstraintBreachT = {
   id: string;
   constraintId: string;
+  category: string;
   variables: [string, Date, string][];
+  hardToSoft: boolean;
   description: string;
 };
 
