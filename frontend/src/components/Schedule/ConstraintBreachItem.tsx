@@ -12,8 +12,8 @@ interface Props {
   CBDisplayed: boolean;
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
-  addCBDisplayed: (id: string) => void;
-  removeCBDisplayed: (id: string) => void;
+  addCBsDisplayed: (ids: string[]) => void;
+  removeCBsDisplayed: (ids: string[]) => void;
 }
 
 export default function ConstraintBreachItem({
@@ -21,19 +21,21 @@ export default function ConstraintBreachItem({
   CBDisplayed,
   workers,
   shifts,
-  addCBDisplayed,
-  removeCBDisplayed,
+  addCBsDisplayed,
+  removeCBsDisplayed,
 }: Props) {
   const switchDisplayCB = () => {
     if (CBDisplayed) {
-      removeCBDisplayed(constraintBreach.id);
+      removeCBsDisplayed([constraintBreach.id]);
     } else {
-      addCBDisplayed(constraintBreach.id);
+      addCBsDisplayed([constraintBreach.id]);
     }
   };
 
   return (
-    <ListItem>
+    <ListItem
+      sx={{ bgcolor: constraintBreach.hardToSoft ? "#f8d7da" : "inherit" }}
+    >
       <ListItemIcon>
         <Checkbox checked={CBDisplayed} onClick={switchDisplayCB} />
       </ListItemIcon>

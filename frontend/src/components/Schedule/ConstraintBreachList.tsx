@@ -1,11 +1,16 @@
-import * as React from "react";
+import React, { useState } from "react";
 
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import Typography from "@mui/material/Typography";
 
 import ConstraintBreachItem from "./ConstraintBreachItem";
 import { ConstraintBreachT, ShiftIdNameT, WorkerIdNameT } from "./types";
@@ -15,8 +20,8 @@ interface Props {
   CBsDisplayed: string[];
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
-  addCBDisplayed: (id: string) => void;
-  removeCBDisplayed: (id: string) => void;
+  addCBsDisplayed: (ids: string[]) => void;
+  removeCBsDisplayed: (ids: string[]) => void;
 }
 
 export default function ConstraintBreachList({
@@ -24,49 +29,130 @@ export default function ConstraintBreachList({
   CBsDisplayed,
   workers,
   shifts,
-  addCBDisplayed,
-  removeCBDisplayed,
+  addCBsDisplayed,
+  removeCBsDisplayed,
 }: Props) {
-  // const selectAllCBs = () => {
-  //   if (CBsDisplayed.length > 0) {
-  //     CBsDisplayed.map((id) => removeCBDisplayed(id));
-  //   } else {
-  //     constraintBreaches.map((cb) => addCBDisplayed(cb.id));
-  //   }
-  // };
+  const CBsConstraint: ConstraintBreachT[] = constraintBreaches
+    .filter((cb) => cb.category === "constraint")
+    .sort((a, b) => (a.hardToSoft ? -1 : 1));
+  const CBsFA: ConstraintBreachT[] = constraintBreaches.filter(
+    (cb) => cb.category === "fixed_assignment"
+  );
+  const CBsRequest: ConstraintBreachT[] = constraintBreaches.filter(
+    (cb) => cb.category === "request"
+  );
+
+  const checkedConstraint: boolean = CBsConstraint.some((cb) =>
+    CBsDisplayed.includes(cb.id)
+  );
+
+  const checkColorConstraint: string = CBsConstraint.every((cb) =>
+    CBsDisplayed.includes(cb.id)
+  )
+    ? "primary"
+    : "default";
+
+  const switchDisplayCBsConstraint = () => {
+    if (CBsConstraint.every((cb) => CBsDisplayed.includes(cb.id))) {
+      removeCBsDisplayed(CBsConstraint.map((cb) => cb.id));
+    } else {
+      for (let cb of CBsConstraint.filter(
+        (cb) => !CBsDisplayed.includes(cb.id)
+      )) {
+        addCBsDisplayed(CBsConstraint.map((cb) => cb.id));
+      }
+    }
+  };
 
   return (
     <Box sx={{ flexGrow: 1, maxWidth: 752 }}>
-      <List dense={true}>
-        {/* <> */}
-        {/* <ListItem>
-            <ListItemIcon>
-              <Checkbox
-                checked={CBsDisplayed.length > 0}
-                color={
-                  CBsDisplayed.length > 0 &&
-                  CBsDisplayed.length < constraintBreaches.length
-                    ? "default"
-                    : "primary"
-                }
-                onClick={selectAllCBs}
+      <Accordion>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel1a-content"
+          id="panel1a-header"
+        >
+          <Typography>Constraints</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignContent: "left",
+              alignItems: "center",
+            }}
+          >
+            <Checkbox
+              checked={checkedConstraint}
+              color={checkColorConstraint as "primary" | "default"}
+              onClick={switchDisplayCBsConstraint}
+            />
+            <Typography variant="body1">Select all</Typography>
+          </Box>
+          <List dense={true}>
+            {CBsConstraint.map((constraintBreach, index) => (
+              <ConstraintBreachItem
+                key={index}
+                constraintBreach={constraintBreach}
+                CBDisplayed={CBsDisplayed.includes(constraintBreach.id)}
+                workers={workers}
+                shifts={shifts}
+                addCBsDisplayed={addCBsDisplayed}
+                removeCBsDisplayed={removeCBsDisplayed}
               />
-            </ListItemIcon>
-            <ListItemText />
-          </ListItem> */}
-        {constraintBreaches.map((constraintBreach, index) => (
-          <ConstraintBreachItem
-            key={index}
-            constraintBreach={constraintBreach}
-            CBDisplayed={CBsDisplayed.includes(constraintBreach.id)}
-            workers={workers}
-            shifts={shifts}
-            addCBDisplayed={addCBDisplayed}
-            removeCBDisplayed={removeCBDisplayed}
-          />
-        ))}
-        {/* </> */}
-      </List>
+            ))}
+          </List>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel1a-content"
+          id="panel1a-header"
+        >
+          <Typography>Fixed Assignments</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <List dense={true}>
+            {CBsFA.map((constraintBreach, index) => (
+              <ConstraintBreachItem
+                key={index}
+                constraintBreach={constraintBreach}
+                CBDisplayed={CBsDisplayed.includes(constraintBreach.id)}
+                workers={workers}
+                shifts={shifts}
+                addCBsDisplayed={addCBsDisplayed}
+                removeCBsDisplayed={removeCBsDisplayed}
+              />
+            ))}
+          </List>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel1a-content"
+          id="panel1a-header"
+        >
+          <Typography>Requests</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <List dense={true}>
+            {CBsRequest.map((constraintBreach, index) => (
+              <ConstraintBreachItem
+                key={index}
+                constraintBreach={constraintBreach}
+                CBDisplayed={CBsDisplayed.includes(constraintBreach.id)}
+                workers={workers}
+                shifts={shifts}
+                addCBsDisplayed={addCBsDisplayed}
+                removeCBsDisplayed={removeCBsDisplayed}
+              />
+            ))}
+          </List>
+        </AccordionDetails>
+      </Accordion>
     </Box>
   );
 }

@@ -16,6 +16,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard_to_soft=False,
                 penalty=2,
             ),
             Request(
@@ -23,6 +24,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s1",
+                hard_to_soft=False,
                 penalty=2,
             ),
             Request(
@@ -30,6 +32,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-04"),
                 shift_id="s2",
+                hard_to_soft=False,
                 penalty=2,
             ),
         ]
@@ -57,6 +60,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard_to_soft=False,
                 penalty=2,
             ),
             Request(
@@ -64,6 +68,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s1",
+                hard_to_soft=False,
                 penalty=3,
             ),
             Request(
@@ -71,6 +76,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-04"),
                 shift_id="s2",
+                hard_to_soft=False,
                 penalty=4,
             ),
         ]
@@ -105,6 +111,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard_to_soft=False,
                 penalty=2,
             ),
             Request(
@@ -112,6 +119,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s1",
+                hard_to_soft=False,
                 penalty=3,
             ),
             Request(
@@ -119,6 +127,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-04"),
                 shift_id="s2",
+                hard_to_soft=False,
                 penalty=4,
             ),
         ]
@@ -137,6 +146,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard_to_soft=False,
                 penalty=2,
             ),
             Request(
@@ -144,6 +154,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard_to_soft=False,
                 penalty=4,
             ),
         ]
@@ -167,6 +178,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard_to_soft=False,
                 penalty=2,
             ),
             Request(
@@ -174,6 +186,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard_to_soft=False,
                 penalty=4,
             ),
         ]
@@ -198,6 +211,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard_to_soft=False,
                 penalty=2,
             ),
         ]
@@ -206,11 +220,11 @@ class TestRequest(TestEngine):
         outputs = engine_solve(inputs)
 
         expected_variables = [
-            [
+            (
                 requests[0].worker_id,
                 requests[0].date,
                 requests[0].shift_id,
-            ],
+            ),
         ]
 
         # all constraint_breaches' variables are in expected_variables
@@ -241,6 +255,7 @@ class TestRequest(TestEngine):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard_to_soft=False,
                 penalty=2,
             ),
         ]

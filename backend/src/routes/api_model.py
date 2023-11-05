@@ -83,7 +83,9 @@ class AssignmentMessage(BaseModel):
 class ConstraintBreachMessage(BaseModel):
     id: str
     constraintId: str
+    category: str
     variables: List[Tuple[str, date, str]]
+    hardToSoft: bool
     description: str
 
 

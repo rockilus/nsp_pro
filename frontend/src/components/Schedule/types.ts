@@ -11,7 +11,9 @@ export type AssignmentT = {
 export type ConstraintBreachT = {
   id: string;
   constraintId: string;
+  category: string;
   variables: [string, Date, string][];
+  hardToSoft: boolean;
   description: string;
 };
 
@@ -52,7 +54,7 @@ export type CellT = {
   value: string;
   rowSpan: number;
   noCoverage: boolean;
-  constraintBreach: boolean;
+  constraintBreach: ConstraintBreachT[];
 };
 
 export type ScheduleOptionsT = {

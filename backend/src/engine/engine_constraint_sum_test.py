@@ -41,6 +41,7 @@ class TestConstraint:
                 relative="",
             ),
             hard=True,
+            hard_to_soft=False,
             penalty=0,
         )
 
@@ -69,6 +70,7 @@ class TestConstraint:
                 relative="",
             ),
             hard=False,
+            hard_to_soft=False,
             penalty=20,
         )
 
@@ -390,7 +392,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         )
 
         expected_variables = [
-            [[w, d, s] for d in week]
+            [(w, d, s) for d in week]
             for w in inputs.variable_space.workers
             for week in dates_weeks
             for s in constraint_sum_hard.shift_var.target

@@ -33,6 +33,7 @@ class Request:
     worker_id: str
     date: date
     shift_id: str
+    hard_to_soft: bool
     penalty: int
 
 
@@ -87,6 +88,7 @@ class Constraint:
     day_var: VarDay
     shift_var: VarShift
     hard: bool
+    hard_to_soft: bool
     penalty: int
 
 
@@ -107,8 +109,10 @@ class Inputs:
 @dataclass
 class ConstraintBreach:
     constraint_id: str
+    category: Literal["request", "fixed_assignment", "constraint"]
     variables: List[Tuple[str, date, str]]
     value_diff: int
+    hard_to_soft: bool
     penalty: int
 
 

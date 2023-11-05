@@ -112,15 +112,11 @@ class Model:
                     VarName(
                         constraint_id=r.id,
                         cstr_vars=[var.Name() for var in cstr_vars],
+                        category="fixed_assignment" if r.hard_to_soft else "request",
+                        hard_to_soft=r.hard_to_soft,
                     )
                 )
             )
-            # var_name = json.dumps(
-            #     {
-            #         "constraint_id": r.id,
-            #         "cstr_vars": [var.Name() for var in cstr_vars],
-            #     }
-            # )
             lit = self.model.NewBoolVar(var_name)
             cstr_vars.append(lit)
             self.model.AddBoolOr(cstr_vars)
@@ -439,10 +435,14 @@ class Model:
         else:
             if constraint.penalty != 0:
                 var_name = json.dumps(
-                    {
-                        "constraint_id": constraint.id,
-                        "cstr_vars": [var.Name() for var in cstr_vars],
-                    }
+                    asdict(
+                        VarName(
+                            constraint_id=constraint.id,
+                            cstr_vars=[var.Name() for var in cstr_vars],
+                            category="constraint",
+                            hard_to_soft=constraint.hard_to_soft,
+                        )
+                    )
                 )
                 if constraint.operator == "less_than_or_equal":
                     delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
@@ -548,14 +548,18 @@ class Model:
                 span = Model._negated_bounded_span(cstr_vars, start, length)
                 # pylint: disable=protected-access
                 var_name = json.dumps(
-                    {
-                        "constraint_id": constraint.id,
-                        "cstr_vars": [
-                            var.Not().Name()
-                            for var in span
-                            if isinstance(var, cp_model._NotBooleanVariable)
-                        ],
-                    }
+                    asdict(
+                        VarName(
+                            constraint_id=constraint.id,
+                            cstr_vars=[
+                                var.Not().Name()
+                                for var in span
+                                if isinstance(var, cp_model._NotBooleanVariable)
+                            ],
+                            category="constraint",
+                            hard_to_soft=constraint.hard_to_soft,
+                        )
+                    )
                 )
                 lit = self.model.NewBoolVar(var_name)
                 span.append(lit)
@@ -573,14 +577,18 @@ class Model:
                 span = Model._negated_bounded_span(cstr_vars, start, length)
                 # pylint: disable=protected-access
                 var_name = json.dumps(
-                    {
-                        "constraint_id": constraint.id,
-                        "cstr_vars": [
-                            var.Not().Name()
-                            for var in span
-                            if isinstance(var, cp_model._NotBooleanVariable)
-                        ],
-                    }
+                    asdict(
+                        VarName(
+                            constraint_id=constraint.id,
+                            cstr_vars=[
+                                var.Not().Name()
+                                for var in span
+                                if isinstance(var, cp_model._NotBooleanVariable)
+                            ],
+                            category="constraint",
+                            hard_to_soft=constraint.hard_to_soft,
+                        )
+                    )
                 )
                 lit = self.model.NewBoolVar(var_name)
                 span.append(lit)
@@ -607,10 +615,14 @@ class Model:
         else:
             if constraint.penalty != 0:
                 var_name = json.dumps(
-                    {
-                        "constraint_id": constraint.id,
-                        "cstr_vars": [var.Name() for var in cstr_vars],
-                    }
+                    asdict(
+                        VarName(
+                            constraint_id=constraint.id,
+                            cstr_vars=[var.Name() for var in cstr_vars],
+                            category="constraint",
+                            hard_to_soft=constraint.hard_to_soft,
+                        )
+                    )
                 )
                 if constraint.operator == "yes":
                     transition = [cstr_vars[0].Not(), cstr_vars[1]]
@@ -636,10 +648,14 @@ class Model:
             if constraint.penalty != 0:
                 cstr_vars: List[cp_model.IntVar] = [cstr_var]
                 var_name = json.dumps(
-                    {
-                        "constraint_id": constraint.id,
-                        "cstr_vars": [var.Name() for var in cstr_vars],
-                    }
+                    asdict(
+                        VarName(
+                            constraint_id=constraint.id,
+                            cstr_vars=[var.Name() for var in cstr_vars],
+                            category="constraint",
+                            hard_to_soft=constraint.hard_to_soft,
+                        )
+                    )
                 )
                 cstr_vars = [var.Not() for var in cstr_vars]
                 lit = self.model.NewBoolVar(var_name)
@@ -657,10 +673,14 @@ class Model:
         if constraint.penalty != 0:
             target_average_int = int(target_average)
             var_name = json.dumps(
-                {
-                    "constraint_id": constraint.id,
-                    "cstr_vars": [var.Name() for var in cstr_vars],
-                }
+                asdict(
+                    VarName(
+                        constraint_id=constraint.id,
+                        cstr_vars=[var.Name() for var in cstr_vars],
+                        category="constraint",
+                        hard_to_soft=constraint.hard_to_soft,
+                    )
+                )
             )
             delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
             self.model.Add(delta == sum(cstr_vars) - target_average_int)
@@ -723,6 +743,7 @@ class Model:
                         relative="",
                     ),
                     hard=False,
+                    hard_to_soft=constraint.hard_to_soft,
                     penalty=constraint.penalty,
                 )
             )

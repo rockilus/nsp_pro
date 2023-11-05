@@ -17,7 +17,9 @@ class Assignment:
 class ConstraintBreach:
     id: str
     constraint_id: str
+    category: str
     variables: List[Tuple[str, date, str]]
+    hard_to_soft: bool
     description: str
 
 

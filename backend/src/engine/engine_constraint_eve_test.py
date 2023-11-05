@@ -47,6 +47,7 @@ class TestConstraint:
                 relative="",
             ),
             hard=False,
+            hard_to_soft=False,
             penalty=1,
         )
 
@@ -78,6 +79,7 @@ class TestConstraint:
                 relative="",
             ),
             hard=False,
+            hard_to_soft=False,
             penalty=2,
         )
 
@@ -381,7 +383,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         target_days = list(build_day_list(start_date, end_date))
 
         expected_variables = [
-            [w, d, s]
+            (w, d, s)
             for w in constraint_eve_soft.worker_var.target
             for d in target_days
             for s in constraint_eve_soft.shift_var.target

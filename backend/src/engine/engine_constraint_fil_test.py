@@ -45,6 +45,7 @@ class TestConstraint:
                 relative="",
             ),
             hard=True,
+            hard_to_soft=False,
             penalty=0,
         )
 
@@ -76,6 +77,7 @@ class TestConstraint:
                 relative="",
             ),
             hard=False,
+            hard_to_soft=False,
             penalty=20,
         )
 
@@ -94,6 +96,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 shift_id="s0",
                 date=date.fromisoformat("2023-10-02"),
+                hard_to_soft=False,
                 penalty=1,
             )
         ]
@@ -129,6 +132,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 shift_id="s2",
                 date=date.fromisoformat("2023-10-02"),
+                hard_to_soft=False,
                 penalty=1,
             )
         ]
@@ -164,6 +168,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w2",
                 shift_id="s0",
                 date=date.fromisoformat("2023-10-02"),
+                hard_to_soft=False,
                 penalty=1,
             )
         ]
@@ -199,6 +204,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w2",
                 shift_id="s2",
                 date=date.fromisoformat("2023-10-02"),
+                hard_to_soft=False,
                 penalty=1,
             )
         ]
@@ -237,6 +243,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 worker_id="w0",
                 shift_id="s0",
                 date=date.fromisoformat("2023-10-02"),
+                hard_to_soft=False,
                 penalty=1,
             )
         ]
@@ -272,6 +279,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 worker_id="w0",
                 shift_id="s2",
                 date=date.fromisoformat("2023-10-02"),
+                hard_to_soft=False,
                 penalty=1,
             )
         ]
@@ -307,6 +315,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 worker_id="w2",
                 shift_id="s0",
                 date=date.fromisoformat("2023-10-02"),
+                hard_to_soft=False,
                 penalty=1,
             )
         ]
@@ -342,6 +351,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 worker_id="w2",
                 shift_id="s2",
                 date=date.fromisoformat("2023-10-02"),
+                hard_to_soft=False,
                 penalty=1,
             )
         ]
@@ -433,7 +443,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         assignments = outputs.assignments
 
         expected_variables = [
-            [w, d, a.shift_id]
+            (w, d, a.shift_id)
             for a in assignments
             for w in constraint_fil_soft.worker_var.target
             for d in build_day_list(

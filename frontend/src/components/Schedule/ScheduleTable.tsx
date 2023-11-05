@@ -14,10 +14,17 @@ import { ColumnT, RowT } from "./types";
 interface Props {
   columns: ColumnT[];
   rows: RowT[];
+  displayCBs: boolean;
+  CBsDisplayed: string[];
 }
 
-export default function ScheduleTable({ columns, rows }: Props) {
-  const noCoverageColor: string = "#FDEDEC";
+export default function ScheduleTable({
+  columns,
+  rows,
+  displayCBs,
+  CBsDisplayed,
+}: Props) {
+  const noCoverageColor: string = "#E0E0E0";
 
   // console.log("columns", columns);
 
@@ -53,7 +60,14 @@ export default function ScheduleTable({ columns, rows }: Props) {
                   row.find((c) => c.date.getTime() === column.date.getTime()) ||
                   null;
                 return (
-                  cell && <ScheduleCell key={rowIndex + colIndex} cell={cell} />
+                  cell && (
+                    <ScheduleCell
+                      key={rowIndex + colIndex}
+                      cell={cell}
+                      displayCBs={displayCBs}
+                      CBsDisplayed={CBsDisplayed}
+                    />
+                  )
                 );
               })}
             </TableRow>

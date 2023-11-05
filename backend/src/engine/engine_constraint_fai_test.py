@@ -46,6 +46,7 @@ class TestConstraint:
                 relative="",
             ),
             hard=False,
+            hard_to_soft=False,
             penalty=2,
         )
 
@@ -211,7 +212,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
 
         expected_variables = [
-            [w, d, s]
+            (w, d, s)
             for w in inputs.variable_space.workers
             for d in build_day_list(
                 inputs.variable_space.start_date,
@@ -405,7 +406,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
 
         expected_variables = [
-            [w, d, s]
+            (w, d, s)
             for w in inputs.variable_space.workers
             for d in build_day_list(
                 inputs.variable_space.start_date,
@@ -600,7 +601,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
 
         expected_variables = [
-            [w, d, s]
+            (w, d, s)
             for w in constraint_fai_soft.worker_var.target
             for d in build_day_list(
                 inputs.variable_space.start_date,
@@ -839,7 +840,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         ]
 
         expected_variables = [
-            [w, d, s]
+            (w, d, s)
             for w in inputs.variable_space.workers
             for d in target_days
             for s in coverage_shifts
