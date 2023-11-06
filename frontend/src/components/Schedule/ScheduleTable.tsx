@@ -51,10 +51,7 @@ export default function ScheduleTable({
         </TableHead>
         <TableBody>
           {rows.map((row, rowIndex) => (
-            <TableRow
-              key={rowIndex}
-              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-            >
+            <TableRow key={rowIndex}>
               {columns.map((column, colIndex) => {
                 const cell =
                   row.find((c) => c.date.getTime() === column.date.getTime()) ||

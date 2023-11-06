@@ -34,6 +34,10 @@ export default function ScheduleCell({
       ? "2px solid red"
       : " 2px inherit";
 
+  console.log("cell", cell);
+  console.log("CBsDisplayed", CBsDisplayed);
+  console.log("border", border);
+
   return (
     <TableCell
       component="th"
