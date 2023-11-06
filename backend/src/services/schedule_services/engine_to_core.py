@@ -53,6 +53,8 @@ def _engine_to_core_constraint_breach(
             description = _build_description_cb_sum(constraint, cb, assignments)
         elif constraint.constraint_type == "seq":
             description = _build_description_cb_seq(constraint, cb, assignments)
+        elif constraint.constraint_type == "ord":
+            description = _build_description_cb_ord(constraint, cb, assignments)
         else:
             description = f"{constraint.constraint_type} constraint not implemented yet"
     elif cb.category in ["request", "fixed_assignment"]:
@@ -128,6 +130,46 @@ def _build_description_cb_seq(
         f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}"
         if len(dates) > 1
         else f"{start_date.strftime('%b %d')}",
+        "for",
+        " ".join([w.name for w in workers]),
+    ]
+    return " ".join(string_list)
+
+
+def _build_description_cb_ord(
+    constraint: Constraint,
+    cb: ConstraintBreachEngine,
+    assignments: List[AssignmentEngine],
+) -> str:
+    # No:
+    # Shift morning 1 day after/before shift night
+    # Yes:
+    # Shift afternoon 1 day after/before shift night instead of shift morning
+    workers_id = set(v[0] for v in cb.variables)
+    d_reference, d_relative = cb.variables[0][1], cb.variables[1][1]
+    workers = [worker_db.get_worker_by_id(w_id) for w_id in workers_id]
+    s_reference = shift_db.get_shift_by_id(constraint.shift_var.reference_id)
+    s_relative = shift_db.get_shift_by_id(constraint.shift_var.relative_id)
+    a_d_relative = next(
+        (a for a in assignments if a.worker_id in workers_id and a.date == d_relative),
+        None,
+    )
+    shift_assigned_name = (
+        shift_db.get_shift_by_id(a_d_relative.shift_id).name
+        if a_d_relative
+        else "unknown"
+    )
+    string_list = [
+        "Shift",
+        shift_assigned_name,
+        str(abs(constraint.day_var.interval)),
+        "day" if abs(constraint.day_var.interval) <= 1 else "days",
+        "after" if constraint.day_var.interval >= 0 else "before",
+        "shift",
+        s_reference.name,
+        "on",
+        d_reference.strftime("%b %d"),
+        f"instead of shift {s_relative.name}" if constraint.operator == "yes" else "",
         "for",
         " ".join([w.name for w in workers]),
     ]
