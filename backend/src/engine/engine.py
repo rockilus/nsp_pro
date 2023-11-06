@@ -4,6 +4,7 @@ from typing import List
 from engine.inputs_outputs import Inputs, Outputs
 from engine.model import Model
 from engine.output import Output
+import time
 
 
 class Engine:
@@ -15,7 +16,10 @@ class Engine:
         )
         shifts = inputs.variable_space.shifts
         model = Model(workers, days, shifts)
+        start_time = time.time()
         model.set_up_model(inputs)
+        end_time = time.time()
+        print("Time to set up model: ", end_time - start_time)
         model.solve()
         # model.save_to_text(
         #     "/Users/felipekharaba/Documents/Documents – Felipe’s MacBook Pro/"

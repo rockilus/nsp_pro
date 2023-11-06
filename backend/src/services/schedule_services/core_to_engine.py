@@ -45,7 +45,11 @@ def core_to_engine_inputs(
     )
     inputs = Inputs(
         variable_space=variable_space,
-        coverage=CoverageEngine(_build_shift_demands(coverage_selectors, coverages)),
+        coverage=CoverageEngine(
+            _build_shift_demands(
+                coverage_selectors, coverages, start_date, end_date
+            )
+        ),
         requests=r_engine,
         fixed_assignments=fa_engine,
         constraints=[_core_to_engine_constraint(c) for c in constraints],
@@ -56,13 +60,18 @@ def core_to_engine_inputs(
 def _build_shift_demands(
     coverage_selectors: List[CoverageSelector],
     coverages: List[Union[Coverage, None]],
+    start_date: date,
+    end_date: date,
 ) -> List[ShiftDemandEngine]:
     shift_demands = []
     for cs, c in zip(coverage_selectors, coverages):
         if c is None:
             continue
-        for day in range((cs.end_date - cs.start_date).days + 1):
-            cov_date = cs.start_date + timedelta(days=day)
+        for day in range(
+            (min(cs.end_date, end_date) - max(cs.start_date, start_date)).days
+            + 1
+        ):
+            cov_date = max(cs.start_date, start_date) + timedelta(days=day)
             for shift_demand in c.shift_demands:
                 if shift_demand.day_index == cov_date.weekday():
                     shift_demands.append(
@@ -105,7 +114,9 @@ def _core_to_engine_requests_and_fixed_assignments(
             )
     else:
         fa_engine = [
-            AssignmentEngine(worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id)
+            AssignmentEngine(
+                worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id
+            )
             for fa in fixed_assignments
         ]
     return r_engine, fa_engine

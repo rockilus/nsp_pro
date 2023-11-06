@@ -163,9 +163,15 @@ export default function ScheduleConfig({
         ...newHeaderCell,
       });
       for (let column of columns.filter((c) => c.date.getTime() !== 0)) {
+        console.log("column", column);
+        console.log("column.date", column.date);
+        console.log("assignments", assignments);
+
         const assignment = assignments.find(
           (a) => a.date.getTime() === column.date.getTime()
         );
+        console.log("assignment", assignment);
+
         const shiftName = assignment
           ? shifts.find((s) => s.id === assignment.shiftId)?.name || ""
           : "";
@@ -184,6 +190,7 @@ export default function ScheduleConfig({
       }
       newRows.push(row.slice());
     }
+
     return newRows;
   }, [columns, schedule, workers, shifts, assignmentInConflictsWorker]);
 

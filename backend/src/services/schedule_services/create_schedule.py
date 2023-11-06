@@ -24,13 +24,17 @@ def create_schedule(
 ) -> Tuple[Schedule, List[Assignment]]:
     workers = worker_db.get_workers()
     shifts = shift_db.get_shifts()
-    coverage_selectors = coverage_selector_db.get_coverage_selectors()
+    coverage_selectors = coverage_selector_db.get_coverage_selector_by_dates(
+        schedule_options.start_date, schedule_options.end_date
+    )
     coverages: List[Union[Coverage, None]] = []
     for coverage_selector in coverage_selectors:
         if coverage_selector.coverage_id == "":
             coverages.append(None)
             continue
-        coverage = coverage_db.get_coverage_by_id(coverage_selector.coverage_id)
+        coverage = coverage_db.get_coverage_by_id(
+            coverage_selector.coverage_id
+        )
         coverages.append(coverage)
     fixed_assignments = fixed_assignment_db.get_fixed_assignments()
     requests = request_db.get_requests()
