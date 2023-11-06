@@ -52,6 +52,7 @@ export default function ScheduleConfig({
           (cb.category === "constraint" &&
             cb.variables.some(
               (variable) =>
+                variable[0] === assignment.workerId &&
                 variable[1].getTime() === assignment.date.getTime() &&
                 variable[2] === assignment.shiftId
             )) ||
