@@ -64,6 +64,41 @@ export default function ConstraintBreachList({
     }
   };
 
+  const checkedFA: boolean = CBsFA.some((cb) => CBsDisplayed.includes(cb.id));
+
+  const checkColorFA: string = CBsFA.every((cb) => CBsDisplayed.includes(cb.id))
+    ? "primary"
+    : "default";
+
+  const switchDisplayCBsFA = () => {
+    if (CBsFA.every((cb) => CBsDisplayed.includes(cb.id))) {
+      removeCBsDisplayed(CBsFA.map((cb) => cb.id));
+    } else {
+      for (let cb of CBsFA.filter((cb) => !CBsDisplayed.includes(cb.id))) {
+        addCBsDisplayed(CBsFA.map((cb) => cb.id));
+      }
+    }
+  };
+  const checkedRequest: boolean = CBsRequest.some((cb) =>
+    CBsDisplayed.includes(cb.id)
+  );
+
+  const checkColorRequest: string = CBsRequest.every((cb) =>
+    CBsDisplayed.includes(cb.id)
+  )
+    ? "primary"
+    : "default";
+
+  const switchDisplayCBsRequest = () => {
+    if (CBsRequest.every((cb) => CBsDisplayed.includes(cb.id))) {
+      removeCBsDisplayed(CBsRequest.map((cb) => cb.id));
+    } else {
+      for (let cb of CBsRequest.filter((cb) => !CBsDisplayed.includes(cb.id))) {
+        addCBsDisplayed(CBsRequest.map((cb) => cb.id));
+      }
+    }
+  };
+
   return (
     <Box sx={{ flexGrow: 1, maxWidth: 752 }}>
       <Accordion>
@@ -114,6 +149,21 @@ export default function ConstraintBreachList({
           <Typography>Fixed Assignments</Typography>
         </AccordionSummary>
         <AccordionDetails>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignContent: "left",
+              alignItems: "center",
+            }}
+          >
+            <Checkbox
+              checked={checkedFA}
+              color={checkColorFA as "primary" | "default"}
+              onClick={switchDisplayCBsFA}
+            />
+            <Typography variant="body1">Select all</Typography>
+          </Box>
           <List dense={true}>
             {CBsFA.map((constraintBreach, index) => (
               <ConstraintBreachItem
@@ -138,6 +188,21 @@ export default function ConstraintBreachList({
           <Typography>Requests</Typography>
         </AccordionSummary>
         <AccordionDetails>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignContent: "left",
+              alignItems: "center",
+            }}
+          >
+            <Checkbox
+              checked={checkedRequest}
+              color={checkColorRequest as "primary" | "default"}
+              onClick={switchDisplayCBsRequest}
+            />
+            <Typography variant="body1">Select all</Typography>
+          </Box>
           <List dense={true}>
             {CBsRequest.map((constraintBreach, index) => (
               <ConstraintBreachItem
