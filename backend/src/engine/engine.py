@@ -1,10 +1,10 @@
+import time
 from datetime import date, timedelta
 from typing import List
 
 from engine.inputs_outputs import Inputs, Outputs
 from engine.model import Model
 from engine.output import Output
-import time
 
 
 class Engine:

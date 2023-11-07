@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import dayjs from "dayjs";
-import dayjsPluginUTC from "dayjs-plugin-utc";
+import utc from "dayjs/plugin/utc";
 
 import {
   ScheduleT,
@@ -10,7 +10,7 @@ import {
   ConstraintBreachT,
 } from "../components/Schedule/types";
 
-dayjs.extend(dayjsPluginUTC);
+dayjs.extend(utc);
 
 const baseApiUrl = "http://127.0.0.1:5000";
 const apiUrlSchedule = baseApiUrl + "/schedule";

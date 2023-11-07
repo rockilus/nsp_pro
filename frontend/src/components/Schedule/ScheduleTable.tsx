@@ -54,8 +54,7 @@ export default function ScheduleTable({
             <TableRow key={rowIndex}>
               {columns.map((column, colIndex) => {
                 const cell =
-                  row.find((c) => c.date.getTime() === column.date.getTime()) ||
-                  null;
+                  row.find((c) => c.date.isSame(column.date)) || null;
                 return (
                   cell && (
                     <ScheduleCell

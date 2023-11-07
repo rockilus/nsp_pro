@@ -59,7 +59,7 @@ export default function Draft() {
       )}
       <CoverageSelectorConfig />
       <FARConfig workers={workersIdName} shifts={shiftsIdName} />
-      {/* <ScheduleTab workers={workersIdName} shifts={shiftsIdName} /> */}
+      <ScheduleTab workers={workersIdName} shifts={shiftsIdName} />
     </Box>
   );
 }

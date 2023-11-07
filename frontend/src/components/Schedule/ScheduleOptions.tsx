@@ -41,15 +41,9 @@ export default function ScheduleOptions({
   ];
   const colorList = ["success", "error", "warning", "error"];
 
-  const dateToTimeZero = (date: Date): Date => {
-    return new Date(
-      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0)
-    );
-  };
-
   const [scheduleOptions, setScheduleOptions] = useState<ScheduleOptionsT>({
     startDate: dayjs.utc("2023-10-2"),
-    endDate: dayjs.utc("2023-10-15", 0, 0, 0),
+    endDate: dayjs.utc("2023-10-15"),
   });
 
   return (
@@ -59,20 +53,19 @@ export default function ScheduleOptions({
       </Typography>
       <DatePicker
         value={scheduleOptions.startDate}
-        onChange={(newValue) => {
-          console.log("newValue:", newValue);
+        onChange={(newValue) =>
           setScheduleOptions({
             ...scheduleOptions,
-            startDate: newValue ? newValue : dayjs.utc(),
-          });
-        }}
+            startDate: newValue ? dayjs.utc(newValue) : dayjs.utc(),
+          })
+        }
       />
       <DatePicker
         value={scheduleOptions.endDate}
         onChange={(newValue) =>
           setScheduleOptions({
             ...scheduleOptions,
-            endDate: newValue ? newValue : dayjs.utc(),
+            endDate: newValue ? dayjs.utc(newValue) : dayjs.utc(),
           })
         }
       />

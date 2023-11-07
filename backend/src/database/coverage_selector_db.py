@@ -29,10 +29,7 @@ class CoverageSelectorDB:
     ) -> List[CoverageSelector]:
         # pylint: disable=no-member
         coverage_selectors = CoverageSelectorDocument.objects.all()  # type: ignore
-        return [
-            _from_mongo_coverage_selector(cs)
-            for cs in list(coverage_selectors)
-        ]
+        return [_from_mongo_coverage_selector(cs) for cs in list(coverage_selectors)]
 
     def get_coverage_selector_by_id(
         self, coverage_selector_id: str
@@ -51,18 +48,13 @@ class CoverageSelectorDB:
             start_date__lte=end_date,
             end_date__gte=start_date,
         )
-        return [
-            _from_mongo_coverage_selector(cs)
-            for cs in list(coverage_selectors)
-        ]
+        return [_from_mongo_coverage_selector(cs) for cs in list(coverage_selectors)]
 
     def update_coverage_selector(
         self, coverage_selector: CoverageSelector
     ) -> CoverageSelector:
         # pylint: disable=no-member
-        coverage_selector_document = to_mongo_coverage_selector(
-            coverage_selector
-        )
+        coverage_selector_document = to_mongo_coverage_selector(coverage_selector)
         coverage_selector_saved = coverage_selector_document.save()
         return _from_mongo_coverage_selector(coverage_selector_saved)
 
@@ -94,9 +86,7 @@ def to_mongo_coverage_selector(
 def _from_mongo_coverage_selector(
     doc_obj: CoverageSelectorDocument,
 ) -> CoverageSelector:
-    start_date_datetime = datetime.combine(
-        doc_obj.start_date, datetime.min.time()
-    )
+    start_date_datetime = datetime.combine(doc_obj.start_date, datetime.min.time())
     end_date_datetime = datetime.combine(doc_obj.end_date, datetime.min.time())
     return CoverageSelector(
         id=doc_obj.id,

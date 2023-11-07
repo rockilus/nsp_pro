@@ -59,30 +59,30 @@ export default function ScheduleTab({ workers, shifts }: Props) {
         Schedule
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "row" }}>
-        {/* <ScheduleOptions
+        <ScheduleOptions
           schedule={schedule}
           shiftSchedule={shiftSchedule}
           displayCBs={displayCBs}
           addSchedule={addSchedule}
           switchScheduleDisplay={() => setShiftSchedule(!shiftSchedule)}
           switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
-        /> */}
-        {/* <ScheduleConfig
+        />
+        <ScheduleConfig
           schedule={schedule}
           workers={workers}
           shifts={shifts}
           shiftSchedule={shiftSchedule}
           displayCBs={displayCBs}
           CBsDisplayed={CBsDisplayed}
-        /> */}
-        {/* <ConstraintBreachList
+        />
+        <ConstraintBreachList
           constraintBreaches={schedule.comments.constraintBreaches}
           CBsDisplayed={CBsDisplayed}
           workers={workers}
           shifts={shifts}
           addCBsDisplayed={addCBsDisplayed}
           removeCBsDisplayed={removeCBsDisplayed}
-        /> */}
+        />
       </Box>
     </Box>
   );
