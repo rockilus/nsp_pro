@@ -29,7 +29,7 @@ class CoverageSelectorDB:
     ) -> List[CoverageSelector]:
         # pylint: disable=no-member
         coverage_selectors = CoverageSelectorDocument.objects.all()  # type: ignore
-        return [_from_mongo_coverage_selector(w) for w in list(coverage_selectors)]
+        return [_from_mongo_coverage_selector(cs) for cs in list(coverage_selectors)]
 
     def get_coverage_selector_by_id(
         self, coverage_selector_id: str
@@ -39,6 +39,16 @@ class CoverageSelectorDB:
             id=coverage_selector_id
         )
         return _from_mongo_coverage_selector(coverage_selector)
+
+    def get_coverage_selector_by_dates(
+        self, start_date: date, end_date: date
+    ) -> List[CoverageSelector]:
+        # pylint: disable=no-member
+        coverage_selectors = CoverageSelectorDocument.objects.filter(  # type: ignore
+            start_date__lte=end_date,
+            end_date__gte=start_date,
+        )
+        return [_from_mongo_coverage_selector(cs) for cs in list(coverage_selectors)]
 
     def update_coverage_selector(
         self, coverage_selector: CoverageSelector

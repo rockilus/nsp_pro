@@ -24,7 +24,9 @@ def create_schedule(
 ) -> Tuple[Schedule, List[Assignment]]:
     workers = worker_db.get_workers()
     shifts = shift_db.get_shifts()
-    coverage_selectors = coverage_selector_db.get_coverage_selectors()
+    coverage_selectors = coverage_selector_db.get_coverage_selector_by_dates(
+        schedule_options.start_date, schedule_options.end_date
+    )
     coverages: List[Union[Coverage, None]] = []
     for coverage_selector in coverage_selectors:
         if coverage_selector.coverage_id == "":

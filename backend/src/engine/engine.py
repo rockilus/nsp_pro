@@ -1,3 +1,4 @@
+import time
 from datetime import date, timedelta
 from typing import List
 
@@ -15,7 +16,10 @@ class Engine:
         )
         shifts = inputs.variable_space.shifts
         model = Model(workers, days, shifts)
+        start_time = time.time()
         model.set_up_model(inputs)
+        end_time = time.time()
+        print("Time to set up model: ", end_time - start_time)
         model.solve()
         # model.save_to_text(
         #     "/Users/felipekharaba/Documents/Documents – Felipe’s MacBook Pro/"

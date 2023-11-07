@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -12,6 +13,8 @@ import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { ScheduleOptionsT, ScheduleT } from "./types";
+
+dayjs.extend(utc);
 
 interface Props {
   schedule: ScheduleT;
@@ -38,15 +41,9 @@ export default function ScheduleOptions({
   ];
   const colorList = ["success", "error", "warning", "error"];
 
-  const dateToTimeZero = (date: Date): Date => {
-    return new Date(
-      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0)
-    );
-  };
-
   const [scheduleOptions, setScheduleOptions] = useState<ScheduleOptionsT>({
-    startDate: dateToTimeZero(new Date(Date.UTC(2023, 9, 2, 0, 0, 0))),
-    endDate: dateToTimeZero(new Date(Date.UTC(2023, 9, 15, 0, 0, 0))),
+    startDate: dayjs.utc("2023-10-2"),
+    endDate: dayjs.utc("2023-10-15"),
   });
 
   return (
@@ -55,20 +52,20 @@ export default function ScheduleOptions({
         Solver options
       </Typography>
       <DatePicker
-        value={dayjs(scheduleOptions.startDate)}
+        value={scheduleOptions.startDate}
         onChange={(newValue) =>
           setScheduleOptions({
             ...scheduleOptions,
-            startDate: dateToTimeZero(newValue?.toDate() || new Date()),
+            startDate: newValue ? dayjs.utc(newValue) : dayjs.utc(),
           })
         }
       />
       <DatePicker
-        value={dayjs(scheduleOptions.endDate)}
+        value={scheduleOptions.endDate}
         onChange={(newValue) =>
           setScheduleOptions({
             ...scheduleOptions,
-            endDate: dateToTimeZero(newValue?.toDate() || new Date()),
+            endDate: newValue ? dayjs.utc(newValue) : dayjs.utc(),
           })
         }
       />

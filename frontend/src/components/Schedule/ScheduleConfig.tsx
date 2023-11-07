@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import dayjs from "dayjs";
 
 import ScheduleTable from "./ScheduleTable";
 import {
@@ -38,7 +39,7 @@ export default function ScheduleConfig({
         cb.variables.some(
           (variable) =>
             variable[0] === assignment.workerId &&
-            variable[1].getTime() === assignment.date.getTime()
+            variable[1].isSame(assignment.date)
         )
       );
     },
@@ -53,14 +54,14 @@ export default function ScheduleConfig({
             cb.variables.some(
               (variable) =>
                 variable[0] === assignment.workerId &&
-                variable[1].getTime() === assignment.date.getTime() &&
+                variable[1].isSame(assignment.date) &&
                 variable[2] === assignment.shiftId
             )) ||
           (["fixed_assignment", "request"].includes(cb.category) &&
             cb.variables.some(
               (variable) =>
                 variable[0] === assignment.workerId &&
-                variable[1].getTime() === assignment.date.getTime()
+                variable[1].isSame(assignment.date)
             ))
       );
     },
@@ -68,11 +69,12 @@ export default function ScheduleConfig({
   );
 
   const buildColumnHeaders = useCallback(
-    (startDate: Date, endDate: Date): ColumnT[] => {
+    (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs): ColumnT[] => {
       const columns: ColumnT[] = [
-        { date: new Date(0), name: "", noCoverage: false },
+        { date: dayjs(0), name: "", noCoverage: false },
       ];
       let currentDate = startDate;
+
       const options: Intl.DateTimeFormatOptions = {
         weekday: "short",
         day: "numeric",
@@ -80,14 +82,14 @@ export default function ScheduleConfig({
       };
       while (currentDate <= endDate) {
         const column: ColumnT = {
-          date: new Date(currentDate),
-          name: new Intl.DateTimeFormat("en-US", options).format(currentDate),
-          noCoverage: schedule.comments.missingCoverageDates.some(
-            (date) => date.getTime() === currentDate.getTime()
+          date: dayjs(currentDate),
+          name: currentDate.format("ddd, MMM D"),
+          noCoverage: schedule.comments.missingCoverageDates.some((date) =>
+            date.isSame(currentDate)
           ),
         };
         columns.push({ ...column });
-        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate = currentDate.add(1, "day");
       }
       return columns;
     },
@@ -96,23 +98,23 @@ export default function ScheduleConfig({
 
   const buildShiftRows = useCallback((): RowT[] => {
     const newRows: RowT[] = [];
-    const dateColumns = columns.filter((c) => c.date.getTime() !== 0);
+    const dateColumns = columns.filter((c: ColumnT) => c.date.valueOf() !== 0);
     for (let shift of shifts.filter((s) => s.name !== "Off")) {
       const shiftAssignments = schedule.assignments.filter(
         (a) => a.shiftId === shift.id
       );
       const assignments = dateColumns.map((d) =>
-        shiftAssignments.filter((a) => a.date.getTime() === d.date.getTime())
+        shiftAssignments.filter((a) => a.date.isSame(d.date))
       );
       const rowSpan = assignments.reduce(
-        (max, arr) => Math.max(max, arr.length),
+        (max: number, arr) => Math.max(max, arr.length),
         0
       );
       for (let i = 0; i < rowSpan; i++) {
         const row: RowT = [];
         if (i === 0) {
           const newHeaderCell: CellT = {
-            date: new Date(0),
+            date: dayjs(0),
             value: shift.name,
             rowSpan: rowSpan,
             noCoverage: false,
@@ -153,7 +155,7 @@ export default function ScheduleConfig({
         (a) => a.workerId === worker.id
       );
       const newHeaderCell: CellT = {
-        date: new Date(0),
+        date: dayjs(0),
         value: worker.name,
         rowSpan: 1,
         noCoverage: false,
@@ -162,9 +164,11 @@ export default function ScheduleConfig({
       row.push({
         ...newHeaderCell,
       });
-      for (let column of columns.filter((c) => c.date.getTime() !== 0)) {
-        const assignment = assignments.find(
-          (a) => a.date.getTime() === column.date.getTime()
+      for (let column of columns.filter(
+        (c: ColumnT) => c.date.valueOf() !== 0
+      )) {
+        const assignment = assignments.find((a: AssignmentT) =>
+          a.date.isSame(column.date)
         );
         const shiftName = assignment
           ? shifts.find((s) => s.id === assignment.shiftId)?.name || ""
@@ -184,6 +188,7 @@ export default function ScheduleConfig({
       }
       newRows.push(row.slice());
     }
+
     return newRows;
   }, [columns, schedule, workers, shifts, assignmentInConflictsWorker]);
 
