@@ -1,4 +1,7 @@
 import { create } from "zustand";
+import dayjs from "dayjs";
+import dayjsPluginUTC from "dayjs-plugin-utc";
+
 import {
   ScheduleT,
   AssignmentT,
@@ -6,6 +9,8 @@ import {
   ScheduleOptionsT,
   ConstraintBreachT,
 } from "../components/Schedule/types";
+
+dayjs.extend(dayjsPluginUTC);
 
 const baseApiUrl = "http://127.0.0.1:5000";
 const apiUrlSchedule = baseApiUrl + "/schedule";
@@ -19,7 +24,7 @@ type ScheduleStateT = {
 const toAssignmentT = (data: any) => {
   const assignment: AssignmentT = {
     ...data,
-    date: new Date(data.date),
+    date: dayjs.utc(data.date),
   };
   return assignment;
 };
@@ -28,7 +33,7 @@ const toConstraintBreachT = (data: any) => {
   const constraintBreach: ConstraintBreachT = {
     ...data,
     variables: data.variables.map((variable: any) => {
-      const variableDate = new Date(variable[1]);
+      const variableDate = dayjs.utc(variable[1]);
       return [variable[0], variableDate, variable[2]];
     }),
   };
@@ -38,8 +43,8 @@ const toConstraintBreachT = (data: any) => {
 const toCommentsT = (data: any) => {
   const comments: CommentsT = {
     constraintBreaches: data.constraintBreaches.map(toConstraintBreachT),
-    missingCoverageDates: data.missingCoverageDates.map(
-      (isoDate: string) => new Date(isoDate)
+    missingCoverageDates: data.missingCoverageDates.map((isoDate: string) =>
+      dayjs.utc(isoDate)
     ),
   };
   return comments;
@@ -48,8 +53,8 @@ const toCommentsT = (data: any) => {
 const toScheduleT = (data: any) => {
   const schedule: ScheduleT = {
     ...data,
-    startDate: new Date(data.startDate),
-    endDate: new Date(data.endDate),
+    startDate: dayjs.utc(data.startDate),
+    endDate: dayjs.utc(data.endDate),
     assignments: data.assignments.map(toAssignmentT),
     comments: toCommentsT(data.comments),
   };
@@ -59,8 +64,8 @@ const toScheduleT = (data: any) => {
 export const useScheduleStore = create<ScheduleStateT>()((set) => ({
   schedule: {
     id: "",
-    startDate: new Date(0),
-    endDate: new Date(0),
+    startDate: dayjs.utc(0),
+    endDate: dayjs.utc(0),
     status: "Not solved",
     assignments: [],
     comments: {

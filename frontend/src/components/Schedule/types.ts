@@ -1,9 +1,9 @@
-import { type } from "os";
+import dayjs from "dayjs";
 
 export type AssignmentT = {
   id: string;
   workerId: string;
-  date: Date;
+  date: dayjs.Dayjs;
   shiftId: string;
   scheduleId: string;
 };
@@ -12,20 +12,20 @@ export type ConstraintBreachT = {
   id: string;
   constraintId: string;
   category: string;
-  variables: [string, Date, string][];
+  variables: [string, dayjs.Dayjs, string][];
   hardToSoft: boolean;
   description: string;
 };
 
 export type CommentsT = {
   constraintBreaches: ConstraintBreachT[];
-  missingCoverageDates: Date[];
+  missingCoverageDates: dayjs.Dayjs[];
 };
 
 export type ScheduleT = {
   id: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: dayjs.Dayjs;
+  endDate: dayjs.Dayjs;
   status: string;
   assignments: AssignmentT[];
   comments: CommentsT;
@@ -42,7 +42,7 @@ export type WorkerIdNameT = {
 };
 
 export type ColumnT = {
-  date: Date;
+  date: dayjs.Dayjs;
   name: string;
   noCoverage: boolean;
 };
@@ -50,7 +50,7 @@ export type ColumnT = {
 export type RowT = CellT[];
 
 export type CellT = {
-  date: Date;
+  date: dayjs.Dayjs;
   value: string;
   rowSpan: number;
   noCoverage: boolean;
@@ -58,6 +58,6 @@ export type CellT = {
 };
 
 export type ScheduleOptionsT = {
-  startDate: Date;
-  endDate: Date;
+  startDate: dayjs.Dayjs;
+  endDate: dayjs.Dayjs;
 };

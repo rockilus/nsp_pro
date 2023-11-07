@@ -73,12 +73,15 @@ export default function ScheduleConfig({
         { date: new Date(0), name: "", noCoverage: false },
       ];
       let currentDate = startDate;
+
       const options: Intl.DateTimeFormatOptions = {
         weekday: "short",
         day: "numeric",
         month: "short",
       };
       while (currentDate <= endDate) {
+        console.log("currentDate", currentDate);
+        console.log("currentDate.getTime()", currentDate.getTime());
         const column: ColumnT = {
           date: new Date(currentDate),
           name: new Intl.DateTimeFormat("en-US", options).format(currentDate),
@@ -163,14 +166,14 @@ export default function ScheduleConfig({
         ...newHeaderCell,
       });
       for (let column of columns.filter((c) => c.date.getTime() !== 0)) {
-        console.log("column", column);
-        console.log("column.date", column.date);
-        console.log("assignments", assignments);
+        // console.log("column", column);
+        // console.log("column.date", column.date);
+        // console.log("assignments", assignments);
 
         const assignment = assignments.find(
           (a) => a.date.getTime() === column.date.getTime()
         );
-        console.log("assignment", assignment);
+        // console.log("assignment", assignment);
 
         const shiftName = assignment
           ? shifts.find((s) => s.id === assignment.shiftId)?.name || ""
