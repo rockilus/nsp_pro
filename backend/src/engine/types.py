@@ -18,3 +18,24 @@ class VarName:
     category: Literal["request", "fixed_assignment", "constraint"]
     cstr_vars: List[str]
     hard_to_soft: bool
+
+
+@dataclass
+class BenchmarkTimes:
+    total_start: float = 0.0
+    total_end: float = 0.0
+    full_setup_start: float = 0.0
+    full_setup_end: float = 0.0
+    variables_start: float = 0.0
+    variables_end: float = 0.0
+    constraints_start: float = 0.0
+    constraints_end: float = 0.0
+    objective_start: float = 0.0
+    objective_end: float = 0.0
+
+
+# status 0: UNKNOWN
+# status 1: MODEL_INVALID
+# status 2: FEASIBLE
+# status 3: INFEASIBLE
+# status 4: OPTIMAL

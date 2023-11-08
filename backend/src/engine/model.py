@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
+import time
 from dataclasses import asdict
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Set, Tuple
@@ -18,12 +19,17 @@ from engine.inputs_outputs import (
     VarShift,
     VarWorker,
 )
-from engine.types import Objective, VarName
+from engine.types import BenchmarkTimes, Objective, VarName
 
 
 class Model:
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, workers: List[str], days: List[str], shifts: List[str]) -> None:
+    def __init__(
+        self,
+        workers: List[str],
+        days: List[str],
+        shifts: List[str],
+    ) -> None:
         self.workers = workers
         self.days = days
         self.shifts = shifts
@@ -33,15 +39,25 @@ class Model:
         self.solver = cp_model.CpSolver()
         self.solution_printer = cp_model.ObjectiveSolutionPrinter()
         self.status = 0
+        self.bt = BenchmarkTimes()
 
     def set_up_model(self, inputs: Inputs) -> None:
+        self.bt.total_start = time.time()
+        self.bt.full_setup_start = time.time()
+        self.bt.variables_start = time.time()
         self.build_variables()
+        self.bt.variables_end = time.time()
+        self.bt.constraints_start = time.time()
         self.add_exactly_one_shift_per_day_constraint()
         self.add_coverage_constraints(inputs.coverage.coverage)
         self.add_custom_constraints(inputs.constraints, inputs.coverage.coverage)
         self.add_fixed_assignments(inputs.fixed_assignments)
         self.add_requests(inputs.requests)
+        self.bt.constraints_end = time.time()
+        self.bt.objective_start = time.time()
         self.add_objective()
+        self.bt.objective_end = time.time()
+        self.bt.full_setup_end = time.time()
 
     def build_variables(self) -> None:
         for worker in self.workers:
@@ -829,13 +845,16 @@ class Model:
         if params:
             text_format.Parse(params, self.solver.parameters)
         self.status = self.solver.Solve(self.model, self.solution_printer)
+        self.bt.total_end = time.time()
 
-    def save_to_text(self, directory_path: str) -> None:
-        model_file_path = os.path.join(directory_path, "model.txt")
-        model_file_path_alt = os.path.join(directory_path, "model_alt.txt")
-        # solver_file_path = os.path.join(directory_path, "solver.txt")
-        with open(model_file_path, "w", encoding="utf-8") as text_file:
-            text_file.write(str(self.model))
-        self.model.ExportToFile(model_file_path_alt)
+    def save_to_text(self, file_path: str) -> None:
+        # model_file_path = os.path.join(directory_path, "model.txt")
+        # model_file_path_alt = os.path.join(directory_path, "model_alt.txt")
+        # # solver_file_path = os.path.join(directory_path, "solver.txt")
+        # with open(model_file_path, "w", encoding="utf-8") as text_file:
+        #     text_file.write(str(self.model))
+        if os.environ.get("TEST_MODE") is not None:
+            return
+        self.model.ExportToFile(file_path)
         # with open(solver_file_path, "w", encoding="utf-8") as text_file:
         #     text_file.write(str(self.solution_printer))
