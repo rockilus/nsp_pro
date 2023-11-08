@@ -11,7 +11,7 @@ __pycache__/
 .next/
 node_modules/
 dist/
-backend/src/engine/saved/
+backend/src/engine/saved/*
 
 # Environments
 venv_nsp
