@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import AbcIcon from "@mui/icons-material/Abc";
 import Box from "@mui/material/Box";
@@ -31,6 +31,31 @@ export default function HeadCell({
     column.entryOptions
   );
 
+  const handleEditConfirm = async () => {
+    if (
+      nameState !== column.name ||
+      entryTypeState !== column.entryType ||
+      !entryOptionsState.every((val, index) => val === column.entryOptions[index]) // hotfix for array content comparison
+    ) {
+      const updatedColumn: ColumnT = {
+        id: column.id,
+        name: nameState,
+        entryType: entryTypeState,
+        entryOptions: entryOptionsState,
+        defaultColumn: column.defaultColumn,
+      };
+      await handleEditCell(updatedColumn);
+      setNameState(column.name);
+      setEntryTypeState(column.entryType);
+      setEntryOptionsState(column.entryOptions);
+      handleClose();
+    }
+  };
+
+  useEffect(() => {
+    handleEditConfirm()
+  }, [entryOptionsState, handleEditConfirm]);
+
   const open = Boolean(anchorEl);
 
   const iconsPrefix: Record<string, React.ReactNode> = {
@@ -50,26 +75,6 @@ export default function HeadCell({
     setAnchorEl(null);
   };
 
-  const handleEditConfirm = async () => {
-    if (
-      nameState !== column.name ||
-      entryTypeState !== column.entryType ||
-      entryOptionsState !== column.entryOptions
-    ) {
-      const updatedColumn: ColumnT = {
-        id: column.id,
-        name: nameState,
-        entryType: entryTypeState,
-        entryOptions: entryOptionsState,
-        defaultColumn: column.defaultColumn,
-      };
-      await handleEditCell(updatedColumn);
-    }
-    setNameState(column.name);
-    setEntryTypeState(column.entryType);
-    setEntryOptionsState(column.entryOptions);
-    handleClose();
-  };
 
   const handleEditCancel = () => {
     setNameState(column.name);
@@ -121,6 +126,11 @@ export default function HeadCell({
         }}
         MenuListProps={{
           "aria-labelledby": "basic-button",
+        }}
+        slotProps={{ 
+          paper: { 
+            sx: { padding: 2 },
+          } 
         }}
       >
         <UpdateColumnHeader
