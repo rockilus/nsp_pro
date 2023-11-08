@@ -225,7 +225,7 @@ const SelectShift: React.FC<SelectShiftProps> = ({ shifts, shiftDimensions, onCh
       });
       onChange(matchingShifts.map(shift => shift.id));
     }
-  }, [selectedDimension, comparator, value]);
+  }, [selectedDimension, comparator, value, shifts, onChange]);
 
   const handleDimensionChange = (event: SelectChangeEvent<string>) => {
     setSelectedDimension(event.target.value as string);

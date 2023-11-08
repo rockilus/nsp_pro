@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import AbcIcon from "@mui/icons-material/Abc";
 import Box from "@mui/material/Box";
@@ -31,7 +31,7 @@ export default function HeadCell({
     column.entryOptions
   );
 
-  const handleEditConfirm = async () => {
+  const handleEditConfirm  = useCallback(async () => {
     if (
       nameState !== column.name ||
       entryTypeState !== column.entryType ||
@@ -50,7 +50,8 @@ export default function HeadCell({
       setEntryOptionsState(column.entryOptions);
       handleClose();
     }
-  };
+  }, [nameState, entryTypeState, entryOptionsState, column, handleEditCell]);
+
 
   useEffect(() => {
     handleEditConfirm()
