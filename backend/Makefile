@@ -13,6 +13,6 @@ lint:
 
 test:
 	# Assuming you have a test command similar to 'poetry run pytest' or similar
-	poetry run pytest
+	TEST_MODE=1 poetry run pytest
 
 check: lint test

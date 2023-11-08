@@ -1,1 +1,0 @@
-<ortools.sat.python.cp_model.ObjectiveSolutionPrinter object at 0x1269c8ad0>

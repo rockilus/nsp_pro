@@ -1,10 +1,13 @@
+import os
 import time
 from datetime import date, timedelta
 from typing import List
 
+from engine.benchmark_track import benchmark_track_func
 from engine.inputs_outputs import Inputs, Outputs
 from engine.model import Model
 from engine.output import Output
+from utils.contants import Constants
 
 
 class Engine:
@@ -15,6 +18,7 @@ class Engine:
             inputs.variable_space.start_date, inputs.variable_space.end_date
         )
         shifts = inputs.variable_space.shifts
+
         model = Model(workers, days, shifts)
         start_time = time.time()
         model.set_up_model(inputs)
@@ -25,6 +29,12 @@ class Engine:
         #     "/Users/felipekharaba/Documents/Documents – Felipe’s MacBook Pro/"
         #     + "Coding courses/Projects/nsp_pro/backend/src/engine/"
         # )
+        model.save_to_text(
+            os.getcwd()
+            + Constants.ENGINE_SAVED_FILE_PATH
+            + Constants.MODEL_SAVED_FILE_NAME
+        )
+        benchmark_track_func(model)
         output = Output(model)
         return output.build_outputs()
 
