@@ -6,17 +6,12 @@ const baseApiUrl = "http://127.0.0.1:5000";
 const apiUrlConstraintTree = baseApiUrl + "/constraint-tree";
 
 type ConstraintTreeStateT = {
-  constraintTree: TreeNodeT;
+  constraintTree?: TreeNodeT;
   fetchConstraintTree: () => void;
 };
 
 export const useConstraintTreeStore = create<ConstraintTreeStateT>()((set) => ({
-  constraintTree: {
-    name: "",
-    parentOptions: [],
-    options: [],
-    children: [],
-  },
+  constraintTree: undefined,
 
   fetchConstraintTree: async () => {
     const options: RequestInit = {

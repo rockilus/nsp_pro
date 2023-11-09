@@ -49,25 +49,27 @@ export default function ConstraintConfig({ workers, shifts }: Props) {
       <Typography variant="h4" align="left" color="black">
         Constraints Configuration
       </Typography>
-      <ConstraintButton
-        buttonElement={createButton()}
-        constraint={{
-          id: "",
-          buildBlocks: [],
-          hard: true,
-          priority: "",
-          active: true,
-        }}
-        tree={constraintTree}
-        workers={workers}
-        shifts={shifts}
-      />
-      <ConstraintList
-        constraints={constraints}
-        tree={constraintTree}
-        workers={workers}
-        shifts={shifts}
-      />
+      {constraintTree && (<>
+        <ConstraintButton
+          buttonElement={createButton()}
+          constraint={{
+            id: "",
+            buildBlocks: [],
+            hard: true,
+            priority: "",
+            active: true,
+          }}
+          tree={constraintTree}
+          workers={workers}
+          shifts={shifts}
+        />
+        <ConstraintList
+          constraints={constraints}
+          tree={constraintTree}
+          workers={workers}
+          shifts={shifts}
+        />
+      </>)}
     </Box>
   );
 }

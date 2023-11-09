@@ -8,6 +8,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import { ShiftT } from './types';
 import { useConstraintStore } from '../../stores/constraintStore';
+import { BuildBlockNameT } from '../Constraint/types';
 
 type TreeNode = {
   name: 'type' | 'operator' | 'quantity' | 'shift_id' | 'day';
@@ -105,7 +106,7 @@ type Block = {
 } 
 
 interface BlockOutT {
-  name: 'type' | 'timing' | 'quantity' | 'operator' | 'shift_id';
+  name: BuildBlockNameT;
   value: string | number;
 }
 

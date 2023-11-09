@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 
-import { TreeNodeT, BuildBlockT } from "./types";
+import { TreeNodeT, BuildBlockT, BuildBlockNameT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
   buildBlocks: BuildBlockT[];
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
-  addBlock: (name: string, option: string | number) => void;
+  addBlock: (name: BuildBlockNameT, option: string | number) => void;
   setAtLeaf: (atLeaf: boolean) => void;
 }
 
@@ -40,7 +40,7 @@ export default function TreeNavigation({
 
   const getChild = () => {
     const child = tree.children.find((child) =>
-      child.parentOptions.includes(getValue())
+      child.parentOptions.includes(getValue() as string|number)
     );
     return child;
   };

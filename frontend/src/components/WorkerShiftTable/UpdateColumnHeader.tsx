@@ -17,6 +17,17 @@ const propertyTypes = {
   list: "List",
 };
 
+interface Props {
+  columnId: string;
+  name: string;
+  entryType: string;
+  entryOptions: string[];
+  setNameState: (newName: string) => void;
+  setEntryType: (newEntryType: string) => void;
+  setEntryOptions: (newEntryOptions: string[] | ((previousOptions: string[]) => string[])) => void;
+  handleDeleteColumn: (columnId: string) => void;
+}
+
 export default function UpdateColumnHeader({
   columnId,
   name: value,
@@ -26,10 +37,10 @@ export default function UpdateColumnHeader({
   setEntryType,
   setEntryOptions,
   handleDeleteColumn,
-}) {
+}: Props) {
   const [newOption, setNewOption] = useState("");
 
-  const handleRemoveOption = (index) => {
+  const handleRemoveOption = (index: number) => {
     const newEntryOptions = entryOptions.filter((_, idx) => idx !== index);
     setEntryOptions(newEntryOptions);
   };
@@ -63,9 +74,9 @@ export default function UpdateColumnHeader({
             label="Property Type"
             onChange={(e) => setEntryType(e.target.value)}
           >
-            {Object.keys(propertyTypes).map((key) => (
+            {Object.keys(propertyTypes).map((key, val) => (
               <MenuItem value={key} key={key}>
-                {propertyTypes[key]}
+                {val}
               </MenuItem>
             ))}
           </Select>

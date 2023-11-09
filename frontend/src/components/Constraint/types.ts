@@ -7,13 +7,13 @@ export type ConstraintT = {
 };
 
 export type TreeNodeT = {
-  name: string;
+  name: BuildBlockNameT;
   parentOptions: Array<string | number>;
   options: string[];
   children: TreeNodeT[];
 };
 
-export type BuildBlockNameT = 'type' | 'operator' | 'quantity' | 'shift_id' | 'timing' | 'worker_id';
+export type BuildBlockNameT = 'type' | 'operator' | 'quantity' | 'shift_id' | 'day' | 'worker_id' | 'shift_id_reference' | 'shift_id_relative';
 
 export type BuildBlockT = {
   name: BuildBlockNameT;

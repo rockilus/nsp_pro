@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Button, Card, CardContent, FormControl, InputLabel, List, ListItem, ListItemText, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { useConstraintStore } from "../../stores/constraintStore";
 import { ShiftDimensionT, ShiftT } from "../Shift/types";
+import { BuildBlockNameT } from "../Constraint/types";
 
 type FunctionDefinitionT = {
   name: string;
@@ -284,7 +285,7 @@ const SelectShift: React.FC<SelectShiftProps> = ({ shifts, shiftDimensions, onCh
 
 
 interface BlockOutT {
-  name: 'type' | 'timing' | 'quantity' | 'operator' | 'shift_id';
+  name: BuildBlockNameT;
   value: string | number | string[];
 }
 
@@ -317,10 +318,15 @@ const FormulaInput: React.FC<FormulaInputProps> = ({ onSubmit }) => {
   );
 };
 
+interface ParsedNode {
+  value: string;
+  args: ParsedNode[];
+}
+
 const parseInput = (inputValue: string) => {
   let idx = 0;
 
-  const parseNode = () => {
+  const parseNode = (): ParsedNode => {
       let name = '';
       const args = [];
 
@@ -403,11 +409,6 @@ const SELECT_SHIFTS = (
   
   return matchedShifts.map(shift => shift.id);
 };
-
-interface ParsedNode {
-  value: string;
-  args: ParsedNode[];
-}
 
 const resolveFunctions = (parsedFunction: ParsedNode, shifts: ShiftT[], shiftDimensions: ShiftDimensionT[]): any => {
   const funcDef = functions.find(f => f.label === parsedFunction.value);
@@ -521,7 +522,7 @@ const FunctionDocumentation: React.FC<FunctionDocumentationProps> = ({ functions
                 {selectedFunction.args.map(arg => (
                   <ListItem key={arg.name}>
                     <ListItemText 
-                      primary={`${arg.label} (${arg.type})${arg.type === 'select' ? `: ${arg.options.map(opt => opt.label).join(', ')}` : ''}`} 
+                      primary={`${arg.label} (${arg.type})${arg.type === 'select' ? `: ${arg.options!.map(opt => opt.label).join(', ')}` : ''}`} 
                     />
                   </ListItem>
                 ))}
@@ -574,7 +575,7 @@ const SentenceBuilder: React.FC<SentenceBuilderProps> = ({ shifts, shiftDimensio
     console.log('resolvedArgs', resolvedArgs);
 
     const blockOuts: BlockOutT[] = functionDefinition.args.map((arg, index) => ({
-      name: arg.name as 'type' | 'timing' | 'quantity' | 'operator' | 'shift_id',
+      name: arg.name as BuildBlockNameT,
       value: resolvedArgs[index]
     }));
 
@@ -647,7 +648,7 @@ const ConstraintBuilder: React.FC<ConstraintBuilderProps> = ({ shifts, shiftDime
   const handleOnSubmit = () => {
     if (selectedFunction) {
       const blockOuts: BlockOutT[] = selectedFunction.args.map(arg => ({
-        name: arg.name as 'type' | 'timing' | 'quantity' | 'operator' | 'shift_id',
+        name: arg.name as BuildBlockNameT,
         value: args[arg.name] as string | number
       }));
   
