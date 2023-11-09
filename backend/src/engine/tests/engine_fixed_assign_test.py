@@ -1,8 +1,11 @@
 from datetime import date
 from typing import Callable
 
-from engine.inputs_outputs import Assignment, Inputs, Outputs
 from engine.tests.engine_test import TestEngine
+
+# pylint: disable=unused-import
+from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
+from engine.types.input_output_types import Assignment, Inputs, Outputs
 
 
 # pylint: disable=R0801

@@ -3,11 +3,13 @@ import datetime
 import os
 import subprocess
 
-from engine.model import Model
+from engine.model.model import Model
+from engine.types.input_output_types import Inputs
 from utils.contants import Constants
 
 
-def benchmark_track_func(
+def save_benchmark_to_csv(
+    inputs: Inputs,
     model: Model,
 ) -> None:
     if os.environ.get("TEST_MODE") is not None:
@@ -39,6 +41,17 @@ def benchmark_track_func(
         "num_workers",
         "num_days",
         "num_shifts",
+        "num_variables",
+        "num_constraints_total",
+        "num_constraints_sum",
+        "num_constraints_seq",
+        "num_constraints_ord",
+        "num_constraints_fil",
+        "num_constraints_fai",
+        "num_constraints_eve",
+        "num_fixed_assignments",
+        "num_requests",
+        "num_shift_demands",
         "total_time",
         "setup_time",
         "solve_time",
@@ -63,11 +76,48 @@ def benchmark_track_func(
         'solution_fingerprint',
         "commit",
     ]
+    num_constraints_sum = sum(
+        1 for constraint in inputs.constraints if constraint.constraint_type == "sum"
+    )
+    num_constraints_seq = sum(
+        1 for constraint in inputs.constraints if constraint.constraint_type == "seq"
+    )
+    num_constraints_ord = sum(
+        1 for constraint in inputs.constraints if constraint.constraint_type == "ord"
+    )
+    num_constraints_fil = sum(
+        1 for constraint in inputs.constraints if constraint.constraint_type == "fil"
+    )
+    num_constraints_fai = sum(
+        1 for constraint in inputs.constraints if constraint.constraint_type == "fai"
+    )
+    num_constraints_eve = sum(
+        1 for constraint in inputs.constraints if constraint.constraint_type == "eve"
+    )
+    num_constraints_total = (
+        num_constraints_sum
+        + num_constraints_seq
+        + num_constraints_ord
+        + num_constraints_fil
+        + num_constraints_fai
+        + num_constraints_eve
+    )
     entry = {
         "date": get_date_time(),
         "num_workers": len(model.workers),
         "num_days": len(model.days),
         "num_shifts": len(model.shifts),
+        "num_variables": len(model.variables),
+        "num_constraints_total": num_constraints_total,
+        "num_constraints_sum": num_constraints_sum,
+        "num_constraints_seq": num_constraints_seq,
+        "num_constraints_ord": num_constraints_ord,
+        "num_constraints_fil": num_constraints_fil,
+        "num_constraints_fai": num_constraints_fai,
+        "num_constraints_eve": num_constraints_eve,
+        "num_fixed_assignments": len(inputs.fixed_assignments),
+        "num_requests": len(inputs.requests),
+        "num_shift_demands": len(inputs.coverage.coverage),
         "total_time": model.bt.total_end - model.bt.total_start,
         "setup_time": model.bt.full_setup_end - model.bt.full_setup_start,
         "solve_time": model.solver.WallTime(),

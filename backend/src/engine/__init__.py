@@ -1,5 +1,5 @@
 from engine.engine import Engine
-from engine.inputs_outputs import (
+from engine.types.input_output_types import (
     Assignment,
     Constraint,
     ConstraintBreach,

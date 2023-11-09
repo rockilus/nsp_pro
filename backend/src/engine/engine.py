@@ -3,10 +3,11 @@ import time
 from datetime import date, timedelta
 from typing import List
 
-from engine.benchmark_track import benchmark_track_func
-from engine.inputs_outputs import Inputs, Outputs
-from engine.model import Model
+from engine.model.model import Model
 from engine.output import Output
+from engine.save_benchmarks import save_benchmark_to_csv
+from engine.save_model import save_model_to_text
+from engine.types.input_output_types import Inputs, Outputs
 from utils.contants import Constants
 
 
@@ -25,16 +26,13 @@ class Engine:
         end_time = time.time()
         print("Time to set up model: ", end_time - start_time)
         model.solve()
-        # model.save_to_text(
-        #     "/Users/felipekharaba/Documents/Documents – Felipe’s MacBook Pro/"
-        #     + "Coding courses/Projects/nsp_pro/backend/src/engine/"
-        # )
-        model.save_to_text(
+        save_model_to_text(
+            model.model,
             os.getcwd()
             + Constants.ENGINE_SAVED_FILE_PATH
-            + Constants.MODEL_SAVED_FILE_NAME
+            + Constants.MODEL_SAVED_FILE_NAME,
         )
-        benchmark_track_func(model)
+        save_benchmark_to_csv(inputs, model)
         output = Output(model)
         return output.build_outputs()
 
