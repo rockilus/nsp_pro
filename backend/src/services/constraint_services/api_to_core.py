@@ -117,20 +117,15 @@ def build_constraint_ord(constraint_build: ConstraintBuild) -> Constraint:
             get_block_value_from_name("quantity", constraint_build.build_blocks)
         ),
     )
+    reference_shift_ids = get_block_value_from_name("shift_id_reference", constraint_build.build_blocks)
+    relative_shift_ids = get_block_value_from_name("shift_id_relative", constraint_build.build_blocks)
+
     var_shift = VarShift(
         operator="",
         selector="equal",
         target_ids=[],
-        reference_id=str(
-            get_block_value_from_name(
-                "shift_id_reference", constraint_build.build_blocks
-            )
-        ),
-        relative_id=str(
-            get_block_value_from_name(
-                "shift_id_relative", constraint_build.build_blocks
-            )
-        ),
+        reference_id=str(reference_shift_ids[0]),
+        relative_id=str(relative_shift_ids[0]),
     )
     constraint = Constraint(
         id=constraint_build.id,

@@ -49,8 +49,9 @@ export default function ConstraintListItem({
           block.name
         )
       ) {
+        const shiftIds = block.value as string[];
         const shiftName = shifts.find(
-          (shift) => shift.id === block.value
+          (shift) => shiftIds.indexOf(shift.id) !== -1
         )?.name;
         stringArray.push(shiftName);
       } else {

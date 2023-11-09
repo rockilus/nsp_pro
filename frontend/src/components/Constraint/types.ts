@@ -13,7 +13,9 @@ export type TreeNodeT = {
   children: TreeNodeT[];
 };
 
+export type BuildBlockNameT = 'type' | 'operator' | 'quantity' | 'shift_id' | 'timing' | 'worker_id';
+
 export type BuildBlockT = {
-  name: 'type' | 'operator' | 'quantity' | 'shift_id' | 'timing';
-  value: string | number;
+  name: BuildBlockNameT;
+  value: string | number | string[];
 };

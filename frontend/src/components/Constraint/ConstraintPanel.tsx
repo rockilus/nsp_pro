@@ -11,7 +11,7 @@ import ThermostatIcon from "@mui/icons-material/Thermostat";
 
 import TreeNavigation from "./TreeNavigation";
 import { useConstraintStore } from "../../stores/constraintStore";
-import { TreeNodeT, BuildBlockT, ConstraintT } from "./types";
+import { TreeNodeT, BuildBlockT, ConstraintT, BuildBlockNameT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
@@ -42,7 +42,7 @@ export default function ConstraintPanel({
     (state) => state.deleteConstraint
   );
 
-  const addBlock = (name: string, option: string | number) => {
+  const addBlock = (name: BuildBlockNameT, option: string | number) => {
     const newBlock: BuildBlockT = { name: name, value: option };
     const index = constraintState.buildBlocks.findIndex(
       (item) => item.name === name
