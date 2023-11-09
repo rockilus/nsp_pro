@@ -2,8 +2,8 @@ import random
 from datetime import date
 from typing import Callable
 
-from engine.engine_test import TestEngine
 from engine.inputs_outputs import Coverage, Inputs, Outputs, ShiftDemand
+from engine.tests.engine_test import TestEngine
 
 
 # pylint: disable=R0801

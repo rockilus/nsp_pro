@@ -3,7 +3,6 @@ from typing import Callable, List
 
 import pytest
 
-from engine.engine_test import TestEngine
 from engine.inputs_outputs import (
     Constraint,
     Inputs,
@@ -13,6 +12,7 @@ from engine.inputs_outputs import (
     VarShift,
     VarWorker,
 )
+from engine.tests.engine_test import TestEngine
 
 
 # pylint: disable=R0801

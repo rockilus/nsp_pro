@@ -6,7 +6,7 @@ from dataclasses import asdict
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Set, Tuple
 
-from google.protobuf import text_format  # type: ignore
+# from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.inputs_outputs import (
@@ -841,9 +841,9 @@ class Model:
         )
 
     def solve(self) -> cp_model.CpSolver:
-        params = "max_time_in_seconds:10.0"
-        if params:
-            text_format.Parse(params, self.solver.parameters)
+        # params = "max_time_in_seconds:10.0"
+        # if params:
+        #     text_format.Parse(params, self.solver.parameters)
         self.status = self.solver.Solve(self.model, self.solution_printer)
         self.bt.total_end = time.time()
 
