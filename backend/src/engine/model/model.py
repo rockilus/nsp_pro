@@ -38,13 +38,28 @@ class Model:
         self.bt = BenchmarkTimes()
 
         self.add_constraint_sum = AddConstraintSum(
-            self.model, self.variables, self.workers, self.days, self.obj
+            self.model,
+            self.variables,
+            self.workers,
+            self.days,
+            self.shifts,
+            self.obj,
         )
         self.add_constraint_seq = AddConstraintSeq(
-            self.model, self.variables, self.workers, self.days, self.obj
+            self.model,
+            self.variables,
+            self.workers,
+            self.days,
+            self.shifts,
+            self.obj,
         )
         self.add_constraint_ord = AddConstraintOrd(
-            self.model, self.variables, self.workers, self.days, self.obj
+            self.model,
+            self.variables,
+            self.workers,
+            self.days,
+            self.shifts,
+            self.obj,
         )
         self.add_constraint_fil = AddConstraintFil(
             self.model,

@@ -1,10 +1,12 @@
 from datetime import date, timedelta
-from typing import Dict, List, Set, Tuple
+from typing import List
 
-from ortools.sat.python import cp_model
-
+from engine.model.add_constraint import AddConstraint
 from engine.model.add_constraint_sum import AddConstraintSum
-from engine.model.utils.model_utils import get_average_nb_shifts_per_worker
+from engine.model.utils.model_utils import (
+    build_shifts_in_coverage,
+    get_average_nb_shifts_per_worker,
+)
 from engine.types.input_output_types import (
     Constraint,
     ShiftDemand,
@@ -12,49 +14,38 @@ from engine.types.input_output_types import (
     VarShift,
     VarWorker,
 )
-from engine.types.model_types import Objective
 
 
-class AddConstraintEve:
-    def __init__(
-        self,
-        model: cp_model.CpModel,
-        variables: Dict[Tuple, Dict],
-        workers: List[str],
-        days: List[str],
-        shifts: List[str],
-        obj: Objective,
-    ) -> None:
-        self.model = model
-        self.variables = variables
-        self.workers = workers
-        self.days = days
-        self.shifts = shifts
-        self.obj = obj
-
+class AddConstraintEve(AddConstraint):
+    # pylint: disable=too-many-arguments
+    def __init__(self, model, variables, workers, days, shifts, obj) -> None:
+        # pylint: disable=R0801
+        super().__init__(model, variables, workers, days, shifts, obj)
         self.add_constraint_sum = AddConstraintSum(
             self.model,
             self.variables,
             self.workers,
             self.days,
+            self.shifts,
             self.obj,
         )
 
     def add_constraint(
         self, constraint: Constraint, coverage: List[ShiftDemand]
     ) -> None:
-        shifts_in_coverage = set(
-            shift_demand.shift_id
-            for shift_demand in coverage
-            if shift_demand.quantity > 0
+        w_vars, d_vars, s_vars = self.get_vars_coordinates(
+            constraint, build_shifts_in_coverage(coverage)
         )
-        w_vars, d_vars, s_vars = self._get_vars_coordinates_eve(
-            constraint, shifts_in_coverage
-        )
+        # pylint: disable=R0801
+        if not all(isinstance(item, str) for item in d_vars):
+            raise TypeError(
+                "Expected a list of strings, "
+                + f"but got {format(type(d_vars))} instead."
+            )
         target_average = get_average_nb_shifts_per_worker(
             coverage,
             constraint.worker_var.num_eligible_workers,
-            d_vars,
+            d_vars,  # type: ignore
             s_vars,
         )
         period_lengths = AddConstraintEve.integer_division_list(
@@ -66,29 +57,6 @@ class AddConstraintEve:
             )
             for constraint_sum in constraints_sum:
                 self.add_constraint_sum.add_constraint(constraint_sum)
-
-    def _get_vars_coordinates_eve(
-        self, constraint: Constraint, shifts_in_coverage: Set[str]
-    ) -> Tuple[List[str], List[str], List[str]]:
-        if constraint.worker_var.selector == "all":
-            w_vars = self.workers
-        elif constraint.worker_var.selector == "equal":
-            w_vars = constraint.worker_var.target
-        else:
-            raise NotImplementedError(
-                f"Worker selector {constraint.worker_var.selector} " + "not implemented"
-            )
-        if constraint.day_var.selector == "all":
-            d_vars = self.days
-        if constraint.shift_var.selector == "all":
-            s_vars = [s for s in self.shifts if s in shifts_in_coverage]
-        elif constraint.shift_var.selector == "equal":
-            s_vars = constraint.shift_var.target
-        else:
-            raise NotImplementedError(
-                f"Shift selector {constraint.shift_var.selector} " + "not implemented"
-            )
-        return w_vars, d_vars, s_vars
 
     def convert_constraint_eve_to_constraints_sum(
         self,

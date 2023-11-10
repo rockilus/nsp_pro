@@ -1,10 +1,11 @@
 from typing import Dict, List, Tuple
 
-from ortools.sat.python import cp_model
+from ortools.sat.python import cp_model  # type: ignore
 
 from engine.types.input_output_types import ShiftDemand
 
 
+# pylint: disable=too-few-public-methods
 class AddCoverage:
     def __init__(
         self,

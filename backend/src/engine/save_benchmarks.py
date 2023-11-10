@@ -5,9 +5,10 @@ import subprocess
 
 from engine.model.model import Model
 from engine.types.input_output_types import Inputs
-from utils.contants import Constants
+from utils.constants import Constants
 
 
+# pylint: disable=too-many-locals
 def save_benchmark_to_csv(
     inputs: Inputs,
     model: Model,

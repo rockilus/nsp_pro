@@ -1,8 +1,8 @@
 import json
 from dataclasses import asdict
-from typing import List, Literal, Union
+from typing import List, Literal, Set, Union
 
-from ortools.sat.python import cp_model
+from ortools.sat.python import cp_model  # type: ignore
 
 from engine.types.input_output_types import Constraint, Request, ShiftDemand
 from engine.types.model_types import VarName
@@ -63,4 +63,10 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
                 hard_to_soft=constraint.hard_to_soft,
             )
         )
+    )
+
+
+def build_shifts_in_coverage(coverage: List[ShiftDemand]) -> Set[str]:
+    return set(
+        shift_demand.shift_id for shift_demand in coverage if shift_demand.quantity > 0
     )

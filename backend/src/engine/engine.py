@@ -8,7 +8,7 @@ from engine.output import Output
 from engine.save_benchmarks import save_benchmark_to_csv
 from engine.save_model import save_model_to_text
 from engine.types.input_output_types import Inputs, Outputs
-from utils.contants import Constants
+from utils.constants import Constants
 
 
 class Engine:

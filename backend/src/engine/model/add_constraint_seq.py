@@ -1,53 +1,21 @@
-from typing import Dict, List, Tuple
+from typing import List
 
-from ortools.sat.python import cp_model
+from ortools.sat.python import cp_model  # type: ignore
 
+from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import build_var_name_seq
 from engine.types.input_output_types import Constraint
-from engine.types.model_types import Objective
 
 
-class AddConstraintSeq:
-    def __init__(
-        self,
-        model: cp_model.CpModel,
-        variables: Dict[Tuple, Dict],
-        workers: List[str],
-        days: List[str],
-        obj: Objective,
-    ) -> None:
-        self.model = model
-        self.variables = variables
-        self.workers = workers
-        self.days = days
-        self.obj = obj
-
+class AddConstraintSeq(AddConstraint):
     def add_constraint(self, constraint: Constraint) -> None:
-        w_vars, d_vars, s_vars = self._get_vars_coordinates_seq(constraint)
+        w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
         for w in w_vars:
             for s in s_vars:
                 constraint_vars = []
                 for d in d_vars:
                     constraint_vars.append(self.variables[w, d, s])
             self._add_constraint_seq_to_model(constraint, constraint_vars)
-
-    def _get_vars_coordinates_seq(
-        self, constraint: Constraint
-    ) -> Tuple[List[str], List[str], List[str]]:
-        if constraint.worker_var.selector == "all":
-            w_vars = self.workers
-        else:
-            raise NotImplementedError(
-                f"Worker selector {constraint.worker_var.selector} " + "not implemented"
-            )
-        d_vars = self.days
-        if constraint.shift_var.selector == "equal":
-            s_vars = constraint.shift_var.target
-        else:
-            raise NotImplementedError(
-                f"Shift selector {constraint.shift_var.selector} " + "not implemented"
-            )
-        return w_vars, d_vars, s_vars
 
     def _add_constraint_seq_to_model(
         self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]

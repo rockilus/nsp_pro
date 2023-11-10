@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple
 
-from ortools.sat.python import cp_model
+from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.utils.model_utils import build_var_name
 from engine.types.input_output_types import Assignment, Request
