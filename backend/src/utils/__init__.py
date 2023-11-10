@@ -1,4 +1,4 @@
-from utils.contants import Constants
+from utils.constants import Constants
 
 __all__ = [
     "Constants",

@@ -18,7 +18,7 @@ from engine import VariableSpace
 from engine import VarShift as VarShiftEngine
 from engine import VarWorker as VarWorkerEngine
 from services.schedule_services.penalty_map import penalty_map
-from utils.contants import Constants
+from utils.constants import Constants
 
 
 # pylint: disable=too-many-arguments

@@ -1,0 +1,158 @@
+#!/usr/bin/env python3
+import time
+from typing import Dict, List, Tuple
+
+# from google.protobuf import text_format  # type: ignore
+from ortools.sat.python import cp_model  # type: ignore
+
+from engine.model.add_constraint_eve import AddConstraintEve
+from engine.model.add_constraint_fai import AddConstraintFai
+from engine.model.add_constraint_fil import AddConstraintFil
+from engine.model.add_constraint_ord import AddConstraintOrd
+from engine.model.add_constraint_seq import AddConstraintSeq
+from engine.model.add_constraint_sum import AddConstraintSum
+from engine.model.add_coverage import AddCoverage
+from engine.model.add_far import AddFAR
+from engine.types.input_output_types import Constraint, Inputs, ShiftDemand
+from engine.types.model_types import BenchmarkTimes, Objective
+
+
+class Model:
+    # pylint: disable=too-many-instance-attributes
+    def __init__(
+        self,
+        workers: List[str],
+        days: List[str],
+        shifts: List[str],
+    ) -> None:
+        self.workers = workers
+        self.days = days
+        self.shifts = shifts
+
+        self.model = cp_model.CpModel()
+        self.variables: Dict[Tuple, Dict] = {}
+        self.obj = Objective()
+        self.solver = cp_model.CpSolver()
+        self.solution_printer = cp_model.ObjectiveSolutionPrinter()
+        self.status = 0
+        self.bt = BenchmarkTimes()
+
+        self.add_constraint_sum = AddConstraintSum(
+            self.model,
+            self.variables,
+            self.workers,
+            self.days,
+            self.shifts,
+            self.obj,
+        )
+        self.add_constraint_seq = AddConstraintSeq(
+            self.model,
+            self.variables,
+            self.workers,
+            self.days,
+            self.shifts,
+            self.obj,
+        )
+        self.add_constraint_ord = AddConstraintOrd(
+            self.model,
+            self.variables,
+            self.workers,
+            self.days,
+            self.shifts,
+            self.obj,
+        )
+        self.add_constraint_fil = AddConstraintFil(
+            self.model,
+            self.variables,
+            self.workers,
+            self.days,
+            self.shifts,
+            self.obj,
+        )
+        self.add_constraint_fai = AddConstraintFai(
+            self.model,
+            self.variables,
+            self.workers,
+            self.days,
+            self.shifts,
+            self.obj,
+        )
+        self.add_constraint_eve = AddConstraintEve(
+            self.model,
+            self.variables,
+            self.workers,
+            self.days,
+            self.shifts,
+            self.obj,
+        )
+        self.add_coverage = AddCoverage(self.model, self.variables, self.workers)
+        self.add_far = AddFAR(self.model, self.variables, self.workers, self.obj)
+
+    def set_up_model(self, inputs: Inputs) -> None:
+        self.bt.total_start = time.time()
+        self.bt.full_setup_start = time.time()
+        self.bt.variables_start = time.time()
+        self.build_variables()
+        self.bt.variables_end = time.time()
+        self.bt.constraints_start = time.time()
+        self.add_exactly_one_shift_per_day_constraint()
+        self.add_coverage.add_coverage(inputs.coverage.coverage)
+        self.add_custom_constraints(inputs.constraints, inputs.coverage.coverage)
+        self.add_far.add_fixed_assignments(inputs.fixed_assignments)
+        self.add_far.add_requests(inputs.requests)
+        self.bt.constraints_end = time.time()
+        self.bt.objective_start = time.time()
+        self.add_objective()
+        self.bt.objective_end = time.time()
+        self.bt.full_setup_end = time.time()
+
+    def build_variables(self) -> None:
+        for worker in self.workers:
+            for day in self.days:
+                for shift in self.shifts:
+                    self.variables[(worker, day, shift)] = self.model.NewBoolVar(
+                        f"{worker}_{day}_{shift}"
+                    )
+
+    def add_exactly_one_shift_per_day_constraint(self) -> None:
+        for worker in self.workers:
+            for day in self.days:
+                self.model.AddExactlyOne(
+                    self.variables[worker, day, shift] for shift in self.shifts
+                )
+
+    def add_custom_constraints(
+        self, constraints: List[Constraint], coverage: List[ShiftDemand]
+    ) -> None:
+        for constraint in constraints:
+            if constraint.constraint_type == "sum":
+                self.add_constraint_sum.add_constraint(constraint)
+            elif constraint.constraint_type == "seq":
+                self.add_constraint_seq.add_constraint(constraint)
+            elif constraint.constraint_type == "ord":
+                self.add_constraint_ord.add_constraint(constraint)
+            elif constraint.constraint_type == "fil":
+                self.add_constraint_fil.add_constraint(constraint)
+            elif constraint.constraint_type == "fai":
+                self.add_constraint_fai.add_constraint(constraint, coverage)
+            elif constraint.constraint_type == "eve":
+                self.add_constraint_eve.add_constraint(constraint, coverage)
+
+    def add_objective(self) -> None:
+        self.model.Minimize(
+            sum(
+                self.obj.bool_vars[i] * self.obj.bool_coeffs[i]
+                for i in range(len(self.obj.bool_vars))
+            )
+            + sum(
+                self.obj.int_vars[i] * self.obj.int_coeffs[i]
+                for i in range(len(self.obj.int_vars))
+            )
+        )
+
+    def solve(self) -> cp_model.CpSolver:
+        # params = "max_time_in_seconds:10.0"
+        # if params:
+        #     text_format.Parse(params, self.solver.parameters)
+        self.status = self.solver.Solve(self.model, self.solution_printer)
+        self.bt.total_end = time.time()

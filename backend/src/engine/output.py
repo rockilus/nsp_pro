@@ -4,9 +4,9 @@ from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.inputs_outputs import Assignment, ConstraintBreach, Outputs
-from engine.model import Model
-from engine.types import VarName
+from engine.model.model import Model
+from engine.types.input_output_types import Assignment, ConstraintBreach, Outputs
+from engine.types.model_types import VarName
 
 
 class Output:

@@ -47,7 +47,13 @@ export default function ScheduleOptions({
   });
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "grey.100",
+      }}
+    >
       <Typography variant="subtitle1" align="left">
         Solver options
       </Typography>

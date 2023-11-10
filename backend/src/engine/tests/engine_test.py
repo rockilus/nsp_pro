@@ -4,7 +4,10 @@ from typing import Callable, List
 import pytest
 
 from engine.engine import Engine
-from engine.inputs_outputs import (
+
+# pylint: disable=unused-import
+from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
+from engine.types.input_output_types import (
     Assignment,
     Constraint,
     Coverage,
