@@ -47,6 +47,8 @@ class Output:
         constraint_breaches = []
         print(f"Branches: {self.model.solver.NumBranches()}")
         print(f"Wall time: {self.model.solver.WallTime()} s")
+        print(f"Objective value: {self.model.solver.ObjectiveValue()}")
+        print(f"Status: {self.model.solver.StatusName()}")
         # var_debug = {k: v for k, v in self.model.variables.items()}
         for i, var in enumerate(self.model.obj.bool_vars):
             if self.model.solver.BooleanValue(var):

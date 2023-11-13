@@ -644,7 +644,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         engine_solve: Callable[[Inputs], Outputs],
         constraint_seq_soft: Constraint,
     ) -> None:
-        # At least 4 shift off per week
+        # At least 2 shift off per week
         fixed_assignments = [
             Assignment(
                 worker_id="w0",
