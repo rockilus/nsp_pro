@@ -43,7 +43,7 @@ export default function ScheduleOptions({
 
   const [scheduleOptions, setScheduleOptions] = useState<ScheduleOptionsT>({
     startDate: dayjs.utc("2023-10-2"),
-    endDate: dayjs.utc("2023-10-15"),
+    endDate: dayjs.utc("2024-01-07"),
   });
 
   return (

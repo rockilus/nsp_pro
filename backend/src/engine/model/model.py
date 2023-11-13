@@ -151,8 +151,10 @@ class Model:
         )
 
     def solve(self) -> cp_model.CpSolver:
-        # params = "max_time_in_seconds:10.0"
+        # params = "max_time_in_seconds:20.0"
         # if params:
         #     text_format.Parse(params, self.solver.parameters)
+        self.solver.parameters.max_time_in_seconds = 20.0
+        # self.solver.parameters.log_search_progress = True
         self.status = self.solver.Solve(self.model, self.solution_printer)
         self.bt.total_end = time.time()
