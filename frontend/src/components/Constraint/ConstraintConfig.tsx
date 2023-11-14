@@ -45,8 +45,8 @@ export default function ConstraintConfig({ workers, shifts }: Props) {
   };
 
   return (
-    <Box style={{ width: "100%" }}>
-      <Typography variant="h4" align="left">
+    <Box style={{ width: "100%", backgroundColor: "white" }}>
+      <Typography variant="h4" align="left" color="black">
         Constraints Configuration
       </Typography>
       <ConstraintButton

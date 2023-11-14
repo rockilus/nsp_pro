@@ -131,6 +131,19 @@ class AddConstraintSeq(AddConstraint):
                 )
         #         i += 1
         # print("num iter greater than", i)
+        # for length in range(1, constraint.target_value):
+        #     for start in range(len(cstr_vars) - length + 1):
+        #         span = AddConstraintSeq._negated_bounded_span(
+        #             cstr_vars, start, length
+        #         )
+        #         # pylint: disable=protected-access
+        #         var_name = build_var_name_seq(constraint, span)
+        #         lit = self.model.NewBoolVar(var_name)
+        #         self.model.AddBoolOr(span).OnlyEnforceIf(lit.Not())
+        #         self.obj.bool_vars.append(lit)
+        #         self.obj.bool_coeffs.append(
+        #             constraint.penalty * (constraint.target_value - length)
+        #         )
 
     @staticmethod
     def _negated_bounded_span(

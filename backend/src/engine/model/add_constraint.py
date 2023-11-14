@@ -15,6 +15,7 @@ class AddConstraint:
         self,
         model: cp_model.CpModel,
         variables: Dict[Tuple, Dict],
+        durations: Dict[Tuple, Dict],
         workers: List[str],
         days: List[str],
         shifts: List[str],
@@ -22,6 +23,7 @@ class AddConstraint:
     ) -> None:
         self.model = model
         self.variables = variables
+        self.durations = durations
         self.workers = workers
         self.days = days
         self.shifts = shifts

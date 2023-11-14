@@ -21,6 +21,7 @@ class TestCoverage(TestEngine):
                     date=date.fromisoformat("2023-10-02"),
                     shift_id="s0",
                     quantity=target_coverage,
+                    duration=8,
                 ),
             ]
         )
