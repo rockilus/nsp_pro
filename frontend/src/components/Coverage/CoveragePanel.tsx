@@ -1,11 +1,14 @@
 import React, { Component, useEffect, useState } from "react";
-import CoverageEditableView from "./CoverageEditableView";
+
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import AddIcon from "@mui/icons-material/Add";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+
+import WeekView from "./WeekView";
+import CoverageEditableView from "./CoverageEditableView";
 import { CoverageT, ShiftT } from "./types";
 import { useCoverageStore } from "../../stores/coverageStore";
 
@@ -152,6 +155,7 @@ const CoveragePanel: React.FC<CoveragePanelProps> = ({ shifts }) => {
           )}
         </>
       )}
+      <WeekView />
     </Box>
   );
 };

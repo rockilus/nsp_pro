@@ -4,7 +4,7 @@ export type ShiftDemandT = {
   dayIndex: number; // from 0 to 6
   shiftId: string;
   quantity: number;
-  startTime: dayjs.Dayjs; // in format HH:mm
+  startTime: dayjs.Dayjs;
   duration: number; // in minutes
 };
 
