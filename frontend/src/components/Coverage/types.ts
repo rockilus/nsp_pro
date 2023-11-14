@@ -1,7 +1,11 @@
+import dayjs from "dayjs";
+
 export type ShiftDemandT = {
   dayIndex: number; // from 0 to 6
   shiftId: string;
   quantity: number;
+  startTime: dayjs.Dayjs; // in format HH:mm
+  duration: number; // in minutes
 };
 
 export type CoverageT = {

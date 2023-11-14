@@ -18,12 +18,13 @@ from engine.types.input_output_types import (
 
 class AddConstraintEve(AddConstraint):
     # pylint: disable=too-many-arguments
-    def __init__(self, model, variables, workers, days, shifts, obj) -> None:
+    def __init__(self, model, variables, durations, workers, days, shifts, obj) -> None:
         # pylint: disable=R0801
-        super().__init__(model, variables, workers, days, shifts, obj)
+        super().__init__(model, variables, durations, workers, days, shifts, obj)
         self.add_constraint_sum = AddConstraintSum(
             self.model,
             self.variables,
+            self.durations,
             self.workers,
             self.days,
             self.shifts,

@@ -76,6 +76,7 @@ def _build_shift_demands(
                             date=cov_date,
                             shift_id=shift_demand.shift_id,
                             quantity=shift_demand.quantity,
+                            duration=shift_demand.duration,
                         )
                     )
     return shift_demands

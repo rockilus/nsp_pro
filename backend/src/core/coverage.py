@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, time
 from typing import List
 
 
@@ -8,6 +8,8 @@ class ShiftDemand:
     day_index: int
     shift_id: str
     quantity: int
+    start_time: time
+    duration: int
 
     def __post_init__(self):
         if not 0 <= self.day_index <= 6:

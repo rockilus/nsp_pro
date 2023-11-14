@@ -81,6 +81,7 @@ export default function ConstraintListItem({
         <ListItemText
           primary={stringState}
           secondary={constraint.hard ? "Hard" : `Soft (${constraint.priority})`}
+          style={{ color: "black" }}
         />
       </ListItemButton>
     );

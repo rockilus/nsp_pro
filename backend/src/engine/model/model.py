@@ -31,6 +31,8 @@ class Model:
 
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple, Dict] = {}
+        self.durations: Dict[Tuple, Dict] = {}
+
         self.obj = Objective()
         self.solver = cp_model.CpSolver()
         self.solution_printer = cp_model.ObjectiveSolutionPrinter()
@@ -40,6 +42,7 @@ class Model:
         self.add_constraint_sum = AddConstraintSum(
             self.model,
             self.variables,
+            self.durations,
             self.workers,
             self.days,
             self.shifts,
@@ -48,6 +51,7 @@ class Model:
         self.add_constraint_seq = AddConstraintSeq(
             self.model,
             self.variables,
+            self.durations,
             self.workers,
             self.days,
             self.shifts,
@@ -56,6 +60,7 @@ class Model:
         self.add_constraint_ord = AddConstraintOrd(
             self.model,
             self.variables,
+            self.durations,
             self.workers,
             self.days,
             self.shifts,
@@ -64,6 +69,7 @@ class Model:
         self.add_constraint_fil = AddConstraintFil(
             self.model,
             self.variables,
+            self.durations,
             self.workers,
             self.days,
             self.shifts,
@@ -72,6 +78,7 @@ class Model:
         self.add_constraint_fai = AddConstraintFai(
             self.model,
             self.variables,
+            self.durations,
             self.workers,
             self.days,
             self.shifts,
@@ -80,12 +87,21 @@ class Model:
         self.add_constraint_eve = AddConstraintEve(
             self.model,
             self.variables,
+            self.durations,
             self.workers,
             self.days,
             self.shifts,
             self.obj,
         )
-        self.add_coverage = AddCoverage(self.model, self.variables, self.workers)
+        self.add_coverage = AddCoverage(
+            self.model,
+            self.variables,
+            self.durations,
+            self.workers,
+            self.days,
+            self.shifts,
+            self.obj,
+        )
         self.add_far = AddFAR(self.model, self.variables, self.workers, self.obj)
 
     def set_up_model(self, inputs: Inputs) -> None:
@@ -113,6 +129,13 @@ class Model:
                     self.variables[(worker, day, shift)] = self.model.NewBoolVar(
                         f"{worker}_{day}_{shift}"
                     )
+
+    # def build_durations(self) -> None:
+    #     for d in self.days:
+    #         for s in self.shifts:
+    #             self.durations[(d, s)] = self.model.NewIntVar(
+    #                 0, 24, f"duration_{d}_{s}"
+    #             )
 
     def add_exactly_one_shift_per_day_constraint(self) -> None:
         for worker in self.workers:
