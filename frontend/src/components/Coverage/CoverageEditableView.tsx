@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
@@ -75,6 +77,8 @@ const CoverageEditableView: React.FC<CoverageEditableViewProps> = ({
           dayIndex,
           shiftId,
           quantity: 1,
+          startTime: dayjs(),
+          duration: 1,
         };
         return {
           ...prev,

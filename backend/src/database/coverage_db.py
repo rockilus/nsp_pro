@@ -21,7 +21,7 @@ class CoverageDB:
         coverage = CoverageDocument(
             id=str(ObjectId()),
             name=name,
-            shiftDemands=shift_demands_docs,
+            shift_demands=shift_demands_docs,
         )
         coverage_saved = coverage.save()
         return _from_mongo_coverage(coverage_saved)
@@ -50,9 +50,11 @@ class CoverageDB:
 # Mappers
 def _to_mongo_shift_demand(dataclass_obj: ShiftDemand) -> ShiftDemandDocument:
     return ShiftDemandDocument(
-        dayIndex=dataclass_obj.day_index,
-        shiftId=dataclass_obj.shift_id,
+        day_index=dataclass_obj.day_index,
+        shift_id=dataclass_obj.shift_id,
         quantity=dataclass_obj.quantity,
+        start_time=dataclass_obj.start_time,
+        duration=dataclass_obj.duration,
     )
 
 
@@ -60,7 +62,7 @@ def to_mongo_coverage(dataclass_obj: Coverage) -> CoverageDocument:
     return CoverageDocument(
         id=dataclass_obj.id,
         name=dataclass_obj.name,
-        shiftDemands=[
+        shift_demands=[
             _to_mongo_shift_demand(shift) for shift in dataclass_obj.shift_demands
         ],
     )
@@ -68,9 +70,11 @@ def to_mongo_coverage(dataclass_obj: Coverage) -> CoverageDocument:
 
 def _from_mongo_shift_demand(doc_obj: ShiftDemandDocument) -> ShiftDemand:
     return ShiftDemand(
-        day_index=doc_obj.dayIndex,
-        shift_id=doc_obj.shiftId,
+        day_index=doc_obj.day_index,
+        shift_id=doc_obj.shift_id,
         quantity=doc_obj.quantity,
+        start_time=doc_obj.start_time.time(),
+        duration=doc_obj.duration,
     )
 
 
@@ -79,6 +83,6 @@ def _from_mongo_coverage(doc_obj: CoverageDocument) -> Coverage:
         id=doc_obj.id,
         name=doc_obj.name,
         shift_demands=[
-            _from_mongo_shift_demand(shift) for shift in doc_obj.shiftDemands
+            _from_mongo_shift_demand(shift) for shift in doc_obj.shift_demands
         ],
     )

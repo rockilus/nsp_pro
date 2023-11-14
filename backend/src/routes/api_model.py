@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import List, Tuple, Union
 
 from pydantic import BaseModel
@@ -9,6 +9,8 @@ class ShiftDemandMessage(BaseModel):
     dayIndex: int
     shiftId: str
     quantity: int
+    startTime: datetime
+    duration: int
 
 
 class CreateCoverageRequest(BaseModel):
