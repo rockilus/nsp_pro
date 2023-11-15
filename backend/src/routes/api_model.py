@@ -11,6 +11,7 @@ class ShiftDemandMessage(BaseModel):
     quantity: int
     startTime: datetime
     duration: int
+    coverageId: str
 
 
 class CreateCoverageRequest(BaseModel):

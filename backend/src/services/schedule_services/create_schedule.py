@@ -1,15 +1,15 @@
 from typing import List, Tuple, Union
 
-from core.coverage import Coverage
+from core.coverage import ShiftDemand
 from core.schedule import Assignment, Schedule, ScheduleOptions
 from engine import Engine
 from scripts.setup_database import (
     constraint_db,
-    coverage_db,
     coverage_selector_db,
     fixed_assignment_db,
     request_db,
     shift_db,
+    shift_demand_db,
     worker_db,
 )
 from services.schedule_services.core_to_engine import core_to_engine_inputs
@@ -27,13 +27,14 @@ def create_schedule(
     coverage_selectors = coverage_selector_db.get_coverage_selector_by_dates(
         schedule_options.start_date, schedule_options.end_date
     )
-    coverages: List[Union[Coverage, None]] = []
+    shift_demands: List[Union[List[ShiftDemand], None]] = []
     for coverage_selector in coverage_selectors:
         if coverage_selector.coverage_id == "":
-            coverages.append(None)
+            shift_demands.append(None)
             continue
-        coverage = coverage_db.get_coverage_by_id(coverage_selector.coverage_id)
-        coverages.append(coverage)
+        shift_demands.append(
+            shift_demand_db.get_shift_demands_by_coverage_selector(coverage_selector)
+        )
     fixed_assignments = fixed_assignment_db.get_fixed_assignments()
     requests = request_db.get_requests()
     constraints = constraint_db.get_constraints_active()
@@ -43,7 +44,7 @@ def create_schedule(
         schedule_options.end_date,
         shifts,
         coverage_selectors,
-        coverages,
+        shift_demands,
         fixed_assignments,
         requests,
         constraints,

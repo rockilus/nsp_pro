@@ -14,6 +14,7 @@ import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import CoverageList from "./CoverageList";
+import ShiftDemandButton from "./ShiftDemandButton";
 import { CoverageT } from "./types";
 
 dayjs.extend(utc);
@@ -39,15 +40,8 @@ export default function CoverageOptions({
   handleUpdateCoverage,
   handleDeleteCoverage,
 }: Props) {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: "grey.100",
-        minWidth: 200,
-      }}
-    >
+  const newSDButton = () => {
+    return (
       <Button
         variant="contained"
         color="primary"
@@ -57,6 +51,28 @@ export default function CoverageOptions({
       >
         Create
       </Button>
+    );
+  };
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "grey.100",
+        minWidth: 200,
+      }}
+    >
+      {/* <Button
+        variant="contained"
+        color="primary"
+        startIcon={<AddIcon />}
+        disabled={selectedCoverage === undefined}
+        // onClick={handleAddCoverage}
+      >
+        Create
+      </Button> */}
+      <ShiftDemandButton buttonElement={newSDButton()} />
       <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
       <Typography variant="subtitle1" align="left">
         Coverages

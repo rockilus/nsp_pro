@@ -6,6 +6,7 @@ export type ShiftDemandT = {
   quantity: number;
   startTime: dayjs.Dayjs;
   duration: number; // in minutes
+  coverageId: string;
 };
 
 export type CoverageT = {
