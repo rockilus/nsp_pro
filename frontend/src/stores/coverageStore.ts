@@ -16,23 +16,13 @@ type CoverageStateT = {
   deleteCoverage: (id: string) => void;
 };
 
-const toCoverageT = (data: any) => {
-  const cov: CoverageT = {
-    ...data,
-    dateStart: new Date(data.dateStart),
-    dateEnd: new Date(data.dateEnd),
-  };
-  return cov;
-};
-
 export const useCoverageStore = create<CoverageStateT>()((set) => ({
   coverages: [],
 
   fetchCoverages: async () => {
     try {
       const response = await fetch(apiUrlCoverages); // Adjust API endpoint as needed
-      const data = await response.json();
-      const coverages = data.map(toCoverageT);
+      const coverages: CoverageT[] = await response.json();
       set({ coverages });
     } catch (error) {
       console.error("Failed to fetch coverages:", error);
@@ -48,8 +38,7 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
         },
         body: JSON.stringify(coverage),
       });
-      const data = await response.json();
-      const newCoverage = toCoverageT(data);
+      const newCoverage = await response.json();
       set((state) => ({ coverages: [...state.coverages, newCoverage] }));
       return newCoverage;
     } catch (error) {

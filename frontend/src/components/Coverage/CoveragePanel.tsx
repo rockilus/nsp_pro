@@ -55,23 +55,9 @@ const CoveragePanel: React.FC<CoveragePanelProps> = ({ shifts }) => {
   };
 
   const handleCreateNewCoverage = () => {
-    const now = new Date();
-    const startOfDayUTC = new Date(
-      Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        0,
-        0,
-        0,
-        0
-      )
-    );
     const newCoverage: CoverageT = {
       id: `id-${Date.now()}`, // Temporary unique ID, replace with real ID from the backend if needed
       name: "",
-      dateStart: startOfDayUTC,
-      dateEnd: startOfDayUTC,
       shiftDemands: [],
     };
     setNewCoverage(newCoverage);

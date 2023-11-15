@@ -11,8 +11,6 @@ export type ShiftDemandT = {
 export type CoverageT = {
   id: string;
   name: string;
-  dateStart: Date;
-  dateEnd: Date;
   shiftDemands: ShiftDemandT[];
 };
 
