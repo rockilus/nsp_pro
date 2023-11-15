@@ -116,5 +116,5 @@ def api_msg_to_coverage(msg: CoverageMessage) -> Coverage:
 
 def api_msg_to_shift_demand(msg: ShiftDemandMessage) -> ShiftDemand:
     data_snake = humps.decamelize(msg.model_dump())
-    # data_snake["start_time"] = datetime(data_snake["start_date"]).time()
+    data_snake["start_time"] = data_snake["start_time"].time()
     return ShiftDemand(**data_snake)

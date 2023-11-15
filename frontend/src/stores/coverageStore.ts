@@ -1,6 +1,6 @@
 // coverageStore.ts
 import { create } from "zustand";
-import { CoverageT } from "../components/Coverage/types";
+import { CoverageT, ShiftDemandT } from "../components/Coverage/types";
 
 // const baseApiUrl = "http://localhost:5000";
 const baseApiUrl = "http://127.0.0.1:5000";
@@ -12,8 +12,11 @@ type CoverageStateT = {
   coverages: CoverageT[];
   fetchCoverages: () => void;
   addCoverage: (coverage: CoverageT) => Promise<CoverageT>;
+  addShiftDemand: (shiftDemand: ShiftDemandT) => Promise<ShiftDemandT>;
   updateCoverage: (updatedCoverage: CoverageT) => void;
+  updateShiftDemand: (updatedShiftDemand: ShiftDemandT) => void;
   deleteCoverage: (id: string) => void;
+  deleteShiftDemand: (coverageId: string, id: string) => void;
 };
 
 export const useCoverageStore = create<CoverageStateT>()((set) => ({
@@ -46,6 +49,35 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
     }
   },
 
+  addShiftDemand: async (shiftDemand) => {
+    try {
+      const response = await fetch(
+        `${apiUrlCoverages}/${shiftDemand.coverageId}/shift_demands`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(shiftDemand),
+        }
+      );
+      const newShiftDemand: ShiftDemandT = await response.json();
+      set((state) => ({
+        coverages: state.coverages.map((coverage) =>
+          coverage.id === newShiftDemand.coverageId
+            ? {
+                ...coverage,
+                shiftDemands: [...coverage.shiftDemands, newShiftDemand],
+              }
+            : coverage
+        ),
+      }));
+      return newShiftDemand;
+    } catch (error) {
+      throw Error(`Failed to add shift demand: ${error}`);
+    }
+  },
+
   updateCoverage: async (updatedCoverage) => {
     try {
       await fetch(`${apiUrlCoverages}/${updatedCoverage.id}`, {
@@ -65,6 +97,42 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
     }
   },
 
+  updateShiftDemand: async (updatedShiftDemand) => {
+    try {
+      const response = await fetch(
+        `${apiUrlCoverages}/${updatedShiftDemand.coverageId}/shift_demands/${updatedShiftDemand.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedShiftDemand),
+        }
+      );
+      const newShiftDemand: ShiftDemandT = await response.json();
+      set((state) => ({
+        coverages: state.coverages.map((coverage) =>
+          coverage.id === newShiftDemand.coverageId
+            ? {
+                ...coverage,
+                shiftDemands: coverage.shiftDemands.some(
+                  (shiftDemand) => shiftDemand.id === newShiftDemand.id
+                )
+                  ? coverage.shiftDemands.map((shiftDemand) =>
+                      shiftDemand.id === newShiftDemand.id
+                        ? newShiftDemand
+                        : shiftDemand
+                    )
+                  : [...coverage.shiftDemands, newShiftDemand],
+              }
+            : coverage
+        ),
+      }));
+    } catch (error) {
+      console.error("Failed to update shift demand:", error);
+    }
+  },
+
   deleteCoverage: async (id) => {
     try {
       await fetch(`${apiUrlCoverages}/${id}`, {
@@ -75,6 +143,28 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to delete coverage:", error);
+    }
+  },
+
+  deleteShiftDemand: async (coverageId, id) => {
+    try {
+      await fetch(`${apiUrlCoverages}/${coverageId}/shift_demands/${id}`, {
+        method: "DELETE",
+      });
+      set((state) => ({
+        coverages: state.coverages.map((coverage) =>
+          coverage.id === coverageId
+            ? {
+                ...coverage,
+                shiftDemands: coverage.shiftDemands.filter(
+                  (shiftDemand) => shiftDemand.id !== id
+                ),
+              }
+            : coverage
+        ),
+      }));
+    } catch (error) {
+      console.error("Failed to delete shift demand:", error);
     }
   },
 }));

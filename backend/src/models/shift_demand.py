@@ -1,10 +1,11 @@
 from mongoengine import Document
-from mongoengine.fields import DateTimeField, IntField, ReferenceField
+from mongoengine.fields import DateTimeField, IntField, ReferenceField, StringField
 
 
 class ShiftDemand(Document):
     meta = {"collection": "shift_demands"}
 
+    id = StringField(primary_key=True, required=True)
     day_index = IntField(min_value=0, max_value=6, required=True)
     shift = ReferenceField("Shift", required=True)
     quantity = IntField(required=True)

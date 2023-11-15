@@ -4,18 +4,18 @@ import Box from "@mui/material/Box";
 import Menu from "@mui/material/Menu";
 
 import ShiftDemandPanel from "./ShiftDemandPanel";
-import { CoverageT } from "./types";
+import { ShiftDemandT } from "./types";
 import { ShiftIdNameT } from "../Schedule/types";
 
 interface Props {
   buttonElement: React.ReactNode;
-  coverage: CoverageT;
+  shiftDemand: ShiftDemandT;
   shifts: ShiftIdNameT[];
 }
 
 export default function ShiftDemandButton({
   buttonElement,
-  coverage,
+  shiftDemand,
   shifts,
 }: Props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -49,11 +49,11 @@ export default function ShiftDemandButton({
           },
         }}
       >
-        {/* <ShiftDemandPanel
-          coverage={coverage}
+        <ShiftDemandPanel
+          shiftDemand={shiftDemand}
           shifts={shifts}
           handleClose={handleClose}
-        /> */}
+        />
       </Menu>
     </Box>
   );

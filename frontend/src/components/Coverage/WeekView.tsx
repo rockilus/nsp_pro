@@ -59,7 +59,7 @@ const WeekView: React.FC = () => {
               "Sunday",
             ].map((day, index) => (
               <TableCell
-                key={index}
+                key={`${day}-${index}`}
                 style={{
                   textAlign: "center",
                   verticalAlign: "bottom",
@@ -76,11 +76,10 @@ const WeekView: React.FC = () => {
           {timeSlots.slice(1).map((time, index) => (
             <TableRow key={time.valueOf()}>
               {Array.from({ length: 7 }).map((_, dayIndex) => (
-                <>
+                <React.Fragment key={`${dayIndex}-${index}`}>
                   {dayIndex === 0 &&
                     (time.minute() === 0 || time.minute() === 30) && (
                       <TableCell
-                        key={dayIndex}
                         rowSpan={dayIndex === 0 ? 2 : 1}
                         style={timeCellStyles}
                       >
@@ -92,7 +91,6 @@ const WeekView: React.FC = () => {
                       </TableCell>
                     )}
                   <TableCell
-                    key={`${dayIndex}-${index}`}
                     style={{
                       height: cellHeight,
                       width: dayColWidth,
@@ -103,7 +101,7 @@ const WeekView: React.FC = () => {
                   >
                     {/* You can add event components here based on time slots and days */}
                   </TableCell>
-                </>
+                </React.Fragment>
               ))}
             </TableRow>
           ))}

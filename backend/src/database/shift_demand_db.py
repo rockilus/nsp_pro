@@ -1,11 +1,13 @@
-from datetime import time
+from datetime import datetime, time
 from typing import List
 
 from bson import ObjectId
 
 from core.coverage import Coverage, ShiftDemand
 from core.shift import Shift
+from database.coverage_db import to_mongo_coverage
 from database.db import DB
+from database.shift_db import to_mongo_shift
 from models.shift_demand import ShiftDemand as ShiftDemandDocument
 
 
@@ -26,11 +28,11 @@ class ShiftDemandDB:
         shift_demand = ShiftDemandDocument(
             id=str(ObjectId()),
             day_index=day_index,
-            shift=shift,
+            shift=to_mongo_shift(shift),
             quantity=quantity,
-            start_time=start_time,
+            start_time=datetime.combine(datetime.today(), start_time),
             duration=duration,
-            coverage=coverage,
+            coverage=to_mongo_coverage(coverage),
         )
         shift_demand_saved = shift_demand.save()
         return _from_mongo_shift_demand(shift_demand_saved)
@@ -93,6 +95,7 @@ def _to_mongo_shift_demand(dataclass_obj: ShiftDemand) -> ShiftDemandDocument:
     shift = Shift.objects.get(id=dataclass_obj.shift_id)  # type: ignore
     coverage = Coverage.objects.get(id=dataclass_obj.coverage_id)  # type: ignore
     return ShiftDemandDocument(
+        id=dataclass_obj.id,
         day_index=dataclass_obj.day_index,
         shift=shift,
         quantity=dataclass_obj.quantity,
@@ -104,6 +107,7 @@ def _to_mongo_shift_demand(dataclass_obj: ShiftDemand) -> ShiftDemandDocument:
 
 def _from_mongo_shift_demand(doc_obj: ShiftDemandDocument) -> ShiftDemand:
     return ShiftDemand(
+        id=doc_obj.id,
         day_index=doc_obj.day_index,
         shift_id=doc_obj.shift.id,
         quantity=doc_obj.quantity,

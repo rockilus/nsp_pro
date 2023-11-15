@@ -16,6 +16,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import CoverageList from "./CoverageList";
 import ShiftDemandButton from "./ShiftDemandButton";
 import { CoverageT } from "./types";
+import { ShiftIdNameT } from "../Schedule/types";
 
 dayjs.extend(utc);
 
@@ -23,6 +24,7 @@ interface Props {
   coverages: CoverageT[];
   selectedCoverage: CoverageT | undefined;
   editingName: boolean;
+  shifts: ShiftIdNameT[];
   handleSelectCoverage: (coverage: CoverageT) => void;
   setEditingName: (editingName: boolean) => void;
   handleAddCoverage: () => void;
@@ -34,6 +36,7 @@ export default function CoverageOptions({
   coverages,
   selectedCoverage,
   editingName,
+  shifts,
   handleSelectCoverage,
   setEditingName,
   handleAddCoverage,
@@ -63,16 +66,21 @@ export default function CoverageOptions({
         minWidth: 200,
       }}
     >
-      {/* <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        disabled={selectedCoverage === undefined}
-        // onClick={handleAddCoverage}
-      >
-        Create
-      </Button> */}
-      <ShiftDemandButton buttonElement={newSDButton()} />
+      <ShiftDemandButton
+        buttonElement={newSDButton()}
+        shiftDemand={{
+          id: "",
+          dayIndex: dayjs().day() - 1,
+          shiftId: "",
+          quantity: 0,
+          startTime: dayjs()
+            .startOf("hour")
+            .add(Math.ceil(dayjs().minute() / 15) * 15, "minute"),
+          duration: 60,
+          coverageId: selectedCoverage?.id || "",
+        }}
+        shifts={shifts}
+      />
       <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
       <Typography variant="subtitle1" align="left">
         Coverages

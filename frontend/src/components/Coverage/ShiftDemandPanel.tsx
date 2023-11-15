@@ -8,94 +8,69 @@ import CloseIcon from "@mui/icons-material/Close";
 import FormControl from "@mui/material/FormControl";
 import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import Select from "@mui/material/Select";
+import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
 
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-
-import { CoverageT } from "./types";
-import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
-import { useRequestStore } from "../../stores/requestStore";
-import { FixedAssignmentT, RequestT, FarT } from "./types";
+import { useCoverageStore } from "../../stores/coverageStore";
+import { ShiftDemandT } from "./types";
 import { ShiftIdNameT } from "../Schedule/types";
 
 interface Props {
-  coverage: CoverageT;
+  shiftDemand: ShiftDemandT;
   shifts: ShiftIdNameT[];
   handleClose: () => void;
 }
 
 export default function ShiftDemandPanel({
-  coverage,
+  shiftDemand,
   shifts,
   handleClose,
 }: Props) {
-  const dateToTimeZero = (date: Date): Date => {
-    return new Date(
-      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0)
-    );
-  };
+  const timeSlots: dayjs.Dayjs[] = [];
+  let startTime = dayjs().startOf("day");
+  const endTime = dayjs(startTime).endOf("day");
+  while (startTime.isBefore(endTime) || startTime.isSame(endTime)) {
+    timeSlots.push(startTime);
+    startTime = startTime.add(15, "minute");
+  }
+  const weekDays = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
 
-  const [FAPanel, setFAPanel] = useState<boolean>(far.isFA);
-
-  const [farState, setFarState] = useState<FarT>({
-    id: far.id,
-    workerId: far.workerId,
-    date: far.date,
-    shiftId: far.shiftId,
-    priority: far.priority,
-    isFA: far.isFA,
-    status: far.status,
-  });
-
-  const addFixedAssignment = useFixedAssignmentStore(
-    (state) => state.addFixedAssignment
+  const [SDState, setSDState] = useState<ShiftDemandT>(shiftDemand);
+  const [quantityState, setQuantityState] = useState<number | "">(
+    shiftDemand.quantity
   );
-  const updateFixedAssignment = useFixedAssignmentStore(
-    (state) => state.updateFixedAssignment
-  );
-  const deleteFixedAssignment = useFixedAssignmentStore(
-    (state) => state.deleteFixedAssignment
-  );
-  const addRequest = useRequestStore((state) => state.addRequest);
-  const updateRequest = useRequestStore((state) => state.updateRequest);
-  const deleteRequest = useRequestStore((state) => state.deleteRequest);
 
-  const handleSaveFar = async () => {
-    if (farState.id === "") {
-      if (FAPanel) {
-        const fixedAssignment = farState as FixedAssignmentT;
-        await addFixedAssignment(fixedAssignment);
-        if (!far.isFA && far.id !== "") {
-          await deleteRequest(far.id);
-        }
-      } else {
-        const request = farState as RequestT;
-        await addRequest(request);
-        if (!far.isFA && far.id !== "") {
-          await deleteRequest(far.id);
-        }
-      }
+  const addShiftDemand = useCoverageStore((state) => state.addShiftDemand);
+  const updateShiftDemand = useCoverageStore(
+    (state) => state.updateShiftDemand
+  );
+  const deleteShiftDemand = useCoverageStore(
+    (state) => state.deleteShiftDemand
+  );
+
+  const handleSaveSD = async () => {
+    if (SDState.id === "") {
+      await addShiftDemand(SDState);
     } else {
-      if (FAPanel) {
-        const fixedAssignment = farState as FixedAssignmentT;
-        await updateFixedAssignment(fixedAssignment);
-      } else {
-        const request = farState as RequestT;
-        await updateRequest(request);
-      }
+      await updateShiftDemand(SDState);
     }
     handleClose();
   };
 
-  const handleDeleteFar = async () => {
-    if (farState.id !== "") {
-      if (FAPanel) {
-        await deleteFixedAssignment(farState.id);
-      } else {
-        await deleteRequest(farState.id);
-      }
+  const handleDeleteSD = async () => {
+    if (SDState.id !== "") {
+      await deleteShiftDemand(SDState.coverageId, SDState.id);
     }
     handleClose();
   };
@@ -105,11 +80,11 @@ export default function ShiftDemandPanel({
       <Box sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}>
         <FormControl fullWidth>
           <Select
-            value={farState.shiftId}
+            value={SDState.shiftId}
             label="Shift"
             onChange={(e) =>
-              setFarState({
-                ...farState,
+              setSDState({
+                ...SDState,
                 shiftId: e.target.value as string,
               })
             }
@@ -117,6 +92,83 @@ export default function ShiftDemandPanel({
             {shifts.map((shift) => (
               <MenuItem key={shift.id} value={shift.id}>
                 {shift.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+    );
+  };
+
+  const selectWeekDay = () => {
+    return (
+      <Box sx={{ marginLeft: 1, marginRight: 2, width: 150 }}>
+        <FormControl fullWidth>
+          <Select
+            value={SDState.dayIndex}
+            label="Shift"
+            onChange={(e) =>
+              setSDState({
+                ...SDState,
+                dayIndex: e.target.value as number,
+              })
+            }
+          >
+            {weekDays.map((weekDay, index) => (
+              <MenuItem key={index} value={index}>
+                {weekDay}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+    );
+  };
+
+  const selectStartTime = () => {
+    return (
+      <Box sx={{ marginLeft: 1, marginRight: 1, width: 100 }}>
+        <FormControl fullWidth>
+          <Select
+            value={SDState.startTime.valueOf()}
+            label="Start Time"
+            onChange={(e) =>
+              setSDState({
+                ...SDState,
+                startTime: dayjs(e.target.value),
+              })
+            }
+          >
+            {timeSlots.map((time) => (
+              <MenuItem key={time.valueOf()} value={time.valueOf()}>
+                {time.format("HH:mm")}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+    );
+  };
+  const selectEndTime = () => {
+    return (
+      <Box sx={{ marginLeft: 1, marginRight: 2, width: 100 }}>
+        <FormControl fullWidth>
+          <Select
+            value={SDState.startTime.add(SDState.duration, "minute").valueOf()}
+            label="Start Time"
+            onChange={(e) =>
+              setSDState({
+                ...SDState,
+                duration: dayjs(e.target.value).diff(
+                  SDState.startTime,
+                  "minute"
+                ),
+              })
+            }
+          >
+            {timeSlots.map((time) => (
+              <MenuItem key={time.valueOf()} value={time.valueOf()}>
+                {time.format("HH:mm")}
               </MenuItem>
             ))}
           </Select>
@@ -160,16 +212,8 @@ export default function ShiftDemandPanel({
         }}
       >
         <AccessTimeIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-        <DatePicker
-          sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}
-          value={dayjs(farState.date)}
-          onChange={(newValue) =>
-            setFarState({
-              ...farState,
-              date: dateToTimeZero(newValue?.toDate() || new Date()),
-            })
-          }
-        />
+        {selectWeekDay()}
+        {selectStartTime()}-{selectEndTime()}
       </Box>
       <Box
         sx={{
@@ -188,16 +232,44 @@ export default function ShiftDemandPanel({
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
+          width: "100%",
+          marginBottom: 1,
+        }}
+      >
+        <PeopleAltIcon sx={{ marginLeft: 2, marginRight: 1 }} />
+        <TextField
+          label="Staffing"
+          variant="outlined"
+          type="number"
+          value={quantityState}
+          onChange={(e) => {
+            setQuantityState(e.target.value ? parseInt(e.target.value) : "");
+            setSDState({
+              ...SDState,
+              quantity: e.target.value ? parseInt(e.target.value) : 0,
+            });
+          }}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}
+        />
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
           justifyContent: "flex-end",
           width: "100%",
         }}
       >
-        {coverage.id !== "" && (
+        {shiftDemand.id !== "" && (
           <Button
             variant="contained"
             color="primary"
             sx={{ marginRight: 2 }}
-            onClick={handleDeleteFar}
+            onClick={handleDeleteSD}
           >
             Delete
           </Button>
@@ -206,7 +278,7 @@ export default function ShiftDemandPanel({
           variant="contained"
           color="primary"
           sx={{ marginRight: 2 }}
-          onClick={handleSaveFar}
+          onClick={handleSaveSD}
         >
           Save
         </Button>

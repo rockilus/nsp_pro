@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 # Coverage
 class ShiftDemandMessage(BaseModel):
+    id: str
     dayIndex: int
     shiftId: str
     quantity: int

@@ -6,7 +6,6 @@ import ConstraintConfig from "../components/Constraint/ConstraintConfig";
 import ShiftConfig from "../components/Shift/ShiftConfig";
 import ScheduleTab from "../components/Schedule/ScheduleTab";
 import WorkerConfig from "../components/Worker/WorkerConfig";
-import CoveragePanel from "../components/Coverage/CoveragePanel";
 import CoverageTab from "../components/Coverage/CoverageTab";
 import CoverageSelectorConfig from "../components/CoverageSelector/CoverageSelectorConfig";
 import FARConfig from "../components/FixedAssignmentRequest/FARConfig";
@@ -55,9 +54,6 @@ export default function Draft() {
       <ConstraintConfig workers={workers} shifts={shifts} />
       <WorkerConfig />
       <ShiftConfig />
-      {/* {shiftsForCoverage.length > 0 && (
-        <CoveragePanel shifts={shiftsForCoverage} />
-      )} */}
       <CoverageTab shifts={shiftsIdName} />
       <CoverageSelectorConfig />
       <FARConfig workers={workersIdName} shifts={shiftsIdName} />

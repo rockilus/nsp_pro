@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 
 export type ShiftDemandT = {
+  id: string;
   dayIndex: number; // from 0 to 6
   shiftId: string;
   quantity: number;

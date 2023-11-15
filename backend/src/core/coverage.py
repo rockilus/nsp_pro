@@ -4,6 +4,7 @@ from datetime import date, time
 
 @dataclass
 class ShiftDemand:
+    id: str
     day_index: int
     shift_id: str
     quantity: int

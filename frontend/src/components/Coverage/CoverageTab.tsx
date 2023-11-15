@@ -71,6 +71,7 @@ export default function CoverageTab({ shifts }: Props) {
           coverages={coverages}
           selectedCoverage={selectedCoverage}
           editingName={editingName}
+          shifts={shifts}
           handleAddCoverage={handleAddCoverage}
           handleSelectCoverage={handleSelectCoverage}
           setEditingName={setEditingName}
