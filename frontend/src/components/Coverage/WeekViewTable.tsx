@@ -6,12 +6,24 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
   Paper,
 } from "@mui/material";
 
-const WeekView: React.FC = () => {
+import {
+  WeekDays,
+  CovTimeColWidth,
+  CovTimeColPadR,
+  CovHeadRowHeight,
+  CovBodyRowHeight,
+  CovBorderThick,
+} from "../../utils/constants";
+
+type Props = {
+  dayColWidth: number;
+};
+
+export default function WeekViewTable({ dayColWidth }: Props) {
   // Generate time slots with 15-minute intervals
   const timeSlots: dayjs.Dayjs[] = [];
   let startTime = dayjs().startOf("day");
@@ -25,10 +37,7 @@ const WeekView: React.FC = () => {
   }
   //   console.log("timeSlots:", timeSlots[timeSlots.length - 1]);
 
-  const cellHeight = 12; // Define the height of each cell
-  const timeColWidth = 50; // Define the width of the time column
-  const dayColWidth = 100; // Define the width of each day column
-  const borderStyle = "1px solid #E8E8E8"; // Define the border style
+  const borderStyle = `${CovBorderThick}px solid #E8E8E8`; // Define the border style
   const timeTextColor = "#AFAFAF";
 
   const timeCellStyles = {
@@ -36,8 +45,8 @@ const WeekView: React.FC = () => {
     fontSize: 12,
     textAlign: "right" as const,
     verticalAlign: "middle",
-    width: timeColWidth,
-    padding: "0 10px 0 0",
+    width: CovTimeColWidth,
+    padding: `0 ${CovTimeColPadR}px 0 0`,
     border: "none",
   };
 
@@ -49,21 +58,13 @@ const WeekView: React.FC = () => {
             <TableCell rowSpan={2} style={timeCellStyles}>
               {timeSlots[0].format("HH:mm")}
             </TableCell>
-            {[
-              "Monday",
-              "Tuesday",
-              "Wednesday",
-              "Thursday",
-              "Friday",
-              "Saturday",
-              "Sunday",
-            ].map((day, index) => (
+            {WeekDays.map((day, index) => (
               <TableCell
                 key={`${day}-${index}`}
                 style={{
                   textAlign: "center",
                   verticalAlign: "bottom",
-                  height: cellHeight,
+                  height: CovHeadRowHeight,
                   width: dayColWidth,
                   padding: 0,
                   borderBottom: borderStyle,
@@ -92,15 +93,13 @@ const WeekView: React.FC = () => {
                     )}
                   <TableCell
                     style={{
-                      height: cellHeight,
+                      height: CovBodyRowHeight,
                       width: dayColWidth,
                       padding: 0,
                       borderRight: dayIndex !== 6 ? borderStyle : "none",
                       borderBottom: time.minute() === 0 ? borderStyle : "none",
                     }}
-                  >
-                    {/* You can add event components here based on time slots and days */}
-                  </TableCell>
+                  ></TableCell>
                 </React.Fragment>
               ))}
             </TableRow>
@@ -109,6 +108,4 @@ const WeekView: React.FC = () => {
       </Table>
     </TableContainer>
   );
-};
-
-export default WeekView;
+}

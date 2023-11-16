@@ -1,4 +1,5 @@
 // coverageStore.ts
+import dayjs from "dayjs";
 import { create } from "zustand";
 import { CoverageT, ShiftDemandT } from "../components/Coverage/types";
 
@@ -12,11 +13,18 @@ type CoverageStateT = {
   coverages: CoverageT[];
   fetchCoverages: () => void;
   addCoverage: (coverage: CoverageT) => Promise<CoverageT>;
-  addShiftDemand: (shiftDemand: ShiftDemandT) => Promise<ShiftDemandT>;
+  addShiftDemand: (shiftDemand: ShiftDemandT) => void;
   updateCoverage: (updatedCoverage: CoverageT) => void;
   updateShiftDemand: (updatedShiftDemand: ShiftDemandT) => void;
   deleteCoverage: (id: string) => void;
   deleteShiftDemand: (coverageId: string, id: string) => void;
+};
+
+const toShiftDemandT = (data: any): ShiftDemandT => {
+  return {
+    ...data,
+    startTime: dayjs(data.startTime),
+  };
 };
 
 export const useCoverageStore = create<CoverageStateT>()((set) => ({
@@ -25,7 +33,13 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
   fetchCoverages: async () => {
     try {
       const response = await fetch(apiUrlCoverages); // Adjust API endpoint as needed
-      const coverages: CoverageT[] = await response.json();
+      const data = await response.json();
+      const coverages: CoverageT[] = data.map((coverage: any) => ({
+        ...coverage,
+        shiftDemands: coverage.shiftDemands.map(toShiftDemandT),
+      }));
+      console.log("coverages", coverages);
+
       set({ coverages });
     } catch (error) {
       console.error("Failed to fetch coverages:", error);
@@ -41,7 +55,11 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
         },
         body: JSON.stringify(coverage),
       });
-      const newCoverage = await response.json();
+      const data = await response.json();
+      const newCoverage: CoverageT = {
+        ...data,
+        shiftDemands: coverage.shiftDemands.map(toShiftDemandT),
+      };
       set((state) => ({ coverages: [...state.coverages, newCoverage] }));
       return newCoverage;
     } catch (error) {
@@ -61,7 +79,8 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           body: JSON.stringify(shiftDemand),
         }
       );
-      const newShiftDemand: ShiftDemandT = await response.json();
+      const data = await response.json();
+      const newShiftDemand: ShiftDemandT = toShiftDemandT(data);
       set((state) => ({
         coverages: state.coverages.map((coverage) =>
           coverage.id === newShiftDemand.coverageId
@@ -72,7 +91,6 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
             : coverage
         ),
       }));
-      return newShiftDemand;
     } catch (error) {
       throw Error(`Failed to add shift demand: ${error}`);
     }
@@ -80,16 +98,21 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
 
   updateCoverage: async (updatedCoverage) => {
     try {
-      await fetch(`${apiUrlCoverages}/${updatedCoverage.id}`, {
+      const response = await fetch(`${apiUrlCoverages}/${updatedCoverage.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(updatedCoverage),
       });
+      const data = await response.json();
+      const newCoverage: CoverageT = {
+        ...data,
+        shiftDemands: data.shiftDemands.map(toShiftDemandT),
+      };
       set((state) => ({
         coverages: state.coverages.map((c) =>
-          c.id === updatedCoverage.id ? updatedCoverage : c
+          c.id === newCoverage.id ? newCoverage : c
         ),
       }));
     } catch (error) {
@@ -109,7 +132,8 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           body: JSON.stringify(updatedShiftDemand),
         }
       );
-      const newShiftDemand: ShiftDemandT = await response.json();
+      const data = await response.json();
+      const newShiftDemand: ShiftDemandT = toShiftDemandT(data);
       set((state) => ({
         coverages: state.coverages.map((coverage) =>
           coverage.id === newShiftDemand.coverageId

@@ -21,6 +21,8 @@ export default function ShiftDemandButton({
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
+  console.log("shiftDemand in ShiftDemandButton:", shiftDemand);
+
   const handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     setAnchorEl(event.currentTarget);
   };

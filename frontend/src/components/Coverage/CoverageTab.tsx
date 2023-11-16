@@ -3,8 +3,9 @@ import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
-import WeekView from "./WeekView";
+import CoverageCalendar from "./CoverageCalendar";
 import CoverageOptions from "./CoverageOptions";
+import ParentComponent from "./TestParent";
 
 import { CoverageT } from "./types";
 import { ShiftIdNameT } from "../Schedule/types";
@@ -63,6 +64,7 @@ export default function CoverageTab({ shifts }: Props) {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
+      {/* <ParentComponent /> */}
       <Typography variant="h4" align="left">
         Coverage
       </Typography>
@@ -78,7 +80,15 @@ export default function CoverageTab({ shifts }: Props) {
           handleUpdateCoverage={handleUpdateCoverage}
           handleDeleteCoverage={handleDeleteCoverage}
         />
-        <WeekView />
+        <CoverageCalendar
+          shiftDemands={
+            selectedCoverage
+              ? coverages.find(
+                  (coverage) => (coverage.id = selectedCoverage.id)
+                )?.shiftDemands || []
+              : []
+          }
+        />
       </Box>
     </Box>
   );

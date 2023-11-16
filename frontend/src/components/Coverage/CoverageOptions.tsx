@@ -50,7 +50,6 @@ export default function CoverageOptions({
         color="primary"
         startIcon={<AddIcon />}
         disabled={selectedCoverage === undefined}
-        // onClick={handleAddCoverage}
       >
         Create
       </Button>
