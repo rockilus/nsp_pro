@@ -1,15 +1,16 @@
 from dataclasses import dataclass
 from datetime import date, time
-from typing import List
 
 
 @dataclass
 class ShiftDemand:
+    id: str
     day_index: int
     shift_id: str
     quantity: int
     start_time: time
     duration: int
+    coverage_id: str
 
     def __post_init__(self):
         if not 0 <= self.day_index <= 6:
@@ -20,7 +21,6 @@ class ShiftDemand:
 class Coverage:
     id: str
     name: str
-    shift_demands: List[ShiftDemand]
 
 
 @dataclass

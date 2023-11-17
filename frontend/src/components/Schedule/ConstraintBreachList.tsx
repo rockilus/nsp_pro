@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -7,9 +7,6 @@ import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 
 import ConstraintBreachItem from "./ConstraintBreachItem";

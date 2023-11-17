@@ -2,10 +2,9 @@ from typing import List
 
 from bson import ObjectId
 
-from core.coverage import Coverage, ShiftDemand
+from core.coverage import Coverage
 from database.db import DB
 from models.coverage import Coverage as CoverageDocument
-from models.coverage import ShiftDemand as ShiftDemandDocument
 
 
 class CoverageDB:
@@ -15,13 +14,10 @@ class CoverageDB:
     def create_coverage(
         self,
         name: str,
-        shift_demands: List[ShiftDemand],
     ) -> Coverage:
-        shift_demands_docs = [_to_mongo_shift_demand(d) for d in shift_demands]
         coverage = CoverageDocument(
             id=str(ObjectId()),
             name=name,
-            shift_demands=shift_demands_docs,
         )
         coverage_saved = coverage.save()
         return _from_mongo_coverage(coverage_saved)
@@ -48,33 +44,10 @@ class CoverageDB:
 
 
 # Mappers
-def _to_mongo_shift_demand(dataclass_obj: ShiftDemand) -> ShiftDemandDocument:
-    return ShiftDemandDocument(
-        day_index=dataclass_obj.day_index,
-        shift_id=dataclass_obj.shift_id,
-        quantity=dataclass_obj.quantity,
-        start_time=dataclass_obj.start_time,
-        duration=dataclass_obj.duration,
-    )
-
-
 def to_mongo_coverage(dataclass_obj: Coverage) -> CoverageDocument:
     return CoverageDocument(
         id=dataclass_obj.id,
         name=dataclass_obj.name,
-        shift_demands=[
-            _to_mongo_shift_demand(shift) for shift in dataclass_obj.shift_demands
-        ],
-    )
-
-
-def _from_mongo_shift_demand(doc_obj: ShiftDemandDocument) -> ShiftDemand:
-    return ShiftDemand(
-        day_index=doc_obj.day_index,
-        shift_id=doc_obj.shift_id,
-        quantity=doc_obj.quantity,
-        start_time=doc_obj.start_time.time(),
-        duration=doc_obj.duration,
     )
 
 
@@ -82,7 +55,4 @@ def _from_mongo_coverage(doc_obj: CoverageDocument) -> Coverage:
     return Coverage(
         id=doc_obj.id,
         name=doc_obj.name,
-        shift_demands=[
-            _from_mongo_shift_demand(shift) for shift in doc_obj.shift_demands
-        ],
     )

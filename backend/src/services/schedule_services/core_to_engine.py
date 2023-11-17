@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from typing import List, Union
 
 from core.constraint import Constraint, VarDay, VarShift, VarWorker
-from core.coverage import Coverage, CoverageSelector
+from core.coverage import CoverageSelector, ShiftDemand
 from core.fixed_assignment import FixedAssignment
 from core.request import Request
 from core.shift import Shift
@@ -28,7 +28,7 @@ def core_to_engine_inputs(
     end_date: date,
     shifts: List[Shift],
     coverage_selectors: List[CoverageSelector],
-    coverages: List[Union[Coverage, None]],
+    shift_demands: List[Union[List[ShiftDemand], None]],
     fixed_assignments: List[FixedAssignment],
     requests: List[Request],
     constraints: List[Constraint],
@@ -46,7 +46,9 @@ def core_to_engine_inputs(
     inputs = Inputs(
         variable_space=variable_space,
         coverage=CoverageEngine(
-            _build_shift_demands(coverage_selectors, coverages, start_date, end_date)
+            _build_shift_demands(
+                coverage_selectors, shift_demands, start_date, end_date
+            )
         ),
         requests=r_engine,
         fixed_assignments=fa_engine,
@@ -57,29 +59,29 @@ def core_to_engine_inputs(
 
 def _build_shift_demands(
     coverage_selectors: List[CoverageSelector],
-    coverages: List[Union[Coverage, None]],
+    shift_demands: List[Union[List[ShiftDemand], None]],
     start_date: date,
     end_date: date,
 ) -> List[ShiftDemandEngine]:
-    shift_demands = []
-    for cs, c in zip(coverage_selectors, coverages):
-        if c is None:
+    sd_engine = []
+    for cs, sds in zip(coverage_selectors, shift_demands):
+        if sds is None:
             continue
         for day in range(
             (min(cs.end_date, end_date) - max(cs.start_date, start_date)).days + 1
         ):
             cov_date = max(cs.start_date, start_date) + timedelta(days=day)
-            for shift_demand in c.shift_demands:
-                if shift_demand.day_index == cov_date.weekday():
-                    shift_demands.append(
+            for sd in sds:
+                if sd.day_index == cov_date.weekday():
+                    sd_engine.append(
                         ShiftDemandEngine(
                             date=cov_date,
-                            shift_id=shift_demand.shift_id,
-                            quantity=shift_demand.quantity,
-                            duration=shift_demand.duration,
+                            shift_id=sd.shift_id,
+                            quantity=sd.quantity,
+                            duration=sd.duration,
                         )
                     )
-    return shift_demands
+    return sd_engine
 
 
 def _core_to_engine_request(request: Request) -> RequestEngine:

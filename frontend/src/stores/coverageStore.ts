@@ -1,6 +1,10 @@
 // coverageStore.ts
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
-import { CoverageT } from "../components/Coverage/types";
+import { CoverageT, ShiftDemandT } from "../components/Coverage/types";
+
+dayjs.extend(utc);
 
 // const baseApiUrl = "http://localhost:5000";
 const baseApiUrl = "http://127.0.0.1:5000";
@@ -12,17 +16,18 @@ type CoverageStateT = {
   coverages: CoverageT[];
   fetchCoverages: () => void;
   addCoverage: (coverage: CoverageT) => Promise<CoverageT>;
+  addShiftDemand: (shiftDemand: ShiftDemandT) => void;
   updateCoverage: (updatedCoverage: CoverageT) => void;
+  updateShiftDemand: (updatedShiftDemand: ShiftDemandT) => void;
   deleteCoverage: (id: string) => void;
+  deleteShiftDemand: (coverageId: string, id: string) => void;
 };
 
-const toCoverageT = (data: any) => {
-  const cov: CoverageT = {
+const toShiftDemandT = (data: any): ShiftDemandT => {
+  return {
     ...data,
-    dateStart: new Date(data.dateStart),
-    dateEnd: new Date(data.dateEnd),
+    startTime: dayjs.utc(data.startTime),
   };
-  return cov;
 };
 
 export const useCoverageStore = create<CoverageStateT>()((set) => ({
@@ -32,7 +37,10 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
     try {
       const response = await fetch(apiUrlCoverages); // Adjust API endpoint as needed
       const data = await response.json();
-      const coverages = data.map(toCoverageT);
+      const coverages: CoverageT[] = data.map((coverage: any) => ({
+        ...coverage,
+        shiftDemands: coverage.shiftDemands.map(toShiftDemandT),
+      }));
       set({ coverages });
     } catch (error) {
       console.error("Failed to fetch coverages:", error);
@@ -49,7 +57,10 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
         body: JSON.stringify(coverage),
       });
       const data = await response.json();
-      const newCoverage = toCoverageT(data);
+      const newCoverage: CoverageT = {
+        ...data,
+        shiftDemands: coverage.shiftDemands.map(toShiftDemandT),
+      };
       set((state) => ({ coverages: [...state.coverages, newCoverage] }));
       return newCoverage;
     } catch (error) {
@@ -57,22 +68,93 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
     }
   },
 
+  addShiftDemand: async (shiftDemand) => {
+    try {
+      const response = await fetch(
+        `${apiUrlCoverages}/${shiftDemand.coverageId}/shift_demands`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(shiftDemand),
+        }
+      );
+      const data = await response.json();
+      const newShiftDemand: ShiftDemandT = toShiftDemandT(data);
+      set((state) => ({
+        coverages: state.coverages.map((coverage) =>
+          coverage.id === newShiftDemand.coverageId
+            ? {
+                ...coverage,
+                shiftDemands: [...coverage.shiftDemands, newShiftDemand],
+              }
+            : coverage
+        ),
+      }));
+    } catch (error) {
+      throw Error(`Failed to add shift demand: ${error}`);
+    }
+  },
+
   updateCoverage: async (updatedCoverage) => {
     try {
-      await fetch(`${apiUrlCoverages}/${updatedCoverage.id}`, {
+      const response = await fetch(`${apiUrlCoverages}/${updatedCoverage.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(updatedCoverage),
       });
+      const data = await response.json();
+      const newCoverage: CoverageT = {
+        ...data,
+        shiftDemands: data.shiftDemands.map(toShiftDemandT),
+      };
       set((state) => ({
         coverages: state.coverages.map((c) =>
-          c.id === updatedCoverage.id ? updatedCoverage : c
+          c.id === newCoverage.id ? newCoverage : c
         ),
       }));
     } catch (error) {
       console.error("Failed to update coverage:", error);
+    }
+  },
+
+  updateShiftDemand: async (updatedShiftDemand) => {
+    try {
+      const response = await fetch(
+        `${apiUrlCoverages}/${updatedShiftDemand.coverageId}/shift_demands/${updatedShiftDemand.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedShiftDemand),
+        }
+      );
+      const data = await response.json();
+      const newShiftDemand: ShiftDemandT = toShiftDemandT(data);
+      set((state) => ({
+        coverages: state.coverages.map((coverage) =>
+          coverage.id === newShiftDemand.coverageId
+            ? {
+                ...coverage,
+                shiftDemands: coverage.shiftDemands.some(
+                  (shiftDemand) => shiftDemand.id === newShiftDemand.id
+                )
+                  ? coverage.shiftDemands.map((shiftDemand) =>
+                      shiftDemand.id === newShiftDemand.id
+                        ? newShiftDemand
+                        : shiftDemand
+                    )
+                  : [...coverage.shiftDemands, newShiftDemand],
+              }
+            : coverage
+        ),
+      }));
+    } catch (error) {
+      console.error("Failed to update shift demand:", error);
     }
   },
 
@@ -86,6 +168,28 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to delete coverage:", error);
+    }
+  },
+
+  deleteShiftDemand: async (coverageId, id) => {
+    try {
+      await fetch(`${apiUrlCoverages}/${coverageId}/shift_demands/${id}`, {
+        method: "DELETE",
+      });
+      set((state) => ({
+        coverages: state.coverages.map((coverage) =>
+          coverage.id === coverageId
+            ? {
+                ...coverage,
+                shiftDemands: coverage.shiftDemands.filter(
+                  (shiftDemand) => shiftDemand.id !== id
+                ),
+              }
+            : coverage
+        ),
+      }));
+    } catch (error) {
+      console.error("Failed to delete shift demand:", error);
     }
   },
 }));

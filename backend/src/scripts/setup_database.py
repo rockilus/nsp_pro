@@ -8,6 +8,7 @@ from database import (
     FixedAssignmentDB,
     RequestDB,
     ShiftDB,
+    ShiftDemandDB,
     ShiftDimensionDB,
     ShiftPropertyDB,
     VariableDB,
@@ -28,6 +29,7 @@ coverage_selector_db = CoverageSelectorDB(db)
 fixed_assignment_db = FixedAssignmentDB(db)
 request_db = RequestDB(db)
 shift_db = ShiftDB(db)
+shift_demand_db = ShiftDemandDB(db)
 shift_dimension_db = ShiftDimensionDB(db)
 shift_property_db = ShiftPropertyDB(db)
 variable_db = VariableDB(db)
