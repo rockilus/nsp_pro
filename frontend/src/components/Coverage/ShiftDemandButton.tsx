@@ -21,8 +21,6 @@ export default function ShiftDemandButton({
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  console.log("shiftDemand in ShiftDemandButton:", shiftDemand);
-
   const handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -32,7 +30,10 @@ export default function ShiftDemandButton({
 
   return (
     <Box style={{ width: "100%" }}>
-      <Box onClick={handleClick} sx={{ display: "inline-flex", minWidth: 0 }}>
+      <Box
+        onClick={handleClick}
+        sx={{ display: "inline-flex", minWidth: 0, cursor: "pointer" }}
+      >
         {buttonElement}
       </Box>
       <Menu
@@ -46,7 +47,7 @@ export default function ShiftDemandButton({
         slotProps={{
           paper: {
             style: {
-              width: "95%",
+              width: 410,
             },
           },
         }}

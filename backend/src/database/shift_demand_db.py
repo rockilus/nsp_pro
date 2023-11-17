@@ -8,6 +8,8 @@ from core.shift import Shift
 from database.coverage_db import to_mongo_coverage
 from database.db import DB
 from database.shift_db import to_mongo_shift
+from models.coverage import Coverage as CoverageDocument
+from models.shift import Shift as ShiftDocument
 from models.shift_demand import ShiftDemand as ShiftDemandDocument
 
 
@@ -92,14 +94,16 @@ class ShiftDemandDB:
 # Mappers
 def _to_mongo_shift_demand(dataclass_obj: ShiftDemand) -> ShiftDemandDocument:
     # pylint: disable=no-member
-    shift = Shift.objects.get(id=dataclass_obj.shift_id)  # type: ignore
-    coverage = Coverage.objects.get(id=dataclass_obj.coverage_id)  # type: ignore
+    shift = ShiftDocument.objects.get(id=dataclass_obj.shift_id)  # type: ignore
+    coverage = CoverageDocument.objects.get(  # type: ignore
+        id=dataclass_obj.coverage_id
+    )
     return ShiftDemandDocument(
         id=dataclass_obj.id,
         day_index=dataclass_obj.day_index,
         shift=shift,
         quantity=dataclass_obj.quantity,
-        start_time=dataclass_obj.start_time,
+        start_time=datetime.combine(datetime.now().date(), dataclass_obj.start_time),
         duration=dataclass_obj.duration,
         coverage=coverage,
     )

@@ -69,12 +69,13 @@ export default function CoverageOptions({
         buttonElement={newSDButton()}
         shiftDemand={{
           id: "",
-          dayIndex: dayjs().day() - 1,
+          dayIndex: dayjs.utc().day() - 1,
           shiftId: "",
           quantity: 0,
-          startTime: dayjs()
+          startTime: dayjs
+            .utc()
             .startOf("hour")
-            .add(Math.ceil(dayjs().minute() / 15) * 15, "minute"),
+            .add(Math.ceil(dayjs.utc().minute() / 15) * 15, "minute"),
           duration: 60,
           coverageId: selectedCoverage?.id || "",
         }}

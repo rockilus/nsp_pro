@@ -1,5 +1,6 @@
 import React from "react";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 
 import {
   Table,
@@ -19,6 +20,8 @@ import {
   CovBorderThick,
 } from "../../utils/constants";
 
+dayjs.extend(utc);
+
 type Props = {
   dayColWidth: number;
 };
@@ -26,8 +29,8 @@ type Props = {
 export default function WeekViewTable({ dayColWidth }: Props) {
   // Generate time slots with 15-minute intervals
   const timeSlots: dayjs.Dayjs[] = [];
-  let startTime = dayjs().startOf("day");
-  const endTime = dayjs(startTime).add(1, "day").startOf("day");
+  let startTime = dayjs.utc().startOf("day");
+  const endTime = dayjs.utc(startTime).add(1, "day").startOf("day");
   //   console.log("endTime:", endTime.format("HH:mm"));
 
   // Loop through 15-minute intervals and generate time slots

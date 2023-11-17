@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Box from "@mui/material/Box";
@@ -17,6 +18,9 @@ import WorkIcon from "@mui/icons-material/Work";
 import { useCoverageStore } from "../../stores/coverageStore";
 import { ShiftDemandT } from "./types";
 import { ShiftIdNameT } from "../Schedule/types";
+import { WeekDays } from "../../utils/constants";
+
+dayjs.extend(utc);
 
 interface Props {
   shiftDemand: ShiftDemandT;
@@ -30,21 +34,12 @@ export default function ShiftDemandPanel({
   handleClose,
 }: Props) {
   const timeSlots: dayjs.Dayjs[] = [];
-  let startTime = dayjs().startOf("day");
-  const endTime = dayjs(startTime).endOf("day");
+  let startTime = dayjs.utc().startOf("day");
+  const endTime = dayjs.utc(startTime).endOf("day");
   while (startTime.isBefore(endTime) || startTime.isSame(endTime)) {
     timeSlots.push(startTime);
     startTime = startTime.add(15, "minute");
   }
-  const weekDays = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
 
   const [SDState, setSDState] = useState<ShiftDemandT>(shiftDemand);
   const [quantityState, setQuantityState] = useState<number | "">(
@@ -102,7 +97,7 @@ export default function ShiftDemandPanel({
 
   const selectWeekDay = () => {
     return (
-      <Box sx={{ marginLeft: 1, marginRight: 2, width: 150 }}>
+      <Box sx={{ marginLeft: 1, marginRight: 1, width: 150 }}>
         <FormControl fullWidth>
           <Select
             value={SDState.dayIndex}
@@ -114,7 +109,7 @@ export default function ShiftDemandPanel({
               })
             }
           >
-            {weekDays.map((weekDay, index) => (
+            {WeekDays.map((weekDay, index) => (
               <MenuItem key={index} value={index}>
                 {weekDay}
               </MenuItem>
@@ -127,7 +122,7 @@ export default function ShiftDemandPanel({
 
   const selectStartTime = () => {
     return (
-      <Box sx={{ marginLeft: 1, marginRight: 1, width: 100 }}>
+      <Box sx={{ marginLeft: 1, marginRight: 0.5, width: 100 }}>
         <FormControl fullWidth>
           <Select
             value={SDState.startTime.valueOf()}
@@ -135,7 +130,7 @@ export default function ShiftDemandPanel({
             onChange={(e) =>
               setSDState({
                 ...SDState,
-                startTime: dayjs(e.target.value),
+                startTime: dayjs.utc(e.target.value),
               })
             }
           >
@@ -151,7 +146,7 @@ export default function ShiftDemandPanel({
   };
   const selectEndTime = () => {
     return (
-      <Box sx={{ marginLeft: 1, marginRight: 2, width: 100 }}>
+      <Box sx={{ marginLeft: 0.5, marginRight: 2, width: 100 }}>
         <FormControl fullWidth>
           <Select
             value={SDState.startTime.add(SDState.duration, "minute").valueOf()}
@@ -159,10 +154,9 @@ export default function ShiftDemandPanel({
             onChange={(e) =>
               setSDState({
                 ...SDState,
-                duration: dayjs(e.target.value).diff(
-                  SDState.startTime,
-                  "minute"
-                ),
+                duration: dayjs
+                  .utc(e.target.value)
+                  .diff(SDState.startTime, "minute"),
               })
             }
           >

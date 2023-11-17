@@ -1,7 +1,10 @@
 // coverageStore.ts
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
 import { CoverageT, ShiftDemandT } from "../components/Coverage/types";
+
+dayjs.extend(utc);
 
 // const baseApiUrl = "http://localhost:5000";
 const baseApiUrl = "http://127.0.0.1:5000";
@@ -23,7 +26,7 @@ type CoverageStateT = {
 const toShiftDemandT = (data: any): ShiftDemandT => {
   return {
     ...data,
-    startTime: dayjs(data.startTime),
+    startTime: dayjs.utc(data.startTime),
   };
 };
 
@@ -38,8 +41,6 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
         ...coverage,
         shiftDemands: coverage.shiftDemands.map(toShiftDemandT),
       }));
-      console.log("coverages", coverages);
-
       set({ coverages });
     } catch (error) {
       console.error("Failed to fetch coverages:", error);

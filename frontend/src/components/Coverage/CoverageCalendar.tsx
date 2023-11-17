@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef, use } from "react";
-import dayjs from "dayjs";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 
 import WeekViewTable from "./WeekViewTable";
 import CoveragesOverlay from "./CoveragesOverlay";
@@ -12,12 +11,14 @@ import {
   CovBorderThick,
 } from "../../utils/constants";
 import { ShiftDemandT, ColOverlayT, SDOverlayT } from "./types";
+import { ShiftIdNameT } from "../Schedule/types";
 
 interface Props {
   shiftDemands: ShiftDemandT[];
+  shifts: ShiftIdNameT[];
 }
 
-export default function CoverageCalendar({ shiftDemands }: Props) {
+export default function CoverageCalendar({ shiftDemands, shifts }: Props) {
   const tableRef = useRef<HTMLTableElement>(null);
   const [dayColWidth, setDayColWidth] = useState<number>(100);
   const [colOverlays, setColOverlays] = useState<ColOverlayT[]>([]);
@@ -55,7 +56,6 @@ export default function CoverageCalendar({ shiftDemands }: Props) {
         };
       }),
     ];
-    console.log("colOverlays:", colOverlays);
 
     setColOverlays(colOverlays);
   }, [dayColWidth, SDOverlays]);
@@ -108,11 +108,7 @@ export default function CoverageCalendar({ shiftDemands }: Props) {
           newSDOverlays[j].widthIndex = j - i;
           j++;
         }
-        console.log("newSDOverlays:", newSDOverlays);
-
         for (let k = i; k <= j && k < newSDOverlays.length; k++) {
-          console.log("k:", k);
-
           newSDOverlays[k].widthDivisor = j - i;
         }
         i = j;
@@ -166,7 +162,7 @@ export default function CoverageCalendar({ shiftDemands }: Props) {
   return (
     <div style={{ position: "relative", width: "100%" }} ref={tableRef}>
       <WeekViewTable dayColWidth={dayColWidth} />
-      <CoveragesOverlay colOverlays={colOverlays} />
+      <CoveragesOverlay colOverlays={colOverlays} shifts={shifts} />
     </div>
   );
 }

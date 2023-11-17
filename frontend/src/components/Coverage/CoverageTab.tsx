@@ -5,7 +5,6 @@ import Typography from "@mui/material/Typography";
 
 import CoverageCalendar from "./CoverageCalendar";
 import CoverageOptions from "./CoverageOptions";
-import ParentComponent from "./TestParent";
 
 import { CoverageT } from "./types";
 import { ShiftIdNameT } from "../Schedule/types";
@@ -64,7 +63,6 @@ export default function CoverageTab({ shifts }: Props) {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
-      {/* <ParentComponent /> */}
       <Typography variant="h4" align="left">
         Coverage
       </Typography>
@@ -84,10 +82,11 @@ export default function CoverageTab({ shifts }: Props) {
           shiftDemands={
             selectedCoverage
               ? coverages.find(
-                  (coverage) => (coverage.id = selectedCoverage.id)
+                  (coverage) => coverage.id === selectedCoverage.id
                 )?.shiftDemands || []
               : []
           }
+          shifts={shifts}
         />
       </Box>
     </Box>
