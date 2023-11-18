@@ -16,6 +16,7 @@ from services.schedule_services.core_to_engine import core_to_engine_inputs
 from services.schedule_services.engine_to_core import engine_to_core_outputs
 from services.schedule_services.inputs_processing import build_no_coverage_date
 from services.schedule_services.outputs_processing import update_far_status
+from services.schedule_services.build_stats import build_stats
 
 
 # pylint: disable=too-many-locals
@@ -33,7 +34,9 @@ def create_schedule(
             shift_demands.append(None)
             continue
         shift_demands.append(
-            shift_demand_db.get_shift_demands_by_coverage_selector(coverage_selector)
+            shift_demand_db.get_shift_demands_by_coverage_selector(
+                coverage_selector
+            )
         )
     fixed_assignments = fixed_assignment_db.get_fixed_assignments()
     requests = request_db.get_requests()
@@ -59,4 +62,11 @@ def create_schedule(
     )
     schedule.comments.missing_coverage_dates = no_cov_date
     update_far_status(schedule, assignments)
+    build_stats(
+        workers,
+        schedule_options.start_date,
+        schedule_options.end_date,
+        shifts,
+        assignments,
+    )
     return schedule, assignments
