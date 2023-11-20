@@ -68,10 +68,6 @@ export default function StatsTable({ stats, workers, shifts }: Props) {
   const { clusters, headers } = buildHeaders();
   const rows: StatT[][] = Object.values(groupByWorkerId(stats));
 
-  console.log("clusters", clusters);
-  console.log("headers", headers);
-  console.log("rows", rows);
-
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
