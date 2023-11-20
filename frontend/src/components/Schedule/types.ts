@@ -1,5 +1,7 @@
 import dayjs from "dayjs";
 
+// Types for store
+
 export type AssignmentT = {
   id: string;
   workerId: string;
@@ -22,6 +24,13 @@ export type CommentsT = {
   missingCoverageDates: dayjs.Dayjs[];
 };
 
+export type StatT = {
+  workerId: string;
+  name: string;
+  cluster: string;
+  value: number;
+};
+
 export type ScheduleT = {
   id: string;
   startDate: dayjs.Dayjs;
@@ -29,7 +38,10 @@ export type ScheduleT = {
   status: string;
   assignments: AssignmentT[];
   comments: CommentsT;
+  stats: StatT[];
 };
+
+// Types for components
 
 export type ShiftIdNameT = {
   id: string;
@@ -60,4 +72,11 @@ export type CellT = {
 export type ScheduleOptionsT = {
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
+};
+
+export type ColumnStatsT = {
+  name: string;
+  label: string;
+  columnSpan: number;
+  cluster: string;
 };

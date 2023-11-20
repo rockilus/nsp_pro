@@ -72,6 +72,7 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       constraintBreaches: [],
       missingCoverageDates: [],
     } as CommentsT,
+    stats: [],
   },
 
   fetchSchedule: async () => {
