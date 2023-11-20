@@ -30,6 +30,14 @@ class Comments:
 
 
 @dataclass
+class Stat:
+    worker_id: str
+    name: str
+    cluster: str
+    value: int
+
+
+@dataclass
 class Schedule:
     id: str
     start_date: date
@@ -42,11 +50,6 @@ class Schedule:
 class ScheduleOptions:
     start_date: date
     end_date: date
-
-
-@dataclass
-class Stats:
-    number: int
 
 
 # @dataclass

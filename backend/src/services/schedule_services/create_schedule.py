@@ -1,7 +1,7 @@
 from typing import List, Tuple, Union
 
 from core.coverage import ShiftDemand
-from core.schedule import Assignment, Schedule, ScheduleOptions
+from core.schedule import Assignment, Schedule, ScheduleOptions, Stat
 from engine import Engine
 from scripts.setup_database import (
     constraint_db,
@@ -12,17 +12,17 @@ from scripts.setup_database import (
     shift_demand_db,
     worker_db,
 )
+from services.schedule_services.build_stats import BuildStats
 from services.schedule_services.core_to_engine import core_to_engine_inputs
 from services.schedule_services.engine_to_core import engine_to_core_outputs
 from services.schedule_services.inputs_processing import build_no_coverage_date
 from services.schedule_services.outputs_processing import update_far_status
-from services.schedule_services.build_stats import build_stats
 
 
 # pylint: disable=too-many-locals
 def create_schedule(
     schedule_options: ScheduleOptions,
-) -> Tuple[Schedule, List[Assignment]]:
+) -> Tuple[Schedule, List[Assignment], List[Stat]]:
     workers = worker_db.get_workers()
     shifts = shift_db.get_shifts()
     coverage_selectors = coverage_selector_db.get_coverage_selector_by_dates(
@@ -34,9 +34,7 @@ def create_schedule(
             shift_demands.append(None)
             continue
         shift_demands.append(
-            shift_demand_db.get_shift_demands_by_coverage_selector(
-                coverage_selector
-            )
+            shift_demand_db.get_shift_demands_by_coverage_selector(coverage_selector)
         )
     fixed_assignments = fixed_assignment_db.get_fixed_assignments()
     requests = request_db.get_requests()
@@ -62,11 +60,6 @@ def create_schedule(
     )
     schedule.comments.missing_coverage_dates = no_cov_date
     update_far_status(schedule, assignments)
-    build_stats(
-        workers,
-        schedule_options.start_date,
-        schedule_options.end_date,
-        shifts,
-        assignments,
-    )
-    return schedule, assignments
+    build_stats = BuildStats(inputs, [s.id for s in shifts if s.name == "Off"])
+    stats = build_stats.build_stats(assignments)
+    return schedule, assignments, stats

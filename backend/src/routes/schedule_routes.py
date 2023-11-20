@@ -1,5 +1,4 @@
 from dataclasses import asdict
-from datetime import datetime
 from typing import List
 
 import humps
@@ -12,6 +11,7 @@ from core.schedule import (
     ConstraintBreach,
     Schedule,
     ScheduleOptions,
+    Stat,
 )
 from routes.api_model import (
     AssignmentMessage,
@@ -19,6 +19,7 @@ from routes.api_model import (
     ConstraintBreachMessage,
     ScheduleMessage,
     ScheduleOptionsMessage,
+    StatMessage,
 )
 from services import create_schedule as create_schedule_service
 
@@ -28,8 +29,8 @@ router = APIRouter()
 @router.post("/schedule", status_code=201)
 def create_schedule(req: ScheduleOptionsMessage) -> ScheduleMessage:
     so_data = api_msg_to_schedule_options(req)
-    schedule, assignments = create_schedule_service(so_data)
-    return schedule_and_assignments_to_api_msg(schedule, assignments)
+    schedule, assignments, stats = create_schedule_service(so_data)
+    return schedule_and_assignments_to_api_msg(schedule, assignments, stats)
 
 
 # @router.get("/schedule")
@@ -97,12 +98,20 @@ def assignment_to_api_msg(assignment: Assignment) -> AssignmentMessage:
     return validator.validate_python(as_dict)
 
 
+def stat_to_api_msg(stat: Stat) -> StatMessage:
+    data = asdict(stat)
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(StatMessage)
+    return validator.validate_python(as_dict)
+
+
 def schedule_and_assignments_to_api_msg(
-    schedule: Schedule, assignments: List[Assignment]
+    schedule: Schedule, assignments: List[Assignment], stats: List[Stat]
 ) -> ScheduleMessage:
     data = asdict(schedule)
     data["assignments"] = [assignment_to_api_msg(a) for a in assignments]
     data["comments"] = comments_to_api_msg(schedule.comments)
+    data["stats"] = [stat_to_api_msg(s) for s in stats]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ScheduleMessage)
     return validator.validate_python(as_dict)
@@ -119,10 +128,10 @@ def api_msg_to_schedule_options(
     msg: ScheduleOptionsMessage,
 ) -> ScheduleOptions:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["start_date"] = datetime.combine(
-        data_snake["start_date"], datetime.min.time()
-    )
-    data_snake["end_date"] = datetime.combine(
-        data_snake["end_date"], datetime.min.time()
-    )
+    # data_snake["start_date"] = datetime.combine(
+    #     data_snake["start_date"], datetime.min.time()
+    # ).date()
+    # data_snake["end_date"] = datetime.combine(
+    #     data_snake["end_date"], datetime.min.time()
+    # ).date()
     return ScheduleOptions(**data_snake)
