@@ -98,6 +98,13 @@ class CommentsMessage(BaseModel):
     missingCoverageDates: List[date]
 
 
+class StatMessage(BaseModel):
+    workerId: str
+    name: str
+    cluster: str
+    value: int
+
+
 class ScheduleMessage(BaseModel):
     id: str
     startDate: date
@@ -105,6 +112,7 @@ class ScheduleMessage(BaseModel):
     status: str
     assignments: List[AssignmentMessage]
     comments: CommentsMessage
+    stats: List[StatMessage]
 
 
 # Fixed Assignement

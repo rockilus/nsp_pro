@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 import ScheduleConfig from "./ScheduleConfig";
 import ConstraintBreachList from "./ConstraintBreachList";
 import ScheduleOptions from "./ScheduleOptions";
+import StatsTable from "./StatsTable";
 import { useScheduleStore } from "../../stores/scheduleStore";
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
 import { useRequestStore } from "../../stores/requestStore";
@@ -84,6 +85,13 @@ export default function ScheduleTab({ workers, shifts }: Props) {
           removeCBsDisplayed={removeCBsDisplayed}
         />
       </Box>
+      {schedule.stats && (
+        <StatsTable
+          stats={schedule.stats ? schedule.stats : []}
+          workers={workers}
+          shifts={shifts}
+        />
+      )}
     </Box>
   );
 }

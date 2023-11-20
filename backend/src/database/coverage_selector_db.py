@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import List
 
 from bson import ObjectId
@@ -86,11 +86,9 @@ def to_mongo_coverage_selector(
 def _from_mongo_coverage_selector(
     doc_obj: CoverageSelectorDocument,
 ) -> CoverageSelector:
-    start_date_datetime = datetime.combine(doc_obj.start_date, datetime.min.time())
-    end_date_datetime = datetime.combine(doc_obj.end_date, datetime.min.time())
     return CoverageSelector(
         id=doc_obj.id,
-        start_date=start_date_datetime,
-        end_date=end_date_datetime,
+        start_date=doc_obj.start_date.date(),
+        end_date=doc_obj.end_date.date(),
         coverage_id=str(doc_obj.coverage.id) if doc_obj.coverage else "",
     )
