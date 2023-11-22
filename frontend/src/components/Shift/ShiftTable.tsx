@@ -39,7 +39,6 @@ export default function WorkerShiftTable({
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
-  console.log("bodyEditing", bodyEditing);
 
   return (
     <>
