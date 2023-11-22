@@ -24,3 +24,13 @@ export type ShiftT = {
   color: string;
   shiftProperties: ShiftPropertyT[];
 };
+
+export type ShiftDefaultT = {
+  id: string;
+  name: string;
+  startTime: dayjs.Dayjs;
+  endTime: dayjs.Dayjs;
+  isTimeOff: boolean;
+  staffing: number;
+  color: string;
+};

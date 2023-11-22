@@ -1,20 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
-import FormGroup from "@mui/material/FormGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
 import Typography from "@mui/material/Typography";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import CoverageList from "./CoverageList";
-import ShiftDemandButton from "./ShiftDemandButton";
 import { CoverageT } from "./types";
 import { ShiftIdNameT } from "../Schedule/types";
 
@@ -65,23 +59,6 @@ export default function CoverageOptions({
         minWidth: 200,
       }}
     >
-      <ShiftDemandButton
-        buttonElement={newSDButton()}
-        shiftDemand={{
-          id: "",
-          dayIndex: dayjs.utc().day() - 1,
-          shiftId: "",
-          quantity: 0,
-          startTime: dayjs
-            .utc()
-            .startOf("hour")
-            .add(Math.ceil(dayjs.utc().minute() / 15) * 15, "minute"),
-          duration: 60,
-          coverageId: selectedCoverage?.id || "",
-        }}
-        shifts={shifts}
-      />
-      <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
       <Typography variant="subtitle1" align="left">
         Coverages
       </Typography>

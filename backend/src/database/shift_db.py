@@ -22,7 +22,7 @@ class ShiftDB:
             end_time=ShiftDB.round_time(datetime.now()),
             is_time_off=False,
             staffing=1,
-            color="red",
+            color="grey",
         )
         shift_saved = shift.save()
         return _from_mongo_shift(shift_saved)

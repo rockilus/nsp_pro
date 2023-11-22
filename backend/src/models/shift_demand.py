@@ -1,5 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import DateTimeField, IntField, ReferenceField, StringField
+from mongoengine.fields import IntField, ReferenceField, StringField
 
 
 class ShiftDemand(Document):
@@ -8,7 +8,4 @@ class ShiftDemand(Document):
     id = StringField(primary_key=True, required=True)
     day_index = IntField(min_value=0, max_value=6, required=True)
     shift = ReferenceField("Shift", required=True)
-    quantity = IntField(required=True)
-    start_time = DateTimeField(required=True)
-    duration = IntField(required=True)
     coverage = ReferenceField("Coverage", required=True)

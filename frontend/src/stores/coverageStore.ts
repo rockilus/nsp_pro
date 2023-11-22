@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
 import { CoverageT, ShiftDemandT } from "../components/Coverage/types";
+import { ShiftDefaultT } from "../components/Shift/types";
 
 dayjs.extend(utc);
 
@@ -23,10 +24,11 @@ type CoverageStateT = {
   deleteShiftDemand: (coverageId: string, id: string) => void;
 };
 
-const toShiftDemandT = (data: any): ShiftDemandT => {
+const toShiftDefaultT = (data: any): ShiftDefaultT => {
   return {
     ...data,
     startTime: dayjs.utc(data.startTime),
+    endTime: dayjs.utc(data.endTime),
   };
 };
 
@@ -37,9 +39,12 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
     try {
       const response = await fetch(apiUrlCoverages); // Adjust API endpoint as needed
       const data = await response.json();
-      const coverages: CoverageT[] = data.map((coverage: any) => ({
+      const coverages: CoverageT[] = data.map((coverage: CoverageT) => ({
         ...coverage,
-        shiftDemands: coverage.shiftDemands.map(toShiftDemandT),
+        shiftDemands: coverage.shiftDemands.map((shiftDemand) => ({
+          ...shiftDemand,
+          shift: toShiftDefaultT(shiftDemand.shift),
+        })),
       }));
       set({ coverages });
     } catch (error) {
@@ -59,7 +64,10 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
       const data = await response.json();
       const newCoverage: CoverageT = {
         ...data,
-        shiftDemands: coverage.shiftDemands.map(toShiftDemandT),
+        shiftDemands: data.shiftDemands.map((shiftDemand: ShiftDemandT) => ({
+          ...shiftDemand,
+          shift: toShiftDefaultT(shiftDemand.shift),
+        })),
       };
       set((state) => ({ coverages: [...state.coverages, newCoverage] }));
       return newCoverage;
@@ -81,7 +89,10 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
         }
       );
       const data = await response.json();
-      const newShiftDemand: ShiftDemandT = toShiftDemandT(data);
+      const newShiftDemand: ShiftDemandT = {
+        ...data,
+        shift: toShiftDefaultT(data.shift),
+      };
       set((state) => ({
         coverages: state.coverages.map((coverage) =>
           coverage.id === newShiftDemand.coverageId
@@ -109,7 +120,10 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
       const data = await response.json();
       const newCoverage: CoverageT = {
         ...data,
-        shiftDemands: data.shiftDemands.map(toShiftDemandT),
+        shiftDemands: data.shiftDemands.map((shiftDemand: ShiftDemandT) => ({
+          ...shiftDemand,
+          shift: toShiftDefaultT(shiftDemand.shift),
+        })),
       };
       set((state) => ({
         coverages: state.coverages.map((c) =>
@@ -134,7 +148,10 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
         }
       );
       const data = await response.json();
-      const newShiftDemand: ShiftDemandT = toShiftDemandT(data);
+      const newShiftDemand: ShiftDemandT = {
+        ...data,
+        shift: toShiftDefaultT(data.shift),
+      };
       set((state) => ({
         coverages: state.coverages.map((coverage) =>
           coverage.id === newShiftDemand.coverageId

@@ -9,6 +9,8 @@ export const WeekDays = [
   "Saturday",
   "Sunday",
 ];
+export const NumHoursInDay = 24;
+export const NumQuarterHoursInHour = 4;
 
 // Shifts
 export const DefaultShiftFields = [
@@ -20,12 +22,14 @@ export const DefaultShiftFields = [
   "Is time off",
 ];
 export const ShiftColors = [
-  "#FF0000",
-  "#00FF00",
-  "#0000FF",
-  "#FFFF00",
-  "#FF00FF",
-  "#00FFFF",
+  "#0030C6",
+  "#C60093",
+  "#C69500",
+  "#00C632",
+  "#5000AB",
+  "#AB0005",
+  "#5BAB00",
+  "#00ABA6",
 ];
 
 //Coverages
