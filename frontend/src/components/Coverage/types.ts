@@ -1,12 +1,9 @@
-import dayjs from "dayjs";
+import { ShiftDefaultT } from "../Shift/types";
 
 export type ShiftDemandT = {
   id: string;
   dayIndex: number; // from 0 to 6
-  shiftId: string;
-  quantity: number;
-  startTime: dayjs.Dayjs;
-  duration: number; // in minutes
+  shift: ShiftDefaultT;
   coverageId: string;
 };
 

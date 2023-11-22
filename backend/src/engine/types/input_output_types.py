@@ -19,7 +19,7 @@ class ShiftDemand:
     date: date
     shift_id: str
     quantity: int
-    duration: int
+    duration: int  # in minutes
 
 
 @dataclass

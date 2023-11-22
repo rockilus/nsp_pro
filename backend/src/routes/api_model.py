@@ -4,14 +4,47 @@ from typing import List, Tuple, Union
 from pydantic import BaseModel
 
 
+# Shift
+class ShiftPropertyMessage(BaseModel):
+    id: str
+    value: str
+    shiftDimensionId: str
+    shiftId: str
+
+
+class ShiftMessage(BaseModel):
+    id: str
+    name: str
+    startTime: datetime
+    endTime: datetime
+    isTimeOff: bool
+    staffing: int
+    color: str
+    shiftProperties: List[ShiftPropertyMessage]
+
+
+class ShiftDefaultMessage(BaseModel):
+    id: str
+    name: str
+    startTime: datetime
+    endTime: datetime
+    isTimeOff: bool
+    staffing: int
+    color: str
+
+
+class ShiftDimensionMessage(BaseModel):
+    id: str
+    name: str
+    entryType: str
+    entryOptions: List[str]
+
+
 # Coverage
 class ShiftDemandMessage(BaseModel):
     id: str
     dayIndex: int
-    shiftId: str
-    quantity: int
-    startTime: datetime
-    duration: int
+    shift: ShiftDefaultMessage
     coverageId: str
 
 
@@ -48,32 +81,6 @@ class WorkerMessage(BaseModel):
 
 
 class WorkerDimensionMessage(BaseModel):
-    id: str
-    name: str
-    entryType: str
-    entryOptions: List[str]
-
-
-# Shift
-class ShiftPropertyMessage(BaseModel):
-    id: str
-    value: str
-    shiftDimensionId: str
-    shiftId: str
-
-
-class ShiftMessage(BaseModel):
-    id: str
-    name: str
-    startTime: datetime
-    endTime: datetime
-    isTimeOff: bool
-    staffing: int
-    color: str
-    shiftProperties: List[ShiftPropertyMessage]
-
-
-class ShiftDimensionMessage(BaseModel):
     id: str
     name: str
     entryType: str

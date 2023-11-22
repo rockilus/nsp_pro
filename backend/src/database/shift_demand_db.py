@@ -1,4 +1,3 @@
-from datetime import datetime, time
 from typing import List
 
 from bson import ObjectId
@@ -22,18 +21,12 @@ class ShiftDemandDB:
         self,
         day_index: int,
         shift: Shift,
-        quantity: int,
-        start_time: time,
-        duration: int,
         coverage: Coverage,
     ) -> ShiftDemand:
         shift_demand = ShiftDemandDocument(
             id=str(ObjectId()),
             day_index=day_index,
             shift=to_mongo_shift(shift),
-            quantity=quantity,
-            start_time=datetime.combine(datetime.today(), start_time),
-            duration=duration,
             coverage=to_mongo_coverage(coverage),
         )
         shift_demand_saved = shift_demand.save()
@@ -102,9 +95,6 @@ def _to_mongo_shift_demand(dataclass_obj: ShiftDemand) -> ShiftDemandDocument:
         id=dataclass_obj.id,
         day_index=dataclass_obj.day_index,
         shift=shift,
-        quantity=dataclass_obj.quantity,
-        start_time=datetime.combine(datetime.now().date(), dataclass_obj.start_time),
-        duration=dataclass_obj.duration,
         coverage=coverage,
     )
 
@@ -114,8 +104,5 @@ def _from_mongo_shift_demand(doc_obj: ShiftDemandDocument) -> ShiftDemand:
         id=doc_obj.id,
         day_index=doc_obj.day_index,
         shift_id=doc_obj.shift.id,
-        quantity=doc_obj.quantity,
-        start_time=doc_obj.start_time.time(),
-        duration=doc_obj.duration,
         coverage_id=doc_obj.coverage.id,
     )

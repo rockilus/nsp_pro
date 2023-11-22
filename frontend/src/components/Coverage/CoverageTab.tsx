@@ -7,11 +7,11 @@ import CoverageCalendar from "./CoverageCalendar";
 import CoverageOptions from "./CoverageOptions";
 
 import { CoverageT } from "./types";
-import { ShiftIdNameT } from "../Schedule/types";
+import { ShiftDefaultT } from "../Shift/types";
 import { useCoverageStore } from "../../stores/coverageStore";
 
 type Props = {
-  shifts: ShiftIdNameT[];
+  shifts: ShiftDefaultT[];
 };
 
 export default function CoverageTab({ shifts }: Props) {
@@ -79,6 +79,7 @@ export default function CoverageTab({ shifts }: Props) {
           handleDeleteCoverage={handleDeleteCoverage}
         />
         <CoverageCalendar
+          coverageId={selectedCoverage?.id || ""}
           shiftDemands={
             selectedCoverage
               ? coverages.find(

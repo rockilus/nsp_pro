@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date, time
+from datetime import date
 
 
 @dataclass
@@ -7,9 +7,6 @@ class ShiftDemand:
     id: str
     day_index: int
     shift_id: str
-    quantity: int
-    start_time: time
-    duration: int
     coverage_id: str
 
     def __post_init__(self):

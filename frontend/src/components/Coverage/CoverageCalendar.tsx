@@ -11,30 +11,25 @@ import {
   CovBorderThick,
 } from "../../utils/constants";
 import { ShiftDemandT, ColOverlayT, SDOverlayT } from "./types";
-import { ShiftIdNameT } from "../Schedule/types";
+import { ShiftDefaultT } from "../Shift/types";
 
 interface Props {
+  coverageId: string;
   shiftDemands: ShiftDemandT[];
-  shifts: ShiftIdNameT[];
+  shifts: ShiftDefaultT[];
 }
 
-export default function CoverageCalendar({ shiftDemands, shifts }: Props) {
+export default function CoverageCalendar({
+  coverageId,
+  shiftDemands,
+  shifts,
+}: Props) {
   const tableRef = useRef<HTMLTableElement>(null);
   const [dayColWidth, setDayColWidth] = useState<number>(100);
   const [colOverlays, setColOverlays] = useState<ColOverlayT[]>([]);
   const [SDOverlays, setSDOverlays] = useState<SDOverlayT[][]>([]);
 
   const buildColOverlays = useCallback(() => {
-    const colors = [
-      "red",
-      "orange",
-      "yellow",
-      "green",
-      "blue",
-      "purple",
-      "pink",
-      "brown",
-    ];
     const colOverlays: ColOverlayT[] = [
       {
         left: 0,
@@ -62,14 +57,17 @@ export default function CoverageCalendar({ shiftDemands, shifts }: Props) {
 
   const convertToSDOverlay = useCallback(
     (shiftDemand: ShiftDemandT): SDOverlayT => {
-      const startOfDay = shiftDemand.startTime.startOf("day");
-      const minutesDifference = shiftDemand.startTime.diff(
+      const startOfDay = shiftDemand.shift.startTime.startOf("day");
+      const minutesDifference = shiftDemand.shift.startTime.diff(
         startOfDay,
         "minute"
       );
       const intervalsQuarter = Math.floor(minutesDifference / 15);
       const intervalsHour = Math.floor(minutesDifference / 60);
-      const durationHour = Math.floor(shiftDemand.duration / 60);
+      const durationHour = Math.floor(
+        shiftDemand.shift.endTime.diff(shiftDemand.shift.startTime, "minute") /
+          60
+      );
       return {
         top:
           CovHeadRowHeight +
@@ -77,8 +75,14 @@ export default function CoverageCalendar({ shiftDemands, shifts }: Props) {
           CovBorderThick * (intervalsHour + 1),
         left: 0,
         height:
-          Math.floor(shiftDemand.duration / 15) * CovBodyRowHeight +
-          (shiftDemand.startTime.minute() === 0 && durationHour >= 1
+          Math.floor(
+            shiftDemand.shift.endTime.diff(
+              shiftDemand.shift.startTime,
+              "minute"
+            ) / 15
+          ) *
+            CovBodyRowHeight +
+          (shiftDemand.shift.startTime.minute() === 0 && durationHour >= 1
             ? durationHour - 1
             : durationHour) *
             CovBorderThick,
@@ -96,14 +100,11 @@ export default function CoverageCalendar({ shiftDemands, shifts }: Props) {
     (SDOverlays: SDOverlayT[]): SDOverlayT[] => {
       const newSDOverlays = [...SDOverlays];
       for (let i = 0; i < newSDOverlays.length; i++) {
-        const endTime = SDOverlays[i].shiftDemand.startTime.add(
-          SDOverlays[i].shiftDemand.duration,
-          "minute"
-        );
+        const endTime = SDOverlays[i].shiftDemand.shift.endTime;
         let j = i + 1;
         while (
           j < newSDOverlays.length &&
-          endTime.isAfter(SDOverlays[j].shiftDemand.startTime)
+          endTime.isAfter(SDOverlays[j].shiftDemand.shift.startTime)
         ) {
           newSDOverlays[j].widthIndex = j - i;
           j++;
@@ -122,7 +123,7 @@ export default function CoverageCalendar({ shiftDemands, shifts }: Props) {
     const SDOverlays: SDOverlayT[][] = WeekDays.map((day, index) => {
       return shiftDemands
         .filter((shiftDemand) => shiftDemand.dayIndex === index)
-        .sort((a, b) => (a.startTime.isAfter(b.startTime) ? 1 : -1))
+        .sort((a, b) => (a.shift.startTime.isAfter(b.shift.startTime) ? 1 : -1))
         .map((shiftDemand) => convertToSDOverlay(shiftDemand));
     });
     const SDOverlaysAdj: SDOverlayT[][] = SDOverlays.map((SDOs) => {
@@ -162,7 +163,11 @@ export default function CoverageCalendar({ shiftDemands, shifts }: Props) {
   return (
     <div style={{ position: "relative", width: "100%" }} ref={tableRef}>
       <WeekViewTable dayColWidth={dayColWidth} />
-      <CoveragesOverlay colOverlays={colOverlays} shifts={shifts} />
+      <CoveragesOverlay
+        coverageId={coverageId}
+        colOverlays={colOverlays}
+        shifts={shifts}
+      />
     </div>
   );
 }

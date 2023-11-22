@@ -11,6 +11,7 @@ import CoverageSelectorConfig from "../components/CoverageSelector/CoverageSelec
 import FARConfig from "../components/FixedAssignmentRequest/FARConfig";
 
 import { ShiftT } from "../components/Coverage/types";
+import { ShiftDefaultT } from "../components/Shift/types";
 import { ShiftIdNameT, WorkerIdNameT } from "../components/Schedule/types";
 import { useShiftStore } from "../stores/shiftStore";
 import { useWorkerStore } from "../stores/workerStore";
@@ -19,11 +20,16 @@ export default function Draft() {
   const shifts = useShiftStore((state) => state.shifts);
   const workers = useWorkerStore((state) => state.workers);
 
-  const shiftsForCoverage = shifts
+  const shiftDefaults = shifts
     ? shifts.map((s) => {
-        const shift: ShiftT = {
+        const shift: ShiftDefaultT = {
           id: s.id,
           name: s.name,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          isTimeOff: s.isTimeOff,
+          staffing: s.staffing,
+          color: s.color,
         };
         return shift;
       })
@@ -54,7 +60,7 @@ export default function Draft() {
       <ConstraintConfig workers={workers} shifts={shifts} />
       <WorkerConfig />
       <ShiftConfig />
-      <CoverageTab shifts={shiftsIdName} />
+      <CoverageTab shifts={shiftDefaults} />
       <CoverageSelectorConfig />
       <FARConfig workers={workersIdName} shifts={shiftsIdName} />
       <ScheduleTab workers={workersIdName} shifts={shiftsIdName} />

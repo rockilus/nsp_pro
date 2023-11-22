@@ -47,7 +47,7 @@ def core_to_engine_inputs(
         variable_space=variable_space,
         coverage=CoverageEngine(
             _build_shift_demands(
-                coverage_selectors, shift_demands, start_date, end_date
+                coverage_selectors, shift_demands, shifts, start_date, end_date
             )
         ),
         requests=r_engine,
@@ -60,6 +60,7 @@ def core_to_engine_inputs(
 def _build_shift_demands(
     coverage_selectors: List[CoverageSelector],
     shift_demands: List[Union[List[ShiftDemand], None]],
+    shifts: List[Shift],
     start_date: date,
     end_date: date,
 ) -> List[ShiftDemandEngine]:
@@ -73,14 +74,19 @@ def _build_shift_demands(
             cov_date = max(cs.start_date, start_date) + timedelta(days=day)
             for sd in sds:
                 if sd.day_index == cov_date.weekday():
-                    sd_engine.append(
-                        ShiftDemandEngine(
-                            date=cov_date,
-                            shift_id=sd.shift_id,
-                            quantity=sd.quantity,
-                            duration=sd.duration,
+                    shift = next((s for s in shifts if s.id == sd.shift_id), None)
+                    if shift is not None:
+                        sd_engine.append(
+                            ShiftDemandEngine(
+                                date=cov_date,
+                                shift_id=sd.shift_id,
+                                quantity=shift.staffing,
+                                duration=int(
+                                    (shift.end_time - shift.start_time).total_seconds()
+                                    // 60
+                                ),
+                            )
                         )
-                    )
     return sd_engine
 
 

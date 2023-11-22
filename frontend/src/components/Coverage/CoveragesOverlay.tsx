@@ -1,15 +1,29 @@
 import React from "react";
 
 import CoverageEvent from "./CoverageEvent";
+import ShiftDemandButton from "./ShiftDemandButton";
 import { ColOverlayT } from "./types";
-import { ShiftIdNameT } from "../Schedule/types";
+import { ShiftDefaultT } from "../Shift/types";
+import {
+  CovHeadRowHeight,
+  CovBorderThick,
+  CovBodyRowHeight,
+  NumHoursInDay,
+  NumQuarterHoursInHour,
+} from "../../utils/constants";
+import { emptyShiftDefault } from "../../utils/emptyObjects";
 
 interface Props {
+  coverageId: string;
   colOverlays: ColOverlayT[];
-  shifts: ShiftIdNameT[];
+  shifts: ShiftDefaultT[];
 }
 
-export default function CoveragesOverlay({ colOverlays, shifts }: Props) {
+export default function CoveragesOverlay({
+  coverageId,
+  colOverlays,
+  shifts,
+}: Props) {
   return (
     <div>
       {colOverlays.map((colOverlay, colIndex) => (
@@ -22,10 +36,47 @@ export default function CoveragesOverlay({ colOverlays, shifts }: Props) {
             position: "absolute",
             top: "0px",
             left: `${colOverlay.left}px`,
-            // opacity: 0.5,
           }}
         >
           <div style={{ width: "100%", height: "100%", position: "relative" }}>
+            {colIndex !== 0 && (
+              <ShiftDemandButton
+                buttonElement={
+                  <button
+                    style={{
+                      cursor: "pointer",
+                      opacity: 0.5,
+                      backgroundColor: "transparent",
+                      border: "none",
+                      transition: "background-color 0.3s ease",
+                      width: "100%",
+                      height: `${
+                        CovBodyRowHeight *
+                          (NumHoursInDay * NumQuarterHoursInHour) +
+                        CovBorderThick * (NumHoursInDay - 1)
+                      }px`,
+                      position: "absolute",
+                      top: `${CovHeadRowHeight + CovBorderThick}px`,
+                    }}
+                    onMouseOver={(e) => {
+                      (e.target as HTMLElement).style.backgroundColor =
+                        "lightgrey";
+                    }}
+                    onMouseOut={(e) => {
+                      (e.target as HTMLElement).style.backgroundColor =
+                        "transparent";
+                    }}
+                  ></button>
+                }
+                shiftDemand={{
+                  id: "",
+                  dayIndex: colIndex - 1,
+                  shift: emptyShiftDefault,
+                  coverageId: coverageId,
+                }}
+                shifts={shifts}
+              />
+            )}
             {colOverlay.SDOverlays.map((SDOverlay, index) => (
               <CoverageEvent
                 key={`${colIndex}-${index}`}

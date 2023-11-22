@@ -6,11 +6,11 @@ import Typography from "@mui/material/Typography";
 
 import ShiftDemandButton from "./ShiftDemandButton";
 import { SDOverlayT } from "./types";
-import { ShiftIdNameT } from "../Schedule/types";
+import { ShiftDefaultT } from "../Shift/types";
 
 interface Props {
   SDOverlay: SDOverlayT;
-  shifts: ShiftIdNameT[];
+  shifts: ShiftDefaultT[];
 }
 
 export default function CoverageEvent({ SDOverlay, shifts }: Props) {
@@ -25,7 +25,7 @@ export default function CoverageEvent({ SDOverlay, shifts }: Props) {
           display: "flex",
           alignItems: "left",
           height: `${SDOverlay.height}px`,
-          bgcolor: "primary.main",
+          bgcolor: SDOverlay.shiftDemand.shift.color,
           borderRadius: "4px",
           paddingLeft: `${covEventPadL}px`,
         }}
@@ -42,7 +42,7 @@ export default function CoverageEvent({ SDOverlay, shifts }: Props) {
               marginBottom: covEventMarginB,
             }}
           >
-            {shifts.find((shift) => shift.id === SDOverlay.shiftDemand.shiftId)
+            {shifts.find((shift) => shift.id === SDOverlay.shiftDemand.shift.id)
               ?.name || "No shift"}
           </Typography>
           <Typography
@@ -57,9 +57,15 @@ export default function CoverageEvent({ SDOverlay, shifts }: Props) {
               marginBottom: covEventMarginB,
             }}
           >
-            {SDOverlay.shiftDemand.startTime.format("HH:mm")} -{" "}
-            {SDOverlay.shiftDemand.startTime
-              .add(SDOverlay.shiftDemand.duration, "minutes")
+            {SDOverlay.shiftDemand.shift.startTime.format("HH:mm")} -{" "}
+            {SDOverlay.shiftDemand.shift.startTime
+              .add(
+                SDOverlay.shiftDemand.shift.endTime.diff(
+                  SDOverlay.shiftDemand.shift.startTime,
+                  "minute"
+                ),
+                "minutes"
+              )
               .format("HH:mm")}
           </Typography>
           <Typography
@@ -72,7 +78,7 @@ export default function CoverageEvent({ SDOverlay, shifts }: Props) {
               overflow: "hidden",
             }}
           >
-            {SDOverlay.shiftDemand.quantity}
+            {SDOverlay.shiftDemand.shift.staffing}
             {" staff"}
           </Typography>
         </Stack>
