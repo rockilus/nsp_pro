@@ -65,6 +65,11 @@ class ShiftPropertyMessage(BaseModel):
 class ShiftMessage(BaseModel):
     id: str
     name: str
+    startTime: datetime
+    endTime: datetime
+    isTimeOff: bool
+    staffing: int
+    color: str
     shiftProperties: List[ShiftPropertyMessage]
 
 

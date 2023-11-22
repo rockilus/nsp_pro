@@ -1,4 +1,6 @@
 // shiftStore.ts
+import dayjs from "dayjs";
+
 import { create } from "zustand";
 import { ShiftT, ShiftPropertyT } from "../components/Shift/types";
 
@@ -14,6 +16,14 @@ type ShiftStateT = {
   deleteShift: (id: string) => void;
 };
 
+const toShiftT = (data: any): ShiftT => {
+  return {
+    ...data,
+    startTime: dayjs.utc(data.startTime),
+    endTime: dayjs.utc(data.endTime),
+  };
+};
+
 export const useShiftStore = create<ShiftStateT>()((set) => ({
   shifts: [],
 
@@ -27,7 +37,8 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
     };
     try {
       const response = await fetch(apiUrlShifts, options); // Adjust API endpoint as needed
-      const shifts: ShiftT[] = await response.json();
+      const data = await response.json();
+      const shifts: ShiftT[] = data.map((shift: any) => toShiftT(shift));
       set({ shifts });
     } catch (error) {
       console.error("Failed to fetch shifts:", error);
@@ -43,7 +54,8 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
           "Content-Type": "application/json",
         },
       });
-      const newShift: ShiftT = await response.json();
+      const data = await response.json();
+      const newShift: ShiftT = toShiftT(data);
       set((state) => ({ shifts: [...state.shifts, newShift] }));
     } catch (error) {
       console.error("Failed to add shift:", error);
@@ -59,11 +71,10 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
         },
         body: JSON.stringify(updatedShift),
       });
-      const newShift: ShiftT = await response.json();
+      const data = await response.json();
+      const newShift: ShiftT = toShiftT(data);
       set((state) => ({
-        shifts: state.shifts.map((w) =>
-          w.id === updatedShift.id ? newShift : w
-        ),
+        shifts: state.shifts.map((s) => (s.id === newShift.id ? newShift : s)),
       }));
     } catch (error) {
       console.error("Failed to update shift:", error);

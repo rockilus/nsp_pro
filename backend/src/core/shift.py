@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import List, Union
 
 
@@ -6,6 +7,11 @@ from typing import List, Union
 class Shift:
     id: str
     name: str
+    start_time: datetime
+    end_time: datetime
+    staffing: int
+    is_time_off: bool
+    color: str
 
 
 @dataclass

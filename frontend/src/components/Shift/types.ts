@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 export type ShiftDimensionT = {
   id: string;
   name: string;
@@ -15,5 +17,10 @@ export type ShiftPropertyT = {
 export type ShiftT = {
   id: string;
   name: string;
+  startTime: dayjs.Dayjs;
+  endTime: dayjs.Dayjs;
+  isTimeOff: boolean;
+  staffing: number;
+  color: string;
   shiftProperties: ShiftPropertyT[];
 };

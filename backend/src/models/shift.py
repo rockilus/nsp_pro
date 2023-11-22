@@ -1,9 +1,14 @@
 from mongoengine import Document
-from mongoengine.fields import StringField
+from mongoengine.fields import BooleanField, DateTimeField, IntField, StringField
 
 
 class Shift(Document):
     meta = {"collection": "shifts"}
 
     id = StringField(primary_key=True, required=True)
-    name = StringField()
+    name = StringField(required=True)
+    start_time = DateTimeField(required=True)
+    end_time = DateTimeField(required=True)
+    staffing = IntField(required=True)
+    is_time_off = BooleanField(required=True)
+    color = StringField(required=True)
