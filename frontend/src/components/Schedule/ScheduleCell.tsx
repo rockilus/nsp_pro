@@ -14,7 +14,7 @@ export default function ScheduleCell({
   displayCBs,
   CBsDisplayed,
 }: Props) {
-  const hardCBs = cell.constraintBreach.filter((cb) => cb.hardToSoft);
+  const hardCBs = cell.objectiveBreach.filter((cb) => cb.hardToSoft);
 
   const noCoverageColor: string = "#E0E0E0";
   const hardBreachColor: string = "#FADBD8";
@@ -29,8 +29,8 @@ export default function ScheduleCell({
       : "inherit";
   const border: string =
     displayCBs &&
-    cell.constraintBreach.length > 0 &&
-    cell.constraintBreach.some((cb) => CBsDisplayed.includes(cb.id))
+    cell.objectiveBreach.length > 0 &&
+    cell.objectiveBreach.some((cb) => CBsDisplayed.includes(cb.id))
       ? "2px solid red"
       : " 2px inherit";
 

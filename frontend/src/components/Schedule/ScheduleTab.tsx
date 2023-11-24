@@ -50,7 +50,7 @@ export default function ScheduleTab({ workers, shifts }: Props) {
 
   useEffect(() => {
     if (schedule) {
-      setCBsDisplayed(schedule.comments.constraintBreaches.map((cb) => cb.id));
+      setCBsDisplayed(schedule.objectiveBreaches.map((cb) => cb.id));
     }
   }, [schedule]);
 
@@ -77,7 +77,7 @@ export default function ScheduleTab({ workers, shifts }: Props) {
           CBsDisplayed={CBsDisplayed}
         />
         <ConstraintBreachList
-          constraintBreaches={schedule.comments.constraintBreaches}
+          objectiveBreaches={schedule.objectiveBreaches}
           CBsDisplayed={CBsDisplayed}
           workers={workers}
           shifts={shifts}

@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { VariableDeclaration } from "typescript";
 
 // Types for store
 
@@ -10,18 +11,20 @@ export type AssignmentT = {
   scheduleId: string;
 };
 
-export type ConstraintBreachT = {
-  id: string;
-  constraintId: string;
-  category: string;
-  variables: [string, dayjs.Dayjs, string][];
-  hardToSoft: boolean;
-  description: string;
+export type VariableT = {
+  workerId: string;
+  date: dayjs.Dayjs;
+  shiftId: string;
 };
 
-export type CommentsT = {
-  constraintBreaches: ConstraintBreachT[];
-  missingCoverageDates: dayjs.Dayjs[];
+export type ObjectiveBreachT = {
+  id: string;
+  objctiveId: string;
+  objectiveCategory: string;
+  variables: VariableT[];
+  hardToSoft: boolean;
+  description: string;
+  scheduleId: string;
 };
 
 export type StatT = {
@@ -35,9 +38,11 @@ export type ScheduleT = {
   id: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
+  solveStatus: string;
   status: string;
+  missingCoverageDates: dayjs.Dayjs[];
   assignments: AssignmentT[];
-  comments: CommentsT;
+  objectiveBreaches: ObjectiveBreachT[];
   stats: StatT[];
 };
 
@@ -66,7 +71,7 @@ export type CellT = {
   value: string;
   rowSpan: number;
   noCoverage: boolean;
-  constraintBreach: ConstraintBreachT[];
+  objectiveBreach: ObjectiveBreachT[];
 };
 
 export type ScheduleOptionsT = {

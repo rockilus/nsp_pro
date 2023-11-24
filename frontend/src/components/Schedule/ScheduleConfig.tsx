@@ -10,7 +10,7 @@ import {
   CellT,
   AssignmentT,
   ScheduleT,
-  ConstraintBreachT,
+  ObjectiveBreachT,
 } from "./types";
 
 interface Props {
@@ -34,12 +34,12 @@ export default function ScheduleConfig({
   const [rows, setRows] = useState<RowT[]>([]);
 
   const assignmentInConflictsWorker = useCallback(
-    (assignment: AssignmentT): ConstraintBreachT[] => {
-      return schedule.comments.constraintBreaches.filter((cb) =>
+    (assignment: AssignmentT): ObjectiveBreachT[] => {
+      return schedule.objectiveBreaches.filter((cb) =>
         cb.variables.some(
           (variable) =>
-            variable[0] === assignment.workerId &&
-            variable[1].isSame(assignment.date)
+            variable.workerId === assignment.workerId &&
+            variable.date.isSame(assignment.date)
         )
       );
     },
@@ -47,21 +47,21 @@ export default function ScheduleConfig({
   );
 
   const assignmentConflictsShift = useCallback(
-    (assignment: AssignmentT): ConstraintBreachT[] => {
-      return schedule.comments.constraintBreaches.filter(
+    (assignment: AssignmentT): ObjectiveBreachT[] => {
+      return schedule.objectiveBreaches.filter(
         (cb) =>
-          (cb.category === "constraint" &&
+          (cb.objectiveCategory === "constraint" &&
             cb.variables.some(
               (variable) =>
-                variable[0] === assignment.workerId &&
-                variable[1].isSame(assignment.date) &&
-                variable[2] === assignment.shiftId
+                variable.workerId === assignment.workerId &&
+                variable.date.isSame(assignment.date) &&
+                variable.shiftId === assignment.shiftId
             )) ||
-          (["fixed_assignment", "request"].includes(cb.category) &&
+          (["fixed_assignment", "request"].includes(cb.objectiveCategory) &&
             cb.variables.some(
               (variable) =>
-                variable[0] === assignment.workerId &&
-                variable[1].isSame(assignment.date)
+                variable.workerId === assignment.workerId &&
+                variable.date.isSame(assignment.date)
             ))
       );
     },
@@ -84,7 +84,7 @@ export default function ScheduleConfig({
         const column: ColumnT = {
           date: dayjs(currentDate),
           name: currentDate.format("ddd, MMM D"),
-          noCoverage: schedule.comments.missingCoverageDates.some((date) =>
+          noCoverage: schedule.missingCoverageDates.some((date) =>
             date.isSame(currentDate)
           ),
         };
@@ -93,7 +93,7 @@ export default function ScheduleConfig({
       }
       return columns;
     },
-    [schedule.comments.missingCoverageDates]
+    [schedule.missingCoverageDates]
   );
 
   const buildShiftRows = useCallback((): RowT[] => {
@@ -118,7 +118,7 @@ export default function ScheduleConfig({
             value: shift.name,
             rowSpan: rowSpan,
             noCoverage: false,
-            constraintBreach: [],
+            objectiveBreach: [],
           };
           row.push(newHeaderCell);
         }
@@ -132,7 +132,7 @@ export default function ScheduleConfig({
             value: workerName,
             rowSpan: 1,
             noCoverage: dateColumns[j].noCoverage,
-            constraintBreach: assignment
+            objectiveBreach: assignment
               ? assignmentConflictsShift(assignment)
               : [],
           };
@@ -159,7 +159,7 @@ export default function ScheduleConfig({
         value: worker.name,
         rowSpan: 1,
         noCoverage: false,
-        constraintBreach: [],
+        objectiveBreach: [],
       };
       row.push({
         ...newHeaderCell,
@@ -178,7 +178,7 @@ export default function ScheduleConfig({
           value: shiftName,
           rowSpan: 1,
           noCoverage: column.noCoverage,
-          constraintBreach: assignment
+          objectiveBreach: assignment
             ? assignmentInConflictsWorker(assignment)
             : [],
         };

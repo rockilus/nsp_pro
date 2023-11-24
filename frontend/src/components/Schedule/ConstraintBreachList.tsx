@@ -9,11 +9,11 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import List from "@mui/material/List";
 import Typography from "@mui/material/Typography";
 
-import ConstraintBreachItem from "./ConstraintBreachItem";
-import { ConstraintBreachT, ShiftIdNameT, WorkerIdNameT } from "./types";
+import ConstraintBreachItem from "./ObjectiveBreachItem";
+import { ObjectiveBreachT, ShiftIdNameT, WorkerIdNameT } from "./types";
 
 interface Props {
-  constraintBreaches: ConstraintBreachT[];
+  objectiveBreaches: ObjectiveBreachT[];
   CBsDisplayed: string[];
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
@@ -22,21 +22,21 @@ interface Props {
 }
 
 export default function ConstraintBreachList({
-  constraintBreaches,
+  objectiveBreaches,
   CBsDisplayed,
   workers,
   shifts,
   addCBsDisplayed,
   removeCBsDisplayed,
 }: Props) {
-  const CBsConstraint: ConstraintBreachT[] = constraintBreaches
-    .filter((cb) => cb.category === "constraint")
+  const CBsConstraint: ObjectiveBreachT[] = objectiveBreaches
+    .filter((cb) => cb.objectiveCategory === "constraint")
     .sort((a, b) => (a.hardToSoft ? -1 : 1));
-  const CBsFA: ConstraintBreachT[] = constraintBreaches.filter(
-    (cb) => cb.category === "fixed_assignment"
+  const CBsFA: ObjectiveBreachT[] = objectiveBreaches.filter(
+    (cb) => cb.objectiveCategory === "fixed_assignment"
   );
-  const CBsRequest: ConstraintBreachT[] = constraintBreaches.filter(
-    (cb) => cb.category === "request"
+  const CBsRequest: ObjectiveBreachT[] = objectiveBreaches.filter(
+    (cb) => cb.objectiveCategory === "request"
   );
 
   const checkedConstraint: boolean = CBsConstraint.some((cb) =>
@@ -126,7 +126,7 @@ export default function ConstraintBreachList({
             {CBsConstraint.map((constraintBreach, index) => (
               <ConstraintBreachItem
                 key={index}
-                constraintBreach={constraintBreach}
+                objectiveBreach={constraintBreach}
                 CBDisplayed={CBsDisplayed.includes(constraintBreach.id)}
                 workers={workers}
                 shifts={shifts}
@@ -165,7 +165,7 @@ export default function ConstraintBreachList({
             {CBsFA.map((constraintBreach, index) => (
               <ConstraintBreachItem
                 key={index}
-                constraintBreach={constraintBreach}
+                objectiveBreach={constraintBreach}
                 CBDisplayed={CBsDisplayed.includes(constraintBreach.id)}
                 workers={workers}
                 shifts={shifts}
@@ -204,7 +204,7 @@ export default function ConstraintBreachList({
             {CBsRequest.map((constraintBreach, index) => (
               <ConstraintBreachItem
                 key={index}
-                constraintBreach={constraintBreach}
+                objectiveBreach={constraintBreach}
                 CBDisplayed={CBsDisplayed.includes(constraintBreach.id)}
                 workers={workers}
                 shifts={shifts}

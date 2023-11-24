@@ -17,8 +17,10 @@ export const emptySchedule: ScheduleT = {
   id: "",
   startDate: dayjs(),
   endDate: dayjs(),
+  solveStatus: "",
   status: "",
+  missingCoverageDates: [],
   assignments: [],
-  comments: { constraintBreaches: [], missingCoverageDates: [] },
+  objectiveBreaches: [],
   stats: [],
 };

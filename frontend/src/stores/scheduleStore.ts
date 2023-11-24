@@ -5,9 +5,9 @@ import utc from "dayjs/plugin/utc";
 import {
   ScheduleT,
   AssignmentT,
-  CommentsT,
   ScheduleOptionsT,
-  ConstraintBreachT,
+  ObjectiveBreachT,
+  VariableT,
 } from "../components/Schedule/types";
 
 dayjs.extend(utc);
@@ -29,25 +29,18 @@ const toAssignmentT = (data: any) => {
   return assignment;
 };
 
-const toConstraintBreachT = (data: any) => {
-  const constraintBreach: ConstraintBreachT = {
+const toObjectiveBreachT = (data: any) => {
+  const constraintBreach: ObjectiveBreachT = {
     ...data,
     variables: data.variables.map((variable: any) => {
-      const variableDate = dayjs.utc(variable[1]);
-      return [variable[0], variableDate, variable[2]];
+      const variableT: VariableT = {
+        ...variable,
+        date: dayjs.utc(variable.date),
+      };
+      return variableT;
     }),
   };
   return constraintBreach;
-};
-
-const toCommentsT = (data: any) => {
-  const comments: CommentsT = {
-    constraintBreaches: data.constraintBreaches.map(toConstraintBreachT),
-    missingCoverageDates: data.missingCoverageDates.map((isoDate: string) =>
-      dayjs.utc(isoDate)
-    ),
-  };
-  return comments;
 };
 
 const toScheduleT = (data: any) => {
@@ -55,8 +48,11 @@ const toScheduleT = (data: any) => {
     ...data,
     startDate: dayjs.utc(data.startDate),
     endDate: dayjs.utc(data.endDate),
+    missingCoverageDates: data.missingCoverageDates.map((isoDate: string) =>
+      dayjs.utc(isoDate)
+    ),
     assignments: data.assignments.map(toAssignmentT),
-    comments: toCommentsT(data.comments),
+    objectiveBreaches: data.objectiveBreaches.map(toObjectiveBreachT),
   };
   return schedule;
 };
@@ -66,12 +62,11 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
     id: "",
     startDate: dayjs.utc(0),
     endDate: dayjs.utc(0),
-    status: "Not solved",
+    solveStatus: "Not solved",
+    status: "WIP",
     assignments: [],
-    comments: {
-      constraintBreaches: [],
-      missingCoverageDates: [],
-    } as CommentsT,
+    missingCoverageDates: [],
+    objectiveBreaches: [],
     stats: [],
   },
 
