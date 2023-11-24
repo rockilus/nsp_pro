@@ -2,17 +2,18 @@ import os
 
 from database import (
     DB,
+    AssignmentDB,
     ConstraintDB,
     CoverageDB,
     CoverageSelectorDB,
     FixedAssignmentDB,
+    ObjectiveBreachDB,
     RequestDB,
+    ScheduleDB,
     ShiftDB,
     ShiftDemandDB,
     ShiftDimensionDB,
     ShiftPropertyDB,
-    VariableDB,
-    VariableParamDB,
     WorkerDB,
     WorkerDimensionDB,
     WorkerPropertyDB,
@@ -23,17 +24,18 @@ database_uri = (
 )
 
 db = DB(database_uri)
+assignment_db = AssignmentDB(db)
 constraint_db = ConstraintDB(db)
 coverage_db = CoverageDB(db)
 coverage_selector_db = CoverageSelectorDB(db)
 fixed_assignment_db = FixedAssignmentDB(db)
+objective_breach_db = ObjectiveBreachDB(db)
 request_db = RequestDB(db)
+schedule_db = ScheduleDB(db)
 shift_db = ShiftDB(db)
 shift_demand_db = ShiftDemandDB(db)
 shift_dimension_db = ShiftDimensionDB(db)
 shift_property_db = ShiftPropertyDB(db)
-variable_db = VariableDB(db)
-variable_param_db = VariableParamDB(db)
 worker_db = WorkerDB(db)
 worker_dimension_db = WorkerDimensionDB(db)
 worker_property_db = WorkerPropertyDB(db)

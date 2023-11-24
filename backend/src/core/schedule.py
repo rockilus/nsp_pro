@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Tuple
+from typing import List
 
 
 @dataclass
@@ -12,21 +12,23 @@ class Assignment:
     schedule_id: str
 
 
+@dataclass
+class Variable:
+    worker_id: str
+    date: date
+    shift_id: str
+
+
 # pylint: disable=R0801
 @dataclass
-class ConstraintBreach:
+class ObjectiveBreach:
     id: str
-    constraint_id: str
-    category: str
-    variables: List[Tuple[str, date, str]]
+    objective_id: str
+    objective_category: str  # constraint, request, fixed assignment, coverage?
+    variables: List[Variable]
     hard_to_soft: bool
     description: str
-
-
-@dataclass
-class Comments:
-    constraint_breaches: List[ConstraintBreach]
-    missing_coverage_dates: List[date]
+    schedule_id: str
 
 
 @dataclass
@@ -42,14 +44,9 @@ class Schedule:
     id: str
     start_date: date
     end_date: date
-    comments: Comments
-    status: str
-
-
-@dataclass
-class ScheduleOptions:
-    start_date: date
-    end_date: date
+    solve_status: str  # Not solved, Solved, Hard breached, Soft breached, No solution
+    status: str  # WIP, valid, past
+    missing_coverage_dates: List[date]
 
 
 # @dataclass

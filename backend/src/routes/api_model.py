@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import List, Tuple, Union
+from typing import List, Union
 
 from pydantic import BaseModel
 
@@ -96,20 +96,6 @@ class AssignmentMessage(BaseModel):
     scheduleId: str
 
 
-class ConstraintBreachMessage(BaseModel):
-    id: str
-    constraintId: str
-    category: str
-    variables: List[Tuple[str, date, str]]
-    hardToSoft: bool
-    description: str
-
-
-class CommentsMessage(BaseModel):
-    constraintBreaches: List[ConstraintBreachMessage]
-    missingCoverageDates: List[date]
-
-
 class StatMessage(BaseModel):
     workerId: str
     name: str
@@ -117,13 +103,31 @@ class StatMessage(BaseModel):
     value: int
 
 
+class VariableMessage(BaseModel):
+    worker_id: str
+    date: date
+    shift_id: str
+
+
+class ObjectiveBreachMessage(BaseModel):
+    id: str
+    objectiveId: str
+    objectiveCategory: str  # constraint, request, fixed assignment, coverage?
+    variables: List[VariableMessage]
+    hardToSoft: bool
+    description: str
+    scheduleId: str
+
+
 class ScheduleMessage(BaseModel):
     id: str
     startDate: date
     endDate: date
+    solveStatus: str
     status: str
+    missingCoverageDates: List[date]
     assignments: List[AssignmentMessage]
-    comments: CommentsMessage
+    objectiveBreaches: List[ObjectiveBreachMessage]
     stats: List[StatMessage]
 
 
@@ -165,8 +169,3 @@ class TreeNodeMessage(BaseModel):
     parentOptions: List[str]
     options: List[str]
     children: List["TreeNodeMessage"]
-
-
-class ScheduleOptionsMessage(BaseModel):
-    startDate: date
-    endDate: date

@@ -1,52 +1,43 @@
 from dataclasses import asdict
 from typing import List, Tuple
 
-from bson import ObjectId
-
 from core.constraint import Constraint
-from core.schedule import Assignment, Comments, ConstraintBreach, Schedule
+from core.schedule import Assignment, ObjectiveBreach, Schedule, Variable
 from engine import Assignment as AssignmentEngine
 from engine import ConstraintBreach as ConstraintBreachEngine
-from engine import Inputs, Outputs
+from engine import Outputs
 from scripts.setup_database import constraint_db, shift_db, worker_db
 
 
 def engine_to_core_outputs(
-    inputs: Inputs, outputs: Outputs
-) -> Tuple[Schedule, List[Assignment]]:
-    status = "Not solved"
+    schedule: Schedule, outputs: Outputs
+) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach]]:
     if outputs.is_solution:
         if len(outputs.constraint_breaches) == 0:
-            status = "Solved"
+            schedule.solve_status = "Solved"
         else:
             if any(cb.hard_to_soft for cb in outputs.constraint_breaches):
-                status = "Hard breached"
+                schedule.solve_status = "Hard breached"
             else:
-                status = "Soft breached"
+                schedule.solve_status = "Soft breached"
     else:
-        status = "No solution"
-    schedule = Schedule(
-        id="",
-        start_date=inputs.variable_space.start_date,
-        end_date=inputs.variable_space.end_date,
-        status=status,
-        comments=Comments(
-            constraint_breaches=[
-                _engine_to_core_constraint_breach(cb, outputs.assignments)
-                for cb in outputs.constraint_breaches
-            ],
-            missing_coverage_dates=[],
-        ),
-    )
+        schedule.solve_status = "No solution"
     assignments = [
-        Assignment(**asdict(a), id="", schedule_id="") for a in outputs.assignments
+        Assignment(**asdict(a), id="", schedule_id=schedule.id)
+        for a in outputs.assignments
     ]
-    return schedule, assignments
+    objective_breaches = [
+        _engine_to_core_objective_breach(cb, outputs.assignments, schedule)
+        for cb in outputs.constraint_breaches
+    ]
+    return schedule, assignments, objective_breaches
 
 
-def _engine_to_core_constraint_breach(
-    cb: ConstraintBreachEngine, assignments: List[AssignmentEngine]
-) -> ConstraintBreach:
+def _engine_to_core_objective_breach(
+    cb: ConstraintBreachEngine,
+    assignments: List[AssignmentEngine],
+    schedule: Schedule,
+) -> ObjectiveBreach:
     if cb.category == "constraint":
         constraint = constraint_db.get_constraint_by_id(cb.constraint_id)
         if constraint.constraint_type == "sum":
@@ -61,13 +52,14 @@ def _engine_to_core_constraint_breach(
         description = _build_description_cb_far(cb, assignments)
     else:
         description = f"{cb.category} constraint not implemented yet"
-    return ConstraintBreach(
-        id=str(ObjectId()),
-        constraint_id=cb.constraint_id,
-        category=cb.category,
-        variables=cb.variables,
+    return ObjectiveBreach(
+        id="",
+        objective_id=cb.constraint_id,
+        objective_category=cb.category,
+        variables=[Variable(*v) for v in cb.variables],
         hard_to_soft=cb.hard_to_soft,
         description=description,
+        schedule_id=schedule.id,
     )
 
 

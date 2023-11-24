@@ -12,7 +12,9 @@ import Switch from "@mui/material/Switch";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
+import ScheduleWIP from "./ScheduleWIP";
 import { ScheduleOptionsT, ScheduleT } from "./types";
+import { emptySchedule } from "../../utils/emptyObjects";
 
 dayjs.extend(utc);
 
@@ -54,6 +56,7 @@ export default function ScheduleOptions({
         backgroundColor: "grey.100",
       }}
     >
+      <ScheduleWIP schedule={emptySchedule} />
       <Typography variant="subtitle1" align="left">
         Solver options
       </Typography>
