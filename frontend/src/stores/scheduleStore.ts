@@ -78,8 +78,6 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
     try {
       const response = await fetch(apiUrlSchedule, options);
       const data = await response.json();
-      console.log("data", data);
-
       const schedules: ScheduleT[] = data.map(toScheduleT);
       set({ schedules });
     } catch (error) {

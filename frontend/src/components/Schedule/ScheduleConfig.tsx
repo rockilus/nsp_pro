@@ -38,8 +38,6 @@ export default function ScheduleConfig({
   const [columns, setColumns] = useState<ColumnT[]>([]);
   const [rows, setRows] = useState<RowT[]>([]);
 
-  console.log("assignemnts.length", assignments.length);
-
   const assignmentInConflictsWorker = useCallback(
     (assignment: AssignmentT): ObjectiveBreachT[] => {
       return objectiveBreaches.filter((ob) =>
