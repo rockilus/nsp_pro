@@ -12,9 +12,12 @@ import {
   ScheduleT,
   ObjectiveBreachT,
 } from "./types";
+import { start } from "repl";
 
 interface Props {
-  schedule: ScheduleT;
+  schedules: ScheduleT[];
+  assignments: AssignmentT[];
+  objectiveBreaches: ObjectiveBreachT[];
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
   shiftSchedule: boolean;
@@ -23,7 +26,9 @@ interface Props {
 }
 
 export default function ScheduleConfig({
-  schedule,
+  schedules,
+  assignments,
+  objectiveBreaches,
   workers,
   shifts,
   shiftSchedule,
@@ -33,39 +38,41 @@ export default function ScheduleConfig({
   const [columns, setColumns] = useState<ColumnT[]>([]);
   const [rows, setRows] = useState<RowT[]>([]);
 
+  console.log("assignemnts.length", assignments.length);
+
   const assignmentInConflictsWorker = useCallback(
     (assignment: AssignmentT): ObjectiveBreachT[] => {
-      return schedule.objectiveBreaches.filter((cb) =>
-        cb.variables.some(
+      return objectiveBreaches.filter((ob) =>
+        ob.variables.some(
           (variable) =>
             variable.workerId === assignment.workerId &&
             variable.date.isSame(assignment.date)
         )
       );
     },
-    [schedule]
+    [objectiveBreaches]
   );
 
   const assignmentConflictsShift = useCallback(
     (assignment: AssignmentT): ObjectiveBreachT[] => {
-      return schedule.objectiveBreaches.filter(
-        (cb) =>
-          (cb.objectiveCategory === "constraint" &&
-            cb.variables.some(
+      return objectiveBreaches.filter(
+        (ob) =>
+          (ob.objectiveCategory === "constraint" &&
+            ob.variables.some(
               (variable) =>
                 variable.workerId === assignment.workerId &&
                 variable.date.isSame(assignment.date) &&
                 variable.shiftId === assignment.shiftId
             )) ||
-          (["fixed_assignment", "request"].includes(cb.objectiveCategory) &&
-            cb.variables.some(
+          (["fixed_assignment", "request"].includes(ob.objectiveCategory) &&
+            ob.variables.some(
               (variable) =>
                 variable.workerId === assignment.workerId &&
                 variable.date.isSame(assignment.date)
             ))
       );
     },
-    [schedule]
+    [objectiveBreaches]
   );
 
   const buildColumnHeaders = useCallback(
@@ -84,29 +91,31 @@ export default function ScheduleConfig({
         const column: ColumnT = {
           date: dayjs(currentDate),
           name: currentDate.format("ddd, MMM D"),
-          noCoverage: schedule.missingCoverageDates.some((date) =>
-            date.isSame(currentDate)
-          ),
+          noCoverage:
+            schedules
+              .find((s) => s.status === "WIP")
+              ?.missingCoverageDates.some((date) => date.isSame(currentDate)) ||
+            false,
         };
         columns.push({ ...column });
         currentDate = currentDate.add(1, "day");
       }
       return columns;
     },
-    [schedule.missingCoverageDates]
+    [schedules]
   );
 
   const buildShiftRows = useCallback((): RowT[] => {
     const newRows: RowT[] = [];
     const dateColumns = columns.filter((c: ColumnT) => c.date.valueOf() !== 0);
     for (let shift of shifts.filter((s) => s.name !== "Off")) {
-      const shiftAssignments = schedule.assignments.filter(
+      const shiftAssignments = assignments.filter(
         (a) => a.shiftId === shift.id
       );
-      const assignments = dateColumns.map((d) =>
+      const assignmentsOnDates = dateColumns.map((d) =>
         shiftAssignments.filter((a) => a.date.isSame(d.date))
       );
-      const rowSpan = assignments.reduce(
+      const rowSpan = assignmentsOnDates.reduce(
         (max: number, arr) => Math.max(max, arr.length),
         0
       );
@@ -123,7 +132,7 @@ export default function ScheduleConfig({
           row.push(newHeaderCell);
         }
         for (let j = 0; j < dateColumns.length; j++) {
-          const assignment = assignments[j][i];
+          const assignment = assignmentsOnDates[j][i];
           const workerName = assignment
             ? workers.find((w) => w.id === assignment.workerId)?.name || ""
             : "";
@@ -145,13 +154,13 @@ export default function ScheduleConfig({
       }
     }
     return newRows;
-  }, [columns, schedule, workers, shifts, assignmentConflictsShift]);
+  }, [columns, assignments, workers, shifts, assignmentConflictsShift]);
 
   const buildWorkerRows = useCallback((): RowT[] => {
     const newRows: RowT[] = [];
     for (let worker of workers) {
       const row: RowT = [];
-      const assignments = schedule.assignments.filter(
+      const assignmentsWorker = assignments.filter(
         (a) => a.workerId === worker.id
       );
       const newHeaderCell: CellT = {
@@ -167,19 +176,19 @@ export default function ScheduleConfig({
       for (let column of columns.filter(
         (c: ColumnT) => c.date.valueOf() !== 0
       )) {
-        const assignment = assignments.find((a: AssignmentT) =>
+        const assignmentOnDate = assignmentsWorker.find((a: AssignmentT) =>
           a.date.isSame(column.date)
         );
-        const shiftName = assignment
-          ? shifts.find((s) => s.id === assignment.shiftId)?.name || ""
+        const shiftName = assignmentOnDate
+          ? shifts.find((s) => s.id === assignmentOnDate.shiftId)?.name || ""
           : "";
         const newCell: CellT = {
           date: column.date,
           value: shiftName,
           rowSpan: 1,
           noCoverage: column.noCoverage,
-          objectiveBreach: assignment
-            ? assignmentInConflictsWorker(assignment)
+          objectiveBreach: assignmentOnDate
+            ? assignmentInConflictsWorker(assignmentOnDate)
             : [],
         };
         row.push({
@@ -190,23 +199,31 @@ export default function ScheduleConfig({
     }
 
     return newRows;
-  }, [columns, schedule, workers, shifts, assignmentInConflictsWorker]);
+  }, [columns, assignments, workers, shifts, assignmentInConflictsWorker]);
 
   useEffect(() => {
-    if (columns.length > 0 && schedule) {
+    if (columns.length > 0 && assignments.length > 0) {
       if (shiftSchedule) {
         setRows(buildShiftRows());
       } else {
         setRows(buildWorkerRows());
       }
     }
-  }, [columns, schedule, shiftSchedule, buildShiftRows, buildWorkerRows]);
+  }, [columns, assignments, shiftSchedule, buildShiftRows, buildWorkerRows]);
 
   useEffect(() => {
-    if (schedule) {
-      setColumns(buildColumnHeaders(schedule.startDate, schedule.endDate));
+    if (assignments.length > 0) {
+      const startDate = assignments.reduce(
+        (min, a) => (a.date.isBefore(min) ? a.date : min),
+        assignments[0].date
+      );
+      const endDate = assignments.reduce(
+        (max, a) => (a.date.isAfter(max) ? a.date : max),
+        assignments[0].date
+      );
+      setColumns(buildColumnHeaders(startDate, endDate));
     }
-  }, [schedule, buildColumnHeaders]);
+  }, [assignments, buildColumnHeaders]);
 
   return (
     <ScheduleTable

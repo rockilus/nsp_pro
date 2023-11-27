@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from bson import ObjectId
@@ -77,7 +78,11 @@ def to_mongo_variable(dataclass_obj: Variable) -> VariableDocument:
     shift = ShiftDocument.objects.get(id=dataclass_obj.shift_id)  # type: ignore
     return VariableDocument(
         worker=worker,
-        date=dataclass_obj.date,
+        date=datetime(
+            dataclass_obj.date.year,
+            dataclass_obj.date.month,
+            dataclass_obj.date.day,
+        ),
         shift=shift,
     )
 

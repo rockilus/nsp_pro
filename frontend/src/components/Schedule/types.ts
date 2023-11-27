@@ -41,6 +41,13 @@ export type ScheduleT = {
   solveStatus: string;
   status: string;
   missingCoverageDates: dayjs.Dayjs[];
+  // assignments: AssignmentT[];
+  // objectiveBreaches: ObjectiveBreachT[];
+  // stats: StatT[];
+};
+
+export type SolutionT = {
+  schedule: ScheduleT;
   assignments: AssignmentT[];
   objectiveBreaches: ObjectiveBreachT[];
   stats: StatT[];

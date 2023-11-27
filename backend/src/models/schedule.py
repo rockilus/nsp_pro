@@ -12,4 +12,4 @@ class Schedule(Document):
         required=True
     )  # Not solved, Solved, Hard breached, Soft breached, No solution
     status = StringField(required=True)  # WIP, valid, past
-    missing_coverage_dates = ListField(DateTimeField(), required=True)
+    missing_coverage_dates = ListField(DateTimeField())

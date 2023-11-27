@@ -1,16 +1,24 @@
-import * as React from "react";
+import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import Chip from "@mui/material/Chip";
+import Divider from "@mui/material/Divider";
+import EditIcon from "@mui/icons-material/Edit";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import IconButton from "@mui/material/IconButton";
+import Switch from "@mui/material/Switch";
+import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
-import { ScheduleT } from "./types";
+import SchedulePanelDialog from "./SchedulePanelDialog";
+import { ScheduleOptionsT, ScheduleT } from "./types";
+import { emptySchedule } from "../../utils/emptyObjects";
+import { solveStatusList, solveStatusColors } from "../../utils/constants";
+import { useScheduleStore } from "../../stores/scheduleStore";
 
 dayjs.extend(utc);
 
@@ -19,64 +27,63 @@ interface Props {
 }
 
 export default function ScheduleWIP({ schedule }: Props) {
-  const [open, setOpen] = React.useState(false);
-  const [scheduleState, setScheduleState] = React.useState<ScheduleT>({
-    ...schedule,
-  });
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const solveSchedule = useScheduleStore((state) => state.solveSchedule);
 
   return (
-    <React.Fragment>
-      <Button variant="contained" onClick={handleClickOpen}>
-        Create schedule
-      </Button>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "grey.100",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
       >
-        <DialogTitle id="alert-dialog-title">
-          {"Schedule WIP options"}
-        </DialogTitle>
-        <DialogContent>
-          <DatePicker
-            label="Start date"
-            value={schedule.startDate}
-            onChange={(newValue) =>
-              setScheduleState({
-                ...scheduleState,
-                startDate: newValue ? dayjs.utc(newValue) : dayjs.utc(),
-              })
-            }
-          />
-          <DatePicker
-            label="End date"
-            value={schedule.endDate}
-            onChange={(newValue) =>
-              setScheduleState({
-                ...scheduleState,
-                endDate: newValue ? dayjs.utc(newValue) : dayjs.utc(),
-              })
-            }
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button variant="contained" onClick={handleClose}>
-            Delete
-          </Button>
-          <Button variant="contained" onClick={handleClose} autoFocus>
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </React.Fragment>
+        <Typography variant="subtitle1" align="left">
+          Schedule
+        </Typography>
+        <SchedulePanelDialog
+          buttonElement={
+            <IconButton>
+              <EditIcon color="disabled" />
+            </IconButton>
+          }
+          schedule={schedule}
+        />
+      </Box>
+      <Typography variant="body2" align="left">
+        {"Start: "} {schedule.startDate.format("D MMM YYYY")}
+      </Typography>
+      <Typography variant="body2" align="left">
+        {"End: "} {schedule.endDate.format("D MMM YYYY")}
+      </Typography>
+      <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+        <Typography variant="body2" align="left">
+          Status:
+        </Typography>
+        <Chip
+          label={schedule.solveStatus}
+          color={
+            (solveStatusColors[
+              solveStatusList.indexOf(schedule.solveStatus)
+            ] as "default" | "success" | "error" | "warning") || "default"
+          }
+          sx={{ marginLeft: 1 }}
+        />
+      </Box>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => solveSchedule(schedule.id)}
+      >
+        Solve
+      </Button>
+    </Box>
   );
 }

@@ -41,8 +41,10 @@ def solve_schedule(
         shift_demands.append(
             shift_demand_db.get_shift_demands_by_coverage_selector(coverage_selector)
         )
-    fixed_assignments = fixed_assignment_db.get_fixed_assignments()
-    requests = request_db.get_requests()
+    fixed_assignments = fixed_assignment_db.get_fixed_assignments_by_dates(
+        schedule.start_date, schedule.end_date
+    )
+    requests = request_db.get_requests_by_dates(schedule.start_date, schedule.end_date)
     constraints = constraint_db.get_constraints_active()
     inputs = core_to_engine_inputs(
         workers,
@@ -92,8 +94,8 @@ def save_assignment(
     shift = next((s for s in shifts if s.id == assignment.shift_id), None)
     if not shift:
         raise ValueError(f"Shift {assignment.shift_id} not found")
-    existing_assignment = assignment_db.get_assignment_by_worker_date_shift_schedule(
-        worker, assignment.date, shift, schedule
+    existing_assignment = assignment_db.get_assignment_by_worker_date_schedule(
+        worker, assignment.date, schedule
     )
     if existing_assignment:
         assignment.id = existing_assignment.id

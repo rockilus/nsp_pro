@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from bson import ObjectId
@@ -51,8 +52,16 @@ class ScheduleDB:
 def to_mongo_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
     return ScheduleDocument(
         id=dataclass_obj.id,
-        start_date=dataclass_obj.start_date,
-        end_date=dataclass_obj.end_date,
+        start_date=datetime(
+            dataclass_obj.start_date.year,
+            dataclass_obj.start_date.month,
+            dataclass_obj.start_date.day,
+        ),
+        end_date=datetime(
+            dataclass_obj.end_date.year,
+            dataclass_obj.end_date.month,
+            dataclass_obj.end_date.day,
+        ),
         solve_status=dataclass_obj.solve_status,
         status=dataclass_obj.status,
         missing_coverage_dates=dataclass_obj.missing_coverage_dates,

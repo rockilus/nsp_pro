@@ -104,9 +104,9 @@ class StatMessage(BaseModel):
 
 
 class VariableMessage(BaseModel):
-    worker_id: str
+    workerId: str
     date: date
-    shift_id: str
+    shiftId: str
 
 
 class ObjectiveBreachMessage(BaseModel):
@@ -126,6 +126,13 @@ class ScheduleMessage(BaseModel):
     solveStatus: str
     status: str
     missingCoverageDates: List[date]
+    # assignments: List[AssignmentMessage]
+    # objectiveBreaches: List[ObjectiveBreachMessage]
+    # stats: List[StatMessage]
+
+
+class SolutionMessage(BaseModel):
+    schedule: ScheduleMessage
     assignments: List[AssignmentMessage]
     objectiveBreaches: List[ObjectiveBreachMessage]
     stats: List[StatMessage]

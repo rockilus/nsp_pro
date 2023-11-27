@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import humps
 from fastapi import APIRouter, HTTPException
@@ -10,6 +10,7 @@ from routes.api_model import (
     AssignmentMessage,
     ObjectiveBreachMessage,
     ScheduleMessage,
+    SolutionMessage,
     StatMessage,
 )
 from scripts.setup_database import schedule_db
@@ -26,12 +27,10 @@ def create_schedule(req: ScheduleMessage) -> ScheduleMessage:
 
 
 @router.post("/schedules/{schedule_id}/solve", status_code=201)
-def solve_schedule(schedule_id: str) -> ScheduleMessage:
+def solve_schedule(schedule_id: str) -> SolutionMessage:
     schedule = schedule_db.get_schedule_by_id(schedule_id)
     schedule, assignments, objective_breaches, stats = solve_schedule_service(schedule)
-    return schedule_and_assignments_to_api_msg(
-        schedule, assignments, objective_breaches, stats
-    )
+    return solution_to_api_msg(schedule, assignments, objective_breaches, stats)
 
 
 @router.get("/schedules")
@@ -86,18 +85,29 @@ def schedule_to_api_msg(schedule: Schedule) -> ScheduleMessage:
     return validator.validate_python(as_dict)
 
 
-def schedule_and_assignments_to_api_msg(
+def solution_to_api_msg(
     schedule: Schedule,
     assignments: List[Assignment],
     objective_breaches: List[ObjectiveBreach],
     stats: List[Stat],
-) -> ScheduleMessage:
-    data = asdict(schedule)
+) -> SolutionMessage:
+    data: Dict[
+        str,
+        Union[
+            ScheduleMessage,
+            List[AssignmentMessage],
+            List[ObjectiveBreachMessage],
+            List[StatMessage],
+        ],
+    ] = {}
+    data["schedule"] = schedule_to_api_msg(schedule)
     data["assignments"] = [assignment_to_api_msg(a) for a in assignments]
-    data["comments"] = [objective_breache_to_api_msg(ob) for ob in objective_breaches]
+    data["objective_breaches"] = [
+        objective_breache_to_api_msg(ob) for ob in objective_breaches
+    ]
     data["stats"] = [stat_to_api_msg(s) for s in stats]
     as_dict = humps.camelize(data)
-    validator = TypeAdapter(ScheduleMessage)
+    validator = TypeAdapter(SolutionMessage)
     return validator.validate_python(as_dict)
 
 

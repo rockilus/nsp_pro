@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List
+from typing import List, Union
 
 from bson import ObjectId
 
@@ -47,20 +47,21 @@ class AssignmentDB:
         assignment = AssignmentDocument.objects.get(id=assignment_id)  # type: ignore
         return _from_mongo_assignment(assignment)
 
-    def get_assignment_by_worker_date_shift_schedule(
+    def get_assignment_by_worker_date_schedule(
         self,
         worker: Worker,
         a_date: date,
-        shift: Shift,
         schedule: Schedule,
-    ) -> Assignment:
-        # pylint: disable=no-member
-        assignment = AssignmentDocument.objects.get(  # type: ignore
-            worker=worker,
-            date=a_date,
-            shift=shift,
-            schedule=schedule,
-        )
+    ) -> Union[Assignment, None]:
+        try:
+            # pylint: disable=no-member
+            assignment = AssignmentDocument.objects.get(  # type: ignore
+                worker=to_mongo_worker(worker),
+                date=a_date,
+                schedule=to_mongo_schedule(schedule),
+            )
+        except AssignmentDocument.DoesNotExist:
+            return None
         return _from_mongo_assignment(assignment)
 
     def update_assignment(self, assignment: Assignment) -> Assignment:

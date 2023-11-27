@@ -38,3 +38,19 @@ export const CovTimeColPadR = 10; // in pixels
 export const CovHeadRowHeight = 20; // in pixels
 export const CovBodyRowHeight = 12; // in pixels
 export const CovBorderThick = 1; // in pixels
+
+//Schedules
+export const solveStatusList = [
+  "Not solved",
+  "Solved",
+  "No solution",
+  "Soft breached",
+  "Hard breached",
+];
+export const solveStatusColors = [
+  "default",
+  "success",
+  "error",
+  "warning",
+  "error",
+];
