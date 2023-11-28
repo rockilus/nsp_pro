@@ -13,6 +13,8 @@ from routes.api_model import (
     SolutionMessage,
     StatMessage,
 )
+from routes.assignment_routes import assignment_to_api_msg
+from routes.objective_breach_routes import objective_breach_to_api_msg
 from scripts.setup_database import assignment_db, objective_breach_db, schedule_db
 from services import solve_schedule as solve_schedule_service
 
@@ -57,20 +59,20 @@ def delete_schedule(schedule_id: str) -> Dict:
     return {"message": "CoverageSelector deleted"}
 
 
-def objective_breache_to_api_msg(
-    objective_breach: ObjectiveBreach,
-) -> ObjectiveBreachMessage:
-    data = asdict(objective_breach)
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(ObjectiveBreachMessage)
-    return validator.validate_python(as_dict)
+# def objective_breach_to_api_msg(
+#     objective_breach: ObjectiveBreach,
+# ) -> ObjectiveBreachMessage:
+#     data = asdict(objective_breach)
+#     as_dict = humps.camelize(data)
+#     validator = TypeAdapter(ObjectiveBreachMessage)
+#     return validator.validate_python(as_dict)
 
 
-def assignment_to_api_msg(assignment: Assignment) -> AssignmentMessage:
-    data = asdict(assignment)
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(AssignmentMessage)
-    return validator.validate_python(as_dict)
+# def assignment_to_api_msg(assignment: Assignment) -> AssignmentMessage:
+#     data = asdict(assignment)
+#     as_dict = humps.camelize(data)
+#     validator = TypeAdapter(AssignmentMessage)
+#     return validator.validate_python(as_dict)
 
 
 def stat_to_api_msg(stat: Stat) -> StatMessage:
@@ -105,7 +107,7 @@ def solution_to_api_msg(
     data["schedule"] = schedule_to_api_msg(schedule)
     data["assignments"] = [assignment_to_api_msg(a) for a in assignments]
     data["objective_breaches"] = [
-        objective_breache_to_api_msg(ob) for ob in objective_breaches
+        objective_breach_to_api_msg(ob) for ob in objective_breaches
     ]
     data["stats"] = [stat_to_api_msg(s) for s in stats]
     as_dict = humps.camelize(data)

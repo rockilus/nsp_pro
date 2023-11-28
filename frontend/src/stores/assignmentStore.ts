@@ -41,8 +41,6 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
     try {
       const response = await fetch(apiUrlAssignment, options);
       const data = await response.json();
-      console.log("data", data);
-
       const assignments: AssignmentT[] = data.map(toAssignmentT);
       set({ assignments });
     } catch (error) {
