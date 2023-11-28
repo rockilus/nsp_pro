@@ -7,7 +7,7 @@ import { ObjectiveBreachT, VariableT } from "../components/Schedule/types";
 dayjs.extend(utc);
 
 const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlObjectiveBreach = baseApiUrl + "/objectiveBreaches";
+const apiUrlObjectiveBreach = baseApiUrl + "/objective_breaches";
 
 type ObjectiveBreachStateT = {
   objectiveBreaches: ObjectiveBreachT[];
@@ -50,8 +50,6 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
       try {
         const response = await fetch(apiUrlObjectiveBreach, options);
         const data = await response.json();
-        console.log("data", data);
-
         const objectiveBreaches: ObjectiveBreachT[] =
           data.map(toObjectiveBreachT);
         set({ objectiveBreaches });

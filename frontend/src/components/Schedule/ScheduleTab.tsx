@@ -25,14 +25,29 @@ export default function ScheduleTab({ workers, shifts }: Props) {
   const [displayCBs, setDisplayCBs] = useState<boolean>(true);
   const [CBsDisplayed, setCBsDisplayed] = useState<string[]>([]);
 
+  // Schedules
   const schedules = useScheduleStore((state) => state.schedules);
+  const fetchSchedule = useScheduleStore((state) => state.fetchSchedules);
+  const addSchedule = useScheduleStore((state) => state.addSchedule);
+
+  // Assignments
   const assignments = useAssignmentStore((state) => state.assignments);
+  const fetchAssignments = useAssignmentStore(
+    (state) => state.fetchAssignments
+  );
+
+  // Objective Breaches
   const objectiveBreaches = useObjectiveBreachStore(
     (state) => state.objectiveBreaches
   );
+  const fetchObjectiveBreaches = useObjectiveBreachStore(
+    (state) => state.fetchObjectiveBreaches
+  );
+
+  // Stats
   const stats = useStatStore((state) => state.stats);
-  const fetchSchedule = useScheduleStore((state) => state.fetchSchedules);
-  const addSchedule = useScheduleStore((state) => state.addSchedule);
+
+  // FARs
   const fetchFixedAssignments = useFixedAssignmentStore(
     (state) => state.fetchFixedAssignments
   );
@@ -47,7 +62,9 @@ export default function ScheduleTab({ workers, shifts }: Props) {
 
   useEffect(() => {
     fetchSchedule();
-  }, [fetchSchedule]);
+    fetchAssignments();
+    fetchObjectiveBreaches();
+  }, [fetchSchedule, fetchAssignments, fetchObjectiveBreaches]);
 
   useEffect(() => {
     if (schedules) {
@@ -55,12 +72,6 @@ export default function ScheduleTab({ workers, shifts }: Props) {
       fetchRequests();
     }
   }, [fetchFixedAssignments, fetchRequests, schedules]);
-
-  // useEffect(() => {
-  //   if (schedule) {
-  //     setCBsDisplayed(schedule.objectiveBreaches.map((cb) => cb.id));
-  //   }
-  // }, [schedule]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
