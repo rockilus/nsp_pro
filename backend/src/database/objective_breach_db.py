@@ -70,6 +70,12 @@ class ObjectiveBreachDB:
         )
         objective_breach.delete()
 
+    def delete_objective_breaches_by_schedule_id(self, schedule_id: str) -> None:
+        # pylint: disable=no-member
+        ObjectiveBreachDocument.objects.filter(  # type: ignore
+            schedule=schedule_id
+        ).delete()
+
 
 # Mappers
 def to_mongo_variable(dataclass_obj: Variable) -> VariableDocument:

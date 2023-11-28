@@ -160,6 +160,9 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       set((state) => ({
         schedules: state.schedules.filter((s) => s.id !== id),
       }));
+      useAssignmentStore.getState().deleteAStoreWithScheduleId(id);
+      useObjectiveBreachStore.getState().deleteOBStoreWithScheduleId(id);
+      useStatStore.getState().deleteSStore();
     } catch (error) {
       console.error("Failed to delete schedule:", error);
     }

@@ -16,6 +16,7 @@ type AssignmentStateT = {
   updateAssignmentStore: (updatedAssignments: AssignmentT[]) => void;
   updateAssignment: (updatedAssignment: AssignmentT) => void;
   deleteAssignment: (id: string) => void;
+  deleteAStoreWithScheduleId: (id: string) => void;
 };
 
 export const toAssignmentT = (data: any) => {
@@ -120,5 +121,11 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
     } catch (error) {
       console.error("Failed to delete assignment:", error);
     }
+  },
+
+  deleteAStoreWithScheduleId: (scheduleId) => {
+    set((state) => ({
+      assignments: state.assignments.filter((a) => a.scheduleId !== scheduleId),
+    }));
   },
 }));

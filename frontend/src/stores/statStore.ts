@@ -14,6 +14,7 @@ type StatStateT = {
   fetchStats: () => void;
   addStat: (stat: StatT) => void;
   updateStatStore: (updatedStats: StatT[]) => void;
+  deleteSStore: () => void;
 };
 
 export const toStatT = (data: any) => {
@@ -69,6 +70,12 @@ export const useStatStore = create<StatStateT>()((set) => ({
   updateStatStore: (updatedStats) => {
     set((state) => ({
       stats: updatedStats,
+    }));
+  },
+
+  deleteSStore: () => {
+    set((state) => ({
+      stats: [],
     }));
   },
 }));

@@ -13,7 +13,7 @@ from routes.api_model import (
     SolutionMessage,
     StatMessage,
 )
-from scripts.setup_database import schedule_db
+from scripts.setup_database import assignment_db, objective_breach_db, schedule_db
 from services import solve_schedule as solve_schedule_service
 
 router = APIRouter()
@@ -51,6 +51,8 @@ def update_schedule(schedule_id: str, schedule_api: ScheduleMessage) -> Schedule
 
 @router.delete("/schedules/{schedule_id}")
 def delete_schedule(schedule_id: str) -> Dict:
+    assignment_db.delete_assignments_by_schedule_id(schedule_id)
+    objective_breach_db.delete_objective_breaches_by_schedule_id(schedule_id)
     schedule_db.delete_schedule(schedule_id)
     return {"message": "CoverageSelector deleted"}
 

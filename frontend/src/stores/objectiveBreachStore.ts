@@ -18,6 +18,7 @@ type ObjectiveBreachStateT = {
   ) => void;
   updateObjectiveBreach: (updatedObjectiveBreach: ObjectiveBreachT) => void;
   deleteObjectiveBreach: (id: string) => void;
+  deleteOBStoreWithScheduleId: (id: string) => void;
 };
 
 export const toObjectiveBreachT = (data: any) => {
@@ -79,20 +80,9 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
     },
 
     updateObjectiveBreachStore: (updatedObjectiveBreaches) => {
-      // console.log("updatedObjectiveBreaches", updatedObjectiveBreaches);
-      updatedObjectiveBreaches.forEach((updatedObjectiveBreach) => {
-        //   console.log("updatedObjectiveBreach", updatedObjectiveBreach);
-
-        set((state) => ({
-          objectiveBreaches: state.objectiveBreaches.find(
-            (s) => s.id === updatedObjectiveBreach.id
-          )
-            ? state.objectiveBreaches.map((s) =>
-                s.id === updatedObjectiveBreach.id ? updatedObjectiveBreach : s
-              )
-            : [...state.objectiveBreaches, updatedObjectiveBreach],
-        }));
-      });
+      set((state) => ({
+        objectiveBreaches: updatedObjectiveBreaches,
+      }));
     },
 
     updateObjectiveBreach: async (updatedObjectiveBreach) => {
@@ -130,6 +120,14 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
       } catch (error) {
         console.error("Failed to delete objectiveBreach:", error);
       }
+    },
+
+    deleteOBStoreWithScheduleId: (scheduleId) => {
+      set((state) => ({
+        objectiveBreaches: state.objectiveBreaches.filter(
+          (ob) => ob.scheduleId !== scheduleId
+        ),
+      }));
     },
   })
 );

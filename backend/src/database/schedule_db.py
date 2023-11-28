@@ -18,8 +18,16 @@ class ScheduleDB:
     ) -> Schedule:
         schedule_doc = ScheduleDocument(
             id=str(ObjectId()),
-            start_date=schedule.start_date,
-            end_date=schedule.end_date,
+            start_date=datetime(
+                schedule.start_date.year,
+                schedule.start_date.month,
+                schedule.start_date.day,
+            ),
+            end_date=datetime(
+                schedule.end_date.year,
+                schedule.end_date.month,
+                schedule.end_date.day,
+            ),
             solve_status=schedule.solve_status,
             status=schedule.status,
             missing_coverage_dates=schedule.missing_coverage_dates,

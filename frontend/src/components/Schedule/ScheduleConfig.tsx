@@ -12,7 +12,6 @@ import {
   ScheduleT,
   ObjectiveBreachT,
 } from "./types";
-import { start } from "repl";
 
 interface Props {
   schedules: ScheduleT[];
@@ -220,6 +219,8 @@ export default function ScheduleConfig({
         assignments[0].date
       );
       setColumns(buildColumnHeaders(startDate, endDate));
+    } else {
+      setColumns([]);
     }
   }, [assignments, buildColumnHeaders]);
 
