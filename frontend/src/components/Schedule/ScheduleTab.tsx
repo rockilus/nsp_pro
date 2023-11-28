@@ -12,7 +12,6 @@ import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
 import { useRequestStore } from "../../stores/requestStore";
 import { useAssignmentStore } from "../../stores/assignmentStore";
 import { useObjectiveBreachStore } from "../../stores/objectiveBreachStore";
-import { useStatStore } from "../../stores/statStore";
 import { ShiftIdNameT, WorkerIdNameT } from "./types";
 
 interface Props {
@@ -43,9 +42,6 @@ export default function ScheduleTab({ workers, shifts }: Props) {
   const fetchObjectiveBreaches = useObjectiveBreachStore(
     (state) => state.fetchObjectiveBreaches
   );
-
-  // Stats
-  const stats = useStatStore((state) => state.stats);
 
   // FARs
   const fetchFixedAssignments = useFixedAssignmentStore(
@@ -106,7 +102,7 @@ export default function ScheduleTab({ workers, shifts }: Props) {
           removeCBsDisplayed={removeCBsDisplayed}
         />
       </Box>
-      <StatsTab stats={stats} workers={workers} shifts={shifts} />
+      <StatsTab workers={workers} shifts={shifts} />
     </Box>
   );
 }

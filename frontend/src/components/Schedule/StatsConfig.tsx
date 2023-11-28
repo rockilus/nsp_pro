@@ -20,9 +20,6 @@ export default function StatsConfig({ statsOptions }: Props) {
   const [statsOptionsState, setStatsOptionsState] = useState<StatsOptionsT>(
     statsOptions ? { ...statsOptions } : { ...emptyStatsOptions }
   );
-  console.log("statsOptions", statsOptions);
-  console.log("statsOptionsState", statsOptionsState);
-  console.log("statsOptions?", statsOptions ? "true" : "false");
 
   const addStatsOptions = useStatsOptionsStore(
     (state) => state.addStatsOptions
@@ -32,8 +29,6 @@ export default function StatsConfig({ statsOptions }: Props) {
   );
 
   const handleSave = () => {
-    console.log("statsOptionsState in save", statsOptionsState);
-
     if (statsOptions) {
       updateStatsOptions(statsOptionsState);
     } else {

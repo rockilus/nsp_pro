@@ -43,7 +43,7 @@ export type StatT = {
 };
 
 export type StatsT = {
-  statsOptions: StatsOptionsT;
+  statsOptions: StatsOptionsT | null;
   stats: StatT[];
 };
 

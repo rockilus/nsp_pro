@@ -29,7 +29,7 @@ const toStatsOptionsT = (data: any) => {
 
 const toStatsT = (data: any) => {
   const stats: StatsT = {
-    statsOptions: toStatsOptionsT(data.statsOptions),
+    statsOptions: data.statsOptions ? toStatsOptionsT(data.statsOptions) : null,
     stats: data.stats,
   };
   return stats;
@@ -49,7 +49,6 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
     try {
       const response = await fetch(apiUrlStatsOptions, options);
       const data = await response.json();
-      console.log("data", data);
       const newStats: StatsT = toStatsT(data);
       set((state) => ({
         statsOptions: newStats.statsOptions,
