@@ -10,6 +10,9 @@ import StatsTable from "./StatsTable";
 import { useScheduleStore } from "../../stores/scheduleStore";
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
 import { useRequestStore } from "../../stores/requestStore";
+import { useAssignmentStore } from "../../stores/assignmentStore";
+import { useObjectiveBreachStore } from "../../stores/objectiveBreachStore";
+import { useStatStore } from "../../stores/statStore";
 import { ShiftIdNameT, WorkerIdNameT, ScheduleOptionsT } from "./types";
 
 interface Props {
@@ -22,8 +25,13 @@ export default function ScheduleTab({ workers, shifts }: Props) {
   const [displayCBs, setDisplayCBs] = useState<boolean>(true);
   const [CBsDisplayed, setCBsDisplayed] = useState<string[]>([]);
 
-  const schedule = useScheduleStore((state) => state.schedule);
-  // const fetchSchedule = useScheduleStore((state) => state.fetchSchedule);
+  const schedules = useScheduleStore((state) => state.schedules);
+  const assignments = useAssignmentStore((state) => state.assignments);
+  const objectiveBreaches = useObjectiveBreachStore(
+    (state) => state.objectiveBreaches
+  );
+  const stats = useStatStore((state) => state.stats);
+  const fetchSchedule = useScheduleStore((state) => state.fetchSchedules);
   const addSchedule = useScheduleStore((state) => state.addSchedule);
   const fetchFixedAssignments = useFixedAssignmentStore(
     (state) => state.fetchFixedAssignments
@@ -37,22 +45,22 @@ export default function ScheduleTab({ workers, shifts }: Props) {
     setCBsDisplayed(CBsDisplayed.filter((cbId) => !ids.includes(cbId)));
   };
 
-  // useEffect(() => {
-  //   fetchSchedule();
-  // }, [fetchSchedule]);
+  useEffect(() => {
+    fetchSchedule();
+  }, [fetchSchedule]);
 
   useEffect(() => {
-    if (schedule) {
+    if (schedules) {
       fetchFixedAssignments();
       fetchRequests();
     }
-  }, [fetchFixedAssignments, fetchRequests, schedule]);
+  }, [fetchFixedAssignments, fetchRequests, schedules]);
 
-  useEffect(() => {
-    if (schedule) {
-      setCBsDisplayed(schedule.comments.constraintBreaches.map((cb) => cb.id));
-    }
-  }, [schedule]);
+  // useEffect(() => {
+  //   if (schedule) {
+  //     setCBsDisplayed(schedule.objectiveBreaches.map((cb) => cb.id));
+  //   }
+  // }, [schedule]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
@@ -61,7 +69,7 @@ export default function ScheduleTab({ workers, shifts }: Props) {
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "row" }}>
         <ScheduleOptions
-          schedule={schedule}
+          schedules={schedules}
           shiftSchedule={shiftSchedule}
           displayCBs={displayCBs}
           addSchedule={addSchedule}
@@ -69,7 +77,9 @@ export default function ScheduleTab({ workers, shifts }: Props) {
           switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
         />
         <ScheduleConfig
-          schedule={schedule}
+          schedules={schedules}
+          assignments={assignments}
+          objectiveBreaches={objectiveBreaches}
           workers={workers}
           shifts={shifts}
           shiftSchedule={shiftSchedule}
@@ -77,7 +87,7 @@ export default function ScheduleTab({ workers, shifts }: Props) {
           CBsDisplayed={CBsDisplayed}
         />
         <ConstraintBreachList
-          constraintBreaches={schedule.comments.constraintBreaches}
+          objectiveBreaches={objectiveBreaches} // schedule.objectiveBreaches
           CBsDisplayed={CBsDisplayed}
           workers={workers}
           shifts={shifts}
@@ -85,13 +95,7 @@ export default function ScheduleTab({ workers, shifts }: Props) {
           removeCBsDisplayed={removeCBsDisplayed}
         />
       </Box>
-      {schedule.stats && (
-        <StatsTable
-          stats={schedule.stats ? schedule.stats : []}
-          workers={workers}
-          shifts={shifts}
-        />
-      )}
+      {stats && <StatsTable stats={stats} workers={workers} shifts={shifts} />}
     </Box>
   );
 }

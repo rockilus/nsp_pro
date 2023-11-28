@@ -5,6 +5,7 @@ from ortools.sat.python import cp_model  # type: ignore
 from engine.model.utils.model_utils import build_var_name
 from engine.types.input_output_types import Assignment, Request
 from engine.types.model_types import Objective
+from utils.constants import Constants
 
 
 class AddFAR:
@@ -21,17 +22,19 @@ class AddFAR:
         self.obj = obj
 
     def add_fixed_assignments(self, fixed_assignments: List[Assignment]) -> None:
-        date_format = "%Y-%m-%d"
         for fa in fixed_assignments:
-            w, d, s = fa.worker_id, fa.date.strftime(date_format), fa.shift_id
+            w, d, s = (
+                fa.worker_id,
+                fa.date.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
+                fa.shift_id,
+            )
             self.model.Add(self.variables[w, d, s] == 1)
 
     def add_requests(self, requests: List[Request]) -> None:
-        date_format = "%Y-%m-%d"
         for r in requests:
             w, d, s, p = (
                 r.worker_id,
-                r.date.strftime(date_format),
+                r.date.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
                 r.shift_id,
                 r.penalty,
             )

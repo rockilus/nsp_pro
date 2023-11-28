@@ -1,93 +1,68 @@
 from dataclasses import asdict
-from typing import List
+from typing import Dict, List, Union
 
 import humps
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import TypeAdapter
 
-from core.schedule import (
-    Assignment,
-    Comments,
-    ConstraintBreach,
-    Schedule,
-    ScheduleOptions,
-    Stat,
-)
+from core.schedule import Assignment, ObjectiveBreach, Schedule, Stat
 from routes.api_model import (
     AssignmentMessage,
-    CommentsMessage,
-    ConstraintBreachMessage,
+    ObjectiveBreachMessage,
     ScheduleMessage,
-    ScheduleOptionsMessage,
+    SolutionMessage,
     StatMessage,
 )
-from services import create_schedule as create_schedule_service
+from scripts.setup_database import assignment_db, objective_breach_db, schedule_db
+from services import solve_schedule as solve_schedule_service
 
 router = APIRouter()
 
 
-@router.post("/schedule", status_code=201)
-def create_schedule(req: ScheduleOptionsMessage) -> ScheduleMessage:
-    so_data = api_msg_to_schedule_options(req)
-    schedule, assignments, stats = create_schedule_service(so_data)
-    return schedule_and_assignments_to_api_msg(schedule, assignments, stats)
+@router.post("/schedules", status_code=201)
+def create_schedule(req: ScheduleMessage) -> ScheduleMessage:
+    s_data = api_msg_to_schedule(req)
+    schedule = schedule_db.create_schedule(s_data)
+    return schedule_to_api_msg(schedule)
 
 
-# @router.get("/schedule")
-# def solver() -> ScheduleMessage:
-#     workers = worker_db.get_workers()
-#     shifts = shift_db.get_shifts()
-#     coverage_selectors = coverage_selector_db.get_coverage_selectors()
-#     coverages: List[Union[Coverage, None]] = []
-#     for coverage_selector in coverage_selectors:
-#         if coverage_selector.coverage_id == "":
-#             coverages.append(None)
-#             continue
-#         coverage = coverage_db.get_coverage_by_id(
-#             coverage_selector.coverage_id
-#         )
-#         coverages.append(coverage)
-#     fixed_assignments = fixed_assignment_db.get_fixed_assignments()
-#     requests = request_db.get_requests()
-#     constraints = constraint_db.get_constraints_active()
-#     inputs = core_to_engine_inputs(
-#         workers,
-#         shifts,
-#         coverage_selectors,
-#         coverages,
-#         fixed_assignments,
-#         requests,
-#         constraints,
-#     )
-#     engine = Engine()
-#     outputs = engine.solve(inputs)
-#     schedule, assignments = from_outputs_to_core(inputs, outputs)
-#     no_cov_date = build_no_coverage_date(
-#         inputs.variable_space.start_date,
-#         inputs.variable_space.end_date,
-#         coverage_selectors,
-#     )
-#     schedule.comments.missing_coverage_dates = no_cov_date
-#     update_far_status(schedule, assignments)
-#     return schedule_and_assignments_to_api_msg(schedule, assignments)
+@router.post("/schedules/{schedule_id}/solve", status_code=201)
+def solve_schedule(schedule_id: str) -> SolutionMessage:
+    schedule = schedule_db.get_schedule_by_id(schedule_id)
+    schedule, assignments, objective_breaches, stats = solve_schedule_service(schedule)
+    return solution_to_api_msg(schedule, assignments, objective_breaches, stats)
 
 
-def constraint_breach_to_api_msg(
-    constraint_breach: ConstraintBreach,
-) -> ConstraintBreachMessage:
-    data = asdict(constraint_breach)
+@router.get("/schedules")
+def get_schedules() -> List[ScheduleMessage]:
+    schedules = schedule_db.get_schedules()
+    return [schedule_to_api_msg(s) for s in schedules]
+
+
+@router.put("/schedules/{schedule_id}")
+def update_schedule(schedule_id: str, schedule_api: ScheduleMessage) -> ScheduleMessage:
+    existing_schedule = schedule_db.get_schedule_by_id(schedule_id)
+    if not existing_schedule:
+        raise HTTPException(status_code=404, detail="Schedule does not exist")
+    schedule_data = api_msg_to_schedule(schedule_api)
+    updated_schedule = schedule_db.update_schedule(schedule_data)
+    return schedule_to_api_msg(updated_schedule)
+
+
+@router.delete("/schedules/{schedule_id}")
+def delete_schedule(schedule_id: str) -> Dict:
+    assignment_db.delete_assignments_by_schedule_id(schedule_id)
+    objective_breach_db.delete_objective_breaches_by_schedule_id(schedule_id)
+    schedule_db.delete_schedule(schedule_id)
+    return {"message": "CoverageSelector deleted"}
+
+
+def objective_breache_to_api_msg(
+    objective_breach: ObjectiveBreach,
+) -> ObjectiveBreachMessage:
+    data = asdict(objective_breach)
     as_dict = humps.camelize(data)
-    validator = TypeAdapter(ConstraintBreachMessage)
-    return validator.validate_python(as_dict)
-
-
-def comments_to_api_msg(comments: Comments) -> CommentsMessage:
-    data = asdict(comments)
-    data["constraint_breaches"] = [
-        constraint_breach_to_api_msg(cb) for cb in comments.constraint_breaches
-    ]
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(CommentsMessage)
+    validator = TypeAdapter(ObjectiveBreachMessage)
     return validator.validate_python(as_dict)
 
 
@@ -105,33 +80,44 @@ def stat_to_api_msg(stat: Stat) -> StatMessage:
     return validator.validate_python(as_dict)
 
 
-def schedule_and_assignments_to_api_msg(
-    schedule: Schedule, assignments: List[Assignment], stats: List[Stat]
-) -> ScheduleMessage:
+def schedule_to_api_msg(schedule: Schedule) -> ScheduleMessage:
     data = asdict(schedule)
-    data["assignments"] = [assignment_to_api_msg(a) for a in assignments]
-    data["comments"] = comments_to_api_msg(schedule.comments)
-    data["stats"] = [stat_to_api_msg(s) for s in stats]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ScheduleMessage)
     return validator.validate_python(as_dict)
 
 
+def solution_to_api_msg(
+    schedule: Schedule,
+    assignments: List[Assignment],
+    objective_breaches: List[ObjectiveBreach],
+    stats: List[Stat],
+) -> SolutionMessage:
+    data: Dict[
+        str,
+        Union[
+            ScheduleMessage,
+            List[AssignmentMessage],
+            List[ObjectiveBreachMessage],
+            List[StatMessage],
+        ],
+    ] = {}
+    data["schedule"] = schedule_to_api_msg(schedule)
+    data["assignments"] = [assignment_to_api_msg(a) for a in assignments]
+    data["objective_breaches"] = [
+        objective_breache_to_api_msg(ob) for ob in objective_breaches
+    ]
+    data["stats"] = [stat_to_api_msg(s) for s in stats]
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(SolutionMessage)
+    return validator.validate_python(as_dict)
+
+
 def api_msg_to_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake = {k: v for k, v in data_snake.items() if k != "assignments"}
+    data_snake = {
+        k: v
+        for k, v in data_snake.items()
+        if k not in ["assignments", "objective_breaches", "stats"]
+    }
     return Schedule(**data_snake)
-
-
-# pylint: disable=R0801
-def api_msg_to_schedule_options(
-    msg: ScheduleOptionsMessage,
-) -> ScheduleOptions:
-    data_snake = humps.decamelize(msg.model_dump())
-    # data_snake["start_date"] = datetime.combine(
-    #     data_snake["start_date"], datetime.min.time()
-    # ).date()
-    # data_snake["end_date"] = datetime.combine(
-    #     data_snake["end_date"], datetime.min.time()
-    # ).date()
-    return ScheduleOptions(**data_snake)

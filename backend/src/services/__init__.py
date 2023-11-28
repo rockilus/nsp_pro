@@ -9,7 +9,7 @@ from services.constraint_services.constraint_utils import (
     get_ref_var_value,
     get_var_value,
 )
-from services.schedule_services.create_schedule import create_schedule
+from services.schedule_services.solve_schedule import solve_schedule
 
 __all__ = [
     "build_constraint",
@@ -19,5 +19,5 @@ __all__ = [
     "get_var_value",
     "get_ref_var_value",
     "get_other_var_value",
-    "create_schedule",
+    "solve_schedule",
 ]

@@ -12,27 +12,32 @@ import Switch from "@mui/material/Switch";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
+import SchedulePanelDialog from "./SchedulePanelDialog";
+import ScheduleWIP from "./ScheduleWIP";
 import { ScheduleOptionsT, ScheduleT } from "./types";
+import { emptySchedule } from "../../utils/emptyObjects";
 
 dayjs.extend(utc);
 
 interface Props {
-  schedule: ScheduleT;
+  schedules: ScheduleT[];
   shiftSchedule: boolean;
   displayCBs: boolean;
-  addSchedule: (scheduleOptions: ScheduleOptionsT) => void;
+  addSchedule: (schedule: ScheduleT) => void;
   switchScheduleDisplay: () => void;
   switchDisplayCBs: () => void;
 }
 
 export default function ScheduleOptions({
-  schedule,
+  schedules,
   shiftSchedule,
   displayCBs,
   addSchedule,
   switchScheduleDisplay,
   switchDisplayCBs,
 }: Props) {
+  const scheduleWIP = schedules.find((schedule) => schedule.status === "WIP");
+
   const statusList = [
     "Solved",
     "No solution",
@@ -41,10 +46,9 @@ export default function ScheduleOptions({
   ];
   const colorList = ["success", "error", "warning", "error"];
 
-  const [scheduleOptions, setScheduleOptions] = useState<ScheduleOptionsT>({
-    startDate: dayjs.utc("2023-10-2"),
-    endDate: dayjs.utc("2024-01-07"),
-  });
+  const createScheduleButton = () => {
+    return <Button variant="contained">Create schedule</Button>;
+  };
 
   return (
     <Box
@@ -54,7 +58,15 @@ export default function ScheduleOptions({
         backgroundColor: "grey.100",
       }}
     >
-      <Typography variant="subtitle1" align="left">
+      {scheduleWIP ? (
+        <ScheduleWIP schedule={scheduleWIP} />
+      ) : (
+        <SchedulePanelDialog
+          buttonElement={createScheduleButton()}
+          schedule={emptySchedule}
+        />
+      )}
+      {/* <Typography variant="subtitle1" align="left">
         Solver options
       </Typography>
       <DatePicker
@@ -81,23 +93,23 @@ export default function ScheduleOptions({
         onClick={() => addSchedule(scheduleOptions)}
       >
         Solve
-      </Button>
-      <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
+      </Button> */}
+      {/* <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
       <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
         <Typography variant="body2" align="left">
           Status:
         </Typography>
         <Chip
-          label={schedule.status}
+          label={schedules.status}
           color={
-            (colorList[statusList.indexOf(schedule.status)] as
+            (colorList[statusList.indexOf(schedules.status)] as
               | "success"
               | "error"
               | "warning") || "default"
           }
           sx={{ marginLeft: 1 }}
         />
-      </Box>
+      </Box> */}
       <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
       <Typography variant="subtitle1" align="left">
         Display options

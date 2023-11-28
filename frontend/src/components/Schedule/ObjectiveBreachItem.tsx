@@ -5,10 +5,10 @@ import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 
-import { ConstraintBreachT, ShiftIdNameT, WorkerIdNameT } from "./types";
+import { ObjectiveBreachT, ShiftIdNameT, WorkerIdNameT } from "./types";
 
 interface Props {
-  constraintBreach: ConstraintBreachT;
+  objectiveBreach: ObjectiveBreachT;
   CBDisplayed: boolean;
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function ConstraintBreachItem({
-  constraintBreach,
+  objectiveBreach,
   CBDisplayed,
   workers,
   shifts,
@@ -26,20 +26,20 @@ export default function ConstraintBreachItem({
 }: Props) {
   const switchDisplayCB = () => {
     if (CBDisplayed) {
-      removeCBsDisplayed([constraintBreach.id]);
+      removeCBsDisplayed([objectiveBreach.id]);
     } else {
-      addCBsDisplayed([constraintBreach.id]);
+      addCBsDisplayed([objectiveBreach.id]);
     }
   };
 
   return (
     <ListItem
-      sx={{ bgcolor: constraintBreach.hardToSoft ? "#f8d7da" : "inherit" }}
+      sx={{ bgcolor: objectiveBreach.hardToSoft ? "#f8d7da" : "inherit" }}
     >
       <ListItemIcon>
         <Checkbox checked={CBDisplayed} onClick={switchDisplayCB} />
       </ListItemIcon>
-      <ListItemText primary={constraintBreach.description} />
+      <ListItemText primary={objectiveBreach.description} />
     </ListItem>
   );
 }

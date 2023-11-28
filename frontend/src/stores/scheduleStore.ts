@@ -5,49 +5,30 @@ import utc from "dayjs/plugin/utc";
 import {
   ScheduleT,
   AssignmentT,
-  CommentsT,
-  ScheduleOptionsT,
-  ConstraintBreachT,
+  ObjectiveBreachT,
+  VariableT,
+  SolutionT,
 } from "../components/Schedule/types";
+import { useAssignmentStore, toAssignmentT } from "./assignmentStore";
+import {
+  useObjectiveBreachStore,
+  toObjectiveBreachT,
+} from "./objectiveBreachStore";
+import { useStatStore } from "./statStore";
 
 dayjs.extend(utc);
 
 const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlSchedule = baseApiUrl + "/schedule";
+const apiUrlSchedule = baseApiUrl + "/schedules";
 
 type ScheduleStateT = {
-  schedule: ScheduleT;
-  fetchSchedule: () => void;
-  addSchedule: (scheduleOptions: ScheduleOptionsT) => void;
-};
-
-const toAssignmentT = (data: any) => {
-  const assignment: AssignmentT = {
-    ...data,
-    date: dayjs.utc(data.date),
-  };
-  return assignment;
-};
-
-const toConstraintBreachT = (data: any) => {
-  const constraintBreach: ConstraintBreachT = {
-    ...data,
-    variables: data.variables.map((variable: any) => {
-      const variableDate = dayjs.utc(variable[1]);
-      return [variable[0], variableDate, variable[2]];
-    }),
-  };
-  return constraintBreach;
-};
-
-const toCommentsT = (data: any) => {
-  const comments: CommentsT = {
-    constraintBreaches: data.constraintBreaches.map(toConstraintBreachT),
-    missingCoverageDates: data.missingCoverageDates.map((isoDate: string) =>
-      dayjs.utc(isoDate)
-    ),
-  };
-  return comments;
+  // schedule: ScheduleT;
+  schedules: ScheduleT[];
+  fetchSchedules: () => void;
+  addSchedule: (schedule: ScheduleT) => void;
+  solveSchedule: (id: string) => void;
+  updateSchedule: (updatedSchedule: ScheduleT) => void;
+  deleteSchedule: (id: string) => void;
 };
 
 const toScheduleT = (data: any) => {
@@ -55,27 +36,38 @@ const toScheduleT = (data: any) => {
     ...data,
     startDate: dayjs.utc(data.startDate),
     endDate: dayjs.utc(data.endDate),
-    assignments: data.assignments.map(toAssignmentT),
-    comments: toCommentsT(data.comments),
+    missingCoverageDates: data.missingCoverageDates.map((isoDate: string) =>
+      dayjs.utc(isoDate)
+    ),
   };
   return schedule;
 };
 
-export const useScheduleStore = create<ScheduleStateT>()((set) => ({
-  schedule: {
-    id: "",
-    startDate: dayjs.utc(0),
-    endDate: dayjs.utc(0),
-    status: "Not solved",
-    assignments: [],
-    comments: {
-      constraintBreaches: [],
-      missingCoverageDates: [],
-    } as CommentsT,
-    stats: [],
-  },
+const toSolutionT = (data: any) => {
+  const solution: SolutionT = {
+    schedule: toScheduleT(data.schedule),
+    assignments: data.assignments.map(toAssignmentT),
+    objectiveBreaches: data.objectiveBreaches.map(toObjectiveBreachT),
+    stats: data.stats,
+  };
+  return solution;
+};
 
-  fetchSchedule: async () => {
+export const useScheduleStore = create<ScheduleStateT>()((set) => ({
+  // schedule: {
+  //   id: "",
+  //   startDate: dayjs.utc(0),
+  //   endDate: dayjs.utc(0),
+  //   solveStatus: "Not solved",
+  //   status: "WIP",
+  //   assignments: [],
+  //   missingCoverageDates: [],
+  //   objectiveBreaches: [],
+  //   stats: [],
+  // },
+  schedules: [],
+
+  fetchSchedules: async () => {
     const options: RequestInit = {
       method: "GET",
       credentials: "include" as RequestCredentials,
@@ -86,27 +78,93 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
     try {
       const response = await fetch(apiUrlSchedule, options);
       const data = await response.json();
-      const schedule: ScheduleT = toScheduleT(data);
-      set({ schedule });
+      const schedules: ScheduleT[] = data.map(toScheduleT);
+      set({ schedules });
     } catch (error) {
       console.error("Failed to fetch schedule:", error);
     }
   },
 
-  addSchedule: async (scheduleOptions) => {
+  addSchedule: async (schedule) => {
     try {
       const response = await fetch(apiUrlSchedule, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(scheduleOptions),
+        body: JSON.stringify(schedule),
       });
       const data = await response.json();
-      const schedule: ScheduleT = toScheduleT(data);
-      set({ schedule });
+      const newSchedule: ScheduleT = toScheduleT(data);
+      set((state) => ({
+        schedules: [...state.schedules, newSchedule],
+      }));
     } catch (error) {
       throw Error(`Failed to add schedule: ${error}`);
+    }
+  },
+
+  solveSchedule: async (id) => {
+    try {
+      const response = await fetch(`${apiUrlSchedule}/${id}/solve`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      const newSolution: SolutionT = toSolutionT(data);
+      set((state) => ({
+        schedules: state.schedules.map((s) =>
+          s.id === newSolution.schedule.id ? newSolution.schedule : s
+        ),
+      }));
+      useAssignmentStore
+        .getState()
+        .updateAssignmentStore(newSolution.assignments);
+      useObjectiveBreachStore
+        .getState()
+        .updateObjectiveBreachStore(newSolution.objectiveBreaches);
+      useStatStore.getState().updateStatStore(newSolution.stats);
+    } catch (error) {
+      throw Error(`Failed to add schedule: ${error}`);
+    }
+  },
+
+  updateSchedule: async (updatedSchedule) => {
+    try {
+      const response = await fetch(`${apiUrlSchedule}/${updatedSchedule.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedSchedule),
+      });
+      const data = await response.json();
+      const newSchedule: ScheduleT = toScheduleT(data);
+      set((state) => ({
+        schedules: state.schedules.map((s) =>
+          s.id === newSchedule.id ? newSchedule : s
+        ),
+      }));
+    } catch (error) {
+      console.error("Failed to update schedule:", error);
+    }
+  },
+
+  deleteSchedule: async (id) => {
+    try {
+      await fetch(`${apiUrlSchedule}/${id}`, {
+        method: "DELETE",
+      });
+      set((state) => ({
+        schedules: state.schedules.filter((s) => s.id !== id),
+      }));
+      useAssignmentStore.getState().deleteAStoreWithScheduleId(id);
+      useObjectiveBreachStore.getState().deleteOBStoreWithScheduleId(id);
+      useStatStore.getState().deleteSStore();
+    } catch (error) {
+      console.error("Failed to delete schedule:", error);
     }
   },
 }));

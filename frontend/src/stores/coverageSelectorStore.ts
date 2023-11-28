@@ -61,7 +61,7 @@ export const useCoverageSelectorStore = create<CoverageSelectorStateT>()(
 
     updateCoverageSelector: async (updatedCoverageSelector) => {
       try {
-        await fetch(
+        const response = await fetch(
           `${apiUrlCoverageSelectors}/${updatedCoverageSelector.id}`,
           {
             method: "PUT",
@@ -71,9 +71,11 @@ export const useCoverageSelectorStore = create<CoverageSelectorStateT>()(
             body: JSON.stringify(updatedCoverageSelector),
           }
         );
+        const data = await response.json();
+        const newCoverageSelector = toCoverageSelectorT(data);
         set((state) => ({
           coverageSelectors: state.coverageSelectors.map((c) =>
-            c.id === updatedCoverageSelector.id ? updatedCoverageSelector : c
+            c.id === newCoverageSelector.id ? newCoverageSelector : c
           ),
         }));
       } catch (error) {
