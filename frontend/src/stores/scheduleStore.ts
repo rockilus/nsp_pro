@@ -115,7 +115,7 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       }));
       useAssignmentStore
         .getState()
-        .updateAssignmentStore(newSolution.assignments);
+        .updateAssignmentStore(id, newSolution.assignments);
       useObjectiveBreachStore
         .getState()
         .updateObjectiveBreachStore(newSolution.objectiveBreaches);

@@ -30,7 +30,7 @@ class AssignmentDB:
         assignment = AssignmentDocument(
             id=str(ObjectId()),
             worker=to_mongo_worker(worker),
-            date=a_date,
+            date=datetime(a_date.year, a_date.month, a_date.day),
             shift=to_mongo_shift(shift),
             schedule=to_mongo_schedule(schedule),
         )
@@ -72,6 +72,16 @@ class AssignmentDB:
         # pylint: disable=no-member
         assignments = AssignmentDocument.objects.filter(  # type: ignore
             date__gte=start_date, date__lte=end_date
+        )
+        return [_from_mongo_assignment(a) for a in list(assignments)]
+
+    def get_assignments_by_schedule_id(
+        self,
+        schedule_id: str,
+    ) -> List[Assignment]:
+        # pylint: disable=no-member
+        assignments = AssignmentDocument.objects.filter(  # type: ignore
+            schedule=schedule_id
         )
         return [_from_mongo_assignment(a) for a in list(assignments)]
 

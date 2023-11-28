@@ -13,7 +13,10 @@ type AssignmentStateT = {
   assignments: AssignmentT[];
   fetchAssignments: () => void;
   addAssignment: (assignment: AssignmentT) => void;
-  updateAssignmentStore: (updatedAssignments: AssignmentT[]) => void;
+  updateAssignmentStore: (
+    scheuleId: string,
+    updatedAssignments: AssignmentT[]
+  ) => void;
   updateAssignment: (updatedAssignment: AssignmentT) => void;
   deleteAssignment: (id: string) => void;
   deleteAStoreWithScheduleId: (id: string) => void;
@@ -67,21 +70,13 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
     }
   },
 
-  updateAssignmentStore: (updatedAssignments) => {
-    // console.log("updatedAssignments", updatedAssignments);
-    updatedAssignments.forEach((updatedAssignment) => {
-      //   console.log("updatedAssignment", updatedAssignment);
-
-      set((state) => ({
-        assignments: state.assignments.find(
-          (s) => s.id === updatedAssignment.id
-        )
-          ? state.assignments.map((s) =>
-              s.id === updatedAssignment.id ? updatedAssignment : s
-            )
-          : [...state.assignments, updatedAssignment],
-      }));
-    });
+  updateAssignmentStore: (scheduleId, updatedAssignments) => {
+    set((state) => ({
+      assignments: [
+        ...state.assignments.filter((a) => a.scheduleId !== scheduleId),
+        ...updatedAssignments,
+      ],
+    }));
   },
 
   updateAssignment: async (updatedAssignment) => {
