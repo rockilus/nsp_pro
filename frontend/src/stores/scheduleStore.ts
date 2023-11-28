@@ -2,13 +2,7 @@ import { create } from "zustand";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
-import {
-  ScheduleT,
-  AssignmentT,
-  ObjectiveBreachT,
-  VariableT,
-  SolutionT,
-} from "../components/Schedule/types";
+import { ScheduleT, SolutionT } from "../components/Schedule/types";
 import { useAssignmentStore, toAssignmentT } from "./assignmentStore";
 import {
   useObjectiveBreachStore,

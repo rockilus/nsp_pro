@@ -40,6 +40,13 @@ class Stat:
 
 
 @dataclass
+class StatsOptions:
+    id: str
+    start_date: date
+    end_date: date
+
+
+@dataclass
 class Schedule:
     id: str
     start_date: date

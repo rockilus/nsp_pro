@@ -103,6 +103,17 @@ class StatMessage(BaseModel):
     value: int
 
 
+class StatsOptionsMessage(BaseModel):
+    id: str
+    startDate: date
+    endDate: date
+
+
+class StatsMessage(BaseModel):
+    statsOptions: Union[StatsOptionsMessage, None]
+    stats: List[StatMessage]
+
+
 class VariableMessage(BaseModel):
     workerId: str
     date: date

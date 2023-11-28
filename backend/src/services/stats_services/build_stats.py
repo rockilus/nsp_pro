@@ -3,23 +3,28 @@ from typing import List
 
 import numpy as np
 
-from core.schedule import Assignment, Stat
-from engine import Inputs as InputsEngine
+from core.schedule import Assignment, Stat, StatsOptions
 from utils.constants import Constants
 
 
 class BuildStats:
-    def __init__(self, inputs: InputsEngine, shifts_off: List[str]) -> None:
-        self.workers = inputs.variable_space.workers
-        self.start_date = inputs.variable_space.start_date
-        self.end_date = inputs.variable_space.end_date
-        self.shifts = inputs.variable_space.shifts
+    def __init__(
+        self,
+        stats_options: StatsOptions,
+        worker_ids: List[str],
+        shift_ids: List[str],
+        shifts_off: List[str],
+    ) -> None:
+        self.workers = worker_ids
+        self.start_date = stats_options.start_date
+        self.end_date = stats_options.end_date
+        self.shifts = shift_ids
         self.shifts_off = shifts_off
 
     def build_stats(self, assignments: List[Assignment]) -> List[Stat]:
         a_array = self.assignments_to_np(assignments)
         aw_array = self.a_array_to_aw_array(a_array)
-        worked_days_stats = self.buidl_worked_days_stats(aw_array)
+        worked_days_stats = self.build_worked_days_stats(aw_array)
         worked_shifts_stats = self.build_worked_shifts_stats(a_array)
 
         return worked_days_stats + worked_shifts_stats
@@ -46,7 +51,7 @@ class BuildStats:
         aw_array = np.delete(a_array, indices_to_remove, axis=2)
         return aw_array
 
-    def buidl_worked_days_stats(self, a_array: np.ndarray) -> List[Stat]:
+    def build_worked_days_stats(self, a_array: np.ndarray) -> List[Stat]:
         a_array_sum_shifts = a_array.sum(axis=2)
         dates = [
             self.start_date + timedelta(days=i)

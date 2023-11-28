@@ -14,7 +14,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import SchedulePanelDialog from "./SchedulePanelDialog";
 import ScheduleWIP from "./ScheduleWIP";
-import { ScheduleOptionsT, ScheduleT } from "./types";
+import { ScheduleT } from "./types";
 import { emptySchedule } from "../../utils/emptyObjects";
 
 dayjs.extend(utc);

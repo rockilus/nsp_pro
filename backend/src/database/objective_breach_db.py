@@ -79,7 +79,7 @@ class ObjectiveBreachDB:
 
 # Mappers
 def to_mongo_variable(dataclass_obj: Variable) -> VariableDocument:
-    # pylint: disable=no-member
+    # pylint: disable=no-member, R0801
     worker = WorkerDocument.objects.get(id=dataclass_obj.worker_id)  # type: ignore
     shift = ShiftDocument.objects.get(id=dataclass_obj.shift_id)  # type: ignore
     return VariableDocument(
