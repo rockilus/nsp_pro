@@ -15,6 +15,7 @@ from routes.api_model import (
 )
 from routes.assignment_routes import assignment_to_api_msg
 from routes.objective_breach_routes import objective_breach_to_api_msg
+from routes.stats_options_routes import stat_to_api_msg
 from scripts.setup_database import assignment_db, objective_breach_db, schedule_db
 from services import solve_schedule as solve_schedule_service
 
@@ -57,29 +58,6 @@ def delete_schedule(schedule_id: str) -> Dict:
     objective_breach_db.delete_objective_breaches_by_schedule_id(schedule_id)
     schedule_db.delete_schedule(schedule_id)
     return {"message": "CoverageSelector deleted"}
-
-
-# def objective_breach_to_api_msg(
-#     objective_breach: ObjectiveBreach,
-# ) -> ObjectiveBreachMessage:
-#     data = asdict(objective_breach)
-#     as_dict = humps.camelize(data)
-#     validator = TypeAdapter(ObjectiveBreachMessage)
-#     return validator.validate_python(as_dict)
-
-
-# def assignment_to_api_msg(assignment: Assignment) -> AssignmentMessage:
-#     data = asdict(assignment)
-#     as_dict = humps.camelize(data)
-#     validator = TypeAdapter(AssignmentMessage)
-#     return validator.validate_python(as_dict)
-
-
-def stat_to_api_msg(stat: Stat) -> StatMessage:
-    data = asdict(stat)
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(StatMessage)
-    return validator.validate_python(as_dict)
 
 
 def schedule_to_api_msg(schedule: Schedule) -> ScheduleMessage:

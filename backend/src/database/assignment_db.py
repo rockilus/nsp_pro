@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import List, Union
 
 from bson import ObjectId
@@ -40,7 +40,7 @@ class AssignmentDB:
     def get_assignments(self) -> List[Assignment]:
         # pylint: disable=no-member
         assignments = AssignmentDocument.objects.all()  # type: ignore
-        return [_from_mongo_assignment(c) for c in list(assignments)]
+        return [_from_mongo_assignment(a) for a in list(assignments)]
 
     def get_assignment_by_id(self, assignment_id: str) -> Assignment:
         # pylint: disable=no-member
@@ -63,6 +63,17 @@ class AssignmentDB:
         except AssignmentDocument.DoesNotExist:
             return None
         return _from_mongo_assignment(assignment)
+
+    def get_assignments_by_dates(
+        self,
+        start_date: date,
+        end_date: date,
+    ) -> List[Assignment]:
+        # pylint: disable=no-member
+        assignments = AssignmentDocument.objects.filter(  # type: ignore
+            date__gte=start_date, date__lte=end_date
+        )
+        return [_from_mongo_assignment(a) for a in list(assignments)]
 
     def update_assignment(self, assignment: Assignment) -> Assignment:
         document = to_mongo_assignment(assignment)
@@ -90,7 +101,11 @@ def to_mongo_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
     return AssignmentDocument(
         id=dataclass_obj.id,
         worker=worker,
-        date=dataclass_obj.date,
+        date=datetime(
+            dataclass_obj.date.year,
+            dataclass_obj.date.month,
+            dataclass_obj.date.day,
+        ),
         shift=shift,
         schedule=schedule,
     )
@@ -100,7 +115,7 @@ def _from_mongo_assignment(doc_obj: AssignmentDocument) -> Assignment:
     return Assignment(
         id=doc_obj.id,
         worker_id=doc_obj.worker.id,
-        date=doc_obj.date,
+        date=doc_obj.date.date(),
         shift_id=doc_obj.shift.id,
         schedule_id=doc_obj.schedule.id,
     )

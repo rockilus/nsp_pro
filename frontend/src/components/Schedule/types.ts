@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
-import { VariableDeclaration } from "typescript";
 
 // Types for store
 
+// Assignment
 export type AssignmentT = {
   id: string;
   workerId: string;
@@ -11,6 +11,7 @@ export type AssignmentT = {
   scheduleId: string;
 };
 
+// Objective Breach
 export type VariableT = {
   workerId: string;
   date: dayjs.Dayjs;
@@ -27,6 +28,13 @@ export type ObjectiveBreachT = {
   scheduleId: string;
 };
 
+// Stats
+export type StatsOptionsT = {
+  id: string;
+  startDate: dayjs.Dayjs;
+  endDate: dayjs.Dayjs;
+};
+
 export type StatT = {
   workerId: string;
   name: string;
@@ -34,6 +42,12 @@ export type StatT = {
   value: number;
 };
 
+export type StatsT = {
+  statsOptions: StatsOptionsT | null;
+  stats: StatT[];
+};
+
+// Schedule
 export type ScheduleT = {
   id: string;
   startDate: dayjs.Dayjs;
@@ -41,11 +55,9 @@ export type ScheduleT = {
   solveStatus: string;
   status: string;
   missingCoverageDates: dayjs.Dayjs[];
-  // assignments: AssignmentT[];
-  // objectiveBreaches: ObjectiveBreachT[];
-  // stats: StatT[];
 };
 
+// Solution
 export type SolutionT = {
   schedule: ScheduleT;
   assignments: AssignmentT[];
@@ -79,11 +91,6 @@ export type CellT = {
   rowSpan: number;
   noCoverage: boolean;
   objectiveBreach: ObjectiveBreachT[];
-};
-
-export type ScheduleOptionsT = {
-  startDate: dayjs.Dayjs;
-  endDate: dayjs.Dayjs;
 };
 
 export type ColumnStatsT = {

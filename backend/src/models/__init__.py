@@ -10,6 +10,7 @@ from models.shift import Shift
 from models.shift_demand import ShiftDemand
 from models.shift_dimension import ShiftDimension
 from models.shift_property import ShiftProperty
+from models.stats_options import StatsOptions
 from models.worker import Worker
 from models.worker_dimension import WorkerDimension
 from models.worker_property import WorkerProperty
@@ -31,6 +32,7 @@ __all__ = [
     "ShiftDemand",
     "ShiftDimension",
     "ShiftProperty",
+    "StatsOptions",
     "Worker",
     "WorkerDimension",
     "WorkerProperty",

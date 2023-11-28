@@ -1,22 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
-import Divider from "@mui/material/Divider";
 import EditIcon from "@mui/icons-material/Edit";
-import FormGroup from "@mui/material/FormGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import IconButton from "@mui/material/IconButton";
-import Switch from "@mui/material/Switch";
 import Typography from "@mui/material/Typography";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import SchedulePanelDialog from "./SchedulePanelDialog";
-import { ScheduleOptionsT, ScheduleT } from "./types";
-import { emptySchedule } from "../../utils/emptyObjects";
+import { ScheduleT } from "./types";
 import { solveStatusList, solveStatusColors } from "../../utils/constants";
 import { useScheduleStore } from "../../stores/scheduleStore";
 

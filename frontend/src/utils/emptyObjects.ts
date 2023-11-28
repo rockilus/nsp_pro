@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 import { ShiftDefaultT } from "../components/Shift/types";
-import { ScheduleT } from "../components/Schedule/types";
+import { ScheduleT, StatsOptionsT } from "../components/Schedule/types";
 
 dayjs.extend(utc);
 
@@ -26,4 +26,10 @@ export const emptySchedule: ScheduleT = {
   // assignments: [],
   // objectiveBreaches: [],
   // stats: [],
+};
+
+export const emptyStatsOptions: StatsOptionsT = {
+  id: "",
+  startDate: dayjs.utc().startOf("day"),
+  endDate: dayjs.utc().startOf("day"),
 };
