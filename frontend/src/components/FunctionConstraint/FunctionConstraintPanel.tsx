@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Card, CardContent, FormControl, InputLabel, List, ListItem, ListItemText, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, FormControl, Grid, IconButton, InputLabel, List, ListItem, ListItemText, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { useConstraintStore } from "../../stores/constraintStore";
 import { ShiftDimensionT, ShiftT } from "../Shift/types";
 import { BuildBlockNameT } from "../Constraint/types";
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 
 type FunctionDefinitionT = {
   name: string;
@@ -473,6 +474,30 @@ const validateFunction = (parsedInput: { value: string, args: any[] } , function
   return true;
 };
 
+type CopyToClipboardButtonProps = {
+  textToCopy: string;
+};
+
+const CopyToClipboardButton: React.FC<CopyToClipboardButtonProps> = ({textToCopy}) => {
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => {
+        // Success feedback
+        console.log('Text copied to clipboard');
+      })
+      .catch(err => {
+        // Error handling
+        console.error('Failed to copy: ', err);
+      });
+  };
+
+  return (
+    <IconButton onClick={copyToClipboard} aria-label="copy">
+      <FileCopyIcon />
+    </IconButton>
+  );
+}
+
 type FunctionDocumentationProps = {
   functions: FunctionDefinitionT[];
 };
@@ -508,9 +533,16 @@ const FunctionDocumentation: React.FC<FunctionDocumentationProps> = ({ functions
               <Typography variant="h6" style={{ marginTop: '12px' }}>Examples:</Typography>
               {selectedFunction.examples.map((example, index) => (
                 <Box key={index} mt={2}>
-                  <Box component="pre" bgcolor="#f5f5f5" p={1} borderRadius={1}>
-                    {example.formula}
-                  </Box>
+                  <Grid container spacing={1} alignItems="center">
+                    <Grid item>
+                      <Box component="pre" bgcolor="#f5f5f5" p={1} borderRadius={1}>
+                        {example.formula}
+                      </Box>
+                    </Grid>
+                    <Grid item>
+                      <CopyToClipboardButton textToCopy={example.formula} />
+                    </Grid>
+                  </Grid>
                   <Typography variant="body2" style={{ marginTop: '8px' }}>
                     <strong>Explanation:</strong> {example.explanation}
                   </Typography>
