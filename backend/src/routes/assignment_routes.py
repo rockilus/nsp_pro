@@ -19,7 +19,9 @@ def create_assignment(req: AssignmentMessage) -> AssignmentMessage:
     worker = worker_db.get_worker_by_id(a_data.worker_id)
     shift = shift_db.get_shift_by_id(a_data.shift_id)
     schedule = schedule_db.get_schedule_by_id(a_data.schedule_id)
-    assignment = assignment_db.create_assignment(worker, a_data.date, shift, schedule)
+    assignment = assignment_db.create_assignment(
+        worker, a_data.date, shift, schedule, a_data.status
+    )
     return assignment_to_api_msg(assignment)
 
 

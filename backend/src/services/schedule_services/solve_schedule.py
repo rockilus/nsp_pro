@@ -70,34 +70,37 @@ def solve_schedule(
     update_far_status(schedule, assignments)
     stats = stats_setup()
     updated_schedule = schedule_db.update_schedule(schedule)
-    updated_assignments = [
-        save_assignment(a, workers, shifts, updated_schedule) for a in assignments
-    ]
+    updated_assignments = save_assignments(
+        assignments, workers, shifts, updated_schedule
+    )
     new_objective_breaches = save_objective_breaches(
         updated_schedule, objective_breaches
     )
     return updated_schedule, updated_assignments, new_objective_breaches, stats
 
 
-def save_assignment(
-    assignment: Assignment,
+def save_assignments(
+    assignments: List[Assignment],
     workers: List[Worker],
     shifts: List[Shift],
     schedule: Schedule,
-) -> Assignment:
-    worker = next((w for w in workers if w.id == assignment.worker_id), None)
-    if not worker:
-        raise ValueError(f"Worker {assignment.worker_id} not found")
-    shift = next((s for s in shifts if s.id == assignment.shift_id), None)
-    if not shift:
-        raise ValueError(f"Shift {assignment.shift_id} not found")
-    existing_assignment = assignment_db.get_assignment_by_worker_date_schedule(
-        worker, assignment.date, schedule
-    )
-    if existing_assignment:
-        assignment.id = existing_assignment.id
-        return assignment_db.update_assignment(assignment)
-    return assignment_db.create_assignment(worker, assignment.date, shift, schedule)
+) -> List[Assignment]:
+    existing_as = assignment_db.get_assignments_by_schedule_id(schedule.id)
+    if existing_as:
+        for a in existing_as:
+            assignment_db.delete_assignment(a.id)
+    out = []
+    for a in assignments:
+        worker = next((w for w in workers if w.id == a.worker_id), None)
+        if worker is None:
+            raise ValueError(f"Worker {a.worker_id} not found")
+        shift = next((s for s in shifts if s.id == a.shift_id), None)
+        if shift is None:
+            raise ValueError(f"Shift {a.shift_id} not found")
+        out.append(
+            assignment_db.create_assignment(worker, a.date, shift, schedule, "wip")
+        )
+    return out
 
 
 def save_objective_breaches(

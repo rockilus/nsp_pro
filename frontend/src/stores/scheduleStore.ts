@@ -2,7 +2,7 @@ import { create } from "zustand";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
-import { ScheduleT, SolutionT } from "../components/Schedule/types";
+import { ScheduleT, SolutionT, ValidateT } from "../components/Schedule/types";
 import { useAssignmentStore, toAssignmentT } from "./assignmentStore";
 import {
   useObjectiveBreachStore,
@@ -22,6 +22,7 @@ type ScheduleStateT = {
   addSchedule: (schedule: ScheduleT) => void;
   solveSchedule: (id: string) => void;
   updateSchedule: (updatedSchedule: ScheduleT) => void;
+  validateSchedule: (id: string) => void;
   deleteSchedule: (id: string) => void;
 };
 
@@ -45,6 +46,14 @@ const toSolutionT = (data: any) => {
     stats: data.stats,
   };
   return solution;
+};
+
+const toValidateT = (data: any) => {
+  const out: ValidateT = {
+    schedule: toScheduleT(data.schedule),
+    assignments: data.assignments.map(toAssignmentT),
+  };
+  return out;
 };
 
 export const useScheduleStore = create<ScheduleStateT>()((set) => ({
@@ -115,7 +124,7 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       }));
       useAssignmentStore
         .getState()
-        .updateAssignmentStore(newSolution.assignments);
+        .updateAssignmentStore(id, newSolution.assignments);
       useObjectiveBreachStore
         .getState()
         .updateObjectiveBreachStore(newSolution.objectiveBreaches);
@@ -143,6 +152,29 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to update schedule:", error);
+    }
+  },
+
+  validateSchedule: async (id) => {
+    try {
+      const response = await fetch(`${apiUrlSchedule}/${id}/validate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      const newValidate: ValidateT = toValidateT(data);
+      set((state) => ({
+        schedules: state.schedules.map((s) =>
+          s.id === newValidate.schedule.id ? newValidate.schedule : s
+        ),
+      }));
+      useAssignmentStore
+        .getState()
+        .updateAssignmentStore(id, newValidate.assignments);
+    } catch (error) {
+      console.error("Failed to validate schedule:", error);
     }
   },
 

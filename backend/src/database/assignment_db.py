@@ -20,19 +20,22 @@ class AssignmentDB:
     def __init__(self, db: DB):
         self.db = db
 
+    # pylint: disable=too-many-arguments
     def create_assignment(
         self,
         worker: Worker,
         a_date: date,
         shift: Shift,
         schedule: Schedule,
+        status: str,
     ) -> Assignment:
         assignment = AssignmentDocument(
             id=str(ObjectId()),
             worker=to_mongo_worker(worker),
-            date=a_date,
+            date=datetime(a_date.year, a_date.month, a_date.day),
             shift=to_mongo_shift(shift),
             schedule=to_mongo_schedule(schedule),
+            status=status,
         )
         assignment_saved = assignment.save()
         return _from_mongo_assignment(assignment_saved)
@@ -75,6 +78,16 @@ class AssignmentDB:
         )
         return [_from_mongo_assignment(a) for a in list(assignments)]
 
+    def get_assignments_by_schedule_id(
+        self,
+        schedule_id: str,
+    ) -> List[Assignment]:
+        # pylint: disable=no-member
+        assignments = AssignmentDocument.objects.filter(  # type: ignore
+            schedule=schedule_id
+        )
+        return [_from_mongo_assignment(a) for a in list(assignments)]
+
     def update_assignment(self, assignment: Assignment) -> Assignment:
         document = to_mongo_assignment(assignment)
         document_saved = document.save()
@@ -108,6 +121,7 @@ def to_mongo_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
         ),
         shift=shift,
         schedule=schedule,
+        status=dataclass_obj.status,
     )
 
 
@@ -118,4 +132,5 @@ def _from_mongo_assignment(doc_obj: AssignmentDocument) -> Assignment:
         date=doc_obj.date.date(),
         shift_id=doc_obj.shift.id,
         schedule_id=doc_obj.schedule.id,
+        status=doc_obj.status,
     )

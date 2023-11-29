@@ -9,6 +9,7 @@ export type AssignmentT = {
   date: dayjs.Dayjs;
   shiftId: string;
   scheduleId: string;
+  status: string;
 };
 
 // Objective Breach
@@ -63,6 +64,12 @@ export type SolutionT = {
   assignments: AssignmentT[];
   objectiveBreaches: ObjectiveBreachT[];
   stats: StatT[];
+};
+
+// Validate
+export type ValidateT = {
+  schedule: ScheduleT;
+  assignments: AssignmentT[];
 };
 
 // Types for components

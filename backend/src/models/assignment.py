@@ -10,3 +10,4 @@ class Assignment(Document):
     date = DateTimeField(required=True)
     shift = ReferenceField("Shift", required=True)
     schedule = ReferenceField("Schedule", required=True)
+    status = StringField(required=True)  # wip, valid, past

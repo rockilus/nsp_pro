@@ -16,7 +16,6 @@ class ShiftDemandDB:
     def __init__(self, db: DB):
         self.db = db
 
-    # pylint: disable=too-many-arguments
     def create_shift_demand(
         self,
         day_index: int,

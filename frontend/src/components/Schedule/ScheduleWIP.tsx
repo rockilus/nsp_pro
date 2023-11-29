@@ -10,6 +10,7 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 
 import SchedulePanelDialog from "./SchedulePanelDialog";
+import ScheduleValidateDialog from "./ScheduleValidateDialog";
 import { ScheduleT } from "./types";
 import { solveStatusList, solveStatusColors } from "../../utils/constants";
 import { useScheduleStore } from "../../stores/scheduleStore";
@@ -78,6 +79,7 @@ export default function ScheduleWIP({ schedule }: Props) {
       >
         Solve
       </Button>
+      <ScheduleValidateDialog scheduleId={schedule.id} />
     </Box>
   );
 }

@@ -8,7 +8,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -61,9 +60,6 @@ export default function SchedulePanelDialog({
       >
         {buttonElement}
       </Box>
-      {/* <Button variant="contained" onClick={handleClickOpen}>
-        Create schedule
-      </Button> */}
       <Dialog
         open={open}
         onClose={handleClose}

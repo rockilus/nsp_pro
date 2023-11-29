@@ -79,7 +79,6 @@ export default function ScheduleTab({ workers, shifts }: Props) {
           schedules={schedules}
           shiftSchedule={shiftSchedule}
           displayCBs={displayCBs}
-          addSchedule={addSchedule}
           switchScheduleDisplay={() => setShiftSchedule(!shiftSchedule)}
           switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
         />
