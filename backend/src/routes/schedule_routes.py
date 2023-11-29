@@ -12,12 +12,14 @@ from routes.api_model import (
     ScheduleMessage,
     SolutionMessage,
     StatMessage,
+    ValidateMessage,
 )
 from routes.assignment_routes import assignment_to_api_msg
 from routes.objective_breach_routes import objective_breach_to_api_msg
 from routes.stats_options_routes import stat_to_api_msg
 from scripts.setup_database import assignment_db, objective_breach_db, schedule_db
 from services import solve_schedule as solve_schedule_service
+from services import validate_schedule as validate_schedule_service
 
 router = APIRouter()
 
@@ -34,6 +36,12 @@ def solve_schedule(schedule_id: str) -> SolutionMessage:
     schedule = schedule_db.get_schedule_by_id(schedule_id)
     schedule, assignments, objective_breaches, stats = solve_schedule_service(schedule)
     return solution_to_api_msg(schedule, assignments, objective_breaches, stats)
+
+
+@router.post("/schedules/{schedule_id}/validate", status_code=201)
+def validate_schedule(schedule_id: str) -> ValidateMessage:
+    schedule, assignments = validate_schedule_service(schedule_id)
+    return validate_to_api_msg(schedule, assignments)
 
 
 @router.get("/schedules")
@@ -90,6 +98,18 @@ def solution_to_api_msg(
     data["stats"] = [stat_to_api_msg(s) for s in stats]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(SolutionMessage)
+    return validator.validate_python(as_dict)
+
+
+def validate_to_api_msg(
+    schedule: Schedule,
+    assignments: List[Assignment],
+) -> ValidateMessage:
+    data: Dict[str, Union[ScheduleMessage, List[AssignmentMessage]]] = {}
+    data["schedule"] = schedule_to_api_msg(schedule)
+    data["assignments"] = [assignment_to_api_msg(a) for a in assignments]
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(ValidateMessage)
     return validator.validate_python(as_dict)
 
 

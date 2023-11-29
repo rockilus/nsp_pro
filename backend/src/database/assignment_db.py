@@ -20,12 +20,14 @@ class AssignmentDB:
     def __init__(self, db: DB):
         self.db = db
 
+    # pylint: disable=too-many-arguments
     def create_assignment(
         self,
         worker: Worker,
         a_date: date,
         shift: Shift,
         schedule: Schedule,
+        status: str,
     ) -> Assignment:
         assignment = AssignmentDocument(
             id=str(ObjectId()),
@@ -33,6 +35,7 @@ class AssignmentDB:
             date=datetime(a_date.year, a_date.month, a_date.day),
             shift=to_mongo_shift(shift),
             schedule=to_mongo_schedule(schedule),
+            status=status,
         )
         assignment_saved = assignment.save()
         return _from_mongo_assignment(assignment_saved)
@@ -118,6 +121,7 @@ def to_mongo_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
         ),
         shift=shift,
         schedule=schedule,
+        status=dataclass_obj.status,
     )
 
 
@@ -128,4 +132,5 @@ def _from_mongo_assignment(doc_obj: AssignmentDocument) -> Assignment:
         date=doc_obj.date.date(),
         shift_id=doc_obj.shift.id,
         schedule_id=doc_obj.schedule.id,
+        status=doc_obj.status,
     )

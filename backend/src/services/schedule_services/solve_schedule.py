@@ -39,16 +39,12 @@ def solve_schedule(
             shift_demands.append(None)
             continue
         shift_demands.append(
-            shift_demand_db.get_shift_demands_by_coverage_selector(
-                coverage_selector
-            )
+            shift_demand_db.get_shift_demands_by_coverage_selector(coverage_selector)
         )
     fixed_assignments = fixed_assignment_db.get_fixed_assignments_by_dates(
         schedule.start_date, schedule.end_date
     )
-    requests = request_db.get_requests_by_dates(
-        schedule.start_date, schedule.end_date
-    )
+    requests = request_db.get_requests_by_dates(schedule.start_date, schedule.end_date)
     constraints = constraint_db.get_constraints_active()
     inputs = core_to_engine_inputs(
         workers,
@@ -102,7 +98,7 @@ def save_assignments(
         if shift is None:
             raise ValueError(f"Shift {a.shift_id} not found")
         out.append(
-            assignment_db.create_assignment(worker, a.date, shift, schedule)
+            assignment_db.create_assignment(worker, a.date, shift, schedule, "wip")
         )
     return out
 
@@ -111,9 +107,7 @@ def save_objective_breaches(
     schedule: Schedule,
     objective_breaches: List[ObjectiveBreach],
 ) -> List[ObjectiveBreach]:
-    existing_ob = objective_breach_db.get_objective_breaches_by_schedule_id(
-        schedule.id
-    )
+    existing_ob = objective_breach_db.get_objective_breaches_by_schedule_id(schedule.id)
     if existing_ob:
         for ob in existing_ob:
             objective_breach_db.delete_objective_breach(ob.id)

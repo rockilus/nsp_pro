@@ -94,6 +94,7 @@ class AssignmentMessage(BaseModel):
     date: date
     shiftId: str
     scheduleId: str
+    status: str
 
 
 class StatMessage(BaseModel):
@@ -137,9 +138,6 @@ class ScheduleMessage(BaseModel):
     solveStatus: str
     status: str
     missingCoverageDates: List[date]
-    # assignments: List[AssignmentMessage]
-    # objectiveBreaches: List[ObjectiveBreachMessage]
-    # stats: List[StatMessage]
 
 
 class SolutionMessage(BaseModel):
@@ -147,6 +145,11 @@ class SolutionMessage(BaseModel):
     assignments: List[AssignmentMessage]
     objectiveBreaches: List[ObjectiveBreachMessage]
     stats: List[StatMessage]
+
+
+class ValidateMessage(BaseModel):
+    schedule: ScheduleMessage
+    assignments: List[AssignmentMessage]
 
 
 # Fixed Assignement

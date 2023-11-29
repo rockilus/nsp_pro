@@ -10,6 +10,7 @@ class Assignment:
     date: date
     shift_id: str
     schedule_id: str
+    status: str  # wip, valid, past
 
 
 @dataclass

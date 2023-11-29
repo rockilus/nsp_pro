@@ -23,7 +23,7 @@ def engine_to_core_outputs(
     else:
         schedule.solve_status = "No solution"
     assignments = [
-        Assignment(**asdict(a), id="", schedule_id=schedule.id)
+        Assignment(**asdict(a), id="", schedule_id=schedule.id, status="wip")
         for a in outputs.assignments
     ]
     objective_breaches = [
