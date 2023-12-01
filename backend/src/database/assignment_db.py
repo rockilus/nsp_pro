@@ -88,6 +88,16 @@ class AssignmentDB:
         )
         return [_from_mongo_assignment(a) for a in list(assignments)]
 
+    def get_wip_validated_assignments_before_date(
+        self,
+        a_date: date,
+    ) -> List[Assignment]:
+        # pylint: disable=no-member
+        assignments = AssignmentDocument.objects.filter(  # type: ignore
+            date__lt=a_date, status__in=["wip", "validated"]
+        )
+        return [_from_mongo_assignment(a) for a in list(assignments)]
+
     def update_assignment(self, assignment: Assignment) -> Assignment:
         document = to_mongo_assignment(assignment)
         document_saved = document.save()

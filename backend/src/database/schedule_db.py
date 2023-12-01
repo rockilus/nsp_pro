@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import List
 
 from bson import ObjectId
@@ -44,6 +44,13 @@ class ScheduleDB:
         # pylint: disable=no-member
         schedule = ScheduleDocument.objects.get(id=schedule_id)  # type: ignore
         return _from_mongo_schedule(schedule)
+
+    def get_wip_validated_schedules_before_date(self, s_date: date) -> List[Schedule]:
+        # pylint: disable=no-member
+        schedules = ScheduleDocument.objects.filter(  # type: ignore
+            end_date__lt=s_date, status__in=["wip", "validated"]
+        )
+        return [_from_mongo_schedule(s) for s in list(schedules)]
 
     def update_schedule(self, schedule: Schedule) -> Schedule:
         document = to_mongo_schedule(schedule)
