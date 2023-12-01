@@ -19,6 +19,9 @@ from routes.objective_breach_routes import objective_breach_to_api_msg
 from routes.stats_options_routes import stat_to_api_msg
 from scripts.setup_database import assignment_db, objective_breach_db, schedule_db
 from services import solve_schedule as solve_schedule_service
+from services import (
+    to_past_schedules_and_assignments as to_past_schedules_and_assignments_service,
+)
 from services import validate_schedule as validate_schedule_service
 
 router = APIRouter()
@@ -46,6 +49,7 @@ def validate_schedule(schedule_id: str) -> ValidateMessage:
 
 @router.get("/schedules")
 def get_schedules() -> List[ScheduleMessage]:
+    to_past_schedules_and_assignments_service()
     schedules = schedule_db.get_schedules()
     return [schedule_to_api_msg(s) for s in schedules]
 
