@@ -10,6 +10,11 @@ import TableRow from "@mui/material/TableRow";
 
 import ScheduleCell from "./ScheduleCell";
 import { ColumnT, RowT } from "./types";
+import {
+  ColorNoCoverage,
+  ColorPast,
+  ColorValidated,
+} from "../../utils/constants";
 
 interface Props {
   columns: ColumnT[];
@@ -24,8 +29,6 @@ export default function ScheduleTable({
   displayCBs,
   CBsDisplayed,
 }: Props) {
-  const noCoverageColor: string = "#E0E0E0";
-
   // console.log("columns", columns);
 
   return (
@@ -39,9 +42,14 @@ export default function ScheduleTable({
                 component="th"
                 scope="row"
                 sx={{
-                  backgroundColor: column.noCoverage
-                    ? noCoverageColor
-                    : "inherit",
+                  backgroundColor:
+                    column.status === "past"
+                      ? ColorPast
+                      : column.status === "validated"
+                      ? ColorValidated
+                      : column.noCoverage
+                      ? ColorNoCoverage
+                      : "inherit",
                 }}
               >
                 {column.name}

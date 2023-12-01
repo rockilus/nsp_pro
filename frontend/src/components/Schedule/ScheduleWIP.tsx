@@ -12,7 +12,7 @@ import Typography from "@mui/material/Typography";
 import SchedulePanelDialog from "./SchedulePanelDialog";
 import ScheduleValidateDialog from "./ScheduleValidateDialog";
 import { ScheduleT } from "./types";
-import { solveStatusList, solveStatusColors } from "../../utils/constants";
+import { SolveStatusList, SolveStatusColors } from "../../utils/constants";
 import { useScheduleStore } from "../../stores/scheduleStore";
 
 dayjs.extend(utc);
@@ -65,8 +65,8 @@ export default function ScheduleWIP({ schedule }: Props) {
         <Chip
           label={schedule.solveStatus}
           color={
-            (solveStatusColors[
-              solveStatusList.indexOf(schedule.solveStatus)
+            (SolveStatusColors[
+              SolveStatusList.indexOf(schedule.solveStatus)
             ] as "default" | "success" | "error" | "warning") || "default"
           }
           sx={{ marginLeft: 1 }}
