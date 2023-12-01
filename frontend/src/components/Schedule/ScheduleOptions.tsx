@@ -41,8 +41,9 @@ export default function ScheduleOptions({
             currentSchedule.endDate > latestSchedule.endDate
               ? currentSchedule
               : latestSchedule
-          ).endDate || dayjs.utc()
-      : dayjs.utc();
+          )
+          .endDate.startOf("day") || dayjs.utc().startOf("day")
+      : dayjs.utc().startOf("day");
   const newScheduleWIP = {
     ...emptySchedule,
     startDate: scheduleWIPStartDate.add(1, "day"),

@@ -88,6 +88,7 @@ export type ColumnT = {
   date: dayjs.Dayjs;
   name: string;
   noCoverage: boolean;
+  status: string;
 };
 
 export type RowT = CellT[];

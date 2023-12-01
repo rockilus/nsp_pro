@@ -40,17 +40,20 @@ export const CovBodyRowHeight = 12; // in pixels
 export const CovBorderThick = 1; // in pixels
 
 //Schedules
-export const solveStatusList = [
+export const SolveStatusList = [
   "Not solved",
   "Solved",
   "No solution",
   "Soft breached",
   "Hard breached",
 ];
-export const solveStatusColors = [
+export const SolveStatusColors = [
   "default",
   "success",
   "error",
   "warning",
   "error",
 ];
+export const ColorNoCoverage = "#E0E0E0";
+export const ColorPast = "#D5A8DC";
+export const ColorValidated = "#AFDCA8";

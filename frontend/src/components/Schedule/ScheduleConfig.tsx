@@ -37,6 +37,8 @@ export default function ScheduleConfig({
   const [columns, setColumns] = useState<ColumnT[]>([]);
   const [rows, setRows] = useState<RowT[]>([]);
 
+  // console.log("assignments", assignments);
+
   const assignmentInConflictsWorker = useCallback(
     (assignment: AssignmentT): ObjectiveBreachT[] => {
       return objectiveBreaches.filter((ob) =>
@@ -73,9 +75,14 @@ export default function ScheduleConfig({
   );
 
   const buildColumnHeaders = useCallback(
-    (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs): ColumnT[] => {
+    (
+      startDate: dayjs.Dayjs,
+      endDate: dayjs.Dayjs,
+      lastPastDate: dayjs.Dayjs,
+      lastValidDate: dayjs.Dayjs
+    ): ColumnT[] => {
       const columns: ColumnT[] = [
-        { date: dayjs(0), name: "", noCoverage: false },
+        { date: dayjs(0), name: "", noCoverage: false, status: "" },
       ];
       let currentDate = startDate;
 
@@ -93,6 +100,11 @@ export default function ScheduleConfig({
               .find((s) => s.status === "WIP")
               ?.missingCoverageDates.some((date) => date.isSame(currentDate)) ||
             false,
+          status: currentDate.isBefore(lastPastDate.add(1, "day"))
+            ? "past"
+            : currentDate.isBefore(lastValidDate.add(1, "day"))
+            ? "validated"
+            : "wip",
         };
         columns.push({ ...column });
         currentDate = currentDate.add(1, "day");
@@ -214,11 +226,22 @@ export default function ScheduleConfig({
         (min, a) => (a.date.isBefore(min) ? a.date : min),
         assignments[0].date
       );
+      const lastPastDate = assignments.reduce(
+        (max, a) => (a.date.isAfter(max) && a.status === "past" ? a.date : max),
+        assignments[0].date
+      );
+      const lastValidDate = assignments.reduce(
+        (max, a) =>
+          a.date.isAfter(max) && a.status === "validated" ? a.date : max,
+        assignments[0].date
+      );
       const endDate = assignments.reduce(
         (max, a) => (a.date.isAfter(max) ? a.date : max),
         assignments[0].date
       );
-      setColumns(buildColumnHeaders(startDate, endDate));
+      setColumns(
+        buildColumnHeaders(startDate, endDate, lastPastDate, lastValidDate)
+      );
     } else {
       setColumns([]);
     }
