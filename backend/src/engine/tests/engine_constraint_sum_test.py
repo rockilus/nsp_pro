@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Callable, List
 
 import pytest
@@ -15,6 +15,7 @@ from engine.types.input_output_types import (
     VarShift,
     VarWorker,
 )
+from utils.constants import Constants
 
 
 # pylint: disable=R0801
@@ -90,9 +91,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(
-            inputs.variable_space.start_date, inputs.variable_space.end_date
-        )
+        dates_weeks = get_dates_weeks(inputs.variable_space.days)
 
         counts = [
             sum(
@@ -120,9 +119,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(
-            inputs.variable_space.start_date, inputs.variable_space.end_date
-        )
+        dates_weeks = get_dates_weeks(inputs.variable_space.days)
 
         counts = [
             sum(
@@ -150,9 +147,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(
-            inputs.variable_space.start_date, inputs.variable_space.end_date
-        )
+        dates_weeks = get_dates_weeks(inputs.variable_space.days)
 
         counts = [
             sum(
@@ -237,9 +232,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(
-            inputs.variable_space.start_date, inputs.variable_space.end_date
-        )
+        dates_weeks = get_dates_weeks(inputs.variable_space.days)
 
         counts = [
             sum(
@@ -267,9 +260,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(
-            inputs.variable_space.start_date, inputs.variable_space.end_date
-        )
+        dates_weeks = get_dates_weeks(inputs.variable_space.days)
 
         counts = [
             sum(
@@ -297,9 +288,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(
-            inputs.variable_space.start_date, inputs.variable_space.end_date
-        )
+        dates_weeks = get_dates_weeks(inputs.variable_space.days)
 
         counts = [
             sum(
@@ -331,9 +320,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(
-            inputs.variable_space.start_date, inputs.variable_space.end_date
-        )
+        dates_weeks = get_dates_weeks(inputs.variable_space.days)
         constraint_sum_hard = inputs.constraints[0]
 
         counts = [
@@ -365,9 +352,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         ]
         outputs = engine_solve(inputs)
 
-        dates_weeks = get_dates_weeks(
-            inputs.variable_space.start_date, inputs.variable_space.end_date
-        )
+        dates_weeks = get_dates_weeks(inputs.variable_space.days)
 
         assert outputs.objective_value == constraint_sum_soft.penalty * len(
             inputs.variable_space.workers
@@ -390,9 +375,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         ]
         outputs = engine_solve(inputs)
 
-        dates_weeks = get_dates_weeks(
-            inputs.variable_space.start_date, inputs.variable_space.end_date
-        )
+        dates_weeks = get_dates_weeks(inputs.variable_space.days)
 
         expected_variables = [
             [(w, d, s) for d in week]
@@ -439,9 +422,10 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
 
 # pylint: disable=R0801
-def get_dates_weeks(start_date: date, end_date: date) -> List[List[date]]:
-    delta = end_date - start_date
-    dates = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
+def get_dates_weeks(days: List[str]) -> List[List[date]]:
+    dates = [
+        datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date() for d in days
+    ]
     week_length = 7
     d_indexes = [
         list(range(i, i + 7))

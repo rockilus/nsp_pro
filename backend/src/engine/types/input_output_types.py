@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Literal, Tuple
+from typing import Dict, List, Literal, Tuple
 
 ##############################
 # Inputs
@@ -9,8 +9,7 @@ from typing import List, Literal, Tuple
 @dataclass
 class VariableSpace:
     workers: List[str]
-    start_date: date
-    end_date: date
+    days: List[str]
     shifts: List[str]
 
 
@@ -100,8 +99,8 @@ class Inputs:
     requests: List[Request]
     fixed_assignments: List[Assignment]
     constraints: List[Constraint]
-    prev_assignments: List[Assignment]
-    wip_assignments: List[Assignment]
+    fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
+    sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
 
 
 ##############################

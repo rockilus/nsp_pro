@@ -109,6 +109,8 @@ class Model:
         self.bt.full_setup_start = time.time()
         self.bt.variables_start = time.time()
         self.build_variables()
+        self.set_fixed_variables(inputs.fixed_values)
+        self.add_solution_hint(inputs.sol_hint)
         self.bt.variables_end = time.time()
         self.bt.constraints_start = time.time()
         self.add_exactly_one_shift_per_day_constraint()
@@ -129,6 +131,16 @@ class Model:
                     self.variables[(worker, day, shift)] = self.model.NewBoolVar(
                         f"{worker}_{day}_{shift}"
                     )
+
+    def set_fixed_variables(
+        self, fixed_values: Dict[Tuple[str, str, str], int]
+    ) -> None:
+        for k, v in fixed_values.items():
+            self.model.Add(self.variables[k] == v)
+
+    def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
+        for k, v in solution_hint.items():
+            self.model.AddHint(self.variables[k], v)
 
     # def build_durations(self) -> None:
     #     for d in self.days:
