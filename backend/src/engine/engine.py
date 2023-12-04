@@ -19,7 +19,8 @@ class Engine:
             inputs.variable_space.start_date, inputs.variable_space.end_date
         )
         shifts = inputs.variable_space.shifts
-
+        print("Start date: ", inputs.variable_space.start_date)
+        print("End date: ", inputs.variable_space.end_date)
         model = Model(workers, days, shifts)
         start_time = time.time()
         model.set_up_model(inputs)

@@ -98,6 +98,16 @@ class AssignmentDB:
         )
         return [_from_mongo_assignment(a) for a in list(assignments)]
 
+    def get_assignments_by_status(
+        self,
+        status: List[str],
+    ) -> List[Assignment]:
+        # pylint: disable=no-member
+        assignments = AssignmentDocument.objects.filter(  # type: ignore
+            status__in=status
+        )
+        return [_from_mongo_assignment(a) for a in list(assignments)]
+
     def update_assignment(self, assignment: Assignment) -> Assignment:
         document = to_mongo_assignment(assignment)
         document_saved = document.save()

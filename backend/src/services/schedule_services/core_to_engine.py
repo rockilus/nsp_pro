@@ -7,6 +7,7 @@ from core.fixed_assignment import FixedAssignment
 from core.request import Request
 from core.shift import Shift
 from core.worker import Worker
+from core.schedule import Assignment
 from engine import Assignment as AssignmentEngine
 from engine import Constraint as ConstraintEngine
 from engine import Coverage as CoverageEngine
@@ -32,6 +33,8 @@ def core_to_engine_inputs(
     fixed_assignments: List[FixedAssignment],
     requests: List[Request],
     constraints: List[Constraint],
+    prev_assignments: List[Assignment],
+    wip_assignments: List[Assignment],
 ) -> Inputs:
     r_engine, fa_engine = _core_to_engine_requests_and_fixed_assignments(
         requests, fixed_assignments
@@ -53,6 +56,12 @@ def core_to_engine_inputs(
         requests=r_engine,
         fixed_assignments=fa_engine,
         constraints=[_core_to_engine_constraint(c) for c in constraints],
+        prev_assignments=[
+            core_to_engine_assignment(a) for a in prev_assignments
+        ],
+        wip_assignments=[
+            core_to_engine_assignment(a) for a in wip_assignments
+        ],
     )
     return inputs
 
@@ -69,12 +78,15 @@ def _build_shift_demands(
         if sds is None:
             continue
         for day in range(
-            (min(cs.end_date, end_date) - max(cs.start_date, start_date)).days + 1
+            (min(cs.end_date, end_date) - max(cs.start_date, start_date)).days
+            + 1
         ):
             cov_date = max(cs.start_date, start_date) + timedelta(days=day)
             for sd in sds:
                 if sd.day_index == cov_date.weekday():
-                    shift = next((s for s in shifts if s.id == sd.shift_id), None)
+                    shift = next(
+                        (s for s in shifts if s.id == sd.shift_id), None
+                    )
                     if shift is not None:
                         sd_engine.append(
                             ShiftDemandEngine(
@@ -82,7 +94,9 @@ def _build_shift_demands(
                                 shift_id=sd.shift_id,
                                 quantity=shift.staffing,
                                 duration=int(
-                                    (shift.end_time - shift.start_time).total_seconds()
+                                    (
+                                        shift.end_time - shift.start_time
+                                    ).total_seconds()
                                     // 60
                                 ),
                             )
@@ -120,10 +134,22 @@ def _core_to_engine_requests_and_fixed_assignments(
             )
     else:
         fa_engine = [
-            AssignmentEngine(worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id)
+            AssignmentEngine(
+                worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id
+            )
             for fa in fixed_assignments
         ]
     return r_engine, fa_engine
+
+
+def core_to_engine_assignment(
+    assignment: Assignment,
+) -> AssignmentEngine:
+    return AssignmentEngine(
+        worker_id=assignment.worker_id,
+        date=assignment.date,
+        shift_id=assignment.shift_id,
+    )
 
 
 def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:

@@ -100,6 +100,8 @@ class Inputs:
     requests: List[Request]
     fixed_assignments: List[Assignment]
     constraints: List[Constraint]
+    prev_assignments: List[Assignment]
+    wip_assignments: List[Assignment]
 
 
 ##############################
