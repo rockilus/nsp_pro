@@ -1,7 +1,5 @@
 import os
 import time
-from datetime import date, timedelta
-from typing import List
 
 from engine.model.model import Model
 from engine.output import Output
@@ -14,13 +12,11 @@ from utils.constants import Constants
 class Engine:
     # pylint: disable=too-few-public-methods
     def solve(self, inputs: Inputs) -> Outputs:
-        workers = inputs.variable_space.workers
-        days = Engine._build_day_coordinates(
-            inputs.variable_space.start_date, inputs.variable_space.end_date
+        model = Model(
+            inputs.variable_space.workers,
+            inputs.variable_space.days,
+            inputs.variable_space.shifts,
         )
-        shifts = inputs.variable_space.shifts
-
-        model = Model(workers, days, shifts)
         start_time = time.time()
         model.set_up_model(inputs)
         end_time = time.time()
@@ -35,10 +31,3 @@ class Engine:
         save_benchmark_to_csv(inputs, model)
         output = Output(model)
         return output.build_outputs()
-
-    @staticmethod
-    def _build_day_coordinates(start_date: date, end_date: date) -> List[str]:
-        date_format = "%Y-%m-%d"
-        delta = end_date - start_date
-        dates = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
-        return [date.strftime(date_format) for date in dates]

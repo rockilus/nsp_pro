@@ -1,10 +1,11 @@
-from datetime import date, timedelta
-from typing import List, Union
+from datetime import date, datetime, timedelta
+from typing import Dict, List, Tuple, Union
 
 from core.constraint import Constraint, VarDay, VarShift, VarWorker
 from core.coverage import CoverageSelector, ShiftDemand
 from core.fixed_assignment import FixedAssignment
 from core.request import Request
+from core.schedule import Assignment
 from core.shift import Shift
 from core.worker import Worker
 from engine import Assignment as AssignmentEngine
@@ -21,7 +22,7 @@ from services.schedule_services.penalty_map import penalty_map
 from utils.constants import Constants
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-locals
 def core_to_engine_inputs(
     workers: List[Worker],
     start_date: date,
@@ -32,15 +33,18 @@ def core_to_engine_inputs(
     fixed_assignments: List[FixedAssignment],
     requests: List[Request],
     constraints: List[Constraint],
+    prev_assignments: List[Assignment],
+    wip_assignments: List[Assignment],
 ) -> Inputs:
     r_engine, fa_engine = _core_to_engine_requests_and_fixed_assignments(
         requests, fixed_assignments
     )
+    start_date_hist = min(a.date for a in prev_assignments)
+    end_date_hist = start_date - timedelta(days=1)
 
     variable_space = VariableSpace(
         workers=[worker.id for worker in workers],
-        start_date=start_date,
-        end_date=end_date,
+        days=_build_day_coordinates(start_date_hist, end_date),
         shifts=[shift.id for shift in shifts],
     )
     inputs = Inputs(
@@ -53,6 +57,18 @@ def core_to_engine_inputs(
         requests=r_engine,
         fixed_assignments=fa_engine,
         constraints=[_core_to_engine_constraint(c) for c in constraints],
+        fixed_values=core_to_engine_sol_hint(
+            variable_space.workers,
+            _build_day_coordinates(start_date_hist, end_date_hist),
+            variable_space.shifts,
+            prev_assignments,
+        ),
+        sol_hint=core_to_engine_sol_hint(
+            variable_space.workers,
+            _build_day_coordinates(start_date, end_date),
+            variable_space.shifts,
+            wip_assignments,
+        ),
     )
     return inputs
 
@@ -126,6 +142,28 @@ def _core_to_engine_requests_and_fixed_assignments(
     return r_engine, fa_engine
 
 
+def core_to_engine_sol_hint(
+    workers: List[str],
+    days: List[str],
+    shifts: List[str],
+    assignments: List[Assignment],
+) -> Dict[Tuple[str, str, str], int]:
+    return {
+        (w, d, s): 1
+        if any(
+            a.worker_id == w
+            and a.date
+            == datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+            and a.shift_id == s
+            for a in assignments
+        )
+        else 0
+        for w in workers
+        for d in days
+        for s in shifts
+    }
+
+
 def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
     hard_to_soft = Constants.HARD_TO_SOFT
     return ConstraintEngine(
@@ -177,3 +215,9 @@ def _core_to_engine_var_shift(var_shift: VarShift) -> VarShiftEngine:
         reference=var_shift.reference_id,
         relative=var_shift.relative_id,
     )
+
+
+def _build_day_coordinates(start_date: date, end_date: date) -> List[str]:
+    delta = end_date - start_date
+    dates = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
+    return [date.strftime(Constants.ENGINE_STRING_DATE_FORMAT) for date in dates]

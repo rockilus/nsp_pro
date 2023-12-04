@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Callable, List
 
 import pytest
@@ -16,6 +16,7 @@ from engine.types.input_output_types import (
     VarShift,
     VarWorker,
 )
+from utils.constants import Constants
 
 
 # pylint: disable=R0801
@@ -424,9 +425,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         assert outputs.objective_value == constraint_fil_soft.penalty * len(
             constraint_fil_soft.worker_var.target
-        ) * (
-            (inputs.variable_space.end_date - inputs.variable_space.start_date).days + 1
-        )
+        ) * len(inputs.variable_space.days)
 
     def test_expected_constraint_breaches_variables_for_hard_soft_conflict(
         self,
@@ -449,10 +448,10 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             (w, d, a.shift_id)
             for a in assignments
             for w in constraint_fil_soft.worker_var.target
-            for d in build_day_list(
-                inputs.variable_space.start_date,
-                inputs.variable_space.end_date,
-            )
+            for d in [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+                for d in inputs.variable_space.days
+            ]
             if a.worker_id == w and a.date == d
         ]
 

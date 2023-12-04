@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime
 from typing import Callable, List
 
 import pytest
@@ -18,6 +18,7 @@ from engine.types.input_output_types import (
     VarShift,
     VarWorker,
 )
+from utils.constants import Constants
 
 
 # pylint: disable=R0801, R0903
@@ -102,17 +103,12 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         quantity = 3
         inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         inputs.coverage = build_coverage(
-            inputs.variable_space.start_date,
-            inputs.variable_space.end_date,
-            target_shifts,
-            quantity,
+            inputs.variable_space.days, target_shifts, quantity
         )
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        num_days = (
-            inputs.variable_space.end_date - inputs.variable_space.start_date
-        ).days + 1
+        num_days = len(inputs.variable_space.days)
         target_count = (
             quantity
             * num_days
@@ -123,14 +119,15 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         counts = []
         for i, p_len in enumerate(period_lengths):
             cum_days = sum(period_lengths[:i])
-            start_date = inputs.variable_space.start_date + timedelta(days=cum_days)
-            end_date = start_date + timedelta(days=p_len - 1)
+            dates = [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT)
+                for d in inputs.variable_space.days[cum_days : cum_days + p_len]
+            ]
             count = sum(
                 1
                 for a in assignments
                 if a.worker_id == constraint_eve_soft.worker_var.target
-                and a.date >= start_date
-                and a.date <= end_date
+                and a.date in dates
                 and a.shift_id == constraint_eve_soft.shift_var.target
             )
             counts.append(count)
@@ -160,17 +157,12 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         inputs.fixed_assignments = fixed_assignments
         inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         inputs.coverage = build_coverage(
-            inputs.variable_space.start_date,
-            inputs.variable_space.end_date,
-            target_shifts,
-            quantity,
+            inputs.variable_space.days, target_shifts, quantity
         )
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        num_days = (
-            inputs.variable_space.end_date - inputs.variable_space.start_date
-        ).days + 1
+        num_days = len(inputs.variable_space.days)
         target_count = (
             quantity
             * num_days
@@ -181,14 +173,15 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         counts = []
         for i, p_len in enumerate(period_lengths):
             cum_days = sum(period_lengths[:i])
-            start_date = inputs.variable_space.start_date + timedelta(days=cum_days)
-            end_date = start_date + timedelta(days=p_len - 1)
+            dates = [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT)
+                for d in inputs.variable_space.days[cum_days : cum_days + p_len]
+            ]
             count = sum(
                 1
                 for a in assignments
                 if a.worker_id == constraint_eve_soft.worker_var.target
-                and a.date >= start_date
-                and a.date <= end_date
+                and a.date in dates
                 and a.shift_id == constraint_eve_soft.shift_var.target
             )
             counts.append(count)
@@ -223,17 +216,12 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         inputs.fixed_assignments = fixed_assignments
         inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         inputs.coverage = build_coverage(
-            inputs.variable_space.start_date,
-            inputs.variable_space.end_date,
-            target_shifts,
-            quantity,
+            inputs.variable_space.days, target_shifts, quantity
         )
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        num_days = (
-            inputs.variable_space.end_date - inputs.variable_space.start_date
-        ).days + 1
+        num_days = len(inputs.variable_space.days)
         target_count = (
             quantity
             * num_days
@@ -244,14 +232,15 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         counts = []
         for i, p_len in enumerate(period_lengths):
             cum_days = sum(period_lengths[:i])
-            start_date = inputs.variable_space.start_date + timedelta(days=cum_days)
-            end_date = start_date + timedelta(days=p_len - 1)
+            dates = [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+                for d in inputs.variable_space.days[cum_days : cum_days + p_len]
+            ]
             count = sum(
                 1
                 for a in assignments
                 if a.worker_id in constraint_eve_soft.worker_var.target
-                and a.date >= start_date
-                and a.date <= end_date
+                and a.date in dates
                 and a.shift_id in constraint_eve_soft.shift_var.target
             )
             counts.append(count)
@@ -277,10 +266,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         quantity = 3
         inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
-            inputs.variable_space.start_date,
-            inputs.variable_space.end_date,
-            target_shifts,
-            quantity,
+            inputs.variable_space.days, target_shifts, quantity
         )
         outputs_ex_eve = engine_solve(inputs)
         objective_ex_eve = outputs_ex_eve.objective_value
@@ -320,10 +306,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         inputs.fixed_assignments = fixed_assignments
         inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
-            inputs.variable_space.start_date,
-            inputs.variable_space.end_date,
-            target_shifts,
-            quantity,
+            inputs.variable_space.days, target_shifts, quantity
         )
         outputs_ex_eve = engine_solve(inputs)
         objective_ex_eve = outputs_ex_eve.objective_value
@@ -364,16 +347,11 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         inputs.fixed_assignments = fixed_assignments
         inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         inputs.coverage = build_coverage(
-            inputs.variable_space.start_date,
-            inputs.variable_space.end_date,
-            target_shifts,
-            quantity,
+            inputs.variable_space.days, target_shifts, quantity
         )
         outputs = engine_solve(inputs)
 
-        num_days = (
-            inputs.variable_space.end_date - inputs.variable_space.start_date
-        ).days + 1
+        num_days = len(inputs.variable_space.days)
         target_count = (
             quantity
             * num_days
@@ -381,9 +359,10 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             // len(inputs.variable_space.workers)
         )
         period_lengths = integer_division_list(num_days, target_count)
-        start_date = inputs.variable_space.start_date
-        end_date = start_date + timedelta(days=period_lengths[0] - 1)
-        target_days = list(build_day_list(start_date, end_date))
+        target_days = [
+            datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+            for d in inputs.variable_space.days[: period_lengths[0]]
+        ]
 
         expected_variables = [
             (w, d, s)
@@ -411,17 +390,12 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         )
 
 
-def build_day_list(start_date: date, end_date: date) -> List[date]:
-    delta = end_date - start_date
-    return [start_date + timedelta(days=i) for i in range(delta.days + 1)]
-
-
 def build_coverage(
-    start_date: date, end_date: date, target_shifts: List[str], quantity: int
+    days: List[str], target_shifts: List[str], quantity: int
 ) -> Coverage:
     coverage = []
-    for i in range((end_date - start_date).days + 1):
-        cur_date = start_date + timedelta(days=i)
+    for d_str in days:
+        cur_date = datetime.strptime(d_str, Constants.ENGINE_STRING_DATE_FORMAT).date()
         for s in target_shifts:
             coverage.append(
                 ShiftDemand(

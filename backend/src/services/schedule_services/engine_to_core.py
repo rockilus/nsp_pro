@@ -25,6 +25,7 @@ def engine_to_core_outputs(
     assignments = [
         Assignment(**asdict(a), id="", schedule_id=schedule.id, status="wip")
         for a in outputs.assignments
+        if a.date >= schedule.start_date and a.date <= schedule.end_date
     ]
     objective_breaches = [
         _engine_to_core_objective_breach(cb, outputs.assignments, schedule)

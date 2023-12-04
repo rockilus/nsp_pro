@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Callable
 
 import pytest
@@ -17,6 +17,7 @@ from engine.types.input_output_types import (
     VarShift,
     VarWorker,
 )
+from utils.constants import Constants
 
 
 # pylint: disable=R0801
@@ -217,9 +218,10 @@ class TestConstraintHard(TestEngine, TestConstraint):
             a.date + timedelta(days=constraint_ord_hard.day_var.interval)
             for a in assignments
             if a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            >= inputs.variable_space.start_date
-            and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            <= inputs.variable_space.end_date
+            in [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+                for d in inputs.variable_space.days
+            ]
         ]
 
         next_assignments = [
@@ -262,9 +264,10 @@ class TestConstraintHard(TestEngine, TestConstraint):
             a.date + timedelta(days=constraint_ord_hard.day_var.interval)
             for a in assignments
             if a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            >= inputs.variable_space.start_date
-            and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            <= inputs.variable_space.end_date
+            in [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+                for d in inputs.variable_space.days
+            ]
         ]
 
         next_assignments = [
@@ -306,9 +309,10 @@ class TestConstraintHard(TestEngine, TestConstraint):
             a.date + timedelta(days=constraint_ord_hard.day_var.interval)
             for a in assignments
             if a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            >= inputs.variable_space.start_date
-            and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            <= inputs.variable_space.end_date
+            in [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+                for d in inputs.variable_space.days
+            ]
         ]
 
         next_assignments = [
@@ -351,9 +355,10 @@ class TestConstraintHard(TestEngine, TestConstraint):
             a.date + timedelta(days=constraint_ord_hard.day_var.interval)
             for a in assignments
             if a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            >= inputs.variable_space.start_date
-            and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            <= inputs.variable_space.end_date
+            in [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+                for d in inputs.variable_space.days
+            ]
         ]
 
         next_assignments = [
@@ -415,9 +420,10 @@ class TestConstraintHard(TestEngine, TestConstraint):
             for a in assignments
             if a.date.weekday() == constraint_ord.day_var.target
             and a.date + timedelta(days=constraint_ord.day_var.interval)
-            >= inputs.variable_space.start_date
-            and a.date + timedelta(days=constraint_ord.day_var.interval)
-            <= inputs.variable_space.end_date
+            in [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+                for d in inputs.variable_space.days
+            ]
         ]
 
         next_assignments = [
@@ -478,9 +484,10 @@ class TestConstraintHard(TestEngine, TestConstraint):
             for a in assignments
             if a.date.weekday() == constraint_ord_hard.day_var.target
             and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            >= inputs.variable_space.start_date
-            and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            <= inputs.variable_space.end_date
+            in [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+                for d in inputs.variable_space.days
+            ]
         ]
 
         next_assignments = [
@@ -540,9 +547,10 @@ class TestConstraintHard(TestEngine, TestConstraint):
             for a in assignments
             if a.date.weekday() == constraint_ord_hard.day_var.target
             and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            >= inputs.variable_space.start_date
-            and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            <= inputs.variable_space.end_date
+            in [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+                for d in inputs.variable_space.days
+            ]
         ]
 
         next_assignments = [
@@ -603,9 +611,10 @@ class TestConstraintHard(TestEngine, TestConstraint):
             for a in assignments
             if a.date.weekday() == constraint_ord_hard.day_var.target
             and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            >= inputs.variable_space.start_date
-            and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
-            <= inputs.variable_space.end_date
+            in [
+                datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+                for d in inputs.variable_space.days
+            ]
         ]
 
         next_assignments = [

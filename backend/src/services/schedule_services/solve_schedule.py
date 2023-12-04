@@ -46,6 +46,8 @@ def solve_schedule(
     )
     requests = request_db.get_requests_by_dates(schedule.start_date, schedule.end_date)
     constraints = constraint_db.get_constraints_active()
+    prev_assignments = assignment_db.get_assignments_by_status(["past", "validated"])
+    wip_assignments = assignment_db.get_assignments_by_status(["wip"])
     inputs = core_to_engine_inputs(
         workers,
         schedule.start_date,
@@ -56,6 +58,8 @@ def solve_schedule(
         fixed_assignments,
         requests,
         constraints,
+        prev_assignments,
+        wip_assignments,
     )
     engine = Engine()
     outputs = engine.solve(inputs)
@@ -63,8 +67,8 @@ def solve_schedule(
         schedule, outputs
     )
     schedule.missing_coverage_dates = build_no_coverage_date(
-        inputs.variable_space.start_date,
-        inputs.variable_space.end_date,
+        schedule.start_date,
+        schedule.end_date,
         coverage_selectors,
     )
     update_far_status(schedule, assignments)
