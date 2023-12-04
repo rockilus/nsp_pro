@@ -152,7 +152,8 @@ def core_to_engine_sol_hint(
         (w, d, s): 1
         if any(
             a.worker_id == w
-            and a.date == datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT)
+            and a.date
+            == datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
             and a.shift_id == s
             for a in assignments
         )
