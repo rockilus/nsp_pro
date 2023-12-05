@@ -47,6 +47,10 @@ def build_constraint_sum(constraint_build: ConstraintBuild) -> Constraint:
         target_value=int(
             get_block_value_from_name("quantity", constraint_build.build_blocks)
         ),
+        # target_unit=str(
+        #     get_block_value_from_name("target_unit", constraint_build.build_blocks)
+        # ),
+        target_unit="",
         worker_var=var_worker,
         day_var=var_day,
         shift_var=var_shift,
@@ -92,6 +96,7 @@ def build_constraint_seq(constraint_build: ConstraintBuild) -> Constraint:
         target_value=int(
             get_block_value_from_name("quantity", constraint_build.build_blocks)
         ),
+        target_unit="",
         worker_var=var_worker,
         day_var=var_day,
         shift_var=var_shift,
@@ -143,6 +148,7 @@ def build_constraint_ord(constraint_build: ConstraintBuild) -> Constraint:
             .replace(" ", "_")
         ),
         target_value=0,
+        target_unit="",
         worker_var=var_worker,
         day_var=var_day,
         shift_var=var_shift,

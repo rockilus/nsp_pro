@@ -77,6 +77,7 @@ class AddConstraintEve(AddConstraint):
                     constraint_type="sum",
                     operator="less_than_or_equal",
                     target_value=1,
+                    target_unit="day",
                     worker_var=VarWorker(
                         operator="",
                         selector="equal",

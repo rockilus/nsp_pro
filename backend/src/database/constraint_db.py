@@ -127,6 +127,7 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
         constraint_type=dataclass_obj.constraint_type,
         operator=dataclass_obj.operator,
         target_value=dataclass_obj.target_value,
+        target_unit=dataclass_obj.target_unit,
         worker_var=worker_var,
         day_var=day_var,
         shift_var=shift_var,
@@ -182,6 +183,7 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
         constraint_type=doc_obj.constraint_type,  # type: ignore
         operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
         target_value=doc_obj.target_value,
+        target_unit=doc_obj.target_unit,
         worker_var=worker_var,
         day_var=day_var,
         shift_var=shift_var,

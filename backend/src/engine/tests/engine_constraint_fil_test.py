@@ -28,6 +28,7 @@ class TestConstraint:
             constraint_type="fil",
             operator="",
             target_value=0,
+            target_unit="",
             worker_var=VarWorker(
                 operator="in_target",
                 selector="equal",
@@ -60,6 +61,7 @@ class TestConstraint:
             constraint_type="fil",
             operator="",
             target_value=0,
+            target_unit="",
             worker_var=VarWorker(
                 operator="in_target",
                 selector="equal",

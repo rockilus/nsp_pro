@@ -63,6 +63,7 @@ class Constraint(Document):
         ],
     )
     target_value = IntField(default=0)
+    target_unit = StringField(required=True)  # worker, shift, day, hour
     worker_var = EmbeddedDocumentField(VarWorker, required=True)
     day_var = EmbeddedDocumentField(VarDay, required=True)
     shift_var = EmbeddedDocumentField(VarShift, required=True)

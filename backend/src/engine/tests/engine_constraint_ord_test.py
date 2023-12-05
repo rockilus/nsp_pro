@@ -29,6 +29,7 @@ class TestConstraint:
             constraint_type="ord",
             operator="no",
             target_value=0,
+            target_unit="",
             worker_var=VarWorker(
                 operator="", selector="all", target=[], num_eligible_workers=0
             ),
@@ -58,6 +59,7 @@ class TestConstraint:
             constraint_type="ord",
             operator="no",
             target_value=0,
+            target_unit="",
             worker_var=VarWorker(
                 operator="", selector="all", target=[], num_eligible_workers=0
             ),

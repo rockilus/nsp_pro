@@ -34,6 +34,12 @@ def _build_constraint_sum_tree(shifts: List[Shift]) -> TreeNode:
         options=[s.id for s in shifts],
         children=[day_node],
     )
+    # duration_node = TreeNode(
+    #     name="duration",
+    #     parent_options=[f"{i}" for i in range(10)],
+    #     options=["days", "hours"],
+    #     children=[day_node],
+    # )
     quantity_node = TreeNode(
         name="quantity",
         parent_options=["At least", "At most", "Exactly"],
