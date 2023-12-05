@@ -103,9 +103,7 @@ class Model:
             self.shifts,
             self.obj,
         )
-        self.add_far = AddFAR(
-            self.model, self.variables, self.workers, self.obj
-        )
+        self.add_far = AddFAR(self.model, self.variables, self.workers, self.obj)
 
     def set_up_model(self, inputs: Inputs) -> None:
         self.bt.total_start = time.time()
@@ -119,9 +117,7 @@ class Model:
         self.bt.constraints_start = time.time()
         self.add_exactly_one_shift_per_day_constraint()
         self.add_coverage.add_coverage(inputs.coverage.coverage)
-        self.add_custom_constraints(
-            inputs.constraints, inputs.coverage.coverage
-        )
+        self.add_custom_constraints(inputs.constraints, inputs.coverage.coverage)
         self.add_far.add_fixed_assignments(inputs.fixed_assignments)
         self.add_far.add_requests(inputs.requests)
         self.bt.constraints_end = time.time()
@@ -134,9 +130,9 @@ class Model:
         for worker in self.workers:
             for day in self.days:
                 for shift in self.shifts:
-                    self.variables[
-                        (worker, day, shift)
-                    ] = self.model.NewBoolVar(f"{worker}_{day}_{shift}")
+                    self.variables[(worker, day, shift)] = self.model.NewBoolVar(
+                        f"{worker}_{day}_{shift}"
+                    )
 
     def set_fixed_variables(
         self, fixed_values: Dict[Tuple[str, str, str], int]
@@ -144,9 +140,7 @@ class Model:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
 
-    def add_solution_hint(
-        self, solution_hint: Dict[Tuple[str, str, str], int]
-    ) -> None:
+    def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
         for k, v in solution_hint.items():
             self.model.AddHint(self.variables[k], v)
 

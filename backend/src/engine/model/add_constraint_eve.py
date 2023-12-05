@@ -18,13 +18,9 @@ from engine.types.input_output_types import (
 
 class AddConstraintEve(AddConstraint):
     # pylint: disable=too-many-arguments
-    def __init__(
-        self, model, variables, durations, workers, days, shifts, obj
-    ) -> None:
+    def __init__(self, model, variables, durations, workers, days, shifts, obj) -> None:
         # pylint: disable=R0801
-        super().__init__(
-            model, variables, durations, workers, days, shifts, obj
-        )
+        super().__init__(model, variables, durations, workers, days, shifts, obj)
         self.add_constraint_sum = AddConstraintSum(
             self.model,
             self.variables,
@@ -73,9 +69,7 @@ class AddConstraintEve(AddConstraint):
         constraints_sum = []
         for index, period_length in enumerate(period_lengths):
             cum_days = sum(period_lengths[:index])
-            start_date = date.fromisoformat(self.days[0]) + timedelta(
-                days=cum_days
-            )
+            start_date = date.fromisoformat(self.days[0]) + timedelta(days=cum_days)
             end_date = start_date + timedelta(days=period_length - 1)
             constraints_sum.append(
                 Constraint(
@@ -115,7 +109,5 @@ class AddConstraintEve(AddConstraint):
     def integer_division_list(numerator: int, denominator: int) -> List[int]:
         quotient = numerator // denominator
         remainder = numerator % denominator
-        result = [quotient + 1] * remainder + [quotient] * (
-            denominator - remainder
-        )
+        result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
         return result

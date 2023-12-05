@@ -49,22 +49,18 @@ class AddConstraint:
         if constraint.worker_var.selector == "equal":
             if (
                 constraint.constraint_type == "fil"
-                and constraint.worker_var.operator
-                in ["in_target", "out_target"]
+                and constraint.worker_var.operator in ["in_target", "out_target"]
             ):
                 return self._get_coords_workers_fil(constraint)
             return constraint.worker_var.target
         raise NotImplementedError(
-            f"Worker selector {constraint.worker_var.selector} "
-            + "not implemented"
+            f"Worker selector {constraint.worker_var.selector} " + "not implemented"
         )
 
     def _get_coords_workers_fil(self, constraint: Constraint) -> List[str]:
         if constraint.worker_var.operator == "in_target":
             return constraint.worker_var.target
-        return [
-            w for w in self.workers if w not in constraint.worker_var.target
-        ]
+        return [w for w in self.workers if w not in constraint.worker_var.target]
 
     ##########################
     # Day
@@ -72,24 +68,16 @@ class AddConstraint:
     def _get_coords_days(
         self, constraint: Constraint
     ) -> Union[List[str], List[List[str]]]:
-        if (
-            constraint.constraint_type == "ord"
-            and constraint.day_var.selector
-            in [
-                "all",
-                "week_day_index",
-            ]
-        ):
+        if constraint.constraint_type == "ord" and constraint.day_var.selector in [
+            "all",
+            "week_day_index",
+        ]:
             return self._get_coords_days_ord(constraint)
-        if (
-            constraint.constraint_type == "sum"
-            and constraint.day_var.selector
-            in [
-                "all",
-                "week",
-                "period",
-            ]
-        ):
+        if constraint.constraint_type == "sum" and constraint.day_var.selector in [
+            "all",
+            "week",
+            "period",
+        ]:
             return self._get_coords_days_sum(constraint)
         if constraint.day_var.selector == "all":
             return self.days
@@ -149,18 +137,14 @@ class AddConstraint:
         period = [
             constraint.day_var.start_date + timedelta(days=i)
             for i in range(
-                (
-                    constraint.day_var.end_date - constraint.day_var.start_date
-                ).days
-                + 1
+                (constraint.day_var.end_date - constraint.day_var.start_date).days + 1
             )
         ]
         return [
             [
                 day.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
                 for day in period
-                if day.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
-                in self.days
+                if day.strftime(Constants.ENGINE_STRING_DATE_FORMAT) in self.days
             ]
         ]
 
@@ -179,14 +163,12 @@ class AddConstraint:
         if constraint.shift_var.selector == "equal":
             if (
                 constraint.constraint_type == "fil"
-                and constraint.shift_var.operator
-                in ["in_target", "out_target"]
+                and constraint.shift_var.operator in ["in_target", "out_target"]
             ):
                 return self._get_coords_shifts_fil(constraint)
             return constraint.shift_var.target
         raise NotImplementedError(
-            f"Shift selector {constraint.shift_var.selector} "
-            + "not implemented"
+            f"Shift selector {constraint.shift_var.selector} " + "not implemented"
         )
 
     def _get_coords_shifts_fil(self, constraint: Constraint) -> List[str]:

@@ -141,8 +141,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         ]
 
         assert all(
-            dur
-            == constraint_sum_hard.target_value * Constants.NUM_MINUTES_HOUR
+            dur == constraint_sum_hard.target_value * Constants.NUM_MINUTES_HOUR
             for dur in worked_durations
         )
 
@@ -181,23 +180,23 @@ class TestConstraintHard(TestEngine, TestConstraint):
         engine_solve: Callable[[Inputs], Outputs],
         constraint_sum_hard: Constraint,
     ) -> None:
-        # Worker w0 works 4 times shift s0
+        # Worker w0 works 12 hours total
         constraint_sum_hard.operator = "equal"
-        constraint_sum_hard.worker_var.selector = "equal"
-        constraint_sum_hard.worker_var.target = ["w0"]
         constraint_sum_hard.day_var.selector = "all"
         inputs.constraints = [constraint_sum_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        count = sum(
-            1
+        worked_duration = sum(
+            inputs.shift_durations[a.shift_id]
             for a in assignments
             if a.worker_id in constraint_sum_hard.worker_var.target
-            and a.shift_id in constraint_sum_hard.shift_var.target
         )
 
-        assert count == constraint_sum_hard.target_value
+        assert (
+            worked_duration
+            == constraint_sum_hard.target_value * Constants.NUM_MINUTES_HOUR
+        )
 
     def test_expected_assignment_for_equal_worker_equal_day_period_shift_equal(
         self,
@@ -205,22 +204,18 @@ class TestConstraintHard(TestEngine, TestConstraint):
         engine_solve: Callable[[Inputs], Outputs],
         constraint_sum_hard: Constraint,
     ) -> None:
-        # Worker w0 works 4 times shift s0 during first week (between
+        # Worker w0 works 12 hours during first week (between
         # 2023-10-02 and 2023-10-08)
         constraint_sum_hard.operator = "equal"
-        constraint_sum_hard.worker_var.selector = "equal"
-        constraint_sum_hard.worker_var.target = ["w0"]
         constraint_sum_hard.day_var.selector = "period"
-        constraint_sum_hard.day_var.start_date = date.fromisoformat(
-            "2023-10-02"
-        )
+        constraint_sum_hard.day_var.start_date = date.fromisoformat("2023-10-02")
         constraint_sum_hard.day_var.end_date = date.fromisoformat("2023-10-08")
         inputs.constraints = [constraint_sum_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        count = sum(
-            1
+        worked_duration = sum(
+            inputs.shift_durations[a.shift_id]
             for a in assignments
             if a.worker_id in constraint_sum_hard.worker_var.target
             and a.date
@@ -228,10 +223,12 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 constraint_sum_hard.day_var.start_date,
                 constraint_sum_hard.day_var.end_date,
             )
-            and a.shift_id in constraint_sum_hard.shift_var.target
         )
 
-        assert count == constraint_sum_hard.target_value
+        assert (
+            worked_duration
+            == constraint_sum_hard.target_value * Constants.NUM_MINUTES_HOUR
+        )
 
 
 class TestConstraintSoft(TestEngine, TestConstraint):
@@ -287,8 +284,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             for w in constraint_sum_soft.worker_var.target
         ]
         assert all(
-            dur
-            == constraint_sum_soft.target_value * Constants.NUM_MINUTES_HOUR
+            dur == constraint_sum_soft.target_value * Constants.NUM_MINUTES_HOUR
             for dur in worked_durations
         )
 
@@ -328,7 +324,8 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_sum_hard: Constraint,
         constraint_sum_soft: Constraint,
     ) -> None:
-        # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
+        # Worker w0 works excalty 12 hours per week hard, at most 8 hours per
+        # week soft
         constraint_sum_hard.operator = "equal"
         inputs.constraints = [
             constraint_sum_hard,
@@ -340,20 +337,19 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         dates_weeks = get_dates_weeks(inputs.variable_space.days)
         constraint_sum_hard = inputs.constraints[0]
 
-        counts = [
+        worked_durations = [
             sum(
-                1
+                inputs.shift_durations[a.shift_id]
                 for a in assignments
-                if a.worker_id == w
-                and a.date in week
-                and a.shift_id in constraint_sum_hard.shift_var.target
+                if a.worker_id == w and a.date in week
             )
             for week in dates_weeks
-            for w in inputs.variable_space.workers
+            for w in constraint_sum_hard.worker_var.target
         ]
 
         assert all(
-            count == constraint_sum_hard.target_value for count in counts
+            dur == constraint_sum_hard.target_value * Constants.NUM_MINUTES_HOUR
+            for dur in worked_durations
         )
 
     def test_expected_objective_for_hard_soft_conflict(
@@ -363,7 +359,8 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_sum_hard: Constraint,
         constraint_sum_soft: Constraint,
     ) -> None:
-        # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
+        # Worker w0 works excalty 12 hours per week hard, at most 8 hours per
+        # week soft
         constraint_sum_hard.operator = "equal"
         inputs.constraints = [
             constraint_sum_hard,
@@ -373,10 +370,13 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         dates_weeks = get_dates_weeks(inputs.variable_space.days)
 
-        assert outputs.objective_value == constraint_sum_soft.penalty * len(
-            inputs.variable_space.workers
-        ) * len(dates_weeks) * abs(
-            constraint_sum_hard.target_value - constraint_sum_soft.target_value
+        assert (
+            outputs.objective_value
+            == constraint_sum_soft.penalty
+            * len(constraint_sum_hard.worker_var.target)
+            * len(dates_weeks)
+            * abs(constraint_sum_hard.target_value - constraint_sum_soft.target_value)
+            * Constants.NUM_MINUTES_HOUR
         )
 
     def test_expected_constraint_breaches_variables_for_hard_soft_conflict(
@@ -386,7 +386,8 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_sum_hard: Constraint,
         constraint_sum_soft: Constraint,
     ) -> None:
-        # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
+        # Worker w0 works excalty 12 hours per week hard, at most 8 hours per
+        # week soft
         constraint_sum_hard.operator = "equal"
         inputs.constraints = [
             constraint_sum_hard,
@@ -398,26 +399,20 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         expected_variables = [
             [(w, d, s) for d in week]
-            for w in inputs.variable_space.workers
+            for w in constraint_sum_hard.worker_var.target
             for week in dates_weeks
-            for s in constraint_sum_hard.shift_var.target
+            for s in inputs.variable_space.shifts
         ]
 
         # all constraint_breaches' variables are in expected_variables
         assert all(
-            any(
-                cb_variable in exp_variables
-                for exp_variables in expected_variables
-            )
+            any(cb_variable in exp_variables for exp_variables in expected_variables)
             for cb in outputs.constraint_breaches
             for cb_variable in cb.variables
         )
         # all expected_variables are in constraint_breaches' variables
         assert all(
-            any(
-                exp_variable in cb.variables
-                for cb in outputs.constraint_breaches
-            )
+            any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
             for exp_variables in expected_variables
             for exp_variable in exp_variables
         )
@@ -429,7 +424,8 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_sum_hard: Constraint,
         constraint_sum_soft: Constraint,
     ) -> None:
-        # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
+        # Worker w0 works excalty 12 hours per week hard, at most 8 hours per
+        # week soft
         constraint_sum_hard.operator = "equal"
         inputs.constraints = [
             constraint_sum_hard,
@@ -439,19 +435,17 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         expected_value_diff = (
             constraint_sum_hard.target_value - constraint_sum_soft.target_value
-        )
+        ) * Constants.NUM_MINUTES_HOUR
 
         assert all(
-            cb.value_diff == expected_value_diff
-            for cb in outputs.constraint_breaches
+            cb.value_diff == expected_value_diff for cb in outputs.constraint_breaches
         )
 
 
 # pylint: disable=R0801
 def get_dates_weeks(days: List[str]) -> List[List[date]]:
     dates = [
-        datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-        for d in days
+        datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date() for d in days
     ]
     week_length = 7
     d_indexes = [

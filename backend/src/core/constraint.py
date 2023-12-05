@@ -53,6 +53,7 @@ class Constraint:
         "", "less_than_or_equal", "equal", "greater_than_or_equal", "yes", "no"
     ]
     target_value: int
+    target_unit: str  # worker, shift, day, hour
     worker_var: VarWorker
     day_var: VarDay
     shift_var: VarShift

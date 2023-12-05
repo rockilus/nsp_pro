@@ -30,6 +30,7 @@ class TestConstraint:
             constraint_type="eve",
             operator="",
             target_value=0,
+            target_unit="",
             worker_var=VarWorker(
                 operator="",
                 selector="equal",
@@ -62,6 +63,7 @@ class TestConstraint:
             constraint_type="fai",
             operator="",
             target_value=0,
+            target_unit="",
             worker_var=VarWorker(
                 operator="",
                 selector="all",

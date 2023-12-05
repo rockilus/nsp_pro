@@ -28,6 +28,7 @@ class TestConstraint:
             constraint_type="seq",
             operator="less_than_or_equal",
             target_value=4,
+            target_unit="day",
             worker_var=VarWorker(
                 operator="", selector="all", target=[], num_eligible_workers=0
             ),
@@ -57,6 +58,7 @@ class TestConstraint:
             constraint_type="seq",
             operator="less_than_or_equal",
             target_value=2,
+            target_unit="day",
             worker_var=VarWorker(
                 operator="", selector="all", target=[], num_eligible_workers=0
             ),

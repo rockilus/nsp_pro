@@ -69,6 +69,10 @@ def core_to_engine_inputs(
             variable_space.shifts,
             wip_assignments,
         ),
+        shift_durations={
+            shift.id: int((shift.end_time - shift.start_time).total_seconds() // 60)
+            for shift in shifts
+        },
     )
     return inputs
 
@@ -171,6 +175,7 @@ def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
         constraint_type=constraint.constraint_type,
         operator=constraint.operator,
         target_value=constraint.target_value,
+        target_unit=constraint.target_unit,
         worker_var=_core_to_engine_var_worker(constraint.worker_var),
         day_var=_core_to_engine_var_day(constraint.day_var),
         shift_var=_core_to_engine_var_shift(constraint.shift_var),

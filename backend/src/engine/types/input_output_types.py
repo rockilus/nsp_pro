@@ -72,6 +72,7 @@ class VarShift:
 
 
 @dataclass
+# pylint: disable=too-many-instance-attributes
 class Constraint:
     id: str
     constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
