@@ -14,9 +14,6 @@ def stats_setup() -> List[Stat]:
     assignments = assignment_db.get_assignments_by_dates(
         stats_options.start_date, stats_options.end_date
     )
-    workers_ids = [w.id for w in workers]
-    shifts_ids = [s.id for s in shifts]
-    shifts_off_ids = [s.id for s in shifts if s.name == "Off"]
-    build_stats = BuildStats(stats_options, workers_ids, shifts_ids, shifts_off_ids)
+    build_stats = BuildStats(stats_options, workers, shifts)
     stats = build_stats.build_stats(assignments)
     return stats

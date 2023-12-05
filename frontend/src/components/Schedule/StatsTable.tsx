@@ -42,10 +42,9 @@ export default function StatsTable({ stats, workers, shifts }: Props) {
       headerNames.forEach((headerName: string) => {
         headers.push({
           name: headerName,
-          label:
-            clusterName === "Worked shifts"
-              ? shifts.find((s) => s.id === headerName)?.name || ""
-              : headerName,
+          label: ["Worked shifts", "Worked times"].includes(clusterName)
+            ? shifts.find((s) => s.id === headerName)?.name || ""
+            : headerName,
           columnSpan: 1,
           cluster: clusterName,
         });
@@ -103,7 +102,10 @@ export default function StatsTable({ stats, workers, shifts }: Props) {
               </TableCell>
               {headers.map((header, headerIndex) => {
                 const stat: StatT | null =
-                  row.find((s) => s.name === header.name) || null;
+                  row.find(
+                    (s) =>
+                      s.name === header.name && s.cluster === header.cluster
+                  ) || null;
                 return (
                   stat && (
                     <TableCell

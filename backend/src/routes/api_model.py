@@ -101,7 +101,7 @@ class StatMessage(BaseModel):
     workerId: str
     name: str
     cluster: str
-    value: int
+    value: Union[int, float]
 
 
 class StatsOptionsMessage(BaseModel):

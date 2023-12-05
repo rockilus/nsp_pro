@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List
+from typing import List, Union
 
 
 @dataclass
@@ -37,7 +37,7 @@ class Stat:
     worker_id: str
     name: str
     cluster: str
-    value: int
+    value: Union[int, float]
 
 
 @dataclass
