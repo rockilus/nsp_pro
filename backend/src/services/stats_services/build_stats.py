@@ -4,6 +4,8 @@ from typing import List
 import numpy as np
 
 from core.schedule import Assignment, Stat, StatsOptions
+from core.shift import Shift
+from core.worker import Worker
 from utils.constants import Constants
 
 
@@ -11,43 +13,46 @@ class BuildStats:
     def __init__(
         self,
         stats_options: StatsOptions,
-        worker_ids: List[str],
-        shift_ids: List[str],
-        shifts_off: List[str],
+        workers: List[Worker],
+        shifts: List[Shift],
     ) -> None:
-        self.workers = worker_ids
+        self.workers = workers
+        self.shifts = shifts
+        self.worker_ids = [w.id for w in workers]
         self.start_date = stats_options.start_date
         self.end_date = stats_options.end_date
-        self.shifts = shift_ids
-        self.shifts_off = shifts_off
+        self.shift_ids = [s.id for s in shifts]
+        self.shift_w_ids = [s.id for s in shifts if s.name != "Off"]
+        self.shift_off_ids = [s.id for s in shifts if s.name == "Off"]
 
     def build_stats(self, assignments: List[Assignment]) -> List[Stat]:
         a_array = self.assignments_to_np(assignments)
         aw_array = self.a_array_to_aw_array(a_array)
         worked_days_stats = self.build_worked_days_stats(aw_array)
         worked_shifts_stats = self.build_worked_shifts_stats(a_array)
+        worked_times_stats = self.build_worked_times_stats(aw_array)
 
-        return worked_days_stats + worked_shifts_stats
+        return worked_days_stats + worked_shifts_stats + worked_times_stats
 
     def assignments_to_np(self, assignments: List[Assignment]) -> np.ndarray:
         schedule_array = np.zeros(
             (
-                len(self.workers),
+                len(self.worker_ids),
                 (self.end_date - self.start_date).days + 1,
-                len(self.shifts),
+                len(self.shift_ids),
             ),
             dtype=int,
         )
         for assignment in assignments:
             schedule_array[
-                self.workers.index(assignment.worker_id),
+                self.worker_ids.index(assignment.worker_id),
                 (assignment.date - self.start_date).days,
-                self.shifts.index(assignment.shift_id),
+                self.shift_ids.index(assignment.shift_id),
             ] = 1
         return schedule_array
 
     def a_array_to_aw_array(self, a_array: np.ndarray) -> np.ndarray:
-        indices_to_remove = [self.shifts.index(s) for s in self.shifts_off]
+        indices_to_remove = [self.shift_ids.index(s) for s in self.shift_off_ids]
         aw_array = np.delete(a_array, indices_to_remove, axis=2)
         return aw_array
 
@@ -64,7 +69,7 @@ class BuildStats:
             out[:, day] = np.sum(a_array_sum_shifts * (weekdays == day), axis=1)
         return [
             Stat(
-                worker_id=self.workers[w],
+                worker_id=self.worker_ids[w],
                 name=Constants.WEEK_DAYS[d],
                 cluster="Worked days",
                 value=out[w, d],
@@ -77,11 +82,36 @@ class BuildStats:
         out = a_array.sum(axis=1)
         return [
             Stat(
-                worker_id=self.workers[w],
-                name=self.shifts[s],
+                worker_id=self.worker_ids[w],
+                name=self.shift_ids[s],
                 cluster="Worked shifts",
                 value=out[w, s],
             )
             for w in range(len(out))
-            for s in range(len(self.shifts))
+            for s in range(len(self.shift_ids))
+        ]
+
+    def build_worked_times_stats(self, a_array: np.ndarray) -> List[Stat]:
+        w_shifts = a_array.sum(axis=1)
+        w_times = np.array(
+            [
+                (s.end_time - s.start_time).total_seconds() / 3600
+                for s in self.shifts
+                if s.name != "Off"
+            ],
+            dtype=float,
+        )
+        out = w_shifts * w_times
+        print("w_shifts shape", w_shifts.shape)
+        print("w_times shape", w_times.shape)
+        print("out shape", out.shape)
+        return [
+            Stat(
+                worker_id=self.worker_ids[w],
+                name=self.shift_w_ids[s],
+                cluster="Worked times",
+                value=out[w, s],
+            )
+            for w in range(len(out))
+            for s in range(len(self.shift_w_ids))
         ]
