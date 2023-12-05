@@ -47,6 +47,7 @@ class TestEngine:
             constraints=constraints,
             fixed_values={},
             sol_hint={},
+            shift_durations={"s0": 240, "s1": 0, "s2": 240, "s3": 240},
         )
         return inputs
 

@@ -84,6 +84,7 @@ class Constraint:
         "no",
     ]
     target_value: int
+    target_unit: str  # worker, shift, day, hour
     worker_var: VarWorker
     day_var: VarDay
     shift_var: VarShift
@@ -101,6 +102,7 @@ class Inputs:
     constraints: List[Constraint]
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
+    shift_durations: Dict[str, int]  # in minutes
 
 
 ##############################
