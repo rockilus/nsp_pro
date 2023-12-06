@@ -171,7 +171,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         engine_solve: Callable[[Inputs], Outputs],
         constraint_ord_hard: Constraint,
     ) -> None:
-        # No shift s0 after shift s1
+        # Shift s3 after shift s1, while fixed assignment s4 after s1
         fixed_assignments = [
             Assignment(
                 worker_id="w0",
@@ -181,11 +181,12 @@ class TestConstraintHard(TestEngine, TestConstraint):
             Assignment(
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
-                shift_id="s1",
+                shift_id="s4",
             ),
         ]
         inputs.constraints = [constraint_ord_hard]
         constraint_ord_hard.operator = "yes"
+        constraint_ord_hard.shift_var.relative = "s3"
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
 
@@ -689,7 +690,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 id="request",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
-                shift_id="s0",
+                shift_id="s4",
                 hard_to_soft=False,
                 penalty=1,
             ),

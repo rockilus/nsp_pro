@@ -108,9 +108,7 @@ class Model:
             self.shifts,
             self.obj,
         )
-        self.add_far = AddFAR(
-            self.model, self.variables, self.workers, self.obj
-        )
+        self.add_far = AddFAR(self.model, self.variables, self.workers, self.obj)
 
     def set_up_model(self, inputs: Inputs) -> None:
         self.bt.total_start = time.time()
@@ -123,10 +121,9 @@ class Model:
         self.bt.constraints_start = time.time()
         # self.add_exactly_one_shift_per_day_constraint()
         self.no_interval_overlap()
+        self.add_at_least_one_shift_per_day_constraint()
         self.add_coverage.add_coverage(inputs.coverage.coverage)
-        self.add_custom_constraints(
-            inputs.constraints, inputs.coverage.coverage
-        )
+        self.add_custom_constraints(inputs.constraints, inputs.coverage.coverage)
         self.add_far.add_fixed_assignments(inputs.fixed_assignments)
         self.add_far.add_requests(inputs.requests)
         self.bt.constraints_end = time.time()
@@ -139,9 +136,9 @@ class Model:
         for worker in self.workers:
             for day in self.days:
                 for shift in self.shifts:
-                    self.variables[
-                        (worker, day, shift)
-                    ] = self.model.NewBoolVar(f"var_{worker}_{day}_{shift}")
+                    self.variables[(worker, day, shift)] = self.model.NewBoolVar(
+                        f"{worker}_{day}_{shift}"
+                    )
                     self.intervals[
                         (worker, day, shift)
                     ] = self.model.NewOptionalIntervalVar(
@@ -158,9 +155,7 @@ class Model:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
 
-    def add_solution_hint(
-        self, solution_hint: Dict[Tuple[str, str, str], int]
-    ) -> None:
+    def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
         for k, v in solution_hint.items():
             self.model.AddHint(self.variables[k], v)
 
@@ -171,14 +166,18 @@ class Model:
     #                 self.variables[worker, day, shift] for shift in self.shifts
     #             )
 
+    def add_at_least_one_shift_per_day_constraint(self) -> None:
+        for w in self.workers:
+            for d in self.days:
+                self.model.Add(
+                    sum(self.variables[w, d, s] for s in self.shifts)  # type: ignore
+                    >= 1
+                )
+
     def no_interval_overlap(self) -> None:
         for w in self.workers:
             self.model.AddNoOverlap(
-                [
-                    self.intervals[(w, d, s)]
-                    for d in self.days
-                    for s in self.shifts
-                ]
+                [self.intervals[w, d, s] for d in self.days for s in self.shifts]
             )
 
     def add_custom_constraints(
