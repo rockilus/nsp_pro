@@ -146,6 +146,42 @@ def build_constraint_ord(constraint_build: ConstraintBuild) -> Constraint:
     )
     return constraint
 
+def build_constraint_fai(constraint_build: ConstraintBuild) -> Constraint:
+    var_worker = VarWorker(
+        operator="",
+        selector="all",
+        target_ids=[],
+        num_eligible_workers=0,
+    )
+    var_day = VarDay(
+        selector="all",
+        target=0,
+        start_date=date.today(),
+        end_date=date.today(),
+        interval=0,
+    )
+    target_shift_ids = get_block_value_from_name("shift_id", constraint_build.build_blocks)
+    var_shift = VarShift(
+        operator="",
+        selector="equal",
+        target_ids=target_shift_ids,
+        reference_id="",
+        relative_id="",
+    )
+    constraint = Constraint(
+        id=constraint_build.id,
+        constraint_type="fai",
+        operator="",
+        target_value=0,
+        worker_var=var_worker,
+        day_var=var_day,
+        shift_var=var_shift,
+        active=constraint_build.active,
+        hard=constraint_build.hard,
+        priority=constraint_build.priority,
+        build_blocks=constraint_build.build_blocks,
+    )
+    return constraint
 
 def build_constraint(constraint_build: ConstraintBuild) -> Constraint:
     constraint_type = ""
@@ -160,6 +196,8 @@ def build_constraint(constraint_build: ConstraintBuild) -> Constraint:
         constraint = build_constraint_seq(constraint_build)
     elif constraint_type == "order":
         constraint = build_constraint_ord(constraint_build)
+    elif constraint_type == "fairly_spread":
+        constraint = build_constraint_fai(constraint_build)
     else:
         raise ValueError(f"Constraint type {constraint_type} not recognized")
     return constraint

@@ -11,6 +11,10 @@ from engine.model.utils.model_utils import (
 from engine.types.input_output_types import Constraint, ShiftDemand
 
 
+"""
+FAIrly spread:
+spreading the work fairly across workers (each constraint will apply to all the selected workers).
+"""
 class AddConstraintFai(AddConstraint):
     def add_constraint(
         self, constraint: Constraint, coverage: List[ShiftDemand]

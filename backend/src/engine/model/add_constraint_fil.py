@@ -6,7 +6,14 @@ from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import build_var_name
 from engine.types.input_output_types import Constraint
 
+"""
+FILter: 
 
+Forbid certain tasks for a group of workers, or limit certain tasks to a group of workers (which amounts to the same thing).
+For example:
+- "No doctor over 60 should be on call"
+- "Only doctors based in Plouharnel can work in Plouharnel"
+"""
 class AddConstraintFil(AddConstraint):
     def add_constraint(self, constraint: Constraint) -> None:
         w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)

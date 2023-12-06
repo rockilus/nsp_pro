@@ -161,6 +161,24 @@ const functions: FunctionDefinitionT[] = [
     ],
   },
   {
+    name: 'fairly_spread',
+    label: 'FAIR',
+    description: 'This function is for a constraint about the distribution of shifts.',
+    examples: [
+      {
+        formula: `FAIRLY_SPREAD('Shift name')`,
+        explanation: `This constraint will ensure that the shift named 'Shift name' will be scheduled fairly.`
+      },
+    ],
+    args: [
+      {
+        name: 'shift_id',
+        label: 'Shift',
+        type: 'selectShifts',
+      },
+    ],
+  },
+  {
     name: 'SELECT_SHIFTS',
     label: 'SELECT_SHIFTS',
     description: 'This function helps selecting shifts based on a condition.',

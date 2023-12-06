@@ -16,6 +16,11 @@ from engine.types.input_output_types import (
 )
 
 
+"""
+EVEnly spread:
+Spreading the work of an individual worker evenly through time.
+Can do it for several workers at a time, but each constraint will apply to an individual worker.
+"""
 class AddConstraintEve(AddConstraint):
     # pylint: disable=too-many-arguments
     def __init__(self, model, variables, durations, workers, days, shifts, obj) -> None:
