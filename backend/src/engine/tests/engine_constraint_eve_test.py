@@ -403,7 +403,7 @@ def build_coverage(
                 ShiftDemand(
                     date=cur_date,
                     shift_id=s,
-                    quantity=quantity,
+                    staffing=quantity,
                     duration=8,
                 )
             )

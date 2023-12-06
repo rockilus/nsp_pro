@@ -24,6 +24,6 @@ class AddCoverage(AddConstraint):
                 for w in self.workers
             ]
             sum_var = self.model.NewIntVar(
-                shift_demand.quantity, shift_demand.quantity, ""
+                shift_demand.staffing, shift_demand.staffing, ""
             )
             self.model.Add(sum_var == sum(c_variables))

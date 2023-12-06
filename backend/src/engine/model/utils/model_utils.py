@@ -24,7 +24,7 @@ def get_total_coverage_shift(
 ) -> int:
     date_format = "%Y-%m-%d"
     return sum(
-        shift_demand.quantity
+        shift_demand.staffing
         for shift_demand in coverage
         if shift_demand.shift_id == shift_id
         and shift_demand.date.strftime(date_format) in days
@@ -68,5 +68,5 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
 
 def build_shifts_in_coverage(coverage: List[ShiftDemand]) -> Set[str]:
     return set(
-        shift_demand.shift_id for shift_demand in coverage if shift_demand.quantity > 0
+        shift_demand.shift_id for shift_demand in coverage if shift_demand.staffing > 0
     )
