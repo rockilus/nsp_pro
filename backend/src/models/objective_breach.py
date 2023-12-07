@@ -15,7 +15,7 @@ class Variable(EmbeddedDocument):
 
 
 class ObjectiveBreach(Document):
-    meta = {"collection": "constraint_breaches"}
+    meta = {"collection": "objective_breaches"}
 
     id = StringField(primary_key=True, required=True)
     objective_id = StringField(required=True)

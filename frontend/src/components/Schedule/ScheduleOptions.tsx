@@ -37,10 +37,12 @@ export default function ScheduleOptions({
     schedules.length > 0
       ? schedules
           .filter((schedule) => schedule.status === "validated")
-          ?.reduce((latestSchedule, currentSchedule) =>
-            currentSchedule.endDate > latestSchedule.endDate
-              ? currentSchedule
-              : latestSchedule
+          ?.reduce(
+            (latestSchedule, currentSchedule) =>
+              currentSchedule.endDate > latestSchedule.endDate
+                ? currentSchedule
+                : latestSchedule,
+            { endDate: dayjs.utc().startOf("day") }
           )
           .endDate.startOf("day") || dayjs.utc().startOf("day")
       : dayjs.utc().startOf("day");

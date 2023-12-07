@@ -39,7 +39,9 @@ def core_to_engine_inputs(
     r_engine, fa_engine = _core_to_engine_requests_and_fixed_assignments(
         requests, fixed_assignments
     )
-    start_date_hist = min(a.date for a in prev_assignments)
+    start_date_hist = (
+        min(a.date for a in prev_assignments) if prev_assignments else start_date
+    )
     end_date_hist = start_date - timedelta(days=1)
 
     variable_space = VariableSpace(

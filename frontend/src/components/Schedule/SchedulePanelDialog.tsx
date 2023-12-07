@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
@@ -27,8 +27,8 @@ export default function SchedulePanelDialog({
   buttonElement,
   schedule,
 }: Props) {
-  const [open, setOpen] = React.useState(false);
-  const [scheduleState, setScheduleState] = React.useState<ScheduleT>({
+  const [open, setOpen] = useState(false);
+  const [scheduleState, setScheduleState] = useState<ScheduleT>({
     ...schedule,
   });
 
@@ -51,6 +51,10 @@ export default function SchedulePanelDialog({
     }
     handleClose();
   };
+
+  useEffect(() => {
+    setScheduleState({ ...schedule });
+  }, [schedule]);
 
   return (
     <React.Fragment>

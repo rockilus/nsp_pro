@@ -78,8 +78,8 @@ export default function ScheduleConfig({
     (
       startDate: dayjs.Dayjs,
       endDate: dayjs.Dayjs,
-      lastPastDate: dayjs.Dayjs,
-      lastValidDate: dayjs.Dayjs
+      lastPastDate: dayjs.Dayjs | null,
+      lastValidDate: dayjs.Dayjs | null
     ): ColumnT[] => {
       const columns: ColumnT[] = [
         { date: dayjs(0), name: "", noCoverage: false, status: "" },
@@ -100,11 +100,13 @@ export default function ScheduleConfig({
               .find((s) => s.status === "WIP")
               ?.missingCoverageDates.some((date) => date.isSame(currentDate)) ||
             false,
-          status: currentDate.isBefore(lastPastDate.add(1, "day"))
-            ? "past"
-            : currentDate.isBefore(lastValidDate.add(1, "day"))
-            ? "validated"
-            : "wip",
+          status:
+            lastPastDate && currentDate.isBefore(lastPastDate.add(1, "day"))
+              ? "past"
+              : lastValidDate &&
+                currentDate.isBefore(lastValidDate.add(1, "day"))
+              ? "validated"
+              : "wip",
         };
         columns.push({ ...column });
         currentDate = currentDate.add(1, "day");
@@ -226,15 +228,25 @@ export default function ScheduleConfig({
         (min, a) => (a.date.isBefore(min) ? a.date : min),
         assignments[0].date
       );
-      const lastPastDate = assignments.reduce(
-        (max, a) => (a.date.isAfter(max) && a.status === "past" ? a.date : max),
-        assignments[0].date
+      const pastAssignments = assignments.filter((a) => a.status === "past");
+      const validatedAssignments = assignments.filter(
+        (a) => a.status === "validated"
       );
-      const lastValidDate = assignments.reduce(
-        (max, a) =>
-          a.date.isAfter(max) && a.status === "validated" ? a.date : max,
-        assignments[0].date
-      );
+      const lastPastDate =
+        pastAssignments.length > 0
+          ? pastAssignments.reduce(
+              (max, a) => (a.date.isAfter(max) ? a.date : max),
+              pastAssignments[0].date
+            )
+          : null;
+      const lastValidDate =
+        validatedAssignments.length > 0
+          ? validatedAssignments.reduce(
+              (max, a) =>
+                a.date.isAfter(max) && a.status === "validated" ? a.date : max,
+              validatedAssignments[0].date
+            )
+          : null;
       const endDate = assignments.reduce(
         (max, a) => (a.date.isAfter(max) ? a.date : max),
         assignments[0].date
