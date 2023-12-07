@@ -18,13 +18,15 @@ from engine.types.model_types import BenchmarkTimes, Objective
 
 
 class Model:
-    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(
         self,
         workers: List[str],
         days: List[str],
         shifts: List[str],
         shift_durations: Dict[str, int],
+        shift_start_times: Dict[Tuple, int],
+        shift_end_times: Dict[Tuple, int],
     ) -> None:
         self.workers = workers
         self.days = days
@@ -32,7 +34,10 @@ class Model:
 
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple, Dict] = {}
+        self.intervals: Dict[Tuple, Dict] = {}
         self.durations: Dict[str, int] = shift_durations
+        self.shift_start_times: Dict[Tuple, int] = shift_start_times
+        self.shift_end_times: Dict[Tuple, int] = shift_end_times
 
         self.obj = Objective()
         self.solver = cp_model.CpSolver()
@@ -110,12 +115,13 @@ class Model:
         self.bt.full_setup_start = time.time()
         self.bt.variables_start = time.time()
         self.build_variables()
-        # self.build_durations(inputs.shift_durations)
         self.set_fixed_variables(inputs.fixed_values)
         self.add_solution_hint(inputs.sol_hint)
         self.bt.variables_end = time.time()
         self.bt.constraints_start = time.time()
-        self.add_exactly_one_shift_per_day_constraint()
+        # self.add_exactly_one_shift_per_day_constraint()
+        self.no_interval_overlap()
+        self.add_at_least_one_shift_per_day_constraint()
         self.add_coverage.add_coverage(inputs.coverage.coverage)
         self.add_custom_constraints(inputs.constraints, inputs.coverage.coverage)
         self.add_far.add_fixed_assignments(inputs.fixed_assignments)
@@ -133,6 +139,15 @@ class Model:
                     self.variables[(worker, day, shift)] = self.model.NewBoolVar(
                         f"{worker}_{day}_{shift}"
                     )
+                    self.intervals[
+                        (worker, day, shift)
+                    ] = self.model.NewOptionalIntervalVar(
+                        self.shift_start_times[day, shift],
+                        self.durations[shift],
+                        self.shift_end_times[day, shift],
+                        self.variables[worker, day, shift],
+                        f"inter_{worker}_{day}_{shift}",
+                    )
 
     def set_fixed_variables(
         self, fixed_values: Dict[Tuple[str, str, str], int]
@@ -144,23 +159,26 @@ class Model:
         for k, v in solution_hint.items():
             self.model.AddHint(self.variables[k], v)
 
-    # def build_durations(self, shift_durations: Dict[str, int]) -> None:
-    #     for s in self.shifts:
-    #         self.durations[s] = self.model.NewIntVar(
-    #             shift_durations[s], shift_durations[s], f"duration_{s}"
-    #         )
-    #     for d in self.days:
-    #         for s in self.shifts:
-    #             self.durations[(d, s)] = self.model.NewIntVar(
-    #                 0, 24, f"duration_{d}_{s}"
+    # def add_exactly_one_shift_per_day_constraint(self) -> None:
+    #     for worker in self.workers:
+    #         for day in self.days:
+    #             self.model.AddExactlyOne(
+    #                 self.variables[worker, day, shift] for shift in self.shifts
     #             )
 
-    def add_exactly_one_shift_per_day_constraint(self) -> None:
-        for worker in self.workers:
-            for day in self.days:
-                self.model.AddExactlyOne(
-                    self.variables[worker, day, shift] for shift in self.shifts
+    def add_at_least_one_shift_per_day_constraint(self) -> None:
+        for w in self.workers:
+            for d in self.days:
+                self.model.Add(
+                    sum(self.variables[w, d, s] for s in self.shifts)  # type: ignore
+                    >= 1
                 )
+
+    def no_interval_overlap(self) -> None:
+        for w in self.workers:
+            self.model.AddNoOverlap(
+                [self.intervals[w, d, s] for d in self.days for s in self.shifts]
+            )
 
     def add_custom_constraints(
         self, constraints: List[Constraint], coverage: List[ShiftDemand]

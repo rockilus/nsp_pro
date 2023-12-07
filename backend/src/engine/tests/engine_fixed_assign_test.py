@@ -43,12 +43,12 @@ class TestFixedAssignments(TestEngine):
             Assignment(
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
-                shift_id="s0",
+                shift_id="s3",
             ),
             Assignment(
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
-                shift_id="s1",
+                shift_id="s4",
             ),
         ]
         inputs.fixed_assignments = fixed_assignments

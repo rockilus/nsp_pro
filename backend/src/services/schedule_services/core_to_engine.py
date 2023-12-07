@@ -73,6 +73,28 @@ def core_to_engine_inputs(
             shift.id: int((shift.end_time - shift.start_time).total_seconds() // 60)
             for shift in shifts
         },
+        shift_start_times={
+            (
+                d.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
+                s.id,
+            ): int(
+                s.start_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
+                // Constants.NUM_SECONDS_MINUTE
+            )
+            for d in _build_dates(start_date_hist, end_date)
+            for s in shifts
+        },
+        shift_end_times={
+            (
+                d.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
+                s.id,
+            ): int(
+                s.end_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
+                // Constants.NUM_SECONDS_MINUTE
+            )
+            for d in _build_dates(start_date_hist, end_date)
+            for s in shifts
+        },
     )
     return inputs
 
@@ -100,7 +122,7 @@ def _build_shift_demands(
                             ShiftDemandEngine(
                                 date=cov_date,
                                 shift_id=sd.shift_id,
-                                quantity=shift.staffing,
+                                staffing=shift.staffing,
                                 duration=int(
                                     (shift.end_time - shift.start_time).total_seconds()
                                     // 60
@@ -226,3 +248,8 @@ def _build_day_coordinates(start_date: date, end_date: date) -> List[str]:
     delta = end_date - start_date
     dates = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
     return [date.strftime(Constants.ENGINE_STRING_DATE_FORMAT) for date in dates]
+
+
+def _build_dates(start_date: date, end_date: date) -> List[date]:
+    delta = end_date - start_date
+    return [start_date + timedelta(days=i) for i in range(delta.days + 1)]

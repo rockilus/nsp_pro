@@ -17,6 +17,8 @@ class Engine:
             inputs.variable_space.days,
             inputs.variable_space.shifts,
             inputs.shift_durations,
+            inputs.shift_start_times,
+            inputs.shift_end_times,
         )
         start_time = time.time()
         model.set_up_model(inputs)

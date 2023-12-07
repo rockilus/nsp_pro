@@ -20,7 +20,7 @@ class TestCoverage(TestEngine):
                 ShiftDemand(
                     date=date.fromisoformat("2023-10-02"),
                     shift_id="s0",
-                    quantity=target_coverage,
+                    staffing=target_coverage,
                     duration=8,
                 ),
             ]

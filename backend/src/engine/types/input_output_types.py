@@ -17,7 +17,7 @@ class VariableSpace:
 class ShiftDemand:
     date: date
     shift_id: str
-    quantity: int
+    staffing: int
     duration: int  # in minutes
 
 
@@ -104,6 +104,8 @@ class Inputs:
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
     shift_durations: Dict[str, int]  # in minutes
+    shift_start_times: Dict[Tuple, int]  # timestamp in minutes
+    shift_end_times: Dict[Tuple, int]  # timestamp in minutes
 
 
 ##############################

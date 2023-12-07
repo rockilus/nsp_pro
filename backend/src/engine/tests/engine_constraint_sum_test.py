@@ -88,7 +88,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         engine_solve: Callable[[Inputs], Outputs],
         constraint_sum_hard: Constraint,
     ) -> None:
-        # At most 4 shift off per week
+        # At most 4 shift s0 per week
         inputs.constraints = [constraint_sum_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -115,7 +115,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         engine_solve: Callable[[Inputs], Outputs],
         constraint_sum_hard: Constraint,
     ) -> None:
-        # Exactly 4 shift off per week
+        # Exactly 4 shift s0 per week
         constraint_sum_hard.operator = "equal"
         inputs.constraints = [constraint_sum_hard]
         outputs = engine_solve(inputs)
