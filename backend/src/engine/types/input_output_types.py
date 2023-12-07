@@ -18,7 +18,7 @@ class ShiftDemand:
     date: date
     shift_id: str
     staffing: int
-    duration: int  # in minutes
+    # duration: int  # in minutes
 
 
 @dataclass

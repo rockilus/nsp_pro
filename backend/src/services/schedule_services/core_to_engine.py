@@ -125,10 +125,6 @@ def _build_shift_demands(
                                 date=cov_date,
                                 shift_id=sd.shift_id,
                                 staffing=shift.staffing,
-                                duration=int(
-                                    (shift.end_time - shift.start_time).total_seconds()
-                                    // 60
-                                ),
                             )
                         )
     return sd_engine

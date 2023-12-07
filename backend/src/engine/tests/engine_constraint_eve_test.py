@@ -404,7 +404,6 @@ def build_coverage(
                     date=cur_date,
                     shift_id=s,
                     staffing=quantity,
-                    duration=8,
                 )
             )
 
