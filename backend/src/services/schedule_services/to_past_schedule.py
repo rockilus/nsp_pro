@@ -4,7 +4,7 @@ from scripts.setup_database import assignment_db, schedule_db
 
 
 def to_past_schedules_and_assignments() -> None:
-    today = date(2023, 11, 7)
+    today = date(2023, 12, 7)
     # today = date.today()
     # today = datetime.now(pytz.utc).date()
 
