@@ -3,6 +3,7 @@ from typing import Tuple
 
 
 @dataclass
+# pylint: disable=too-many-instance-attributes
 class Constants:
     NUM_SECONDS_MINUTE: int = 60
     NUM_MINUTES_HOUR: int = 60
@@ -22,3 +23,8 @@ class Constants:
     ENGINE_SAVED_FILE_PATH: str = "/backend/src/engine/saved/"
     BENCHMARK_LOG_FILE_NAME: str = "benchmark_log.csv"
     MODEL_SAVED_FILE_NAME: str = "model_saved.txt"
+    # move out for production
+    # to get a string like this run: openssl rand -hex 32
+    SECRET_KEY: str = "485987f47ca94097327988d802aa07fc6df623f3345e52df85b5c7fd395897f6"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
