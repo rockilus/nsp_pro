@@ -193,17 +193,20 @@ class TreeNodeMessage(BaseModel):
 
 
 # Authentication
-class Token(BaseModel):
+class Token(BaseModel):  # can be deleted
     access_token: str
     token_type: str
 
 
-class TokenData(BaseModel):
-    username: str | None = None
-
-
 class User(BaseModel):
+    id: str
     username: str
-    email: str | None = None
-    full_name: str | None = None
-    disabled: bool | None = None
+    firstName: str
+    lastName: str
+
+
+class UserSignUp(BaseModel):
+    username: str
+    password: str
+    firstName: str
+    lastName: str

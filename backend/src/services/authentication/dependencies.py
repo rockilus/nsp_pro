@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
-from typing import Annotated
+from typing import Annotated, Optional, Tuple
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt  # type: ignore
 from passlib.context import CryptContext  # type: ignore
@@ -44,7 +44,30 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     return encoded_jwt
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
+async def get_access_token_from_cookie(request: Request) -> str:
+    token_cookie = request.cookies.get("access_token")
+    scheme, param = get_access_token_scheme_param(token_cookie)
+    if not token_cookie or scheme.lower() != "bearer":
+        raise HTTPException(
+            status_code=401,
+            detail="Not authenticated",
+            # headers={"WWW-Authenticate": "Bearer"},
+        )
+    return param
+
+
+def get_access_token_scheme_param(
+    access_token_cookie_value: Optional[str],
+) -> Tuple[str, str]:
+    if not access_token_cookie_value:
+        return "", ""
+    scheme, _, param = access_token_cookie_value.partition(" ")
+    return scheme, param
+
+
+async def get_current_user(
+    token: Annotated[str, Depends(get_access_token_from_cookie)]
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

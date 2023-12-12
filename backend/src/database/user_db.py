@@ -28,10 +28,13 @@ class UserDB:
         user = UserDocument.objects.get(id=user_id)  # type: ignore
         return _from_mongo_user(user)
 
-    def get_user_by_username(self, username: str) -> User:
-        # pylint: disable=no-member
-        user = UserDocument.objects.get(username=username)  # type: ignore
-        return _from_mongo_user(user)
+    def get_user_by_username(self, username: str) -> User | None:
+        try:
+            # pylint: disable=no-member
+            user = UserDocument.objects.get(username=username)  # type: ignore
+            return _from_mongo_user(user)
+        except UserDocument.DoesNotExist:
+            return None
 
     def update_user(self, user: User) -> User:
         document = to_mongo_user(user)

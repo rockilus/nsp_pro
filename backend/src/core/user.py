@@ -8,3 +8,11 @@ class User:
     hashed_password: str
     first_name: str
     last_name: str
+
+
+@dataclass
+class UserSignUp:
+    username: str
+    password: str
+    first_name: str
+    last_name: str

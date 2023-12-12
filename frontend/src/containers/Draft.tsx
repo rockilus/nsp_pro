@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 
 import Box from "@mui/material/Box";
 
@@ -9,16 +9,25 @@ import WorkerConfig from "../components/Worker/WorkerConfig";
 import CoverageTab from "../components/Coverage/CoverageTab";
 import CoverageSelectorConfig from "../components/CoverageSelector/CoverageSelectorConfig";
 import FARConfig from "../components/FixedAssignmentRequest/FARConfig";
+import SignIn from "../components/Login/SignIn";
+import SignUp from "../components/Login/SignUp";
+import MenuAppBar from "../components/AppBar/AppBar";
 
 import { ShiftT } from "../components/Coverage/types";
 import { ShiftDefaultT } from "../components/Shift/types";
 import { ShiftIdNameT, WorkerIdNameT } from "../components/Schedule/types";
 import { useShiftStore } from "../stores/shiftStore";
 import { useWorkerStore } from "../stores/workerStore";
+import { useUserStore } from "../stores/userStore";
 
 export default function Draft() {
+  const [showSignUp, setShowSignUp] = useState(false);
+
   const shifts = useShiftStore((state) => state.shifts);
   const workers = useWorkerStore((state) => state.workers);
+  const user = useUserStore((state) => state.user);
+
+  const fetchUser = useUserStore((state) => state.fetchUser);
 
   const shiftDefaults = shifts
     ? shifts.map((s) => {
@@ -55,15 +64,29 @@ export default function Draft() {
       })
     : [];
 
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
   return (
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <ConstraintConfig workers={workers} shifts={shifts} />
-      <WorkerConfig />
-      <ShiftConfig />
-      <CoverageTab shifts={shiftDefaults} />
-      <CoverageSelectorConfig />
-      <FARConfig workers={workersIdName} shifts={shiftsIdName} />
-      <ScheduleTab workers={workersIdName} shifts={shiftsIdName} />
-    </Box>
+    // {user && user.role === "admin" && (}
+    user ? (
+      <div>
+        <MenuAppBar />
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <ConstraintConfig workers={workers} shifts={shifts} />
+          <WorkerConfig />
+          <ShiftConfig />
+          <CoverageTab shifts={shiftDefaults} />
+          <CoverageSelectorConfig />
+          <FARConfig workers={workersIdName} shifts={shiftsIdName} />
+          <ScheduleTab workers={workersIdName} shifts={shiftsIdName} />
+        </Box>
+      </div>
+    ) : showSignUp ? (
+      <SignUp setShowSignUp={setShowSignUp} />
+    ) : (
+      <SignIn setShowSignUp={setShowSignUp} />
+    )
   );
 }

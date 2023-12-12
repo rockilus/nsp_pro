@@ -102,9 +102,6 @@ class BuildStats:
             dtype=float,
         )
         out = w_shifts * w_times
-        print("w_shifts shape", w_shifts.shape)
-        print("w_times shape", w_times.shape)
-        print("out shape", out.shape)
         return [
             Stat(
                 worker_id=self.worker_ids[w],
