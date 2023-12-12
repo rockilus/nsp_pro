@@ -1,8 +1,8 @@
-import { create } from "zustand";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { create } from "zustand";
 
-import { UserT, UserSignUpT, UserSignInT } from "../components/Login/types";
+import { UserSignInT, UserSignUpT, UserT } from "../components/Login/types";
 dayjs.extend(utc);
 
 const baseApiUrl = "http://127.0.0.1:5000";
@@ -30,7 +30,6 @@ export const useUserStore = create<UserStateT>()((set) => ({
       const response = await fetch(`${apiUrlUser}/me`, options);
       if (response.ok) {
         const user: UserT = await response.json();
-        console.log("user fetched:", user);
         set({ user: user });
       }
     } catch (error) {
@@ -47,8 +46,10 @@ export const useUserStore = create<UserStateT>()((set) => ({
         },
         body: JSON.stringify(userSignUp),
       });
-      const newUser: UserT = await response.json();
-      set({ user: newUser });
+      if (response.ok) {
+        const newUser: UserT = await response.json();
+        set({ user: newUser });
+      }
     } catch (error) {
       throw Error(`Failed to add user: ${error}`);
     }
@@ -66,11 +67,10 @@ export const useUserStore = create<UserStateT>()((set) => ({
           password: userSignIn.password,
         }).toString(),
       });
-      if (!response.ok) {
-        throw new Error("Invalid username or password");
+      if (response.ok) {
+        const data: UserT = await response.json();
+        set({ user: data });
       }
-      const data: UserT = await response.json();
-      set({ user: data });
     } catch (error) {
       throw new Error("Invalid username or password");
     }
