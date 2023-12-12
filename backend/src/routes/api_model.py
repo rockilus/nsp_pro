@@ -190,3 +190,23 @@ class TreeNodeMessage(BaseModel):
     parentOptions: List[str]
     options: List[str]
     children: List["TreeNodeMessage"]
+
+
+# Authentication
+class Token(BaseModel):  # can be deleted
+    access_token: str
+    token_type: str
+
+
+class User(BaseModel):
+    id: str
+    username: str
+    firstName: str
+    lastName: str
+
+
+class UserSignUp(BaseModel):
+    username: str
+    password: str
+    firstName: str
+    lastName: str

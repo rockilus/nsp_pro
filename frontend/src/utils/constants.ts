@@ -57,3 +57,6 @@ export const SolveStatusColors = [
 export const ColorNoCoverage = "#E0E0E0";
 export const ColorPast = "#D5A8DC";
 export const ColorValidated = "#AFDCA8";
+
+// User
+export const SignInGrantType = "password";

@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes import (
     router_assignment,
+    router_authentication,
     router_constraint,
     router_constraint_tree,
     router_coverage,
@@ -23,7 +24,8 @@ app = FastAPI()
 
 # CORS
 origins = [
-    "http://localhost:3000",  # Add other origins if needed
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",  # Add other origins if needed
 ]
 
 app.add_middleware(
@@ -37,6 +39,7 @@ app.add_middleware(
 # app.include_router(router_coverage, prefix="/api/v1", tags=["coverage"])
 
 app.include_router(router_assignment)
+app.include_router(router_authentication)
 app.include_router(router_constraint)
 app.include_router(router_constraint_tree)
 app.include_router(router_coverage)

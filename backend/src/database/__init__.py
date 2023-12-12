@@ -12,6 +12,7 @@ from database.shift_demand_db import ShiftDemandDB
 from database.shift_dimension_db import ShiftDimensionDB
 from database.shift_property_db import ShiftPropertyDB
 from database.stats_options_db import StatsOptionsDB
+from database.user_db import UserDB
 from database.worker_db import WorkerDB
 from database.worker_dimension_db import WorkerDimensionDB
 from database.worker_property_db import WorkerPropertyDB
@@ -33,6 +34,7 @@ __all__ = [
     "ShiftDimensionDB",
     "ShiftPropertyDB",
     "StatsOptionsDB",
+    "UserDB",
     "WorkerDB",
     "WorkerDimensionDB",
     "WorkerPropertyDB",
