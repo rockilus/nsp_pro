@@ -4,18 +4,20 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes import (
     router_assignment,
-    router_authentication,
     router_constraint,
     router_constraint_tree,
     router_coverage,
     router_coverage_selector,
     router_fixed_assignment,
     router_objective_breach,
+    router_permission,
     router_request,
+    router_role,
     router_schedule,
     router_shift,
     router_shift_dimension,
     router_stats_options,
+    router_user,
     router_worker,
     router_worker_dimension,
 )
@@ -39,14 +41,16 @@ app.add_middleware(
 # app.include_router(router_coverage, prefix="/api/v1", tags=["coverage"])
 
 app.include_router(router_assignment)
-app.include_router(router_authentication)
+app.include_router(router_user)
 app.include_router(router_constraint)
 app.include_router(router_constraint_tree)
 app.include_router(router_coverage)
 app.include_router(router_coverage_selector)
 app.include_router(router_fixed_assignment)
 app.include_router(router_objective_breach)
+app.include_router(router_permission)
 app.include_router(router_request)
+app.include_router(router_role)
 app.include_router(router_schedule)
 app.include_router(router_shift)
 app.include_router(router_shift_dimension)

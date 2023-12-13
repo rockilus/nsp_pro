@@ -8,7 +8,9 @@ from database import (
     CoverageSelectorDB,
     FixedAssignmentDB,
     ObjectiveBreachDB,
+    PermissionDB,
     RequestDB,
+    RoleDB,
     ScheduleDB,
     ShiftDB,
     ShiftDemandDB,
@@ -32,7 +34,9 @@ coverage_db = CoverageDB(db)
 coverage_selector_db = CoverageSelectorDB(db)
 fixed_assignment_db = FixedAssignmentDB(db)
 objective_breach_db = ObjectiveBreachDB(db)
+permission_db = PermissionDB(db)
 request_db = RequestDB(db)
+role_db = RoleDB(db)
 schedule_db = ScheduleDB(db)
 shift_db = ShiftDB(db)
 shift_demand_db = ShiftDemandDB(db)
