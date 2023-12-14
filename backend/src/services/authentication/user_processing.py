@@ -9,4 +9,5 @@ def user_sign_up_to_user(user_sign_up: UserSignUp) -> User:
         hashed_password=get_password_hash(user_sign_up.password),
         first_name=user_sign_up.first_name,
         last_name=user_sign_up.last_name,
+        roles=[],
     )

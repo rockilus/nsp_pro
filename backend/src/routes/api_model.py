@@ -210,3 +210,16 @@ class UserSignUp(BaseModel):
     password: str
     firstName: str
     lastName: str
+
+
+class RoleMessage(BaseModel):
+    id: str
+    name: str
+    description: str
+    permissions: list[str]
+
+
+class PermissionMessage(BaseModel):
+    id: str
+    name: str
+    description: str

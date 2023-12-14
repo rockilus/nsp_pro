@@ -1,5 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import EmailField, StringField
+from mongoengine.fields import EmailField, ListField, ReferenceField, StringField
 
 
 class User(Document):
@@ -10,3 +10,4 @@ class User(Document):
     hashed_password = StringField(required=True)
     first_name = StringField(required=True)
     last_name = StringField(required=True)
+    roles = ListField(ReferenceField("Role"))

@@ -121,16 +121,10 @@ def user_to_api_msg(
     user: User,
 ) -> UserMessage:
     data = asdict(user)
+    data = {k: v for k, v in data.items() if k not in ["hashed_password", "roles"]}
     as_dict = humps.camelize(data)
     validator = TypeAdapter(UserMessage)
     return validator.validate_python(as_dict)
-
-
-def api_msg_to_user(
-    msg: UserMessage,
-) -> User:
-    data_snake = humps.decamelize(msg.model_dump())
-    return User(**data_snake)
 
 
 def user_sign_up_api_to_core(
