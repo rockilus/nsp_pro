@@ -22,7 +22,7 @@ import { useCoverageSelectorStore } from "../../stores/coverageSelectorStore";
 import { useCoverageStore } from "../../stores/coverageStore";
 import { CoverageSelectorT } from "./types";
 
-export default function CoverageSelectorConfig() {
+export default function CoverageSelectorTab() {
   const columns = useMemo(() => ["Start date", "End date", "Coverage"], []);
 
   const coverageSelectors = useCoverageSelectorStore(

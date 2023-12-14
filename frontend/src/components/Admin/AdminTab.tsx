@@ -8,7 +8,7 @@ import RoleTable from "./RoleTable";
 import { useRoleStore } from "../../stores/roleStore";
 import { usePermissionStore } from "../../stores/permissionStore";
 
-export default function Admin() {
+export default function AdminTab() {
   const roles = useRoleStore((state) => state.roles);
   const fetchRoles = useRoleStore((state) => state.fetchRoles);
 

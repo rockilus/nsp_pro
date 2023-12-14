@@ -16,7 +16,7 @@ interface Props {
   shifts: ShiftIdNameT[];
 }
 
-export default function ConstraintConfig({ workers, shifts }: Props) {
+export default function ConstraintTab({ workers, shifts }: Props) {
   const constraints = useConstraintStore((state) => state.constraints);
   const constraintTree = useConstraintTreeStore(
     (state) => state.constraintTree
