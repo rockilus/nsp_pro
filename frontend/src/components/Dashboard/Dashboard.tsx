@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect } from "react";
 // MUI
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -38,7 +38,9 @@ export default function Dashboard() {
   };
 
   const shifts = useShiftStore((state) => state.shifts);
+  const fetchShifts = useShiftStore((state) => state.fetchShifts);
   const workers = useWorkerStore((state) => state.workers);
+  const fetchWorkers = useWorkerStore((state) => state.fetchWorkers);
 
   const shiftDefaults = shifts
     ? shifts.map((s) => {
@@ -74,6 +76,11 @@ export default function Dashboard() {
         return worker;
       })
     : [];
+
+  useEffect(() => {
+    fetchShifts();
+    fetchWorkers();
+  }, [fetchShifts, fetchWorkers]);
 
   const tabs: { [key: string]: JSX.Element } = {
     workers: <WorkerTab />,

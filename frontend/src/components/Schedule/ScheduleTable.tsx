@@ -7,7 +7,6 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import { styled } from "@mui/system";
 
 import ScheduleCell from "./ScheduleCell";
 import { ColumnT, RowT } from "./types";
