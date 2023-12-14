@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, HTTPException
 from pydantic import TypeAdapter
 
-from core.user import Role, TestRole
+from core.user import Role
 from routes.api_model import RoleMessage
 from scripts.setup_database import role_db
 
