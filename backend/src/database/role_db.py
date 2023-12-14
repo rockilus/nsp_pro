@@ -27,7 +27,7 @@ class RoleDB:
     def get_roles(self) -> List[Role]:
         # pylint: disable=no-member
         roles = RoleDocument.objects.all()  # type: ignore
-        return [_from_mongo_role(a) for a in list(roles)]
+        return [_from_mongo_role(r) for r in list(roles)]
 
     def get_role_by_id(self, role_id: str) -> Role:
         # pylint: disable=no-member
@@ -65,5 +65,5 @@ def _from_mongo_role(doc_obj: RoleDocument) -> Role:
         id=doc_obj.id,
         name=doc_obj.name,
         description=doc_obj.description if doc_obj.description else "",
-        permissions=doc_obj.permissions,
+        permissions=list(doc_obj.permissions),
     )

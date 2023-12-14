@@ -12,6 +12,7 @@ import FARConfig from "../components/FixedAssignmentRequest/FARConfig";
 import SignIn from "../components/Login/SignIn";
 import SignUp from "../components/Login/SignUp";
 import MenuAppBar from "../components/AppBar/AppBar";
+import Admin from "../components/Admin/Admin";
 
 import { ShiftT } from "../components/Coverage/types";
 import { ShiftDefaultT } from "../components/Shift/types";
@@ -81,6 +82,7 @@ export default function Draft() {
           <CoverageSelectorConfig />
           <FARConfig workers={workersIdName} shifts={shiftsIdName} />
           <ScheduleTab workers={workersIdName} shifts={shiftsIdName} />
+          <Admin />
         </Box>
       </div>
     ) : showSignUp ? (

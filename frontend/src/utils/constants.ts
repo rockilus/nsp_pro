@@ -60,3 +60,6 @@ export const ColorValidated = "#AFDCA8";
 
 // User
 export const SignInGrantType = "password";
+
+// Admin
+export const PermissionMenuHeight = 48;

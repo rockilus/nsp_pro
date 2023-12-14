@@ -25,7 +25,15 @@ class Role:
     id: str
     name: str
     description: str
-    permissions: list[str]
+    permissions: List[str]
+
+
+@dataclass
+class TestRole:
+    id: str
+    name: str
+    description: str
+    # permissions: List[str]
 
 
 @dataclass
