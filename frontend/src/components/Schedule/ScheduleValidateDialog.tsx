@@ -28,7 +28,12 @@ export default function ScheduleValidateDialog({ scheduleId }: Props) {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", marginRight: 1 }}>
-      <Button variant="outlined" onClick={handleClickOpen} fullWidth>
+      <Button
+        variant="outlined"
+        onClick={handleClickOpen}
+        fullWidth
+        sx={{ paddingLeft: 0.2, paddingRight: 0.2 }}
+      >
         Validate
       </Button>
       <Dialog

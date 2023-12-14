@@ -1,37 +1,44 @@
 import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-
+// MUI
+import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
-import FormGroup from "@mui/material/FormGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
-import Typography from "@mui/material/Typography";
-
+import FormControl from "@mui/material/FormControl";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import ToggleButton from "@mui/material/ToggleButton";
+// Components
 import SchedulePanelDialog from "./SchedulePanelDialog";
 import ScheduleWIP from "./ScheduleWIP";
+// Types
 import { ScheduleT } from "./types";
+// Utils
 import { emptySchedule } from "../../utils/emptyObjects";
 
 dayjs.extend(utc);
 
 interface Props {
   schedules: ScheduleT[];
-  shiftSchedule: boolean;
+  selectedDisplay: string;
   displayCBs: boolean;
-  switchScheduleDisplay: () => void;
+  setSelectedDisplay: (newSelectedDisplay: string) => void;
   switchDisplayCBs: () => void;
 }
 
 export default function ScheduleOptions({
   schedules,
-  shiftSchedule,
+  selectedDisplay,
   displayCBs,
-  switchScheduleDisplay,
+  setSelectedDisplay,
   switchDisplayCBs,
 }: Props) {
+  const handleChange = (event: SelectChangeEvent) => {
+    setSelectedDisplay(event.target.value as string);
+  };
+
   const scheduleWIP = schedules.find((schedule) => schedule.status === "WIP");
   const scheduleWIPStartDate =
     schedules.length > 0
@@ -53,14 +60,19 @@ export default function ScheduleOptions({
   };
 
   const createScheduleButton = () => {
-    return <Button variant="contained">Create schedule</Button>;
+    return (
+      <Button variant="contained" sx={{ paddingLeft: 0.3, paddingRight: 1 }}>
+        <AddIcon />
+        Schedule
+      </Button>
+    );
   };
 
   return (
     <Box
       sx={{
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "row",
         backgroundColor: "grey.100",
       }}
     >
@@ -72,34 +84,32 @@ export default function ScheduleOptions({
           schedule={newScheduleWIP}
         />
       )}
-      <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
-      <Typography variant="subtitle1" align="left">
-        Display options
-      </Typography>
-      <FormGroup>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={!shiftSchedule}
-              onChange={() => switchScheduleDisplay()}
-              inputProps={{ "aria-label": "controlled" }}
-            />
-          }
-          label="Shift - Worker"
-        />
-      </FormGroup>
-      <FormGroup>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={displayCBs}
-              onChange={() => switchDisplayCBs()}
-              inputProps={{ "aria-label": "controlled" }}
-            />
-          }
-          label="Constraint Breaches"
-        />
-      </FormGroup>
+      <Divider
+        orientation="vertical"
+        sx={{ marginLeft: 2, marginRight: 2, height: 30 }}
+      />
+      <Box sx={{ minWidth: 120 }}>
+        <FormControl fullWidth>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={selectedDisplay}
+            onChange={handleChange}
+          >
+            <MenuItem value={"shift"}>Shift</MenuItem>
+            <MenuItem value={"worker"}>Worker</MenuItem>
+            {/* <MenuItem value={"week"}>Week</MenuItem> */}
+          </Select>
+        </FormControl>
+      </Box>
+      <ToggleButton
+        value="breaches"
+        color="primary"
+        selected={displayCBs}
+        onChange={switchDisplayCBs}
+      >
+        Breaches
+      </ToggleButton>
     </Box>
   );
 }

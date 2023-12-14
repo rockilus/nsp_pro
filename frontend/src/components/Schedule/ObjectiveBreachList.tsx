@@ -21,7 +21,7 @@ interface Props {
   removeCBsDisplayed: (ids: string[]) => void;
 }
 
-export default function ConstraintBreachList({
+export default function ObjectiveBreachList({
   objectiveBreaches,
   CBsDisplayed,
   workers,
@@ -98,15 +98,8 @@ export default function ConstraintBreachList({
 
   return (
     <Box sx={{ flexGrow: 1, maxWidth: 752 }}>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
-          <Typography>Constraints</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
+      {CBsConstraint.length > 0 && (
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
           <Box
             sx={{
               display: "flex",
@@ -120,7 +113,7 @@ export default function ConstraintBreachList({
               color={checkColorConstraint as "primary" | "default"}
               onClick={switchDisplayCBsConstraint}
             />
-            <Typography variant="body1">Select all</Typography>
+            <Typography>Constraints</Typography>
           </Box>
           <List dense={true}>
             {CBsConstraint.map((constraintBreach, index) => (
@@ -135,17 +128,10 @@ export default function ConstraintBreachList({
               />
             ))}
           </List>
-        </AccordionDetails>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
-          <Typography>Fixed Assignments</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
+        </Box>
+      )}
+      {CBsFA.length > 0 && (
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
           <Box
             sx={{
               display: "flex",
@@ -159,7 +145,7 @@ export default function ConstraintBreachList({
               color={checkColorFA as "primary" | "default"}
               onClick={switchDisplayCBsFA}
             />
-            <Typography variant="body1">Select all</Typography>
+            <Typography>Fixed Assignments</Typography>
           </Box>
           <List dense={true}>
             {CBsFA.map((constraintBreach, index) => (
@@ -174,17 +160,10 @@ export default function ConstraintBreachList({
               />
             ))}
           </List>
-        </AccordionDetails>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
-          <Typography>Requests</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
+        </Box>
+      )}
+      {CBsRequest.length > 0 && (
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
           <Box
             sx={{
               display: "flex",
@@ -198,7 +177,7 @@ export default function ConstraintBreachList({
               color={checkColorRequest as "primary" | "default"}
               onClick={switchDisplayCBsRequest}
             />
-            <Typography variant="body1">Select all</Typography>
+            <Typography>Requests</Typography>
           </Box>
           <List dense={true}>
             {CBsRequest.map((constraintBreach, index) => (
@@ -213,8 +192,8 @@ export default function ConstraintBreachList({
               />
             ))}
           </List>
-        </AccordionDetails>
-      </Accordion>
+        </Box>
+      )}
     </Box>
   );
 }
