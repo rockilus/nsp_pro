@@ -9,7 +9,7 @@ import { useShiftStore } from "../../stores/shiftStore";
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
 import { DefaultShiftFields } from "../../utils/constants";
 
-export default function ShiftConfig() {
+export default function ShiftTab() {
   const shifts = useShiftStore((state) => state.shifts);
   const fetchShifts = useShiftStore((state) => state.fetchShifts);
 

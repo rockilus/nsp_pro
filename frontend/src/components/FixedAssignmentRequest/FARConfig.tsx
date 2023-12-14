@@ -17,7 +17,7 @@ interface Props {
   shifts: ShiftIdNameT[];
 }
 
-export default function FARConfig({ workers, shifts }: Props) {
+export default function FARTab({ workers, shifts }: Props) {
   const [fars, setFars] = useState<FarT[]>([]);
   const fixedAssignments = useFixedAssignmentStore(
     (state) => state.fixedAssignments

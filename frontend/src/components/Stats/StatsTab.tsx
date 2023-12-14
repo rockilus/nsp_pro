@@ -7,8 +7,7 @@ import StatsTable from "./StatsTable";
 import StatsConfig from "./StatsConfig";
 import { useStatStore } from "../../stores/statStore";
 import { useStatsOptionsStore } from "../../stores/statsOptionsStore";
-import { ShiftIdNameT, WorkerIdNameT, StatT } from "./types";
-import { emptyStatsOptions } from "../../utils/emptyObjects";
+import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
   workers: WorkerIdNameT[];

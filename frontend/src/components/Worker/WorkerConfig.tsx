@@ -10,7 +10,7 @@ import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
 import { WorkerT, WorkerPropertyT, WorkerDimensionT } from "./types";
 import { ColumnT, RowT, CellT } from "../WorkerShiftTable/types";
 
-export default function WorkerConfig() {
+export default function WorkerTab() {
   const defaultColumns: ColumnT[] = [
     {
       id: "defaultColumnId",

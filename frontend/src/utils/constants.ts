@@ -63,3 +63,6 @@ export const SignInGrantType = "password";
 
 // Admin
 export const PermissionMenuHeight = 48;
+
+// Style
+export const DrawerWidth: number = 240;

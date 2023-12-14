@@ -7,7 +7,7 @@ import Button from "@mui/material/Button";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { useStatsOptionsStore } from "../../stores/statsOptionsStore";
-import { StatsOptionsT } from "./types";
+import { StatsOptionsT } from "../Schedule/types";
 import { emptyStatsOptions } from "../../utils/emptyObjects";
 
 dayjs.extend(utc);
