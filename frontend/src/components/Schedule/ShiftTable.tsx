@@ -19,38 +19,21 @@ interface Props {
   objectiveBreaches: ObjectiveBreachT[];
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
-  shiftSchedule: boolean;
   displayCBs: boolean;
   CBsDisplayed: string[];
 }
 
-export default function ScheduleConfig({
+export default function ShiftTable({
   schedules,
   assignments,
   objectiveBreaches,
   workers,
   shifts,
-  shiftSchedule,
   displayCBs,
   CBsDisplayed,
 }: Props) {
   const [columns, setColumns] = useState<ColumnT[]>([]);
   const [rows, setRows] = useState<RowT[]>([]);
-
-  // console.log("assignments", assignments);
-
-  const assignmentInConflictsWorker = useCallback(
-    (assignment: AssignmentT): ObjectiveBreachT[] => {
-      return objectiveBreaches.filter((ob) =>
-        ob.variables.some(
-          (variable) =>
-            variable.workerId === assignment.workerId &&
-            variable.date.isSame(assignment.date)
-        )
-      );
-    },
-    [objectiveBreaches]
-  );
 
   const assignmentConflictsShift = useCallback(
     (assignment: AssignmentT): ObjectiveBreachT[] => {
@@ -167,60 +150,11 @@ export default function ScheduleConfig({
     return newRows;
   }, [columns, assignments, workers, shifts, assignmentConflictsShift]);
 
-  const buildWorkerRows = useCallback((): RowT[] => {
-    const newRows: RowT[] = [];
-    for (let worker of workers) {
-      const row: RowT = [];
-      const assignmentsWorker = assignments.filter(
-        (a) => a.workerId === worker.id
-      );
-      const newHeaderCell: CellT = {
-        date: dayjs(0),
-        value: worker.name,
-        rowSpan: 1,
-        noCoverage: false,
-        objectiveBreach: [],
-      };
-      row.push({
-        ...newHeaderCell,
-      });
-      for (let column of columns.filter(
-        (c: ColumnT) => c.date.valueOf() !== 0
-      )) {
-        const assignmentOnDate = assignmentsWorker.find((a: AssignmentT) =>
-          a.date.isSame(column.date)
-        );
-        const shiftName = assignmentOnDate
-          ? shifts.find((s) => s.id === assignmentOnDate.shiftId)?.name || ""
-          : "";
-        const newCell: CellT = {
-          date: column.date,
-          value: shiftName,
-          rowSpan: 1,
-          noCoverage: column.noCoverage,
-          objectiveBreach: assignmentOnDate
-            ? assignmentInConflictsWorker(assignmentOnDate)
-            : [],
-        };
-        row.push({
-          ...newCell,
-        });
-      }
-      newRows.push(row.slice());
-    }
-
-    return newRows;
-  }, [columns, assignments, workers, shifts, assignmentInConflictsWorker]);
-
   useEffect(() => {
     if (columns.length > 0 && assignments.length > 0) {
-      if (shiftSchedule) {
-        setRows(buildShiftRows());
-      } else {
-        setRows(buildWorkerRows());
-      }
+      setRows(buildShiftRows());
     }
-  }, [columns, assignments, shiftSchedule, buildShiftRows, buildWorkerRows]);
+  }, [columns, assignments, buildShiftRows]);
 
   useEffect(() => {
     if (assignments.length > 0) {

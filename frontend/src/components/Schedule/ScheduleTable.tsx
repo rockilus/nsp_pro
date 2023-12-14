@@ -7,6 +7,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import { styled } from "@mui/system";
 
 import ScheduleCell from "./ScheduleCell";
 import { ColumnT, RowT } from "./types";
@@ -33,7 +34,7 @@ export default function ScheduleTable({
 
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+      <Table sx={{ minWidth: 650 }} aria-label="simple table" stickyHeader>
         <TableHead>
           <TableRow>
             {columns.map((column, colIndex) => (
@@ -43,13 +44,17 @@ export default function ScheduleTable({
                 scope="row"
                 sx={{
                   backgroundColor:
-                    column.status === "past"
+                    colIndex === 0
+                      ? "#FFFFFF"
+                      : column.status === "past"
                       ? ColorPast
                       : column.status === "validated"
                       ? ColorValidated
                       : column.noCoverage
                       ? ColorNoCoverage
                       : "inherit",
+                  position: colIndex === 0 ? "sticky" : "static",
+                  left: colIndex === 0 ? 0 : "auto",
                 }}
               >
                 {column.name}
@@ -68,6 +73,7 @@ export default function ScheduleTable({
                     <ScheduleCell
                       key={rowIndex + colIndex}
                       cell={cell}
+                      colIndex={colIndex}
                       displayCBs={displayCBs}
                       CBsDisplayed={CBsDisplayed}
                     />

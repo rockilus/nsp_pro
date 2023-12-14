@@ -5,12 +5,14 @@ import { CellT } from "./types";
 
 interface Props {
   cell: CellT;
+  colIndex: number;
   displayCBs: boolean;
   CBsDisplayed: string[];
 }
 
 export default function ScheduleCell({
   cell,
+  colIndex,
   displayCBs,
   CBsDisplayed,
 }: Props) {
@@ -40,8 +42,10 @@ export default function ScheduleCell({
       scope="row"
       rowSpan={cell.rowSpan}
       sx={{
-        backgroundColor: backgroundColor,
+        backgroundColor: colIndex === 0 ? "#FFFFFF" : backgroundColor,
         border: border,
+        position: colIndex === 0 ? "sticky" : "static",
+        left: colIndex === 0 ? 0 : "auto",
       }}
     >
       {cell.value}

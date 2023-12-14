@@ -40,28 +40,29 @@ export default function ScheduleWIP({ schedule }: Props) {
           justifyContent: "space-between",
         }}
       >
-        <Typography variant="subtitle1" align="left">
-          Schedule
-        </Typography>
-        <SchedulePanelDialog
-          buttonElement={
-            <IconButton>
-              <EditIcon color="disabled" />
-            </IconButton>
-          }
-          schedule={schedule}
-        />
-      </Box>
-      <Typography variant="body2" align="left">
-        {"Start: "} {schedule.startDate.format("D MMM YYYY")}
-      </Typography>
-      <Typography variant="body2" align="left">
-        {"End: "} {schedule.endDate.format("D MMM YYYY")}
-      </Typography>
-      <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-        <Typography variant="body2" align="left">
-          Status:
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <SchedulePanelDialog
+            buttonElement={
+              <Typography
+                variant="body2"
+                align="left"
+                sx={{ cursor: "pointer" }}
+              >
+                {schedule.startDate.format("D MMM YYYY")}
+                {" - "}
+                {schedule.endDate.format("D MMM YYYY")}
+              </Typography>
+            }
+            schedule={schedule}
+          />
+        </Box>
         <Chip
           label={schedule.solveStatus}
           color={
@@ -71,15 +72,16 @@ export default function ScheduleWIP({ schedule }: Props) {
           }
           sx={{ marginLeft: 1 }}
         />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => solveSchedule(schedule.id)}
+          sx={{ paddingLeft: 0.2, paddingRight: 0.2 }}
+        >
+          Solve
+        </Button>
+        <ScheduleValidateDialog scheduleId={schedule.id} />
       </Box>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => solveSchedule(schedule.id)}
-      >
-        Solve
-      </Button>
-      <ScheduleValidateDialog scheduleId={schedule.id} />
     </Box>
   );
 }

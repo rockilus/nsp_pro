@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
-import ScheduleConfig from "./ScheduleConfig";
-import ConstraintBreachList from "./ConstraintBreachList";
+import ScheduleDisplay from "./ScheduleDisplay";
+import ObjectiveBreachList from "./ObjectiveBreachList";
 import ScheduleOptions from "./ScheduleOptions";
 import { useScheduleStore } from "../../stores/scheduleStore";
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
@@ -19,6 +19,7 @@ interface Props {
 }
 
 export default function ScheduleTab({ workers, shifts }: Props) {
+  const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
   const [shiftSchedule, setShiftSchedule] = useState<boolean>(true);
   const [displayCBs, setDisplayCBs] = useState<boolean>(true);
   const [CBsDisplayed, setCBsDisplayed] = useState<string[]>([]);
@@ -26,7 +27,6 @@ export default function ScheduleTab({ workers, shifts }: Props) {
   // Schedules
   const schedules = useScheduleStore((state) => state.schedules);
   const fetchSchedule = useScheduleStore((state) => state.fetchSchedules);
-  const addSchedule = useScheduleStore((state) => state.addSchedule);
 
   // Assignments
   const assignments = useAssignmentStore((state) => state.assignments);
@@ -73,33 +73,34 @@ export default function ScheduleTab({ workers, shifts }: Props) {
       <Typography variant="h4" align="left">
         Schedule
       </Typography>
-      <Box sx={{ display: "flex", flexDirection: "row" }}>
-        <ScheduleOptions
-          schedules={schedules}
-          shiftSchedule={shiftSchedule}
-          displayCBs={displayCBs}
-          switchScheduleDisplay={() => setShiftSchedule(!shiftSchedule)}
-          switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
-        />
-        <ScheduleConfig
-          schedules={schedules}
-          assignments={assignments}
-          objectiveBreaches={objectiveBreaches}
-          workers={workers}
-          shifts={shifts}
-          shiftSchedule={shiftSchedule}
-          displayCBs={displayCBs}
-          CBsDisplayed={CBsDisplayed}
-        />
-        <ConstraintBreachList
-          objectiveBreaches={objectiveBreaches} // schedule.objectiveBreaches
-          CBsDisplayed={CBsDisplayed}
-          workers={workers}
-          shifts={shifts}
-          addCBsDisplayed={addCBsDisplayed}
-          removeCBsDisplayed={removeCBsDisplayed}
-        />
-      </Box>
+      <ScheduleOptions
+        schedules={schedules}
+        selectedDisplay={selectedDisplay}
+        displayCBs={displayCBs}
+        setSelectedDisplay={setSelectedDisplay}
+        switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
+      />
+      <ScheduleDisplay
+        schedules={schedules}
+        assignments={assignments}
+        objectiveBreaches={objectiveBreaches}
+        workers={workers}
+        shifts={shifts}
+        selectedDisplay={selectedDisplay}
+        displayCBs={displayCBs}
+        CBsDisplayed={CBsDisplayed}
+      />
+      <Typography variant="h4" align="left">
+        Objective breaches
+      </Typography>
+      <ObjectiveBreachList
+        objectiveBreaches={objectiveBreaches} // schedule.objectiveBreaches
+        CBsDisplayed={CBsDisplayed}
+        workers={workers}
+        shifts={shifts}
+        addCBsDisplayed={addCBsDisplayed}
+        removeCBsDisplayed={removeCBsDisplayed}
+      />
     </Box>
   );
 }
