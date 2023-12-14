@@ -7,15 +7,15 @@ import Toolbar from "@mui/material/Toolbar";
 // Components
 import AppBarDash from "./AppBarDash";
 import DrawerDash from "./DrawerDash";
-import AdminTab from "../Admin/Admin";
-import ConstraintTab from "../Constraint/ConstraintConfig";
-import CoverageSelectorTab from "../CoverageSelector/CoverageSelectorConfig";
+import AdminTab from "../Admin/AdminTab";
+import ConstraintTab from "../Constraint/ConstraintTab";
+import CoverageSelectorTab from "../CoverageSelector/CoverageSelectorTab";
 import CoverageTab from "../Coverage/CoverageTab";
-import FARTab from "../FixedAssignmentRequest/FARConfig";
+import FARTab from "../FixedAssignmentRequest/FARTab";
 import ScheduleTab from "../Schedule/ScheduleTab";
-import ShiftTab from "../Shift/ShiftConfig";
+import ShiftTab from "../Shift/ShiftTab";
 import StatsTab from "../Stats/StatsTab";
-import WorkerTab from "../Worker/WorkerConfig";
+import WorkerTab from "../Worker/WorkerTab";
 // Stores
 import { useShiftStore } from "../../stores/shiftStore";
 import { useWorkerStore } from "../../stores/workerStore";
