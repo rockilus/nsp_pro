@@ -5,38 +5,19 @@ import List from "@mui/material/List";
 import Grid from "@mui/material/Grid";
 
 import ConstraintListItem from "./ConstraintListItem";
-import { ConstraintT, TreeNodeT } from "./types";
-import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
+import { ConstraintT } from "./types";
 
 interface Props {
   constraints: ConstraintT[];
-  tree: TreeNodeT;
-  workers: WorkerIdNameT[];
-  shifts: ShiftIdNameT[];
 }
 
-export default function ConstraintList({
-  constraints,
-  tree,
-  workers,
-  shifts,
-}: Props) {
+export default function ConstraintList({ constraints }: Props) {
   return (
-    <Box sx={{ flexGrow: 1, maxWidth: 752 }}>
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
-          <List dense={true}>
-            {constraints.map((constraint) => (
-              <ConstraintListItem
-                key={constraint.id}
-                constraint={constraint}
-                tree={tree}
-                workers={workers}
-                shifts={shifts}
-              />
-            ))}
-          </List>
-        </Grid>
+    <Box sx={{ margin: 1 }}>
+      <Grid container spacing={0}>
+        {constraints.map((constraint) => (
+          <ConstraintListItem key={constraint.id} constraint={constraint} />
+        ))}
       </Grid>
     </Box>
   );

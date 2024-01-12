@@ -25,6 +25,20 @@ class Constants:
     MODEL_SAVED_FILE_NAME: str = "model_saved.txt"
     # move out for production
     # to get a string like this run: openssl rand -hex 32
-    SECRET_KEY: str = "485987f47ca94097327988d802aa07fc6df623f3345e52df85b5c7fd395897f6"
+    SECRET_KEY: str = (
+        "485987f47ca94097327988d802aa07fc6df623f3345e52df85b5c7fd395897f6"
+    )
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    # Constraint Parser
+    SHIFT_PATTERN_LABEL: str = "SHIFT"
+    WORKER_PATTERN_LABEL: str = "WORKER"
+    VAR_COORD_PATTERN_LABEL: Tuple[str, ...] = (
+        SHIFT_PATTERN_LABEL,
+        WORKER_PATTERN_LABEL,
+    )
+    OPERATOR_PATTERN_LABEL: str = "OPERATOR"
+    TIMING_PATTERN_LABEL: str = "TIMING"
+    NAME_BLOCK_LABEL: str = "name"
+    QUANTITY_BLOCK_LABEL: str = "quantity"
+    REFERENCE_BLOCK_LABEL: str = "reference"

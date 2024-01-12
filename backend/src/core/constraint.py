@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Literal, Union
+from typing import Dict, List, Literal, Union
 
 
 @dataclass
@@ -30,15 +30,9 @@ class VarShift:
 
 
 @dataclass
-class BuildBlock:
-    name: str
-    value: Union[str, int]
-
-
-@dataclass
 class ConstraintBuild:
     id: str
-    build_blocks: List[BuildBlock]
+    text: str
     hard: bool
     priority: str
     active: bool
@@ -50,7 +44,14 @@ class Constraint:
     id: str
     constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
     operator: Literal[
-        "", "less_than_or_equal", "equal", "greater_than_or_equal", "yes", "no"
+        "",
+        "less_than",
+        "less_than_or_equal",
+        "equal",
+        "greater_than_or_equal",
+        "greater_than",
+        "yes",
+        "no",
     ]
     target_value: int
     target_unit: str  # worker, shift, day, hour
@@ -60,12 +61,25 @@ class Constraint:
     active: bool
     hard: bool
     priority: str
-    build_blocks: List[BuildBlock]
+    text: str
+    blocks: Dict
 
 
 @dataclass
-class TreeNode:
-    name: str
-    parent_options: List[str]
-    options: List[str]
-    children: List["TreeNode"]
+class ConstraintMap:
+    constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
+    operator: Literal[
+        "",
+        "less_than",
+        "less_than_or_equal",
+        "equal",
+        "greater_than_or_equal",
+        "greater_than",
+        "yes",
+        "no",
+    ]
+    target_value: int
+    target_unit: str  # worker, shift, day, hour
+    worker_var: VarWorker
+    day_var: VarDay
+    shift_var: VarShift

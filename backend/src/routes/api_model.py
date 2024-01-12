@@ -177,9 +177,13 @@ class BuildBlockMessage(BaseModel):
     value: Union[str, int]
 
 
+class NewConstraintMessage(BaseModel):
+    text: str
+
+
 class ConstraintMessage(BaseModel):
     id: str
-    buildBlocks: List[BuildBlockMessage]
+    text: str
     hard: bool
     priority: str
     active: bool

@@ -10,6 +10,7 @@ from mongoengine.fields import (
     ListField,
     ReferenceField,
     StringField,
+    DictField,
 )
 
 
@@ -38,11 +39,6 @@ class VarShift(EmbeddedDocument):
     relative = ReferenceField("Shift")
 
 
-class BuildBlock(EmbeddedDocument):
-    name = StringField(required=True)
-    value = DynamicField(required=True)
-
-
 # replace constraint/aggregator with type string
 class Constraint(Document):
     meta = {"collection": "constraints"}
@@ -55,9 +51,11 @@ class Constraint(Document):
     operator = StringField(
         choices=[
             "",
+            "less_than",
             "less_than_or_equal",
             "equal",
             "greater_than_or_equal",
+            "greater_than",
             "yes",
             "no",
         ],
@@ -70,4 +68,5 @@ class Constraint(Document):
     hard = BooleanField(required=True)
     priority = StringField(choices=["", "low", "medium", "high"], default="")
     active = BooleanField(default=True)
-    build_blocks = ListField(EmbeddedDocumentField(BuildBlock))
+    text = StringField(required=True)
+    blocks = DictField()

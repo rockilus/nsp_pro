@@ -1,5 +1,5 @@
 from models.assignment import Assignment
-from models.constraint import BuildBlock, Constraint, VarDay, VarShift, VarWorker
+from models.constraint import Constraint, VarDay, VarShift, VarWorker
 from models.coverage import Coverage
 from models.coverage_selector import CoverageSelector
 from models.fixed_assignment import FixedAssignment
@@ -17,7 +17,6 @@ from models.worker_property import WorkerProperty
 
 __all__ = [
     "Assignment",
-    "BuildBlock",
     "Constraint",
     "VarWorker",
     "VarDay",

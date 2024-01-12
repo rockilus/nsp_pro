@@ -2,10 +2,8 @@ from datetime import datetime
 from typing import List
 
 from bson import ObjectId
-
-from core.constraint import BuildBlock, Constraint, VarDay, VarShift, VarWorker
+from core.constraint import Constraint, VarDay, VarShift, VarWorker
 from database.db import DB
-from models import BuildBlock as BuildBlockDocument
 from models import Constraint as ConstraintDocument
 from models import Shift as ShiftDocument
 from models import VarDay as VarDayDocument
@@ -110,7 +108,9 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
             id=dataclass_obj.relative_id
         )
     return VarShiftDocument(
-        operator=dataclass_obj.operator if dataclass_obj.operator != "" else None,
+        operator=dataclass_obj.operator
+        if dataclass_obj.operator != ""
+        else None,
         selector=dataclass_obj.selector,
         target=shifts,
         reference=reference_s,
@@ -134,13 +134,8 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
         hard=dataclass_obj.hard,
         priority=dataclass_obj.priority,
         active=dataclass_obj.active,
-        build_blocks=[
-            BuildBlockDocument(
-                name=block.name,
-                value=block.value,
-            )
-            for block in dataclass_obj.build_blocks
-        ],
+        text=dataclass_obj.text,
+        blocks=dataclass_obj.blocks,
     )
     return constraint
 
@@ -158,8 +153,12 @@ def _from_mongo_var_day(doc_obj: VarDayDocument) -> VarDay:
     return VarDay(
         selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
         target=doc_obj.target,
-        start_date=datetime.combine(doc_obj.start_date, datetime.min.time()).date(),
-        end_date=datetime.combine(doc_obj.end_date, datetime.min.time()).date(),
+        start_date=datetime.combine(
+            doc_obj.start_date, datetime.min.time()
+        ).date(),
+        end_date=datetime.combine(
+            doc_obj.end_date, datetime.min.time()
+        ).date(),
         interval=doc_obj.interval,
     )
 
@@ -190,12 +189,7 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
         hard=doc_obj.hard,
         priority=doc_obj.priority,
         active=doc_obj.active,
-        build_blocks=[
-            BuildBlock(
-                name=b.name,
-                value=b.value,
-            )
-            for b in doc_obj.build_blocks
-        ],
+        text=doc_obj.text,
+        blocks=doc_obj.blocks,
     )
     return constraint

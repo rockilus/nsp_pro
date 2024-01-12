@@ -7,8 +7,8 @@ import Typography from "@mui/material/Typography";
 
 import ConstraintList from "./ConstraintList";
 import ConstraintButton from "./ConstraintButton";
+import NewConstraint from "./NewConstraint";
 import { useConstraintStore } from "../../stores/constraintStore";
-import { useConstraintTreeStore } from "../../stores/constraintTreeStore";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
@@ -18,23 +18,13 @@ interface Props {
 
 export default function ConstraintTab({ workers, shifts }: Props) {
   const constraints = useConstraintStore((state) => state.constraints);
-  const constraintTree = useConstraintTreeStore(
-    (state) => state.constraintTree
-  );
   const fetchConstraints = useConstraintStore(
     (state) => state.fetchConstraints
-  );
-  const fetchConstraintTree = useConstraintTreeStore(
-    (state) => state.fetchConstraintTree
   );
 
   useEffect(() => {
     fetchConstraints();
   }, [fetchConstraints]);
-
-  useEffect(() => {
-    fetchConstraintTree();
-  }, [fetchConstraintTree]);
 
   const createButton = () => {
     return (
@@ -49,25 +39,17 @@ export default function ConstraintTab({ workers, shifts }: Props) {
       <Typography variant="h4" align="left" color="black">
         Constraints Configuration
       </Typography>
-      <ConstraintButton
-        buttonElement={createButton()}
+      <NewConstraint
         constraint={{
           id: "",
-          buildBlocks: [],
+          text: "",
           hard: true,
-          priority: "",
+          priority: "medium",
           active: true,
         }}
-        tree={constraintTree}
-        workers={workers}
-        shifts={shifts}
+        handleClose={() => {}}
       />
-      <ConstraintList
-        constraints={constraints}
-        tree={constraintTree}
-        workers={workers}
-        shifts={shifts}
-      />
+      <ConstraintList constraints={constraints} />
     </Box>
   );
 }

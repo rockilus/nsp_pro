@@ -66,3 +66,6 @@ export const PermissionMenuHeight = 48;
 
 // Style
 export const DrawerWidth: number = 240;
+
+// Constraints
+export const PriorityLevels = ["low", "medium", "high"];

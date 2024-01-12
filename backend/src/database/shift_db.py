@@ -39,6 +39,12 @@ class ShiftDB:
         shift = ShiftDocument.objects.get(id=shift_id)  # type: ignore
         return _from_mongo_shift(shift)
 
+    def get_shift_by_name(self, shift_name: str) -> Shift:
+        # pylint: disable=no-member
+        shift = ShiftDocument.objects(name__icontains=shift_name).first()  # type: ignore
+        # shift = ShiftDocument.objects.get(name=shift_name)
+        return _from_mongo_shift(shift) if shift else None
+
     def update_shift(self, shift: Shift) -> Shift:
         document = to_mongo_shift(shift)
         document_saved = document.save()
