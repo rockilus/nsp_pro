@@ -52,7 +52,9 @@ class BuildStats:
         return schedule_array
 
     def a_array_to_aw_array(self, a_array: np.ndarray) -> np.ndarray:
-        indices_to_remove = [self.shift_ids.index(s) for s in self.shift_off_ids]
+        indices_to_remove = [
+            self.shift_ids.index(s) for s in self.shift_off_ids
+        ]
         aw_array = np.delete(a_array, indices_to_remove, axis=2)
         return aw_array
 
@@ -64,13 +66,17 @@ class BuildStats:
         ]
         weekdays = np.array([d.weekday() for d in dates])
         weekdays = np.tile(weekdays, (len(a_array_sum_shifts), 1))
-        out = np.zeros((len(a_array_sum_shifts), Constants.NUM_DAYS_WEEK), dtype=int)
+        out = np.zeros(
+            (len(a_array_sum_shifts), Constants.NUM_DAYS_WEEK), dtype=int
+        )
         for day in range(Constants.NUM_DAYS_WEEK):
-            out[:, day] = np.sum(a_array_sum_shifts * (weekdays == day), axis=1)
+            out[:, day] = np.sum(
+                a_array_sum_shifts * (weekdays == day), axis=1
+            )
         return [
             Stat(
                 worker_id=self.worker_ids[w],
-                name=Constants.WEEK_DAYS[d],
+                name=Constants.WEEK_DAYS[d].capitalize(),
                 cluster="Worked days",
                 value=out[w, d],
             )

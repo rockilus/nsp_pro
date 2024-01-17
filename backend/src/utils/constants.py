@@ -10,13 +10,13 @@ class Constants:
     NUM_HOURS_DAY: int = 24
     NUM_DAYS_WEEK: int = 7
     WEEK_DAYS: Tuple[str, ...] = (
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
     )
     HARD_TO_SOFT: bool = True
     ENGINE_STRING_DATE_FORMAT: str = "%Y-%m-%d"
@@ -42,3 +42,4 @@ class Constants:
     NAME_BLOCK_LABEL: str = "name"
     QUANTITY_BLOCK_LABEL: str = "quantity"
     REFERENCE_BLOCK_LABEL: str = "reference"
+    CONNECTOR_BLOCK_LABEL: str = "connector"

@@ -3,7 +3,12 @@ from typing import List
 from utils.constants import Constants
 
 
-def build_patterns(shift_names: List[str], worker_names: List[str]) -> List:
+def build_patterns(
+    shift_names: List[str],
+    worker_names: List[str],
+    shift_dimension_names: List[str],
+    worker_dimension_names: List[str],
+) -> List:
     patterns_operator = [
         {
             "label": Constants.OPERATOR_PATTERN_LABEL,
@@ -35,6 +40,10 @@ def build_patterns(shift_names: List[str], worker_names: List[str]) -> List:
             "label": Constants.OPERATOR_PATTERN_LABEL,
             "pattern": [{"LOWER": "no"}],
         },
+        {
+            "label": Constants.OPERATOR_PATTERN_LABEL,
+            "pattern": [{"LOWER": "evenly"}],
+        },
     ]
     patterns_shift = [
         {
@@ -45,11 +54,20 @@ def build_patterns(shift_names: List[str], worker_names: List[str]) -> List:
             "label": Constants.SHIFT_PATTERN_LABEL,
             "pattern": [{"LOWER": {"IN": shift_names}}],
         },
+        {
+            "label": Constants.SHIFT_PATTERN_LABEL,
+            # "pattern": [{"LOWER": {"IN": shift_dimension_names}}],
+            "pattern": [{"LEMMA": {"IN": shift_dimension_names}}],
+        },
     ]
     pattern_worker = [
         {
             "label": Constants.WORKER_PATTERN_LABEL,
             "pattern": [{"LOWER": {"IN": worker_names}}],
+        },
+        {
+            "label": Constants.WORKER_PATTERN_LABEL,
+            "pattern": [{"LEMMA": {"IN": worker_dimension_names}}],
         },
     ]
     patterns_timing = [
@@ -64,6 +82,14 @@ def build_patterns(shift_names: List[str], worker_names: List[str]) -> List:
         {
             "label": Constants.TIMING_PATTERN_LABEL,
             "pattern": [{"LEMMA": "after"}],
+        },
+        {
+            "label": Constants.TIMING_PATTERN_LABEL,
+            "pattern": [{"LEMMA": {"IN": Constants.WEEK_DAYS}}],
+        },
+        {
+            "label": Constants.TIMING_PATTERN_LABEL,
+            "pattern": [{"LEMMA": "bank"}, {"LEMMA": "holiday"}],
         },
     ]
     return (

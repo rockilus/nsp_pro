@@ -5,15 +5,24 @@ from constraint_parser.nlp.test_data import (
     test_data,
     worker_names,
     test_data_single,
+    worker_dimensions,
+    shift_dimensions,
 )
 from constraint_parser.nlp.text_to_block import TextToBlock
+from constraint_parser.nlp.nlp_new import NLPNew
 
 
 class TestNLP:
     @pytest.fixture
     def text_to_block(self):
-        patterns = build_patterns(shift_names, worker_names)
-        return TextToBlock(patterns)
+        patterns = build_patterns(
+            shift_names,
+            worker_names,
+            list(shift_dimensions.keys()),
+            list(worker_dimensions.keys()),
+        )
+        # return TextToBlock(patterns)
+        return NLPNew(patterns)
 
     @pytest.mark.parametrize("test_case", test_data)
     # @pytest.mark.parametrize("test_case", test_data_single)
