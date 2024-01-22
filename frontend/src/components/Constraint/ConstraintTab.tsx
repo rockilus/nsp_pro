@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
 import ConstraintList from "./ConstraintList";
-import ConstraintButton from "./ConstraintButton";
+import ConstraintSentence from "./ConstraintSentence";
 import NewConstraint from "./NewConstraint";
 import { useConstraintStore } from "../../stores/constraintStore";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
@@ -15,6 +15,41 @@ interface Props {
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
 }
+
+// At most 2 consecutive days off
+const selectors = [
+  {
+    name: "operator",
+    options: ["at most", "at least", "exactly"],
+    selected: ["at most"],
+    multiple: false,
+  },
+  {
+    name: "#",
+    options: [],
+    selected: ["2"],
+    multiple: false,
+  },
+  {
+    name: "timing",
+    options: ["consecutive"],
+    selected: ["consecutive"],
+    multiple: false,
+  },
+  {
+    name: "shift",
+    options: ["days off", "morning", "afternoon", "evening", "night"],
+    selected: ["days off"],
+    multiple: true,
+  },
+];
+
+const shift_selector = {
+  name: "shift",
+  options: ["off", "morning", "afternoon", "evening", "night"],
+  selected: ["off"],
+  multiple: true,
+};
 
 export default function ConstraintTab({ workers, shifts }: Props) {
   const constraints = useConstraintStore((state) => state.constraints);
@@ -36,6 +71,7 @@ export default function ConstraintTab({ workers, shifts }: Props) {
 
   return (
     <Box style={{ width: "100%", backgroundColor: "white" }}>
+      <ConstraintSentence selectors={selectors} />
       <Typography variant="h4" align="left" color="black">
         Constraints Configuration
       </Typography>

@@ -26,6 +26,20 @@ class FindConnectedParam:
             ):
                 return self.find_token_connected_parameter(token.head)
             return (ent.label_, ent.text)
+        # Adposition (ADP) as prepositional modifier (prep), not "before" or
+        # "after" and has a child prepositional object (pobj) within a
+        # coordinate entity
+        if (
+            token.pos_ == "ADP"
+            and token.dep_ == "prep"
+            and token.lemma_ not in ["before", "after"]
+            and any(
+                child.dep_ == "pobj"
+                and child.ent_type_ in Constants.VAR_COORD_PATTERN_LABEL
+                for child in token.children
+            )
+        ):
+            return self.find_token_connected_parameter_children(token)
         return self.find_token_connected_parameter(token.head)
 
     def find_token_connected_parameter(
@@ -43,7 +57,7 @@ class FindConnectedParam:
         # (pobj) or meta modifier (meta)
         if token.pos_ == "NUM" and token.dep_ in ["nummod", "pobj", "meta"]:
             return self.find_token_connected_parameter(token.head)
-        # Adverb (ADV) as prepositional modifier (prep)
+        # Adposition (ADP) as prepositional modifier (prep)
         if token.pos_ == "ADP" and token.dep_ == "prep":
             return self.find_token_connected_parameter(token.head)
         # Adjective (ADJ) as adjectival modifier (amod) or conjunct (conj)
@@ -78,6 +92,10 @@ class FindConnectedParam:
         if token.pos_ == "NOUN" and token.dep_ == "nsubjpass":
             for child in [t for t in token.children if t.dep_ == "prep"]:
                 return self.find_token_connected_parameter_children(child)
+        # If noun (NOUN) as nominal subject (nsubj), child numeric modifier (nummod)
+        if token.pos_ == "NOUN" and token.dep_ == "nsubj":
+            for child in [t for t in token.children if t.dep_ == "nummod"]:
+                return self.find_token_connected_parameter_children(child)
         # If adverb (ADV) as root (ROOT), child object of preposition (pobj)
         if token.pos_ == "ADP" and token.dep_ == "ROOT":
             for child in [t for t in token.children if t.dep_ == "pobj"]:
@@ -86,8 +104,10 @@ class FindConnectedParam:
         if token.pos_ == "ADP" and token.dep_ == "prep":
             for child in [t for t in token.children if t.dep_ == "pobj"]:
                 return self.find_token_connected_parameter_children(child)
-        # If verb (VERB) as root (ROOT), child nominal subject - passive (nsubjpass)
+        # If verb (VERB) as root (ROOT), child nominal subject (nsubj) or nominal subject - passive (nsubjpass)
         if token.pos_ == "VERB" and token.dep_ == "ROOT":
-            for child in [t for t in token.children if t.dep_ == "nsubjpass"]:
+            for child in [
+                t for t in token.children if t.dep_ in ["nsubj", "nsubjpass"]
+            ]:
                 return self.find_token_connected_parameter_children(child)
         return None

@@ -29,6 +29,18 @@ worker_ids = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 shift_dimensions = {"duty": ["2", "3"]}
 worker_dimensions = {"surgeon": ["1", "2"], "60+": ["4", "5"]}
 
+# 1 - Block inputted avec des templates -> pure mapping
+# @WORKER:[John] should have @OPERATOR:[at least] @QUANTITY:two @SHIFT:[days off] @TIMING:[per week]
+
+# WORKER OPERATOR QUANTITY SHIFT    TIMING
+# John   at least two      days off per week
+
+# 2 - Block inputted by typing -> pure mapping
+# @WORKER:[John] should have @OPERATOR:[at least] @QUANTITY:two @SHIFT:[days off] @TIMING:[per week]
+
+# 3 - Input text -> NLP + mapping
+# John should have at least two days off per week
+
 # For single test
 test_data_single = [
     {

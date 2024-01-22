@@ -1,4 +1,5 @@
-from typing import List
+import re
+from typing import Dict, List
 
 from utils.constants import Constants
 
@@ -60,16 +61,11 @@ def build_patterns(
             "pattern": [{"LEMMA": {"IN": shift_dimension_names}}],
         },
     ]
-    pattern_worker = [
-        {
-            "label": Constants.WORKER_PATTERN_LABEL,
-            "pattern": [{"LOWER": {"IN": worker_names}}],
-        },
-        {
-            "label": Constants.WORKER_PATTERN_LABEL,
-            "pattern": [{"LEMMA": {"IN": worker_dimension_names}}],
-        },
-    ]
+    pattern_worker = build_patterns_from_list_of_strings(
+        Constants.WORKER_PATTERN_LABEL, worker_names
+    ) + build_patterns_from_list_of_strings(
+        Constants.WORKER_PATTERN_LABEL, worker_dimension_names
+    )
     patterns_timing = [
         {
             "label": Constants.TIMING_PATTERN_LABEL,
@@ -78,6 +74,10 @@ def build_patterns(
         {
             "label": Constants.TIMING_PATTERN_LABEL,
             "pattern": [{"LEMMA": "per"}, {"LOWER": "week"}],
+        },
+        {
+            "label": Constants.TIMING_PATTERN_LABEL,
+            "pattern": [{"LEMMA": "per"}, {"LOWER": "month"}],
         },
         {
             "label": Constants.TIMING_PATTERN_LABEL,
@@ -95,3 +95,23 @@ def build_patterns(
     return (
         patterns_operator + patterns_shift + pattern_worker + patterns_timing
     )
+
+
+def build_patterns_from_list_of_strings(
+    label: str, strings_list: List[str]
+) -> List[Dict]:
+    patterns = []
+    for string in strings_list:
+        string_parts = [
+            part
+            for s in string.split()
+            for part in split_string_by_char_types(s)
+        ]
+        pattern = [{"LEMMA": part} for part in string_parts]
+        patterns.append({"label": label, "pattern": pattern})
+    return patterns
+
+
+def split_string_by_char_types(s):
+    parts = re.findall(r'\d+|[a-zA-Z]+|\W+', s)
+    return parts
