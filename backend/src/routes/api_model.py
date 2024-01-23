@@ -196,6 +196,21 @@ class TreeNodeMessage(BaseModel):
     children: List["TreeNodeMessage"]
 
 
+class ConstraintTemplateBlockMessage(BaseModel):
+    name: str
+    type: str
+    options: List[str]
+    placeholder: str | int
+    multiple: bool
+
+
+class ConstraintTemplateMessage(BaseModel):
+    id: str
+    constraintType: str
+    text: str
+    blocks: List[ConstraintTemplateBlockMessage]
+
+
 # Authentication
 class Token(BaseModel):  # can be deleted
     access_token: str

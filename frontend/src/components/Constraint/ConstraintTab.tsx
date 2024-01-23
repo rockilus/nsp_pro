@@ -6,9 +6,12 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
 import ConstraintList from "./ConstraintList";
-import ConstraintSentence from "./ConstraintSentence";
+import ConstraintEdit from "./ConstraintEdit";
+import TemplateList from "./TemplateList";
 import NewConstraint from "./NewConstraint";
+import NewConstraintNew from "./NewConstraintNew";
 import { useConstraintStore } from "../../stores/constraintStore";
+import { useConstraintTemplateStore } from "../../stores/constraintTemplateStore";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
@@ -57,9 +60,17 @@ export default function ConstraintTab({ workers, shifts }: Props) {
     (state) => state.fetchConstraints
   );
 
+  const constraintTemplates = useConstraintTemplateStore(
+    (state) => state.constraintTemplates
+  );
+  const fetchConstraintTemplates = useConstraintTemplateStore(
+    (state) => state.fetchConstraintTemplates
+  );
+
   useEffect(() => {
     fetchConstraints();
-  }, [fetchConstraints]);
+    fetchConstraintTemplates();
+  }, [fetchConstraints, fetchConstraintTemplates]);
 
   const createButton = () => {
     return (
@@ -71,11 +82,13 @@ export default function ConstraintTab({ workers, shifts }: Props) {
 
   return (
     <Box style={{ width: "100%", backgroundColor: "white" }}>
-      <ConstraintSentence selectors={selectors} />
       <Typography variant="h4" align="left" color="black">
         Constraints Configuration
       </Typography>
-      <NewConstraint
+      <NewConstraintNew constraintTemplates={constraintTemplates} />
+      {/* <ConstraintEdit selectors={selectors} />
+      <TemplateList constraintTemplates={constraintTemplates} /> */}
+      {/* <NewConstraint
         constraint={{
           id: "",
           text: "",
@@ -84,7 +97,7 @@ export default function ConstraintTab({ workers, shifts }: Props) {
           active: true,
         }}
         handleClose={() => {}}
-      />
+      /> */}
       <ConstraintList constraints={constraints} />
     </Box>
   );

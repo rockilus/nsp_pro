@@ -83,3 +83,26 @@ class ConstraintMap:
     worker_var: VarWorker
     day_var: VarDay
     shift_var: VarShift
+
+
+@dataclass
+class ConstraintTemplateBlock:
+    name: Literal[
+        "operator",
+        "#",
+        "timing",
+        "shift",
+        "worker",
+    ]
+    type: Literal["string", "number", "list"]
+    options: List[str]
+    placeholder: str | int
+    multiple: bool
+
+
+@dataclass
+class ConstraintTemplate:
+    id: str
+    constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
+    text: str
+    blocks: List[ConstraintTemplateBlock]

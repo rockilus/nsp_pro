@@ -1,10 +1,10 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from routes import (
     router_assignment,
     router_constraint,
+    router_constraint_template,
     router_coverage,
     router_coverage_selector,
     router_fixed_assignment,
@@ -42,6 +42,7 @@ app.add_middleware(
 app.include_router(router_assignment)
 app.include_router(router_user)
 app.include_router(router_constraint)
+app.include_router(router_constraint_template)
 app.include_router(router_coverage)
 app.include_router(router_coverage_selector)
 app.include_router(router_fixed_assignment)

@@ -2,12 +2,18 @@ from dataclasses import asdict
 from typing import List
 
 import humps
-from core.constraint import Constraint, ConstraintBuild
+from constraint_parser import constraint_parse
+from core.constraint import (
+    Constraint,
+    ConstraintBuild,
+)
 from fastapi import APIRouter, HTTPException
 from pydantic import TypeAdapter
-from routes.api_model import ConstraintMessage, NewConstraintMessage
+from routes.api_model import (
+    ConstraintMessage,
+    NewConstraintMessage,
+)
 from scripts.setup_database import constraint_db
-from constraint_parser import constraint_parse
 from services import update_constraint_same_text
 
 router = APIRouter()

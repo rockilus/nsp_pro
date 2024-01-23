@@ -1,5 +1,8 @@
 from routes.assignment_routes import router as router_assignment
 from routes.constraint_routes import router as router_constraint
+from routes.constraint_template_routes import (
+    router as router_constraint_template,
+)
 from routes.coverage_routes import router as router_coverage
 from routes.coverage_selector_routes import router as router_coverage_selector
 from routes.fixed_assignment_routes import router as router_fixed_assignment
@@ -18,6 +21,7 @@ from routes.worker_routes import router as router_worker
 __all__ = [
     "router_assignment",
     "router_constraint",
+    "router_constraint_template",
     "router_coverage",
     "router_coverage_selector",
     "router_fixed_assignment",

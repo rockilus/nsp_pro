@@ -6,17 +6,16 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 
+import { BlockT, ConstraintTemplateBlockT } from "./types";
+
 interface Props {
-  selector: {
-    name: string;
-    options: string[];
-    selected: string[];
-    multiple: boolean;
-  };
+  block: BlockT | null;
+  templateBlock: ConstraintTemplateBlockT;
+  handleEditBlock: (block: BlockT) => void;
 }
 
-export default function FieldEntry({ selector }: Props) {
-  const [selectorState, setSelectorState] = useState(selector);
+export default function FieldEntry({ block, templateBlock }: Props) {
+  const [selectorState, setSelectorState] = useState(templateBlock);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<string[]>(
     selectorState.options.filter(
@@ -59,7 +58,7 @@ export default function FieldEntry({ selector }: Props) {
         ),
       });
       setFilteredOptions(
-        selector.options.filter(
+        templateBlock.options.filter(
           (option) =>
             !selectorState.selected.includes(option) ||
             option === optionToDelete
@@ -73,7 +72,7 @@ export default function FieldEntry({ selector }: Props) {
     if (
       event.key === "Backspace" &&
       event.currentTarget.selectionStart === 0 &&
-      selector.multiple
+      templateBlock.multiple
     ) {
       const lastSelected =
         selectorState.selected[selectorState.selected.length - 1];
@@ -170,7 +169,7 @@ export default function FieldEntry({ selector }: Props) {
               key={option}
               label={option}
               onDelete={
-                selector.multiple
+                templateBlock.multiple
                   ? () => handleDeleteFromSelected(option)
                   : undefined
               }
@@ -204,7 +203,7 @@ export default function FieldEntry({ selector }: Props) {
             padding: "0 16px 6px 16px",
           }}
         >
-          {selector.multiple ? "Select one or more" : "Select one"}
+          {templateBlock.multiple ? "Select one or more" : "Select one"}
         </div>
         <List dense={true} sx={{ padding: "0 0 0 0" }}>
           {filteredOptions.map((option) => (

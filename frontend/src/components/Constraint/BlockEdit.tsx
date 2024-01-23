@@ -1,17 +1,19 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import FieldEntry from "./FieldEntry";
+import { ConstraintTemplateBlockT, BlockT } from "./types";
 
 interface Props {
-  selector: {
-    name: string;
-    options: string[];
-    selected: string[];
-    multiple: boolean;
-  };
+  block: BlockT | null;
+  templateBlock: ConstraintTemplateBlockT;
+  handleEditBlock: (block: BlockT) => void;
 }
 
-export default function SentenceItem({ selector }: Props) {
+export default function BlockEdit({
+  block,
+  templateBlock,
+  handleEditBlock,
+}: Props) {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -47,7 +49,8 @@ export default function SentenceItem({ selector }: Props) {
   return (
     <div>
       <div className="field-name" style={{ fontSize: "10px" }}>
-        {selector.name.charAt(0).toUpperCase() + selector.name.slice(1)}
+        {templateBlock.name.charAt(0).toUpperCase() +
+          templateBlock.name.slice(1)}
       </div>
       {!open && (
         <div
@@ -65,9 +68,11 @@ export default function SentenceItem({ selector }: Props) {
             //   height: "100%",
           }}
         >
-          {selector.selected.map((option) => (
-            <span key={option}>{option}</span>
-          ))}
+          {block
+            ? block.type === "string" || block.type == "number"
+              ? block.value
+              : block.value.join(", ")
+            : templateBlock.placeholder}
         </div>
       )}
 
@@ -98,7 +103,11 @@ export default function SentenceItem({ selector }: Props) {
               display: "inline-block",
             }}
           >
-            <FieldEntry selector={selector} />
+            <FieldEntry
+              block={block}
+              templateBlock={templateBlock}
+              handleEditBlock={handleEditBlock}
+            />
           </div>
         </div>
       )}
