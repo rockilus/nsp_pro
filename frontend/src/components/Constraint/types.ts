@@ -1,7 +1,9 @@
 export type ConstraintT = {
   id: string;
   constraintType: string;
+  templateId: string;
   blocks: BlockT[];
+  text: string;
   hard: boolean;
   priority: string;
   active: boolean;
@@ -13,17 +15,24 @@ export type BlockT = {
   value: string | number | string[];
 };
 
-export type ConstraintTemplateBlockT = {
+export type TemplateBlockT = {
   name: string;
   type: string;
   options: string[];
   placeholder: string | number;
-  multiple: boolean;
 };
 
-export type ConstraintTemplateT = {
+export type TemplateT = {
   id: string;
   constraintType: string;
   text: string;
-  blocks: ConstraintTemplateBlockT[];
+  blocks: TemplateBlockT[];
+};
+
+// higher darker
+export type ConstraintColorsT = {
+  shade0: string;
+  shade1: string;
+  shade2: string;
+  shade3: string;
 };

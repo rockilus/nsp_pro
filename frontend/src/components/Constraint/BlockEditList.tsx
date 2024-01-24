@@ -1,43 +1,69 @@
-import React, { useState, ChangeEvent, useRef } from "react";
+import React, {
+  useState,
+  ChangeEvent,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 
 import Chip from "@mui/material/Chip";
+import ClearIcon from "@mui/icons-material/Clear";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 
-import { BlockT, ConstraintTemplateBlockT } from "./types";
+import { BlockT, TemplateBlockT } from "./types";
+import { ConstraintDefaultColors } from "../../utils/constants";
 
 interface Props {
   block: BlockT | null;
-  templateBlock: ConstraintTemplateBlockT;
+  templateBlock: TemplateBlockT;
   handleEditBlock: (block: BlockT) => void;
+  handleClose: () => void;
 }
 
-export default function FieldEntry({ block, templateBlock }: Props) {
-  const [selectorState, setSelectorState] = useState(templateBlock);
+export default function BlockEditList({
+  block,
+  templateBlock,
+  handleEditBlock,
+  handleClose,
+}: Props) {
+  const initialValue = useCallback(() => {
+    if (block === null) {
+      return [];
+    }
+    if (Array.isArray(block.value)) {
+      return block.value;
+    }
+    throw new Error("block.value is not an array");
+  }, [block]);
+
+  const [valueState, setValueState] = useState<string[]>(initialValue);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<string[]>(
-    selectorState.options.filter(
-      (option) => !selectorState.selected.includes(option)
-    )
+    templateBlock.options.filter((option) => !valueState.includes(option))
   );
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (block !== null) {
+      setValueState(initialValue);
+    }
+  }, [block, initialValue]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.trim();
     setSearchQuery(query);
     if (query === "") {
       setFilteredOptions(
-        selectorState.options.filter(
-          (option) => !selectorState.selected.includes(option)
-        )
+        templateBlock.options.filter((option) => !valueState.includes(option))
       );
     } else {
-      const newFilteredOptions = selectorState.options.filter(
+      const newFilteredOptions = templateBlock.options.filter(
         (option) =>
-          !selectorState.selected.includes(option) &&
+          !valueState.includes(option) &&
           option.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredOptions(newFilteredOptions);
@@ -50,32 +76,24 @@ export default function FieldEntry({ block, templateBlock }: Props) {
   };
 
   const handleDeleteFromSelected = (optionToDelete: string) => {
-    if (selectorState.selected.includes(optionToDelete)) {
-      setSelectorState({
-        ...selectorState,
-        selected: selectorState.selected.filter(
-          (option) => option !== optionToDelete
-        ),
+    if (valueState.includes(optionToDelete)) {
+      handleEditBlock({
+        name: templateBlock.name,
+        type: templateBlock.type,
+        value: valueState.filter((option) => option !== optionToDelete),
       });
       setFilteredOptions(
         templateBlock.options.filter(
-          (option) =>
-            !selectorState.selected.includes(option) ||
-            option === optionToDelete
+          (option) => !valueState.includes(option) || option === optionToDelete
         )
       );
     }
     // Update the external state for "selected" here
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (
-      event.key === "Backspace" &&
-      event.currentTarget.selectionStart === 0 &&
-      templateBlock.multiple
-    ) {
-      const lastSelected =
-        selectorState.selected[selectorState.selected.length - 1];
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Backspace" && event.currentTarget.selectionStart === 0) {
+      const lastSelected = valueState[valueState.length - 1];
       if (lastSelected) {
         handleDeleteFromSelected(lastSelected);
       }
@@ -98,31 +116,23 @@ export default function FieldEntry({ block, templateBlock }: Props) {
           setSelectedOption(filteredOptions[index - 1]);
         }
       }
+    } else if (event.key === "Escape") {
+      handleClose();
     }
   };
 
   const handleAddSelectedOption = (newOption: string) => {
-    if (selectorState.options.includes(newOption)) {
-      if (selectorState.multiple) {
-        setSelectorState({
-          ...selectorState,
-          selected: [...selectorState.selected, newOption],
-        });
-        setFilteredOptions(
-          selectorState.options.filter(
-            (option) =>
-              !selectorState.selected.includes(option) && option !== newOption
-          )
-        );
-      } else {
-        setSelectorState({
-          ...selectorState,
-          selected: [newOption],
-        });
-        setFilteredOptions(
-          selectorState.options.filter((option) => option !== newOption)
-        );
-      }
+    if (filteredOptions.includes(newOption)) {
+      handleEditBlock({
+        name: templateBlock.name,
+        type: templateBlock.type,
+        value: [...valueState, newOption],
+      });
+      setFilteredOptions(
+        templateBlock.options.filter(
+          (option) => !valueState.includes(option) && option !== newOption
+        )
+      );
       setSearchQuery("");
     }
     // Update the external state for "selected" here
@@ -141,7 +151,8 @@ export default function FieldEntry({ block, templateBlock }: Props) {
         style={{
           borderTopRightRadius: "inherit",
           borderTopLeftRadius: "inherit",
-          background: "#f0efed",
+          // background: "#f0efed",
+          background: ConstraintDefaultColors.shade0,
         }}
       >
         {/* <div className="field-name" style={{ fontSize: "10px" }}>
@@ -164,16 +175,24 @@ export default function FieldEntry({ block, templateBlock }: Props) {
             // },
           }}
         >
-          {selectorState.selected.map((option) => (
+          {valueState.map((option) => (
             <Chip
               key={option}
               label={option}
-              onDelete={
-                templateBlock.multiple
-                  ? () => handleDeleteFromSelected(option)
-                  : undefined
+              onDelete={() => handleDeleteFromSelected(option)}
+              deleteIcon={
+                <ClearIcon
+                  style={{
+                    fontSize: "15px",
+                    color: ConstraintDefaultColors.shade2,
+                  }}
+                />
               }
-              sx={{ height: "21px" }}
+              sx={{
+                height: "21px",
+                color: ConstraintDefaultColors.shade3,
+                background: ConstraintDefaultColors.shade1,
+              }}
             />
           ))}
           <input
@@ -184,6 +203,7 @@ export default function FieldEntry({ block, templateBlock }: Props) {
             ref={inputRef}
             // placeholder="Search shifts"
             style={{
+              color: ConstraintDefaultColors.shade3,
               height: "21px",
               border: "none",
               outline: "none",
@@ -199,11 +219,12 @@ export default function FieldEntry({ block, templateBlock }: Props) {
           style={{
             fontSize: "13px",
             fontWeight: "bold",
-            color: "rgba(55, 53, 47, 0.65)",
+            // color: "rgba(55, 53, 47, 0.65)",
+            color: ConstraintDefaultColors.shade2,
             padding: "0 16px 6px 16px",
           }}
         >
-          {templateBlock.multiple ? "Select one or more" : "Select one"}
+          {"Select one or more " + templateBlock.name.toLowerCase()}
         </div>
         <List dense={true} sx={{ padding: "0 0 0 0" }}>
           {filteredOptions.map((option) => (
@@ -216,7 +237,10 @@ export default function FieldEntry({ block, templateBlock }: Props) {
               sx={{ padding: "0 0 0 0" }}
             >
               <ListItem sx={{ padding: "0 16px 0 16px" }}>
-                <ListItemText primary={option} />
+                <ListItemText
+                  primary={option}
+                  style={{ color: ConstraintDefaultColors.shade3 }}
+                />
               </ListItem>
             </ListItemButton>
           ))}

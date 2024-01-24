@@ -4,14 +4,20 @@ import Box from "@mui/material/Box";
 import Menu from "@mui/material/Menu";
 
 import ConstraintPanel from "./ConstraintPanel";
-import { ConstraintT } from "./types";
+import ConstraintEdit from "./ConstraintEdit";
+import { ConstraintT, TemplateT } from "./types";
 
 interface Props {
   buttonElement: React.ReactNode;
   constraint: ConstraintT;
+  constraintTemplate: TemplateT | null;
 }
 
-export default function ConstraintButton({ buttonElement, constraint }: Props) {
+export default function ConstraintButton({
+  buttonElement,
+  constraint,
+  constraintTemplate,
+}: Props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -43,7 +49,11 @@ export default function ConstraintButton({ buttonElement, constraint }: Props) {
           },
         }}
       >
-        <ConstraintPanel constraint={constraint} handleClose={handleClose} />
+        <ConstraintEdit
+          constraint={constraint}
+          constraintTemplate={constraintTemplate}
+        />
+        {/* <ConstraintPanel constraint={constraint} handleClose={handleClose} /> */}
       </Menu>
     </Box>
   );

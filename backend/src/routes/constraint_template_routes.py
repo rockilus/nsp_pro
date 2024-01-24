@@ -2,17 +2,18 @@ from dataclasses import asdict
 from typing import List
 
 import humps
-from constraint_parser import build_templates
-from core.constraint import ConstraintTemplate
 from fastapi import APIRouter
 from pydantic import TypeAdapter
-from routes.api_model import ConstraintTemplateMessage
+
+from constraint_parser.templates import build_templates
+from core.constraint import Template
+from routes.api_model import TemplateMessage
 
 router = APIRouter()
 
 
 @router.get("/constraint-templates")
-def get_constraint_templates() -> List[ConstraintTemplateMessage]:
+def get_constraint_templates() -> List[TemplateMessage]:
     return [constraint_template_to_api_msg(ct) for ct in build_templates()]
 
 
@@ -26,9 +27,9 @@ def get_constraint_templates() -> List[ConstraintTemplateMessage]:
 
 
 def constraint_template_to_api_msg(
-    constraint_template: ConstraintTemplate,
-) -> ConstraintTemplateMessage:
+    constraint_template: Template,
+) -> TemplateMessage:
     data = asdict(constraint_template)
     as_dict = humps.camelize(data)
-    validator = TypeAdapter(ConstraintTemplateMessage)
+    validator = TypeAdapter(TemplateMessage)
     return validator.validate_python(as_dict)

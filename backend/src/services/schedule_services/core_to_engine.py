@@ -40,7 +40,9 @@ def core_to_engine_inputs(
         requests, fixed_assignments
     )
     start_date_hist = (
-        min(a.date for a in prev_assignments) if prev_assignments else start_date
+        min(a.date for a in prev_assignments)
+        if prev_assignments
+        else start_date
     )
     end_date_hist = start_date - timedelta(days=1)
 
@@ -72,7 +74,9 @@ def core_to_engine_inputs(
             wip_assignments,
         ),
         shift_durations={
-            shift.id: int((shift.end_time - shift.start_time).total_seconds() // 60)
+            shift.id: int(
+                (shift.end_time - shift.start_time).total_seconds() // 60
+            )
             for shift in shifts
         },
         shift_start_times={
@@ -80,7 +84,9 @@ def core_to_engine_inputs(
                 d.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
                 s.id,
             ): int(
-                s.start_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
+                s.start_time.replace(
+                    year=d.year, month=d.month, day=d.day
+                ).timestamp()
                 // Constants.NUM_SECONDS_MINUTE
             )
             for d in _build_dates(start_date_hist, end_date)
@@ -91,7 +97,9 @@ def core_to_engine_inputs(
                 d.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
                 s.id,
             ): int(
-                s.end_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
+                s.end_time.replace(
+                    year=d.year, month=d.month, day=d.day
+                ).timestamp()
                 // Constants.NUM_SECONDS_MINUTE
             )
             for d in _build_dates(start_date_hist, end_date)
@@ -113,12 +121,15 @@ def _build_shift_demands(
         if sds is None:
             continue
         for day in range(
-            (min(cs.end_date, end_date) - max(cs.start_date, start_date)).days + 1
+            (min(cs.end_date, end_date) - max(cs.start_date, start_date)).days
+            + 1
         ):
             cov_date = max(cs.start_date, start_date) + timedelta(days=day)
             for sd in sds:
                 if sd.day_index == cov_date.weekday():
-                    shift = next((s for s in shifts if s.id == sd.shift_id), None)
+                    shift = next(
+                        (s for s in shifts if s.id == sd.shift_id), None
+                    )
                     if shift is not None:
                         sd_engine.append(
                             ShiftDemandEngine(
@@ -160,7 +171,9 @@ def _core_to_engine_requests_and_fixed_assignments(
             )
     else:
         fa_engine = [
-            AssignmentEngine(worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id)
+            AssignmentEngine(
+                worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id
+            )
             for fa in fixed_assignments
         ]
     return r_engine, fa_engine
@@ -237,15 +250,17 @@ def _core_to_engine_var_shift(var_shift: VarShift) -> VarShiftEngine:
         operator=var_shift.operator,
         selector=var_shift.selector,
         target=var_shift.target_ids,
-        reference=var_shift.reference_id,
-        relative=var_shift.relative_id,
+        reference=var_shift.reference_ids,
+        relative=var_shift.relative_ids,
     )
 
 
 def _build_day_coordinates(start_date: date, end_date: date) -> List[str]:
     delta = end_date - start_date
     dates = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
-    return [date.strftime(Constants.ENGINE_STRING_DATE_FORMAT) for date in dates]
+    return [
+        date.strftime(Constants.ENGINE_STRING_DATE_FORMAT) for date in dates
+    ]
 
 
 def _build_dates(start_date: date, end_date: date) -> List[date]:

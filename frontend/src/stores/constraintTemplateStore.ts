@@ -1,12 +1,12 @@
 // constraintTemplateStore.ts
 import { create } from "zustand";
-import { ConstraintTemplateT } from "../components/Constraint/types";
+import { TemplateT } from "../components/Constraint/types";
 
 const baseApiUrl = "http://127.0.0.1:5000";
 const apiUrlConstraints = baseApiUrl + "/constraint-templates";
 
 type ConstraintTemplateStateT = {
-  constraintTemplates: ConstraintTemplateT[];
+  constraintTemplates: TemplateT[];
   fetchConstraintTemplates: () => void;
 };
 
@@ -24,8 +24,7 @@ export const useConstraintTemplateStore = create<ConstraintTemplateStateT>()(
       };
       try {
         const response = await fetch(`${apiUrlConstraints}`, options); // Adjust API endpoint as needed
-        const constraintTemplates: ConstraintTemplateT[] =
-          await response.json();
+        const constraintTemplates: TemplateT[] = await response.json();
         set({ constraintTemplates });
       } catch (error) {
         console.error("Failed to fetch constraint templates:", error);

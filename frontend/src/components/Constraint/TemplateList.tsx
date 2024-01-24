@@ -5,12 +5,12 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 
-import { ConstraintTemplateT } from "./types";
+import { TemplateT } from "./types";
 
 interface Props {
-  constraintTemplates: ConstraintTemplateT[];
-  selectedTemplate: ConstraintTemplateT | null;
-  handleSelectedTemplate: (ct: ConstraintTemplateT) => void;
+  constraintTemplates: TemplateT[];
+  selectedTemplate: TemplateT | null;
+  handleSelectedTemplate: (ct: TemplateT) => void;
 }
 
 export default function TemplateList({

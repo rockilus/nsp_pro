@@ -1,19 +1,71 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
-import BlockEdit from "./BlockEdit";
-import QuantityItem from "./QuantityItem";
-import { ConstraintT, ConstraintTemplateT, BlockT } from "./types";
+import BlockDisplay from "./BlockDisplay";
+import { ConstraintT, TemplateT, BlockT, TemplateBlockT } from "./types";
+import { useConstraintStore } from "../../stores/constraintStore";
+import TemplateList from "./TemplateList";
 
 interface Props {
   constraint: ConstraintT;
-  constraintTemplate: ConstraintTemplateT | null;
+  constraintTemplate: TemplateT | null;
 }
 
 export default function ConstraintEdit({
   constraint,
   constraintTemplate,
 }: Props) {
-  const [constraintState, setConstraintState] = useState(constraint);
+  const initialBlockValue = (
+    templateBlock: TemplateBlockT
+  ): string | number | string[] => {
+    if (templateBlock.type === "text") {
+      return templateBlock.placeholder;
+    } else {
+      if (
+        templateBlock.options.length === 0 &&
+        templateBlock.type !== "number"
+      ) {
+        return templateBlock.placeholder;
+      } else if (templateBlock.options.length === 1) {
+        return templateBlock.options[0];
+      } else {
+        return templateBlock.type === "list" ? [] : "";
+      }
+    }
+  };
+
+  const initialConstraintState = useCallback((): ConstraintT => {
+    if (constraint.id === "") {
+      const blocks: BlockT[] = [];
+      if (constraintTemplate && constraintTemplate.blocks) {
+        for (let block of constraintTemplate.blocks) {
+          blocks.push({
+            name: block.name,
+            type: block.type,
+            value: initialBlockValue(block),
+          });
+        }
+      }
+      return { ...constraint, blocks: blocks };
+    } else {
+      return constraint;
+    }
+  }, [constraint, constraintTemplate]);
+
+  const [constraintState, setConstraintState] = useState(
+    initialConstraintState
+  );
+  const addConstraint = useConstraintStore((state) => state.addConstraint);
+  const updateConstraint = useConstraintStore(
+    (state) => state.updateConstraint
+  );
+
+  const handleSaveConstraint = () => {
+    if (constraint.id === "") {
+      addConstraint(constraintState);
+    } else {
+      updateConstraint(constraintState);
+    }
+  };
 
   const findBlockByName = (name: string): BlockT | null => {
     const block = constraintState.blocks.find((block) => block.name === name);
@@ -36,6 +88,10 @@ export default function ConstraintEdit({
     }
   };
 
+  useEffect(() => {
+    setConstraintState(initialConstraintState());
+  }, [initialConstraintState]);
+
   return (
     <div
       style={{
@@ -47,7 +103,7 @@ export default function ConstraintEdit({
       <div style={{ display: "flex", flexDirection: "row" }}>
         {constraintTemplate?.blocks.map((templateBlock, index) => (
           <div key={index} style={{ marginRight: "5px" }}>
-            <BlockEdit
+            <BlockDisplay
               block={findBlockByName(templateBlock.name)}
               templateBlock={templateBlock}
               handleEditBlock={handleEditBlock}
@@ -83,7 +139,7 @@ export default function ConstraintEdit({
           </div>
         ))} */}
       </div>
-      <button style={{}}>Add</button>
+      <button onClick={handleSaveConstraint}>Add</button>
     </div>
   );
 }

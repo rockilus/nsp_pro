@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from routes import (
     router_assignment,
     router_constraint,
@@ -59,6 +60,4 @@ app.include_router(router_worker_dimension)
 
 
 def run_router():
-    uvicorn.run(
-        "scripts.setup_router:app", host="127.0.0.1", port=5000, reload=True
-    )
+    uvicorn.run("scripts.setup_router:app", host="127.0.0.1", port=5000, reload=True)

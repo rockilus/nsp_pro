@@ -2,8 +2,10 @@ from datetime import datetime
 from typing import List
 
 from bson import ObjectId
-from core.constraint import Constraint, VarDay, VarShift, VarWorker
+
+from core.constraint import Block, Constraint, VarDay, VarShift, VarWorker
 from database.db import DB
+from models import Block as BlockDocument
 from models import Constraint as ConstraintDocument
 from models import Shift as ShiftDocument
 from models import VarDay as VarDayDocument
@@ -67,9 +69,11 @@ def to_mongo_var_worker(dataclass_obj: VarWorker) -> VarWorkerDocument:
     workers = []
     if len(dataclass_obj.target_ids) > 0:
         # pylint: disable=no-member
-        workers = WorkerDocument.objects.get(  # type: ignore
-            id__in=dataclass_obj.target_ids
-        )
+        workers = [
+            WorkerDocument.objects.get(  # type: ignore
+                id__in=dataclass_obj.target_ids
+            )
+        ]
     return VarWorkerDocument(
         operator=dataclass_obj.operator,
         selector=dataclass_obj.selector,
@@ -90,23 +94,27 @@ def to_mongo_var_day(dataclass_obj: VarDay) -> VarDayDocument:
 
 def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
     shifts = []
-    reference_s = None
-    relative_s = None
+    reference_s = []
+    relative_s = []
     if len(dataclass_obj.target_ids) > 0:
         # pylint: disable=no-member
         shifts = [
             ShiftDocument.objects.get(id__in=dataclass_obj.target_ids)  # type: ignore
         ]
-    if dataclass_obj.reference_id != "":
+    if len(dataclass_obj.reference_ids) > 0:
         # pylint: disable=no-member
-        reference_s = ShiftDocument.objects.get(  # type: ignore
-            id=dataclass_obj.reference_id
-        )
-    if dataclass_obj.relative_id != "":
+        reference_s = [
+            ShiftDocument.objects.get(  # type: ignore
+                id__in=dataclass_obj.reference_ids
+            )
+        ]
+    if len(dataclass_obj.relative_ids) > 0:
         # pylint: disable=no-member
-        relative_s = ShiftDocument.objects.get(  # type: ignore
-            id=dataclass_obj.relative_id
-        )
+        relative_s = [
+            ShiftDocument.objects.get(  # type: ignore
+                id__in=dataclass_obj.relative_ids
+            )
+        ]
     return VarShiftDocument(
         operator=dataclass_obj.operator
         if dataclass_obj.operator != ""
@@ -118,6 +126,14 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
     )
 
 
+def to_mongo_block(dataclass_obj: Block) -> BlockDocument:
+    return BlockDocument(
+        name=dataclass_obj.name,
+        type=dataclass_obj.type,
+        value=dataclass_obj.value,
+    )
+
+
 def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
     worker_var = to_mongo_var_worker(dataclass_obj.worker_var)
     day_var = to_mongo_var_day(dataclass_obj.day_var)
@@ -125,6 +141,7 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
     constraint = ConstraintDocument(
         id=dataclass_obj.id,
         constraint_type=dataclass_obj.constraint_type,
+        template_id=dataclass_obj.template_id,
         operator=dataclass_obj.operator,
         target_value=dataclass_obj.target_value,
         target_unit=dataclass_obj.target_unit,
@@ -135,7 +152,7 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
         priority=dataclass_obj.priority,
         active=dataclass_obj.active,
         text=dataclass_obj.text,
-        blocks=dataclass_obj.blocks,
+        blocks=[to_mongo_block(b) for b in dataclass_obj.blocks],
     )
     return constraint
 
@@ -168,8 +185,18 @@ def _from_mongo_var_shift(doc_obj: VarShiftDocument) -> VarShift:
         operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
         selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
         target_ids=[s.id for s in doc_obj.target],
-        reference_id=doc_obj.reference.id if doc_obj.reference else "",
-        relative_id=doc_obj.relative.id if doc_obj.relative else "",
+        reference_ids=[s.id for s in doc_obj.reference],
+        relative_ids=[s.id for s in doc_obj.relative],
+    )
+
+
+def _from_mongo_block(doc_obj: BlockDocument) -> Block:
+    return Block(
+        name=doc_obj.name,  # type: ignore
+        type=doc_obj.type,  # type: ignore
+        value=doc_obj.value
+        if isinstance(doc_obj.value, (str, int))
+        else list(doc_obj.value),
     )
 
 
@@ -180,6 +207,7 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
     constraint = Constraint(
         id=str(doc_obj.id),
         constraint_type=doc_obj.constraint_type,  # type: ignore
+        template_id=doc_obj.template_id,
         operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
         target_value=doc_obj.target_value,
         target_unit=doc_obj.target_unit,
@@ -190,6 +218,6 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
         priority=doc_obj.priority,
         active=doc_obj.active,
         text=doc_obj.text,
-        blocks=doc_obj.blocks,
+        blocks=[_from_mongo_block(b) for b in doc_obj.blocks],
     )
     return constraint

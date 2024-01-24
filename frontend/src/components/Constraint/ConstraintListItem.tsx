@@ -17,15 +17,19 @@ import ToggleButton from "@mui/material/ToggleButton";
 import Typography from "@mui/material/Typography";
 
 import ConstraintButton from "./ConstraintButton";
-import { ConstraintT } from "./types";
+import { ConstraintT, TemplateT } from "./types";
 import { useConstraintStore } from "../../stores/constraintStore";
 import { PriorityLevels } from "../../utils/constants";
 
 interface Props {
   constraint: ConstraintT;
+  constraintTemplate: TemplateT | null;
 }
 
-export default function ConstraintListItem({ constraint }: Props) {
+export default function ConstraintListItem({
+  constraint,
+  constraintTemplate,
+}: Props) {
   const updateConstraint = useConstraintStore(
     (state) => state.updateConstraint
   );
@@ -150,6 +154,7 @@ export default function ConstraintListItem({ constraint }: Props) {
             <ConstraintButton
               buttonElement={editButton()}
               constraint={constraint}
+              constraintTemplate={constraintTemplate}
             />
             <IconButton edge="end" aria-label="delete" onClick={handleDelete}>
               <ClearIcon />

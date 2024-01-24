@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Dict, List, Literal, Union
+from typing import List, Literal
 
 
 @dataclass
@@ -25,13 +25,33 @@ class VarShift:
     operator: Literal["", "in_target", "out_target"]
     selector: Literal["", "all", "equal"]
     target_ids: List[str]
-    reference_id: str
-    relative_id: str
+    reference_ids: List[str]
+    relative_ids: List[str]
+
+
+@dataclass
+class Block:
+    name: Literal[
+        "operator",
+        "#",
+        "timing",
+        "shift",
+        "worker",
+        "text",
+        "shift_reference",
+        "shift_relative",
+        "weekday",
+    ]
+    type: Literal["string", "number", "list"]
+    value: str | int | List[str]
 
 
 @dataclass
 class ConstraintBuild:
     id: str
+    constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
+    template_id: str
+    blocks: List[Block]
     text: str
     hard: bool
     priority: str
@@ -43,6 +63,7 @@ class ConstraintBuild:
 class Constraint:
     id: str
     constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
+    template_id: str
     operator: Literal[
         "",
         "less_than",
@@ -62,47 +83,30 @@ class Constraint:
     hard: bool
     priority: str
     text: str
-    blocks: Dict
+    blocks: List[Block]
 
 
 @dataclass
-class ConstraintMap:
-    constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
-    operator: Literal[
-        "",
-        "less_than",
-        "less_than_or_equal",
-        "equal",
-        "greater_than_or_equal",
-        "greater_than",
-        "yes",
-        "no",
-    ]
-    target_value: int
-    target_unit: str  # worker, shift, day, hour
-    worker_var: VarWorker
-    day_var: VarDay
-    shift_var: VarShift
-
-
-@dataclass
-class ConstraintTemplateBlock:
+class TemplateBlock:
     name: Literal[
         "operator",
         "#",
         "timing",
         "shift",
         "worker",
+        "text",
+        "shift_reference",
+        "shift_relative",
+        "weekday",
     ]
     type: Literal["string", "number", "list"]
     options: List[str]
     placeholder: str | int
-    multiple: bool
 
 
 @dataclass
-class ConstraintTemplate:
+class Template:
     id: str
     constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
     text: str
-    blocks: List[ConstraintTemplateBlock]
+    blocks: List[TemplateBlock]

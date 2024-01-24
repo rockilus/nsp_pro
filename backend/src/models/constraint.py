@@ -10,7 +10,6 @@ from mongoengine.fields import (
     ListField,
     ReferenceField,
     StringField,
-    DictField,
 )
 
 
@@ -35,8 +34,27 @@ class VarShift(EmbeddedDocument):
     operator = StringField(choices=["", "in_target", "out_target"], default="")
     selector = StringField(choices=["", "all", "equal"], default="")
     target = ListField(ReferenceField("Shift"), default=[])
-    reference = ReferenceField("Shift")
-    relative = ReferenceField("Shift")
+    reference = ListField(ReferenceField("Shift"))
+    relative = ListField(ReferenceField("Shift"))
+
+
+class Block(EmbeddedDocument):
+    name = StringField(
+        required=True,
+        choices=[
+            "operator",
+            "#",
+            "timing",
+            "shift",
+            "worker",
+            "text",
+            "shift_reference",
+            "shift_relative",
+            "weekday",
+        ],
+    )
+    type = StringField(required=True, choices=["string", "number", "list"])
+    value = DynamicField(required=True)
 
 
 # replace constraint/aggregator with type string
@@ -48,6 +66,7 @@ class Constraint(Document):
     constraint_type = StringField(
         required=True, choices=["sum", "seq", "ord", "fil", "fai", "eve"]
     )
+    template_id = StringField(required=True)
     operator = StringField(
         choices=[
             "",
@@ -69,4 +88,4 @@ class Constraint(Document):
     priority = StringField(choices=["", "low", "medium", "high"], default="")
     active = BooleanField(default=True)
     text = StringField(required=True)
-    blocks = DictField()
+    blocks = ListField(EmbeddedDocumentField(Block))

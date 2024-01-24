@@ -172,43 +172,35 @@ class RequestMessage(BaseModel):
 
 
 # Constraint
-class BuildBlockMessage(BaseModel):
+class BlockMessage(BaseModel):
     name: str
-    value: Union[str, int]
-
-
-class NewConstraintMessage(BaseModel):
-    text: str
+    type: str
+    value: str | int | List[str]
 
 
 class ConstraintMessage(BaseModel):
     id: str
+    constraintType: str
+    templateId: str
+    blocks: List[BlockMessage]
     text: str
     hard: bool
     priority: str
     active: bool
 
 
-class TreeNodeMessage(BaseModel):
-    name: str
-    parentOptions: List[str]
-    options: List[str]
-    children: List["TreeNodeMessage"]
-
-
-class ConstraintTemplateBlockMessage(BaseModel):
+class TemplateBlockMessage(BaseModel):
     name: str
     type: str
     options: List[str]
     placeholder: str | int
-    multiple: bool
 
 
-class ConstraintTemplateMessage(BaseModel):
+class TemplateMessage(BaseModel):
     id: str
     constraintType: str
     text: str
-    blocks: List[ConstraintTemplateBlockMessage]
+    blocks: List[TemplateBlockMessage]
 
 
 # Authentication
