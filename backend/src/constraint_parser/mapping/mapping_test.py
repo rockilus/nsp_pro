@@ -16,8 +16,8 @@ class TestConstraintMapping:
         return ConstraintMapping(
             workers,
             shifts,
-            worker_dimensions,
-            shift_dimensions,
+            # worker_dimensions,
+            # shift_dimensions,
         )
 
     @pytest.mark.parametrize(
