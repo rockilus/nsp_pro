@@ -20,7 +20,9 @@ class TestConstraintMapping:
             shift_dimensions,
         )
 
-    @pytest.mark.parametrize("test_case", test_data)
+    @pytest.mark.parametrize(
+        "test_case", test_data, ids=[str(tc['text']) for tc in test_data]
+    )
     def test_constraint_mapping(self, constraint_mapping, test_case):
         constraint = constraint_mapping(test_case["in"])
         assert constraint == test_case["out"]

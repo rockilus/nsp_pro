@@ -11,6 +11,7 @@ from core.constraint import (
 )
 from core.shift import Shift
 from core.worker import Worker
+from utils import Constants
 
 
 class ConstraintMapping:
@@ -67,7 +68,9 @@ class ConstraintMapping:
             id=cstr_build.id,
             constraint_type=cstr_build.constraint_type,
             template_id=cstr_build.template_id,
-            operator=self.get_constraint_operator(cstr_build.blocks),
+            operator=self.get_constraint_operator(
+                cstr_build.blocks, cstr_build.constraint_type
+            ),
             target_value=self.get_constraint_target_value(cstr_build.blocks),
             target_unit="",
             worker_var=var_worker,
@@ -106,7 +109,9 @@ class ConstraintMapping:
             id=cstr_build.id,
             constraint_type=cstr_build.constraint_type,
             template_id=cstr_build.template_id,
-            operator=self.get_constraint_operator(cstr_build.blocks),
+            operator=self.get_constraint_operator(
+                cstr_build.blocks, cstr_build.constraint_type
+            ),
             target_value=self.get_constraint_target_value(cstr_build.blocks),
             target_unit="",
             worker_var=var_worker,
@@ -128,11 +133,11 @@ class ConstraintMapping:
             num_eligible_workers=0,
         )
         var_day = VarDay(
-            selector="all",
-            target=0,
+            selector=self.get_day_selector(cstr_build.blocks),
+            target=self.get_day_target(cstr_build.blocks),
             start_date=date.today(),
             end_date=date.today(),
-            interval=self.get_constraint_target_value(cstr_build.blocks),
+            interval=self.get_day_interval(cstr_build.blocks),
         )
         var_shift = VarShift(
             operator="",
@@ -149,7 +154,9 @@ class ConstraintMapping:
             id=cstr_build.id,
             constraint_type="ord",
             template_id=cstr_build.template_id,
-            operator=self.get_constraint_operator(cstr_build.blocks),
+            operator=self.get_constraint_operator(
+                cstr_build.blocks, cstr_build.constraint_type
+            ),
             target_value=0,
             target_unit="",
             worker_var=var_worker,
@@ -206,8 +213,32 @@ class ConstraintMapping:
         if timing_block:
             if timing_block.value == "per week":
                 return "week"
+            elif timing_block.value in ["before", "after"]:
+                weekday_block = self.find_block_by_name(blocks, "weekday")
+                if weekday_block:
+                    return "week_day_index"
+                return "all"
             raise ValueError(f"Operator {timing_block.value} not recognized")
         raise ValueError("Timing block not found")
+
+    def get_day_target(self, blocks: List[Block]) -> int:
+        if self.get_day_selector(blocks) != "week_day_index":
+            return 0
+        weekday_block = self.find_block_by_name(blocks, "weekday")
+        if weekday_block:
+            if weekday_block.value in Constants.WEEK_DAYS:
+                return Constants.WEEK_DAYS.index(weekday_block.value)
+            raise ValueError(f"Weekday {weekday_block.value} not recognized")
+        raise ValueError("Weekday block not found")
+
+    def get_day_interval(self, blocks: List[Block]) -> int:
+        timing_block = self.find_block_by_name(blocks, "timing")
+        if timing_block:
+            if timing_block.value == "before":
+                return self.get_constraint_target_value(blocks) * -1
+            elif timing_block.value == "after":
+                return self.get_constraint_target_value(blocks)
+        return 0
 
     # VarShift
     def get_shift_selector(self, blocks: List[Block]) -> str:
@@ -269,12 +300,16 @@ class ConstraintMapping:
         return None
 
     # Constraint
-    def get_constraint_operator(self, blocks: List[Block]) -> str:
+    def get_constraint_operator(
+        self, blocks: List[Block], cstr_type: str
+    ) -> str:
         operator_block = self.find_block_by_name(blocks, "operator")
         if operator_block:
             if not isinstance(operator_block.value, str):
                 raise ValueError("Operator block value is not a string")
             return self.convert_operator(operator_block.value)
+        elif cstr_type == "ord":
+            return "yes"
         raise ValueError("Operator not found")
 
     @staticmethod

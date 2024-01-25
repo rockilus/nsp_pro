@@ -149,8 +149,8 @@ worker_dimensions = {"surgeon": ["1", "2"], "60+": ["4", "5"]}
 
 
 test_data = [
-    # "John should work at most 2 consecutive days off"
     {
+        "text": "John should work at most 2 consecutive off.",
         "in": ConstraintBuild(
             id="",
             constraint_type="seq",
@@ -192,8 +192,8 @@ test_data = [
                 operator="",
                 selector="equal",
                 target_ids=["0"],
-                reference_ids="",
-                relative_ids="",
+                reference_ids=[],
+                relative_ids=[],
             ),
             active=True,
             hard=True,
@@ -209,8 +209,8 @@ test_data = [
             ],
         ),
     },
-    # "John should work at least 1 off per week"
     {
+        "text": "John should work at least 1 off per week.",
         "in": ConstraintBuild(
             id="",
             constraint_type="sum",
@@ -252,8 +252,8 @@ test_data = [
                 operator="",
                 selector="equal",
                 target_ids=["0"],
-                reference_ids="",
-                relative_ids="",
+                reference_ids=[],
+                relative_ids=[],
             ),
             active=True,
             hard=True,
@@ -269,14 +269,12 @@ test_data = [
             ],
         ),
     },
-    # "No shift night on day after afternoon for John"
-    # "No shift night 2 days after afternoon for John"
-    # "No shift night on day before afternoon for John"
     {
+        "text": "No night 1 day after afternoon for john.",
         "in": ConstraintBuild(
             id="",
             constraint_type="ord",
-            template_id="3",
+            template_id="2",
             blocks=[
                 Block(name="operator", type="string", value="no"),
                 Block(name="shift_reference", type="list", value=["night"]),
@@ -294,10 +292,10 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="sum",
-            template_id="1",
-            operator="greater_than_or_equal",
-            target_value=1,
+            constraint_type="ord",
+            template_id="2",
+            operator="no",
+            target_value=0,
             target_unit="",
             worker_var=VarWorker(
                 operator="",
@@ -306,23 +304,23 @@ test_data = [
                 num_eligible_workers=0,
             ),
             day_var=VarDay(
-                selector="week",
+                selector="all",
                 target=0,
                 start_date=date.today(),
                 end_date=date.today(),
-                interval=0,
+                interval=1,
             ),
             shift_var=VarShift(
                 operator="",
-                selector="equal",
-                target_ids=["0"],
-                reference_ids="",
-                relative_ids="",
+                selector="all",
+                target_ids=[],
+                reference_ids=["3"],
+                relative_ids=["2"],
             ),
             active=True,
             hard=True,
             priority="medium",
-            text="John should work at least 1 off per week.",
+            text="No night 1 day after afternoon for john.",
             blocks=[
                 Block(name="operator", type="string", value="no"),
                 Block(name="shift_reference", type="list", value=["night"]),
@@ -335,9 +333,8 @@ test_data = [
             ],
         ),
     },
-    # "If shift night, then off next day for John"
-    # "If shift night, then off 2 days after for John"
     {
+        "text": "If night then off 1 day after for john.",
         "in": ConstraintBuild(
             id="",
             constraint_type="ord",
@@ -360,10 +357,10 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="sum",
-            template_id="1",
-            operator="greater_than_or_equal",
-            target_value=1,
+            constraint_type="ord",
+            template_id="3",
+            operator="yes",
+            target_value=0,
             target_unit="",
             worker_var=VarWorker(
                 operator="",
@@ -372,23 +369,23 @@ test_data = [
                 num_eligible_workers=0,
             ),
             day_var=VarDay(
-                selector="week",
+                selector="all",
                 target=0,
                 start_date=date.today(),
                 end_date=date.today(),
-                interval=0,
+                interval=1,
             ),
             shift_var=VarShift(
                 operator="",
-                selector="equal",
-                target_ids=["0"],
-                reference_ids="",
-                relative_ids="",
+                selector="all",
+                target_ids=[],
+                reference_ids=["3"],
+                relative_ids=["0"],
             ),
             active=True,
             hard=True,
             priority="medium",
-            text="John should work at least 1 off per week.",
+            text="If night then off 1 day after for john.",
             blocks=[
                 Block(name="text", type="string", value="if"),
                 Block(name="shift_reference", type="list", value=["night"]),
@@ -402,12 +399,12 @@ test_data = [
             ],
         ),
     },
-    # "If morning on saturday, then off 2 days afer for John"
     {
+        "text": "If morning on saturday then off 2 day after for john.",
         "in": ConstraintBuild(
             id="",
             constraint_type="ord",
-            template_id="3",
+            template_id="4",
             blocks=[
                 Block(name="text", type="string", value="if"),
                 Block(name="shift_reference", type="list", value=["morning"]),
@@ -428,10 +425,10 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="sum",
-            template_id="1",
-            operator="greater_than_or_equal",
-            target_value=1,
+            constraint_type="ord",
+            template_id="4",
+            operator="yes",
+            target_value=0,
             target_unit="",
             worker_var=VarWorker(
                 operator="",
@@ -440,23 +437,23 @@ test_data = [
                 num_eligible_workers=0,
             ),
             day_var=VarDay(
-                selector="week",
-                target=0,
+                selector="week_day_index",
+                target=5,
                 start_date=date.today(),
                 end_date=date.today(),
-                interval=0,
+                interval=2,
             ),
             shift_var=VarShift(
                 operator="",
-                selector="equal",
-                target_ids=["0"],
-                reference_ids="",
-                relative_ids="",
+                selector="all",
+                target_ids=[],
+                reference_ids=["1"],
+                relative_ids=["0"],
             ),
             active=True,
             hard=True,
             priority="medium",
-            text="John should work at least 1 off per week.",
+            text="If morning on saturday then off 2 day after for john.",
             blocks=[
                 Block(name="text", type="string", value="if"),
                 Block(name="shift_reference", type="list", value=["morning"]),
@@ -467,6 +464,76 @@ test_data = [
                 Block(name="#", type="number", value=2),
                 Block(name="text", type="string", value="day"),
                 Block(name="timing", type="string", value="after"),
+                Block(name="text", type="string", value="for"),
+                Block(name="worker", type="list", value=["John"]),
+            ],
+        ),
+    },
+    {
+        "text": "If morning on saturday then off 2 day before for john.",
+        "in": ConstraintBuild(
+            id="",
+            constraint_type="ord",
+            template_id="4",
+            blocks=[
+                Block(name="text", type="string", value="if"),
+                Block(name="shift_reference", type="list", value=["morning"]),
+                Block(name="text", type="string", value="on"),
+                Block(name="weekday", type="string", value="saturday"),
+                Block(name="text", type="string", value="then"),
+                Block(name="shift_relative", type="list", value=["off"]),
+                Block(name="#", type="number", value=2),
+                Block(name="text", type="string", value="day"),
+                Block(name="timing", type="string", value="before"),
+                Block(name="text", type="string", value="for"),
+                Block(name="worker", type="list", value=["John"]),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+        ),
+        "out": Constraint(
+            id="",
+            constraint_type="ord",
+            template_id="4",
+            operator="yes",
+            target_value=0,
+            target_unit="",
+            worker_var=VarWorker(
+                operator="",
+                selector="equal",
+                target_ids=["0"],
+                num_eligible_workers=0,
+            ),
+            day_var=VarDay(
+                selector="week_day_index",
+                target=5,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=-2,
+            ),
+            shift_var=VarShift(
+                operator="",
+                selector="all",
+                target_ids=[],
+                reference_ids=["1"],
+                relative_ids=["0"],
+            ),
+            active=True,
+            hard=True,
+            priority="medium",
+            text="If morning on saturday then off 2 day before for john.",
+            blocks=[
+                Block(name="text", type="string", value="if"),
+                Block(name="shift_reference", type="list", value=["morning"]),
+                Block(name="text", type="string", value="on"),
+                Block(name="weekday", type="string", value="saturday"),
+                Block(name="text", type="string", value="then"),
+                Block(name="shift_relative", type="list", value=["off"]),
+                Block(name="#", type="number", value=2),
+                Block(name="text", type="string", value="day"),
+                Block(name="timing", type="string", value="before"),
                 Block(name="text", type="string", value="for"),
                 Block(name="worker", type="list", value=["John"]),
             ],
