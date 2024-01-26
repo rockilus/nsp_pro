@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Literal, Tuple
 
 
 @dataclass
@@ -10,13 +10,13 @@ class Constants:
     NUM_HOURS_DAY: int = 24
     NUM_DAYS_WEEK: int = 7
     WEEK_DAYS: Tuple[str, ...] = (
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
     )
     HARD_TO_SOFT: bool = True
     ENGINE_STRING_DATE_FORMAT: str = "%Y-%m-%d"
@@ -28,3 +28,40 @@ class Constants:
     SECRET_KEY: str = "485987f47ca94097327988d802aa07fc6df623f3345e52df85b5c7fd395897f6"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    # Constraint Parser
+    SHIFT_PATTERN_LABEL: str = "SHIFT"
+    WORKER_PATTERN_LABEL: str = "WORKER"
+    VAR_COORD_PATTERN_LABEL: Tuple[str, ...] = (
+        SHIFT_PATTERN_LABEL,
+        WORKER_PATTERN_LABEL,
+    )
+    OPERATOR_PATTERN_LABEL: str = "OPERATOR"
+    TIMING_PATTERN_LABEL: str = "TIMING"
+    NAME_BLOCK_LABEL: str = "name"
+    QUANTITY_BLOCK_LABEL: str = "quantity"
+    REFERENCE_BLOCK_LABEL: str = "reference"
+    CONNECTOR_BLOCK_LABEL: str = "connector"
+    BLOCK_NAME_OPTIONS = Literal[
+        "operator",
+        "#",
+        "timing",
+        "shift",
+        "worker",
+        "text",
+        "shift_reference",
+        "shift_relative",
+        "weekday",
+    ]
+    CONSTRAINT_OPERATOR_OPTIONS = Literal[
+        "",
+        "less_than",
+        "less_than_or_equal",
+        "equal",
+        "greater_than_or_equal",
+        "greater_than",
+        "yes",
+        "no",
+    ]
+    VAR_WORKER_SELECTOR_OPTIONS = Literal["all", "equal"]
+    VAR_DAY_SELECTOR_OPTIONS = Literal["all", "week", "period", "week_day_index"]
+    VAR_SHIFT_SELECTOR_OPTIONS = Literal["all", "equal"]

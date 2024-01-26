@@ -44,8 +44,8 @@ class TestConstraint:
                 operator="",
                 selector="all",
                 target=[],
-                reference="s1",
-                relative="s0",
+                reference=["s1"],
+                relative=["s0"],
             ),
             hard=True,
             hard_to_soft=False,
@@ -74,8 +74,8 @@ class TestConstraint:
                 operator="",
                 selector="all",
                 target=[],
-                reference="s1",
-                relative="s0",
+                reference=["s1"],
+                relative=["s0"],
             ),
             hard=False,
             hard_to_soft=False,
@@ -109,7 +109,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative
+        assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
 
     def test_expected_assignment_for_yes(
         self,
@@ -117,7 +117,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         engine_solve: Callable[[Inputs], Outputs],
         constraint_ord_hard: Constraint,
     ) -> None:
-        # No shift s0 after shift s1
+        # Shift s3 after shift s1
         fixed_assignments = [
             Assignment(
                 worker_id="w0",
@@ -126,7 +126,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             ),
         ]
         constraint_ord_hard.operator = "yes"
-        constraint_ord_hard.shift_var.relative = "s3"
+        constraint_ord_hard.shift_var.relative = ["s3"]
         inputs.constraints = [constraint_ord_hard]
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
@@ -138,7 +138,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert next_assignment.shift_id == constraint_ord_hard.shift_var.relative
+        assert next_assignment.shift_id == constraint_ord_hard.shift_var.relative[0]
 
     def test_no_solution_for_no_if_conflict(
         self,
@@ -186,7 +186,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         ]
         inputs.constraints = [constraint_ord_hard]
         constraint_ord_hard.operator = "yes"
-        constraint_ord_hard.shift_var.relative = "s3"
+        constraint_ord_hard.shift_var.relative = ["s3"]
         inputs.fixed_assignments = fixed_assignments
         outputs = engine_solve(inputs)
 
@@ -233,7 +233,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
-            next_assignment.shift_id != constraint_ord_hard.shift_var.relative
+            next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
             for next_assignment in next_assignments
         )
 
@@ -279,7 +279,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
-            next_assignment.shift_id == constraint_ord_hard.shift_var.relative
+            next_assignment.shift_id == constraint_ord_hard.shift_var.relative[0]
             for next_assignment in next_assignments
         )
 
@@ -324,7 +324,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
-            next_assignment.shift_id != constraint_ord_hard.shift_var.relative
+            next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
             for next_assignment in next_assignments
         )
 
@@ -370,7 +370,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
-            next_assignment.shift_id == constraint_ord_hard.shift_var.relative
+            next_assignment.shift_id == constraint_ord_hard.shift_var.relative[0]
             for next_assignment in next_assignments
         )
 
@@ -435,7 +435,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
-            next_assignment.shift_id != constraint_ord_hard.shift_var.relative
+            next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
             for next_assignment in next_assignments
         )
 
@@ -499,7 +499,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
-            next_assignment.shift_id == constraint_ord_hard.shift_var.relative
+            next_assignment.shift_id == constraint_ord_hard.shift_var.relative[0]
             for next_assignment in next_assignments
         )
 
@@ -562,7 +562,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
-            next_assignment.shift_id != constraint_ord_hard.shift_var.relative
+            next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
             for next_assignment in next_assignments
         )
 
@@ -626,7 +626,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
         ]
         assert (
-            next_assignment.shift_id == constraint_ord_hard.shift_var.relative
+            next_assignment.shift_id == constraint_ord_hard.shift_var.relative[0]
             for next_assignment in next_assignments
         )
 
@@ -668,7 +668,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert next_assignment.shift_id != constraint_ord_soft.shift_var.relative
+        assert next_assignment.shift_id != constraint_ord_soft.shift_var.relative[0]
         assert outputs.objective_value == 1
 
     def test_expected_assignment_for_yes(
@@ -696,7 +696,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             ),
         ]
         constraint_ord_soft.operator = "yes"
-        constraint_ord_soft.shift_var.relative = "s3"
+        constraint_ord_soft.shift_var.relative = ["s3"]
         inputs.constraints = [constraint_ord_soft]
         inputs.fixed_assignments = fixed_assignments
         inputs.requests = requests
@@ -709,7 +709,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert next_assignment.shift_id == constraint_ord_soft.shift_var.relative
+        assert next_assignment.shift_id == constraint_ord_soft.shift_var.relative[0]
         assert outputs.objective_value == 1
 
     def test_expected_assignment_for_hard_soft_conflict(
@@ -742,7 +742,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             if a.worker_id == fixed_assignments[0].worker_id
             and a.date == fixed_assignments[0].date + timedelta(days=1)
         ][0]
-        assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative
+        assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
 
     def test_expected_objective_for_hard_soft_conflict(
         self,
@@ -796,12 +796,12 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             (
                 fixed_assignments[0].worker_id,
                 fixed_assignments[0].date,
-                constraint_ord_soft.shift_var.reference,
+                constraint_ord_soft.shift_var.reference[0],
             ),
             (
                 fixed_assignments[0].worker_id,
                 fixed_assignments[0].date + timedelta(days=1),
-                constraint_ord_soft.shift_var.relative,
+                constraint_ord_soft.shift_var.relative[0],
             ),
         ]
 

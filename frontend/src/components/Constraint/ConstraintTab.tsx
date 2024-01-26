@@ -6,9 +6,9 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
 import ConstraintList from "./ConstraintList";
-import ConstraintButton from "./ConstraintButton";
+import NewConstraint from "./NewConstraint";
 import { useConstraintStore } from "../../stores/constraintStore";
-import { useConstraintTreeStore } from "../../stores/constraintTreeStore";
+import { useConstraintTemplateStore } from "../../stores/constraintTemplateStore";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 
 interface Props {
@@ -18,23 +18,21 @@ interface Props {
 
 export default function ConstraintTab({ workers, shifts }: Props) {
   const constraints = useConstraintStore((state) => state.constraints);
-  const constraintTree = useConstraintTreeStore(
-    (state) => state.constraintTree
-  );
   const fetchConstraints = useConstraintStore(
     (state) => state.fetchConstraints
   );
-  const fetchConstraintTree = useConstraintTreeStore(
-    (state) => state.fetchConstraintTree
+
+  const constraintTemplates = useConstraintTemplateStore(
+    (state) => state.constraintTemplates
+  );
+  const fetchConstraintTemplates = useConstraintTemplateStore(
+    (state) => state.fetchConstraintTemplates
   );
 
   useEffect(() => {
     fetchConstraints();
-  }, [fetchConstraints]);
-
-  useEffect(() => {
-    fetchConstraintTree();
-  }, [fetchConstraintTree]);
+    fetchConstraintTemplates();
+  }, [fetchConstraints, fetchConstraintTemplates]);
 
   const createButton = () => {
     return (
@@ -49,24 +47,10 @@ export default function ConstraintTab({ workers, shifts }: Props) {
       <Typography variant="h4" align="left" color="black">
         Constraints Configuration
       </Typography>
-      <ConstraintButton
-        buttonElement={createButton()}
-        constraint={{
-          id: "",
-          buildBlocks: [],
-          hard: true,
-          priority: "",
-          active: true,
-        }}
-        tree={constraintTree}
-        workers={workers}
-        shifts={shifts}
-      />
+      <NewConstraint constraintTemplates={constraintTemplates} />
       <ConstraintList
         constraints={constraints}
-        tree={constraintTree}
-        workers={workers}
-        shifts={shifts}
+        constraintTemplates={constraintTemplates}
       />
     </Box>
   );

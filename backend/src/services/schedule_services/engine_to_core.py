@@ -141,8 +141,12 @@ def _build_description_cb_ord(
     workers_id = set(v[0] for v in cb.variables)
     d_reference, d_relative = cb.variables[0][1], cb.variables[1][1]
     workers = [worker_db.get_worker_by_id(w_id) for w_id in workers_id]
-    s_reference = shift_db.get_shift_by_id(constraint.shift_var.reference_id)
-    s_relative = shift_db.get_shift_by_id(constraint.shift_var.relative_id)
+    s_reference = [
+        shift_db.get_shift_by_id(s_id) for s_id in constraint.shift_var.reference_ids
+    ]
+    s_relative = [
+        shift_db.get_shift_by_id(s_id) for s_id in constraint.shift_var.relative_ids
+    ]
     a_d_relative = next(
         (a for a in assignments if a.worker_id in workers_id and a.date == d_relative),
         None,
@@ -159,10 +163,12 @@ def _build_description_cb_ord(
         "day" if abs(constraint.day_var.interval) <= 1 else "days",
         "after" if constraint.day_var.interval >= 0 else "before",
         "shift",
-        s_reference.name,
+        ", ".join([s.name for s in s_reference]),
         "on",
         d_reference.strftime("%b %d"),
-        f"instead of shift {s_relative.name}" if constraint.operator == "yes" else "",
+        f"instead of shift {', '.join([s.name for s in s_relative])}"
+        if constraint.operator == "yes"
+        else "",
         "for",
         " ".join([w.name for w in workers]),
     ]

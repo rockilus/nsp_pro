@@ -43,18 +43,26 @@ class AddConstraintEve(AddConstraint):
                 "Expected a list of strings, "
                 + f"but got {format(type(d_vars))} instead."
             )
+        if not all(isinstance(item, str) for item in s_vars):
+            raise TypeError(
+                "Expected a list of strings, "
+                + f"but got {format(type(s_vars))} instead."
+            )
         target_average = get_average_nb_shifts_per_worker(
             coverage,
             constraint.worker_var.num_eligible_workers,
             d_vars,  # type: ignore
-            s_vars,
+            s_vars,  # type: ignore
         )
         period_lengths = AddConstraintEve.integer_division_list(
             len(self.days), int(target_average)
         )
         for w in w_vars:
             constraints_sum = self.convert_constraint_eve_to_constraints_sum(
-                constraint, w, s_vars[0], period_lengths
+                constraint,
+                w,
+                s_vars[0],  # type: ignore
+                period_lengths,
             )
             for constraint_sum in constraints_sum:
                 self.add_constraint_sum.add_constraint(constraint_sum)
@@ -95,8 +103,8 @@ class AddConstraintEve(AddConstraint):
                         operator="",
                         selector="equal",
                         target=[target_shift],
-                        reference="",
-                        relative="",
+                        reference=[],
+                        relative=[],
                     ),
                     hard=False,
                     hard_to_soft=constraint.hard_to_soft,

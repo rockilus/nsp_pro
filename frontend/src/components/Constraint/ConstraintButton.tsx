@@ -4,23 +4,19 @@ import Box from "@mui/material/Box";
 import Menu from "@mui/material/Menu";
 
 import ConstraintPanel from "./ConstraintPanel";
-import { ConstraintT, TreeNodeT } from "./types";
-import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
+import ConstraintEdit from "./ConstraintEdit";
+import { ConstraintT, TemplateT } from "./types";
 
 interface Props {
   buttonElement: React.ReactNode;
   constraint: ConstraintT;
-  tree: TreeNodeT;
-  workers: WorkerIdNameT[];
-  shifts: ShiftIdNameT[];
+  constraintTemplate: TemplateT | null;
 }
 
 export default function ConstraintButton({
   buttonElement,
   constraint,
-  tree,
-  workers,
-  shifts,
+  constraintTemplate,
 }: Props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -53,13 +49,11 @@ export default function ConstraintButton({
           },
         }}
       >
-        <ConstraintPanel
+        <ConstraintEdit
           constraint={constraint}
-          tree={tree}
-          workers={workers}
-          shifts={shifts}
-          handleClose={handleClose}
+          constraintTemplate={constraintTemplate}
         />
+        {/* <ConstraintPanel constraint={constraint} handleClose={handleClose} /> */}
       </Menu>
     </Box>
   );

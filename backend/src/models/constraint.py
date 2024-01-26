@@ -34,12 +34,27 @@ class VarShift(EmbeddedDocument):
     operator = StringField(choices=["", "in_target", "out_target"], default="")
     selector = StringField(choices=["", "all", "equal"], default="")
     target = ListField(ReferenceField("Shift"), default=[])
-    reference = ReferenceField("Shift")
-    relative = ReferenceField("Shift")
+    reference = ListField(ReferenceField("Shift"))
+    relative = ListField(ReferenceField("Shift"))
 
 
-class BuildBlock(EmbeddedDocument):
-    name = StringField(required=True)
+class Block(EmbeddedDocument):
+    name = StringField(
+        required=True,
+        # pylint: disable = R0801
+        choices=[
+            "operator",
+            "#",
+            "timing",
+            "shift",
+            "worker",
+            "text",
+            "shift_reference",
+            "shift_relative",
+            "weekday",
+        ],
+    )
+    type = StringField(required=True, choices=["string", "number", "list"])
     value = DynamicField(required=True)
 
 
@@ -52,12 +67,16 @@ class Constraint(Document):
     constraint_type = StringField(
         required=True, choices=["sum", "seq", "ord", "fil", "fai", "eve"]
     )
+    template_id = StringField(required=True)
     operator = StringField(
+        # pylint: disable = R0801
         choices=[
             "",
+            "less_than",
             "less_than_or_equal",
             "equal",
             "greater_than_or_equal",
+            "greater_than",
             "yes",
             "no",
         ],
@@ -70,4 +89,5 @@ class Constraint(Document):
     hard = BooleanField(required=True)
     priority = StringField(choices=["", "low", "medium", "high"], default="")
     active = BooleanField(default=True)
-    build_blocks = ListField(EmbeddedDocumentField(BuildBlock))
+    text = StringField(required=True)
+    blocks = ListField(EmbeddedDocumentField(Block))

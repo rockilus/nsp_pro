@@ -1,19 +1,38 @@
 export type ConstraintT = {
   id: string;
-  buildBlocks: BuildBlockT[];
+  constraintType: string;
+  templateId: string;
+  blocks: BlockT[];
+  text: string;
   hard: boolean;
   priority: string;
   active: boolean;
 };
 
-export type TreeNodeT = {
+export type BlockT = {
   name: string;
-  parentOptions: Array<string | number>;
-  options: string[];
-  children: TreeNodeT[];
+  type: string;
+  value: string | number | string[];
 };
 
-export type BuildBlockT = {
+export type TemplateBlockT = {
   name: string;
-  value: string | number;
+  type: string;
+  options: string[];
+  placeholder: string | number;
+};
+
+export type TemplateT = {
+  id: string;
+  constraintType: string;
+  text: string;
+  blocks: TemplateBlockT[];
+};
+
+// higher darker
+export type ConstraintColorsT = {
+  shade0: string;
+  shade1: string;
+  shade2: string;
+  shade3: string;
 };

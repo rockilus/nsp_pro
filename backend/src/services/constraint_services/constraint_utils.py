@@ -1,5 +1,7 @@
 from typing import Dict, List
 
+from core.constraint import Constraint, ConstraintBuild
+
 
 def get_var_value(constraint: Dict, constraint_variables: List[Dict]) -> str:
     variables: Dict[str, List] = {
@@ -64,3 +66,12 @@ def get_other_var_value(constraint_variables: List[Dict]) -> str:
     )
     other_var_value = variables[constraint_var["param"]][constraint_var["other_value"]]
     return other_var_value
+
+
+def update_constraint_same_text(
+    cstr_build: ConstraintBuild, constraint: Constraint
+) -> Constraint:
+    constraint.hard = cstr_build.hard
+    constraint.priority = cstr_build.priority
+    constraint.active = cstr_build.active
+    return constraint

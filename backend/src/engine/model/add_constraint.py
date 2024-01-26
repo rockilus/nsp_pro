@@ -33,7 +33,11 @@ class AddConstraint:
         self,
         constraint: Constraint,
         shifts_in_coverage: Union[Set[str], None] = None,
-    ) -> Tuple[List[str], Union[List[str], List[List[str]]], List[str]]:
+    ) -> Tuple[
+        List[str],
+        Union[List[str], List[List[str]]],
+        List[str] | List[List[str]],
+    ]:
         return (
             self._get_coords_workers(constraint),
             self._get_coords_days(constraint),
@@ -155,7 +159,9 @@ class AddConstraint:
         self,
         constraint: Constraint,
         shifts_in_coverage: Union[Set[str], None] = None,
-    ) -> List[str]:
+    ) -> List[str] | List[List[str]]:
+        if constraint.constraint_type == "ord":
+            return self._get_coords_shifts_ord(constraint)
         if constraint.shift_var.selector == "all":
             if shifts_in_coverage is not None:
                 return [s for s in self.shifts if s in shifts_in_coverage]
@@ -175,6 +181,13 @@ class AddConstraint:
         if constraint.shift_var.operator == "in_target":
             return constraint.shift_var.target
         return [s for s in self.shifts if s not in constraint.shift_var.target]
+
+    def _get_coords_shifts_ord(self, constraint: Constraint) -> List[List[str]]:
+        return [
+            [s_ref, s_rel]
+            for s_ref in constraint.shift_var.reference
+            for s_rel in constraint.shift_var.relative
+        ]
 
     @staticmethod
     def _build_weeks_day_index_list(

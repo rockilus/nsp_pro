@@ -237,8 +237,8 @@ def _core_to_engine_var_shift(var_shift: VarShift) -> VarShiftEngine:
         operator=var_shift.operator,
         selector=var_shift.selector,
         target=var_shift.target_ids,
-        reference=var_shift.reference_id,
-        relative=var_shift.relative_id,
+        reference=var_shift.reference_ids,
+        relative=var_shift.relative_ids,
     )
 
 

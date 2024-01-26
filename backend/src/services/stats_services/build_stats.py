@@ -70,7 +70,7 @@ class BuildStats:
         return [
             Stat(
                 worker_id=self.worker_ids[w],
-                name=Constants.WEEK_DAYS[d],
+                name=Constants.WEEK_DAYS[d].capitalize(),
                 cluster="Worked days",
                 value=out[w, d],
             )
