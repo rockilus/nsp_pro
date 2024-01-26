@@ -1,3 +1,4 @@
+# pylint: disable = too-many-lines
 from datetime import date, datetime
 
 from core.constraint import (

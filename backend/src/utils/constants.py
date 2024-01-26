@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Literal, Tuple
 
 
 @dataclass
@@ -41,3 +41,27 @@ class Constants:
     QUANTITY_BLOCK_LABEL: str = "quantity"
     REFERENCE_BLOCK_LABEL: str = "reference"
     CONNECTOR_BLOCK_LABEL: str = "connector"
+    BLOCK_NAME_OPTIONS = Literal[
+        "operator",
+        "#",
+        "timing",
+        "shift",
+        "worker",
+        "text",
+        "shift_reference",
+        "shift_relative",
+        "weekday",
+    ]
+    CONSTRAINT_OPERATOR_OPTIONS = Literal[
+        "",
+        "less_than",
+        "less_than_or_equal",
+        "equal",
+        "greater_than_or_equal",
+        "greater_than",
+        "yes",
+        "no",
+    ]
+    VAR_WORKER_SELECTOR_OPTIONS = Literal["all", "equal"]
+    VAR_DAY_SELECTOR_OPTIONS = Literal["all", "week", "period", "week_day_index"]
+    VAR_SHIFT_SELECTOR_OPTIONS = Literal["all", "equal"]

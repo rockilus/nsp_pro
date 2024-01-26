@@ -1,31 +1,36 @@
 from typing import List
 
+from constraint_parser.mapping.map_day import MapDay
+from constraint_parser.mapping.map_shift import MapShift
+from constraint_parser.mapping.map_worker import MapWorker
 from constraint_parser.mapping.utils import find_block_by_name
-from core.constraint import (
-    Block,
-    Constraint,
-    ConstraintBuild,
-    VarDay,
-    VarShift,
-    VarWorker,
-)
+from core.constraint import Block, Constraint, ConstraintBuild
+from core.shift import Shift
+from core.worker import Worker
+from utils.constants import Constants
 
 
 class MapConstaint:
-    def __call__(
+    def __init__(
         self,
-        cstr_build: ConstraintBuild,
-        var_worker: VarWorker,
-        var_day: VarDay,
-        var_shift: VarShift,
-    ) -> Constraint:
+        workers: List[Worker],
+        shifts: List[Shift],
+    ) -> None:
+        self.workers = workers
+        self.shifts = shifts
+        self.map_worker = MapWorker(workers)
+        self.map_day = MapDay()
+        self.map_shift = MapShift(shifts)
+
+    def __call__(self, cstr_build: ConstraintBuild) -> Constraint:
+        var_worker = self.map_worker(cstr_build)
+        var_day = self.map_day(cstr_build)
+        var_shift = self.map_shift(cstr_build)
         return Constraint(
             id=cstr_build.id,
             constraint_type=cstr_build.constraint_type,
             template_id=cstr_build.template_id,
-            operator=self.get_operator(
-                cstr_build.blocks, cstr_build.constraint_type
-            ),
+            operator=self.get_operator(cstr_build.blocks, cstr_build.constraint_type),
             target_value=self.get_target_value(
                 cstr_build.blocks, cstr_build.constraint_type
             ),
@@ -40,13 +45,15 @@ class MapConstaint:
             blocks=cstr_build.blocks,
         )
 
-    def get_operator(self, blocks: List[Block], cstr_type: str) -> str:
+    def get_operator(
+        self, blocks: List[Block], cstr_type: str
+    ) -> Constants.CONSTRAINT_OPERATOR_OPTIONS:
         operator_block = find_block_by_name(blocks, "operator")
         if operator_block:
             if not isinstance(operator_block.value, str):
                 raise ValueError("Operator block value is not a string")
             return self.convert_operator(operator_block.value)
-        elif cstr_type == "ord":
+        if cstr_type == "ord":
             return "yes"
         raise ValueError("Operator not found")
 
@@ -61,7 +68,9 @@ class MapConstaint:
         raise ValueError("Target value not found")
 
     @staticmethod
-    def convert_operator(operator: str) -> str:
+    def convert_operator(
+        operator: str,
+    ) -> Constants.CONSTRAINT_OPERATOR_OPTIONS:
         operator_mod = operator.lower().replace(" ", "_")
         if operator_mod in ["less_than"]:
             return "less_than"
@@ -77,7 +86,7 @@ class MapConstaint:
         if operator_mod in ["greater_than_or_equal", "at_least"]:
             return "greater_than_or_equal"
         if operator_mod in ["yes", "no"]:
-            return operator_mod
+            return operator_mod  # type: ignore
         raise ValueError(f"Operator {operator} not recognized")
 
     @staticmethod

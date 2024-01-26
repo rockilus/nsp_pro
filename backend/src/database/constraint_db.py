@@ -70,9 +70,7 @@ def to_mongo_var_worker(dataclass_obj: VarWorker) -> VarWorkerDocument:
     if len(dataclass_obj.target_ids) > 0:
         # pylint: disable=no-member
         workers = [
-            WorkerDocument.objects.get(  # type: ignore
-                id__in=dataclass_obj.target_ids
-            )
+            WorkerDocument.objects.get(id__in=dataclass_obj.target_ids)  # type: ignore
         ]
     return VarWorkerDocument(
         operator=dataclass_obj.operator,
@@ -111,14 +109,10 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
     if len(dataclass_obj.relative_ids) > 0:
         # pylint: disable=no-member
         relative_s = [
-            ShiftDocument.objects.get(  # type: ignore
-                id__in=dataclass_obj.relative_ids
-            )
+            ShiftDocument.objects.get(id__in=dataclass_obj.relative_ids)  # type: ignore
         ]
     return VarShiftDocument(
-        operator=dataclass_obj.operator
-        if dataclass_obj.operator != ""
-        else None,
+        operator=dataclass_obj.operator if dataclass_obj.operator != "" else None,
         selector=dataclass_obj.selector,
         target=shifts,
         reference=reference_s,
@@ -170,12 +164,8 @@ def _from_mongo_var_day(doc_obj: VarDayDocument) -> VarDay:
     return VarDay(
         selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
         target=doc_obj.target,
-        start_date=datetime.combine(
-            doc_obj.start_date, datetime.min.time()
-        ).date(),
-        end_date=datetime.combine(
-            doc_obj.end_date, datetime.min.time()
-        ).date(),
+        start_date=datetime.combine(doc_obj.start_date, datetime.min.time()).date(),
+        end_date=datetime.combine(doc_obj.end_date, datetime.min.time()).date(),
         interval=doc_obj.interval,
     )
 

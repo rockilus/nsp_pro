@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Dict, List, Literal, Tuple
 
+from utils.constants import Constants
+
 ##############################
 # Inputs
 
@@ -67,8 +69,8 @@ class VarShift:
     operator: Literal["", "in_target", "out_target"]
     selector: Literal["", "all", "equal"]
     target: List[str]
-    reference: str
-    relative: str
+    reference: List[str]
+    relative: List[str]
 
 
 @dataclass
@@ -76,14 +78,7 @@ class VarShift:
 class Constraint:
     id: str
     constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
-    operator: Literal[
-        "",
-        "less_than_or_equal",
-        "equal",
-        "greater_than_or_equal",
-        "yes",
-        "no",
-    ]
+    operator: Constants.CONSTRAINT_OPERATOR_OPTIONS
     target_value: int
     target_unit: str  # worker, shift, day, hour
     worker_var: VarWorker

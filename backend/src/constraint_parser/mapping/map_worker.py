@@ -3,6 +3,7 @@ from typing import List
 from constraint_parser.mapping.utils import find_block_by_name
 from core.constraint import Block, ConstraintBuild, VarWorker
 from core.worker import Worker
+from utils.constants import Constants
 
 
 class MapWorker:
@@ -20,7 +21,9 @@ class MapWorker:
             num_eligible_workers=0,
         )
 
-    def get_worker_selector(self, blocks: List[Block]) -> str:
+    def get_worker_selector(
+        self, blocks: List[Block]
+    ) -> Constants.VAR_WORKER_SELECTOR_OPTIONS:
         worker_block = find_block_by_name(blocks, "worker")
         if worker_block:
             if not isinstance(worker_block.value, list):

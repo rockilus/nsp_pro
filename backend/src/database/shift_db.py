@@ -39,7 +39,7 @@ class ShiftDB:
         shift = ShiftDocument.objects.get(id=shift_id)  # type: ignore
         return _from_mongo_shift(shift)
 
-    def get_shift_by_name(self, shift_name: str) -> Shift:
+    def get_shift_by_name(self, shift_name: str) -> Shift | None:
         # pylint: disable=no-member
         shift = ShiftDocument.objects(  # type: ignore
             name__icontains=shift_name

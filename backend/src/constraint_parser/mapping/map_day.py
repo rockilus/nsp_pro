@@ -9,35 +9,27 @@ from utils.constants import Constants
 class MapDay:
     def __call__(self, cstr_build: ConstraintBuild) -> VarDay:
         return VarDay(
-            selector=self.get_selector(
-                cstr_build.blocks, cstr_build.constraint_type
-            ),
-            target=self.get_target(
-                cstr_build.blocks, cstr_build.constraint_type
-            ),
+            selector=self.get_selector(cstr_build.blocks, cstr_build.constraint_type),
+            target=self.get_target(cstr_build.blocks, cstr_build.constraint_type),
             start_date=date.today(),
             end_date=date.today(),
-            interval=self.get_interval(
-                cstr_build.blocks, cstr_build.constraint_type
-            ),
+            interval=self.get_interval(cstr_build.blocks, cstr_build.constraint_type),
         )
 
-    def get_selector(self, blocks: List[Block], cstr_type: str) -> str:
+    def get_selector(
+        self, blocks: List[Block], cstr_type: str
+    ) -> Constants.VAR_DAY_SELECTOR_OPTIONS:
         timing_block = find_block_by_name(blocks, "timing")
         if timing_block:
             if cstr_type == "sum":
                 if timing_block.value == "per week":
                     return "week"
-                raise ValueError(
-                    f"Operator {timing_block.value} not recognized"
-                )
-            elif cstr_type == "seq":
+                raise ValueError(f"Operator {timing_block.value} not recognized")
+            if cstr_type == "seq":
                 if timing_block.value == "consecutive":
                     return "all"
-                raise ValueError(
-                    f"Operator {timing_block.value} not recognized"
-                )
-            elif cstr_type == "ord":
+                raise ValueError(f"Operator {timing_block.value} not recognized")
+            if cstr_type == "ord":
                 if timing_block.value in ["before", "after"]:
                     weekday_block = find_block_by_name(blocks, "weekday")
                     if weekday_block:

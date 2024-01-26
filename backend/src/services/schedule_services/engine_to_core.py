@@ -42,21 +42,13 @@ def _engine_to_core_objective_breach(
     if cb.category == "constraint":
         constraint = constraint_db.get_constraint_by_id(cb.constraint_id)
         if constraint.constraint_type == "sum":
-            description = _build_description_cb_sum(
-                constraint, cb, assignments
-            )
+            description = _build_description_cb_sum(constraint, cb, assignments)
         elif constraint.constraint_type == "seq":
-            description = _build_description_cb_seq(
-                constraint, cb, assignments
-            )
+            description = _build_description_cb_seq(constraint, cb, assignments)
         elif constraint.constraint_type == "ord":
-            description = _build_description_cb_ord(
-                constraint, cb, assignments
-            )
+            description = _build_description_cb_ord(constraint, cb, assignments)
         else:
-            description = (
-                f"{constraint.constraint_type} constraint not implemented yet"
-            )
+            description = f"{constraint.constraint_type} constraint not implemented yet"
     elif cb.category in ["request", "fixed_assignment"]:
         description = _build_description_cb_far(cb, assignments)
     else:
@@ -87,9 +79,7 @@ def _build_description_cb_sum(
     count = sum(
         1
         for a in assignments
-        if a.worker_id in workers_id
-        and a.date in dates
-        and a.shift_id in shifts_id
+        if a.worker_id in workers_id and a.date in dates and a.shift_id in shifts_id
     )
     diff = count - constraint.target_value
     string_list = [
@@ -120,9 +110,7 @@ def _build_description_cb_seq(
     count = sum(
         1
         for a in assignments
-        if a.worker_id in workers_id
-        and a.date in dates
-        and a.shift_id in shifts_id
+        if a.worker_id in workers_id and a.date in dates and a.shift_id in shifts_id
     )
     diff = count - constraint.target_value
     string_list = [
@@ -153,14 +141,14 @@ def _build_description_cb_ord(
     workers_id = set(v[0] for v in cb.variables)
     d_reference, d_relative = cb.variables[0][1], cb.variables[1][1]
     workers = [worker_db.get_worker_by_id(w_id) for w_id in workers_id]
-    s_reference = shift_db.get_shift_by_id(constraint.shift_var.reference_id)
-    s_relative = shift_db.get_shift_by_id(constraint.shift_var.relative_ids)
+    s_reference = [
+        shift_db.get_shift_by_id(s_id) for s_id in constraint.shift_var.reference_ids
+    ]
+    s_relative = [
+        shift_db.get_shift_by_id(s_id) for s_id in constraint.shift_var.relative_ids
+    ]
     a_d_relative = next(
-        (
-            a
-            for a in assignments
-            if a.worker_id in workers_id and a.date == d_relative
-        ),
+        (a for a in assignments if a.worker_id in workers_id and a.date == d_relative),
         None,
     )
     shift_assigned_name = (
@@ -175,10 +163,10 @@ def _build_description_cb_ord(
         "day" if abs(constraint.day_var.interval) <= 1 else "days",
         "after" if constraint.day_var.interval >= 0 else "before",
         "shift",
-        s_reference.name,
+        ", ".join([s.name for s in s_reference]),
         "on",
         d_reference.strftime("%b %d"),
-        f"instead of shift {s_relative.name}"
+        f"instead of shift {', '.join([s.name for s in s_relative])}"
         if constraint.operator == "yes"
         else "",
         "for",
@@ -195,17 +183,11 @@ def _build_description_cb_far(
     date = cb.variables[0][1]
     shift = shift_db.get_shift_by_id(cb.variables[0][2])
     assignment = next(
-        (
-            a
-            for a in assignments
-            if a.worker_id == worker.id and a.date == date
-        ),
+        (a for a in assignments if a.worker_id == worker.id and a.date == date),
         None,
     )
     shift_assigned = (
-        shift_db.get_shift_by_id(assignment.shift_id).name
-        if assignment
-        else "unknown"
+        shift_db.get_shift_by_id(assignment.shift_id).name if assignment else "unknown"
     )
     string_list = [
         worker.name,

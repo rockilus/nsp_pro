@@ -2,18 +2,20 @@ from dataclasses import dataclass
 from datetime import date
 from typing import List, Literal
 
+from utils.constants import Constants
+
 
 @dataclass
 class VarWorker:
     operator: Literal["", "in_target", "out_target"]
-    selector: Literal["all", "equal"]
+    selector: Constants.VAR_WORKER_SELECTOR_OPTIONS
     target_ids: List[str]
     num_eligible_workers: int
 
 
 @dataclass
 class VarDay:
-    selector: Literal["all", "week", "period", "week_day_index"]
+    selector: Constants.VAR_DAY_SELECTOR_OPTIONS
     target: int
     start_date: date
     end_date: date
@@ -23,7 +25,7 @@ class VarDay:
 @dataclass
 class VarShift:
     operator: Literal["", "in_target", "out_target"]
-    selector: Literal["", "all", "equal"]
+    selector: Constants.VAR_SHIFT_SELECTOR_OPTIONS
     target_ids: List[str]
     reference_ids: List[str]
     relative_ids: List[str]
@@ -31,17 +33,7 @@ class VarShift:
 
 @dataclass
 class Block:
-    name: Literal[
-        "operator",
-        "#",
-        "timing",
-        "shift",
-        "worker",
-        "text",
-        "shift_reference",
-        "shift_relative",
-        "weekday",
-    ]
+    name: Literal[Constants.BLOCK_NAME_OPTIONS]
     type: Literal["string", "number", "list"]
     value: str | int | List[str]
 
@@ -64,16 +56,7 @@ class Constraint:
     id: str
     constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
     template_id: str
-    operator: Literal[
-        "",
-        "less_than",
-        "less_than_or_equal",
-        "equal",
-        "greater_than_or_equal",
-        "greater_than",
-        "yes",
-        "no",
-    ]
+    operator: Constants.CONSTRAINT_OPERATOR_OPTIONS
     target_value: int
     target_unit: str  # worker, shift, day, hour
     worker_var: VarWorker
@@ -88,18 +71,8 @@ class Constraint:
 
 @dataclass
 class TemplateBlock:
-    name: Literal[
-        "operator",
-        "#",
-        "timing",
-        "shift",
-        "worker",
-        "text",
-        "shift_reference",
-        "shift_relative",
-        "weekday",
-    ]
-    type: Literal["string", "number", "list"]
+    name: Constants.BLOCK_NAME_OPTIONS
+    value_type: Literal["string", "number", "list"]
     options: List[str]
     placeholder: str | int
 

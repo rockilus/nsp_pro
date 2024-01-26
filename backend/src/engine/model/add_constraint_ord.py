@@ -9,7 +9,7 @@ from engine.types.input_output_types import Constraint
 
 class AddConstraintOrd(AddConstraint):
     def add_constraint(self, constraint: Constraint) -> None:
-        w_vars, d_vars, _ = self.get_vars_coordinates(constraint)
+        w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
         if not all(isinstance(item, list) for item in d_vars):
             raise TypeError(
                 "Expected a list of lists of strings, "
@@ -17,11 +17,12 @@ class AddConstraintOrd(AddConstraint):
             )
         for w in w_vars:
             for d1, d2 in d_vars:  # type: ignore
-                constraint_vars = [
-                    self.variables[w, d1, constraint.shift_var.reference],
-                    self.variables[w, d2, constraint.shift_var.relative],
-                ]
-                self._add_constraint_ord_to_model(constraint, constraint_vars)
+                for s_ref, s_rel in s_vars:  # type: ignore
+                    constraint_vars = [
+                        self.variables[w, d1, s_ref],
+                        self.variables[w, d2, s_rel],
+                    ]
+                    self._add_constraint_ord_to_model(constraint, constraint_vars)
 
     def _add_constraint_ord_to_model(
         self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]

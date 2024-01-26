@@ -11,6 +11,11 @@ from utils.constants import Constants
 class AddConstraintSum(AddConstraint):
     def add_constraint(self, constraint: Constraint) -> None:
         w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
+        if not all(isinstance(item, str) for item in s_vars):
+            raise TypeError(
+                "Expected a list of strings, "
+                + f"but got {format(type(s_vars))} instead."
+            )
         if constraint.target_unit == "hour":
             for w in w_vars:
                 for period in d_vars:
@@ -20,7 +25,9 @@ class AddConstraintSum(AddConstraint):
                         constraint_vars.extend(
                             [self.variables[w, d, s] for d in period]
                         )
-                        constraint_durs.extend([self.durations[s] for d in period])
+                        constraint_durs.extend(
+                            [self.durations[s] for _ in period]  # type: ignore
+                        )
                     self._add_constraint_sum_hour(
                         constraint, constraint_vars, constraint_durs
                     )

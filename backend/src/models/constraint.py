@@ -41,6 +41,7 @@ class VarShift(EmbeddedDocument):
 class Block(EmbeddedDocument):
     name = StringField(
         required=True,
+        # pylint: disable = R0801
         choices=[
             "operator",
             "#",
@@ -68,6 +69,7 @@ class Constraint(Document):
     )
     template_id = StringField(required=True)
     operator = StringField(
+        # pylint: disable = R0801
         choices=[
             "",
             "less_than",

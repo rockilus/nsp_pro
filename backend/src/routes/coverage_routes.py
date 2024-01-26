@@ -46,8 +46,7 @@ def get_coverages() -> List[CoverageMessage]:
         for coverage in coverages
     ]
     shifts = [
-        [shift_db.get_shift_by_id(sd.shift_id) for sd in sds]
-        for sds in shift_demands
+        [shift_db.get_shift_by_id(sd.shift_id) for sd in sds] for sds in shift_demands
     ]
     return [
         coverage_and_shift_demands_to_api_msg(c, sds, ss)
@@ -74,9 +73,7 @@ def update_shift_demand(
 ) -> ShiftDemandMessage:
     existing_sd = shift_demand_db.get_shift_demand_by_id(shift_demand_id)
     if not existing_sd:
-        raise HTTPException(
-            status_code=404, detail="Shift demand does not exist"
-        )
+        raise HTTPException(status_code=404, detail="Shift demand does not exist")
     sd_data = api_msg_to_shift_demand(req)
     shift_demand = shift_demand_db.update_shift_demand(sd_data)
     shift = shift_db.get_shift_by_id(shift_demand.shift_id)
@@ -118,8 +115,7 @@ def coverage_and_shift_demands_to_api_msg(
 ) -> CoverageMessage:
     data = asdict(coverage)
     data["shift_demands"] = [
-        shift_demand_and_shift_to_api_msg(sd, s)
-        for sd, s in zip(shift_demands, shifts)
+        shift_demand_and_shift_to_api_msg(sd, s) for sd, s in zip(shift_demands, shifts)
     ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(CoverageMessage)

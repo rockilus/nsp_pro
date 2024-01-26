@@ -35,9 +35,7 @@ def update_constraint(
     cb_data = api_msg_to_constraint_build(updated_constraint)
     existing_c = constraint_db.get_constraint_by_id(constraint_id)
     if not existing_c:
-        raise HTTPException(
-            status_code=404, detail="Constraint does not exist"
-        )
+        raise HTTPException(status_code=404, detail="Constraint does not exist")
     if cb_data.text != existing_c.text:
         c_updated = constraint_parse(cb_data)
     else:
