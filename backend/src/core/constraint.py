@@ -72,7 +72,7 @@ class Constraint:
 @dataclass
 class TemplateBlock:
     name: Constants.BLOCK_NAME_OPTIONS
-    value_type: Literal["string", "number", "list"]
+    type: Literal["string", "number", "list"]
     options: List[str]
     placeholder: str | int
 
