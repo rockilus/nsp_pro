@@ -320,12 +320,10 @@ constraints = [
     "Number of duties on thursdays should be evenly spread across eligible "
     + "workers",
     "Number of duties on thursdays should be evenly spread across surgeons",
-    "Number of duties on fridays should be evenly spread across eligible "
-    + "workers",
+    "Number of duties on fridays should be evenly spread across eligible " + "workers",
     "Number of duties on saturdays should be evenly spread across eligible "
     + "workers",
-    "Number of duties on sunday should be evenly spread across eligible "
-    + "workers",
+    "Number of duties on sunday should be evenly spread across eligible " + "workers",
     "Number of duties on bank holidays should be evenly spread across "
     + "eligible workers",
     "Number of duties should be evenly spread across eligible workers",
