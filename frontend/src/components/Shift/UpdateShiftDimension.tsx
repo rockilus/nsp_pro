@@ -20,7 +20,6 @@ interface Props {
   entryType: string;
   entryOptions: string[];
   setNameState: React.Dispatch<React.SetStateAction<string>>;
-  setEntryType: React.Dispatch<React.SetStateAction<string>>;
   setEntryOptions: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
@@ -37,31 +36,9 @@ export default function UpdateShiftDimension({
   entryType,
   entryOptions,
   setNameState,
-  setEntryType,
   setEntryOptions,
 }: Props) {
   const [newOption, setNewOption] = useState<string>("");
-
-  const selectField = () => (
-    <Box sx={{ minWidth: 120, width: "100%" }}>
-      <FormControl fullWidth>
-        <InputLabel id="demo-simple-select-label">Property Type</InputLabel>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={entryType}
-          label="Property Type"
-          onChange={(e) => setEntryType(e.target.value)}
-        >
-          {Object.keys(propertyTypes).map((key) => (
-            <MenuItem value={key} key={key}>
-              {propertyTypes[key as keyof typeof propertyTypes]}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </Box>
-  );
 
   const addListOptions = () => (
     <Box sx={{ minWidth: 120, width: "100%" }}>
@@ -117,7 +94,6 @@ export default function UpdateShiftDimension({
             fullWidth
           />
         </ListItem>
-        <ListItem key={"entry_type"}>{selectField()}</ListItem>
       </List>
       {entryType === "list" && (
         <ListItem key={"list_options"}>{addListOptions()}</ListItem>

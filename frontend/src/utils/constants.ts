@@ -34,6 +34,20 @@ export const ShiftColors = [
   "#00ABA6",
 ];
 
+export const PropertyTypes = {
+  str: "String",
+  int: "Integer",
+  bool: "Boolean",
+  list: "List",
+};
+
+export const DefaultProperties: Record<string, string | boolean> = {
+  str: "",
+  int: "",
+  bool: false,
+  list: "",
+};
+
 //Coverages
 export const CovTimeColWidth = 50; // in pixels
 export const CovTimeColPadR = 10; // in pixels

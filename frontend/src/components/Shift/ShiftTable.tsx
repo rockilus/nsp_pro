@@ -18,6 +18,7 @@ import AddShiftDimensionDrawer from "./AddShiftDimensionDrawer";
 import ShiftFieldCell from "./ShiftFieldCell";
 import { ShiftDimensionT, ShiftT } from "./types";
 import { useShiftStore } from "../../stores/shiftStore";
+import { DefaultProperties } from "../../utils/constants";
 
 interface Props {
   shiftDimensions: ShiftDimensionT[];
@@ -25,7 +26,7 @@ interface Props {
   defaultShiftFields: string[];
 }
 
-export default function WorkerShiftTable({
+export default function ShiftTable({
   shiftDimensions,
   shifts,
   defaultShiftFields,
@@ -79,15 +80,23 @@ export default function WorkerShiftTable({
                     (sp) => sp.shiftDimensionId === sd.id
                   );
                   return (
-                    shiftProperty && (
-                      <ShiftPropertyCell
-                        key={sdIndex}
-                        shiftProperty={shiftProperty}
-                        shiftDimension={sd}
-                        editing={bodyEditing[shiftProperty.shiftId] === sd.id}
-                        setEditing={setBodyEditing}
-                      />
-                    )
+                    <ShiftPropertyCell
+                      key={sdIndex}
+                      shiftProperty={
+                        shiftProperty
+                          ? shiftProperty
+                          : {
+                              id: "",
+                              shiftId: shift.id,
+                              shiftDimensionId: sd.id,
+                              value: DefaultProperties[sd.entryType],
+                            }
+                      }
+                      shiftDimension={sd}
+                      editing={bodyEditing[shift.id] === sd.id}
+                      setEditing={setBodyEditing}
+                    />
+                    // )
                   );
                 })}
                 <TableCell component="th" scope="row">

@@ -90,7 +90,7 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(updatedShiftProperty.value),
+          body: JSON.stringify(updatedShiftProperty),
         }
       );
       const newShiftProperty: ShiftPropertyT = await response.json();

@@ -1,6 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 
 import Box from "@mui/material/Box";
+import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -32,42 +33,19 @@ export default function ShiftPropertyCell({
 
   const handleEditConfirm = async () => {
     if (valueState !== shiftProperty.value) {
-      const updatedSP = { ...shiftProperty, value: valueState };
-      await updateShiftProperty(updatedSP);
+      updateShiftProperty({ ...shiftProperty, value: valueState });
     }
     setEditing({});
+  };
+
+  const handleToggle = () => {
+    updateShiftProperty({ ...shiftProperty, value: !shiftProperty.value });
   };
 
   const handleEditCancel = () => {
     setEditing({});
     setValueState(shiftProperty.value);
   };
-
-  const selectFieldBool = () => (
-    <Box sx={{ minWidth: 120, width: "100%" }}>
-      <FormControl fullWidth>
-        <InputLabel id="demo-simple-select-label">Select Option</InputLabel>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={valueState}
-          label="Property Type"
-          onChange={(e) => setValueState(e.target.value)}
-          onBlur={handleEditConfirm}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleEditConfirm();
-            } else if (e.key === "Escape") {
-              handleEditCancel();
-            }
-          }}
-        >
-          <MenuItem value={"True"}>True</MenuItem>
-          <MenuItem value={"False"}>False</MenuItem>
-        </Select>
-      </FormControl>
-    </Box>
-  );
 
   const selectField = () => (
     <Box sx={{ minWidth: 120, width: "100%" }}>
@@ -108,11 +86,9 @@ export default function ShiftPropertyCell({
           setEditing({ [shiftProperty.shiftId]: shiftDimension.id })
         }
       >
-        {editing ? (
+        {editing && shiftDimension.entryType !== "bool" ? (
           shiftDimension.entryType === "list" ? (
             selectField()
-          ) : shiftDimension.entryType === "bool" ? (
-            selectFieldBool()
           ) : shiftDimension.entryType === "int" ? (
             <TextField
               fullWidth
@@ -148,6 +124,15 @@ export default function ShiftPropertyCell({
               autoFocus
             />
           )
+        ) : shiftDimension.entryType === "bool" ? (
+          <Checkbox
+            checked={
+              typeof shiftProperty.value === "boolean"
+                ? shiftProperty.value
+                : shiftProperty.value === 1
+            }
+            onClick={handleToggle}
+          />
         ) : (
           shiftProperty.value
         )}

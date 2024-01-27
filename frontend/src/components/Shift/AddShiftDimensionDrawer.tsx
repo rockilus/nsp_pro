@@ -16,18 +16,12 @@ import Typography from "@mui/material/Typography";
 
 import { ShiftDimensionT } from "./types";
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
+import { PropertyTypes } from "../../utils/constants";
 
 interface Props {
   drawerOpen: boolean;
   toggleDrawer: () => void;
 }
-
-const propertyTypes = {
-  str: "String",
-  int: "Integer",
-  bool: "Boolean",
-  list: "List",
-};
 
 export default function AddShiftDimensionDrawer({
   drawerOpen,
@@ -68,9 +62,9 @@ export default function AddShiftDimensionDrawer({
           label="Property Type"
           onChange={handleChange}
         >
-          {Object.keys(propertyTypes).map((key) => (
+          {Object.keys(PropertyTypes).map((key) => (
             <MenuItem value={key} key={key}>
-              {propertyTypes[key as keyof typeof propertyTypes]}
+              {PropertyTypes[key as keyof typeof PropertyTypes]}
             </MenuItem>
           ))}
         </Select>
