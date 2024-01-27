@@ -126,7 +126,11 @@ export default function ShiftPropertyCell({
           )
         ) : shiftDimension.entryType === "bool" ? (
           <Checkbox
-            checked={shiftProperty.value as boolean}
+            checked={
+              typeof shiftProperty.value === "boolean"
+                ? shiftProperty.value
+                : shiftProperty.value === 1
+            }
             onClick={handleToggle}
           />
         ) : (
