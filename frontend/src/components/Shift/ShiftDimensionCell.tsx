@@ -21,9 +21,6 @@ interface Props {
 export default function ShiftDimensionCell({ shiftDimension }: Props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [nameState, setNameState] = useState(shiftDimension.name);
-  const [entryTypeState, setEntryTypeState] = useState(
-    shiftDimension.entryType
-  );
   const [entryOptionsState, setEntryOptionsState] = useState(
     shiftDimension.entryOptions
   );
@@ -52,26 +49,23 @@ export default function ShiftDimensionCell({ shiftDimension }: Props) {
   const handleEditConfirm = async () => {
     if (
       nameState !== shiftDimension.name ||
-      entryTypeState !== shiftDimension.entryType ||
       entryOptionsState !== shiftDimension.entryOptions
     ) {
       const updatedSD: ShiftDimensionT = {
         id: shiftDimension.id,
         name: nameState,
-        entryType: entryTypeState,
+        entryType: shiftDimension.entryType,
         entryOptions: entryOptionsState,
       };
       await updateShiftDimension(updatedSD);
     }
     setNameState(shiftDimension.name);
-    setEntryTypeState(shiftDimension.entryType);
     setEntryOptionsState(shiftDimension.entryOptions);
     handleClose();
   };
 
   const handleEditCancel = () => {
     setNameState(shiftDimension.name);
-    setEntryTypeState(shiftDimension.entryType);
     setEntryOptionsState(shiftDimension.entryOptions);
     handleClose();
   };
@@ -124,10 +118,9 @@ export default function ShiftDimensionCell({ shiftDimension }: Props) {
         <UpdateShiftDimension
           shiftDimensionId={shiftDimension.id}
           name={nameState}
-          entryType={entryTypeState}
+          entryType={shiftDimension.entryType}
           entryOptions={entryOptionsState}
           setNameState={setNameState}
-          setEntryType={setEntryTypeState}
           setEntryOptions={setEntryOptionsState}
         />
       </Menu>

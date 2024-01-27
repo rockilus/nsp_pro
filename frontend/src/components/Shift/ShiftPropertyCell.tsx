@@ -29,6 +29,9 @@ export default function ShiftPropertyCell({
 
   // console.log("shiftProperty", shiftProperty);
   // console.log("shiftDimension", shiftDimension);
+  console.log("shiftDimension.entryType", shiftDimension.entryType);
+  console.log("shiftProperty.value", shiftProperty.value);
+  console.log("shiftProperty", shiftProperty);
 
   const updateShiftProperty = useShiftStore(
     (state) => state.updateShiftProperty
