@@ -3,7 +3,7 @@ import React, { useRef, useCallback, useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
-import WorkerShiftTable from "./ShiftTable";
+import ShiftTable from "./ShiftTable";
 
 import { useShiftStore } from "../../stores/shiftStore";
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
@@ -33,7 +33,7 @@ export default function ShiftTab() {
       <Typography variant="h4" align="left">
         Shifts Configuration
       </Typography>
-      <WorkerShiftTable
+      <ShiftTable
         shiftDimensions={shiftDimensions}
         shifts={shifts}
         defaultShiftFields={DefaultShiftFields}

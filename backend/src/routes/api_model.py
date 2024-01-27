@@ -7,7 +7,7 @@ from pydantic import BaseModel
 # Shift
 class ShiftPropertyMessage(BaseModel):
     id: str
-    value: str
+    value: str | int | bool
     shiftDimensionId: str
     shiftId: str
 

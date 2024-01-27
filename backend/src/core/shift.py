@@ -19,7 +19,7 @@ class Shift:
 class ShiftDimension:
     id: str
     name: str
-    entry_type: str
+    entry_type: str  # str, int, bool, list
     entry_options: List[str]
 
 

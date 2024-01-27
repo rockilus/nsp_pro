@@ -82,6 +82,8 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
   },
 
   updateShiftProperty: async (updatedShiftProperty) => {
+    console.log("updatedShiftProperty", updatedShiftProperty);
+
     try {
       const response = await fetch(
         `${apiUrlShifts}/${updatedShiftProperty.shiftId}/properties/${updatedShiftProperty.shiftDimensionId}`,
@@ -90,7 +92,7 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(updatedShiftProperty.value),
+          body: JSON.stringify(updatedShiftProperty),
         }
       );
       const newShiftProperty: ShiftPropertyT = await response.json();
