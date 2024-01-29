@@ -69,9 +69,10 @@ def to_mongo_var_worker(dataclass_obj: VarWorker) -> VarWorkerDocument:
     workers = []
     if len(dataclass_obj.target_ids) > 0:
         # pylint: disable=no-member
-        workers = [
-            WorkerDocument.objects.get(id__in=dataclass_obj.target_ids)  # type: ignore
-        ]
+        workers = WorkerDocument.objects.filter(  # type: ignore
+            id__in=dataclass_obj.target_ids
+        )
+
     return VarWorkerDocument(
         operator=dataclass_obj.operator,
         selector=dataclass_obj.selector,
@@ -96,9 +97,9 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
     relative_s = []
     if len(dataclass_obj.target_ids) > 0:
         # pylint: disable=no-member
-        shifts = [
-            ShiftDocument.objects.get(id__in=dataclass_obj.target_ids)  # type: ignore
-        ]
+        shifts = ShiftDocument.objects.filter(  # type: ignore
+            id__in=dataclass_obj.target_ids
+        )
     if len(dataclass_obj.reference_ids) > 0:
         # pylint: disable=no-member
         reference_s = [

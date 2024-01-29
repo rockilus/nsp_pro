@@ -46,7 +46,7 @@ class WorkerPropertyDB:
     ) -> List[WorkerProperty]:
         # pylint: disable=no-member
         worker_properties = WorkerPropertyDocument.objects.filter(  # type: ignore
-            worker_dimension=worker_dimension
+            worker_dimension=worker_dimension.id
         )
         return [_from_mongo_worker_property(wp) for wp in list(worker_properties)]
 
@@ -69,6 +69,66 @@ class WorkerPropertyDB:
             .first()
         )
         return _from_mongo_worker_property(worker_property) if worker_property else None
+
+    def get_workers_id_by_dim_and_prop(self):
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$worker_dimension",  # Group by worker_dimension id
+                    "properties": {"$push": {"value": "$value", "worker": "$worker"}},
+                }
+            },
+            {"$unwind": "$properties"},  # Unwind the properties array
+            {
+                "$group": {
+                    "_id": {
+                        # Regroup by worker_dimension
+                        "worker_dimension": "$_id",
+                        # Group by value within each dimension
+                        "value": "$properties.value",
+                    },
+                    "workers": {
+                        "$push": "$properties.worker"
+                    },  # Push worker references
+                    "name": {"$first": "$name"},  # Retain the name (temporarily)
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "worker_dimensions",  # Join with the referenced collection
+                    "localField": "_id.worker_dimension",
+                    "foreignField": "_id",
+                    "as": "worker_dimension_data",
+                }
+            },
+            {"$unwind": "$worker_dimension_data"},  # Unwind the joined data
+            {
+                "$project": {
+                    "_id": 1,
+                    "worker_dimension": "$worker_dimension_data._id",
+                    # Access the name from the joined document
+                    "name": "$worker_dimension_data.name",
+                    "value": 1,
+                    "workers": 1,
+                }
+            },
+        ]
+
+        # pylint: disable=no-member
+        result = WorkerPropertyDocument.objects.aggregate(*pipeline)  # type: ignore
+        out = {}
+        for r in result:
+            print(r)
+            dim_name = r["name"].lower()
+            prop_value = r["_id"]["value"].lower()
+            prop_workers = r["workers"]
+            if dim_name not in out:
+                out[dim_name] = {}
+            if prop_value not in out[dim_name]:
+                out[dim_name][prop_value] = prop_workers
+            else:
+                out[dim_name][prop_value] += prop_workers
+        return out
 
     def update_worker_property(
         self,

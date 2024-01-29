@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Literal
+from typing import Dict, List, Literal
 
 from utils.constants import Constants
 
@@ -34,8 +34,8 @@ class VarShift:
 @dataclass
 class Block:
     name: Literal[Constants.BLOCK_NAME_OPTIONS]
-    type: Literal["string", "number", "list"]
-    value: str | int | List[str]
+    type: Literal["string", "number", "list", "dict"]
+    value: str | int | List[str] | List[Dict[str, str]]
 
 
 @dataclass
@@ -72,8 +72,8 @@ class Constraint:
 @dataclass
 class TemplateBlock:
     name: Constants.BLOCK_NAME_OPTIONS
-    type: Literal["string", "number", "list"]
-    options: List[str]
+    type: Literal["string", "number", "list", "dict"]
+    options: List[str] | Dict
     placeholder: str | int
 
 

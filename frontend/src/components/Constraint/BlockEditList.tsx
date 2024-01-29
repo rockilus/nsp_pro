@@ -29,20 +29,40 @@ export default function BlockEditList({
   handleEditBlock,
   handleClose,
 }: Props) {
-  const initialValue = useCallback(() => {
+  const initialValue = useCallback((): string[] => {
     if (block === null) {
       return [];
     }
-    if (Array.isArray(block.value)) {
-      return block.value;
+    if (
+      Array.isArray(block.value) &&
+      (block.value as any[]).every((v: unknown) => typeof v === "string")
+    ) {
+      return block.value as string[];
     }
     throw new Error("block.value is not an array");
   }, [block]);
 
+  const templateOptionsCast = useCallback((): string[] => {
+    if (templateBlock === null) {
+      return [];
+    }
+    if (
+      Array.isArray(templateBlock.options) &&
+      (templateBlock.options as any[]).every(
+        (option: unknown) => typeof option === "string"
+      )
+    ) {
+      return templateBlock.options as string[];
+    }
+    throw new Error("templateBlock.options is not an array of strings");
+  }, [templateBlock]);
+
   const [valueState, setValueState] = useState<string[]>(initialValue);
+  const [templateOptions, setTemplateOptions] =
+    useState<string[]>(templateOptionsCast);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<string[]>(
-    templateBlock.options.filter((option) => !valueState.includes(option))
+    templateOptions.filter((option) => !valueState.includes(option))
   );
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,15 +73,21 @@ export default function BlockEditList({
     }
   }, [block, initialValue]);
 
+  useEffect(() => {
+    if (templateBlock !== null) {
+      setTemplateOptions(templateOptionsCast);
+    }
+  }, [templateBlock, templateOptionsCast]);
+
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.trim();
     setSearchQuery(query);
     if (query === "") {
       setFilteredOptions(
-        templateBlock.options.filter((option) => !valueState.includes(option))
+        templateOptions.filter((option) => !valueState.includes(option))
       );
     } else {
-      const newFilteredOptions = templateBlock.options.filter(
+      const newFilteredOptions = templateOptions.filter(
         (option) =>
           !valueState.includes(option) &&
           option.toLowerCase().includes(query.toLowerCase())
@@ -83,7 +109,7 @@ export default function BlockEditList({
         value: valueState.filter((option) => option !== optionToDelete),
       });
       setFilteredOptions(
-        templateBlock.options.filter(
+        templateOptions.filter(
           (option) => !valueState.includes(option) || option === optionToDelete
         )
       );
@@ -129,7 +155,7 @@ export default function BlockEditList({
         value: [...valueState, newOption],
       });
       setFilteredOptions(
-        templateBlock.options.filter(
+        templateOptions.filter(
           (option) => !valueState.includes(option) && option !== newOption
         )
       );
@@ -156,8 +182,8 @@ export default function BlockEditList({
         }}
       >
         {/* <div className="field-name" style={{ fontSize: "10px" }}>
-          {selector.name.charAt(0).toUpperCase() + selector.name.slice(1)}
-        </div> */}
+            {selector.name.charAt(0).toUpperCase() + selector.name.slice(1)}
+          </div> */}
         <div
           className="input-container"
           onClick={() => inputRef.current && inputRef.current.focus()}
