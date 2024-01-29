@@ -16,9 +16,11 @@ export default function ConstraintEdit({
 }: Props) {
   const initialBlockValue = (
     templateBlock: TemplateBlockT
-  ): string | number | string[] => {
+  ): string | number | string[] | Record<string, string>[] => {
     if (templateBlock.type === "text") {
       return templateBlock.placeholder;
+    } else if (templateBlock.type === "dict") {
+      return [];
     } else {
       if (
         templateBlock.options.length === 0 &&
@@ -26,7 +28,7 @@ export default function ConstraintEdit({
       ) {
         return templateBlock.placeholder;
       } else if (templateBlock.options.length === 1) {
-        return templateBlock.options[0];
+        return templateBlock.options[0] as string;
       } else {
         return templateBlock.type === "list" ? [] : "";
       }

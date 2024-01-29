@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
-import BlockEditList from "./BlockEditList";
+import BlockEditList from "./BlockEditDict";
 import BlockEditString from "./BlockEditString";
 import BlockEditQty from "./BlockEditQty";
+import BlockEditDict from "./BlockEditDict";
 import { TemplateBlockT, BlockT } from "./types";
 import { ConstraintDefaultColors } from "../../utils/constants";
 
@@ -78,6 +79,14 @@ export default function BlockDisplay({
               display: "inline-block",
             }}
           >
+            {templateBlock.type === "dict" && (
+              <BlockEditDict
+                block={block}
+                templateBlock={templateBlock}
+                handleEditBlock={handleEditBlock}
+                handleClose={handleClose}
+              />
+            )}
             {templateBlock.type === "list" && (
               <BlockEditList
                 block={block}
@@ -106,7 +115,10 @@ export default function BlockDisplay({
         </div>
       ) : (
         <div>
-          {block && Array.isArray(block.value) && block.value.length !== 0 ? (
+          {block &&
+          block.type === "string" &&
+          Array.isArray(block.value) &&
+          block.value.length !== 0 ? (
             <div
               className="field-value"
               onClick={handleClickOpen}
@@ -118,6 +130,22 @@ export default function BlockDisplay({
               }}
             >
               {block.value.join(", ")}
+            </div>
+          ) : block &&
+            block.type === "dict" &&
+            Array.isArray(block.value) &&
+            block.value.length !== 0 ? (
+            <div
+              className="field-value"
+              onClick={handleClickOpen}
+              style={{
+                display: "inline-block",
+                cursor: "pointer",
+                fontWeight: "bold",
+                color: ConstraintDefaultColors.shade3,
+              }}
+            >
+              {block.value.map(Object.values).flat().join(", ")}
             </div>
           ) : block &&
             ((block.type === "string" && block.value !== "") ||
@@ -132,7 +160,7 @@ export default function BlockDisplay({
                 color: ConstraintDefaultColors.shade3,
               }}
             >
-              {block.value}
+              {block.value as string | number}
             </div>
           ) : (
             <div

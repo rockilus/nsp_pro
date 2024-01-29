@@ -1,14 +1,15 @@
-from typing import List
+from typing import Dict, List
 
-from constraint_parser.mapping.utils import find_block_by_name
+from constraint_parser.mapping.utils import find_block_by_name, list_dicts_to_dict
 from core.constraint import Block, ConstraintBuild, VarShift
 from core.shift import Shift
 from utils.constants import Constants
 
 
 class MapShift:
-    def __init__(self, shifts: List[Shift]) -> None:
+    def __init__(self, shifts: List[Shift], shift_dim_dict: Dict) -> None:
         self.shifts = shifts
+        self.shift_dim_dict = shift_dim_dict
 
     def __call__(self, cstr_build: ConstraintBuild) -> VarShift:
         return VarShift(
@@ -30,25 +31,26 @@ class MapShift:
     ) -> Constants.VAR_SHIFT_SELECTOR_OPTIONS:
         shift_block = find_block_by_name(blocks, "shift")
         if shift_block:
-            if not isinstance(shift_block.value, list):
-                raise ValueError("Shift block value is not a list")
-            for s in shift_block.value:
-                if s == "all shifts":
+            if isinstance(shift_block.value, list) and all(
+                isinstance(s, dict) for s in shift_block.value
+            ):
+                if any(
+                    "all shifts" in s.values()  # type: ignore
+                    for s in shift_block.value
+                ):
                     return "all"
-            return "equal"
+                return "equal"
+            raise ValueError("Shift block value is not a list of dicts")
         if cstr_type == "ord":
             return "all"
         raise ValueError("Shift block not found")
 
     def get_target_ids(self, blocks: List[Block], cstr_type: str) -> List[str]:
+        if self.get_selector(blocks, cstr_type) == "all":
+            return []
         shift_block = find_block_by_name(blocks, "shift")
         if shift_block:
-            if not isinstance(shift_block.value, list):
-                raise ValueError("Shift block value is not a list")
-            out = []
-            for s in shift_block.value:
-                out.append(self.get_shift_id_from_name(s))
-            return out
+            return self.shift_block_to_id_list(shift_block)
         if cstr_type == "ord":
             return []
         raise ValueError("Shift block not found")
@@ -60,12 +62,7 @@ class MapShift:
             return []
         shift_ref_block = find_block_by_name(blocks, "shift_reference")
         if shift_ref_block:
-            if not isinstance(shift_ref_block.value, list):
-                raise ValueError("Shift reference block value is not a list")
-            out = []
-            for s in shift_ref_block.value:
-                out.append(self.get_shift_id_from_name(s))
-            return out
+            return self.shift_block_to_id_list(shift_ref_block)
         raise ValueError("Shift reference block not found")
 
     def get_relative_target_ids(self, blocks: List[Block], cstr_type: str) -> List[str]:
@@ -73,12 +70,7 @@ class MapShift:
             return []
         shift_rel_block = find_block_by_name(blocks, "shift_relative")
         if shift_rel_block:
-            if not isinstance(shift_rel_block.value, list):
-                raise ValueError("Shift relative block value is not a list")
-            out = []
-            for s in shift_rel_block.value:
-                out.append(self.get_shift_id_from_name(s))
-            return out
+            return self.shift_block_to_id_list(shift_rel_block)
         raise ValueError("Shift relative block not found")
 
     def get_shift_id_from_name(self, shift_name: str) -> str:
@@ -94,3 +86,23 @@ class MapShift:
             if shift.name.lower() == name.lower():
                 return shift
         return None
+
+    def shift_block_to_id_list(self, shift_block: Block) -> List[str]:
+        if not isinstance(shift_block.value, list):
+            raise ValueError("Shift block value is not a list")
+        shift_dict = list_dicts_to_dict(shift_block.value)
+        out = []
+        for dim, props in shift_dict.items():
+            if dim == "shifts":
+                for w in props:
+                    out.append(self.get_shift_id_from_name(w))
+            else:
+                if dim not in self.shift_dim_dict:
+                    raise ValueError(f"Shift dimension {dim} not found")
+                for prop in props:
+                    if prop not in self.shift_dim_dict[dim]:
+                        raise ValueError(
+                            f"Shift property {prop} for dimension {dim} not found"
+                        )
+                    out += self.shift_dim_dict[dim][prop]
+        return list(set(out))

@@ -28,7 +28,7 @@ export default function BlockEditString({
   handleEditBlock,
   handleClose,
 }: Props) {
-  const initialValue = useCallback(() => {
+  const initialValue = useCallback((): string => {
     if (block === null) {
       return "";
     }
@@ -38,10 +38,27 @@ export default function BlockEditString({
     throw new Error("block.value is not a string");
   }, [block]);
 
+  const templateOptionsCast = useCallback((): string[] => {
+    if (templateBlock === null) {
+      return [];
+    }
+    if (
+      Array.isArray(templateBlock.options) &&
+      (templateBlock.options as any[]).every(
+        (option: unknown) => typeof option === "string"
+      )
+    ) {
+      return templateBlock.options as string[];
+    }
+    throw new Error("templateBlock.options is not an array of strings");
+  }, [templateBlock]);
+
   const [valueState, setValueState] = useState<string>(initialValue);
+  const [templateOptions, setTemplateOptions] =
+    useState<string[]>(templateOptionsCast);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<string[]>(
-    templateBlock.options.filter((option) => !valueState.includes(option))
+    templateOptions.filter((option) => !valueState.includes(option))
   );
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -52,15 +69,21 @@ export default function BlockEditString({
     }
   }, [block, initialValue]);
 
+  useEffect(() => {
+    if (templateBlock !== null) {
+      setTemplateOptions(templateOptionsCast);
+    }
+  }, [templateBlock, templateOptionsCast]);
+
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.trim();
     setSearchQuery(query);
     if (query === "") {
       setFilteredOptions(
-        templateBlock.options.filter((option) => !valueState.includes(option))
+        templateOptions.filter((option) => !valueState.includes(option))
       );
     } else {
-      const newFilteredOptions = templateBlock.options.filter(
+      const newFilteredOptions = templateOptions.filter(
         (option) =>
           !valueState.includes(option) &&
           option.toLowerCase().includes(query.toLowerCase())
@@ -106,7 +129,7 @@ export default function BlockEditString({
         value: newOption,
       });
       setFilteredOptions(
-        templateBlock.options.filter((option) => option !== newOption)
+        templateOptions.filter((option) => option !== newOption)
       );
       setSearchQuery("");
     }

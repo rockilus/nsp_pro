@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from constraint_parser.mapping.map_day import MapDay
 from constraint_parser.mapping.map_shift import MapShift
@@ -15,12 +15,16 @@ class MapConstaint:
         self,
         workers: List[Worker],
         shifts: List[Shift],
+        worker_dim_dict: Dict,
+        shift_dim_dict: Dict,
     ) -> None:
         self.workers = workers
         self.shifts = shifts
-        self.map_worker = MapWorker(workers)
+        self.worker_dim_dict = worker_dim_dict
+        self.shift_dim_dict = shift_dim_dict
+        self.map_worker = MapWorker(workers, worker_dim_dict)
         self.map_day = MapDay()
-        self.map_shift = MapShift(shifts)
+        self.map_shift = MapShift(shifts, shift_dim_dict)
 
     def __call__(self, cstr_build: ConstraintBuild) -> Constraint:
         var_worker = self.map_worker(cstr_build)
@@ -94,12 +98,21 @@ class MapConstaint:
         values = []
         for block in blocks:
             if isinstance(block.value, list):
-                if len(block.value) > 1:
+                block_values = block.value
+                if all(isinstance(v, dict) for v in block.value):
+                    block_values = [
+                        v for d in block.value for v in d.values()  # type: ignore
+                    ]
+                if len(block_values) > 1 and all(
+                    isinstance(v, str) for v in block_values
+                ):
                     values.append(
-                        ', '.join(block.value[:-1]) + ' and ' + block.value[-1]
+                        ', '.join(block_values[:-1])  # type: ignore
+                        + ' and '
+                        + block_values[-1]
                     )
-                else:
-                    values.append(block.value[0])
+                elif isinstance(block_values[0], str):
+                    values.append(block_values[0])
             else:
                 values.append(str(block.value))
         joined_values = ' '.join(values)

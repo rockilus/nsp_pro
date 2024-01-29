@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import List, Union
+from typing import Dict, List, Union
 
 from pydantic import BaseModel
 
@@ -175,7 +175,7 @@ class RequestMessage(BaseModel):
 class BlockMessage(BaseModel):
     name: str
     type: str
-    value: str | int | List[str]
+    value: str | int | List[str] | List[Dict[str, str]]
 
 
 class ConstraintMessage(BaseModel):
@@ -192,7 +192,7 @@ class ConstraintMessage(BaseModel):
 class TemplateBlockMessage(BaseModel):
     name: str
     type: str
-    options: List[str]
+    options: List[str] | Dict
     placeholder: str | int
 
 

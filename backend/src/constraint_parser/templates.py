@@ -1,22 +1,67 @@
-from typing import List
+from typing import Dict, List
 
 from core.constraint import Template, TemplateBlock
-from scripts.setup_database import shift_db, worker_db
-from utils.constants import Constants
+from scripts.setup_database import (
+    shift_db,
+    shift_dimension_db,
+    shift_property_db,
+    worker_db,
+    worker_dimension_db,
+    worker_property_db,
+)
 
 
 def build_templates() -> List[Template]:
     shifts = shift_db.get_shifts()
+    shift_options = {
+        "all": ["all shifts"],
+        "shifts": [s.name for s in shifts],
+    }
+    shift_dimensions = shift_dimension_db.get_shift_dimensions()
+    for shift_dimension in shift_dimensions:
+        shift_properties = shift_property_db.get_shift_properties_by_shift_dimension(
+            shift_dimension
+        )
+        if shift_dimension.entry_type == "bool":
+            shift_options[shift_dimension.name] = [
+                shift_dimension.name,
+                f"not {shift_dimension.name}",
+            ]
+        else:
+            shift_options[shift_dimension.name] = [
+                str(sp.value) for sp in shift_properties
+            ]
     workers = worker_db.get_workers()
+    worker_options = {
+        "all": ["all workers"],
+        "workers": [w.name for w in workers],
+    }
+    worker_dimensions = worker_dimension_db.get_worker_dimensions()
+    for worker_dimension in worker_dimensions:
+        worker_properties = (
+            worker_property_db.get_worker_properties_by_worker_dimension(
+                worker_dimension
+            )
+        )
+        if worker_dimension.entry_type == "bool":
+            worker_options[worker_dimension.name] = [
+                worker_dimension.name,
+                f"not {worker_dimension.name}",
+            ]
+        else:
+            worker_options[worker_dimension.name] = [
+                str(wp.value) for wp in worker_properties
+            ]
+
     return build_templates_list(
-        [s.name for s in shifts],
-        [w.name for w in workers],
+        shift_options,
+        worker_options,
     )
 
 
 def build_templates_list(
-    shift_names: List[str],
-    worker_names: List[str],
+    shift_options: Dict,
+    worker_options: Dict,
 ) -> List[Template]:
     return [
         Template(
@@ -26,8 +71,8 @@ def build_templates_list(
             blocks=[
                 TemplateBlock(
                     name="worker",
-                    type="list",
-                    options=worker_names,
+                    type="dict",
+                    options=worker_options,
                     placeholder="John",
                 ),
                 TemplateBlock(
@@ -56,8 +101,8 @@ def build_templates_list(
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="list",
-                    options=shift_names,
+                    type="dict",
+                    options=shift_options,
                     placeholder="days off",
                 ),
             ],
@@ -69,8 +114,8 @@ def build_templates_list(
             blocks=[
                 TemplateBlock(
                     name="worker",
-                    type="list",
-                    options=worker_names,
+                    type="dict",
+                    options=worker_options,
                     placeholder="John",
                 ),
                 TemplateBlock(
@@ -93,8 +138,8 @@ def build_templates_list(
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="list",
-                    options=shift_names,
+                    type="dict",
+                    options=shift_options,
                     placeholder="days off",
                 ),
                 TemplateBlock(
@@ -118,8 +163,8 @@ def build_templates_list(
                 ),
                 TemplateBlock(
                     name="shift_reference",
-                    type="list",
-                    options=shift_names,
+                    type="dict",
+                    options=shift_options,
                     placeholder="shift night",
                 ),
                 TemplateBlock(
@@ -142,8 +187,8 @@ def build_templates_list(
                 ),
                 TemplateBlock(
                     name="shift_relative",
-                    type="list",
-                    options=shift_names,
+                    type="dict",
+                    options=shift_options,
                     placeholder="afternoon",
                 ),
                 TemplateBlock(
@@ -154,146 +199,146 @@ def build_templates_list(
                 ),
                 TemplateBlock(
                     name="worker",
-                    type="list",
-                    options=worker_names,
+                    type="dict",
+                    options=worker_options,
                     placeholder="John",
                 ),
             ],
         ),
-        Template(
-            id="3",
-            constraint_type="ord",
-            text="If shift night, then off 1 day after for John",
-            blocks=[
-                TemplateBlock(
-                    name="text",
-                    type="string",
-                    options=[],
-                    placeholder="if",
-                ),
-                TemplateBlock(
-                    name="shift_reference",
-                    type="list",
-                    options=shift_names,
-                    placeholder="shift night",
-                ),
-                TemplateBlock(
-                    name="text",
-                    type="string",
-                    options=[],
-                    placeholder="then",
-                ),
-                TemplateBlock(
-                    name="shift_relative",
-                    type="list",
-                    options=shift_names,
-                    placeholder="off",
-                ),
-                TemplateBlock(
-                    name="#",
-                    type="number",
-                    options=[],
-                    placeholder=1,
-                ),
-                TemplateBlock(
-                    name="text",
-                    type="string",
-                    options=[],
-                    placeholder="day",
-                ),
-                TemplateBlock(
-                    name="timing",
-                    type="string",
-                    options=["after", "before"],
-                    placeholder="after",
-                ),
-                TemplateBlock(
-                    name="text",
-                    type="string",
-                    options=[],
-                    placeholder="for",
-                ),
-                TemplateBlock(
-                    name="worker",
-                    type="list",
-                    options=worker_names,
-                    placeholder="John",
-                ),
-            ],
-        ),
-        Template(
-            id="4",
-            constraint_type="ord",
-            text="If morning on saturday, then off 2 days afer for John",
-            blocks=[
-                TemplateBlock(
-                    name="text",
-                    type="string",
-                    options=[],
-                    placeholder="if",
-                ),
-                TemplateBlock(
-                    name="shift_reference",
-                    type="list",
-                    options=shift_names,
-                    placeholder="shift night",
-                ),
-                TemplateBlock(
-                    name="text",
-                    type="string",
-                    options=[],
-                    placeholder="on",
-                ),
-                TemplateBlock(
-                    name="weekday",
-                    type="string",
-                    options=list(Constants.WEEK_DAYS),
-                    placeholder="monday",
-                ),
-                TemplateBlock(
-                    name="text",
-                    type="string",
-                    options=[],
-                    placeholder="then",
-                ),
-                TemplateBlock(
-                    name="shift_relative",
-                    type="list",
-                    options=shift_names,
-                    placeholder="off",
-                ),
-                TemplateBlock(
-                    name="#",
-                    type="number",
-                    options=[],
-                    placeholder=2,
-                ),
-                TemplateBlock(
-                    name="text",
-                    type="string",
-                    options=[],
-                    placeholder="day",
-                ),
-                TemplateBlock(
-                    name="timing",
-                    type="string",
-                    options=["after", "before"],
-                    placeholder="after",
-                ),
-                TemplateBlock(
-                    name="text",
-                    type="string",
-                    options=[],
-                    placeholder="for",
-                ),
-                TemplateBlock(
-                    name="worker",
-                    type="list",
-                    options=worker_names,
-                    placeholder="John",
-                ),
-            ],
-        ),
+        # Template(
+        #     id="3",
+        #     constraint_type="ord",
+        #     text="If shift night, then off 1 day after for John",
+        #     blocks=[
+        #         TemplateBlock(
+        #             name="text",
+        #             type="string",
+        #             options=[],
+        #             placeholder="if",
+        #         ),
+        #         TemplateBlock(
+        #             name="shift_reference",
+        #             type="list",
+        #             options=shift_names,
+        #             placeholder="shift night",
+        #         ),
+        #         TemplateBlock(
+        #             name="text",
+        #             type="string",
+        #             options=[],
+        #             placeholder="then",
+        #         ),
+        #         TemplateBlock(
+        #             name="shift_relative",
+        #             type="list",
+        #             options=shift_names,
+        #             placeholder="off",
+        #         ),
+        #         TemplateBlock(
+        #             name="#",
+        #             type="number",
+        #             options=[],
+        #             placeholder=1,
+        #         ),
+        #         TemplateBlock(
+        #             name="text",
+        #             type="string",
+        #             options=[],
+        #             placeholder="day",
+        #         ),
+        #         TemplateBlock(
+        #             name="timing",
+        #             type="string",
+        #             options=["after", "before"],
+        #             placeholder="after",
+        #         ),
+        #         TemplateBlock(
+        #             name="text",
+        #             type="string",
+        #             options=[],
+        #             placeholder="for",
+        #         ),
+        #         TemplateBlock(
+        #             name="worker",
+        #             type="list",
+        #             options=worker_names,
+        #             placeholder="John",
+        #         ),
+        #     ],
+        # ),
+        # Template(
+        #     id="4",
+        #     constraint_type="ord",
+        #     text="If morning on saturday, then off 2 days afer for John",
+        #     blocks=[
+        #         TemplateBlock(
+        #             name="text",
+        #             type="string",
+        #             options=[],
+        #             placeholder="if",
+        #         ),
+        #         TemplateBlock(
+        #             name="shift_reference",
+        #             type="list",
+        #             options=shift_names,
+        #             placeholder="shift night",
+        #         ),
+        #         TemplateBlock(
+        #             name="text",
+        #             type="string",
+        #             options=[],
+        #             placeholder="on",
+        #         ),
+        #         TemplateBlock(
+        #             name="weekday",
+        #             type="string",
+        #             options=list(Constants.WEEK_DAYS),
+        #             placeholder="monday",
+        #         ),
+        #         TemplateBlock(
+        #             name="text",
+        #             type="string",
+        #             options=[],
+        #             placeholder="then",
+        #         ),
+        #         TemplateBlock(
+        #             name="shift_relative",
+        #             type="list",
+        #             options=shift_names,
+        #             placeholder="off",
+        #         ),
+        #         TemplateBlock(
+        #             name="#",
+        #             type="number",
+        #             options=[],
+        #             placeholder=2,
+        #         ),
+        #         TemplateBlock(
+        #             name="text",
+        #             type="string",
+        #             options=[],
+        #             placeholder="day",
+        #         ),
+        #         TemplateBlock(
+        #             name="timing",
+        #             type="string",
+        #             options=["after", "before"],
+        #             placeholder="after",
+        #         ),
+        #         TemplateBlock(
+        #             name="text",
+        #             type="string",
+        #             options=[],
+        #             placeholder="for",
+        #         ),
+        #         TemplateBlock(
+        #             name="worker",
+        #             type="list",
+        #             options=worker_names,
+        #             placeholder="John",
+        #         ),
+        #     ],
+        # ),
     ]
 
 

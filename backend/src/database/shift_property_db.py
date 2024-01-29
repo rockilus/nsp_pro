@@ -45,14 +45,16 @@ class ShiftPropertyDB:
         shift_dimension: ShiftDimension,
     ) -> List[ShiftProperty]:
         # pylint: disable=no-member
-        shift_properties = ShiftProperty.objects.filter(  # type: ignore
-            shift_dimension=shift_dimension
+        shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
+            shift_dimension=shift_dimension.id
         )
         return [_from_mongo_shift_property(sp) for sp in list(shift_properties)]
 
     def get_shift_property_by_id(self, shift_property_id: str) -> ShiftProperty:
         # pylint: disable=no-member
-        shift_property = ShiftProperty.objects.get(id=shift_property_id)  # type: ignore
+        shift_property = ShiftPropertyDocument.objects.get(  # type: ignore
+            id=shift_property_id
+        )
         return _from_mongo_shift_property(shift_property)
 
     def get_shift_property_by_shift_and_dimension(
@@ -67,6 +69,62 @@ class ShiftPropertyDB:
             .first()
         )
         return _from_mongo_shift_property(shift_property) if shift_property else None
+
+    def get_shifts_id_by_dim_and_prop(self):
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$shift_dimension",
+                    "properties": {"$push": {"value": "$value", "shift": "$shift"}},
+                }
+            },
+            {"$unwind": "$properties"},
+            {
+                "$group": {
+                    "_id": {
+                        "shift_dimension": "$_id",
+                        "value": "$properties.value",
+                    },
+                    "shifts": {"$push": "$properties.shift"},
+                    "name": {"$first": "$name"},
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "shift_dimensions",
+                    "localField": "_id.shift_dimension",
+                    "foreignField": "_id",
+                    "as": "shift_dimension_data",
+                }
+            },
+            {"$unwind": "$shift_dimension_data"},
+            {
+                "$project": {
+                    "_id": 1,
+                    "shift_dimension": "$shift_dimension_data._id",
+                    "name": "$shift_dimension_data.name",
+                    "value": 1,
+                    "shifts": 1,
+                }
+            },
+        ]
+
+        # pylint: disable=no-member
+        result = ShiftPropertyDocument.objects.aggregate(*pipeline)  # type: ignore
+        # pylint: disable=R0801
+        out = {}
+        for r in result:
+            print(r)
+            dim_name = r["name"].lower()
+            prop_value = r["_id"]["value"].lower()
+            prop_shifts = r["shifts"]
+            if dim_name not in out:
+                out[dim_name] = {}
+            if prop_value not in out[dim_name]:
+                out[dim_name][prop_value] = prop_shifts
+            else:
+                out[dim_name][prop_value] += prop_shifts
+        return out
 
     def update_shift_property(
         self,

@@ -1,3 +1,5 @@
+import { Block } from "@mui/icons-material";
+
 export type ConstraintT = {
   id: string;
   constraintType: string;
@@ -12,13 +14,13 @@ export type ConstraintT = {
 export type BlockT = {
   name: string;
   type: string;
-  value: string | number | string[];
+  value: string | number | string[] | Record<string, string>[];
 };
 
 export type TemplateBlockT = {
   name: string;
   type: string;
-  options: string[];
+  options: string[] | Record<string, string>[];
   placeholder: string | number;
 };
 

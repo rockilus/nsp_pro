@@ -54,7 +54,7 @@ class Block(EmbeddedDocument):
             "weekday",
         ],
     )
-    type = StringField(required=True, choices=["string", "number", "list"])
+    type = StringField(required=True, choices=["string", "number", "list", "dict"])
     value = DynamicField(required=True)
 
 
