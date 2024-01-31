@@ -5,9 +5,10 @@ import humps
 from fastapi import APIRouter, Body, HTTPException
 from pydantic import TypeAdapter
 
-from core.shift import ShiftDimension
-from routes.api_model import ShiftDimensionMessage
-from scripts.setup_database import shift_dimension_db, shift_property_db
+from core.shift import ShiftDimension, ShiftProperty
+from routes.api_model import NewShiftDimensionMessage, ShiftDimensionMessage
+from routes.shift_routes import shift_property_to_api_msg
+from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
 
 router = APIRouter()
 
@@ -15,13 +16,20 @@ router = APIRouter()
 @router.post("/shift-dimensions")
 def create_shift_dimension(
     name: str = Body(...),
-    entryType: str = Body(...),
-    entryOptions: List[str] = Body(...),
-) -> ShiftDimensionMessage:
+    entry_type: str = Body(..., alias="entryType"),
+    entry_options: List[str] = Body(..., alias="entryOptions"),
+) -> NewShiftDimensionMessage:
     shift_dimension = shift_dimension_db.create_shift_dimension(
-        name, entryType, entryOptions
+        name, entry_type, entry_options
     )
-    return shift_dimension_to_api_msg(shift_dimension)
+    properties = []
+    if entry_type == "bool":
+        shifts = shift_db.get_shifts()
+        for shift in shifts:
+            properties.append(
+                shift_property_db.create_shift_property(shift, shift_dimension, False)
+            )
+    return new_shift_dimension_to_api_msg(shift_dimension, properties)
 
 
 @router.get("/shift-dimensions")
@@ -61,6 +69,18 @@ def shift_dimension_to_api_msg(
     data = asdict(shift_dimension)
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ShiftDimensionMessage)
+    return validator.validate_python(as_dict)
+
+
+def new_shift_dimension_to_api_msg(
+    shift_dimension: ShiftDimension,
+    shift_properties: List[ShiftProperty],
+) -> NewShiftDimensionMessage:
+    as_dict = {
+        "newDimension": shift_dimension_to_api_msg(shift_dimension),
+        "newProperties": [shift_property_to_api_msg(sp) for sp in shift_properties],
+    }
+    validator = TypeAdapter(NewShiftDimensionMessage)
     return validator.validate_python(as_dict)
 
 

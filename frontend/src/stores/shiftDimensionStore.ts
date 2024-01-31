@@ -1,6 +1,7 @@
 // shiftDimensionStore.ts
 import { create } from "zustand";
-import { ShiftDimensionT } from "../components/Shift/types";
+import { ShiftDimensionT, NewShiftDimensionT } from "../components/Shift/types";
+import { useShiftStore } from "./shiftStore";
 
 const baseApiUrl = "http://127.0.0.1:5000";
 const apiUrlShiftDimensions = `${baseApiUrl}/shift-dimensions`;
@@ -33,7 +34,6 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
     }
   },
 
-  // Here I keep POST for the convention, but there is no body
   addShiftDimension: async (shiftDimension) => {
     try {
       const response = await fetch(apiUrlShiftDimensions, {
@@ -43,10 +43,17 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
         },
         body: JSON.stringify(shiftDimension),
       });
-      const newShiftDimension: ShiftDimensionT = await response.json();
+      const data = await response.json();
+      const newShiftDimension: NewShiftDimensionT = data;
       set((state) => ({
-        shiftDimensions: [...state.shiftDimensions, newShiftDimension],
+        shiftDimensions: [
+          ...state.shiftDimensions,
+          newShiftDimension.newDimension,
+        ],
       }));
+      useShiftStore
+        .getState()
+        .addPropertiesToStore(newShiftDimension.newProperties);
     } catch (error) {
       console.error("Failed to add shiftDimension:", error);
     }

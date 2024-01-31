@@ -15,19 +15,13 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
 import { ColumnT } from "./types";
+import { PropertyTypes } from "../../utils/constants";
 
 interface Props {
   drawerOpen: boolean;
   toggleDrawer: () => void;
   handleAddColumn: (newColumn: ColumnT) => void;
 }
-
-const propertyTypes = {
-  str: "String",
-  int: "Integer",
-  bool: "Boolean",
-  list: "List",
-};
 
 export default function CreateDrawer({
   drawerOpen,
@@ -66,9 +60,9 @@ export default function CreateDrawer({
           label="Property Type"
           onChange={handleChange}
         >
-          {Object.keys(propertyTypes).map((key) => (
+          {Object.keys(PropertyTypes).map((key) => (
             <MenuItem value={key} key={key}>
-              {propertyTypes[key as keyof typeof propertyTypes]}
+              {PropertyTypes[key as keyof typeof PropertyTypes]}
             </MenuItem>
           ))}
         </Select>

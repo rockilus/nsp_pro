@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import List, Union
 
+from utils.constants import Constants
+
 
 @dataclass
 class Worker:
@@ -12,7 +14,7 @@ class Worker:
 class WorkerDimension:
     id: str
     name: str
-    entry_type: str
+    entry_type: Constants.DIMENSION_ENTRY_TYPES
     entry_options: List[str]
 
 

@@ -53,6 +53,16 @@ class WorkerDimensionDB:
         )
         return _from_mongo_worker_dimension(worker_dimension)
 
+    def get_worker_dimensions_by_entry_type(
+        self,
+        entry_type: str,
+    ) -> List[WorkerDimension]:
+        # pylint: disable=no-member
+        worker_dimensions = WorkerDimensionDocument.objects.filter(  # type: ignore
+            entry_type=entry_type
+        )
+        return [_from_mongo_worker_dimension(wd) for wd in list(worker_dimensions)]
+
     def update_worker_dimension(
         self, worker_dimension: WorkerDimension
     ) -> WorkerDimension:
@@ -91,6 +101,6 @@ def _from_mongo_worker_dimension(
     return WorkerDimension(
         id=doc_obj.id,
         name=doc_obj.name,
-        entry_type=doc_obj.entry_type,
+        entry_type=doc_obj.entry_type,  # type: ignore
         entry_options=[*doc_obj.entry_options],
     )

@@ -9,6 +9,7 @@ type WorkerStateT = {
   workers: WorkerT[];
   fetchWorkers: () => void;
   addWorker: () => void;
+  addPropertiesToStore: (newProperties: WorkerPropertyT[]) => void;
   updateWorker: (updatedWorker: WorkerT) => void;
   updateWorkerProperty: (updatedWorkerProperty: WorkerPropertyT) => void;
   deleteWorker: (id: string) => void;
@@ -48,6 +49,26 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
     } catch (error) {
       console.error("Failed to add worker:", error);
     }
+  },
+
+  addPropertiesToStore: (newProperties) => {
+    set((state) => ({
+      workers: state.workers.map((worker) => {
+        const newWorkerProperties = newProperties.filter(
+          (property) => property.workerId === worker.id
+        );
+
+        return newWorkerProperties
+          ? {
+              ...worker,
+              workerProperties: [
+                ...worker.workerProperties,
+                ...newWorkerProperties,
+              ],
+            }
+          : worker;
+      }),
+    }));
   },
 
   updateWorker: async (updatedWorker) => {

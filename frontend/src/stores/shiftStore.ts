@@ -11,6 +11,7 @@ type ShiftStateT = {
   shifts: ShiftT[];
   fetchShifts: () => void;
   addShift: () => void;
+  addPropertiesToStore: (newProperties: ShiftPropertyT[]) => void;
   updateShift: (updatedShift: ShiftT) => void;
   updateShiftProperty: (updatedShiftProperty: ShiftPropertyT) => void;
   deleteShift: (id: string) => void;
@@ -60,6 +61,26 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
     } catch (error) {
       console.error("Failed to add shift:", error);
     }
+  },
+
+  addPropertiesToStore: (newProperties) => {
+    set((state) => ({
+      shifts: state.shifts.map((shift) => {
+        const newShiftProperties = newProperties.filter(
+          (property) => property.shiftId === shift.id
+        );
+
+        return newShiftProperties
+          ? {
+              ...shift,
+              shiftProperties: [
+                ...shift.shiftProperties,
+                ...newShiftProperties,
+              ],
+            }
+          : shift;
+      }),
+    }));
   },
 
   updateShift: async (updatedShift) => {

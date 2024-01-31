@@ -1,6 +1,10 @@
 // workerDimensionStore.ts
 import { create } from "zustand";
-import { WorkerDimensionT } from "../components/Worker/types";
+import {
+  WorkerDimensionT,
+  NewWorkerDimensionT,
+} from "../components/Worker/types";
+import { useWorkerStore } from "./workerStore";
 
 const baseApiUrl = "http://127.0.0.1:5000";
 const apiUrlWorkerDimensions = `${baseApiUrl}/worker-dimensions`;
@@ -46,10 +50,16 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
           body: JSON.stringify(workerDimension),
         });
         const data = await response.json();
-        const newWorkerDimension: WorkerDimensionT = data; // check if this works
+        const newWorkerDimension: NewWorkerDimensionT = data;
         set((state) => ({
-          workerDimensions: [...state.workerDimensions, newWorkerDimension],
+          workerDimensions: [
+            ...state.workerDimensions,
+            newWorkerDimension.newDimension,
+          ],
         }));
+        useWorkerStore
+          .getState()
+          .addPropertiesToStore(newWorkerDimension.newProperties);
       } catch (error) {
         console.error("Failed to add workerDimension:", error);
       }

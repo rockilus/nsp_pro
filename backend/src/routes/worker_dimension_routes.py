@@ -5,9 +5,10 @@ import humps
 from fastapi import APIRouter, Body, HTTPException
 from pydantic import TypeAdapter
 
-from core.worker import WorkerDimension
-from routes.api_model import WorkerDimensionMessage
-from scripts.setup_database import worker_dimension_db, worker_property_db
+from core.worker import WorkerDimension, WorkerProperty
+from routes.api_model import NewWorkerDimensionMessage, WorkerDimensionMessage
+from routes.worker_routes import worker_property_to_api_msg
+from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
 
 router = APIRouter()
 
@@ -17,11 +18,20 @@ def create_worker_dimension(
     name: str = Body(...),
     entry_type: str = Body(..., alias="entryType"),
     entry_options: List[str] = Body(..., alias="entryOptions"),
-) -> WorkerDimensionMessage:
+) -> NewWorkerDimensionMessage:
     worker_dimension = worker_dimension_db.create_worker_dimension(
         name, entry_type, entry_options
     )
-    return worker_dimension_to_api_msg(worker_dimension)
+    properties = []
+    if entry_type == "bool":
+        workers = worker_db.get_workers()
+        for worker in workers:
+            properties.append(
+                worker_property_db.create_worker_property(
+                    worker, worker_dimension, False
+                )
+            )
+    return new_worker_dimension_to_api_msg(worker_dimension, properties)
 
 
 @router.get("/worker-dimensions")
@@ -62,6 +72,18 @@ def worker_dimension_to_api_msg(
     data = asdict(worker_dimension)
     as_dict = humps.camelize(data)
     validator = TypeAdapter(WorkerDimensionMessage)
+    return validator.validate_python(as_dict)
+
+
+def new_worker_dimension_to_api_msg(
+    worker_dimension: WorkerDimension,
+    worker_properties: List[WorkerProperty],
+) -> NewWorkerDimensionMessage:
+    as_dict = {
+        "newDimension": worker_dimension_to_api_msg(worker_dimension),
+        "newProperties": [worker_property_to_api_msg(wp) for wp in worker_properties],
+    }
+    validator = TypeAdapter(NewWorkerDimensionMessage)
     return validator.validate_python(as_dict)
 
 

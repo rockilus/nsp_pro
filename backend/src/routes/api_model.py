@@ -4,6 +4,32 @@ from typing import Dict, List, Union
 from pydantic import BaseModel
 
 
+# Worker
+class WorkerPropertyMessage(BaseModel):
+    id: str
+    value: str | int | bool
+    workerDimensionId: str
+    workerId: str
+
+
+class WorkerMessage(BaseModel):
+    id: str
+    name: str
+    workerProperties: List[WorkerPropertyMessage]
+
+
+class WorkerDimensionMessage(BaseModel):
+    id: str
+    name: str
+    entryType: str
+    entryOptions: List[str]
+
+
+class NewWorkerDimensionMessage(BaseModel):
+    newDimension: WorkerDimensionMessage
+    newProperties: List[WorkerPropertyMessage]
+
+
 # Shift
 class ShiftPropertyMessage(BaseModel):
     id: str
@@ -40,6 +66,11 @@ class ShiftDimensionMessage(BaseModel):
     entryOptions: List[str]
 
 
+class NewShiftDimensionMessage(BaseModel):
+    newDimension: ShiftDimensionMessage
+    newProperties: List[ShiftPropertyMessage]
+
+
 # Coverage
 class ShiftDemandMessage(BaseModel):
     id: str
@@ -66,25 +97,55 @@ class CoverageSelectorMessage(BaseModel):
     endDate: date
 
 
-# Worker
-class WorkerPropertyMessage(BaseModel):
+# Fixed Assignement
+class FixedAssignmentMessage(BaseModel):
     id: str
-    value: str
-    workerDimensionId: str
     workerId: str
+    date: date
+    shiftId: str
+    status: str
 
 
-class WorkerMessage(BaseModel):
+# Request
+class RequestMessage(BaseModel):
     id: str
+    workerId: str
+    date: date
+    shiftId: str
+    priority: str
+    status: str
+
+
+# Constraint
+class BlockMessage(BaseModel):
     name: str
-    workerProperties: List[WorkerPropertyMessage]
+    type: str
+    value: str | int | List[str] | List[Dict[str, str]]
 
 
-class WorkerDimensionMessage(BaseModel):
+class ConstraintMessage(BaseModel):
     id: str
+    constraintType: str
+    templateId: str
+    blocks: List[BlockMessage]
+    text: str
+    hard: bool
+    priority: str
+    active: bool
+
+
+class TemplateBlockMessage(BaseModel):
     name: str
-    entryType: str
-    entryOptions: List[str]
+    type: str
+    options: List[str] | Dict
+    placeholder: str | int
+
+
+class TemplateMessage(BaseModel):
+    id: str
+    constraintType: str
+    text: str
+    blocks: List[TemplateBlockMessage]
 
 
 # Schedule
@@ -150,57 +211,6 @@ class SolutionMessage(BaseModel):
 class ValidateMessage(BaseModel):
     schedule: ScheduleMessage
     assignments: List[AssignmentMessage]
-
-
-# Fixed Assignement
-class FixedAssignmentMessage(BaseModel):
-    id: str
-    workerId: str
-    date: date
-    shiftId: str
-    status: str
-
-
-# Request
-class RequestMessage(BaseModel):
-    id: str
-    workerId: str
-    date: date
-    shiftId: str
-    priority: str
-    status: str
-
-
-# Constraint
-class BlockMessage(BaseModel):
-    name: str
-    type: str
-    value: str | int | List[str] | List[Dict[str, str]]
-
-
-class ConstraintMessage(BaseModel):
-    id: str
-    constraintType: str
-    templateId: str
-    blocks: List[BlockMessage]
-    text: str
-    hard: bool
-    priority: str
-    active: bool
-
-
-class TemplateBlockMessage(BaseModel):
-    name: str
-    type: str
-    options: List[str] | Dict
-    placeholder: str | int
-
-
-class TemplateMessage(BaseModel):
-    id: str
-    constraintType: str
-    text: str
-    blocks: List[TemplateBlockMessage]
 
 
 # Authentication

@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Union
 
+from utils.constants import Constants
+
 
 @dataclass
 class Shift:
@@ -19,7 +21,7 @@ class Shift:
 class ShiftDimension:
     id: str
     name: str
-    entry_type: str  # str, int, bool, list
+    entry_type: Constants.DIMENSION_ENTRY_TYPES  # str, int, bool, list
     entry_options: List[str]
 
 
