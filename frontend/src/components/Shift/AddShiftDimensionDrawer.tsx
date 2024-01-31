@@ -36,14 +36,14 @@ export default function AddShiftDimensionDrawer({
     (state) => state.addShiftDimension
   );
 
-  const handleAddConfirm = async () => {
+  const handleAddConfirm = () => {
     const newShiftDimension: ShiftDimensionT = {
       id: "",
       name: name,
       entryType: entryType,
       entryOptions: listOptions,
     };
-    await addShiftDimension(newShiftDimension);
+    addShiftDimension(newShiftDimension);
     toggleDrawer();
   };
 
@@ -148,7 +148,6 @@ export default function AddShiftDimensionDrawer({
       {entryType === "list" && (
         <ListItem key={"list_options"}>{addListOptions()}</ListItem>
       )}
-
       <Button
         variant="contained"
         color="primary"

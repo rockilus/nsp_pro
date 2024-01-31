@@ -14,34 +14,36 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
-import { ColumnT } from "./types";
+import { WorkerDimensionT } from "./types";
+import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
 import { PropertyTypes } from "../../utils/constants";
 
 interface Props {
   drawerOpen: boolean;
   toggleDrawer: () => void;
-  handleAddColumn: (newColumn: ColumnT) => void;
 }
 
-export default function CreateDrawer({
+export default function AddWorkerDimensionDrawer({
   drawerOpen,
   toggleDrawer,
-  handleAddColumn,
 }: Props) {
   const [name, setName] = useState("");
   const [entryType, setEntryType] = useState("");
   const [listOptions, setListOptions] = useState<string[]>([]);
   const [newOption, setNewOption] = useState<string>("");
 
-  const handleAddConfirm = async () => {
-    const newColumn: ColumnT = {
+  const addWorkerDimension = useWorkerDimensionStore(
+    (state) => state.addWorkerDimension
+  );
+
+  const handleAddConfirm = () => {
+    const newWorkerDimension: WorkerDimensionT = {
       id: "",
       name: name,
       entryType: entryType,
       entryOptions: listOptions,
-      defaultColumn: false,
     };
-    await handleAddColumn(newColumn);
+    addWorkerDimension(newWorkerDimension);
     toggleDrawer();
   };
 
@@ -146,7 +148,6 @@ export default function CreateDrawer({
       {entryType === "list" && (
         <ListItem key={"list_options"}>{addListOptions()}</ListItem>
       )}
-
       <Button
         variant="contained"
         color="primary"

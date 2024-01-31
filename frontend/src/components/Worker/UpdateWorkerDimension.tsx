@@ -1,69 +1,33 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import CancelIcon from "@mui/icons-material/Cancel";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
-import DialogColumnDelete from "./DialogColumnDelete";
+import DialogColumnDelete from "./DialogWorkerDimensionDel";
 
 interface Props {
-  columnId: string;
+  workerDimensionId: string;
   name: string;
   entryType: string;
   entryOptions: string[];
   setNameState: React.Dispatch<React.SetStateAction<string>>;
-  setEntryType: React.Dispatch<React.SetStateAction<string>>;
   setEntryOptions: React.Dispatch<React.SetStateAction<string[]>>;
-  handleDeleteColumn: (columnId: string) => void;
 }
 
-const propertyTypes = {
-  str: "String",
-  int: "Integer",
-  bool: "Boolean",
-  list: "List",
-};
-
-export default function UpdateColumnHeader({
-  columnId,
+export default function UpdateWorkerDimension({
+  workerDimensionId,
   name: value,
   entryType,
   entryOptions,
   setNameState,
-  setEntryType,
   setEntryOptions,
-  handleDeleteColumn,
 }: Props) {
   const [newOption, setNewOption] = useState<string>("");
-
-  const selectField = () => (
-    <Box sx={{ minWidth: 120, width: "100%" }}>
-      <FormControl fullWidth>
-        <InputLabel id="demo-simple-select-label">Property Type</InputLabel>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={entryType}
-          label="Property Type"
-          onChange={(e) => setEntryType(e.target.value)}
-        >
-          {Object.keys(propertyTypes).map((key) => (
-            <MenuItem value={key} key={key}>
-              {propertyTypes[key as keyof typeof propertyTypes]}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </Box>
-  );
 
   const addListOptions = () => (
     <Box sx={{ minWidth: 120, width: "100%" }}>
@@ -119,16 +83,12 @@ export default function UpdateColumnHeader({
             fullWidth
           />
         </ListItem>
-        <ListItem key={"entry_type"}>{selectField()}</ListItem>
       </List>
       {entryType === "list" && (
         <ListItem key={"list_options"}>{addListOptions()}</ListItem>
       )}
       <ListItem key={"button"}>
-        <DialogColumnDelete
-          columnId={columnId}
-          handleDeleteColumn={handleDeleteColumn}
-        />
+        <DialogColumnDelete workerDimensionId={workerDimensionId} />
       </ListItem>
     </Box>
   );

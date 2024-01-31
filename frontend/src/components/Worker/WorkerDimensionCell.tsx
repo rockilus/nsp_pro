@@ -10,25 +10,23 @@ import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
 import Typography from "@mui/material/Typography";
 
-import UpdateColumnHeader from "./UpdateColumnHeader";
-import { ColumnT } from "./types";
+import UpdateWorkerDimension from "./UpdateWorkerDimension";
+import { WorkerDimensionT } from "./types";
+import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
 
 interface Props {
-  column: ColumnT;
-  handleEditCell: (updatedColumn: ColumnT) => void;
-  handleDeleteColumn: (columnId: string) => void;
+  workerDimension: WorkerDimensionT;
 }
 
-export default function HeadCell({
-  column,
-  handleEditCell,
-  handleDeleteColumn,
-}: Props) {
+export default function WorkerDimensionCell({ workerDimension }: Props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [nameState, setNameState] = useState(column.name);
-  const [entryTypeState, setEntryTypeState] = useState(column.entryType);
+  const [nameState, setNameState] = useState(workerDimension.name);
   const [entryOptionsState, setEntryOptionsState] = useState(
-    column.entryOptions
+    workerDimension.entryOptions
+  );
+
+  const updateWorkerDimension = useWorkerDimensionStore(
+    (state) => state.updateWorkerDimension
   );
 
   const open = Boolean(anchorEl);
@@ -41,40 +39,34 @@ export default function HeadCell({
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (!column.defaultColumn) {
-      setAnchorEl(event.currentTarget);
-    }
+    setAnchorEl(event.currentTarget);
   };
 
   const handleClose = () => {
     setAnchorEl(null);
   };
 
-  const handleEditConfirm = async () => {
+  const handleEditConfirm = () => {
     if (
-      nameState !== column.name ||
-      entryTypeState !== column.entryType ||
-      entryOptionsState !== column.entryOptions
+      nameState !== workerDimension.name ||
+      entryOptionsState !== workerDimension.entryOptions
     ) {
-      const updatedColumn: ColumnT = {
-        id: column.id,
+      const updatedWD: WorkerDimensionT = {
+        id: workerDimension.id,
         name: nameState,
-        entryType: entryTypeState,
+        entryType: workerDimension.entryType,
         entryOptions: entryOptionsState,
-        defaultColumn: column.defaultColumn,
       };
-      await handleEditCell(updatedColumn);
+      updateWorkerDimension(updatedWD);
     }
-    setNameState(column.name);
-    setEntryTypeState(column.entryType);
-    setEntryOptionsState(column.entryOptions);
+    setNameState(workerDimension.name);
+    setEntryOptionsState(workerDimension.entryOptions);
     handleClose();
   };
 
   const handleEditCancel = () => {
-    setNameState(column.name);
-    setEntryTypeState(column.entryType);
-    setEntryOptionsState(column.entryOptions);
+    setNameState(workerDimension.name);
+    setEntryOptionsState(workerDimension.entryOptions);
     handleClose();
   };
 
@@ -87,14 +79,14 @@ export default function HeadCell({
       }}
     >
       <Typography variant="body2" color="text.secondary" align="left">
-        {column.name}
+        {workerDimension.name}
       </Typography>
-      {iconsPrefix[column.entryType]}
+      {iconsPrefix[workerDimension.entryType]}
     </Box>
   );
 
   return (
-    <TableCell key={column.id} component="th" scope="row">
+    <TableCell key={workerDimension.id} component="th" scope="row">
       <Button
         id="basic-button"
         aria-controls={open ? "basic-menu" : undefined}
@@ -123,15 +115,13 @@ export default function HeadCell({
           "aria-labelledby": "basic-button",
         }}
       >
-        <UpdateColumnHeader
-          columnId={column.id}
+        <UpdateWorkerDimension
+          workerDimensionId={workerDimension.id}
           name={nameState}
-          entryType={entryTypeState}
+          entryType={workerDimension.entryType}
           entryOptions={entryOptionsState}
           setNameState={setNameState}
-          setEntryType={setEntryTypeState}
           setEntryOptions={setEntryOptionsState}
-          handleDeleteColumn={handleDeleteColumn}
         />
       </Menu>
     </TableCell>

@@ -8,16 +8,18 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
+import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
+
 interface Props {
-  columnId: string;
-  handleDeleteColumn: (columnId: string) => void;
+  workerDimensionId: string;
 }
 
-export default function DialogColumnDelete({
-  columnId,
-  handleDeleteColumn,
-}: Props) {
+export default function DialogColumnDelete({ workerDimensionId }: Props) {
   const [open, setOpen] = useState(false);
+
+  const deleteWorkerDimension = useWorkerDimensionStore(
+    (state) => state.deleteWorkerDimension
+  );
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -50,8 +52,8 @@ export default function DialogColumnDelete({
         <DialogActions>
           <Button
             onClick={() => {
+              deleteWorkerDimension(workerDimensionId);
               handleClose();
-              handleDeleteColumn(columnId);
             }}
             color="error"
           >

@@ -2,7 +2,7 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import TypeAdapter
 
 from core.worker import Worker, WorkerProperty
@@ -53,26 +53,20 @@ def update_worker(worker_id: str, worker: WorkerMessage) -> WorkerMessage:
 def update_worker_property(
     worker_id: str,
     worker_dimension_id: str,
-    value: str = Body(...),
+    worker_property: WorkerPropertyMessage,
 ) -> WorkerPropertyMessage:
-    worker = worker_db.get_worker_by_id(worker_id)
-    worker_dimension = worker_dimension_db.get_worker_dimension_by_id(
-        worker_dimension_id
-    )
-    worker_property = worker_property_db.get_worker_property_by_worker_and_dimension(
-        worker, worker_dimension
-    )
-
-    if not worker_property:
-        updated_worker_property = worker_property_db.create_worker_property(
-            worker, worker_dimension, value
+    wp_data = api_msg_to_worker_property(worker_property)
+    if wp_data.id == "":
+        worker = worker_db.get_worker_by_id(worker_id)
+        worker_dimension = worker_dimension_db.get_worker_dimension_by_id(
+            worker_dimension_id
+        )
+        new_wp = worker_property_db.create_worker_property(
+            worker, worker_dimension, wp_data.value
         )
     else:
-        worker_property.value = value
-        updated_worker_property = worker_property_db.update_worker_property(
-            worker_property
-        )
-    return worker_property_to_api_msg(updated_worker_property)
+        new_wp = worker_property_db.update_worker_property(wp_data)
+    return worker_property_to_api_msg(new_wp)
 
 
 @router.delete("/workers/{worker_id}")
@@ -107,3 +101,8 @@ def api_msg_to_worker(msg: WorkerMessage) -> Worker:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake = {k: v for k, v in data_snake.items() if k != "worker_properties"}
     return Worker(**data_snake)
+
+
+def api_msg_to_worker_property(msg: WorkerPropertyMessage) -> WorkerProperty:
+    data_snake = humps.decamelize(msg.model_dump())
+    return WorkerProperty(**data_snake)

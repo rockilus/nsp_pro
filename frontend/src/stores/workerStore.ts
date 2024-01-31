@@ -100,7 +100,7 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(updatedWorkerProperty.value),
+          body: JSON.stringify(updatedWorkerProperty),
         }
       );
       const newWorkerProperty: WorkerPropertyT = await response.json();

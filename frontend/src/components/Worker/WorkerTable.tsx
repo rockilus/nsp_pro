@@ -12,30 +12,30 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
-import ShiftPropertyCell from "./ShiftPropertyCell";
-import ShiftDimensionCell from "./ShiftDimensionCell";
-import AddShiftDimensionDrawer from "./AddShiftDimensionDrawer";
-import ShiftFieldCell from "./ShiftFieldCell";
-import { ShiftDimensionT, ShiftT } from "./types";
-import { useShiftStore } from "../../stores/shiftStore";
+import WorkerPropertyCell from "./WorkerPropertyCell";
+import WorkerDimensionCell from "./WorkerDimensionCell";
+import AddWorkerDimensionDrawer from "./AddWorkerDimensionDrawer";
+import WorkerFieldCell from "./WorkerFieldCell";
+import { WorkerDimensionT, WorkerT } from "./types";
+import { useWorkerStore } from "../../stores/workerStore";
 import { DefaultProperties } from "../../utils/constants";
 
 interface Props {
-  shiftDimensions: ShiftDimensionT[];
-  shifts: ShiftT[];
-  defaultShiftFields: string[];
+  workerDimensions: WorkerDimensionT[];
+  workers: WorkerT[];
+  defaultWorkerFields: string[];
 }
 
-export default function ShiftTable({
-  shiftDimensions,
-  shifts,
-  defaultShiftFields,
+export default function WorkerTable({
+  workerDimensions,
+  workers,
+  defaultWorkerFields,
 }: Props) {
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const addShift = useShiftStore((state) => state.addShift);
-  const deleteShift = useShiftStore((state) => state.deleteShift);
+  const addWorker = useWorkerStore((state) => state.addWorker);
+  const deleteWorker = useWorkerStore((state) => state.deleteWorker);
 
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
@@ -47,11 +47,11 @@ export default function ShiftTable({
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              {defaultShiftFields.map((field, index) => (
+              {defaultWorkerFields.map((field, index) => (
                 <TableCell key={index}>{field}</TableCell>
               ))}
-              {shiftDimensions.map((sd, sdIndex) => (
-                <ShiftDimensionCell key={sdIndex} shiftDimension={sd} />
+              {workerDimensions.map((wd, wdIndex) => (
+                <WorkerDimensionCell key={wdIndex} workerDimension={wd} />
               ))}
               <TableCell>
                 <Button onClick={toggleDrawer}>
@@ -61,46 +61,46 @@ export default function ShiftTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {shifts.map((shift, shiftIndex) => (
+            {workers.map((worker, workerIndex) => (
               <TableRow
-                key={shiftIndex}
+                key={workerIndex}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
-                {defaultShiftFields.map((field, index) => (
-                  <ShiftFieldCell
+                {defaultWorkerFields.map((field, index) => (
+                  <WorkerFieldCell
                     key={index}
-                    shift={shift}
-                    shiftField={field}
+                    worker={worker}
+                    workerField={field}
                     editing={bodyEditing}
                     setEditing={setBodyEditing}
                   />
                 ))}
-                {shiftDimensions.map((sd, sdIndex) => {
-                  const shiftProperty = shift.shiftProperties.find(
-                    (sp) => sp.shiftDimensionId === sd.id
+                {workerDimensions.map((wd, wdIndex) => {
+                  const workerProperty = worker.workerProperties.find(
+                    (wp) => wp.workerDimensionId === wd.id
                   );
                   return (
-                    <ShiftPropertyCell
-                      key={sdIndex}
-                      shiftProperty={
-                        shiftProperty
-                          ? shiftProperty
+                    <WorkerPropertyCell
+                      key={wdIndex}
+                      workerProperty={
+                        workerProperty
+                          ? workerProperty
                           : {
                               id: "",
-                              shiftId: shift.id,
-                              shiftDimensionId: sd.id,
-                              value: DefaultProperties[sd.entryType],
+                              workerId: worker.id,
+                              workerDimensionId: wd.id,
+                              value: DefaultProperties[wd.entryType],
                             }
                       }
-                      shiftDimension={sd}
-                      editing={bodyEditing[shift.id] === sd.id}
+                      workerDimension={wd}
+                      editing={bodyEditing[worker.id] === wd.id}
                       setEditing={setBodyEditing}
                     />
                   );
                 })}
                 <TableCell component="th" scope="row">
                   <Box sx={{ display: "flex" }}>
-                    <Button onClick={() => deleteShift(shift.id)}>
+                    <Button onClick={() => deleteWorker(worker.id)}>
                       <DeleteIcon />
                     </Button>
                   </Box>
@@ -108,8 +108,8 @@ export default function ShiftTable({
               </TableRow>
             ))}
             <TableRow>
-              <TableCell colSpan={shiftDimensions.length}>
-                <Button onClick={addShift}>
+              <TableCell colSpan={workerDimensions.length}>
+                <Button onClick={addWorker}>
                   <AddIcon />
                   New
                 </Button>
@@ -118,7 +118,7 @@ export default function ShiftTable({
           </TableBody>
         </Table>
       </TableContainer>
-      <AddShiftDimensionDrawer
+      <AddWorkerDimensionDrawer
         drawerOpen={drawerOpen}
         toggleDrawer={toggleDrawer}
       />
