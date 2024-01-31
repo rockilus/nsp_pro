@@ -28,9 +28,9 @@ def build_templates() -> List[Template]:
                 f"not {shift_dimension.name}",
             ]
         else:
-            shift_options[shift_dimension.name] = [
-                str(sp.value) for sp in shift_properties
-            ]
+            shift_options[shift_dimension.name] = list(
+                set(str(sp.value) for sp in shift_properties)
+            )
     workers = worker_db.get_workers()
     worker_options = {
         "all": ["all workers"],
@@ -49,9 +49,9 @@ def build_templates() -> List[Template]:
                 f"not {worker_dimension.name}",
             ]
         else:
-            worker_options[worker_dimension.name] = [
-                str(wp.value) for wp in worker_properties
-            ]
+            worker_options[worker_dimension.name] = list(
+                set(str(wp.value) for wp in worker_properties)
+            )
 
     return build_templates_list(
         shift_options,
