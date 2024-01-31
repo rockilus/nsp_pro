@@ -116,7 +116,13 @@ class ShiftPropertyDB:
         for r in result:
             print(r)
             dim_name = r["name"].lower()
-            prop_value = r["_id"]["value"].lower()
+            prop_value = (
+                r["_id"]["value"].lower()
+                if not isinstance(r["_id"]["value"], bool)
+                else dim_name
+                if r["_id"]["value"]
+                else "not " + dim_name
+            )
             prop_shifts = r["shifts"]
             if dim_name not in out:
                 out[dim_name] = {}
