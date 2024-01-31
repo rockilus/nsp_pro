@@ -54,6 +54,16 @@ class ShiftDimensionDB:
         )
         return _from_mongo_shift_dimension(shift_dimension)
 
+    def get_shift_dimensions_by_entry_type(
+        self,
+        entry_type: str,
+    ) -> List[ShiftDimension]:
+        # pylint: disable=no-member
+        shift_dimensions = ShiftDimensionDocument.objects.filter(  # type: ignore
+            entry_type=entry_type
+        )
+        return [_from_mongo_shift_dimension(sd) for sd in list(shift_dimensions)]
+
     def update_shift_dimension(
         # pylint: disable=too-many-arguments
         self,
@@ -90,6 +100,6 @@ def _from_mongo_shift_dimension(
         # pylint: disable=R0801
         id=doc_obj.id,
         name=doc_obj.name,
-        entry_type=doc_obj.entry_type,
+        entry_type=doc_obj.entry_type,  # type: ignore
         entry_options=[*doc_obj.entry_options],
     )

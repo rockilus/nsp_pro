@@ -17,3 +17,8 @@ export type WorkerT = {
   name: string;
   workerProperties: WorkerPropertyT[];
 };
+
+export type NewWorkerDimensionT = {
+  newDimension: WorkerDimensionT;
+  newProperties: WorkerPropertyT[];
+};

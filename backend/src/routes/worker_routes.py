@@ -15,10 +15,13 @@ router = APIRouter()
 @router.post("/workers")
 def create_worker() -> WorkerMessage:
     worker_created = worker_db.create_worker()
-    worker_properties = worker_property_db.get_worker_properties_by_worker(
-        worker_created
-    )
-    return worker_and_properties_to_api_msg(worker_created, worker_properties)
+    wd_bool = worker_dimension_db.get_worker_dimensions_by_entry_type("bool")
+    wp_bool = []
+    for wd in wd_bool:
+        wp_bool.append(
+            worker_property_db.create_worker_property(worker_created, wd, False)
+        )
+    return worker_and_properties_to_api_msg(worker_created, wp_bool)
 
 
 @router.get("/workers")
@@ -91,11 +94,10 @@ def worker_property_to_api_msg(
 def worker_and_properties_to_api_msg(
     worker: Worker, worker_properties: List[WorkerProperty]
 ) -> WorkerMessage:
-    worker_properties_message = [
+    data = asdict(worker)
+    data["worker_properties"] = [
         worker_property_to_api_msg(wp) for wp in worker_properties
     ]
-    data = asdict(worker)
-    data["worker_properties"] = worker_properties_message
     as_dict = humps.camelize(data)
     validator = TypeAdapter(WorkerMessage)
     return validator.validate_python(as_dict)

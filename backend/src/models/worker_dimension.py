@@ -7,5 +7,5 @@ class WorkerDimension(Document):
 
     id = StringField(primary_key=True, required=True)
     name = StringField(required=True)
-    entry_type = StringField(required=True)
+    entry_type = StringField(required=True, choices=["str", "int", "bool", "list"])
     entry_options = ListField(StringField())

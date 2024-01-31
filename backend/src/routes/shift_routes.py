@@ -15,8 +15,13 @@ router = APIRouter()
 @router.post("/shifts", status_code=201)
 def create_shift() -> ShiftMessage:
     shift_created = shift_db.create_shift()
-    shift_properties = shift_property_db.get_shift_properties_by_shift(shift_created)
-    return shift_and_properties_to_api_msg(shift_created, shift_properties)
+    sd_bool = shift_dimension_db.get_shift_dimensions_by_entry_type("bool")
+    sp_bool = []
+    for wd in sd_bool:
+        sp_bool.append(
+            shift_property_db.create_shift_property(shift_created, wd, False)
+        )
+    return shift_and_properties_to_api_msg(shift_created, sp_bool)
 
 
 @router.get("/shifts")

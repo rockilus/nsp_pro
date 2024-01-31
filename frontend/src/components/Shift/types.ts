@@ -34,3 +34,8 @@ export type ShiftDefaultT = {
   staffing: number;
   color: string;
 };
+
+export type NewShiftDimensionT = {
+  newDimension: ShiftDimensionT;
+  newProperties: ShiftPropertyT[];
+};
