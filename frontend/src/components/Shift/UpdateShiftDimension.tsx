@@ -1,14 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import CancelIcon from "@mui/icons-material/Cancel";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
@@ -22,13 +18,6 @@ interface Props {
   setNameState: React.Dispatch<React.SetStateAction<string>>;
   setEntryOptions: React.Dispatch<React.SetStateAction<string[]>>;
 }
-
-const propertyTypes = {
-  str: "String",
-  int: "Integer",
-  bool: "Boolean",
-  list: "List",
-};
 
 export default function UpdateShiftDimension({
   shiftDimensionId,

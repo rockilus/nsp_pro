@@ -46,7 +46,7 @@ export default function ShiftDimensionCell({ shiftDimension }: Props) {
     setAnchorEl(null);
   };
 
-  const handleEditConfirm = async () => {
+  const handleEditConfirm = () => {
     if (
       nameState !== shiftDimension.name ||
       entryOptionsState !== shiftDimension.entryOptions
@@ -57,7 +57,7 @@ export default function ShiftDimensionCell({ shiftDimension }: Props) {
         entryType: shiftDimension.entryType,
         entryOptions: entryOptionsState,
       };
-      await updateShiftDimension(updatedSD);
+      updateShiftDimension(updatedSD);
     }
     setNameState(shiftDimension.name);
     setEntryOptionsState(shiftDimension.entryOptions);

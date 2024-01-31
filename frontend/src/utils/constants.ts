@@ -14,6 +14,9 @@ export const WeekDays = [
 export const NumHoursInDay = 24;
 export const NumQuarterHoursInHour = 4;
 
+// Workers
+export const DefaultWorkerFields = ["Name"];
+
 // Shifts
 export const DefaultShiftFields = [
   "Color",
