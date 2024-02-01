@@ -29,12 +29,7 @@ class TestConstraint:
             operator="",
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(
-                operator="",
-                selector="all",
-                target=[],
-                num_eligible_workers=0,
-            ),
+            worker_var=VarWorker(selector="all", target=[], num_eligible_workers=0),
             day_var=VarDay(
                 selector="all",
                 target=0,
@@ -42,13 +37,7 @@ class TestConstraint:
                 end_date=date.today(),
                 interval=0,
             ),
-            shift_var=VarShift(
-                operator="",
-                selector="all",
-                target=[],
-                reference=[],
-                relative=[],
-            ),
+            shift_var=VarShift(selector="all", target=[], reference=[], relative=[]),
             hard=False,
             hard_to_soft=False,
             penalty=2,

@@ -188,10 +188,7 @@ test_data = [
             target_value=2,
             target_unit="",
             worker_var=VarWorker(
-                operator="",
-                selector="equal",
-                target_ids=["0"],
-                num_eligible_workers=0,
+                selector="equal", target_ids=["0"], num_eligible_workers=0
             ),
             day_var=VarDay(
                 selector="all",
@@ -201,7 +198,6 @@ test_data = [
                 interval=0,
             ),
             shift_var=VarShift(
-                operator="",
                 selector="equal",
                 target_ids=["0"],
                 reference_ids=[],
@@ -248,12 +244,7 @@ test_data = [
             operator="less_than_or_equal",
             target_value=2,
             target_unit="",
-            worker_var=VarWorker(
-                operator="",
-                selector="all",
-                target_ids=[],
-                num_eligible_workers=0,
-            ),
+            worker_var=VarWorker(selector="all", target_ids=[], num_eligible_workers=0),
             day_var=VarDay(
                 selector="all",
                 target=0,
@@ -262,7 +253,6 @@ test_data = [
                 interval=0,
             ),
             shift_var=VarShift(
-                operator="",
                 selector="all",
                 target_ids=[],
                 reference_ids=[],
@@ -310,10 +300,7 @@ test_data = [
             target_value=2,
             target_unit="",
             worker_var=VarWorker(
-                operator="",
-                selector="equal",
-                target_ids=["4", "5"],
-                num_eligible_workers=0,
+                selector="equal", target_ids=["4", "5"], num_eligible_workers=0
             ),
             day_var=VarDay(
                 selector="all",
@@ -323,7 +310,6 @@ test_data = [
                 interval=0,
             ),
             shift_var=VarShift(
-                operator="",
                 selector="equal",
                 target_ids=["0", "1", "4", "5", "6", "7"],
                 reference_ids=[],
@@ -375,10 +361,7 @@ test_data = [
             target_value=2,
             target_unit="",
             worker_var=VarWorker(
-                operator="",
-                selector="equal",
-                target_ids=["1", "2"],
-                num_eligible_workers=0,
+                selector="equal", target_ids=["1", "2"], num_eligible_workers=0
             ),
             day_var=VarDay(
                 selector="all",
@@ -388,7 +371,6 @@ test_data = [
                 interval=0,
             ),
             shift_var=VarShift(
-                operator="",
                 selector="equal",
                 target_ids=["0", "1", "2", "3"],
                 reference_ids=[],
@@ -440,10 +422,7 @@ test_data = [
             target_value=1,
             target_unit="",
             worker_var=VarWorker(
-                operator="",
-                selector="equal",
-                target_ids=["0"],
-                num_eligible_workers=0,
+                selector="equal", target_ids=["0"], num_eligible_workers=0
             ),
             day_var=VarDay(
                 selector="week",
@@ -453,7 +432,6 @@ test_data = [
                 interval=0,
             ),
             shift_var=VarShift(
-                operator="",
                 selector="equal",
                 target_ids=["0"],
                 reference_ids=[],
@@ -511,10 +489,7 @@ test_data = [
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
-                operator="",
-                selector="equal",
-                target_ids=["0"],
-                num_eligible_workers=0,
+                selector="equal", target_ids=["0"], num_eligible_workers=0
             ),
             day_var=VarDay(
                 selector="all",
@@ -524,7 +499,6 @@ test_data = [
                 interval=1,
             ),
             shift_var=VarShift(
-                operator="",
                 selector="all",
                 target_ids=[],
                 reference_ids=["3"],
@@ -592,10 +566,7 @@ test_data = [
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
-                operator="",
-                selector="equal",
-                target_ids=["0"],
-                num_eligible_workers=0,
+                selector="equal", target_ids=["0"], num_eligible_workers=0
             ),
             day_var=VarDay(
                 selector="all",
@@ -605,7 +576,6 @@ test_data = [
                 interval=1,
             ),
             shift_var=VarShift(
-                operator="",
                 selector="all",
                 target_ids=[],
                 reference_ids=["3"],
@@ -676,10 +646,7 @@ test_data = [
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
-                operator="",
-                selector="equal",
-                target_ids=["0"],
-                num_eligible_workers=0,
+                selector="equal", target_ids=["0"], num_eligible_workers=0
             ),
             day_var=VarDay(
                 selector="week_day_index",
@@ -689,7 +656,6 @@ test_data = [
                 interval=2,
             ),
             shift_var=VarShift(
-                operator="",
                 selector="all",
                 target_ids=[],
                 reference_ids=["1"],
@@ -762,10 +728,7 @@ test_data = [
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
-                operator="",
-                selector="equal",
-                target_ids=["0"],
-                num_eligible_workers=0,
+                selector="equal", target_ids=["0"], num_eligible_workers=0
             ),
             day_var=VarDay(
                 selector="week_day_index",
@@ -775,7 +738,6 @@ test_data = [
                 interval=-2,
             ),
             shift_var=VarShift(
-                operator="",
                 selector="all",
                 target_ids=[],
                 reference_ids=["1"],
@@ -805,6 +767,127 @@ test_data = [
                 Block(name="timing", type="string", value="before"),
                 Block(name="text", type="string", value="for"),
                 Block(name="worker", type="dict", value=[{"workers": "John"}]),
+            ],
+        ),
+    },
+    # Filter
+    {
+        "text": "John should only work night.",
+        "in": ConstraintBuild(
+            id="",
+            constraint_type="fil",
+            template_id="5",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"workers": "John"}]),
+                Block(name="operator", type="string", value="should only"),
+                Block(name="text", type="string", value="work"),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+        ),
+        "out": Constraint(
+            id="",
+            constraint_type="fil",
+            template_id="5",
+            operator="yes",
+            target_value=0,
+            target_unit="",
+            worker_var=VarWorker(
+                selector="equal", target_ids=["0"], num_eligible_workers=0
+            ),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                selector="equal",
+                target_ids=["3"],
+                reference_ids=[],
+                relative_ids=[],
+            ),
+            active=True,
+            hard=True,
+            priority="medium",
+            text="John should only work night.",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"workers": "John"}]),
+                Block(name="operator", type="string", value="should only"),
+                Block(name="text", type="string", value="work"),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
+            ],
+        ),
+    },
+    {
+        "text": "John should not work night.",
+        "in": ConstraintBuild(
+            id="",
+            constraint_type="fil",
+            template_id="5",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"workers": "John"}]),
+                Block(name="operator", type="string", value="should not"),
+                Block(name="text", type="string", value="work"),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+        ),
+        "out": Constraint(
+            id="",
+            constraint_type="fil",
+            template_id="5",
+            operator="no",
+            target_value=0,
+            target_unit="",
+            worker_var=VarWorker(
+                selector="equal", target_ids=["0"], num_eligible_workers=0
+            ),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                selector="equal",
+                target_ids=["3"],
+                reference_ids=[],
+                relative_ids=[],
+            ),
+            active=True,
+            hard=True,
+            priority="medium",
+            text="John should not work night.",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"workers": "John"}]),
+                Block(name="operator", type="string", value="should not"),
+                Block(name="text", type="string", value="work"),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
             ],
         ),
     },

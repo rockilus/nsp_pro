@@ -9,6 +9,7 @@ from scripts.setup_database import (
     worker_dimension_db,
     worker_property_db,
 )
+from utils.constants import Constants
 
 
 def build_templates() -> List[Template]:
@@ -205,163 +206,193 @@ def build_templates_list(
                 ),
             ],
         ),
-        # Template(
-        #     id="3",
-        #     constraint_type="ord",
-        #     text="If shift night, then off 1 day after for John",
-        #     blocks=[
-        #         TemplateBlock(
-        #             name="text",
-        #             type="string",
-        #             options=[],
-        #             placeholder="if",
-        #         ),
-        #         TemplateBlock(
-        #             name="shift_reference",
-        #             type="list",
-        #             options=shift_names,
-        #             placeholder="shift night",
-        #         ),
-        #         TemplateBlock(
-        #             name="text",
-        #             type="string",
-        #             options=[],
-        #             placeholder="then",
-        #         ),
-        #         TemplateBlock(
-        #             name="shift_relative",
-        #             type="list",
-        #             options=shift_names,
-        #             placeholder="off",
-        #         ),
-        #         TemplateBlock(
-        #             name="#",
-        #             type="number",
-        #             options=[],
-        #             placeholder=1,
-        #         ),
-        #         TemplateBlock(
-        #             name="text",
-        #             type="string",
-        #             options=[],
-        #             placeholder="day",
-        #         ),
-        #         TemplateBlock(
-        #             name="timing",
-        #             type="string",
-        #             options=["after", "before"],
-        #             placeholder="after",
-        #         ),
-        #         TemplateBlock(
-        #             name="text",
-        #             type="string",
-        #             options=[],
-        #             placeholder="for",
-        #         ),
-        #         TemplateBlock(
-        #             name="worker",
-        #             type="list",
-        #             options=worker_names,
-        #             placeholder="John",
-        #         ),
-        #     ],
-        # ),
-        # Template(
-        #     id="4",
-        #     constraint_type="ord",
-        #     text="If morning on saturday, then off 2 days afer for John",
-        #     blocks=[
-        #         TemplateBlock(
-        #             name="text",
-        #             type="string",
-        #             options=[],
-        #             placeholder="if",
-        #         ),
-        #         TemplateBlock(
-        #             name="shift_reference",
-        #             type="list",
-        #             options=shift_names,
-        #             placeholder="shift night",
-        #         ),
-        #         TemplateBlock(
-        #             name="text",
-        #             type="string",
-        #             options=[],
-        #             placeholder="on",
-        #         ),
-        #         TemplateBlock(
-        #             name="weekday",
-        #             type="string",
-        #             options=list(Constants.WEEK_DAYS),
-        #             placeholder="monday",
-        #         ),
-        #         TemplateBlock(
-        #             name="text",
-        #             type="string",
-        #             options=[],
-        #             placeholder="then",
-        #         ),
-        #         TemplateBlock(
-        #             name="shift_relative",
-        #             type="list",
-        #             options=shift_names,
-        #             placeholder="off",
-        #         ),
-        #         TemplateBlock(
-        #             name="#",
-        #             type="number",
-        #             options=[],
-        #             placeholder=2,
-        #         ),
-        #         TemplateBlock(
-        #             name="text",
-        #             type="string",
-        #             options=[],
-        #             placeholder="day",
-        #         ),
-        #         TemplateBlock(
-        #             name="timing",
-        #             type="string",
-        #             options=["after", "before"],
-        #             placeholder="after",
-        #         ),
-        #         TemplateBlock(
-        #             name="text",
-        #             type="string",
-        #             options=[],
-        #             placeholder="for",
-        #         ),
-        #         TemplateBlock(
-        #             name="worker",
-        #             type="list",
-        #             options=worker_names,
-        #             placeholder="John",
-        #         ),
-        #     ],
-        # ),
+        Template(
+            id="3",
+            constraint_type="ord",
+            text="If shift night, then off 1 day after for John",
+            blocks=[
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="if",
+                ),
+                TemplateBlock(
+                    name="shift_reference",
+                    type="dict",
+                    options=shift_options,
+                    placeholder="shift night",
+                ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="then",
+                ),
+                TemplateBlock(
+                    name="shift_relative",
+                    type="dict",
+                    options=shift_options,
+                    placeholder="off",
+                ),
+                TemplateBlock(
+                    name="#",
+                    type="number",
+                    options=[],
+                    placeholder=1,
+                ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="day",
+                ),
+                TemplateBlock(
+                    name="timing",
+                    type="string",
+                    options=["after", "before"],
+                    placeholder="after",
+                ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="for",
+                ),
+                TemplateBlock(
+                    name="worker",
+                    type="dict",
+                    options=worker_options,
+                    placeholder="John",
+                ),
+            ],
+        ),
+        Template(
+            id="4",
+            constraint_type="ord",
+            text="If morning on saturday, then off 2 days afer for John",
+            blocks=[
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="if",
+                ),
+                TemplateBlock(
+                    name="shift_reference",
+                    type="dict",
+                    options=shift_options,
+                    placeholder="shift night",
+                ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="on",
+                ),
+                TemplateBlock(
+                    name="weekday",
+                    type="string",
+                    options=list(Constants.WEEK_DAYS),
+                    placeholder="monday",
+                ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="then",
+                ),
+                TemplateBlock(
+                    name="shift_relative",
+                    type="dict",
+                    options=shift_options,
+                    placeholder="off",
+                ),
+                TemplateBlock(
+                    name="#",
+                    type="number",
+                    options=[],
+                    placeholder=2,
+                ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="day",
+                ),
+                TemplateBlock(
+                    name="timing",
+                    type="string",
+                    options=["after", "before"],
+                    placeholder="after",
+                ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="for",
+                ),
+                TemplateBlock(
+                    name="worker",
+                    type="dict",
+                    options=worker_options,
+                    placeholder="John",
+                ),
+            ],
+        ),
+        # Filter
+        Template(
+            id="5",
+            constraint_type="fil",
+            text="John should only work night",
+            blocks=[
+                TemplateBlock(
+                    name="worker",
+                    type="dict",
+                    options=worker_options,
+                    placeholder="John",
+                ),
+                TemplateBlock(
+                    name="operator",
+                    type="string",
+                    options=["should only", "should not"],
+                    placeholder="should only",
+                ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="work",
+                ),
+                TemplateBlock(
+                    name="shift",
+                    type="dict",
+                    options=shift_options,
+                    placeholder="shift night",
+                ),
+            ],
+        ),
     ]
 
 
 constraints = [
-    "At most 2 consecutive days off",
-    "Less than 3 consecutive days off",
-    "Number of consecutive days off less than or equal to 2",
-    "Maximum 2 consecutive days off",
-    "John should have at least two days off per week",
-    "At least 2 consecutive night shifts",
-    "At most 3 consecutive night shifts",
-    "At least 1 shift off per week",
-    "At least 2 shifts off per week",
-    "At most 2 shifts off per week",
-    "At least 1 night shift per week",
-    "At most 4 night shifts per week",
-    "No shift night after afternoon",
-    "No shift morning after night",
-    "Shift night after afternoon",
-    "Shift off after shift duty",
-    "Shift off after duty",
-    "1 shift off after shift duty",
-    "1 day off after a duty",
+    # Sequence
+    "John should work at most 2 consecutive days off",  # OK
+    # Sum
+    "John should work at least 1 days off per week",  # OK
+    # Order
+    "No shift night 1 day after afternoon for John",  # OK
+    "If shift night, then off 1 day after for John",  # OK
+    "If morning on saturday, then off 2 days afer for John",  # OK
+    # Filter
+    "60+ workers should only do maternity duties",  # OK
+    "Over 60 workers should only do maternity duties",  # OK
+    "Pregnant workers should not do any duties",  # OK
+    "Pregnant workers should only do consultations and surgeries",  # OK
+    "Pregnant workers should only do consultations, surgeries and classes",  # OK
+    "Plouharnel workers should work in Plouharnel only",  # OK
+    "Vannes workers should work in Vannes only",  # OK
+    # Fairness
     "Number of duties on thursdays should be evenly spread across eligible "
     + "workers",
     "Number of duties on thursdays should be evenly spread across surgeons",
@@ -372,21 +403,14 @@ constraints = [
     "Number of duties on bank holidays should be evenly spread across "
     + "eligible workers",
     "Number of duties should be evenly spread across eligible workers",
-    "60+ workers should do at most 4 duties per month",
-    "60+ workers should not work more than 4 duties per month",
-    "60+ workers should only do maternity duties",
-    "Over 60 workers should only do maternity duties",
-    "Pregnant workers should not do any duties",
-    "Pregnant workers should only do consultations and surgeries",
-    "Pregnant workers should only do consultations, surgeries and classes",
-    "Plouharnel workers should work in Plouharnel only",
-    "Vannes workers should work in Vannes only",
     "Number of Plouharnel duty should be evenly spread across workers working "
     + "on both sites",
+    # Evenness
     "Duties during work week should be spread evenly in time for a worker (not "
     + "all duties grouped)",
     "Duties during weekend should be spread evenly in time for a worker (not "
     + "all duties grouped)",
+    # To be categorized
     "Duty on saturday means off on previous friday",
     "Duty on saturday means off on next monday",
     "Duty on friday means off on previous thursday",
@@ -399,4 +423,28 @@ constraints = [
     "For worker x, no work on wednesday afternoons",
     "Workers working partime and allowed to work in Plouharnel should work at "
     + "least 2 days in Plouharnel",
+]
+
+constraints_repeat = [
+    # Sequence
+    "Less than 3 consecutive days off",
+    "Number of consecutive days off less than or equal to 2",
+    "Maximum 2 consecutive days off",
+    "At least 2 consecutive night shifts",
+    "At most 3 consecutive night shifts",
+    # Sum
+    "At least 1 shift off per week",
+    "At least 2 shifts off per week",
+    "At most 2 shifts off per week",
+    "At least 1 night shift per week",
+    "At most 4 night shifts per week",
+    "60+ workers should do at most 4 duties per month",
+    "60+ workers should not work more than 4 duties per month",
+    # Order
+    "No shift morning after night",
+    "Shift night after afternoon",
+    "Shift off after shift duty",
+    "Shift off after duty",
+    "1 shift off after shift duty",
+    "1 day off after a duty",
 ]

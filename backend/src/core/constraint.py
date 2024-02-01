@@ -7,7 +7,6 @@ from utils.constants import Constants
 
 @dataclass
 class VarWorker:
-    operator: Literal["", "in_target", "out_target"]
     selector: Constants.VAR_WORKER_SELECTOR_OPTIONS
     target_ids: List[str]
     num_eligible_workers: int
@@ -24,7 +23,6 @@ class VarDay:
 
 @dataclass
 class VarShift:
-    operator: Literal["", "in_target", "out_target"]
     selector: Constants.VAR_SHIFT_SELECTOR_OPTIONS
     target_ids: List[str]
     reference_ids: List[str]

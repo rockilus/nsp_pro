@@ -51,20 +51,10 @@ class AddConstraint:
         if constraint.worker_var.selector == "all":
             return self.workers
         if constraint.worker_var.selector == "equal":
-            if (
-                constraint.constraint_type == "fil"
-                and constraint.worker_var.operator in ["in_target", "out_target"]
-            ):
-                return self._get_coords_workers_fil(constraint)
             return constraint.worker_var.target
         raise NotImplementedError(
             f"Worker selector {constraint.worker_var.selector} " + "not implemented"
         )
-
-    def _get_coords_workers_fil(self, constraint: Constraint) -> List[str]:
-        if constraint.worker_var.operator == "in_target":
-            return constraint.worker_var.target
-        return [w for w in self.workers if w not in constraint.worker_var.target]
 
     ##########################
     # Day
@@ -167,10 +157,7 @@ class AddConstraint:
                 return [s for s in self.shifts if s in shifts_in_coverage]
             return self.shifts
         if constraint.shift_var.selector == "equal":
-            if (
-                constraint.constraint_type == "fil"
-                and constraint.shift_var.operator in ["in_target", "out_target"]
-            ):
+            if constraint.constraint_type == "fil":
                 return self._get_coords_shifts_fil(constraint)
             return constraint.shift_var.target
         raise NotImplementedError(
@@ -178,7 +165,7 @@ class AddConstraint:
         )
 
     def _get_coords_shifts_fil(self, constraint: Constraint) -> List[str]:
-        if constraint.shift_var.operator == "in_target":
+        if constraint.operator == "no":
             return constraint.shift_var.target
         return [s for s in self.shifts if s not in constraint.shift_var.target]
 

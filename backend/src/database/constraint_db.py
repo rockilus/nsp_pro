@@ -74,7 +74,6 @@ def to_mongo_var_worker(dataclass_obj: VarWorker) -> VarWorkerDocument:
         )
 
     return VarWorkerDocument(
-        operator=dataclass_obj.operator,
         selector=dataclass_obj.selector,
         target=workers,
         num_eligible_workers=dataclass_obj.num_eligible_workers,
@@ -113,7 +112,6 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
             ShiftDocument.objects.get(id__in=dataclass_obj.relative_ids)  # type: ignore
         ]
     return VarShiftDocument(
-        operator=dataclass_obj.operator if dataclass_obj.operator != "" else None,
         selector=dataclass_obj.selector,
         target=shifts,
         reference=reference_s,
@@ -154,7 +152,6 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
 
 def _from_mongo_var_worker(doc_obj: VarWorkerDocument) -> VarWorker:
     return VarWorker(
-        operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
         selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
         target_ids=[w.id for w in doc_obj.target],
         num_eligible_workers=doc_obj.num_eligible_workers,
@@ -173,7 +170,6 @@ def _from_mongo_var_day(doc_obj: VarDayDocument) -> VarDay:
 
 def _from_mongo_var_shift(doc_obj: VarShiftDocument) -> VarShift:
     return VarShift(
-        operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
         selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
         target_ids=[s.id for s in doc_obj.target],
         reference_ids=[s.id for s in doc_obj.reference],

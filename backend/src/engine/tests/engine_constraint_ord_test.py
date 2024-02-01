@@ -30,9 +30,7 @@ class TestConstraint:
             operator="no",
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(
-                operator="", selector="all", target=[], num_eligible_workers=0
-            ),
+            worker_var=VarWorker(selector="all", target=[], num_eligible_workers=0),
             day_var=VarDay(
                 selector="all",
                 target=0,
@@ -41,11 +39,7 @@ class TestConstraint:
                 interval=1,
             ),
             shift_var=VarShift(
-                operator="",
-                selector="all",
-                target=[],
-                reference=["s1"],
-                relative=["s0"],
+                selector="all", target=[], reference=["s1"], relative=["s0"]
             ),
             hard=True,
             hard_to_soft=False,
@@ -60,9 +54,7 @@ class TestConstraint:
             operator="no",
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(
-                operator="", selector="all", target=[], num_eligible_workers=0
-            ),
+            worker_var=VarWorker(selector="all", target=[], num_eligible_workers=0),
             day_var=VarDay(
                 selector="all",
                 target=0,
@@ -71,11 +63,7 @@ class TestConstraint:
                 interval=1,
             ),
             shift_var=VarShift(
-                operator="",
-                selector="all",
-                target=[],
-                reference=["s1"],
-                relative=["s0"],
+                selector="all", target=[], reference=["s1"], relative=["s0"]
             ),
             hard=False,
             hard_to_soft=False,

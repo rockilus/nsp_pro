@@ -13,7 +13,6 @@ class MapShift:
 
     def __call__(self, cstr_build: ConstraintBuild) -> VarShift:
         return VarShift(
-            operator="",
             selector=self.get_selector(cstr_build.blocks, cstr_build.constraint_type),
             target_ids=self.get_target_ids(
                 cstr_build.blocks, cstr_build.constraint_type
@@ -58,7 +57,7 @@ class MapShift:
     def get_reference_target_ids(
         self, blocks: List[Block], cstr_type: str
     ) -> List[str]:
-        if cstr_type in ["sum", "seq"]:
+        if cstr_type in ["sum", "seq", "fil"]:
             return []
         shift_ref_block = find_block_by_name(blocks, "shift_reference")
         if shift_ref_block:
@@ -66,7 +65,7 @@ class MapShift:
         raise ValueError("Shift reference block not found")
 
     def get_relative_target_ids(self, blocks: List[Block], cstr_type: str) -> List[str]:
-        if cstr_type in ["sum", "seq"]:
+        if cstr_type in ["sum", "seq", "fil"]:
             return []
         shift_rel_block = find_block_by_name(blocks, "shift_relative")
         if shift_rel_block:

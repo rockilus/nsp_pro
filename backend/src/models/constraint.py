@@ -14,7 +14,6 @@ from mongoengine.fields import (
 
 
 class VarWorker(EmbeddedDocument):
-    operator = StringField(choices=["", "in_target", "out_target"], default="")
     selector = StringField(required=True, choices=["all", "equal"])
     target = ListField(ReferenceField("Worker"), default=[])
     num_eligible_workers = IntField(default=0)
@@ -31,7 +30,6 @@ class VarDay(EmbeddedDocument):
 
 
 class VarShift(EmbeddedDocument):
-    operator = StringField(choices=["", "in_target", "out_target"], default="")
     selector = StringField(choices=["", "all", "equal"], default="")
     target = ListField(ReferenceField("Shift"), default=[])
     reference = ListField(ReferenceField("Shift"))

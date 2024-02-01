@@ -48,7 +48,6 @@ class Assignment:
 
 @dataclass
 class VarWorker:
-    operator: Literal["", "in_target", "out_target"]
     selector: Literal["all", "equal"]
     target: List[str]
     num_eligible_workers: int
@@ -66,8 +65,7 @@ class VarDay:
 
 @dataclass
 class VarShift:
-    operator: Literal["", "in_target", "out_target"]
-    selector: Literal["", "all", "equal"]
+    selector: Literal["all", "equal"]
     target: List[str]
     reference: List[str]
     relative: List[str]

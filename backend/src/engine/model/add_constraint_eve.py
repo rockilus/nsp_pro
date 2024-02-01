@@ -87,7 +87,6 @@ class AddConstraintEve(AddConstraint):
                     target_value=1,
                     target_unit="day",
                     worker_var=VarWorker(
-                        operator="",
                         selector="equal",
                         target=[target_worker],
                         num_eligible_workers=0,
@@ -100,7 +99,6 @@ class AddConstraintEve(AddConstraint):
                         interval=0,
                     ),
                     shift_var=VarShift(
-                        operator="",
                         selector="equal",
                         target=[target_shift],
                         reference=[],

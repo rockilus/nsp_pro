@@ -215,7 +215,6 @@ def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
 
 def _core_to_engine_var_worker(var_worker: VarWorker) -> VarWorkerEngine:
     return VarWorkerEngine(
-        operator=var_worker.operator,
         selector=var_worker.selector,
         target=var_worker.target_ids,
         num_eligible_workers=var_worker.num_eligible_workers,
@@ -234,7 +233,6 @@ def _core_to_engine_var_day(var_day: VarDay) -> VarDayEngine:
 
 def _core_to_engine_var_shift(var_shift: VarShift) -> VarShiftEngine:
     return VarShiftEngine(
-        operator=var_shift.operator,
         selector=var_shift.selector,
         target=var_shift.target_ids,
         reference=var_shift.reference_ids,

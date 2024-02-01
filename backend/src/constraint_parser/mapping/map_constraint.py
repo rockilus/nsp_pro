@@ -62,7 +62,7 @@ class MapConstaint:
         raise ValueError("Operator not found")
 
     def get_target_value(self, blocks: List[Block], cstr_type: str) -> int:
-        if cstr_type == "ord":
+        if cstr_type in ["ord", "fil"]:
             return 0
         qty_block = find_block_by_name(blocks, "#")
         if qty_block:
@@ -72,6 +72,7 @@ class MapConstaint:
         raise ValueError("Target value not found")
 
     @staticmethod
+    # pylint: disable=too-many-return-statements
     def convert_operator(
         operator: str,
     ) -> Constants.CONSTRAINT_OPERATOR_OPTIONS:
@@ -91,6 +92,10 @@ class MapConstaint:
             return "greater_than_or_equal"
         if operator_mod in ["yes", "no"]:
             return operator_mod  # type: ignore
+        if operator_mod in ["should_only"]:
+            return "yes"
+        if operator_mod in ["should_not"]:
+            return "no"
         raise ValueError(f"Operator {operator} not recognized")
 
     @staticmethod

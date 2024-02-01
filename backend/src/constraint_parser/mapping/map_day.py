@@ -35,6 +35,8 @@ class MapDay:
                     if weekday_block:
                         return "week_day_index"
                     return "all"
+        if cstr_type == "fil":
+            return "all"
         raise ValueError("Timing block not found")
 
     def get_target(self, blocks: List[Block], cstr_type: str) -> int:

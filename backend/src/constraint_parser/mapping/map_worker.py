@@ -13,7 +13,6 @@ class MapWorker:
 
     def __call__(self, cstr_build: ConstraintBuild) -> VarWorker:
         return VarWorker(
-            operator="",
             selector=self.get_worker_selector(cstr_build.blocks),
             target_ids=self.get_target_ids(cstr_build.blocks),
             num_eligible_workers=0,
