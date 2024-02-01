@@ -229,16 +229,12 @@ test_data = [
             constraint_type="seq",
             template_id="0",
             blocks=[
-                Block(
-                    name="worker", type="dict", value=[{"all": "all workers"}]
-                ),
+                Block(name="worker", type="dict", value=[{"all": "all workers"}]),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
                 Block(name="#", type="number", value=2),
                 Block(name="timing", type="string", value="consecutive"),
-                Block(
-                    name="shift", type="dict", value=[{"all": "all shifts"}]
-                ),
+                Block(name="shift", type="dict", value=[{"all": "all shifts"}]),
             ],
             text="",
             hard=True,
@@ -277,16 +273,12 @@ test_data = [
             priority="medium",
             text="All workers should work at most 2 consecutive all shifts.",
             blocks=[
-                Block(
-                    name="worker", type="dict", value=[{"all": "all workers"}]
-                ),
+                Block(name="worker", type="dict", value=[{"all": "all workers"}]),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
                 Block(name="#", type="number", value=2),
                 Block(name="timing", type="string", value="consecutive"),
-                Block(
-                    name="shift", type="dict", value=[{"all": "all shifts"}]
-                ),
+                Block(name="shift", type="dict", value=[{"all": "all shifts"}]),
             ],
         ),
     },
