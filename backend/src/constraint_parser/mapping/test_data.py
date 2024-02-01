@@ -770,6 +770,127 @@ test_data = [
             ],
         ),
     },
+    # Filter
+    {
+        "text": "John should only work night.",
+        "in": ConstraintBuild(
+            id="",
+            constraint_type="fil",
+            template_id="5",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"workers": "John"}]),
+                Block(name="operator", type="string", value="should only"),
+                Block(name="text", type="string", value="work"),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+        ),
+        "out": Constraint(
+            id="",
+            constraint_type="fil",
+            template_id="5",
+            operator="yes",
+            target_value=0,
+            target_unit="",
+            worker_var=VarWorker(
+                selector="equal", target_ids=["0"], num_eligible_workers=0
+            ),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                selector="equal",
+                target_ids=["3"],
+                reference_ids=[],
+                relative_ids=[],
+            ),
+            active=True,
+            hard=True,
+            priority="medium",
+            text="John should only work night.",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"workers": "John"}]),
+                Block(name="operator", type="string", value="should only"),
+                Block(name="text", type="string", value="work"),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
+            ],
+        ),
+    },
+    {
+        "text": "John should not work night.",
+        "in": ConstraintBuild(
+            id="",
+            constraint_type="fil",
+            template_id="5",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"workers": "John"}]),
+                Block(name="operator", type="string", value="should not"),
+                Block(name="text", type="string", value="work"),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+        ),
+        "out": Constraint(
+            id="",
+            constraint_type="fil",
+            template_id="5",
+            operator="no",
+            target_value=0,
+            target_unit="",
+            worker_var=VarWorker(
+                selector="equal", target_ids=["0"], num_eligible_workers=0
+            ),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                selector="equal",
+                target_ids=["3"],
+                reference_ids=[],
+                relative_ids=[],
+            ),
+            active=True,
+            hard=True,
+            priority="medium",
+            text="John should not work night.",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"workers": "John"}]),
+                Block(name="operator", type="string", value="should not"),
+                Block(name="text", type="string", value="work"),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
+            ],
+        ),
+    },
     # {
     #     "in_text": "Less than 3 consecutive days off",
     #     "out_nlp": {

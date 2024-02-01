@@ -385,13 +385,13 @@ constraints = [
     "If shift night, then off 1 day after for John",  # OK
     "If morning on saturday, then off 2 days afer for John",  # OK
     # Filter
-    "60+ workers should only do maternity duties",
-    "Over 60 workers should only do maternity duties",
-    "Pregnant workers should not do any duties",
-    "Pregnant workers should only do consultations and surgeries",
-    "Pregnant workers should only do consultations, surgeries and classes",
-    "Plouharnel workers should work in Plouharnel only",
-    "Vannes workers should work in Vannes only",
+    "60+ workers should only do maternity duties",  # OK
+    "Over 60 workers should only do maternity duties",  # OK
+    "Pregnant workers should not do any duties",  # OK
+    "Pregnant workers should only do consultations and surgeries",  # OK
+    "Pregnant workers should only do consultations, surgeries and classes",  # OK
+    "Plouharnel workers should work in Plouharnel only",  # OK
+    "Vannes workers should work in Vannes only",  # OK
     # Fairness
     "Number of duties on thursdays should be evenly spread across eligible "
     + "workers",
