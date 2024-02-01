@@ -58,7 +58,7 @@ class MapWorker:
                                 f"Worker property {prop} for dimension {dim} not found"
                             )
                         out += self.worker_dim_dict[dim][prop]
-            return list(set(out))
+            return sorted(list(set(out)))
         raise ValueError("Worker block not found")
 
     def get_worker_id_from_name(self, worker_name: str) -> str:

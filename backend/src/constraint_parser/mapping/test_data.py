@@ -131,10 +131,16 @@ workers = [
 ]
 
 
-shift_dimensions = {"duty": {"true": ["2", "3"]}}
-worker_dimensions = {
+shift_dim_dict = {
+    "duty": {"duty": ["2", "3"], "not duty": ["0", "1", "4", "5", "6", "7"]},
+    "unit": {"unit 1": ["0", "1", "2", "3"], "unit 2": ["4", "5", "6", "7"]},
+}
+worker_dim_dict = {
     "specialty": {"surgeon": ["1", "2"], "anesthesia": ["3", "4"]},
-    "60+": {"true": ["4", "5"]},
+    "60+": {
+        "60+": ["4", "5"],
+        "not 60+": ["0", "1", "2", "3", "6", "7", "8", "9"],
+    },
 }
 
 # 1 - Block inputted avec des templates -> pure mapping
@@ -153,6 +159,8 @@ worker_dimensions = {
 
 
 test_data = [
+    # Sequence
+    # One worker, one shift
     {
         "text": "John should work at most 2 consecutive off.",
         "in": ConstraintBuild(
@@ -213,6 +221,198 @@ test_data = [
             ],
         ),
     },
+    # All workers, all shifts
+    {
+        "text": "All workers should work at most 2 consecutive all shifts.",
+        "in": ConstraintBuild(
+            id="",
+            constraint_type="seq",
+            template_id="0",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"all": "all workers"}]),
+                Block(name="text", type="string", value="should work"),
+                Block(name="operator", type="string", value="at most"),
+                Block(name="#", type="number", value=2),
+                Block(name="timing", type="string", value="consecutive"),
+                Block(name="shift", type="dict", value=[{"all": "all shifts"}]),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+        ),
+        "out": Constraint(
+            id="",
+            constraint_type="seq",
+            template_id="0",
+            operator="less_than_or_equal",
+            target_value=2,
+            target_unit="",
+            worker_var=VarWorker(
+                operator="",
+                selector="all",
+                target_ids=[],
+                num_eligible_workers=0,
+            ),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                operator="",
+                selector="all",
+                target_ids=[],
+                reference_ids=[],
+                relative_ids=[],
+            ),
+            active=True,
+            hard=True,
+            priority="medium",
+            text="All workers should work at most 2 consecutive all shifts.",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"all": "all workers"}]),
+                Block(name="text", type="string", value="should work"),
+                Block(name="operator", type="string", value="at most"),
+                Block(name="#", type="number", value=2),
+                Block(name="timing", type="string", value="consecutive"),
+                Block(name="shift", type="dict", value=[{"all": "all shifts"}]),
+            ],
+        ),
+    },
+    # Boolean property workers, boolean property shifts
+    {
+        "text": "60+ should work at most 2 consecutive not duty.",
+        "in": ConstraintBuild(
+            id="",
+            constraint_type="seq",
+            template_id="0",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"60+": "60+"}]),
+                Block(name="text", type="string", value="should work"),
+                Block(name="operator", type="string", value="at most"),
+                Block(name="#", type="number", value=2),
+                Block(name="timing", type="string", value="consecutive"),
+                Block(name="shift", type="dict", value=[{"duty": "not duty"}]),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+        ),
+        "out": Constraint(
+            id="",
+            constraint_type="seq",
+            template_id="0",
+            operator="less_than_or_equal",
+            target_value=2,
+            target_unit="",
+            worker_var=VarWorker(
+                operator="",
+                selector="equal",
+                target_ids=["4", "5"],
+                num_eligible_workers=0,
+            ),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                operator="",
+                selector="equal",
+                target_ids=["0", "1", "4", "5", "6", "7"],
+                reference_ids=[],
+                relative_ids=[],
+            ),
+            active=True,
+            hard=True,
+            priority="medium",
+            text="60+ should work at most 2 consecutive not duty.",
+            blocks=[
+                Block(name="worker", type="dict", value=[{"60+": "60+"}]),
+                Block(name="text", type="string", value="should work"),
+                Block(name="operator", type="string", value="at most"),
+                Block(name="#", type="number", value=2),
+                Block(name="timing", type="string", value="consecutive"),
+                Block(name="shift", type="dict", value=[{"duty": "not duty"}]),
+            ],
+        ),
+    },
+    # Non boolean property worker, non boolean property shift
+    {
+        "text": "Surgeon should work at most 2 consecutive unit 1.",
+        "in": ConstraintBuild(
+            id="",
+            constraint_type="seq",
+            template_id="0",
+            blocks=[
+                Block(
+                    name="worker",
+                    type="dict",
+                    value=[{"specialty": "surgeon"}],
+                ),
+                Block(name="text", type="string", value="should work"),
+                Block(name="operator", type="string", value="at most"),
+                Block(name="#", type="number", value=2),
+                Block(name="timing", type="string", value="consecutive"),
+                Block(name="shift", type="dict", value=[{"unit": "unit 1"}]),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+        ),
+        "out": Constraint(
+            id="",
+            constraint_type="seq",
+            template_id="0",
+            operator="less_than_or_equal",
+            target_value=2,
+            target_unit="",
+            worker_var=VarWorker(
+                operator="",
+                selector="equal",
+                target_ids=["1", "2"],
+                num_eligible_workers=0,
+            ),
+            day_var=VarDay(
+                selector="all",
+                target=0,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                operator="",
+                selector="equal",
+                target_ids=["0", "1", "2", "3"],
+                reference_ids=[],
+                relative_ids=[],
+            ),
+            active=True,
+            hard=True,
+            priority="medium",
+            text="Surgeon should work at most 2 consecutive unit 1.",
+            blocks=[
+                Block(
+                    name="worker",
+                    type="dict",
+                    value=[{"specialty": "surgeon"}],
+                ),
+                Block(name="text", type="string", value="should work"),
+                Block(name="operator", type="string", value="at most"),
+                Block(name="#", type="number", value=2),
+                Block(name="timing", type="string", value="consecutive"),
+                Block(name="shift", type="dict", value=[{"unit": "unit 1"}]),
+            ],
+        ),
+    },
+    # Sum
     {
         "text": "John should work at least 1 off per week.",
         "in": ConstraintBuild(
@@ -273,6 +473,7 @@ test_data = [
             ],
         ),
     },
+    # Order
     {
         "text": "No night 1 day after afternoon for john.",
         "in": ConstraintBuild(

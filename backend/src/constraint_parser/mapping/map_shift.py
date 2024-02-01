@@ -105,4 +105,4 @@ class MapShift:
                             f"Shift property {prop} for dimension {dim} not found"
                         )
                     out += self.shift_dim_dict[dim][prop]
-        return list(set(out))
+        return sorted(list(set(out)))
