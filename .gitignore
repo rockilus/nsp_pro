@@ -1,0 +1,17 @@
+# Files
+.DS_Store
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Folders
+__pycache__/
+.pytest_cache/
+.vscode/
+.mypy_cache/
+.next/
+node_modules/
+dist/
+backend/src/engine/saved/*
+
+# Environments
+venv_nsp
