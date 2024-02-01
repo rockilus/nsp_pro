@@ -1,6 +1,9 @@
 from typing import Dict, List
 
-from constraint_parser.mapping.utils import find_block_by_name, list_dicts_to_dict
+from constraint_parser.mapping.utils import (
+    find_block_by_name,
+    list_dicts_to_dict,
+)
 from core.constraint import Block, ConstraintBuild, VarShift
 from core.shift import Shift
 from utils.constants import Constants
@@ -14,7 +17,9 @@ class MapShift:
     def __call__(self, cstr_build: ConstraintBuild) -> VarShift:
         return VarShift(
             operator="",
-            selector=self.get_selector(cstr_build.blocks, cstr_build.constraint_type),
+            selector=self.get_selector(
+                cstr_build.blocks, cstr_build.constraint_type
+            ),
             target_ids=self.get_target_ids(
                 cstr_build.blocks, cstr_build.constraint_type
             ),
@@ -65,7 +70,9 @@ class MapShift:
             return self.shift_block_to_id_list(shift_ref_block)
         raise ValueError("Shift reference block not found")
 
-    def get_relative_target_ids(self, blocks: List[Block], cstr_type: str) -> List[str]:
+    def get_relative_target_ids(
+        self, blocks: List[Block], cstr_type: str
+    ) -> List[str]:
         if cstr_type in ["sum", "seq"]:
             return []
         shift_rel_block = find_block_by_name(blocks, "shift_relative")
@@ -105,4 +112,4 @@ class MapShift:
                             f"Shift property {prop} for dimension {dim} not found"
                         )
                     out += self.shift_dim_dict[dim][prop]
-        return list(set(out))
+        return sorted(list(set(out)))

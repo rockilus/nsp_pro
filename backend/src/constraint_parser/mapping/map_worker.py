@@ -1,6 +1,9 @@
 from typing import Dict, List
 
-from constraint_parser.mapping.utils import find_block_by_name, list_dicts_to_dict
+from constraint_parser.mapping.utils import (
+    find_block_by_name,
+    list_dicts_to_dict,
+)
 from core.constraint import Block, ConstraintBuild, VarWorker
 from core.worker import Worker
 from utils.constants import Constants
@@ -58,7 +61,7 @@ class MapWorker:
                                 f"Worker property {prop} for dimension {dim} not found"
                             )
                         out += self.worker_dim_dict[dim][prop]
-            return list(set(out))
+            return sorted(list(set(out)))
         raise ValueError("Worker block not found")
 
     def get_worker_id_from_name(self, worker_name: str) -> str:
