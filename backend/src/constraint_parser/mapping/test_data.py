@@ -962,6 +962,75 @@ test_data = [
             ],
         ),
     },
+    # Fairness
+    {
+        "text": "Night on sunday should be fairly spread across all workers.",
+        "in": ConstraintBuild(
+            id="",
+            constraint_type="fai",
+            template_id="7",
+            blocks=[
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
+                Block(name="text", type="string", value="on"),
+                Block(name="weekday", type="string", value="sunday"),
+                Block(
+                    name="text",
+                    type="string",
+                    value="should be fairly spread across",
+                ),
+                Block(name="worker", type="dict", value=[{"all": "all workers"}]),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+        ),
+        "out": Constraint(
+            id="",
+            constraint_type="fai",
+            template_id="7",
+            operator="",
+            target_value=0,
+            target_unit="",
+            worker_var=VarWorker(selector="all", target_ids=[], num_eligible_workers=0),
+            day_var=VarDay(
+                selector="week_day_index",
+                target=6,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                selector="equal",
+                target_ids=["3"],
+                reference_ids=[],
+                relative_ids=[],
+            ),
+            active=True,
+            hard=True,
+            priority="medium",
+            text="Night on sunday should be fairly spread across all workers.",
+            blocks=[
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
+                Block(name="text", type="string", value="on"),
+                Block(name="weekday", type="string", value="sunday"),
+                Block(
+                    name="text",
+                    type="string",
+                    value="should be fairly spread across",
+                ),
+                Block(name="worker", type="dict", value=[{"all": "all workers"}]),
+            ],
+        ),
+    },
     # {
     #     "in_text": "Less than 3 consecutive days off",
     #     "out_nlp": {
