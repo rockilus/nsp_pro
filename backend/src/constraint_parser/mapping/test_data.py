@@ -891,6 +891,77 @@ test_data = [
             ],
         ),
     },
+    # Evenness
+    {
+        "text": "Night on sunday should be evenly spread in time for John.",
+        "in": ConstraintBuild(
+            id="",
+            constraint_type="eve",
+            template_id="6",
+            blocks=[
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
+                Block(name="text", type="string", value="on"),
+                Block(name="weekday", type="string", value="sunday"),
+                Block(
+                    name="text",
+                    type="string",
+                    value="should be evenly spread in time for",
+                ),
+                Block(name="worker", type="dict", value=[{"workers": "John"}]),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+        ),
+        "out": Constraint(
+            id="",
+            constraint_type="eve",
+            template_id="6",
+            operator="",
+            target_value=0,
+            target_unit="",
+            worker_var=VarWorker(
+                selector="equal", target_ids=["0"], num_eligible_workers=0
+            ),
+            day_var=VarDay(
+                selector="week_day_index",
+                target=6,
+                start_date=date.today(),
+                end_date=date.today(),
+                interval=0,
+            ),
+            shift_var=VarShift(
+                selector="equal",
+                target_ids=["3"],
+                reference_ids=[],
+                relative_ids=[],
+            ),
+            active=True,
+            hard=True,
+            priority="medium",
+            text="Night on sunday should be evenly spread in time for john.",
+            blocks=[
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"shifts": "night"}],
+                ),
+                Block(name="text", type="string", value="on"),
+                Block(name="weekday", type="string", value="sunday"),
+                Block(
+                    name="text",
+                    type="string",
+                    value="should be evenly spread in time for",
+                ),
+                Block(name="worker", type="dict", value=[{"workers": "John"}]),
+            ],
+        ),
+    },
     # {
     #     "in_text": "Less than 3 consecutive days off",
     #     "out_nlp": {

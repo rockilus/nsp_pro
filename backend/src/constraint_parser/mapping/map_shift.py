@@ -57,7 +57,7 @@ class MapShift:
     def get_reference_target_ids(
         self, blocks: List[Block], cstr_type: str
     ) -> List[str]:
-        if cstr_type in ["sum", "seq", "fil"]:
+        if cstr_type in ["sum", "seq", "fil", "eve", "fai"]:
             return []
         shift_ref_block = find_block_by_name(blocks, "shift_reference")
         if shift_ref_block:
@@ -65,7 +65,7 @@ class MapShift:
         raise ValueError("Shift reference block not found")
 
     def get_relative_target_ids(self, blocks: List[Block], cstr_type: str) -> List[str]:
-        if cstr_type in ["sum", "seq", "fil"]:
+        if cstr_type in ["sum", "seq", "fil", "eve", "fai"]:
             return []
         shift_rel_block = find_block_by_name(blocks, "shift_relative")
         if shift_rel_block:

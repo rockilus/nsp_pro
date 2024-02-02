@@ -20,6 +20,7 @@ class MapDay:
         self, blocks: List[Block], cstr_type: str
     ) -> Constants.VAR_DAY_SELECTOR_OPTIONS:
         timing_block = find_block_by_name(blocks, "timing")
+        weekday_block = find_block_by_name(blocks, "weekday")
         if timing_block:
             if cstr_type == "sum":
                 if timing_block.value == "per week":
@@ -31,12 +32,14 @@ class MapDay:
                 raise ValueError(f"Operator {timing_block.value} not recognized")
             if cstr_type == "ord":
                 if timing_block.value in ["before", "after"]:
-                    weekday_block = find_block_by_name(blocks, "weekday")
                     if weekday_block:
                         return "week_day_index"
                     return "all"
         if cstr_type == "fil":
             return "all"
+        if weekday_block:
+            if cstr_type == "eve":
+                return "week_day_index"
         raise ValueError("Timing block not found")
 
     def get_target(self, blocks: List[Block], cstr_type: str) -> int:
@@ -52,7 +55,7 @@ class MapDay:
         raise ValueError("Weekday block not found")
 
     def get_interval(self, blocks: List[Block], cstr_type: str) -> int:
-        if cstr_type in ["sum", "seq"]:
+        if cstr_type in ["sum", "seq", "fil", "eve"]:
             return 0
         timing_block = find_block_by_name(blocks, "timing")
         if timing_block:

@@ -372,6 +372,51 @@ def build_templates_list(
                 ),
             ],
         ),
+        # Evenness
+        Template(
+            id="6",
+            constraint_type="eve",
+            text="Duties on sunday should be evenly spread in time for all workers",
+            blocks=[
+                TemplateBlock(
+                    name="shift",
+                    type="dict",
+                    options=shift_options,
+                    placeholder="Duty",
+                ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="on",
+                ),
+                TemplateBlock(
+                    name="weekday",
+                    type="string",
+                    options=list(Constants.WEEK_DAYS),
+                    placeholder="monday",
+                ),
+                # TemplateBlock(
+                #     name="timing",
+                #     type="string",
+                #     options=list(Constants.WEEK_DAYS),
+                #     # + ["work week", "weekend", "bank holiday"], # to come
+                #     placeholder="sunday",
+                # ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="should be evenly spread in time for",
+                ),
+                TemplateBlock(
+                    name="worker",
+                    type="dict",
+                    options=worker_options,
+                    placeholder="John",
+                ),
+            ],
+        ),
     ]
 
 
@@ -392,6 +437,11 @@ constraints = [
     "Pregnant workers should only do consultations, surgeries and classes",  # OK
     "Plouharnel workers should work in Plouharnel only",  # OK
     "Vannes workers should work in Vannes only",  # OK
+    # Evenness
+    "Duties during work week should be spread evenly in time for a worker (not "
+    + "all duties grouped)",
+    "Duties during weekend should be spread evenly in time for a worker (not "
+    + "all duties grouped)",
     # Fairness
     "Number of duties on thursdays should be evenly spread across eligible "
     + "workers",
@@ -405,11 +455,6 @@ constraints = [
     "Number of duties should be evenly spread across eligible workers",
     "Number of Plouharnel duty should be evenly spread across workers working "
     + "on both sites",
-    # Evenness
-    "Duties during work week should be spread evenly in time for a worker (not "
-    + "all duties grouped)",
-    "Duties during weekend should be spread evenly in time for a worker (not "
-    + "all duties grouped)",
     # To be categorized
     "Duty on saturday means off on previous friday",
     "Duty on saturday means off on next monday",
