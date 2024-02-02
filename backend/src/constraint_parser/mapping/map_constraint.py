@@ -52,6 +52,8 @@ class MapConstaint:
     def get_operator(
         self, blocks: List[Block], cstr_type: str
     ) -> Constants.CONSTRAINT_OPERATOR_OPTIONS:
+        if cstr_type in ["eve"]:
+            return ""
         operator_block = find_block_by_name(blocks, "operator")
         if operator_block:
             if not isinstance(operator_block.value, str):
@@ -62,7 +64,7 @@ class MapConstaint:
         raise ValueError("Operator not found")
 
     def get_target_value(self, blocks: List[Block], cstr_type: str) -> int:
-        if cstr_type in ["ord", "fil"]:
+        if cstr_type in ["ord", "fil", "eve"]:
             return 0
         qty_block = find_block_by_name(blocks, "#")
         if qty_block:
