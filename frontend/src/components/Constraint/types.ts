@@ -10,17 +10,22 @@ export type ConstraintT = {
   priority: string;
   active: boolean;
 };
+export type TemplateOptionValueT = {
+  name: string;
+  id: string;
+  idType: string;
+};
 
 export type BlockT = {
   name: string;
   type: string;
-  value: string | number | string[] | Record<string, string>[];
+  value: string | number | string[] | Record<string, TemplateOptionValueT>[];
 };
 
 export type TemplateBlockT = {
   name: string;
   type: string;
-  options: string[] | Record<string, string>[];
+  options: string[] | Record<string, TemplateOptionValueT[]>;
   placeholder: string | number;
 };
 

@@ -122,7 +122,7 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
 def to_mongo_block(dataclass_obj: Block) -> BlockDocument:
     return BlockDocument(
         name=dataclass_obj.name,
-        type=dataclass_obj.type,
+        type=dataclass_obj.value_type,
         value=dataclass_obj.value,
     )
 
@@ -162,8 +162,12 @@ def _from_mongo_var_day(doc_obj: VarDayDocument) -> VarDay:
     return VarDay(
         selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
         target=doc_obj.target,
-        start_date=datetime.combine(doc_obj.start_date, datetime.min.time()).date(),
-        end_date=datetime.combine(doc_obj.end_date, datetime.min.time()).date(),
+        start_date=datetime.combine(
+            doc_obj.start_date, datetime.min.time()
+        ).date(),
+        end_date=datetime.combine(
+            doc_obj.end_date, datetime.min.time()
+        ).date(),
         interval=doc_obj.interval,
     )
 
@@ -180,7 +184,7 @@ def _from_mongo_var_shift(doc_obj: VarShiftDocument) -> VarShift:
 def _from_mongo_block(doc_obj: BlockDocument) -> Block:
     return Block(
         name=doc_obj.name,  # type: ignore
-        type=doc_obj.type,  # type: ignore
+        value_type=doc_obj.type,  # type: ignore
         value=doc_obj.value
         if isinstance(doc_obj.value, (str, int))
         else list(doc_obj.value),

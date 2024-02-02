@@ -75,6 +75,8 @@ export default function ConstraintEdit({
   };
 
   const handleEditBlock = (block: BlockT) => {
+    console.log("handleEditBlock", block);
+
     if (findBlockByName(block.name) === null) {
       setConstraintState({
         ...constraintState,
@@ -91,8 +93,12 @@ export default function ConstraintEdit({
   };
 
   useEffect(() => {
+    console.log("ConstraintEdit useEffect called");
+
     setConstraintState(initialConstraintState());
   }, [initialConstraintState]);
+
+  console.log("ConstraintEdit", constraintState);
 
   return (
     <div
@@ -112,34 +118,6 @@ export default function ConstraintEdit({
             />
           </div>
         ))}
-
-        {/* {constraintTemplate?.blocks.map((templateBlock, index) => (
-          <div key={index} style={{ marginRight: "5px" }}>
-            {["operator", "shift", "worker", "timing"].includes(
-              templateBlock.name
-            ) &&
-              (templateBlock.options.length > 1 ? (
-                <BlockEdit selector={templateBlock} />
-              ) : (
-                <div>
-                  <div className="field-name" style={{ fontSize: "10px" }}>
-                    {templateBlock.name.charAt(0).toUpperCase() +
-                      templateBlock.name.slice(1)}
-                  </div>
-                  <div className="field-value">{templateBlock.selected[0]}</div>
-                </div>
-              ))}
-            {templateBlock.name === "text" && (
-              <div>
-                <div className="field-name" style={{ height: "15px" }}></div>
-                <div className="field-value">{templateBlock.selected[0]}</div>
-              </div>
-            )}
-            {templateBlock.name === "#" && (
-              <QuantityItem selector={templateBlock} />
-            )}
-          </div>
-        ))} */}
       </div>
       <button onClick={handleSaveConstraint}>Add</button>
     </div>

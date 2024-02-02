@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
-import BlockEditList from "./BlockEditDict";
+import BlockEditList from "./BlockEditList";
 import BlockEditString from "./BlockEditString";
 import BlockEditQty from "./BlockEditQty";
 import BlockEditDict from "./BlockEditDict";
@@ -20,6 +20,8 @@ export default function BlockDisplay({
 }: Props) {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
+
+  console.log("BlockDisplay", block);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -145,7 +147,11 @@ export default function BlockDisplay({
                 color: ConstraintDefaultColors.shade3,
               }}
             >
-              {block.value.map(Object.values).flat().join(", ")}
+              {block.value
+                .map(Object.values)
+                .flat()
+                .map((item) => item.name)
+                .join(", ")}
             </div>
           ) : block &&
             ((block.type === "string" && block.value !== "") ||
