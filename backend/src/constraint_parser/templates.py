@@ -394,15 +394,8 @@ def build_templates_list(
                     name="weekday",
                     type="string",
                     options=list(Constants.WEEK_DAYS),
-                    placeholder="monday",
+                    placeholder="sunday",
                 ),
-                # TemplateBlock(
-                #     name="timing",
-                #     type="string",
-                #     options=list(Constants.WEEK_DAYS),
-                #     # + ["work week", "weekend", "bank holiday"], # to come
-                #     placeholder="sunday",
-                # ),
                 TemplateBlock(
                     name="text",
                     type="string",
@@ -414,6 +407,44 @@ def build_templates_list(
                     type="dict",
                     options=worker_options,
                     placeholder="John",
+                ),
+            ],
+        ),
+        # Fairness
+        Template(
+            id="7",
+            constraint_type="fai",
+            text="Duties on sunday should be fairly spread across all workers",
+            blocks=[
+                TemplateBlock(
+                    name="shift",
+                    type="dict",
+                    options=shift_options,
+                    placeholder="Duty",
+                ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="on",
+                ),
+                TemplateBlock(
+                    name="weekday",
+                    type="string",
+                    options=list(Constants.WEEK_DAYS),
+                    placeholder="sunday",
+                ),
+                TemplateBlock(
+                    name="text",
+                    type="string",
+                    options=[],
+                    placeholder="should be fairly spread across",
+                ),
+                TemplateBlock(
+                    name="worker",
+                    type="dict",
+                    options=worker_options,
+                    placeholder="all workers",
                 ),
             ],
         ),

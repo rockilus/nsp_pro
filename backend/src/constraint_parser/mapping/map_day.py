@@ -38,7 +38,7 @@ class MapDay:
         if cstr_type == "fil":
             return "all"
         if weekday_block:
-            if cstr_type == "eve":
+            if cstr_type in ["eve", "fai"]:
                 return "week_day_index"
         raise ValueError("Timing block not found")
 
