@@ -30,9 +30,6 @@ export default function BlockEditDict({
   handleEditBlock,
   handleClose,
 }: Props) {
-  // console.log("templateBlock", templateBlock);
-  console.log("BlockEditDict", block);
-
   function isDictionary(obj: any): obj is Record<string, unknown> {
     return (
       obj !== null &&
@@ -64,8 +61,6 @@ export default function BlockEditDict({
       Array.isArray(block.value) &&
       (block.value as any[]).every(isTemplateOptionValueT)
     ) {
-      console.log("block.value for valueState", block.value);
-
       return block.value as TemplateOptionValueT[];
     }
     throw new Error("block.value is not an array of TemplateOptionValueT");
@@ -150,8 +145,6 @@ export default function BlockEditDict({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    console.log("useEffect block called");
-
     if (block !== null) {
       setValueState(initialValue);
     }

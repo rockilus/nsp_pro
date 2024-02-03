@@ -83,8 +83,6 @@ export default function ConstraintEdit({
   };
 
   const handleEditBlock = (block: BlockT) => {
-    console.log("handleEditBlock", block);
-
     if (findBlockByName(block.name) === null) {
       setConstraintState({
         ...constraintState,
@@ -101,12 +99,8 @@ export default function ConstraintEdit({
   };
 
   useEffect(() => {
-    console.log("ConstraintEdit useEffect called");
-
     setConstraintState(initialConstraintState());
   }, [initialConstraintState]);
-
-  console.log("ConstraintEdit", constraintState);
 
   return (
     <div

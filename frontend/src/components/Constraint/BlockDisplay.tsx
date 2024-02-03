@@ -21,8 +21,6 @@ export default function BlockDisplay({
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  console.log("BlockDisplay", block);
-
   const handleClickOpen = () => {
     setOpen(true);
   };
