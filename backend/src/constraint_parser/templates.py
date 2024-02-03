@@ -13,29 +13,16 @@ from utils.constants import Constants
 
 
 def build_templates() -> List[Template]:
-    shifts = shift_db.get_shifts()
-    shift_options = {
-        "all": ["all shifts"],
-        "shifts": [s.name for s in shifts],
-    }
-    shift_dimensions = shift_dimension_db.get_shift_dimensions()
-    for shift_dimension in shift_dimensions:
-        shift_properties = shift_property_db.get_shift_properties_by_shift_dimension(
-            shift_dimension
-        )
-        if shift_dimension.entry_type == "bool":
-            shift_options[shift_dimension.name] = [
-                shift_dimension.name,
-                f"not {shift_dimension.name}",
-            ]
-        else:
-            shift_options[shift_dimension.name] = list(
-                set(str(sp.value) for sp in shift_properties)
-            )
+    worker_options = build_worker_options()
+    shift_options = build_shift_options()
+    return build_templates_list(worker_options, shift_options)
+
+
+def build_worker_options() -> Dict:
     workers = worker_db.get_workers()
     worker_options = {
-        "all": ["all workers"],
-        "workers": [w.name for w in workers],
+        "all": [{"name": "all workers", "id": "", "id_type": ""}],
+        "workers": [{"name": w.name, "id": w.id, "id_type": "worker"} for w in workers],
     }
     worker_dimensions = worker_dimension_db.get_worker_dimensions()
     for worker_dimension in worker_dimensions:
@@ -46,24 +33,66 @@ def build_templates() -> List[Template]:
         )
         if worker_dimension.entry_type == "bool":
             worker_options[worker_dimension.name] = [
-                worker_dimension.name,
-                f"not {worker_dimension.name}",
+                {
+                    "name": worker_dimension.name,
+                    "id": worker_dimension.id,
+                    "id_type": "worker_dimension",
+                },
+                {
+                    "name": f"not {worker_dimension.name}",
+                    "id": worker_dimension.id,
+                    "id_type": "worker_dimension",
+                },
             ]
         else:
-            worker_options[worker_dimension.name] = list(
-                set(str(wp.value) for wp in worker_properties)
-            )
+            worker_options[worker_dimension.name] = [
+                {
+                    "name": str(wp_value),
+                    "id": worker_dimension.id,
+                    "id_type": "worker_dimension",
+                }
+                for wp_value in list(set(str(wp.value) for wp in worker_properties))
+            ]
+    return worker_options
 
-    return build_templates_list(
-        shift_options,
-        worker_options,
-    )
+
+def build_shift_options() -> Dict:
+    shifts = shift_db.get_shifts()
+    shift_options = {
+        "all": [{"name": "all shifts", "id": "", "id_type": ""}],
+        "shifts": [{"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts],
+    }
+    shift_dimensions = shift_dimension_db.get_shift_dimensions()
+    for shift_dimension in shift_dimensions:
+        shift_properties = shift_property_db.get_shift_properties_by_shift_dimension(
+            shift_dimension
+        )
+        if shift_dimension.entry_type == "bool":
+            shift_options[shift_dimension.name] = [
+                {
+                    "name": shift_dimension.name,
+                    "id": shift_dimension.id,
+                    "id_type": "shift_dimension",
+                },
+                {
+                    "name": f"not {shift_dimension.name}",
+                    "id": shift_dimension.id,
+                    "id_type": "shift_dimension",
+                },
+            ]
+        else:
+            shift_options[shift_dimension.name] = [
+                {
+                    "name": str(sp_value),
+                    "id": shift_dimension.id,
+                    "id_type": "shift_dimension",
+                }
+                for sp_value in list(set(str(sp.value) for sp in shift_properties))
+            ]
+    return shift_options
 
 
-def build_templates_list(
-    shift_options: Dict,
-    worker_options: Dict,
-) -> List[Template]:
+def build_templates_list(worker_options: Dict, shift_options: Dict) -> List[Template]:
     return [
         Template(
             id="0",

@@ -30,10 +30,17 @@ class VarShift:
 
 
 @dataclass
+class DictBlockValue:
+    name: str
+    id: str
+    id_type: str
+
+
+@dataclass
 class Block:
     name: Literal[Constants.BLOCK_NAME_OPTIONS]
     type: Literal["string", "number", "list", "dict"]
-    value: str | int | List[str] | List[Dict[str, str]]
+    value: str | int | List[str] | List[Dict]
 
 
 @dataclass

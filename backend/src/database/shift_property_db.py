@@ -74,19 +74,11 @@ class ShiftPropertyDB:
         pipeline = [
             {
                 "$group": {
-                    "_id": "$shift_dimension",
-                    "properties": {"$push": {"value": "$value", "shift": "$shift"}},
-                }
-            },
-            {"$unwind": "$properties"},
-            {
-                "$group": {
                     "_id": {
-                        "shift_dimension": "$_id",
-                        "value": "$properties.value",
+                        "shift_dimension": "$shift_dimension",
+                        "value": "$value",
                     },
-                    "shifts": {"$push": "$properties.shift"},
-                    "name": {"$first": "$name"},
+                    "shifts": {"$push": "$shift"},
                 }
             },
             {
@@ -100,10 +92,9 @@ class ShiftPropertyDB:
             {"$unwind": "$shift_dimension_data"},
             {
                 "$project": {
-                    "_id": 1,
-                    "shift_dimension": "$shift_dimension_data._id",
-                    "name": "$shift_dimension_data.name",
-                    "value": 1,
+                    "_id": "$_id.shift_dimension",
+                    "dim_name": "$shift_dimension_data.name",
+                    "prop_value": "$_id.value",
                     "shifts": 1,
                 }
             },
@@ -114,22 +105,25 @@ class ShiftPropertyDB:
         # pylint: disable=R0801
         out = {}
         for r in result:
-            print(r)
-            dim_name = r["name"].lower()
-            prop_value = (
-                r["_id"]["value"].lower()
-                if not isinstance(r["_id"]["value"], bool)
+            dim, dim_name, prop_value, shifts = (
+                r["_id"],
+                r["dim_name"].lower(),
+                r["prop_value"],
+                r["shifts"],
+            )
+            prop_value_mod = (
+                prop_value.lower()
+                if not isinstance(prop_value, bool)
                 else dim_name
-                if r["_id"]["value"]
+                if prop_value
                 else "not " + dim_name
             )
-            prop_shifts = r["shifts"]
-            if dim_name not in out:
-                out[dim_name] = {}
-            if prop_value not in out[dim_name]:
-                out[dim_name][prop_value] = prop_shifts
+            if dim not in out:
+                out[dim] = {}
+            if prop_value_mod not in out[dim]:
+                out[dim][prop_value_mod] = shifts
             else:
-                out[dim_name][prop_value] += prop_shifts
+                out[dim][prop_value_mod] += shifts
         return out
 
     def update_shift_property(

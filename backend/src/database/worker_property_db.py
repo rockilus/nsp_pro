@@ -71,44 +71,114 @@ class WorkerPropertyDB:
         return _from_mongo_worker_property(worker_property) if worker_property else None
 
     def get_workers_id_by_dim_and_prop(self):
+        # pipeline_study = [
+        #     # Group by worker_dimension id
+        #     # Return an iterable of dicts in format:
+        #     # {
+        #     #     "_id": "worker_dimension_id",
+        #     #     "properties": [{"value": "value", "worker": "worker_id"}]
+        #     # }
+        #     {
+        #         "$group": {
+        #             "_id": "$worker_dimension",
+        #             "properties": {"$push": {"value": "$value", "worker": "$worker"}},
+        #         }
+        #     },
+        #     # Unwind the properties list
+        #     # Return an iterable of dicts in format (instead of having a list
+        #     # of properties for each worker_dimension, each item of the
+        #     # properties list is now its own dict):
+        #     # {
+        #     #     "_id": "worker_dimension_id",
+        #     #     "properties": {"value": "value", "worker": "worker_id"}
+        #     # }
+        #     {"$unwind": "$properties"},
+        #     # Group by worker_dimension id and property value
+        #     # Return an iterable of dicts in format:
+        #     # {
+        #     #     "_id": {
+        #     #         "worker_dimension": "worker_dimension_id",
+        #     #         "value": "value",
+        #     #     },
+        #     #     "workers": ["worker_ids"]
+        #     # }
+        #     {
+        #         "$group": {
+        #             "_id": {
+        #                 "worker_dimension": "$_id",
+        #                 "value": "$properties.value",
+        #             },
+        #             "workers": {"$push": "$properties.worker"},
+        #         }
+        #     },
+        #     # Lookup worker_dimension by id and store it in
+        #     # "worker_dimension_data" field (it will be a list with one element)
+        #     # Return an iterable of dicts in format:
+        #     # {
+        #     #     "_id": {
+        #     #         "worker_dimension": "worker_dimension_id",
+        #     #         "value": "value",
+        #     #     },
+        #     #     "workers": ["worker_ids"]
+        #     #     "worker_dimension_data": [worker_dimension]
+        #     # }
+        #     {
+        #         "$lookup": {
+        #             "from": "worker_dimensions",
+        #             "localField": "_id.worker_dimension",
+        #             "foreignField": "_id",
+        #             "as": "worker_dimension_data",
+        #         }
+        #     },
+        #     # Unwind the worker_dimension_data list
+        #     {"$unwind": "$worker_dimension_data"},
+        #     # Reshapes the documents by specifying which fields to include,
+        #     # exclude, or manipulate before the final output:
+        #     # Fields to include as is: _id, value, workers
+        #     # New field worker_dimension: _id field of worker_dimension_data
+        #     # Return an iterable of dicts in format:
+        #     # {
+        #     #     "_id": {
+        #     #         "worker_dimension": "worker_dimension_id",
+        #     #         "value": "value",
+        #     #     },
+        #     #     "workers": ["worker_ids"]
+        #     #     "worker_dimension": worker_dimension_id
+        #     # }
+        #     {
+        #         "$project": {
+        #             "_id": 1,
+        #             "worker_dimension": "$worker_dimension_data._id",
+        #             "value": 1,
+        #             "workers": 1,
+        #         }
+        #     },
+        # ]
+
         pipeline = [
             {
                 "$group": {
-                    "_id": "$worker_dimension",  # Group by worker_dimension id
-                    "properties": {"$push": {"value": "$value", "worker": "$worker"}},
-                }
-            },
-            {"$unwind": "$properties"},  # Unwind the properties array
-            {
-                "$group": {
                     "_id": {
-                        # Regroup by worker_dimension
-                        "worker_dimension": "$_id",
-                        # Group by value within each dimension
-                        "value": "$properties.value",
+                        "worker_dimension": "$worker_dimension",
+                        "prop_value": "$value",
                     },
-                    "workers": {
-                        "$push": "$properties.worker"
-                    },  # Push worker references
-                    "name": {"$first": "$name"},  # Retain the name (temporarily)
-                }
+                    "workers": {"$push": "$worker"},
+                },
             },
             {
                 "$lookup": {
-                    "from": "worker_dimensions",  # Join with the referenced collection
+                    "from": "worker_dimensions",
                     "localField": "_id.worker_dimension",
                     "foreignField": "_id",
                     "as": "worker_dimension_data",
                 }
             },
-            {"$unwind": "$worker_dimension_data"},  # Unwind the joined data
+            {"$unwind": "$worker_dimension_data"},
             {
                 "$project": {
-                    "_id": 1,
-                    "worker_dimension": "$worker_dimension_data._id",
-                    # Access the name from the joined document
-                    "name": "$worker_dimension_data.name",
-                    "value": 1,
+                    "_id": "$_id.worker_dimension",
+                    "dim_name": "$worker_dimension_data.name",
+                    "prop_value": "$_id.prop_value",
                     "workers": 1,
                 }
             },
@@ -118,21 +188,25 @@ class WorkerPropertyDB:
         result = WorkerPropertyDocument.objects.aggregate(*pipeline)  # type: ignore
         out = {}
         for r in result:
-            dim_name = r["name"].lower()
-            prop_value = (
-                r["_id"]["value"].lower()
-                if not isinstance(r["_id"]["value"], bool)
+            dim, dim_name, prop_value, workers = (
+                r["_id"],
+                r["dim_name"].lower(),
+                r["prop_value"],
+                r["workers"],
+            )
+            prop_value_mod = (
+                prop_value.lower()
+                if not isinstance(prop_value, bool)
                 else dim_name
-                if r["_id"]["value"]
+                if prop_value
                 else "not " + dim_name
             )
-            prop_workers = r["workers"]
-            if dim_name not in out:
-                out[dim_name] = {}
-            if prop_value not in out[dim_name]:
-                out[dim_name][prop_value] = prop_workers
+            if dim not in out:
+                out[dim] = {}
+            if prop_value_mod not in out[dim]:
+                out[dim][prop_value_mod] = workers
             else:
-                out[dim_name][prop_value] += prop_workers
+                out[dim][prop_value_mod] += workers
         return out
 
     def update_worker_property(

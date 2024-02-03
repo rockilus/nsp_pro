@@ -14,7 +14,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import ListSubheader from "@mui/material/ListSubheader";
 
-import { BlockT, TemplateBlockT } from "./types";
+import { BlockT, TemplateBlockT, TemplateOptionValueT } from "./types";
 import { ConstraintDefaultColors } from "../../utils/constants";
 
 interface Props {
@@ -41,20 +41,35 @@ export default function BlockEditDict({
     );
   }
 
-  const initialValue = useCallback((): Record<string, string>[] => {
+  const isTemplateOptionValueT = useCallback((dict: unknown): boolean => {
+    return (
+      isDictionary(dict) &&
+      "name" in dict &&
+      "id" in dict &&
+      "idType" in dict &&
+      typeof dict.name === "string" &&
+      typeof dict.id === "string" &&
+      typeof dict.idType === "string"
+    );
+  }, []);
+
+  const initialValue = useCallback((): TemplateOptionValueT[] => {
     if (block === null) {
       return [];
     }
     if (
       Array.isArray(block.value) &&
-      (block.value as any[]).every(isDictionary)
+      (block.value as any[]).every(isTemplateOptionValueT)
     ) {
-      return block.value as Record<string, string>[];
+      return block.value as TemplateOptionValueT[];
     }
-    throw new Error("block.value is not an array of dictionaries");
-  }, [block]);
+    throw new Error("block.value is not an array of TemplateOptionValueT");
+  }, [block, isTemplateOptionValueT]);
 
-  const templateOptionsCast = useCallback((): Record<string, string[]> => {
+  const templateOptionsCast = useCallback((): Record<
+    string,
+    TemplateOptionValueT[]
+  > => {
     if (templateBlock === null) {
       return {};
     }
@@ -63,40 +78,43 @@ export default function BlockEditDict({
       Object.values(templateBlock.options).every(
         (v) =>
           Array.isArray(v) &&
-          v.every((option: unknown) => typeof option === "string")
+          v.every((item: unknown) =>
+            isTemplateOptionValueT(item as Record<string, unknown>)
+          )
       )
     ) {
-      return templateBlock.options as Record<string, string[]>;
+      return templateBlock.options as Record<string, TemplateOptionValueT[]>;
     }
     throw new Error(
-      "templateBlock.options is not a dictionary of string key and strings array values"
+      "templateBlock.options is not a dictionary of string key and TemplateOptionValueT array values"
     );
-  }, [templateBlock]);
+  }, [templateBlock, isTemplateOptionValueT]);
 
   const filterOptionsList = useCallback(
     (
       searchQuery: string,
-      selectedOptions: Record<string, string>[],
-      options: string[]
-    ): string[] => {
-      const selectedArray = selectedOptions.map(Object.values).flat();
+      selectedOptions: TemplateOptionValueT[],
+      options: TemplateOptionValueT[]
+    ): TemplateOptionValueT[] => {
+      const selectedArray: string[] = selectedOptions.map((item) => item.name);
       return searchQuery === ""
-        ? options.filter((option) => !selectedArray.includes(option))
+        ? options.filter((option) => !selectedArray.includes(option.name))
         : options.filter(
             (option) =>
-              !selectedArray.includes(option) &&
-              option.toLowerCase().includes(searchQuery.toLowerCase())
+              !selectedArray.includes(option.name) &&
+              option.name.toLowerCase().includes(searchQuery.toLowerCase())
           );
     },
     []
   );
+
   const filterOptions = useCallback(
     (
       searchQuery: string,
-      selectedOptions: Record<string, string>[],
-      options: Record<string, string[]>
-    ): Record<string, string[]> => {
-      let out: Record<string, string[]> = {};
+      selectedOptions: TemplateOptionValueT[],
+      options: Record<string, TemplateOptionValueT[]>
+    ): Record<string, TemplateOptionValueT[]> => {
+      let out: Record<string, TemplateOptionValueT[]> = {};
       for (let key of Object.keys(options)) {
         const filteredKeyOptions = filterOptionsList(
           searchQuery,
@@ -113,16 +131,16 @@ export default function BlockEditDict({
   );
 
   const [valueState, setValueState] =
-    useState<Record<string, string>[]>(initialValue);
+    useState<TemplateOptionValueT[]>(initialValue);
   const [templateOptions, setTemplateOptions] =
-    useState<Record<string, string[]>>(templateOptionsCast);
+    useState<Record<string, TemplateOptionValueT[]>>(templateOptionsCast);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<
-    Record<string, string[]>
+    Record<string, TemplateOptionValueT[]>
   >(filterOptions("", valueState, templateOptions));
   const [selectedOption, setSelectedOption] = useState<Record<
     string,
-    string
+    TemplateOptionValueT
   > | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -159,7 +177,7 @@ export default function BlockEditDict({
     }
   };
 
-  const handleDeleteFromSelected = (optionToDelete: Record<string, string>) => {
+  const handleDeleteFromSelected = (optionToDelete: TemplateOptionValueT) => {
     if (valueState.includes(optionToDelete)) {
       const newValue = valueState.filter((option) => option !== optionToDelete);
       handleEditBlock({
@@ -247,12 +265,15 @@ export default function BlockEditDict({
     }
   };
 
-  const handleAddSelectedOption = (newOptionKey: string, newOption: string) => {
+  const handleAddSelectedOption = (
+    newOptionKey: string,
+    newOption: TemplateOptionValueT
+  ) => {
     if (
       newOptionKey in filteredOptions &&
       filteredOptions[newOptionKey].includes(newOption)
     ) {
-      const newValue = [...valueState, { [newOptionKey]: newOption }];
+      const newValue = [...valueState, newOption];
       handleEditBlock({
         name: templateBlock.name,
         type: templateBlock.type,
@@ -304,7 +325,7 @@ export default function BlockEditDict({
           {valueState.map((option, index) => (
             <Chip
               key={index}
-              label={Object.values(option)}
+              label={option.name}
               onDelete={() => handleDeleteFromSelected(option)}
               deleteIcon={
                 <ClearIcon
@@ -352,25 +373,6 @@ export default function BlockEditDict({
         >
           Select one or more
         </div>
-        {/* <List dense={true} sx={{ padding: "0 0 0 0" }}>
-          {filteredOptions.map((option) => (
-            <ListItemButton
-              key={option}
-              onClick={() => {
-                handleAddSelectedOption(option);
-              }}
-              selected={selectedOption === option}
-              sx={{ padding: "0 0 0 0" }}
-            >
-              <ListItem sx={{ padding: "0 16px 0 16px" }}>
-                <ListItemText
-                  primary={option}
-                  style={{ color: ConstraintDefaultColors.shade3 }}
-                />
-              </ListItem>
-            </ListItemButton>
-          ))}
-        </List> */}
         <List
           sx={{
             width: "100%",
@@ -389,7 +391,7 @@ export default function BlockEditDict({
                 <ul>
                   <ListSubheader>{sectionLabel}</ListSubheader>
                   {filteredOptions[sectionLabel].map(
-                    (option: string, index: number) => (
+                    (option: TemplateOptionValueT, index: number) => (
                       <ListItemButton
                         key={`item-${sectionLabel}-${index}`}
                         onClick={() => {
@@ -404,7 +406,7 @@ export default function BlockEditDict({
                       >
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText
-                            primary={option}
+                            primary={option.name}
                             style={{ color: ConstraintDefaultColors.shade3 }}
                           />
                         </ListItem>

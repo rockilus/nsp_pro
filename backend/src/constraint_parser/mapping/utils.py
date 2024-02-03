@@ -1,6 +1,6 @@
-from typing import List
+from typing import Dict, List
 
-from core.constraint import Block
+from core.constraint import Block, DictBlockValue
 
 
 def find_block_by_name(blocks: List[Block], name: str) -> Block | None:
@@ -10,14 +10,8 @@ def find_block_by_name(blocks: List[Block], name: str) -> Block | None:
     return None
 
 
-def list_dicts_to_dict(list_of_dicts):
-    out = {}
-    for d in list_of_dicts:
-        for k, v in d.items():
-            k = k.lower()
-            v = v.lower()
-            if k not in out:
-                out[k] = []
-            if v not in out[k]:
-                out[k].append(v)
-    return out
+def cast_to_dict_block_value(dict_obj: Dict) -> DictBlockValue:
+    required_keys = {"name", "id", "id_type"}
+    if set(dict_obj.keys()) == required_keys:
+        return DictBlockValue(**dict_obj)
+    raise ValueError("Invalid keys for DictBlockValue")

@@ -20,8 +20,6 @@ class MapConstaint:
     ) -> None:
         self.workers = workers
         self.shifts = shifts
-        self.worker_dim_dict = worker_dim_dict
-        self.shift_dim_dict = shift_dim_dict
         self.map_worker = MapWorker(workers, worker_dim_dict)
         self.map_day = MapDay()
         self.map_shift = MapShift(shifts, shift_dim_dict)
@@ -107,9 +105,7 @@ class MapConstaint:
             if isinstance(block.value, list):
                 block_values = block.value
                 if all(isinstance(v, dict) for v in block.value):
-                    block_values = [
-                        v for d in block.value for v in d.values()  # type: ignore
-                    ]
+                    block_values = [v["name"] for v in block_values]  # type: ignore
                 if len(block_values) > 1 and all(
                     isinstance(v, str) for v in block_values
                 ):
