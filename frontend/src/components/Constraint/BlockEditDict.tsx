@@ -44,10 +44,9 @@ export default function BlockEditDict({
     );
   }
 
-  function isTemplateOptionValueT(dict: Record<string, unknown>): boolean {
+  const isTemplateOptionValueT = useCallback((dict: unknown): boolean => {
     return (
-      typeof dict === "object" &&
-      dict !== null &&
+      isDictionary(dict) &&
       "name" in dict &&
       "id" in dict &&
       "idType" in dict &&
@@ -55,32 +54,22 @@ export default function BlockEditDict({
       typeof dict.id === "string" &&
       typeof dict.idType === "string"
     );
-  }
+  }, []);
 
-  const initialValue = useCallback((): Record<
-    string,
-    TemplateOptionValueT
-  >[] => {
+  const initialValue = useCallback((): TemplateOptionValueT[] => {
     if (block === null) {
       return [];
     }
     if (
       Array.isArray(block.value) &&
-      (block.value as any[]).every(isDictionary) &&
-      (block.value as any[]).every((v) =>
-        Object.values(v).every((item: unknown) =>
-          isTemplateOptionValueT(item as Record<string, unknown>)
-        )
-      )
+      (block.value as any[]).every(isTemplateOptionValueT)
     ) {
       console.log("block.value for valueState", block.value);
 
-      return block.value as Record<string, TemplateOptionValueT>[];
+      return block.value as TemplateOptionValueT[];
     }
-    throw new Error(
-      "block.value is not an array of dictionaries with values of type TemplateOptionValueT"
-    );
-  }, [block]);
+    throw new Error("block.value is not an array of TemplateOptionValueT");
+  }, [block, isTemplateOptionValueT]);
 
   const templateOptionsCast = useCallback((): Record<
     string,
@@ -104,18 +93,15 @@ export default function BlockEditDict({
     throw new Error(
       "templateBlock.options is not a dictionary of string key and TemplateOptionValueT array values"
     );
-  }, [templateBlock]);
+  }, [templateBlock, isTemplateOptionValueT]);
 
   const filterOptionsList = useCallback(
     (
       searchQuery: string,
-      selectedOptions: Record<string, TemplateOptionValueT>[],
+      selectedOptions: TemplateOptionValueT[],
       options: TemplateOptionValueT[]
     ): TemplateOptionValueT[] => {
-      const selectedArray: string[] = selectedOptions
-        .map(Object.values)
-        .flat()
-        .map((item) => item.name);
+      const selectedArray: string[] = selectedOptions.map((item) => item.name);
       return searchQuery === ""
         ? options.filter((option) => !selectedArray.includes(option.name))
         : options.filter(
@@ -130,7 +116,7 @@ export default function BlockEditDict({
   const filterOptions = useCallback(
     (
       searchQuery: string,
-      selectedOptions: Record<string, TemplateOptionValueT>[],
+      selectedOptions: TemplateOptionValueT[],
       options: Record<string, TemplateOptionValueT[]>
     ): Record<string, TemplateOptionValueT[]> => {
       let out: Record<string, TemplateOptionValueT[]> = {};
@@ -150,7 +136,7 @@ export default function BlockEditDict({
   );
 
   const [valueState, setValueState] =
-    useState<Record<string, TemplateOptionValueT>[]>(initialValue);
+    useState<TemplateOptionValueT[]>(initialValue);
   const [templateOptions, setTemplateOptions] =
     useState<Record<string, TemplateOptionValueT[]>>(templateOptionsCast);
   const [searchQuery, setSearchQuery] = useState("");
@@ -198,9 +184,7 @@ export default function BlockEditDict({
     }
   };
 
-  const handleDeleteFromSelected = (
-    optionToDelete: Record<string, TemplateOptionValueT>
-  ) => {
+  const handleDeleteFromSelected = (optionToDelete: TemplateOptionValueT) => {
     if (valueState.includes(optionToDelete)) {
       const newValue = valueState.filter((option) => option !== optionToDelete);
       handleEditBlock({
@@ -296,7 +280,7 @@ export default function BlockEditDict({
       newOptionKey in filteredOptions &&
       filteredOptions[newOptionKey].includes(newOption)
     ) {
-      const newValue = [...valueState, { [newOptionKey]: newOption }];
+      const newValue = [...valueState, newOption];
       handleEditBlock({
         name: templateBlock.name,
         type: templateBlock.type,
@@ -348,7 +332,7 @@ export default function BlockEditDict({
           {valueState.map((option, index) => (
             <Chip
               key={index}
-              label={Object.values(option).map((item) => item.name)}
+              label={option.name}
               onDelete={() => handleDeleteFromSelected(option)}
               deleteIcon={
                 <ClearIcon

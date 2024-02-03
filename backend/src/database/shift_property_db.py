@@ -119,11 +119,11 @@ class ShiftPropertyDB:
             dim, dim_name, prop_value, shifts = (
                 r["_id"],
                 r["dim_name"].lower(),
-                r["prop_value"].lower(),
+                r["prop_value"],
                 r["shifts"],
             )
             prop_value_mod = (
-                prop_value
+                prop_value.lower()
                 if not isinstance(prop_value, bool)
                 else dim_name
                 if prop_value

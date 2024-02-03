@@ -4,7 +4,7 @@ import BlockEditList from "./BlockEditList";
 import BlockEditString from "./BlockEditString";
 import BlockEditQty from "./BlockEditQty";
 import BlockEditDict from "./BlockEditDict";
-import { TemplateBlockT, BlockT } from "./types";
+import { TemplateBlockT, BlockT, TemplateOptionValueT } from "./types";
 import { ConstraintDefaultColors } from "../../utils/constants";
 
 interface Props {
@@ -147,11 +147,7 @@ export default function BlockDisplay({
                 color: ConstraintDefaultColors.shade3,
               }}
             >
-              {block.value
-                .map(Object.values)
-                .flat()
-                .map((item) => item.name)
-                .join(", ")}
+              {block.value.map((item) => item.name).join(", ")}
             </div>
           ) : block &&
             ((block.type === "string" && block.value !== "") ||

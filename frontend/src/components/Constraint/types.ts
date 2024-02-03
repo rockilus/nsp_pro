@@ -19,7 +19,7 @@ export type TemplateOptionValueT = {
 export type BlockT = {
   name: string;
   type: string;
-  value: string | number | string[] | Record<string, TemplateOptionValueT>[];
+  value: string | number | string[] | TemplateOptionValueT[];
 };
 
 export type TemplateBlockT = {
