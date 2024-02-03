@@ -147,7 +147,11 @@ export default function BlockDisplay({
                 color: ConstraintDefaultColors.shade3,
               }}
             >
-              {block.value.map((item) => item.name).join(", ")}
+              {block.value
+                .map((item) =>
+                  typeof item === "object" && "name" in item ? item.name : ""
+                )
+                .join(", ")}
             </div>
           ) : block &&
             ((block.type === "string" && block.value !== "") ||

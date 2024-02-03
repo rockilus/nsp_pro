@@ -38,9 +38,7 @@ class WorkerPropertyDB:
         worker_properties = WorkerPropertyDocument.objects.filter(  # type: ignore
             worker=worker.id
         )
-        return [
-            _from_mongo_worker_property(wp) for wp in list(worker_properties)
-        ]
+        return [_from_mongo_worker_property(wp) for wp in list(worker_properties)]
 
     def get_worker_properties_by_worker_dimension(
         self,
@@ -50,13 +48,9 @@ class WorkerPropertyDB:
         worker_properties = WorkerPropertyDocument.objects.filter(  # type: ignore
             worker_dimension=worker_dimension.id
         )
-        return [
-            _from_mongo_worker_property(wp) for wp in list(worker_properties)
-        ]
+        return [_from_mongo_worker_property(wp) for wp in list(worker_properties)]
 
-    def get_worker_property_by_id(
-        self, worker_property_id: str
-    ) -> WorkerProperty:
+    def get_worker_property_by_id(self, worker_property_id: str) -> WorkerProperty:
         # pylint: disable=no-member
         worker_property = WorkerPropertyDocument.objects.get(  # type: ignore
             _id=worker_property_id
@@ -74,98 +68,92 @@ class WorkerPropertyDB:
             .filter(worker_dimension=worker_dimension.id)
             .first()
         )
-        return (
-            _from_mongo_worker_property(worker_property)
-            if worker_property
-            else None
-        )
+        return _from_mongo_worker_property(worker_property) if worker_property else None
 
     def get_workers_id_by_dim_and_prop(self):
-        pipeline_study = [
-            # Group by worker_dimension id
-            # Return an iterable of dicts in format:
-            # {
-            #     "_id": "worker_dimension_id",
-            #     "properties": [{"value": "value", "worker": "worker_id"}]
-            # }
-            {
-                "$group": {
-                    "_id": "$worker_dimension",
-                    "properties": {
-                        "$push": {"value": "$value", "worker": "$worker"}
-                    },
-                }
-            },
-            # Unwind the properties list
-            # Return an iterable of dicts in format (instead of having a list
-            # of properties for each worker_dimension, each item of the
-            # properties list is now its own dict):
-            # {
-            #     "_id": "worker_dimension_id",
-            #     "properties": {"value": "value", "worker": "worker_id"}
-            # }
-            {"$unwind": "$properties"},
-            # Group by worker_dimension id and property value
-            # Return an iterable of dicts in format:
-            # {
-            #     "_id": {
-            #         "worker_dimension": "worker_dimension_id",
-            #         "value": "value",
-            #     },
-            #     "workers": ["worker_ids"]
-            # }
-            {
-                "$group": {
-                    "_id": {
-                        "worker_dimension": "$_id",
-                        "value": "$properties.value",
-                    },
-                    "workers": {"$push": "$properties.worker"},
-                }
-            },
-            # Lookup worker_dimension by id and store it in
-            # "worker_dimension_data" field (it will be a list with one element)
-            # Return an iterable of dicts in format:
-            # {
-            #     "_id": {
-            #         "worker_dimension": "worker_dimension_id",
-            #         "value": "value",
-            #     },
-            #     "workers": ["worker_ids"]
-            #     "worker_dimension_data": [worker_dimension]
-            # }
-            {
-                "$lookup": {
-                    "from": "worker_dimensions",
-                    "localField": "_id.worker_dimension",
-                    "foreignField": "_id",
-                    "as": "worker_dimension_data",
-                }
-            },
-            # Unwind the worker_dimension_data list
-            {"$unwind": "$worker_dimension_data"},
-            # Reshapes the documents by specifying which fields to include,
-            # exclude, or manipulate before the final output:
-            # Fields to include as is: _id, value, workers
-            # New field worker_dimension: _id field of worker_dimension_data
-            # Return an iterable of dicts in format:
-            # {
-            #     "_id": {
-            #         "worker_dimension": "worker_dimension_id",
-            #         "value": "value",
-            #     },
-            #     "workers": ["worker_ids"]
-            #     "worker_dimension": worker_dimension_id
-            # }
-            {
-                "$project": {
-                    "_id": 1,
-                    "worker_dimension": "$worker_dimension_data._id",
-                    "value": 1,
-                    "workers": 1,
-                }
-            },
-        ]
+        # pipeline_study = [
+        #     # Group by worker_dimension id
+        #     # Return an iterable of dicts in format:
+        #     # {
+        #     #     "_id": "worker_dimension_id",
+        #     #     "properties": [{"value": "value", "worker": "worker_id"}]
+        #     # }
+        #     {
+        #         "$group": {
+        #             "_id": "$worker_dimension",
+        #             "properties": {"$push": {"value": "$value", "worker": "$worker"}},
+        #         }
+        #     },
+        #     # Unwind the properties list
+        #     # Return an iterable of dicts in format (instead of having a list
+        #     # of properties for each worker_dimension, each item of the
+        #     # properties list is now its own dict):
+        #     # {
+        #     #     "_id": "worker_dimension_id",
+        #     #     "properties": {"value": "value", "worker": "worker_id"}
+        #     # }
+        #     {"$unwind": "$properties"},
+        #     # Group by worker_dimension id and property value
+        #     # Return an iterable of dicts in format:
+        #     # {
+        #     #     "_id": {
+        #     #         "worker_dimension": "worker_dimension_id",
+        #     #         "value": "value",
+        #     #     },
+        #     #     "workers": ["worker_ids"]
+        #     # }
+        #     {
+        #         "$group": {
+        #             "_id": {
+        #                 "worker_dimension": "$_id",
+        #                 "value": "$properties.value",
+        #             },
+        #             "workers": {"$push": "$properties.worker"},
+        #         }
+        #     },
+        #     # Lookup worker_dimension by id and store it in
+        #     # "worker_dimension_data" field (it will be a list with one element)
+        #     # Return an iterable of dicts in format:
+        #     # {
+        #     #     "_id": {
+        #     #         "worker_dimension": "worker_dimension_id",
+        #     #         "value": "value",
+        #     #     },
+        #     #     "workers": ["worker_ids"]
+        #     #     "worker_dimension_data": [worker_dimension]
+        #     # }
+        #     {
+        #         "$lookup": {
+        #             "from": "worker_dimensions",
+        #             "localField": "_id.worker_dimension",
+        #             "foreignField": "_id",
+        #             "as": "worker_dimension_data",
+        #         }
+        #     },
+        #     # Unwind the worker_dimension_data list
+        #     {"$unwind": "$worker_dimension_data"},
+        #     # Reshapes the documents by specifying which fields to include,
+        #     # exclude, or manipulate before the final output:
+        #     # Fields to include as is: _id, value, workers
+        #     # New field worker_dimension: _id field of worker_dimension_data
+        #     # Return an iterable of dicts in format:
+        #     # {
+        #     #     "_id": {
+        #     #         "worker_dimension": "worker_dimension_id",
+        #     #         "value": "value",
+        #     #     },
+        #     #     "workers": ["worker_ids"]
+        #     #     "worker_dimension": worker_dimension_id
+        #     # }
+        #     {
+        #         "$project": {
+        #             "_id": 1,
+        #             "worker_dimension": "$worker_dimension_data._id",
+        #             "value": 1,
+        #             "workers": 1,
+        #         }
+        #     },
+        # ]
 
         pipeline = [
             {

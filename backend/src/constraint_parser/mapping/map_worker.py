@@ -1,9 +1,6 @@
 from typing import Dict, List
 
-from constraint_parser.mapping.utils import (
-    cast_to_dict_block_value,
-    find_block_by_name,
-)
+from constraint_parser.mapping.utils import cast_to_dict_block_value, find_block_by_name
 from core.constraint import Block, ConstraintBuild, DictBlockValue, VarWorker
 from core.worker import Worker
 from utils.constants import Constants
@@ -45,7 +42,8 @@ class MapWorker:
                     raise ValueError(f"Worker dimension {value.id} not found")
                 if value.name.lower() not in self.worker_dim_dict[value.id]:
                     raise ValueError(
-                        f"Worker property {value.name} for dimension {value.id} not found"
+                        f"Worker property {value.name} for dimension "
+                        + f"{value.id} not found"
                     )
                 out += self.worker_dim_dict[value.id][value.name.lower()]
         return sorted(list(set(out)))
@@ -61,7 +59,8 @@ class MapWorker:
                 isinstance(v, dict) for v in worker_block.value
             ):
                 return [
-                    cast_to_dict_block_value(v) for v in worker_block.value  # type: ignore
+                    cast_to_dict_block_value(v)  # type: ignore
+                    for v in worker_block.value
                 ]
             raise ValueError("Worker block value is not a list of dicts")
         raise ValueError("Worker block not found")

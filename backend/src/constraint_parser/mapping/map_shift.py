@@ -1,9 +1,6 @@
 from typing import Dict, List
 
-from constraint_parser.mapping.utils import (
-    cast_to_dict_block_value,
-    find_block_by_name,
-)
+from constraint_parser.mapping.utils import cast_to_dict_block_value, find_block_by_name
 from core.constraint import Block, ConstraintBuild, DictBlockValue, VarShift
 from core.shift import Shift
 from utils.constants import Constants
@@ -31,12 +28,8 @@ class MapShift:
             else []
         )
         return VarShift(
-            selector=self.get_selector(
-                shift_values, cstr_build.constraint_type
-            ),
-            target_ids=self.get_target_ids(
-                shift_values, cstr_build.constraint_type
-            ),
+            selector=self.get_selector(shift_values, cstr_build.constraint_type),
+            target_ids=self.get_target_ids(shift_values, cstr_build.constraint_type),
             reference_ids=self.get_target_ids(
                 shift_reference_values, cstr_build.constraint_type
             ),
@@ -54,28 +47,22 @@ class MapShift:
             return "all"
         return "equal"
 
-    def get_target_ids(
-        self, values: List[DictBlockValue], cstr_type: str
-    ) -> List[str]:
-        if (
-            self.get_selector(values, cstr_type) == "all"
-            and cstr_type != "ord"
-        ):
+    def get_target_ids(self, values: List[DictBlockValue], cstr_type: str) -> List[str]:
+        if self.get_selector(values, cstr_type) == "all" and cstr_type != "ord":
             return []
         out = []
         for value in values:
             if value.id_type == "shift":
                 if not self.check_shift_id(value.id):
-                    raise ValueError(
-                        f"Shift {value.name} with id {value.id} not found"
-                    )
+                    raise ValueError(f"Shift {value.name} with id {value.id} not found")
                 out.append(value.id)
             else:
                 if value.id not in self.shift_dim_dict:
                     raise ValueError(f"Shift dimension {value.id} not found")
                 if value.name.lower() not in self.shift_dim_dict[value.id]:
                     raise ValueError(
-                        f"Shift property {value.name} for dimension {value.id} not found"
+                        f"Shift property {value.name} "
+                        + f"for dimension {value.id} not found"
                     )
                 out += self.shift_dim_dict[value.id][value.name.lower()]
         return sorted(list(set(out)))
@@ -84,16 +71,15 @@ class MapShift:
         return any(s.id == shift_id for s in self.shifts)
 
     @staticmethod
-    def get_shift_values(
-        blocks: List[Block], block_name: str
-    ) -> List[DictBlockValue]:
+    def get_shift_values(blocks: List[Block], block_name: str) -> List[DictBlockValue]:
         shift_block = find_block_by_name(blocks, block_name)
         if shift_block:
             if isinstance(shift_block.value, list) and all(
                 isinstance(v, dict) for v in shift_block.value
             ):
                 return [
-                    cast_to_dict_block_value(v) for v in shift_block.value  # type: ignore
+                    cast_to_dict_block_value(v)  # type: ignore
+                    for v in shift_block.value
                 ]
             raise ValueError("Shift block value is not a list of dicts")
         raise ValueError("Shift block not found")

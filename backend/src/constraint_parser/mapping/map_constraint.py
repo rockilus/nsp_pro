@@ -32,9 +32,7 @@ class MapConstaint:
             id=cstr_build.id,
             constraint_type=cstr_build.constraint_type,
             template_id=cstr_build.template_id,
-            operator=self.get_operator(
-                cstr_build.blocks, cstr_build.constraint_type
-            ),
+            operator=self.get_operator(cstr_build.blocks, cstr_build.constraint_type),
             target_value=self.get_target_value(
                 cstr_build.blocks, cstr_build.constraint_type
             ),
@@ -107,9 +105,7 @@ class MapConstaint:
             if isinstance(block.value, list):
                 block_values = block.value
                 if all(isinstance(v, dict) for v in block.value):
-                    block_values = [
-                        v["name"] for v in block_values  # type: ignore
-                    ]
+                    block_values = [v["name"] for v in block_values]  # type: ignore
                 if len(block_values) > 1 and all(
                     isinstance(v, str) for v in block_values
                 ):

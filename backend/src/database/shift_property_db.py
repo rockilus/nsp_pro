@@ -38,9 +38,7 @@ class ShiftPropertyDB:
         shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
             shift=shift.id
         )
-        return [
-            _from_mongo_shift_property(sp) for sp in list(shift_properties)
-        ]
+        return [_from_mongo_shift_property(sp) for sp in list(shift_properties)]
 
     def get_shift_properties_by_shift_dimension(
         self,
@@ -50,13 +48,9 @@ class ShiftPropertyDB:
         shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
             shift_dimension=shift_dimension.id
         )
-        return [
-            _from_mongo_shift_property(sp) for sp in list(shift_properties)
-        ]
+        return [_from_mongo_shift_property(sp) for sp in list(shift_properties)]
 
-    def get_shift_property_by_id(
-        self, shift_property_id: str
-    ) -> ShiftProperty:
+    def get_shift_property_by_id(self, shift_property_id: str) -> ShiftProperty:
         # pylint: disable=no-member
         shift_property = ShiftPropertyDocument.objects.get(  # type: ignore
             id=shift_property_id
@@ -74,11 +68,7 @@ class ShiftPropertyDB:
             .filter(shift_dimension=shift_dimension.id)
             .first()
         )
-        return (
-            _from_mongo_shift_property(shift_property)
-            if shift_property
-            else None
-        )
+        return _from_mongo_shift_property(shift_property) if shift_property else None
 
     def get_shifts_id_by_dim_and_prop(self):
         pipeline = [
