@@ -103,8 +103,7 @@ class ShiftPropertyDB:
             {
                 "$project": {
                     "_id": "$_id.shift_dimension",
-                    "dim_name"
-                    "$shift_dimension_data.name"
+                    "dim_name": "$shift_dimension_data.name",
                     "prop_value": "$_id.value",
                     "shifts": 1,
                 }

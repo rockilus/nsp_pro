@@ -108,7 +108,7 @@ class MapConstaint:
                 block_values = block.value
                 if all(isinstance(v, dict) for v in block.value):
                     block_values = [
-                        v for d in block.value for v in d.values()  # type: ignore
+                        v["name"] for v in block_values  # type: ignore
                     ]
                 if len(block_values) > 1 and all(
                     isinstance(v, str) for v in block_values

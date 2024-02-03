@@ -5,6 +5,7 @@ from core.constraint import (
     Block,
     Constraint,
     ConstraintBuild,
+    DictBlockValue,
     VarDay,
     VarShift,
     VarWorker,
@@ -132,12 +133,18 @@ workers = [
 
 
 shift_dim_dict = {
-    "duty": {"duty": ["2", "3"], "not duty": ["0", "1", "4", "5", "6", "7"]},
-    "unit": {"unit 1": ["0", "1", "2", "3"], "unit 2": ["4", "5", "6", "7"]},
+    "duty_id": {
+        "duty": ["2", "3"],
+        "not duty": ["0", "1", "4", "5", "6", "7"],
+    },
+    "unit_id": {
+        "unit 1": ["0", "1", "2", "3"],
+        "unit 2": ["4", "5", "6", "7"],
+    },
 }
 worker_dim_dict = {
-    "specialty": {"surgeon": ["1", "2"], "anesthesia": ["3", "4"]},
-    "60+": {
+    "specialty_id": {"surgeon": ["1", "2"], "anesthesia": ["3", "4"]},
+    "60+_id": {
         "60+": ["4", "5"],
         "not 60+": ["0", "1", "2", "3", "6", "7", "8", "9"],
     },
@@ -171,13 +178,17 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
                 Block(name="#", type="number", value=2),
                 Block(name="timing", type="string", value="consecutive"),
-                Block(name="shift", type="dict", value=[{"shifts": "off"}]),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
+                ),
             ],
             text="",
             hard=True,
@@ -215,13 +226,17 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
                 Block(name="#", type="number", value=2),
                 Block(name="timing", type="string", value="consecutive"),
-                Block(name="shift", type="dict", value=[{"shifts": "off"}]),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
+                ),
             ],
         ),
     },
@@ -236,7 +251,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"all": "all workers"}],
+                    value=[{"name": "all workers", "id": "", "id_type": ""}],
                 ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
@@ -245,7 +260,7 @@ test_data = [
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"all": "all shifts"}],
+                    value=[{"name": "all shifts", "id": "", "id_type": ""}],
                 ),
             ],
             text="",
@@ -284,7 +299,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"all": "all workers"}],
+                    value=[{"name": "all workers", "id": "", "id_type": ""}],
                 ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
@@ -293,7 +308,7 @@ test_data = [
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"all": "all shifts"}],
+                    value=[{"name": "all shifts", "id": "", "id_type": ""}],
                 ),
             ],
         ),
@@ -306,7 +321,17 @@ test_data = [
             constraint_type="seq",
             template_id="0",
             blocks=[
-                Block(name="worker", type="dict", value=[{"60+": "60+"}]),
+                Block(
+                    name="worker",
+                    type="dict",
+                    value=[
+                        {
+                            "name": "60+",
+                            "id": "60+_id",
+                            "id_type": "worker_dimension",
+                        }
+                    ],
+                ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
                 Block(name="#", type="number", value=2),
@@ -314,7 +339,13 @@ test_data = [
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"duty": "not duty"}],
+                    value=[
+                        {
+                            "name": "not duty",
+                            "id": "duty_id",
+                            "id_type": "shift_dimension",
+                        }
+                    ],
                 ),
             ],
             text="",
@@ -350,7 +381,17 @@ test_data = [
             priority="medium",
             text="60+ should work at most 2 consecutive not duty.",
             blocks=[
-                Block(name="worker", type="dict", value=[{"60+": "60+"}]),
+                Block(
+                    name="worker",
+                    type="dict",
+                    value=[
+                        {
+                            "name": "60+",
+                            "id": "60+_id",
+                            "id_type": "worker_dimension",
+                        }
+                    ],
+                ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
                 Block(name="#", type="number", value=2),
@@ -358,7 +399,13 @@ test_data = [
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"duty": "not duty"}],
+                    value=[
+                        {
+                            "name": "not duty",
+                            "id": "duty_id",
+                            "id_type": "shift_dimension",
+                        }
+                    ],
                 ),
             ],
         ),
@@ -374,13 +421,29 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"specialty": "surgeon"}],
+                    value=[
+                        {
+                            "name": "surgeon",
+                            "id": "specialty_id",
+                            "id_type": "worker_dimension",
+                        }
+                    ],
                 ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
                 Block(name="#", type="number", value=2),
                 Block(name="timing", type="string", value="consecutive"),
-                Block(name="shift", type="dict", value=[{"unit": "unit 1"}]),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[
+                        {
+                            "name": "unit 1",
+                            "id": "unit_id",
+                            "id_type": "shift_dimension",
+                        }
+                    ],
+                ),
             ],
             text="",
             hard=True,
@@ -418,13 +481,29 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"specialty": "surgeon"}],
+                    value=[
+                        {
+                            "name": "surgeon",
+                            "id": "specialty_id",
+                            "id_type": "worker_dimension",
+                        }
+                    ],
                 ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
                 Block(name="#", type="number", value=2),
                 Block(name="timing", type="string", value="consecutive"),
-                Block(name="shift", type="dict", value=[{"unit": "unit 1"}]),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[
+                        {
+                            "name": "unit 1",
+                            "id": "unit_id",
+                            "id_type": "shift_dimension",
+                        }
+                    ],
+                ),
             ],
         ),
     },
@@ -439,12 +518,16 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at least"),
                 Block(name="#", type="number", value=1),
-                Block(name="shift", type="dict", value=[{"shifts": "off"}]),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
+                ),
                 Block(name="timing", type="string", value="per week"),
             ],
             text="",
@@ -483,12 +566,16 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at least"),
                 Block(name="#", type="number", value=1),
-                Block(name="shift", type="dict", value=[{"shifts": "off"}]),
+                Block(
+                    name="shift",
+                    type="dict",
+                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
+                ),
                 Block(name="timing", type="string", value="per week"),
             ],
         ),
@@ -505,7 +592,7 @@ test_data = [
                 Block(
                     name="shift_reference",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
                 Block(name="#", type="number", value=1),
                 Block(name="text", type="string", value="day"),
@@ -513,13 +600,15 @@ test_data = [
                 Block(
                     name="shift_relative",
                     type="dict",
-                    value=[{"shifts": "afternoon"}],
+                    value=[
+                        {"name": "afternoon", "id": "2", "id_type": "shift"}
+                    ],
                 ),
                 Block(name="text", type="string", value="for"),
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
             text="",
@@ -559,7 +648,7 @@ test_data = [
                 Block(
                     name="shift_reference",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
                 Block(name="#", type="number", value=1),
                 Block(name="text", type="string", value="day"),
@@ -567,13 +656,15 @@ test_data = [
                 Block(
                     name="shift_relative",
                     type="dict",
-                    value=[{"shifts": "afternoon"}],
+                    value=[
+                        {"name": "afternoon", "id": "2", "id_type": "shift"}
+                    ],
                 ),
                 Block(name="text", type="string", value="for"),
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
         ),
@@ -589,13 +680,13 @@ test_data = [
                 Block(
                     name="shift_reference",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
                 Block(name="text", type="string", value="then"),
                 Block(
                     name="shift_relative",
                     type="dict",
-                    value=[{"shifts": "off"}],
+                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
                 ),
                 Block(name="#", type="number", value=1),
                 Block(name="text", type="string", value="day"),
@@ -604,7 +695,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
             text="",
@@ -644,13 +735,13 @@ test_data = [
                 Block(
                     name="shift_reference",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
                 Block(name="text", type="string", value="then"),
                 Block(
                     name="shift_relative",
                     type="dict",
-                    value=[{"shifts": "off"}],
+                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
                 ),
                 Block(name="#", type="number", value=1),
                 Block(name="text", type="string", value="day"),
@@ -659,7 +750,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
         ),
@@ -675,7 +766,7 @@ test_data = [
                 Block(
                     name="shift_reference",
                     type="dict",
-                    value=[{"shifts": "morning"}],
+                    value=[{"name": "morning", "id": "1", "id_type": "shift"}],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="saturday"),
@@ -683,7 +774,7 @@ test_data = [
                 Block(
                     name="shift_relative",
                     type="dict",
-                    value=[{"shifts": "off"}],
+                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
                 ),
                 Block(name="#", type="number", value=2),
                 Block(name="text", type="string", value="day"),
@@ -692,7 +783,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
             text="",
@@ -732,7 +823,7 @@ test_data = [
                 Block(
                     name="shift_reference",
                     type="dict",
-                    value=[{"shifts": "morning"}],
+                    value=[{"name": "morning", "id": "1", "id_type": "shift"}],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="saturday"),
@@ -740,7 +831,7 @@ test_data = [
                 Block(
                     name="shift_relative",
                     type="dict",
-                    value=[{"shifts": "off"}],
+                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
                 ),
                 Block(name="#", type="number", value=2),
                 Block(name="text", type="string", value="day"),
@@ -749,7 +840,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
         ),
@@ -765,7 +856,7 @@ test_data = [
                 Block(
                     name="shift_reference",
                     type="dict",
-                    value=[{"shifts": "morning"}],
+                    value=[{"name": "morning", "id": "1", "id_type": "shift"}],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="saturday"),
@@ -773,7 +864,7 @@ test_data = [
                 Block(
                     name="shift_relative",
                     type="dict",
-                    value=[{"shifts": "off"}],
+                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
                 ),
                 Block(name="#", type="number", value=2),
                 Block(name="text", type="string", value="day"),
@@ -782,7 +873,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
             text="",
@@ -822,7 +913,7 @@ test_data = [
                 Block(
                     name="shift_reference",
                     type="dict",
-                    value=[{"shifts": "morning"}],
+                    value=[{"name": "morning", "id": "1", "id_type": "shift"}],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="saturday"),
@@ -830,7 +921,7 @@ test_data = [
                 Block(
                     name="shift_relative",
                     type="dict",
-                    value=[{"shifts": "off"}],
+                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
                 ),
                 Block(name="#", type="number", value=2),
                 Block(name="text", type="string", value="day"),
@@ -839,7 +930,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
         ),
@@ -855,14 +946,14 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
                 Block(name="operator", type="string", value="should only"),
                 Block(name="text", type="string", value="work"),
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
             ],
             text="",
@@ -901,14 +992,14 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
                 Block(name="operator", type="string", value="should only"),
                 Block(name="text", type="string", value="work"),
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
             ],
         ),
@@ -923,14 +1014,14 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
                 Block(name="operator", type="string", value="should not"),
                 Block(name="text", type="string", value="work"),
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
             ],
             text="",
@@ -969,14 +1060,14 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
                 Block(name="operator", type="string", value="should not"),
                 Block(name="text", type="string", value="work"),
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
             ],
         ),
@@ -992,7 +1083,7 @@ test_data = [
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="sunday"),
@@ -1004,7 +1095,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
             text="",
@@ -1043,7 +1134,7 @@ test_data = [
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="sunday"),
@@ -1055,7 +1146,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"workers": "John"}],
+                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
         ),
@@ -1071,7 +1162,7 @@ test_data = [
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="sunday"),
@@ -1083,7 +1174,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"all": "all workers"}],
+                    value=[{"name": "all workers", "id": "", "id_type": ""}],
                 ),
             ],
             text="",
@@ -1122,7 +1213,7 @@ test_data = [
                 Block(
                     name="shift",
                     type="dict",
-                    value=[{"shifts": "night"}],
+                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="sunday"),
@@ -1134,7 +1225,7 @@ test_data = [
                 Block(
                     name="worker",
                     type="dict",
-                    value=[{"all": "all workers"}],
+                    value=[{"name": "all workers", "id": "", "id_type": ""}],
                 ),
             ],
         ),
