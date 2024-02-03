@@ -120,7 +120,7 @@ class RequestMessage(BaseModel):
 class BlockMessage(BaseModel):
     name: str
     type: str
-    value: str | int | List[str] | List[Dict[str, str]]
+    value: str | int | List[str] | List[Dict]
 
 
 class ConstraintMessage(BaseModel):

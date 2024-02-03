@@ -20,8 +20,6 @@ class MapConstaint:
     ) -> None:
         self.workers = workers
         self.shifts = shifts
-        self.worker_dim_dict = worker_dim_dict
-        self.shift_dim_dict = shift_dim_dict
         self.map_worker = MapWorker(workers, worker_dim_dict)
         self.map_day = MapDay()
         self.map_shift = MapShift(shifts, shift_dim_dict)
@@ -34,7 +32,9 @@ class MapConstaint:
             id=cstr_build.id,
             constraint_type=cstr_build.constraint_type,
             template_id=cstr_build.template_id,
-            operator=self.get_operator(cstr_build.blocks, cstr_build.constraint_type),
+            operator=self.get_operator(
+                cstr_build.blocks, cstr_build.constraint_type
+            ),
             target_value=self.get_target_value(
                 cstr_build.blocks, cstr_build.constraint_type
             ),

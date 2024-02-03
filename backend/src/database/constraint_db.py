@@ -122,7 +122,7 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
 def to_mongo_block(dataclass_obj: Block) -> BlockDocument:
     return BlockDocument(
         name=dataclass_obj.name,
-        type=dataclass_obj.value_type,
+        type=dataclass_obj.type,
         value=dataclass_obj.value,
     )
 
@@ -184,7 +184,7 @@ def _from_mongo_var_shift(doc_obj: VarShiftDocument) -> VarShift:
 def _from_mongo_block(doc_obj: BlockDocument) -> Block:
     return Block(
         name=doc_obj.name,  # type: ignore
-        value_type=doc_obj.type,  # type: ignore
+        type=doc_obj.type,  # type: ignore
         value=doc_obj.value
         if isinstance(doc_obj.value, (str, int))
         else list(doc_obj.value),
