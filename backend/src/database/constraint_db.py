@@ -5,7 +5,7 @@ from bson import ObjectId
 
 from core.constraint import Block, Constraint, VarDay, VarShift, VarWorker
 from database.db import DB
-from models import Block as BlockDocument
+from models import BlockConstraint as BlockDocument
 from models import Constraint as ConstraintDocument
 from models import Shift as ShiftDocument
 from models import VarDay as VarDayDocument
@@ -119,6 +119,7 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
     )
 
 
+# pylint: disable=R0801
 def to_mongo_block(dataclass_obj: Block) -> BlockDocument:
     return BlockDocument(
         name=dataclass_obj.name,
@@ -177,6 +178,7 @@ def _from_mongo_var_shift(doc_obj: VarShiftDocument) -> VarShift:
     )
 
 
+# pylint: disable=R0801
 def _from_mongo_block(doc_obj: BlockDocument) -> Block:
     return Block(
         name=doc_obj.name,  # type: ignore

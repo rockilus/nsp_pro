@@ -3,6 +3,7 @@ import os
 from database import (
     DB,
     AssignmentDB,
+    ConstraintBuildDB,
     ConstraintDB,
     CoverageDB,
     CoverageSelectorDB,
@@ -29,6 +30,7 @@ database_uri = (
 
 db = DB(database_uri)
 assignment_db = AssignmentDB(db)
+constraint_build_db = ConstraintBuildDB(db)
 constraint_db = ConstraintDB(db)
 coverage_db = CoverageDB(db)
 coverage_selector_db = CoverageSelectorDB(db)

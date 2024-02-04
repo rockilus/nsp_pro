@@ -123,7 +123,7 @@ class BlockMessage(BaseModel):
     value: str | int | List[str] | List[Dict]
 
 
-class ConstraintMessage(BaseModel):
+class ConstraintBuildMessage(BaseModel):
     id: str
     constraintType: str
     templateId: str

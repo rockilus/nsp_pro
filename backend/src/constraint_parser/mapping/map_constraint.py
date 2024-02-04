@@ -43,7 +43,7 @@ class MapConstaint:
             active=cstr_build.active,
             hard=cstr_build.hard,
             priority=cstr_build.priority,
-            text=self.blocks_to_string(cstr_build.blocks),
+            text=self.blocks_to_string_constraint(cstr_build.blocks),
             blocks=cstr_build.blocks,
         )
 
@@ -99,7 +99,8 @@ class MapConstaint:
         raise ValueError(f"Operator {operator} not recognized")
 
     @staticmethod
-    def blocks_to_string(blocks: List[Block]) -> str:
+    # pylint: disable=R0801
+    def blocks_to_string_constraint(blocks: List[Block]) -> str:
         values = []
         for block in blocks:
             if isinstance(block.value, list):

@@ -1,4 +1,5 @@
 from database.assignment_db import AssignmentDB
+from database.constraint_build_db import ConstraintBuildDB
 from database.constraint_db import ConstraintDB
 from database.coverage_db import CoverageDB
 from database.coverage_selector_db import CoverageSelectorDB
@@ -23,6 +24,7 @@ from database.worker_property_db import WorkerPropertyDB
 
 __all__ = [
     "AssignmentDB",
+    "ConstraintBuildDB",
     "ConstraintDB",
     "CoverageDB",
     "CoverageSelectorDB",

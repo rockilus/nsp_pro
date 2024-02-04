@@ -36,7 +36,7 @@ class VarShift(EmbeddedDocument):
     relative = ListField(ReferenceField("Shift"))
 
 
-class Block(EmbeddedDocument):
+class BlockConstraint(EmbeddedDocument):
     name = StringField(
         required=True,
         # pylint: disable = R0801
@@ -88,4 +88,4 @@ class Constraint(Document):
     priority = StringField(choices=["", "low", "medium", "high"], default="")
     active = BooleanField(default=True)
     text = StringField(required=True)
-    blocks = ListField(EmbeddedDocumentField(Block))
+    blocks = ListField(EmbeddedDocumentField(BlockConstraint))
