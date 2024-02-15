@@ -5,8 +5,9 @@ from bson import ObjectId
 
 from core.constraint import Block, Constraint, VarDay, VarShift, VarWorker
 from database.db import DB
-from models import BlockConstraint as BlockDocument
+from models import Block as BlockDocument
 from models import Constraint as ConstraintDocument
+from models import Schedule as ScheduleDocument
 from models import Shift as ShiftDocument
 from models import VarDay as VarDayDocument
 from models import VarShift as VarShiftDocument
@@ -19,10 +20,7 @@ class ConstraintDB:
         self.db = db
 
     # pylint: disable=too-many-arguments
-    def create_constraint(
-        self,
-        constraint: Constraint,
-    ) -> Constraint:
+    def create_constraint(self, constraint: Constraint) -> Constraint:
         constraint_doc = to_mongo_constraint(constraint)
         constraint_doc.id = str(ObjectId())
         constraint_saved = constraint_doc.save()
@@ -62,6 +60,14 @@ class ConstraintDB:
             id=constraint_id
         )
         constraint_doc.delete()
+
+    def delete_constraints_by_schedule_id(self, schedule_id: str) -> None:
+        # pylint: disable=no-member
+        constraints = ConstraintDocument.objects.filter(  # type: ignore
+            schedule=schedule_id
+        )
+        for constraint in list(constraints):
+            constraint.delete()
 
 
 # Mappers
@@ -132,6 +138,10 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
     worker_var = to_mongo_var_worker(dataclass_obj.worker_var)
     day_var = to_mongo_var_day(dataclass_obj.day_var)
     shift_var = to_mongo_var_shift(dataclass_obj.shift_var)
+    # pylint: disable=no-member
+    schedule = ScheduleDocument.objects.get(  # type: ignore
+        id=dataclass_obj.schedule_id
+    )
     constraint = ConstraintDocument(
         id=dataclass_obj.id,
         constraint_type=dataclass_obj.constraint_type,
@@ -147,6 +157,7 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
         active=dataclass_obj.active,
         text=dataclass_obj.text,
         blocks=[to_mongo_block(b) for b in dataclass_obj.blocks],
+        schedule=schedule,
     )
     return constraint
 
@@ -183,9 +194,11 @@ def _from_mongo_block(doc_obj: BlockDocument) -> Block:
     return Block(
         name=doc_obj.name,  # type: ignore
         type=doc_obj.type,  # type: ignore
-        value=doc_obj.value
-        if isinstance(doc_obj.value, (str, int))
-        else list(doc_obj.value),
+        value=(
+            doc_obj.value
+            if isinstance(doc_obj.value, (str, int))
+            else list(doc_obj.value)
+        ),
     )
 
 
@@ -208,5 +221,6 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
         active=doc_obj.active,
         text=doc_obj.text,
         blocks=[_from_mongo_block(b) for b in doc_obj.blocks],
+        schedule_id=str(doc_obj.schedule.id),
     )
     return constraint

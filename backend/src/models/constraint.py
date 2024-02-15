@@ -4,13 +4,14 @@ from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (
     BooleanField,
     DateTimeField,
-    DynamicField,
     EmbeddedDocumentField,
     IntField,
     ListField,
     ReferenceField,
     StringField,
 )
+
+from models.constraint_build import Block
 
 
 class VarWorker(EmbeddedDocument):
@@ -36,24 +37,24 @@ class VarShift(EmbeddedDocument):
     relative = ListField(ReferenceField("Shift"))
 
 
-class BlockConstraint(EmbeddedDocument):
-    name = StringField(
-        required=True,
-        # pylint: disable = R0801
-        choices=[
-            "operator",
-            "#",
-            "timing",
-            "shift",
-            "worker",
-            "text",
-            "shift_reference",
-            "shift_relative",
-            "weekday",
-        ],
-    )
-    type = StringField(required=True, choices=["string", "number", "list", "dict"])
-    value = DynamicField(required=True)
+# class BlockConstraint(EmbeddedDocument):
+#     name = StringField(
+#         required=True,
+#         # pylint: disable = R0801
+#         choices=[
+#             "operator",
+#             "#",
+#             "timing",
+#             "shift",
+#             "worker",
+#             "text",
+#             "shift_reference",
+#             "shift_relative",
+#             "weekday",
+#         ],
+#     )
+#     type = StringField(required=True, choices=["string", "number", "list", "dict"])
+#     value = DynamicField(required=True)
 
 
 # replace constraint/aggregator with type string
@@ -88,4 +89,5 @@ class Constraint(Document):
     priority = StringField(choices=["", "low", "medium", "high"], default="")
     active = BooleanField(default=True)
     text = StringField(required=True)
-    blocks = ListField(EmbeddedDocumentField(BlockConstraint))
+    blocks = ListField(EmbeddedDocumentField(Block))
+    schedule = ReferenceField("Schedule", required=True)

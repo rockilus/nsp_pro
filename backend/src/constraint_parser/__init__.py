@@ -1,5 +1,5 @@
-from constraint_parser.constraint_parse import constraint_parse
+from constraint_parser.constraint_parse import parse_constraint
 
 __all__ = [
-    "constraint_parse",
+    "parse_constraint",
 ]

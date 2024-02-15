@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Dict, List, Union
 
 from bson import ObjectId
 
@@ -70,7 +70,7 @@ class WorkerPropertyDB:
         )
         return _from_mongo_worker_property(worker_property) if worker_property else None
 
-    def get_workers_id_by_dim_and_prop(self):
+    def get_workers_id_by_dim_and_prop(self) -> Dict:
         # pipeline_study = [
         #     # Group by worker_dimension id
         #     # Return an iterable of dicts in format:
@@ -186,7 +186,7 @@ class WorkerPropertyDB:
 
         # pylint: disable=no-member
         result = WorkerPropertyDocument.objects.aggregate(*pipeline)  # type: ignore
-        out = {}
+        out: Dict = {}
         for r in result:
             dim, dim_name, prop_value, workers = (
                 r["_id"],

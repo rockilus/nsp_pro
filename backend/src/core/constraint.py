@@ -72,6 +72,7 @@ class Constraint:
     priority: str
     text: str
     blocks: List[Block]
+    schedule_id: str
 
 
 @dataclass

@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Dict, List, Union
 
 from bson import ObjectId
 
@@ -70,7 +70,7 @@ class ShiftPropertyDB:
         )
         return _from_mongo_shift_property(shift_property) if shift_property else None
 
-    def get_shifts_id_by_dim_and_prop(self):
+    def get_shifts_id_by_dim_and_prop(self) -> Dict:
         pipeline = [
             {
                 "$group": {
@@ -103,7 +103,7 @@ class ShiftPropertyDB:
         # pylint: disable=no-member
         result = ShiftPropertyDocument.objects.aggregate(*pipeline)  # type: ignore
         # pylint: disable=R0801
-        out = {}
+        out: Dict = {}
         for r in result:
             dim, dim_name, prop_value, shifts = (
                 r["_id"],

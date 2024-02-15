@@ -237,6 +237,7 @@ test_data = [
                     value=[{"name": "off", "id": "0", "id_type": "shift"}],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
     # All workers, all shifts
@@ -308,6 +309,7 @@ test_data = [
                     value=[{"name": "all shifts", "id": "", "id_type": ""}],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
     # Boolean property workers, boolean property shifts
@@ -405,6 +407,7 @@ test_data = [
                     ],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
     # Non boolean property worker, non boolean property shift
@@ -502,6 +505,7 @@ test_data = [
                     ],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
     # Sum
@@ -575,6 +579,7 @@ test_data = [
                 ),
                 Block(name="timing", type="string", value="per week"),
             ],
+            schedule_id="test_schedule",
         ),
     },
     # Order
@@ -660,6 +665,7 @@ test_data = [
                     value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
     {
@@ -746,6 +752,7 @@ test_data = [
                     value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
     {
@@ -836,6 +843,7 @@ test_data = [
                     value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
     {
@@ -926,6 +934,7 @@ test_data = [
                     value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
     # Filter
@@ -995,6 +1004,7 @@ test_data = [
                     value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
     {
@@ -1063,6 +1073,7 @@ test_data = [
                     value=[{"name": "night", "id": "3", "id_type": "shift"}],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
     # Evenness
@@ -1142,6 +1153,7 @@ test_data = [
                     value=[{"name": "John", "id": "0", "id_type": "worker"}],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
     # Fairness
@@ -1219,6 +1231,7 @@ test_data = [
                     value=[{"name": "all workers", "id": "", "id_type": ""}],
                 ),
             ],
+            schedule_id="test_schedule",
         ),
     },
 ]

@@ -24,7 +24,7 @@ class MapConstaint:
         self.map_day = MapDay()
         self.map_shift = MapShift(shifts, shift_dim_dict)
 
-    def __call__(self, cstr_build: ConstraintBuild) -> Constraint:
+    def __call__(self, cstr_build: ConstraintBuild, schedule_id: str) -> Constraint:
         var_worker = self.map_worker(cstr_build)
         var_day = self.map_day(cstr_build)
         var_shift = self.map_shift(cstr_build)
@@ -45,6 +45,7 @@ class MapConstaint:
             priority=cstr_build.priority,
             text=self.blocks_to_string_constraint(cstr_build.blocks),
             blocks=cstr_build.blocks,
+            schedule_id=schedule_id,
         )
 
     def get_operator(
