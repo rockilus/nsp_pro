@@ -67,6 +67,7 @@ class Constants:
         "yes",
         "no",
     ]
+    CONSTRAINT_TYPE_OPTIONS = Literal["sum", "seq", "ord", "fil", "fai", "eve"]
     VAR_WORKER_SELECTOR_OPTIONS = Literal["all", "equal"]
     VAR_DAY_SELECTOR_OPTIONS = Literal["all", "week", "period", "week_day_index"]
     VAR_SHIFT_SELECTOR_OPTIONS = Literal["all", "equal"]
