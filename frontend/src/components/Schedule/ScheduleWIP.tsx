@@ -1,12 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
-import EditIcon from "@mui/icons-material/Edit";
-import IconButton from "@mui/material/IconButton";
+import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 
 import SchedulePanelDialog from "./SchedulePanelDialog";
@@ -22,7 +21,14 @@ interface Props {
 }
 
 export default function ScheduleWIP({ schedule }: Props) {
+  const [isSolving, setIsSolving] = useState(false);
   const solveSchedule = useScheduleStore((state) => state.solveSchedule);
+
+  const handleSolve = async () => {
+    setIsSolving(true);
+    await solveSchedule(schedule.id);
+    setIsSolving(false);
+  };
 
   return (
     <Box
@@ -72,14 +78,30 @@ export default function ScheduleWIP({ schedule }: Props) {
           }
           sx={{ marginLeft: 1 }}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => solveSchedule(schedule.id)}
-          sx={{ paddingLeft: 0.2, paddingRight: 0.2 }}
-        >
-          Solve
-        </Button>
+        {isSolving ? (
+          <div
+            style={{
+              backgroundColor: "#1976d2",
+              height: "36.5px",
+              width: "64px",
+              borderRadius: "4px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <CircularProgress size={20} sx={{ color: "white" }} />
+          </div>
+        ) : (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSolve}
+            sx={{ paddingLeft: 0.2, paddingRight: 0.2 }}
+          >
+            Solve
+          </Button>
+        )}
         <ScheduleValidateDialog scheduleId={schedule.id} />
       </Box>
     </Box>
