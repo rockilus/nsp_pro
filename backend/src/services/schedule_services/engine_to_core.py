@@ -10,13 +10,16 @@ from scripts.setup_database import constraint_db, shift_db, worker_db
 
 
 def engine_to_core_outputs(
-    schedule: Schedule, outputs: Outputs
+    schedule: Schedule, outputs: Outputs, constraints: List[Constraint]
 ) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach]]:
+    objective_breaches = _engine_to_core_objective_breaches(
+        outputs.constraint_breaches, outputs.assignments, schedule, constraints
+    )
     if outputs.is_solution:
-        if len(outputs.constraint_breaches) == 0:
+        if len(objective_breaches) == 0:
             schedule.solve_status = "Solved"
         else:
-            if any(cb.hard_to_soft for cb in outputs.constraint_breaches):
+            if any(ob.hard_to_soft for ob in objective_breaches):
                 schedule.solve_status = "Hard breached"
             else:
                 schedule.solve_status = "Soft breached"
@@ -27,11 +30,29 @@ def engine_to_core_outputs(
         for a in outputs.assignments
         if a.date >= schedule.start_date and a.date <= schedule.end_date
     ]
-    objective_breaches = [
-        _engine_to_core_objective_breach(cb, outputs.assignments, schedule)
-        for cb in outputs.constraint_breaches
-    ]
     return schedule, assignments, objective_breaches
+
+
+def _engine_to_core_objective_breaches(
+    objective_breaches: List[ConstraintBreachEngine],
+    assignments: List[AssignmentEngine],
+    schedule: Schedule,
+    constraints: List[Constraint],
+) -> List[ObjectiveBreach]:
+    out = []
+    for ob in objective_breaches:
+        if ob.category == "constraint":
+            for c in constraints:
+                if c.id == ob.constraint_id:
+                    if c.constraint_build_id == "":
+                        break
+                    out.append(
+                        _engine_to_core_objective_breach(ob, assignments, schedule)
+                    )
+                    break
+        else:
+            out.append(_engine_to_core_objective_breach(ob, assignments, schedule))
+    return out
 
 
 def _engine_to_core_objective_breach(
@@ -120,9 +141,11 @@ def _build_description_cb_seq(
         "consecutive",
         "too many" if diff > 0 else "short",
         "on period" if len(dates) > 1 else "on",
-        f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}"
-        if len(dates) > 1
-        else f"{start_date.strftime('%b %d')}",
+        (
+            f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}"
+            if len(dates) > 1
+            else f"{start_date.strftime('%b %d')}"
+        ),
         "for",
         " ".join([w.name for w in workers]),
     ]
@@ -166,9 +189,11 @@ def _build_description_cb_ord(
         ", ".join([s.name for s in s_reference]),
         "on",
         d_reference.strftime("%b %d"),
-        f"instead of shift {', '.join([s.name for s in s_relative])}"
-        if constraint.operator == "yes"
-        else "",
+        (
+            f"instead of shift {', '.join([s.name for s in s_relative])}"
+            if constraint.operator == "yes"
+            else ""
+        ),
         "for",
         " ".join([w.name for w in workers]),
     ]

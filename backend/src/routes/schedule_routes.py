@@ -5,7 +5,6 @@ import humps
 from fastapi import APIRouter, HTTPException
 from pydantic import TypeAdapter
 
-from constraint_parser import parse_constraint
 from core.schedule import Assignment, ObjectiveBreach, Schedule, Stat
 from routes.api_model import (
     AssignmentMessage,
@@ -20,14 +19,9 @@ from routes.objective_breach_routes import objective_breach_to_api_msg
 from routes.stats_options_routes import stat_to_api_msg
 from scripts.setup_database import (
     assignment_db,
-    constraint_build_db,
     constraint_db,
     objective_breach_db,
     schedule_db,
-    shift_db,
-    shift_property_db,
-    worker_db,
-    worker_property_db,
 )
 from services import solve_schedule as solve_schedule_service
 from services import (
@@ -47,26 +41,7 @@ def create_schedule(req: ScheduleMessage) -> ScheduleMessage:
 
 @router.post("/schedules/{schedule_id}/solve", status_code=201)
 def solve_schedule(schedule_id: str) -> SolutionMessage:
-    workers = worker_db.get_workers()
-    shifts = shift_db.get_shifts()
-    worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
-    shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
-    cstr_builds = constraint_build_db.get_constraint_builds()
     schedule = schedule_db.get_schedule_by_id(schedule_id)
-    constraint_db.delete_constraints_by_schedule_id(schedule_id)
-    constraints = [
-        parse_constraint(
-            cstr_build,
-            workers,
-            shifts,
-            worker_dim_dict,
-            shift_dim_dict,
-            schedule_id,
-        )
-        for cstr_build in cstr_builds
-    ]
-    for constraint in constraints:
-        constraint_db.create_constraint(constraint)
     schedule, assignments, objective_breaches, stats = solve_schedule_service(schedule)
     return solution_to_api_msg(schedule, assignments, objective_breaches, stats)
 
