@@ -66,4 +66,4 @@ class Constraint(Document):
     priority = StringField(choices=["", "low", "medium", "high"], default="")
     active = BooleanField(default=True)
     schedule = ReferenceField("Schedule", required=True)
-    constraint_build = ReferenceField("ConstraintBuild", required=True)
+    constraint_build = ReferenceField("ConstraintBuild")

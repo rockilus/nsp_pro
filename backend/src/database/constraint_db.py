@@ -144,8 +144,12 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
         id=dataclass_obj.schedule_id
     )
     # pylint: disable=no-member
-    constraint_build = ConstraintBuildDocument.objects.get(  # type: ignore
-        id=dataclass_obj.constraint_build_id
+    constraint_build = (
+        ConstraintBuildDocument.objects.get(  # type: ignore
+            id=dataclass_obj.constraint_build_id
+        )
+        if dataclass_obj.constraint_build_id != ""
+        else None
     )
     constraint = ConstraintDocument(
         id=dataclass_obj.id,
@@ -222,6 +226,8 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
         priority=doc_obj.priority,
         active=doc_obj.active,
         schedule_id=str(doc_obj.schedule.id),
-        constraint_build_id=str(doc_obj.constraint_build.id),
+        constraint_build_id=str(doc_obj.constraint_build.id)
+        if doc_obj.constraint_build
+        else "",
     )
     return constraint
