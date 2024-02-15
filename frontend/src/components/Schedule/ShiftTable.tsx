@@ -65,7 +65,13 @@ export default function ShiftTable({
       lastValidDate: dayjs.Dayjs | null
     ): ColumnT[] => {
       const columns: ColumnT[] = [
-        { date: dayjs(0), name: "", noCoverage: false, status: "" },
+        {
+          date: dayjs(0),
+          name: "",
+          noCoverage: false,
+          status: "",
+          schedule: null,
+        },
       ];
       let currentDate = startDate;
 
@@ -75,14 +81,22 @@ export default function ShiftTable({
         month: "short",
       };
       while (currentDate <= endDate) {
+        const schedule = schedules.find(
+          (s) =>
+            (s.startDate.isBefore(currentDate) &&
+              s.endDate.isAfter(currentDate)) ||
+            s.startDate.isSame(currentDate) ||
+            s.endDate.isSame(currentDate)
+        );
         const column: ColumnT = {
           date: dayjs(currentDate),
           name: currentDate.format("ddd, MMM D"),
           noCoverage:
-            schedules
-              .find((s) => s.status === "WIP")
-              ?.missingCoverageDates.some((date) => date.isSame(currentDate)) ||
-            false,
+            schedule?.status === "WIP"
+              ? schedule.missingCoverageDates.some((date) =>
+                  date.isSame(currentDate)
+                )
+              : false || false,
           status:
             lastPastDate && currentDate.isBefore(lastPastDate.add(1, "day"))
               ? "past"
@@ -90,6 +104,7 @@ export default function ShiftTable({
                 currentDate.isBefore(lastValidDate.add(1, "day"))
               ? "validated"
               : "wip",
+          schedule: schedule ? schedule : null,
         };
         columns.push({ ...column });
         currentDate = currentDate.add(1, "day");

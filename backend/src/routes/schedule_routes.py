@@ -98,6 +98,7 @@ def update_schedule(schedule_id: str, schedule_api: ScheduleMessage) -> Schedule
 def delete_schedule(schedule_id: str) -> Dict:
     assignment_db.delete_assignments_by_schedule_id(schedule_id)
     objective_breach_db.delete_objective_breaches_by_schedule_id(schedule_id)
+    constraint_db.delete_constraints_by_schedule_id(schedule_id)
     schedule_db.delete_schedule(schedule_id)
     return {"message": "CoverageSelector deleted"}
 

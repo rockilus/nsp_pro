@@ -88,6 +88,7 @@ export type ColumnT = {
   date: dayjs.Dayjs;
   name: string;
   noCoverage: boolean;
+  schedule: ScheduleT | null;
   status: string;
 };
 
