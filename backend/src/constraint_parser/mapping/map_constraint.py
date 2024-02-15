@@ -31,7 +31,6 @@ class MapConstaint:
         return Constraint(
             id=cstr_build.id,
             constraint_type=cstr_build.constraint_type,
-            template_id=cstr_build.template_id,
             operator=self.get_operator(cstr_build.blocks, cstr_build.constraint_type),
             target_value=self.get_target_value(
                 cstr_build.blocks, cstr_build.constraint_type
@@ -43,9 +42,8 @@ class MapConstaint:
             active=cstr_build.active,
             hard=cstr_build.hard,
             priority=cstr_build.priority,
-            text=self.blocks_to_string_constraint(cstr_build.blocks),
-            blocks=cstr_build.blocks,
             schedule_id=schedule_id,
+            constraint_build_id=cstr_build.id,
         )
 
     def get_operator(

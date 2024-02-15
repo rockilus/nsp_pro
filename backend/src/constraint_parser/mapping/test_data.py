@@ -197,7 +197,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="seq",
-            template_id="0",
             operator="less_than_or_equal",
             target_value=2,
             target_unit="",
@@ -220,24 +219,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="John should work at most 2 consecutive off.",
-            blocks=[
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
-                ),
-                Block(name="text", type="string", value="should work"),
-                Block(name="operator", type="string", value="at most"),
-                Block(name="#", type="number", value=2),
-                Block(name="timing", type="string", value="consecutive"),
-                Block(
-                    name="shift",
-                    type="dict",
-                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     # All workers, all shifts
@@ -271,7 +254,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="seq",
-            template_id="0",
             operator="less_than_or_equal",
             target_value=2,
             target_unit="",
@@ -292,24 +274,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="All workers should work at most 2 consecutive all shifts.",
-            blocks=[
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[{"name": "all workers", "id": "", "id_type": ""}],
-                ),
-                Block(name="text", type="string", value="should work"),
-                Block(name="operator", type="string", value="at most"),
-                Block(name="#", type="number", value=2),
-                Block(name="timing", type="string", value="consecutive"),
-                Block(
-                    name="shift",
-                    type="dict",
-                    value=[{"name": "all shifts", "id": "", "id_type": ""}],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     # Boolean property workers, boolean property shifts
@@ -355,7 +321,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="seq",
-            template_id="0",
             operator="less_than_or_equal",
             target_value=2,
             target_unit="",
@@ -378,36 +343,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="60+ should work at most 2 consecutive not duty.",
-            blocks=[
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[
-                        {
-                            "name": "60+",
-                            "id": "60+_id",
-                            "id_type": "worker_dimension",
-                        }
-                    ],
-                ),
-                Block(name="text", type="string", value="should work"),
-                Block(name="operator", type="string", value="at most"),
-                Block(name="#", type="number", value=2),
-                Block(name="timing", type="string", value="consecutive"),
-                Block(
-                    name="shift",
-                    type="dict",
-                    value=[
-                        {
-                            "name": "not duty",
-                            "id": "duty_id",
-                            "id_type": "shift_dimension",
-                        }
-                    ],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     # Non boolean property worker, non boolean property shift
@@ -453,7 +390,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="seq",
-            template_id="0",
             operator="less_than_or_equal",
             target_value=2,
             target_unit="",
@@ -476,36 +412,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="Surgeon should work at most 2 consecutive unit 1.",
-            blocks=[
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[
-                        {
-                            "name": "surgeon",
-                            "id": "specialty_id",
-                            "id_type": "worker_dimension",
-                        }
-                    ],
-                ),
-                Block(name="text", type="string", value="should work"),
-                Block(name="operator", type="string", value="at most"),
-                Block(name="#", type="number", value=2),
-                Block(name="timing", type="string", value="consecutive"),
-                Block(
-                    name="shift",
-                    type="dict",
-                    value=[
-                        {
-                            "name": "unit 1",
-                            "id": "unit_id",
-                            "id_type": "shift_dimension",
-                        }
-                    ],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     # Sum
@@ -539,7 +447,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="sum",
-            template_id="1",
             operator="greater_than_or_equal",
             target_value=1,
             target_unit="",
@@ -562,24 +469,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="John should work at least 1 off per week.",
-            blocks=[
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
-                ),
-                Block(name="text", type="string", value="should work"),
-                Block(name="operator", type="string", value="at least"),
-                Block(name="#", type="number", value=1),
-                Block(
-                    name="shift",
-                    type="dict",
-                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
-                ),
-                Block(name="timing", type="string", value="per week"),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     # Order
@@ -619,7 +510,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="ord",
-            template_id="2",
             operator="no",
             target_value=0,
             target_unit="",
@@ -642,30 +532,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="No night 1 day after afternoon for john.",
-            blocks=[
-                Block(name="operator", type="string", value="no"),
-                Block(
-                    name="shift_reference",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
-                ),
-                Block(name="#", type="number", value=1),
-                Block(name="text", type="string", value="day"),
-                Block(name="timing", type="string", value="after"),
-                Block(
-                    name="shift_relative",
-                    type="dict",
-                    value=[{"name": "afternoon", "id": "2", "id_type": "shift"}],
-                ),
-                Block(name="text", type="string", value="for"),
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     {
@@ -705,7 +573,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="ord",
-            template_id="3",
             operator="yes",
             target_value=0,
             target_unit="",
@@ -728,31 +595,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="If night then off 1 day after for john.",
-            blocks=[
-                Block(name="text", type="string", value="if"),
-                Block(
-                    name="shift_reference",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
-                ),
-                Block(name="text", type="string", value="then"),
-                Block(
-                    name="shift_relative",
-                    type="dict",
-                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
-                ),
-                Block(name="#", type="number", value=1),
-                Block(name="text", type="string", value="day"),
-                Block(name="timing", type="string", value="after"),
-                Block(name="text", type="string", value="for"),
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     {
@@ -794,7 +638,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="ord",
-            template_id="4",
             operator="yes",
             target_value=0,
             target_unit="",
@@ -817,33 +660,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="If morning on saturday then off 2 day after for john.",
-            blocks=[
-                Block(name="text", type="string", value="if"),
-                Block(
-                    name="shift_reference",
-                    type="dict",
-                    value=[{"name": "morning", "id": "1", "id_type": "shift"}],
-                ),
-                Block(name="text", type="string", value="on"),
-                Block(name="weekday", type="string", value="saturday"),
-                Block(name="text", type="string", value="then"),
-                Block(
-                    name="shift_relative",
-                    type="dict",
-                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
-                ),
-                Block(name="#", type="number", value=2),
-                Block(name="text", type="string", value="day"),
-                Block(name="timing", type="string", value="after"),
-                Block(name="text", type="string", value="for"),
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     {
@@ -885,7 +703,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="ord",
-            template_id="4",
             operator="yes",
             target_value=0,
             target_unit="",
@@ -908,33 +725,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="If morning on saturday then off 2 day before for john.",
-            blocks=[
-                Block(name="text", type="string", value="if"),
-                Block(
-                    name="shift_reference",
-                    type="dict",
-                    value=[{"name": "morning", "id": "1", "id_type": "shift"}],
-                ),
-                Block(name="text", type="string", value="on"),
-                Block(name="weekday", type="string", value="saturday"),
-                Block(name="text", type="string", value="then"),
-                Block(
-                    name="shift_relative",
-                    type="dict",
-                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
-                ),
-                Block(name="#", type="number", value=2),
-                Block(name="text", type="string", value="day"),
-                Block(name="timing", type="string", value="before"),
-                Block(name="text", type="string", value="for"),
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     # Filter
@@ -966,7 +758,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="fil",
-            template_id="5",
             operator="yes",
             target_value=0,
             target_unit="",
@@ -989,22 +780,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="John should only work night.",
-            blocks=[
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
-                ),
-                Block(name="operator", type="string", value="should only"),
-                Block(name="text", type="string", value="work"),
-                Block(
-                    name="shift",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     {
@@ -1035,7 +812,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="fil",
-            template_id="5",
             operator="no",
             target_value=0,
             target_unit="",
@@ -1058,22 +834,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="John should not work night.",
-            blocks=[
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
-                ),
-                Block(name="operator", type="string", value="should not"),
-                Block(name="text", type="string", value="work"),
-                Block(
-                    name="shift",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     # Evenness
@@ -1110,7 +872,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="eve",
-            template_id="6",
             operator="",
             target_value=0,
             target_unit="",
@@ -1133,27 +894,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="Night on sunday should be evenly spread in time for john.",
-            blocks=[
-                Block(
-                    name="shift",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
-                ),
-                Block(name="text", type="string", value="on"),
-                Block(name="weekday", type="string", value="sunday"),
-                Block(
-                    name="text",
-                    type="string",
-                    value="should be evenly spread in time for",
-                ),
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
     # Fairness
@@ -1190,7 +932,6 @@ test_data = [
         "out": Constraint(
             id="",
             constraint_type="fai",
-            template_id="7",
             operator="",
             target_value=0,
             target_unit="",
@@ -1211,27 +952,8 @@ test_data = [
             active=True,
             hard=True,
             priority="medium",
-            text="Night on sunday should be fairly spread across all workers.",
-            blocks=[
-                Block(
-                    name="shift",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
-                ),
-                Block(name="text", type="string", value="on"),
-                Block(name="weekday", type="string", value="sunday"),
-                Block(
-                    name="text",
-                    type="string",
-                    value="should be fairly spread across",
-                ),
-                Block(
-                    name="worker",
-                    type="dict",
-                    value=[{"name": "all workers", "id": "", "id_type": ""}],
-                ),
-            ],
             schedule_id="test_schedule",
+            constraint_build_id="",
         ),
     },
 ]

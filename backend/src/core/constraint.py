@@ -59,8 +59,7 @@ class ConstraintBuild:
 # pylint: disable=too-many-instance-attributes
 class Constraint:
     id: str
-    constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
-    template_id: str
+    constraint_type: Constants.CONSTRAINT_TYPE_OPTIONS
     operator: Constants.CONSTRAINT_OPERATOR_OPTIONS
     target_value: int
     target_unit: str  # worker, shift, day, hour
@@ -70,9 +69,8 @@ class Constraint:
     active: bool
     hard: bool
     priority: str
-    text: str
-    blocks: List[Block]
     schedule_id: str
+    constraint_build_id: str
 
 
 @dataclass

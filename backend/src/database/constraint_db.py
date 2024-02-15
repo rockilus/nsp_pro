@@ -7,6 +7,7 @@ from core.constraint import Block, Constraint, VarDay, VarShift, VarWorker
 from database.db import DB
 from models import Block as BlockDocument
 from models import Constraint as ConstraintDocument
+from models import ConstraintBuild as ConstraintBuildDocument
 from models import Schedule as ScheduleDocument
 from models import Shift as ShiftDocument
 from models import VarDay as VarDayDocument
@@ -142,10 +143,13 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
     schedule = ScheduleDocument.objects.get(  # type: ignore
         id=dataclass_obj.schedule_id
     )
+    # pylint: disable=no-member
+    constraint_build = ConstraintBuildDocument.objects.get(  # type: ignore
+        id=dataclass_obj.constraint_build_id
+    )
     constraint = ConstraintDocument(
         id=dataclass_obj.id,
         constraint_type=dataclass_obj.constraint_type,
-        template_id=dataclass_obj.template_id,
         operator=dataclass_obj.operator,
         target_value=dataclass_obj.target_value,
         target_unit=dataclass_obj.target_unit,
@@ -155,9 +159,8 @@ def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
         hard=dataclass_obj.hard,
         priority=dataclass_obj.priority,
         active=dataclass_obj.active,
-        text=dataclass_obj.text,
-        blocks=[to_mongo_block(b) for b in dataclass_obj.blocks],
         schedule=schedule,
+        constraint_build=constraint_build,
     )
     return constraint
 
@@ -209,7 +212,6 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
     constraint = Constraint(
         id=str(doc_obj.id),
         constraint_type=doc_obj.constraint_type,  # type: ignore
-        template_id=doc_obj.template_id,
         operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
         target_value=doc_obj.target_value,
         target_unit=doc_obj.target_unit,
@@ -219,8 +221,7 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
         hard=doc_obj.hard,
         priority=doc_obj.priority,
         active=doc_obj.active,
-        text=doc_obj.text,
-        blocks=[_from_mongo_block(b) for b in doc_obj.blocks],
         schedule_id=str(doc_obj.schedule.id),
+        constraint_build_id=str(doc_obj.constraint_build.id),
     )
     return constraint
