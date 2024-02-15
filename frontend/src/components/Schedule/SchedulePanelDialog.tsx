@@ -60,7 +60,11 @@ export default function SchedulePanelDialog({
     <React.Fragment>
       <Box
         onClick={handleClickOpen}
-        sx={{ display: "inline-flex", minWidth: 0 }}
+        sx={{
+          display: "inline-flex",
+          minWidth: 0,
+          cursor: "pointer",
+        }}
       >
         {buttonElement}
       </Box>
@@ -80,45 +84,57 @@ export default function SchedulePanelDialog({
               width: "100%",
             }}
           >
-            {"Schedule WIP options"}
+            {"Schedule options"}
             <IconButton onClick={handleClose}>
               <CloseIcon color="disabled" />
             </IconButton>
           </Box>
         </DialogTitle>
         <DialogContent>
-          <DatePicker
-            label="Start date"
-            value={schedule.startDate}
-            onChange={(newValue) =>
-              setScheduleState({
-                ...scheduleState,
-                startDate: newValue
-                  ? dayjs.utc(newValue).startOf("day")
-                  : dayjs.utc().startOf("day"),
-              })
-            }
-          />
-          <DatePicker
-            label="End date"
-            value={schedule.endDate}
-            onChange={(newValue) =>
-              setScheduleState({
-                ...scheduleState,
-                endDate: newValue
-                  ? dayjs.utc(newValue).startOf("day")
-                  : dayjs.utc().startOf("day"),
-              })
-            }
-          />
+          {schedule.status === "WIP" ? (
+            <div>
+              <DatePicker
+                label="Start date"
+                value={schedule.startDate}
+                onChange={(newValue) =>
+                  setScheduleState({
+                    ...scheduleState,
+                    startDate: newValue
+                      ? dayjs.utc(newValue).startOf("day")
+                      : dayjs.utc().startOf("day"),
+                  })
+                }
+              />
+              <DatePicker
+                label="End date"
+                value={schedule.endDate}
+                onChange={(newValue) =>
+                  setScheduleState({
+                    ...scheduleState,
+                    endDate: newValue
+                      ? dayjs.utc(newValue).startOf("day")
+                      : dayjs.utc().startOf("day"),
+                  })
+                }
+              />
+            </div>
+          ) : (
+            <div>
+              {schedule.startDate.format("D MMM YYYY")}
+              {" - "}
+              {schedule.endDate.format("D MMM YYYY")}
+            </div>
+          )}
         </DialogContent>
         <DialogActions>
           {scheduleState.id && (
             <ScheduleDeleteDialog scheduleId={scheduleState.id} />
           )}
-          <Button variant="contained" onClick={handleSaveSchedule} autoFocus>
-            Save
-          </Button>
+          {schedule.status === "WIP" && (
+            <Button variant="contained" onClick={handleSaveSchedule} autoFocus>
+              Save
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </React.Fragment>
