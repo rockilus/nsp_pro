@@ -33,7 +33,7 @@ export default function CoverageCalendar({
     const colOverlays: ColOverlayT[] = [
       {
         left: 0,
-        width: CovTimeColWidth + CovTimeColPadR,
+        width: CovTimeColWidth,
         // color: "red",
         color: "transparent",
         SDOverlays: [],
@@ -42,7 +42,8 @@ export default function CoverageCalendar({
         return {
           left:
             CovTimeColWidth +
-            CovTimeColPadR +
+            // CovBorderThick * 2 +
+            // CovTimeColPadR +
             index * (dayColWidth + CovBorderThick),
           width: dayColWidth,
           // color: colors[index + 1],
