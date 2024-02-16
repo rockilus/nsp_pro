@@ -1,8 +1,8 @@
 from datetime import date, datetime, timedelta
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
 from core.constraint import Constraint, VarDay, VarShift, VarWorker
-from core.coverage import CoverageSelector, ShiftDemand
+from core.coverage import ShiftDemand
 from core.fixed_assignment import FixedAssignment
 from core.request import Request
 from core.schedule import Assignment
@@ -28,8 +28,7 @@ def core_to_engine_inputs(
     start_date: date,
     end_date: date,
     shifts: List[Shift],
-    coverage_selectors: List[CoverageSelector],
-    shift_demands: List[Union[List[ShiftDemand], None]],
+    shift_demands: List[List[ShiftDemand] | None],
     fixed_assignments: List[FixedAssignment],
     requests: List[Request],
     constraints: List[Constraint],
@@ -52,9 +51,7 @@ def core_to_engine_inputs(
     inputs = Inputs(
         variable_space=variable_space,
         coverage=CoverageEngine(
-            _build_shift_demands(
-                coverage_selectors, shift_demands, shifts, start_date, end_date
-            )
+            _build_shift_demands(shift_demands, shifts, start_date, end_date)
         ),
         requests=r_engine,
         fixed_assignments=fa_engine,
@@ -102,31 +99,40 @@ def core_to_engine_inputs(
 
 
 def _build_shift_demands(
-    coverage_selectors: List[CoverageSelector],
-    shift_demands: List[Union[List[ShiftDemand], None]],
+    shift_demands: List[List[ShiftDemand] | None],
     shifts: List[Shift],
     start_date: date,
     end_date: date,
 ) -> List[ShiftDemandEngine]:
     sd_engine = []
-    for cs, sds in zip(coverage_selectors, shift_demands):
-        if sds is None:
-            continue
-        for day in range(
-            (min(cs.end_date, end_date) - max(cs.start_date, start_date)).days + 1
-        ):
-            cov_date = max(cs.start_date, start_date) + timedelta(days=day)
-            for sd in sds:
-                if sd.day_index == cov_date.weekday():
-                    shift = next((s for s in shifts if s.id == sd.shift_id), None)
-                    if shift is not None:
-                        sd_engine.append(
-                            ShiftDemandEngine(
-                                date=cov_date,
-                                shift_id=sd.shift_id,
-                                staffing=shift.staffing,
-                            )
-                        )
+    shifts_not_off = [s for s in shifts if not s.is_time_off]
+    shift_demands_flat = [
+        sd for sds_list in shift_demands if sds_list is not None for sd in sds_list
+    ]
+    for s in shifts_not_off:
+        for day in range((end_date - start_date).days + 1):
+            cov_date = start_date + timedelta(days=day)
+            sds = [
+                sd
+                for sd in shift_demands_flat
+                if sd.day_index == cov_date.weekday() and sd.shift_id == s.id
+            ]
+            if sds:
+                sd_engine.append(
+                    ShiftDemandEngine(
+                        date=cov_date,
+                        shift_id=s.id,
+                        staffing=s.staffing * len(sds),
+                    )
+                )
+            else:
+                sd_engine.append(
+                    ShiftDemandEngine(
+                        date=cov_date,
+                        shift_id=s.id,
+                        staffing=0,
+                    )
+                )
     return sd_engine
 
 
@@ -173,15 +179,17 @@ def core_to_engine_sol_hint(
     assignments: List[Assignment],
 ) -> Dict[Tuple[str, str, str], int]:
     return {
-        (w, d, s): 1
-        if any(
-            a.worker_id == w
-            and a.date
-            == datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-            and a.shift_id == s
-            for a in assignments
+        (w, d, s): (
+            1
+            if any(
+                a.worker_id == w
+                and a.date
+                == datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+                and a.shift_id == s
+                for a in assignments
+            )
+            else 0
         )
-        else 0
         for w in workers
         for d in days
         for s in shifts
@@ -201,14 +209,16 @@ def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
         shift_var=_core_to_engine_var_shift(constraint.shift_var),
         hard=constraint.hard if not hard_to_soft else False,
         hard_to_soft=hard_to_soft and constraint.hard,
-        penalty=getattr(
-            penalty_map.constraint,
-            constraint.priority if constraint.priority != "" else "no",
-        )
-        if not hard_to_soft and constraint.hard
-        else getattr(
-            penalty_map.constraint,
-            "hard",
+        penalty=(
+            getattr(
+                penalty_map.constraint,
+                constraint.priority if constraint.priority != "" else "no",
+            )
+            if not hard_to_soft and constraint.hard
+            else getattr(
+                penalty_map.constraint,
+                "hard",
+            )
         ),
     )
 
