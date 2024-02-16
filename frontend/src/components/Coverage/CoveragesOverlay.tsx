@@ -56,7 +56,8 @@ export default function CoveragesOverlay({
                         CovBorderThick * (NumHoursInDay - 1)
                       }px`,
                       position: "absolute",
-                      top: `${CovHeadRowHeight + CovBorderThick}px`,
+                      // top: `${CovHeadRowHeight + CovBorderThick}px`,
+                      top: 0,
                     }}
                     onMouseOver={(e) => {
                       (e.target as HTMLElement).style.backgroundColor =
