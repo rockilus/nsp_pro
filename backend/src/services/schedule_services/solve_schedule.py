@@ -61,7 +61,6 @@ def solve_schedule(
         schedule.start_date,
         schedule.end_date,
         shifts,
-        coverage_selectors,
         shift_demands,
         fixed_assignments,
         requests,
