@@ -27,11 +27,12 @@ class MapConstaint:
     def __call__(self, cstr_build: ConstraintBuild, schedule_id: str) -> Constraint:
         var_worker = self.map_worker(cstr_build)
         var_day = self.map_day(cstr_build)
-        var_shift = self.map_shift(cstr_build)
+        cstr_operator = self.get_operator(cstr_build.blocks, cstr_build.constraint_type)
+        var_shift = self.map_shift(cstr_build, cstr_operator)
         return Constraint(
             id=cstr_build.id,
             constraint_type=cstr_build.constraint_type,
-            operator=self.get_operator(cstr_build.blocks, cstr_build.constraint_type),
+            operator=cstr_operator,
             target_value=self.get_target_value(
                 cstr_build.blocks, cstr_build.constraint_type
             ),

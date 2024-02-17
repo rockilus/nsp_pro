@@ -1,6 +1,6 @@
 import json
 from dataclasses import asdict
-from typing import List, Literal, Set, Union
+from typing import List, Literal, Set
 
 from ortools.sat.python import cp_model  # type: ignore
 
@@ -32,7 +32,7 @@ def get_total_coverage_shift(
 
 
 def build_var_name(
-    constraint: Union[Constraint, Request],
+    constraint: Constraint | Request,
     cstr_vars: List[cp_model.IntVar],
     category: Literal['request', 'fixed_assignment', 'constraint'],
 ) -> str:
