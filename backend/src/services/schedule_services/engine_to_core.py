@@ -68,6 +68,8 @@ def _engine_to_core_objective_breach(
             description = _build_description_cb_seq(constraint, cb, assignments)
         elif constraint.constraint_type == "ord":
             description = _build_description_cb_ord(constraint, cb, assignments)
+        elif constraint.constraint_type == "fil":
+            description = _build_description_cb_fil(cb)
         else:
             description = f"{constraint.constraint_type} constraint not implemented yet"
     elif cb.category in ["request", "fixed_assignment"]:
@@ -196,6 +198,38 @@ def _build_description_cb_ord(
         ),
         "for",
         " ".join([w.name for w in workers]),
+    ]
+    return " ".join(string_list)
+
+
+def _build_description_cb_fil(
+    cb: ConstraintBreachEngine,
+    # assignments: List[AssignmentEngine],
+) -> str:
+    # No:
+    # No Plouharnel worker should work in Vannes site.
+    # Yes:
+    # Plouharnel worker should only work in Plouharnel site.
+    workers_id = set(v[0] for v in cb.variables)
+    dates = set(v[1] for v in cb.variables)
+    shifts_id = set(v[2] for v in cb.variables)
+    workers = [worker_db.get_worker_by_id(w_id) for w_id in workers_id]
+    shifts = [shift_db.get_shift_by_id(s_id) for s_id in shifts_id]
+    # a_conflict = [
+    #     a for a in assignments if a.worker_id in workers_id and a.date in dates
+    # ]
+    # shift_assigned_names = [
+    #     shift_db.get_shift_by_id(a.shift_id).name for a in a_conflict
+    # ]
+    string_list = [
+        "Shift",
+        " ".join([s.name for s in shifts]),
+        # " ".join(shift_assigned_names),
+        "on",
+        " ".join([f"{d.strftime('%b %d')}" for d in dates]),
+        "for",
+        " ".join([w.name for w in workers]),
+        "not allowed",
     ]
     return " ".join(string_list)
 

@@ -19,7 +19,14 @@ export default function TemplateList({
   handleSelectedTemplate,
 }: Props) {
   return (
-    <div>
+    <div
+      style={{
+        border: "1px solid black",
+        borderRadius: "4px",
+        maxHeight: "200px",
+        overflowY: "auto",
+      }}
+    >
       <List dense={true} sx={{ padding: "0 0 0 0" }}>
         {constraintTemplates.map((ct, index) => (
           <ListItemButton

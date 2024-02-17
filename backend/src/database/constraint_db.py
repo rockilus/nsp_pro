@@ -108,16 +108,14 @@ def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
         )
     if len(dataclass_obj.reference_ids) > 0:
         # pylint: disable=no-member
-        reference_s = [
-            ShiftDocument.objects.get(  # type: ignore
-                id__in=dataclass_obj.reference_ids
-            )
-        ]
+        reference_s = ShiftDocument.objects.filter(  # type: ignore
+            id__in=dataclass_obj.reference_ids
+        )
     if len(dataclass_obj.relative_ids) > 0:
         # pylint: disable=no-member
-        relative_s = [
-            ShiftDocument.objects.get(id__in=dataclass_obj.relative_ids)  # type: ignore
-        ]
+        relative_s = ShiftDocument.objects.filter(  # type: ignore
+            id__in=dataclass_obj.relative_ids
+        )
     return VarShiftDocument(
         selector=dataclass_obj.selector,
         target=shifts,
@@ -226,8 +224,8 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
         priority=doc_obj.priority,
         active=doc_obj.active,
         schedule_id=str(doc_obj.schedule.id),
-        constraint_build_id=str(doc_obj.constraint_build.id)
-        if doc_obj.constraint_build
-        else "",
+        constraint_build_id=(
+            str(doc_obj.constraint_build.id) if doc_obj.constraint_build else ""
+        ),
     )
     return constraint

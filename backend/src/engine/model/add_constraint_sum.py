@@ -33,10 +33,11 @@ class AddConstraintSum(AddConstraint):
                     )
         else:
             for w in w_vars:
-                for s in s_vars:
-                    for period in d_vars:
-                        constraint_vars = [self.variables[w, d, s] for d in period]
-                        self._add_constraint_sum_other(constraint, constraint_vars)
+                for period in d_vars:
+                    constraint_vars = []
+                    for s in s_vars:
+                        constraint_vars += [self.variables[w, d, s] for d in period]
+                    self._add_constraint_sum_other(constraint, constraint_vars)
 
     def _add_constraint_sum_hour(
         self,

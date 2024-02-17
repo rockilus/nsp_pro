@@ -11,7 +11,7 @@ class MapShift:
         self.shifts = shifts
         self.shift_dim_dict = shift_dim_dict
 
-    def __call__(self, cstr_build: ConstraintBuild) -> VarShift:
+    def __call__(self, cstr_build: ConstraintBuild, cstr_operator: str) -> VarShift:
         shift_values = (
             self.get_shift_values(cstr_build.blocks, "shift")
             if cstr_build.constraint_type != "ord"
@@ -29,7 +29,9 @@ class MapShift:
         )
         return VarShift(
             selector=self.get_selector(shift_values, cstr_build.constraint_type),
-            target_ids=self.get_target_ids(shift_values, cstr_build.constraint_type),
+            target_ids=self.get_target_ids(
+                shift_values, cstr_build.constraint_type, cstr_operator
+            ),
             reference_ids=self.get_target_ids(
                 shift_reference_values, cstr_build.constraint_type
             ),
@@ -47,7 +49,12 @@ class MapShift:
             return "all"
         return "equal"
 
-    def get_target_ids(self, values: List[DictBlockValue], cstr_type: str) -> List[str]:
+    def get_target_ids(
+        self,
+        values: List[DictBlockValue],
+        cstr_type: str,
+        cstr_operator: str = "",
+    ) -> List[str]:
         if self.get_selector(values, cstr_type) == "all" and cstr_type != "ord":
             return []
         out = []
@@ -65,6 +72,8 @@ class MapShift:
                         + f"for dimension {value.id} not found"
                     )
                 out += self.shift_dim_dict[value.id][value.name.lower()]
+        if cstr_type == "fil" and cstr_operator == "yes":
+            out += [s.id for s in self.shifts if s.is_time_off]
         return sorted(list(set(out)))
 
     def check_shift_id(self, shift_id: str) -> bool:

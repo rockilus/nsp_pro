@@ -773,7 +773,7 @@ test_data = [
             ),
             shift_var=VarShift(
                 selector="equal",
-                target_ids=["3"],
+                target_ids=["0", "3"],
                 reference_ids=[],
                 relative_ids=[],
             ),

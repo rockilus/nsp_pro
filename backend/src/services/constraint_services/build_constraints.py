@@ -28,7 +28,7 @@ def build_constraints(
         )
         for cstr_build in cstr_builds
     ]
-    return user_constraints + build_default_constraints(shifts, schedule_id)
+    return user_constraints
 
 
 def build_default_constraints(
