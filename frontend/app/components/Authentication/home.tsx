@@ -1,15 +1,18 @@
-import Image from "next/image";
 import { cookies, headers } from "next/headers";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getSSRSession } from "supertokens-node/nextjs";
 import { SessionContainer } from "supertokens-node/recipe/session";
 
-import styles from "../../page.module.css";
-import { SessionAuthForNextJS } from "./sessionAuthForNextJS";
-import { LinksComponent } from "./linksComponent";
 import { CelebrateIcon, SeparatorLine } from "../../../assets/images";
+import { ensureSuperTokensInit } from "../../config/backend";
+import styles from "../../page.module.css";
 import { CallAPIButton } from "./callApiButton";
+import { LinksComponent } from "./linksComponent";
+import { SessionAuthForNextJS } from "./sessionAuthForNextJS";
 import { TryRefreshComponent } from "./tryRefreshClientComponent";
+
+ensureSuperTokensInit();
 
 async function getSSRSessionHelper(): Promise<{
   session: SessionContainer | undefined;
@@ -34,8 +37,6 @@ async function getSSRSessionHelper(): Promise<{
 }
 
 export async function HomePage() {
-  console.log("HomePage");
-
   const { session, hasToken, hasInvalidClaims, error } =
     await getSSRSessionHelper();
 

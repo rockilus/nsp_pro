@@ -5,7 +5,7 @@ import Session from "supertokens-auth-react/recipe/session";
 import SuperTokens from "supertokens-auth-react";
 
 import styles from "../../page.module.css";
-import { recipeDetails } from "../../config/superTokens";
+import { recipeDetails } from "../../config/frontend";
 import { BlogsIcon, GuideIcon, SignOutIcon } from "../../../assets/images";
 
 const SignOutLink = (props: { name: string; link: string; icon: string }) => {
@@ -24,8 +24,6 @@ const SignOutLink = (props: { name: string; link: string; icon: string }) => {
 };
 
 export const LinksComponent = () => {
-  console.log("LinksComponent");
-
   const links: {
     name: string;
     link: string;

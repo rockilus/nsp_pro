@@ -4,7 +4,7 @@ import { SuperTokensWrapper } from "supertokens-auth-react";
 import SuperTokensReact from "supertokens-auth-react";
 import { usePathname, useRouter } from "next/navigation";
 
-import { frontendConfig, setRouter } from "../../config/superTokens";
+import { frontendConfig, setRouter } from "../../config/frontend";
 
 if (typeof window !== "undefined") {
   // we only want to call this init function on the frontend, so we check typeof window !== 'undefined'
@@ -14,8 +14,6 @@ if (typeof window !== "undefined") {
 export const SuperTokensProvider: React.FC<React.PropsWithChildren<{}>> = ({
   children,
 }) => {
-  console.log("SuperTokensProvider");
-
   setRouter(useRouter(), usePathname() || window.location.pathname);
 
   return <SuperTokensWrapper>{children}</SuperTokensWrapper>;

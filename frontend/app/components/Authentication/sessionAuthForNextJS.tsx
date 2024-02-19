@@ -8,8 +8,6 @@ type Props = Parameters<typeof SessionAuth>[0] & {
 };
 
 export const SessionAuthForNextJS = (props: Props) => {
-  console.log("SessionAuthForNextJS");
-
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     setLoaded(true);

@@ -6,8 +6,6 @@ import Session from "supertokens-auth-react/recipe/session";
 import SuperTokens from "supertokens-auth-react";
 
 export const TryRefreshComponent = () => {
-  console.log("TryRefreshComponent");
-
   const router = useRouter();
   const [didError, setDidError] = useState(false);
 
