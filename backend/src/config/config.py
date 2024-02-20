@@ -1,13 +1,11 @@
-from supertokens_python.recipe import emailpassword, session, dashboard
-from supertokens_python import (
-    InputAppInfo,
-    SupertokensConfig,
-)
+from supertokens_python import InputAppInfo, SupertokensConfig
+from supertokens_python.recipe import dashboard, emailpassword, session
 from utils.constants import Constants
 
 # this is the location of the SuperTokens core.
 supertokens_config = SupertokensConfig(
-    connection_uri="https://try.supertokens.com"
+    connection_uri=Constants.ST_CONNECTION_URI,
+    api_key=Constants.ST_API_KEY,
 )
 
 app_info = InputAppInfo(
@@ -20,4 +18,10 @@ framework = "fastapi"
 
 # recipeList contains all the modules that you want to
 # use from SuperTokens. See the full list here: https://supertokens.com/docs/guides
-recipe_list = [session.init(), emailpassword.init(), dashboard.init()]
+recipe_list = [
+    session.init(),
+    emailpassword.init(),
+    dashboard.init(
+        admins=list(Constants.ST_DASHBOARD_ADMINS),
+    ),
+]
