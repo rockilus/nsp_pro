@@ -5,7 +5,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 import Draft from "./Draft";
 
-export default function Home() {
+export default function HomePage() {
   return (
     <div>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
