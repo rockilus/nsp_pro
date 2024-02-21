@@ -42,9 +42,7 @@ class Constants:
     # Authentication
     # move out for production
     # to get a string like this run: openssl rand -hex 32
-    SECRET_KEY: str = (
-        "485987f47ca94097327988d802aa07fc6df623f3345e52df85b5c7fd395897f6"
-    )
+    SECRET_KEY: str = "485987f47ca94097327988d802aa07fc6df623f3345e52df85b5c7fd395897f6"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     # Constraint Parser
@@ -83,7 +81,5 @@ class Constants:
     ]
     CONSTRAINT_TYPE_OPTIONS = Literal["sum", "seq", "ord", "fil", "fai", "eve"]
     VAR_WORKER_SELECTOR_OPTIONS = Literal["all", "equal"]
-    VAR_DAY_SELECTOR_OPTIONS = Literal[
-        "all", "week", "period", "week_day_index"
-    ]
+    VAR_DAY_SELECTOR_OPTIONS = Literal["all", "week", "period", "week_day_index"]
     VAR_SHIFT_SELECTOR_OPTIONS = Literal["all", "equal"]

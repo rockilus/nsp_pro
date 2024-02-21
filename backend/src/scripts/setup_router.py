@@ -1,7 +1,10 @@
 import uvicorn
-from config import config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from supertokens_python import get_all_cors_headers, init
+from supertokens_python.framework.fastapi import get_middleware
+
+from config import config
 from routes import (
     router_assignment,
     router_authentication,
@@ -22,8 +25,6 @@ from routes import (
     router_worker,
     router_worker_dimension,
 )
-from supertokens_python import get_all_cors_headers, init
-from supertokens_python.framework.fastapi import get_middleware
 from utils.constants import Constants
 
 # from starlette.middleware.cors import CORSMiddleware
@@ -31,7 +32,7 @@ from utils.constants import Constants
 init(
     supertokens_config=config.supertokens_config,
     app_info=config.app_info,
-    framework=config.framework,
+    framework=config.framework,  # type: ignore
     recipe_list=config.recipe_list,
     mode="asgi",
 )

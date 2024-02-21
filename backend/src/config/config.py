@@ -1,5 +1,6 @@
 from supertokens_python import InputAppInfo, SupertokensConfig
 from supertokens_python.recipe import dashboard, emailpassword, session
+
 from utils.constants import Constants
 
 # this is the location of the SuperTokens core.
