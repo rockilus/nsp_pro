@@ -1,13 +1,11 @@
-import Home from "../containers/Home";
-import { StyledEngineProvider } from '@mui/material/styles';
+import React from "react";
+import SessionReact from "supertokens-auth-react/recipe/session";
+import HomePage from "../containers/HomePage";
 
-
-export default function App() {
+export default function Home() {
   return (
-    <>
-      <StyledEngineProvider injectFirst>
-        <Home />
-      </StyledEngineProvider>
-    </>
+    <SessionReact.SessionAuth>
+      <HomePage />
+    </SessionReact.SessionAuth>
   );
 }

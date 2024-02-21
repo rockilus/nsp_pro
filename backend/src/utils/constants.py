@@ -5,6 +5,18 @@ from typing import Literal, Tuple
 @dataclass
 # pylint: disable=too-many-instance-attributes
 class Constants:
+    # Config
+    HOST: str = "127.0.0.1"
+    BASE_URL: str = "http://" + HOST
+    WEBSITE_PORT: int = 3000
+    API_PORT: int = 5000
+    # SuperTokens config
+    ST_CONNECTION_URI: str = (
+        "https://st-dev-707a9b40-cfce-11ee-b31a-575ea1b90de8.aws.supertokens.io"
+    )
+    ST_API_KEY: str = "IM3-DkK88nDEVgyEI7Vpx8Yzgo"
+    ST_DASHBOARD_ADMINS: Tuple[str, ...] = ("felipe.kharaba@icloud.com",)
+
     # General
     NUM_SECONDS_MINUTE: int = 60
     NUM_MINUTES_HOUR: int = 60

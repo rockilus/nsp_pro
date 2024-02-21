@@ -1,4 +1,7 @@
 import * as React from "react";
+import SessionReact from "supertokens-auth-react/recipe/session";
+import SuperTokensReact from "supertokens-auth-react";
+
 import { styled } from "@mui/material/styles";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -44,7 +47,10 @@ interface Props {
 export default function AppBarDash({ open, toggleDrawer }: Props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
-  const signOut = useUserStore((state) => state.signOut);
+  const handleLogout = async () => {
+    await SessionReact.signOut();
+    SuperTokensReact.redirectToAuth();
+  };
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -109,7 +115,7 @@ export default function AppBarDash({ open, toggleDrawer }: Props) {
           >
             {/* <MenuItem onClick={handleClose}>Profile</MenuItem>
               <MenuItem onClick={handleClose}>My account</MenuItem> */}
-            <MenuItem onClick={signOut}>Sign Out</MenuItem>
+            <MenuItem onClick={handleLogout}>Sign Out</MenuItem>
           </Menu>
         </div>
       </Toolbar>
