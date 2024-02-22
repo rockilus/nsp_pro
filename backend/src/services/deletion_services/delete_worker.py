@@ -20,6 +20,7 @@ def delete_worker(worker_id: str) -> None:
     delete_worker_from_constraint_build(worker_id)
     delete_worker_property_from_constraint_build(worker_id)
     delete_worker_from_objective_breach(worker_id)
+    delete_worker_from_constraint(worker_id)
     worker_property_db.delete_worker_properties_by_worker_id(worker_id)
     assignment_db.delete_assignments_by_worker_id(worker_id)
     fixed_assignment_db.delete_fixed_assignments_by_worker_id(worker_id)
@@ -135,3 +136,16 @@ def delete_worker_from_objective_breach(worker_id: str) -> None:
             continue
         ob.variables = new_vars
         objective_breach_db.update_objective_breach(ob)
+
+
+def delete_worker_from_constraint(worker_id: str) -> None:
+    constraints = constraint_db.get_constraints_by_worker_id(worker_id)
+    for constraint in constraints:
+        new_targets = [
+            w for w in constraint.worker_var.target_ids if w != worker_id
+        ]
+        if not new_targets:
+            constraint_db.delete_constraint(constraint.id)
+            continue
+        constraint.worker_var.target_ids = new_targets
+        constraint_db.update_constraint(constraint)

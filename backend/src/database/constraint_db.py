@@ -46,6 +46,13 @@ class ConstraintDB:
         constraint = ConstraintDocument.objects.get(id=constraint_id)  # type: ignore
         return _from_mongo_constraint(constraint)
 
+    def get_constraints_by_worker_id(self, worker_id: str) -> List[Constraint]:
+        # pylint: disable=no-member
+        constraints = ConstraintDocument.objects.filter(  # type: ignore
+            worker_var__target=worker_id
+        )
+        return [_from_mongo_constraint(c) for c in list(constraints)]
+
     # pyling: disable=too-many-arguments
     def update_constraint(
         self,
@@ -179,8 +186,12 @@ def _from_mongo_var_day(doc_obj: VarDayDocument) -> VarDay:
     return VarDay(
         selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
         target=doc_obj.target,
-        start_date=datetime.combine(doc_obj.start_date, datetime.min.time()).date(),
-        end_date=datetime.combine(doc_obj.end_date, datetime.min.time()).date(),
+        start_date=datetime.combine(
+            doc_obj.start_date, datetime.min.time()
+        ).date(),
+        end_date=datetime.combine(
+            doc_obj.end_date, datetime.min.time()
+        ).date(),
         interval=doc_obj.interval,
     )
 
@@ -225,7 +236,9 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
         active=doc_obj.active,
         schedule_id=str(doc_obj.schedule.id),
         constraint_build_id=(
-            str(doc_obj.constraint_build.id) if doc_obj.constraint_build else ""
+            str(doc_obj.constraint_build.id)
+            if doc_obj.constraint_build
+            else ""
         ),
     )
     return constraint
