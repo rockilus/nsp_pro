@@ -22,9 +22,7 @@ class ObjectiveBreachDB:
         objective_breach: ObjectiveBreach,
         schedule: Schedule,
     ) -> ObjectiveBreach:
-        variable_docs = [
-            to_mongo_variable(v) for v in objective_breach.variables
-        ]
+        variable_docs = [to_mongo_variable(v) for v in objective_breach.variables]
         ob_doc = ObjectiveBreachDocument(
             id=str(ObjectId()),
             objective_id=objective_breach.objective_id,
@@ -40,13 +38,9 @@ class ObjectiveBreachDB:
     def get_objective_breaches(self) -> List[ObjectiveBreach]:
         # pylint: disable=no-member
         objective_breaches = ObjectiveBreachDocument.objects.all()  # type: ignore
-        return [
-            _from_mongo_objective_breach(ob) for ob in list(objective_breaches)
-        ]
+        return [_from_mongo_objective_breach(ob) for ob in list(objective_breaches)]
 
-    def get_objective_breach_by_id(
-        self, objective_breach_id: str
-    ) -> ObjectiveBreach:
+    def get_objective_breach_by_id(self, objective_breach_id: str) -> ObjectiveBreach:
         # pylint: disable=no-member
         objective_breach = ObjectiveBreachDocument.objects.get(  # type: ignore
             id=objective_breach_id
@@ -60,9 +54,7 @@ class ObjectiveBreachDB:
         objective_breaches = ObjectiveBreachDocument.objects.filter(  # type: ignore
             schedule=schedule_id
         )
-        return [
-            _from_mongo_objective_breach(ob) for ob in list(objective_breaches)
-        ]
+        return [_from_mongo_objective_breach(ob) for ob in list(objective_breaches)]
 
     def get_objective_breaches_by_worker_id(
         self, worker_id: str
@@ -71,9 +63,7 @@ class ObjectiveBreachDB:
         objective_breaches = ObjectiveBreachDocument.objects.filter(  # type: ignore
             variables__worker=worker_id
         )
-        return [
-            _from_mongo_objective_breach(ob) for ob in list(objective_breaches)
-        ]
+        return [_from_mongo_objective_breach(ob) for ob in list(objective_breaches)]
 
     def update_objective_breach(
         self, objective_breach: ObjectiveBreach
@@ -89,9 +79,7 @@ class ObjectiveBreachDB:
         )
         objective_breach.delete()
 
-    def delete_objective_breaches_by_schedule_id(
-        self, schedule_id: str
-    ) -> None:
+    def delete_objective_breaches_by_schedule_id(self, schedule_id: str) -> None:
         # pylint: disable=no-member
         ObjectiveBreachDocument.objects.filter(  # type: ignore
             schedule=schedule_id

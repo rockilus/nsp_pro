@@ -37,9 +37,7 @@ class WorkerPropertyDB:
         worker_properties = WorkerPropertyDocument.objects.filter(  # type: ignore
             worker=worker_id
         )
-        return [
-            _from_mongo_worker_property(wp) for wp in list(worker_properties)
-        ]
+        return [_from_mongo_worker_property(wp) for wp in list(worker_properties)]
 
     def get_worker_properties_by_worker_dimension_id(
         self, worker_dimension_id: str
@@ -48,13 +46,9 @@ class WorkerPropertyDB:
         worker_properties = WorkerPropertyDocument.objects.filter(  # type: ignore
             worker_dimension=worker_dimension_id
         )
-        return [
-            _from_mongo_worker_property(wp) for wp in list(worker_properties)
-        ]
+        return [_from_mongo_worker_property(wp) for wp in list(worker_properties)]
 
-    def get_worker_property_by_id(
-        self, worker_property_id: str
-    ) -> WorkerProperty:
+    def get_worker_property_by_id(self, worker_property_id: str) -> WorkerProperty:
         # pylint: disable=no-member
         worker_property = WorkerPropertyDocument.objects.get(  # type: ignore
             _id=worker_property_id
@@ -72,11 +66,7 @@ class WorkerPropertyDB:
             .filter(worker_dimension=worker_dimension.id)
             .first()
         )
-        return (
-            _from_mongo_worker_property(worker_property)
-            if worker_property
-            else None
-        )
+        return _from_mongo_worker_property(worker_property) if worker_property else None
 
     def get_workers_id_by_dim_and_prop(self) -> Dict:
         # pipeline_study = [
@@ -205,7 +195,9 @@ class WorkerPropertyDB:
             prop_value_mod = (
                 prop_value.lower()
                 if not isinstance(prop_value, bool)
-                else dim_name if prop_value else "not " + dim_name
+                else dim_name
+                if prop_value
+                else "not " + dim_name
             )
             if dim not in out:
                 out[dim] = {}

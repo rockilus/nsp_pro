@@ -186,12 +186,8 @@ def _from_mongo_var_day(doc_obj: VarDayDocument) -> VarDay:
     return VarDay(
         selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
         target=doc_obj.target,
-        start_date=datetime.combine(
-            doc_obj.start_date, datetime.min.time()
-        ).date(),
-        end_date=datetime.combine(
-            doc_obj.end_date, datetime.min.time()
-        ).date(),
+        start_date=datetime.combine(doc_obj.start_date, datetime.min.time()).date(),
+        end_date=datetime.combine(doc_obj.end_date, datetime.min.time()).date(),
         interval=doc_obj.interval,
     )
 
@@ -236,9 +232,7 @@ def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
         active=doc_obj.active,
         schedule_id=str(doc_obj.schedule.id),
         constraint_build_id=(
-            str(doc_obj.constraint_build.id)
-            if doc_obj.constraint_build
-            else ""
+            str(doc_obj.constraint_build.id) if doc_obj.constraint_build else ""
         ),
     )
     return constraint

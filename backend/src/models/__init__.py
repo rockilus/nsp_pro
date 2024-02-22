@@ -24,6 +24,7 @@ __all__ = [
     "VarWorker",
     "Block",
     "ConstraintBuild",
+    "MissingProperty",
     "Coverage",
     "CoverageSelector",
     "FixedAssignment",

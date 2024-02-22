@@ -2,18 +2,17 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
-from core.worker import Worker, WorkerProperty
 from fastapi import APIRouter, HTTPException
 from pydantic import TypeAdapter
+
+from core.worker import Worker, WorkerProperty
 from routes.api_model import WorkerMessage, WorkerPropertyMessage
-from scripts.setup_database import (
-    worker_db,
-    worker_dimension_db,
-    worker_property_db,
+from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
+from services.deletion_services.delete_worker import (
+    add_back_worker_property_to_constraint_build,
 )
 from services.deletion_services.delete_worker import (
     delete_worker as delete_worker_service,
-    add_back_worker_property_to_constraint_build,
 )
 
 router = APIRouter()
@@ -26,9 +25,7 @@ def create_worker() -> WorkerMessage:
     wp_bool = []
     for wd in wd_bool:
         wp_bool.append(
-            worker_property_db.create_worker_property(
-                worker_created, wd, False
-            )
+            worker_property_db.create_worker_property(worker_created, wd, False)
         )
     return worker_and_properties_to_api_msg(worker_created, wp_bool)
 
@@ -109,9 +106,7 @@ def worker_and_properties_to_api_msg(
 
 def api_msg_to_worker(msg: WorkerMessage) -> Worker:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake = {
-        k: v for k, v in data_snake.items() if k != "worker_properties"
-    }
+    data_snake = {k: v for k, v in data_snake.items() if k != "worker_properties"}
     return Worker(**data_snake)
 
 

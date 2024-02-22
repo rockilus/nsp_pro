@@ -46,9 +46,7 @@ class RequestDB:
         request = RequestDocument.objects.get(id=request_id)  # type: ignore
         return _from_mongo_request(request)
 
-    def get_requests_by_dates(
-        self, start_date: date, end_date: date
-    ) -> List[Request]:
+    def get_requests_by_dates(self, start_date: date, end_date: date) -> List[Request]:
         # pylint: disable=no-member
         requests = RequestDocument.objects.filter(  # type: ignore
             date__gte=start_date, date__lte=end_date

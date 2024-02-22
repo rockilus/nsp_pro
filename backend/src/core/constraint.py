@@ -46,7 +46,7 @@ class Block:
 @dataclass
 class MissingProperty:
     dimension_id: str
-    property_values: List[str]
+    property_values: List[str | int | float | bool]
 
 
 @dataclass

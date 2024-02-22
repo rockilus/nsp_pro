@@ -124,7 +124,9 @@ class AssignmentDB:
 
     def delete_assignments_by_worker_id(self, worker_id: str) -> None:
         # pylint: disable=no-member
-        assignments = AssignmentDocument.objects.filter(worker=worker_id)  # type: ignore
+        assignments = AssignmentDocument.objects.filter(  # type: ignore
+            worker=worker_id
+        )
         for a in assignments:
             a.delete()
 
