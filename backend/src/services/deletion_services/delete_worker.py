@@ -1,4 +1,5 @@
 from core.constraint import Block, MissingProperty
+from core.worker import WorkerProperty
 from scripts.setup_database import (
     assignment_db,
     constraint_build_db,
@@ -17,7 +18,7 @@ from services.constraint_build_services.blocks_to_string import (
 
 def delete_worker(worker_id: str) -> None:
     delete_worker_from_constraint_build(worker_id)
-    deactivate_cbs_with_worker_property(worker_id)
+    delete_worker_property_from_constraint_build(worker_id)
     worker_property_db.delete_worker_properties_by_worker_id(worker_id)
     assignment_db.delete_assignments_by_worker_id(worker_id)
     fixed_assignment_db.delete_fixed_assignments_by_worker_id(worker_id)
@@ -53,7 +54,7 @@ def delete_worker_from_constraint_build(worker_id: str) -> None:
 
 
 # ["str", "int", "bool", "list"]
-def deactivate_cbs_with_worker_property(worker_id: str) -> None:
+def delete_worker_property_from_constraint_build(worker_id: str) -> None:
     wps = worker_property_db.get_worker_properties_by_worker_id(worker_id)
     for wp in wps:
         wd = worker_dimension_db.get_worker_dimension_by_id(
@@ -100,3 +101,20 @@ def deactivate_cbs_with_worker_property(worker_id: str) -> None:
                         if not other_values:
                             cb.active = False
                 constraint_build_db.update_constraint_build(cb)
+
+
+def add_back_worker_property_to_constraint_build(wp: WorkerProperty) -> None:
+    cbs = constraint_build_db.get_constraint_builds_by_wd_id_and_wp_value(
+        wp.worker_dimension_id, wp.value
+    )
+    for cb in cbs:
+        new_mps = []
+        for mp in cb.missing_properties:
+            if mp.dimension_id == wp.worker_dimension_id:
+                mp.property_values.remove(wp.value)
+                if not mp.property_values:
+                    continue
+            new_mps.append(mp)
+        cb.missing_properties = new_mps
+        cb.active = True
+        constraint_build_db.update_constraint_build(cb)

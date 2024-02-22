@@ -2,21 +2,18 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
+from core.worker import Worker, WorkerProperty
 from fastapi import APIRouter, HTTPException
 from pydantic import TypeAdapter
-
-from core.worker import Worker, WorkerProperty
 from routes.api_model import WorkerMessage, WorkerPropertyMessage
 from scripts.setup_database import (
     worker_db,
     worker_dimension_db,
     worker_property_db,
-    assignment_db,
-    fixed_assignment_db,
-    request_db,
 )
 from services.deletion_services.delete_worker import (
     delete_worker as delete_worker_service,
+    add_back_worker_property_to_constraint_build,
 )
 
 router = APIRouter()
@@ -79,6 +76,7 @@ def update_worker_property(
         )
     else:
         new_wp = worker_property_db.update_worker_property(wp_data)
+    add_back_worker_property_to_constraint_build(new_wp)
     return worker_property_to_api_msg(new_wp)
 
 
