@@ -94,9 +94,11 @@ def delete_worker_property_from_constraint_build(worker_id: str) -> None:
                         other_values = [
                             v
                             for v in block.value
-                            for mp in cb.missing_properties
-                            if v["id"] != mp.dimension_id
-                            and v["name"] not in mp.property_values
+                            if not any(
+                                v["id"] == mp.dimension_id
+                                and v["name"] in mp.property_values
+                                for mp in cb.missing_properties
+                            )
                         ]
                         if not other_values:
                             cb.active = False
@@ -110,7 +112,10 @@ def add_back_worker_property_to_constraint_build(wp: WorkerProperty) -> None:
     for cb in cbs:
         new_mps = []
         for mp in cb.missing_properties:
-            if mp.dimension_id == wp.worker_dimension_id:
+            if (
+                mp.dimension_id == wp.worker_dimension_id
+                and wp.value in mp.property_values
+            ):
                 mp.property_values.remove(wp.value)
                 if not mp.property_values:
                     continue

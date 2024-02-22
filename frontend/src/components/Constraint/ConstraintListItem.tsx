@@ -98,7 +98,7 @@ export default function ConstraintListItem({
           >
             {constraint.text}
           </Typography>
-          {!constraint.active && (
+          {constraint.missingProperties.length > 0 && (
             <div
               className="field-name"
               style={{

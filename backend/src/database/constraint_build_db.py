@@ -32,7 +32,12 @@ class ConstraintBuildDB:
     def get_constraint_builds(self) -> List[ConstraintBuild]:
         # pylint: disable=no-member
         cb_docs = ConstraintBuildDocument.objects.all()  # type: ignore
-        return [_from_mongo_constraint_build(w) for w in list(cb_docs)]
+        return [_from_mongo_constraint_build(cb) for cb in list(cb_docs)]
+
+    def get_constraint_builds_active(self) -> List[ConstraintBuild]:
+        # pylint: disable=no-member
+        cb_docs = ConstraintBuildDocument.objects(active=True)  # type: ignore
+        return [_from_mongo_constraint_build(cb) for cb in list(cb_docs)]
 
     def get_constraint_build_by_id(
         self, constraint_build_id: str

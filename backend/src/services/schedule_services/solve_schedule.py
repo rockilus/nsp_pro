@@ -37,7 +37,7 @@ def solve_schedule(
     shifts = shift_db.get_shifts()
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
-    cstr_builds = constraint_build_db.get_constraint_builds()
+    cstr_builds = constraint_build_db.get_constraint_builds_active()
     constraints = setup_constraints(
         workers,
         shifts,
@@ -53,8 +53,12 @@ def solve_schedule(
     fixed_assignments = fixed_assignment_db.get_fixed_assignments_by_dates(
         schedule.start_date, schedule.end_date
     )
-    requests = request_db.get_requests_by_dates(schedule.start_date, schedule.end_date)
-    prev_assignments = assignment_db.get_assignments_by_status(["past", "validated"])
+    requests = request_db.get_requests_by_dates(
+        schedule.start_date, schedule.end_date
+    )
+    prev_assignments = assignment_db.get_assignments_by_status(
+        ["past", "validated"]
+    )
     wip_assignments = assignment_db.get_assignments_by_status(["wip"])
     inputs = core_to_engine_inputs(
         workers,
@@ -109,7 +113,9 @@ def save_assignments(
         if shift is None:
             raise ValueError(f"Shift {a.shift_id} not found")
         out.append(
-            assignment_db.create_assignment(worker, a.date, shift, schedule, "wip")
+            assignment_db.create_assignment(
+                worker, a.date, shift, schedule, "wip"
+            )
         )
     return out
 
@@ -117,7 +123,9 @@ def save_assignments(
 def save_objective_breaches(
     schedule: Schedule, objective_breaches: List[ObjectiveBreach]
 ) -> List[ObjectiveBreach]:
-    existing_ob = objective_breach_db.get_objective_breaches_by_schedule_id(schedule.id)
+    existing_ob = objective_breach_db.get_objective_breaches_by_schedule_id(
+        schedule.id
+    )
     if existing_ob:
         for ob in existing_ob:
             objective_breach_db.delete_objective_breach(ob.id)
@@ -160,6 +168,8 @@ def setup_shift_demands(
             out.append(None)
             continue
         out.append(
-            shift_demand_db.get_shift_demands_by_coverage_selector(coverage_selector)
+            shift_demand_db.get_shift_demands_by_coverage_selector(
+                coverage_selector
+            )
         )
     return out
