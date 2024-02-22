@@ -19,6 +19,7 @@ from services.constraint_build_services.blocks_to_string import (
 def delete_worker(worker_id: str) -> None:
     delete_worker_from_constraint_build(worker_id)
     delete_worker_property_from_constraint_build(worker_id)
+    delete_worker_from_objective_breach(worker_id)
     worker_property_db.delete_worker_properties_by_worker_id(worker_id)
     assignment_db.delete_assignments_by_worker_id(worker_id)
     fixed_assignment_db.delete_fixed_assignments_by_worker_id(worker_id)
@@ -123,3 +124,14 @@ def add_back_worker_property_to_constraint_build(wp: WorkerProperty) -> None:
         cb.missing_properties = new_mps
         cb.active = True
         constraint_build_db.update_constraint_build(cb)
+
+
+def delete_worker_from_objective_breach(worker_id: str) -> None:
+    obs = objective_breach_db.get_objective_breaches_by_worker_id(worker_id)
+    for ob in obs:
+        new_vars = [v for v in ob.variables if v.worker_id != worker_id]
+        if not new_vars:
+            objective_breach_db.delete_objective_breach(ob.id)
+            continue
+        ob.variables = new_vars
+        objective_breach_db.update_objective_breach(ob)
