@@ -1,5 +1,3 @@
-import { Block } from "@mui/icons-material";
-
 export type ConstraintT = {
   id: string;
   constraintType: string;
@@ -9,6 +7,7 @@ export type ConstraintT = {
   hard: boolean;
   priority: string;
   active: boolean;
+  missingProperties: MissingProperty[];
 };
 export type TemplateOptionValueT = {
   name: string;
@@ -20,6 +19,11 @@ export type BlockT = {
   name: string;
   type: string;
   value: string | number | string[] | TemplateOptionValueT[];
+};
+
+export type MissingProperty = {
+  dimension_id: string;
+  propertyValues: string[];
 };
 
 export type TemplateBlockT = {

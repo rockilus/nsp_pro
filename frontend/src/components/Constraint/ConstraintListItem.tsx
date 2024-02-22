@@ -1,25 +1,22 @@
 import React from "react";
 
-import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
-import CircleIcon from "@mui/icons-material/Circle";
 import ClearIcon from "@mui/icons-material/Clear";
-import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import Grid from "@mui/material/Grid";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
 import IconButton from "@mui/material/IconButton";
-import Rating from "@mui/material/Rating";
-import RemoveIcon from "@mui/icons-material/Remove";
 import ToggleButton from "@mui/material/ToggleButton";
 import Typography from "@mui/material/Typography";
 
 import ConstraintButton from "./ConstraintButton";
 import { ConstraintT, TemplateT } from "./types";
 import { useConstraintStore } from "../../stores/constraintStore";
-import { PriorityLevels } from "../../utils/constants";
+import {
+  ConstraintColorActiveBack,
+  ConstraintColorInactiveBack,
+  ConstraintColorActiveText,
+  ConstraintColorInactiveText,
+} from "../../utils/constants";
 
 interface Props {
   constraint: ConstraintT;
@@ -44,36 +41,6 @@ export default function ConstraintListItem({
   const handleToggleHard = () => {
     const updatedConstraint = { ...constraint, hard: !constraint.hard };
     updateConstraint(updatedConstraint);
-  };
-
-  const handlePriorityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const updatedConstraint = {
-      ...constraint,
-      priority: PriorityLevels[Number(event.target.value) - 1],
-    };
-    updateConstraint(updatedConstraint);
-  };
-
-  const handlePriorityIncrease = () => {
-    const currentlLevel = PriorityLevels.indexOf(constraint.priority);
-    if (currentlLevel < PriorityLevels.length - 1) {
-      const updatedConstraint = {
-        ...constraint,
-        priority: PriorityLevels[currentlLevel + 1],
-      };
-      updateConstraint(updatedConstraint);
-    }
-  };
-
-  const handlePriorityDecrease = () => {
-    const currentlLevel = PriorityLevels.indexOf(constraint.priority);
-    if (currentlLevel > 0) {
-      const updatedConstraint = {
-        ...constraint,
-        priority: PriorityLevels[currentlLevel - 1],
-      };
-      updateConstraint(updatedConstraint);
-    }
   };
 
   const editButton = () => {
@@ -102,34 +69,6 @@ export default function ConstraintListItem({
         >
           {constraint.hard ? "Hard" : "Soft"}
         </ToggleButton>
-        {/* {!constraint.hard && (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <IconButton size="small" onClick={handlePriorityDecrease}>
-              <RemoveIcon fontSize="inherit" />
-            </IconButton>
-            <Rating
-              name="highlight-selected-only"
-              value={PriorityLevels.indexOf(constraint.priority) + 1}
-              icon={<CircleIcon fontSize="inherit" color="warning" />}
-              emptyIcon={<CircleIcon fontSize="inherit" color="disabled" />}
-              max={PriorityLevels.length}
-              highlightSelectedOnly
-              size="small"
-              onChange={(e) => {
-                handlePriorityChange(e);
-              }}
-            />
-            <IconButton size="small" onClick={handlePriorityIncrease}>
-              <AddIcon fontSize="inherit" />
-            </IconButton>
-          </Box>
-        )} */}
       </Box>
     );
   };
@@ -139,12 +78,42 @@ export default function ConstraintListItem({
       <Grid
         container
         spacing={0}
-        sx={{ display: "flex", alignItems: "center" }}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          backgroundColor: constraint.active
+            ? ConstraintColorActiveBack
+            : ConstraintColorInactiveBack,
+        }}
       >
         <Grid item xs={8}>
-          <Typography variant="subtitle2" align="left" color="black">
+          <Typography
+            variant="subtitle2"
+            align="left"
+            color={
+              constraint.active
+                ? ConstraintColorActiveText
+                : ConstraintColorInactiveText
+            }
+          >
             {constraint.text}
           </Typography>
+          {!constraint.active && (
+            <div
+              className="field-name"
+              style={{
+                fontSize: "10px",
+                fontStyle: "italic",
+                color: ConstraintColorInactiveText,
+              }}
+            >
+              {"No " +
+                constraint.missingProperties
+                  .flatMap((mp) => mp.propertyValues)
+                  .join(", ") +
+                " property"}
+            </div>
+          )}
         </Grid>
         <Grid item xs={3}>
           {hardSoftButton()}
