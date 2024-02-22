@@ -46,6 +46,13 @@ class ConstraintDB:
         constraint = ConstraintDocument.objects.get(id=constraint_id)  # type: ignore
         return _from_mongo_constraint(constraint)
 
+    def get_constraints_by_worker_id(self, worker_id: str) -> List[Constraint]:
+        # pylint: disable=no-member
+        constraints = ConstraintDocument.objects.filter(  # type: ignore
+            worker_var__target=worker_id
+        )
+        return [_from_mongo_constraint(c) for c in list(constraints)]
+
     # pyling: disable=too-many-arguments
     def update_constraint(
         self,

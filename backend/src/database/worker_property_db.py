@@ -30,23 +30,21 @@ class WorkerPropertyDB:
         worker_property_saved = worker_property.save()
         return _from_mongo_worker_property(worker_property_saved)
 
-    def get_worker_properties_by_worker(
-        self,
-        worker: Worker,
+    def get_worker_properties_by_worker_id(
+        self, worker_id: str
     ) -> List[WorkerProperty]:
         # pylint: disable=no-member
         worker_properties = WorkerPropertyDocument.objects.filter(  # type: ignore
-            worker=worker.id
+            worker=worker_id
         )
         return [_from_mongo_worker_property(wp) for wp in list(worker_properties)]
 
-    def get_worker_properties_by_worker_dimension(
-        self,
-        worker_dimension: WorkerDimension,
+    def get_worker_properties_by_worker_dimension_id(
+        self, worker_dimension_id: str
     ) -> List[WorkerProperty]:
         # pylint: disable=no-member
         worker_properties = WorkerPropertyDocument.objects.filter(  # type: ignore
-            worker_dimension=worker_dimension.id
+            worker_dimension=worker_dimension_id
         )
         return [_from_mongo_worker_property(wp) for wp in list(worker_properties)]
 

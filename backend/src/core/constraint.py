@@ -44,6 +44,12 @@ class Block:
 
 
 @dataclass
+class MissingProperty:
+    dimension_id: str
+    property_values: List[str | int | float | bool]
+
+
+@dataclass
 class ConstraintBuild:
     id: str
     constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
@@ -53,6 +59,7 @@ class ConstraintBuild:
     hard: bool
     priority: str
     active: bool
+    missing_properties: List[MissingProperty]
 
 
 @dataclass

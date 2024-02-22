@@ -63,6 +63,14 @@ class RequestDB:
         request = RequestDocument.objects.get(id=request_id)  # type: ignore
         request.delete()
 
+    def delete_requests_by_worker_id(self, worker_id: str) -> None:
+        # pylint: disable=no-member
+        requests = RequestDocument.objects(  # type: ignore
+            worker=worker_id  # type: ignore
+        )
+        for r in requests:
+            r.delete()
+
 
 # Mappers
 def to_mongo_request(

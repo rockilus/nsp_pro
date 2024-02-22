@@ -41,11 +41,14 @@ class MapWorker:
                 if value.id not in self.worker_dim_dict:
                     raise ValueError(f"Worker dimension {value.id} not found")
                 if value.name.lower() not in self.worker_dim_dict[value.id]:
-                    raise ValueError(
-                        f"Worker property {value.name} for dimension "
-                        + f"{value.id} not found"
-                    )
+                    # raise ValueError(
+                    #     f"Worker property {value.name} for dimension "
+                    #     + f"{value.id} not found"
+                    # )
+                    continue
                 out += self.worker_dim_dict[value.id][value.name.lower()]
+        if not out:
+            raise ValueError("No workers found")
         return sorted(list(set(out)))
 
     def check_worker_id(self, worker_id: str) -> bool:

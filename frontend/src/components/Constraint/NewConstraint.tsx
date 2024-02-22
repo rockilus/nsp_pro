@@ -30,6 +30,7 @@ export default function NewConstraint({ constraintTemplates }: Props) {
             hard: true,
             priority: "medium",
             active: true,
+            missingProperties: [],
           }}
           constraintTemplate={selectedTemplate}
         />

@@ -28,6 +28,11 @@ class Block(EmbeddedDocument):
     value = DynamicField(required=True)
 
 
+class MissingProperty(EmbeddedDocument):
+    dimension_id = StringField(required=True)
+    property_values = ListField(DynamicField(), required=True)
+
+
 # replace constraint/aggregator with type string
 class ConstraintBuild(Document):
     meta = {"collection": "constraint_builds"}
@@ -43,3 +48,4 @@ class ConstraintBuild(Document):
     hard = BooleanField(required=True)
     priority = StringField(choices=["", "low", "medium", "high"], default="")
     active = BooleanField(default=True)
+    missing_properties = ListField(EmbeddedDocumentField(MissingProperty))

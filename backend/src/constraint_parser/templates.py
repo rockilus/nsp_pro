@@ -27,8 +27,8 @@ def build_worker_options() -> Dict:
     worker_dimensions = worker_dimension_db.get_worker_dimensions()
     for worker_dimension in worker_dimensions:
         worker_properties = (
-            worker_property_db.get_worker_properties_by_worker_dimension(
-                worker_dimension
+            worker_property_db.get_worker_properties_by_worker_dimension_id(
+                worker_dimension.id
             )
         )
         if worker_dimension.entry_type == "bool":

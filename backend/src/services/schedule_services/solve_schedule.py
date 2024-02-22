@@ -37,7 +37,7 @@ def solve_schedule(
     shifts = shift_db.get_shifts()
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
-    cstr_builds = constraint_build_db.get_constraint_builds()
+    cstr_builds = constraint_build_db.get_constraint_builds_active()
     constraints = setup_constraints(
         workers,
         shifts,

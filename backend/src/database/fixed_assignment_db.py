@@ -69,6 +69,12 @@ class FixedAssignmentDB:
         )
         fixed_assignment.delete()
 
+    def delete_fixed_assignments_by_worker_id(self, worker_id: str) -> None:
+        # pylint: disable=no-member
+        fas = FixedAssignmentDocument.objects.filter(worker=worker_id)  # type: ignore
+        for fa in fas:
+            fa.delete()
+
 
 # Mappers
 def to_mongo_fixed_assignment(

@@ -56,6 +56,15 @@ class ObjectiveBreachDB:
         )
         return [_from_mongo_objective_breach(ob) for ob in list(objective_breaches)]
 
+    def get_objective_breaches_by_worker_id(
+        self, worker_id: str
+    ) -> List[ObjectiveBreach]:
+        # pylint: disable=no-member
+        objective_breaches = ObjectiveBreachDocument.objects.filter(  # type: ignore
+            variables__worker=worker_id
+        )
+        return [_from_mongo_objective_breach(ob) for ob in list(objective_breaches)]
+
     def update_objective_breach(
         self, objective_breach: ObjectiveBreach
     ) -> ObjectiveBreach:
