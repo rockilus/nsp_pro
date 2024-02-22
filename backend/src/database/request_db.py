@@ -46,7 +46,9 @@ class RequestDB:
         request = RequestDocument.objects.get(id=request_id)  # type: ignore
         return _from_mongo_request(request)
 
-    def get_requests_by_dates(self, start_date: date, end_date: date) -> List[Request]:
+    def get_requests_by_dates(
+        self, start_date: date, end_date: date
+    ) -> List[Request]:
         # pylint: disable=no-member
         requests = RequestDocument.objects.filter(  # type: ignore
             date__gte=start_date, date__lte=end_date
@@ -62,6 +64,14 @@ class RequestDB:
         # pylint: disable=no-member
         request = RequestDocument.objects.get(id=request_id)  # type: ignore
         request.delete()
+
+    def delete_requests_by_worker_id(self, worker_id: str) -> None:
+        # pylint: disable=no-member
+        requests = RequestDocument.objects(  # type: ignore
+            worker=worker_id  # type: ignore
+        )
+        for r in requests:
+            r.delete()
 
 
 # Mappers

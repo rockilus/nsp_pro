@@ -1,0 +1,102 @@
+from core.constraint import Block, MissingProperty
+from scripts.setup_database import (
+    assignment_db,
+    constraint_build_db,
+    constraint_db,
+    fixed_assignment_db,
+    objective_breach_db,
+    request_db,
+    worker_db,
+    worker_dimension_db,
+    worker_property_db,
+)
+from services.constraint_build_services.blocks_to_string import (
+    blocks_to_string,
+)
+
+
+def delete_worker(worker_id: str) -> None:
+    delete_worker_from_constraint_build(worker_id)
+    deactivate_cbs_with_worker_property(worker_id)
+    worker_property_db.delete_worker_properties_by_worker_id(worker_id)
+    assignment_db.delete_assignments_by_worker_id(worker_id)
+    fixed_assignment_db.delete_fixed_assignments_by_worker_id(worker_id)
+    request_db.delete_requests_by_worker_id(worker_id)
+    worker_db.delete_worker(worker_id)
+
+
+def delete_worker_from_constraint_build(worker_id: str) -> None:
+    cbs = constraint_build_db.get_constraint_builds_by_worker_id(worker_id)
+    for cb in cbs:
+        new_blocks = []
+        skip_to_next_cb = False
+        for block in cb.blocks:
+            if block.name == "worker":
+                new_value = [v for v in block.value if v["id"] != worker_id]
+                if new_value:
+                    new_blocks.append(
+                        Block(
+                            name=block.name, type=block.type, value=new_value
+                        )
+                    )
+                else:
+                    constraint_build_db.delete_constraint_build(cb.id)
+                    skip_to_next_cb = True
+                    break
+            else:
+                new_blocks.append(block)
+        if skip_to_next_cb:
+            continue
+        cb.blocks = new_blocks
+        cb.text = blocks_to_string(new_blocks)
+        constraint_build_db.update_constraint_build(cb)
+
+
+# ["str", "int", "bool", "list"]
+def deactivate_cbs_with_worker_property(worker_id: str) -> None:
+    wps = worker_property_db.get_worker_properties_by_worker_id(worker_id)
+    for wp in wps:
+        wd = worker_dimension_db.get_worker_dimension_by_id(
+            wp.worker_dimension_id
+        )
+        if wd.entry_type == "bool":
+            continue
+        wps_dim = (
+            worker_property_db.get_worker_properties_by_worker_dimension_id(
+                wp.worker_dimension_id
+            )
+        )
+        wps_dim_same_value = [
+            wpd for wpd in wps_dim if wpd.value == wp.value and wpd.id != wp.id
+        ]
+        if not wps_dim_same_value:
+            cbs = constraint_build_db.get_constraint_builds_by_wd_id_and_wp_value(
+                wp.worker_dimension_id, wp.value
+            )
+            for cb in cbs:
+                if any(
+                    mp.dimension_id == wp.worker_dimension_id
+                    for mp in cb.missing_properties
+                ):
+                    for mp in cb.missing_properties:
+                        if mp.dimension_id == wp.worker_dimension_id:
+                            mp.property_values.append(wp.value)
+                else:
+                    cb.missing_properties.append(
+                        MissingProperty(
+                            dimension_id=wp.worker_dimension_id,
+                            property_values=[wp.value],
+                        )
+                    )
+                for block in cb.blocks:
+                    if block.name == "worker":
+                        other_values = [
+                            v
+                            for v in block.value
+                            for mp in cb.missing_properties
+                            if v["id"] != mp.dimension_id
+                            and v["name"] not in mp.property_values
+                        ]
+                        if not other_values:
+                            cb.active = False
+                constraint_build_db.update_constraint_build(cb)

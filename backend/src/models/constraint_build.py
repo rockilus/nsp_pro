@@ -5,6 +5,7 @@ from mongoengine.fields import (
     EmbeddedDocumentField,
     ListField,
     StringField,
+    DictField,
 )
 
 
@@ -24,8 +25,15 @@ class Block(EmbeddedDocument):
             "weekday",
         ],
     )
-    type = StringField(required=True, choices=["string", "number", "list", "dict"])
+    type = StringField(
+        required=True, choices=["string", "number", "list", "dict"]
+    )
     value = DynamicField(required=True)
+
+
+class MissingProperty(EmbeddedDocument):
+    dimension_id = StringField(required=True)
+    property_values = ListField(DynamicField(), required=True)
 
 
 # replace constraint/aggregator with type string
@@ -43,3 +51,4 @@ class ConstraintBuild(Document):
     hard = BooleanField(required=True)
     priority = StringField(choices=["", "low", "medium", "high"], default="")
     active = BooleanField(default=True)
+    missing_properties = ListField(EmbeddedDocumentField(MissingProperty))

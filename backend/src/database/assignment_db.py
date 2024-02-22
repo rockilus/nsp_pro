@@ -122,6 +122,12 @@ class AssignmentDB:
         # pylint: disable=no-member
         AssignmentDocument.objects.filter(schedule=schedule_id).delete()  # type: ignore
 
+    def delete_assignments_by_worker_id(self, worker_id: str) -> None:
+        # pylint: disable=no-member
+        assignments = AssignmentDocument.objects.filter(worker=worker_id)  # type: ignore
+        for a in assignments:
+            a.delete()
+
 
 # Mappers
 def to_mongo_assignment(dataclass_obj: Assignment) -> AssignmentDocument:

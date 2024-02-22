@@ -123,6 +123,11 @@ class BlockMessage(BaseModel):
     value: str | int | List[str] | List[Dict]
 
 
+class MissingPropertyMessage(BaseModel):
+    dimensionId: str
+    propertyValues: List[str]
+
+
 class ConstraintBuildMessage(BaseModel):
     id: str
     constraintType: str
@@ -132,6 +137,7 @@ class ConstraintBuildMessage(BaseModel):
     hard: bool
     priority: str
     active: bool
+    missingProperties: List[MissingPropertyMessage]
 
 
 class TemplateBlockMessage(BaseModel):

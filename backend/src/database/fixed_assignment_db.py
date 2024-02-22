@@ -37,9 +37,13 @@ class FixedAssignmentDB:
     def get_fixed_assignments(self) -> List[FixedAssignment]:
         # pylint: disable=no-member
         fixed_assignments = FixedAssignmentDocument.objects.all()  # type: ignore
-        return [_from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)]
+        return [
+            _from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)
+        ]
 
-    def get_fixed_assignment_by_id(self, fixed_assignment_id: str) -> FixedAssignment:
+    def get_fixed_assignment_by_id(
+        self, fixed_assignment_id: str
+    ) -> FixedAssignment:
         # pylint: disable=no-member
         fixed_assignment = FixedAssignmentDocument.objects.get(  # type: ignore
             id=fixed_assignment_id
@@ -53,7 +57,9 @@ class FixedAssignmentDB:
         fixed_assignments = FixedAssignmentDocument.objects.filter(  # type: ignore
             date__gte=start_date, date__lte=end_date
         )
-        return [_from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)]
+        return [
+            _from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)
+        ]
 
     def update_fixed_assignment(
         self, fixed_assignment: FixedAssignment
@@ -68,6 +74,14 @@ class FixedAssignmentDB:
             id=fixed_assignment_id
         )
         fixed_assignment.delete()
+
+    def delete_fixed_assignments_by_worker_id(self, worker_id: str) -> None:
+        # pylint: disable=no-member
+        fas = FixedAssignmentDocument.objects.filter(  # type: ignore
+            worker=worker_id
+        )
+        for fa in fas:
+            fa.delete()
 
 
 # Mappers

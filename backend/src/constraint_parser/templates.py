@@ -22,13 +22,15 @@ def build_worker_options() -> Dict:
     workers = worker_db.get_workers()
     worker_options = {
         "all": [{"name": "all workers", "id": "", "id_type": ""}],
-        "workers": [{"name": w.name, "id": w.id, "id_type": "worker"} for w in workers],
+        "workers": [
+            {"name": w.name, "id": w.id, "id_type": "worker"} for w in workers
+        ],
     }
     worker_dimensions = worker_dimension_db.get_worker_dimensions()
     for worker_dimension in worker_dimensions:
         worker_properties = (
-            worker_property_db.get_worker_properties_by_worker_dimension(
-                worker_dimension
+            worker_property_db.get_worker_properties_by_worker_dimension_id(
+                worker_dimension.id
             )
         )
         if worker_dimension.entry_type == "bool":
@@ -51,7 +53,9 @@ def build_worker_options() -> Dict:
                     "id": worker_dimension.id,
                     "id_type": "worker_dimension",
                 }
-                for wp_value in list(set(str(wp.value) for wp in worker_properties))
+                for wp_value in list(
+                    set(str(wp.value) for wp in worker_properties)
+                )
             ]
     return worker_options
 
@@ -60,12 +64,16 @@ def build_shift_options() -> Dict:
     shifts = shift_db.get_shifts()
     shift_options = {
         "all": [{"name": "all shifts", "id": "", "id_type": ""}],
-        "shifts": [{"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts],
+        "shifts": [
+            {"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts
+        ],
     }
     shift_dimensions = shift_dimension_db.get_shift_dimensions()
     for shift_dimension in shift_dimensions:
-        shift_properties = shift_property_db.get_shift_properties_by_shift_dimension(
-            shift_dimension
+        shift_properties = (
+            shift_property_db.get_shift_properties_by_shift_dimension(
+                shift_dimension
+            )
         )
         if shift_dimension.entry_type == "bool":
             shift_options[shift_dimension.name] = [
@@ -87,12 +95,16 @@ def build_shift_options() -> Dict:
                     "id": shift_dimension.id,
                     "id_type": "shift_dimension",
                 }
-                for sp_value in list(set(str(sp.value) for sp in shift_properties))
+                for sp_value in list(
+                    set(str(sp.value) for sp in shift_properties)
+                )
             ]
     return shift_options
 
 
-def build_templates_list(worker_options: Dict, shift_options: Dict) -> List[Template]:
+def build_templates_list(
+    worker_options: Dict, shift_options: Dict
+) -> List[Template]:
     return [
         Template(
             id="0",
@@ -506,10 +518,12 @@ constraints = [
     "Number of duties on thursdays should be evenly spread across eligible "
     + "workers",
     "Number of duties on thursdays should be evenly spread across surgeons",
-    "Number of duties on fridays should be evenly spread across eligible " + "workers",
+    "Number of duties on fridays should be evenly spread across eligible "
+    + "workers",
     "Number of duties on saturdays should be evenly spread across eligible "
     + "workers",
-    "Number of duties on sunday should be evenly spread across eligible " + "workers",
+    "Number of duties on sunday should be evenly spread across eligible "
+    + "workers",
     "Number of duties on bank holidays should be evenly spread across "
     + "eligible workers",
     "Number of duties should be evenly spread across eligible workers",

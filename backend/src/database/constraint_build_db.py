@@ -2,10 +2,11 @@ from typing import List
 
 from bson import ObjectId
 
-from core.constraint import Block, ConstraintBuild
+from core.constraint import Block, ConstraintBuild, MissingProperty
 from database.db import DB
 from models import Block as BlockDocument
 from models import ConstraintBuild as ConstraintBuildDocument
+from models import MissingProperty as MissingPropertyDocument
 
 
 class ConstraintBuildDB:
@@ -33,12 +34,57 @@ class ConstraintBuildDB:
         cb_docs = ConstraintBuildDocument.objects.all()  # type: ignore
         return [_from_mongo_constraint_build(w) for w in list(cb_docs)]
 
-    def get_constraint_build_by_id(self, constraint_build_id: str) -> ConstraintBuild:
+    def get_constraint_build_by_id(
+        self, constraint_build_id: str
+    ) -> ConstraintBuild:
         # pylint: disable=no-member
         cb_doc = ConstraintBuildDocument.objects.get(  # type: ignore
             id=constraint_build_id
         )
         return _from_mongo_constraint_build(cb_doc)
+
+    def get_constraint_builds_by_worker_id(
+        self, worker_id: str
+    ) -> List[ConstraintBuild]:
+        # pylint: disable=no-member
+        cb_docs = ConstraintBuildDocument.objects(  # type: ignore
+            __raw__={
+                'blocks': {
+                    '$elemMatch': {
+                        'name': 'worker',
+                        'value': {
+                            '$elemMatch': {
+                                'id': worker_id,
+                                'id_type': 'worker',
+                            }
+                        },
+                    }
+                }
+            }
+        )
+        return [_from_mongo_constraint_build(cb) for cb in list(cb_docs)]
+
+    def get_constraint_builds_by_wd_id_and_wp_value(
+        self, wd_id: str, wp_value: str
+    ) -> List[ConstraintBuild]:
+        # pylint: disable=no-member
+        cb_docs = ConstraintBuildDocument.objects(  # type: ignore
+            __raw__={
+                'blocks': {
+                    '$elemMatch': {
+                        'name': 'worker',
+                        'value': {
+                            '$elemMatch': {
+                                'name': wp_value,
+                                'id': wd_id,
+                                'id_type': 'worker_dimension',
+                            }
+                        },
+                    }
+                }
+            }
+        )
+        return [_from_mongo_constraint_build(cb) for cb in list(cb_docs)]
 
     def update_constraint_build(
         self, constraint_build: ConstraintBuild
@@ -69,9 +115,30 @@ def _from_mongo_block(doc_obj: BlockDocument) -> Block:
     return Block(
         name=doc_obj.name,  # type: ignore
         type=doc_obj.type,  # type: ignore
-        value=doc_obj.value
-        if isinstance(doc_obj.value, (str, int))
-        else list(doc_obj.value),
+        value=(
+            doc_obj.value
+            if isinstance(doc_obj.value, (str, int))
+            else list(doc_obj.value)
+        ),
+    )
+
+
+# MissingProperty
+def to_mongo_missing_property(
+    dataclass_obj: MissingProperty,
+) -> MissingPropertyDocument:
+    return MissingPropertyDocument(
+        dimension_id=dataclass_obj.dimension_id,
+        property_values=dataclass_obj.property_values,
+    )
+
+
+def _from_mongo_missing_property(
+    doc_obj: MissingPropertyDocument,
+) -> MissingProperty:
+    return MissingProperty(
+        dimension_id=doc_obj.dimension_id,
+        property_values=list(doc_obj.property_values),
     )
 
 
@@ -88,6 +155,10 @@ def to_mongo_constraint_build(
         hard=dataclass_obj.hard,
         priority=dataclass_obj.priority,
         active=dataclass_obj.active,
+        missing_properties=[
+            to_mongo_missing_property(mp)
+            for mp in dataclass_obj.missing_properties
+        ],
     )
 
 
@@ -103,4 +174,8 @@ def _from_mongo_constraint_build(
         hard=doc_obj.hard,
         priority=doc_obj.priority,
         active=doc_obj.active,
+        missing_properties=[
+            _from_mongo_missing_property(mp)
+            for mp in doc_obj.missing_properties
+        ],
     )
