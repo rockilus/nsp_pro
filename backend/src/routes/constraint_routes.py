@@ -13,6 +13,9 @@ from routes.api_model import (
 )
 from scripts.setup_database import constraint_build_db
 from services.constraint_build_services.blocks_to_string import blocks_to_string
+from services.deletion_services.delete_constraint_build import (
+    delete_constraint_build as delete_constraint_build_service,
+)
 
 router = APIRouter()
 
@@ -46,7 +49,7 @@ def update_constraint(
 
 @router.delete("/constraints/{constraint_build_id}")
 def delete_constraint(constraint_build_id: str):
-    constraint_build_db.delete_constraint_build(constraint_build_id)
+    delete_constraint_build_service(constraint_build_id)
     return {"message": "Constraint deleted"}
 
 

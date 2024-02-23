@@ -89,6 +89,27 @@ class ConstraintBuildDB:
         )
         return [_from_mongo_constraint_build(cb) for cb in list(cb_docs)]
 
+    def get_constraint_builds_by_worker_dimension_id(
+        self, wd_id: str
+    ) -> List[ConstraintBuild]:
+        # pylint: disable=no-member
+        cb_docs = ConstraintBuildDocument.objects(  # type: ignore
+            __raw__={
+                'blocks': {
+                    '$elemMatch': {
+                        'name': 'worker',
+                        'value': {
+                            '$elemMatch': {
+                                'id': wd_id,
+                                'id_type': 'worker_dimension',
+                            }
+                        },
+                    }
+                }
+            }
+        )
+        return [_from_mongo_constraint_build(cb) for cb in list(cb_docs)]
+
     def update_constraint_build(
         self, constraint_build: ConstraintBuild
     ) -> ConstraintBuild:

@@ -9,6 +9,9 @@ from core.worker import WorkerDimension, WorkerProperty
 from routes.api_model import NewWorkerDimensionMessage, WorkerDimensionMessage
 from routes.worker_routes import worker_property_to_api_msg
 from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
+from services.deletion_services.delete_worker_dimension import (
+    delete_worker_dimension as delete_worker_dimension_service,
+)
 
 router = APIRouter()
 
@@ -59,10 +62,7 @@ def update_worker_dimension(
 
 @router.delete("/worker-dimensions/{worker_dimension_id}")
 def delete_worker_dimension(worker_dimension_id: str) -> Dict:
-    worker_property_db.delete_worker_properties_by_worker_dimension_id(
-        worker_dimension_id
-    )
-    worker_dimension_db.delete_worker_dimension(worker_dimension_id)
+    delete_worker_dimension_service(worker_dimension_id)
     return {"message": "Worker deleted"}
 
 
