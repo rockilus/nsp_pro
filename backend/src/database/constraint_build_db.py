@@ -39,7 +39,9 @@ class ConstraintBuildDB:
         cb_docs = ConstraintBuildDocument.objects(active=True)  # type: ignore
         return [_from_mongo_constraint_build(cb) for cb in list(cb_docs)]
 
-    def get_constraint_build_by_id(self, constraint_build_id: str) -> ConstraintBuild:
+    def get_constraint_build_by_id(
+        self, constraint_build_id: str
+    ) -> ConstraintBuild:
         # pylint: disable=no-member
         cb_doc = ConstraintBuildDocument.objects.get(  # type: ignore
             id=constraint_build_id
@@ -79,6 +81,27 @@ class ConstraintBuildDB:
                         'value': {
                             '$elemMatch': {
                                 'name': wp_value,
+                                'id': wd_id,
+                                'id_type': 'worker_dimension',
+                            }
+                        },
+                    }
+                }
+            }
+        )
+        return [_from_mongo_constraint_build(cb) for cb in list(cb_docs)]
+
+    def get_constraint_builds_by_worker_dimension_id(
+        self, wd_id: str
+    ) -> List[ConstraintBuild]:
+        # pylint: disable=no-member
+        cb_docs = ConstraintBuildDocument.objects(  # type: ignore
+            __raw__={
+                'blocks': {
+                    '$elemMatch': {
+                        'name': 'worker',
+                        'value': {
+                            '$elemMatch': {
                                 'id': wd_id,
                                 'id_type': 'worker_dimension',
                             }
@@ -159,7 +182,8 @@ def to_mongo_constraint_build(
         priority=dataclass_obj.priority,
         active=dataclass_obj.active,
         missing_properties=[
-            to_mongo_missing_property(mp) for mp in dataclass_obj.missing_properties
+            to_mongo_missing_property(mp)
+            for mp in dataclass_obj.missing_properties
         ],
     )
 
@@ -177,6 +201,7 @@ def _from_mongo_constraint_build(
         priority=doc_obj.priority,
         active=doc_obj.active,
         missing_properties=[
-            _from_mongo_missing_property(mp) for mp in doc_obj.missing_properties
+            _from_mongo_missing_property(mp)
+            for mp in doc_obj.missing_properties
         ],
     )
