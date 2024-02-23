@@ -27,6 +27,9 @@ from routes import (
 )
 from utils.constants import Constants
 
+# from permit.sync import Permit
+
+# permit = Permit(Permit(pdp=Constants.PDP_URL, token=Constants.PERMIT_API_KEY))
 # from starlette.middleware.cors import CORSMiddleware
 
 init(
@@ -36,6 +39,7 @@ init(
     recipe_list=config.recipe_list,
     mode="asgi",
 )
+
 
 app = FastAPI()
 

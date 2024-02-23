@@ -1,6 +1,7 @@
 from supertokens_python import InputAppInfo, SupertokensConfig
 from supertokens_python.recipe import dashboard, emailpassword, session
 
+from services.authentication.override_func import override_emailpassword_functions
 from utils.constants import Constants
 
 # this is the location of the SuperTokens core.
@@ -21,7 +22,11 @@ framework = "fastapi"
 # use from SuperTokens. See the full list here: https://supertokens.com/docs/guides
 recipe_list = [
     session.init(),
-    emailpassword.init(),
+    emailpassword.init(
+        override=emailpassword.InputOverrideConfig(
+            functions=override_emailpassword_functions
+        )
+    ),
     dashboard.init(
         admins=list(Constants.ST_DASHBOARD_ADMINS),
     ),
