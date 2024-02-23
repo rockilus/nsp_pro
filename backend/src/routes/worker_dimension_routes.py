@@ -8,11 +8,7 @@ from pydantic import TypeAdapter
 from core.worker import WorkerDimension, WorkerProperty
 from routes.api_model import NewWorkerDimensionMessage, WorkerDimensionMessage
 from routes.worker_routes import worker_property_to_api_msg
-from scripts.setup_database import (
-    worker_db,
-    worker_dimension_db,
-    worker_property_db,
-)
+from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
 from services.deletion_services.delete_worker_dimension import (
     delete_worker_dimension as delete_worker_dimension_service,
 )
@@ -56,9 +52,7 @@ def update_worker_dimension(
         worker_dimension_id
     )
     if not existing_worker_dim:
-        raise HTTPException(
-            status_code=404, detail="Worker Dimension does not exist"
-        )
+        raise HTTPException(status_code=404, detail="Worker Dimension does not exist")
     worker_dimension_data = api_msg_to_worker_dimension(worker_dimension)
     worker_dimension_updated = worker_dimension_db.update_worker_dimension(
         worker_dimension_data
@@ -87,9 +81,7 @@ def new_worker_dimension_to_api_msg(
 ) -> NewWorkerDimensionMessage:
     as_dict = {
         "newDimension": worker_dimension_to_api_msg(worker_dimension),
-        "newProperties": [
-            worker_property_to_api_msg(wp) for wp in worker_properties
-        ],
+        "newProperties": [worker_property_to_api_msg(wp) for wp in worker_properties],
     }
     validator = TypeAdapter(NewWorkerDimensionMessage)
     return validator.validate_python(as_dict)

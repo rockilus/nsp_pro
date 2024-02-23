@@ -77,6 +77,16 @@ class ConstraintDB:
         for constraint in list(constraints):
             constraint.delete()
 
+    def delete_constraints_by_constraint_build_id(
+        self, constraint_build_id: str
+    ) -> None:
+        # pylint: disable=no-member
+        constraints = ConstraintDocument.objects.filter(  # type: ignore
+            constraint_build=constraint_build_id
+        )
+        for constraint in list(constraints):
+            constraint.delete()
+
 
 # Mappers
 def to_mongo_var_worker(dataclass_obj: VarWorker) -> VarWorkerDocument:
