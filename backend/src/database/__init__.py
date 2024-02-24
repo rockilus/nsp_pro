@@ -6,9 +6,7 @@ from database.coverage_selector_db import CoverageSelectorDB
 from database.db import DB
 from database.fixed_assignment_db import FixedAssignmentDB
 from database.objective_breach_db import ObjectiveBreachDB
-from database.permission_db import PermissionDB
 from database.request_db import RequestDB
-from database.role_db import RoleDB
 from database.schedule_db import ScheduleDB
 from database.shift_db import ShiftDB
 from database.shift_demand_db import ShiftDemandDB
@@ -31,9 +29,7 @@ __all__ = [
     "DB",
     "FixedAssignmentDB",
     "ObjectiveBreachDB",
-    "PermissionDB",
     "RequestDB",
-    "RoleDB",
     "ScheduleDB",
     "ShiftDB",
     "ShiftDemandDB",

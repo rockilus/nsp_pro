@@ -14,9 +14,7 @@ from routes import (
     router_coverage_selector,
     router_fixed_assignment,
     router_objective_breach,
-    router_permission,
     router_request,
-    router_role,
     router_schedule,
     router_shift,
     router_shift_dimension,
@@ -78,9 +76,7 @@ app.include_router(router_coverage)
 app.include_router(router_coverage_selector)
 app.include_router(router_fixed_assignment)
 app.include_router(router_objective_breach)
-app.include_router(router_permission)
 app.include_router(router_request)
-app.include_router(router_role)
 app.include_router(router_schedule)
 app.include_router(router_shift)
 app.include_router(router_shift_dimension)

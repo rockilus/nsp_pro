@@ -6,9 +6,7 @@ from routes.coverage_routes import router as router_coverage
 from routes.coverage_selector_routes import router as router_coverage_selector
 from routes.fixed_assignment_routes import router as router_fixed_assignment
 from routes.objective_breach_routes import router as router_objective_breach
-from routes.permission_routes import router as router_permission
 from routes.request_routes import router as router_request
-from routes.role_routes import router as router_role
 from routes.schedule_routes import router as router_schedule
 from routes.shift_dimension_routes import router as router_shift_dimension
 from routes.shift_routes import router as router_shift
@@ -26,9 +24,7 @@ __all__ = [
     "router_coverage_selector",
     "router_fixed_assignment",
     "router_objective_breach",
-    "router_permission",
     "router_request",
-    "router_role",
     "router_schedule",
     "router_shift_dimension",
     "router_shift",

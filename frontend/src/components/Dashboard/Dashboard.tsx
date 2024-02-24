@@ -7,7 +7,6 @@ import Toolbar from "@mui/material/Toolbar";
 // Components
 import AppBarDash from "./AppBarDash";
 import DrawerDash from "./DrawerDash";
-import AdminTab from "../Admin/AdminTab";
 import ConstraintTab from "../Constraint/ConstraintTab";
 import CoverageSelectorTab from "../CoverageSelector/CoverageSelectorTab";
 import CoverageTab from "../Coverage/CoverageTab";
@@ -91,7 +90,6 @@ export default function Dashboard() {
     coverageSelector: <CoverageSelectorTab />,
     schedule: <ScheduleTab workers={workersIdName} shifts={shiftsIdName} />,
     stats: <StatsTab workers={workersIdName} shifts={shiftsIdName} />,
-    admin: <AdminTab />,
   };
 
   return (
