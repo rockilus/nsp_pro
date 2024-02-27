@@ -34,7 +34,7 @@ async def create_worker(
         )
     w_data = api_msg_to_worker(worker)
     worker_created = worker_db.create_worker(w_data)
-    wd_bool = worker_dimension_db.get_worker_dimensions_by_entry_type("bool")
+    wd_bool = worker_dimension_db.get_worker_dimensions_by_entry_type("bool", team_id)
     wp_bool = []
     for wd in wd_bool:
         wp_bool.append(
@@ -52,7 +52,7 @@ async def get_workers(
         raise HTTPException(
             status_code=403, detail="You do not have permission to get workers"
         )
-    workers = worker_db.get_workers()
+    workers = worker_db.get_workers(team_id)
     workers_properties = [
         worker_property_db.get_worker_properties_by_worker_id(worker.id)
         for worker in workers

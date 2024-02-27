@@ -19,12 +19,12 @@ def build_templates() -> List[Template]:
 
 
 def build_worker_options() -> Dict:
-    workers = worker_db.get_workers()
+    workers = worker_db.get_workers(team_id="TO_REPLACE")
     worker_options = {
         "all": [{"name": "all workers", "id": "", "id_type": ""}],
         "workers": [{"name": w.name, "id": w.id, "id_type": "worker"} for w in workers],
     }
-    worker_dimensions = worker_dimension_db.get_worker_dimensions()
+    worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id="TO_REPLACE")
     for worker_dimension in worker_dimensions:
         worker_properties = (
             worker_property_db.get_worker_properties_by_worker_dimension_id(

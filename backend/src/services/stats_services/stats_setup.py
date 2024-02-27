@@ -9,7 +9,7 @@ def stats_setup() -> List[Stat]:
     stats_options = stats_options_db.get_stats_options()
     if stats_options is None:
         return []
-    workers = worker_db.get_workers()
+    workers = worker_db.get_workers(team_id="TO_REPLACE")
     shifts = shift_db.get_shifts()
     assignments = assignment_db.get_assignments_by_dates(
         stats_options.start_date, stats_options.end_date

@@ -22,11 +22,9 @@ class WorkerDB:
         worker_saved = worker_doc.save()
         return _from_mongo_worker(worker_saved)
 
-    def get_workers(
-        self,
-    ) -> List[Worker]:
+    def get_workers(self, team_id: str) -> List[Worker]:
         # pylint: disable=no-member
-        workers = WorkerDocument.objects.all()  # type: ignore
+        workers = WorkerDocument.objects.filter(team=team_id)  # type: ignore
         return [_from_mongo_worker(w) for w in list(workers)]
 
     def get_worker_by_id(self, worker_id: str) -> Worker:

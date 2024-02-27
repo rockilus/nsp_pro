@@ -26,11 +26,11 @@ class WorkerDimensionDB:
         wd_saved = wd_doc.save()
         return _from_mongo_worker_dimension(wd_saved)
 
-    def get_worker_dimensions(
-        self,
-    ) -> List[WorkerDimension]:
+    def get_worker_dimensions(self, team_id: str) -> List[WorkerDimension]:
         # pylint: disable=no-member
-        worker_dimensions = WorkerDimensionDocument.objects.all()  # type: ignore
+        worker_dimensions = WorkerDimensionDocument.objects.filter(  # type: ignore
+            team=team_id
+        )
         return [_from_mongo_worker_dimension(wd) for wd in list(worker_dimensions)]
 
     def get_worker_dimension_by_id(self, worker_dimension_id: str) -> WorkerDimension:
@@ -41,20 +41,20 @@ class WorkerDimensionDB:
         return _from_mongo_worker_dimension(worker_dimension)
 
     def get_worker_dimension_by_name(
-        self, worker_dimension_name: str
+        self, worker_dimension_name: str, team_id: str
     ) -> WorkerDimension:
         # pylint: disable=no-member
         worker_dimension = WorkerDimensionDocument.objects.get(  # type: ignore
-            name=worker_dimension_name
+            name=worker_dimension_name, team=team_id
         )
         return _from_mongo_worker_dimension(worker_dimension)
 
     def get_worker_dimensions_by_entry_type(
-        self, entry_type: str
+        self, entry_type: str, team_id: str
     ) -> List[WorkerDimension]:
         # pylint: disable=no-member
         worker_dimensions = WorkerDimensionDocument.objects.filter(  # type: ignore
-            entry_type=entry_type
+            entry_type=entry_type, team=team_id
         )
         return [_from_mongo_worker_dimension(wd) for wd in list(worker_dimensions)]
 

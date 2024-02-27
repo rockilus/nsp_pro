@@ -8,6 +8,7 @@ const apiUrlTeam = baseApiUrl + "/teams";
 type TeamStateT = {
   teams: TeamT[];
   fetchTeams: () => void;
+  clearTeams: () => void;
 };
 
 export const useTeamStore = create<TeamStateT>()((set) => ({
@@ -27,5 +28,9 @@ export const useTeamStore = create<TeamStateT>()((set) => ({
     } catch (error) {
       console.error("Failed to fetch teams:", error);
     }
+  },
+
+  clearTeams: () => {
+    set({ teams: [] });
   },
 }));

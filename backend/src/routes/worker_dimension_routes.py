@@ -36,7 +36,7 @@ async def create_worker_dimension(
     wd_created = worker_dimension_db.create_worker_dimension(wd_data)
     properties = []
     if wd_created.entry_type == "bool":
-        workers = worker_db.get_workers()
+        workers = worker_db.get_workers(team_id)
         for worker in workers:
             properties.append(
                 worker_property_db.create_worker_property(worker, wd_created, False)
@@ -56,7 +56,7 @@ async def get_worker_dimensions(
             status_code=403,
             detail="You do not have permission to get worker dimensions",
         )
-    worker_dimensions = worker_dimension_db.get_worker_dimensions()
+    worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id)
     return [worker_dimension_to_api_msg(wd) for wd in worker_dimensions]
 
 

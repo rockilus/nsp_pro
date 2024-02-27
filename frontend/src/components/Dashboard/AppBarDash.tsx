@@ -1,21 +1,20 @@
 import * as React from "react";
 import SessionReact from "supertokens-auth-react/recipe/session";
 import SuperTokensReact from "supertokens-auth-react";
-
-import { styled } from "@mui/material/styles";
+// MUI
+import AccountCircle from "@mui/icons-material/AccountCircle";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuIcon from "@mui/icons-material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import Badge from "@mui/material/Badge";
-import MenuIcon from "@mui/icons-material/Menu";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
-import AccountCircle from "@mui/icons-material/AccountCircle";
-
+import { styled } from "@mui/material/styles";
+// Stores
+import { useTeamStore } from "../../stores/teamStore";
+// Constants
 import { DrawerWidth } from "../../utils/constants";
-import { useUserStore } from "../../stores/userStore";
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -46,9 +45,11 @@ interface Props {
 
 export default function AppBarDash({ open, toggleDrawer }: Props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const clearTeams = useTeamStore((state) => state.clearTeams);
 
   const handleLogout = async () => {
     await SessionReact.signOut();
+    clearTeams();
     SuperTokensReact.redirectToAuth();
   };
 
