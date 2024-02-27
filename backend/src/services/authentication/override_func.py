@@ -7,6 +7,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpOkResult,
 )
 
+from services.user_services.user_sign_up import user_sign_up
 from utils.constants import Constants
 
 permit = Permit(pdp=Constants.PDP_URL, token=Constants.PERMIT_API_KEY)
@@ -29,10 +30,22 @@ def override_emailpassword_functions(
             email = result.user.email
             if result.user:
                 await permit.api.users.sync({"key": user_id, "email": email})
-                await permit.api.users.assign_role(
-                    {"user": user_id, "role": "admin", "tenant": "default"}
+                team_id = user_sign_up(user_id, email)
+                permit_team_instance = await permit.api.resource_instances.create(
+                    {
+                        "key": team_id,
+                        "resource": "team",
+                        "tenant": "default",
+                    }
                 )
-
+                await permit.api.role_assignments.assign(
+                    {
+                        "role": "leader",
+                        "resource_instance": f"team:{permit_team_instance.key}",
+                        "user": user_id,
+                        "tenant": "default",
+                    }
+                )
         return result  # type: ignore
 
     original_implementation.sign_up = sign_up  # type: ignore

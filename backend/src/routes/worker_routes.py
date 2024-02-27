@@ -2,8 +2,10 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.session.framework.fastapi import verify_session
 
 from core.worker import Worker, WorkerProperty
 from routes.api_model import WorkerMessage, WorkerPropertyMessage
@@ -19,7 +21,10 @@ router = APIRouter()
 
 
 @router.post("/workers")
-def create_worker() -> WorkerMessage:
+def create_worker(
+    session: SessionContainer = Depends(verify_session()),
+) -> WorkerMessage:
+    print("session", session.get_user_id())
     worker_created = worker_db.create_worker()
     wd_bool = worker_dimension_db.get_worker_dimensions_by_entry_type("bool")
     wp_bool = []

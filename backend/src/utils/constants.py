@@ -18,7 +18,6 @@ class Constants:
     ST_DASHBOARD_ADMINS: Tuple[str, ...] = ("felipe.kharaba@icloud.com",)
     # Permit.io config
     PDP_URL: str = "http://localhost:7766"
-    # PDP_URL: str = "http://0.0.0.0:7766"
     PERMIT_API_KEY: str = (
         "permit_key_DdSCEb3OXhfpVpjx1iHEnHfQ9mp3ReRk1B3g0htSS"
         + "rSmQ6GvvKfLhHhWncxvxBqi2wNfhDhM9eZsIZfurOmaB4"

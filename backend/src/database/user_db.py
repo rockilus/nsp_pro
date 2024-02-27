@@ -1,5 +1,3 @@
-from bson import ObjectId
-
 from core.user import User
 from database.db import DB
 from models.user import User as UserDocument
@@ -13,13 +11,7 @@ class UserDB:
         self,
         user: User,
     ) -> User:
-        user_doc = UserDocument(
-            id=str(ObjectId()),
-            email=user.email,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            workers=[],
-        )
+        user_doc = to_mongo_user(user)
         user_saved = user_doc.save()
         return _from_mongo_user(user_saved)
 
@@ -31,7 +23,7 @@ class UserDB:
     def get_user_by_email(self, email: str) -> User | None:
         try:
             # pylint: disable=no-member
-            user = UserDocument.objects.get(username=email)  # type: ignore
+            user = UserDocument.objects.get(email=email)  # type: ignore
             return _from_mongo_user(user)
         except UserDocument.DoesNotExist:
             return None

@@ -16,6 +16,7 @@ from database import (
     ShiftDimensionDB,
     ShiftPropertyDB,
     StatsOptionsDB,
+    TeamDB,
     UserDB,
     WorkerDB,
     WorkerDimensionDB,
@@ -41,6 +42,7 @@ shift_demand_db = ShiftDemandDB(db)
 shift_dimension_db = ShiftDimensionDB(db)
 shift_property_db = ShiftPropertyDB(db)
 stats_options_db = StatsOptionsDB(db)
+team_db = TeamDB(db)
 user_db = UserDB(db)
 worker_db = WorkerDB(db)
 worker_dimension_db = WorkerDimensionDB(db)
