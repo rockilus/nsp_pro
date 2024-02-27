@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+// MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -11,22 +11,28 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-
+// Components
 import WorkerPropertyCell from "./WorkerPropertyCell";
 import WorkerDimensionCell from "./WorkerDimensionCell";
 import AddWorkerDimensionDrawer from "./AddWorkerDimensionDrawer";
 import WorkerFieldCell from "./WorkerFieldCell";
-import { WorkerDimensionT, WorkerT } from "./types";
+// Stores
 import { useWorkerStore } from "../../stores/workerStore";
+// Types
+import { WorkerDimensionT, WorkerT } from "./types";
+import { TeamT } from "../../containers/types";
+// Constants
 import { DefaultProperties } from "../../utils/constants";
 
 interface Props {
+  team: TeamT;
   workerDimensions: WorkerDimensionT[];
   workers: WorkerT[];
   defaultWorkerFields: string[];
 }
 
 export default function WorkerTable({
+  team,
   workerDimensions,
   workers,
   defaultWorkerFields,
@@ -41,6 +47,15 @@ export default function WorkerTable({
     setDrawerOpen(!drawerOpen);
   };
 
+  const handleAddWorker = () => {
+    addWorker({
+      id: "",
+      teamId: team.id,
+      name: "",
+      workerProperties: [],
+    });
+  };
+
   return (
     <>
       <TableContainer component={Paper} style={{ width: "100%" }}>
@@ -51,7 +66,11 @@ export default function WorkerTable({
                 <TableCell key={index}>{field}</TableCell>
               ))}
               {workerDimensions.map((wd, wdIndex) => (
-                <WorkerDimensionCell key={wdIndex} workerDimension={wd} />
+                <WorkerDimensionCell
+                  key={wdIndex}
+                  team={team}
+                  workerDimension={wd}
+                />
               ))}
               <TableCell>
                 <Button onClick={toggleDrawer}>
@@ -82,6 +101,7 @@ export default function WorkerTable({
                   return (
                     <WorkerPropertyCell
                       key={wdIndex}
+                      team={team}
                       workerProperty={
                         workerProperty
                           ? workerProperty
@@ -100,7 +120,7 @@ export default function WorkerTable({
                 })}
                 <TableCell component="th" scope="row">
                   <Box sx={{ display: "flex" }}>
-                    <Button onClick={() => deleteWorker(worker.id)}>
+                    <Button onClick={() => deleteWorker(worker.id, team.id)}>
                       <DeleteIcon />
                     </Button>
                   </Box>
@@ -109,7 +129,7 @@ export default function WorkerTable({
             ))}
             <TableRow>
               <TableCell colSpan={workerDimensions.length}>
-                <Button onClick={addWorker}>
+                <Button onClick={handleAddWorker}>
                   <AddIcon />
                   New
                 </Button>
@@ -119,6 +139,7 @@ export default function WorkerTable({
         </Table>
       </TableContainer>
       <AddWorkerDimensionDrawer
+        team={team}
         drawerOpen={drawerOpen}
         toggleDrawer={toggleDrawer}
       />

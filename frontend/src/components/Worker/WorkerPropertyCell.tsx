@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
@@ -8,11 +8,14 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
-
-import { WorkerPropertyT, WorkerDimensionT } from "./types";
+// Stores
 import { useWorkerStore } from "../../stores/workerStore";
+// Types
+import { WorkerPropertyT, WorkerDimensionT } from "./types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   workerProperty: WorkerPropertyT;
   workerDimension: WorkerDimensionT;
   editing: boolean;
@@ -20,6 +23,7 @@ interface Props {
 }
 
 export default function WorkerPropertyCell({
+  team,
   workerProperty,
   workerDimension,
   editing,
@@ -33,13 +37,16 @@ export default function WorkerPropertyCell({
 
   const handleEditConfirm = async () => {
     if (valueState !== workerProperty.value) {
-      updateWorkerProperty({ ...workerProperty, value: valueState });
+      updateWorkerProperty(team.id, { ...workerProperty, value: valueState });
     }
     setEditing({});
   };
 
   const handleToggle = () => {
-    updateWorkerProperty({ ...workerProperty, value: !workerProperty.value });
+    updateWorkerProperty(team.id, {
+      ...workerProperty,
+      value: !workerProperty.value,
+    });
   };
 
   const handleEditCancel = () => {

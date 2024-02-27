@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -7,14 +7,17 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-
+// Stores
 import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
+// Types
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   workerDimensionId: string;
 }
 
-export default function DialogColumnDelete({ workerDimensionId }: Props) {
+export default function DialogColumnDelete({ team, workerDimensionId }: Props) {
   const [open, setOpen] = useState(false);
 
   const deleteWorkerDimension = useWorkerDimensionStore(
@@ -52,7 +55,7 @@ export default function DialogColumnDelete({ workerDimensionId }: Props) {
         <DialogActions>
           <Button
             onClick={() => {
-              deleteWorkerDimension(workerDimensionId);
+              deleteWorkerDimension(workerDimensionId, team.id);
               handleClose();
             }}
             color="error"

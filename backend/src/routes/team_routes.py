@@ -3,11 +3,11 @@ from typing import List
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
-from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.framework.fastapi import verify_session
 
 from core.team import Team
 from routes.api_model import TeamMessage
+from services.authentication.authn_services import authn_verify_session
+from services.authentication.authn_types import SessionContainer
 from services.team_services.team_services import get_user_teams
 
 router = APIRouter()
@@ -24,7 +24,7 @@ router = APIRouter()
 
 @router.get("/teams")
 async def get_teams(
-    session: SessionContainer = Depends(verify_session()),
+    session: SessionContainer = Depends(authn_verify_session()),
 ) -> List[TeamMessage]:
     teams = await get_user_teams(session.get_user_id())
     return [team_to_api_msg(t) for t in teams]

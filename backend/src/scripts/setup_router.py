@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes import (
     router_assignment,
-    router_authentication,
     router_constraint,
     router_constraint_template,
     router_coverage,
@@ -25,8 +24,8 @@ from routes import (
 # pylint: disable=unused-import
 from services.authentication import authn_services  # noqa: F401
 from services.authentication.authn_services import (
-    get_authn_cors_headers,
-    get_authn_middleware,
+    authn_get_cors_headers,
+    authn_get_middleware,
 )
 from services.authorization import authz_services  # noqa: F401
 from utils.constants import Constants
@@ -39,18 +38,17 @@ origins = [
     "http://127.0.0.1:3000",  # Add other origins if needed
 ]
 
-app.add_middleware(get_authn_middleware())
+app.add_middleware(authn_get_middleware())
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[Constants.BASE_URL + ":" + str(Constants.WEBSITE_PORT)],
     allow_credentials=True,
     allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["Content-Type"] + get_authn_cors_headers(),
+    allow_headers=["Content-Type"] + authn_get_cors_headers(),
 )
 
 app.include_router(router_assignment)
-app.include_router(router_authentication)
 app.include_router(router_constraint)
 app.include_router(router_constraint_template)
 app.include_router(router_coverage)

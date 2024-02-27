@@ -90,42 +90,52 @@ shifts = [
 workers = [
     Worker(
         id="0",
+        team_id="0",
         name="john",
     ),
     Worker(
         id="1",
+        team_id="0",
         name="paul",
     ),
     Worker(
         id="2",
+        team_id="0",
         name="george",
     ),
     Worker(
         id="3",
+        team_id="0",
         name="ringo",
     ),
     Worker(
         id="4",
+        team_id="0",
         name="yoko",
     ),
     Worker(
         id="5",
+        team_id="0",
         name="linda",
     ),
     Worker(
         id="6",
+        team_id="0",
         name="maureen",
     ),
     Worker(
         id="7",
+        team_id="0",
         name="pattie",
     ),
     Worker(
         id="8",
+        team_id="0",
         name="olivia",
     ),
     Worker(
         id="9",
+        team_id="0",
         name="barbara",
     ),
 ]

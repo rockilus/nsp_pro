@@ -46,3 +46,17 @@ async def permit_role_assignment_get_user_teams(user_id: str, role: str) -> List
     return [
         team_db.get_team_by_id(t.resource_instance.split(":")[1]) for t in team_permit
     ]
+
+
+async def permit_check(
+    user_id: str,
+    action: str,
+    resource: str,
+    resource_id: str | None = None,
+) -> bool:
+    resource_instance = f"{resource}:{resource_id}" if resource_id else resource
+    return await permit.check(
+        user=user_id,
+        action=action,
+        resource=resource_instance,
+    )

@@ -30,8 +30,6 @@ interface Props {
 }
 
 export default function Dashboard({ team }: Props) {
-  console.log("team", team);
-
   const [selectedTab, setSelectedTab] = React.useState<string>("workers");
   const [open, setOpen] = React.useState<boolean>(false);
 
@@ -84,11 +82,11 @@ export default function Dashboard({ team }: Props) {
 
   useEffect(() => {
     fetchShifts();
-    fetchWorkers();
-  }, [fetchShifts, fetchWorkers]);
+    fetchWorkers(team.id);
+  }, [fetchShifts, fetchWorkers, team.id]);
 
   const tabs: { [key: string]: JSX.Element } = {
-    workers: <WorkerTab />,
+    workers: <WorkerTab team={team} />,
     shifts: <ShiftTab />,
     coverages: <CoverageTab shifts={shiftDefaults} />,
     constraints: <ConstraintTab workers={workers} shifts={shifts} />,

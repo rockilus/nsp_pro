@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+// MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -13,17 +13,22 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-
-import { WorkerDimensionT } from "./types";
+// Stores
 import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
+// Types
+import { WorkerDimensionT } from "./types";
+import { TeamT } from "../../containers/types";
+// Constants
 import { PropertyTypes } from "../../utils/constants";
 
 interface Props {
+  team: TeamT;
   drawerOpen: boolean;
   toggleDrawer: () => void;
 }
 
 export default function AddWorkerDimensionDrawer({
+  team,
   drawerOpen,
   toggleDrawer,
 }: Props) {
@@ -39,6 +44,7 @@ export default function AddWorkerDimensionDrawer({
   const handleAddConfirm = () => {
     const newWorkerDimension: WorkerDimensionT = {
       id: "",
+      teamId: team.id,
       name: name,
       entryType: entryType,
       entryOptions: listOptions,

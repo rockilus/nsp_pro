@@ -14,12 +14,14 @@ class WorkerPropertyMessage(BaseModel):
 
 class WorkerMessage(BaseModel):
     id: str
+    teamId: str
     name: str
     workerProperties: List[WorkerPropertyMessage]
 
 
 class WorkerDimensionMessage(BaseModel):
     id: str
+    teamId: str
     name: str
     entryType: str
     entryOptions: List[str]
