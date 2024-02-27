@@ -1,13 +1,9 @@
-from core.team import Team
 from core.user import User
-from scripts.setup_database import team_db, user_db
+from scripts.setup_database import user_db
+from services.authorization.authz_services import permit_user_sync
 
 
-def user_sign_up(user_id: str, email: str) -> str:
-    user_db.create_user(
-        User(id=user_id, email=email, first_name="", last_name="", workers=[])
-    )
-    team = team_db.create_team(
-        Team(id="", team_members=[user_id], team_leaders=[user_id])
-    )
-    return str(team.id)
+async def create_user(user: User) -> User:
+    new_user = user_db.create_user(user)
+    await permit_user_sync(new_user)
+    return new_user

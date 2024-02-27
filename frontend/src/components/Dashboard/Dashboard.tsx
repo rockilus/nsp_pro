@@ -21,11 +21,17 @@ import { useWorkerStore } from "../../stores/workerStore";
 // Types
 import { ShiftDefaultT } from "../Shift/types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
+import { TeamT } from "../../containers/types";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
+interface Props {
+  team: TeamT;
+}
 
-export default function Dashboard() {
+export default function Dashboard({ team }: Props) {
+  console.log("team", team);
+
   const [selectedTab, setSelectedTab] = React.useState<string>("workers");
   const [open, setOpen] = React.useState<boolean>(false);
 

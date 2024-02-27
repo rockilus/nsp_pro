@@ -230,3 +230,10 @@ class User(BaseModel):
     username: str
     firstName: str
     lastName: str
+
+
+# Team
+class TeamMessage(BaseModel):
+    id: str
+    # team_members: List[str]
+    # team_leaders: List[str]
