@@ -2,45 +2,70 @@ from dataclasses import asdict
 from typing import List
 
 import humps
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.coverage import Coverage, ShiftDemand
 from core.shift import Shift
 from routes.api_model import CoverageMessage, ShiftDemandMessage
 from scripts.setup_database import coverage_db, shift_db, shift_demand_db
+from services.authentication.authn_services import authn_verify_session
+from services.authentication.authn_types import SessionContainerType
+from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
 
-@router.post("/coverages", status_code=201)
-def create_coverage(req: CoverageMessage) -> CoverageMessage:
-    data = api_msg_to_coverage(req)
-    cov = coverage_db.create_coverage(name=data.name)
-    shift_demands = shift_demand_db.get_shift_demands_by_coverage(cov)
+@router.post("/coverages/teams/{team_id}", status_code=201)
+async def create_coverage(
+    team_id: str,
+    coverage: CoverageMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> CoverageMessage:
+    if not await permit_check(
+        session.get_user_id(), "create-coverage", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to create a coverage",
+        )
+    c_data = api_msg_to_coverage(coverage)
+    c_created = coverage_db.create_coverage(c_data)
+    shift_demands = shift_demand_db.get_shift_demands_by_coverage(c_created)
     shifts = [shift_db.get_shift_by_id(sd.shift_id) for sd in shift_demands]
-    return coverage_and_shift_demands_to_api_msg(cov, shift_demands, shifts)
+    return coverage_and_shift_demands_to_api_msg(c_created, shift_demands, shifts)
 
 
-@router.post("/coverages/{coverage_id}/shift_demands", status_code=201)
-def create_shift_demand(
-    coverage_id: str,
-    req: ShiftDemandMessage,
+@router.post("/coverages/{coverage_id}/shift_demands/teams/{team_id}", status_code=201)
+async def create_shift_demand(
+    team_id: str,
+    shift_demand: ShiftDemandMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ShiftDemandMessage:
-    data = api_msg_to_shift_demand(req)
-    shift = shift_db.get_shift_by_id(data.shift_id)
-    coverage = coverage_db.get_coverage_by_id(coverage_id)
-    shift_demand = shift_demand_db.create_shift_demand(
-        day_index=data.day_index,
-        shift=shift,
-        coverage=coverage,
-    )
-    return shift_demand_and_shift_to_api_msg(shift_demand, shift)
+    if not await permit_check(
+        session.get_user_id(), "create-shift-demand", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to create a shift demand",
+        )
+    sd_data = api_msg_to_shift_demand(shift_demand)
+    shift = shift_db.get_shift_by_id(sd_data.shift_id)
+    sd_created = shift_demand_db.create_shift_demand(sd_data)
+    return shift_demand_and_shift_to_api_msg(sd_created, shift)
 
 
-@router.get("/coverages")
-def get_coverages() -> List[CoverageMessage]:
-    coverages = coverage_db.get_coverages()
+@router.get("/coverages/teams/{team_id}")
+async def get_coverages(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> List[CoverageMessage]:
+    if not await permit_check(session.get_user_id(), "read-coverages", "team", team_id):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to get coverages",
+        )
+    coverages = coverage_db.get_coverages(team_id)
     shift_demands = [
         shift_demand_db.get_shift_demands_by_coverage(coverage)
         for coverage in coverages
@@ -54,8 +79,20 @@ def get_coverages() -> List[CoverageMessage]:
     ]
 
 
-@router.put("/coverages/{coverage_id}")
-def update_coverage(coverage_id: str, updated_coverage: CoverageMessage):
+@router.put("/coverages/{coverage_id}/teams/{team_id}")
+async def update_coverage(
+    coverage_id: str,
+    team_id: str,
+    updated_coverage: CoverageMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
+):
+    if not await permit_check(
+        session.get_user_id(), "update-coverage", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to update a coverage",
+        )
     existing_cov = coverage_db.get_coverage_by_id(coverage_id)
     if not existing_cov:
         raise HTTPException(status_code=404, detail="Coverage does not exist")
@@ -66,11 +103,20 @@ def update_coverage(coverage_id: str, updated_coverage: CoverageMessage):
     return coverage_and_shift_demands_to_api_msg(cov, shift_demands, shifts)
 
 
-@router.put("/coverages/{coverage_id}/shift_demands/{shift_demand_id}")
-def update_shift_demand(
+@router.put("/coverages/{coverage_id}/shift_demands/{shift_demand_id}/teams/{team_id}")
+async def update_shift_demand(
     shift_demand_id: str,
+    team_id: str,
     req: ShiftDemandMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ShiftDemandMessage:
+    if not await permit_check(
+        session.get_user_id(), "update-shift-demand", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to update a shift demand",
+        )
     existing_sd = shift_demand_db.get_shift_demand_by_id(shift_demand_id)
     if not existing_sd:
         raise HTTPException(status_code=404, detail="Shift demand does not exist")
@@ -80,15 +126,39 @@ def update_shift_demand(
     return shift_demand_and_shift_to_api_msg(shift_demand, shift)
 
 
-@router.delete("/coverages/{coverage_id}")
-def delete_coverage(coverage_id: str):
+@router.delete("/coverages/{coverage_id}/teams/{team_id}")
+async def delete_coverage(
+    coverage_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+):
+    if not await permit_check(
+        session.get_user_id(), "delete-coverage", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to delete a coverage",
+        )
     shift_demand_db.delete_shift_demands_by_coverage_id(coverage_id)
     coverage_db.delete_coverage(coverage_id)
     return {"message": "Coverage deleted successfully"}
 
 
-@router.delete("/coverages/{coverage_id}/shift_demands/{shift_demand_id}")
-def delete_shift_demand(shift_demand_id: str):
+@router.delete(
+    "/coverages/{coverage_id}/shift_demands/{shift_demand_id}/teams/{team_id}"
+)
+async def delete_shift_demand(
+    shift_demand_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+):
+    if not await permit_check(
+        session.get_user_id(), "delete-shift-demand", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to delete a shift demand",
+        )
     shift_demand_db.delete_shift_demand(shift_demand_id)
     return {"message": "Shift demand deleted successfully"}
 

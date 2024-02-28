@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import dayjs from "dayjs";
-
+// MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -17,12 +17,18 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-
+// Stores
 import { useCoverageSelectorStore } from "../../stores/coverageSelectorStore";
 import { useCoverageStore } from "../../stores/coverageStore";
+// Types
 import { CoverageSelectorT } from "./types";
+import { TeamT } from "../../containers/types";
 
-export default function CoverageSelectorTab() {
+interface Props {
+  team: TeamT;
+}
+
+export default function CoverageSelectorTab({ team }: Props) {
   const columns = useMemo(() => ["Start date", "End date", "Coverage"], []);
 
   const coverageSelectors = useCoverageSelectorStore(
@@ -49,8 +55,8 @@ export default function CoverageSelectorTab() {
   }, [fetchCoverageSelectors]);
 
   useEffect(() => {
-    fetchCoverages();
-  }, [fetchCoverages]);
+    fetchCoverages(team.id);
+  }, [fetchCoverages, team.id]);
 
   // Rows
 

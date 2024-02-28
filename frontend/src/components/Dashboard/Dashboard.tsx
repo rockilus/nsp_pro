@@ -88,10 +88,10 @@ export default function Dashboard({ team }: Props) {
   const tabs: { [key: string]: JSX.Element } = {
     workers: <WorkerTab team={team} />,
     shifts: <ShiftTab team={team} />,
-    coverages: <CoverageTab shifts={shiftDefaults} />,
+    coverages: <CoverageTab team={team} shifts={shiftDefaults} />,
     constraints: <ConstraintTab workers={workers} shifts={shifts} />,
     requests: <FARTab workers={workersIdName} shifts={shiftsIdName} />,
-    coverageSelector: <CoverageSelectorTab />,
+    coverageSelector: <CoverageSelectorTab team={team} />,
     schedule: <ScheduleTab workers={workersIdName} shifts={shiftsIdName} />,
     stats: <StatsTab workers={workersIdName} shifts={shiftsIdName} />,
   };

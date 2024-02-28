@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-
+// Components
 import CoverageCalendar from "./CoverageCalendar";
 import CoverageOptions from "./CoverageOptions";
-
+// Stores
+import { useCoverageStore } from "../../stores/coverageStore";
+// Types
 import { CoverageT } from "./types";
 import { ShiftDefaultT } from "../Shift/types";
-import { useCoverageStore } from "../../stores/coverageStore";
+import { TeamT } from "../../containers/types";
 
 type Props = {
+  team: TeamT;
   shifts: ShiftDefaultT[];
 };
 
-export default function CoverageTab({ shifts }: Props) {
+export default function CoverageTab({ team, shifts }: Props) {
   // remote interactions via stores
   const coverages = useCoverageStore((state) => state.coverages);
   const fetchCoverages = useCoverageStore((state) => state.fetchCoverages);
@@ -30,8 +33,8 @@ export default function CoverageTab({ shifts }: Props) {
 
   // Fetch coverages from the API on mount
   useEffect(() => {
-    fetchCoverages();
-  }, [fetchCoverages]);
+    fetchCoverages(team.id);
+  }, [fetchCoverages, team.id]);
 
   // handlers for callbacks
   const handleUpdateCoverage = async (updatedCoverage: CoverageT) => {
@@ -41,7 +44,8 @@ export default function CoverageTab({ shifts }: Props) {
 
   const handleAddCoverage = async () => {
     const templateCoverage: CoverageT = {
-      id: `id-${Date.now()}`, // Temporary unique ID, replace with real ID from the backend if needed
+      id: `id-${Date.now()}`,
+      teamId: team.id,
       name: "New coverage",
       shiftDemands: [],
     };
@@ -56,7 +60,7 @@ export default function CoverageTab({ shifts }: Props) {
   };
 
   const handleDeleteCoverage = (coverageId: string) => {
-    deleteCoverage(coverageId);
+    deleteCoverage(coverageId, team.id);
     setSelectedCoverage(undefined);
     setEditingName(false);
   };
@@ -79,6 +83,7 @@ export default function CoverageTab({ shifts }: Props) {
           handleDeleteCoverage={handleDeleteCoverage}
         />
         <CoverageCalendar
+          team={team}
           coverageId={selectedCoverage?.id || ""}
           shiftDemands={
             selectedCoverage

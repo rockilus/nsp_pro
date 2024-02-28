@@ -9,6 +9,7 @@ export type ShiftDemandT = {
 
 export type CoverageT = {
   id: string;
+  teamId: string;
   name: string;
   shiftDemands: ShiftDemandT[];
 };

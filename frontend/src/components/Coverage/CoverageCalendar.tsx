@@ -1,7 +1,12 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-
+// Components
 import WeekViewTable from "./WeekViewTable";
 import CoveragesOverlay from "./CoveragesOverlay";
+// Types
+import { ShiftDemandT, ColOverlayT, SDOverlayT } from "./types";
+import { ShiftDefaultT } from "../Shift/types";
+import { TeamT } from "../../containers/types";
+// Constants
 import {
   WeekDays,
   CovTimeColWidth,
@@ -10,16 +15,16 @@ import {
   CovBodyRowHeight,
   CovBorderThick,
 } from "../../utils/constants";
-import { ShiftDemandT, ColOverlayT, SDOverlayT } from "./types";
-import { ShiftDefaultT } from "../Shift/types";
 
 interface Props {
+  team: TeamT;
   coverageId: string;
   shiftDemands: ShiftDemandT[];
   shifts: ShiftDefaultT[];
 }
 
 export default function CoverageCalendar({
+  team,
   coverageId,
   shiftDemands,
   shifts,
@@ -165,6 +170,7 @@ export default function CoverageCalendar({
     <div style={{ position: "relative", width: "100%" }} ref={tableRef}>
       <WeekViewTable dayColWidth={dayColWidth} />
       <CoveragesOverlay
+        team={team}
         coverageId={coverageId}
         colOverlays={colOverlays}
         shifts={shifts}

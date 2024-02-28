@@ -54,7 +54,6 @@ class ShiftMessage(BaseModel):
 
 class ShiftDefaultMessage(BaseModel):
     id: str
-    teamId: str
     name: str
     startTime: datetime
     endTime: datetime
@@ -84,13 +83,9 @@ class ShiftDemandMessage(BaseModel):
     coverageId: str
 
 
-class CreateCoverageRequest(BaseModel):
-    name: str
-    shiftDemands: List[ShiftDemandMessage]
-
-
 class CoverageMessage(BaseModel):
     id: str
+    teamId: str
     name: str
     shiftDemands: List[ShiftDemandMessage]
 

@@ -3,10 +3,7 @@ from typing import List
 from bson import ObjectId
 
 from core.coverage import Coverage, ShiftDemand
-from core.shift import Shift
-from database.coverage_db import to_mongo_coverage
 from database.db import DB
-from database.shift_db import to_mongo_shift
 from models.coverage import Coverage as CoverageDocument
 from models.shift import Shift as ShiftDocument
 from models.shift_demand import ShiftDemand as ShiftDemandDocument
@@ -16,25 +13,16 @@ class ShiftDemandDB:
     def __init__(self, db: DB):
         self.db = db
 
-    def create_shift_demand(
-        self,
-        day_index: int,
-        shift: Shift,
-        coverage: Coverage,
-    ) -> ShiftDemand:
-        shift_demand = ShiftDemandDocument(
+    def create_shift_demand(self, shift_demand: ShiftDemand) -> ShiftDemand:
+        sd_data = _to_mongo_shift_demand(shift_demand)
+        sd_doc = ShiftDemandDocument(
             id=str(ObjectId()),
-            day_index=day_index,
-            shift=to_mongo_shift(shift),
-            coverage=to_mongo_coverage(coverage),
+            day_index=sd_data.day_index,
+            shift=sd_data.shift,
+            coverage=sd_data.coverage,
         )
-        shift_demand_saved = shift_demand.save()
-        return _from_mongo_shift_demand(shift_demand_saved)
-
-    def get_shift_demands(self) -> List[ShiftDemand]:
-        # pylint: disable=no-member
-        shift_demands = ShiftDemandDocument.objects.all()  # type: ignore
-        return [_from_mongo_shift_demand(sd) for sd in list(shift_demands)]
+        sd_saved = sd_doc.save()
+        return _from_mongo_shift_demand(sd_saved)
 
     def get_shift_demand_by_id(self, shift_demand_id: str) -> ShiftDemand:
         # pylint: disable=no-member
@@ -43,10 +31,7 @@ class ShiftDemandDB:
         )
         return _from_mongo_shift_demand(shift_demand)
 
-    def get_shift_demands_by_coverage(
-        self,
-        coverage: Coverage,
-    ) -> List[ShiftDemand]:
+    def get_shift_demands_by_coverage(self, coverage: Coverage) -> List[ShiftDemand]:
         # pylint: disable=no-member
         shift_demands = ShiftDemandDocument.objects.filter(  # type: ignore
             coverage=coverage.id
@@ -63,9 +48,9 @@ class ShiftDemandDB:
         return [_from_mongo_shift_demand(sd) for sd in list(shift_demands)]
 
     def update_shift_demand(self, shift_demand: ShiftDemand) -> ShiftDemand:
-        document = _to_mongo_shift_demand(shift_demand)
-        document_saved = document.save()
-        return _from_mongo_shift_demand(document_saved)
+        sd_doc = _to_mongo_shift_demand(shift_demand)
+        sd_saved = sd_doc.save()
+        return _from_mongo_shift_demand(sd_saved)
 
     def delete_shift_demand(self, shift_demand_id: str) -> None:
         # pylint: disable=no-member

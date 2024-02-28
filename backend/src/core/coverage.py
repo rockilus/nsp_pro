@@ -17,6 +17,7 @@ class ShiftDemand:
 @dataclass
 class Coverage:
     id: str
+    team_id: str
     name: str
 
 
