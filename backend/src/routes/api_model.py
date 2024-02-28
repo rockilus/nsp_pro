@@ -92,6 +92,7 @@ class CoverageMessage(BaseModel):
 
 class CoverageSelectorMessage(BaseModel):
     id: str
+    teamId: str
     coverageId: str
     startDate: date
     endDate: date

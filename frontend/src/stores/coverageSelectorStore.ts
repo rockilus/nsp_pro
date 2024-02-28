@@ -7,12 +7,12 @@ const apiUrlCoverageSelectors = `${baseApiUrl}/coverage-selectors`;
 
 type CoverageSelectorStateT = {
   coverageSelectors: CoverageSelectorT[];
-  fetchCoverageSelectors: () => void;
+  fetchCoverageSelectors: (teamId: string) => void;
   addCoverageSelector: (
     coverageSelector: CoverageSelectorT
   ) => Promise<CoverageSelectorT>;
   updateCoverageSelector: (updatedCoverageSelector: CoverageSelectorT) => void;
-  deleteCoverageSelector: (id: string) => void;
+  deleteCoverageSelector: (coverageSelectorId: string, teamId: string) => void;
 };
 
 const toCoverageSelectorT = (data: any) => {
@@ -28,9 +28,16 @@ export const useCoverageSelectorStore = create<CoverageSelectorStateT>()(
   (set) => ({
     coverageSelectors: [],
 
-    fetchCoverageSelectors: async () => {
+    fetchCoverageSelectors: async (teamId) => {
       try {
-        const response = await fetch(apiUrlCoverageSelectors); // Adjust API endpoint as needed
+        const response = await fetch(
+          `${apiUrlCoverageSelectors}/teams/${teamId}`
+        );
+        if (!response.ok) {
+          throw Error(
+            `Failed to fetch coverageSelectors: ${response.statusText}`
+          );
+        }
         const data = await response.json();
         const coverageSelectors = data.map(toCoverageSelectorT);
         set({ coverageSelectors });
@@ -41,13 +48,19 @@ export const useCoverageSelectorStore = create<CoverageSelectorStateT>()(
 
     addCoverageSelector: async (coverageSelector) => {
       try {
-        const response = await fetch(apiUrlCoverageSelectors, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(coverageSelector),
-        });
+        const response = await fetch(
+          `${apiUrlCoverageSelectors}/teams/${coverageSelector.teamId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(coverageSelector),
+          }
+        );
+        if (!response.ok) {
+          throw Error(`Failed to add coverageSelector: ${response.statusText}`);
+        }
         const data = await response.json();
         const newCoverageSelector = toCoverageSelectorT(data);
         set((state) => ({
@@ -62,7 +75,7 @@ export const useCoverageSelectorStore = create<CoverageSelectorStateT>()(
     updateCoverageSelector: async (updatedCoverageSelector) => {
       try {
         const response = await fetch(
-          `${apiUrlCoverageSelectors}/${updatedCoverageSelector.id}`,
+          `${apiUrlCoverageSelectors}/${updatedCoverageSelector.id}/teams/${updatedCoverageSelector.teamId}`,
           {
             method: "PUT",
             headers: {
@@ -71,6 +84,11 @@ export const useCoverageSelectorStore = create<CoverageSelectorStateT>()(
             body: JSON.stringify(updatedCoverageSelector),
           }
         );
+        if (!response.ok) {
+          throw Error(
+            `Failed to update coverageSelector: ${response.statusText}`
+          );
+        }
         const data = await response.json();
         const newCoverageSelector = toCoverageSelectorT(data);
         set((state) => ({
@@ -83,13 +101,23 @@ export const useCoverageSelectorStore = create<CoverageSelectorStateT>()(
       }
     },
 
-    deleteCoverageSelector: async (id) => {
+    deleteCoverageSelector: async (coverageSelectorId, teamId) => {
       try {
-        await fetch(`${apiUrlCoverageSelectors}/${id}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(
+          `${apiUrlCoverageSelectors}/${coverageSelectorId}/teams/${teamId}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (!response.ok) {
+          throw Error(
+            `Failed to delete coverageSelector: ${response.statusText}`
+          );
+        }
         set((state) => ({
-          coverageSelectors: state.coverageSelectors.filter((c) => c.id !== id),
+          coverageSelectors: state.coverageSelectors.filter(
+            (c) => c.id !== coverageSelectorId
+          ),
         }));
       } catch (error) {
         console.error("Failed to delete coverageSelector:", error);

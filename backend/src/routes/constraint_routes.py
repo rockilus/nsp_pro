@@ -54,7 +54,7 @@ async def get_constraints(
             status_code=403,
             detail="You do not have permission to get constraints",
         )
-    constraint_builds = constraint_build_db.get_constraint_builds()
+    constraint_builds = constraint_build_db.get_constraint_builds(team_id)
     return [constraint_build_to_api_msg(cb) for cb in constraint_builds]
 
 

@@ -24,6 +24,7 @@ class Coverage:
 @dataclass
 class CoverageSelector:
     id: str
+    team_id: str
     coverage_id: str
     start_date: date
     end_date: date

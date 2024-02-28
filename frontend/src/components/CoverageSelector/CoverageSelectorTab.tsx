@@ -51,8 +51,8 @@ export default function CoverageSelectorTab({ team }: Props) {
   const fetchCoverages = useCoverageStore((state) => state.fetchCoverages);
 
   useEffect(() => {
-    fetchCoverageSelectors();
-  }, [fetchCoverageSelectors]);
+    fetchCoverageSelectors(team.id);
+  }, [fetchCoverageSelectors, team.id]);
 
   useEffect(() => {
     fetchCoverages(team.id);
@@ -69,6 +69,7 @@ export default function CoverageSelectorTab({ team }: Props) {
   const handleAddCoverageSelector = async () => {
     const newCoverageSelector: CoverageSelectorT = {
       id: "",
+      teamId: team.id,
       startDate: dateToTimeZero(new Date()),
       endDate: dateToTimeZero(new Date()),
       coverageId: "",
@@ -76,7 +77,7 @@ export default function CoverageSelectorTab({ team }: Props) {
     await addCoverageSelector(newCoverageSelector);
   };
 
-  const handleUpdateCoverageId = async (
+  const handleUpdateCoverageId = (
     event: SelectChangeEvent,
     coverageSelector: CoverageSelectorT
   ) => {
@@ -84,17 +85,17 @@ export default function CoverageSelectorTab({ team }: Props) {
       ...coverageSelector,
       coverageId: event.target.value as string,
     };
-    await updateCoverageSelector(updatedCoverageSelector);
+    updateCoverageSelector(updatedCoverageSelector);
   };
 
-  const handleUpdateCoverageSelector = async (
+  const handleUpdateCoverageSelector = (
     updatedCoverageSelector: CoverageSelectorT
   ) => {
-    await updateCoverageSelector(updatedCoverageSelector);
+    updateCoverageSelector(updatedCoverageSelector);
   };
 
-  const handleDeleteCoverageSelector = async (rowId: string) => {
-    await deleteCoverageSelector(rowId);
+  const handleDeleteCoverageSelector = (rowId: string) => {
+    deleteCoverageSelector(rowId, team.id);
   };
 
   const selectCoverage = (coverageSelector: CoverageSelectorT) => {

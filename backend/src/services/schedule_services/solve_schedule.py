@@ -37,7 +37,7 @@ def solve_schedule(
     shifts = shift_db.get_shifts(team_id="TO_REPLACE")
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
-    cstr_builds = constraint_build_db.get_constraint_builds_active()
+    cstr_builds = constraint_build_db.get_constraint_builds_active(team_id="TO_REPLACE")
     constraints = setup_constraints(
         workers,
         shifts,
@@ -47,7 +47,7 @@ def solve_schedule(
         cstr_builds,
     )
     coverage_selectors = coverage_selector_db.get_coverage_selector_by_dates(
-        schedule.start_date, schedule.end_date
+        schedule.start_date, schedule.end_date, team_id="TO_REPLACE"
     )
     shift_demands = setup_shift_demands(coverage_selectors)
     fixed_assignments = fixed_assignment_db.get_fixed_assignments_by_dates(

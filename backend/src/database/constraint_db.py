@@ -27,16 +27,12 @@ class ConstraintDB:
         constraint_saved = constraint_doc.save()
         return _from_mongo_constraint(constraint_saved)
 
-    def get_constraints(
-        self,
-    ) -> List[Constraint]:
+    def get_constraints(self) -> List[Constraint]:
         # pylint: disable=no-member
         constraints = ConstraintDocument.objects.all()  # type: ignore
         return [_from_mongo_constraint(c) for c in list(constraints)]
 
-    def get_constraints_active(
-        self,
-    ) -> List[Constraint]:
+    def get_constraints_active(self) -> List[Constraint]:
         # pylint: disable=no-member
         constraints = ConstraintDocument.objects.filter(active=True)  # type: ignore
         return [_from_mongo_constraint(c) for c in list(constraints)]
@@ -54,10 +50,7 @@ class ConstraintDB:
         return [_from_mongo_constraint(c) for c in list(constraints)]
 
     # pyling: disable=too-many-arguments
-    def update_constraint(
-        self,
-        constraint: Constraint,
-    ) -> Constraint:
+    def update_constraint(self, constraint: Constraint) -> Constraint:
         constraint_doc = to_mongo_constraint(constraint)
         constraint_saved = constraint_doc.save()
         return _from_mongo_constraint(constraint_saved)
