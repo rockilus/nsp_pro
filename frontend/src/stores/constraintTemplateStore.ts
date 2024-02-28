@@ -7,14 +7,14 @@ const apiUrlConstraints = baseApiUrl + "/constraint-templates";
 
 type ConstraintTemplateStateT = {
   constraintTemplates: TemplateT[];
-  fetchConstraintTemplates: () => void;
+  fetchConstraintTemplates: (teamId: string) => void;
 };
 
 export const useConstraintTemplateStore = create<ConstraintTemplateStateT>()(
   (set) => ({
     constraintTemplates: [],
 
-    fetchConstraintTemplates: async () => {
+    fetchConstraintTemplates: async (teamId) => {
       const options: RequestInit = {
         method: "GET",
         credentials: "include" as RequestCredentials,
@@ -23,7 +23,15 @@ export const useConstraintTemplateStore = create<ConstraintTemplateStateT>()(
         },
       };
       try {
-        const response = await fetch(`${apiUrlConstraints}`, options); // Adjust API endpoint as needed
+        const response = await fetch(
+          `${apiUrlConstraints}/teams/${teamId}`,
+          options
+        );
+        if (!response.ok) {
+          throw Error(
+            `Failed to fetch constraint templates: ${response.statusText}`
+          );
+        }
         const constraintTemplates: TemplateT[] = await response.json();
         set({ constraintTemplates });
       } catch (error) {

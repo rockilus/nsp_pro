@@ -1,5 +1,6 @@
 export type ConstraintT = {
   id: string;
+  teamId: string;
   constraintType: string;
   templateId: string;
   blocks: BlockT[];

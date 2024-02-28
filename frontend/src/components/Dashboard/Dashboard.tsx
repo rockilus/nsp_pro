@@ -89,7 +89,7 @@ export default function Dashboard({ team }: Props) {
     workers: <WorkerTab team={team} />,
     shifts: <ShiftTab team={team} />,
     coverages: <CoverageTab team={team} shifts={shiftDefaults} />,
-    constraints: <ConstraintTab workers={workers} shifts={shifts} />,
+    constraints: <ConstraintTab team={team} />,
     requests: <FARTab workers={workersIdName} shifts={shiftsIdName} />,
     coverageSelector: <CoverageSelectorTab team={team} />,
     schedule: <ScheduleTab workers={workersIdName} shifts={shiftsIdName} />,

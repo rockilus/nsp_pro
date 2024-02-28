@@ -1,14 +1,17 @@
 import React, { useState } from "react";
-
+// Components
 import ConstraintEdit from "./ConstraintEdit";
 import TemplateList from "./TemplateList";
+// Types
 import { TemplateT } from "./types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   constraintTemplates: TemplateT[];
 }
 
-export default function NewConstraint({ constraintTemplates }: Props) {
+export default function NewConstraint({ team, constraintTemplates }: Props) {
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateT | null>(
     null
   );
@@ -23,6 +26,7 @@ export default function NewConstraint({ constraintTemplates }: Props) {
         <ConstraintEdit
           constraint={{
             id: "",
+            teamId: team.id,
             constraintType: selectedTemplate.constraintType,
             templateId: selectedTemplate.id,
             blocks: [],

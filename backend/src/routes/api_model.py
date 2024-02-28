@@ -130,6 +130,7 @@ class MissingPropertyMessage(BaseModel):
 
 class ConstraintBuildMessage(BaseModel):
     id: str
+    teamId: str
     constraintType: str
     templateId: str
     blocks: List[BlockMessage]

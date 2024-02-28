@@ -1,5 +1,5 @@
 import React from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import ClearIcon from "@mui/icons-material/Clear";
 import EditIcon from "@mui/icons-material/Edit";
@@ -7,23 +7,29 @@ import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
 import ToggleButton from "@mui/material/ToggleButton";
 import Typography from "@mui/material/Typography";
-
+// Components
 import ConstraintButton from "./ConstraintButton";
-import { ConstraintT, TemplateT } from "./types";
+// Stores
 import { useConstraintStore } from "../../stores/constraintStore";
+// Types
+import { ConstraintT, TemplateT } from "./types";
+// Constants
 import {
   ConstraintColorActiveBack,
   ConstraintColorInactiveBack,
   ConstraintColorActiveText,
   ConstraintColorInactiveText,
 } from "../../utils/constants";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   constraint: ConstraintT;
   constraintTemplate: TemplateT | null;
 }
 
 export default function ConstraintListItem({
+  team,
   constraint,
   constraintTemplate,
 }: Props) {
@@ -35,7 +41,7 @@ export default function ConstraintListItem({
   );
 
   const handleDelete = async () => {
-    await deleteConstraint(constraint.id);
+    await deleteConstraint(constraint.id, team.id);
   };
 
   const handleToggleHard = () => {

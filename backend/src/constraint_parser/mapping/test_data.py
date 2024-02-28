@@ -189,6 +189,7 @@ test_data = [
         "text": "John should work at most 2 consecutive off.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="seq",
             template_id="0",
             blocks=[
@@ -247,6 +248,7 @@ test_data = [
         "text": "All workers should work at most 2 consecutive all shifts.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="seq",
             template_id="0",
             blocks=[
@@ -303,6 +305,7 @@ test_data = [
         "text": "60+ should work at most 2 consecutive not duty.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="seq",
             template_id="0",
             blocks=[
@@ -373,6 +376,7 @@ test_data = [
         "text": "Surgeon should work at most 2 consecutive unit 1.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="seq",
             template_id="0",
             blocks=[
@@ -443,6 +447,7 @@ test_data = [
         "text": "John should work at least 1 off per week.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="sum",
             template_id="1",
             blocks=[
@@ -501,6 +506,7 @@ test_data = [
         "text": "No night 1 day after afternoon for john.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="ord",
             template_id="2",
             blocks=[
@@ -564,6 +570,7 @@ test_data = [
         "text": "If night then off 1 day after for john.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="ord",
             template_id="3",
             blocks=[
@@ -628,6 +635,7 @@ test_data = [
         "text": "If morning on saturday then off 2 day after for john.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="ord",
             template_id="4",
             blocks=[
@@ -694,6 +702,7 @@ test_data = [
         "text": "If morning on saturday then off 2 day before for john.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="ord",
             template_id="4",
             blocks=[
@@ -761,6 +770,7 @@ test_data = [
         "text": "John should only work night.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="fil",
             template_id="5",
             blocks=[
@@ -816,6 +826,7 @@ test_data = [
         "text": "John should not work night.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="fil",
             template_id="5",
             blocks=[
@@ -872,6 +883,7 @@ test_data = [
         "text": "Night on sunday should be evenly spread in time for John.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="eve",
             template_id="6",
             blocks=[
@@ -933,6 +945,7 @@ test_data = [
         "text": "Night on sunday should be fairly spread across all workers.",
         "in": ConstraintBuild(
             id="",
+            team_id="0",
             constraint_type="fai",
             template_id="7",
             blocks=[

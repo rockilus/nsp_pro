@@ -1,17 +1,21 @@
 import * as React from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
-
+// Components
 import ConstraintListItem from "./ConstraintListItem";
+// Types
 import { ConstraintT, TemplateT } from "./types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   constraints: ConstraintT[];
   constraintTemplates: TemplateT[];
 }
 
 export default function ConstraintList({
+  team,
   constraints,
   constraintTemplates,
 }: Props) {
@@ -26,6 +30,7 @@ export default function ConstraintList({
         {constraints.map((constraint) => (
           <ConstraintListItem
             key={constraint.id}
+            team={team}
             constraint={constraint}
             constraintTemplate={findTemplateById(constraint.templateId)}
           />

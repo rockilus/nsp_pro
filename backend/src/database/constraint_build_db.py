@@ -7,6 +7,7 @@ from database.db import DB
 from models import Block as BlockDocument
 from models import ConstraintBuild as ConstraintBuildDocument
 from models import MissingProperty as MissingPropertyDocument
+from models import Team as TeamDocument
 
 
 class ConstraintBuildDB:
@@ -16,18 +17,20 @@ class ConstraintBuildDB:
     def create_constraint_build(
         self, constraint_build: ConstraintBuild
     ) -> ConstraintBuild:
+        cb_data = to_mongo_constraint_build(constraint_build)
         cb_doc = ConstraintBuildDocument(
             id=str(ObjectId()),
-            constraint_type=constraint_build.constraint_type,
-            template_id=constraint_build.template_id,
-            blocks=[to_mongo_block(b) for b in constraint_build.blocks],
-            text=constraint_build.text,
-            hard=constraint_build.hard,
-            priority=constraint_build.priority,
-            active=constraint_build.active,
+            team=cb_data.team,
+            constraint_type=cb_data.constraint_type,
+            template_id=cb_data.template_id,
+            blocks=[to_mongo_block(b) for b in cb_data.blocks],
+            text=cb_data.text,
+            hard=cb_data.hard,
+            priority=cb_data.priority,
+            active=cb_data.active,
         )
-        cb_doc_saved = cb_doc.save()
-        return _from_mongo_constraint_build(cb_doc_saved)
+        cb_saved = cb_doc.save()
+        return _from_mongo_constraint_build(cb_saved)
 
     def get_constraint_builds(self) -> List[ConstraintBuild]:
         # pylint: disable=no-member
@@ -170,8 +173,11 @@ def _from_mongo_missing_property(
 def to_mongo_constraint_build(
     dataclass_obj: ConstraintBuild,
 ) -> ConstraintBuildDocument:
+    # pylint: disable=no-member
+    team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
     return ConstraintBuildDocument(
         id=dataclass_obj.id,
+        team=team,
         constraint_type=dataclass_obj.constraint_type,
         template_id=dataclass_obj.template_id,
         blocks=[to_mongo_block(b) for b in dataclass_obj.blocks],
@@ -190,6 +196,7 @@ def _from_mongo_constraint_build(
 ) -> ConstraintBuild:
     return ConstraintBuild(
         id=doc_obj.id,
+        team_id=doc_obj.team.id,
         constraint_type=doc_obj.constraint_type,  # type: ignore
         template_id=doc_obj.template_id,
         blocks=[_from_mongo_block(b) for b in doc_obj.blocks],
