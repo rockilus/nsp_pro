@@ -57,12 +57,12 @@ def build_worker_options() -> Dict:
 
 
 def build_shift_options() -> Dict:
-    shifts = shift_db.get_shifts()
+    shifts = shift_db.get_shifts(team_id="TO_REPLACE")
     shift_options = {
         "all": [{"name": "all shifts", "id": "", "id_type": ""}],
         "shifts": [{"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts],
     }
-    shift_dimensions = shift_dimension_db.get_shift_dimensions()
+    shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id="TO_REPLACE")
     for shift_dimension in shift_dimensions:
         shift_properties = shift_property_db.get_shift_properties_by_shift_dimension(
             shift_dimension

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+// MUI
 import AbcIcon from "@mui/icons-material/Abc";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -9,16 +9,20 @@ import Menu from "@mui/material/Menu";
 import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
 import Typography from "@mui/material/Typography";
-
+// Components
 import UpdateShiftDimension from "./UpdateShiftDimension";
-import { ShiftDimensionT } from "./types";
+// Stores
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
+//Types
+import { ShiftDimensionT } from "./types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   shiftDimension: ShiftDimensionT;
 }
 
-export default function ShiftDimensionCell({ shiftDimension }: Props) {
+export default function ShiftDimensionCell({ team, shiftDimension }: Props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [nameState, setNameState] = useState(shiftDimension.name);
   const [entryOptionsState, setEntryOptionsState] = useState(
@@ -53,6 +57,7 @@ export default function ShiftDimensionCell({ shiftDimension }: Props) {
     ) {
       const updatedSD: ShiftDimensionT = {
         id: shiftDimension.id,
+        teamId: shiftDimension.teamId,
         name: nameState,
         entryType: shiftDimension.entryType,
         entryOptions: entryOptionsState,
@@ -116,6 +121,7 @@ export default function ShiftDimensionCell({ shiftDimension }: Props) {
         }}
       >
         <UpdateShiftDimension
+          team={team}
           shiftDimensionId={shiftDimension.id}
           name={nameState}
           entryType={shiftDimension.entryType}

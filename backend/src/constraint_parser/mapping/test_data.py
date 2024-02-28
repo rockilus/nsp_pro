@@ -15,6 +15,7 @@ from core.worker import Worker
 shifts = [
     Shift(
         id="0",
+        team_id="0",
         name="off",
         start_time=datetime.strptime("00:00", "%H:%M"),
         end_time=datetime.strptime("00:00", "%H:%M"),
@@ -24,6 +25,7 @@ shifts = [
     ),
     Shift(
         id="1",
+        team_id="0",
         name="morning",
         start_time=datetime.strptime("08:00", "%H:%M"),
         end_time=datetime.strptime("16:00", "%H:%M"),
@@ -33,6 +35,7 @@ shifts = [
     ),
     Shift(
         id="2",
+        team_id="0",
         name="afternoon",
         start_time=datetime.strptime("16:00", "%H:%M"),
         end_time=datetime.strptime("00:00", "%H:%M"),
@@ -42,6 +45,7 @@ shifts = [
     ),
     Shift(
         id="3",
+        team_id="0",
         name="night",
         start_time=datetime.strptime("00:00", "%H:%M"),
         end_time=datetime.strptime("08:00", "%H:%M"),
@@ -51,6 +55,7 @@ shifts = [
     ),
     Shift(
         id="4",
+        team_id="0",
         name="maternity",
         start_time=datetime.strptime("00:00", "%H:%M"),
         end_time=datetime.strptime("00:00", "%H:%M"),
@@ -60,6 +65,7 @@ shifts = [
     ),
     Shift(
         id="5",
+        team_id="0",
         name="consultation",
         start_time=datetime.strptime("08:00", "%H:%M"),
         end_time=datetime.strptime("16:00", "%H:%M"),
@@ -69,6 +75,7 @@ shifts = [
     ),
     Shift(
         id="6",
+        team_id="0",
         name="emergency",
         start_time=datetime.strptime("16:00", "%H:%M"),
         end_time=datetime.strptime("00:00", "%H:%M"),
@@ -78,6 +85,7 @@ shifts = [
     ),
     Shift(
         id="7",
+        team_id="0",
         name="morning consultation",
         start_time=datetime.strptime("00:00", "%H:%M"),
         end_time=datetime.strptime("00:00", "%H:%M"),

@@ -81,13 +81,13 @@ export default function Dashboard({ team }: Props) {
     : [];
 
   useEffect(() => {
-    fetchShifts();
+    fetchShifts(team.id);
     fetchWorkers(team.id);
   }, [fetchShifts, fetchWorkers, team.id]);
 
   const tabs: { [key: string]: JSX.Element } = {
     workers: <WorkerTab team={team} />,
-    shifts: <ShiftTab />,
+    shifts: <ShiftTab team={team} />,
     coverages: <CoverageTab shifts={shiftDefaults} />,
     constraints: <ConstraintTab workers={workers} shifts={shifts} />,
     requests: <FARTab workers={workersIdName} shifts={shiftsIdName} />,

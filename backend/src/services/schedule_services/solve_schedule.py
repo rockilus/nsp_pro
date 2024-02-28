@@ -34,7 +34,7 @@ def solve_schedule(
     schedule: Schedule,
 ) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach], List[Stat]]:
     workers = worker_db.get_workers(team_id="TO_REPLACE")
-    shifts = shift_db.get_shifts()
+    shifts = shift_db.get_shifts(team_id="TO_REPLACE")
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
     cstr_builds = constraint_build_db.get_constraint_builds_active()

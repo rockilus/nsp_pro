@@ -8,16 +8,16 @@ const apiUrlShiftDimensions = `${baseApiUrl}/shift-dimensions`;
 
 type ShiftDimensionStateT = {
   shiftDimensions: ShiftDimensionT[];
-  fetchShiftDimensions: () => void;
+  fetchShiftDimensions: (teamId: string) => void;
   addShiftDimension: (ShiftDimension: ShiftDimensionT) => void;
   updateShiftDimension: (updatedShiftDimension: ShiftDimensionT) => void;
-  deleteShiftDimension: (id: string) => void;
+  deleteShiftDimension: (shiftDimensionId: string, teamId: string) => void;
 };
 
 export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
   shiftDimensions: [],
 
-  fetchShiftDimensions: async () => {
+  fetchShiftDimensions: async (teamId) => {
     const options: RequestInit = {
       method: "GET",
       credentials: "include" as RequestCredentials,
@@ -26,7 +26,14 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
       },
     };
     try {
-      const response = await fetch(apiUrlShiftDimensions, options); // Adjust API endpoint as needed
+      const response = await fetch(
+        `${apiUrlShiftDimensions}/teams/${teamId}`,
+        options
+      );
+      if (!response.ok) {
+        console.log("Failed to fetch shiftDimensions", response);
+        throw new Error("Failed to fetch shiftDimensions");
+      }
       const shiftDimensions: ShiftDimensionT[] = await response.json();
       set({ shiftDimensions });
     } catch (error) {
@@ -36,13 +43,20 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
 
   addShiftDimension: async (shiftDimension) => {
     try {
-      const response = await fetch(apiUrlShiftDimensions, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(shiftDimension),
-      });
+      const response = await fetch(
+        `${apiUrlShiftDimensions}/teams/${shiftDimension.teamId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(shiftDimension),
+        }
+      );
+      if (!response.ok) {
+        console.log("Failed to add shiftDimension", response);
+        throw new Error("Failed to add shiftDimension");
+      }
       const data = await response.json();
       const newShiftDimension: NewShiftDimensionT = data;
       set((state) => ({
@@ -62,7 +76,7 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
   updateShiftDimension: async (updatedShiftDimension) => {
     try {
       const response = await fetch(
-        `${apiUrlShiftDimensions}/${updatedShiftDimension.id}`,
+        `${apiUrlShiftDimensions}/${updatedShiftDimension.id}/teams/${updatedShiftDimension.teamId}`,
         {
           method: "PUT",
           headers: {
@@ -71,6 +85,10 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
           body: JSON.stringify(updatedShiftDimension),
         }
       );
+      if (!response.ok) {
+        console.log("Failed to update shiftDimension", response);
+        throw new Error("Failed to update shiftDimension");
+      }
       const newShiftDimension: ShiftDimensionT = await response.json();
       set((state) => ({
         shiftDimensions: state.shiftDimensions.map((shiftDimension) =>
@@ -84,17 +102,26 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
     }
   },
 
-  deleteShiftDimension: async (id) => {
+  deleteShiftDimension: async (shiftDimensionId, teamId) => {
     try {
-      await fetch(`${apiUrlShiftDimensions}/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id }),
-      });
+      const response = await fetch(
+        `${apiUrlShiftDimensions}/${shiftDimensionId}/teams/${teamId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ shiftDimensionId, teamId }),
+        }
+      );
+      if (!response.ok) {
+        console.log("Failed to delete shiftDimension", response);
+        throw new Error("Failed to delete shiftDimension");
+      }
       set((state) => ({
-        shiftDimensions: state.shiftDimensions.filter((c) => c.id !== id),
+        shiftDimensions: state.shiftDimensions.filter(
+          (c) => c.id !== shiftDimensionId
+        ),
       }));
     } catch (error) {
       console.error("Failed to delete shiftDimension:", error);

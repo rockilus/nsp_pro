@@ -8,6 +8,7 @@ from utils.constants import Constants
 @dataclass
 class Shift:
     id: str
+    team_id: str
     name: str
     start_time: datetime
     end_time: datetime
@@ -20,6 +21,7 @@ class Shift:
 # pylint: disable=R0801
 class ShiftDimension:
     id: str
+    team_id: str
     name: str
     entry_type: Constants.DIMENSION_ENTRY_TYPES  # str, int, bool, list
     entry_options: List[str]

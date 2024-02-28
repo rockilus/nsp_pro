@@ -1,15 +1,22 @@
 import React, { useEffect } from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-
+// Components
 import ShiftTable from "./ShiftTable";
-
+// Stores
 import { useShiftStore } from "../../stores/shiftStore";
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
+// Types
+import { TeamT } from "../../containers/types";
+// Constants
 import { DefaultShiftFields } from "../../utils/constants";
 
-export default function ShiftTab() {
+interface Props {
+  team: TeamT;
+}
+
+export default function ShiftTab({ team }: Props) {
   const shifts = useShiftStore((state) => state.shifts);
   const fetchShifts = useShiftStore((state) => state.fetchShifts);
 
@@ -21,12 +28,12 @@ export default function ShiftTab() {
   );
 
   useEffect(() => {
-    fetchShifts();
-  }, [fetchShifts]);
+    fetchShifts(team.id);
+  }, [fetchShifts, team.id]);
 
   useEffect(() => {
-    fetchShiftDimensions();
-  }, [fetchShiftDimensions]);
+    fetchShiftDimensions(team.id);
+  }, [fetchShiftDimensions, team.id]);
 
   return (
     <Box style={{ width: "100%" }}>
@@ -34,6 +41,7 @@ export default function ShiftTab() {
         Shifts Configuration
       </Typography>
       <ShiftTable
+        team={team}
         shiftDimensions={shiftDimensions}
         shifts={shifts}
         defaultShiftFields={DefaultShiftFields}

@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
@@ -8,11 +8,14 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
-
-import { ShiftPropertyT, ShiftDimensionT } from "./types";
+// Stores
 import { useShiftStore } from "../../stores/shiftStore";
+// Types
+import { ShiftPropertyT, ShiftDimensionT } from "./types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   shiftProperty: ShiftPropertyT;
   shiftDimension: ShiftDimensionT;
   editing: boolean;
@@ -20,6 +23,7 @@ interface Props {
 }
 
 export default function ShiftPropertyCell({
+  team,
   shiftProperty,
   shiftDimension,
   editing,
@@ -33,13 +37,16 @@ export default function ShiftPropertyCell({
 
   const handleEditConfirm = async () => {
     if (valueState !== shiftProperty.value) {
-      updateShiftProperty({ ...shiftProperty, value: valueState });
+      updateShiftProperty(team.id, { ...shiftProperty, value: valueState });
     }
     setEditing({});
   };
 
   const handleToggle = () => {
-    updateShiftProperty({ ...shiftProperty, value: !shiftProperty.value });
+    updateShiftProperty(team.id, {
+      ...shiftProperty,
+      value: !shiftProperty.value,
+    });
   };
 
   const handleEditCancel = () => {

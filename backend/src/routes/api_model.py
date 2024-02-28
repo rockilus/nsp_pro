@@ -42,6 +42,7 @@ class ShiftPropertyMessage(BaseModel):
 
 class ShiftMessage(BaseModel):
     id: str
+    teamId: str
     name: str
     startTime: datetime
     endTime: datetime
@@ -53,6 +54,7 @@ class ShiftMessage(BaseModel):
 
 class ShiftDefaultMessage(BaseModel):
     id: str
+    teamId: str
     name: str
     startTime: datetime
     endTime: datetime
@@ -63,6 +65,7 @@ class ShiftDefaultMessage(BaseModel):
 
 class ShiftDimensionMessage(BaseModel):
     id: str
+    teamId: str
     name: str
     entryType: str
     entryOptions: List[str]
