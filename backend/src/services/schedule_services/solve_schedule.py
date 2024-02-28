@@ -51,9 +51,11 @@ def solve_schedule(
     )
     shift_demands = setup_shift_demands(coverage_selectors)
     fixed_assignments = fixed_assignment_db.get_fixed_assignments_by_dates(
-        schedule.start_date, schedule.end_date
+        schedule.start_date, schedule.end_date, team_id="TO_REPLACE"
     )
-    requests = request_db.get_requests_by_dates(schedule.start_date, schedule.end_date)
+    requests = request_db.get_requests_by_dates(
+        schedule.start_date, schedule.end_date, team_id="TO_REPLACE"
+    )
     prev_assignments = assignment_db.get_assignments_by_status(["past", "validated"])
     wip_assignments = assignment_db.get_assignments_by_status(["wip"])
     inputs = core_to_engine_inputs(

@@ -1,29 +1,31 @@
 import React, { useState, useEffect, useCallback } from "react";
-
+// MUI
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
 import IconButton from "@mui/material/IconButton";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import Typography from "@mui/material/Typography";
-
+// Components
 import FARButton from "./FARButton";
-import { FarT } from "./types";
-import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
+// Stores
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
 import { useRequestStore } from "../../stores/requestStore";
+// Types
+import { FarT } from "./types";
+import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   far: FarT;
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
 }
 
-export default function FARListItem({ far, workers, shifts }: Props) {
+export default function FARListItem({ team, far, workers, shifts }: Props) {
   const [stringState, setStringState] = useState<string>("");
 
   const deleteFixedAssignment = useFixedAssignmentStore(
@@ -52,11 +54,11 @@ export default function FARListItem({ far, workers, shifts }: Props) {
     createString();
   }, [far, workers, shifts, createString]);
 
-  const handleDeleteFar = async () => {
+  const handleDeleteFar = () => {
     if (far.isFA) {
-      await deleteFixedAssignment(far.id);
+      deleteFixedAssignment(far.id, team.id);
     } else {
-      await deleteRequest(far.id);
+      deleteRequest(far.id, team.id);
     }
   };
 
@@ -90,6 +92,7 @@ export default function FARListItem({ far, workers, shifts }: Props) {
       // style={{ backgroundColor: "transparent" }}
     >
       <FARButton
+        team={team}
         buttonElement={editButton()}
         far={far}
         workers={workers}

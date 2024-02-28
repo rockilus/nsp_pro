@@ -10,10 +10,10 @@ const apiUrlRequests = `${baseApiUrl}/requests`;
 
 type RequestStateT = {
   requests: RequestT[];
-  fetchRequests: () => void;
-  addRequest: (request: RequestT) => Promise<RequestT>;
-  updateRequest: (updatedRequest: RequestT) => void;
-  deleteRequest: (id: string) => void;
+  fetchRequests: (teamId: string) => void;
+  addRequest: (request: RequestT, teamId: string) => Promise<RequestT>;
+  updateRequest: (updatedRequest: RequestT, teamId: string) => void;
+  deleteRequest: (requestId: string, teamId: string) => void;
 };
 
 const toRequestT = (data: any) => {
@@ -27,15 +27,18 @@ const toRequestT = (data: any) => {
 export const useRequestStore = create<RequestStateT>()((set) => ({
   requests: [],
 
-  fetchRequests: async () => {
+  fetchRequests: async (teamId) => {
     try {
-      const response = await fetch(apiUrlRequests, {
+      const response = await fetch(`${apiUrlRequests}/teams/${teamId}`, {
         method: "GET",
         credentials: "include" as RequestCredentials,
         headers: {
           "Content-Type": "application/json",
         },
-      }); // Adjust API endpoint as needed
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch requests: ${response.status}`);
+      }
       const data = await response.json();
       const requests = data.map(toRequestT);
       set({ requests });
@@ -44,15 +47,18 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
     }
   },
 
-  addRequest: async (request) => {
+  addRequest: async (request, teamId) => {
     try {
-      const response = await fetch(apiUrlRequests, {
+      const response = await fetch(`${apiUrlRequests}/teams/${teamId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(request),
       });
+      if (!response.ok) {
+        throw new Error(`Failed to add request: ${response.status}`);
+      }
       const data = await response.json();
       const newRequest = toRequestT(data);
       set((state) => ({
@@ -64,15 +70,21 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
     }
   },
 
-  updateRequest: async (updatedRequest) => {
+  updateRequest: async (updatedRequest, teamId) => {
     try {
-      await fetch(`${apiUrlRequests}/${updatedRequest.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedRequest),
-      });
+      const response = await fetch(
+        `${apiUrlRequests}/${updatedRequest.id}/teams/${teamId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedRequest),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to update request: ${response.status}`);
+      }
       set((state) => ({
         requests: state.requests.map((fa) =>
           fa.id === updatedRequest.id ? updatedRequest : fa
@@ -83,13 +95,19 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
     }
   },
 
-  deleteRequest: async (id) => {
+  deleteRequest: async (requestId, teamId) => {
     try {
-      await fetch(`${apiUrlRequests}/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${apiUrlRequests}/${requestId}/teams/${teamId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to delete request: ${response.status}`);
+      }
       set((state) => ({
-        requests: state.requests.filter((fa) => fa.id !== id),
+        requests: state.requests.filter((fa) => fa.id !== requestId),
       }));
     } catch (error) {
       console.error("Failed to delete request:", error);

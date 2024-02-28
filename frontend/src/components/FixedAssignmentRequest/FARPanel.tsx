@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
-
+// MUI
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -12,22 +12,30 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import Select from "@mui/material/Select";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
 import WorkIcon from "@mui/icons-material/Work";
-
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-
+// Stores
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
 import { useRequestStore } from "../../stores/requestStore";
+// Types
 import { FixedAssignmentT, RequestT, FarT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   far: FarT;
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
   handleClose: () => void;
 }
 
-export default function FARPanel({ far, workers, shifts, handleClose }: Props) {
+export default function FARPanel({
+  team,
+  far,
+  workers,
+  shifts,
+  handleClose,
+}: Props) {
   const dateToTimeZero = (date: Date): Date => {
     return new Date(
       Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0)
@@ -63,24 +71,24 @@ export default function FARPanel({ far, workers, shifts, handleClose }: Props) {
     if (farState.id === "") {
       if (FAPanel) {
         const fixedAssignment = farState as FixedAssignmentT;
-        await addFixedAssignment(fixedAssignment);
+        await addFixedAssignment(fixedAssignment, team.id);
         if (!far.isFA && far.id !== "") {
-          await deleteRequest(far.id);
+          deleteRequest(far.id, team.id);
         }
       } else {
         const request = farState as RequestT;
-        await addRequest(request);
+        await addRequest(request, team.id);
         if (!far.isFA && far.id !== "") {
-          await deleteRequest(far.id);
+          deleteRequest(far.id, team.id);
         }
       }
     } else {
       if (FAPanel) {
         const fixedAssignment = farState as FixedAssignmentT;
-        await updateFixedAssignment(fixedAssignment);
+        updateFixedAssignment(fixedAssignment, team.id);
       } else {
         const request = farState as RequestT;
-        await updateRequest(request);
+        updateRequest(request, team.id);
       }
     }
     handleClose();
@@ -89,9 +97,9 @@ export default function FARPanel({ far, workers, shifts, handleClose }: Props) {
   const handleDeleteFar = async () => {
     if (farState.id !== "") {
       if (FAPanel) {
-        await deleteFixedAssignment(farState.id);
+        deleteFixedAssignment(farState.id, team.id);
       } else {
-        await deleteRequest(farState.id);
+        deleteRequest(farState.id, team.id);
       }
     }
     handleClose();

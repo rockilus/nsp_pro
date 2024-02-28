@@ -1,13 +1,16 @@
 import React from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import Menu from "@mui/material/Menu";
-
+// Components
 import FARPanel from "./FARPanel";
+// Types
 import { FarT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   buttonElement: React.ReactNode;
   far: FarT;
   workers: WorkerIdNameT[];
@@ -15,6 +18,7 @@ interface Props {
 }
 
 export default function FARButton({
+  team,
   buttonElement,
   far,
   workers,
@@ -52,6 +56,7 @@ export default function FARButton({
         }}
       >
         <FARPanel
+          team={team}
           far={far}
           workers={workers}
           shifts={shifts}

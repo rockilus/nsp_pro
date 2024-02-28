@@ -24,8 +24,6 @@ export default function ScheduleTable({
   displayCBs,
   CBsDisplayed,
 }: Props) {
-  // console.log("columns", columns);
-
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table" stickyHeader>

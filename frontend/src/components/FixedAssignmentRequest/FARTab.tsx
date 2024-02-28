@@ -1,23 +1,27 @@
 import React, { useCallback, useEffect, useState } from "react";
-
+// MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-
+// Components
 import FARButton from "./FARButton";
 import FARList from "./FARList";
+// Stores
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
 import { useRequestStore } from "../../stores/requestStore";
+// Types
 import { FixedAssignmentT, RequestT, FarT } from "./types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
 }
 
-export default function FARTab({ workers, shifts }: Props) {
+export default function FARTab({ team, workers, shifts }: Props) {
   const [fars, setFars] = useState<FarT[]>([]);
   const fixedAssignments = useFixedAssignmentStore(
     (state) => state.fixedAssignments
@@ -58,12 +62,12 @@ export default function FARTab({ workers, shifts }: Props) {
   );
 
   useEffect(() => {
-    fetchFixedAssignments();
-  }, [fetchFixedAssignments]);
+    fetchFixedAssignments(team.id);
+  }, [fetchFixedAssignments, team.id]);
 
   useEffect(() => {
-    fetchRequests();
-  }, [fetchRequests]);
+    fetchRequests(team.id);
+  }, [fetchRequests, team.id]);
 
   useEffect(() => {
     setFars(buildFarsArray(fixedAssignments, requests));
@@ -89,6 +93,7 @@ export default function FARTab({ workers, shifts }: Props) {
         Fixed Assignments and Requests
       </Typography>
       <FARButton
+        team={team}
         buttonElement={createButton()}
         far={{
           id: "",
@@ -102,7 +107,7 @@ export default function FARTab({ workers, shifts }: Props) {
         workers={workers}
         shifts={shifts}
       />
-      <FARList fars={fars} workers={workers} shifts={shifts} />
+      <FARList team={team} fars={fars} workers={workers} shifts={shifts} />
     </Box>
   );
 }

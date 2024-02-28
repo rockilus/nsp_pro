@@ -1,26 +1,29 @@
 import React, { useEffect, useState } from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-
+// Components
 import ScheduleDisplay from "./ScheduleDisplay";
 import ObjectiveBreachList from "./ObjectiveBreachList";
 import ScheduleOptions from "./ScheduleOptions";
+// Stores
 import { useScheduleStore } from "../../stores/scheduleStore";
 import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
 import { useRequestStore } from "../../stores/requestStore";
 import { useAssignmentStore } from "../../stores/assignmentStore";
 import { useObjectiveBreachStore } from "../../stores/objectiveBreachStore";
+// Types
 import { ShiftIdNameT, WorkerIdNameT } from "./types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   workers: WorkerIdNameT[];
   shifts: ShiftIdNameT[];
 }
 
-export default function ScheduleTab({ workers, shifts }: Props) {
+export default function ScheduleTab({ team, workers, shifts }: Props) {
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
-  const [shiftSchedule, setShiftSchedule] = useState<boolean>(true);
   const [displayCBs, setDisplayCBs] = useState<boolean>(true);
   const [CBsDisplayed, setCBsDisplayed] = useState<string[]>([]);
 
@@ -63,10 +66,10 @@ export default function ScheduleTab({ workers, shifts }: Props) {
 
   useEffect(() => {
     if (schedules) {
-      fetchFixedAssignments();
-      fetchRequests();
+      fetchFixedAssignments(team.id);
+      fetchRequests(team.id);
     }
-  }, [fetchFixedAssignments, fetchRequests, schedules]);
+  }, [fetchFixedAssignments, fetchRequests, schedules, team.id]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>

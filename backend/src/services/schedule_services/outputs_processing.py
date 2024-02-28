@@ -6,9 +6,11 @@ from scripts.setup_database import fixed_assignment_db, request_db
 
 def update_far_status(schedule: Schedule, assignments: List[Assignment]) -> None:
     fixed_assignments = fixed_assignment_db.get_fixed_assignments_by_dates(
-        schedule.start_date, schedule.end_date
+        schedule.start_date, schedule.end_date, team_id="TO_REPLACE"
     )
-    requests = request_db.get_requests_by_dates(schedule.start_date, schedule.end_date)
+    requests = request_db.get_requests_by_dates(
+        schedule.start_date, schedule.end_date, team_id="TO_REPLACE"
+    )
     for fa in fixed_assignments:
         assignment = next(
             (
