@@ -4,7 +4,9 @@ from typing import List
 from bson import ObjectId
 
 from core.request import Request
+from core.worker import Worker
 from database.db import DB
+from database.worker_db import to_mongo_worker
 from models import Shift as ShiftDocument
 from models import Worker as WorkerDocument
 from models.request import Request as RequestDocument
@@ -27,9 +29,10 @@ class RequestDB:
         r_saved = r_doc.save()
         return _from_mongo_request(r_saved)
 
-    def get_requests(self, team_id: str) -> List[Request]:
+    def get_requests(self, workers: List[Worker]) -> List[Request]:
+        w_docs = [to_mongo_worker(w) for w in workers]
         # pylint: disable=no-member
-        requests = RequestDocument.objects.filter(worker__team=team_id)  # type: ignore
+        requests = RequestDocument.objects.filter(worker__in=w_docs)  # type: ignore
         return [_from_mongo_request(r) for r in list(requests)]
 
     def get_request_by_id(self, request_id: str) -> Request:
@@ -38,11 +41,12 @@ class RequestDB:
         return _from_mongo_request(request)
 
     def get_requests_by_dates(
-        self, start_date: date, end_date: date, team_id: str
+        self, start_date: date, end_date: date, workers: List[Worker]
     ) -> List[Request]:
+        w_docs = [to_mongo_worker(w) for w in workers]
         # pylint: disable=no-member
         requests = RequestDocument.objects.filter(  # type: ignore
-            date__gte=start_date, date__lte=end_date, worker__team=team_id
+            date__gte=start_date, date__lte=end_date, worker__in=w_docs
         )
         return [_from_mongo_request(r) for r in list(requests)]
 

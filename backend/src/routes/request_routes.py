@@ -8,7 +8,7 @@ from pydantic import TypeAdapter
 
 from core.request import Request
 from routes.api_model import RequestMessage
-from scripts.setup_database import request_db
+from scripts.setup_database import request_db, worker_db
 from services.authentication.authn_services import authn_verify_session
 from services.authentication.authn_types import SessionContainerType
 from services.authorization.authz_services import permit_check
@@ -43,7 +43,8 @@ async def get_requests(
             status_code=403,
             detail="You do not have permission to get requests",
         )
-    requests = request_db.get_requests(team_id)
+    workers = worker_db.get_workers(team_id)
+    requests = request_db.get_requests(workers)
     return [request_to_api_msg(r) for r in requests]
 
 

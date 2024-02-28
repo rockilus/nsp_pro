@@ -18,6 +18,7 @@ export const emptyShiftDefault: ShiftDefaultT = {
 
 export const emptySchedule: ScheduleT = {
   id: "",
+  teamId: "",
   startDate: dayjs.utc().startOf("day"),
   endDate: dayjs.utc().startOf("day"),
   solveStatus: "Not solved",

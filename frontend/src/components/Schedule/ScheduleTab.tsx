@@ -29,7 +29,7 @@ export default function ScheduleTab({ team, workers, shifts }: Props) {
 
   // Schedules
   const schedules = useScheduleStore((state) => state.schedules);
-  const fetchSchedule = useScheduleStore((state) => state.fetchSchedules);
+  const fetchSchedules = useScheduleStore((state) => state.fetchSchedules);
 
   // Assignments
   const assignments = useAssignmentStore((state) => state.assignments);
@@ -59,10 +59,10 @@ export default function ScheduleTab({ team, workers, shifts }: Props) {
   };
 
   useEffect(() => {
-    fetchSchedule();
+    fetchSchedules(team.id);
     fetchAssignments();
     fetchObjectiveBreaches();
-  }, [fetchSchedule, fetchAssignments, fetchObjectiveBreaches]);
+  }, [fetchSchedules, fetchAssignments, fetchObjectiveBreaches, team.id]);
 
   useEffect(() => {
     if (schedules) {
@@ -77,6 +77,7 @@ export default function ScheduleTab({ team, workers, shifts }: Props) {
         Schedule
       </Typography>
       <ScheduleOptions
+        team={team}
         schedules={schedules}
         selectedDisplay={selectedDisplay}
         displayCBs={displayCBs}
@@ -84,6 +85,7 @@ export default function ScheduleTab({ team, workers, shifts }: Props) {
         switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
       />
       <ScheduleDisplay
+        team={team}
         schedules={schedules}
         assignments={assignments}
         objectiveBreaches={objectiveBreaches}

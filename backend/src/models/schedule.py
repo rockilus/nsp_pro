@@ -1,11 +1,12 @@
 from mongoengine import Document
-from mongoengine.fields import DateTimeField, ListField, StringField
+from mongoengine.fields import DateTimeField, ListField, ReferenceField, StringField
 
 
 class Schedule(Document):
     meta = {"collection": "schedules"}
 
     id = StringField(primary_key=True, required=True)
+    team = ReferenceField("Team", required=True)
     start_date = DateTimeField(required=True)
     end_date = DateTimeField(required=True)
     solve_status = StringField(

@@ -27,7 +27,7 @@ async def get_constraint_templates(
             status_code=403,
             detail="You do not have permission to get constraint templates",
         )
-    return [constraint_template_to_api_msg(ct) for ct in build_templates()]
+    return [constraint_template_to_api_msg(ct) for ct in build_templates(team_id)]
 
 
 def constraint_template_to_api_msg(

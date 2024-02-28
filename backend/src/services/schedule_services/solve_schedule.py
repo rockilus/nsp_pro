@@ -33,11 +33,11 @@ from services.stats_services.stats_setup import stats_setup
 def solve_schedule(
     schedule: Schedule,
 ) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach], List[Stat]]:
-    workers = worker_db.get_workers(team_id="TO_REPLACE")
-    shifts = shift_db.get_shifts(team_id="TO_REPLACE")
+    workers = worker_db.get_workers(schedule.team_id)
+    shifts = shift_db.get_shifts(schedule.team_id)
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
-    cstr_builds = constraint_build_db.get_constraint_builds_active(team_id="TO_REPLACE")
+    cstr_builds = constraint_build_db.get_constraint_builds_active(schedule.team_id)
     constraints = setup_constraints(
         workers,
         shifts,
@@ -47,14 +47,14 @@ def solve_schedule(
         cstr_builds,
     )
     coverage_selectors = coverage_selector_db.get_coverage_selector_by_dates(
-        schedule.start_date, schedule.end_date, team_id="TO_REPLACE"
+        schedule.start_date, schedule.end_date, schedule.team_id
     )
     shift_demands = setup_shift_demands(coverage_selectors)
     fixed_assignments = fixed_assignment_db.get_fixed_assignments_by_dates(
-        schedule.start_date, schedule.end_date, team_id="TO_REPLACE"
+        schedule.start_date, schedule.end_date, workers
     )
     requests = request_db.get_requests_by_dates(
-        schedule.start_date, schedule.end_date, team_id="TO_REPLACE"
+        schedule.start_date, schedule.end_date, workers
     )
     prev_assignments = assignment_db.get_assignments_by_status(["past", "validated"])
     wip_assignments = assignment_db.get_assignments_by_status(["wip"])
@@ -81,7 +81,7 @@ def solve_schedule(
         coverage_selectors,
     )
     update_far_status(schedule, assignments)
-    stats = stats_setup()
+    stats = stats_setup(schedule.team_id)
     updated_schedule = schedule_db.update_schedule(schedule)
     updated_assignments = save_assignments(
         assignments, workers, shifts, updated_schedule

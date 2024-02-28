@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-
+// MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CloseIcon from "@mui/icons-material/Close";
@@ -11,19 +11,24 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-
+// Components
 import ScheduleDeleteDialog from "./ScheduleDeleteDialog";
-import { ScheduleT } from "./types";
+// Stores
 import { useScheduleStore } from "../../stores/scheduleStore";
+// Types
+import { ScheduleT } from "./types";
+import { TeamT } from "../../containers/types";
 
 dayjs.extend(utc);
 
 interface Props {
+  team: TeamT;
   buttonElement: React.ReactNode;
   schedule: ScheduleT;
 }
 
 export default function SchedulePanelDialog({
+  team,
   buttonElement,
   schedule,
 }: Props) {
@@ -128,7 +133,7 @@ export default function SchedulePanelDialog({
         </DialogContent>
         <DialogActions>
           {scheduleState.id && (
-            <ScheduleDeleteDialog scheduleId={scheduleState.id} />
+            <ScheduleDeleteDialog team={team} scheduleId={scheduleState.id} />
           )}
           {schedule.status === "WIP" && (
             <Button variant="contained" onClick={handleSaveSchedule} autoFocus>

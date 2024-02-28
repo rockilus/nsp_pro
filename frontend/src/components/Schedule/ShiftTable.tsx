@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import dayjs from "dayjs";
-
+// Components
 import ScheduleTable from "./ScheduleTable";
+// Types
 import {
   ShiftIdNameT,
   WorkerIdNameT,
@@ -12,8 +13,10 @@ import {
   ScheduleT,
   ObjectiveBreachT,
 } from "./types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   schedules: ScheduleT[];
   assignments: AssignmentT[];
   objectiveBreaches: ObjectiveBreachT[];
@@ -24,6 +27,7 @@ interface Props {
 }
 
 export default function ShiftTable({
+  team,
   schedules,
   assignments,
   objectiveBreaches,
@@ -210,6 +214,7 @@ export default function ShiftTable({
 
   return (
     <ScheduleTable
+      team={team}
       columns={columns}
       rows={rows}
       displayCBs={displayCBs}

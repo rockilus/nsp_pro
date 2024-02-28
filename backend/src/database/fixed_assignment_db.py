@@ -4,7 +4,9 @@ from typing import List
 from bson import ObjectId
 
 from core.fixed_assignment import FixedAssignment
+from core.worker import Worker
 from database.db import DB
+from database.worker_db import to_mongo_worker
 from models import Shift as ShiftDocument
 from models import Worker as WorkerDocument
 from models.fixed_assignment import FixedAssignment as FixedAssignmentDocument
@@ -28,10 +30,11 @@ class FixedAssignmentDB:
         fa_saved = fa_doc.save()
         return _from_mongo_fixed_assignment(fa_saved)
 
-    def get_fixed_assignments(self, team_id: str) -> List[FixedAssignment]:
+    def get_fixed_assignments(self, workers: List[Worker]) -> List[FixedAssignment]:
+        w_docs = [to_mongo_worker(w) for w in workers]
         # pylint: disable=no-member
         fixed_assignments = FixedAssignmentDocument.objects.filter(  # type: ignore
-            worker__team=team_id
+            worker__in=w_docs
         )
         return [_from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)]
 
@@ -43,11 +46,12 @@ class FixedAssignmentDB:
         return _from_mongo_fixed_assignment(fixed_assignment)
 
     def get_fixed_assignments_by_dates(
-        self, start_date: date, end_date: date, team_id: str
+        self, start_date: date, end_date: date, workers: List[Worker]
     ) -> List[FixedAssignment]:
+        w_docs = [to_mongo_worker(w) for w in workers]
         # pylint: disable=no-member
         fixed_assignments = FixedAssignmentDocument.objects.filter(  # type: ignore
-            date__gte=start_date, date__lte=end_date, worker__team=team_id
+            date__gte=start_date, date__lte=end_date, worker__in=w_docs
         )
         return [_from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)]
 

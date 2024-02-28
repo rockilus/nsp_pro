@@ -202,6 +202,7 @@ class ObjectiveBreachMessage(BaseModel):
 
 class ScheduleMessage(BaseModel):
     id: str
+    teamId: str
     startDate: date
     endDate: date
     solveStatus: str

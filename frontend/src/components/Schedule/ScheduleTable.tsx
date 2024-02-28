@@ -1,17 +1,20 @@
 import React from "react";
-
+// MUI
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-
+// Components
 import ScheduleCell from "./ScheduleCell";
 import ScheduleHeaderCell from "./ScheduleHeaderCell";
+// Types
 import { ColumnT, RowT } from "./types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   columns: ColumnT[];
   rows: RowT[];
   displayCBs: boolean;
@@ -19,6 +22,7 @@ interface Props {
 }
 
 export default function ScheduleTable({
+  team,
   columns,
   rows,
   displayCBs,
@@ -32,6 +36,7 @@ export default function ScheduleTable({
             {columns.map((column, colIndex) => (
               <ScheduleHeaderCell
                 key={colIndex}
+                team={team}
                 column={column}
                 colIndex={colIndex}
               />

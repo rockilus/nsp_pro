@@ -5,12 +5,12 @@ from scripts.setup_database import assignment_db, shift_db, stats_options_db, wo
 from services.stats_services.build_stats import BuildStats
 
 
-def stats_setup() -> List[Stat]:
+def stats_setup(team_id: str) -> List[Stat]:
     stats_options = stats_options_db.get_stats_options()
     if stats_options is None:
         return []
-    workers = worker_db.get_workers(team_id="TO_REPLACE")
-    shifts = shift_db.get_shifts(team_id="TO_REPLACE")
+    workers = worker_db.get_workers(team_id)
+    shifts = shift_db.get_shifts(team_id)
     assignments = assignment_db.get_assignments_by_dates(
         stats_options.start_date, stats_options.end_date
     )

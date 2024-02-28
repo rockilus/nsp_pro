@@ -17,14 +17,14 @@ router = APIRouter()
 def create_stats_options(req: StatsOptionsMessage) -> StatsMessage:
     s_data = api_msg_to_stats_options(req)
     stats_options = stats_options_db.create_stats_options(s_data)
-    stats = stats_setup()
+    stats = stats_setup("TO_REPLACE")
     return stats_to_api_msg(stats_options, stats)
 
 
 @router.get("/stats-options")
 def get_stats_options() -> StatsMessage:
     stats_options = stats_options_db.get_stats_options()
-    stats = stats_setup()
+    stats = stats_setup("TO_REPLACE")
     return stats_to_api_msg(stats_options, stats)
 
 
@@ -37,7 +37,7 @@ def update_stats_options(
         raise HTTPException(status_code=404, detail="Stats options does not exist")
     stats_options_data = api_msg_to_stats_options(stats_options_api)
     updated_stats_options = stats_options_db.update_stats_options(stats_options_data)
-    stats = stats_setup()
+    stats = stats_setup("TO_REPLACE")
     return stats_to_api_msg(updated_stats_options, stats)
 
 

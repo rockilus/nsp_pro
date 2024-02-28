@@ -8,7 +8,7 @@ from pydantic import TypeAdapter
 
 from core.fixed_assignment import FixedAssignment
 from routes.api_model import FixedAssignmentMessage
-from scripts.setup_database import fixed_assignment_db
+from scripts.setup_database import fixed_assignment_db, worker_db
 from services.authentication.authn_services import authn_verify_session
 from services.authentication.authn_types import SessionContainerType
 from services.authorization.authz_services import permit_check
@@ -47,7 +47,8 @@ async def get_fixed_assignments(
             status_code=403,
             detail="You do not have permission to get fixed assignments",
         )
-    fixed_assignments = fixed_assignment_db.get_fixed_assignments(team_id)
+    workers = worker_db.get_workers(team_id)
+    fixed_assignments = fixed_assignment_db.get_fixed_assignments(workers)
     return [fixed_assignment_to_api_msg(fa) for fa in fixed_assignments]
 
 
