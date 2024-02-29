@@ -56,8 +56,11 @@ def solve_schedule(
     requests = request_db.get_requests_by_dates(
         schedule.start_date, schedule.end_date, workers
     )
-    prev_assignments = assignment_db.get_assignments_by_status(["past", "validated"])
-    wip_assignments = assignment_db.get_assignments_by_status(["wip"])
+    team_schedules = schedule_db.get_schedules(schedule.team_id)
+    prev_assignments = assignment_db.get_assignments_by_status(
+        ["past", "validated"], team_schedules
+    )
+    wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
     inputs = core_to_engine_inputs(
         workers,
         schedule.start_date,
@@ -111,7 +114,16 @@ def save_assignments(
         if shift is None:
             raise ValueError(f"Shift {a.shift_id} not found")
         out.append(
-            assignment_db.create_assignment(worker, a.date, shift, schedule, "wip")
+            assignment_db.create_assignment(
+                Assignment(
+                    id="",
+                    worker_id=worker.id,
+                    date=a.date,
+                    shift_id=shift.id,
+                    schedule_id=schedule.id,
+                    status="wip",
+                )
+            )
         )
     return out
 

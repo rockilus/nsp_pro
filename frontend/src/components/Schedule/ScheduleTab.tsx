@@ -60,7 +60,7 @@ export default function ScheduleTab({ team, workers, shifts }: Props) {
 
   useEffect(() => {
     fetchSchedules(team.id);
-    fetchAssignments();
+    fetchAssignments(team.id);
     fetchObjectiveBreaches();
   }, [fetchSchedules, fetchAssignments, fetchObjectiveBreaches, team.id]);
 

@@ -11,15 +11,15 @@ const apiUrlAssignment = baseApiUrl + "/assignments";
 
 type AssignmentStateT = {
   assignments: AssignmentT[];
-  fetchAssignments: () => void;
-  addAssignment: (assignment: AssignmentT) => void;
+  fetchAssignments: (teamId: string) => void;
+  addAssignment: (assignment: AssignmentT, teamId: string) => void;
   updateAssignmentStore: (
     scheuleId: string,
     updatedAssignments: AssignmentT[]
   ) => void;
-  updateAssignment: (updatedAssignment: AssignmentT) => void;
-  deleteAssignment: (id: string) => void;
-  deleteAStoreWithScheduleId: (id: string) => void;
+  updateAssignment: (updatedAssignment: AssignmentT, teamId: string) => void;
+  deleteAssignment: (assignmentId: string, teamId: string) => void;
+  deleteAStoreWithScheduleId: (scheduleId: string) => void;
 };
 
 export const toAssignmentT = (data: any) => {
@@ -33,7 +33,7 @@ export const toAssignmentT = (data: any) => {
 export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
   assignments: [],
 
-  fetchAssignments: async () => {
+  fetchAssignments: async (teamId) => {
     const options: RequestInit = {
       method: "GET",
       credentials: "include" as RequestCredentials,
@@ -42,7 +42,13 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
       },
     };
     try {
-      const response = await fetch(apiUrlAssignment, options);
+      const response = await fetch(
+        `${apiUrlAssignment}/teams/${teamId}`,
+        options
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch assignments");
+      }
       const data = await response.json();
       const assignments: AssignmentT[] = data.map(toAssignmentT);
       set({ assignments });
@@ -51,15 +57,18 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
     }
   },
 
-  addAssignment: async (assignment) => {
+  addAssignment: async (assignment, teamId) => {
     try {
-      const response = await fetch(apiUrlAssignment, {
+      const response = await fetch(`${apiUrlAssignment}/teams/${teamId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(assignment),
       });
+      if (!response.ok) {
+        throw new Error("Failed to add assignment");
+      }
       const data = await response.json();
       const newAssignment: AssignmentT = toAssignmentT(data);
       set((state) => ({
@@ -79,10 +88,10 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
     }));
   },
 
-  updateAssignment: async (updatedAssignment) => {
+  updateAssignment: async (updatedAssignment, teamId) => {
     try {
       const response = await fetch(
-        `${apiUrlAssignment}/${updatedAssignment.id}`,
+        `${apiUrlAssignment}/${updatedAssignment.id}/teams/${teamId}`,
         {
           method: "PUT",
           headers: {
@@ -91,6 +100,9 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
           body: JSON.stringify(updatedAssignment),
         }
       );
+      if (!response.ok) {
+        throw new Error("Failed to update assignment");
+      }
       const data = await response.json();
       const newAssignment: AssignmentT = toAssignmentT(data);
       set((state) => ({
@@ -103,13 +115,19 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
     }
   },
 
-  deleteAssignment: async (id) => {
+  deleteAssignment: async (assignmentId, teamId) => {
     try {
-      await fetch(`${apiUrlAssignment}/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${apiUrlAssignment}/${assignmentId}/teams/${teamId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to delete assignment");
+      }
       set((state) => ({
-        assignments: state.assignments.filter((s) => s.id !== id),
+        assignments: state.assignments.filter((s) => s.id !== assignmentId),
       }));
     } catch (error) {
       console.error("Failed to delete assignment:", error);
