@@ -1,13 +1,14 @@
 import { create } from "zustand";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
 import { ObjectiveBreachT, VariableT } from "../components/Schedule/types";
 
 dayjs.extend(utc);
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlObjectiveBreach = baseApiUrl + "/objective_breaches";
+const apiUrlObjectiveBreach = ApiUrl + "/objective_breaches";
 
 type ObjectiveBreachStateT = {
   objectiveBreaches: ObjectiveBreachT[];

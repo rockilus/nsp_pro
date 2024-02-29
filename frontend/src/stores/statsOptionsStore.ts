@@ -1,14 +1,16 @@
-import { create } from "zustand";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-
-import { StatsOptionsT, StatsT } from "../components/Schedule/types";
+import { create } from "zustand";
+// Stores
 import { useStatStore } from "./statStore";
+// Types
+import { StatsOptionsT, StatsT } from "../components/Schedule/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
 dayjs.extend(utc);
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlStatsOptions = baseApiUrl + "/stats-options";
+const apiUrlStatsOptions = ApiUrl + "/stats-options";
 
 type StatsOptionsStateT = {
   statsOptions: StatsOptionsT | null;

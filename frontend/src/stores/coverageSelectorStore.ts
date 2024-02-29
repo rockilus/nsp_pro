@@ -1,9 +1,10 @@
-// coverageSelectorStore.ts
 import { create } from "zustand";
+// Types
 import { CoverageSelectorT } from "../components/CoverageSelector/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlCoverageSelectors = `${baseApiUrl}/coverage-selectors`;
+const apiUrlCoverageSelectors = ApiUrl + "/coverage-selectors";
 
 type CoverageSelectorStateT = {
   coverageSelectors: CoverageSelectorT[];

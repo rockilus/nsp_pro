@@ -1,12 +1,14 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
-
+// Types
 import { UserSignInT, UserSignUpT, UserT } from "../components/Login/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
+
 dayjs.extend(utc);
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlUser = baseApiUrl + "/user";
+const apiUrlUser = ApiUrl + "/user";
 
 type UserStateT = {
   user: UserT | null;
@@ -39,7 +41,7 @@ export const useUserStore = create<UserStateT>()((set) => ({
 
   signUp: async (userSignUp) => {
     try {
-      const response = await fetch(`${baseApiUrl}/signup`, {
+      const response = await fetch(`${apiUrlUser}/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,7 +59,7 @@ export const useUserStore = create<UserStateT>()((set) => ({
 
   signIn: async (userSignIn) => {
     try {
-      const response = await fetch(`${baseApiUrl}/token`, {
+      const response = await fetch(`${apiUrlUser}/token`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         credentials: "include",
@@ -97,7 +99,7 @@ export const useUserStore = create<UserStateT>()((set) => ({
 
   signOut: async () => {
     try {
-      const response = await fetch(`${baseApiUrl}/signout`, {
+      const response = await fetch(`${apiUrlUser}/signout`, {
         method: "POST",
         credentials: "include",
       });

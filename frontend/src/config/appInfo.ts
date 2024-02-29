@@ -1,6 +1,7 @@
+import { ApiUrl } from "../utils/env_config";
+
 const port = process.env.APP_PORT || 3000;
 
-// const apiBasePath = "/api/auth/";
 const apiBasePath = "/auth/";
 
 export const websiteDomain =
@@ -11,6 +12,6 @@ export const websiteDomain =
 export const appInfo = {
   appName: "nsp_pro",
   websiteDomain,
-  apiDomain: "http://127.0.0.1:5000",
+  apiDomain: ApiUrl,
   apiBasePath,
 };

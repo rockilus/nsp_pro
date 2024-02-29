@@ -1,13 +1,11 @@
 // fixedAssignmentStore.ts
 import { create } from "zustand";
+// Types
 import { FixedAssignmentT } from "../components/FixedAssignmentRequest/types";
-import TemplateList from "../components/Constraint/TemplateList";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
-// const baseApiUrl = "http://localhost:5000";
-const baseApiUrl = "http://127.0.0.1:5000";
-
-// FixedAssignment
-const apiUrlFixedAssignments = `${baseApiUrl}/fixed-assignments`;
+const apiUrlFixedAssignments = ApiUrl + "/fixed-assignments";
 
 type FixedAssignmentStateT = {
   fixedAssignments: FixedAssignmentT[];

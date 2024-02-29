@@ -1,9 +1,10 @@
-// constraintTemplateStore.ts
 import { create } from "zustand";
+// Types
 import { TemplateT } from "../components/Constraint/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlConstraints = baseApiUrl + "/constraint-templates";
+const apiUrlConstraints = ApiUrl + "/constraint-templates";
 
 type ConstraintTemplateStateT = {
   constraintTemplates: TemplateT[];

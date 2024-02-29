@@ -1,9 +1,10 @@
 import { create } from "zustand";
-
+// Types
 import { TeamT } from "../containers/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlTeam = baseApiUrl + "/teams";
+const apiUrlTeam = ApiUrl + "/teams";
 
 type TeamStateT = {
   teams: TeamT[];

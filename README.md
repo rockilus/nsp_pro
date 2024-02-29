@@ -23,7 +23,7 @@ docker pull permitio/pdp-v2:latest
 ```
 Run permit container
 ```
-docker run -it -p 7766:7000 --env PDP_DEBUG=True --env PDP_API_KEY=permit_key_DdSCEb3OXhfpVpjx1iHEnHfQ9mp3ReRk1B3g0htSSrSmQ6GvvKfLhHhWncxvxBqi2wNfhDhM9eZsIZfurOmaB4 permitio/pdp-v2:latest
+docker run -it -p 7766:7000 --env PDP_DEBUG=True --env PDP_API_KEY=<YOUR_API_KEY> permitio/pdp-v2:latest
 ```
 
 Then go play on http://localhost:3000

@@ -1,4 +1,3 @@
-// workerDimensionStore.ts
 import { create } from "zustand";
 // Stores
 import { useWorkerStore } from "./workerStore";
@@ -7,9 +6,10 @@ import {
   WorkerDimensionT,
   NewWorkerDimensionT,
 } from "../components/Worker/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlWorkerDimensions = `${baseApiUrl}/worker-dimensions`;
+const apiUrlWorkerDimensions = ApiUrl + "/worker-dimensions";
 
 type WorkerDimensionStateT = {
   workerDimensions: WorkerDimensionT[];

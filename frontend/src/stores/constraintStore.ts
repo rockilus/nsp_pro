@@ -1,9 +1,10 @@
-// constraintStore.ts
 import { create } from "zustand";
+// Types
 import { ConstraintT } from "../components/Constraint/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlConstraints = baseApiUrl + "/constraints";
+const apiUrlConstraints = ApiUrl + "/constraints";
 
 type ConstraintStateT = {
   constraints: ConstraintT[];

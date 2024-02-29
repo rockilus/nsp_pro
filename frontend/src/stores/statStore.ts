@@ -1,13 +1,14 @@
-import { create } from "zustand";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-
+import { create } from "zustand";
+// Types
 import { StatT } from "../components/Schedule/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
 dayjs.extend(utc);
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlStat = baseApiUrl + "/stats";
+const apiUrlStat = ApiUrl + "/stats";
 
 type StatStateT = {
   stats: StatT[];
