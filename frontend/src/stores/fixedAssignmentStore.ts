@@ -1,6 +1,7 @@
 // fixedAssignmentStore.ts
 import { create } from "zustand";
 import { FixedAssignmentT } from "../components/FixedAssignmentRequest/types";
+import TemplateList from "../components/Constraint/TemplateList";
 
 // const baseApiUrl = "http://localhost:5000";
 const baseApiUrl = "http://127.0.0.1:5000";
@@ -10,12 +11,16 @@ const apiUrlFixedAssignments = `${baseApiUrl}/fixed-assignments`;
 
 type FixedAssignmentStateT = {
   fixedAssignments: FixedAssignmentT[];
-  fetchFixedAssignments: () => void;
+  fetchFixedAssignments: (teamId: string) => void;
   addFixedAssignment: (
-    fixedAssignment: FixedAssignmentT
+    fixedAssignment: FixedAssignmentT,
+    teamId: string
   ) => Promise<FixedAssignmentT>;
-  updateFixedAssignment: (updatedFixedAssignment: FixedAssignmentT) => void;
-  deleteFixedAssignment: (id: string) => void;
+  updateFixedAssignment: (
+    updatedFixedAssignment: FixedAssignmentT,
+    teamId: string
+  ) => void;
+  deleteFixedAssignment: (fixedAssignmentId: string, teamId: string) => void;
 };
 
 const toFixedAssignmentT = (data: any) => {
@@ -30,15 +35,23 @@ export const useFixedAssignmentStore = create<FixedAssignmentStateT>()(
   (set) => ({
     fixedAssignments: [],
 
-    fetchFixedAssignments: async () => {
+    fetchFixedAssignments: async (teamId) => {
       try {
-        const response = await fetch(apiUrlFixedAssignments, {
-          method: "GET",
-          credentials: "include" as RequestCredentials,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }); // Adjust API endpoint as needed
+        const response = await fetch(
+          `${apiUrlFixedAssignments}/teams/${teamId}`,
+          {
+            method: "GET",
+            credentials: "include" as RequestCredentials,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch fixedAssignments: ${response.status}`
+          );
+        }
         const data = await response.json();
         const fixedAssignments = data.map(toFixedAssignmentT);
         set({ fixedAssignments });
@@ -47,15 +60,21 @@ export const useFixedAssignmentStore = create<FixedAssignmentStateT>()(
       }
     },
 
-    addFixedAssignment: async (fixedAssignment) => {
+    addFixedAssignment: async (fixedAssignment, teamId) => {
       try {
-        const response = await fetch(apiUrlFixedAssignments, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(fixedAssignment),
-        });
+        const response = await fetch(
+          `${apiUrlFixedAssignments}/teams/${teamId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(fixedAssignment),
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to add fixedAssignment: ${response.status}`);
+        }
         const data = await response.json();
         const newFixedAssignment = toFixedAssignmentT(data);
         set((state) => ({
@@ -67,15 +86,23 @@ export const useFixedAssignmentStore = create<FixedAssignmentStateT>()(
       }
     },
 
-    updateFixedAssignment: async (updatedFixedAssignment) => {
+    updateFixedAssignment: async (updatedFixedAssignment, teamId) => {
       try {
-        await fetch(`${apiUrlFixedAssignments}/${updatedFixedAssignment.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedFixedAssignment),
-        });
+        const response = await fetch(
+          `${apiUrlFixedAssignments}/${updatedFixedAssignment.id}/teams/${teamId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedFixedAssignment),
+          }
+        );
+        if (!response.ok) {
+          throw new Error(
+            `Failed to update fixedAssignment: ${response.status}`
+          );
+        }
         set((state) => ({
           fixedAssignments: state.fixedAssignments.map((fa) =>
             fa.id === updatedFixedAssignment.id ? updatedFixedAssignment : fa
@@ -86,13 +113,23 @@ export const useFixedAssignmentStore = create<FixedAssignmentStateT>()(
       }
     },
 
-    deleteFixedAssignment: async (id) => {
+    deleteFixedAssignment: async (fixedAssignmentId, teamId) => {
       try {
-        await fetch(`${apiUrlFixedAssignments}/${id}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(
+          `${apiUrlFixedAssignments}/${fixedAssignmentId}/teams/${teamId}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (!response.ok) {
+          throw new Error(
+            `Failed to delete fixedAssignment: ${response.status}`
+          );
+        }
         set((state) => ({
-          fixedAssignments: state.fixedAssignments.filter((fa) => fa.id !== id),
+          fixedAssignments: state.fixedAssignments.filter(
+            (fa) => fa.id !== fixedAssignmentId
+          ),
         }));
       } catch (error) {
         console.error("Failed to delete fixedAssignment:", error);

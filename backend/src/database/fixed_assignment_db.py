@@ -4,10 +4,8 @@ from typing import List
 from bson import ObjectId
 
 from core.fixed_assignment import FixedAssignment
-from core.shift import Shift
 from core.worker import Worker
 from database.db import DB
-from database.shift_db import to_mongo_shift
 from database.worker_db import to_mongo_worker
 from models import Shift as ShiftDocument
 from models import Worker as WorkerDocument
@@ -19,24 +17,25 @@ class FixedAssignmentDB:
         self.db = db
 
     def create_fixed_assignment(
-        self,
-        worker: Worker,
-        target_date: date,
-        shift: Shift,
+        self, fixed_assignment: FixedAssignment
     ) -> FixedAssignment:
-        fixed_assignment = FixedAssignmentDocument(
+        fa_data = to_mongo_fixed_assignment(fixed_assignment)
+        fa_doc = FixedAssignmentDocument(
             id=str(ObjectId()),
-            worker=to_mongo_worker(worker),
-            date=target_date,
-            shift=to_mongo_shift(shift),
+            worker=fa_data.worker,
+            date=fa_data.date,
+            shift=fa_data.shift,
             status="pending",
         )
-        fixed_assignment_saved = fixed_assignment.save()
-        return _from_mongo_fixed_assignment(fixed_assignment_saved)
+        fa_saved = fa_doc.save()
+        return _from_mongo_fixed_assignment(fa_saved)
 
-    def get_fixed_assignments(self) -> List[FixedAssignment]:
+    def get_fixed_assignments(self, workers: List[Worker]) -> List[FixedAssignment]:
+        w_docs = [to_mongo_worker(w) for w in workers]
         # pylint: disable=no-member
-        fixed_assignments = FixedAssignmentDocument.objects.all()  # type: ignore
+        fixed_assignments = FixedAssignmentDocument.objects.filter(  # type: ignore
+            worker__in=w_docs
+        )
         return [_from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)]
 
     def get_fixed_assignment_by_id(self, fixed_assignment_id: str) -> FixedAssignment:
@@ -47,20 +46,21 @@ class FixedAssignmentDB:
         return _from_mongo_fixed_assignment(fixed_assignment)
 
     def get_fixed_assignments_by_dates(
-        self, start_date: date, end_date: date
+        self, start_date: date, end_date: date, workers: List[Worker]
     ) -> List[FixedAssignment]:
+        w_docs = [to_mongo_worker(w) for w in workers]
         # pylint: disable=no-member
         fixed_assignments = FixedAssignmentDocument.objects.filter(  # type: ignore
-            date__gte=start_date, date__lte=end_date
+            date__gte=start_date, date__lte=end_date, worker__in=w_docs
         )
         return [_from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)]
 
     def update_fixed_assignment(
         self, fixed_assignment: FixedAssignment
     ) -> FixedAssignment:
-        document = to_mongo_fixed_assignment(fixed_assignment)
-        document_saved = document.save()
-        return _from_mongo_fixed_assignment(document_saved)
+        fa_doc = to_mongo_fixed_assignment(fixed_assignment)
+        fa_saved = fa_doc.save()
+        return _from_mongo_fixed_assignment(fa_saved)
 
     def delete_fixed_assignment(self, fixed_assignment_id: str) -> None:
         # pylint: disable=no-member

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -7,14 +7,20 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-
+// Stores
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
+// Types
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   shiftDimensionId: string;
 }
 
-export default function DialogShiftDimensionDel({ shiftDimensionId }: Props) {
+export default function DialogShiftDimensionDel({
+  team,
+  shiftDimensionId,
+}: Props) {
   const [open, setOpen] = useState(false);
 
   const deleteShiftDimension = useShiftDimensionStore(
@@ -52,7 +58,7 @@ export default function DialogShiftDimensionDel({ shiftDimensionId }: Props) {
         <DialogActions>
           <Button
             onClick={() => {
-              deleteShiftDimension(shiftDimensionId);
+              deleteShiftDimension(shiftDimensionId, team.id);
               handleClose();
             }}
             color="error"

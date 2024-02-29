@@ -1,9 +1,12 @@
 import React from "react";
-
+// Components
 import CoverageEvent from "./CoverageEvent";
 import ShiftDemandButton from "./ShiftDemandButton";
+// Types
 import { ColOverlayT } from "./types";
 import { ShiftDefaultT } from "../Shift/types";
+import { TeamT } from "../../containers/types";
+// Constants
 import {
   CovHeadRowHeight,
   CovBorderThick,
@@ -14,12 +17,14 @@ import {
 import { emptyShiftDefault } from "../../utils/emptyObjects";
 
 interface Props {
+  team: TeamT;
   coverageId: string;
   colOverlays: ColOverlayT[];
   shifts: ShiftDefaultT[];
 }
 
 export default function CoveragesOverlay({
+  team,
   coverageId,
   colOverlays,
   shifts,
@@ -41,6 +46,7 @@ export default function CoveragesOverlay({
           <div style={{ width: "100%", height: "100%", position: "relative" }}>
             {colIndex !== 0 && (
               <ShiftDemandButton
+                team={team}
                 buttonElement={
                   <button
                     style={{
@@ -81,6 +87,7 @@ export default function CoveragesOverlay({
             {colOverlay.SDOverlays.map((SDOverlay, index) => (
               <CoverageEvent
                 key={`${colIndex}-${index}`}
+                team={team}
                 SDOverlay={SDOverlay}
                 shifts={shifts}
               />

@@ -52,6 +52,7 @@ class MissingProperty:
 @dataclass
 class ConstraintBuild:
     id: str
+    team_id: str
     constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
     template_id: str
     blocks: List[Block]

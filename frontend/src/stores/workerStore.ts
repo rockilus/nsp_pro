@@ -1,5 +1,6 @@
 // workerStore.ts
 import { create } from "zustand";
+// Types
 import { WorkerT, WorkerPropertyT } from "../components/Worker/types";
 
 const baseApiUrl = "http://127.0.0.1:5000";
@@ -7,18 +8,21 @@ const apiUrlWorkers = baseApiUrl + "/workers";
 
 type WorkerStateT = {
   workers: WorkerT[];
-  fetchWorkers: () => void;
-  addWorker: () => void;
+  fetchWorkers: (teamId: string) => void;
+  addWorker: (worker: WorkerT) => void;
   addPropertiesToStore: (newProperties: WorkerPropertyT[]) => void;
   updateWorker: (updatedWorker: WorkerT) => void;
-  updateWorkerProperty: (updatedWorkerProperty: WorkerPropertyT) => void;
-  deleteWorker: (id: string) => void;
+  updateWorkerProperty: (
+    teamId: string,
+    updatedWorkerProperty: WorkerPropertyT
+  ) => void;
+  deleteWorker: (workerId: string, teamId: string) => void;
 };
 
 export const useWorkerStore = create<WorkerStateT>()((set) => ({
   workers: [],
 
-  fetchWorkers: async () => {
+  fetchWorkers: async (teamId) => {
     const options: RequestInit = {
       method: "GET",
       credentials: "include" as RequestCredentials,
@@ -27,7 +31,11 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
       },
     };
     try {
-      const response = await fetch(apiUrlWorkers, options); // Adjust API endpoint as needed
+      const response = await fetch(`${apiUrlWorkers}/teams/${teamId}`, options);
+      if (!response.ok) {
+        console.log("Failed to fetch workers", response);
+        throw new Error("Failed to fetch workers");
+      }
       const workers: WorkerT[] = await response.json();
       set({ workers });
     } catch (error) {
@@ -35,15 +43,19 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
     }
   },
 
-  // Here I keep POST for the convention, but there is no body
-  addWorker: async () => {
+  addWorker: async (worker: WorkerT) => {
     try {
-      const response = await fetch(apiUrlWorkers, {
+      const response = await fetch(`${apiUrlWorkers}/teams/${worker.teamId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(worker),
       });
+      if (!response.ok) {
+        console.log("Failed to add worker", response);
+        throw new Error("Failed to add worker");
+      }
       const newWorker: WorkerT = await response.json();
       set((state) => ({ workers: [...state.workers, newWorker] }));
     } catch (error) {
@@ -73,13 +85,20 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
 
   updateWorker: async (updatedWorker) => {
     try {
-      const response = await fetch(`${apiUrlWorkers}/${updatedWorker.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedWorker),
-      });
+      const response = await fetch(
+        `${apiUrlWorkers}/${updatedWorker.id}/teams/${updatedWorker.teamId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedWorker),
+        }
+      );
+      if (!response.ok) {
+        console.log("Failed to update worker", response);
+        throw new Error("Failed to update worker");
+      }
       const newWorker: WorkerT = await response.json();
       set((state) => ({
         workers: state.workers.map((w) =>
@@ -91,10 +110,10 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
     }
   },
 
-  updateWorkerProperty: async (updatedWorkerProperty) => {
+  updateWorkerProperty: async (teamId, updatedWorkerProperty) => {
     try {
       const response = await fetch(
-        `${apiUrlWorkers}/${updatedWorkerProperty.workerId}/properties/${updatedWorkerProperty.workerDimensionId}`,
+        `${apiUrlWorkers}/${updatedWorkerProperty.workerId}/properties/${updatedWorkerProperty.workerDimensionId}/teams/${teamId}`,
         {
           method: "PUT",
           headers: {
@@ -103,6 +122,10 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
           body: JSON.stringify(updatedWorkerProperty),
         }
       );
+      if (!response.ok) {
+        console.log("Failed to update workerProperty", response);
+        throw new Error("Failed to update workerProperty");
+      }
       const newWorkerProperty: WorkerPropertyT = await response.json();
       set((state) => ({
         workers: state.workers.map((worker) =>
@@ -127,17 +150,24 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
     }
   },
 
-  deleteWorker: async (id) => {
+  deleteWorker: async (workerId, teamId) => {
     try {
-      await fetch(`${apiUrlWorkers}/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id }),
-      });
+      const response = await fetch(
+        `${apiUrlWorkers}/${workerId}/teams/${teamId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ workerId, teamId }),
+        }
+      );
+      if (!response.ok) {
+        console.log("Failed to delete worker", response);
+        throw new Error("Failed to delete worker");
+      }
       set((state) => ({
-        workers: state.workers.filter((c) => c.id !== id),
+        workers: state.workers.filter((c) => c.id !== workerId),
       }));
     } catch (error) {
       console.error("Failed to delete worker:", error);

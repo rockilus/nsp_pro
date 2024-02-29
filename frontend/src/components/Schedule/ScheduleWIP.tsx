@@ -1,32 +1,36 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-
+// MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
-
+// Components
 import SchedulePanelDialog from "./SchedulePanelDialog";
 import ScheduleValidateDialog from "./ScheduleValidateDialog";
+// Stores
+import { useScheduleStore } from "../../stores/scheduleStore";
+// Types
 import { ScheduleT } from "./types";
 import { SolveStatusList, SolveStatusColors } from "../../utils/constants";
-import { useScheduleStore } from "../../stores/scheduleStore";
+import { TeamT } from "../../containers/types";
 
 dayjs.extend(utc);
 
 interface Props {
+  team: TeamT;
   schedule: ScheduleT;
 }
 
-export default function ScheduleWIP({ schedule }: Props) {
+export default function ScheduleWIP({ team, schedule }: Props) {
   const [isSolving, setIsSolving] = useState(false);
   const solveSchedule = useScheduleStore((state) => state.solveSchedule);
 
-  const handleSolve = async () => {
+  const handleSolve = () => {
     setIsSolving(true);
-    await solveSchedule(schedule.id);
+    solveSchedule(schedule.id, team.id);
     setIsSolving(false);
   };
 
@@ -55,6 +59,7 @@ export default function ScheduleWIP({ schedule }: Props) {
           }}
         >
           <SchedulePanelDialog
+            team={team}
             buttonElement={
               <Typography
                 variant="body2"
@@ -102,7 +107,7 @@ export default function ScheduleWIP({ schedule }: Props) {
             Solve
           </Button>
         )}
-        <ScheduleValidateDialog scheduleId={schedule.id} />
+        <ScheduleValidateDialog team={team} scheduleId={schedule.id} />
       </Box>
     </Box>
   );

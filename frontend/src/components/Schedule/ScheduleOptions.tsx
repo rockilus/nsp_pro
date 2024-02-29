@@ -15,12 +15,14 @@ import SchedulePanelDialog from "./SchedulePanelDialog";
 import ScheduleWIP from "./ScheduleWIP";
 // Types
 import { ScheduleT } from "./types";
+import { TeamT } from "../../containers/types";
 // Utils
 import { emptySchedule } from "../../utils/emptyObjects";
 
 dayjs.extend(utc);
 
 interface Props {
+  team: TeamT;
   schedules: ScheduleT[];
   selectedDisplay: string;
   displayCBs: boolean;
@@ -29,6 +31,7 @@ interface Props {
 }
 
 export default function ScheduleOptions({
+  team,
   schedules,
   selectedDisplay,
   displayCBs,
@@ -55,6 +58,7 @@ export default function ScheduleOptions({
       : dayjs.utc().startOf("day");
   const newScheduleWIP = {
     ...emptySchedule,
+    teamId: team.id,
     startDate: scheduleWIPStartDate.add(1, "day"),
     endDate: scheduleWIPStartDate.add(1, "month"),
   };
@@ -77,9 +81,10 @@ export default function ScheduleOptions({
       }}
     >
       {scheduleWIP ? (
-        <ScheduleWIP schedule={scheduleWIP} />
+        <ScheduleWIP team={team} schedule={scheduleWIP} />
       ) : (
         <SchedulePanelDialog
+          team={team}
           buttonElement={createScheduleButton()}
           schedule={newScheduleWIP}
         />

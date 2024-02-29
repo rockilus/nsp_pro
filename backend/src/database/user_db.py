@@ -1,8 +1,5 @@
-from bson import ObjectId
-
 from core.user import User
 from database.db import DB
-from models.role import Role as RoleDocument
 from models.user import User as UserDocument
 
 
@@ -14,14 +11,7 @@ class UserDB:
         self,
         user: User,
     ) -> User:
-        user_doc = UserDocument(
-            id=str(ObjectId()),
-            username=user.username,
-            hashed_password=user.hashed_password,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            roles=user.roles,
-        )
+        user_doc = to_mongo_user(user)
         user_saved = user_doc.save()
         return _from_mongo_user(user_saved)
 
@@ -30,10 +20,10 @@ class UserDB:
         user = UserDocument.objects.get(id=user_id)  # type: ignore
         return _from_mongo_user(user)
 
-    def get_user_by_username(self, username: str) -> User | None:
+    def get_user_by_email(self, email: str) -> User | None:
         try:
             # pylint: disable=no-member
-            user = UserDocument.objects.get(username=username)  # type: ignore
+            user = UserDocument.objects.get(email=email)  # type: ignore
             return _from_mongo_user(user)
         except UserDocument.DoesNotExist:
             return None
@@ -51,24 +41,20 @@ class UserDB:
 
 # Mappers
 def to_mongo_user(dataclass_obj: User) -> UserDocument:
-    # pylint: disable=no-member
-    roles = RoleDocument.objects.get(name__in=dataclass_obj.roles)  # type: ignore
     return UserDocument(
         id=dataclass_obj.id,
-        username=dataclass_obj.username,
-        hashed_password=dataclass_obj.hashed_password,
+        email=dataclass_obj.email,
         first_name=dataclass_obj.first_name,
         last_name=dataclass_obj.last_name,
-        roles=roles,
+        workers=[],
     )
 
 
 def _from_mongo_user(doc_obj: UserDocument) -> User:
     return User(
         id=doc_obj.id,
-        username=doc_obj.username,
-        hashed_password=doc_obj.hashed_password,
-        first_name=doc_obj.first_name,
-        last_name=doc_obj.last_name,
-        roles=[r.name for r in doc_obj.roles],
+        email=doc_obj.email,
+        first_name=doc_obj.first_name if doc_obj.first_name else "",
+        last_name=doc_obj.last_name if doc_obj.last_name else "",
+        workers=[],
     )

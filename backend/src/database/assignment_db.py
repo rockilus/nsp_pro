@@ -4,11 +4,9 @@ from typing import List, Union
 from bson import ObjectId
 
 from core.schedule import Assignment, Schedule
-from core.shift import Shift
 from core.worker import Worker
 from database.db import DB
 from database.schedule_db import to_mongo_schedule
-from database.shift_db import to_mongo_shift
 from database.worker_db import to_mongo_worker
 from models.assignment import Assignment as AssignmentDocument
 from models.schedule import Schedule as ScheduleDocument
@@ -21,28 +19,25 @@ class AssignmentDB:
         self.db = db
 
     # pylint: disable=too-many-arguments
-    def create_assignment(
-        self,
-        worker: Worker,
-        a_date: date,
-        shift: Shift,
-        schedule: Schedule,
-        status: str,
-    ) -> Assignment:
-        assignment = AssignmentDocument(
+    def create_assignment(self, assignment: Assignment) -> Assignment:
+        a_data = to_mongo_assignment(assignment)
+        a_doc = AssignmentDocument(
             id=str(ObjectId()),
-            worker=to_mongo_worker(worker),
-            date=datetime(a_date.year, a_date.month, a_date.day),
-            shift=to_mongo_shift(shift),
-            schedule=to_mongo_schedule(schedule),
-            status=status,
+            worker=a_data.worker,
+            date=a_data.date,
+            shift=a_data.shift,
+            schedule=a_data.schedule,
+            status=a_data.status,
         )
-        assignment_saved = assignment.save()
-        return _from_mongo_assignment(assignment_saved)
+        a_saved = a_doc.save()
+        return _from_mongo_assignment(a_saved)
 
-    def get_assignments(self) -> List[Assignment]:
+    def get_assignments(self, schedules: List[Schedule]) -> List[Assignment]:
+        s_docs = [to_mongo_schedule(s) for s in schedules]
         # pylint: disable=no-member
-        assignments = AssignmentDocument.objects.all()  # type: ignore
+        assignments = AssignmentDocument.objects.filter(  # type: ignore
+            schedule__in=s_docs
+        )
         return [_from_mongo_assignment(a) for a in list(assignments)]
 
     def get_assignment_by_id(self, assignment_id: str) -> Assignment:
@@ -51,10 +46,7 @@ class AssignmentDB:
         return _from_mongo_assignment(assignment)
 
     def get_assignment_by_worker_date_schedule(
-        self,
-        worker: Worker,
-        a_date: date,
-        schedule: Schedule,
+        self, worker: Worker, a_date: date, schedule: Schedule
     ) -> Union[Assignment, None]:
         try:
             # pylint: disable=no-member
@@ -68,20 +60,16 @@ class AssignmentDB:
         return _from_mongo_assignment(assignment)
 
     def get_assignments_by_dates(
-        self,
-        start_date: date,
-        end_date: date,
+        self, start_date: date, end_date: date, schedules: List[Schedule]
     ) -> List[Assignment]:
+        s_docs = [to_mongo_schedule(s) for s in schedules]
         # pylint: disable=no-member
         assignments = AssignmentDocument.objects.filter(  # type: ignore
-            date__gte=start_date, date__lte=end_date
+            date__gte=start_date, date__lte=end_date, schedule__in=s_docs
         )
         return [_from_mongo_assignment(a) for a in list(assignments)]
 
-    def get_assignments_by_schedule_id(
-        self,
-        schedule_id: str,
-    ) -> List[Assignment]:
+    def get_assignments_by_schedule_id(self, schedule_id: str) -> List[Assignment]:
         # pylint: disable=no-member
         assignments = AssignmentDocument.objects.filter(  # type: ignore
             schedule=schedule_id
@@ -89,29 +77,31 @@ class AssignmentDB:
         return [_from_mongo_assignment(a) for a in list(assignments)]
 
     def get_wip_validated_assignments_before_date(
-        self,
-        a_date: date,
+        self, a_date: date, schedules: List[Schedule]
     ) -> List[Assignment]:
+        s_docs = [to_mongo_schedule(s) for s in schedules]
         # pylint: disable=no-member
         assignments = AssignmentDocument.objects.filter(  # type: ignore
-            date__lt=a_date, status__in=["wip", "validated"]
+            date__lt=a_date,
+            status__in=["wip", "validated"],
+            schedule__in=s_docs,
         )
         return [_from_mongo_assignment(a) for a in list(assignments)]
 
     def get_assignments_by_status(
-        self,
-        status: List[str],
+        self, status: List[str], schedules: List[Schedule]
     ) -> List[Assignment]:
+        s_docs = [to_mongo_schedule(s) for s in schedules]
         # pylint: disable=no-member
         assignments = AssignmentDocument.objects.filter(  # type: ignore
-            status__in=status
+            status__in=status, schedule__in=s_docs
         )
         return [_from_mongo_assignment(a) for a in list(assignments)]
 
     def update_assignment(self, assignment: Assignment) -> Assignment:
-        document = to_mongo_assignment(assignment)
-        document_saved = document.save()
-        return _from_mongo_assignment(document_saved)
+        a_doc = to_mongo_assignment(assignment)
+        a_saved = a_doc.save()
+        return _from_mongo_assignment(a_saved)
 
     def delete_assignment(self, assignment_id: str) -> None:
         # pylint: disable=no-member

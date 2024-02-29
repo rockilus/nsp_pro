@@ -1,13 +1,14 @@
 import React from "react";
-
+// MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
-
+// Components
 import CoverageItem from "./CoverageItem";
+// Types
 import { CoverageT } from "./types";
 
 interface Props {

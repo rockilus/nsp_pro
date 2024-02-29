@@ -4,6 +4,7 @@ from mongoengine.fields import (
     DynamicField,
     EmbeddedDocumentField,
     ListField,
+    ReferenceField,
     StringField,
 )
 
@@ -38,6 +39,7 @@ class ConstraintBuild(Document):
     meta = {"collection": "constraint_builds"}
 
     id = StringField(primary_key=True, required=True)
+    team = ReferenceField("Team", required=True)
     # rename to aggregator
     constraint_type = StringField(
         required=True, choices=["sum", "seq", "ord", "fil", "fai", "eve"]

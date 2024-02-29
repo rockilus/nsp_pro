@@ -1,14 +1,17 @@
 from typing import List
 
 from core.schedule import Assignment, Schedule
-from scripts.setup_database import fixed_assignment_db, request_db
+from scripts.setup_database import fixed_assignment_db, request_db, worker_db
 
 
 def update_far_status(schedule: Schedule, assignments: List[Assignment]) -> None:
+    workers = worker_db.get_workers(schedule.team_id)
     fixed_assignments = fixed_assignment_db.get_fixed_assignments_by_dates(
-        schedule.start_date, schedule.end_date
+        schedule.start_date, schedule.end_date, workers
     )
-    requests = request_db.get_requests_by_dates(schedule.start_date, schedule.end_date)
+    requests = request_db.get_requests_by_dates(
+        schedule.start_date, schedule.end_date, workers
+    )
     for fa in fixed_assignments:
         assignment = next(
             (

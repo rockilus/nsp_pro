@@ -1,8 +1,8 @@
 from dataclasses import asdict
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import humps
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.schedule import Assignment, ObjectiveBreach, Schedule, Stat
@@ -28,39 +28,93 @@ from services import (
     to_past_schedules_and_assignments as to_past_schedules_and_assignments_service,
 )
 from services import validate_schedule as validate_schedule_service
+from services.authentication.authn_services import authn_verify_session
+from services.authentication.authn_types import SessionContainerType
+from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
 
-@router.post("/schedules", status_code=201)
-def create_schedule(req: ScheduleMessage) -> ScheduleMessage:
-    s_data = api_msg_to_schedule(req)
-    schedule = schedule_db.create_schedule(s_data)
-    return schedule_to_api_msg(schedule)
+@router.post("/schedules/teams/{team_id}", status_code=201)
+async def create_schedule(
+    team_id: str,
+    schedule: ScheduleMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> ScheduleMessage:
+    if not await permit_check(
+        session.get_user_id(), "create-schedule", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to create a schedule",
+        )
+    s_data = api_msg_to_schedule(schedule)
+    s_created = schedule_db.create_schedule(s_data)
+    return schedule_to_api_msg(s_created)
 
 
-@router.post("/schedules/{schedule_id}/solve", status_code=201)
-def solve_schedule(schedule_id: str) -> SolutionMessage:
+@router.post("/schedules/{schedule_id}/solve/teams/{team_id}", status_code=201)
+async def solve_schedule(
+    schedule_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> SolutionMessage:
+    if not await permit_check(session.get_user_id(), "solve-schedule", "team", team_id):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to solve a schedule",
+        )
     schedule = schedule_db.get_schedule_by_id(schedule_id)
     schedule, assignments, objective_breaches, stats = solve_schedule_service(schedule)
     return solution_to_api_msg(schedule, assignments, objective_breaches, stats)
 
 
-@router.post("/schedules/{schedule_id}/validate", status_code=201)
-def validate_schedule(schedule_id: str) -> ValidateMessage:
+@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
+async def validate_schedule(
+    schedule_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> ValidateMessage:
+    if not await permit_check(
+        session.get_user_id(), "validate-schedule", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to validate a schedule",
+        )
     schedule, assignments = validate_schedule_service(schedule_id)
     return validate_to_api_msg(schedule, assignments)
 
 
-@router.get("/schedules")
-def get_schedules() -> List[ScheduleMessage]:
-    to_past_schedules_and_assignments_service()
-    schedules = schedule_db.get_schedules()
+@router.get("/schedules/teams/{team_id}")
+async def get_schedules(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> List[ScheduleMessage]:
+    if not await permit_check(session.get_user_id(), "read-schedules", "team", team_id):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to get schedules",
+        )
+    to_past_schedules_and_assignments_service(team_id)
+    schedules = schedule_db.get_schedules(team_id)
     return [schedule_to_api_msg(s) for s in schedules]
 
 
-@router.put("/schedules/{schedule_id}")
-def update_schedule(schedule_id: str, schedule_api: ScheduleMessage) -> ScheduleMessage:
+@router.put("/schedules/{schedule_id}/teams/{team_id}")
+async def update_schedule(
+    schedule_id: str,
+    team_id: str,
+    schedule_api: ScheduleMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> ScheduleMessage:
+    if not await permit_check(
+        session.get_user_id(), "update-schedule", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to update a schedule",
+        )
     existing_schedule = schedule_db.get_schedule_by_id(schedule_id)
     if not existing_schedule:
         raise HTTPException(status_code=404, detail="Schedule does not exist")
@@ -69,13 +123,24 @@ def update_schedule(schedule_id: str, schedule_api: ScheduleMessage) -> Schedule
     return schedule_to_api_msg(updated_schedule)
 
 
-@router.delete("/schedules/{schedule_id}")
-def delete_schedule(schedule_id: str) -> Dict:
+@router.delete("/schedules/{schedule_id}/teams/{team_id}")
+async def delete_schedule(
+    schedule_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> Dict:
+    if not await permit_check(
+        session.get_user_id(), "delete-schedule", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to delete a schedule",
+        )
     assignment_db.delete_assignments_by_schedule_id(schedule_id)
     objective_breach_db.delete_objective_breaches_by_schedule_id(schedule_id)
     constraint_db.delete_constraints_by_schedule_id(schedule_id)
     schedule_db.delete_schedule(schedule_id)
-    return {"message": "CoverageSelector deleted"}
+    return {"message": "Schedule deleted"}
 
 
 def schedule_to_api_msg(schedule: Schedule) -> ScheduleMessage:
@@ -93,12 +158,10 @@ def solution_to_api_msg(
 ) -> SolutionMessage:
     data: Dict[
         str,
-        Union[
-            ScheduleMessage,
-            List[AssignmentMessage],
-            List[ObjectiveBreachMessage],
-            List[StatMessage],
-        ],
+        ScheduleMessage
+        | List[AssignmentMessage]
+        | List[ObjectiveBreachMessage]
+        | List[StatMessage],
     ] = {}
     data["schedule"] = schedule_to_api_msg(schedule)
     data["assignments"] = [assignment_to_api_msg(a) for a in assignments]
@@ -115,7 +178,7 @@ def validate_to_api_msg(
     schedule: Schedule,
     assignments: List[Assignment],
 ) -> ValidateMessage:
-    data: Dict[str, Union[ScheduleMessage, List[AssignmentMessage]]] = {}
+    data: Dict[str, ScheduleMessage | List[AssignmentMessage]] = {}
     data["schedule"] = schedule_to_api_msg(schedule)
     data["assignments"] = [assignment_to_api_msg(a) for a in assignments]
     as_dict = humps.camelize(data)

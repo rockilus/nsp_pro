@@ -1,18 +1,15 @@
 import React from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-
+// MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
-
+// Components
 import CoverageList from "./CoverageList";
+// Types
 import { CoverageT } from "./types";
 import { ShiftIdNameT } from "../Schedule/types";
-
-dayjs.extend(utc);
 
 interface Props {
   coverages: CoverageT[];

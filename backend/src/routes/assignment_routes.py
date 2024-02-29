@@ -3,38 +3,68 @@ from datetime import datetime
 from typing import Dict, List
 
 import humps
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.schedule import Assignment
 from routes.api_model import AssignmentMessage
-from scripts.setup_database import assignment_db, schedule_db, shift_db, worker_db
+from scripts.setup_database import assignment_db, schedule_db
+from services.authentication.authn_services import authn_verify_session
+from services.authentication.authn_types import SessionContainerType
+from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
 
-@router.post("/assignments", status_code=201)
-def create_assignment(req: AssignmentMessage) -> AssignmentMessage:
-    a_data = api_msg_to_assignment(req)
-    worker = worker_db.get_worker_by_id(a_data.worker_id)
-    shift = shift_db.get_shift_by_id(a_data.shift_id)
-    schedule = schedule_db.get_schedule_by_id(a_data.schedule_id)
-    assignment = assignment_db.create_assignment(
-        worker, a_data.date, shift, schedule, a_data.status
-    )
-    return assignment_to_api_msg(assignment)
+@router.post("/assignments/teams/{team_id}", status_code=201)
+async def create_assignment(
+    team_id: str,
+    assignment: AssignmentMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> AssignmentMessage:
+    if not await permit_check(
+        session.get_user_id(), "create-assignment", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to create an assignment",
+        )
+    a_data = api_msg_to_assignment(assignment)
+    a_created = assignment_db.create_assignment(a_data)
+    return assignment_to_api_msg(a_created)
 
 
-@router.get("/assignments")
-def get_assignments() -> List[AssignmentMessage]:
-    assignments = assignment_db.get_assignments()
+@router.get("/assignments/teams/{team_id}")
+async def get_assignments(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> List[AssignmentMessage]:
+    if not await permit_check(
+        session.get_user_id(), "read-assignments", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to get assignments",
+        )
+    schedules = schedule_db.get_schedules(team_id)
+    assignments = assignment_db.get_assignments(schedules)
     return [assignment_to_api_msg(a) for a in assignments]
 
 
-@router.put("/assignments/{assignment_id}")
-def update_assignment(
-    assignment_id: str, assignment_api: AssignmentMessage
+@router.put("/assignments/{assignment_id}/teams/{team_id}")
+async def update_assignment(
+    assignment_id: str,
+    team_id: str,
+    assignment_api: AssignmentMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
 ) -> AssignmentMessage:
+    if not await permit_check(
+        session.get_user_id(), "update-assignment", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to update an assignment",
+        )
     existing_assignment = assignment_db.get_assignment_by_id(assignment_id)
     if not existing_assignment:
         raise HTTPException(status_code=404, detail="Assignment does not exist")
@@ -43,8 +73,19 @@ def update_assignment(
     return assignment_to_api_msg(updated_assignment)
 
 
-@router.delete("/assignments/{assignment_id}")
-def delete_assignment(assignment_id: str) -> Dict:
+@router.delete("/assignments/{assignment_id}/teams/{team_id}")
+async def delete_assignment(
+    assignment_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> Dict:
+    if not await permit_check(
+        session.get_user_id(), "delete-assignment", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to delete an assignment",
+        )
     assignment_db.delete_assignment(assignment_id)
     return {"message": "Assignment deleted"}
 

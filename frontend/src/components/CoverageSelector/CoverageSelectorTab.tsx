@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import dayjs from "dayjs";
-
+// MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -17,12 +17,18 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-
+// Stores
 import { useCoverageSelectorStore } from "../../stores/coverageSelectorStore";
 import { useCoverageStore } from "../../stores/coverageStore";
+// Types
 import { CoverageSelectorT } from "./types";
+import { TeamT } from "../../containers/types";
 
-export default function CoverageSelectorTab() {
+interface Props {
+  team: TeamT;
+}
+
+export default function CoverageSelectorTab({ team }: Props) {
   const columns = useMemo(() => ["Start date", "End date", "Coverage"], []);
 
   const coverageSelectors = useCoverageSelectorStore(
@@ -45,12 +51,12 @@ export default function CoverageSelectorTab() {
   const fetchCoverages = useCoverageStore((state) => state.fetchCoverages);
 
   useEffect(() => {
-    fetchCoverageSelectors();
-  }, [fetchCoverageSelectors]);
+    fetchCoverageSelectors(team.id);
+  }, [fetchCoverageSelectors, team.id]);
 
   useEffect(() => {
-    fetchCoverages();
-  }, [fetchCoverages]);
+    fetchCoverages(team.id);
+  }, [fetchCoverages, team.id]);
 
   // Rows
 
@@ -63,6 +69,7 @@ export default function CoverageSelectorTab() {
   const handleAddCoverageSelector = async () => {
     const newCoverageSelector: CoverageSelectorT = {
       id: "",
+      teamId: team.id,
       startDate: dateToTimeZero(new Date()),
       endDate: dateToTimeZero(new Date()),
       coverageId: "",
@@ -70,7 +77,7 @@ export default function CoverageSelectorTab() {
     await addCoverageSelector(newCoverageSelector);
   };
 
-  const handleUpdateCoverageId = async (
+  const handleUpdateCoverageId = (
     event: SelectChangeEvent,
     coverageSelector: CoverageSelectorT
   ) => {
@@ -78,17 +85,17 @@ export default function CoverageSelectorTab() {
       ...coverageSelector,
       coverageId: event.target.value as string,
     };
-    await updateCoverageSelector(updatedCoverageSelector);
+    updateCoverageSelector(updatedCoverageSelector);
   };
 
-  const handleUpdateCoverageSelector = async (
+  const handleUpdateCoverageSelector = (
     updatedCoverageSelector: CoverageSelectorT
   ) => {
-    await updateCoverageSelector(updatedCoverageSelector);
+    updateCoverageSelector(updatedCoverageSelector);
   };
 
-  const handleDeleteCoverageSelector = async (rowId: string) => {
-    await deleteCoverageSelector(rowId);
+  const handleDeleteCoverageSelector = (rowId: string) => {
+    deleteCoverageSelector(rowId, team.id);
   };
 
   const selectCoverage = (coverageSelector: CoverageSelectorT) => {

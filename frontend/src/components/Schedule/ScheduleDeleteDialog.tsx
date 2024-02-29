@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -7,14 +7,17 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-
+// Stores
 import { useScheduleStore } from "../../stores/scheduleStore";
+// Types
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   scheduleId: string;
 }
 
-export default function ScheduleDeleteDialog({ scheduleId }: Props) {
+export default function ScheduleDeleteDialog({ team, scheduleId }: Props) {
   const [open, setOpen] = useState(false);
   const deleteSchedule = useScheduleStore((state) => state.deleteSchedule);
 
@@ -49,7 +52,7 @@ export default function ScheduleDeleteDialog({ scheduleId }: Props) {
         <DialogActions>
           <Button
             onClick={() => {
-              deleteSchedule(scheduleId);
+              deleteSchedule(scheduleId, team.id);
               handleClose();
             }}
             color="error"

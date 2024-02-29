@@ -1,9 +1,12 @@
 import React from "react";
-
+// MUI
 import TableCell from "@mui/material/TableCell";
-
+// Components
 import SchedulePanelDialog from "./SchedulePanelDialog";
+// Types
 import { ColumnT } from "./types";
+import { TeamT } from "../../containers/types";
+// Constants
 import {
   ColorNoCoverage,
   ColorPast,
@@ -11,11 +14,12 @@ import {
 } from "../../utils/constants";
 
 interface Props {
+  team: TeamT;
   column: ColumnT;
   colIndex: number;
 }
 
-export default function ScheduleHeaderCell({ column, colIndex }: Props) {
+export default function ScheduleHeaderCell({ team, column, colIndex }: Props) {
   return (
     <TableCell
       component="th"
@@ -38,6 +42,7 @@ export default function ScheduleHeaderCell({ column, colIndex }: Props) {
     >
       {column.schedule !== null ? (
         <SchedulePanelDialog
+          team={team}
           buttonElement={column.name}
           schedule={column.schedule}
         />

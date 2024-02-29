@@ -18,26 +18,29 @@ class ObjectiveBreachDB:
         self.db = db
 
     def create_objective_breach(
-        self,
-        objective_breach: ObjectiveBreach,
-        schedule: Schedule,
+        self, objective_breach: ObjectiveBreach
     ) -> ObjectiveBreach:
-        variable_docs = [to_mongo_variable(v) for v in objective_breach.variables]
+        ob_data = to_mongo_objective_breach(objective_breach)
         ob_doc = ObjectiveBreachDocument(
             id=str(ObjectId()),
-            objective_id=objective_breach.objective_id,
-            objective_category=objective_breach.objective_category,
-            variables=variable_docs,
-            hard_to_soft=objective_breach.hard_to_soft,
-            description=objective_breach.description,
-            schedule=to_mongo_schedule(schedule),
+            objective_id=ob_data.objective_id,
+            objective_category=ob_data.objective_category,
+            variables=ob_data.variables,
+            hard_to_soft=ob_data.hard_to_soft,
+            description=ob_data.description,
+            schedule=ob_data.schedule,
         )
-        objective_breach_saved = ob_doc.save()
-        return _from_mongo_objective_breach(objective_breach_saved)
+        ob_saved = ob_doc.save()
+        return _from_mongo_objective_breach(ob_saved)
 
-    def get_objective_breaches(self) -> List[ObjectiveBreach]:
+    def get_objective_breaches(
+        self, schedules: List[Schedule]
+    ) -> List[ObjectiveBreach]:
+        s_docs = [to_mongo_schedule(s) for s in schedules]
         # pylint: disable=no-member
-        objective_breaches = ObjectiveBreachDocument.objects.all()  # type: ignore
+        objective_breaches = ObjectiveBreachDocument.objects.filter(  # type: ignore
+            schedule__in=s_docs
+        )
         return [_from_mongo_objective_breach(ob) for ob in list(objective_breaches)]
 
     def get_objective_breach_by_id(self, objective_breach_id: str) -> ObjectiveBreach:

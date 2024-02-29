@@ -7,7 +7,6 @@ import Toolbar from "@mui/material/Toolbar";
 // Components
 import AppBarDash from "./AppBarDash";
 import DrawerDash from "./DrawerDash";
-import AdminTab from "../Admin/AdminTab";
 import ConstraintTab from "../Constraint/ConstraintTab";
 import CoverageSelectorTab from "../CoverageSelector/CoverageSelectorTab";
 import CoverageTab from "../Coverage/CoverageTab";
@@ -22,11 +21,15 @@ import { useWorkerStore } from "../../stores/workerStore";
 // Types
 import { ShiftDefaultT } from "../Shift/types";
 import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
+import { TeamT } from "../../containers/types";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
+interface Props {
+  team: TeamT;
+}
 
-export default function Dashboard() {
+export default function Dashboard({ team }: Props) {
   const [selectedTab, setSelectedTab] = React.useState<string>("workers");
   const [open, setOpen] = React.useState<boolean>(false);
 
@@ -78,20 +81,25 @@ export default function Dashboard() {
     : [];
 
   useEffect(() => {
-    fetchShifts();
-    fetchWorkers();
-  }, [fetchShifts, fetchWorkers]);
+    fetchShifts(team.id);
+    fetchWorkers(team.id);
+  }, [fetchShifts, fetchWorkers, team.id]);
 
   const tabs: { [key: string]: JSX.Element } = {
-    workers: <WorkerTab />,
-    shifts: <ShiftTab />,
-    coverages: <CoverageTab shifts={shiftDefaults} />,
-    constraints: <ConstraintTab workers={workers} shifts={shifts} />,
-    requests: <FARTab workers={workersIdName} shifts={shiftsIdName} />,
-    coverageSelector: <CoverageSelectorTab />,
-    schedule: <ScheduleTab workers={workersIdName} shifts={shiftsIdName} />,
-    stats: <StatsTab workers={workersIdName} shifts={shiftsIdName} />,
-    admin: <AdminTab />,
+    workers: <WorkerTab team={team} />,
+    shifts: <ShiftTab team={team} />,
+    coverages: <CoverageTab team={team} shifts={shiftDefaults} />,
+    constraints: <ConstraintTab team={team} />,
+    requests: (
+      <FARTab team={team} workers={workersIdName} shifts={shiftsIdName} />
+    ),
+    coverageSelector: <CoverageSelectorTab team={team} />,
+    schedule: (
+      <ScheduleTab team={team} workers={workersIdName} shifts={shiftsIdName} />
+    ),
+    stats: (
+      <StatsTab team={team} workers={workersIdName} shifts={shiftsIdName} />
+    ),
   };
 
   return (

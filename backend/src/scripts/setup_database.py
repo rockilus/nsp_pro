@@ -9,15 +9,14 @@ from database import (
     CoverageSelectorDB,
     FixedAssignmentDB,
     ObjectiveBreachDB,
-    PermissionDB,
     RequestDB,
-    RoleDB,
     ScheduleDB,
     ShiftDB,
     ShiftDemandDB,
     ShiftDimensionDB,
     ShiftPropertyDB,
     StatsOptionsDB,
+    TeamDB,
     UserDB,
     WorkerDB,
     WorkerDimensionDB,
@@ -36,15 +35,14 @@ coverage_db = CoverageDB(db)
 coverage_selector_db = CoverageSelectorDB(db)
 fixed_assignment_db = FixedAssignmentDB(db)
 objective_breach_db = ObjectiveBreachDB(db)
-permission_db = PermissionDB(db)
 request_db = RequestDB(db)
-role_db = RoleDB(db)
 schedule_db = ScheduleDB(db)
 shift_db = ShiftDB(db)
 shift_demand_db = ShiftDemandDB(db)
 shift_dimension_db = ShiftDimensionDB(db)
 shift_property_db = ShiftPropertyDB(db)
 stats_options_db = StatsOptionsDB(db)
+team_db = TeamDB(db)
 user_db = UserDB(db)
 worker_db = WorkerDB(db)
 worker_dimension_db = WorkerDimensionDB(db)

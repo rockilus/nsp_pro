@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+// MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -7,10 +7,13 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-
+// Components
 import DialogShiftDimensionDel from "./DialogShiftDimensionDel";
+// Types
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   shiftDimensionId: string;
   name: string;
   entryType: string;
@@ -20,6 +23,7 @@ interface Props {
 }
 
 export default function UpdateShiftDimension({
+  team,
   shiftDimensionId,
   name: value,
   entryType,
@@ -88,7 +92,10 @@ export default function UpdateShiftDimension({
         <ListItem key={"list_options"}>{addListOptions()}</ListItem>
       )}
       <ListItem key={"button"}>
-        <DialogShiftDimensionDel shiftDimensionId={shiftDimensionId} />
+        <DialogShiftDimensionDel
+          team={team}
+          shiftDimensionId={shiftDimensionId}
+        />
       </ListItem>
     </Box>
   );

@@ -14,12 +14,14 @@ class WorkerPropertyMessage(BaseModel):
 
 class WorkerMessage(BaseModel):
     id: str
+    teamId: str
     name: str
     workerProperties: List[WorkerPropertyMessage]
 
 
 class WorkerDimensionMessage(BaseModel):
     id: str
+    teamId: str
     name: str
     entryType: str
     entryOptions: List[str]
@@ -40,6 +42,7 @@ class ShiftPropertyMessage(BaseModel):
 
 class ShiftMessage(BaseModel):
     id: str
+    teamId: str
     name: str
     startTime: datetime
     endTime: datetime
@@ -61,6 +64,7 @@ class ShiftDefaultMessage(BaseModel):
 
 class ShiftDimensionMessage(BaseModel):
     id: str
+    teamId: str
     name: str
     entryType: str
     entryOptions: List[str]
@@ -79,19 +83,16 @@ class ShiftDemandMessage(BaseModel):
     coverageId: str
 
 
-class CreateCoverageRequest(BaseModel):
-    name: str
-    shiftDemands: List[ShiftDemandMessage]
-
-
 class CoverageMessage(BaseModel):
     id: str
+    teamId: str
     name: str
     shiftDemands: List[ShiftDemandMessage]
 
 
 class CoverageSelectorMessage(BaseModel):
     id: str
+    teamId: str
     coverageId: str
     startDate: date
     endDate: date
@@ -130,6 +131,7 @@ class MissingPropertyMessage(BaseModel):
 
 class ConstraintBuildMessage(BaseModel):
     id: str
+    teamId: str
     constraintType: str
     templateId: str
     blocks: List[BlockMessage]
@@ -173,6 +175,7 @@ class StatMessage(BaseModel):
 
 class StatsOptionsMessage(BaseModel):
     id: str
+    teamId: str
     startDate: date
     endDate: date
 
@@ -200,6 +203,7 @@ class ObjectiveBreachMessage(BaseModel):
 
 class ScheduleMessage(BaseModel):
     id: str
+    teamId: str
     startDate: date
     endDate: date
     solveStatus: str
@@ -232,21 +236,8 @@ class User(BaseModel):
     lastName: str
 
 
-class UserSignUp(BaseModel):
-    username: str
-    password: str
-    firstName: str
-    lastName: str
-
-
-class RoleMessage(BaseModel):
+# Team
+class TeamMessage(BaseModel):
     id: str
-    name: str
-    description: str
-    permissions: list[str]
-
-
-class PermissionMessage(BaseModel):
-    id: str
-    name: str
-    description: str
+    # team_members: List[str]
+    # team_leaders: List[str]

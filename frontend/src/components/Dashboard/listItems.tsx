@@ -98,21 +98,21 @@ export const mainListItems = ({ selectedTab, selectTab }: Props) => {
   );
 };
 
-export const secondaryListItems = ({ selectedTab, selectTab }: Props) => {
-  return (
-    <React.Fragment>
-      <ListSubheader component="div" inset>
-        Admin
-      </ListSubheader>
-      <ListItemButton
-        selected={selectedTab === "admin"}
-        onClick={() => selectTab("admin")}
-      >
-        <ListItemIcon>
-          <LayersIcon />
-        </ListItemIcon>
-        <ListItemText primary="Roles/Permissions" />
-      </ListItemButton>
-    </React.Fragment>
-  );
-};
+// export const secondaryListItems = ({ selectedTab, selectTab }: Props) => {
+//   return (
+//     <React.Fragment>
+//       <ListSubheader component="div" inset>
+//         Admin
+//       </ListSubheader>
+//       <ListItemButton
+//         selected={selectedTab === "admin"}
+//         onClick={() => selectTab("admin")}
+//       >
+//         <ListItemIcon>
+//           <LayersIcon />
+//         </ListItemIcon>
+//         <ListItemText primary="Roles/Permissions" />
+//       </ListItemButton>
+//     </React.Fragment>
+//   );
+// };

@@ -18,12 +18,12 @@ const apiUrlSchedule = baseApiUrl + "/schedules";
 type ScheduleStateT = {
   // schedule: ScheduleT;
   schedules: ScheduleT[];
-  fetchSchedules: () => void;
+  fetchSchedules: (teamId: string) => void;
   addSchedule: (schedule: ScheduleT) => void;
-  solveSchedule: (id: string) => void;
+  solveSchedule: (scheduleId: string, teamId: string) => void;
   updateSchedule: (updatedSchedule: ScheduleT) => void;
-  validateSchedule: (id: string) => void;
-  deleteSchedule: (id: string) => void;
+  validateSchedule: (scheduleId: string, teamId: string) => void;
+  deleteSchedule: (scheduleId: string, teamId: string) => void;
 };
 
 const toScheduleT = (data: any) => {
@@ -57,20 +57,9 @@ const toValidateT = (data: any) => {
 };
 
 export const useScheduleStore = create<ScheduleStateT>()((set) => ({
-  // schedule: {
-  //   id: "",
-  //   startDate: dayjs.utc(0),
-  //   endDate: dayjs.utc(0),
-  //   solveStatus: "Not solved",
-  //   status: "WIP",
-  //   assignments: [],
-  //   missingCoverageDates: [],
-  //   objectiveBreaches: [],
-  //   stats: [],
-  // },
   schedules: [],
 
-  fetchSchedules: async () => {
+  fetchSchedules: async (teamId) => {
     const options: RequestInit = {
       method: "GET",
       credentials: "include" as RequestCredentials,
@@ -79,7 +68,13 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       },
     };
     try {
-      const response = await fetch(apiUrlSchedule, options);
+      const response = await fetch(
+        `${apiUrlSchedule}/teams/${teamId}`,
+        options
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch schedules: ${response.statusText}`);
+      }
       const data = await response.json();
       const schedules: ScheduleT[] = data.map(toScheduleT);
       set({ schedules });
@@ -90,13 +85,19 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
 
   addSchedule: async (schedule) => {
     try {
-      const response = await fetch(apiUrlSchedule, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(schedule),
-      });
+      const response = await fetch(
+        `${apiUrlSchedule}/teams/${schedule.teamId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(schedule),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to add schedule: ${response.statusText}`);
+      }
       const data = await response.json();
       const newSchedule: ScheduleT = toScheduleT(data);
       set((state) => ({
@@ -107,14 +108,20 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
     }
   },
 
-  solveSchedule: async (id) => {
+  solveSchedule: async (scheduleId, teamId) => {
     try {
-      const response = await fetch(`${apiUrlSchedule}/${id}/solve`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${apiUrlSchedule}/${scheduleId}/solve/teams/${teamId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to add schedule: ${response.statusText}`);
+      }
       const data = await response.json();
       const newSolution: SolutionT = toSolutionT(data);
       set((state) => ({
@@ -124,7 +131,7 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       }));
       useAssignmentStore
         .getState()
-        .updateAssignmentStore(id, newSolution.assignments);
+        .updateAssignmentStore(scheduleId, newSolution.assignments);
       useObjectiveBreachStore
         .getState()
         .updateObjectiveBreachStore(newSolution.objectiveBreaches);
@@ -136,13 +143,19 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
 
   updateSchedule: async (updatedSchedule) => {
     try {
-      const response = await fetch(`${apiUrlSchedule}/${updatedSchedule.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedSchedule),
-      });
+      const response = await fetch(
+        `${apiUrlSchedule}/${updatedSchedule.id}/teams/${updatedSchedule.teamId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedSchedule),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to update schedule: ${response.statusText}`);
+      }
       const data = await response.json();
       const newSchedule: ScheduleT = toScheduleT(data);
       set((state) => ({
@@ -155,14 +168,20 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
     }
   },
 
-  validateSchedule: async (id) => {
+  validateSchedule: async (scheduleId, teamId) => {
     try {
-      const response = await fetch(`${apiUrlSchedule}/${id}/validate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${apiUrlSchedule}/${scheduleId}/validate/teams/${teamId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to validate schedule: ${response.statusText}`);
+      }
       const data = await response.json();
       const newValidate: ValidateT = toValidateT(data);
       set((state) => ({
@@ -172,22 +191,30 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       }));
       useAssignmentStore
         .getState()
-        .updateAssignmentStore(id, newValidate.assignments);
+        .updateAssignmentStore(scheduleId, newValidate.assignments);
     } catch (error) {
       console.error("Failed to validate schedule:", error);
     }
   },
 
-  deleteSchedule: async (id) => {
+  deleteSchedule: async (scheduleId, teamId) => {
     try {
-      await fetch(`${apiUrlSchedule}/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${apiUrlSchedule}/${scheduleId}/teams/${teamId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to delete schedule: ${response.statusText}`);
+      }
       set((state) => ({
-        schedules: state.schedules.filter((s) => s.id !== id),
+        schedules: state.schedules.filter((s) => s.id !== scheduleId),
       }));
-      useAssignmentStore.getState().deleteAStoreWithScheduleId(id);
-      useObjectiveBreachStore.getState().deleteOBStoreWithScheduleId(id);
+      useAssignmentStore.getState().deleteAStoreWithScheduleId(scheduleId);
+      useObjectiveBreachStore
+        .getState()
+        .deleteOBStoreWithScheduleId(scheduleId);
       useStatStore.getState().deleteSStore();
     } catch (error) {
       console.error("Failed to delete schedule:", error);

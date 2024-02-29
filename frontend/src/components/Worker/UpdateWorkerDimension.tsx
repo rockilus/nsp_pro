@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+// MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -7,10 +7,13 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-
+// Components
 import DialogColumnDelete from "./DialogWorkerDimensionDel";
+// Types
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   workerDimensionId: string;
   name: string;
   entryType: string;
@@ -20,6 +23,7 @@ interface Props {
 }
 
 export default function UpdateWorkerDimension({
+  team,
   workerDimensionId,
   name: value,
   entryType,
@@ -88,7 +92,7 @@ export default function UpdateWorkerDimension({
         <ListItem key={"list_options"}>{addListOptions()}</ListItem>
       )}
       <ListItem key={"button"}>
-        <DialogColumnDelete workerDimensionId={workerDimensionId} />
+        <DialogColumnDelete team={team} workerDimensionId={workerDimensionId} />
       </ListItem>
     </Box>
   );

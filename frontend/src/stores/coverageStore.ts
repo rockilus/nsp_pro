@@ -2,6 +2,7 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
+// Types
 import { CoverageT, ShiftDemandT } from "../components/Coverage/types";
 import { ShiftDefaultT } from "../components/Shift/types";
 
@@ -15,13 +16,17 @@ const apiUrlCoverages = `${baseApiUrl}/coverages`;
 
 type CoverageStateT = {
   coverages: CoverageT[];
-  fetchCoverages: () => void;
+  fetchCoverages: (teamId: string) => void;
   addCoverage: (coverage: CoverageT) => Promise<CoverageT>;
-  addShiftDemand: (shiftDemand: ShiftDemandT) => void;
+  addShiftDemand: (shiftDemand: ShiftDemandT, teamId: string) => void;
   updateCoverage: (updatedCoverage: CoverageT) => void;
-  updateShiftDemand: (updatedShiftDemand: ShiftDemandT) => void;
-  deleteCoverage: (id: string) => void;
-  deleteShiftDemand: (coverageId: string, id: string) => void;
+  updateShiftDemand: (updatedShiftDemand: ShiftDemandT, teamId: string) => void;
+  deleteCoverage: (coverageId: string, teamId: string) => void;
+  deleteShiftDemand: (
+    coverageId: string,
+    shiftDemandId: string,
+    teamId: string
+  ) => void;
 };
 
 const toShiftDefaultT = (data: any): ShiftDefaultT => {
@@ -35,9 +40,12 @@ const toShiftDefaultT = (data: any): ShiftDefaultT => {
 export const useCoverageStore = create<CoverageStateT>()((set) => ({
   coverages: [],
 
-  fetchCoverages: async () => {
+  fetchCoverages: async (teamId) => {
     try {
-      const response = await fetch(apiUrlCoverages); // Adjust API endpoint as needed
+      const response = await fetch(`${apiUrlCoverages}/teams/${teamId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch coverages");
+      }
       const data = await response.json();
       const coverages: CoverageT[] = data.map((coverage: CoverageT) => ({
         ...coverage,
@@ -54,13 +62,19 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
 
   addCoverage: async (coverage) => {
     try {
-      const response = await fetch(apiUrlCoverages, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(coverage),
-      });
+      const response = await fetch(
+        `${apiUrlCoverages}/teams/${coverage.teamId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(coverage),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to add coverage");
+      }
       const data = await response.json();
       const newCoverage: CoverageT = {
         ...data,
@@ -76,10 +90,10 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
     }
   },
 
-  addShiftDemand: async (shiftDemand) => {
+  addShiftDemand: async (shiftDemand, teamId) => {
     try {
       const response = await fetch(
-        `${apiUrlCoverages}/${shiftDemand.coverageId}/shift_demands`,
+        `${apiUrlCoverages}/${shiftDemand.coverageId}/shift_demands/teams/${teamId}`,
         {
           method: "POST",
           headers: {
@@ -88,6 +102,9 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           body: JSON.stringify(shiftDemand),
         }
       );
+      if (!response.ok) {
+        throw new Error("Failed to add shift demand");
+      }
       const data = await response.json();
       const newShiftDemand: ShiftDemandT = {
         ...data,
@@ -110,13 +127,19 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
 
   updateCoverage: async (updatedCoverage) => {
     try {
-      const response = await fetch(`${apiUrlCoverages}/${updatedCoverage.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedCoverage),
-      });
+      const response = await fetch(
+        `${apiUrlCoverages}/${updatedCoverage.id}/teams/${updatedCoverage.teamId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedCoverage),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to update coverage");
+      }
       const data = await response.json();
       const newCoverage: CoverageT = {
         ...data,
@@ -135,10 +158,10 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
     }
   },
 
-  updateShiftDemand: async (updatedShiftDemand) => {
+  updateShiftDemand: async (updatedShiftDemand, teamId) => {
     try {
       const response = await fetch(
-        `${apiUrlCoverages}/${updatedShiftDemand.coverageId}/shift_demands/${updatedShiftDemand.id}`,
+        `${apiUrlCoverages}/${updatedShiftDemand.coverageId}/shift_demands/${updatedShiftDemand.id}/teams/${teamId}`,
         {
           method: "PUT",
           headers: {
@@ -147,6 +170,9 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           body: JSON.stringify(updatedShiftDemand),
         }
       );
+      if (!response.ok) {
+        throw new Error("Failed to update shift demand");
+      }
       const data = await response.json();
       const newShiftDemand: ShiftDemandT = {
         ...data,
@@ -175,31 +201,43 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
     }
   },
 
-  deleteCoverage: async (id) => {
+  deleteCoverage: async (coverageId, teamId) => {
     try {
-      await fetch(`${apiUrlCoverages}/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${apiUrlCoverages}/${coverageId}/teams/${teamId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to delete coverage");
+      }
       set((state) => ({
-        coverages: state.coverages.filter((c) => c.id !== id),
+        coverages: state.coverages.filter((c) => c.id !== coverageId),
       }));
     } catch (error) {
       console.error("Failed to delete coverage:", error);
     }
   },
 
-  deleteShiftDemand: async (coverageId, id) => {
+  deleteShiftDemand: async (coverageId, shiftDemandId, teamId) => {
     try {
-      await fetch(`${apiUrlCoverages}/${coverageId}/shift_demands/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${apiUrlCoverages}/${coverageId}/shift_demands/${shiftDemandId}/teams/${teamId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to delete shift demand");
+      }
       set((state) => ({
         coverages: state.coverages.map((coverage) =>
           coverage.id === coverageId
             ? {
                 ...coverage,
                 shiftDemands: coverage.shiftDemands.filter(
-                  (shiftDemand) => shiftDemand.id !== id
+                  (shiftDemand) => shiftDemand.id !== shiftDemandId
                 ),
               }
             : coverage

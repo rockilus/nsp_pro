@@ -10,8 +10,10 @@ import {
   ScheduleT,
   ObjectiveBreachT,
 } from "./types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   schedules: ScheduleT[];
   assignments: AssignmentT[];
   objectiveBreaches: ObjectiveBreachT[];
@@ -23,6 +25,7 @@ interface Props {
 }
 
 export default function ScheduleDisplay({
+  team,
   schedules,
   assignments,
   objectiveBreaches,
@@ -35,6 +38,7 @@ export default function ScheduleDisplay({
   const scheduleDisplays: { [key: string]: JSX.Element } = {
     shift: (
       <ShiftTable
+        team={team}
         schedules={schedules}
         assignments={assignments}
         objectiveBreaches={objectiveBreaches}
@@ -46,6 +50,7 @@ export default function ScheduleDisplay({
     ),
     worker: (
       <WorkerTable
+        team={team}
         schedules={schedules}
         assignments={assignments}
         objectiveBreaches={objectiveBreaches}

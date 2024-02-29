@@ -32,6 +32,7 @@ export type ObjectiveBreachT = {
 // Stats
 export type StatsOptionsT = {
   id: string;
+  teamId: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
 };
@@ -51,6 +52,7 @@ export type StatsT = {
 // Schedule
 export type ScheduleT = {
   id: string;
+  teamId: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
   solveStatus: string;

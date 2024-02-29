@@ -7,16 +7,16 @@ const apiUrlConstraints = baseApiUrl + "/constraints";
 
 type ConstraintStateT = {
   constraints: ConstraintT[];
-  fetchConstraints: () => void;
+  fetchConstraints: (teamId: string) => void;
   addConstraint: (constraint: ConstraintT) => void;
   updateConstraint: (updatedConstraint: ConstraintT) => void;
-  deleteConstraint: (id: string) => void;
+  deleteConstraint: (constraintId: string, teamId: string) => void;
 };
 
 export const useConstraintStore = create<ConstraintStateT>()((set) => ({
   constraints: [],
 
-  fetchConstraints: async () => {
+  fetchConstraints: async (teamId) => {
     const options: RequestInit = {
       method: "GET",
       credentials: "include" as RequestCredentials,
@@ -25,7 +25,13 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
       },
     };
     try {
-      const response = await fetch(apiUrlConstraints, options); // Adjust API endpoint as needed
+      const response = await fetch(
+        `${apiUrlConstraints}/teams/${teamId}`,
+        options
+      );
+      if (!response.ok) {
+        throw Error(`Failed to fetch constraints: ${response.statusText}`);
+      }
       const constraints: ConstraintT[] = await response.json();
       set({ constraints });
     } catch (error) {
@@ -35,13 +41,19 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
 
   addConstraint: async (constraint) => {
     try {
-      const response = await fetch(apiUrlConstraints, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(constraint),
-      });
+      const response = await fetch(
+        `${apiUrlConstraints}/teams/${constraint.teamId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(constraint),
+        }
+      );
+      if (!response.ok) {
+        throw Error(`Failed to add constraint: ${response.statusText}`);
+      }
       const newConstraint = await response.json();
       set((state) => ({
         constraints: [...state.constraints, newConstraint],
@@ -54,7 +66,7 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
   updateConstraint: async (updatedConstraint) => {
     try {
       const response = await fetch(
-        `${apiUrlConstraints}/${updatedConstraint.id}`,
+        `${apiUrlConstraints}/${updatedConstraint.id}/teams/${updatedConstraint.teamId}`,
         {
           method: "PUT",
           headers: {
@@ -63,6 +75,9 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
           body: JSON.stringify(updatedConstraint),
         }
       );
+      if (!response.ok) {
+        throw Error(`Failed to update constraint: ${response.statusText}`);
+      }
       const newConstraint: ConstraintT = await response.json();
       set((state) => ({
         constraints: state.constraints.map((w) =>
@@ -74,17 +89,23 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
     }
   },
 
-  deleteConstraint: async (id) => {
+  deleteConstraint: async (constraintId, teamId) => {
     try {
-      await fetch(`${apiUrlConstraints}/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id }),
-      });
+      const response = await fetch(
+        `${apiUrlConstraints}/${constraintId}/teams/${teamId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id: constraintId }),
+        }
+      );
+      if (!response.ok) {
+        throw Error(`Failed to delete constraint: ${response.statusText}`);
+      }
       set((state) => ({
-        constraints: state.constraints.filter((c) => c.id !== id),
+        constraints: state.constraints.filter((c) => c.id !== constraintId),
       }));
     } catch (error) {
       console.error("Failed to delete constraint:", error);

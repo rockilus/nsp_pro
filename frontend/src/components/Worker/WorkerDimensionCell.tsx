@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+// MUI
 import AbcIcon from "@mui/icons-material/Abc";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -9,16 +9,20 @@ import Menu from "@mui/material/Menu";
 import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
 import Typography from "@mui/material/Typography";
-
+// Components
 import UpdateWorkerDimension from "./UpdateWorkerDimension";
-import { WorkerDimensionT } from "./types";
+// Stores
 import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
+// Types
+import { WorkerDimensionT } from "./types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   workerDimension: WorkerDimensionT;
 }
 
-export default function WorkerDimensionCell({ workerDimension }: Props) {
+export default function WorkerDimensionCell({ team, workerDimension }: Props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [nameState, setNameState] = useState(workerDimension.name);
   const [entryOptionsState, setEntryOptionsState] = useState(
@@ -53,6 +57,7 @@ export default function WorkerDimensionCell({ workerDimension }: Props) {
     ) {
       const updatedWD: WorkerDimensionT = {
         id: workerDimension.id,
+        teamId: workerDimension.teamId,
         name: nameState,
         entryType: workerDimension.entryType,
         entryOptions: entryOptionsState,
@@ -116,6 +121,7 @@ export default function WorkerDimensionCell({ workerDimension }: Props) {
         }}
       >
         <UpdateWorkerDimension
+          team={team}
           workerDimensionId={workerDimension.id}
           name={nameState}
           entryType={workerDimension.entryType}

@@ -43,6 +43,7 @@ class Stat:
 @dataclass
 class StatsOptions:
     id: str
+    team_id: str
     start_date: date
     end_date: date
 
@@ -50,9 +51,10 @@ class StatsOptions:
 @dataclass
 class Schedule:
     id: str
+    team_id: str
     start_date: date
     end_date: date
-    solve_status: str  # Not solved, Solved, Hard breached, Soft breached, No solution
+    solve_status: (str)  # Not solved, Solved, Hard breached, Soft breached, No solution
     status: str  # WIP, valid, past
     missing_coverage_dates: List[date]
 

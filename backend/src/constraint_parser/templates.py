@@ -12,19 +12,19 @@ from scripts.setup_database import (
 from utils.constants import Constants
 
 
-def build_templates() -> List[Template]:
-    worker_options = build_worker_options()
-    shift_options = build_shift_options()
+def build_templates(team_id: str) -> List[Template]:
+    worker_options = build_worker_options(team_id)
+    shift_options = build_shift_options(team_id)
     return build_templates_list(worker_options, shift_options)
 
 
-def build_worker_options() -> Dict:
-    workers = worker_db.get_workers()
+def build_worker_options(team_id: str) -> Dict:
+    workers = worker_db.get_workers(team_id)
     worker_options = {
         "all": [{"name": "all workers", "id": "", "id_type": ""}],
         "workers": [{"name": w.name, "id": w.id, "id_type": "worker"} for w in workers],
     }
-    worker_dimensions = worker_dimension_db.get_worker_dimensions()
+    worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id)
     for worker_dimension in worker_dimensions:
         worker_properties = (
             worker_property_db.get_worker_properties_by_worker_dimension_id(
@@ -56,13 +56,13 @@ def build_worker_options() -> Dict:
     return worker_options
 
 
-def build_shift_options() -> Dict:
-    shifts = shift_db.get_shifts()
+def build_shift_options(team_id: str) -> Dict:
+    shifts = shift_db.get_shifts(team_id)
     shift_options = {
         "all": [{"name": "all shifts", "id": "", "id_type": ""}],
         "shifts": [{"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts],
     }
-    shift_dimensions = shift_dimension_db.get_shift_dimensions()
+    shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
     for shift_dimension in shift_dimensions:
         shift_properties = shift_property_db.get_shift_properties_by_shift_dimension(
             shift_dimension

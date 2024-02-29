@@ -1,19 +1,22 @@
 import React from "react";
-
+// MUI
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-
+// Components
 import ShiftDemandButton from "./ShiftDemandButton";
+// Types
 import { SDOverlayT } from "./types";
 import { ShiftDefaultT } from "../Shift/types";
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   SDOverlay: SDOverlayT;
   shifts: ShiftDefaultT[];
 }
 
-export default function CoverageEvent({ SDOverlay, shifts }: Props) {
+export default function CoverageEvent({ team, SDOverlay, shifts }: Props) {
   const covEventWidth = Math.floor(SDOverlay.width / SDOverlay.widthDivisor); // px
   const covEventPadL = 2; // px
   const covEventMarginB = -0.75;
@@ -103,6 +106,7 @@ export default function CoverageEvent({ SDOverlay, shifts }: Props) {
       }}
     >
       <ShiftDemandButton
+        team={team}
         buttonElement={newSDButton()}
         shiftDemand={SDOverlay.shiftDemand}
         shifts={shifts}

@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-
+// MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CloseIcon from "@mui/icons-material/Close";
@@ -11,21 +9,24 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
-
+// Stores
 import { useCoverageStore } from "../../stores/coverageStore";
+// Types
 import { ShiftDemandT } from "./types";
 import { ShiftDefaultT } from "../Shift/types";
+// Constants
 import { emptyShiftDefault } from "../../utils/emptyObjects";
-
-dayjs.extend(utc);
+import { TeamT } from "../../containers/types";
 
 interface Props {
+  team: TeamT;
   shiftDemand: ShiftDemandT;
   shifts: ShiftDefaultT[];
   handleClose: () => void;
 }
 
 export default function ShiftDemandPanel({
+  team,
   shiftDemand,
   shifts,
   handleClose,
@@ -42,16 +43,16 @@ export default function ShiftDemandPanel({
 
   const handleSaveSD = () => {
     if (SDState.id === "") {
-      addShiftDemand(SDState);
+      addShiftDemand(SDState, team.id);
     } else {
-      updateShiftDemand(SDState);
+      updateShiftDemand(SDState, team.id);
     }
     handleClose();
   };
 
   const handleDeleteSD = () => {
     if (SDState.id !== "") {
-      deleteShiftDemand(SDState.coverageId, SDState.id);
+      deleteShiftDemand(SDState.coverageId, SDState.id, team.id);
     }
     handleClose();
   };

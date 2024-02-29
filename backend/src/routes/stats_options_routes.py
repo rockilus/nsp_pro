@@ -2,47 +2,92 @@ from dataclasses import asdict
 from typing import Dict, List, Union
 
 import humps
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.schedule import Stat, StatsOptions
 from routes.api_model import StatMessage, StatsMessage, StatsOptionsMessage
 from scripts.setup_database import stats_options_db
+from services.authentication.authn_services import authn_verify_session
+from services.authentication.authn_types import SessionContainerType
+from services.authorization.authz_services import permit_check
 from services.stats_services.stats_setup import stats_setup
 
 router = APIRouter()
 
 
-@router.post("/stats-options", status_code=201)
-def create_stats_options(req: StatsOptionsMessage) -> StatsMessage:
+@router.post("/stats-options/teams/{team_id}", status_code=201)
+async def create_stats_options(
+    team_id: str,
+    req: StatsOptionsMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> StatsMessage:
+    if not await permit_check(
+        session.get_user_id(), "create-stats-options", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to create a stats options",
+        )
     s_data = api_msg_to_stats_options(req)
     stats_options = stats_options_db.create_stats_options(s_data)
-    stats = stats_setup()
+    stats = stats_setup(team_id)
     return stats_to_api_msg(stats_options, stats)
 
 
-@router.get("/stats-options")
-def get_stats_options() -> StatsMessage:
-    stats_options = stats_options_db.get_stats_options()
-    stats = stats_setup()
-    return stats_to_api_msg(stats_options, stats)
-
-
-@router.put("/stats-options/{stats_options_id}")
-def update_stats_options(
-    stats_options_id: str, stats_options_api: StatsOptionsMessage
+@router.get("/stats-options/teams/{team_id}")
+async def get_stats_options(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
 ) -> StatsMessage:
+    if not await permit_check(
+        session.get_user_id(), "read-stats-options", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to get stats options",
+        )
+    stats_options = stats_options_db.get_stats_options(team_id)
+    stats = stats_setup(team_id)
+    return stats_to_api_msg(stats_options, stats)
+
+
+@router.put("/stats-options/{stats_options_id}/teams/{team_id}")
+async def update_stats_options(
+    stats_options_id: str,
+    team_id: str,
+    stats_options_api: StatsOptionsMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> StatsMessage:
+    if not await permit_check(
+        session.get_user_id(), "update-stats-options", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to update stats options",
+        )
     existing_stats_options = stats_options_db.get_stats_options_by_id(stats_options_id)
     if not existing_stats_options:
         raise HTTPException(status_code=404, detail="Stats options does not exist")
     stats_options_data = api_msg_to_stats_options(stats_options_api)
     updated_stats_options = stats_options_db.update_stats_options(stats_options_data)
-    stats = stats_setup()
+    stats = stats_setup(team_id)
     return stats_to_api_msg(updated_stats_options, stats)
 
 
-@router.delete("/stats-options/{stats_options_id}")
-def delete_stats_options(stats_options_id: str) -> Dict:
+@router.delete("/stats-options/{stats_options_id}/teams/{team_id}")
+async def delete_stats_options(
+    stats_options_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> Dict:
+    if not await permit_check(
+        session.get_user_id(), "delete-stats-options", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to delete stats options",
+        )
     stats_options_db.delete_stats_options(stats_options_id)
     return {"message": "CoverageSelector deleted"}
 

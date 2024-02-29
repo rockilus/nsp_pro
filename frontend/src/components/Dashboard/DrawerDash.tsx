@@ -8,7 +8,7 @@ import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
-import { mainListItems, secondaryListItems } from "./listItems";
+import { mainListItems } from "./listItems";
 import { DrawerWidth } from "../../utils/constants";
 
 const Drawer = styled(MuiDrawer, {
@@ -67,8 +67,8 @@ export default function DrawerDash({
       <Divider />
       <List component="nav">
         {mainListItems({ selectedTab, selectTab })}
-        <Divider sx={{ my: 1 }} />
-        {secondaryListItems({ selectedTab, selectTab })}
+        {/* <Divider sx={{ my: 1 }} />
+        {secondaryListItems({ selectedTab, selectTab })} */}
       </List>
     </Drawer>
   );

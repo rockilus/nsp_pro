@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 
 export type ShiftDimensionT = {
   id: string;
+  teamId: string;
   name: string;
   entryType: string;
   entryOptions: string[];
@@ -16,6 +17,7 @@ export type ShiftPropertyT = {
 
 export type ShiftT = {
   id: string;
+  teamId: string;
   name: string;
   startTime: dayjs.Dayjs;
   endTime: dayjs.Dayjs;

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+// MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -11,22 +13,30 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-
+// Components
 import ShiftPropertyCell from "./ShiftPropertyCell";
 import ShiftDimensionCell from "./ShiftDimensionCell";
 import AddShiftDimensionDrawer from "./AddShiftDimensionDrawer";
 import ShiftFieldCell from "./ShiftFieldCell";
-import { ShiftDimensionT, ShiftT } from "./types";
+// Stores
 import { useShiftStore } from "../../stores/shiftStore";
+// Types
+import { ShiftDimensionT, ShiftT } from "./types";
+import { TeamT } from "../../containers/types";
+// Constants
 import { DefaultProperties } from "../../utils/constants";
 
+dayjs.extend(utc);
+
 interface Props {
+  team: TeamT;
   shiftDimensions: ShiftDimensionT[];
   shifts: ShiftT[];
   defaultShiftFields: string[];
 }
 
 export default function ShiftTable({
+  team,
   shiftDimensions,
   shifts,
   defaultShiftFields,
@@ -37,8 +47,27 @@ export default function ShiftTable({
   const addShift = useShiftStore((state) => state.addShift);
   const deleteShift = useShiftStore((state) => state.deleteShift);
 
+  const roundTime = (dt: dayjs.Dayjs): dayjs.Dayjs => {
+    let minutes = Math.floor(dt.minute() / 15) * 15;
+    return dt.minute(minutes).second(0).millisecond(0);
+  };
+
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
+  };
+
+  const handleAddShift = () => {
+    addShift({
+      id: "",
+      teamId: team.id,
+      name: "",
+      startTime: roundTime(dayjs.utc()),
+      endTime: roundTime(dayjs.utc()),
+      isTimeOff: false,
+      staffing: 1,
+      color: "grey",
+      shiftProperties: [],
+    });
   };
 
   return (
@@ -51,7 +80,11 @@ export default function ShiftTable({
                 <TableCell key={index}>{field}</TableCell>
               ))}
               {shiftDimensions.map((sd, sdIndex) => (
-                <ShiftDimensionCell key={sdIndex} shiftDimension={sd} />
+                <ShiftDimensionCell
+                  key={sdIndex}
+                  team={team}
+                  shiftDimension={sd}
+                />
               ))}
               <TableCell>
                 <Button onClick={toggleDrawer}>
@@ -82,6 +115,7 @@ export default function ShiftTable({
                   return (
                     <ShiftPropertyCell
                       key={sdIndex}
+                      team={team}
                       shiftProperty={
                         shiftProperty
                           ? shiftProperty
@@ -100,7 +134,7 @@ export default function ShiftTable({
                 })}
                 <TableCell component="th" scope="row">
                   <Box sx={{ display: "flex" }}>
-                    <Button onClick={() => deleteShift(shift.id)}>
+                    <Button onClick={() => deleteShift(shift.id, team.id)}>
                       <DeleteIcon />
                     </Button>
                   </Box>
@@ -109,7 +143,7 @@ export default function ShiftTable({
             ))}
             <TableRow>
               <TableCell colSpan={shiftDimensions.length}>
-                <Button onClick={addShift}>
+                <Button onClick={handleAddShift}>
                   <AddIcon />
                   New
                 </Button>
@@ -119,6 +153,7 @@ export default function ShiftTable({
         </Table>
       </TableContainer>
       <AddShiftDimensionDrawer
+        team={team}
         drawerOpen={drawerOpen}
         toggleDrawer={toggleDrawer}
       />
