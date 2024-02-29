@@ -136,8 +136,7 @@ def save_objective_breaches(
         for ob in existing_ob:
             objective_breach_db.delete_objective_breach(ob.id)
     return [
-        objective_breach_db.create_objective_breach(ob, schedule)
-        for ob in objective_breaches
+        objective_breach_db.create_objective_breach(ob) for ob in objective_breaches
     ]
 
 

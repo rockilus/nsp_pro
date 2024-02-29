@@ -2,26 +2,50 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.schedule import ObjectiveBreach, Variable
 from routes.api_model import ObjectiveBreachMessage, VariableMessage
-from scripts.setup_database import objective_breach_db
+from scripts.setup_database import objective_breach_db, schedule_db
+from services.authentication.authn_services import authn_verify_session
+from services.authentication.authn_types import SessionContainerType
+from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
 
-@router.get("/objective_breaches")
-def get_objective_breaches() -> List[ObjectiveBreachMessage]:
-    objective_breaches = objective_breach_db.get_objective_breaches()
+@router.get("/objective_breaches/teams/{team_id}")
+async def get_objective_breaches(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> List[ObjectiveBreachMessage]:
+    if not await permit_check(
+        session.get_user_id(), "read-objective-breaches", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to get objective breaches",
+        )
+    team_schedules = schedule_db.get_schedules(team_id)
+    objective_breaches = objective_breach_db.get_objective_breaches(team_schedules)
     return [objective_breach_to_api_msg(a) for a in objective_breaches]
 
 
-@router.put("/objective_breaches/{objective_breach_id}")
-def update_objective_breach(
-    objective_breach_id: str, objective_breach_api: ObjectiveBreachMessage
+@router.put("/objective_breaches/{objective_breach_id}/teams/{team_id}")
+async def update_objective_breach(
+    objective_breach_id: str,
+    team_id: str,
+    objective_breach_api: ObjectiveBreachMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ObjectiveBreachMessage:
+    if not await permit_check(
+        session.get_user_id(), "update-objective-breach", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to update objective breaches",
+        )
     existing_objective_breach = objective_breach_db.get_objective_breach_by_id(
         objective_breach_id
     )
@@ -34,8 +58,19 @@ def update_objective_breach(
     return objective_breach_to_api_msg(updated_objective_breach)
 
 
-@router.delete("/objective_breaches/{objective_breach_id}")
-def delete_objective_breach(objective_breach_id: str) -> Dict:
+@router.delete("/objective_breaches/{objective_breach_id}/teams/{team_id}")
+async def delete_objective_breach(
+    objective_breach_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> Dict:
+    if not await permit_check(
+        session.get_user_id(), "delete-objective-breach", "team", team_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to delete objective breaches",
+        )
     objective_breach_db.delete_objective_breach(objective_breach_id)
     return {"message": "ObjectiveBreach deleted"}
 

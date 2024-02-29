@@ -11,14 +11,20 @@ const apiUrlObjectiveBreach = baseApiUrl + "/objective_breaches";
 
 type ObjectiveBreachStateT = {
   objectiveBreaches: ObjectiveBreachT[];
-  fetchObjectiveBreaches: () => void;
-  addObjectiveBreach: (objectiveBreach: ObjectiveBreachT) => void;
+  fetchObjectiveBreaches: (teamId: string) => void;
+  addObjectiveBreach: (
+    objectiveBreach: ObjectiveBreachT,
+    teamId: string
+  ) => void;
   updateObjectiveBreachStore: (
     updatedObjectiveBreaches: ObjectiveBreachT[]
   ) => void;
-  updateObjectiveBreach: (updatedObjectiveBreach: ObjectiveBreachT) => void;
-  deleteObjectiveBreach: (id: string) => void;
-  deleteOBStoreWithScheduleId: (id: string) => void;
+  updateObjectiveBreach: (
+    updatedObjectiveBreach: ObjectiveBreachT,
+    teamId: string
+  ) => void;
+  deleteObjectiveBreach: (objectBreachId: string, teamId: string) => void;
+  deleteOBStoreWithScheduleId: (scheduleId: string) => void;
 };
 
 export const toObjectiveBreachT = (data: any) => {
@@ -39,7 +45,7 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
   (set) => ({
     objectiveBreaches: [],
 
-    fetchObjectiveBreaches: async () => {
+    fetchObjectiveBreaches: async (teamId) => {
       const options: RequestInit = {
         method: "GET",
         credentials: "include" as RequestCredentials,
@@ -48,7 +54,13 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
         },
       };
       try {
-        const response = await fetch(apiUrlObjectiveBreach, options);
+        const response = await fetch(
+          `${apiUrlObjectiveBreach}/teams/${teamId}`,
+          options
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         const objectiveBreaches: ObjectiveBreachT[] =
           data.map(toObjectiveBreachT);
@@ -58,15 +70,21 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
       }
     },
 
-    addObjectiveBreach: async (objectiveBreach) => {
+    addObjectiveBreach: async (objectiveBreach, teamId) => {
       try {
-        const response = await fetch(apiUrlObjectiveBreach, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(objectiveBreach),
-        });
+        const response = await fetch(
+          `${apiUrlObjectiveBreach}/teams/${teamId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(objectiveBreach),
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         const newObjectiveBreach: ObjectiveBreachT = toObjectiveBreachT(data);
         set((state) => ({
@@ -83,10 +101,10 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
       }));
     },
 
-    updateObjectiveBreach: async (updatedObjectiveBreach) => {
+    updateObjectiveBreach: async (updatedObjectiveBreach, teamId) => {
       try {
         const response = await fetch(
-          `${apiUrlObjectiveBreach}/${updatedObjectiveBreach.id}`,
+          `${apiUrlObjectiveBreach}/${updatedObjectiveBreach.id}/teams/${teamId}`,
           {
             method: "PUT",
             headers: {
@@ -95,6 +113,9 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
             body: JSON.stringify(updatedObjectiveBreach),
           }
         );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         const newObjectiveBreach: ObjectiveBreachT = toObjectiveBreachT(data);
         set((state) => ({
@@ -107,13 +128,21 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
       }
     },
 
-    deleteObjectiveBreach: async (id) => {
+    deleteObjectiveBreach: async (objectBreachId, teamId) => {
       try {
-        await fetch(`${apiUrlObjectiveBreach}/${id}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(
+          `${apiUrlObjectiveBreach}/${objectBreachId}/teams/${teamId}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         set((state) => ({
-          objectiveBreaches: state.objectiveBreaches.filter((s) => s.id !== id),
+          objectiveBreaches: state.objectiveBreaches.filter(
+            (s) => s.id !== objectBreachId
+          ),
         }));
       } catch (error) {
         console.error("Failed to delete objectiveBreach:", error);

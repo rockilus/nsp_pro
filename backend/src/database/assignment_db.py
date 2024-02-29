@@ -79,20 +79,22 @@ class AssignmentDB:
     def get_wip_validated_assignments_before_date(
         self, a_date: date, schedules: List[Schedule]
     ) -> List[Assignment]:
+        s_docs = [to_mongo_schedule(s) for s in schedules]
         # pylint: disable=no-member
         assignments = AssignmentDocument.objects.filter(  # type: ignore
             date__lt=a_date,
             status__in=["wip", "validated"],
-            schedule__in=schedules,
+            schedule__in=s_docs,
         )
         return [_from_mongo_assignment(a) for a in list(assignments)]
 
     def get_assignments_by_status(
         self, status: List[str], schedules: List[Schedule]
     ) -> List[Assignment]:
+        s_docs = [to_mongo_schedule(s) for s in schedules]
         # pylint: disable=no-member
         assignments = AssignmentDocument.objects.filter(  # type: ignore
-            status__in=status, schedule__in=schedules
+            status__in=status, schedule__in=s_docs
         )
         return [_from_mongo_assignment(a) for a in list(assignments)]
 
