@@ -175,6 +175,7 @@ class StatMessage(BaseModel):
 
 class StatsOptionsMessage(BaseModel):
     id: str
+    teamId: str
     startDate: date
     endDate: date
 

@@ -97,7 +97,9 @@ export default function Dashboard({ team }: Props) {
     schedule: (
       <ScheduleTab team={team} workers={workersIdName} shifts={shiftsIdName} />
     ),
-    stats: <StatsTab workers={workersIdName} shifts={shiftsIdName} />,
+    stats: (
+      <StatsTab team={team} workers={workersIdName} shifts={shiftsIdName} />
+    ),
   };
 
   return (

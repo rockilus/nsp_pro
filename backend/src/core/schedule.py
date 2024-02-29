@@ -43,6 +43,7 @@ class Stat:
 @dataclass
 class StatsOptions:
     id: str
+    team_id: str
     start_date: date
     end_date: date
 

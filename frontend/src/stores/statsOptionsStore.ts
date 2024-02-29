@@ -4,7 +4,6 @@ import utc from "dayjs/plugin/utc";
 
 import { StatsOptionsT, StatsT } from "../components/Schedule/types";
 import { useStatStore } from "./statStore";
-import { emptyStatsOptions } from "../utils/emptyObjects";
 
 dayjs.extend(utc);
 
@@ -13,7 +12,7 @@ const apiUrlStatsOptions = baseApiUrl + "/stats-options";
 
 type StatsOptionsStateT = {
   statsOptions: StatsOptionsT | null;
-  fetchStatsOptions: () => void;
+  fetchStatsOptions: (teamId: string) => void;
   addStatsOptions: (statsOptions: StatsOptionsT) => void;
   updateStatsOptions: (updatedStatsOptions: StatsOptionsT) => void;
 };
@@ -38,7 +37,7 @@ const toStatsT = (data: any) => {
 export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
   statsOptions: null,
 
-  fetchStatsOptions: async () => {
+  fetchStatsOptions: async (teamId) => {
     const options: RequestInit = {
       method: "GET",
       credentials: "include" as RequestCredentials,
@@ -47,7 +46,13 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
       },
     };
     try {
-      const response = await fetch(apiUrlStatsOptions, options);
+      const response = await fetch(
+        `${apiUrlStatsOptions}/teams/${teamId}`,
+        options
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch statsOptions: ${response.statusText}`);
+      }
       const data = await response.json();
       const newStats: StatsT = toStatsT(data);
       set((state) => ({
@@ -61,13 +66,19 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
 
   addStatsOptions: async (statsOptions) => {
     try {
-      const response = await fetch(apiUrlStatsOptions, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(statsOptions),
-      });
+      const response = await fetch(
+        `${apiUrlStatsOptions}/teams/${statsOptions.teamId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(statsOptions),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to add statsOptions: ${response.statusText}`);
+      }
       const data = await response.json();
       const newStats: StatsT = toStatsT(data);
       set((state) => ({
@@ -82,7 +93,7 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
   updateStatsOptions: async (updatedStatsOptions) => {
     try {
       const response = await fetch(
-        `${apiUrlStatsOptions}/${updatedStatsOptions.id}`,
+        `${apiUrlStatsOptions}/${updatedStatsOptions.id}/teams/${updatedStatsOptions.teamId}`,
         {
           method: "PUT",
           headers: {
@@ -91,6 +102,11 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
           body: JSON.stringify(updatedStatsOptions),
         }
       );
+      if (!response.ok) {
+        throw new Error(
+          `Failed to update statsOptions: ${response.statusText}`
+        );
+      }
       const data = await response.json();
       const newStats: StatsT = toStatsT(data);
       set((state) => ({

@@ -31,6 +31,7 @@ export const emptySchedule: ScheduleT = {
 
 export const emptyStatsOptions: StatsOptionsT = {
   id: "",
+  teamId: "",
   startDate: dayjs.utc().startOf("day"),
   endDate: dayjs.utc().startOf("day"),
 };

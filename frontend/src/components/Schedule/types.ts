@@ -32,6 +32,7 @@ export type ObjectiveBreachT = {
 // Stats
 export type StatsOptionsT = {
   id: string;
+  teamId: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
 };

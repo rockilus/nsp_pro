@@ -12,7 +12,7 @@ from services.stats_services.build_stats import BuildStats
 
 
 def stats_setup(team_id: str) -> List[Stat]:
-    stats_options = stats_options_db.get_stats_options()
+    stats_options = stats_options_db.get_stats_options(team_id)
     if stats_options is None:
         return []
     workers = worker_db.get_workers(team_id)
