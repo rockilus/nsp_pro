@@ -10,18 +10,6 @@ class Constants:
     BASE_URL: str = "http://" + HOST
     WEBSITE_PORT: int = 3000
     API_PORT: int = 5000
-    # SuperTokens config
-    ST_CONNECTION_URI: str = (
-        "https://st-dev-707a9b40-cfce-11ee-b31a-575ea1b90de8.aws.supertokens.io"
-    )
-    ST_API_KEY: str = "IM3-DkK88nDEVgyEI7Vpx8Yzgo"
-    ST_DASHBOARD_ADMINS: Tuple[str, ...] = ("felipe.kharaba@icloud.com",)
-    # Permit.io config
-    PDP_URL: str = "http://localhost:7766"
-    PERMIT_API_KEY: str = (
-        "permit_key_DdSCEb3OXhfpVpjx1iHEnHfQ9mp3ReRk1B3g0htSS"
-        + "rSmQ6GvvKfLhHhWncxvxBqi2wNfhDhM9eZsIZfurOmaB4"
-    )
 
     # General
     NUM_SECONDS_MINUTE: int = 60

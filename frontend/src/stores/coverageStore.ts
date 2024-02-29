@@ -1,18 +1,15 @@
-// coverageStore.ts
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
 // Types
 import { CoverageT, ShiftDemandT } from "../components/Coverage/types";
 import { ShiftDefaultT } from "../components/Shift/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
 dayjs.extend(utc);
 
-// const baseApiUrl = "http://localhost:5000";
-const baseApiUrl = "http://127.0.0.1:5000";
-
-// Coverage
-const apiUrlCoverages = `${baseApiUrl}/coverages`;
+const apiUrlCoverages = ApiUrl + "/coverages";
 
 type CoverageStateT = {
   coverages: CoverageT[];

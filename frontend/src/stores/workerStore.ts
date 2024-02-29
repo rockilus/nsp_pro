@@ -1,10 +1,10 @@
-// workerStore.ts
 import { create } from "zustand";
 // Types
 import { WorkerT, WorkerPropertyT } from "../components/Worker/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlWorkers = baseApiUrl + "/workers";
+const apiUrlWorkers = ApiUrl + "/workers";
 
 type WorkerStateT = {
   workers: WorkerT[];

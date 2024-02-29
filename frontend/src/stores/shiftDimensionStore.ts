@@ -1,10 +1,12 @@
-// shiftDimensionStore.ts
 import { create } from "zustand";
-import { ShiftDimensionT, NewShiftDimensionT } from "../components/Shift/types";
+// Stores
 import { useShiftStore } from "./shiftStore";
+// Types
+import { ShiftDimensionT, NewShiftDimensionT } from "../components/Shift/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlShiftDimensions = `${baseApiUrl}/shift-dimensions`;
+const apiUrlShiftDimensions = ApiUrl + "/shift-dimensions";
 
 type ShiftDimensionStateT = {
   shiftDimensions: ShiftDimensionT[];

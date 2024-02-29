@@ -1,12 +1,11 @@
 // requestStore.ts
 import { create } from "zustand";
+// Types
 import { RequestT } from "../components/FixedAssignmentRequest/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
-// const baseApiUrl = "http://localhost:5000";
-const baseApiUrl = "http://127.0.0.1:5000";
-
-// Request
-const apiUrlRequests = `${baseApiUrl}/requests`;
+const apiUrlRequests = ApiUrl + "/requests";
 
 type RequestStateT = {
   requests: RequestT[];

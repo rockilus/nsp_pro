@@ -1,11 +1,11 @@
-// shiftStore.ts
 import dayjs from "dayjs";
-
 import { create } from "zustand";
+// Types
 import { ShiftT, ShiftPropertyT } from "../components/Shift/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlShifts = `${baseApiUrl}/shifts`;
+const apiUrlShifts = ApiUrl + "/shifts";
 
 type ShiftStateT = {
   shifts: ShiftT[];

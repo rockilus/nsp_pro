@@ -1,19 +1,21 @@
-import { create } from "zustand";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-
-import { ScheduleT, SolutionT, ValidateT } from "../components/Schedule/types";
+import { create } from "zustand";
+// Stores
 import { useAssignmentStore, toAssignmentT } from "./assignmentStore";
 import {
   useObjectiveBreachStore,
   toObjectiveBreachT,
 } from "./objectiveBreachStore";
 import { useStatStore } from "./statStore";
+// Types
+import { ScheduleT, SolutionT, ValidateT } from "../components/Schedule/types";
+// Constants
+import { ApiUrl } from "../utils/env_config";
 
 dayjs.extend(utc);
 
-const baseApiUrl = "http://127.0.0.1:5000";
-const apiUrlSchedule = baseApiUrl + "/schedules";
+const apiUrlSchedule = ApiUrl + "/schedules";
 
 type ScheduleStateT = {
   // schedule: ScheduleT;

@@ -3,11 +3,12 @@ from supertokens_python.recipe import dashboard, emailpassword, session
 
 from services.authentication.override_func import override_emailpassword_functions
 from utils.constants import Constants
+from utils.env_config import ST_API_KEY, ST_CONNECTION_URI, ST_DASHBOARD_ADMINS
 
 # this is the location of the SuperTokens core.
 supertokens_config = SupertokensConfig(
-    connection_uri=Constants.ST_CONNECTION_URI,
-    api_key=Constants.ST_API_KEY,
+    connection_uri=ST_CONNECTION_URI,
+    api_key=ST_API_KEY,
 )
 
 app_info = InputAppInfo(
@@ -18,8 +19,6 @@ app_info = InputAppInfo(
 
 framework = "fastapi"
 
-# recipeList contains all the modules that you want to
-# use from SuperTokens. See the full list here: https://supertokens.com/docs/guides
 recipe_list = [
     session.init(),
     emailpassword.init(
@@ -28,6 +27,6 @@ recipe_list = [
         )
     ),
     dashboard.init(
-        admins=list(Constants.ST_DASHBOARD_ADMINS),
+        admins=list(ST_DASHBOARD_ADMINS),
     ),
 ]
