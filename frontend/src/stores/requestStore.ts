@@ -2,10 +2,8 @@
 import { create } from "zustand";
 // Types
 import { RequestT } from "../components/FixedAssignmentRequest/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
-const apiUrlRequests = ApiUrl + "/requests";
+const apiUrlRequests = process.env.NEXT_PUBLIC_API_URL + "/requests";
 
 type RequestStateT = {
   requests: RequestT[];

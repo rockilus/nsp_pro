@@ -1,10 +1,8 @@
 import { create } from "zustand";
 // Types
 import { ConstraintT } from "../components/Constraint/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
-const apiUrlConstraints = ApiUrl + "/constraints";
+const apiUrlConstraints = process.env.NEXT_PUBLIC_API_URL + "/constraints";
 
 type ConstraintStateT = {
   constraints: ConstraintT[];

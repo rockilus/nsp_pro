@@ -10,12 +10,10 @@ import {
 import { useStatStore } from "./statStore";
 // Types
 import { ScheduleT, SolutionT, ValidateT } from "../components/Schedule/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
 dayjs.extend(utc);
 
-const apiUrlSchedule = ApiUrl + "/schedules";
+const apiUrlSchedule = process.env.NEXT_PUBLIC_API_URL + "/schedules";
 
 type ScheduleStateT = {
   // schedule: ScheduleT;

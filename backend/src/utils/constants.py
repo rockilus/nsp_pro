@@ -5,12 +5,6 @@ from typing import Literal, Tuple
 @dataclass
 # pylint: disable=too-many-instance-attributes
 class Constants:
-    # Config
-    HOST: str = "127.0.0.1"
-    BASE_URL: str = "http://" + HOST
-    WEBSITE_PORT: int = 3000
-    API_PORT: int = 5000
-
     # General
     NUM_SECONDS_MINUTE: int = 60
     NUM_MINUTES_HOUR: int = 60

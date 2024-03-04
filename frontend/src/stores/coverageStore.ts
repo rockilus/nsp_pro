@@ -4,12 +4,10 @@ import { create } from "zustand";
 // Types
 import { CoverageT, ShiftDemandT } from "../components/Coverage/types";
 import { ShiftDefaultT } from "../components/Shift/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
 dayjs.extend(utc);
 
-const apiUrlCoverages = ApiUrl + "/coverages";
+const apiUrlCoverages = process.env.NEXT_PUBLIC_API_URL + "/coverages";
 
 type CoverageStateT = {
   coverages: CoverageT[];

@@ -28,21 +28,17 @@ from services.authentication.authn_services import (
     authn_get_middleware,
 )
 from services.authorization import authz_services  # noqa: F401
-from utils.constants import Constants
+from utils.env_config import API_DOMAIN, API_PORT, ORIGINS, UVICORN_RELOAD
 
 app = FastAPI()
 
-# CORS
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",  # Add other origins if needed
-]
-
 app.add_middleware(authn_get_middleware())
+
+print("ORIGINS", ORIGINS)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[Constants.BASE_URL + ":" + str(Constants.WEBSITE_PORT)],
+    allow_origins=list(ORIGINS),
     allow_credentials=True,
     allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["Content-Type"] + authn_get_cors_headers(),
@@ -69,7 +65,7 @@ app.include_router(router_worker_dimension)
 def run_router():
     uvicorn.run(
         "scripts.setup_router:app",
-        host=Constants.HOST,
-        port=Constants.API_PORT,
-        reload=True,
+        host=API_DOMAIN,
+        port=API_PORT,
+        reload=UVICORN_RELOAD,
     )

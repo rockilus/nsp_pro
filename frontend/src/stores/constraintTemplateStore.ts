@@ -1,10 +1,9 @@
 import { create } from "zustand";
 // Types
 import { TemplateT } from "../components/Constraint/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
-const apiUrlConstraints = ApiUrl + "/constraint-templates";
+const apiUrlConstraints =
+  process.env.NEXT_PUBLIC_API_URL + "/constraint-templates";
 
 type ConstraintTemplateStateT = {
   constraintTemplates: TemplateT[];

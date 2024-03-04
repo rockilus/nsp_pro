@@ -1,5 +1,3 @@
-import os
-
 from database import (
     DB,
     AssignmentDB,
@@ -22,10 +20,9 @@ from database import (
     WorkerDimensionDB,
     WorkerPropertyDB,
 )
+from utils.env_config import DB_NAME, DB_URI
 
-database_uri = (
-    "mongodb://localhost:27017/" + f"{os.getenv('ENV_SITUATION', default='nsp_pro')}"
-)
+database_uri = DB_URI + "/" + DB_NAME
 
 db = DB(database_uri)
 assignment_db = AssignmentDB(db)

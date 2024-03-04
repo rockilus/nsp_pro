@@ -1,17 +1,10 @@
-import { ApiUrl } from "../utils/env_config";
-
-const port = process.env.APP_PORT || 3000;
-
 const apiBasePath = "/auth/";
 
-export const websiteDomain =
-  process.env.APP_URL ||
-  process.env.NEXT_PUBLIC_APP_URL ||
-  `http://127.0.0.1:${port}`;
+export const websiteDomain = `${process.env.NEXT_PUBLIC_CLIENT_URL}:${process.env.NEXT_PUBLIC_CLIENT_PORT}`;
 
 export const appInfo = {
   appName: "nsp_pro",
   websiteDomain,
-  apiDomain: ApiUrl,
+  apiDomain: process.env.NEXT_PUBLIC_API_URL as string,
   apiBasePath,
 };

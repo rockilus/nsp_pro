@@ -5,12 +5,10 @@ import { create } from "zustand";
 import { useStatStore } from "./statStore";
 // Types
 import { StatsOptionsT, StatsT } from "../components/Schedule/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
 dayjs.extend(utc);
 
-const apiUrlStatsOptions = ApiUrl + "/stats-options";
+const apiUrlStatsOptions = process.env.NEXT_PUBLIC_API_URL + "/stats-options";
 
 type StatsOptionsStateT = {
   statsOptions: StatsOptionsT | null;

@@ -3,12 +3,10 @@ import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
 // Types
 import { StatT } from "../components/Schedule/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
 dayjs.extend(utc);
 
-const apiUrlStat = ApiUrl + "/stats";
+const apiUrlStat = process.env.NEXT_PUBLIC_API_URL + "/stats";
 
 type StatStateT = {
   stats: StatT[];

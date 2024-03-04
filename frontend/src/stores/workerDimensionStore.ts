@@ -6,10 +6,9 @@ import {
   WorkerDimensionT,
   NewWorkerDimensionT,
 } from "../components/Worker/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
-const apiUrlWorkerDimensions = ApiUrl + "/worker-dimensions";
+const apiUrlWorkerDimensions =
+  process.env.NEXT_PUBLIC_API_URL + "/worker-dimensions";
 
 type WorkerDimensionStateT = {
   workerDimensions: WorkerDimensionT[];
