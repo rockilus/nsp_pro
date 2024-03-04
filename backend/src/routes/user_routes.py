@@ -88,9 +88,7 @@ def user_to_api_msg(
     user: User,
 ) -> UserMessage:
     data = asdict(user)
-    data = {
-        k: v for k, v in data.items() if k not in ["hashed_password", "roles"]
-    }
+    data = {k: v for k, v in data.items() if k not in ["hashed_password", "roles"]}
     as_dict = humps.camelize(data)
     validator = TypeAdapter(UserMessage)
     return validator.validate_python(as_dict)
