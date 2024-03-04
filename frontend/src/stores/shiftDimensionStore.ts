@@ -3,10 +3,9 @@ import { create } from "zustand";
 import { useShiftStore } from "./shiftStore";
 // Types
 import { ShiftDimensionT, NewShiftDimensionT } from "../components/Shift/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
-const apiUrlShiftDimensions = ApiUrl + "/shift-dimensions";
+const apiUrlShiftDimensions =
+  process.env.NEXT_PUBLIC_API_URL + "/shift-dimensions";
 
 type ShiftDimensionStateT = {
   shiftDimensions: ShiftDimensionT[];

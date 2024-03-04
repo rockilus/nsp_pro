@@ -3,12 +3,10 @@ import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
 // Types
 import { UserSignInT, UserSignUpT, UserT } from "../components/Login/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
 dayjs.extend(utc);
 
-const apiUrlUser = ApiUrl + "/user";
+const apiUrlUser = process.env.NEXT_PUBLIC_API_URL + "/user";
 
 type UserStateT = {
   user: UserT | null;

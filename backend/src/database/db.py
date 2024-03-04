@@ -10,3 +10,4 @@ class DB:
 
     def connect(self):
         self.db = mongoengine.connect(host=self.db_uri)
+        print(f"Connected to {self.db_uri}")

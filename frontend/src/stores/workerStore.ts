@@ -1,10 +1,8 @@
 import { create } from "zustand";
 // Types
 import { WorkerT, WorkerPropertyT } from "../components/Worker/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
-const apiUrlWorkers = ApiUrl + "/workers";
+const apiUrlWorkers = process.env.NEXT_PUBLIC_API_URL + "/workers";
 
 type WorkerStateT = {
   workers: WorkerT[];

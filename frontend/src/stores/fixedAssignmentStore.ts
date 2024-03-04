@@ -2,10 +2,9 @@
 import { create } from "zustand";
 // Types
 import { FixedAssignmentT } from "../components/FixedAssignmentRequest/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
-const apiUrlFixedAssignments = ApiUrl + "/fixed-assignments";
+const apiUrlFixedAssignments =
+  process.env.NEXT_PUBLIC_API_URL + "/fixed-assignments";
 
 type FixedAssignmentStateT = {
   fixedAssignments: FixedAssignmentT[];

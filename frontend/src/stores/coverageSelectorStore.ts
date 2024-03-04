@@ -1,10 +1,9 @@
 import { create } from "zustand";
 // Types
 import { CoverageSelectorT } from "../components/CoverageSelector/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
-const apiUrlCoverageSelectors = ApiUrl + "/coverage-selectors";
+const apiUrlCoverageSelectors =
+  process.env.NEXT_PUBLIC_API_URL + "/coverage-selectors";
 
 type CoverageSelectorStateT = {
   coverageSelectors: CoverageSelectorT[];

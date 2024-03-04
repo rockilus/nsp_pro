@@ -3,12 +3,10 @@ import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
 // Types
 import { AssignmentT } from "../components/Schedule/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
 dayjs.extend(utc);
 
-const apiUrlAssignment = ApiUrl + "/assignments";
+const apiUrlAssignment = process.env.NEXT_PUBLIC_API_URL + "/assignments";
 
 type AssignmentStateT = {
   assignments: AssignmentT[];

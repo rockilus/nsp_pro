@@ -9,6 +9,21 @@ def get_env_variable(name: str) -> str:
     return value
 
 
+# API
+API_DOMAIN: str = get_env_variable("API_DOMAIN")
+API_URL: str = get_env_variable("API_URL")
+API_PORT: int = int(get_env_variable("API_PORT"))
+ORIGINS: Tuple[str, ...] = tuple(get_env_variable("ORIGINS").split(","))
+
+# CLIENT
+CLIENT_URL: str = get_env_variable("CLIENT_URL")
+CLIENT_PORT: int = int(get_env_variable("CLIENT_PORT"))
+
+# Database
+DB_URI: str = get_env_variable("DB_URI")
+DB_NAME: str = get_env_variable("DB_NAME")
+
+# Supertokens config
 ST_CONNECTION_URI: str = get_env_variable("ST_CONNECTION_URI")
 ST_API_KEY: str = get_env_variable("ST_API_KEY")
 ST_DASHBOARD_ADMINS: Tuple[str, ...] = tuple(
@@ -17,3 +32,6 @@ ST_DASHBOARD_ADMINS: Tuple[str, ...] = tuple(
 # Permit.io config
 PDP_URL: str = get_env_variable("PDP_URL")
 PERMIT_API_KEY: str = get_env_variable("PERMIT_API_KEY")
+
+# Uvicorn config
+UVICORN_RELOAD: bool = bool(get_env_variable("UVICORN_RELOAD"))

@@ -2,10 +2,8 @@ import dayjs from "dayjs";
 import { create } from "zustand";
 // Types
 import { ShiftT, ShiftPropertyT } from "../components/Shift/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
-const apiUrlShifts = ApiUrl + "/shifts";
+const apiUrlShifts = process.env.NEXT_PUBLIC_API_URL + "/shifts";
 
 type ShiftStateT = {
   shifts: ShiftT[];

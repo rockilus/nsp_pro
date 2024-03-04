@@ -1,10 +1,8 @@
 import { create } from "zustand";
 // Types
 import { TeamT } from "../containers/types";
-// Constants
-import { ApiUrl } from "../utils/env_config";
 
-const apiUrlTeam = ApiUrl + "/teams";
+const apiUrlTeam = process.env.NEXT_PUBLIC_API_URL + "/teams";
 
 type TeamStateT = {
   teams: TeamT[];

@@ -29,16 +29,7 @@ router = APIRouter()
 #     access_token = create_access_token(
 #         data={"sub": user.username}, expires_delta=access_token_expires
 #     )
-#     response.set_cookie(
-#         key="access_token",
-#         value=f"Bearer {access_token}",
-#         httponly=True,  # set to true for production
-#         secure=False,  # set to true for production
-#         samesite="lax",  # set to "lax" for production
-#         # domain="127.0.0.1",  # set to your domain for production
-#         # expires=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-#         # max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-#     )
+#     response.set_cookie()
 #     return user_to_api_msg(user)
 
 
@@ -60,16 +51,7 @@ router = APIRouter()
 #     access_token = create_access_token(
 #         data={"sub": user.username}, expires_delta=access_token_expires
 #     )
-#     response.set_cookie(
-#         key="access_token",
-#         value=f"Bearer {access_token}",
-#         httponly=True,  # set to true for production
-#         secure=False,  # set to true for production
-#         samesite="lax",  # set to "lax" for production
-#         # domain="127.0.0.1",  # set to your domain for production
-#         # expires=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-#         # max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-#     )
+#     response.set_cookie()
 #     return user_to_api_msg(user)  # type: ignore
 
 
@@ -85,16 +67,7 @@ router = APIRouter()
 #         data={"sub": current_user.username},
 #           expires_delta=access_token_expires,  # type: ignore
 #     )
-#     response.set_cookie(
-#         key="access_token",
-#         value=f"Bearer {access_token}",
-#         httponly=True,  # set to true for production
-#         secure=False,  # set to true for production
-#         samesite="lax",  # set to "lax" for production
-#         # domain="127.0.0.1",  # set to your domain for production
-#         # expires=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-#         # max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-#     )
+#     response.set_cookie()
 #     return {"message": "Refresh successful"}
 
 
@@ -115,7 +88,9 @@ def user_to_api_msg(
     user: User,
 ) -> UserMessage:
     data = asdict(user)
-    data = {k: v for k, v in data.items() if k not in ["hashed_password", "roles"]}
+    data = {
+        k: v for k, v in data.items() if k not in ["hashed_password", "roles"]
+    }
     as_dict = humps.camelize(data)
     validator = TypeAdapter(UserMessage)
     return validator.validate_python(as_dict)
