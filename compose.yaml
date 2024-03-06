@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: "./backend"
+    environment:
+      - ST_CONNECTION_URI=${ST_CONNECTION_URI}
+      - ST_API_KEY=${ST_API_KEY}
+      - ST_DASHBOARD_ADMINS=${ST_DASHBOARD_ADMINS}
+      - PDP_URL=${PDP_URL}
+      - PERMIT_API_KEY=${PERMIT_API_KEY}
+    env_file:
+      - .env.prod
+    ports:
+      - "4000:4000"
+  
+  permit-pdp:
+    image: permitio/pdp-v2:latest
+    environment:
+      - PDP_API_KEY=${PERMIT_API_KEY}
+    ports:
+      - "8181:8181"
+      - "7766:7000"
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/data/db
+      - mongodb_config:/data/configdb
+
+  frontend:
+    build: 
+      context: "./frontend"
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_PORT=4000
+      - NEXT_PUBLIC_API_URL="http://0.0.0.0:4000"
+      - NEXT_PUBLIC_CLIENT_URL="http://0.0.0.0"
+      - NEXT_PUBLIC_CLIENT_PORT=3000
+
+volumes:
+  mongodb:
+  mongodb_config:
