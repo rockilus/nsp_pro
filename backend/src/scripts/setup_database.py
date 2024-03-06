@@ -20,9 +20,9 @@ from database import (
     WorkerDimensionDB,
     WorkerPropertyDB,
 )
-from utils.env_config import DB_NAME, DB_URI
+from utils.env_config import DB_URI
 
-database_uri = DB_URI + "/" + DB_NAME
+database_uri = DB_URI
 
 db = DB(database_uri)
 assignment_db = AssignmentDB(db)

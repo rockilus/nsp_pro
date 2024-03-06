@@ -21,7 +21,6 @@ CLIENT_PORT: int = int(get_env_variable("CLIENT_PORT"))
 
 # Database
 DB_URI: str = get_env_variable("DB_URI")
-DB_NAME: str = get_env_variable("DB_NAME")
 
 # Supertokens config
 ST_CONNECTION_URI: str = get_env_variable("ST_CONNECTION_URI")
