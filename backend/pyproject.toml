@@ -9,7 +9,6 @@ readme = "README.md"
 python = ">=3.10,<3.13"
 ortools = "^9.8.3296"
 flask = "^2.3.2"
-pymongo = {extras = ["gssapi", "snappy", "srv", "tls"], version = "^4.6.2"}
 mongoengine = "^0.27.0"
 mongo-types = "^0.15.1"
 flask-jwt-extended = "^4.4.4"
@@ -27,6 +26,7 @@ passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 spacy = "^3.7.2"
 supertokens-python = "^0.18.7"
 permit = "^2.3.0"
+pymongo = "^4.6.2"
 
 
 [tool.poetry.group.dev.dependencies]
