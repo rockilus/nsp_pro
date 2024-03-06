@@ -11,15 +11,6 @@ class DB:
         self.connect()
 
     def connect(self):
-        # client = MongoClient(self.db_uri)
-
-        # try:
-        #     client.admin.command('ping')
-        #     print(
-        #         "Pinged your deployment. You successfully connected to MongoDB!"
-        #     )
-        # except Exception as e:
-        #     print(e)
         try:
             self.db = mongoengine.connect(host=self.db_uri)
             print(f"Connected to {self.db_uri}")
