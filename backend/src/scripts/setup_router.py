@@ -9,6 +9,7 @@ from routes import (
     router_coverage,
     router_coverage_selector,
     router_fixed_assignment,
+    router_health,
     router_objective_breach,
     router_request,
     router_schedule,
@@ -28,21 +29,27 @@ from services.authentication.authn_services import (
     authn_get_middleware,
 )
 from services.authorization import authz_services  # noqa: F401
+
+# from starlette.middleware.cors import CORSMiddleware
 from utils.env_config import API_DOMAIN, API_PORT, ORIGINS, UVICORN_RELOAD
 
 app = FastAPI()
 
-app.add_middleware(authn_get_middleware())
 
 print("ORIGINS", ORIGINS)
 
+app.add_middleware(authn_get_middleware())
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=list(ORIGINS),
+    # allow_origins=list(ORIGINS),
+    allow_origins=ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["Content-Type"] + authn_get_cors_headers(),
+    # allow_headers=["*"] + authn_get_cors_headers(),
 )
+
 
 app.include_router(router_assignment)
 app.include_router(router_constraint)
@@ -50,6 +57,7 @@ app.include_router(router_constraint_template)
 app.include_router(router_coverage)
 app.include_router(router_coverage_selector)
 app.include_router(router_fixed_assignment)
+app.include_router(router_health)
 app.include_router(router_objective_breach)
 app.include_router(router_request)
 app.include_router(router_schedule)

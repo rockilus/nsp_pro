@@ -22,9 +22,7 @@ from database import (
 )
 from utils.env_config import DB_URI
 
-database_uri = DB_URI
-
-db = DB(database_uri)
+db = DB(DB_URI)
 assignment_db = AssignmentDB(db)
 constraint_build_db = ConstraintBuildDB(db)
 constraint_db = ConstraintDB(db)

@@ -5,9 +5,9 @@ from permit import Permit  # type: ignore
 from core.team import Team
 from core.user import User
 from scripts.setup_database import team_db
-from utils.env_config import PDP_URL, PERMIT_API_KEY
+from utils.env_config import PDP_API_KEY, PDP_URL
 
-permit = Permit(pdp=PDP_URL, token=PERMIT_API_KEY)
+permit = Permit(pdp=PDP_URL, token=PDP_API_KEY)
 
 
 async def permit_user_sync(user: User) -> None:

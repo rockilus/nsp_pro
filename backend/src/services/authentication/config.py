@@ -3,9 +3,7 @@ from supertokens_python.recipe import dashboard, emailpassword, session
 
 from services.authentication.override_func import override_emailpassword_functions
 from utils.env_config import (
-    API_PORT,
     API_URL,
-    CLIENT_PORT,
     CLIENT_URL,
     ST_API_KEY,
     ST_CONNECTION_URI,
@@ -20,8 +18,8 @@ supertokens_config = SupertokensConfig(
 
 app_info = InputAppInfo(
     app_name="Supertokens",
-    api_domain=API_URL + ":" + str(API_PORT),
-    website_domain=CLIENT_URL + ":" + str(CLIENT_PORT),
+    api_domain=API_URL,
+    website_domain=CLIENT_URL,
 )
 
 framework = "fastapi"
