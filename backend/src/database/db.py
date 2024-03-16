@@ -1,7 +1,5 @@
 import mongoengine  # type: ignore
 
-# from pymongo.mongo_client import MongoClient
-
 
 # pylint: disable=too-few-public-methods
 class DB:
@@ -13,7 +11,7 @@ class DB:
     def connect(self):
         try:
             self.db = mongoengine.connect(host=self.db_uri)
-            print(f"Connected to {self.db_uri}")
         # pylint: disable=broad-except
         except Exception as e:
+            print("Failed to connect to database")
             print(e)

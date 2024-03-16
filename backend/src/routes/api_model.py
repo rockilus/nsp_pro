@@ -241,3 +241,8 @@ class TeamMessage(BaseModel):
     id: str
     # team_members: List[str]
     # team_leaders: List[str]
+
+
+# Health
+class HealthCheck(BaseModel):
+    status: str

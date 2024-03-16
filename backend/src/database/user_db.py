@@ -11,6 +11,7 @@ class UserDB:
         self,
         user: User,
     ) -> User:
+        print("db.db in create_user", self.db.db)
         user_doc = to_mongo_user(user)
         user_saved = user_doc.save()
         return _from_mongo_user(user_saved)
