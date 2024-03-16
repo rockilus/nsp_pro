@@ -5,7 +5,7 @@ from permit import Permit  # type: ignore
 from core.team import Team
 from core.user import User
 from scripts.setup_database import team_db
-from utils.env_config import PDP_URL, PDP_API_KEY
+from utils.env_config import PDP_API_KEY, PDP_URL
 
 permit = Permit(pdp=PDP_URL, token=PDP_API_KEY)
 
@@ -37,17 +37,14 @@ async def permit_role_assignment_assign(
     )
 
 
-async def permit_role_assignment_get_user_teams(
-    user_id: str, role: str
-) -> List[Team]:
+async def permit_role_assignment_get_user_teams(user_id: str, role: str) -> List[Team]:
     team_permit = await permit.api.role_assignments.list(
         user_key=user_id,
         role_key=role,
         tenant_key="default",
     )
     return [
-        team_db.get_team_by_id(t.resource_instance.split(":")[1])
-        for t in team_permit
+        team_db.get_team_by_id(t.resource_instance.split(":")[1]) for t in team_permit
     ]
 
 
@@ -57,9 +54,7 @@ async def permit_check(
     resource: str,
     resource_id: str | None = None,
 ) -> bool:
-    resource_instance = (
-        f"{resource}:{resource_id}" if resource_id else resource
-    )
+    resource_instance = f"{resource}:{resource_id}" if resource_id else resource
     return await permit.check(
         user=user_id,
         action=action,
