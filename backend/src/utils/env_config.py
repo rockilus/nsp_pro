@@ -64,7 +64,7 @@ ST_DASHBOARD_ADMINS: Tuple[str, ...] = tuple(
 )
 # Permit.io config
 PDP_URL: str = get_env_variable("PDP_URL")
-PERMIT_API_KEY: str = get_env_variable("PERMIT_API_KEY")
+PDP_API_KEY: str = get_env_variable("PDP_API_KEY")
 
 # Uvicorn config
 UVICORN_RELOAD: bool = bool(get_env_variable("UVICORN_RELOAD"))
