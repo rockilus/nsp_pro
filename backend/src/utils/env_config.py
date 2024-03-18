@@ -52,7 +52,7 @@ elif ENVIRONMENT == "production":
         + "&authMechanism=MONGODB-AWS"
         + "&retryWrites=true"
         + "&w=majority"
-        + "&authMechanismProperties=AWS_SESSION_TOKEN:{session_token}"
+        + f"&authMechanismProperties=AWS_SESSION_TOKEN:{session_token}"
         + "&appName=nsp-pro-db-cluster"
     )
 

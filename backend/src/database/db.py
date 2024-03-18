@@ -9,8 +9,11 @@ class DB:
         self.connect()
 
     def connect(self):
+        print("Connecting to database")
+        print(self.db_uri)
         try:
             self.db = mongoengine.connect(host=self.db_uri)
+            print("Connected to database OK")
         # pylint: disable=broad-except
         except Exception as e:
             print("Failed to connect to database")
