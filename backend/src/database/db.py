@@ -1,4 +1,8 @@
 import mongoengine  # type: ignore
+from mongoengine.connection import ConnectionFailure
+
+from errors import DBConnectionError
+from services.logging.logger import log_error, log_info
 
 
 # pylint: disable=too-few-public-methods
@@ -6,15 +10,11 @@ class DB:
     def __init__(self, db_uri: str):
         self.db_uri = db_uri
         self.db = None
-        self.connect()
 
     def connect(self):
-        print("Connecting to database")
-        print(self.db_uri)
         try:
             self.db = mongoengine.connect(host=self.db_uri)
-            print("Connected to database OK")
-        # pylint: disable=broad-except
-        except Exception as e:
-            print("Failed to connect to database")
-            print(e)
+            log_info("Connected to database OK")
+        except ConnectionFailure as e:
+            log_error("Failed to connect to database: " + str(e))
+            raise DBConnectionError("Failed to connect to database") from e

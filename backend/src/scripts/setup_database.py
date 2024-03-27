@@ -20,9 +20,18 @@ from database import (
     WorkerDimensionDB,
     WorkerPropertyDB,
 )
+from errors import DBConnectionError
+from services.logging.logger import log_critical
 from utils.env_config import DB_URI
 
 db = DB(DB_URI)
+try:
+    db.connect()
+except DBConnectionError as e:
+    log_critical("Failed to connect to database" + str(e))
+    raise e
+
+
 assignment_db = AssignmentDB(db)
 constraint_build_db = ConstraintBuildDB(db)
 constraint_db = ConstraintDB(db)
