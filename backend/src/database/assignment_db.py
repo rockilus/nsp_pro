@@ -28,15 +28,8 @@ class AssignmentDB:
 
     # pylint: disable=too-many-arguments
     def create_assignment(self, assignment: Assignment) -> Assignment:
-        a_data = core_to_doc_assignment(assignment)
-        a_doc = AssignmentDocument(
-            id=str(ObjectId()),
-            worker=a_data.worker,
-            date=a_data.date,
-            shift=a_data.shift,
-            schedule=a_data.schedule,
-            status=a_data.status,
-        )
+        a_doc = core_to_doc_assignment(assignment)
+        a_doc.id = str(ObjectId())
         try:
             a_saved = a_doc.save()
         except Exception as e:

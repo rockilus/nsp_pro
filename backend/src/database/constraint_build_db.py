@@ -25,18 +25,8 @@ class ConstraintBuildDB:
     def create_constraint_build(
         self, constraint_build: ConstraintBuild
     ) -> ConstraintBuild:
-        cb_data = core_to_doc_constraint_build(constraint_build)
-        cb_doc = ConstraintBuildDocument(
-            id=str(ObjectId()),
-            team=cb_data.team,
-            constraint_type=cb_data.constraint_type,
-            template_id=cb_data.template_id,
-            blocks=[core_to_doc_block(b) for b in cb_data.blocks],
-            text=cb_data.text,
-            hard=cb_data.hard,
-            priority=cb_data.priority,
-            active=cb_data.active,
-        )
+        cb_doc = core_to_doc_constraint_build(constraint_build)
+        cb_doc.id = str(ObjectId())
         try:
             cb_saved = cb_doc.save()
         except Exception as e:
