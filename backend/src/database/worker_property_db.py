@@ -5,7 +5,7 @@ from bson import ObjectId
 from core.worker import Worker, WorkerDimension, WorkerProperty
 from database.db import DB
 from database.worker_db import core_to_doc_worker
-from database.worker_dimension_db import to_mongo_worker_dimension
+from database.worker_dimension_db import core_to_doc_worker_dimension
 from models import Worker as WorkerDocument
 from models import WorkerDimension as WorkerDimensionDocument
 from models import WorkerProperty as WorkerPropertyDocument
@@ -25,7 +25,7 @@ class WorkerPropertyDB:
             id=str(ObjectId()),
             value=value,
             worker=core_to_doc_worker(worker),
-            worker_dimension=to_mongo_worker_dimension(worker_dimension),
+            worker_dimension=core_to_doc_worker_dimension(worker_dimension),
         )
         worker_property_saved = worker_property.save()
         return _from_mongo_worker_property(worker_property_saved)
