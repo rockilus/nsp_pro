@@ -6,7 +6,7 @@ from bson import ObjectId
 from core.fixed_assignment import FixedAssignment
 from core.worker import Worker
 from database.db import DB
-from database.worker_db import to_mongo_worker
+from database.worker_db import core_to_doc_worker
 from errors import (
     handle_create_core_object_error,
     handle_create_document_error,
@@ -37,7 +37,7 @@ class FixedAssignmentDB:
         return _from_mongo_fixed_assignment(fa_saved)
 
     def get_fixed_assignments(self, workers: List[Worker]) -> List[FixedAssignment]:
-        w_docs = [to_mongo_worker(w) for w in workers]
+        w_docs = [core_to_doc_worker(w) for w in workers]
         try:
             # pylint: disable=no-member
             fixed_assignments = FixedAssignmentDocument.objects.filter(  # type: ignore
@@ -62,7 +62,7 @@ class FixedAssignmentDB:
     def get_fixed_assignments_by_dates(
         self, start_date: date, end_date: date, workers: List[Worker]
     ) -> List[FixedAssignment]:
-        w_docs = [to_mongo_worker(w) for w in workers]
+        w_docs = [core_to_doc_worker(w) for w in workers]
         try:
             # pylint: disable=no-member
             fixed_assignments = FixedAssignmentDocument.objects.filter(  # type: ignore

@@ -6,7 +6,7 @@ from bson import ObjectId
 from core.request import Request
 from core.worker import Worker
 from database.db import DB
-from database.worker_db import to_mongo_worker
+from database.worker_db import core_to_doc_worker
 from errors import (
     handle_create_core_object_error,
     handle_create_document_error,
@@ -36,7 +36,7 @@ class RequestDB:
         return doc_to_core_request(r_saved)
 
     def get_requests(self, workers: List[Worker]) -> List[Request]:
-        w_docs = [to_mongo_worker(w) for w in workers]
+        w_docs = [core_to_doc_worker(w) for w in workers]
         try:
             # pylint: disable=no-member
             requests = RequestDocument.objects.filter(worker__in=w_docs)  # type: ignore
@@ -53,7 +53,7 @@ class RequestDB:
     def get_requests_by_dates(
         self, start_date: date, end_date: date, workers: List[Worker]
     ) -> List[Request]:
-        w_docs = [to_mongo_worker(w) for w in workers]
+        w_docs = [core_to_doc_worker(w) for w in workers]
         try:
             # pylint: disable=no-member
             requests = RequestDocument.objects.filter(  # type: ignore

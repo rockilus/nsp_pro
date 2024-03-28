@@ -7,7 +7,7 @@ from core.schedule import Assignment, Schedule
 from core.worker import Worker
 from database.db import DB
 from database.schedule_db import core_to_doc_schedule
-from database.worker_db import to_mongo_worker
+from database.worker_db import core_to_doc_worker
 from errors import (
     handle_create_core_object_error,
     handle_create_document_error,
@@ -66,7 +66,7 @@ class AssignmentDB:
         try:
             # pylint: disable=no-member
             assignment = AssignmentDocument.objects.get(  # type: ignore
-                worker=to_mongo_worker(worker),
+                worker=core_to_doc_worker(worker),
                 date=a_date,
                 schedule=core_to_doc_schedule(schedule),
             )
