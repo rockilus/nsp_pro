@@ -197,7 +197,7 @@ def core_to_doc_objective_breach(
 
 
 # document to core
-def doc_to_core_mongo_variable(doc_var: VariableDocument) -> Variable:
+def doc_to_core_variable(doc_var: VariableDocument) -> Variable:
     try:
         variable = Variable(
             worker_id=doc_var.worker.id,
@@ -218,7 +218,7 @@ def doc_to_core_objective_breach(
             id=doc_obj.id,
             objective_id=doc_obj.objective_id,
             objective_category=doc_obj.objective_category,
-            variables=[doc_to_core_mongo_variable(v) for v in doc_obj.variables],
+            variables=[doc_to_core_variable(v) for v in doc_obj.variables],
             hard_to_soft=doc_obj.hard_to_soft,
             description=doc_obj.description,
             schedule_id=doc_obj.schedule.id,

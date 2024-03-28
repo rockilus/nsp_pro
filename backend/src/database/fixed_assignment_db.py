@@ -34,7 +34,7 @@ class FixedAssignmentDB:
         except Exception as e:
             log_info(f"Failed to save fixed assignment to database: {e}")
             handle_save_document_error(e)
-        return _from_mongo_fixed_assignment(fa_saved)
+        return doc_to_core_fixed_assignment(fa_saved)
 
     def get_fixed_assignments(self, workers: List[Worker]) -> List[FixedAssignment]:
         w_docs = [core_to_doc_worker(w) for w in workers]
@@ -46,7 +46,7 @@ class FixedAssignmentDB:
         except Exception as e:
             log_info(f"Failed to get fixed assignments by workers from database: {e}")
             handle_get_document_error(e)
-        return [_from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)]
+        return [doc_to_core_fixed_assignment(fa) for fa in list(fixed_assignments)]
 
     def get_fixed_assignment_by_id(self, fixed_assignment_id: str) -> FixedAssignment:
         try:
@@ -57,7 +57,7 @@ class FixedAssignmentDB:
         except Exception as e:
             log_info(f"Failed to get fixed assignment by id from database: {e}")
             handle_get_document_error(e)
-        return _from_mongo_fixed_assignment(fixed_assignment)
+        return doc_to_core_fixed_assignment(fixed_assignment)
 
     def get_fixed_assignments_by_dates(
         self, start_date: date, end_date: date, workers: List[Worker]
@@ -71,7 +71,7 @@ class FixedAssignmentDB:
         except Exception as e:
             log_info(f"Failed to get fixed assignments by dates from database: {e}")
             handle_get_document_error(e)
-        return [_from_mongo_fixed_assignment(fa) for fa in list(fixed_assignments)]
+        return [doc_to_core_fixed_assignment(fa) for fa in list(fixed_assignments)]
 
     def update_fixed_assignment(
         self, fixed_assignment: FixedAssignment
@@ -82,7 +82,7 @@ class FixedAssignmentDB:
         except Exception as e:
             log_info(f"Failed to update fixed assignment to database: {e}")
             handle_save_document_error(e)
-        return _from_mongo_fixed_assignment(fa_saved)
+        return doc_to_core_fixed_assignment(fa_saved)
 
     def delete_fixed_assignment(self, fixed_assignment_id: str) -> None:
         try:
@@ -154,7 +154,7 @@ def core_to_doc_fixed_assignment(
 
 
 # document to core
-def _from_mongo_fixed_assignment(
+def doc_to_core_fixed_assignment(
     doc_obj: FixedAssignmentDocument,
 ) -> FixedAssignment:
     date_datetime = datetime.combine(doc_obj.date, datetime.min.time()).date()

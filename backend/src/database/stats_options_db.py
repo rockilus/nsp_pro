@@ -28,7 +28,7 @@ class StatsOptionsDB:
         except Exception as e:
             log_info(f"Failed to save stats options to database: {e}")
             handle_save_document_error(e)
-        return _from_mongo_stats_options(so_saved)
+        return doc_to_core_stats_options(so_saved)
 
     def get_stats_options(self, team_id: str) -> StatsOptions | None:
         try:
@@ -39,7 +39,7 @@ class StatsOptionsDB:
         except Exception as e:
             log_info(f"Failed to get stats options from database: {e}")
             handle_get_document_error(e)
-        return _from_mongo_stats_options(stats_options) if stats_options else None
+        return doc_to_core_stats_options(stats_options) if stats_options else None
 
     def get_stats_options_by_id(self, stats_options_id: str) -> StatsOptions:
         try:
@@ -50,7 +50,7 @@ class StatsOptionsDB:
         except Exception as e:
             log_info(f"Failed to get stats options by id from database: {e}")
             handle_get_document_error(e)
-        return _from_mongo_stats_options(stats_options)
+        return doc_to_core_stats_options(stats_options)
 
     def update_stats_options(self, stats_options: StatsOptions) -> StatsOptions:
         document = core_to_doc_stats_options(stats_options)
@@ -59,7 +59,7 @@ class StatsOptionsDB:
         except Exception as e:
             log_info(f"Failed to update stats options to database: {e}")
             handle_save_document_error(e)
-        return _from_mongo_stats_options(document_saved)
+        return doc_to_core_stats_options(document_saved)
 
     def delete_stats_options(self, stats_options_id: str) -> None:
         try:
@@ -111,7 +111,7 @@ def core_to_doc_stats_options(
 
 
 # document to core
-def _from_mongo_stats_options(doc_obj: StatsOptionsDocument) -> StatsOptions:
+def doc_to_core_stats_options(doc_obj: StatsOptionsDocument) -> StatsOptions:
     try:
         stats_options = StatsOptions(
             id=doc_obj.id,
