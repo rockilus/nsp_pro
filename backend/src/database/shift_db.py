@@ -4,8 +4,16 @@ from bson import ObjectId
 
 from core.shift import Shift
 from database.db import DB
+from errors import (
+    handle_create_core_object_error,
+    handle_create_document_error,
+    handle_delete_document_error,
+    handle_get_document_error,
+    handle_save_document_error,
+)
 from models import Shift as ShiftDocument
 from models import Team as TeamDocument
+from services.logging import log_info
 
 
 class ShiftDB:
@@ -13,65 +21,96 @@ class ShiftDB:
         self.db = db
 
     def create_shift(self, shift: Shift) -> Shift:
-        s_data = to_mongo_shift(shift)
-        s_doc = ShiftDocument(
-            id=str(ObjectId()),
-            team=s_data.team,
-            name=s_data.name,
-            start_time=s_data.start_time,
-            end_time=s_data.end_time,
-            is_time_off=s_data.is_time_off,
-            staffing=s_data.staffing,
-            color=s_data.color,
-        )
-        s_saved = s_doc.save()
-        return _from_mongo_shift(s_saved)
+        s_doc = core_to_doc_shift(shift)
+        s_doc.id = str(ObjectId())
+        try:
+            s_saved = s_doc.save()
+        except Exception as e:
+            log_info(f"Failed to save shift to database: {e}")
+            handle_save_document_error(e)
+        return doc_to_core_shift(s_saved)
 
     def get_shifts(self, team_id: str) -> List[Shift]:
-        # pylint: disable=no-member
-        shifts = ShiftDocument.objects(team=team_id)  # type: ignore
-        return [_from_mongo_shift(s) for s in list(shifts)]
+        try:
+            # pylint: disable=no-member
+            shifts = ShiftDocument.objects(team=team_id)  # type: ignore
+        except Exception as e:
+            log_info(f"Failed to get shifts from database: {e}")
+            handle_get_document_error(e)
+        return [doc_to_core_shift(s) for s in list(shifts)]
 
     def get_shift_by_id(self, shift_id: str) -> Shift:
-        # pylint: disable=no-member
-        shift = ShiftDocument.objects.get(id=shift_id)  # type: ignore
-        return _from_mongo_shift(shift)
+        try:
+            # pylint: disable=no-member
+            shift = ShiftDocument.objects.get(id=shift_id)  # type: ignore
+        except Exception as e:
+            log_info(f"Failed to get shift by id from database: {e}")
+            handle_get_document_error(e)
+        return doc_to_core_shift(shift)
 
     def update_shift(self, shift: Shift) -> Shift:
-        s_doc = to_mongo_shift(shift)
-        s_saved = s_doc.save()
-        return _from_mongo_shift(s_saved)
+        s_doc = core_to_doc_shift(shift)
+        try:
+            s_saved = s_doc.save()
+        except Exception as e:
+            log_info(f"Failed to update shift in database: {e}")
+            handle_save_document_error(e)
+        return doc_to_core_shift(s_saved)
 
     def delete_shift(self, shift_id: str) -> None:
-        # pylint: disable=no-member
-        shift = ShiftDocument.objects.get(id=shift_id)  # type: ignore
-        shift.delete()
+        try:
+            # pylint: disable=no-member
+            shift = ShiftDocument.objects.get(id=shift_id)  # type: ignore
+        except Exception as e:
+            log_info(f"Failed to get shift by id to delete from database: {e}")
+            handle_get_document_error(e)
+        try:
+            shift.delete()
+        except Exception as e:
+            log_info(f"Failed to delete shift from database: {e}")
+            handle_delete_document_error(e)
 
 
 # Mappers
-def to_mongo_shift(dataclass_obj: Shift) -> ShiftDocument:
-    # pylint: disable=no-member
-    team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
-    return ShiftDocument(
-        id=dataclass_obj.id,
-        team=team,
-        name=dataclass_obj.name,
-        start_time=dataclass_obj.start_time,
-        end_time=dataclass_obj.end_time,
-        staffing=dataclass_obj.staffing,
-        is_time_off=dataclass_obj.is_time_off,
-        color=dataclass_obj.color,
-    )
+# core to document
+def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
+    try:
+        # pylint: disable=no-member
+        team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
+    except Exception as e:
+        log_info(f"Failed to get team by id: {e}")
+        handle_get_document_error(e)
+    try:
+        s_doc = ShiftDocument(
+            id=dataclass_obj.id,
+            team=team,
+            name=dataclass_obj.name,
+            start_time=dataclass_obj.start_time,
+            end_time=dataclass_obj.end_time,
+            staffing=dataclass_obj.staffing,
+            is_time_off=dataclass_obj.is_time_off,
+            color=dataclass_obj.color,
+        )
+    except Exception as e:
+        log_info(f"Failed to convert Shift to ShiftDocument: {e}")
+        handle_create_document_error(e)
+    return s_doc
 
 
-def _from_mongo_shift(doc_obj: ShiftDocument) -> Shift:
-    return Shift(
-        id=doc_obj.id,
-        team_id=doc_obj.team.id,
-        name=str(doc_obj.name) if doc_obj.name is not None else "",
-        start_time=doc_obj.start_time,
-        end_time=doc_obj.end_time,
-        staffing=doc_obj.staffing,
-        is_time_off=doc_obj.is_time_off,
-        color=doc_obj.color,
-    )
+# document to core
+def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
+    try:
+        shift = Shift(
+            id=doc_obj.id,
+            team_id=doc_obj.team.id,
+            name=str(doc_obj.name) if doc_obj.name is not None else "",
+            start_time=doc_obj.start_time,
+            end_time=doc_obj.end_time,
+            staffing=doc_obj.staffing,
+            is_time_off=doc_obj.is_time_off,
+            color=doc_obj.color,
+        )
+    except Exception as e:
+        log_info(f"Failed to convert ShiftDocument to Shift: {e}")
+        handle_create_core_object_error(e)
+    return shift
