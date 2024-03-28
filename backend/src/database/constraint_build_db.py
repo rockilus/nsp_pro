@@ -40,7 +40,7 @@ class ConstraintBuildDB:
         try:
             cb_saved = cb_doc.save()
         except Exception as e:
-            log_info(f'Failed to save constraint build document to database: {e}')
+            log_info(f'Failed to save constraint build to database: {e}')
             handle_save_document_error(e)
         return doc_to_core_constraint_build(cb_saved)
 

@@ -40,7 +40,7 @@ class AssignmentDB:
         try:
             a_saved = a_doc.save()
         except Exception as e:
-            log_info(f"Failed to save assignment document to database: {e}")
+            log_info(f"Failed to save assignment to database: {e}")
             handle_save_document_error(e)
         return doc_to_core_assignment(a_saved)
 

@@ -3,9 +3,15 @@ from typing import List
 
 from bson import ObjectId
 
-from core.constraint import Block, Constraint, VarDay, VarShift, VarWorker
+from core.constraint import Constraint, VarDay, VarShift, VarWorker
 from database.db import DB
-from models import Block as BlockDocument
+from errors import (
+    handle_create_core_object_error,
+    handle_create_document_error,
+    handle_delete_document_error,
+    handle_get_document_error,
+    handle_save_document_error,
+)
 from models import Constraint as ConstraintDocument
 from models import ConstraintBuild as ConstraintBuildDocument
 from models import Schedule as ScheduleDocument
@@ -14,6 +20,7 @@ from models import VarDay as VarDayDocument
 from models import VarShift as VarShiftDocument
 from models import VarWorker as VarWorkerDocument
 from models import Worker as WorkerDocument
+from services.logging import log_info
 
 
 class ConstraintDB:
@@ -22,220 +29,311 @@ class ConstraintDB:
 
     # pylint: disable=too-many-arguments
     def create_constraint(self, constraint: Constraint) -> Constraint:
-        constraint_doc = to_mongo_constraint(constraint)
+        constraint_doc = core_to_doc_constraint(constraint)
         constraint_doc.id = str(ObjectId())
-        constraint_saved = constraint_doc.save()
-        return _from_mongo_constraint(constraint_saved)
+        try:
+            constraint_saved = constraint_doc.save()
+        except Exception as e:
+            log_info(f"Failed to save constraint to database: {e}")
+            handle_save_document_error(e)
+        return doc_to_core_constraint(constraint_saved)
 
     def get_constraints(self) -> List[Constraint]:
-        # pylint: disable=no-member
-        constraints = ConstraintDocument.objects.all()  # type: ignore
-        return [_from_mongo_constraint(c) for c in list(constraints)]
+        try:
+            # pylint: disable=no-member
+            constraints = ConstraintDocument.objects.all()  # type: ignore
+        except Exception as e:
+            log_info(f"Failed to get constraints from database: {e}")
+            handle_get_document_error(e)
+        return [doc_to_core_constraint(c) for c in list(constraints)]
 
     def get_constraints_active(self) -> List[Constraint]:
-        # pylint: disable=no-member
-        constraints = ConstraintDocument.objects.filter(active=True)  # type: ignore
-        return [_from_mongo_constraint(c) for c in list(constraints)]
+        try:
+            # pylint: disable=no-member
+            constraints = ConstraintDocument.objects.filter(active=True)  # type: ignore
+        except Exception as e:
+            log_info(f"Failed to get active constraints from database: {e}")
+            handle_get_document_error(e)
+        return [doc_to_core_constraint(c) for c in list(constraints)]
 
     def get_constraint_by_id(self, constraint_id: str) -> Constraint:
-        # pylint: disable=no-member
-        constraint = ConstraintDocument.objects.get(id=constraint_id)  # type: ignore
-        return _from_mongo_constraint(constraint)
+        try:
+            # pylint: disable=no-member
+            constraint = ConstraintDocument.objects.get(  # type: ignore
+                id=constraint_id
+            )
+        except Exception as e:
+            log_info(f"Failed to get constraint by id from database: {e}")
+            handle_get_document_error(e)
+        return doc_to_core_constraint(constraint)
 
     def get_constraints_by_worker_id(self, worker_id: str) -> List[Constraint]:
-        # pylint: disable=no-member
-        constraints = ConstraintDocument.objects.filter(  # type: ignore
-            worker_var__target=worker_id
-        )
-        return [_from_mongo_constraint(c) for c in list(constraints)]
+        try:
+            # pylint: disable=no-member
+            constraints = ConstraintDocument.objects.filter(  # type: ignore
+                worker_var__target=worker_id
+            )
+        except Exception as e:
+            log_info(f"Failed to get constraints by worker id from database: {e}")
+            handle_get_document_error(e)
+        return [doc_to_core_constraint(c) for c in list(constraints)]
 
     # pyling: disable=too-many-arguments
     def update_constraint(self, constraint: Constraint) -> Constraint:
-        constraint_doc = to_mongo_constraint(constraint)
-        constraint_saved = constraint_doc.save()
-        return _from_mongo_constraint(constraint_saved)
+        constraint_doc = core_to_doc_constraint(constraint)
+        try:
+            constraint_saved = constraint_doc.save()
+        except Exception as e:
+            log_info(f"Failed to update constraint in database: {e}")
+            handle_save_document_error(e)
+        return doc_to_core_constraint(constraint_saved)
 
     def delete_constraint(self, constraint_id: str) -> None:
-        # pylint: disable=no-member
-        constraint_doc = ConstraintDocument.objects.get(  # type: ignore
-            id=constraint_id
-        )
-        constraint_doc.delete()
+        try:
+            # pylint: disable=no-member
+            constraint_doc = ConstraintDocument.objects.get(  # type: ignore
+                id=constraint_id
+            )
+        except Exception as e:
+            log_info(f"Failed to get constraint by id to delete: {e}")
+            handle_get_document_error(e)
+        try:
+            constraint_doc.delete()
+        except Exception as e:
+            log_info(f"Failed to delete constraint: {e}")
+            handle_delete_document_error(e)
 
     def delete_constraints_by_schedule_id(self, schedule_id: str) -> None:
-        # pylint: disable=no-member
-        constraints = ConstraintDocument.objects.filter(  # type: ignore
-            schedule=schedule_id
-        )
-        for constraint in list(constraints):
-            constraint.delete()
+        try:
+            # pylint: disable=no-member
+            constraints = ConstraintDocument.objects.filter(  # type: ignore
+                schedule=schedule_id
+            )
+        except Exception as e:
+            log_info(f"Failed to get constraints by schedule id to delete: {e}")
+            handle_get_document_error(e)
+        try:
+            for constraint in list(constraints):
+                constraint.delete()
+        except Exception as e:
+            log_info(f"Failed to delete constraints: {e}")
+            handle_delete_document_error(e)
 
     def delete_constraints_by_constraint_build_id(
         self, constraint_build_id: str
     ) -> None:
-        # pylint: disable=no-member
-        constraints = ConstraintDocument.objects.filter(  # type: ignore
-            constraint_build=constraint_build_id
-        )
-        for constraint in list(constraints):
-            constraint.delete()
+        try:
+            # pylint: disable=no-member
+            constraints = ConstraintDocument.objects.filter(  # type: ignore
+                constraint_build=constraint_build_id
+            )
+        except Exception as e:
+            log_info(f"Failed to get constraints by constraint build id to delete: {e}")
+            handle_get_document_error(e)
+        try:
+            for constraint in list(constraints):
+                constraint.delete()
+        except Exception as e:
+            log_info(f"Failed to delete constraints: {e}")
+            handle_delete_document_error(e)
 
 
 # Mappers
-def to_mongo_var_worker(dataclass_obj: VarWorker) -> VarWorkerDocument:
+# core to document
+def core_to_doc_var_worker(dataclass_obj: VarWorker) -> VarWorkerDocument:
     workers = []
     if len(dataclass_obj.target_ids) > 0:
-        # pylint: disable=no-member
-        workers = WorkerDocument.objects.filter(  # type: ignore
-            id__in=dataclass_obj.target_ids
+        try:
+            # pylint: disable=no-member
+            workers = WorkerDocument.objects.filter(  # type: ignore
+                id__in=dataclass_obj.target_ids
+            )
+        except Exception as e:
+            log_info(f"Failed to get workers by id: {e}")
+            handle_get_document_error(e)
+    try:
+        vw_doc = VarWorkerDocument(
+            selector=dataclass_obj.selector,
+            target=workers,
+            num_eligible_workers=dataclass_obj.num_eligible_workers,
         )
-
-    return VarWorkerDocument(
-        selector=dataclass_obj.selector,
-        target=workers,
-        num_eligible_workers=dataclass_obj.num_eligible_workers,
-    )
+    except Exception as e:
+        log_info(f"Failed to convert VarWorker to VarWorkerDocument: {e}")
+        handle_create_document_error(e)
+    return vw_doc
 
 
-def to_mongo_var_day(dataclass_obj: VarDay) -> VarDayDocument:
-    return VarDayDocument(
-        selector=dataclass_obj.selector,
-        target=dataclass_obj.target,
-        start_date=dataclass_obj.start_date,
-        end_date=dataclass_obj.end_date,
-        interval=dataclass_obj.interval,
-    )
+def core_to_doc_var_day(dataclass_obj: VarDay) -> VarDayDocument:
+    try:
+        vd_doc = VarDayDocument(
+            selector=dataclass_obj.selector,
+            target=dataclass_obj.target,
+            start_date=dataclass_obj.start_date,
+            end_date=dataclass_obj.end_date,
+            interval=dataclass_obj.interval,
+        )
+    except Exception as e:
+        log_info(f"Failed to convert VarDay to VarDayDocument: {e}")
+        handle_create_document_error(e)
+    return vd_doc
 
 
-def to_mongo_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
+def core_to_doc_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
     shifts = []
     reference_s = []
     relative_s = []
     if len(dataclass_obj.target_ids) > 0:
-        # pylint: disable=no-member
-        shifts = ShiftDocument.objects.filter(  # type: ignore
-            id__in=dataclass_obj.target_ids
-        )
+        try:
+            # pylint: disable=no-member
+            shifts = ShiftDocument.objects.filter(  # type: ignore
+                id__in=dataclass_obj.target_ids
+            )
+        except Exception as e:
+            log_info(f"Failed to get shifts by id: {e}")
+            handle_get_document_error(e)
     if len(dataclass_obj.reference_ids) > 0:
-        # pylint: disable=no-member
-        reference_s = ShiftDocument.objects.filter(  # type: ignore
-            id__in=dataclass_obj.reference_ids
-        )
+        try:
+            # pylint: disable=no-member
+            reference_s = ShiftDocument.objects.filter(  # type: ignore
+                id__in=dataclass_obj.reference_ids
+            )
+        except Exception as e:
+            log_info(f"Failed to get shifts by id: {e}")
+            handle_get_document_error(e)
     if len(dataclass_obj.relative_ids) > 0:
+        try:
+            # pylint: disable=no-member
+            relative_s = ShiftDocument.objects.filter(  # type: ignore
+                id__in=dataclass_obj.relative_ids
+            )
+        except Exception as e:
+            log_info(f"Failed to get shifts by id: {e}")
+            handle_get_document_error(e)
+    try:
+        vs_doc = VarShiftDocument(
+            selector=dataclass_obj.selector,
+            target=shifts,
+            reference=reference_s,
+            relative=relative_s,
+        )
+    except Exception as e:
+        log_info(f"Failed to convert VarShift to VarShiftDocument: {e}")
+        handle_create_document_error(e)
+    return vs_doc
+
+
+def core_to_doc_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
+    worker_var = core_to_doc_var_worker(dataclass_obj.worker_var)
+    day_var = core_to_doc_var_day(dataclass_obj.day_var)
+    shift_var = core_to_doc_var_shift(dataclass_obj.shift_var)
+    try:
+        # pylint: disable=no-member, R0801
+        schedule = ScheduleDocument.objects.get(  # type: ignore
+            id=dataclass_obj.schedule_id
+        )
+    except Exception as e:
+        log_info(f"Failed to get schedule by id: {e}")
+        handle_get_document_error(e)
+    try:
         # pylint: disable=no-member
-        relative_s = ShiftDocument.objects.filter(  # type: ignore
-            id__in=dataclass_obj.relative_ids
+        constraint_build = (
+            ConstraintBuildDocument.objects.get(  # type: ignore
+                id=dataclass_obj.constraint_build_id
+            )
+            if dataclass_obj.constraint_build_id != ""
+            else None
         )
-    return VarShiftDocument(
-        selector=dataclass_obj.selector,
-        target=shifts,
-        reference=reference_s,
-        relative=relative_s,
-    )
-
-
-# pylint: disable=R0801
-def to_mongo_block(dataclass_obj: Block) -> BlockDocument:
-    return BlockDocument(
-        name=dataclass_obj.name,
-        type=dataclass_obj.type,
-        value=dataclass_obj.value,
-    )
-
-
-def to_mongo_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
-    worker_var = to_mongo_var_worker(dataclass_obj.worker_var)
-    day_var = to_mongo_var_day(dataclass_obj.day_var)
-    shift_var = to_mongo_var_shift(dataclass_obj.shift_var)
-    # pylint: disable=no-member
-    schedule = ScheduleDocument.objects.get(  # type: ignore
-        id=dataclass_obj.schedule_id
-    )
-    # pylint: disable=no-member
-    constraint_build = (
-        ConstraintBuildDocument.objects.get(  # type: ignore
-            id=dataclass_obj.constraint_build_id
+    except Exception as e:
+        log_info(f"Failed to get constraint build by id: {e}")
+        handle_get_document_error(e)
+    try:
+        constraint = ConstraintDocument(
+            id=dataclass_obj.id,
+            constraint_type=dataclass_obj.constraint_type,
+            operator=dataclass_obj.operator,
+            target_value=dataclass_obj.target_value,
+            target_unit=dataclass_obj.target_unit,
+            worker_var=worker_var,
+            day_var=day_var,
+            shift_var=shift_var,
+            hard=dataclass_obj.hard,
+            priority=dataclass_obj.priority,
+            active=dataclass_obj.active,
+            schedule=schedule,
+            constraint_build=constraint_build,
         )
-        if dataclass_obj.constraint_build_id != ""
-        else None
-    )
-    constraint = ConstraintDocument(
-        id=dataclass_obj.id,
-        constraint_type=dataclass_obj.constraint_type,
-        operator=dataclass_obj.operator,
-        target_value=dataclass_obj.target_value,
-        target_unit=dataclass_obj.target_unit,
-        worker_var=worker_var,
-        day_var=day_var,
-        shift_var=shift_var,
-        hard=dataclass_obj.hard,
-        priority=dataclass_obj.priority,
-        active=dataclass_obj.active,
-        schedule=schedule,
-        constraint_build=constraint_build,
-    )
+    except Exception as e:
+        log_info(f"Failed to convert Constraint to ConstraintDocument: {e}")
+        handle_create_document_error(e)
     return constraint
 
 
-def _from_mongo_var_worker(doc_obj: VarWorkerDocument) -> VarWorker:
-    return VarWorker(
-        selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
-        target_ids=[w.id for w in doc_obj.target],
-        num_eligible_workers=doc_obj.num_eligible_workers,
-    )
+# document to core
+def doc_to_core_var_worker(doc_obj: VarWorkerDocument) -> VarWorker:
+    try:
+        var_worker = VarWorker(
+            selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
+            target_ids=[w.id for w in doc_obj.target],
+            num_eligible_workers=doc_obj.num_eligible_workers,
+        )
+    except Exception as e:
+        log_info(f"Failed to convert VarWorkerDocument to VarWorker: {e}")
+        handle_create_core_object_error(e)
+    return var_worker
 
 
-def _from_mongo_var_day(doc_obj: VarDayDocument) -> VarDay:
-    return VarDay(
-        selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
-        target=doc_obj.target,
-        start_date=datetime.combine(doc_obj.start_date, datetime.min.time()).date(),
-        end_date=datetime.combine(doc_obj.end_date, datetime.min.time()).date(),
-        interval=doc_obj.interval,
-    )
+def doc_to_core_var_day(doc_obj: VarDayDocument) -> VarDay:
+    try:
+        var_day = VarDay(
+            selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
+            target=doc_obj.target,
+            start_date=datetime.combine(doc_obj.start_date, datetime.min.time()).date(),
+            end_date=datetime.combine(doc_obj.end_date, datetime.min.time()).date(),
+            interval=doc_obj.interval,
+        )
+    except Exception as e:
+        log_info(f"Failed to convert VarDayDocument to VarDay: {e}")
+        handle_create_core_object_error(e)
+    return var_day
 
 
-def _from_mongo_var_shift(doc_obj: VarShiftDocument) -> VarShift:
-    return VarShift(
-        selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
-        target_ids=[s.id for s in doc_obj.target],
-        reference_ids=[s.id for s in doc_obj.reference],
-        relative_ids=[s.id for s in doc_obj.relative],
-    )
+def doc_to_core_var_shift(doc_obj: VarShiftDocument) -> VarShift:
+    try:
+        var_shift = VarShift(
+            selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
+            target_ids=[s.id for s in doc_obj.target],
+            reference_ids=[s.id for s in doc_obj.reference],
+            relative_ids=[s.id for s in doc_obj.relative],
+        )
+    except Exception as e:
+        log_info(f"Failed to convert VarShiftDocument to VarShift: {e}")
+        handle_create_core_object_error(e)
+    return var_shift
 
 
-# pylint: disable=R0801
-def _from_mongo_block(doc_obj: BlockDocument) -> Block:
-    return Block(
-        name=doc_obj.name,  # type: ignore
-        type=doc_obj.type,  # type: ignore
-        value=(
-            doc_obj.value
-            if isinstance(doc_obj.value, (str, int))
-            else list(doc_obj.value)
-        ),
-    )
-
-
-def _from_mongo_constraint(doc_obj: ConstraintDocument) -> Constraint:
-    worker_var = _from_mongo_var_worker(doc_obj.worker_var)
-    day_var = _from_mongo_var_day(doc_obj.day_var)
-    shift_var = _from_mongo_var_shift(doc_obj.shift_var)
-    constraint = Constraint(
-        id=str(doc_obj.id),
-        constraint_type=doc_obj.constraint_type,  # type: ignore
-        operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
-        target_value=doc_obj.target_value,
-        target_unit=doc_obj.target_unit,
-        worker_var=worker_var,
-        day_var=day_var,
-        shift_var=shift_var,
-        hard=doc_obj.hard,
-        priority=doc_obj.priority,
-        active=doc_obj.active,
-        schedule_id=str(doc_obj.schedule.id),
-        constraint_build_id=(
-            str(doc_obj.constraint_build.id) if doc_obj.constraint_build else ""
-        ),
-    )
+def doc_to_core_constraint(doc_obj: ConstraintDocument) -> Constraint:
+    worker_var = doc_to_core_var_worker(doc_obj.worker_var)
+    day_var = doc_to_core_var_day(doc_obj.day_var)
+    shift_var = doc_to_core_var_shift(doc_obj.shift_var)
+    try:
+        constraint = Constraint(
+            id=str(doc_obj.id),
+            constraint_type=doc_obj.constraint_type,  # type: ignore
+            operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
+            target_value=doc_obj.target_value,
+            target_unit=doc_obj.target_unit,
+            worker_var=worker_var,
+            day_var=day_var,
+            shift_var=shift_var,
+            hard=doc_obj.hard,
+            priority=doc_obj.priority,
+            active=doc_obj.active,
+            schedule_id=str(doc_obj.schedule.id),
+            constraint_build_id=(
+                str(doc_obj.constraint_build.id) if doc_obj.constraint_build else ""
+            ),
+        )
+    except Exception as e:
+        log_info(f"Failed to convert ConstraintDocument to Constraint: {e}")
+        handle_create_core_object_error(e)
     return constraint
