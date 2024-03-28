@@ -5,9 +5,17 @@ from bson import ObjectId
 
 from core.coverage import CoverageSelector
 from database.db import DB
+from errors import (
+    handle_create_core_object_error,
+    handle_create_document_error,
+    handle_delete_document_error,
+    handle_get_document_error,
+    handle_save_document_error,
+)
 from models import Coverage as CoverageDocument
 from models import CoverageSelector as CoverageSelectorDocument
 from models import Team as TeamDocument
+from services.logging import log_info
 
 
 class CoverageSelectorDB:
@@ -17,86 +25,132 @@ class CoverageSelectorDB:
     def create_coverage_selector(
         self, coverage_selector: CoverageSelector
     ) -> CoverageSelector:
-        cs_data = to_mongo_coverage_selector(coverage_selector)
-        cs_doc = CoverageSelectorDocument(
-            id=str(ObjectId()),
-            team=cs_data.team,
-            start_date=cs_data.start_date,
-            end_date=cs_data.end_date,
-        )
-        cs_saved = cs_doc.save()
-        return _from_mongo_coverage_selector(cs_saved)
+        cs_doc = core_to_doc_coverage_selector(coverage_selector)
+        cs_doc.id = str(ObjectId())
+        try:
+            cs_saved = cs_doc.save()
+        except Exception as e:
+            log_info(f"Failed to save coverage selector to database: {e}")
+            handle_save_document_error(e)
+        return doc_to_core_coverage_selector(cs_saved)
 
     def get_coverage_selectors(self, team_id: str) -> List[CoverageSelector]:
-        # pylint: disable=no-member
-        coverage_selectors = CoverageSelectorDocument.objects.filter(  # type: ignore
-            team=team_id
-        )
-        return [_from_mongo_coverage_selector(cs) for cs in list(coverage_selectors)]
+        try:
+            # pylint: disable=no-member
+            coverage_selectors = CoverageSelectorDocument.objects.filter(
+                team=team_id
+            )  # type: ignore
+        except Exception as e:
+            log_info(f"Failed to get coverage selectors from database: {e}")
+            handle_get_document_error(e)
+        return [doc_to_core_coverage_selector(cs) for cs in list(coverage_selectors)]
 
     def get_coverage_selector_by_id(
         self, coverage_selector_id: str
     ) -> CoverageSelector:
-        # pylint: disable=no-member
-        coverage_selector = CoverageSelectorDocument.objects.get(  # type: ignore
-            id=coverage_selector_id
-        )
-        return _from_mongo_coverage_selector(coverage_selector)
+        try:
+            # pylint: disable=no-member
+            coverage_selector = CoverageSelectorDocument.objects.get(  # type: ignore
+                id=coverage_selector_id
+            )
+        except Exception as e:
+            log_info(f"Failed to get coverage selector by id from database: {e}")
+            handle_get_document_error(e)
+        return doc_to_core_coverage_selector(coverage_selector)
 
     def get_coverage_selector_by_dates(
         self, start_date: date, end_date: date, team_id: str
     ) -> List[CoverageSelector]:
-        # pylint: disable=no-member
-        coverage_selectors = CoverageSelectorDocument.objects.filter(  # type: ignore
-            start_date__lte=end_date,
-            end_date__gte=start_date,
-            team=team_id,
-        )
-        return [_from_mongo_coverage_selector(cs) for cs in list(coverage_selectors)]
+        try:
+            # pylint: disable=no-member
+            coverage_selectors = CoverageSelectorDocument.objects.filter(  # type: ignore # noqa
+                start_date__lte=end_date,  # type: ignore
+                end_date__gte=start_date,  # type: ignore
+                team=team_id,  # type: ignore
+            )  # type: ignore
+
+        except Exception as e:
+            log_info(f"Failed to get coverage selectors by dates from database: {e}")
+            handle_get_document_error(e)
+        return [doc_to_core_coverage_selector(cs) for cs in list(coverage_selectors)]
 
     def update_coverage_selector(
         self, coverage_selector: CoverageSelector
     ) -> CoverageSelector:
-        # pylint: disable=no-member
-        cs_doc = to_mongo_coverage_selector(coverage_selector)
-        cs_saved = cs_doc.save()
-        return _from_mongo_coverage_selector(cs_saved)
+        cs_doc = core_to_doc_coverage_selector(coverage_selector)
+        try:
+            cs_saved = cs_doc.save()
+        except Exception as e:
+            log_info(f"Failed to update coverage selector in database: {e}")
+            handle_save_document_error(e)
+        return doc_to_core_coverage_selector(cs_saved)
 
     def delete_coverage_selector(self, coverage_selector_id: str) -> None:
-        # pylint: disable=no-member
-        coverage_selector = CoverageSelectorDocument.objects.get(  # type: ignore
-            id=coverage_selector_id
-        )
-        coverage_selector.delete()
+        try:
+            # pylint: disable=no-member
+            coverage_selector = CoverageSelectorDocument.objects.get(  # type: ignore
+                id=coverage_selector_id
+            )
+        except Exception as e:
+            log_info(
+                f"Failed to get coverage selector by id to delete from database: {e}"
+            )
+            handle_get_document_error(e)
+        try:
+            coverage_selector.delete()
+        except Exception as e:
+            log_info(f"Failed to delete coverage selector from database: {e}")
+            handle_delete_document_error(e)
 
 
 # Mappers
-def to_mongo_coverage_selector(
+# core to document
+def core_to_doc_coverage_selector(
     dataclass_obj: CoverageSelector,
 ) -> CoverageSelectorDocument:
-    # pylint: disable=no-member
-    team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
-    if dataclass_obj.coverage_id != "":
+    # pylint: disable=R0801
+    try:
         # pylint: disable=no-member
-        coverage = CoverageDocument.objects.get(  # type: ignore
-            id=dataclass_obj.coverage_id
+        team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
+    except Exception as e:
+        log_info(f"Failed to get team from database: {e}")
+        handle_get_document_error(e)
+    if dataclass_obj.coverage_id != "":
+        try:
+            # pylint: disable=no-member
+            coverage = CoverageDocument.objects.get(  # type: ignore
+                id=dataclass_obj.coverage_id
+            )
+        except Exception as e:
+            log_info(f"Failed to get coverage from database: {e}")
+            handle_get_document_error(e)
+    try:
+        cs_doc = CoverageSelectorDocument(
+            id=dataclass_obj.id,
+            team=team,
+            start_date=dataclass_obj.start_date,
+            end_date=dataclass_obj.end_date,
+            coverage=coverage if dataclass_obj.coverage_id != "" else None,
         )
-    return CoverageSelectorDocument(
-        id=dataclass_obj.id,
-        team=team,
-        start_date=dataclass_obj.start_date,
-        end_date=dataclass_obj.end_date,
-        coverage=coverage if dataclass_obj.coverage_id != "" else None,
-    )
+    except Exception as e:
+        log_info(f"Failed to convert CoverageSelector to CoverageSelectorDocument: {e}")
+        handle_create_document_error(e)
+    return cs_doc
 
 
-def _from_mongo_coverage_selector(
+# document to core
+def doc_to_core_coverage_selector(
     doc_obj: CoverageSelectorDocument,
 ) -> CoverageSelector:
-    return CoverageSelector(
-        id=doc_obj.id,
-        team_id=doc_obj.team.id,
-        start_date=doc_obj.start_date.date(),
-        end_date=doc_obj.end_date.date(),
-        coverage_id=str(doc_obj.coverage.id) if doc_obj.coverage else "",
-    )
+    try:
+        coverage_selector = CoverageSelector(
+            id=doc_obj.id,
+            team_id=doc_obj.team.id,
+            start_date=doc_obj.start_date.date(),
+            end_date=doc_obj.end_date.date(),
+            coverage_id=str(doc_obj.coverage.id) if doc_obj.coverage else "",
+        )
+    except Exception as e:
+        log_info(f"Failed to convert CoverageSelectorDocument to CoverageSelector: {e}")
+        handle_create_core_object_error(e)
+    return coverage_selector
