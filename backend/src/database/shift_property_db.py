@@ -4,8 +4,6 @@ from bson import ObjectId
 
 from core.shift import Shift, ShiftDimension, ShiftProperty
 from database.db import DB
-from database.shift_db import core_to_doc_shift
-from database.shift_dimension_db import core_to_doc_shift_dimension
 from errors import (
     handle_create_core_object_error,
     handle_create_document_error,
@@ -23,24 +21,15 @@ class ShiftPropertyDB:
     def __init__(self, db: DB):
         self.db = db
 
-    def create_shift_property(
-        self,
-        shift: Shift,
-        shift_dimension: ShiftDimension,
-        value: Union[str, int, float, bool],
-    ) -> ShiftProperty:
-        shift_property = ShiftPropertyDocument(
-            id=str(ObjectId()),
-            value=value,
-            shift=core_to_doc_shift(shift),
-            shift_dimension=core_to_doc_shift_dimension(shift_dimension),
-        )
+    def create_shift_property(self, shift_property: ShiftProperty) -> ShiftProperty:
+        sp_doc = core_to_doc_shift_property(shift_property)
+        sp_doc.id = str(ObjectId())
         try:
-            shift_property_saved = shift_property.save()
+            sp_saved = sp_doc.save()
         except Exception as e:
             log_info(f"Failed to save shift property to database: {e}")
             handle_save_document_error(e)
-        return doc_to_core_shift_property(shift_property_saved)
+        return doc_to_core_shift_property(sp_saved)
 
     def get_shift_properties_by_shift(self, shift: Shift) -> List[ShiftProperty]:
         try:

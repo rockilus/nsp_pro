@@ -7,7 +7,7 @@ from pydantic import TypeAdapter
 
 from core.shift import ShiftDimension, ShiftProperty
 from routes.api_model import NewShiftDimensionMessage, ShiftDimensionMessage
-from routes.shift_routes import shift_property_to_api_msg
+from routes.shift_routes import core_to_msg_shift_property
 from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
 from services.authentication.authn_services import authn_verify_session
 from services.authentication.authn_types import SessionContainerType
@@ -36,7 +36,14 @@ async def create_shift_dimension(
         shifts = shift_db.get_shifts(team_id)
         for shift in shifts:
             properties.append(
-                shift_property_db.create_shift_property(shift, sd_created, False)
+                shift_property_db.create_shift_property(
+                    ShiftProperty(
+                        id="",
+                        value=False,
+                        shift_id=shift.id,
+                        shift_dimension_id=sd_created.id,
+                    )
+                )
             )
     return new_shift_dimension_to_api_msg(sd_created, properties)
 
@@ -117,7 +124,7 @@ def new_shift_dimension_to_api_msg(
 ) -> NewShiftDimensionMessage:
     as_dict = {
         "newDimension": shift_dimension_to_api_msg(shift_dimension),
-        "newProperties": [shift_property_to_api_msg(sp) for sp in shift_properties],
+        "newProperties": [core_to_msg_shift_property(sp) for sp in shift_properties],
     }
     validator = TypeAdapter(NewShiftDimensionMessage)
     return validator.validate_python(as_dict)
