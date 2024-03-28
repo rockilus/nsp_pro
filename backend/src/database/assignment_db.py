@@ -6,7 +6,7 @@ from bson import ObjectId
 from core.schedule import Assignment, Schedule
 from core.worker import Worker
 from database.db import DB
-from database.schedule_db import to_mongo_schedule
+from database.schedule_db import core_to_doc_schedule
 from database.worker_db import to_mongo_worker
 from errors import (
     handle_create_core_object_error,
@@ -38,7 +38,7 @@ class AssignmentDB:
         return doc_to_core_assignment(a_saved)
 
     def get_assignments(self, schedules: List[Schedule]) -> List[Assignment]:
-        s_docs = [to_mongo_schedule(s) for s in schedules]
+        s_docs = [core_to_doc_schedule(s) for s in schedules]
         try:
             # pylint: disable=no-member
             assignments = AssignmentDocument.objects.filter(  # type: ignore
@@ -68,7 +68,7 @@ class AssignmentDB:
             assignment = AssignmentDocument.objects.get(  # type: ignore
                 worker=to_mongo_worker(worker),
                 date=a_date,
-                schedule=to_mongo_schedule(schedule),
+                schedule=core_to_doc_schedule(schedule),
             )
         except AssignmentDocument.DoesNotExist:
             return None
@@ -83,7 +83,7 @@ class AssignmentDB:
     def get_assignments_by_dates(
         self, start_date: date, end_date: date, schedules: List[Schedule]
     ) -> List[Assignment]:
-        s_docs = [to_mongo_schedule(s) for s in schedules]
+        s_docs = [core_to_doc_schedule(s) for s in schedules]
         try:
             # pylint: disable=no-member
             assignments = AssignmentDocument.objects.filter(  # type: ignore
@@ -108,7 +108,7 @@ class AssignmentDB:
     def get_wip_validated_assignments_before_date(
         self, a_date: date, schedules: List[Schedule]
     ) -> List[Assignment]:
-        s_docs = [to_mongo_schedule(s) for s in schedules]
+        s_docs = [core_to_doc_schedule(s) for s in schedules]
         try:
             # pylint: disable=no-member
             assignments = AssignmentDocument.objects.filter(  # type: ignore
@@ -127,7 +127,7 @@ class AssignmentDB:
     def get_assignments_by_status(
         self, status: List[str], schedules: List[Schedule]
     ) -> List[Assignment]:
-        s_docs = [to_mongo_schedule(s) for s in schedules]
+        s_docs = [core_to_doc_schedule(s) for s in schedules]
         try:
             # pylint: disable=no-member
             assignments = AssignmentDocument.objects.filter(  # type: ignore

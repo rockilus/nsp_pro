@@ -5,7 +5,7 @@ from bson import ObjectId
 
 from core.schedule import ObjectiveBreach, Schedule, Variable
 from database.db import DB
-from database.schedule_db import to_mongo_schedule
+from database.schedule_db import core_to_doc_schedule
 from errors import (
     handle_create_core_object_error,
     handle_create_document_error,
@@ -40,7 +40,7 @@ class ObjectiveBreachDB:
     def get_objective_breaches(
         self, schedules: List[Schedule]
     ) -> List[ObjectiveBreach]:
-        s_docs = [to_mongo_schedule(s) for s in schedules]
+        s_docs = [core_to_doc_schedule(s) for s in schedules]
         try:
             # pylint: disable=no-member
             objective_breaches = ObjectiveBreachDocument.objects.filter(  # type: ignore
