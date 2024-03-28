@@ -4,8 +4,6 @@ from bson import ObjectId
 
 from core.worker import Worker, WorkerDimension, WorkerProperty
 from database.db import DB
-from database.worker_db import core_to_doc_worker
-from database.worker_dimension_db import core_to_doc_worker_dimension
 from errors import (
     handle_create_core_object_error,
     handle_create_document_error,
@@ -23,24 +21,15 @@ class WorkerPropertyDB:
     def __init__(self, db: DB):
         self.db = db
 
-    def create_worker_property(
-        self,
-        worker: Worker,
-        worker_dimension: WorkerDimension,
-        value: Union[str, int, float, bool],
-    ) -> WorkerProperty:
-        worker_property = WorkerPropertyDocument(
-            id=str(ObjectId()),
-            value=value,
-            worker=core_to_doc_worker(worker),
-            worker_dimension=core_to_doc_worker_dimension(worker_dimension),
-        )
+    def create_worker_property(self, worker_property: WorkerProperty) -> WorkerProperty:
+        wp_doc = core_to_doc_worker_property(worker_property)
+        wp_doc.id = str(ObjectId())
         try:
-            worker_property_saved = worker_property.save()
+            wp_saved = wp_doc.save()
         except Exception as e:
             log_info(f"Failed to save worker property to database: {e}")
             handle_save_document_error(e)
-        return doc_to_core_worker_property(worker_property_saved)
+        return doc_to_core_worker_property(wp_saved)
 
     def get_worker_properties_by_worker_id(
         self, worker_id: str

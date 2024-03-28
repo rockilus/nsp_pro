@@ -7,7 +7,7 @@ from pydantic import TypeAdapter
 
 from core.worker import WorkerDimension, WorkerProperty
 from routes.api_model import NewWorkerDimensionMessage, WorkerDimensionMessage
-from routes.worker_routes import worker_property_to_api_msg
+from routes.worker_routes import core_to_msg_worker_property
 from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
 from services.authentication.authn_services import authn_verify_session
 from services.authentication.authn_types import SessionContainerType
@@ -39,7 +39,14 @@ async def create_worker_dimension(
         workers = worker_db.get_workers(team_id)
         for worker in workers:
             properties.append(
-                worker_property_db.create_worker_property(worker, wd_created, False)
+                worker_property_db.create_worker_property(
+                    WorkerProperty(
+                        id="",
+                        value=False,
+                        worker_id=worker.id,
+                        worker_dimension_id=wd_created.id,
+                    )
+                )
             )
     return new_worker_dimension_to_api_msg(wd_created, properties)
 
@@ -118,7 +125,7 @@ def new_worker_dimension_to_api_msg(
 ) -> NewWorkerDimensionMessage:
     as_dict = {
         "newDimension": worker_dimension_to_api_msg(worker_dimension),
-        "newProperties": [worker_property_to_api_msg(wp) for wp in worker_properties],
+        "newProperties": [core_to_msg_worker_property(wp) for wp in worker_properties],
     }
     validator = TypeAdapter(NewWorkerDimensionMessage)
     return validator.validate_python(as_dict)

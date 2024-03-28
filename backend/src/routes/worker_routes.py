@@ -33,15 +33,22 @@ async def create_worker(
             status_code=403,
             detail="You do not have permission to create a worker",
         )
-    w_data = api_msg_to_worker(worker)
+    w_data = msg_to_core_worker(worker)
     worker_created = worker_db.create_worker(w_data)
     wd_bool = worker_dimension_db.get_worker_dimensions_by_entry_type("bool", team_id)
     wp_bool = []
     for wd in wd_bool:
         wp_bool.append(
-            worker_property_db.create_worker_property(worker_created, wd, False)
+            worker_property_db.create_worker_property(
+                WorkerProperty(
+                    id="",
+                    value=False,
+                    worker_id=worker_created.id,
+                    worker_dimension_id=wd.id,
+                )
+            )
         )
-    return worker_and_properties_to_api_msg(worker_created, wp_bool)
+    return core_to_msg_worker_and_properties(worker_created, wp_bool)
 
 
 @router.get("/workers/teams/{team_id}")
@@ -59,7 +66,7 @@ async def get_workers(
         for worker in workers
     ]
     return [
-        worker_and_properties_to_api_msg(w, wp)
+        core_to_msg_worker_and_properties(w, wp)
         for w, wp in zip(workers, workers_properties)
     ]
 
@@ -79,7 +86,7 @@ async def update_worker(
     existing_worker = worker_db.get_worker_by_id(worker_id)
     if not existing_worker:
         raise HTTPException(status_code=404, detail="Worker does not exist")
-    w_data = api_msg_to_worker(worker)
+    w_data = msg_to_core_worker(worker)
     try:
         if w_data.name == "Trump":
             raise WorkerNameNotAllowed(f"Worker name {w_data.name} is not allowed")
@@ -89,14 +96,12 @@ async def update_worker(
     worker_properties = worker_property_db.get_worker_properties_by_worker_id(
         updated_worker.id
     )
-    return worker_and_properties_to_api_msg(updated_worker, worker_properties)
+    return core_to_msg_worker_and_properties(updated_worker, worker_properties)
 
 
 @router.put("/workers/{worker_id}/properties/{worker_dimension_id}/teams/{team_id}")
 async def update_worker_property(
     team_id: str,
-    worker_id: str,
-    worker_dimension_id: str,
     worker_property: WorkerPropertyMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> WorkerPropertyMessage:
@@ -107,19 +112,13 @@ async def update_worker_property(
             status_code=403,
             detail="You do not have permission to update a worker property",
         )
-    wp_data = api_msg_to_worker_property(worker_property)
+    wp_data = msg_to_core_worker_property(worker_property)
     if wp_data.id == "":
-        worker = worker_db.get_worker_by_id(worker_id)
-        worker_dimension = worker_dimension_db.get_worker_dimension_by_id(
-            worker_dimension_id
-        )
-        new_wp = worker_property_db.create_worker_property(
-            worker, worker_dimension, wp_data.value
-        )
+        new_wp = worker_property_db.create_worker_property(wp_data)
     else:
         new_wp = worker_property_db.update_worker_property(wp_data)
     add_back_worker_property_to_constraint_build(new_wp)
-    return worker_property_to_api_msg(new_wp)
+    return core_to_msg_worker_property(new_wp)
 
 
 @router.delete("/workers/{worker_id}/teams/{team_id}")
@@ -137,7 +136,9 @@ async def delete_worker(
     return {"message": "Worker deleted"}
 
 
-def worker_property_to_api_msg(
+# Mappers
+# core to message
+def core_to_msg_worker_property(
     worker_property: WorkerProperty,
 ) -> WorkerPropertyMessage:
     data = asdict(worker_property)
@@ -146,24 +147,25 @@ def worker_property_to_api_msg(
     return validator.validate_python(as_dict)
 
 
-def worker_and_properties_to_api_msg(
+def core_to_msg_worker_and_properties(
     worker: Worker, worker_properties: List[WorkerProperty]
 ) -> WorkerMessage:
     data = asdict(worker)
     data["worker_properties"] = [
-        worker_property_to_api_msg(wp) for wp in worker_properties
+        core_to_msg_worker_property(wp) for wp in worker_properties
     ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(WorkerMessage)
     return validator.validate_python(as_dict)
 
 
-def api_msg_to_worker(msg: WorkerMessage) -> Worker:
+# message to core
+def msg_to_core_worker(msg: WorkerMessage) -> Worker:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake = {k: v for k, v in data_snake.items() if k != "worker_properties"}
     return Worker(**data_snake)
 
 
-def api_msg_to_worker_property(msg: WorkerPropertyMessage) -> WorkerProperty:
+def msg_to_core_worker_property(msg: WorkerPropertyMessage) -> WorkerProperty:
     data_snake = humps.decamelize(msg.model_dump())
     return WorkerProperty(**data_snake)

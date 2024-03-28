@@ -26,15 +26,22 @@ async def create_shift(
             status_code=403,
             detail="You do not have permission to create a shift",
         )
-    s_data = api_msg_to_shift(shift)
+    s_data = msg_to_core_to_shift(shift)
     shift_created = shift_db.create_shift(s_data)
     sd_bool = shift_dimension_db.get_shift_dimensions_by_entry_type("bool", team_id)
     sp_bool = []
     for wd in sd_bool:
         sp_bool.append(
-            shift_property_db.create_shift_property(shift_created, wd, False)
+            shift_property_db.create_shift_property(
+                ShiftProperty(
+                    id="",
+                    value=False,
+                    shift_id=shift_created.id,
+                    shift_dimension_id=wd.id,
+                )
+            )
         )
-    return shift_and_properties_to_api_msg(shift_created, sp_bool)
+    return core_to_msg_shift_and_properties(shift_created, sp_bool)
 
 
 @router.get("/shifts/teams/{team_id}")
@@ -52,7 +59,7 @@ async def get_shifts(
         shift_property_db.get_shift_properties_by_shift(shift) for shift in shifts
     ]
     return [
-        shift_and_properties_to_api_msg(s, sp)
+        core_to_msg_shift_and_properties(s, sp)
         for s, sp in zip(shifts, shifts_properties)
     ]
 
@@ -72,17 +79,15 @@ async def update_shift(
     existing_shift = shift_db.get_shift_by_id(shift_id)
     if not existing_shift:
         raise HTTPException(status_code=404, detail="Shift does not exist")
-    shift_data = api_msg_to_shift(shift)
+    shift_data = msg_to_core_to_shift(shift)
     updated_shift = shift_db.update_shift(shift_data)
     shift_properties = shift_property_db.get_shift_properties_by_shift(updated_shift)
-    return shift_and_properties_to_api_msg(updated_shift, shift_properties)
+    return core_to_msg_shift_and_properties(updated_shift, shift_properties)
 
 
 @router.put("/shifts/{shift_id}/properties/{shift_dimension_id}/teams/{team_id}")
 async def update_shift_property(
-    shift_id: str,
     team_id: str,
-    shift_dimension_id: str,
     shift_property: ShiftPropertyMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ShiftPropertyMessage:
@@ -93,18 +98,12 @@ async def update_shift_property(
             status_code=403,
             detail="You do not have permission to update shift properties",
         )
-    sp_data = api_msg_to_shift_property(shift_property)
+    sp_data = msg_to_core_shift_property(shift_property)
     if sp_data.id == "":
-        shift = shift_db.get_shift_by_id(shift_id)
-        shift_dimension = shift_dimension_db.get_shift_dimension_by_id(
-            shift_dimension_id
-        )
-        new_sp = shift_property_db.create_shift_property(
-            shift, shift_dimension, sp_data.value
-        )
+        new_sp = shift_property_db.create_shift_property(sp_data)
     else:
         new_sp = shift_property_db.update_shift_property(sp_data)
-    return shift_property_to_api_msg(new_sp)
+    return core_to_msg_shift_property(new_sp)
 
 
 @router.delete("/shifts/{shift_id}/teams/{team_id}")
@@ -123,7 +122,9 @@ async def delete_shift(
     return {"message": "shift deleted"}
 
 
-def shift_property_to_api_msg(
+# Mappers
+# core to message
+def core_to_msg_shift_property(
     shift_property: ShiftProperty,
 ) -> ShiftPropertyMessage:
     data = asdict(shift_property)
@@ -132,11 +133,11 @@ def shift_property_to_api_msg(
     return validator.validate_python(as_dict)
 
 
-def shift_and_properties_to_api_msg(
+def core_to_msg_shift_and_properties(
     shift: Shift, shift_properties: List[ShiftProperty]
 ) -> ShiftMessage:
     shift_properties_message = [
-        shift_property_to_api_msg(wp) for wp in shift_properties
+        core_to_msg_shift_property(wp) for wp in shift_properties
     ]
     data = asdict(shift)
     data["shift_properties"] = shift_properties_message
@@ -145,12 +146,13 @@ def shift_and_properties_to_api_msg(
     return validator.validate_python(as_dict)
 
 
-def api_msg_to_shift(msg: ShiftMessage) -> Shift:
+# message to core
+def msg_to_core_to_shift(msg: ShiftMessage) -> Shift:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake = {k: v for k, v in data_snake.items() if k != "shift_properties"}
     return Shift(**data_snake)
 
 
-def api_msg_to_shift_property(msg: ShiftPropertyMessage) -> ShiftProperty:
+def msg_to_core_shift_property(msg: ShiftPropertyMessage) -> ShiftProperty:
     data_snake = humps.decamelize(msg.model_dump())
     return ShiftProperty(**data_snake)
