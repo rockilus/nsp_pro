@@ -5,7 +5,7 @@ from bson import ObjectId
 from core.shift import Shift, ShiftDimension, ShiftProperty
 from database.db import DB
 from database.shift_db import core_to_doc_shift
-from database.shift_dimension_db import to_mongo_shift_dimension
+from database.shift_dimension_db import core_to_doc_shift_dimension
 from models import Shift as ShiftDocument
 from models import ShiftDimension as ShiftDimensionDocument
 from models import ShiftProperty as ShiftPropertyDocument
@@ -25,7 +25,7 @@ class ShiftPropertyDB:
             id=str(ObjectId()),
             value=value,
             shift=core_to_doc_shift(shift),
-            shift_dimension=to_mongo_shift_dimension(shift_dimension),
+            shift_dimension=core_to_doc_shift_dimension(shift_dimension),
         )
         shift_property_saved = shift_property.save()
         return _from_mongo_shift_property(shift_property_saved)
