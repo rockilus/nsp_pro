@@ -1,3 +1,4 @@
+# mypy: disable-error-code="attr-defined"
 from datetime import date
 from typing import List
 
@@ -63,12 +64,11 @@ class CoverageSelectorDB:
     ) -> List[CoverageSelector]:
         try:
             # pylint: disable=no-member
-            coverage_selectors = CoverageSelectorDocument.objects.filter(  # type: ignore # noqa
-                start_date__lte=end_date,  # type: ignore
-                end_date__gte=start_date,  # type: ignore
-                team=team_id,  # type: ignore
-            )  # type: ignore
-
+            coverage_selectors = CoverageSelectorDocument.objects.filter(
+                start_date__lte=end_date,
+                end_date__gte=start_date,
+                team=team_id,
+            )
         except Exception as e:
             log_info(f"Failed to get coverage selectors by dates from database: {e}")
             handle_get_document_error(e)
