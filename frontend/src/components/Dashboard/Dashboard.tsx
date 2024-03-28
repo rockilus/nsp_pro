@@ -13,6 +13,7 @@ import CoverageTab from "../Coverage/CoverageTab";
 import FARTab from "../FixedAssignmentRequest/FARTab";
 import ScheduleTab from "../Schedule/ScheduleTab";
 import ShiftTab from "../Shift/ShiftTab";
+import SimpleSnackbar from "../../utils/SnackBars";
 import StatsTab from "../Stats/StatsTab";
 import WorkerTab from "../Worker/WorkerTab";
 // Stores
@@ -129,6 +130,7 @@ export default function Dashboard({ team }: Props) {
           {tabs[selectedTab]}
         </Box>
       </Box>
+      <SimpleSnackbar />
     </ThemeProvider>
   );
 }

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 // Types
 import { WorkerT, WorkerPropertyT } from "../components/Worker/types";
+import { ResponseStatusT } from "./types";
 
 const apiUrlWorkers = process.env.NEXT_PUBLIC_API_URL + "/workers";
 
@@ -9,7 +10,7 @@ type WorkerStateT = {
   fetchWorkers: (teamId: string) => void;
   addWorker: (worker: WorkerT) => void;
   addPropertiesToStore: (newProperties: WorkerPropertyT[]) => void;
-  updateWorker: (updatedWorker: WorkerT) => void;
+  updateWorker: (updatedWorker: WorkerT) => Promise<ResponseStatusT>;
   updateWorkerProperty: (
     teamId: string,
     updatedWorkerProperty: WorkerPropertyT
@@ -93,18 +94,28 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
           body: JSON.stringify(updatedWorker),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        console.log("Failed to update worker", response);
-        throw new Error("Failed to update worker");
+        return {
+          statusOK: false,
+          message: responseData.detail,
+        };
       }
-      const newWorker: WorkerT = await response.json();
+      const newWorker: WorkerT = responseData;
       set((state) => ({
         workers: state.workers.map((w) =>
           w.id === updatedWorker.id ? newWorker : w
         ),
       }));
+      return {
+        statusOK: true,
+        message: "Worker updated",
+      };
     } catch (error) {
-      console.error("Failed to update worker:", error);
+      return {
+        statusOK: false,
+        message: "Failed to update worker: " + error || "Unknown error",
+      };
     }
   },
 

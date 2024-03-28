@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from routes import (
     router_assignment,
@@ -29,8 +30,7 @@ from services.authentication.authn_services import (
     authn_get_middleware,
 )
 from services.authorization import authz_services  # noqa: F401
-
-# from starlette.middleware.cors import CORSMiddleware
+from services.logging.middleware import log_middleware
 from utils.env_config import API_DOMAIN, API_PORT, ORIGINS, UVICORN_RELOAD
 
 app = FastAPI()
@@ -49,6 +49,7 @@ app.add_middleware(
     allow_headers=["Content-Type"] + authn_get_cors_headers(),
     # allow_headers=["*"] + authn_get_cors_headers(),
 )
+app.add_middleware(BaseHTTPMiddleware, dispatch=log_middleware)
 
 
 app.include_router(router_assignment)

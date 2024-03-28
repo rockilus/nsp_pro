@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.worker import Worker, WorkerProperty
+from errors import WorkerNameNotAllowed
 from routes.api_model import WorkerMessage, WorkerPropertyMessage
 from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
 from services.authentication.authn_services import authn_verify_session
@@ -79,6 +80,11 @@ async def update_worker(
     if not existing_worker:
         raise HTTPException(status_code=404, detail="Worker does not exist")
     w_data = api_msg_to_worker(worker)
+    try:
+        if w_data.name == "Trump":
+            raise WorkerNameNotAllowed(f"Worker name {w_data.name} is not allowed")
+    except WorkerNameNotAllowed as e:
+        raise HTTPException(status_code=403, detail=str(e)) from e
     updated_worker = worker_db.update_worker(w_data)
     worker_properties = worker_property_db.get_worker_properties_by_worker_id(
         updated_worker.id
