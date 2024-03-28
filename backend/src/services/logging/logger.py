@@ -1,6 +1,10 @@
 from loguru import logger
 
 
+def log_debug(message: str) -> None:
+    logger.debug(message)
+
+
 def log_info(message: str) -> None:
     logger.info(message)
 
