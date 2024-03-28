@@ -6,9 +6,17 @@ from core.shift import Shift, ShiftDimension, ShiftProperty
 from database.db import DB
 from database.shift_db import core_to_doc_shift
 from database.shift_dimension_db import core_to_doc_shift_dimension
+from errors import (
+    handle_create_core_object_error,
+    handle_create_document_error,
+    handle_delete_document_error,
+    handle_get_document_error,
+    handle_save_document_error,
+)
 from models import Shift as ShiftDocument
 from models import ShiftDimension as ShiftDimensionDocument
 from models import ShiftProperty as ShiftPropertyDocument
+from services.logging import log_info
 
 
 class ShiftPropertyDB:
@@ -27,48 +35,67 @@ class ShiftPropertyDB:
             shift=core_to_doc_shift(shift),
             shift_dimension=core_to_doc_shift_dimension(shift_dimension),
         )
-        shift_property_saved = shift_property.save()
-        return _from_mongo_shift_property(shift_property_saved)
+        try:
+            shift_property_saved = shift_property.save()
+        except Exception as e:
+            log_info(f"Failed to save shift property to database: {e}")
+            handle_save_document_error(e)
+        return doc_to_core_shift_property(shift_property_saved)
 
-    def get_shift_properties_by_shift(
-        self,
-        shift: Shift,
-    ) -> List[ShiftProperty]:
-        # pylint: disable=no-member
-        shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
-            shift=shift.id
-        )
-        return [_from_mongo_shift_property(sp) for sp in list(shift_properties)]
+    def get_shift_properties_by_shift(self, shift: Shift) -> List[ShiftProperty]:
+        try:
+            # pylint: disable=no-member
+            shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
+                shift=shift.id
+            )
+        except Exception as e:
+            log_info(f"Failed to get shift properties by shift from database: {e}")
+            handle_get_document_error(e)
+        return [doc_to_core_shift_property(sp) for sp in list(shift_properties)]
 
     def get_shift_properties_by_shift_dimension(
-        self,
-        shift_dimension: ShiftDimension,
+        self, shift_dimension: ShiftDimension
     ) -> List[ShiftProperty]:
-        # pylint: disable=no-member
-        shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
-            shift_dimension=shift_dimension.id
-        )
-        return [_from_mongo_shift_property(sp) for sp in list(shift_properties)]
+        try:
+            # pylint: disable=no-member
+            shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
+                shift_dimension=shift_dimension.id
+            )
+        except Exception as e:
+            log_info(
+                f"Failed to get shift properties by shift dimension from database: {e}"
+            )
+            handle_get_document_error(e)
+        return [doc_to_core_shift_property(sp) for sp in list(shift_properties)]
 
     def get_shift_property_by_id(self, shift_property_id: str) -> ShiftProperty:
-        # pylint: disable=no-member
-        shift_property = ShiftPropertyDocument.objects.get(  # type: ignore
-            id=shift_property_id
-        )
-        return _from_mongo_shift_property(shift_property)
+        try:
+            # pylint: disable=no-member
+            shift_property = ShiftPropertyDocument.objects.get(  # type: ignore
+                id=shift_property_id
+            )
+        except Exception as e:
+            log_info(f"Failed to get shift property by id from database: {e}")
+            handle_get_document_error(e)
+        return doc_to_core_shift_property(shift_property)
 
     def get_shift_property_by_shift_and_dimension(
-        self,
-        shift: Shift,
-        shift_dimension: ShiftDimension,
+        self, shift: Shift, shift_dimension: ShiftDimension
     ) -> Union[ShiftProperty, None]:
-        # pylint: disable=no-member
-        shift_property = (
-            ShiftPropertyDocument.objects.filter(shift=shift.id)  # type: ignore
-            .filter(shift_dimension=shift_dimension.id)
-            .first()
-        )
-        return _from_mongo_shift_property(shift_property) if shift_property else None
+        try:
+            # pylint: disable=no-member
+            shift_property = (
+                ShiftPropertyDocument.objects.filter(shift=shift.id)  # type: ignore
+                .filter(shift_dimension=shift_dimension.id)
+                .first()
+            )
+        except Exception as e:
+            log_info(
+                "Failed to get shift property by shift and dimension from "
+                + f"database: {e}"
+            )
+            handle_get_document_error(e)
+        return doc_to_core_shift_property(shift_property) if shift_property else None
 
     def get_shifts_id_by_dim_and_prop(self) -> Dict:
         pipeline = [
@@ -99,9 +126,12 @@ class ShiftPropertyDB:
                 }
             },
         ]
-
-        # pylint: disable=no-member
-        result = ShiftPropertyDocument.objects.aggregate(*pipeline)  # type: ignore
+        try:
+            # pylint: disable=no-member
+            result = ShiftPropertyDocument.objects.aggregate(*pipeline)  # type: ignore
+        except Exception as e:
+            log_info(f"Failed to get shifts by dimension and property: {e}")
+            handle_get_document_error(e)
         # pylint: disable=R0801
         out: Dict = {}
         for r in result:
@@ -126,56 +156,98 @@ class ShiftPropertyDB:
                 out[dim][prop_value_mod] += shifts
         return out
 
-    def update_shift_property(
-        self,
-        shift_property: ShiftProperty,
-    ) -> ShiftProperty:
-        document = _to_mongo_shift_property(shift_property)
-        document_saved = document.save()
-        return _from_mongo_shift_property(document_saved)
+    def update_shift_property(self, shift_property: ShiftProperty) -> ShiftProperty:
+        document = core_to_doc_shift_property(shift_property)
+        try:
+            document_saved = document.save()
+        except Exception as e:
+            log_info(f"Failed to update shift property: {e}")
+            handle_save_document_error(e)
+        return doc_to_core_shift_property(document_saved)
 
     def delete_shift_properties_by_shift_id(self, shift_id: str) -> None:
-        # pylint: disable=no-member
-        shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
-            shift=shift_id
-        )
-        for shift_property in shift_properties:
-            shift_property.delete()
+        try:
+            # pylint: disable=no-member
+            shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
+                shift=shift_id
+            )
+        except Exception as e:
+            log_info(f"Failed to get shift properties by shift id to delete: {e}")
+            handle_get_document_error(e)
+        try:
+            for shift_property in shift_properties:
+                shift_property.delete()
+        except Exception as e:
+            log_info(f"Failed to delete shift properties: {e}")
+            handle_delete_document_error(e)
 
     def delete_shift_properties_by_shift_dimension_id(
         self, shift_dimension_id: str
     ) -> None:
-        # pylint: disable=no-member
-        shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
-            shift_dimension=shift_dimension_id
-        )
-        for shift_property in shift_properties:
-            shift_property.delete()
+        try:
+            # pylint: disable=no-member
+            shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
+                shift_dimension=shift_dimension_id
+            )
+        except Exception as e:
+            log_info(
+                "Failed to get shift properties by shift dimension id to delete: "
+                + f"{e}"
+            )
+            handle_get_document_error(e)
+        try:
+            for shift_property in shift_properties:
+                shift_property.delete()
+        except Exception as e:
+            log_info(f"Failed to delete shift properties: {e}")
+            handle_delete_document_error(e)
 
 
 # Mappers
-def _to_mongo_shift_property(
+# core to document
+def core_to_doc_shift_property(
     dataclass_obj: ShiftProperty,
 ) -> ShiftPropertyDocument:
-    # pylint: disable=no-member
-    shift = ShiftDocument.objects.get(id=dataclass_obj.shift_id)  # type: ignore
-    shift_dimension = ShiftDimensionDocument.objects.get(  # type: ignore
-        id=dataclass_obj.shift_dimension_id
-    )
-    return ShiftPropertyDocument(
-        id=dataclass_obj.id,
-        value=dataclass_obj.value,
-        shift=shift,
-        shift_dimension=shift_dimension,
-    )
+    # pylint: disable=R0801
+    try:
+        # pylint: disable=no-member
+        shift = ShiftDocument.objects.get(id=dataclass_obj.shift_id)  # type: ignore
+    except Exception as e:
+        log_info(f"Failed to get shift by id: {e}")
+        handle_get_document_error(e)
+    try:
+        # pylint: disable=no-member
+        shift_dimension = ShiftDimensionDocument.objects.get(  # type: ignore
+            id=dataclass_obj.shift_dimension_id
+        )
+    except Exception as e:
+        log_info(f"Failed to get shift dimension by id: {e}")
+        handle_get_document_error(e)
+    try:
+        sp_doc = ShiftPropertyDocument(
+            id=dataclass_obj.id,
+            value=dataclass_obj.value,
+            shift=shift,
+            shift_dimension=shift_dimension,
+        )
+    except Exception as e:
+        log_info(f"Failed to convert ShiftProperty to ShiftPropertyDocument: {e}")
+        handle_create_document_error(e)
+    return sp_doc
 
 
-def _from_mongo_shift_property(
+# document to core
+def doc_to_core_shift_property(
     doc_obj: ShiftPropertyDocument,
 ) -> ShiftProperty:
-    return ShiftProperty(
-        id=doc_obj.id,
-        value=doc_obj.value,
-        shift_id=doc_obj.shift.id,
-        shift_dimension_id=doc_obj.shift_dimension.id,
-    )
+    try:
+        shift_property = ShiftProperty(
+            id=doc_obj.id,
+            value=doc_obj.value,
+            shift_id=doc_obj.shift.id,
+            shift_dimension_id=doc_obj.shift_dimension.id,
+        )
+    except Exception as e:
+        log_info(f"Failed to convert ShiftPropertyDocument to ShiftProperty: {e}")
+        handle_create_core_object_error(e)
+    return shift_property
