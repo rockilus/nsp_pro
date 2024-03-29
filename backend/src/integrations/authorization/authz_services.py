@@ -5,11 +5,12 @@ from permit import Permit, PermitConnectionError  # type: ignore
 from core.team import Team
 from core.user import User
 from errors import AuthzConnectionError, handle_permit_errors
-from logger import log_info
+from logger import log_debug, log_info
 from utils.env_config import PDP_API_KEY, PDP_URL
 
 try:
     permit = Permit(pdp=PDP_URL, token=PDP_API_KEY)
+    log_debug("Permit SDK initialization and connection to PDP OK")
 except PermitConnectionError as err:
     log_info("Permit connection error")
     raise AuthzConnectionError(

@@ -49,17 +49,3 @@ def handle_delete_document_error(error: Exception):
     if isinstance(error, DoesNotExist):
         raise DocumentDoesNotExistError(str(error)) from error
     raise error
-
-    # "NotRegistered",
-    # "InvalidDocumentError",
-    # "LookUpError",
-    # "DoesNotExist",
-    # "MultipleObjectsReturned",
-    # "InvalidQueryError",
-    # "OperationError",
-    # "NotUniqueError",
-    # "BulkWriteError",
-    # "FieldDoesNotExist",
-    # "ValidationError",
-    # "SaveConditionError",
-    # "DeprecatedError",
