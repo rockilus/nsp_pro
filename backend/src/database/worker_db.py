@@ -62,9 +62,7 @@ class WorkerDB:
             # pylint: disable=no-member
             worker = WorkerDocument.objects.get(id=worker_id)  # type: ignore
         except Exception as e:
-            log_info(
-                f"Failed to get worker by id to delete from database: {e}"
-            )
+            log_info(f"Failed to get worker by id to delete from database: {e}")
             handle_get_document_error(e)
         try:
             worker.delete()

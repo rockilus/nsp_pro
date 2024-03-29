@@ -62,9 +62,7 @@ class CoverageDB:
             # pylint: disable=no-member
             coverage = CoverageDocument.objects.get(id=coverage_id)  # type: ignore
         except Exception as e:
-            log_info(
-                f"Failed to get coverage by id to delete from database: {e}"
-            )
+            log_info(f"Failed to get coverage by id to delete from database: {e}")
             handle_get_document_error(e)
         try:
             coverage.delete()

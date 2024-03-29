@@ -56,9 +56,7 @@ async def authz_role_assignment_assign(
         handle_permit_errors(e)
 
 
-async def authz_role_assignment_get_user_team_ids(
-    user_id: str, role: str
-) -> List[str]:
+async def authz_role_assignment_get_user_team_ids(user_id: str, role: str) -> List[str]:
     try:
         team_permit = await permit.api.role_assignments.list(
             user_key=user_id,
@@ -77,9 +75,7 @@ async def authz_check(
     resource: str,
     resource_id: str | None = None,
 ) -> bool:
-    resource_instance = (
-        f"{resource}:{resource_id}" if resource_id else resource
-    )
+    resource_instance = f"{resource}:{resource_id}" if resource_id else resource
     try:
         out = await permit.check(
             user=user_id,

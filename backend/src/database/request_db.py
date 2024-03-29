@@ -78,9 +78,7 @@ class RequestDB:
             # pylint: disable=no-member
             request = RequestDocument.objects.get(id=request_id)  # type: ignore
         except Exception as e:
-            log_info(
-                f"Failed to get request by id to delete from database: {e}"
-            )
+            log_info(f"Failed to get request by id to delete from database: {e}")
             handle_get_document_error(e)
         try:
             request.delete()

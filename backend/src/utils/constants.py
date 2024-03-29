@@ -71,5 +71,5 @@ class Constants:
 
     # Routes
     USER_ERROR_MESSAGE_GENERIC: str = (
-        "An error occurred while processing your request. Please try again later."
+        "an error occurred while processing your request, please try again later."
     )

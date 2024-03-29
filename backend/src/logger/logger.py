@@ -14,7 +14,6 @@ def log_debug(message: str) -> None:
 
 
 def log_info(message: str) -> None:
-    # logger.info(message)
     logger.opt(exception=True).log("INFO", message)
 
 
@@ -24,8 +23,3 @@ def log_error(message: str) -> None:
 
 def log_critical(message: str) -> None:
     logger.critical(message)
-
-
-# def log_exception(message: str) -> None:
-#     # logger.exception(message, level="INFO")
-#     logger.opt(exception=True).log("INFO", message)

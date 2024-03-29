@@ -20,9 +20,7 @@ class ShiftDimensionDB:
     def __init__(self, db: DB):
         self.db = db
 
-    def create_shift_dimension(
-        self, shift_dimension: ShiftDimension
-    ) -> ShiftDimension:
+    def create_shift_dimension(self, shift_dimension: ShiftDimension) -> ShiftDimension:
         sd_doc = core_to_doc_shift_dimension(shift_dimension)
         sd_doc.id = str(ObjectId())
         try:
@@ -41,13 +39,9 @@ class ShiftDimensionDB:
         except Exception as e:
             log_info(f"Failed to get shift dimensions from database: {e}")
             handle_get_document_error(e)
-        return [
-            doc_to_core_shift_dimension(sd) for sd in list(shift_dimensions)
-        ]
+        return [doc_to_core_shift_dimension(sd) for sd in list(shift_dimensions)]
 
-    def get_shift_dimension_by_id(
-        self, shift_dimension_id: str
-    ) -> ShiftDimension:
+    def get_shift_dimension_by_id(self, shift_dimension_id: str) -> ShiftDimension:
         try:
             # pylint: disable=no-member
             shift_dimension = ShiftDimensionDocument.objects.get(  # type: ignore
@@ -67,17 +61,11 @@ class ShiftDimensionDB:
                 entry_type=entry_type, team=team_id
             )
         except Exception as e:
-            log_info(
-                f"Failed to get shift dimensions by entry type from database: {e}"
-            )
+            log_info(f"Failed to get shift dimensions by entry type from database: {e}")
             handle_get_document_error(e)
-        return [
-            doc_to_core_shift_dimension(sd) for sd in list(shift_dimensions)
-        ]
+        return [doc_to_core_shift_dimension(sd) for sd in list(shift_dimensions)]
 
-    def update_shift_dimension(
-        self, shift_dimension: ShiftDimension
-    ) -> ShiftDimension:
+    def update_shift_dimension(self, shift_dimension: ShiftDimension) -> ShiftDimension:
         sd_doc = core_to_doc_shift_dimension(shift_dimension)
         try:
             sd_saved = sd_doc.save()
@@ -124,9 +112,7 @@ def core_to_doc_shift_dimension(
             entry_options=dataclass_obj.entry_options,
         )
     except Exception as e:
-        log_info(
-            f"Failed to convert ShiftDimension to ShiftDimensionDocument: {e}"
-        )
+        log_info(f"Failed to convert ShiftDimension to ShiftDimensionDocument: {e}")
         handle_create_document_error(e)
     return sd_doc
 
@@ -145,8 +131,6 @@ def doc_to_core_shift_dimension(
             entry_options=[*doc_obj.entry_options],
         )
     except Exception as e:
-        log_info(
-            f"Failed to convert ShiftDimensionDocument to ShiftDimension: {e}"
-        )
+        log_info(f"Failed to convert ShiftDimensionDocument to ShiftDimension: {e}")
         handle_create_core_object_error(e)
     return shift_dimension

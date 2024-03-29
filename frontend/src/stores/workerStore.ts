@@ -1,4 +1,6 @@
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { WorkerT, WorkerPropertyT } from "../components/Worker/types";
 import { ResponseStatusT } from "./types";
@@ -51,14 +53,25 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
         },
         body: JSON.stringify(worker),
       });
+      const responseData = await response.json();
       if (!response.ok) {
-        console.log("Failed to add worker", response);
-        throw new Error("Failed to add worker");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add worker: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const newWorker: WorkerT = await response.json();
+      const newWorker: WorkerT = responseData;
       set((state) => ({ workers: [...state.workers, newWorker] }));
     } catch (error) {
-      console.error("Failed to add worker:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to add worker, please try again later",
+          "error"
+        );
     }
   },
 

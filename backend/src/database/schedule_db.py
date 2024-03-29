@@ -78,9 +78,7 @@ class ScheduleDB:
             # pylint: disable=no-member
             schedule = ScheduleDocument.objects.get(id=schedule_id)  # type: ignore
         except Exception as e:
-            log_info(
-                f"Failed to get schedule by id to delete from database: {e}"
-            )
+            log_info(f"Failed to get schedule by id to delete from database: {e}")
             handle_get_document_error(e)
         try:
             schedule.delete()

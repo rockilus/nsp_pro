@@ -42,18 +42,14 @@ class ShiftDemandDB:
             handle_get_document_error(e)
         return doc_to_core_shift_demand(shift_demand)
 
-    def get_shift_demands_by_coverage(
-        self, coverage: Coverage
-    ) -> List[ShiftDemand]:
+    def get_shift_demands_by_coverage(self, coverage: Coverage) -> List[ShiftDemand]:
         try:
             # pylint: disable=no-member
             shift_demands = ShiftDemandDocument.objects.filter(  # type: ignore
                 coverage=coverage.id
             )
         except Exception as e:
-            log_info(
-                f"Failed to get shift demands by coverage from database: {e}"
-            )
+            log_info(f"Failed to get shift demands by coverage from database: {e}")
             handle_get_document_error(e)
         return [doc_to_core_shift_demand(sd) for sd in list(shift_demands)]
 
@@ -88,9 +84,7 @@ class ShiftDemandDB:
                 id=shift_demand_id
             )
         except Exception as e:
-            log_info(
-                f"Failed to get shift demand by id to delete from database: {e}"
-            )
+            log_info(f"Failed to get shift demand by id to delete from database: {e}")
             handle_get_document_error(e)
         try:
             shift_demand.delete()
@@ -105,9 +99,7 @@ class ShiftDemandDB:
                 coverage=coverage_id
             )
         except Exception as e:
-            log_info(
-                f"Failed to get shift demands by coverage id to delete: {e}"
-            )
+            log_info(f"Failed to get shift demands by coverage id to delete: {e}")
             handle_get_document_error(e)
         try:
             for shift_demand in shift_demands:
