@@ -21,7 +21,7 @@ from database import (
     WorkerPropertyDB,
 )
 from errors import DBConnectionError
-from services.logging.logger import log_critical
+from logger import log_critical
 from utils.env_config import DB_URI
 
 db = DB(DB_URI)

@@ -7,10 +7,9 @@ from pydantic import TypeAdapter
 
 from constraint_parser.templates import build_templates
 from core.constraint import Template
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import TemplateMessage
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
@@ -20,7 +19,7 @@ async def get_constraint_templates(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[TemplateMessage]:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "read-constraint-templates", "team", team_id
     ):
         raise HTTPException(

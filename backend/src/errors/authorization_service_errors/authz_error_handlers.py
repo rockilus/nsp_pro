@@ -9,7 +9,7 @@ from errors.authorization_service_errors.authz_errors import (
 )
 
 
-def handle_authz_errors(error: Exception):
+def handle_permit_errors(error: Exception):
     if isinstance(error, PermitConnectionError):
         raise AuthzConnectionError(str(error)) from error
     if isinstance(error, KeyError):

@@ -12,6 +12,7 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models import Constraint as ConstraintDocument
 from models import ConstraintBuild as ConstraintBuildDocument
 from models import Schedule as ScheduleDocument
@@ -20,7 +21,6 @@ from models import VarDay as VarDayDocument
 from models import VarShift as VarShiftDocument
 from models import VarWorker as VarWorkerDocument
 from models import Worker as WorkerDocument
-from services.logging import log_info
 
 
 class ConstraintDB:
@@ -74,7 +74,9 @@ class ConstraintDB:
                 worker_var__target=worker_id
             )
         except Exception as e:
-            log_info(f"Failed to get constraints by worker id from database: {e}")
+            log_info(
+                f"Failed to get constraints by worker id from database: {e}"
+            )
             handle_get_document_error(e)
         return [doc_to_core_constraint(c) for c in list(constraints)]
 
@@ -110,7 +112,9 @@ class ConstraintDB:
                 schedule=schedule_id
             )
         except Exception as e:
-            log_info(f"Failed to get constraints by schedule id to delete: {e}")
+            log_info(
+                f"Failed to get constraints by schedule id to delete: {e}"
+            )
             handle_get_document_error(e)
         try:
             for constraint in list(constraints):
@@ -128,7 +132,9 @@ class ConstraintDB:
                 constraint_build=constraint_build_id
             )
         except Exception as e:
-            log_info(f"Failed to get constraints by constraint build id to delete: {e}")
+            log_info(
+                f"Failed to get constraints by constraint build id to delete: {e}"
+            )
             handle_get_document_error(e)
         try:
             for constraint in list(constraints):
@@ -287,8 +293,12 @@ def doc_to_core_var_day(doc_obj: VarDayDocument) -> VarDay:
         var_day = VarDay(
             selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
             target=doc_obj.target,
-            start_date=datetime.combine(doc_obj.start_date, datetime.min.time()).date(),
-            end_date=datetime.combine(doc_obj.end_date, datetime.min.time()).date(),
+            start_date=datetime.combine(
+                doc_obj.start_date, datetime.min.time()
+            ).date(),
+            end_date=datetime.combine(
+                doc_obj.end_date, datetime.min.time()
+            ).date(),
             interval=doc_obj.interval,
         )
     except Exception as e:
@@ -330,7 +340,9 @@ def doc_to_core_constraint(doc_obj: ConstraintDocument) -> Constraint:
             active=doc_obj.active,
             schedule_id=str(doc_obj.schedule.id),
             constraint_build_id=(
-                str(doc_obj.constraint_build.id) if doc_obj.constraint_build else ""
+                str(doc_obj.constraint_build.id)
+                if doc_obj.constraint_build
+                else ""
             ),
         )
     except Exception as e:

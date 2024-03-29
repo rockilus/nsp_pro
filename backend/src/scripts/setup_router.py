@@ -1,8 +1,15 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
 
+# pylint: disable=unused-import
+from integrations.authentication import authn_services  # noqa: F401
+from integrations.authentication import (
+    authn_get_cors_headers,
+    authn_get_middleware,
+)
+from integrations.authorization import authz_services  # noqa: F401
+from logger import log_middleware
 from routes import (
     router_assignment,
     router_constraint,
@@ -22,21 +29,11 @@ from routes import (
     router_worker,
     router_worker_dimension,
 )
-
-# pylint: disable=unused-import
-from services.authentication import authn_services  # noqa: F401
-from services.authentication.authn_services import (
-    authn_get_cors_headers,
-    authn_get_middleware,
-)
-from services.authorization import authz_services  # noqa: F401
-from services.logging.middleware import log_middleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from utils.env_config import API_DOMAIN, API_PORT, ORIGINS, UVICORN_RELOAD
 
 app = FastAPI()
 
-
-print("ORIGINS", ORIGINS)
 
 app.add_middleware(authn_get_middleware())
 
@@ -77,4 +74,5 @@ def run_router():
         host=API_DOMAIN,
         port=API_PORT,
         reload=UVICORN_RELOAD,
+        access_log=False,
     )

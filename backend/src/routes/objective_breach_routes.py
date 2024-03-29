@@ -6,11 +6,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.schedule import ObjectiveBreach, Variable
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import ObjectiveBreachMessage, VariableMessage
 from scripts.setup_database import objective_breach_db, schedule_db
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
@@ -20,7 +19,7 @@ async def get_objective_breaches(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ObjectiveBreachMessage]:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "read-objective-breaches", "team", team_id
     ):
         raise HTTPException(
@@ -39,7 +38,7 @@ async def update_objective_breach(
     objective_breach_api: ObjectiveBreachMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ObjectiveBreachMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "update-objective-breach", "team", team_id
     ):
         raise HTTPException(
@@ -64,7 +63,7 @@ async def delete_objective_breach(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "delete-objective-breach", "team", team_id
     ):
         raise HTTPException(

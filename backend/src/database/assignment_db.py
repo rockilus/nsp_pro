@@ -15,11 +15,11 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models.assignment import Assignment as AssignmentDocument
 from models.schedule import Schedule as ScheduleDocument
 from models.shift import Shift as ShiftDocument
 from models.worker import Worker as WorkerDocument
-from services.logging import log_info
 
 
 class AssignmentDB:
@@ -94,14 +94,18 @@ class AssignmentDB:
             handle_get_document_error(e)
         return [doc_to_core_assignment(a) for a in list(assignments)]
 
-    def get_assignments_by_schedule_id(self, schedule_id: str) -> List[Assignment]:
+    def get_assignments_by_schedule_id(
+        self, schedule_id: str
+    ) -> List[Assignment]:
         try:
             # pylint: disable=no-member
             assignments = AssignmentDocument.objects.filter(  # type: ignore
                 schedule=schedule_id
             )
         except Exception as e:
-            log_info(f"Failed to get assignments by schedule id from database: {e}")
+            log_info(
+                f"Failed to get assignments by schedule id from database: {e}"
+            )
             handle_get_document_error(e)
         return [doc_to_core_assignment(a) for a in list(assignments)]
 
@@ -169,7 +173,9 @@ class AssignmentDB:
                 schedule=schedule_id
             )
         except Exception as e:
-            log_info(f"Failed to get assignments by schedule id to delete: {e}")
+            log_info(
+                f"Failed to get assignments by schedule id to delete: {e}"
+            )
             handle_get_document_error(e)
         try:
             for a in assigments:

@@ -7,11 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.coverage import CoverageSelector
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import CoverageSelectorMessage
 from scripts.setup_database import coverage_selector_db
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
@@ -22,7 +21,7 @@ async def create_coverage_selector(
     coverage_selector: CoverageSelectorMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> CoverageSelectorMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "create-coverage-selector", "team", team_id
     ):
         raise HTTPException(
@@ -39,7 +38,7 @@ async def get_coverage_selectors(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[CoverageSelectorMessage]:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "read-coverage-selectors", "team", team_id
     ):
         raise HTTPException(
@@ -57,7 +56,7 @@ async def update_coverage_selector(
     coverage_selector_api: CoverageSelectorMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> CoverageSelectorMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "update-coverage-selector", "team", team_id
     ):
         raise HTTPException(
@@ -82,7 +81,7 @@ async def delete_coverage_selector(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "delete-coverage-selector", "team", team_id
     ):
         raise HTTPException(

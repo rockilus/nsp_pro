@@ -6,11 +6,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.shift import Shift, ShiftProperty
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import ShiftMessage, ShiftPropertyMessage
 from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
@@ -21,7 +20,7 @@ async def create_shift(
     shift: ShiftMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ShiftMessage:
-    if not await permit_check(session.get_user_id(), "create-shift", "team", team_id):
+    if not await authz_check(session.get_user_id(), "create-shift", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to create a shift",
@@ -49,7 +48,7 @@ async def get_shifts(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ShiftMessage]:
-    if not await permit_check(session.get_user_id(), "read-shifts", "team", team_id):
+    if not await authz_check(session.get_user_id(), "read-shifts", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to read shifts",
@@ -71,7 +70,7 @@ async def update_shift(
     shift: ShiftMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ShiftMessage:
-    if not await permit_check(session.get_user_id(), "update-shift", "team", team_id):
+    if not await authz_check(session.get_user_id(), "update-shift", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to update shifts",
@@ -91,7 +90,7 @@ async def update_shift_property(
     shift_property: ShiftPropertyMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ShiftPropertyMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "update-shift-property", "team", team_id
     ):
         raise HTTPException(
@@ -112,7 +111,7 @@ async def delete_shift(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
-    if not await permit_check(session.get_user_id(), "delete-shift", "team", team_id):
+    if not await authz_check(session.get_user_id(), "delete-shift", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to delete shifts",

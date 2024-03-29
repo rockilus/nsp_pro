@@ -6,13 +6,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.worker import WorkerDimension, WorkerProperty
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import NewWorkerDimensionMessage, WorkerDimensionMessage
 from routes.worker_routes import core_to_msg_worker_property
 from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
-from services.deletion_services.delete_worker_dimension import (
+from services.worker_services import (
     delete_worker_dimension as delete_worker_dimension_service,
 )
 
@@ -25,7 +24,7 @@ async def create_worker_dimension(
     worker_dimension: WorkerDimensionMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> NewWorkerDimensionMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "create-worker-dimension", "team", team_id
     ):
         raise HTTPException(
@@ -56,7 +55,7 @@ async def get_worker_dimensions(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[WorkerDimensionMessage]:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "read-worker-dimensions", "team", team_id
     ):
         raise HTTPException(
@@ -74,7 +73,7 @@ async def update_worker_dimension(
     worker_dimension: WorkerDimensionMessage,  # pylint: disable=W0613
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> WorkerDimensionMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "update-worker-dimension", "team", team_id
     ):
         raise HTTPException(
@@ -99,7 +98,7 @@ async def delete_worker_dimension(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "delete-worker-dimension", "team", team_id
     ):
         raise HTTPException(

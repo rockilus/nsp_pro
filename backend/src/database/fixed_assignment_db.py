@@ -14,10 +14,10 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models import Shift as ShiftDocument
 from models import Worker as WorkerDocument
 from models.fixed_assignment import FixedAssignment as FixedAssignmentDocument
-from services.logging import log_info
 
 
 class FixedAssignmentDB:
@@ -36,7 +36,9 @@ class FixedAssignmentDB:
             handle_save_document_error(e)
         return doc_to_core_fixed_assignment(fa_saved)
 
-    def get_fixed_assignments(self, workers: List[Worker]) -> List[FixedAssignment]:
+    def get_fixed_assignments(
+        self, workers: List[Worker]
+    ) -> List[FixedAssignment]:
         w_docs = [core_to_doc_worker(w) for w in workers]
         try:
             # pylint: disable=no-member
@@ -44,18 +46,26 @@ class FixedAssignmentDB:
                 worker__in=w_docs
             )
         except Exception as e:
-            log_info(f"Failed to get fixed assignments by workers from database: {e}")
+            log_info(
+                f"Failed to get fixed assignments by workers from database: {e}"
+            )
             handle_get_document_error(e)
-        return [doc_to_core_fixed_assignment(fa) for fa in list(fixed_assignments)]
+        return [
+            doc_to_core_fixed_assignment(fa) for fa in list(fixed_assignments)
+        ]
 
-    def get_fixed_assignment_by_id(self, fixed_assignment_id: str) -> FixedAssignment:
+    def get_fixed_assignment_by_id(
+        self, fixed_assignment_id: str
+    ) -> FixedAssignment:
         try:
             # pylint: disable=no-member
             fixed_assignment = FixedAssignmentDocument.objects.get(  # type: ignore
                 id=fixed_assignment_id
             )
         except Exception as e:
-            log_info(f"Failed to get fixed assignment by id from database: {e}")
+            log_info(
+                f"Failed to get fixed assignment by id from database: {e}"
+            )
             handle_get_document_error(e)
         return doc_to_core_fixed_assignment(fixed_assignment)
 
@@ -69,9 +79,13 @@ class FixedAssignmentDB:
                 date__gte=start_date, date__lte=end_date, worker__in=w_docs
             )
         except Exception as e:
-            log_info(f"Failed to get fixed assignments by dates from database: {e}")
+            log_info(
+                f"Failed to get fixed assignments by dates from database: {e}"
+            )
             handle_get_document_error(e)
-        return [doc_to_core_fixed_assignment(fa) for fa in list(fixed_assignments)]
+        return [
+            doc_to_core_fixed_assignment(fa) for fa in list(fixed_assignments)
+        ]
 
     def update_fixed_assignment(
         self, fixed_assignment: FixedAssignment
@@ -148,7 +162,9 @@ def core_to_doc_fixed_assignment(
             status=dataclass_obj.status,
         )
     except Exception as e:
-        log_info(f"Failed to convert FixedAssignment to FixedAssignmentDocument: {e}")
+        log_info(
+            f"Failed to convert FixedAssignment to FixedAssignmentDocument: {e}"
+        )
         handle_create_document_error(e)
     return fa_doc
 
@@ -167,6 +183,8 @@ def doc_to_core_fixed_assignment(
             status=doc_obj.status,
         )
     except Exception as e:
-        log_info(f"Failed to convert FixedAssignmentDocument to FixedAssignment: {e}")
+        log_info(
+            f"Failed to convert FixedAssignmentDocument to FixedAssignment: {e}"
+        )
         handle_create_core_object_error(e)
     return fixed_assignment

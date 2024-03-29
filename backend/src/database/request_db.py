@@ -14,10 +14,10 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models import Shift as ShiftDocument
 from models import Worker as WorkerDocument
 from models.request import Request as RequestDocument
-from services.logging import log_info
 
 
 class RequestDB:
@@ -78,7 +78,9 @@ class RequestDB:
             # pylint: disable=no-member
             request = RequestDocument.objects.get(id=request_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get request by id to delete from database: {e}")
+            log_info(
+                f"Failed to get request by id to delete from database: {e}"
+            )
             handle_get_document_error(e)
         try:
             request.delete()

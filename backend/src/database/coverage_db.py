@@ -11,9 +11,9 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models import Coverage as CoverageDocument
 from models import Team as TeamDocument
-from services.logging import log_info
 
 
 class CoverageDB:
@@ -62,7 +62,9 @@ class CoverageDB:
             # pylint: disable=no-member
             coverage = CoverageDocument.objects.get(id=coverage_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get coverage by id to delete from database: {e}")
+            log_info(
+                f"Failed to get coverage by id to delete from database: {e}"
+            )
             handle_get_document_error(e)
         try:
             coverage.delete()

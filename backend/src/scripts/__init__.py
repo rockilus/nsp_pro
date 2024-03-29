@@ -1,6 +1,5 @@
 from scripts.run_app import run_app
 
-# from scripts.run_solver import run_solver
 from scripts.setup_database import (
     assignment_db,
     constraint_build_db,

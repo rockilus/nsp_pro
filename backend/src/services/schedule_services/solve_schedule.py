@@ -21,12 +21,12 @@ from scripts.setup_database import (
     worker_db,
     worker_property_db,
 )
-from services.constraint_services.build_constraints import build_constraints
+from services.constraint_services import build_constraints
 from services.schedule_services.core_to_engine import core_to_engine_inputs
 from services.schedule_services.engine_to_core import engine_to_core_outputs
 from services.schedule_services.inputs_processing import build_no_coverage_date
 from services.schedule_services.outputs_processing import update_far_status
-from services.stats_services.stats_setup import stats_setup
+from services.stats_services import stats_setup
 
 
 # pylint: disable=too-many-locals

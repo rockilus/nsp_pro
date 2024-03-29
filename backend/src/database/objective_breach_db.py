@@ -13,12 +13,12 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models.objective_breach import ObjectiveBreach as ObjectiveBreachDocument
 from models.objective_breach import Variable as VariableDocument
 from models.schedule import Schedule as ScheduleDocument
 from models.shift import Shift as ShiftDocument
 from models.worker import Worker as WorkerDocument
-from services.logging import log_info
 
 
 class ObjectiveBreachDB:
@@ -49,16 +49,22 @@ class ObjectiveBreachDB:
         except Exception as e:
             log_info(f"Failed to get objective breaches from database: {e}")
             handle_get_document_error(e)
-        return [doc_to_core_objective_breach(ob) for ob in list(objective_breaches)]
+        return [
+            doc_to_core_objective_breach(ob) for ob in list(objective_breaches)
+        ]
 
-    def get_objective_breach_by_id(self, objective_breach_id: str) -> ObjectiveBreach:
+    def get_objective_breach_by_id(
+        self, objective_breach_id: str
+    ) -> ObjectiveBreach:
         try:
             # pylint: disable=no-member
             objective_breach = ObjectiveBreachDocument.objects.get(  # type: ignore
                 id=objective_breach_id
             )
         except Exception as e:
-            log_info(f"Failed to get objective breach by id from database: {e}")
+            log_info(
+                f"Failed to get objective breach by id from database: {e}"
+            )
             handle_get_document_error(e)
         return doc_to_core_objective_breach(objective_breach)
 
@@ -75,7 +81,9 @@ class ObjectiveBreachDB:
                 f"Failed to get objective breaches by schedule id from database: {e}"
             )
             handle_get_document_error(e)
-        return [doc_to_core_objective_breach(ob) for ob in list(objective_breaches)]
+        return [
+            doc_to_core_objective_breach(ob) for ob in list(objective_breaches)
+        ]
 
     def get_objective_breaches_by_worker_id(
         self, worker_id: str
@@ -90,7 +98,9 @@ class ObjectiveBreachDB:
                 f"Failed to get objective breaches by worker id from database: {e}"
             )
             handle_get_document_error(e)
-        return [doc_to_core_objective_breach(ob) for ob in list(objective_breaches)]
+        return [
+            doc_to_core_objective_breach(ob) for ob in list(objective_breaches)
+        ]
 
     def update_objective_breach(
         self, objective_breach: ObjectiveBreach
@@ -118,14 +128,18 @@ class ObjectiveBreachDB:
             log_info(f"Failed to delete objective breach: {e}")
             handle_delete_document_error(e)
 
-    def delete_objective_breaches_by_schedule_id(self, schedule_id: str) -> None:
+    def delete_objective_breaches_by_schedule_id(
+        self, schedule_id: str
+    ) -> None:
         try:
             # pylint: disable=no-member
             objective_breaches = ObjectiveBreachDocument.objects.filter(  # type: ignore
                 schedule=schedule_id
             )
         except Exception as e:
-            log_info(f"Failed to get objective breaches by schedule id to delete: {e}")
+            log_info(
+                f"Failed to get objective breaches by schedule id to delete: {e}"
+            )
             handle_get_document_error(e)
         try:
             for ob in objective_breaches:
@@ -185,13 +199,17 @@ def core_to_doc_objective_breach(
             id=dataclass_obj.id,
             objective_id=dataclass_obj.objective_id,
             objective_category=dataclass_obj.objective_category,
-            variables=[core_to_doc_variable(v) for v in dataclass_obj.variables],
+            variables=[
+                core_to_doc_variable(v) for v in dataclass_obj.variables
+            ],
             hard_to_soft=dataclass_obj.hard_to_soft,
             description=dataclass_obj.description,
             schedule=schedule,
         )
     except Exception as e:
-        log_info(f"Failed to convert ObjectiveBreach to ObjectiveBreachDocument: {e}")
+        log_info(
+            f"Failed to convert ObjectiveBreach to ObjectiveBreachDocument: {e}"
+        )
         handle_create_document_error(e)
     return ob_doc
 
@@ -224,6 +242,8 @@ def doc_to_core_objective_breach(
             schedule_id=doc_obj.schedule.id,
         )
     except Exception as e:
-        log_info(f"Failed to convert ObjectiveBreachDocument to ObjectiveBreach: {e}")
+        log_info(
+            f"Failed to convert ObjectiveBreachDocument to ObjectiveBreach: {e}"
+        )
         handle_create_core_object_error(e)
     return objective_breach

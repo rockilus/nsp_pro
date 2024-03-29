@@ -7,11 +7,10 @@ from pydantic import TypeAdapter
 
 from core.coverage import Coverage, ShiftDemand
 from core.shift import Shift
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import CoverageMessage, ShiftDemandMessage
 from scripts.setup_database import coverage_db, shift_db, shift_demand_db
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
@@ -22,9 +21,7 @@ async def create_coverage(
     coverage: CoverageMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> CoverageMessage:
-    if not await permit_check(
-        session.get_user_id(), "create-coverage", "team", team_id
-    ):
+    if not await authz_check(session.get_user_id(), "create-coverage", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to create a coverage",
@@ -42,7 +39,7 @@ async def create_shift_demand(
     shift_demand: ShiftDemandMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ShiftDemandMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "create-shift-demand", "team", team_id
     ):
         raise HTTPException(
@@ -60,7 +57,7 @@ async def get_coverages(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[CoverageMessage]:
-    if not await permit_check(session.get_user_id(), "read-coverages", "team", team_id):
+    if not await authz_check(session.get_user_id(), "read-coverages", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to get coverages",
@@ -86,9 +83,7 @@ async def update_coverage(
     updated_coverage: CoverageMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
-    if not await permit_check(
-        session.get_user_id(), "update-coverage", "team", team_id
-    ):
+    if not await authz_check(session.get_user_id(), "update-coverage", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to update a coverage",
@@ -110,7 +105,7 @@ async def update_shift_demand(
     req: ShiftDemandMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ShiftDemandMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "update-shift-demand", "team", team_id
     ):
         raise HTTPException(
@@ -132,9 +127,7 @@ async def delete_coverage(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
-    if not await permit_check(
-        session.get_user_id(), "delete-coverage", "team", team_id
-    ):
+    if not await authz_check(session.get_user_id(), "delete-coverage", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to delete a coverage",
@@ -152,7 +145,7 @@ async def delete_shift_demand(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "delete-shift-demand", "team", team_id
     ):
         raise HTTPException(

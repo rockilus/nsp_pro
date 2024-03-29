@@ -4,7 +4,7 @@ from supertokens_python import get_all_cors_headers, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 
-from services.authentication import config
+from integrations.authentication import config
 
 init(
     supertokens_config=config.supertokens_config,

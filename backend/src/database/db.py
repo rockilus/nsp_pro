@@ -2,7 +2,7 @@ import mongoengine  # type: ignore
 from mongoengine.connection import ConnectionFailure
 
 from errors import DBConnectionError
-from services.logging import log_debug, log_info
+from logger import log_debug, log_info
 
 
 # pylint: disable=too-few-public-methods
