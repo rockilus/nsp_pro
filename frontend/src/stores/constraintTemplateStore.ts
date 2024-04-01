@@ -1,4 +1,6 @@
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { TemplateT } from "../components/Constraint/types";
 
@@ -27,15 +29,27 @@ export const useConstraintTemplateStore = create<ConstraintTemplateStateT>()(
           `${apiUrlConstraints}/teams/${teamId}`,
           options
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          throw Error(
-            `Failed to fetch constraint templates: ${response.statusText}`
-          );
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to fetch constraint templates: " + responseData.detail,
+              "error"
+            );
+          return;
         }
-        const constraintTemplates: TemplateT[] = await response.json();
+        const constraintTemplates: TemplateT[] = responseData;
         set({ constraintTemplates });
       } catch (error) {
         console.error("Failed to fetch constraint templates:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch constraint template, please try again later",
+            "error"
+          );
+        return;
       }
     },
   })

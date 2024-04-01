@@ -1,4 +1,6 @@
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { ConstraintT } from "../components/Constraint/types";
 
@@ -28,13 +30,26 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
         `${apiUrlConstraints}/teams/${teamId}`,
         options
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw Error(`Failed to fetch constraints: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch constraints: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const constraints: ConstraintT[] = await response.json();
+      const constraints: ConstraintT[] = responseData;
       set({ constraints });
     } catch (error) {
       console.error("Failed to fetch constraints:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch constraints, please try again later",
+          "error"
+        );
     }
   },
 
@@ -50,15 +65,28 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
           body: JSON.stringify(constraint),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw Error(`Failed to add constraint: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add constraint: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const newConstraint = await response.json();
+      const newConstraint = responseData;
       set((state) => ({
         constraints: [...state.constraints, newConstraint],
       }));
     } catch (error) {
-      throw Error(`Failed to add constraint: ${error}`);
+      console.error("Failed to add constraint:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to add constraint, please try again later",
+          "error"
+        );
     }
   },
 
@@ -74,10 +102,17 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
           body: JSON.stringify(updatedConstraint),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw Error(`Failed to update constraint: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update constraint: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const newConstraint: ConstraintT = await response.json();
+      const newConstraint: ConstraintT = responseData;
       set((state) => ({
         constraints: state.constraints.map((w) =>
           w.id === updatedConstraint.id ? newConstraint : w
@@ -85,6 +120,12 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to update constraint:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update constraint, please try again later",
+          "error"
+        );
     }
   },
 
@@ -100,14 +141,27 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
           body: JSON.stringify({ id: constraintId }),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw Error(`Failed to delete constraint: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to delete constraint: " + responseData.detail,
+            "error"
+          );
+        return;
       }
       set((state) => ({
         constraints: state.constraints.filter((c) => c.id !== constraintId),
       }));
     } catch (error) {
       console.error("Failed to delete constraint:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to delete constraint, please try again later",
+          "error"
+        );
     }
   },
 }));

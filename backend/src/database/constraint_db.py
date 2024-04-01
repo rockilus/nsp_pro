@@ -34,7 +34,7 @@ class ConstraintDB:
         try:
             constraint_saved = constraint_doc.save()
         except Exception as e:
-            log_info(f"Failed to save constraint to database: {e}")
+            log_info("Failed to save constraint to database")
             handle_save_document_error(e)
         return doc_to_core_constraint(constraint_saved)
 
@@ -43,7 +43,7 @@ class ConstraintDB:
             # pylint: disable=no-member
             constraints = ConstraintDocument.objects.all()  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get constraints from database: {e}")
+            log_info("Failed to get constraints from database")
             handle_get_document_error(e)
         return [doc_to_core_constraint(c) for c in list(constraints)]
 
@@ -52,7 +52,7 @@ class ConstraintDB:
             # pylint: disable=no-member
             constraints = ConstraintDocument.objects.filter(active=True)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get active constraints from database: {e}")
+            log_info("Failed to get active constraints from database")
             handle_get_document_error(e)
         return [doc_to_core_constraint(c) for c in list(constraints)]
 
@@ -63,7 +63,7 @@ class ConstraintDB:
                 id=constraint_id
             )
         except Exception as e:
-            log_info(f"Failed to get constraint by id from database: {e}")
+            log_info("Failed to get constraint by id from database")
             handle_get_document_error(e)
         return doc_to_core_constraint(constraint)
 
@@ -74,19 +74,24 @@ class ConstraintDB:
                 worker_var__target=worker_id
             )
         except Exception as e:
-            log_info(f"Failed to get constraints by worker id from database: {e}")
+            log_info("Failed to get constraints by worker id from database")
             handle_get_document_error(e)
         return [doc_to_core_constraint(c) for c in list(constraints)]
 
-    # pyling: disable=too-many-arguments
     def update_constraint(self, constraint: Constraint) -> Constraint:
-        constraint_doc = core_to_doc_constraint(constraint)
+        c_doc = core_to_doc_constraint(constraint)
         try:
-            constraint_saved = constraint_doc.save()
+            # pylint: disable=no-member
+            ConstraintDocument.objects.get(id=c_doc.id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to update constraint in database: {e}")
+            log_info(f"Constraint with id {c_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
+            c_saved = c_doc.save()
+        except Exception as e:
+            log_info("Failed to update constraint in database")
             handle_save_document_error(e)
-        return doc_to_core_constraint(constraint_saved)
+        return doc_to_core_constraint(c_saved)
 
     def delete_constraint(self, constraint_id: str) -> None:
         try:
@@ -95,12 +100,12 @@ class ConstraintDB:
                 id=constraint_id
             )
         except Exception as e:
-            log_info(f"Failed to get constraint by id to delete: {e}")
+            log_info("Failed to get constraint by id to delete")
             handle_get_document_error(e)
         try:
             constraint_doc.delete()
         except Exception as e:
-            log_info(f"Failed to delete constraint: {e}")
+            log_info("Failed to delete constraint")
             handle_delete_document_error(e)
 
     def delete_constraints_by_schedule_id(self, schedule_id: str) -> None:
@@ -110,13 +115,13 @@ class ConstraintDB:
                 schedule=schedule_id
             )
         except Exception as e:
-            log_info(f"Failed to get constraints by schedule id to delete: {e}")
+            log_info("Failed to get constraints by schedule id to delete")
             handle_get_document_error(e)
         try:
             for constraint in list(constraints):
                 constraint.delete()
         except Exception as e:
-            log_info(f"Failed to delete constraints: {e}")
+            log_info("Failed to delete constraints")
             handle_delete_document_error(e)
 
     def delete_constraints_by_constraint_build_id(
@@ -128,13 +133,13 @@ class ConstraintDB:
                 constraint_build=constraint_build_id
             )
         except Exception as e:
-            log_info(f"Failed to get constraints by constraint build id to delete: {e}")
+            log_info("Failed to get constraints by constraint build id to delete")
             handle_get_document_error(e)
         try:
             for constraint in list(constraints):
                 constraint.delete()
         except Exception as e:
-            log_info(f"Failed to delete constraints: {e}")
+            log_info("Failed to delete constraints")
             handle_delete_document_error(e)
 
 
@@ -149,7 +154,7 @@ def core_to_doc_var_worker(dataclass_obj: VarWorker) -> VarWorkerDocument:
                 id__in=dataclass_obj.target_ids
             )
         except Exception as e:
-            log_info(f"Failed to get workers by id: {e}")
+            log_info("Failed to get workers by id")
             handle_get_document_error(e)
     try:
         vw_doc = VarWorkerDocument(
@@ -158,7 +163,7 @@ def core_to_doc_var_worker(dataclass_obj: VarWorker) -> VarWorkerDocument:
             num_eligible_workers=dataclass_obj.num_eligible_workers,
         )
     except Exception as e:
-        log_info(f"Failed to convert VarWorker to VarWorkerDocument: {e}")
+        log_info("Failed to convert VarWorker to VarWorkerDocument")
         handle_create_document_error(e)
     return vw_doc
 
@@ -173,7 +178,7 @@ def core_to_doc_var_day(dataclass_obj: VarDay) -> VarDayDocument:
             interval=dataclass_obj.interval,
         )
     except Exception as e:
-        log_info(f"Failed to convert VarDay to VarDayDocument: {e}")
+        log_info("Failed to convert VarDay to VarDayDocument")
         handle_create_document_error(e)
     return vd_doc
 
@@ -189,7 +194,7 @@ def core_to_doc_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
                 id__in=dataclass_obj.target_ids
             )
         except Exception as e:
-            log_info(f"Failed to get shifts by id: {e}")
+            log_info("Failed to get shifts by id")
             handle_get_document_error(e)
     if len(dataclass_obj.reference_ids) > 0:
         try:
@@ -198,7 +203,7 @@ def core_to_doc_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
                 id__in=dataclass_obj.reference_ids
             )
         except Exception as e:
-            log_info(f"Failed to get shifts by id: {e}")
+            log_info("Failed to get shifts by id")
             handle_get_document_error(e)
     if len(dataclass_obj.relative_ids) > 0:
         try:
@@ -207,7 +212,7 @@ def core_to_doc_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
                 id__in=dataclass_obj.relative_ids
             )
         except Exception as e:
-            log_info(f"Failed to get shifts by id: {e}")
+            log_info("Failed to get shifts by id")
             handle_get_document_error(e)
     try:
         vs_doc = VarShiftDocument(
@@ -217,7 +222,7 @@ def core_to_doc_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
             relative=relative_s,
         )
     except Exception as e:
-        log_info(f"Failed to convert VarShift to VarShiftDocument: {e}")
+        log_info("Failed to convert VarShift to VarShiftDocument")
         handle_create_document_error(e)
     return vs_doc
 
@@ -232,7 +237,7 @@ def core_to_doc_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
             id=dataclass_obj.schedule_id
         )
     except Exception as e:
-        log_info(f"Failed to get schedule by id: {e}")
+        log_info("Failed to get schedule by id")
         handle_get_document_error(e)
     try:
         # pylint: disable=no-member
@@ -244,7 +249,7 @@ def core_to_doc_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
             else None
         )
     except Exception as e:
-        log_info(f"Failed to get constraint build by id: {e}")
+        log_info("Failed to get constraint build by id")
         handle_get_document_error(e)
     try:
         constraint = ConstraintDocument(
@@ -263,7 +268,7 @@ def core_to_doc_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
             constraint_build=constraint_build,
         )
     except Exception as e:
-        log_info(f"Failed to convert Constraint to ConstraintDocument: {e}")
+        log_info("Failed to convert Constraint to ConstraintDocument")
         handle_create_document_error(e)
     return constraint
 
@@ -277,7 +282,7 @@ def doc_to_core_var_worker(doc_obj: VarWorkerDocument) -> VarWorker:
             num_eligible_workers=doc_obj.num_eligible_workers,
         )
     except Exception as e:
-        log_info(f"Failed to convert VarWorkerDocument to VarWorker: {e}")
+        log_info("Failed to convert VarWorkerDocument to VarWorker")
         handle_create_core_object_error(e)
     return var_worker
 
@@ -292,7 +297,7 @@ def doc_to_core_var_day(doc_obj: VarDayDocument) -> VarDay:
             interval=doc_obj.interval,
         )
     except Exception as e:
-        log_info(f"Failed to convert VarDayDocument to VarDay: {e}")
+        log_info("Failed to convert VarDayDocument to VarDay")
         handle_create_core_object_error(e)
     return var_day
 
@@ -306,7 +311,7 @@ def doc_to_core_var_shift(doc_obj: VarShiftDocument) -> VarShift:
             relative_ids=[s.id for s in doc_obj.relative],
         )
     except Exception as e:
-        log_info(f"Failed to convert VarShiftDocument to VarShift: {e}")
+        log_info("Failed to convert VarShiftDocument to VarShift")
         handle_create_core_object_error(e)
     return var_shift
 
@@ -334,6 +339,6 @@ def doc_to_core_constraint(doc_obj: ConstraintDocument) -> Constraint:
             ),
         )
     except Exception as e:
-        log_info(f"Failed to convert ConstraintDocument to Constraint: {e}")
+        log_info("Failed to convert ConstraintDocument to Constraint")
         handle_create_core_object_error(e)
     return constraint
