@@ -1,6 +1,7 @@
 import { create } from "zustand";
 // Stores
 import { useWorkerStore } from "./workerStore";
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import {
   WorkerDimensionT,
@@ -35,19 +36,29 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
           `${apiUrlWorkerDimensions}/teams/${teamId}`,
           options
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          console.log("Failed to fetch workerDimensions", response);
-          throw new Error("Failed to fetch workerDimensions");
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to fetch worker dimensions: " + responseData.detail,
+              "error"
+            );
+          return;
         }
-        const data = await response.json();
-        const workerDimensions = data;
+        const workerDimensions: WorkerDimensionT[] = responseData;
         set({ workerDimensions });
       } catch (error) {
-        console.error("Failed to fetch workerDimensions:", error);
+        console.error("Failed to fetch worker dimensions:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch worker dimensions, please try again later",
+            "error"
+          );
       }
     },
 
-    // Here I keep POST for the convention, but there is no body
     addWorkerDimension: async (workerDimension) => {
       try {
         const response = await fetch(
@@ -60,12 +71,17 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
             body: JSON.stringify(workerDimension),
           }
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          console.log("Failed to add workerDimension", response);
-          throw new Error("Failed to add workerDimension");
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to add worker dimension: " + responseData.detail,
+              "error"
+            );
+          return;
         }
-        const data = await response.json();
-        const newWorkerDimension: NewWorkerDimensionT = data;
+        const newWorkerDimension: NewWorkerDimensionT = responseData;
         set((state) => ({
           workerDimensions: [
             ...state.workerDimensions,
@@ -76,7 +92,13 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
           .getState()
           .addPropertiesToStore(newWorkerDimension.newProperties);
       } catch (error) {
-        console.error("Failed to add workerDimension:", error);
+        console.error("Failed to add worker dimension:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add worker dimension, please try again later",
+            "error"
+          );
       }
     },
 
@@ -92,12 +114,17 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
             body: JSON.stringify(updatedWorkerDimension),
           }
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          console.log("Failed to update workerDimension", response);
-          throw new Error("Failed to update workerDimension");
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to update worker dimension: " + responseData.detail,
+              "error"
+            );
+          return;
         }
-        const data = await response.json();
-        const newWorkerDimension: WorkerDimensionT = data; // check if this works
+        const newWorkerDimension: WorkerDimensionT = responseData;
         set((state) => ({
           workerDimensions: state.workerDimensions.map((workerDimension) =>
             workerDimension.id === newWorkerDimension.id
@@ -106,7 +133,13 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
           ),
         }));
       } catch (error) {
-        console.error("Failed to update workerDimension:", error);
+        console.error("Failed to update worker dimension:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update worker dimension, please try again later",
+            "error"
+          );
       }
     },
 
@@ -122,9 +155,15 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
             body: JSON.stringify({ workerDimensionId, teamId }),
           }
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          console.log("Failed to delete workerDimension", response);
-          throw new Error("Failed to delete workerDimension");
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to delete worker dimension: " + responseData.detail,
+              "error"
+            );
+          return;
         }
         set((state) => ({
           workerDimensions: state.workerDimensions.filter(
@@ -132,7 +171,13 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
           ),
         }));
       } catch (error) {
-        console.error("Failed to delete workerDimension:", error);
+        console.error("Failed to delete worker dimension:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to delete worker dimension, please try again later",
+            "error"
+          );
       }
     },
   })
