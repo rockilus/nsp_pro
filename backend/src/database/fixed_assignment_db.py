@@ -32,7 +32,7 @@ class FixedAssignmentDB:
         try:
             fa_saved = fa_doc.save()
         except Exception as e:
-            log_info(f"Failed to save fixed assignment to database: {e}")
+            log_info("Failed to save fixed assignment to database")
             handle_save_document_error(e)
         return doc_to_core_fixed_assignment(fa_saved)
 
@@ -44,7 +44,7 @@ class FixedAssignmentDB:
                 worker__in=w_docs
             )
         except Exception as e:
-            log_info(f"Failed to get fixed assignments by workers from database: {e}")
+            log_info("Failed to get fixed assignments by workers from database")
             handle_get_document_error(e)
         return [doc_to_core_fixed_assignment(fa) for fa in list(fixed_assignments)]
 
@@ -55,7 +55,7 @@ class FixedAssignmentDB:
                 id=fixed_assignment_id
             )
         except Exception as e:
-            log_info(f"Failed to get fixed assignment by id from database: {e}")
+            log_info("Failed to get fixed assignment by id from database")
             handle_get_document_error(e)
         return doc_to_core_fixed_assignment(fixed_assignment)
 
@@ -69,7 +69,7 @@ class FixedAssignmentDB:
                 date__gte=start_date, date__lte=end_date, worker__in=w_docs
             )
         except Exception as e:
-            log_info(f"Failed to get fixed assignments by dates from database: {e}")
+            log_info("Failed to get fixed assignments by dates from database")
             handle_get_document_error(e)
         return [doc_to_core_fixed_assignment(fa) for fa in list(fixed_assignments)]
 
@@ -78,9 +78,15 @@ class FixedAssignmentDB:
     ) -> FixedAssignment:
         fa_doc = core_to_doc_fixed_assignment(fixed_assignment)
         try:
+            # pylint: disable=no-member
+            fa_saved = FixedAssignmentDocument.objects.get(id=fa_doc.id)  # type: ignore
+        except Exception as e:
+            log_info(f"Fixed assignment with id {fa_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
             fa_saved = fa_doc.save()
         except Exception as e:
-            log_info(f"Failed to update fixed assignment to database: {e}")
+            log_info("Failed to update fixed assignment to database")
             handle_save_document_error(e)
         return doc_to_core_fixed_assignment(fa_saved)
 
@@ -91,14 +97,12 @@ class FixedAssignmentDB:
                 id=fixed_assignment_id
             )
         except Exception as e:
-            log_info(
-                f"Failed to get fixed assignment by id to delete from database: {e}"
-            )
+            log_info("Failed to get fixed assignment by id to delete from database")
             handle_get_document_error(e)
         try:
             fixed_assignment.delete()
         except Exception as e:
-            log_info(f"Failed to delete fixed assignment from database: {e}")
+            log_info("Failed to delete fixed assignment from database")
             handle_delete_document_error(e)
 
     def delete_fixed_assignments_by_worker_id(self, worker_id: str) -> None:
@@ -110,14 +114,14 @@ class FixedAssignmentDB:
         except Exception as e:
             log_info(
                 "Failed to get fixed assignments by worker id to delete from "
-                + f"database: {e}"
+                + "database"
             )
             handle_get_document_error(e)
         try:
             for fa in fas:
                 fa.delete()
         except Exception as e:
-            log_info(f"Failed to delete fixed assignments from database: {e}")
+            log_info("Failed to delete fixed assignments from database")
             handle_delete_document_error(e)
 
 
@@ -131,13 +135,13 @@ def core_to_doc_fixed_assignment(
         # pylint: disable=no-member
         worker = WorkerDocument.objects.get(id=dataclass_obj.worker_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get worker by id: {e}")
+        log_info("Failed to get worker by id")
         handle_get_document_error(e)
     try:
         # pylint: disable=no-member
         shift = ShiftDocument.objects.get(id=dataclass_obj.shift_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get shift by id: {e}")
+        log_info("Failed to get shift by id")
         handle_get_document_error(e)
     try:
         fa_doc = FixedAssignmentDocument(
@@ -148,7 +152,7 @@ def core_to_doc_fixed_assignment(
             status=dataclass_obj.status,
         )
     except Exception as e:
-        log_info(f"Failed to convert FixedAssignment to FixedAssignmentDocument: {e}")
+        log_info("Failed to convert FixedAssignment to FixedAssignmentDocument")
         handle_create_document_error(e)
     return fa_doc
 
@@ -167,6 +171,6 @@ def doc_to_core_fixed_assignment(
             status=doc_obj.status,
         )
     except Exception as e:
-        log_info(f"Failed to convert FixedAssignmentDocument to FixedAssignment: {e}")
+        log_info("Failed to convert FixedAssignmentDocument to FixedAssignment")
         handle_create_core_object_error(e)
     return fixed_assignment

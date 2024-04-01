@@ -1,5 +1,6 @@
-// fixedAssignmentStore.ts
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { FixedAssignmentT } from "../components/FixedAssignmentRequest/types";
 
@@ -12,7 +13,7 @@ type FixedAssignmentStateT = {
   addFixedAssignment: (
     fixedAssignment: FixedAssignmentT,
     teamId: string
-  ) => Promise<FixedAssignmentT>;
+  ) => void;
   updateFixedAssignment: (
     updatedFixedAssignment: FixedAssignmentT,
     teamId: string
@@ -44,16 +45,26 @@ export const useFixedAssignmentStore = create<FixedAssignmentStateT>()(
             },
           }
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          throw new Error(
-            `Failed to fetch fixedAssignments: ${response.status}`
-          );
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to fetch fixed assignments: " + responseData.detail,
+              "error"
+            );
+          return;
         }
-        const data = await response.json();
-        const fixedAssignments = data.map(toFixedAssignmentT);
+        const fixedAssignments = responseData.map(toFixedAssignmentT);
         set({ fixedAssignments });
       } catch (error) {
-        console.error("Failed to fetch fixedAssignments:", error);
+        console.error("Failed to fetch fixed assignments:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch fixed assignments, please try again later",
+            "error"
+          );
       }
     },
 
@@ -69,17 +80,28 @@ export const useFixedAssignmentStore = create<FixedAssignmentStateT>()(
             body: JSON.stringify(fixedAssignment),
           }
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          throw new Error(`Failed to add fixedAssignment: ${response.status}`);
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to add fixed assignment: " + responseData.detail,
+              "error"
+            );
+          return;
         }
-        const data = await response.json();
-        const newFixedAssignment = toFixedAssignmentT(data);
+        const newFixedAssignment = toFixedAssignmentT(responseData);
         set((state) => ({
           fixedAssignments: [...state.fixedAssignments, newFixedAssignment],
         }));
-        return newFixedAssignment;
       } catch (error) {
-        throw Error(`Failed to add fixedAssignment: ${error}`);
+        console.error("Failed to add fixed assignment:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add fixed assignment, please try again later",
+            "error"
+          );
       }
     },
 
@@ -95,10 +117,15 @@ export const useFixedAssignmentStore = create<FixedAssignmentStateT>()(
             body: JSON.stringify(updatedFixedAssignment),
           }
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          throw new Error(
-            `Failed to update fixedAssignment: ${response.status}`
-          );
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to update fixed assignment: " + responseData.detail,
+              "error"
+            );
+          return;
         }
         set((state) => ({
           fixedAssignments: state.fixedAssignments.map((fa) =>
@@ -106,7 +133,13 @@ export const useFixedAssignmentStore = create<FixedAssignmentStateT>()(
           ),
         }));
       } catch (error) {
-        console.error("Failed to update fixedAssignment:", error);
+        console.error("Failed to update fixed assignment:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update fixed assignment, please try again later",
+            "error"
+          );
       }
     },
 
@@ -118,10 +151,15 @@ export const useFixedAssignmentStore = create<FixedAssignmentStateT>()(
             method: "DELETE",
           }
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          throw new Error(
-            `Failed to delete fixedAssignment: ${response.status}`
-          );
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to delete fixed assignment: " + responseData.detail,
+              "error"
+            );
+          return;
         }
         set((state) => ({
           fixedAssignments: state.fixedAssignments.filter(
@@ -130,6 +168,12 @@ export const useFixedAssignmentStore = create<FixedAssignmentStateT>()(
         }));
       } catch (error) {
         console.error("Failed to delete fixedAssignment:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to delete fixed assignment, please try again later",
+            "error"
+          );
       }
     },
   })
