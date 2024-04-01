@@ -26,7 +26,7 @@ class ShiftDB:
         try:
             s_saved = s_doc.save()
         except Exception as e:
-            log_info(f"Failed to save shift to database: {e}")
+            log_info("Failed to save shift to database")
             handle_save_document_error(e)
         return doc_to_core_shift(s_saved)
 
@@ -35,7 +35,7 @@ class ShiftDB:
             # pylint: disable=no-member
             shifts = ShiftDocument.objects(team=team_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get shifts from database: {e}")
+            log_info("Failed to get shifts from database")
             handle_get_document_error(e)
         return [doc_to_core_shift(s) for s in list(shifts)]
 
@@ -44,16 +44,22 @@ class ShiftDB:
             # pylint: disable=no-member
             shift = ShiftDocument.objects.get(id=shift_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get shift by id from database: {e}")
+            log_info("Failed to get shift by id from database")
             handle_get_document_error(e)
         return doc_to_core_shift(shift)
 
     def update_shift(self, shift: Shift) -> Shift:
         s_doc = core_to_doc_shift(shift)
         try:
+            # pylint: disable=no-member
+            ShiftDocument.objects.get(id=shift.id)  # type: ignore
+        except Exception as e:
+            log_info(f"Shift with id {s_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
             s_saved = s_doc.save()
         except Exception as e:
-            log_info(f"Failed to update shift in database: {e}")
+            log_info("Failed to update shift in database")
             handle_save_document_error(e)
         return doc_to_core_shift(s_saved)
 
@@ -62,12 +68,12 @@ class ShiftDB:
             # pylint: disable=no-member
             shift = ShiftDocument.objects.get(id=shift_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get shift by id to delete from database: {e}")
+            log_info("Failed to get shift by id to delete from database")
             handle_get_document_error(e)
         try:
             shift.delete()
         except Exception as e:
-            log_info(f"Failed to delete shift from database: {e}")
+            log_info("Failed to delete shift from database")
             handle_delete_document_error(e)
 
 
@@ -78,7 +84,7 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get team by id: {e}")
+        log_info("Failed to get team by id")
         handle_get_document_error(e)
     try:
         s_doc = ShiftDocument(
@@ -92,7 +98,7 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
             color=dataclass_obj.color,
         )
     except Exception as e:
-        log_info(f"Failed to convert Shift to ShiftDocument: {e}")
+        log_info("Failed to convert Shift to ShiftDocument")
         handle_create_document_error(e)
     return s_doc
 
@@ -111,6 +117,6 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             color=doc_obj.color,
         )
     except Exception as e:
-        log_info(f"Failed to convert ShiftDocument to Shift: {e}")
+        log_info("Failed to convert ShiftDocument to Shift")
         handle_create_core_object_error(e)
     return shift
