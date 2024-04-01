@@ -1,5 +1,7 @@
 import dayjs from "dayjs";
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { ShiftT, ShiftPropertyT } from "../components/Shift/types";
 
@@ -39,15 +41,28 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
     };
     try {
       const response = await fetch(`${apiUrlShifts}/teams/${teamId}`, options);
+      const responseData = await response.json();
       if (!response.ok) {
-        console.log("Failed to fetch shifts", response);
-        throw new Error("Failed to fetch shifts");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch shifts: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const shifts: ShiftT[] = data.map((shift: any) => toShiftT(shift));
+      const shifts: ShiftT[] = responseData.map((shift: any) =>
+        toShiftT(shift)
+      );
       set({ shifts });
     } catch (error) {
       console.error("Failed to fetch shifts:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch shifts, please try again later",
+          "error"
+        );
     }
   },
 
@@ -60,15 +75,23 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
         },
         body: JSON.stringify(shift),
       });
+      const responseData = await response.json();
       if (!response.ok) {
-        console.log("Failed to add shift", response);
-        throw new Error("Failed to add shift");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add shift: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newShift: ShiftT = toShiftT(data);
+      const newShift: ShiftT = toShiftT(responseData);
       set((state) => ({ shifts: [...state.shifts, newShift] }));
     } catch (error) {
       console.error("Failed to add shift:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar("Failed to add shift, please try again later", "error");
     }
   },
 
@@ -104,17 +127,28 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
           body: JSON.stringify(updatedShift),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        console.log("Failed to update shift", response);
-        throw new Error("Failed to update shift");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update shift: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newShift: ShiftT = toShiftT(data);
+      const newShift: ShiftT = toShiftT(responseData);
       set((state) => ({
         shifts: state.shifts.map((s) => (s.id === newShift.id ? newShift : s)),
       }));
     } catch (error) {
       console.error("Failed to update shift:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update shift, please try again later",
+          "error"
+        );
     }
   },
 
@@ -130,11 +164,17 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
           body: JSON.stringify(updatedShiftProperty),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        console.log("Failed to update shiftProperty", response);
-        throw new Error("Failed to update shiftProperty");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update shift property: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const newShiftProperty: ShiftPropertyT = await response.json();
+      const newShiftProperty: ShiftPropertyT = responseData;
       set((state) => ({
         shifts: state.shifts.map((shift) =>
           shift.id === newShiftProperty.shiftId
@@ -155,6 +195,12 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to update shift:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update shift property, please try again later",
+          "error"
+        );
     }
   },
 
@@ -170,15 +216,27 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
           body: JSON.stringify({ shiftId, teamId }),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        console.log("Failed to delete shift", response);
-        throw new Error("Failed to delete shift");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to delete shift: " + responseData.detail,
+            "error"
+          );
+        return;
       }
       set((state) => ({
         shifts: state.shifts.filter((c) => c.id !== shiftId),
       }));
     } catch (error) {
       console.error("Failed to delete shift:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to delete shift, please try again later",
+          "error"
+        );
     }
   },
 }));
