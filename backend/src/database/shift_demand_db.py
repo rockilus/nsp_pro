@@ -27,7 +27,7 @@ class ShiftDemandDB:
         try:
             sd_saved = sd_doc.save()
         except Exception as e:
-            log_info(f"Failed to save shift demand to database: {e}")
+            log_info("Failed to save shift demand to database")
             handle_save_document_error(e)
         return doc_to_core_shift_demand(sd_saved)
 
@@ -38,7 +38,7 @@ class ShiftDemandDB:
                 id=shift_demand_id
             )
         except Exception as e:
-            log_info(f"Failed to get shift demand by id from database: {e}")
+            log_info("Failed to get shift demand by id from database")
             handle_get_document_error(e)
         return doc_to_core_shift_demand(shift_demand)
 
@@ -49,7 +49,7 @@ class ShiftDemandDB:
                 coverage=coverage.id
             )
         except Exception as e:
-            log_info(f"Failed to get shift demands by coverage from database: {e}")
+            log_info("Failed to get shift demands by coverage from database")
             handle_get_document_error(e)
         return [doc_to_core_shift_demand(sd) for sd in list(shift_demands)]
 
@@ -62,18 +62,22 @@ class ShiftDemandDB:
                 coverage=coverage_selector.coverage_id
             )
         except Exception as e:
-            log_info(
-                f"Failed to get shift demands by coverage selector from database: {e}"
-            )
+            log_info("Failed to get shift demands by coverage selector from database")
             handle_get_document_error(e)
         return [doc_to_core_shift_demand(sd) for sd in list(shift_demands)]
 
     def update_shift_demand(self, shift_demand: ShiftDemand) -> ShiftDemand:
         sd_doc = core_to_doc_shift_demand(shift_demand)
         try:
+            # pylint: disable=no-member
+            ShiftDemandDocument.objects.get(id=sd_doc.id)  # type: ignore
+        except Exception as e:
+            log_info(f"Shift demand with id {sd_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
             sd_saved = sd_doc.save()
         except Exception as e:
-            log_info(f"Failed to update shift demand in database: {e}")
+            log_info("Failed to update shift demand in database")
             handle_save_document_error(e)
         return doc_to_core_shift_demand(sd_saved)
 
@@ -84,12 +88,12 @@ class ShiftDemandDB:
                 id=shift_demand_id
             )
         except Exception as e:
-            log_info(f"Failed to get shift demand by id to delete from database: {e}")
+            log_info("Failed to get shift demand by id to delete from database")
             handle_get_document_error(e)
         try:
             shift_demand.delete()
         except Exception as e:
-            log_info(f"Failed to delete shift demand from database: {e}")
+            log_info("Failed to delete shift demand from database")
             handle_delete_document_error(e)
 
     def delete_shift_demands_by_coverage_id(self, coverage_id: str) -> None:
@@ -99,13 +103,13 @@ class ShiftDemandDB:
                 coverage=coverage_id
             )
         except Exception as e:
-            log_info(f"Failed to get shift demands by coverage id to delete: {e}")
+            log_info("Failed to get shift demands by coverage id to delete")
             handle_get_document_error(e)
         try:
             for shift_demand in shift_demands:
                 shift_demand.delete()
         except Exception as e:
-            log_info(f"Failed to delete shift demands: {e}")
+            log_info("Failed to delete shift demands")
             handle_delete_document_error(e)
 
 
@@ -119,7 +123,7 @@ def core_to_doc_shift_demand(
         # pylint: disable=no-member
         shift = ShiftDocument.objects.get(id=dataclass_obj.shift_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get shift by id: {e}")
+        log_info("Failed to get shift by id")
         handle_get_document_error(e)
     try:
         # pylint: disable=no-member
@@ -127,7 +131,7 @@ def core_to_doc_shift_demand(
             id=dataclass_obj.coverage_id
         )
     except Exception as e:
-        log_info(f"Failed to get coverage by id: {e}")
+        log_info("Failed to get coverage by id")
         handle_get_document_error(e)
     try:
         sd_doc = ShiftDemandDocument(
@@ -137,7 +141,7 @@ def core_to_doc_shift_demand(
             coverage=coverage,
         )
     except Exception as e:
-        log_info(f"Failed to convert ShiftDemand to ShiftDemandDocument: {e}")
+        log_info("Failed to convert ShiftDemand to ShiftDemandDocument")
         handle_create_document_error(e)
     return sd_doc
 
@@ -152,6 +156,6 @@ def doc_to_core_shift_demand(doc_obj: ShiftDemandDocument) -> ShiftDemand:
             coverage_id=doc_obj.coverage.id,
         )
     except Exception as e:
-        log_info(f"Failed to convert ShiftDemandDocument to ShiftDemand: {e}")
+        log_info("Failed to convert ShiftDemandDocument to ShiftDemand")
         handle_create_core_object_error(e)
     return shift_demand

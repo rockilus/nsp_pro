@@ -26,7 +26,7 @@ class CoverageDB:
         try:
             c_saved = c_doc.save()
         except Exception as e:
-            log_info(f"Failed to save coverage to database: {e}")
+            log_info("Failed to save coverage to database")
             handle_save_document_error(e)
         return doc_to_core_coverage(c_saved)
 
@@ -35,7 +35,7 @@ class CoverageDB:
             # pylint: disable=no-member
             coverages = CoverageDocument.objects(team=team_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get coverages from database: {e}")
+            log_info("Failed to get coverages from database")
             handle_get_document_error(e)
         return [doc_to_core_coverage(c) for c in list(coverages)]
 
@@ -44,16 +44,22 @@ class CoverageDB:
             # pylint: disable=no-member
             coverage = CoverageDocument.objects.get(id=coverage_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get coverage from database: {e}")
+            log_info("Failed to get coverage from database")
             handle_get_document_error(e)
         return doc_to_core_coverage(coverage)
 
     def update_coverage(self, coverage: Coverage) -> Coverage:
         c_doc = core_to_doc_coverage(coverage)
         try:
+            # pylint: disable=no-member
+            CoverageDocument.objects.get(id=c_doc.id)  # type: ignore
+        except Exception as e:
+            log_info(f"Coverage with id {c_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
             c_saved = c_doc.save()
         except Exception as e:
-            log_info(f"Failed to update coverage in database: {e}")
+            log_info("Failed to update coverage in database")
             handle_save_document_error(e)
         return doc_to_core_coverage(c_saved)
 
@@ -62,12 +68,12 @@ class CoverageDB:
             # pylint: disable=no-member
             coverage = CoverageDocument.objects.get(id=coverage_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get coverage by id to delete from database: {e}")
+            log_info("Failed to get coverage by id to delete from database")
             handle_get_document_error(e)
         try:
             coverage.delete()
         except Exception as e:
-            log_info(f"Failed to delete coverage from database: {e}")
+            log_info("Failed to delete coverage from database")
             handle_delete_document_error(e)
 
 
@@ -78,7 +84,7 @@ def core_to_doc_coverage(dataclass_obj: Coverage) -> CoverageDocument:
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get team from database: {e}")
+        log_info("Failed to get team from database")
         handle_get_document_error(e)
     try:
         c_doc = CoverageDocument(
@@ -87,7 +93,7 @@ def core_to_doc_coverage(dataclass_obj: Coverage) -> CoverageDocument:
             name=dataclass_obj.name,
         )
     except Exception as e:
-        log_info(f"Failed to convert Coverage to CoverageDocument: {e}")
+        log_info("Failed to convert Coverage to CoverageDocument")
         handle_create_document_error(e)
     return c_doc
 
@@ -101,6 +107,6 @@ def doc_to_core_coverage(doc_obj: CoverageDocument) -> Coverage:
             name=doc_obj.name,
         )
     except Exception as e:
-        log_info(f"Failed to convert CoverageDocument to Coverage: {e}")
+        log_info("Failed to convert CoverageDocument to Coverage")
         handle_create_core_object_error(e)
     return coverage
