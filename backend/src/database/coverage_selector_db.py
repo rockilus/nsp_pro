@@ -31,7 +31,7 @@ class CoverageSelectorDB:
         try:
             cs_saved = cs_doc.save()
         except Exception as e:
-            log_info(f"Failed to save coverage selector to database: {e}")
+            log_info("Failed to save coverage selector to database")
             handle_save_document_error(e)
         return doc_to_core_coverage_selector(cs_saved)
 
@@ -42,7 +42,7 @@ class CoverageSelectorDB:
                 team=team_id
             )  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get coverage selectors from database: {e}")
+            log_info("Failed to get coverage selectors from database")
             handle_get_document_error(e)
         return [doc_to_core_coverage_selector(cs) for cs in list(coverage_selectors)]
 
@@ -55,7 +55,7 @@ class CoverageSelectorDB:
                 id=coverage_selector_id
             )
         except Exception as e:
-            log_info(f"Failed to get coverage selector by id from database: {e}")
+            log_info("Failed to get coverage selector by id from database")
             handle_get_document_error(e)
         return doc_to_core_coverage_selector(coverage_selector)
 
@@ -70,7 +70,7 @@ class CoverageSelectorDB:
                 team=team_id,
             )
         except Exception as e:
-            log_info(f"Failed to get coverage selectors by dates from database: {e}")
+            log_info("Failed to get coverage selectors by dates from database")
             handle_get_document_error(e)
         return [doc_to_core_coverage_selector(cs) for cs in list(coverage_selectors)]
 
@@ -79,9 +79,15 @@ class CoverageSelectorDB:
     ) -> CoverageSelector:
         cs_doc = core_to_doc_coverage_selector(coverage_selector)
         try:
+            # pylint: disable=no-member
+            CoverageSelectorDocument.objects.get(id=cs_doc.id)  # type: ignore
+        except Exception as e:
+            log_info(f"Coverage selector with id {cs_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
             cs_saved = cs_doc.save()
         except Exception as e:
-            log_info(f"Failed to update coverage selector in database: {e}")
+            log_info("Failed to update coverage selector in database")
             handle_save_document_error(e)
         return doc_to_core_coverage_selector(cs_saved)
 
@@ -92,14 +98,12 @@ class CoverageSelectorDB:
                 id=coverage_selector_id
             )
         except Exception as e:
-            log_info(
-                f"Failed to get coverage selector by id to delete from database: {e}"
-            )
+            log_info("Failed to get coverage selector by id to delete from database")
             handle_get_document_error(e)
         try:
             coverage_selector.delete()
         except Exception as e:
-            log_info(f"Failed to delete coverage selector from database: {e}")
+            log_info("Failed to delete coverage selector from database")
             handle_delete_document_error(e)
 
 
@@ -113,7 +117,7 @@ def core_to_doc_coverage_selector(
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get team from database: {e}")
+        log_info("Failed to get team from database")
         handle_get_document_error(e)
     if dataclass_obj.coverage_id != "":
         try:
@@ -122,7 +126,7 @@ def core_to_doc_coverage_selector(
                 id=dataclass_obj.coverage_id
             )
         except Exception as e:
-            log_info(f"Failed to get coverage from database: {e}")
+            log_info("Failed to get coverage from database")
             handle_get_document_error(e)
     try:
         cs_doc = CoverageSelectorDocument(
@@ -133,7 +137,7 @@ def core_to_doc_coverage_selector(
             coverage=coverage if dataclass_obj.coverage_id != "" else None,
         )
     except Exception as e:
-        log_info(f"Failed to convert CoverageSelector to CoverageSelectorDocument: {e}")
+        log_info("Failed to convert CoverageSelector to CoverageSelectorDocument")
         handle_create_document_error(e)
     return cs_doc
 
@@ -151,6 +155,6 @@ def doc_to_core_coverage_selector(
             coverage_id=str(doc_obj.coverage.id) if doc_obj.coverage else "",
         )
     except Exception as e:
-        log_info(f"Failed to convert CoverageSelectorDocument to CoverageSelector: {e}")
+        log_info("Failed to convert CoverageSelectorDocument to CoverageSelector")
         handle_create_core_object_error(e)
     return coverage_selector

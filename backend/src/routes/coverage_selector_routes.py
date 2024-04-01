@@ -7,8 +7,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.coverage import CoverageSelector
+from errors import (
+    MessageTypeError,
+    NotAuthorizedError,
+    handle_create_core_object_error,
+    handle_message_errors,
+    handle_routes_errors,
+)
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
+from logger import log_info
 from routes.api_model import CoverageSelectorMessage
 from scripts.setup_database import coverage_selector_db
 
@@ -21,16 +29,20 @@ async def create_coverage_selector(
     coverage_selector: CoverageSelectorMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> CoverageSelectorMessage:
-    if not await authz_check(
-        session.get_user_id(), "create-coverage-selector", "team", team_id
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="You do not have permission to create a coverage selector",
-        )
-    cs_data = api_msg_to_coverage_selector(coverage_selector)
-    cs_created = coverage_selector_db.create_coverage_selector(cs_data)
-    return coverage_selector_to_api_msg(cs_created)
+    try:
+        if not await authz_check(
+            session.get_user_id(), "create-coverage-selector", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to create a coverage selector"
+            )
+        cs_data = msg_to_core_coverage_selector(coverage_selector)
+        cs_created = coverage_selector_db.create_coverage_selector(cs_data)
+        response = core_to_msg_coverage_selector(cs_created)
+    except Exception as e:
+        log_info("Failed to create coverage selector")
+        handle_routes_errors(e)
+    return response
 
 
 @router.get("/coverage-selectors/teams/{team_id}")
@@ -38,15 +50,19 @@ async def get_coverage_selectors(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[CoverageSelectorMessage]:
-    if not await authz_check(
-        session.get_user_id(), "read-coverage-selectors", "team", team_id
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="You do not have permission to get coverage selectors",
-        )
-    coverage_selectors = coverage_selector_db.get_coverage_selectors(team_id)
-    return [coverage_selector_to_api_msg(w) for w in coverage_selectors]
+    try:
+        if not await authz_check(
+            session.get_user_id(), "read-coverage-selectors", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to get coverage selectors"
+            )
+        coverage_selectors = coverage_selector_db.get_coverage_selectors(team_id)
+        response = [core_to_msg_coverage_selector(w) for w in coverage_selectors]
+    except Exception as e:
+        log_info("Failed to get coverage selectors")
+        handle_routes_errors(e)
+    return response
 
 
 @router.put("/coverage-selectors/{coverage_selector_id}/teams/{team_id}")
@@ -56,23 +72,29 @@ async def update_coverage_selector(
     coverage_selector_api: CoverageSelectorMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> CoverageSelectorMessage:
-    if not await authz_check(
-        session.get_user_id(), "update-coverage-selector", "team", team_id
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="You do not have permission to update a coverage selector",
+    try:
+        if not await authz_check(
+            session.get_user_id(), "update-coverage-selector", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update a coverage selector"
+            )
+        existing_coverage_selector = coverage_selector_db.get_coverage_selector_by_id(
+            coverage_selector_id
         )
-    existing_coverage_selector = coverage_selector_db.get_coverage_selector_by_id(
-        coverage_selector_id
-    )
-    if not existing_coverage_selector:
-        raise HTTPException(status_code=404, detail="CoverageSelector does not exist")
-    coverage_selector_data = api_msg_to_coverage_selector(coverage_selector_api)
-    updated_coverage_selector = coverage_selector_db.update_coverage_selector(
-        coverage_selector_data
-    )
-    return coverage_selector_to_api_msg(updated_coverage_selector)
+        if not existing_coverage_selector:
+            raise HTTPException(
+                status_code=404, detail="CoverageSelector does not exist"
+            )
+        coverage_selector_data = msg_to_core_coverage_selector(coverage_selector_api)
+        updated_coverage_selector = coverage_selector_db.update_coverage_selector(
+            coverage_selector_data
+        )
+        response = core_to_msg_coverage_selector(updated_coverage_selector)
+    except Exception as e:
+        log_info("Failed to update coverage selector")
+        handle_routes_errors(e)
+    return response
 
 
 @router.delete("/coverage-selectors/{coverage_selector_id}/teams/{team_id}")
@@ -81,27 +103,42 @@ async def delete_coverage_selector(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
-    if not await authz_check(
-        session.get_user_id(), "delete-coverage-selector", "team", team_id
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="You do not have permission to delete a coverage selector",
-        )
-    coverage_selector_db.delete_coverage_selector(coverage_selector_id)
+    try:
+        if not await authz_check(
+            session.get_user_id(), "delete-coverage-selector", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to delete a coverage selector"
+            )
+        coverage_selector_db.delete_coverage_selector(coverage_selector_id)
+    except Exception as e:
+        log_info("Failed to delete coverage selector")
+        handle_routes_errors(e)
     return {"message": "CoverageSelector deleted"}
 
 
-def coverage_selector_to_api_msg(
+# Mappers
+# core to message
+def core_to_msg_coverage_selector(
     coverage_selector: CoverageSelector,
 ) -> CoverageSelectorMessage:
-    data = asdict(coverage_selector)
+    try:
+        data = asdict(coverage_selector)
+    except Exception as e:
+        log_info("Failed to convert CoverageSelector to dictionary")
+        raise MessageTypeError(str(e)) from e
     as_dict = humps.camelize(data)
     validator = TypeAdapter(CoverageSelectorMessage)
-    return validator.validate_python(as_dict)
+    try:
+        cs_msg = validator.validate_python(as_dict)
+    except Exception as e:
+        log_info("Failed to convert CoverageSelector to CoverageSelectorMessage")
+        handle_message_errors(e)
+    return cs_msg
 
 
-def api_msg_to_coverage_selector(
+# message to core
+def msg_to_core_coverage_selector(
     msg: CoverageSelectorMessage,
 ) -> CoverageSelector:
     data_snake = humps.decamelize(msg.model_dump())
@@ -111,4 +148,9 @@ def api_msg_to_coverage_selector(
     data_snake["end_date"] = datetime.combine(
         data_snake["end_date"], datetime.min.time()
     )
-    return CoverageSelector(**data_snake)
+    try:
+        coverage_selector = CoverageSelector(**data_snake)
+    except Exception as e:
+        log_info("Failed to create CoverageSelector from CoverageSelectorMessage")
+        handle_create_core_object_error(e)
+    return coverage_selector
