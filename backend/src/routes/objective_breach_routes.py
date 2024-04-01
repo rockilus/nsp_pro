@@ -2,12 +2,20 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
 from core.schedule import ObjectiveBreach, Variable
+from errors import (
+    MessageTypeError,
+    NotAuthorizedError,
+    handle_create_core_object_error,
+    handle_message_errors,
+    handle_routes_errors,
+)
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
+from logger import log_info
 from routes.api_model import ObjectiveBreachMessage, VariableMessage
 from scripts.setup_database import objective_breach_db, schedule_db
 
@@ -19,42 +27,44 @@ async def get_objective_breaches(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ObjectiveBreachMessage]:
-    if not await authz_check(
-        session.get_user_id(), "read-objective-breaches", "team", team_id
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="You do not have permission to get objective breaches",
-        )
-    team_schedules = schedule_db.get_schedules(team_id)
-    objective_breaches = objective_breach_db.get_objective_breaches(team_schedules)
-    return [objective_breach_to_api_msg(a) for a in objective_breaches]
+    try:
+        if not await authz_check(
+            session.get_user_id(), "read-objective-breaches", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to get objective breaches",
+            )
+        team_schedules = schedule_db.get_schedules(team_id)
+        objective_breaches = objective_breach_db.get_objective_breaches(team_schedules)
+        response = [core_to_msg_objective_breach(a) for a in objective_breaches]
+    except Exception as e:
+        log_info("Failed to get objective breaches")
+        handle_routes_errors(e)
+    return response
 
 
 @router.put("/objective_breaches/{objective_breach_id}/teams/{team_id}")
 async def update_objective_breach(
-    objective_breach_id: str,
     team_id: str,
     objective_breach_api: ObjectiveBreachMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ObjectiveBreachMessage:
-    if not await authz_check(
-        session.get_user_id(), "update-objective-breach", "team", team_id
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="You do not have permission to update objective breaches",
+    try:
+        if not await authz_check(
+            session.get_user_id(), "update-objective-breach", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update objective breaches",
+            )
+        objective_breach_data = msg_to_core_objective_breach(objective_breach_api)
+        updated_objective_breach = objective_breach_db.update_objective_breach(
+            objective_breach_data
         )
-    existing_objective_breach = objective_breach_db.get_objective_breach_by_id(
-        objective_breach_id
-    )
-    if not existing_objective_breach:
-        raise HTTPException(status_code=404, detail="ObjectiveBreach does not exist")
-    objective_breach_data = api_msg_to_objective_breach(objective_breach_api)
-    updated_objective_breach = objective_breach_db.update_objective_breach(
-        objective_breach_data
-    )
-    return objective_breach_to_api_msg(updated_objective_breach)
+        response = core_to_msg_objective_breach(updated_objective_breach)
+    except Exception as e:
+        log_info("Failed to update objective breach")
+        handle_routes_errors(e)
+    return response
 
 
 @router.delete("/objective_breaches/{objective_breach_id}/teams/{team_id}")
@@ -63,34 +73,59 @@ async def delete_objective_breach(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
-    if not await authz_check(
-        session.get_user_id(), "delete-objective-breach", "team", team_id
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="You do not have permission to delete objective breaches",
-        )
-    objective_breach_db.delete_objective_breach(objective_breach_id)
+    try:
+        if not await authz_check(
+            session.get_user_id(), "delete-objective-breach", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to delete objective breaches",
+            )
+        objective_breach_db.delete_objective_breach(objective_breach_id)
+    except Exception as e:
+        log_info("Failed to delete objective breach")
+        handle_routes_errors(e)
     return {"message": "ObjectiveBreach deleted"}
 
 
-def objective_breach_to_api_msg(
+# Mappers
+# core to message
+def core_to_msg_objective_breach(
     objective_breach: ObjectiveBreach,
 ) -> ObjectiveBreachMessage:
-    data = asdict(objective_breach)
+    try:
+        data = asdict(objective_breach)
+    except Exception as e:
+        log_info("Failed to convert ObjectiveBreach to dictionary")
+        raise MessageTypeError(str(e)) from e
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ObjectiveBreachMessage)
-    return validator.validate_python(as_dict)
+    try:
+        ob_msg = validator.validate_python(as_dict)
+    except Exception as e:
+        log_info("Failed to convert ObjectiveBreach to ObjectiveBreachMessage")
+        handle_message_errors(e)
+    return ob_msg
 
 
-def api_msg_to_variable(msg: VariableMessage) -> Variable:
+# message to core
+def msg_to_core_variable(msg: VariableMessage) -> Variable:
     data_snake = humps.decamelize(msg.model_dump())
-    return Variable(**data_snake)
+    try:
+        variable = Variable(**data_snake)
+    except Exception as e:
+        log_info("Failed to convert VariableMessage to Variable")
+        handle_create_core_object_error(e)
+    return variable
 
 
-def api_msg_to_objective_breach(
+def msg_to_core_objective_breach(
     msg: ObjectiveBreachMessage,
 ) -> ObjectiveBreach:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["variables"] = [api_msg_to_variable(v) for v in msg.variables]
-    return ObjectiveBreach(**data_snake)
+    data_snake["variables"] = [msg_to_core_variable(v) for v in msg.variables]
+    try:
+        objective_breach = ObjectiveBreach(**data_snake)
+    except Exception as e:
+        log_info("Failed to convert ObjectiveBreachMessage to ObjectiveBreach")
+        handle_create_core_object_error(e)
+    return objective_breach

@@ -8,8 +8,10 @@ import {
   toObjectiveBreachT,
 } from "./objectiveBreachStore";
 import { useStatStore } from "./statStore";
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { ScheduleT, SolutionT, ValidateT } from "../components/Schedule/types";
+import { use } from "react";
 
 dayjs.extend(utc);
 
@@ -72,14 +74,26 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
         `${apiUrlSchedule}/teams/${teamId}`,
         options
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to fetch schedules: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch schedules: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const schedules: ScheduleT[] = data.map(toScheduleT);
+      const schedules: ScheduleT[] = responseData.map(toScheduleT);
       set({ schedules });
     } catch (error) {
       console.error("Failed to fetch schedule:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch schedules, please try again later",
+          "error"
+        );
     }
   },
 
@@ -95,16 +109,28 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
           body: JSON.stringify(schedule),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to add schedule: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add schedule: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newSchedule: ScheduleT = toScheduleT(data);
+      const newSchedule: ScheduleT = toScheduleT(responseData);
       set((state) => ({
         schedules: [...state.schedules, newSchedule],
       }));
     } catch (error) {
-      throw Error(`Failed to add schedule: ${error}`);
+      console.error("Failed to add schedule:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to add schedule, please try again later",
+          "error"
+        );
     }
   },
 
@@ -119,11 +145,17 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
           },
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to add schedule: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to solve schedule: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newSolution: SolutionT = toSolutionT(data);
+      const newSolution: SolutionT = toSolutionT(responseData);
       set((state) => ({
         schedules: state.schedules.map((s) =>
           s.id === newSolution.schedule.id ? newSolution.schedule : s
@@ -137,7 +169,13 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
         .updateObjectiveBreachStore(newSolution.objectiveBreaches);
       useStatStore.getState().updateStatStore(newSolution.stats);
     } catch (error) {
-      throw Error(`Failed to add schedule: ${error}`);
+      console.error("Failed to solve schedule:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to solve schedule, please try again later",
+          "error"
+        );
     }
   },
 
@@ -153,11 +191,17 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
           body: JSON.stringify(updatedSchedule),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to update schedule: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update schedule: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newSchedule: ScheduleT = toScheduleT(data);
+      const newSchedule: ScheduleT = toScheduleT(responseData);
       set((state) => ({
         schedules: state.schedules.map((s) =>
           s.id === newSchedule.id ? newSchedule : s
@@ -165,6 +209,12 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to update schedule:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update schedule, please try again later",
+          "error"
+        );
     }
   },
 
@@ -179,11 +229,17 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
           },
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to validate schedule: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to validate schedule: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newValidate: ValidateT = toValidateT(data);
+      const newValidate: ValidateT = toValidateT(responseData);
       set((state) => ({
         schedules: state.schedules.map((s) =>
           s.id === newValidate.schedule.id ? newValidate.schedule : s
@@ -194,6 +250,12 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
         .updateAssignmentStore(scheduleId, newValidate.assignments);
     } catch (error) {
       console.error("Failed to validate schedule:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to validate schedule, please try again later",
+          "error"
+        );
     }
   },
 
@@ -205,8 +267,15 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
           method: "DELETE",
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to delete schedule: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to delete schedule: " + responseData.detail,
+            "error"
+          );
+        return;
       }
       set((state) => ({
         schedules: state.schedules.filter((s) => s.id !== scheduleId),
@@ -218,6 +287,12 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       useStatStore.getState().deleteSStore();
     } catch (error) {
       console.error("Failed to delete schedule:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to delete schedule, please try again later",
+          "error"
+        );
     }
   },
 }));

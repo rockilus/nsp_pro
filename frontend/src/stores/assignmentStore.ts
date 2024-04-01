@@ -1,6 +1,8 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { AssignmentT } from "../components/Schedule/types";
 
@@ -45,14 +47,26 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
         `${apiUrlAssignment}/teams/${teamId}`,
         options
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to fetch assignments");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch assignments: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const assignments: AssignmentT[] = data.map(toAssignmentT);
+      const assignments: AssignmentT[] = responseData.map(toAssignmentT);
       set({ assignments });
     } catch (error) {
       console.error("Failed to fetch assignment:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch assignments, please try again later",
+          "error"
+        );
     }
   },
 
@@ -65,16 +79,28 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
         },
         body: JSON.stringify(assignment),
       });
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to add assignment");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add assignment: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newAssignment: AssignmentT = toAssignmentT(data);
+      const newAssignment: AssignmentT = toAssignmentT(responseData);
       set((state) => ({
         assignments: [...state.assignments, newAssignment],
       }));
     } catch (error) {
-      throw Error(`Failed to add assignment: ${error}`);
+      console.error("Failed to add assignment:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to add assignment, please try again later",
+          "error"
+        );
     }
   },
 
@@ -99,11 +125,17 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
           body: JSON.stringify(updatedAssignment),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to update assignment");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update assignment: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newAssignment: AssignmentT = toAssignmentT(data);
+      const newAssignment: AssignmentT = toAssignmentT(responseData);
       set((state) => ({
         assignments: state.assignments.map((s) =>
           s.id === newAssignment.id ? newAssignment : s
@@ -111,6 +143,12 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to update assignment:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update assignment, please try again later",
+          "error"
+        );
     }
   },
 
@@ -122,14 +160,27 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
           method: "DELETE",
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to delete assignment");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to delete assignment: " + responseData.detail,
+            "error"
+          );
+        return;
       }
       set((state) => ({
         assignments: state.assignments.filter((s) => s.id !== assignmentId),
       }));
     } catch (error) {
       console.error("Failed to delete assignment:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to delete assignment, please try again later",
+          "error"
+        );
     }
   },
 

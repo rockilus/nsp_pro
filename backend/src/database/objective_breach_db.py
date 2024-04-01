@@ -33,7 +33,7 @@ class ObjectiveBreachDB:
         try:
             ob_saved = ob_doc.save()
         except Exception as e:
-            log_info(f"Failed to save objective breach to database: {e}")
+            log_info("Failed to save objective breach to database")
             handle_save_document_error(e)
         return doc_to_core_objective_breach(ob_saved)
 
@@ -47,7 +47,7 @@ class ObjectiveBreachDB:
                 schedule__in=s_docs
             )
         except Exception as e:
-            log_info(f"Failed to get objective breaches from database: {e}")
+            log_info("Failed to get objective breaches from database")
             handle_get_document_error(e)
         return [doc_to_core_objective_breach(ob) for ob in list(objective_breaches)]
 
@@ -58,7 +58,7 @@ class ObjectiveBreachDB:
                 id=objective_breach_id
             )
         except Exception as e:
-            log_info(f"Failed to get objective breach by id from database: {e}")
+            log_info("Failed to get objective breach by id from database")
             handle_get_document_error(e)
         return doc_to_core_objective_breach(objective_breach)
 
@@ -71,9 +71,7 @@ class ObjectiveBreachDB:
                 schedule=schedule_id
             )
         except Exception as e:
-            log_info(
-                f"Failed to get objective breaches by schedule id from database: {e}"
-            )
+            log_info("Failed to get objective breaches by schedule id from database")
             handle_get_document_error(e)
         return [doc_to_core_objective_breach(ob) for ob in list(objective_breaches)]
 
@@ -86,22 +84,26 @@ class ObjectiveBreachDB:
                 variables__worker=worker_id
             )
         except Exception as e:
-            log_info(
-                f"Failed to get objective breaches by worker id from database: {e}"
-            )
+            log_info("Failed to get objective breaches by worker id from database")
             handle_get_document_error(e)
         return [doc_to_core_objective_breach(ob) for ob in list(objective_breaches)]
 
     def update_objective_breach(
         self, objective_breach: ObjectiveBreach
     ) -> ObjectiveBreach:
-        document = core_to_doc_objective_breach(objective_breach)
+        ob_doc = core_to_doc_objective_breach(objective_breach)
         try:
-            document_saved = document.save()
+            # pylint: disable=no-member
+            ObjectiveBreachDocument.objects.get(id=ob_doc.id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to update objective breach: {e}")
+            log_info(f"Objective breach with id {ob_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
+            ob_saved = ob_doc.save()
+        except Exception as e:
+            log_info("Failed to update objective breach")
             handle_save_document_error(e)
-        return doc_to_core_objective_breach(document_saved)
+        return doc_to_core_objective_breach(ob_saved)
 
     def delete_objective_breach(self, objective_breach_id: str) -> None:
         try:
@@ -110,12 +112,12 @@ class ObjectiveBreachDB:
                 id=objective_breach_id
             )
         except Exception as e:
-            log_info(f"Failed to get objective breach by id to delete: {e}")
+            log_info("Failed to get objective breach by id to delete")
             handle_get_document_error(e)
         try:
             objective_breach.delete()
         except Exception as e:
-            log_info(f"Failed to delete objective breach: {e}")
+            log_info("Failed to delete objective breach")
             handle_delete_document_error(e)
 
     def delete_objective_breaches_by_schedule_id(self, schedule_id: str) -> None:
@@ -125,13 +127,13 @@ class ObjectiveBreachDB:
                 schedule=schedule_id
             )
         except Exception as e:
-            log_info(f"Failed to get objective breaches by schedule id to delete: {e}")
+            log_info("Failed to get objective breaches by schedule id to delete")
             handle_get_document_error(e)
         try:
             for ob in objective_breaches:
                 ob.delete()
         except Exception as e:
-            log_info(f"Failed to delete objective breaches: {e}")
+            log_info("Failed to delete objective breaches")
             handle_delete_document_error(e)
 
 
@@ -142,14 +144,14 @@ def core_to_doc_variable(dataclass_obj: Variable) -> VariableDocument:
         # pylint: disable=no-member, R0801
         worker = WorkerDocument.objects.get(id=dataclass_obj.worker_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get worker by id: {e}")
+        log_info("Failed to get worker by id")
         handle_get_document_error(e)
     # pylint: disable=R0801
     try:
         # pylint: disable=no-member
         shift = ShiftDocument.objects.get(id=dataclass_obj.shift_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get shift by id: {e}")
+        log_info("Failed to get shift by id")
         handle_get_document_error(e)
     # pylint: disable=R0801
     try:
@@ -163,7 +165,7 @@ def core_to_doc_variable(dataclass_obj: Variable) -> VariableDocument:
             shift=shift,
         )
     except Exception as e:
-        log_info(f"Failed to convert Variable to VariableDocument: {e}")
+        log_info("Failed to convert Variable to VariableDocument")
         handle_create_document_error(e)
     return v_doc
 
@@ -178,7 +180,7 @@ def core_to_doc_objective_breach(
             id=dataclass_obj.schedule_id
         )
     except Exception as e:
-        log_info(f"Failed to get schedule by id: {e}")
+        log_info("Failed to get schedule by id")
         handle_get_document_error(e)
     try:
         ob_doc = ObjectiveBreachDocument(
@@ -191,7 +193,7 @@ def core_to_doc_objective_breach(
             schedule=schedule,
         )
     except Exception as e:
-        log_info(f"Failed to convert ObjectiveBreach to ObjectiveBreachDocument: {e}")
+        log_info("Failed to convert ObjectiveBreach to ObjectiveBreachDocument")
         handle_create_document_error(e)
     return ob_doc
 
@@ -205,7 +207,7 @@ def doc_to_core_variable(doc_var: VariableDocument) -> Variable:
             shift_id=doc_var.shift.id,
         )
     except Exception as e:
-        log_info(f"Failed to convert VariableDocument to Variable: {e}")
+        log_info("Failed to convert VariableDocument to Variable")
         handle_create_core_object_error(e)
     return variable
 
@@ -224,6 +226,6 @@ def doc_to_core_objective_breach(
             schedule_id=doc_obj.schedule.id,
         )
     except Exception as e:
-        log_info(f"Failed to convert ObjectiveBreachDocument to ObjectiveBreach: {e}")
+        log_info("Failed to convert ObjectiveBreachDocument to ObjectiveBreach")
         handle_create_core_object_error(e)
     return objective_breach

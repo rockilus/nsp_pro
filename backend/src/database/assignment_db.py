@@ -141,6 +141,12 @@ class AssignmentDB:
     def update_assignment(self, assignment: Assignment) -> Assignment:
         a_doc = core_to_doc_assignment(assignment)
         try:
+            # pylint: disable=no-member
+            AssignmentDocument.objects.get(id=a_doc.id)  # type: ignore
+        except Exception as e:
+            log_info(f"Assignment with id {a_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
             a_saved = a_doc.save()
         except Exception as e:
             log_info("Failed to update assignment")
