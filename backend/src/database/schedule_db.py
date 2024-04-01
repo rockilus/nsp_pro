@@ -27,7 +27,7 @@ class ScheduleDB:
         try:
             s_saved = s_doc.save()
         except Exception as e:
-            log_info(f"Failed to save schedule to database: {e}")
+            log_info("Failed to save schedule to database")
             handle_save_document_error(e)
         return doc_to_core_schedule(s_saved)
 
@@ -36,7 +36,7 @@ class ScheduleDB:
             # pylint: disable=no-member
             schedules = ScheduleDocument.objects.filter(team=team_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get schedules from database: {e}")
+            log_info("Failed to get schedules from database")
             handle_get_document_error(e)
         return [doc_to_core_schedule(c) for c in list(schedules)]
 
@@ -45,7 +45,7 @@ class ScheduleDB:
             # pylint: disable=no-member
             schedule = ScheduleDocument.objects.get(id=schedule_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get schedule by id from database: {e}")
+            log_info("Failed to get schedule by id from database")
             handle_get_document_error(e)
         return doc_to_core_schedule(schedule)
 
@@ -60,16 +60,22 @@ class ScheduleDB:
                 team=team_id,
             )
         except Exception as e:
-            log_info(f"Failed to get schedules from database: {e}")
+            log_info("Failed to get schedules from database")
             handle_get_document_error(e)
         return [doc_to_core_schedule(s) for s in list(schedules)]
 
     def update_schedule(self, schedule: Schedule) -> Schedule:
         s_doc = core_to_doc_schedule(schedule)
         try:
+            # pylint: disable=no-member
+            ScheduleDocument.objects.get(id=s_doc.id)  # type: ignore
+        except Exception as e:
+            log_info(f"Schedule with id {s_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
             s_saved = s_doc.save()
         except Exception as e:
-            log_info(f"Failed to update schedule to database: {e}")
+            log_info("Failed to update schedule to database")
             handle_save_document_error(e)
         return doc_to_core_schedule(s_saved)
 
@@ -78,12 +84,12 @@ class ScheduleDB:
             # pylint: disable=no-member
             schedule = ScheduleDocument.objects.get(id=schedule_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get schedule by id to delete from database: {e}")
+            log_info("Failed to get schedule by id to delete from database")
             handle_get_document_error(e)
         try:
             schedule.delete()
         except Exception as e:
-            log_info(f"Failed to delete schedule from database: {e}")
+            log_info("Failed to delete schedule from database")
             handle_delete_document_error(e)
 
 
@@ -94,7 +100,7 @@ def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get team by id for schedule: {e}")
+        log_info("Failed to get team by id for schedule")
         handle_get_document_error(e)
     try:
         s_doc = ScheduleDocument(
@@ -115,7 +121,7 @@ def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
             missing_coverage_dates=dataclass_obj.missing_coverage_dates,
         )
     except Exception as e:
-        log_info(f"Failed to convert Schedule to ScheduleDocument: {e}")
+        log_info("Failed to convert Schedule to ScheduleDocument")
         handle_create_document_error(e)
     return s_doc
 
@@ -137,6 +143,6 @@ def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
             ],
         )
     except Exception as e:
-        log_info(f"Failed to convert ScheduleDocument to Schedule: {e}")
+        log_info("Failed to convert ScheduleDocument to Schedule")
         handle_create_core_object_error(e)
     return schedule

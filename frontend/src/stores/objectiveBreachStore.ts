@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
+// Types
 import { ObjectiveBreachT, VariableT } from "../components/Schedule/types";
 
 dayjs.extend(utc);
@@ -58,15 +60,27 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
           `${apiUrlObjectiveBreach}/teams/${teamId}`,
           options
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to fetch objective breaches: " + responseData.detail,
+              "error"
+            );
+          return;
         }
-        const data = await response.json();
         const objectiveBreaches: ObjectiveBreachT[] =
-          data.map(toObjectiveBreachT);
+          responseData.map(toObjectiveBreachT);
         set({ objectiveBreaches });
       } catch (error) {
         console.error("Failed to fetch objectiveBreach:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch objective breaches, please try again later",
+            "error"
+          );
       }
     },
 
@@ -82,16 +96,29 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
             body: JSON.stringify(objectiveBreach),
           }
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to add objective breach: " + responseData.detail,
+              "error"
+            );
+          return;
         }
-        const data = await response.json();
-        const newObjectiveBreach: ObjectiveBreachT = toObjectiveBreachT(data);
+        const newObjectiveBreach: ObjectiveBreachT =
+          toObjectiveBreachT(responseData);
         set((state) => ({
           objectiveBreaches: [...state.objectiveBreaches, newObjectiveBreach],
         }));
       } catch (error) {
-        throw Error(`Failed to add objectiveBreach: ${error}`);
+        console.error("Failed to add objectiveBreach:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add objective breach, please try again later",
+            "error"
+          );
       }
     },
 
@@ -113,11 +140,18 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
             body: JSON.stringify(updatedObjectiveBreach),
           }
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to update objective breach: " + responseData.detail,
+              "error"
+            );
+          return;
         }
-        const data = await response.json();
-        const newObjectiveBreach: ObjectiveBreachT = toObjectiveBreachT(data);
+        const newObjectiveBreach: ObjectiveBreachT =
+          toObjectiveBreachT(responseData);
         set((state) => ({
           objectiveBreaches: state.objectiveBreaches.map((s) =>
             s.id === newObjectiveBreach.id ? newObjectiveBreach : s
@@ -125,6 +159,12 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
         }));
       } catch (error) {
         console.error("Failed to update objectiveBreach:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update objective breach, please try again later",
+            "error"
+          );
       }
     },
 
@@ -136,8 +176,15 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
             method: "DELETE",
           }
         );
+        const responseData = await response.json();
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          useSnackBarStore
+            .getState()
+            .updateSnackBar(
+              "Failed to delete objective breach: " + responseData.detail,
+              "error"
+            );
+          return;
         }
         set((state) => ({
           objectiveBreaches: state.objectiveBreaches.filter(
@@ -146,6 +193,12 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
         }));
       } catch (error) {
         console.error("Failed to delete objectiveBreach:", error);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to delete objective breach, please try again later",
+            "error"
+          );
       }
     },
 
