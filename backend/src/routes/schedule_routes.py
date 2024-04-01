@@ -26,7 +26,7 @@ from routes.api_model import (
 )
 from routes.assignment_routes import core_to_msg_assignment
 from routes.objective_breach_routes import core_to_msg_objective_breach
-from routes.stats_options_routes import stat_to_api_msg
+from routes.stats_options_routes import core_to_msg_stat
 from scripts.setup_database import (
     assignment_db,
     constraint_db,
@@ -213,7 +213,7 @@ def core_to_msg_solution(
     data["objective_breaches"] = [
         core_to_msg_objective_breach(ob) for ob in objective_breaches
     ]
-    data["stats"] = [stat_to_api_msg(s) for s in stats]
+    data["stats"] = [core_to_msg_stat(s) for s in stats]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(SolutionMessage)
     try:

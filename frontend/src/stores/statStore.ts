@@ -1,6 +1,8 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { StatT } from "../components/Schedule/types";
 
@@ -37,13 +39,26 @@ export const useStatStore = create<StatStateT>()((set) => ({
     };
     try {
       const response = await fetch(apiUrlStat, options);
-      const data = await response.json();
-      console.log("data", data);
-
-      const stats: StatT[] = data.map(toStatT);
+      const responseData = await response.json();
+      if (!response.ok) {
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch stats: " + responseData.detail,
+            "error"
+          );
+        return;
+      }
+      const stats: StatT[] = responseData.map(toStatT);
       set({ stats });
     } catch (error) {
       console.error("Failed to fetch stat:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch stats, please try again later",
+          "error"
+        );
     }
   },
 
@@ -56,13 +71,25 @@ export const useStatStore = create<StatStateT>()((set) => ({
         },
         body: JSON.stringify(stat),
       });
-      const data = await response.json();
-      const newStat: StatT = toStatT(data);
+      const responseData = await response.json();
+      if (!response.ok) {
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add stat: " + responseData.detail,
+            "error"
+          );
+        return;
+      }
+      const newStat: StatT = toStatT(responseData);
       set((state) => ({
         stats: [...state.stats, newStat],
       }));
     } catch (error) {
-      throw Error(`Failed to add stat: ${error}`);
+      console.error("Failed to add stat:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar("Failed to add stat, please try again later", "error");
     }
   },
 
