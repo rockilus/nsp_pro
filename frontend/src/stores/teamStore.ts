@@ -1,4 +1,6 @@
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { TeamT } from "../containers/types";
 
@@ -20,12 +22,26 @@ export const useTeamStore = create<TeamStateT>()((set) => ({
     };
     try {
       const response = await fetch(apiUrlTeam, options);
-      if (response.ok) {
-        const teams: TeamT[] = await response.json();
-        set({ teams: teams });
+      const responseData = await response.json();
+      if (!response.ok) {
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch teams: " + responseData.detail,
+            "error"
+          );
+        return;
       }
+      const teams: TeamT[] = await response.json();
+      set({ teams: teams });
     } catch (error) {
       console.error("Failed to fetch teams:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch teams, please try again later",
+          "error"
+        );
     }
   },
 

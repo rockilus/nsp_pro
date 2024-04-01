@@ -5,8 +5,17 @@ from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
 from core.team import Team
+from errors import NotAuthorizedError  # MessageTypeError,
+from errors import (
+    handle_create_core_object_error,
+    handle_message_errors,
+    handle_routes_errors,
+)
 from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
+from logger import log_info
 from routes.api_model import TeamMessage
+from scripts.setup_database import team_db
 from services.team_services import get_user_teams
 
 router = APIRouter()
@@ -25,21 +34,31 @@ router = APIRouter()
 async def get_teams(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[TeamMessage]:
-    teams = await get_user_teams(session.get_user_id())
-    return [team_to_api_msg(t) for t in teams]
+    try:
+        teams = await get_user_teams(session.get_user_id())
+        response = [core_to_msg_team(t) for t in teams]
+    except Exception as e:
+        log_info("Failed to get teams")
+        handle_routes_errors(e)
+    return response
 
 
-# @router.put("/teams/{team_id}")
-# def update_team(team_id: str, team: TeamMessage) -> TeamMessage:
-#     existing_team = team_db.get_team_by_id(team_id)
-#     if not existing_team:
-#         raise HTTPException(status_code=404, detail="Team does not exist")
-#     team_data = api_msg_to_team(team)
-#     updated_team = team_db.update_team(team_data)
-#     team_properties = team_property_db.get_team_properties_by_team_id(
-#         updated_team.id
-#     )
-#     return team_to_api_msg(updated_team, team_properties)
+@router.put("/teams/{team_id}")
+def update_team(
+    team_id: str,
+    team: TeamMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> TeamMessage:
+    try:
+        if not authz_check(session.get_user_id(), "update-team", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to update a team")
+        team_data = msg_to_core_team(team)
+        updated_team = team_db.update_team(team_data)
+        response = core_to_msg_team(updated_team)
+    except Exception as e:
+        log_info("Failed to update team")
+        handle_routes_errors(e)
+    return response
 
 
 # @router.delete("/teams/{team_id}")
@@ -48,14 +67,27 @@ async def get_teams(
 #     return {"message": "Team deleted"}
 
 
-def team_to_api_msg(team: Team) -> TeamMessage:
+# Mappers
+# core to message
+def core_to_msg_team(team: Team) -> TeamMessage:
     # data = asdict(team)
     data = {"id": team.id}
     as_dict = humps.camelize(data)
     validator = TypeAdapter(TeamMessage)
-    return validator.validate_python(as_dict)
+    try:
+        t_msg = validator.validate_python(as_dict)
+    except Exception as e:
+        log_info("Failed to convert Team to TeamMessage")
+        handle_message_errors(e)
+    return t_msg
 
 
-def api_msg_to_team(msg: TeamMessage) -> Team:
+# message to core
+def msg_to_core_team(msg: TeamMessage) -> Team:
     data_snake = humps.decamelize(msg.model_dump())
-    return Team(**data_snake)
+    try:
+        team = Team(**data_snake)
+    except Exception as e:
+        log_info("Failed to convert TeamMessage to Team")
+        handle_create_core_object_error(e)
+    return team

@@ -26,7 +26,7 @@ class TeamDB:
         try:
             team_saved = team_doc.save()
         except Exception as e:
-            log_info(f"Failed to save team to database: {e}")
+            log_info("Failed to save team to database")
             handle_save_document_error(e)
         return doc_to_core_team(team_saved)
 
@@ -35,7 +35,7 @@ class TeamDB:
             # pylint: disable=no-member
             teams = TeamDocument.objects.all()  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get teams from database: {e}")
+            log_info("Failed to get teams from database")
             handle_get_document_error(e)
         return [doc_to_core_team(t) for t in list(teams)]
 
@@ -44,30 +44,36 @@ class TeamDB:
             # pylint: disable=no-member
             team = TeamDocument.objects.get(id=team_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get team by id from database: {e}")
+            log_info("Failed to get team by id from database")
             handle_get_document_error(e)
         return doc_to_core_team(team)
 
     def update_team(self, team: Team) -> Team:
-        team_doc = core_to_doc_team(team)
+        t_doc = core_to_doc_team(team)
         try:
-            team_saved = team_doc.save()
+            # pylint: disable=no-member
+            TeamDocument.objects.get(id=team.id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to update team to database: {e}")
+            log_info(f"Team with id {t_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
+            t_saved = t_doc.save()
+        except Exception as e:
+            log_info("Failed to update team to database")
             handle_save_document_error(e)
-        return doc_to_core_team(team_saved)
+        return doc_to_core_team(t_saved)
 
     def delete_team(self, team_id: str) -> None:
         try:
             # pylint: disable=no-member
             team = TeamDocument.objects.get(id=team_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get team by id to delete from database: {e}")
+            log_info("Failed to get team by id to delete from database")
             handle_get_document_error(e)
         try:
             team.delete()
         except Exception as e:
-            log_info(f"Failed to delete team from database: {e}")
+            log_info("Failed to delete team from database")
             handle_delete_document_error(e)
 
 
@@ -84,7 +90,7 @@ def core_to_doc_team(dataclass_obj: Team) -> TeamDocument:
             else []
         )
     except Exception as e:
-        log_info(f"Failed to get users by ids from database: {e}")
+        log_info("Failed to get users by ids from database")
         handle_get_document_error(e)
     try:
         # pylint: disable=no-member
@@ -96,7 +102,7 @@ def core_to_doc_team(dataclass_obj: Team) -> TeamDocument:
             else []
         )
     except Exception as e:
-        log_info(f"Failed to get users by ids from database: {e}")
+        log_info("Failed to get users by ids from database")
         handle_get_document_error(e)
     try:
         t_doc = TeamDocument(
@@ -105,7 +111,7 @@ def core_to_doc_team(dataclass_obj: Team) -> TeamDocument:
             team_leaders=team_leaders,
         )
     except Exception as e:
-        log_info(f"Failed to convert Team to TeamDocument: {e}")
+        log_info("Failed to convert Team to TeamDocument")
         handle_create_document_error(e)
     return t_doc
 
@@ -119,6 +125,6 @@ def doc_to_core_team(doc_obj: TeamDocument) -> Team:
             team_leaders=[str(u.id) for u in doc_obj.team_leaders],
         )
     except Exception as e:
-        log_info(f"Failed to convert TeamDocument to Team: {e}")
+        log_info("Failed to convert TeamDocument to Team")
         handle_create_core_object_error(e)
     return team

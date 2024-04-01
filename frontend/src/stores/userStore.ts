@@ -1,8 +1,10 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
-import { UserSignInT, UserSignUpT, UserT } from "../components/Login/types";
+import { UserT } from "../components/Login/types";
 
 dayjs.extend(utc);
 
@@ -11,10 +13,7 @@ const apiUrlUser = process.env.NEXT_PUBLIC_API_URL + "/user";
 type UserStateT = {
   user: UserT | null;
   fetchUser: () => void;
-  signUp: (userSignUp: UserSignUpT) => void;
-  signIn: (userSignIn: UserSignInT) => void;
-  // updateUser: (updatedUser: UserT) => void;
-  signOut: () => void;
+  updateUser: (updatedUser: UserT) => void;
   // deleteUser: (id: string) => void;
 };
 
@@ -28,86 +27,60 @@ export const useUserStore = create<UserStateT>()((set) => ({
     };
     try {
       const response = await fetch(`${apiUrlUser}/me`, options);
-      if (response.ok) {
-        const user: UserT = await response.json();
-        set({ user: user });
+      const responseData = await response.json();
+      if (!response.ok) {
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch user: " + responseData.detail,
+            "error"
+          );
+        return;
       }
+      const user: UserT = await response.json();
+      set({ user: user });
     } catch (error) {
       console.error("Failed to fetch user:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch user, please try again later",
+          "error"
+        );
     }
   },
 
-  signUp: async (userSignUp) => {
+  updateUser: async (updatedUser) => {
     try {
-      const response = await fetch(`${apiUrlUser}/signup`, {
-        method: "POST",
+      const response = await fetch(`${apiUrlUser}/${updatedUser.id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(userSignUp),
+        body: JSON.stringify(updatedUser),
       });
-      if (response.ok) {
-        const newUser: UserT = await response.json();
-        set({ user: newUser });
+      const responseData = await response.json();
+      if (!response.ok) {
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update user: " + responseData.detail,
+            "error"
+          );
+        return;
       }
+      const newUser: UserT = responseData;
+      set((state) => ({
+        user: newUser,
+      }));
     } catch (error) {
-      throw Error(`Failed to add user: ${error}`);
-    }
-  },
-
-  signIn: async (userSignIn) => {
-    try {
-      const response = await fetch(`${apiUrlUser}/token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        credentials: "include",
-        body: new URLSearchParams({
-          grant_type: userSignIn.grantType,
-          username: userSignIn.username,
-          password: userSignIn.password,
-        }).toString(),
-      });
-      if (response.ok) {
-        const data: UserT = await response.json();
-        set({ user: data });
-      }
-    } catch (error) {
-      throw new Error("Invalid username or password");
-    }
-  },
-
-  // updateUser: async (updatedUser) => {
-  //   try {
-  //     const response = await fetch(`${apiUrlUser}/${updatedUser.id}`, {
-  //       method: "PUT",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(updatedUser),
-  //     });
-  //     const data = await response.json();
-  //     const newUser: UserT = toUserT(data);
-  //     set((state) => ({
-  //       user: state.user.map((s) => (s.id === newUser.id ? newUser : s)),
-  //     }));
-  //   } catch (error) {
-  //     console.error("Failed to update user:", error);
-  //   }
-  // },
-
-  signOut: async () => {
-    try {
-      const response = await fetch(`${apiUrlUser}/signout`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (response.ok) {
-        set({ user: null });
-      } else {
-        throw new Error("Failed to sign out");
-      }
-    } catch (error) {
-      console.log("Failed to sign out:", error);
+      console.error("Failed to update user:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update user, please try again later",
+          "error"
+        );
     }
   },
 
