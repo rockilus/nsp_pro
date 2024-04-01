@@ -26,7 +26,7 @@ class StatsOptionsDB:
         try:
             so_saved = so_doc.save()
         except Exception as e:
-            log_info(f"Failed to save stats options to database: {e}")
+            log_info("Failed to save stats options to database")
             handle_save_document_error(e)
         return doc_to_core_stats_options(so_saved)
 
@@ -37,7 +37,7 @@ class StatsOptionsDB:
                 team=team_id
             ).first()
         except Exception as e:
-            log_info(f"Failed to get stats options from database: {e}")
+            log_info("Failed to get stats options from database")
             handle_get_document_error(e)
         return doc_to_core_stats_options(stats_options) if stats_options else None
 
@@ -48,18 +48,24 @@ class StatsOptionsDB:
                 id=stats_options_id
             )
         except Exception as e:
-            log_info(f"Failed to get stats options by id from database: {e}")
+            log_info("Failed to get stats options by id from database")
             handle_get_document_error(e)
         return doc_to_core_stats_options(stats_options)
 
     def update_stats_options(self, stats_options: StatsOptions) -> StatsOptions:
-        document = core_to_doc_stats_options(stats_options)
+        so_doc = core_to_doc_stats_options(stats_options)
         try:
-            document_saved = document.save()
+            # pylint: disable=no-member
+            StatsOptionsDocument.objects.get(id=so_doc.id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to update stats options to database: {e}")
+            log_info(f"Stats options with id {so_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
+            so_saved = so_doc.save()
+        except Exception as e:
+            log_info("Failed to update stats options to database")
             handle_save_document_error(e)
-        return doc_to_core_stats_options(document_saved)
+        return doc_to_core_stats_options(so_saved)
 
     def delete_stats_options(self, stats_options_id: str) -> None:
         try:
@@ -68,12 +74,12 @@ class StatsOptionsDB:
                 id=stats_options_id
             )
         except Exception as e:
-            log_info(f"Failed to get stats options by id to delete from database: {e}")
+            log_info("Failed to get stats options by id to delete from database")
             handle_get_document_error(e)
         try:
             stats_options.delete()
         except Exception as e:
-            log_info(f"Failed to delete stats options from database: {e}")
+            log_info("Failed to delete stats options from database")
             handle_delete_document_error(e)
 
 
@@ -87,7 +93,7 @@ def core_to_doc_stats_options(
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get team by id: {e}")
+        log_info("Failed to get team by id")
         handle_get_document_error(e)
     try:
         so_doc = StatsOptionsDocument(
@@ -105,7 +111,7 @@ def core_to_doc_stats_options(
             ),
         )
     except Exception as e:
-        log_info(f"Failed to convert StatsOptions to StatsOptionsDocument: {e}")
+        log_info("Failed to convert StatsOptions to StatsOptionsDocument")
         handle_create_document_error(e)
     return so_doc
 
@@ -120,6 +126,6 @@ def doc_to_core_stats_options(doc_obj: StatsOptionsDocument) -> StatsOptions:
             end_date=doc_obj.end_date.date(),
         )
     except Exception as e:
-        log_info(f"Failed to convert StatsOptionsDocument to StatsOptions: {e}")
+        log_info("Failed to convert StatsOptionsDocument to StatsOptions")
         handle_create_core_object_error(e)
     return stats_options

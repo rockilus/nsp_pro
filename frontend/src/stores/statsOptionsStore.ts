@@ -3,6 +3,7 @@ import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
 // Stores
 import { useStatStore } from "./statStore";
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { StatsOptionsT, StatsT } from "../components/Schedule/types";
 
@@ -50,17 +51,29 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
         `${apiUrlStatsOptions}/teams/${teamId}`,
         options
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to fetch statsOptions: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch stats options: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newStats: StatsT = toStatsT(data);
+      const newStats: StatsT = toStatsT(responseData);
       set((state) => ({
         statsOptions: newStats.statsOptions,
       }));
       useStatStore.setState({ stats: newStats.stats });
     } catch (error) {
       console.error("Failed to fetch statsOptions:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch stats options, please try again later",
+          "error"
+        );
     }
   },
 
@@ -76,17 +89,29 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
           body: JSON.stringify(statsOptions),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to add statsOptions: ${response.statusText}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add stats options: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newStats: StatsT = toStatsT(data);
+      const newStats: StatsT = toStatsT(responseData);
       set((state) => ({
         statsOptions: newStats.statsOptions,
       }));
       useStatStore.setState({ stats: newStats.stats });
     } catch (error) {
-      throw Error(`Failed to add statsOptions: ${error}`);
+      console.error("Failed to add statsOptions:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to add stats options, please try again later",
+          "error"
+        );
     }
   },
 
@@ -102,19 +127,29 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
           body: JSON.stringify(updatedStatsOptions),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(
-          `Failed to update statsOptions: ${response.statusText}`
-        );
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update stats options: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newStats: StatsT = toStatsT(data);
+      const newStats: StatsT = toStatsT(responseData);
       set((state) => ({
         statsOptions: newStats.statsOptions,
       }));
       useStatStore.setState({ stats: newStats.stats });
     } catch (error) {
       console.error("Failed to update statsOptions:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update stats options, please try again later",
+          "error"
+        );
     }
   },
 }));
