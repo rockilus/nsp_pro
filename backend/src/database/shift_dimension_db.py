@@ -26,7 +26,7 @@ class ShiftDimensionDB:
         try:
             sd_saved = sd_doc.save()
         except Exception as e:
-            log_info(f"Failed to save shift dimension to database: {e}")
+            log_info("Failed to save shift dimension to database")
             handle_save_document_error(e)
         return doc_to_core_shift_dimension(sd_saved)
 
@@ -37,7 +37,7 @@ class ShiftDimensionDB:
                 team=team_id
             )
         except Exception as e:
-            log_info(f"Failed to get shift dimensions from database: {e}")
+            log_info("Failed to get shift dimensions from database")
             handle_get_document_error(e)
         return [doc_to_core_shift_dimension(sd) for sd in list(shift_dimensions)]
 
@@ -48,7 +48,7 @@ class ShiftDimensionDB:
                 id=shift_dimension_id
             )
         except Exception as e:
-            log_info(f"Failed to get shift dimension by id from database: {e}")
+            log_info("Failed to get shift dimension by id from database")
             handle_get_document_error(e)
         return doc_to_core_shift_dimension(shift_dimension)
 
@@ -61,16 +61,22 @@ class ShiftDimensionDB:
                 entry_type=entry_type, team=team_id
             )
         except Exception as e:
-            log_info(f"Failed to get shift dimensions by entry type from database: {e}")
+            log_info("Failed to get shift dimensions by entry type from database")
             handle_get_document_error(e)
         return [doc_to_core_shift_dimension(sd) for sd in list(shift_dimensions)]
 
     def update_shift_dimension(self, shift_dimension: ShiftDimension) -> ShiftDimension:
         sd_doc = core_to_doc_shift_dimension(shift_dimension)
         try:
+            # pylint: disable=no-member
+            ShiftDimensionDocument.objects.get(id=sd_doc.id)  # type: ignore
+        except Exception as e:
+            log_info(f"Shift dimension with id {sd_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
             sd_saved = sd_doc.save()
         except Exception as e:
-            log_info(f"Failed to update shift dimension to database: {e}")
+            log_info("Failed to update shift dimension to database")
             handle_save_document_error(e)
         return doc_to_core_shift_dimension(sd_saved)
 
@@ -81,12 +87,12 @@ class ShiftDimensionDB:
                 id=shift_dimension_id
             )
         except Exception as e:
-            log_info(f"Failed to get shift dimension by id to delete: {e}")
+            log_info("Failed to get shift dimension by id to delete")
             handle_get_document_error(e)
         try:
             shift_dimension.delete()
         except Exception as e:
-            log_info(f"Failed to delete shift dimension: {e}")
+            log_info("Failed to delete shift dimension")
             handle_delete_document_error(e)
 
 
@@ -100,7 +106,7 @@ def core_to_doc_shift_dimension(
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get team from database: {e}")
+        log_info("Failed to get team from database")
         handle_get_document_error(e)
     try:
         sd_doc = ShiftDimensionDocument(
@@ -112,7 +118,7 @@ def core_to_doc_shift_dimension(
             entry_options=dataclass_obj.entry_options,
         )
     except Exception as e:
-        log_info(f"Failed to convert ShiftDimension to ShiftDimensionDocument: {e}")
+        log_info("Failed to convert ShiftDimension to ShiftDimensionDocument")
         handle_create_document_error(e)
     return sd_doc
 
@@ -131,6 +137,6 @@ def doc_to_core_shift_dimension(
             entry_options=[*doc_obj.entry_options],
         )
     except Exception as e:
-        log_info(f"Failed to convert ShiftDimensionDocument to ShiftDimension: {e}")
+        log_info("Failed to convert ShiftDimensionDocument to ShiftDimension")
         handle_create_core_object_error(e)
     return shift_dimension
