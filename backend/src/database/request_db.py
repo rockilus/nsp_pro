@@ -31,7 +31,7 @@ class RequestDB:
         try:
             r_saved = r_doc.save()
         except Exception as e:
-            log_info(f"Failed to save request to database: {e}")
+            log_info("Failed to save request to database")
             handle_save_document_error(e)
         return doc_to_core_request(r_saved)
 
@@ -41,7 +41,7 @@ class RequestDB:
             # pylint: disable=no-member
             requests = RequestDocument.objects.filter(worker__in=w_docs)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get requests by workers from database: {e}")
+            log_info("Failed to get requests by workers from database")
             handle_get_document_error(e)
         return [doc_to_core_request(r) for r in list(requests)]
 
@@ -60,16 +60,22 @@ class RequestDB:
                 date__gte=start_date, date__lte=end_date, worker__in=w_docs
             )
         except Exception as e:
-            log_info(f"Failed to get requests by dates from database: {e}")
+            log_info("Failed to get requests by dates from database")
             handle_get_document_error(e)
         return [doc_to_core_request(r) for r in list(requests)]
 
     def update_request(self, request: Request) -> Request:
         r_doc = core_to_doc_request(request)
         try:
+            # pylint: disable=no-member
+            RequestDocument.objects.get(id=r_doc.id)  # type: ignore
+        except Exception as e:
+            log_info(f"Request with id {r_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
             r_saved = r_doc.save()
         except Exception as e:
-            log_info(f"Failed to update request to database: {e}")
+            log_info("Failed to update request to database")
             handle_save_document_error(e)
         return doc_to_core_request(r_saved)
 
@@ -78,12 +84,12 @@ class RequestDB:
             # pylint: disable=no-member
             request = RequestDocument.objects.get(id=request_id)  # type: ignore
         except Exception as e:
-            log_info(f"Failed to get request by id to delete from database: {e}")
+            log_info("Failed to get request by id to delete from database")
             handle_get_document_error(e)
         try:
             request.delete()
         except Exception as e:
-            log_info(f"Failed to delete request from database: {e}")
+            log_info("Failed to delete request from database")
             handle_delete_document_error(e)
 
     def delete_requests_by_worker_id(self, worker_id: str) -> None:
@@ -93,15 +99,13 @@ class RequestDB:
                 worker=worker_id  # type: ignore
             )
         except Exception as e:
-            log_info(
-                f"Failed to get requests by worker id to delete from database: {e}"
-            )
+            log_info("Failed to get requests by worker id to delete from database")
             handle_get_document_error(e)
         try:
             for r in requests:
                 r.delete()
         except Exception as e:
-            log_info(f"Failed to delete requests from database: {e}")
+            log_info("Failed to delete requests from database")
             handle_delete_document_error(e)
 
 
@@ -112,13 +116,13 @@ def core_to_doc_request(dataclass_obj: Request) -> RequestDocument:
         # pylint: disable=no-member
         worker = WorkerDocument.objects.get(id=dataclass_obj.worker_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get worker by id from database: {e}")
+        log_info("Failed to get worker by id from database")
         handle_get_document_error(e)
     try:
         # pylint: disable=no-member
         shift = ShiftDocument.objects.get(id=dataclass_obj.shift_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get shift by id from database: {e}")
+        log_info("Failed to get shift by id from database")
         handle_get_document_error(e)
     try:
         r_doc = RequestDocument(
@@ -130,7 +134,7 @@ def core_to_doc_request(dataclass_obj: Request) -> RequestDocument:
             status=dataclass_obj.status,
         )
     except Exception as e:
-        log_info(f"Failed to convert Request to RequestDocument: {e}")
+        log_info("Failed to convert Request to RequestDocument")
         handle_create_document_error(e)
     return r_doc
 
@@ -148,6 +152,6 @@ def doc_to_core_request(doc_obj: RequestDocument) -> Request:
             status=doc_obj.status,
         )
     except Exception as e:
-        log_info(f"Failed to convert RequestDocument to Request: {e}")
+        log_info("Failed to convert RequestDocument to Request")
         handle_create_core_object_error(e)
     return request

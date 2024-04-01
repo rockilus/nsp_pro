@@ -1,5 +1,6 @@
-// requestStore.ts
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { RequestT } from "../components/FixedAssignmentRequest/types";
 
@@ -8,7 +9,7 @@ const apiUrlRequests = process.env.NEXT_PUBLIC_API_URL + "/requests";
 type RequestStateT = {
   requests: RequestT[];
   fetchRequests: (teamId: string) => void;
-  addRequest: (request: RequestT, teamId: string) => Promise<RequestT>;
+  addRequest: (request: RequestT, teamId: string) => void;
   updateRequest: (updatedRequest: RequestT, teamId: string) => void;
   deleteRequest: (requestId: string, teamId: string) => void;
 };
@@ -33,14 +34,26 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
           "Content-Type": "application/json",
         },
       });
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to fetch requests: ${response.status}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch requests: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const requests = data.map(toRequestT);
+      const requests = responseData.map(toRequestT);
       set({ requests });
     } catch (error) {
       console.error("Failed to fetch requests:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch requests, please try again later",
+          "error"
+        );
     }
   },
 
@@ -53,17 +66,28 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
         },
         body: JSON.stringify(request),
       });
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to add request: ${response.status}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add request: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const newRequest = toRequestT(data);
+      const newRequest = toRequestT(responseData);
       set((state) => ({
         requests: [...state.requests, newRequest],
       }));
-      return newRequest;
     } catch (error) {
-      throw Error(`Failed to add request: ${error}`);
+      console.error("Failed to add request:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to add request, please try again later",
+          "error"
+        );
     }
   },
 
@@ -79,8 +103,15 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
           body: JSON.stringify(updatedRequest),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to update request: ${response.status}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update request: " + responseData.detail,
+            "error"
+          );
+        return;
       }
       set((state) => ({
         requests: state.requests.map((fa) =>
@@ -89,6 +120,12 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to update request:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update request, please try again later",
+          "error"
+        );
     }
   },
 
@@ -100,14 +137,27 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
           method: "DELETE",
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to delete request: ${response.status}`);
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to delete request: " + responseData.detail,
+            "error"
+          );
+        return;
       }
       set((state) => ({
         requests: state.requests.filter((fa) => fa.id !== requestId),
       }));
     } catch (error) {
       console.error("Failed to delete request:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to delete request, please try again later",
+          "error"
+        );
     }
   },
 }));
