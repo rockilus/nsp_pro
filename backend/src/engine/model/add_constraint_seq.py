@@ -153,7 +153,7 @@ class AddConstraintSeq(AddConstraint):
         if start > 0:
             sequence.append(cstr_vars[start - 1])
         for i in range(length):
-            sequence.append(cstr_vars[start + i].Not())
+            sequence.append(cstr_vars[start + i].Not())  # type: ignore # [CHECK IF OK]
         if start + length < len(cstr_vars):
             sequence.append(cstr_vars[start + length])
         return sequence

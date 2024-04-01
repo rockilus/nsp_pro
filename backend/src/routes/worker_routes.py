@@ -2,13 +2,13 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
 from core.worker import Worker, WorkerProperty
 from errors import (
     MessageTypeError,
-    WorkerNameNotAllowed,
+    NotAuthorizedError,
     handle_create_core_object_error,
     handle_message_errors,
     handle_routes_errors,
@@ -34,10 +34,7 @@ async def create_worker(
         if not await authz_check(
             session.get_user_id(), "create-worker", "team", team_id
         ):
-            raise HTTPException(
-                status_code=403,
-                detail="You do not have permission to create a worker",
-            )
+            raise NotAuthorizedError("You do not have permission to create a worker")
         w_data = msg_to_core_worker(worker)
         worker_created = worker_db.create_worker(w_data)
         wd_bool = worker_dimension_db.get_worker_dimensions_by_entry_type(
@@ -71,10 +68,7 @@ async def get_workers(
         if not await authz_check(
             session.get_user_id(), "read-workers", "team", team_id
         ):
-            raise HTTPException(
-                status_code=403,
-                detail="You do not have permission to get workers",
-            )
+            raise NotAuthorizedError("You do not have permission to get workers")
         workers = worker_db.get_workers(team_id)
         workers_properties = [
             worker_property_db.get_worker_properties_by_worker_id(worker.id)
@@ -93,7 +87,6 @@ async def get_workers(
 @router.put("/workers/{worker_id}/teams/{team_id}")
 async def update_worker(
     team_id: str,
-    worker_id: str,
     worker: WorkerMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> WorkerMessage:
@@ -101,19 +94,8 @@ async def update_worker(
         if not await authz_check(
             session.get_user_id(), "update-worker", "team", team_id
         ):
-            raise HTTPException(
-                status_code=403,
-                detail="You do not have permission to update a worker",
-            )
-        existing_worker = worker_db.get_worker_by_id(worker_id)
-        if not existing_worker:
-            raise HTTPException(status_code=404, detail="Worker does not exist")
+            raise NotAuthorizedError("You do not have permission to update a worker")
         w_data = msg_to_core_worker(worker)
-        try:
-            if w_data.name == "Trump":
-                raise WorkerNameNotAllowed(f"Worker name {w_data.name} is not allowed")
-        except WorkerNameNotAllowed as e:
-            raise HTTPException(status_code=403, detail=str(e)) from e
         updated_worker = worker_db.update_worker(w_data)
         worker_properties = worker_property_db.get_worker_properties_by_worker_id(
             updated_worker.id
@@ -135,9 +117,8 @@ async def update_worker_property(
         if not await authz_check(
             session.get_user_id(), "update-worker-property", "team", team_id
         ):
-            raise HTTPException(
-                status_code=403,
-                detail="You do not have permission to update a worker property",
+            raise NotAuthorizedError(
+                "You do not have permission to update a worker property"
             )
         wp_data = msg_to_core_worker_property(worker_property)
         if wp_data.id == "":
@@ -162,10 +143,7 @@ async def delete_worker(
         if not await authz_check(
             session.get_user_id(), "delete-worker", "team", team_id
         ):
-            raise HTTPException(
-                status_code=403,
-                detail="You do not have permission to delete a worker",
-            )
+            raise NotAuthorizedError("You do not have permission to delete a worker")
         delete_worker_service(worker_id)
     except Exception as e:
         log_info("Failed to delete worker")

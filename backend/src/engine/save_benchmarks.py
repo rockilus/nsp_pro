@@ -30,7 +30,7 @@ def save_benchmark_to_csv(
             ):
                 response_dict[key] = float(value)  # type: ignore
             else:
-                response_dict[key] = value
+                response_dict[key] = value  # type: ignore # [CHECK IF OK]
 
     file_path = (
         os.getcwd()

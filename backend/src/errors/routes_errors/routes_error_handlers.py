@@ -19,10 +19,35 @@ from errors.message_errors.message_errors import (
     MessageValidationError,
     MessageValueError,
 )
+from errors.routes_errors.routes_errors import NotAuthorizedError
 from utils.constants import Constants
 
 
 def handle_routes_errors(error: Exception):
+    if isinstance(error, CoreTypeError):
+        raise HTTPException(
+            status_code=400,
+            detail="invalid input type, please check your data",
+        )
+    if isinstance(error, NotAuthorizedError):
+        raise HTTPException(
+            status_code=403,
+            detail=error.message,
+        )
+    if isinstance(error, DocumentDoesNotExistError):
+        raise HTTPException(
+            status_code=404, detail="the requested resource could not be found"
+        )
+    if isinstance(error, DocumentNotUniqueError):
+        raise HTTPException(
+            status_code=409,
+            detail="the provided value already exists, please use a different value",
+        )
+    if isinstance(error, CoreValueError):
+        raise HTTPException(
+            status_code=422,
+            detail="invalid input value, please check your data",
+        )
     if isinstance(
         error,
         (
@@ -41,23 +66,5 @@ def handle_routes_errors(error: Exception):
         raise HTTPException(
             status_code=503, detail=Constants.USER_ERROR_MESSAGE_GENERIC
         )
-    if isinstance(error, DocumentNotUniqueError):
-        raise HTTPException(
-            status_code=409,
-            detail="the provided value already exists, please use a different value",
-        )
-    if isinstance(error, DocumentDoesNotExistError):
-        raise HTTPException(
-            status_code=404, detail="the requested resource could not be found"
-        )
-    if isinstance(error, CoreTypeError):
-        raise HTTPException(
-            status_code=400,
-            detail="invalid input type, please check your data",
-        )
-    if isinstance(error, CoreValueError):
-        raise HTTPException(
-            status_code=422,
-            detail="invalid input value, please check your data",
-        )
+
     raise HTTPException(status_code=503, detail=Constants.USER_ERROR_MESSAGE_GENERIC)
