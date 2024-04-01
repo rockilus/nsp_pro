@@ -52,7 +52,7 @@ class ShiftDB:
         s_doc = core_to_doc_shift(shift)
         try:
             # pylint: disable=no-member
-            ShiftDocument.objects.get(id=shift.id)  # type: ignore
+            ShiftDocument.objects.get(id=s_doc.id)  # type: ignore
         except Exception as e:
             log_info(f"Shift with id {s_doc.id} does not exist")
             handle_get_document_error(e)

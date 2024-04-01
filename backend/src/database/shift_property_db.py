@@ -146,7 +146,7 @@ class ShiftPropertyDB:
         sp_doc = core_to_doc_shift_property(shift_property)
         try:
             # pylint: disable=no-member
-            ShiftPropertyDocument.objects.get(id=shift_property.id)  # type: ignore
+            ShiftPropertyDocument.objects.get(id=sp_doc.id)  # type: ignore
         except Exception as e:
             log_info(f"Shift property with id {sp_doc.id} does not exist")
             handle_get_document_error(e)
