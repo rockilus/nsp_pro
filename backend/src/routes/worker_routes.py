@@ -174,7 +174,6 @@ def core_to_msg_worker_property(
 def core_to_msg_worker_and_properties(
     worker: Worker, worker_properties: List[WorkerProperty]
 ) -> WorkerMessage:
-    # TypeError("asdict() should be called on dataclass instances")
     try:
         data = asdict(worker)
     except Exception as e:

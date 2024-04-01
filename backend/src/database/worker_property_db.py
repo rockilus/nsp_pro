@@ -27,7 +27,7 @@ class WorkerPropertyDB:
         try:
             wp_saved = wp_doc.save()
         except Exception as e:
-            log_info(f"Failed to save worker property to database: {e}")
+            log_info("Failed to save worker property to database")
             handle_save_document_error(e)
         return doc_to_core_worker_property(wp_saved)
 
@@ -40,7 +40,7 @@ class WorkerPropertyDB:
                 worker=worker_id
             )
         except Exception as e:
-            log_info(f"Failed to get worker properties by worker id from database: {e}")
+            log_info("Failed to get worker properties by worker id from database")
             handle_get_document_error(e)
         return [doc_to_core_worker_property(wp) for wp in list(worker_properties)]
 
@@ -55,7 +55,7 @@ class WorkerPropertyDB:
         except Exception as e:
             log_info(
                 "Failed to get worker properties by worker dimension id from "
-                + f"database: {e}"
+                + "database"
             )
             handle_get_document_error(e)
         return [doc_to_core_worker_property(wp) for wp in list(worker_properties)]
@@ -67,7 +67,7 @@ class WorkerPropertyDB:
                 _id=worker_property_id
             )
         except Exception as e:
-            log_info(f"Failed to get worker property by id from database: {e}")
+            log_info("Failed to get worker property by id from database")
             handle_get_document_error(e)
         return doc_to_core_worker_property(worker_property)
 
@@ -84,7 +84,7 @@ class WorkerPropertyDB:
         except Exception as e:
             log_info(
                 "Failed to get worker property by worker and dimension from "
-                + f"database: {e}"
+                + "database"
             )
             handle_get_document_error(e)
         return doc_to_core_worker_property(worker_property) if worker_property else None
@@ -208,7 +208,7 @@ class WorkerPropertyDB:
         except Exception as e:
             log_info(
                 "Failed to get workers id by dimensions and property values "
-                + f"from database: {e}"
+                + "from database"
             )
             handle_get_document_error(e)
         out: Dict = {}
@@ -237,9 +237,15 @@ class WorkerPropertyDB:
     def update_worker_property(self, worker_property: WorkerProperty) -> WorkerProperty:
         document = core_to_doc_worker_property(worker_property)
         try:
+            # pylint: disable=no-member
+            WorkerPropertyDocument.objects.get(id=document.id)  # type: ignore
+        except Exception as e:
+            log_info(f"Worker property with id {document.id} does not exist")
+            handle_get_document_error(e)
+        try:
             document_saved = document.save()
         except Exception as e:
-            log_info(f"Failed to update worker property: {e}")
+            log_info("Failed to update worker property")
             handle_save_document_error(e)
         return doc_to_core_worker_property(document_saved)
 
@@ -250,13 +256,13 @@ class WorkerPropertyDB:
                 worker=worker_id
             )
         except Exception as e:
-            log_info(f"Failed to get worker properties by worker id to delete: {e}")
+            log_info("Failed to get worker properties by worker id to delete")
             handle_get_document_error(e)
         try:
             for worker_property in worker_properties:
                 worker_property.delete()
         except Exception as e:
-            log_info(f"Failed to delete worker properties: {e}")
+            log_info("Failed to delete worker properties")
             handle_delete_document_error(e)
 
     def delete_worker_properties_by_worker_dimension_id(
@@ -270,14 +276,14 @@ class WorkerPropertyDB:
         except Exception as e:
             log_info(
                 "Failed to get worker properties by worker dimension id to delete: "
-                + f"{e}"
+                + "{e}"
             )
             handle_get_document_error(e)
         try:
             for worker_property in worker_properties:
                 worker_property.delete()
         except Exception as e:
-            log_info(f"Failed to delete worker properties: {e}")
+            log_info("Failed to delete worker properties")
             handle_delete_document_error(e)
 
 
@@ -290,7 +296,7 @@ def core_to_doc_worker_property(
         # pylint: disable=no-member
         worker = WorkerDocument.objects.get(id=dataclass_obj.worker_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get worker by id for worker property: {e}")
+        log_info("Failed to get worker by id for worker property")
         handle_get_document_error(e)
     try:
         # pylint: disable=no-member
@@ -298,7 +304,7 @@ def core_to_doc_worker_property(
             id=dataclass_obj.worker_dimension_id
         )
     except Exception as e:
-        log_info(f"Failed to get worker dimension by id for worker property: {e}")
+        log_info("Failed to get worker dimension by id for worker property")
         handle_get_document_error(e)
     try:
         wp_doc = WorkerPropertyDocument(
@@ -308,7 +314,7 @@ def core_to_doc_worker_property(
             worker_dimension=worker_dimension,
         )
     except Exception as e:
-        log_info(f"Failed to convert WorkerProperty to WorkerPropertyDocument: {e}")
+        log_info("Failed to convert WorkerProperty to WorkerPropertyDocument")
         handle_create_document_error(e)
     return wp_doc
 
@@ -325,6 +331,6 @@ def doc_to_core_worker_property(
             worker_dimension_id=doc_obj.worker_dimension.id,
         )
     except Exception as e:
-        log_info(f"Failed to convert WorkerPropertyDocument to WorkerProperty: {e}")
+        log_info("Failed to convert WorkerPropertyDocument to WorkerProperty")
         handle_create_core_object_error(e)
     return worker_property

@@ -28,7 +28,7 @@ class WorkerDimensionDB:
         try:
             wd_saved = wd_doc.save()
         except Exception as e:
-            log_info(f"Failed to save worker dimension to database: {e}")
+            log_info("Failed to save worker dimension to database")
             handle_save_document_error(e)
         return doc_to_core_worker_dimension(wd_saved)
 
@@ -39,7 +39,7 @@ class WorkerDimensionDB:
                 team=team_id
             )
         except Exception as e:
-            log_info(f"Failed to get worker dimensions from database: {e}")
+            log_info("Failed to get worker dimensions from database")
             handle_get_document_error(e)
         return [doc_to_core_worker_dimension(wd) for wd in list(worker_dimensions)]
 
@@ -50,7 +50,7 @@ class WorkerDimensionDB:
                 id=worker_dimension_id
             )
         except Exception as e:
-            log_info(f"Failed to get worker dimension by id from database: {e}")
+            log_info("Failed to get worker dimension by id from database")
             handle_get_document_error(e)
         return doc_to_core_worker_dimension(worker_dimension)
 
@@ -63,7 +63,7 @@ class WorkerDimensionDB:
                 name=worker_dimension_name, team=team_id
             )
         except Exception as e:
-            log_info(f"Failed to get worker dimension by name from database: {e}")
+            log_info("Failed to get worker dimension by name from database")
             handle_get_document_error(e)
         return doc_to_core_worker_dimension(worker_dimension)
 
@@ -76,9 +76,7 @@ class WorkerDimensionDB:
                 entry_type=entry_type, team=team_id
             )
         except Exception as e:
-            log_info(
-                f"Failed to get worker dimensions by entry type from database: {e}"
-            )
+            log_info("Failed to get worker dimensions by entry type from database")
             handle_get_document_error(e)
         return [doc_to_core_worker_dimension(wd) for wd in list(worker_dimensions)]
 
@@ -87,9 +85,15 @@ class WorkerDimensionDB:
     ) -> WorkerDimension:
         wd_doc = core_to_doc_worker_dimension(worker_dimension)
         try:
+            # pylint: disable=no-member
+            WorkerDimensionDocument.objects.get(id=wd_doc.id)  # type: ignore
+        except Exception as e:
+            log_info(f"Worker dimension with id {wd_doc.id} does not exist")
+            handle_get_document_error(e)
+        try:
             wd_saved = wd_doc.save()
         except Exception as e:
-            log_info(f"Failed to update worker dimension to database: {e}")
+            log_info("Failed to update worker dimension to database")
             handle_save_document_error(e)
         return doc_to_core_worker_dimension(wd_saved)
 
@@ -100,14 +104,12 @@ class WorkerDimensionDB:
                 id=worker_dimension_id
             )
         except Exception as e:
-            log_info(
-                f"Failed to get worker dimension by id to delete from database: {e}"
-            )
+            log_info("Failed to get worker dimension by id to delete from database")
             handle_get_document_error(e)
         try:
             worker_dimension.delete()
         except Exception as e:
-            log_info(f"Failed to delete worker dimension from database: {e}")
+            log_info("Failed to delete worker dimension from database")
             handle_delete_document_error(e)
 
 
@@ -120,7 +122,7 @@ def core_to_doc_worker_dimension(
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get team by id to create worker dimension: {e}")
+        log_info("Failed to get team by id to create worker dimension")
         handle_get_document_error(e)
     try:
         wd_doc = WorkerDimensionDocument(
@@ -131,7 +133,7 @@ def core_to_doc_worker_dimension(
             entry_options=dataclass_obj.entry_options,
         )
     except Exception as e:
-        log_info(f"Failed to convert WorkerDimension to WorkerDimensionDocument: {e}")
+        log_info("Failed to convert WorkerDimension to WorkerDimensionDocument")
         handle_create_document_error(e)
     return wd_doc
 
@@ -149,6 +151,6 @@ def doc_to_core_worker_dimension(
             entry_options=[*doc_obj.entry_options],
         )
     except Exception as e:
-        log_info(f"Failed to convert WorkerDimensionDocument to WorkerDimension: {e}")
+        log_info("Failed to convert WorkerDimensionDocument to WorkerDimension")
         handle_create_core_object_error(e)
     return worker_dimension
