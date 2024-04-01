@@ -1,6 +1,8 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { CoverageT, ShiftDemandT } from "../components/Coverage/types";
 import { ShiftDefaultT } from "../components/Shift/types";
@@ -12,7 +14,7 @@ const apiUrlCoverages = process.env.NEXT_PUBLIC_API_URL + "/coverages";
 type CoverageStateT = {
   coverages: CoverageT[];
   fetchCoverages: (teamId: string) => void;
-  addCoverage: (coverage: CoverageT) => Promise<CoverageT>;
+  addCoverage: (coverage: CoverageT) => Promise<CoverageT | null>;
   addShiftDemand: (shiftDemand: ShiftDemandT, teamId: string) => void;
   updateCoverage: (updatedCoverage: CoverageT) => void;
   updateShiftDemand: (updatedShiftDemand: ShiftDemandT, teamId: string) => void;
@@ -38,20 +40,34 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
   fetchCoverages: async (teamId) => {
     try {
       const response = await fetch(`${apiUrlCoverages}/teams/${teamId}`);
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to fetch coverages");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch coverages: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
-      const coverages: CoverageT[] = data.map((coverage: CoverageT) => ({
-        ...coverage,
-        shiftDemands: coverage.shiftDemands.map((shiftDemand) => ({
-          ...shiftDemand,
-          shift: toShiftDefaultT(shiftDemand.shift),
-        })),
-      }));
+      const coverages: CoverageT[] = responseData.map(
+        (coverage: CoverageT) => ({
+          ...coverage,
+          shiftDemands: coverage.shiftDemands.map((shiftDemand) => ({
+            ...shiftDemand,
+            shift: toShiftDefaultT(shiftDemand.shift),
+          })),
+        })
+      );
       set({ coverages });
     } catch (error) {
       console.error("Failed to fetch coverages:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch coverages, please try again later",
+          "error"
+        );
     }
   },
 
@@ -67,21 +83,36 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           body: JSON.stringify(coverage),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to add coverage");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add coverage: " + responseData.detail,
+            "error"
+          );
+        return null;
       }
-      const data = await response.json();
       const newCoverage: CoverageT = {
-        ...data,
-        shiftDemands: data.shiftDemands.map((shiftDemand: ShiftDemandT) => ({
-          ...shiftDemand,
-          shift: toShiftDefaultT(shiftDemand.shift),
-        })),
+        ...responseData,
+        shiftDemands: responseData.shiftDemands.map(
+          (shiftDemand: ShiftDemandT) => ({
+            ...shiftDemand,
+            shift: toShiftDefaultT(shiftDemand.shift),
+          })
+        ),
       };
       set((state) => ({ coverages: [...state.coverages, newCoverage] }));
       return newCoverage;
     } catch (error) {
-      throw Error(`Failed to add coverage: ${error}`);
+      console.error("Failed to add coverage:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to add coverage, please try again later",
+          "error"
+        );
+      return null;
     }
   },
 
@@ -97,13 +128,19 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           body: JSON.stringify(shiftDemand),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to add shift demand");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add shift demand: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
       const newShiftDemand: ShiftDemandT = {
-        ...data,
-        shift: toShiftDefaultT(data.shift),
+        ...responseData,
+        shift: toShiftDefaultT(responseData.shift),
       };
       set((state) => ({
         coverages: state.coverages.map((coverage) =>
@@ -116,7 +153,13 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
         ),
       }));
     } catch (error) {
-      throw Error(`Failed to add shift demand: ${error}`);
+      console.error("Failed to add shift demand:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to add shift demand, please try again later",
+          "error"
+        );
     }
   },
 
@@ -132,16 +175,24 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           body: JSON.stringify(updatedCoverage),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to update coverage");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update coverage: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
       const newCoverage: CoverageT = {
-        ...data,
-        shiftDemands: data.shiftDemands.map((shiftDemand: ShiftDemandT) => ({
-          ...shiftDemand,
-          shift: toShiftDefaultT(shiftDemand.shift),
-        })),
+        ...responseData,
+        shiftDemands: responseData.shiftDemands.map(
+          (shiftDemand: ShiftDemandT) => ({
+            ...shiftDemand,
+            shift: toShiftDefaultT(shiftDemand.shift),
+          })
+        ),
       };
       set((state) => ({
         coverages: state.coverages.map((c) =>
@@ -150,6 +201,12 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to update coverage:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update coverage, please try again later",
+          "error"
+        );
     }
   },
 
@@ -165,13 +222,19 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           body: JSON.stringify(updatedShiftDemand),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to update shift demand");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update shift demand: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const data = await response.json();
       const newShiftDemand: ShiftDemandT = {
-        ...data,
-        shift: toShiftDefaultT(data.shift),
+        ...responseData,
+        shift: toShiftDefaultT(responseData.shift),
       };
       set((state) => ({
         coverages: state.coverages.map((coverage) =>
@@ -193,6 +256,12 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to update shift demand:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update shift demand, please try again later",
+          "error"
+        );
     }
   },
 
@@ -204,14 +273,27 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           method: "DELETE",
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to delete coverage");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to delete coverage: " + responseData.detail,
+            "error"
+          );
+        return;
       }
       set((state) => ({
         coverages: state.coverages.filter((c) => c.id !== coverageId),
       }));
     } catch (error) {
       console.error("Failed to delete coverage:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to delete coverage, please try again later",
+          "error"
+        );
     }
   },
 
@@ -223,8 +305,15 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           method: "DELETE",
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to delete shift demand");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to delete shift demand: " + responseData.detail,
+            "error"
+          );
+        return;
       }
       set((state) => ({
         coverages: state.coverages.map((coverage) =>
@@ -240,6 +329,12 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to delete shift demand:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to delete shift demand, please try again later",
+          "error"
+        );
     }
   },
 }));

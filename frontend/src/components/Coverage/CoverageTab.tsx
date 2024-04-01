@@ -50,6 +50,9 @@ export default function CoverageTab({ team, shifts }: Props) {
       shiftDemands: [],
     };
     const newCoverage = await addCoverage(templateCoverage);
+    if (!newCoverage) {
+      return;
+    }
     setSelectedCoverage(newCoverage);
     setEditingName(true);
   };
