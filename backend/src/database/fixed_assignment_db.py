@@ -14,10 +14,10 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models import Shift as ShiftDocument
 from models import Worker as WorkerDocument
 from models.fixed_assignment import FixedAssignment as FixedAssignmentDocument
-from services.logging import log_info
 
 
 class FixedAssignmentDB:

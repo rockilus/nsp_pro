@@ -7,8 +7,8 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models.user import User as UserDocument
-from services.logging import log_info
 
 
 class UserDB:

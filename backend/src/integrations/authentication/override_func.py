@@ -8,7 +8,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
 
 from core.team import Team
 from core.user import User
-from services.authorization.authz_services import permit_role_assignment_assign
+from integrations.authorization.authz_services import authz_role_assignment_assign
 from services.team_services.team_services import create_team
 from services.user_services.user_sign_up import create_user
 
@@ -46,7 +46,7 @@ def override_emailpassword_functions(
                 )
                 print("user and team created in mongodb:", email)
                 print("assigning user as leader of team in permit.io:", email)
-                await permit_role_assignment_assign(user_id, "team", team.id, "leader")
+                await authz_role_assignment_assign(user_id, "team", team.id, "leader")
                 print("user assigned as leader of team in permit.io:", email)
         return result  # type: ignore
 

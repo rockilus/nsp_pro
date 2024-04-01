@@ -1,7 +1,8 @@
 import { create } from "zustand";
+// Stores
+import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { WorkerT, WorkerPropertyT } from "../components/Worker/types";
-import { ResponseStatusT } from "./types";
 
 const apiUrlWorkers = process.env.NEXT_PUBLIC_API_URL + "/workers";
 
@@ -10,7 +11,7 @@ type WorkerStateT = {
   fetchWorkers: (teamId: string) => void;
   addWorker: (worker: WorkerT) => void;
   addPropertiesToStore: (newProperties: WorkerPropertyT[]) => void;
-  updateWorker: (updatedWorker: WorkerT) => Promise<ResponseStatusT>;
+  updateWorker: (updatedWorker: WorkerT) => void;
   updateWorkerProperty: (
     teamId: string,
     updatedWorkerProperty: WorkerPropertyT
@@ -31,14 +32,26 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
     };
     try {
       const response = await fetch(`${apiUrlWorkers}/teams/${teamId}`, options);
+      const responseData = await response.json();
       if (!response.ok) {
-        console.log("Failed to fetch workers", response);
-        throw new Error("Failed to fetch workers");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch workers: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const workers: WorkerT[] = await response.json();
+      const workers: WorkerT[] = responseData;
       set({ workers });
     } catch (error) {
       console.error("Failed to fetch workers:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch workers, please try again later",
+          "error"
+        );
     }
   },
 
@@ -51,14 +64,26 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
         },
         body: JSON.stringify(worker),
       });
+      const responseData = await response.json();
       if (!response.ok) {
-        console.log("Failed to add worker", response);
-        throw new Error("Failed to add worker");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to add worker: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const newWorker: WorkerT = await response.json();
+      const newWorker: WorkerT = responseData;
       set((state) => ({ workers: [...state.workers, newWorker] }));
     } catch (error) {
       console.error("Failed to add worker:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to add worker, please try again later",
+          "error"
+        );
     }
   },
 
@@ -96,10 +121,13 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
       );
       const responseData = await response.json();
       if (!response.ok) {
-        return {
-          statusOK: false,
-          message: responseData.detail,
-        };
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update worker: " + responseData.detail,
+            "error"
+          );
+        return;
       }
       const newWorker: WorkerT = responseData;
       set((state) => ({
@@ -112,10 +140,14 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
         message: "Worker updated",
       };
     } catch (error) {
-      return {
-        statusOK: false,
-        message: "Failed to update worker: " + error || "Unknown error",
-      };
+      console.error("Failed to update worker:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update worker, please try again later",
+          "error"
+        );
+      return;
     }
   },
 
@@ -131,11 +163,17 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
           body: JSON.stringify(updatedWorkerProperty),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        console.log("Failed to update workerProperty", response);
-        throw new Error("Failed to update workerProperty");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update worker: " + responseData.detail,
+            "error"
+          );
+        return;
       }
-      const newWorkerProperty: WorkerPropertyT = await response.json();
+      const newWorkerProperty: WorkerPropertyT = responseData;
       set((state) => ({
         workers: state.workers.map((worker) =>
           worker.id === newWorkerProperty.workerId
@@ -156,6 +194,12 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
       }));
     } catch (error) {
       console.error("Failed to update worker:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update worker, please try again later",
+          "error"
+        );
     }
   },
 
@@ -171,15 +215,27 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
           body: JSON.stringify({ workerId, teamId }),
         }
       );
+      const responseData = await response.json();
       if (!response.ok) {
-        console.log("Failed to delete worker", response);
-        throw new Error("Failed to delete worker");
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to delete worker: " + responseData.detail,
+            "error"
+          );
+        return;
       }
       set((state) => ({
         workers: state.workers.filter((c) => c.id !== workerId),
       }));
     } catch (error) {
       console.error("Failed to delete worker:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to delete worker, please try again later",
+          "error"
+        );
     }
   },
 }));

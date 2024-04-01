@@ -55,7 +55,7 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
             VarName(
                 constraint_id=constraint.id,
                 cstr_vars=[
-                    var.Not().Name()
+                    var.Not().Name()  # type: ignore # [CHECK IF OK]
                     for var in span
                     if isinstance(var, cp_model._NotBooleanVariable)
                 ],

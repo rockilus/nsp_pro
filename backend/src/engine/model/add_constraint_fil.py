@@ -26,7 +26,9 @@ class AddConstraintFil(AddConstraint):
             if constraint.penalty != 0:
                 cstr_vars: List[cp_model.IntVar] = [cstr_var]
                 var_name = build_var_name(constraint, cstr_vars, "constraint")
-                cstr_vars = [var.Not() for var in cstr_vars]
+                cstr_vars = [
+                    var.Not() for var in cstr_vars  # type: ignore # [CHECK IF OK]
+                ]
                 lit = self.model.NewBoolVar(var_name)
                 cstr_vars.append(lit)
                 self.model.AddBoolOr(cstr_vars)

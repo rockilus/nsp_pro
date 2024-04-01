@@ -15,11 +15,11 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models.assignment import Assignment as AssignmentDocument
 from models.schedule import Schedule as ScheduleDocument
 from models.shift import Shift as ShiftDocument
 from models.worker import Worker as WorkerDocument
-from services.logging import log_info
 
 
 class AssignmentDB:
@@ -33,7 +33,7 @@ class AssignmentDB:
         try:
             a_saved = a_doc.save()
         except Exception as e:
-            log_info(f"Failed to save assignment to database: {e}")
+            log_info("Failed to save assignment to database")
             handle_save_document_error(e)
         return doc_to_core_assignment(a_saved)
 
@@ -45,7 +45,7 @@ class AssignmentDB:
                 schedule__in=s_docs
             )
         except Exception as e:
-            log_info(f"Failed to get assignments from database: {e}")
+            log_info("Failed to get assignments from database")
             handle_get_document_error(e)
         return [doc_to_core_assignment(a) for a in list(assignments)]
 
@@ -56,7 +56,7 @@ class AssignmentDB:
                 id=assignment_id
             )
         except Exception as e:
-            log_info(f"Failed to get assignment by id from database: {e}")
+            log_info("Failed to get assignment by id from database")
             handle_get_document_error(e)
         return doc_to_core_assignment(assignment)
 
@@ -75,7 +75,7 @@ class AssignmentDB:
         except Exception as e:
             log_info(
                 "Failed to get assignment by worker, date and schedule from "
-                + f"database: {e}"
+                + "database"
             )
             handle_get_document_error(e)
         return doc_to_core_assignment(assignment)
@@ -90,7 +90,7 @@ class AssignmentDB:
                 date__gte=start_date, date__lte=end_date, schedule__in=s_docs
             )
         except Exception as e:
-            log_info(f"Failed to get assignments by dates from database: {e}")
+            log_info("Failed to get assignments by dates from database")
             handle_get_document_error(e)
         return [doc_to_core_assignment(a) for a in list(assignments)]
 
@@ -101,7 +101,7 @@ class AssignmentDB:
                 schedule=schedule_id
             )
         except Exception as e:
-            log_info(f"Failed to get assignments by schedule id from database: {e}")
+            log_info("Failed to get assignments by schedule id from database")
             handle_get_document_error(e)
         return [doc_to_core_assignment(a) for a in list(assignments)]
 
@@ -119,7 +119,7 @@ class AssignmentDB:
         except Exception as e:
             log_info(
                 "Failed to get wip and validated assignments before date "
-                + f"from database: {e}"
+                + "from database"
             )
             handle_get_document_error(e)
         return [doc_to_core_assignment(a) for a in list(assignments)]
@@ -134,7 +134,7 @@ class AssignmentDB:
                 status__in=status, schedule__in=s_docs
             )
         except Exception as e:
-            log_info(f"Failed to get assignments by status from database: {e}")
+            log_info("Failed to get assignments by status from database")
             handle_get_document_error(e)
         return [doc_to_core_assignment(a) for a in list(assignments)]
 
@@ -143,7 +143,7 @@ class AssignmentDB:
         try:
             a_saved = a_doc.save()
         except Exception as e:
-            log_info(f"Failed to update assignment: {e}")
+            log_info("Failed to update assignment")
             handle_save_document_error(e)
         return doc_to_core_assignment(a_saved)
 
@@ -154,12 +154,12 @@ class AssignmentDB:
                 id=assignment_id
             )
         except Exception as e:
-            log_info(f"Failed to get assignment by id to delete: {e}")
+            log_info("Failed to get assignment by id to delete")
             handle_get_document_error(e)
         try:
             assignment.delete()
         except Exception as e:
-            log_info(f"Failed to delete assignment: {e}")
+            log_info("Failed to delete assignment")
             handle_delete_document_error(e)
 
     def delete_assignments_by_schedule_id(self, schedule_id: str) -> None:
@@ -169,13 +169,13 @@ class AssignmentDB:
                 schedule=schedule_id
             )
         except Exception as e:
-            log_info(f"Failed to get assignments by schedule id to delete: {e}")
+            log_info("Failed to get assignments by schedule id to delete")
             handle_get_document_error(e)
         try:
             for a in assigments:
                 a.delete()
         except Exception as e:
-            log_info(f"Failed to delete assignments: {e}")
+            log_info("Failed to delete assignments")
             handle_delete_document_error(e)
 
     def delete_assignments_by_worker_id(self, worker_id: str) -> None:
@@ -185,13 +185,13 @@ class AssignmentDB:
                 worker=worker_id
             )
         except Exception as e:
-            log_info(f"Failed to get assignments by worker id to delete: {e}")
+            log_info("Failed to get assignments by worker id to delete")
             handle_get_document_error(e)
         try:
             for a in assignments:
                 a.delete()
         except Exception as e:
-            log_info(f"Failed to delete assignments: {e}")
+            log_info("Failed to delete assignments")
             handle_delete_document_error(e)
 
 
@@ -202,13 +202,13 @@ def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
         # pylint: disable=no-member
         worker = WorkerDocument.objects.get(id=dataclass_obj.worker_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get worker by id: {e}")
+        log_info("Failed to get worker by id")
         handle_get_document_error(e)
     try:
         # pylint: disable=no-member
         shift = ShiftDocument.objects.get(id=dataclass_obj.shift_id)  # type: ignore
     except Exception as e:
-        log_info(f"Failed to get shift by id: {e}")
+        log_info("Failed to get shift by id")
         handle_get_document_error(e)
     try:
         # pylint: disable=no-member
@@ -216,7 +216,7 @@ def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
             id=dataclass_obj.schedule_id
         )
     except Exception as e:
-        log_info(f"Failed to get schedule by id: {e}")
+        log_info("Failed to get schedule by id")
         handle_get_document_error(e)
     try:
         assignment_doc = AssignmentDocument(
@@ -233,7 +233,7 @@ def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
         )
     # pylint: disable=broad-except
     except Exception as e:
-        log_info(f"Failed to convert Assignment to AssignmentDocument: {e}")
+        log_info("Failed to convert Assignment to AssignmentDocument")
         handle_create_document_error(e)
     return assignment_doc
 
@@ -250,6 +250,6 @@ def doc_to_core_assignment(doc_obj: AssignmentDocument) -> Assignment:
             status=doc_obj.status,
         )
     except Exception as e:
-        log_info(f"Failed to convert AssignmentDocument to Assignment: {e}")
+        log_info("Failed to convert AssignmentDocument to Assignment")
         handle_create_core_object_error(e)
     return assignment

@@ -6,12 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.schedule import Stat, StatsOptions
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import StatMessage, StatsMessage, StatsOptionsMessage
 from scripts.setup_database import stats_options_db
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
-from services.stats_services.stats_setup import stats_setup
+from services.stats_services import stats_setup
 
 router = APIRouter()
 
@@ -22,7 +21,7 @@ async def create_stats_options(
     req: StatsOptionsMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> StatsMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "create-stats-options", "team", team_id
     ):
         raise HTTPException(
@@ -40,7 +39,7 @@ async def get_stats_options(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> StatsMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "read-stats-options", "team", team_id
     ):
         raise HTTPException(
@@ -59,7 +58,7 @@ async def update_stats_options(
     stats_options_api: StatsOptionsMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> StatsMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "update-stats-options", "team", team_id
     ):
         raise HTTPException(
@@ -81,7 +80,7 @@ async def delete_stats_options(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "delete-stats-options", "team", team_id
     ):
         raise HTTPException(

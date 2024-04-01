@@ -12,7 +12,7 @@ class AddFAR:
     def __init__(
         self,
         model: cp_model.CpModel,
-        variables: Dict[Tuple, Dict],
+        variables: Dict[Tuple, cp_model.IntVar],
         workers: List[str],
         obj: Objective,
     ) -> None:

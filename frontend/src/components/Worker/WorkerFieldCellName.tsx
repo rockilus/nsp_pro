@@ -5,7 +5,6 @@ import TextField from "@mui/material/TextField";
 
 import { WorkerT } from "./types";
 import { useWorkerStore } from "../../stores/workerStore";
-import { useSnackBarStore } from "../../stores/snackbarStore";
 
 interface Props {
   worker: WorkerT;
@@ -21,17 +20,13 @@ export default function WorkerFieldCellName({
   const [valueState, setValueState] = useState(worker.name);
 
   const updateWorker = useWorkerStore((state) => state.updateWorker);
-  const updateSnackBar = useSnackBarStore((state) => state.updateSnackBar);
 
   const handleEditConfirm = async () => {
     if (valueState !== worker.name) {
-      const responseStatus = await updateWorker({
+      updateWorker({
         ...worker,
         name: valueState,
       });
-      if (!responseStatus.statusOK) {
-        updateSnackBar(responseStatus.message, "error");
-      }
     }
     setEditing({});
   };

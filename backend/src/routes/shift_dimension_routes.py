@@ -6,12 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.shift import ShiftDimension, ShiftProperty
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import NewShiftDimensionMessage, ShiftDimensionMessage
 from routes.shift_routes import core_to_msg_shift_property
 from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
@@ -22,7 +21,7 @@ async def create_shift_dimension(
     shift_dimension: ShiftDimensionMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> NewShiftDimensionMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "create-shift-dimension", "team", team_id
     ):
         raise HTTPException(
@@ -53,7 +52,7 @@ async def get_shift_dimensions(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ShiftDimensionMessage]:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "read-shift-dimensions", "team", team_id
     ):
         raise HTTPException(
@@ -72,7 +71,7 @@ async def update_shift_dimension(
     shift_dimension: ShiftDimensionMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ShiftDimensionMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "update-shift-dimension", "team", team_id
     ):
         raise HTTPException(
@@ -97,7 +96,7 @@ async def delete_shift_dimension(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "delete-shift-dimension", "team", team_id
     ):
         raise HTTPException(

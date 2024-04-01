@@ -12,6 +12,7 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models import Constraint as ConstraintDocument
 from models import ConstraintBuild as ConstraintBuildDocument
 from models import Schedule as ScheduleDocument
@@ -20,7 +21,6 @@ from models import VarDay as VarDayDocument
 from models import VarShift as VarShiftDocument
 from models import VarWorker as VarWorkerDocument
 from models import Worker as WorkerDocument
-from services.logging import log_info
 
 
 class ConstraintDB:

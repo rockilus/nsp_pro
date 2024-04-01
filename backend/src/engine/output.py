@@ -25,7 +25,7 @@ class Output:
             return Outputs(
                 is_solution,
                 assignments,
-                objective_value,
+                objective_value,  # type: ignore # [CHECK IF OK]
                 constraint_breaches,
             )
         return Outputs(is_solution, [], 0, [])

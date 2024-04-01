@@ -11,9 +11,9 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models import Team as TeamDocument
 from models import User as UserDocument
-from services.logging import log_info
 
 
 class TeamDB:

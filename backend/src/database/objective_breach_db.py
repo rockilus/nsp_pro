@@ -13,12 +13,12 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models.objective_breach import ObjectiveBreach as ObjectiveBreachDocument
 from models.objective_breach import Variable as VariableDocument
 from models.schedule import Schedule as ScheduleDocument
 from models.shift import Shift as ShiftDocument
 from models.worker import Worker as WorkerDocument
-from services.logging import log_info
 
 
 class ObjectiveBreachDB:

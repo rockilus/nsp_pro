@@ -14,7 +14,7 @@ class AddConstraint:
     def __init__(
         self,
         model: cp_model.CpModel,
-        variables: Dict[Tuple, Dict],
+        variables: Dict[Tuple, cp_model.IntVar],
         durations: Dict[str, int],
         workers: List[str],
         days: List[str],

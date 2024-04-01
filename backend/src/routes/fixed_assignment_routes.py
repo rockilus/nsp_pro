@@ -7,11 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.fixed_assignment import FixedAssignment
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import FixedAssignmentMessage
 from scripts.setup_database import fixed_assignment_db, worker_db
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
@@ -22,7 +21,7 @@ async def create_fixed_assignment(
     req: FixedAssignmentMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> FixedAssignmentMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "create-fixed-assignment", "team", team_id
     ):
         raise HTTPException(
@@ -40,7 +39,7 @@ async def get_fixed_assignments(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[FixedAssignmentMessage]:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "read-fixed-assignments", "team", team_id
     ):
         raise HTTPException(
@@ -59,7 +58,7 @@ async def update_fixed_assignment(
     updated_fixed_assignment: FixedAssignmentMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "update-fixed-assignment", "team", team_id
     ):
         raise HTTPException(
@@ -83,7 +82,7 @@ async def delete_fixed_assignment(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "delete-fixed-assignment", "team", team_id
     ):
         raise HTTPException(

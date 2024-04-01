@@ -11,7 +11,7 @@ from scripts.setup_database import (
     worker_dimension_db,
     worker_property_db,
 )
-from services.deletion_services.utils import delete_item_with_id_from_constraint_build
+from services.worker_services.utils import delete_item_with_id_from_constraint_build
 
 
 def delete_worker(worker_id: str) -> None:

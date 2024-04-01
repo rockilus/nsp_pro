@@ -33,8 +33,8 @@ class Model:
         self.shifts = shifts
 
         self.model = cp_model.CpModel()
-        self.variables: Dict[Tuple, Dict] = {}
-        self.intervals: Dict[Tuple, Dict] = {}
+        self.variables: Dict[Tuple, cp_model.IntVar] = {}
+        self.intervals: Dict[Tuple, cp_model.IntervalVar] = {}
         self.durations: Dict[str, int] = shift_durations
         self.shift_start_times: Dict[Tuple, int] = shift_start_times
         self.shift_end_times: Dict[Tuple, int] = shift_end_times
@@ -200,7 +200,8 @@ class Model:
     def add_objective(self) -> None:
         self.model.Minimize(
             sum(
-                self.obj.bool_vars[i] * self.obj.bool_coeffs[i]
+                self.obj.bool_vars[i]  # type: ignore # [CHECK IF OK]
+                * self.obj.bool_coeffs[i]
                 for i in range(len(self.obj.bool_vars))
             )
             + sum(
@@ -209,11 +210,13 @@ class Model:
             )
         )
 
-    def solve(self) -> cp_model.CpSolver:
+    def solve(self) -> None:
         # params = "max_time_in_seconds:20.0"
         # if params:
         #     text_format.Parse(params, self.solver.parameters)
         self.solver.parameters.max_time_in_seconds = 20.0
         # self.solver.parameters.log_search_progress = True
-        self.status = self.solver.Solve(self.model, self.solution_printer)
+        self.status = self.solver.Solve(  # type: ignore # [CHECK IF OK]
+            self.model, self.solution_printer
+        )
         self.bt.total_end = time.time()

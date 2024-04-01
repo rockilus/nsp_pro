@@ -11,10 +11,10 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models import Worker as WorkerDocument
 from models import WorkerDimension as WorkerDimensionDocument
 from models import WorkerProperty as WorkerPropertyDocument
-from services.logging import log_info
 
 
 class WorkerPropertyDB:

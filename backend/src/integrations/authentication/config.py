@@ -1,7 +1,7 @@
 from supertokens_python import InputAppInfo, SupertokensConfig
 from supertokens_python.recipe import dashboard, emailpassword, session
 
-from services.authentication.override_func import override_emailpassword_functions
+from integrations.authentication.override_func import override_emailpassword_functions
 from utils.env_config import (
     API_URL,
     CLIENT_URL,

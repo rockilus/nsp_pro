@@ -7,11 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.request import Request
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import RequestMessage
 from scripts.setup_database import request_db, worker_db
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
@@ -22,7 +21,7 @@ async def create_request(
     req: RequestMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> RequestMessage:
-    if not await permit_check(session.get_user_id(), "create-request", "team", team_id):
+    if not await authz_check(session.get_user_id(), "create-request", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to create a request",
@@ -38,7 +37,7 @@ async def get_requests(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[RequestMessage]:
-    if not await permit_check(session.get_user_id(), "read-requests", "team", team_id):
+    if not await authz_check(session.get_user_id(), "read-requests", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to get requests",
@@ -55,7 +54,7 @@ async def update_request(
     updated_request: RequestMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
-    if not await permit_check(session.get_user_id(), "update-request", "team", team_id):
+    if not await authz_check(session.get_user_id(), "update-request", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to update a request",
@@ -77,7 +76,7 @@ async def delete_request(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
-    if not await permit_check(session.get_user_id(), "delete-request", "team", team_id):
+    if not await authz_check(session.get_user_id(), "delete-request", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to delete a request",

@@ -37,7 +37,7 @@ class AddConstraintOrd(AddConstraint):
                     f"Sum constraint operator {constraint.operator} "
                     + "not implemented"
                 )
-            self.model.AddBoolOr(transition)
+            self.model.AddBoolOr(transition)  # type: ignore # [CHECK IF OK]
         else:
             if constraint.penalty != 0:
                 var_name = build_var_name(constraint, cstr_vars, "constraint")
@@ -52,6 +52,6 @@ class AddConstraintOrd(AddConstraint):
                     )
                 trans_var = self.model.NewBoolVar(var_name)
                 transition.append(trans_var)
-                self.model.AddBoolOr(transition)
+                self.model.AddBoolOr(transition)  # type: ignore # [CHECK IF OK]
                 self.obj.bool_vars.append(trans_var)
                 self.obj.bool_coeffs.append(constraint.penalty)

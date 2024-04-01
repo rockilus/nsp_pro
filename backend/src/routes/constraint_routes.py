@@ -6,18 +6,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.constraint import Block, ConstraintBuild, MissingProperty
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import (
     BlockMessage,
     ConstraintBuildMessage,
     MissingPropertyMessage,
 )
 from scripts.setup_database import constraint_build_db
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
-from services.constraint_build_services.blocks_to_string import blocks_to_string
-from services.deletion_services.delete_constraint_build import (
-    delete_constraint_build as delete_constraint_build_service,
+from services.constraint_build_services import (
+    blocks_to_string,
+    delete_constraint_build_and_dependencies,
 )
 
 router = APIRouter()
@@ -29,7 +28,7 @@ async def create_constraint(
     req: ConstraintBuildMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ConstraintBuildMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "create-constraint", "team", team_id
     ):
         raise HTTPException(
@@ -47,7 +46,7 @@ async def get_constraints(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ConstraintBuildMessage]:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "read-constraints", "team", team_id
     ):
         raise HTTPException(
@@ -65,7 +64,7 @@ async def update_constraint(
     updated_constraint_build: ConstraintBuildMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ConstraintBuildMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "update-constraint", "team", team_id
     ):
         raise HTTPException(
@@ -87,14 +86,14 @@ async def delete_constraint(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "delete-constraint", "team", team_id
     ):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to delete a constraint",
         )
-    delete_constraint_build_service(constraint_build_id)
+    delete_constraint_build_and_dependencies(constraint_build_id)
     return {"message": "Constraint deleted"}
 
 

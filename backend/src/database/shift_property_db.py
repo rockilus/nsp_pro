@@ -11,10 +11,10 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models import Shift as ShiftDocument
 from models import ShiftDimension as ShiftDimensionDocument
 from models import ShiftProperty as ShiftPropertyDocument
-from services.logging import log_info
 
 
 class ShiftPropertyDB:

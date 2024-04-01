@@ -7,11 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.schedule import Assignment
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import AssignmentMessage
 from scripts.setup_database import assignment_db, schedule_db
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
 
 router = APIRouter()
 
@@ -22,7 +21,7 @@ async def create_assignment(
     assignment: AssignmentMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> AssignmentMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "create-assignment", "team", team_id
     ):
         raise HTTPException(
@@ -39,7 +38,7 @@ async def get_assignments(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[AssignmentMessage]:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "read-assignments", "team", team_id
     ):
         raise HTTPException(
@@ -58,7 +57,7 @@ async def update_assignment(
     assignment_api: AssignmentMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> AssignmentMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "update-assignment", "team", team_id
     ):
         raise HTTPException(
@@ -79,7 +78,7 @@ async def delete_assignment(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "delete-assignment", "team", team_id
     ):
         raise HTTPException(

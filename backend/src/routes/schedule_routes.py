@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core.schedule import Assignment, ObjectiveBreach, Schedule, Stat
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
 from routes.api_model import (
     AssignmentMessage,
     ObjectiveBreachMessage,
@@ -23,14 +25,11 @@ from scripts.setup_database import (
     objective_breach_db,
     schedule_db,
 )
-from services import solve_schedule as solve_schedule_service
-from services import (
+from services.schedule_services import solve_schedule as solve_schedule_service
+from services.schedule_services import (
     to_past_schedules_and_assignments as to_past_schedules_and_assignments_service,
 )
-from services import validate_schedule as validate_schedule_service
-from services.authentication.authn_services import authn_verify_session
-from services.authentication.authn_types import SessionContainerType
-from services.authorization.authz_services import permit_check
+from services.schedule_services import validate_schedule as validate_schedule_service
 
 router = APIRouter()
 
@@ -41,9 +40,7 @@ async def create_schedule(
     schedule: ScheduleMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ScheduleMessage:
-    if not await permit_check(
-        session.get_user_id(), "create-schedule", "team", team_id
-    ):
+    if not await authz_check(session.get_user_id(), "create-schedule", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to create a schedule",
@@ -59,7 +56,7 @@ async def solve_schedule(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> SolutionMessage:
-    if not await permit_check(session.get_user_id(), "solve-schedule", "team", team_id):
+    if not await authz_check(session.get_user_id(), "solve-schedule", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to solve a schedule",
@@ -75,7 +72,7 @@ async def validate_schedule(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ValidateMessage:
-    if not await permit_check(
+    if not await authz_check(
         session.get_user_id(), "validate-schedule", "team", team_id
     ):
         raise HTTPException(
@@ -91,7 +88,7 @@ async def get_schedules(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ScheduleMessage]:
-    if not await permit_check(session.get_user_id(), "read-schedules", "team", team_id):
+    if not await authz_check(session.get_user_id(), "read-schedules", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to get schedules",
@@ -108,9 +105,7 @@ async def update_schedule(
     schedule_api: ScheduleMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ScheduleMessage:
-    if not await permit_check(
-        session.get_user_id(), "update-schedule", "team", team_id
-    ):
+    if not await authz_check(session.get_user_id(), "update-schedule", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to update a schedule",
@@ -129,9 +124,7 @@ async def delete_schedule(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
-    if not await permit_check(
-        session.get_user_id(), "delete-schedule", "team", team_id
-    ):
+    if not await authz_check(session.get_user_id(), "delete-schedule", "team", team_id):
         raise HTTPException(
             status_code=403,
             detail="You do not have permission to delete a schedule",

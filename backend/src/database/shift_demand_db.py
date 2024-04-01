@@ -11,10 +11,10 @@ from errors import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from logger import log_info
 from models.coverage import Coverage as CoverageDocument
 from models.shift import Shift as ShiftDocument
 from models.shift_demand import ShiftDemand as ShiftDemandDocument
-from services.logging import log_info
 
 
 class ShiftDemandDB:
