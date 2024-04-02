@@ -85,7 +85,7 @@ export default function UpdateWorkerDimensionForm({
           entryOptions: updatedOptions ? updatedOptions : listOptions,
         };
         const addedOK = await updateWorkerDimension(newWorkerDimension);
-        if (addedOK) {
+        if (addedOK && !updatedOptions) {
           setName("");
           setListOptions([]);
           if (setOpenParent) {
