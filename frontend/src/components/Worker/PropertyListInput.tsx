@@ -7,10 +7,15 @@ import TextField from "@mui/material/TextField";
 
 interface Props {
   options: string[];
+  listError: boolean;
   setOptions: (value: string[]) => void;
 }
 
-export default function OptionList({ options, setOptions }: Props) {
+export default function PropertyListInput({
+  options,
+  listError,
+  setOptions,
+}: Props) {
   const [newOption, setNewOption] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
 
@@ -48,13 +53,18 @@ export default function OptionList({ options, setOptions }: Props) {
         value={newOption}
         onChange={handleInputChange}
         onKeyDown={handleKeyPress}
-        error={error}
-        helperText={error ? "Please enter an option" : ""}
+        error={error || listError}
+        helperText={error || listError ? "Please enter an option" : ""}
         sx={{ width: "100%" }}
       />
       <Box mt={2}>
         {options.map((option, index) => (
-          <Box key={index} display="flex" alignItems="center">
+          <Box
+            key={index}
+            display="flex"
+            alignItems="center"
+            sx={{ paddingLeft: 0.5 }}
+          >
             <Box flexGrow={1}>{option}</Box>
             <IconButton onClick={() => handleDeleteOption(index)}>
               <CancelIcon />

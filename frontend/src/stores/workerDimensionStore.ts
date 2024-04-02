@@ -14,7 +14,7 @@ const apiUrlWorkerDimensions =
 type WorkerDimensionStateT = {
   workerDimensions: WorkerDimensionT[];
   fetchWorkerDimensions: (teamId: string) => void;
-  addWorkerDimension: (WorkerDimension: WorkerDimensionT) => void;
+  addWorkerDimension: (WorkerDimension: WorkerDimensionT) => Promise<boolean>;
   updateWorkerDimension: (updatedWorkerDimension: WorkerDimensionT) => void;
   deleteWorkerDimension: (workerDimensionId: string, teamId: string) => void;
 };
@@ -79,7 +79,7 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
               "Failed to add worker dimension: " + responseData.detail,
               "error"
             );
-          return;
+          return false;
         }
         const newWorkerDimension: NewWorkerDimensionT = responseData;
         set((state) => ({
@@ -91,6 +91,7 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
         useWorkerStore
           .getState()
           .addPropertiesToStore(newWorkerDimension.newProperties);
+        return true;
       } catch (error) {
         console.error("Failed to add worker dimension:", error);
         useSnackBarStore
@@ -99,6 +100,7 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
             "Failed to add worker dimension, please try again later",
             "error"
           );
+        return false;
       }
     },
 

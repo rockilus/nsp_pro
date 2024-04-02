@@ -12,9 +12,10 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Components
+import NewPropertyForm from "./NewPropertyForm";
+import PopoverRHS from "./PopoverRHS";
 import WorkerPropertyCell from "./WorkerPropertyCell";
 import WorkerDimensionCell from "./WorkerDimensionCell";
-import AddWorkerDimensionDrawer from "./AddWorkerDimensionDrawer";
 import WorkerFieldCell from "./WorkerFieldCell";
 // Stores
 import { useWorkerStore } from "../../stores/workerStore";
@@ -38,14 +39,10 @@ export default function WorkerTable({
   defaultWorkerFields,
 }: Props) {
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   const addWorker = useWorkerStore((state) => state.addWorker);
   const deleteWorker = useWorkerStore((state) => state.deleteWorker);
-
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen);
-  };
 
   const handleAddWorker = () => {
     addWorker({
@@ -73,9 +70,13 @@ export default function WorkerTable({
                 />
               ))}
               <TableCell>
-                <Button onClick={toggleDrawer}>
-                  <AddIcon />
-                </Button>
+                <PopoverRHS
+                  title={"New property"}
+                  buttonContent={<AddIcon color="primary" />}
+                  content={<NewPropertyForm setOpenParent={setPopoverOpen} />}
+                  open={popoverOpen}
+                  setOpen={setPopoverOpen}
+                />
               </TableCell>
             </TableRow>
           </TableHead>
@@ -138,11 +139,6 @@ export default function WorkerTable({
           </TableBody>
         </Table>
       </TableContainer>
-      <AddWorkerDimensionDrawer
-        team={team}
-        drawerOpen={drawerOpen}
-        toggleDrawer={toggleDrawer}
-      />
     </>
   );
 }
