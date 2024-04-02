@@ -8,12 +8,15 @@ const apiUrlTeam = process.env.NEXT_PUBLIC_API_URL + "/teams";
 
 type TeamStateT = {
   teams: TeamT[];
+  selectedTeam: TeamT | null;
   fetchTeams: () => void;
   clearTeams: () => void;
+  setSelectedTeam: (team: TeamT | null) => void;
 };
 
 export const useTeamStore = create<TeamStateT>()((set) => ({
   teams: [],
+  selectedTeam: null,
 
   fetchTeams: async () => {
     const options: RequestInit = {
@@ -32,7 +35,7 @@ export const useTeamStore = create<TeamStateT>()((set) => ({
           );
         return;
       }
-      const teams: TeamT[] = await response.json();
+      const teams: TeamT[] = responseData;
       set({ teams: teams });
     } catch (error) {
       console.error("Failed to fetch teams:", error);
@@ -47,5 +50,9 @@ export const useTeamStore = create<TeamStateT>()((set) => ({
 
   clearTeams: () => {
     set({ teams: [] });
+  },
+
+  setSelectedTeam: (team: TeamT | null) => {
+    set({ selectedTeam: team });
   },
 }));

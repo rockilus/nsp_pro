@@ -12,9 +12,10 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Components
+import NewWorkerDimensionForm from "./NewWorkerDimensionForm";
+import PopoverRHS from "./PopoverRHS";
 import WorkerPropertyCell from "./WorkerPropertyCell";
 import WorkerDimensionCell from "./WorkerDimensionCell";
-import AddWorkerDimensionDrawer from "./AddWorkerDimensionDrawer";
 import WorkerFieldCell from "./WorkerFieldCell";
 // Stores
 import { useWorkerStore } from "../../stores/workerStore";
@@ -38,14 +39,10 @@ export default function WorkerTable({
   defaultWorkerFields,
 }: Props) {
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
   const addWorker = useWorkerStore((state) => state.addWorker);
   const deleteWorker = useWorkerStore((state) => state.deleteWorker);
-
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen);
-  };
 
   const handleAddWorker = () => {
     addWorker({
@@ -66,16 +63,18 @@ export default function WorkerTable({
                 <TableCell key={index}>{field}</TableCell>
               ))}
               {workerDimensions.map((wd, wdIndex) => (
-                <WorkerDimensionCell
-                  key={wdIndex}
-                  team={team}
-                  workerDimension={wd}
-                />
+                <WorkerDimensionCell key={wdIndex} workerDimension={wd} />
               ))}
               <TableCell>
-                <Button onClick={toggleDrawer}>
-                  <AddIcon />
-                </Button>
+                <PopoverRHS
+                  title={"New property"}
+                  buttonContent={<AddIcon color="primary" />}
+                  content={
+                    <NewWorkerDimensionForm setOpenParent={setPopoverRhsOpen} />
+                  }
+                  open={popoverRhsOpen}
+                  setOpen={setPopoverRhsOpen}
+                />
               </TableCell>
             </TableRow>
           </TableHead>
@@ -138,11 +137,6 @@ export default function WorkerTable({
           </TableBody>
         </Table>
       </TableContainer>
-      <AddWorkerDimensionDrawer
-        team={team}
-        drawerOpen={drawerOpen}
-        toggleDrawer={toggleDrawer}
-      />
     </>
   );
 }
