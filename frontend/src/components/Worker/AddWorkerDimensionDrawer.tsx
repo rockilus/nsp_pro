@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 // MUI
-import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import CancelIcon from "@mui/icons-material/Cancel";
 import Drawer from "@mui/material/Drawer";
@@ -13,6 +12,8 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+// Components
+import OptionList from "./PropertyListInput";
 // Stores
 import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
 // Types
@@ -35,7 +36,6 @@ export default function AddWorkerDimensionDrawer({
   const [name, setName] = useState("");
   const [entryType, setEntryType] = useState("");
   const [listOptions, setListOptions] = useState<string[]>([]);
-  const [newOption, setNewOption] = useState<string>("");
 
   const addWorkerDimension = useWorkerDimensionStore(
     (state) => state.addWorkerDimension
@@ -78,47 +78,6 @@ export default function AddWorkerDimensionDrawer({
     </Box>
   );
 
-  const addListOptions = () => (
-    <Box sx={{ minWidth: 120, width: "100%" }}>
-      {listOptions.map((option, index) => (
-        <ListItem key={index}>
-          <Typography variant="body1" sx={{ width: "100%" }}>
-            {option}
-          </Typography>
-          <CancelIcon
-            color="disabled"
-            sx={{ cursor: "pointer", marginLeft: "10px" }}
-            onClick={() => {
-              listOptions.splice(index, 1);
-              setListOptions([...listOptions]);
-            }}
-          />
-        </ListItem>
-      ))}
-      <Box sx={{ display: "flex", alignItems: "center" }}>
-        <TextField
-          id="outlined-basic"
-          label="New Option"
-          variant="outlined"
-          value={newOption}
-          onChange={(e) => setNewOption(e.target.value)}
-          fullWidth
-        />
-        <AddIcon
-          color="primary"
-          sx={{ cursor: "pointer", marginLeft: "10px" }}
-          onClick={() => {
-            if (newOption === "") {
-              return;
-            }
-            setListOptions([...listOptions, newOption]);
-            setNewOption("");
-          }}
-        />
-      </Box>
-    </Box>
-  );
-
   const drawerContent = () => (
     <Box sx={{ width: 350 }} role="presentation">
       <Box
@@ -152,7 +111,9 @@ export default function AddWorkerDimensionDrawer({
         <ListItem key={"entry_type"}>{selectField()}</ListItem>
       </List>
       {entryType === "list" && (
-        <ListItem key={"list_options"}>{addListOptions()}</ListItem>
+        <ListItem key={"entry_options"}>
+          <OptionList options={listOptions} setOptions={setListOptions} />
+        </ListItem>
       )}
       <Button
         variant="contained"

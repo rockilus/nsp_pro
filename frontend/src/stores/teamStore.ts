@@ -32,7 +32,7 @@ export const useTeamStore = create<TeamStateT>()((set) => ({
           );
         return;
       }
-      const teams: TeamT[] = await response.json();
+      const teams: TeamT[] = responseData;
       set({ teams: teams });
     } catch (error) {
       console.error("Failed to fetch teams:", error);
