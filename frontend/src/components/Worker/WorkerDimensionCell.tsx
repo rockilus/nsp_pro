@@ -2,77 +2,29 @@ import React, { useState } from "react";
 // MUI
 import AbcIcon from "@mui/icons-material/Abc";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import ListIcon from "@mui/icons-material/List";
-import Menu from "@mui/material/Menu";
 import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
 import Typography from "@mui/material/Typography";
 // Components
-import UpdateWorkerDimension from "./UpdateWorkerDimension";
-// Stores
-import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
+import PopoverAnchorEl from "./PopoverAnchorEl";
+import UpdateWorkerDimensionForm from "./UpdateWorkerDimensionForm";
 // Types
 import { WorkerDimensionT } from "./types";
-import { TeamT } from "../../containers/types";
 
 interface Props {
-  team: TeamT;
   workerDimension: WorkerDimensionT;
 }
 
-export default function WorkerDimensionCell({ team, workerDimension }: Props) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [nameState, setNameState] = useState(workerDimension.name);
-  const [entryOptionsState, setEntryOptionsState] = useState(
-    workerDimension.entryOptions
-  );
-
-  const updateWorkerDimension = useWorkerDimensionStore(
-    (state) => state.updateWorkerDimension
-  );
-
-  const open = Boolean(anchorEl);
+export default function WorkerDimensionCell({ workerDimension }: Props) {
+  const [popoverAnchorOpen, setPopoverAnchorOpen] = useState(false);
 
   const iconsPrefix: Record<string, React.ReactNode> = {
     str: <AbcIcon color="disabled" fontSize="small" />,
     int: <NumbersIcon color="disabled" fontSize="small" />,
     bool: <CheckBoxIcon color="disabled" fontSize="small" />,
     list: <ListIcon color="disabled" fontSize="small" />,
-  };
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleEditConfirm = () => {
-    if (
-      nameState !== workerDimension.name ||
-      entryOptionsState !== workerDimension.entryOptions
-    ) {
-      const updatedWD: WorkerDimensionT = {
-        id: workerDimension.id,
-        teamId: workerDimension.teamId,
-        name: nameState,
-        entryType: workerDimension.entryType,
-        entryOptions: entryOptionsState,
-      };
-      updateWorkerDimension(updatedWD);
-    }
-    setNameState(workerDimension.name);
-    setEntryOptionsState(workerDimension.entryOptions);
-    handleClose();
-  };
-
-  const handleEditCancel = () => {
-    setNameState(workerDimension.name);
-    setEntryOptionsState(workerDimension.entryOptions);
-    handleClose();
   };
 
   const cellContent = () => (
@@ -92,44 +44,17 @@ export default function WorkerDimensionCell({ team, workerDimension }: Props) {
 
   return (
     <TableCell key={workerDimension.id} component="th" scope="row">
-      <Button
-        id="basic-button"
-        aria-controls={open ? "basic-menu" : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? "true" : undefined}
-        style={{
-          textTransform: "none",
-          justifyContent: "flex-start",
-          padding: 0,
-        }}
-        onClick={handleClick}
-      >
-        {cellContent()}
-      </Button>
-      <Menu
-        id="basic-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleEditCancel}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleEditConfirm();
-          }
-        }}
-        MenuListProps={{
-          "aria-labelledby": "basic-button",
-        }}
-      >
-        <UpdateWorkerDimension
-          team={team}
-          workerDimensionId={workerDimension.id}
-          name={nameState}
-          entryType={workerDimension.entryType}
-          entryOptions={entryOptionsState}
-          setNameState={setNameState}
-          setEntryOptions={setEntryOptionsState}
-        />
-      </Menu>
+      <PopoverAnchorEl
+        buttonContent={cellContent()}
+        content={
+          <UpdateWorkerDimensionForm
+            workerDimension={workerDimension}
+            setOpenParent={setPopoverAnchorOpen}
+          />
+        }
+        open={popoverAnchorOpen}
+        setOpen={setPopoverAnchorOpen}
+      />
     </TableCell>
   );
 }

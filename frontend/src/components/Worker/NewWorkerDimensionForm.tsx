@@ -9,7 +9,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 // Component
-import PropertyListInput from "./PropertyListInput";
+import DimensionListInput from "./DimensionListInput";
 // Stores
 import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
 import { useTeamStore } from "../../stores/teamStore";
@@ -19,10 +19,10 @@ import { WorkerDimensionT } from "./types";
 import { PropertyTypes } from "../../utils/constants";
 
 interface Props {
-  setOpenParent: (open: boolean) => void | undefined;
+  setOpenParent: (open: boolean) => void | null;
 }
 
-export default function NewPropertyForm({ setOpenParent }: Props) {
+export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
   const [name, setName] = useState<string>("");
   const [type, setType] = useState<string>("");
   const [listOptions, setListOptions] = useState<string[]>([]);
@@ -42,6 +42,21 @@ export default function NewPropertyForm({ setOpenParent }: Props) {
   const handleTypeChange = (event: SelectChangeEvent<string>) => {
     setListOptions([]);
     setType(event.target.value as string);
+  };
+
+  const handleAddOption = (newOption: string) => {
+    if (newOption.trim() !== "") {
+      setListOptions([...listOptions, newOption]);
+      setListError(false);
+    } else {
+      setListError(true);
+    }
+  };
+
+  const handleRemoveOption = (index: number) => {
+    const updatedOptions = [...listOptions];
+    updatedOptions.splice(index, 1);
+    setListOptions(updatedOptions);
   };
 
   const handleAddElement = async () => {
@@ -124,20 +139,19 @@ export default function NewPropertyForm({ setOpenParent }: Props) {
       </Box>
       {type === "list" && (
         <Box mt={2}>
-          <PropertyListInput
+          <DimensionListInput
             options={listOptions}
             listError={listError}
-            setOptions={setListOptions}
+            addOption={handleAddOption}
+            removeOption={handleRemoveOption}
           />
         </Box>
       )}
-      <Button
-        variant="contained"
-        onClick={handleAddElement}
-        style={{ marginTop: 10 }}
-      >
-        Add
-      </Button>
+      <div style={{ display: "flex", justifyContent: "right", marginTop: 10 }}>
+        <Button variant="contained" onClick={handleAddElement}>
+          Add
+        </Button>
+      </div>
     </Box>
   );
 }

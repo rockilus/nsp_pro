@@ -8,13 +8,15 @@ import TextField from "@mui/material/TextField";
 interface Props {
   options: string[];
   listError: boolean;
-  setOptions: (value: string[]) => void;
+  addOption: (newOption: string) => void;
+  removeOption: (index: number) => void;
 }
 
-export default function PropertyListInput({
+export default function DimensionListInput({
   options,
   listError,
-  setOptions,
+  addOption,
+  removeOption,
 }: Props) {
   const [newOption, setNewOption] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
@@ -25,7 +27,7 @@ export default function PropertyListInput({
 
   const handleAddOption = () => {
     if (newOption.trim() !== "") {
-      setOptions([...options, newOption]);
+      addOption(newOption);
       setNewOption("");
       setError(false);
     } else {
@@ -40,9 +42,7 @@ export default function PropertyListInput({
   };
 
   const handleDeleteOption = (index: number) => {
-    const updatedOptions = [...options];
-    updatedOptions.splice(index, 1);
-    setOptions(updatedOptions);
+    removeOption(index);
   };
 
   return (

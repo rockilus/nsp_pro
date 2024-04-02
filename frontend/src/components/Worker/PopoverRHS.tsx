@@ -76,7 +76,6 @@ export default function PopoverRHS({
               margin: 20,
               boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
               padding: 20,
-              //   maxWidth: 300,
               width: 350,
               height: "80%",
             },

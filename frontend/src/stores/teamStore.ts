@@ -11,7 +11,7 @@ type TeamStateT = {
   selectedTeam: TeamT | null;
   fetchTeams: () => void;
   clearTeams: () => void;
-  setSelectedTeam: (team: TeamT | null) => void; // Add setSelectedTeam action
+  setSelectedTeam: (team: TeamT | null) => void;
 };
 
 export const useTeamStore = create<TeamStateT>()((set) => ({

@@ -8,7 +8,7 @@ import ListItem from "@mui/material/ListItem";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 // Components
-import DialogColumnDelete from "./DialogWorkerDimensionDel";
+import DialogWorkerDimensionDel from "./DialogWorkerDimensionDel";
 // Types
 import { TeamT } from "../../containers/types";
 
@@ -92,7 +92,7 @@ export default function UpdateWorkerDimension({
         <ListItem key={"list_options"}>{addListOptions()}</ListItem>
       )}
       <ListItem key={"button"}>
-        <DialogColumnDelete team={team} workerDimensionId={workerDimensionId} />
+        <DialogWorkerDimensionDel workerDimensionId={workerDimensionId} />
       </ListItem>
     </Box>
   );

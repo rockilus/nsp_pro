@@ -9,17 +9,16 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 // Stores
 import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
-// Types
-import { TeamT } from "../../containers/types";
+import { useTeamStore } from "../../stores/teamStore";
 
 interface Props {
-  team: TeamT;
   workerDimensionId: string;
 }
 
-export default function DialogColumnDelete({ team, workerDimensionId }: Props) {
+export default function DialogWorkerDimensionDel({ workerDimensionId }: Props) {
   const [open, setOpen] = useState(false);
 
+  const selectedTeam = useTeamStore((state) => state.selectedTeam);
   const deleteWorkerDimension = useWorkerDimensionStore(
     (state) => state.deleteWorkerDimension
   );
@@ -33,9 +32,9 @@ export default function DialogColumnDelete({ team, workerDimensionId }: Props) {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
-      <Button variant="outlined" onClick={handleClickOpen} fullWidth>
-        Delete property
+    <Box>
+      <Button variant="outlined" onClick={handleClickOpen}>
+        Delete
       </Button>
       <Dialog
         open={open}
@@ -55,8 +54,10 @@ export default function DialogColumnDelete({ team, workerDimensionId }: Props) {
         <DialogActions>
           <Button
             onClick={() => {
-              deleteWorkerDimension(workerDimensionId, team.id);
-              handleClose();
+              if (selectedTeam) {
+                deleteWorkerDimension(workerDimensionId, selectedTeam.id);
+                handleClose();
+              }
             }}
             color="error"
           >
