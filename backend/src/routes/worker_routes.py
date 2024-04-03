@@ -125,7 +125,15 @@ async def update_worker_property(
             new_wp = worker_property_db.create_worker_property(wp_data)
         else:
             new_wp = worker_property_db.update_worker_property(wp_data)
-        add_back_worker_property_to_constraint_build(new_wp)
+        if isinstance(new_wp.value, list):
+            for value in new_wp.value:
+                add_back_worker_property_to_constraint_build(
+                    new_wp.worker_dimension_id, value
+                )
+        else:
+            add_back_worker_property_to_constraint_build(
+                new_wp.worker_dimension_id, new_wp.value
+            )
         response = core_to_msg_worker_property(new_wp)
     except Exception as e:
         log_info("Failed to update worker property")

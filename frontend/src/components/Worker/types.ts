@@ -8,7 +8,7 @@ export type WorkerDimensionT = {
 
 export type WorkerPropertyT = {
   id: string;
-  value: string | number | boolean;
+  value: string | number | boolean | string[];
   workerId: string;
   workerDimensionId: string;
 };

@@ -10,7 +10,7 @@ export type ShiftDimensionT = {
 
 export type ShiftPropertyT = {
   id: string;
-  value: string | number | boolean;
+  value: string | number | boolean | string[];
   shiftId: string;
   shiftDimensionId: string;
 };

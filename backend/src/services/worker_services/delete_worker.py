@@ -1,5 +1,4 @@
 from core.constraint import MissingProperty
-from core.worker import WorkerProperty
 from scripts.setup_database import (
     assignment_db,
     constraint_build_db,
@@ -40,29 +39,48 @@ def delete_worker_property_from_constraint_build(worker_id: str) -> None:
         wps_dim = worker_property_db.get_worker_properties_by_worker_dimension_id(
             wp.worker_dimension_id
         )
-        wps_dim_same_value = [
-            wpd for wpd in wps_dim if wpd.value == wp.value and wpd.id != wp.id
-        ]
-        if not wps_dim_same_value:
-            update_cbs_for_change_worker_property(wp)
+        if wd.entry_type == "list":
+            if isinstance(wp.value, list):
+                for wp_v in wp.value:
+                    wps_dim_same_value = [
+                        wpd
+                        for wpd in wps_dim
+                        if wp_v in wpd.value and wpd.id != wp.id  # type: ignore
+                    ]
+                    if not wps_dim_same_value:
+                        update_cbs_for_change_worker_property(
+                            wp.worker_dimension_id, wp_v
+                        )
+            else:
+                raise ValueError(
+                    "Worker property value is not a list for list dimension"
+                )
+        else:
+            wps_dim_same_value = [
+                wpd for wpd in wps_dim if wpd.value == wp.value and wpd.id != wp.id
+            ]
+            if not wps_dim_same_value:
+                update_cbs_for_change_worker_property(
+                    wp.worker_dimension_id, wp.value  # type: ignore
+                )
 
 
-def update_cbs_for_change_worker_property(wp: WorkerProperty) -> None:
+def update_cbs_for_change_worker_property(
+    worker_dimension_id: str, value: str | int | float | bool
+) -> None:
     cbs = constraint_build_db.get_constraint_builds_by_wd_id_and_wp_value(
-        wp.worker_dimension_id, wp.value
+        worker_dimension_id, value  # type: ignore
     )
     for cb in cbs:
-        if any(
-            mp.dimension_id == wp.worker_dimension_id for mp in cb.missing_properties
-        ):
+        if any(mp.dimension_id == worker_dimension_id for mp in cb.missing_properties):
             for mp in cb.missing_properties:
-                if mp.dimension_id == wp.worker_dimension_id:
-                    mp.property_values.append(wp.value)
+                if mp.dimension_id == worker_dimension_id:
+                    mp.property_values.append(value)  # type: ignore
         else:
             cb.missing_properties.append(
                 MissingProperty(
-                    dimension_id=wp.worker_dimension_id,
-                    property_values=[wp.value],
+                    dimension_id=worker_dimension_id,
+                    property_values=[value],  # type: ignore
                 )
             )
         for block in cb.blocks:
@@ -81,18 +99,17 @@ def update_cbs_for_change_worker_property(wp: WorkerProperty) -> None:
         constraint_build_db.update_constraint_build(cb)
 
 
-def add_back_worker_property_to_constraint_build(wp: WorkerProperty) -> None:
+def add_back_worker_property_to_constraint_build(
+    worker_dimension_id: str, value: str | int | float | bool
+) -> None:
     cbs = constraint_build_db.get_constraint_builds_by_wd_id_and_wp_value(
-        wp.worker_dimension_id, wp.value
+        worker_dimension_id, value
     )
     for cb in cbs:
         new_mps = []
         for mp in cb.missing_properties:
-            if (
-                mp.dimension_id == wp.worker_dimension_id
-                and wp.value in mp.property_values
-            ):
-                mp.property_values.remove(wp.value)
+            if mp.dimension_id == worker_dimension_id and value in mp.property_values:
+                mp.property_values.remove(value)
                 if not mp.property_values:
                     continue
             new_mps.append(mp)
