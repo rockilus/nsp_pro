@@ -11,10 +11,10 @@ import TextField from "@mui/material/TextField";
 // Component
 import DimensionListInput from "../../utils/DimensionListInput";
 // Stores
-import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
+import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
 import { useTeamStore } from "../../stores/teamStore";
 // Types
-import { WorkerDimensionT } from "./types";
+import { ShiftDimensionT } from "./types";
 // Constant
 import { PropertyTypes } from "../../utils/constants";
 
@@ -22,7 +22,7 @@ interface Props {
   setOpenParent: (open: boolean) => void | null;
 }
 
-export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
+export default function NewShiftDimensionForm({ setOpenParent }: Props) {
   const [name, setName] = useState<string>("");
   const [type, setType] = useState<string>("");
   const [listOptions, setListOptions] = useState<string[]>([]);
@@ -31,8 +31,8 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
   const [listError, setListError] = useState<boolean>(false);
 
   const selectedTeam = useTeamStore((state) => state.selectedTeam);
-  const addWorkerDimension = useWorkerDimensionStore(
-    (state) => state.addWorkerDimension
+  const addShiftDimension = useShiftDimensionStore(
+    (state) => state.addShiftDimension
   );
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,14 +82,14 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
       (type !== "list" || listOptions.length > 0) &&
       selectedTeam
     ) {
-      const newWorkerDimension: WorkerDimensionT = {
+      const newShiftDimension: ShiftDimensionT = {
         id: "",
         teamId: selectedTeam.id,
         name: name,
         entryType: type,
         entryOptions: listOptions,
       };
-      const addedOK = await addWorkerDimension(newWorkerDimension);
+      const addedOK = await addShiftDimension(newShiftDimension);
       if (addedOK) {
         setName("");
         setType("");

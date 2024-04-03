@@ -13,7 +13,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Components
 import NewWorkerDimensionForm from "./NewWorkerDimensionForm";
-import PopoverRHS from "./PopoverRHS";
+import PopoverRHS from "../../utils/PopoverRHS";
 import WorkerPropertyCell from "./WorkerPropertyCell";
 import WorkerDimensionCell from "./WorkerDimensionCell";
 import WorkerFieldCell from "./WorkerFieldCell";

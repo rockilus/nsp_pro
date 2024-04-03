@@ -11,8 +11,10 @@ const apiUrlShiftDimensions =
 type ShiftDimensionStateT = {
   shiftDimensions: ShiftDimensionT[];
   fetchShiftDimensions: (teamId: string) => void;
-  addShiftDimension: (ShiftDimension: ShiftDimensionT) => void;
-  updateShiftDimension: (updatedShiftDimension: ShiftDimensionT) => void;
+  addShiftDimension: (ShiftDimension: ShiftDimensionT) => Promise<boolean>;
+  updateShiftDimension: (
+    updatedShiftDimension: ShiftDimensionT
+  ) => Promise<boolean>;
   deleteShiftDimension: (shiftDimensionId: string, teamId: string) => void;
 };
 
@@ -75,7 +77,7 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
             "Failed to add shift dimension: " + responseData.detail,
             "error"
           );
-        return;
+        return false;
       }
       const newShiftDimension: NewShiftDimensionT = responseData;
       set((state) => ({
@@ -87,6 +89,7 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
       useShiftStore
         .getState()
         .addPropertiesToStore(newShiftDimension.newProperties);
+      return true;
     } catch (error) {
       console.error("Failed to add shiftDimension:", error);
       useSnackBarStore
@@ -95,6 +98,7 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
           "Failed to add shift dimension, please try again later",
           "error"
         );
+      return false;
     }
   },
 
@@ -118,7 +122,7 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
             "Failed to update shift dimension: " + responseData.detail,
             "error"
           );
-        return;
+        return false;
       }
       const newShiftDimension: ShiftDimensionT = responseData;
       set((state) => ({
@@ -128,6 +132,7 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
             : shiftDimension
         ),
       }));
+      return true;
     } catch (error) {
       console.error("Failed to update shiftDimension:", error);
       useSnackBarStore
@@ -136,6 +141,7 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
           "Failed to update shift dimension, please try again later",
           "error"
         );
+      return false;
     }
   },
 

@@ -14,10 +14,11 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Components
-import ShiftPropertyCell from "./ShiftPropertyCell";
+import NewShiftDimensionForm from "./NewShiftDimensionForm";
+import PopoverRHS from "../../utils/PopoverRHS";
 import ShiftDimensionCell from "./ShiftDimensionCell";
-import AddShiftDimensionDrawer from "./AddShiftDimensionDrawer";
 import ShiftFieldCell from "./ShiftFieldCell";
+import ShiftPropertyCell from "./ShiftPropertyCell";
 // Stores
 import { useShiftStore } from "../../stores/shiftStore";
 // Types
@@ -42,7 +43,7 @@ export default function ShiftTable({
   defaultShiftFields,
 }: Props) {
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
   const addShift = useShiftStore((state) => state.addShift);
   const deleteShift = useShiftStore((state) => state.deleteShift);
@@ -50,10 +51,6 @@ export default function ShiftTable({
   const roundTime = (dt: dayjs.Dayjs): dayjs.Dayjs => {
     let minutes = Math.floor(dt.minute() / 15) * 15;
     return dt.minute(minutes).second(0).millisecond(0);
-  };
-
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen);
   };
 
   const handleAddShift = () => {
@@ -80,16 +77,18 @@ export default function ShiftTable({
                 <TableCell key={index}>{field}</TableCell>
               ))}
               {shiftDimensions.map((sd, sdIndex) => (
-                <ShiftDimensionCell
-                  key={sdIndex}
-                  team={team}
-                  shiftDimension={sd}
-                />
+                <ShiftDimensionCell key={sdIndex} shiftDimension={sd} />
               ))}
               <TableCell>
-                <Button onClick={toggleDrawer}>
-                  <AddIcon />
-                </Button>
+                <PopoverRHS
+                  title={"New property"}
+                  buttonContent={<AddIcon color="primary" />}
+                  content={
+                    <NewShiftDimensionForm setOpenParent={setPopoverRhsOpen} />
+                  }
+                  open={popoverRhsOpen}
+                  setOpen={setPopoverRhsOpen}
+                />
               </TableCell>
             </TableRow>
           </TableHead>
@@ -152,11 +151,6 @@ export default function ShiftTable({
           </TableBody>
         </Table>
       </TableContainer>
-      <AddShiftDimensionDrawer
-        team={team}
-        drawerOpen={drawerOpen}
-        toggleDrawer={toggleDrawer}
-      />
     </>
   );
 }

@@ -5,32 +5,32 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 // Component
 import DimensionListInput from "../../utils/DimensionListInput";
-import DialogWorkerDimensionDel from "./DialogWorkerDimensionDel";
+import DialogShiftDimensionDel from "./DialogShiftDimensionDel";
 // Stores
-import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
+import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
 import { useTeamStore } from "../../stores/teamStore";
 // Types
-import { WorkerDimensionT } from "./types";
+import { ShiftDimensionT } from "./types";
 
 interface Props {
-  workerDimension: WorkerDimensionT;
+  shiftDimension: ShiftDimensionT;
   setOpenParent: (open: boolean) => void | null;
 }
 
-export default function UpdateWorkerDimensionForm({
-  workerDimension,
+export default function UpdateShiftDimensionForm({
+  shiftDimension,
   setOpenParent,
 }: Props) {
-  const [name, setName] = useState<string>(workerDimension.name);
+  const [name, setName] = useState<string>(shiftDimension.name);
   const [listOptions, setListOptions] = useState<string[]>(
-    workerDimension.entryOptions
+    shiftDimension.entryOptions
   );
   const [nameError, setNameError] = useState<boolean>(false);
   const [listError, setListError] = useState<boolean>(false);
 
   const selectedTeam = useTeamStore((state) => state.selectedTeam);
-  const updateWorkerDimension = useWorkerDimensionStore(
-    (state) => state.updateWorkerDimension
+  const updateShiftDimension = useShiftDimensionStore(
+    (state) => state.updateShiftDimension
   );
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +60,7 @@ export default function UpdateWorkerDimensionForm({
     } else {
       setNameError(false);
     }
-    if (workerDimension.entryType === "list" && listOptions.length === 0) {
+    if (shiftDimension.entryType === "list" && listOptions.length === 0) {
       setListError(true);
     } else {
       setListError(false);
@@ -68,23 +68,23 @@ export default function UpdateWorkerDimensionForm({
 
     if (
       name.trim() !== "" &&
-      workerDimension.entryType !== "" &&
-      (workerDimension.entryType !== "list" || listOptions.length > 0) &&
+      shiftDimension.entryType !== "" &&
+      (shiftDimension.entryType !== "list" || listOptions.length > 0) &&
       selectedTeam
     ) {
       if (
-        name !== workerDimension.name ||
-        listOptions !== workerDimension.entryOptions ||
+        name !== shiftDimension.name ||
+        listOptions !== shiftDimension.entryOptions ||
         updatedOptions
       ) {
-        const newWorkerDimension: WorkerDimensionT = {
-          id: workerDimension.id,
+        const newShiftDimension: ShiftDimensionT = {
+          id: shiftDimension.id,
           teamId: selectedTeam.id,
           name: name,
-          entryType: workerDimension.entryType,
+          entryType: shiftDimension.entryType,
           entryOptions: updatedOptions ? updatedOptions : listOptions,
         };
-        const addedOK = await updateWorkerDimension(newWorkerDimension);
+        const addedOK = await updateShiftDimension(newShiftDimension);
         if (addedOK && !updatedOptions) {
           setName("");
           setListOptions([]);
@@ -118,7 +118,7 @@ export default function UpdateWorkerDimensionForm({
         onKeyDown={handleKeyPress}
         sx={{ width: "100%" }}
       />
-      {workerDimension.entryType === "list" && (
+      {shiftDimension.entryType === "list" && (
         <Box mt={2}>
           <DimensionListInput
             options={listOptions}
@@ -136,7 +136,7 @@ export default function UpdateWorkerDimensionForm({
         >
           Save
         </Button>
-        <DialogWorkerDimensionDel workerDimensionId={workerDimension.id} />
+        <DialogShiftDimensionDel shiftDimensionId={shiftDimension.id} />
       </div>
     </Box>
   );
