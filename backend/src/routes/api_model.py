@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from pydantic import BaseModel
 
@@ -7,7 +7,7 @@ from pydantic import BaseModel
 # Worker
 class WorkerPropertyMessage(BaseModel):
     id: str
-    value: str | int | bool
+    value: str | int | bool | List[str]
     workerDimensionId: str
     workerId: str
 
@@ -170,7 +170,7 @@ class StatMessage(BaseModel):
     workerId: str
     name: str
     cluster: str
-    value: Union[int, float]
+    value: int | float
 
 
 class StatsOptionsMessage(BaseModel):
@@ -181,7 +181,7 @@ class StatsOptionsMessage(BaseModel):
 
 
 class StatsMessage(BaseModel):
-    statsOptions: Union[StatsOptionsMessage, None]
+    statsOptions: StatsOptionsMessage | None
     stats: List[StatMessage]
 
 

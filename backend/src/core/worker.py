@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List
 
 from utils.constants import Constants
 
@@ -23,6 +23,6 @@ class WorkerDimension:
 @dataclass
 class WorkerProperty:
     id: str
-    value: Union[str, int, float, bool]
+    value: str | int | float | bool | List[str]
     worker_id: str
     worker_dimension_id: str
