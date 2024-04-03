@@ -13,8 +13,7 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 // Types
-import { WorkerDimensionT, WorkerPropertyT } from "./types";
-import { ConstraintDefaultColors } from "../../utils/constants";
+import { ConstraintDefaultColors } from "../constants";
 
 interface Props {
   selectedOptions: string[];

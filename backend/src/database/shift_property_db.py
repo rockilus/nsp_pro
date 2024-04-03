@@ -85,6 +85,7 @@ class ShiftPropertyDB:
 
     def get_shifts_id_by_dim_and_prop(self) -> Dict:
         pipeline = [
+            {"unwind": "$value"},
             {
                 "$group": {
                     "_id": {
