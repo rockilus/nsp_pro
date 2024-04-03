@@ -40,6 +40,7 @@ export default function BlockEditDict({
       !(obj instanceof Function)
     );
   }
+  console.log("templateBlock", templateBlock);
 
   const isTemplateOptionValueT = useCallback((dict: unknown): boolean => {
     return (
