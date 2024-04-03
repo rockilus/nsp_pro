@@ -5,28 +5,28 @@ import Chip from "@mui/material/Chip";
 import ListTypeCellEdit from "../../utils/WorkerShiftUtils/ListTypeCellEdit";
 import PopoverAnchorElOver from "../../utils/PopoverAnchorElOver";
 // Stores
-import { useWorkerStore } from "../../stores/workerStore";
+import { useShiftStore } from "../../stores/shiftStore";
 import { useTeamStore } from "../../stores/teamStore";
 // Types
-import { WorkerDimensionT, WorkerPropertyT } from "./types";
+import { ShiftDimensionT, ShiftPropertyT } from "./types";
 
 interface Props {
-  workerDimension: WorkerDimensionT;
-  workerProperty: WorkerPropertyT;
+  shiftDimension: ShiftDimensionT;
+  shiftProperty: ShiftPropertyT;
 }
 
-export default function WorkerPropertyCellList({
-  workerDimension,
-  workerProperty,
+export default function ShiftPropertyCellList({
+  shiftDimension,
+  shiftProperty,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [valueState, setValueState] = useState<string[]>(
-    workerProperty.value as string[]
+    shiftProperty.value as string[]
   );
 
   const selectedTeam = useTeamStore((state) => state.selectedTeam);
-  const updateWorkerProperty = useWorkerStore(
-    (state) => state.updateWorkerProperty
+  const updateShiftProperty = useShiftStore(
+    (state) => state.updateShiftProperty
   );
 
   const handleClose = () => {
@@ -34,15 +34,15 @@ export default function WorkerPropertyCellList({
   };
 
   const handleAddListValue = (value: string) => {
-    if (workerDimension.entryType === "list" && Array.isArray(valueState)) {
+    if (shiftDimension.entryType === "list" && Array.isArray(valueState)) {
       const updatedValue = [...valueState, value];
       setValueState(updatedValue);
       if (!selectedTeam) {
         console.error("No team selected");
         return;
       }
-      updateWorkerProperty(selectedTeam.id, {
-        ...workerProperty,
+      updateShiftProperty(selectedTeam.id, {
+        ...shiftProperty,
         value: updatedValue,
       });
     } else {
@@ -51,15 +51,15 @@ export default function WorkerPropertyCellList({
   };
 
   const handleDeleteListValue = (value: string) => {
-    if (workerDimension.entryType === "list" && Array.isArray(valueState)) {
+    if (shiftDimension.entryType === "list" && Array.isArray(valueState)) {
       const updatedValue = valueState.filter((v) => v !== value);
       setValueState(updatedValue);
       if (!selectedTeam) {
         console.error("No team selected");
         return;
       }
-      updateWorkerProperty(selectedTeam.id, {
-        ...workerProperty,
+      updateShiftProperty(selectedTeam.id, {
+        ...shiftProperty,
         value: updatedValue,
       });
     } else {
@@ -70,16 +70,16 @@ export default function WorkerPropertyCellList({
   return (
     <PopoverAnchorElOver
       buttonContent={
-        Array.isArray(workerProperty.value)
-          ? workerProperty.value.map((value, index) => (
+        Array.isArray(shiftProperty.value)
+          ? shiftProperty.value.map((value, index) => (
               <Chip key={index} label={value} />
             ))
-          : workerProperty.value
+          : shiftProperty.value
       }
       content={
         <ListTypeCellEdit
           selectedOptions={valueState}
-          options={workerDimension.entryOptions}
+          options={shiftDimension.entryOptions}
           handleAddListValue={handleAddListValue}
           handleDeleteListValue={handleDeleteListValue}
           handleClose={handleClose}

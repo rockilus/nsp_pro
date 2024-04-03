@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Union
+from typing import List
 
 from utils.constants import Constants
 
@@ -30,6 +30,6 @@ class ShiftDimension:
 @dataclass
 class ShiftProperty:
     id: str
-    value: Union[str, int, float, bool]
+    value: str | int | float | bool | List[str]
     shift_id: str
     shift_dimension_id: str
