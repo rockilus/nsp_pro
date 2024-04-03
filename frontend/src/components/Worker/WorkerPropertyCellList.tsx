@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Chip from "@mui/material/Chip";
 // Components
 import ListTypeCellEdit from "./ListTypeCellEdit";
-import PopoverAnchorElOver from "./PopoverAnchorElOver";
+import PopoverAnchorElOver from "../../utils/PopoverAnchorElOver";
 // Stores
 import { useWorkerStore } from "../../stores/workerStore";
 import { useTeamStore } from "../../stores/teamStore";

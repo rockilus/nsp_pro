@@ -2,77 +2,29 @@ import React, { useState } from "react";
 // MUI
 import AbcIcon from "@mui/icons-material/Abc";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import ListIcon from "@mui/icons-material/List";
-import Menu from "@mui/material/Menu";
 import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
 import Typography from "@mui/material/Typography";
 // Components
-import UpdateShiftDimension from "./UpdateShiftDimension";
-// Stores
-import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
+import PopoverAnchorElBelow from "../../utils/PopoverAnchorElBelow";
+import UpdateShiftDimensionForm from "./UpdateShiftDimensionForm";
 //Types
 import { ShiftDimensionT } from "./types";
-import { TeamT } from "../../containers/types";
 
 interface Props {
-  team: TeamT;
   shiftDimension: ShiftDimensionT;
 }
 
-export default function ShiftDimensionCell({ team, shiftDimension }: Props) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [nameState, setNameState] = useState(shiftDimension.name);
-  const [entryOptionsState, setEntryOptionsState] = useState(
-    shiftDimension.entryOptions
-  );
-
-  const updateShiftDimension = useShiftDimensionStore(
-    (state) => state.updateShiftDimension
-  );
-
-  const open = Boolean(anchorEl);
+export default function ShiftDimensionCell({ shiftDimension }: Props) {
+  const [popoverAnchorOpen, setPopoverAnchorOpen] = useState(false);
 
   const iconsPrefix: Record<string, React.ReactNode> = {
     str: <AbcIcon color="disabled" fontSize="small" />,
     int: <NumbersIcon color="disabled" fontSize="small" />,
     bool: <CheckBoxIcon color="disabled" fontSize="small" />,
     list: <ListIcon color="disabled" fontSize="small" />,
-  };
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleEditConfirm = () => {
-    if (
-      nameState !== shiftDimension.name ||
-      entryOptionsState !== shiftDimension.entryOptions
-    ) {
-      const updatedSD: ShiftDimensionT = {
-        id: shiftDimension.id,
-        teamId: shiftDimension.teamId,
-        name: nameState,
-        entryType: shiftDimension.entryType,
-        entryOptions: entryOptionsState,
-      };
-      updateShiftDimension(updatedSD);
-    }
-    setNameState(shiftDimension.name);
-    setEntryOptionsState(shiftDimension.entryOptions);
-    handleClose();
-  };
-
-  const handleEditCancel = () => {
-    setNameState(shiftDimension.name);
-    setEntryOptionsState(shiftDimension.entryOptions);
-    handleClose();
   };
 
   const cellContent = () => (
@@ -92,44 +44,17 @@ export default function ShiftDimensionCell({ team, shiftDimension }: Props) {
 
   return (
     <TableCell key={shiftDimension.id} component="th" scope="row">
-      <Button
-        id="basic-button"
-        aria-controls={open ? "basic-menu" : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? "true" : undefined}
-        style={{
-          textTransform: "none",
-          justifyContent: "flex-start",
-          padding: 0,
-        }}
-        onClick={handleClick}
-      >
-        {cellContent()}
-      </Button>
-      <Menu
-        id="basic-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleEditCancel}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleEditConfirm();
-          }
-        }}
-        MenuListProps={{
-          "aria-labelledby": "basic-button",
-        }}
-      >
-        <UpdateShiftDimension
-          team={team}
-          shiftDimensionId={shiftDimension.id}
-          name={nameState}
-          entryType={shiftDimension.entryType}
-          entryOptions={entryOptionsState}
-          setNameState={setNameState}
-          setEntryOptions={setEntryOptionsState}
-        />
-      </Menu>
+      <PopoverAnchorElBelow
+        buttonContent={cellContent()}
+        content={
+          <UpdateShiftDimensionForm
+            shiftDimension={shiftDimension}
+            setOpenParent={setPopoverAnchorOpen}
+          />
+        }
+        open={popoverAnchorOpen}
+        setOpen={setPopoverAnchorOpen}
+      />
     </TableCell>
   );
 }

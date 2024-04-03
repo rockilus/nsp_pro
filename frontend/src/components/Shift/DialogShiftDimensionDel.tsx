@@ -9,20 +9,16 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 // Stores
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
-// Types
-import { TeamT } from "../../containers/types";
+import { useTeamStore } from "../../stores/teamStore";
 
 interface Props {
-  team: TeamT;
   shiftDimensionId: string;
 }
 
-export default function DialogShiftDimensionDel({
-  team,
-  shiftDimensionId,
-}: Props) {
+export default function DialogShiftDimensionDel({ shiftDimensionId }: Props) {
   const [open, setOpen] = useState(false);
 
+  const selectedTeam = useTeamStore((state) => state.selectedTeam);
   const deleteShiftDimension = useShiftDimensionStore(
     (state) => state.deleteShiftDimension
   );
@@ -58,8 +54,10 @@ export default function DialogShiftDimensionDel({
         <DialogActions>
           <Button
             onClick={() => {
-              deleteShiftDimension(shiftDimensionId, team.id);
-              handleClose();
+              if (selectedTeam) {
+                deleteShiftDimension(shiftDimensionId, selectedTeam.id);
+                handleClose();
+              }
             }}
             color="error"
           >
