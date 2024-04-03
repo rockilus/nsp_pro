@@ -1,20 +1,12 @@
-import React, {
-  useState,
-  ChangeEvent,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { useState } from "react";
 // MUI
 import Chip from "@mui/material/Chip";
-import ClearIcon from "@mui/icons-material/Clear";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
 // Components
 import ListTypeCellEdit from "./ListTypeCellEdit";
 import PopoverAnchorElOver from "./PopoverAnchorElOver";
+// Stores
+import { useWorkerStore } from "../../stores/workerStore";
+import { useTeamStore } from "../../stores/teamStore";
 // Types
 import { WorkerDimensionT, WorkerPropertyT } from "./types";
 
@@ -23,11 +15,19 @@ interface Props {
   workerProperty: WorkerPropertyT;
 }
 
-export default function WPListCell({ workerDimension, workerProperty }: Props) {
+export default function WorkerPropertyCellList({
+  workerDimension,
+  workerProperty,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [valueState, setValueState] = useState<string[]>(
     workerProperty.value as string[]
   );
+
+  const updateWorkerProperty = useWorkerStore(
+    (state) => state.updateWorkerProperty
+  );
+  const selectedTeam = useTeamStore((state) => state.selectedTeam);
 
   const handleClose = () => {
     setOpen(false);
@@ -35,7 +35,16 @@ export default function WPListCell({ workerDimension, workerProperty }: Props) {
 
   const handleAddListValue = (value: string) => {
     if (workerDimension.entryType === "list" && Array.isArray(valueState)) {
-      setValueState([...valueState, value]);
+      const updatedValue = [...valueState, value];
+      setValueState(updatedValue);
+      if (!selectedTeam) {
+        console.error("No team selected");
+        return;
+      }
+      updateWorkerProperty(selectedTeam.id, {
+        ...workerProperty,
+        value: updatedValue,
+      });
     } else {
       console.error("Cannot add list value to non-list property");
     }
@@ -43,18 +52,30 @@ export default function WPListCell({ workerDimension, workerProperty }: Props) {
 
   const handleDeleteListValue = (value: string) => {
     if (workerDimension.entryType === "list" && Array.isArray(valueState)) {
-      setValueState(valueState.filter((v) => v !== value));
+      const updatedValue = valueState.filter((v) => v !== value);
+      setValueState(updatedValue);
+      if (!selectedTeam) {
+        console.error("No team selected");
+        return;
+      }
+      updateWorkerProperty(selectedTeam.id, {
+        ...workerProperty,
+        value: updatedValue,
+      });
     } else {
       console.error("Cannot remove list value from non-list property");
     }
   };
 
-  console.log(workerProperty);
-
   return (
     <PopoverAnchorElOver
-      buttonContent={workerProperty.value}
-      //   buttonContent={<div style={{ color: "black" }}>Test</div>}
+      buttonContent={
+        Array.isArray(workerProperty.value)
+          ? workerProperty.value.map((value, index) => (
+              <Chip key={index} label={value} />
+            ))
+          : workerProperty.value
+      }
       content={
         <ListTypeCellEdit
           selectedOptions={valueState}
