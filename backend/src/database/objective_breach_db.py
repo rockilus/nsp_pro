@@ -88,6 +88,19 @@ class ObjectiveBreachDB:
             handle_get_document_error(e)
         return [doc_to_core_objective_breach(ob) for ob in list(objective_breaches)]
 
+    def get_objective_breaches_by_shift_id(
+        self, shift_id: str
+    ) -> List[ObjectiveBreach]:
+        try:
+            # pylint: disable=no-member
+            objective_breaches = ObjectiveBreachDocument.objects.filter(  # type: ignore
+                variables__shift=shift_id
+            )
+        except Exception as e:
+            log_info("Failed to get objective breaches by shift id from database")
+            handle_get_document_error(e)
+        return [doc_to_core_objective_breach(ob) for ob in list(objective_breaches)]
+
     def update_objective_breach(
         self, objective_breach: ObjectiveBreach
     ) -> ObjectiveBreach:

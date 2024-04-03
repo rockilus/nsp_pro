@@ -78,6 +78,17 @@ class ConstraintDB:
             handle_get_document_error(e)
         return [doc_to_core_constraint(c) for c in list(constraints)]
 
+    def get_constraints_by_shift_id(self, shift_id: str) -> List[Constraint]:
+        try:
+            # pylint: disable=no-member
+            constraints = ConstraintDocument.objects.filter(  # type: ignore
+                shift_var__target=shift_id
+            )
+        except Exception as e:
+            log_info("Failed to get constraints by shift id from database")
+            handle_get_document_error(e)
+        return [doc_to_core_constraint(c) for c in list(constraints)]
+
     def update_constraint(self, constraint: Constraint) -> Constraint:
         c_doc = core_to_doc_constraint(constraint)
         try:

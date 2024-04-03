@@ -18,6 +18,8 @@ from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import ShiftMessage, ShiftPropertyMessage
 from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
+from services.shift_services import add_back_shift_property_to_constraint_build
+from services.shift_services import delete_shift as delete_shift_service
 
 router = APIRouter()
 
@@ -65,7 +67,8 @@ async def get_shifts(
             raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = shift_db.get_shifts(team_id)
         shifts_properties = [
-            shift_property_db.get_shift_properties_by_shift(shift) for shift in shifts
+            shift_property_db.get_shift_properties_by_shift_id(shift.id)
+            for shift in shifts
         ]
         response = [
             core_to_msg_shift_and_properties(s, sp)
@@ -90,8 +93,8 @@ async def update_shift(
             raise NotAuthorizedError("You do not have permission to update shifts")
         shift_data = msg_to_core_to_shift(shift)
         updated_shift = shift_db.update_shift(shift_data)
-        shift_properties = shift_property_db.get_shift_properties_by_shift(
-            updated_shift
+        shift_properties = shift_property_db.get_shift_properties_by_shift_id(
+            updated_shift.id
         )
         response = core_to_msg_shift_and_properties(updated_shift, shift_properties)
     except Exception as e:
@@ -118,6 +121,15 @@ async def update_shift_property(
             new_sp = shift_property_db.create_shift_property(sp_data)
         else:
             new_sp = shift_property_db.update_shift_property(sp_data)
+        if isinstance(new_sp.value, list):
+            for value in new_sp.value:
+                add_back_shift_property_to_constraint_build(
+                    new_sp.shift_dimension_id, value
+                )
+        else:
+            add_back_shift_property_to_constraint_build(
+                new_sp.shift_dimension_id, new_sp.value
+            )
         response = core_to_msg_shift_property(new_sp)
     except Exception as e:
         log_info("Failed to update shift property")
@@ -136,13 +148,11 @@ async def delete_shift(
             session.get_user_id(), "delete-shift", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to delete shifts")
-        shift_property_db.delete_shift_properties_by_shift_id(shift_id)
-        shift_db.delete_shift(shift_id)
-        response = {"message": "shift deleted"}
+        delete_shift_service(shift_id)
     except Exception as e:
         log_info("Failed to delete shift")
         handle_routes_errors(e)
-    return response
+    return {"message": "shift deleted"}
 
 
 # Mappers

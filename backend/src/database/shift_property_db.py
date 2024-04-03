@@ -31,24 +31,24 @@ class ShiftPropertyDB:
             handle_save_document_error(e)
         return doc_to_core_shift_property(sp_saved)
 
-    def get_shift_properties_by_shift(self, shift: Shift) -> List[ShiftProperty]:
+    def get_shift_properties_by_shift_id(self, shift_id: str) -> List[ShiftProperty]:
         try:
             # pylint: disable=no-member
             shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
-                shift=shift.id
+                shift=shift_id
             )
         except Exception as e:
             log_info("Failed to get shift properties by shift from database")
             handle_get_document_error(e)
         return [doc_to_core_shift_property(sp) for sp in list(shift_properties)]
 
-    def get_shift_properties_by_shift_dimension(
-        self, shift_dimension: ShiftDimension
+    def get_shift_properties_by_shift_dimension_id(
+        self, sd_id: str
     ) -> List[ShiftProperty]:
         try:
             # pylint: disable=no-member
             shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
-                shift_dimension=shift_dimension.id
+                shift_dimension=sd_id
             )
         except Exception as e:
             log_info("Failed to get shift properties by shift dimension from database")

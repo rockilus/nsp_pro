@@ -19,6 +19,9 @@ from logger import log_info
 from routes.api_model import NewShiftDimensionMessage, ShiftDimensionMessage
 from routes.shift_routes import core_to_msg_shift_property
 from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
+from services.shift_services import (
+    delete_shift_dimension as delete_shift_dimension_service,
+)
 
 router = APIRouter()
 
@@ -117,10 +120,7 @@ async def delete_shift_dimension(
                 status_code=403,
                 detail="You do not have permission to delete a shift dimension",
             )
-        shift_property_db.delete_shift_properties_by_shift_dimension_id(
-            shift_dimension_id
-        )
-        shift_dimension_db.delete_shift_dimension(shift_dimension_id)
+        delete_shift_dimension_service(shift_dimension_id)
     except Exception as e:
         log_info("Failed to delete shift dimension")
         handle_routes_errors(e)

@@ -64,8 +64,8 @@ def build_shift_options(team_id: str) -> Dict:
     }
     shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
     for shift_dimension in shift_dimensions:
-        shift_properties = shift_property_db.get_shift_properties_by_shift_dimension(
-            shift_dimension
+        shift_properties = shift_property_db.get_shift_properties_by_shift_dimension_id(
+            shift_dimension.id
         )
         if shift_dimension.entry_type == "bool":
             shift_options[shift_dimension.name] = [

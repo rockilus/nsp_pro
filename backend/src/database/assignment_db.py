@@ -200,6 +200,22 @@ class AssignmentDB:
             log_info("Failed to delete assignments")
             handle_delete_document_error(e)
 
+    def delete_assignments_by_shift_id(self, shift_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            assignments = AssignmentDocument.objects.filter(  # type: ignore
+                shift=shift_id
+            )
+        except Exception as e:
+            log_info("Failed to get assignments by shift id to delete")
+            handle_get_document_error(e)
+        try:
+            for a in assignments:
+                a.delete()
+        except Exception as e:
+            log_info("Failed to delete assignments")
+            handle_delete_document_error(e)
+
 
 # Mappers
 # core to document
