@@ -44,11 +44,11 @@ export const PropertyTypes = {
   list: "List",
 };
 
-export const DefaultProperties: Record<string, string | boolean> = {
+export const DefaultProperties: Record<string, string | boolean | string[]> = {
   str: "",
   int: "",
   bool: false,
-  list: "",
+  list: [],
 };
 
 //Coverages

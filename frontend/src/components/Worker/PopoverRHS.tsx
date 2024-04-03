@@ -22,7 +22,7 @@ export default function PopoverRHS({
   open,
   setOpen,
 }: Props) {
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
 
   const handleClick = () => {
     setOpen(true);

@@ -8,7 +8,7 @@ import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
 import Typography from "@mui/material/Typography";
 // Components
-import PopoverAnchorEl from "./PopoverAnchorEl";
+import PopoverAnchorElBelow from "./PopoverAnchorElBelow";
 import UpdateWorkerDimensionForm from "./UpdateWorkerDimensionForm";
 // Types
 import { WorkerDimensionT } from "./types";
@@ -44,7 +44,7 @@ export default function WorkerDimensionCell({ workerDimension }: Props) {
 
   return (
     <TableCell key={workerDimension.id} component="th" scope="row">
-      <PopoverAnchorEl
+      <PopoverAnchorElBelow
         buttonContent={cellContent()}
         content={
           <UpdateWorkerDimensionForm

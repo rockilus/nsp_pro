@@ -1,6 +1,5 @@
 import * as React from "react";
 import Popover from "@mui/material/Popover";
-import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 
 interface Props {
@@ -10,7 +9,7 @@ interface Props {
   setOpen: (open: boolean) => void;
 }
 
-export default function PopoverAnchorEl({
+export default function PopoverAnchorElOver({
   buttonContent,
   content,
   open,
@@ -33,7 +32,12 @@ export default function PopoverAnchorEl({
   const id = open ? "simple-popover" : undefined;
 
   return (
-    <div>
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+      }}
+    >
       <Button
         aria-describedby={id}
         variant="contained"
@@ -49,6 +53,9 @@ export default function PopoverAnchorEl({
           textTransform: "none",
           justifyContent: "flex-start",
           padding: 0,
+          width: "100%",
+          height: "100%",
+          minHeight: 20,
         }}
       >
         {buttonContent}
@@ -59,15 +66,14 @@ export default function PopoverAnchorEl({
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: "bottom",
+          vertical: "top",
           horizontal: "left",
         }}
         slotProps={{
           paper: {
             style: {
               boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
-              padding: 20,
-              width: 350,
+              padding: 0,
             },
           },
         }}

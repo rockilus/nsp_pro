@@ -8,6 +8,8 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
+// Components
+import WPListCell from "./WPListCell";
 // Stores
 import { useWorkerStore } from "../../stores/workerStore";
 // Types
@@ -29,7 +31,9 @@ export default function WorkerPropertyCell({
   editing,
   setEditing,
 }: Props) {
-  const [valueState, setValueState] = useState(workerProperty.value);
+  const [valueState, setValueState] = useState<
+    string | number | boolean | string[]
+  >(workerProperty.value);
 
   const updateWorkerProperty = useWorkerStore(
     (state) => state.updateWorkerProperty
@@ -93,7 +97,12 @@ export default function WorkerPropertyCell({
           setEditing({ [workerProperty.workerId]: workerDimension.id })
         }
       >
-        {editing && workerDimension.entryType !== "bool" ? (
+        {workerDimension.entryType === "list" ? (
+          <WPListCell
+            workerDimension={workerDimension}
+            workerProperty={workerProperty}
+          />
+        ) : editing && workerDimension.entryType !== "bool" ? (
           workerDimension.entryType === "list" ? (
             selectField()
           ) : workerDimension.entryType === "int" ? (
