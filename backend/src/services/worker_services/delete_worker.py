@@ -29,7 +29,7 @@ def delete_worker(worker_id: str) -> None:
 
 def delete_worker_from_constraint_build(worker_id: str) -> None:
     cbs = constraint_build_db.get_constraint_builds_by_worker_id(worker_id)
-    delete_item_with_id_from_constraint_build(worker_id, cbs, "worker")
+    delete_item_with_id_from_constraint_build(worker_id, cbs, ["worker"])
 
 
 def delete_worker_property_from_constraint_build(worker_id: str) -> None:

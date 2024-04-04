@@ -9,13 +9,13 @@ from services.constraint_build_services.delete_constraint_build import (
 
 
 def delete_item_with_id_from_constraint_build(
-    item_id: str, cbs: List[ConstraintBuild], block_name: str
+    item_id: str, cbs: List[ConstraintBuild], block_names: List[str]
 ) -> None:
     for cb in cbs:
         new_blocks = []
         skip_to_next_cb = False
         for block in cb.blocks:
-            if block.name == block_name:
+            if block.name in block_names:
                 new_value = [
                     v
                     for v in block.value  # type: ignore

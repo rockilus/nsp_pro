@@ -17,10 +17,10 @@ from services.constraint_build_services.delete_constraint_build_item import (
 
 
 def delete_shift(shift_id: str) -> None:
-    delete_shift_from_constraint_build(shift_id)  # OK
-    delete_shift_property_from_constraint_build(shift_id)  # OK
-    delete_shift_from_objective_breach(shift_id)  # OK
-    delete_shift_from_constraint(shift_id)  # OK
+    delete_shift_from_constraint_build(shift_id)
+    delete_shift_property_from_constraint_build(shift_id)
+    delete_shift_from_objective_breach(shift_id)
+    delete_shift_from_constraint(shift_id)
     shift_property_db.delete_shift_properties_by_shift_id(shift_id)
     assignment_db.delete_assignments_by_shift_id(shift_id)
     fixed_assignment_db.delete_fixed_assignments_by_shift_id(shift_id)
@@ -30,7 +30,9 @@ def delete_shift(shift_id: str) -> None:
 
 def delete_shift_from_constraint_build(shift_id: str) -> None:
     cbs = constraint_build_db.get_constraint_builds_by_shift_id(shift_id)
-    delete_item_with_id_from_constraint_build(shift_id, cbs, "shift")
+    delete_item_with_id_from_constraint_build(
+        shift_id, cbs, ["shift", "shift_reference", "shift_relative"]
+    )
 
 
 def delete_shift_property_from_constraint_build(shift_id: str) -> None:
@@ -87,7 +89,7 @@ def update_cbs_for_change_shift_property(
                 )
             )
         for block in cb.blocks:
-            if block.name == "shift":
+            if block.name in ["shift", "shift_refence", "shift_relative"]:
                 other_values = [
                     v
                     for v in block.value  # type: ignore
@@ -133,11 +135,29 @@ def delete_shift_from_objective_breach(shift_id: str) -> None:
 
 
 def delete_shift_from_constraint(shift_id: str) -> None:
-    constraints = constraint_db.get_constraints_by_shift_id(shift_id)
+    constraints = constraint_db.get_constraints_by_shift_id_in_target(shift_id)
     for constraint in constraints:
         new_targets = [s for s in constraint.shift_var.target_ids if s != shift_id]
         if not new_targets:
             constraint_db.delete_constraint(constraint.id)
             continue
         constraint.shift_var.target_ids = new_targets
+        constraint_db.update_constraint(constraint)
+    constraints = constraint_db.get_constraints_by_shift_id_in_reference(shift_id)
+    for constraint in constraints:
+        new_references = [
+            s for s in constraint.shift_var.reference_ids if s != shift_id
+        ]
+        if not new_references:
+            constraint_db.delete_constraint(constraint.id)
+            continue
+        constraint.shift_var.reference_ids = new_references
+        constraint_db.update_constraint(constraint)
+    constraints = constraint_db.get_constraints_by_shift_id_in_relative(shift_id)
+    for constraint in constraints:
+        new_relatives = [s for s in constraint.shift_var.relative_ids if s != shift_id]
+        if not new_relatives:
+            constraint_db.delete_constraint(constraint.id)
+            continue
+        constraint.shift_var.relative_ids = new_relatives
         constraint_db.update_constraint(constraint)

@@ -16,4 +16,4 @@ def delete_shift_dimension(sd_id: str) -> None:
 
 def delete_shift_dimension_from_constraint_build(sd_id: str) -> None:
     cbs = constraint_build_db.get_constraint_builds_by_shift_dimension_id(sd_id)
-    delete_item_with_id_from_constraint_build(sd_id, cbs, "shift")
+    delete_item_with_id_from_constraint_build(sd_id, cbs, ["shift"])

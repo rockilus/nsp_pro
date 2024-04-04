@@ -97,7 +97,13 @@ class ConstraintBuildDB:
                 __raw__={
                     'blocks': {
                         '$elemMatch': {
-                            'name': 'shift',
+                            'name': {
+                                '$in': [
+                                    'shift',
+                                    'shift_reference',
+                                    'shift_relative',
+                                ]
+                            },
                             'value': {
                                 '$elemMatch': {
                                     'id': shift_id,
@@ -151,7 +157,13 @@ class ConstraintBuildDB:
                 __raw__={
                     'blocks': {
                         '$elemMatch': {
-                            'name': 'shift',
+                            'name': {
+                                '$in': [
+                                    'shift',
+                                    'shift_reference',
+                                    'shift_relative',
+                                ]
+                            },
                             'value': {
                                 '$elemMatch': {
                                     'name': sp_value,
