@@ -42,12 +42,13 @@ def core_to_engine_inputs(
         min(a.date for a in prev_assignments) if prev_assignments else start_date
     )
     end_date_hist = start_date - timedelta(days=1)
-
     variable_space = VariableSpace(
         workers=[worker.id for worker in workers],
         days=_build_day_coordinates(start_date_hist, end_date),
         shifts=[shift.id for shift in shifts],
     )
+    dates = _build_dates(start_date_hist, end_date)
+    s_durations, s_start_times, s_end_times = _build_interval_parameters(shifts, dates)
     inputs = Inputs(
         variable_space=variable_space,
         coverage=CoverageEngine(
@@ -68,32 +69,9 @@ def core_to_engine_inputs(
             variable_space.shifts,
             wip_assignments,
         ),
-        shift_durations={
-            shift.id: int((shift.end_time - shift.start_time).total_seconds() // 60)
-            for shift in shifts
-        },
-        shift_start_times={
-            (
-                d.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
-                s.id,
-            ): int(
-                s.start_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
-                // Constants.NUM_SECONDS_MINUTE
-            )
-            for d in _build_dates(start_date_hist, end_date)
-            for s in shifts
-        },
-        shift_end_times={
-            (
-                d.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
-                s.id,
-            ): int(
-                s.end_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
-                // Constants.NUM_SECONDS_MINUTE
-            )
-            for d in _build_dates(start_date_hist, end_date)
-            for s in shifts
-        },
+        shift_durations=s_durations,
+        shift_start_times=s_start_times,
+        shift_end_times=s_end_times,
     )
     return inputs
 
@@ -259,3 +237,65 @@ def _build_day_coordinates(start_date: date, end_date: date) -> List[str]:
 def _build_dates(start_date: date, end_date: date) -> List[date]:
     delta = end_date - start_date
     return [start_date + timedelta(days=i) for i in range(delta.days + 1)]
+
+
+def _build_interval_parameters(
+    shifts: List[Shift], dates=List[date]
+) -> Tuple[Dict[str, int], Dict[Tuple[str, str], int], Dict[Tuple[str, str], int]]:
+    s_durations = {}
+    s_start_times = {}
+    s_end_times = {}
+    for s in shifts:
+        s_durations[s.id] = int((s.end_time - s.start_time).total_seconds() // 60 - 1)
+        day_diff = (s.end_time.date() - s.start_time.date()).days
+        for d in dates:
+            d_string = d.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
+            s_start_times[d_string, s.id] = int(
+                s.start_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
+                // Constants.NUM_SECONDS_MINUTE
+            )
+
+            s_end_times[d_string, s.id] = int(
+                (
+                    s.end_time.replace(year=d.year, month=d.month, day=d.day)
+                    + timedelta(day_diff)
+                ).timestamp()
+                // Constants.NUM_SECONDS_MINUTE
+                - 1
+            )
+    return s_durations, s_start_times, s_end_times
+
+    # shift_durations = {
+    #     shift.id: int(
+    #         (shift.end_time - shift.start_time).total_seconds() // 60 - 1
+    #     )
+    #     for shift in shifts
+    # }
+    # shift_start_times = {
+    #     (
+    #         d.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
+    #         s.id,
+    #     ): int(
+    #         s.start_time.replace(
+    #             year=d.year, month=d.month, day=d.day
+    #         ).timestamp()
+    #         // Constants.NUM_SECONDS_MINUTE
+    #     )
+    #     for d in dates
+    #     for s in shifts
+    # }
+    # shift_end_times = {
+    #     (
+    #         d.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
+    #         s.id,
+    #     ): int(
+    #         s.end_time.replace(
+    #             year=d.year, month=d.month, day=d.day
+    #         ).timestamp()
+    #         // Constants.NUM_SECONDS_MINUTE
+    #         - 1
+    #     )
+    #     for d in dates
+    #     for s in shifts
+    # }
+    # return shift_durations, shift_start_times, shift_end_times

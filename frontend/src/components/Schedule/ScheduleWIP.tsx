@@ -28,9 +28,9 @@ export default function ScheduleWIP({ team, schedule }: Props) {
   const [isSolving, setIsSolving] = useState(false);
   const solveSchedule = useScheduleStore((state) => state.solveSchedule);
 
-  const handleSolve = () => {
+  const handleSolve = async () => {
     setIsSolving(true);
-    solveSchedule(schedule.id, team.id);
+    await solveSchedule(schedule.id, team.id);
     setIsSolving(false);
   };
 

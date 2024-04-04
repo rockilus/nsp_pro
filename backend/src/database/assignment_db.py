@@ -37,6 +37,20 @@ class AssignmentDB:
             handle_save_document_error(e)
         return doc_to_core_assignment(a_saved)
 
+    def create_assignments(self, assignments: List[Assignment]) -> List[Assignment]:
+        try:
+            a_docs = core_to_doc_assignments_new(assignments)
+        except Exception as e:
+            log_info("Failed to convert Assignments to AssignmentDocuments")
+            handle_create_document_error(e)
+        try:
+            # pylint: disable=no-member
+            a_saved = AssignmentDocument.objects.insert(a_docs)  # type: ignore
+        except Exception as e:
+            log_info("Failed to save assignments to database")
+            handle_save_document_error(e)
+        return [doc_to_core_assignment(a) for a in a_saved]
+
     def get_assignments(self, schedules: List[Schedule]) -> List[Assignment]:
         s_docs = [core_to_doc_schedule(s) for s in schedules]
         try:
@@ -127,16 +141,20 @@ class AssignmentDB:
     def get_assignments_by_status(
         self, status: List[str], schedules: List[Schedule]
     ) -> List[Assignment]:
-        s_docs = [core_to_doc_schedule(s) for s in schedules]
         try:
             # pylint: disable=no-member
-            assignments = AssignmentDocument.objects.filter(  # type: ignore
-                status__in=status, schedule__in=s_docs
+            a_docs = AssignmentDocument.objects.filter(  # type: ignore
+                status__in=status, schedule__in=[s.id for s in schedules]
             )
         except Exception as e:
             log_info("Failed to get assignments by status from database")
             handle_get_document_error(e)
-        return [doc_to_core_assignment(a) for a in list(assignments)]
+        try:
+            assigments = [doc_to_core_assignment(a) for a in list(a_docs)]
+        except Exception as e:
+            log_info("Failed to convert AssignmentDocuments to Assignments")
+            handle_create_core_object_error(e)
+        return assigments
 
     def update_assignment(self, assignment: Assignment) -> Assignment:
         a_doc = core_to_doc_assignment(assignment)
@@ -171,15 +189,7 @@ class AssignmentDB:
     def delete_assignments_by_schedule_id(self, schedule_id: str) -> None:
         try:
             # pylint: disable=no-member
-            assigments = AssignmentDocument.objects.filter(  # type: ignore
-                schedule=schedule_id
-            )
-        except Exception as e:
-            log_info("Failed to get assignments by schedule id to delete")
-            handle_get_document_error(e)
-        try:
-            for a in assigments:
-                a.delete()
+            AssignmentDocument.objects(schedule=schedule_id).delete()  # type: ignore
         except Exception as e:
             log_info("Failed to delete assignments")
             handle_delete_document_error(e)
@@ -260,18 +270,69 @@ def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
     return assignment_doc
 
 
+def core_to_doc_assignments_new(
+    dataclass_objs: List[Assignment],
+) -> List[AssignmentDocument]:
+    worker_ids = list(set(doc.worker_id for doc in dataclass_objs))
+    # pylint: disable=no-member
+    workers = {
+        worker.id: worker
+        for worker in WorkerDocument.objects.filter(id__in=worker_ids)  # type: ignore
+    }
+    shift_ids = list(set(doc.shift_id for doc in dataclass_objs))
+    shifts = {
+        shift.id: shift
+        for shift in ShiftDocument.objects.filter(id__in=shift_ids)  # type: ignore
+    }
+    schedule_ids = list(set(doc.schedule_id for doc in dataclass_objs))
+    schedules = {
+        schedule.id: schedule
+        for schedule in ScheduleDocument.objects.filter(  # type: ignore
+            id__in=schedule_ids
+        )
+    }
+    out = []
+    for dataclass_obj in dataclass_objs:
+        # a_dict = asdict(dataclass_obj)
+        # a_dict["id"] = str(ObjectId())
+        # a_dict["worker"] = workers.get(dataclass_obj.worker_id)
+        # a_dict["date"] = datetime(
+        #     dataclass_obj.date.year,
+        #     dataclass_obj.date.month,
+        #     dataclass_obj.date.day,
+        # )
+        # a_dict["shift"] = shifts.get(dataclass_obj.shift_id)
+        # a_dict["schedule"] = schedules.get(dataclass_obj.schedule_id)
+        # a_dict.pop("worker_id")
+        # a_dict.pop("shift_id")
+        # a_dict.pop("schedule_id")
+        # assignment_doc = AssignmentDocument(**a_dict)
+        assignment_doc = AssignmentDocument(
+            id=str(ObjectId()),
+            worker=workers.get(dataclass_obj.worker_id),
+            date=datetime(
+                dataclass_obj.date.year,
+                dataclass_obj.date.month,
+                dataclass_obj.date.day,
+            ),
+            shift=shifts.get(dataclass_obj.shift_id),
+            schedule=schedules.get(dataclass_obj.schedule_id),
+            status=dataclass_obj.status,
+        )
+        out.append(assignment_doc)
+    return out
+
+
 # document to core
 def doc_to_core_assignment(doc_obj: AssignmentDocument) -> Assignment:
-    try:
-        assignment = Assignment(
-            id=doc_obj.id,
-            worker_id=doc_obj.worker.id,
-            date=doc_obj.date.date(),
-            shift_id=doc_obj.shift.id,
-            schedule_id=doc_obj.schedule.id,
-            status=doc_obj.status,
-        )
-    except Exception as e:
-        log_info("Failed to convert AssignmentDocument to Assignment")
-        handle_create_core_object_error(e)
-    return assignment
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["id"] = doc_dict["_id"]
+    doc_dict["worker_id"] = doc_dict["worker"]
+    doc_dict["date"] = doc_dict["date"].date()
+    doc_dict["shift_id"] = doc_dict["shift"]
+    doc_dict["schedule_id"] = doc_dict["schedule"]
+    doc_dict.pop("_id")
+    doc_dict.pop("worker")
+    doc_dict.pop("shift")
+    doc_dict.pop("schedule")
+    return Assignment(**doc_dict)
