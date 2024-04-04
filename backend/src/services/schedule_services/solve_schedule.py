@@ -1,3 +1,4 @@
+import time
 from typing import Dict, List, Tuple
 
 from core.constraint import Constraint, ConstraintBuild
@@ -29,27 +30,20 @@ from services.schedule_services.outputs_processing import update_far_status
 from services.stats_services import stats_setup
 
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, too-many-statements
 def solve_schedule(
     schedule: Schedule,
 ) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach], List[Stat]]:
+    start_time = time.time()
+    start_time_db = time.time()
     workers = worker_db.get_workers(schedule.team_id)
     shifts = shift_db.get_shifts(schedule.team_id)
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
     cstr_builds = constraint_build_db.get_constraint_builds_active(schedule.team_id)
-    constraints = setup_constraints(
-        workers,
-        shifts,
-        worker_dim_dict,
-        shift_dim_dict,
-        schedule.id,
-        cstr_builds,
-    )
     coverage_selectors = coverage_selector_db.get_coverage_selector_by_dates(
         schedule.start_date, schedule.end_date, schedule.team_id
     )
-    shift_demands = setup_shift_demands(coverage_selectors)
     fixed_assignments = fixed_assignment_db.get_fixed_assignments_by_dates(
         schedule.start_date, schedule.end_date, workers
     )
@@ -61,6 +55,17 @@ def solve_schedule(
         ["past", "validated"], team_schedules
     )
     wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
+    end_time_db = time.time()
+    start_time_engine_inputs = time.time()
+    constraints = setup_constraints(
+        workers,
+        shifts,
+        worker_dim_dict,
+        shift_dim_dict,
+        schedule.id,
+        cstr_builds,
+    )
+    shift_demands = setup_shift_demands(coverage_selectors)
     inputs = core_to_engine_inputs(
         workers,
         schedule.start_date,
@@ -73,8 +78,12 @@ def solve_schedule(
         prev_assignments,
         wip_assignments,
     )
+    end_time_engine_inputs = time.time()
+    start_time_engine = time.time()
     engine = Engine()
     outputs = engine.solve(inputs)
+    end_time_engine = time.time()
+    start_time_process_outputs = time.time()
     schedule, assignments, objective_breaches = engine_to_core_outputs(
         schedule, outputs, constraints
     )
@@ -83,48 +92,66 @@ def solve_schedule(
         schedule.end_date,
         coverage_selectors,
     )
+    end_time_process_outputs = time.time()
+    start_time_update_db = time.time()
     update_far_status(schedule, assignments)
-    stats = stats_setup(schedule.team_id)
     updated_schedule = schedule_db.update_schedule(schedule)
-    updated_assignments = save_assignments(
-        assignments, workers, shifts, updated_schedule
-    )
+    updated_assignments = save_assignments(assignments, updated_schedule)
     new_objective_breaches = save_objective_breaches(
         updated_schedule, objective_breaches
+    )
+    end_time_update_db = time.time()
+    start_time_stats = time.time()
+    stats = stats_setup(schedule.team_id)
+    end_time_stats = time.time()
+    end_time = time.time()
+    # time stats
+    total_time = end_time - start_time
+    total_time_db = end_time_db - start_time_db
+    total_time_engine_inputs = end_time_engine_inputs - start_time_engine_inputs
+    total_time_engine = end_time_engine - start_time_engine
+    total_time_process_outputs = end_time_process_outputs - start_time_process_outputs
+    total_time_update_db = end_time_update_db - start_time_update_db
+    total_time_stats = end_time_stats - start_time_stats
+    print(f"total time:           {total_time:.2f}s")
+    print(
+        "db time:              "
+        + f"{total_time_db:.2f}s "
+        + f"({(total_time_db / total_time) * 100:.0f}%)"
+    )
+    print(
+        "engine inputs time:   "
+        + f"{total_time_engine_inputs:.2f}s "
+        + f"({(total_time_engine_inputs / total_time) * 100:.0f}%)"
+    )
+    print(
+        "engine time:          "
+        + f"{total_time_engine:.2f}s "
+        + f"({(total_time_engine / total_time) * 100:.0f}%)"
+    )
+    print(
+        "process outputs time: "
+        + f"{total_time_process_outputs:.2f}s "
+        + f"({(total_time_process_outputs / total_time) * 100:.0f}%)"
+    )
+    print(
+        "update db time:       "
+        + f"{total_time_update_db:.2f}s "
+        + f"({(total_time_update_db / total_time) * 100:.0f}%)"
+    )
+    print(
+        "stats time:           "
+        + f"{total_time_stats:.2f}s "
+        + f"({(total_time_stats / total_time) * 100:.0f}%)"
     )
     return updated_schedule, updated_assignments, new_objective_breaches, stats
 
 
 def save_assignments(
-    assignments: List[Assignment],
-    workers: List[Worker],
-    shifts: List[Shift],
-    schedule: Schedule,
+    assignments: List[Assignment], schedule: Schedule
 ) -> List[Assignment]:
-    existing_as = assignment_db.get_assignments_by_schedule_id(schedule.id)
-    if existing_as:
-        for a in existing_as:
-            assignment_db.delete_assignment(a.id)
-    out = []
-    for a in assignments:
-        worker = next((w for w in workers if w.id == a.worker_id), None)
-        if worker is None:
-            raise ValueError(f"Worker {a.worker_id} not found")
-        shift = next((s for s in shifts if s.id == a.shift_id), None)
-        if shift is None:
-            raise ValueError(f"Shift {a.shift_id} not found")
-        out.append(
-            assignment_db.create_assignment(
-                Assignment(
-                    id="",
-                    worker_id=worker.id,
-                    date=a.date,
-                    shift_id=shift.id,
-                    schedule_id=schedule.id,
-                    status="wip",
-                )
-            )
-        )
+    assignment_db.delete_assignments_by_schedule_id(schedule.id)
+    out = assignment_db.create_assignments(assignments)
     return out
 
 
