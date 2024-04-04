@@ -119,7 +119,6 @@ class Model:
         self.add_solution_hint(inputs.sol_hint)
         self.bt.variables_end = time.time()
         self.bt.constraints_start = time.time()
-        # self.add_exactly_one_shift_per_day_constraint()
         self.no_interval_overlap()
         self.add_at_least_one_shift_per_day_constraint()
         self.add_coverage.add_coverage(inputs.coverage.coverage)
@@ -136,6 +135,22 @@ class Model:
         for worker in self.workers:
             for day in self.days:
                 for shift in self.shifts:
+                    # print(
+                    #     "start time: ",
+                    #     datetime.fromtimestamp(
+                    #       self.shift_start_times[day, shift] * 60),
+                    # )
+                    # print(
+                    #     "end time: ",
+                    #     datetime.fromtimestamp(self.shift_end_times[day, shift] * 60),
+                    # )
+                    # print("duration: ", self.durations[shift])
+                    # print(
+                    #     "check: ",
+                    #     self.shift_end_times[day, shift]
+                    #     - self.shift_start_times[day, shift]
+                    #     - self.durations[shift],
+                    # )
                     self.variables[(worker, day, shift)] = self.model.NewBoolVar(
                         f"{worker}_{day}_{shift}"
                     )
@@ -158,13 +173,6 @@ class Model:
     def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
         for k, v in solution_hint.items():
             self.model.AddHint(self.variables[k], v)
-
-    # def add_exactly_one_shift_per_day_constraint(self) -> None:
-    #     for worker in self.workers:
-    #         for day in self.days:
-    #             self.model.AddExactlyOne(
-    #                 self.variables[worker, day, shift] for shift in self.shifts
-    #             )
 
     def add_at_least_one_shift_per_day_constraint(self) -> None:
         for w in self.workers:

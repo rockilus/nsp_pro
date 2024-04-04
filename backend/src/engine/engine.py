@@ -27,6 +27,10 @@ class Engine:
         end_time = time.time()
         print("Time to set up model: ", end_time - start_time)
         model.solve()
+        print(f"Branches:        {model.solver.NumBranches()}")
+        print(f"Wall time:       {model.solver.WallTime()} s")
+        print(f"Objective value: {model.solver.ObjectiveValue()}")
+        print(f"Status:          {model.solver.StatusName()}")
         # save_model_to_text(
         #     model.model,
         #     os.getcwd()

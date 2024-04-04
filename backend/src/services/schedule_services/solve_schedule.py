@@ -151,6 +151,8 @@ def save_assignments(
     assignments: List[Assignment], schedule: Schedule
 ) -> List[Assignment]:
     assignment_db.delete_assignments_by_schedule_id(schedule.id)
+    if not assignments:
+        return []
     out = assignment_db.create_assignments(assignments)
     return out
 
