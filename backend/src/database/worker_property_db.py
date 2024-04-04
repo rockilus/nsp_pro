@@ -21,7 +21,9 @@ class WorkerPropertyDB:
     def __init__(self, db: DB):
         self.db = db
 
-    def create_worker_property(self, worker_property: WorkerProperty) -> WorkerProperty:
+    def create_worker_property(
+        self, worker_property: WorkerProperty
+    ) -> WorkerProperty:
         wp_doc = core_to_doc_worker_property(worker_property)
         wp_doc.id = str(ObjectId())
         try:
@@ -40,9 +42,13 @@ class WorkerPropertyDB:
                 worker=worker_id
             )
         except Exception as e:
-            log_info("Failed to get worker properties by worker id from database")
+            log_info(
+                "Failed to get worker properties by worker id from database"
+            )
             handle_get_document_error(e)
-        return [doc_to_core_worker_property(wp) for wp in list(worker_properties)]
+        return [
+            doc_to_core_worker_property(wp) for wp in list(worker_properties)
+        ]
 
     def get_worker_properties_by_worker_dimension_id(
         self, wd_id: str
@@ -58,9 +64,13 @@ class WorkerPropertyDB:
                 + "database"
             )
             handle_get_document_error(e)
-        return [doc_to_core_worker_property(wp) for wp in list(worker_properties)]
+        return [
+            doc_to_core_worker_property(wp) for wp in list(worker_properties)
+        ]
 
-    def get_worker_property_by_id(self, worker_property_id: str) -> WorkerProperty:
+    def get_worker_property_by_id(
+        self, worker_property_id: str
+    ) -> WorkerProperty:
         try:
             # pylint: disable=no-member
             worker_property = WorkerPropertyDocument.objects.get(  # type: ignore
@@ -87,7 +97,11 @@ class WorkerPropertyDB:
                 + "database"
             )
             handle_get_document_error(e)
-        return doc_to_core_worker_property(worker_property) if worker_property else None
+        return (
+            doc_to_core_worker_property(worker_property)
+            if worker_property
+            else None
+        )
 
     def get_workers_id_by_dim_and_prop(self) -> Dict:
         # pipeline_study = [
@@ -269,9 +283,7 @@ class WorkerPropertyDB:
             prop_value_mod = (
                 prop_value.lower()
                 if not isinstance(prop_value, bool)
-                else dim_name
-                if prop_value
-                else "not " + dim_name
+                else dim_name if prop_value else "not " + dim_name
             )
             if dim not in out:
                 out[dim] = {}
@@ -281,7 +293,9 @@ class WorkerPropertyDB:
                 out[dim][prop_value_mod] += workers
         return out
 
-    def update_worker_property(self, worker_property: WorkerProperty) -> WorkerProperty:
+    def update_worker_property(
+        self, worker_property: WorkerProperty
+    ) -> WorkerProperty:
         document = core_to_doc_worker_property(worker_property)
         try:
             # pylint: disable=no-member

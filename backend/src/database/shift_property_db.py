@@ -21,7 +21,9 @@ class ShiftPropertyDB:
     def __init__(self, db: DB):
         self.db = db
 
-    def create_shift_property(self, shift_property: ShiftProperty) -> ShiftProperty:
+    def create_shift_property(
+        self, shift_property: ShiftProperty
+    ) -> ShiftProperty:
         sp_doc = core_to_doc_shift_property(shift_property)
         sp_doc.id = str(ObjectId())
         try:
@@ -31,7 +33,9 @@ class ShiftPropertyDB:
             handle_save_document_error(e)
         return doc_to_core_shift_property(sp_saved)
 
-    def get_shift_properties_by_shift_id(self, shift_id: str) -> List[ShiftProperty]:
+    def get_shift_properties_by_shift_id(
+        self, shift_id: str
+    ) -> List[ShiftProperty]:
         try:
             # pylint: disable=no-member
             shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
@@ -40,7 +44,9 @@ class ShiftPropertyDB:
         except Exception as e:
             log_info("Failed to get shift properties by shift from database")
             handle_get_document_error(e)
-        return [doc_to_core_shift_property(sp) for sp in list(shift_properties)]
+        return [
+            doc_to_core_shift_property(sp) for sp in list(shift_properties)
+        ]
 
     def get_shift_properties_by_shift_dimension_id(
         self, sd_id: str
@@ -51,11 +57,17 @@ class ShiftPropertyDB:
                 shift_dimension=sd_id
             )
         except Exception as e:
-            log_info("Failed to get shift properties by shift dimension from database")
+            log_info(
+                "Failed to get shift properties by shift dimension from database"
+            )
             handle_get_document_error(e)
-        return [doc_to_core_shift_property(sp) for sp in list(shift_properties)]
+        return [
+            doc_to_core_shift_property(sp) for sp in list(shift_properties)
+        ]
 
-    def get_shift_property_by_id(self, shift_property_id: str) -> ShiftProperty:
+    def get_shift_property_by_id(
+        self, shift_property_id: str
+    ) -> ShiftProperty:
         try:
             # pylint: disable=no-member
             shift_property = ShiftPropertyDocument.objects.get(  # type: ignore
@@ -78,14 +90,19 @@ class ShiftPropertyDB:
             )
         except Exception as e:
             log_info(
-                "Failed to get shift property by shift and dimension from " + "database"
+                "Failed to get shift property by shift and dimension from "
+                + "database"
             )
             handle_get_document_error(e)
-        return doc_to_core_shift_property(shift_property) if shift_property else None
+        return (
+            doc_to_core_shift_property(shift_property)
+            if shift_property
+            else None
+        )
 
     def get_shifts_id_by_dim_and_prop(self) -> Dict:
         pipeline = [
-            {"unwind": "$value"},
+            {"$unwind": "$value"},
             {
                 "$group": {
                     "_id": {
@@ -131,9 +148,7 @@ class ShiftPropertyDB:
             prop_value_mod = (
                 prop_value.lower()
                 if not isinstance(prop_value, bool)
-                else dim_name
-                if prop_value
-                else "not " + dim_name
+                else dim_name if prop_value else "not " + dim_name
             )
             if dim not in out:
                 out[dim] = {}
@@ -143,7 +158,9 @@ class ShiftPropertyDB:
                 out[dim][prop_value_mod] += shifts
         return out
 
-    def update_shift_property(self, shift_property: ShiftProperty) -> ShiftProperty:
+    def update_shift_property(
+        self, shift_property: ShiftProperty
+    ) -> ShiftProperty:
         sp_doc = core_to_doc_shift_property(shift_property)
         try:
             # pylint: disable=no-member
