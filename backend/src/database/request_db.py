@@ -108,6 +108,22 @@ class RequestDB:
             log_info("Failed to delete requests from database")
             handle_delete_document_error(e)
 
+    def delete_requests_by_shift_id(self, shift_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            requests = RequestDocument.objects(  # type: ignore
+                shift=shift_id  # type: ignore
+            )
+        except Exception as e:
+            log_info("Failed to get requests by shift id to delete from database")
+            handle_get_document_error(e)
+        try:
+            for r in requests:
+                r.delete()
+        except Exception as e:
+            log_info("Failed to delete requests from database")
+            handle_delete_document_error(e)
+
 
 # Mappers
 # core to document

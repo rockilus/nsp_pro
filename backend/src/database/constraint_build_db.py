@@ -90,6 +90,35 @@ class ConstraintBuildDB:
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
+    def get_constraint_builds_by_shift_id(self, shift_id: str) -> List[ConstraintBuild]:
+        try:
+            # pylint: disable=no-member
+            cb_docs = ConstraintBuildDocument.objects(  # type: ignore
+                __raw__={
+                    'blocks': {
+                        '$elemMatch': {
+                            'name': {
+                                '$in': [
+                                    'shift',
+                                    'shift_reference',
+                                    'shift_relative',
+                                ]
+                            },
+                            'value': {
+                                '$elemMatch': {
+                                    'id': shift_id,
+                                    'id_type': 'shift',
+                                }
+                            },
+                        }
+                    }
+                }
+            )
+        except Exception as e:
+            log_info('Failed to get constraint build by shift id from database')
+            handle_get_document_error(e)
+        return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
+
     def get_constraint_builds_by_wd_id_and_wp_value(
         self, wd_id: str, wp_value: str | int | float | bool
     ) -> List[ConstraintBuild]:
@@ -119,6 +148,41 @@ class ConstraintBuildDB:
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
+    def get_constraint_builds_by_sd_id_and_sp_value(
+        self, sd_id: str, sp_value: str | int | float | bool
+    ) -> List[ConstraintBuild]:
+        try:
+            # pylint: disable=no-member
+            cb_docs = ConstraintBuildDocument.objects(  # type: ignore
+                __raw__={
+                    'blocks': {
+                        '$elemMatch': {
+                            'name': {
+                                '$in': [
+                                    'shift',
+                                    'shift_reference',
+                                    'shift_relative',
+                                ]
+                            },
+                            'value': {
+                                '$elemMatch': {
+                                    'name': sp_value,
+                                    'id': sd_id,
+                                    'id_type': 'shift_dimension',
+                                }
+                            },
+                        }
+                    }
+                }
+            )
+        except Exception as e:
+            log_info(
+                'Failed to get constraint build by shift dimension id and '
+                + 'shift property value from database'
+            )
+            handle_get_document_error(e)
+        return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
+
     def get_constraint_builds_by_worker_dimension_id(
         self, wd_id: str
     ) -> List[ConstraintBuild]:
@@ -142,6 +206,34 @@ class ConstraintBuildDB:
         except Exception as e:
             log_info(
                 'Failed to get constraint build by worker dimension id from '
+                + 'database'
+            )
+            handle_get_document_error(e)
+        return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
+
+    def get_constraint_builds_by_shift_dimension_id(
+        self, sd_id: str
+    ) -> List[ConstraintBuild]:
+        try:
+            # pylint: disable=no-member
+            cb_docs = ConstraintBuildDocument.objects(  # type: ignore
+                __raw__={
+                    'blocks': {
+                        '$elemMatch': {
+                            'name': 'shift',
+                            'value': {
+                                '$elemMatch': {
+                                    'id': sd_id,
+                                    'id_type': 'shift_dimension',
+                                }
+                            },
+                        }
+                    }
+                }
+            )
+        except Exception as e:
+            log_info(
+                'Failed to get constraint build by shift dimension id from '
                 + 'database'
             )
             handle_get_document_error(e)

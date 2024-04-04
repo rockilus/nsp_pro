@@ -124,6 +124,23 @@ class FixedAssignmentDB:
             log_info("Failed to delete fixed assignments from database")
             handle_delete_document_error(e)
 
+    def delete_fixed_assignments_by_shift_id(self, shift_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            fas = FixedAssignmentDocument.objects.filter(shift=shift_id)  # type: ignore
+        except Exception as e:
+            log_info(
+                "Failed to get fixed assignments by shift id to delete from "
+                + "database"
+            )
+            handle_get_document_error(e)
+        try:
+            for fa in fas:
+                fa.delete()
+        except Exception as e:
+            log_info("Failed to delete fixed assignments from database")
+            handle_delete_document_error(e)
+
 
 # Mappers
 # core to document

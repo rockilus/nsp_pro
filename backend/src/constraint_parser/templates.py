@@ -44,6 +44,21 @@ def build_worker_options(team_id: str) -> Dict:
                     "id_type": "worker_dimension",
                 },
             ]
+        if worker_dimension.entry_type == "list":
+            worker_options[worker_dimension.name] = [
+                {
+                    "name": str(wp_value),
+                    "id": worker_dimension.id,
+                    "id_type": "worker_dimension",
+                }
+                for wp_value in list(
+                    set(
+                        str(item)
+                        for wp in worker_properties
+                        for item in wp.value  # type: ignore
+                    )
+                )
+            ]
         else:
             worker_options[worker_dimension.name] = [
                 {
@@ -64,8 +79,8 @@ def build_shift_options(team_id: str) -> Dict:
     }
     shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
     for shift_dimension in shift_dimensions:
-        shift_properties = shift_property_db.get_shift_properties_by_shift_dimension(
-            shift_dimension
+        shift_properties = shift_property_db.get_shift_properties_by_shift_dimension_id(
+            shift_dimension.id
         )
         if shift_dimension.entry_type == "bool":
             shift_options[shift_dimension.name] = [
@@ -79,6 +94,21 @@ def build_shift_options(team_id: str) -> Dict:
                     "id": shift_dimension.id,
                     "id_type": "shift_dimension",
                 },
+            ]
+        if shift_dimension.entry_type == "list":
+            shift_options[shift_dimension.name] = [
+                {
+                    "name": str(sp_value),
+                    "id": shift_dimension.id,
+                    "id_type": "shift_dimension",
+                }
+                for sp_value in list(
+                    set(
+                        str(item)
+                        for sp in shift_properties
+                        for item in sp.value  # type: ignore
+                    )
+                )
             ]
         else:
             shift_options[shift_dimension.name] = [

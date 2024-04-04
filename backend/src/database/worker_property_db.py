@@ -45,12 +45,12 @@ class WorkerPropertyDB:
         return [doc_to_core_worker_property(wp) for wp in list(worker_properties)]
 
     def get_worker_properties_by_worker_dimension_id(
-        self, worker_dimension_id: str
+        self, wd_id: str
     ) -> List[WorkerProperty]:
         try:
             # pylint: disable=no-member
             worker_properties = WorkerPropertyDocument.objects.filter(  # type: ignore
-                worker_dimension=worker_dimension_id
+                worker_dimension=wd_id
             )
         except Exception as e:
             log_info(

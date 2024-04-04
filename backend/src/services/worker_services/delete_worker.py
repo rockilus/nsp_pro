@@ -10,7 +10,9 @@ from scripts.setup_database import (
     worker_dimension_db,
     worker_property_db,
 )
-from services.worker_services.utils import delete_item_with_id_from_constraint_build
+from services.constraint_build_services.delete_constraint_build_item import (
+    delete_item_with_id_from_constraint_build,
+)
 
 
 def delete_worker(worker_id: str) -> None:
@@ -27,7 +29,7 @@ def delete_worker(worker_id: str) -> None:
 
 def delete_worker_from_constraint_build(worker_id: str) -> None:
     cbs = constraint_build_db.get_constraint_builds_by_worker_id(worker_id)
-    delete_item_with_id_from_constraint_build(worker_id, cbs, "worker")
+    delete_item_with_id_from_constraint_build(worker_id, cbs, ["worker"])
 
 
 def delete_worker_property_from_constraint_build(worker_id: str) -> None:
@@ -69,7 +71,7 @@ def update_cbs_for_change_worker_property(
     worker_dimension_id: str, value: str | int | float | bool
 ) -> None:
     cbs = constraint_build_db.get_constraint_builds_by_wd_id_and_wp_value(
-        worker_dimension_id, value  # type: ignore
+        worker_dimension_id, value
     )
     for cb in cbs:
         if any(mp.dimension_id == worker_dimension_id for mp in cb.missing_properties):
