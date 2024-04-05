@@ -18,6 +18,7 @@ from routes import (
     router_health,
     router_objective_breach,
     router_request,
+    router_rest_shift,
     router_schedule,
     router_shift,
     router_shift_dimension,
@@ -55,6 +56,7 @@ app.include_router(router_fixed_assignment)
 app.include_router(router_health)
 app.include_router(router_objective_breach)
 app.include_router(router_request)
+app.include_router(router_rest_shift)
 app.include_router(router_schedule)
 app.include_router(router_shift)
 app.include_router(router_shift_dimension)

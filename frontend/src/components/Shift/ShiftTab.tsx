@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 import ShiftTable from "./ShiftTable";
 // Stores
 import { useShiftStore } from "../../stores/shiftStore";
+import { useRestShiftStore } from "../../stores/RestshiftStore";
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
 // Types
 import { TeamT } from "../../containers/types";
@@ -18,7 +19,9 @@ interface Props {
 
 export default function ShiftTab({ team }: Props) {
   const shifts = useShiftStore((state) => state.shifts);
+  const restShifts = useRestShiftStore((state) => state.restShifts);
   const fetchShifts = useShiftStore((state) => state.fetchShifts);
+  const fetchRestShifts = useRestShiftStore((state) => state.fetchRestShifts);
 
   const shiftDimensions = useShiftDimensionStore(
     (state) => state.shiftDimensions
@@ -32,18 +35,34 @@ export default function ShiftTab({ team }: Props) {
   }, [fetchShifts, team.id]);
 
   useEffect(() => {
+    fetchRestShifts(team.id);
+  }, [fetchRestShifts, team.id]);
+
+  useEffect(() => {
     fetchShiftDimensions(team.id);
   }, [fetchShiftDimensions, team.id]);
 
   return (
     <Box style={{ width: "100%" }}>
       <Typography variant="h4" align="left">
-        Shifts Configuration
+        Shifts configuration
+      </Typography>
+      <Typography variant="h4" align="left">
+        Shifts
       </Typography>
       <ShiftTable
         team={team}
         shiftDimensions={shiftDimensions}
         shifts={shifts}
+        defaultShiftFields={DefaultShiftFields}
+      />
+      <Typography variant="h4" align="left">
+        Rest
+      </Typography>
+      <ShiftTable
+        team={team}
+        shiftDimensions={shiftDimensions}
+        shifts={restShifts}
         defaultShiftFields={DefaultShiftFields}
       />
     </Box>

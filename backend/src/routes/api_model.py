@@ -52,6 +52,18 @@ class ShiftMessage(BaseModel):
     shiftProperties: List[ShiftPropertyMessage]
 
 
+class RestShiftMessage(BaseModel):
+    id: str
+    teamId: str
+    name: str
+    startTime: datetime
+    endTime: datetime
+    isTimeOff: bool
+    staffing: int
+    color: str
+    shiftProperties: List[ShiftPropertyMessage]
+
+
 class ShiftDefaultMessage(BaseModel):
     id: str
     name: str

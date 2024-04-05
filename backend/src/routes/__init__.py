@@ -7,6 +7,7 @@ from routes.fixed_assignment_routes import router as router_fixed_assignment
 from routes.health_routes import router as router_health
 from routes.objective_breach_routes import router as router_objective_breach
 from routes.request_routes import router as router_request
+from routes.rest_shift_routes import router as router_rest_shift
 from routes.schedule_routes import router as router_schedule
 from routes.shift_dimension_routes import router as router_shift_dimension
 from routes.shift_routes import router as router_shift
@@ -26,6 +27,7 @@ __all__ = [
     "router_health",
     "router_objective_breach",
     "router_request",
+    "router_rest_shift",
     "router_schedule",
     "router_shift_dimension",
     "router_shift",
