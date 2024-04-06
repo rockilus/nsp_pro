@@ -18,12 +18,18 @@ export const NumQuarterHoursInHour = 4;
 export const DefaultWorkerFields = ["Name"];
 
 // Shifts
-export const DefaultShiftFields = [
+export const DefaultWorkShiftFields = [
   "Color",
   "Name",
   "Start time",
   "End time",
   "Staffing",
+];
+export const DefaultRestShiftFields = [
+  "Color",
+  "Name",
+  "Start time",
+  "End time",
 ];
 export const ShiftColors = [
   "#0030C6",

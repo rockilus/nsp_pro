@@ -62,7 +62,7 @@ export default function ShiftTable({
       name: "",
       startTime: roundTime(dayjs.utc()),
       endTime: roundTime(dayjs.utc()),
-      isTimeOff: false,
+      isTimeOff: isRest,
       staffing: 1,
       color: "grey",
       shiftProperties: [],

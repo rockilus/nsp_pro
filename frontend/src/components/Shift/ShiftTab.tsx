@@ -10,7 +10,10 @@ import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
 // Types
 import { TeamT } from "../../containers/types";
 // Constants
-import { DefaultShiftFields } from "../../utils/constants";
+import {
+  DefaultWorkShiftFields,
+  DefaultRestShiftFields,
+} from "../../utils/constants";
 
 interface Props {
   team: TeamT;
@@ -18,8 +21,7 @@ interface Props {
 
 export default function ShiftTab({ team }: Props) {
   const shifts = useShiftStore((state) => state.shifts);
-  const restShifts = useShiftStore((state) => state.restShifts);
-  const fetchAllShifts = useShiftStore((state) => state.fetchAllShifts);
+  const fetchShifts = useShiftStore((state) => state.fetchShifts);
 
   const shiftDimensions = useShiftDimensionStore(
     (state) => state.shiftDimensions
@@ -29,8 +31,8 @@ export default function ShiftTab({ team }: Props) {
   );
 
   useEffect(() => {
-    fetchAllShifts(team.id);
-  }, [fetchAllShifts, team.id]);
+    fetchShifts(team.id);
+  }, [fetchShifts, team.id]);
 
   useEffect(() => {
     fetchShiftDimensions(team.id);
@@ -48,8 +50,8 @@ export default function ShiftTab({ team }: Props) {
         team={team}
         isRest={false}
         shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
-        shifts={shifts}
-        defaultShiftFields={DefaultShiftFields}
+        shifts={shifts.filter((s) => !s.isTimeOff)}
+        defaultShiftFields={DefaultWorkShiftFields}
       />
       <Typography variant="h4" align="left">
         Rest
@@ -58,8 +60,8 @@ export default function ShiftTab({ team }: Props) {
         team={team}
         isRest={true}
         shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
-        shifts={restShifts}
-        defaultShiftFields={DefaultShiftFields}
+        shifts={shifts.filter((s) => s.isTimeOff)}
+        defaultShiftFields={DefaultRestShiftFields}
       />
     </Box>
   );

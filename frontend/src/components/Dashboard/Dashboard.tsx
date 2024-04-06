@@ -42,8 +42,7 @@ export default function Dashboard({ team }: Props) {
   };
 
   const shifts = useShiftStore((state) => state.shifts);
-  const restShifts = useShiftStore((state) => state.restShifts);
-  const fetchAllShifts = useShiftStore((state) => state.fetchAllShifts);
+  const fetchShifts = useShiftStore((state) => state.fetchShifts);
   const workers = useWorkerStore((state) => state.workers);
   const fetchWorkers = useWorkerStore((state) => state.fetchWorkers);
 
@@ -73,19 +72,6 @@ export default function Dashboard({ team }: Props) {
       })
     : [];
 
-  const restShiftsIdName = restShifts
-    ? restShifts.map((s) => {
-        const shift: ShiftIdNameT = {
-          id: s.id,
-          name: s.name,
-          isTimeOff: s.isTimeOff,
-        };
-        return shift;
-      })
-    : [];
-
-  const allShiftsIdName = [...shiftsIdName, ...restShiftsIdName];
-
   const workersIdName = workers
     ? workers.map((w) => {
         const worker: WorkerIdNameT = {
@@ -97,9 +83,9 @@ export default function Dashboard({ team }: Props) {
     : [];
 
   useEffect(() => {
-    fetchAllShifts(team.id);
     fetchWorkers(team.id);
-  }, [fetchWorkers, fetchAllShifts, team.id]);
+    fetchShifts(team.id);
+  }, [fetchWorkers, fetchShifts, team.id]);
 
   const tabs: { [key: string]: JSX.Element } = {
     workers: <WorkerTab team={team} />,
@@ -107,18 +93,14 @@ export default function Dashboard({ team }: Props) {
     coverages: <CoverageTab team={team} shifts={shiftDefaults} />,
     constraints: <ConstraintTab team={team} />,
     requests: (
-      <FARTab team={team} workers={workersIdName} shifts={allShiftsIdName} />
+      <FARTab team={team} workers={workersIdName} shifts={shiftsIdName} />
     ),
     coverageSelector: <CoverageSelectorTab team={team} />,
     schedule: (
-      <ScheduleTab
-        team={team}
-        workers={workersIdName}
-        shifts={allShiftsIdName}
-      />
+      <ScheduleTab team={team} workers={workersIdName} shifts={shiftsIdName} />
     ),
     stats: (
-      <StatsTab team={team} workers={workersIdName} shifts={allShiftsIdName} />
+      <StatsTab team={team} workers={workersIdName} shifts={shiftsIdName} />
     ),
   };
 

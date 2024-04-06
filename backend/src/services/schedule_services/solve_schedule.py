@@ -37,12 +37,10 @@ def solve_schedule(
     start_time = time.time()
     start_time_db = time.time()
     workers = worker_db.get_workers(schedule.team_id)
-    shifts = shift_db.get_all_shifts(schedule.team_id)
+    shifts = shift_db.get_shifts(schedule.team_id)
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
-    cstr_builds = constraint_build_db.get_constraint_builds_active(
-        schedule.team_id
-    )
+    cstr_builds = constraint_build_db.get_constraint_builds_active(schedule.team_id)
     coverage_selectors = coverage_selector_db.get_coverage_selector_by_dates(
         schedule.start_date, schedule.end_date, schedule.team_id
     )
@@ -56,9 +54,7 @@ def solve_schedule(
     prev_assignments = assignment_db.get_assignments_by_status(
         ["past", "validated"], team_schedules
     )
-    wip_assignments = assignment_db.get_assignments_by_status(
-        ["wip"], team_schedules
-    )
+    wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
     constraints = setup_constraints(
@@ -112,13 +108,9 @@ def solve_schedule(
     # time stats
     total_time = end_time - start_time
     total_time_db = end_time_db - start_time_db
-    total_time_engine_inputs = (
-        end_time_engine_inputs - start_time_engine_inputs
-    )
+    total_time_engine_inputs = end_time_engine_inputs - start_time_engine_inputs
     total_time_engine = end_time_engine - start_time_engine
-    total_time_process_outputs = (
-        end_time_process_outputs - start_time_process_outputs
-    )
+    total_time_process_outputs = end_time_process_outputs - start_time_process_outputs
     total_time_update_db = end_time_update_db - start_time_update_db
     total_time_stats = end_time_stats - start_time_stats
     print(f"total time:           {total_time:.2f}s")
@@ -168,15 +160,12 @@ def save_assignments(
 def save_objective_breaches(
     schedule: Schedule, objective_breaches: List[ObjectiveBreach]
 ) -> List[ObjectiveBreach]:
-    existing_ob = objective_breach_db.get_objective_breaches_by_schedule_id(
-        schedule.id
-    )
+    existing_ob = objective_breach_db.get_objective_breaches_by_schedule_id(schedule.id)
     if existing_ob:
         for ob in existing_ob:
             objective_breach_db.delete_objective_breach(ob.id)
     return [
-        objective_breach_db.create_objective_breach(ob)
-        for ob in objective_breaches
+        objective_breach_db.create_objective_breach(ob) for ob in objective_breaches
     ]
 
 
@@ -213,8 +202,6 @@ def setup_shift_demands(
             out.append(None)
             continue
         out.append(
-            shift_demand_db.get_shift_demands_by_coverage_selector(
-                coverage_selector
-            )
+            shift_demand_db.get_shift_demands_by_coverage_selector(coverage_selector)
         )
     return out
