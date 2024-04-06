@@ -13,12 +13,19 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import NewShiftDimensionMessage, ShiftDimensionMessage
 from routes.shift_routes import core_to_msg_shift_property
-from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
+from scripts.setup_database import (
+    shift_db,
+    shift_dimension_db,
+    shift_property_db,
+)
 from services.shift_services import (
     delete_shift_dimension as delete_shift_dimension_service,
 )
@@ -43,7 +50,10 @@ async def create_shift_dimension(
         sd_created = shift_dimension_db.create_shift_dimension(sd_data)
         properties = []
         if sd_created.entry_type == "bool":
-            shifts = shift_db.get_shifts(team_id)
+            if sd_created.is_rest:
+                shifts = shift_db.get_rest_shifts(team_id)
+            else:
+                shifts = shift_db.get_shifts(team_id)
             for shift in shifts:
                 properties.append(
                     shift_property_db.create_shift_property(

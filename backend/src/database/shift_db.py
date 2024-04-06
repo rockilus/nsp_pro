@@ -30,6 +30,15 @@ class ShiftDB:
             handle_save_document_error(e)
         return doc_to_core_shift(s_saved)
 
+    def get_all_shifts(self, team_id: str) -> List[Shift]:
+        try:
+            # pylint: disable=no-member
+            shifts = ShiftDocument.objects(team=team_id)  # type: ignore
+        except Exception as e:
+            log_info("Failed to get all shifts from database")
+            handle_get_document_error(e)
+        return [doc_to_core_shift(s) for s in list(shifts)]
+
     def get_shifts(self, team_id: str) -> List[Shift]:
         try:
             # pylint: disable=no-member
