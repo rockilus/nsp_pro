@@ -66,6 +66,7 @@ export default function Dashboard({ team }: Props) {
         const shift: ShiftIdNameT = {
           id: s.id,
           name: s.name,
+          isTimeOff: s.isTimeOff,
         };
         return shift;
       })
@@ -82,9 +83,9 @@ export default function Dashboard({ team }: Props) {
     : [];
 
   useEffect(() => {
-    fetchShifts(team.id);
     fetchWorkers(team.id);
-  }, [fetchShifts, fetchWorkers, team.id]);
+    fetchShifts(team.id);
+  }, [fetchWorkers, fetchShifts, team.id]);
 
   const tabs: { [key: string]: JSX.Element } = {
     workers: <WorkerTab team={team} />,

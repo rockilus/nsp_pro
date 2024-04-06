@@ -10,7 +10,10 @@ import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
 // Types
 import { TeamT } from "../../containers/types";
 // Constants
-import { DefaultShiftFields } from "../../utils/constants";
+import {
+  DefaultWorkShiftFields,
+  DefaultRestShiftFields,
+} from "../../utils/constants";
 
 interface Props {
   team: TeamT;
@@ -38,13 +41,27 @@ export default function ShiftTab({ team }: Props) {
   return (
     <Box style={{ width: "100%" }}>
       <Typography variant="h4" align="left">
-        Shifts Configuration
+        Shifts configuration
+      </Typography>
+      <Typography variant="h4" align="left">
+        Shifts
       </Typography>
       <ShiftTable
         team={team}
-        shiftDimensions={shiftDimensions}
-        shifts={shifts}
-        defaultShiftFields={DefaultShiftFields}
+        isRest={false}
+        shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
+        shifts={shifts.filter((s) => !s.isTimeOff)}
+        defaultShiftFields={DefaultWorkShiftFields}
+      />
+      <Typography variant="h4" align="left">
+        Rest
+      </Typography>
+      <ShiftTable
+        team={team}
+        isRest={true}
+        shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
+        shifts={shifts.filter((s) => s.isTimeOff)}
+        defaultShiftFields={DefaultRestShiftFields}
       />
     </Box>
   );

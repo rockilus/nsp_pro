@@ -21,6 +21,7 @@ class Shift:
 # pylint: disable=R0801
 class ShiftDimension:
     id: str
+    is_rest: bool
     team_id: str
     name: str
     entry_type: Constants.DIMENSION_ENTRY_TYPES  # str, int, bool, list

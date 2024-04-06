@@ -43,7 +43,10 @@ async def create_shift_dimension(
         sd_created = shift_dimension_db.create_shift_dimension(sd_data)
         properties = []
         if sd_created.entry_type == "bool":
-            shifts = shift_db.get_shifts(team_id)
+            if sd_created.is_rest:
+                shifts = shift_db.get_rest_shifts(team_id)
+            else:
+                shifts = shift_db.get_work_shifts(team_id)
             for shift in shifts:
                 properties.append(
                     shift_property_db.create_shift_property(

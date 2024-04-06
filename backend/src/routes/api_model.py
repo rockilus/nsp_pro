@@ -64,6 +64,7 @@ class ShiftDefaultMessage(BaseModel):
 
 class ShiftDimensionMessage(BaseModel):
     id: str
+    isRest: bool
     teamId: str
     name: str
     entryType: str

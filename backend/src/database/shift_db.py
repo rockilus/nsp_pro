@@ -35,7 +35,29 @@ class ShiftDB:
             # pylint: disable=no-member
             shifts = ShiftDocument.objects(team=team_id)  # type: ignore
         except Exception as e:
+            log_info("Failed to get all shifts from database")
+            handle_get_document_error(e)
+        return [doc_to_core_shift(s) for s in list(shifts)]
+
+    def get_work_shifts(self, team_id: str) -> List[Shift]:
+        try:
+            # pylint: disable=no-member
+            shifts = ShiftDocument.objects(  # type: ignore
+                team=team_id, is_time_off=False
+            )
+        except Exception as e:
             log_info("Failed to get shifts from database")
+            handle_get_document_error(e)
+        return [doc_to_core_shift(s) for s in list(shifts)]
+
+    def get_rest_shifts(self, team_id: str) -> List[Shift]:
+        try:
+            # pylint: disable=no-member
+            shifts = ShiftDocument.objects(  # type: ignore
+                team=team_id, is_time_off=True
+            )
+        except Exception as e:
+            log_info("Failed to get rest shifts from database")
             handle_get_document_error(e)
         return [doc_to_core_shift(s) for s in list(shifts)]
 

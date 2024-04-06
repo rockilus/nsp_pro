@@ -19,10 +19,14 @@ import { ShiftDimensionT } from "./types";
 import { PropertyTypes } from "../../utils/constants";
 
 interface Props {
+  isRest: boolean;
   setOpenParent: (open: boolean) => void | null;
 }
 
-export default function NewShiftDimensionForm({ setOpenParent }: Props) {
+export default function NewShiftDimensionForm({
+  isRest,
+  setOpenParent,
+}: Props) {
   const [name, setName] = useState<string>("");
   const [type, setType] = useState<string>("");
   const [listOptions, setListOptions] = useState<string[]>([]);
@@ -84,6 +88,7 @@ export default function NewShiftDimensionForm({ setOpenParent }: Props) {
     ) {
       const newShiftDimension: ShiftDimensionT = {
         id: "",
+        isRest: isRest,
         teamId: selectedTeam.id,
         name: name,
         entryType: type,
