@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 
 export type ShiftDimensionT = {
   id: string;
+  isRest: boolean;
   teamId: string;
   name: string;
   entryType: string;

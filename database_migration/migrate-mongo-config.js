@@ -1,9 +1,11 @@
 // In this file you can configure migrate-mongo
 
+
 const config = {
   mongodb: {
     // TODO Change (or review) the url to your MongoDB:
-    url: "mongodb://localhost:27017/nsp_pro",
+    // url: "mongodb://localhost:27017/nsp_pro",
+    url: process.env.DB_URI,
 
     // TODO Change this to your database name:
     // databaseName: "YOURDATABASENAME",

@@ -79,6 +79,7 @@ export default function UpdateShiftDimensionForm({
       ) {
         const newShiftDimension: ShiftDimensionT = {
           id: shiftDimension.id,
+          isRest: shiftDimension.isRest,
           teamId: selectedTeam.id,
           name: name,
           entryType: shiftDimension.entryType,

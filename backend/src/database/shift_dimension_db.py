@@ -112,6 +112,7 @@ def core_to_doc_shift_dimension(
         sd_doc = ShiftDimensionDocument(
             # pylint: disable=R0801
             id=dataclass_obj.id,
+            is_rest=dataclass_obj.is_rest,
             team=team,
             name=dataclass_obj.name,
             entry_type=dataclass_obj.entry_type,
@@ -131,6 +132,7 @@ def doc_to_core_shift_dimension(
         shift_dimension = ShiftDimension(
             # pylint: disable=R0801
             id=doc_obj.id,
+            is_rest=doc_obj.is_rest,
             team_id=doc_obj.team.id,
             name=doc_obj.name,
             entry_type=doc_obj.entry_type,  # type: ignore

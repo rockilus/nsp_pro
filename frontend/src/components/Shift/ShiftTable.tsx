@@ -31,6 +31,7 @@ dayjs.extend(utc);
 
 interface Props {
   team: TeamT;
+  isRest: boolean;
   shiftDimensions: ShiftDimensionT[];
   shifts: ShiftT[];
   defaultShiftFields: string[];
@@ -38,6 +39,7 @@ interface Props {
 
 export default function ShiftTable({
   team,
+  isRest,
   shiftDimensions,
   shifts,
   defaultShiftFields,
@@ -84,7 +86,10 @@ export default function ShiftTable({
                   title={"New property"}
                   buttonContent={<AddIcon color="primary" />}
                   content={
-                    <NewShiftDimensionForm setOpenParent={setPopoverRhsOpen} />
+                    <NewShiftDimensionForm
+                      isRest={isRest}
+                      setOpenParent={setPopoverRhsOpen}
+                    />
                   }
                   open={popoverRhsOpen}
                   setOpen={setPopoverRhsOpen}

@@ -24,7 +24,6 @@ export const DefaultShiftFields = [
   "Start time",
   "End time",
   "Staffing",
-  "Is time off",
 ];
 export const ShiftColors = [
   "#0030C6",

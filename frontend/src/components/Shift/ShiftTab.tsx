@@ -6,7 +6,6 @@ import Typography from "@mui/material/Typography";
 import ShiftTable from "./ShiftTable";
 // Stores
 import { useShiftStore } from "../../stores/shiftStore";
-import { useRestShiftStore } from "../../stores/RestshiftStore";
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
 // Types
 import { TeamT } from "../../containers/types";
@@ -19,9 +18,8 @@ interface Props {
 
 export default function ShiftTab({ team }: Props) {
   const shifts = useShiftStore((state) => state.shifts);
-  const restShifts = useRestShiftStore((state) => state.restShifts);
-  const fetchShifts = useShiftStore((state) => state.fetchShifts);
-  const fetchRestShifts = useRestShiftStore((state) => state.fetchRestShifts);
+  const restShifts = useShiftStore((state) => state.restShifts);
+  const fetchAllShifts = useShiftStore((state) => state.fetchAllShifts);
 
   const shiftDimensions = useShiftDimensionStore(
     (state) => state.shiftDimensions
@@ -31,12 +29,8 @@ export default function ShiftTab({ team }: Props) {
   );
 
   useEffect(() => {
-    fetchShifts(team.id);
-  }, [fetchShifts, team.id]);
-
-  useEffect(() => {
-    fetchRestShifts(team.id);
-  }, [fetchRestShifts, team.id]);
+    fetchAllShifts(team.id);
+  }, [fetchAllShifts, team.id]);
 
   useEffect(() => {
     fetchShiftDimensions(team.id);
@@ -52,7 +46,8 @@ export default function ShiftTab({ team }: Props) {
       </Typography>
       <ShiftTable
         team={team}
-        shiftDimensions={shiftDimensions}
+        isRest={false}
+        shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
         shifts={shifts}
         defaultShiftFields={DefaultShiftFields}
       />
@@ -61,7 +56,8 @@ export default function ShiftTab({ team }: Props) {
       </Typography>
       <ShiftTable
         team={team}
-        shiftDimensions={shiftDimensions}
+        isRest={true}
+        shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
         shifts={restShifts}
         defaultShiftFields={DefaultShiftFields}
       />
