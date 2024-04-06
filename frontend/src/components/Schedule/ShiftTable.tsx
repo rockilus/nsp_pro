@@ -121,7 +121,7 @@ export default function ShiftTable({
   const buildShiftRows = useCallback((): RowT[] => {
     const newRows: RowT[] = [];
     const dateColumns = columns.filter((c: ColumnT) => c.date.valueOf() !== 0);
-    for (let shift of shifts.filter((s) => s.name !== "Off")) {
+    for (let shift of shifts.filter((s) => !s.isTimeOff)) {
       const shiftAssignments = assignments.filter(
         (a) => a.shiftId === shift.id
       );

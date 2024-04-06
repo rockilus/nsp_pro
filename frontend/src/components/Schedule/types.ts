@@ -79,6 +79,7 @@ export type ValidateT = {
 export type ShiftIdNameT = {
   id: string;
   name: string;
+  isTimeOff: boolean;
 };
 
 export type WorkerIdNameT = {
