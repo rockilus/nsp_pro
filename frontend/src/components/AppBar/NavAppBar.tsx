@@ -45,6 +45,7 @@ const NavAppBar = ({ tabs, selectedTabId, handleSelectTab }: Props) => {
             alt="logo"
             width={logoWidth}
             height={logoHeight}
+            priority
           />
           <Box display="flex" justifyContent="center" alignItems="center">
             {/* <div style={{ display: "flex", justifyContent: "space-evenly" }}> */}
