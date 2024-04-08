@@ -2,8 +2,8 @@ import React, { useState } from "react";
 // MUI
 import Chip from "@mui/material/Chip";
 // Components
-import ListTypeCellEdit from "../../utils/WorkerShiftUtils/ListTypeCellEdit";
-import PopoverAnchorElOver from "../../utils/PopoverAnchorElOver";
+import ListTypeCellEdit from "../SharedComponents/ListTypeCellEdit";
+import PopoverAnchorElOver from "../SharedComponents/PopoverAnchorElOver";
 // Stores
 import { useShiftStore } from "../../stores/shiftStore";
 import { useTeamStore } from "../../stores/teamStore";
@@ -72,7 +72,7 @@ export default function ShiftPropertyCellList({
       buttonContent={
         Array.isArray(shiftProperty.value)
           ? shiftProperty.value.map((value, index) => (
-              <Chip key={index} label={value} />
+              <Chip key={index} label={value} sx={{ cursor: "pointer" }} />
             ))
           : shiftProperty.value
       }

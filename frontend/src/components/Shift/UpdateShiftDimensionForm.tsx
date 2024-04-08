@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 // Component
-import DimensionListInput from "../../utils/WorkerShiftUtils/DimensionListInput";
+import DimensionListInput from "../SharedComponents/DimensionListInput";
 import DialogShiftDimensionDel from "./DialogShiftDimensionDel";
 // Stores
 import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";

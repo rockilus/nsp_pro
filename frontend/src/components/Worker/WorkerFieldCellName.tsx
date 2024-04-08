@@ -1,10 +1,12 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
-
+// MUI
+import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
-
-import { WorkerT } from "./types";
+// Stores
 import { useWorkerStore } from "../../stores/workerStore";
+// Types
+import { WorkerT } from "./types";
 
 interface Props {
   worker: WorkerT;
@@ -41,6 +43,7 @@ export default function WorkerFieldCellName({
       component="th"
       scope="row"
       onClick={() => setEditing({ [worker.id]: "Name" })}
+      sx={{ paddingY: 0 }}
     >
       {editing ? (
         <TextField
@@ -60,7 +63,9 @@ export default function WorkerFieldCellName({
           autoFocus
         />
       ) : (
-        worker.name
+        <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
+          {worker.name}
+        </Box>
       )}
     </TableCell>
   );

@@ -1,10 +1,12 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
-
+// MUI
+import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
-
-import { ShiftT } from "./types";
+// Stores
 import { useShiftStore } from "../../stores/shiftStore";
+// Types
+import { ShiftT } from "./types";
 
 interface Props {
   shift: ShiftT;
@@ -38,6 +40,7 @@ export default function ShiftFieldCellName({
       component="th"
       scope="row"
       onClick={() => setEditing({ [shift.id]: "Name" })}
+      sx={{ paddingY: 0, cursor: "pointer" }}
     >
       {editing ? (
         <TextField
@@ -57,7 +60,9 @@ export default function ShiftFieldCellName({
           autoFocus
         />
       ) : (
-        shift.name
+        <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
+          {shift.name}
+        </Box>
       )}
     </TableCell>
   );

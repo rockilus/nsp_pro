@@ -8,7 +8,7 @@ import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
 import Typography from "@mui/material/Typography";
 // Components
-import PopoverAnchorElBelow from "../../utils/PopoverAnchorElBelow";
+import PopoverAnchorElBelow from "../SharedComponents/PopoverAnchorElBelow";
 import UpdateShiftDimensionForm from "./UpdateShiftDimensionForm";
 //Types
 import { ShiftDimensionT } from "./types";
@@ -35,7 +35,12 @@ export default function ShiftDimensionCell({ shiftDimension }: Props) {
         justifyContent: "center",
       }}
     >
-      <Typography variant="body2" color="text.secondary" align="left">
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        align="left"
+        sx={{ fontWeight: "bold" }}
+      >
         {shiftDimension.name}
       </Typography>
       {iconsPrefix[shiftDimension.entryType]}
@@ -43,7 +48,12 @@ export default function ShiftDimensionCell({ shiftDimension }: Props) {
   );
 
   return (
-    <TableCell key={shiftDimension.id} component="th" scope="row">
+    <TableCell
+      key={shiftDimension.id}
+      component="th"
+      scope="row"
+      sx={{ paddingY: 0 }}
+    >
       <PopoverAnchorElBelow
         buttonContent={cellContent()}
         content={

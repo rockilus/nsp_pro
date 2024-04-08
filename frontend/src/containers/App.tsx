@@ -9,11 +9,12 @@ import CoverageTab from "../components/Coverage/CoverageTab";
 import FARTab from "../components/FixedAssignmentRequest/FARTab";
 import ScheduleTab from "../components/Schedule/ScheduleTab";
 import ShiftTab from "../components/Shift/ShiftTab";
-import SimpleSnackbar from "../utils/SnackBars";
+import SimpleSnackbar from "../components/SnackBars/SnackBars";
 import StatsTab from "../components/Stats/StatsTab";
 import WorkerTab from "../components/Worker/WorkerTab";
 // Stores
 import { useShiftStore } from "../stores/shiftStore";
+import { useShiftDimensionStore } from "../stores/shiftDimensionStore";
 import { useTeamStore } from "../stores/teamStore";
 import { useWorkerStore } from "../stores/workerStore";
 import { useWorkerDimensionStore } from "../stores/workerDimensionStore";
@@ -37,6 +38,12 @@ const App = () => {
 
   const shifts = useShiftStore((state) => state.shifts);
   const fetchShifts = useShiftStore((state) => state.fetchShifts);
+  const shiftDimensions = useShiftDimensionStore(
+    (state) => state.shiftDimensions
+  );
+  const fetchShiftDimensions = useShiftDimensionStore(
+    (state) => state.fetchShiftDimensions
+  );
   const workers = useWorkerStore((state) => state.workers);
   const fetchWorkers = useWorkerStore((state) => state.fetchWorkers);
   const workerDimensions = useWorkerDimensionStore(
@@ -104,8 +111,15 @@ const App = () => {
       fetchWorkers(selectedTeam.id);
       fetchWorkerDimensions(selectedTeam.id);
       fetchShifts(selectedTeam.id);
+      fetchShiftDimensions(selectedTeam.id);
     }
-  }, [fetchWorkers, fetchWorkerDimensions, fetchShifts, selectedTeam]);
+  }, [
+    fetchWorkers,
+    fetchWorkerDimensions,
+    fetchShifts,
+    fetchShiftDimensions,
+    selectedTeam,
+  ]);
 
   const renderTabContent = () => {
     if (!selectedTeam) {
@@ -121,7 +135,13 @@ const App = () => {
           />
         );
       case "shifts":
-        return <ShiftTab team={selectedTeam} />;
+        return (
+          <ShiftTab
+            team={selectedTeam}
+            shifts={shifts}
+            shiftDimensions={shiftDimensions}
+          />
+        );
       case "coverages":
         return <CoverageTab team={selectedTeam} shifts={shiftDefaults} />;
       case "constraints":

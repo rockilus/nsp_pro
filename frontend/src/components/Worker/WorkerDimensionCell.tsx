@@ -8,7 +8,7 @@ import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
 import Typography from "@mui/material/Typography";
 // Components
-import PopoverAnchorElBelow from "../../utils/PopoverAnchorElBelow";
+import PopoverAnchorElBelow from "../SharedComponents/PopoverAnchorElBelow";
 import UpdateWorkerDimensionForm from "./UpdateWorkerDimensionForm";
 // Types
 import { WorkerDimensionT } from "./types";
