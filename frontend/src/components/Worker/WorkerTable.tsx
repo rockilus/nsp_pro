@@ -4,6 +4,7 @@ import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
+import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -11,6 +12,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import Typography from "@mui/material/Typography";
 // Components
 import NewWorkerDimensionForm from "./NewWorkerDimensionForm";
 import PopoverRHS from "../../utils/PopoverRHS";
@@ -55,26 +57,84 @@ export default function WorkerTable({
 
   return (
     <>
-      <TableContainer component={Paper} style={{ width: "100%" }}>
+      <TableContainer component={Paper} sx={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
+          <TableHead sx={{ backgroundColor: "grey.100" }}>
+            <TableRow>
+              <TableCell
+                colSpan={
+                  defaultWorkerFields.length + workerDimensions.length + 1
+                }
+                sx={{ paddingY: 0 }}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  width="100%"
+                  alignItems="center"
+                >
+                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                    Workers
+                  </Typography>
+                  <PopoverRHS
+                    title={"New property"}
+                    buttonContent={
+                      <Button
+                        sx={{
+                          borderRadius: 4,
+                          textTransform: "none",
+                          border: "1px solid",
+                          height: "30px",
+                          color: "grey.700",
+                          marginY: 1,
+                        }}
+                      >
+                        Add property
+                      </Button>
+                    }
+                    content={
+                      <NewWorkerDimensionForm
+                        setOpenParent={setPopoverRhsOpen}
+                      />
+                    }
+                    open={popoverRhsOpen}
+                    setOpen={setPopoverRhsOpen}
+                  />
+                </Box>
+              </TableCell>
+            </TableRow>
             <TableRow>
               {defaultWorkerFields.map((field, index) => (
-                <TableCell key={index}>{field}</TableCell>
+                <TableCell key={index} sx={{ paddingY: 1, fontWeight: "bold" }}>
+                  {field}
+                </TableCell>
               ))}
               {workerDimensions.map((wd, wdIndex) => (
                 <WorkerDimensionCell key={wdIndex} workerDimension={wd} />
               ))}
-              <TableCell>
-                <PopoverRHS
+              <TableCell sx={{ padding: 0, width: 110 }}>
+                {/* <PopoverRHS
                   title={"New property"}
-                  buttonContent={<AddIcon color="primary" />}
+                  buttonContent={
+                    <Button
+                      sx={{
+                        borderRadius: 4,
+                        textTransform: "none",
+                        border: "1px solid",
+                        height: "30px",
+                        color: "grey.700",
+                        marginY: 1,
+                      }}
+                    >
+                      Add property
+                    </Button>
+                  }
                   content={
                     <NewWorkerDimensionForm setOpenParent={setPopoverRhsOpen} />
                   }
                   open={popoverRhsOpen}
                   setOpen={setPopoverRhsOpen}
-                />
+                /> */}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -126,11 +186,25 @@ export default function WorkerTable({
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow>
-              <TableCell colSpan={workerDimensions.length}>
-                <Button onClick={handleAddWorker}>
-                  <AddIcon />
-                  New
+            <TableRow sx={{ backgroundColor: "grey.100" }}>
+              <TableCell
+                colSpan={
+                  defaultWorkerFields.length + workerDimensions.length + 1
+                }
+                sx={{ paddingY: 0 }}
+              >
+                <Button
+                  onClick={handleAddWorker}
+                  sx={{
+                    borderRadius: 4,
+                    textTransform: "none",
+                    border: "1px solid",
+                    height: "30px",
+                    color: "grey.700",
+                    marginY: 1,
+                  }}
+                >
+                  Add worker
                 </Button>
               </TableCell>
             </TableRow>

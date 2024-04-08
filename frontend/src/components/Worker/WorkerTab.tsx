@@ -4,42 +4,29 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 // Components
 import WorkerTable from "./WorkerTable";
-// Stores
-import { useWorkerStore } from "../../stores/workerStore";
-import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
 // Types
+import { WorkerT, WorkerDimensionT } from "./types";
 import { TeamT } from "../../containers/types";
 // Constants
 import { DefaultWorkerFields } from "../../utils/constants";
 
 interface Props {
   team: TeamT;
+  workers: WorkerT[];
+  workerDimensions: WorkerDimensionT[];
 }
 
-export default function WorkerTab({ team }: Props) {
-  const workers = useWorkerStore((state) => state.workers);
-  const fetchWorkers = useWorkerStore((state) => state.fetchWorkers);
-
-  const workerDimensions = useWorkerDimensionStore(
-    (state) => state.workerDimensions
-  );
-  const fetchWorkerDimensions = useWorkerDimensionStore(
-    (state) => state.fetchWorkerDimensions
-  );
-
-  useEffect(() => {
-    fetchWorkers(team.id);
-  }, [fetchWorkers, team.id]);
-
-  useEffect(() => {
-    fetchWorkerDimensions(team.id);
-  }, [fetchWorkerDimensions, team.id]);
-
+export default function WorkerTab({ team, workers, workerDimensions }: Props) {
   return (
-    <Box style={{ width: "100%" }}>
-      <Typography variant="h4" align="left">
-        Workers Configuration
-      </Typography>
+    <Box
+      sx={{
+        border: "1px solid grey",
+        margin: 2,
+        overflowX: "auto",
+        borderRadius: 2,
+        backgroundColor: "none",
+      }}
+    >
       <WorkerTable
         team={team}
         workerDimensions={workerDimensions}

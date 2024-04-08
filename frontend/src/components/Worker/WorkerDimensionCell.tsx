@@ -35,7 +35,12 @@ export default function WorkerDimensionCell({ workerDimension }: Props) {
         justifyContent: "center",
       }}
     >
-      <Typography variant="body2" color="text.secondary" align="left">
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        align="left"
+        sx={{ fontWeight: "bold" }}
+      >
         {workerDimension.name}
       </Typography>
       {iconsPrefix[workerDimension.entryType]}
@@ -43,7 +48,12 @@ export default function WorkerDimensionCell({ workerDimension }: Props) {
   );
 
   return (
-    <TableCell key={workerDimension.id} component="th" scope="row">
+    <TableCell
+      key={workerDimension.id}
+      component="th"
+      scope="row"
+      sx={{ paddingY: 0 }}
+    >
       <PopoverAnchorElBelow
         buttonContent={cellContent()}
         content={

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+// MUI
+import Box from "@mui/material/Box";
 // Components
 import NavAppBar from "../components/AppBar/NavAppBar";
 import ConstraintTab from "../components/Constraint/ConstraintTab";
@@ -14,6 +16,7 @@ import WorkerTab from "../components/Worker/WorkerTab";
 import { useShiftStore } from "../stores/shiftStore";
 import { useTeamStore } from "../stores/teamStore";
 import { useWorkerStore } from "../stores/workerStore";
+import { useWorkerDimensionStore } from "../stores/workerDimensionStore";
 // Types
 import { ShiftDefaultT } from "../components/Shift/types";
 import { ShiftIdNameT, WorkerIdNameT } from "../components/Schedule/types";
@@ -36,6 +39,12 @@ const App = () => {
   const fetchShifts = useShiftStore((state) => state.fetchShifts);
   const workers = useWorkerStore((state) => state.workers);
   const fetchWorkers = useWorkerStore((state) => state.fetchWorkers);
+  const workerDimensions = useWorkerDimensionStore(
+    (state) => state.workerDimensions
+  );
+  const fetchWorkerDimensions = useWorkerDimensionStore(
+    (state) => state.fetchWorkerDimensions
+  );
 
   const teams = useTeamStore((state) => state.teams);
   const selectedTeam = useTeamStore((state) => state.selectedTeam);
@@ -93,9 +102,10 @@ const App = () => {
   useEffect(() => {
     if (selectedTeam) {
       fetchWorkers(selectedTeam.id);
+      fetchWorkerDimensions(selectedTeam.id);
       fetchShifts(selectedTeam.id);
     }
-  }, [fetchWorkers, fetchShifts, selectedTeam]);
+  }, [fetchWorkers, fetchWorkerDimensions, fetchShifts, selectedTeam]);
 
   const renderTabContent = () => {
     if (!selectedTeam) {
@@ -103,7 +113,13 @@ const App = () => {
     }
     switch (selectedTabId) {
       case "workers":
-        return <WorkerTab team={selectedTeam} />;
+        return (
+          <WorkerTab
+            team={selectedTeam}
+            workers={workers}
+            workerDimensions={workerDimensions}
+          />
+        );
       case "shifts":
         return <ShiftTab team={selectedTeam} />;
       case "coverages":
@@ -152,7 +168,7 @@ const App = () => {
         selectedTabId={selectedTabId}
         handleSelectTab={handleSelectTab}
       />
-      {selectedTeam && renderTabContent()}
+      {renderTabContent()}
       <SimpleSnackbar />
     </div>
   );

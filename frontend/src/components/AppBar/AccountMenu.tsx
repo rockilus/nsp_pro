@@ -35,7 +35,7 @@ export default function AccountMenu() {
         aria-controls="menu-appbar"
         aria-haspopup="true"
         onClick={handleMenu}
-        sx={{ color: "#65676b" }}
+        sx={{ color: "grey.700" }}
       >
         <AccountCircle />
       </IconButton>
