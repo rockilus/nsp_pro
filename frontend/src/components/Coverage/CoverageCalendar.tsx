@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
+// MUI
+import Box from "@mui/material/Box";
 // Components
 import WeekViewTable from "./WeekViewTable";
 import CoveragesOverlay from "./CoveragesOverlay";
 // Types
 import { ShiftDemandT, ColOverlayT, SDOverlayT } from "./types";
-import { ShiftDefaultT } from "../Shift/types";
+import { ShiftT } from "../Shift/types";
 import { TeamT } from "../../containers/types";
 // Constants
 import {
@@ -20,7 +22,7 @@ interface Props {
   team: TeamT;
   coverageId: string;
   shiftDemands: ShiftDemandT[];
-  shifts: ShiftDefaultT[];
+  shifts: ShiftT[];
 }
 
 export default function CoverageCalendar({
@@ -167,14 +169,26 @@ export default function CoverageCalendar({
   }, [shiftDemands, buildSDOverlays]);
 
   return (
-    <div style={{ position: "relative", width: "100%" }} ref={tableRef}>
-      <WeekViewTable dayColWidth={dayColWidth} />
-      <CoveragesOverlay
-        team={team}
-        coverageId={coverageId}
-        colOverlays={colOverlays}
-        shifts={shifts}
-      />
-    </div>
+    <Box
+      sx={{
+        border: "1px solid grey",
+        margin: 2,
+        marginLeft: 0,
+        overflowX: "auto",
+        borderRadius: 2,
+        backgroundColor: "none",
+        width: "100%",
+      }}
+    >
+      <div style={{ position: "relative", width: "100%" }} ref={tableRef}>
+        <WeekViewTable dayColWidth={dayColWidth} />
+        <CoveragesOverlay
+          team={team}
+          coverageId={coverageId}
+          colOverlays={colOverlays}
+          shifts={shifts}
+        />
+      </div>
+    </Box>
   );
 }

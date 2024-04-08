@@ -5,7 +5,7 @@ import { create } from "zustand";
 import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { CoverageT, ShiftDemandT } from "../components/Coverage/types";
-import { ShiftDefaultT } from "../components/Shift/types";
+import { toShiftT } from "./shiftStore";
 
 dayjs.extend(utc);
 
@@ -24,14 +24,6 @@ type CoverageStateT = {
     shiftDemandId: string,
     teamId: string
   ) => void;
-};
-
-const toShiftDefaultT = (data: any): ShiftDefaultT => {
-  return {
-    ...data,
-    startTime: dayjs.utc(data.startTime),
-    endTime: dayjs.utc(data.endTime),
-  };
 };
 
 export const useCoverageStore = create<CoverageStateT>()((set) => ({
@@ -55,7 +47,7 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           ...coverage,
           shiftDemands: coverage.shiftDemands.map((shiftDemand) => ({
             ...shiftDemand,
-            shift: toShiftDefaultT(shiftDemand.shift),
+            shift: toShiftT(shiftDemand.shift),
           })),
         })
       );
@@ -98,7 +90,7 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
         shiftDemands: responseData.shiftDemands.map(
           (shiftDemand: ShiftDemandT) => ({
             ...shiftDemand,
-            shift: toShiftDefaultT(shiftDemand.shift),
+            shift: toShiftT(shiftDemand.shift),
           })
         ),
       };
@@ -140,7 +132,7 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
       }
       const newShiftDemand: ShiftDemandT = {
         ...responseData,
-        shift: toShiftDefaultT(responseData.shift),
+        shift: toShiftT(responseData.shift),
       };
       set((state) => ({
         coverages: state.coverages.map((coverage) =>
@@ -190,7 +182,7 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
         shiftDemands: responseData.shiftDemands.map(
           (shiftDemand: ShiftDemandT) => ({
             ...shiftDemand,
-            shift: toShiftDefaultT(shiftDemand.shift),
+            shift: toShiftT(shiftDemand.shift),
           })
         ),
       };
@@ -234,7 +226,7 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
       }
       const newShiftDemand: ShiftDemandT = {
         ...responseData,
-        shift: toShiftDefaultT(responseData.shift),
+        shift: toShiftT(responseData.shift),
       };
       set((state) => ({
         coverages: state.coverages.map((coverage) =>

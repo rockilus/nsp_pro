@@ -17,7 +17,6 @@ const TableAddButton = ({ text, handleClick }: Props) => {
         border: "1px solid",
         height: "30px",
         color: "grey.700",
-        marginY: 1,
       }}
     >
       {text}

@@ -6,14 +6,14 @@ import Menu from "@mui/material/Menu";
 import ShiftDemandPanel from "./ShiftDemandPanel";
 // Types
 import { ShiftDemandT } from "./types";
-import { ShiftDefaultT } from "../Shift/types";
+import { ShiftT } from "../Shift/types";
 import { TeamT } from "../../containers/types";
 
 interface Props {
   team: TeamT;
   buttonElement: React.ReactNode;
   shiftDemand: ShiftDemandT;
-  shifts: ShiftDefaultT[];
+  shifts: ShiftT[];
 }
 
 export default function ShiftDemandButton({

@@ -1,21 +1,17 @@
 import React from "react";
 // MUI
-import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 // Components
 import CoverageList from "./CoverageList";
+import TableAddButton from "../SharedComponents/TableAddButton";
 // Types
 import { CoverageT } from "./types";
-import { ShiftIdNameT } from "../Schedule/types";
 
 interface Props {
   coverages: CoverageT[];
   selectedCoverage: CoverageT | undefined;
   editingName: boolean;
-  shifts: ShiftIdNameT[];
   handleSelectCoverage: (coverage: CoverageT) => void;
   setEditingName: (editingName: boolean) => void;
   handleAddCoverage: () => void;
@@ -27,38 +23,42 @@ export default function CoverageOptions({
   coverages,
   selectedCoverage,
   editingName,
-  shifts,
   handleSelectCoverage,
   setEditingName,
   handleAddCoverage,
   handleUpdateCoverage,
   handleDeleteCoverage,
 }: Props) {
-  const newSDButton = () => {
-    return (
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        disabled={selectedCoverage === undefined}
-      >
-        Create
-      </Button>
-    );
-  };
-
   return (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
+        alignSelf: "flex-start",
         backgroundColor: "grey.100",
         minWidth: 200,
+        border: "1px solid grey",
+        borderRadius: 2,
+        margin: 2,
       }}
     >
-      <Typography variant="subtitle1" align="left">
-        Coverages
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          minHeight: 45,
+          paddingLeft: 1,
+          borderBottom: "1px solid lightgrey",
+        }}
+      >
+        <Typography
+          variant="subtitle1"
+          align="left"
+          sx={{ fontWeight: "bold" }}
+        >
+          Coverages
+        </Typography>
+      </Box>
       <CoverageList
         coverages={coverages}
         selectedCoverage={selectedCoverage}
@@ -69,11 +69,16 @@ export default function CoverageOptions({
         handleUpdateCoverage={handleUpdateCoverage}
         handleDeleteCoverage={handleDeleteCoverage}
       />
-      <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
-      <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-        <Typography variant="body2" align="left">
-          Coverage options
-        </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          minHeight: 45,
+          paddingLeft: 1,
+          borderTop: "1px solid lightgrey",
+        }}
+      >
+        <TableAddButton text="Add coverage" handleClick={handleAddCoverage} />
       </Box>
     </Box>
   );

@@ -13,13 +13,13 @@ import SimpleSnackbar from "../components/SnackBars/SnackBars";
 import StatsTab from "../components/Stats/StatsTab";
 import WorkerTab from "../components/Worker/WorkerTab";
 // Stores
+import { useCoverageStore } from "../stores/coverageStore";
 import { useShiftStore } from "../stores/shiftStore";
 import { useShiftDimensionStore } from "../stores/shiftDimensionStore";
 import { useTeamStore } from "../stores/teamStore";
 import { useWorkerStore } from "../stores/workerStore";
 import { useWorkerDimensionStore } from "../stores/workerDimensionStore";
 // Types
-import { ShiftDefaultT } from "../components/Shift/types";
 import { ShiftIdNameT, WorkerIdNameT } from "../components/Schedule/types";
 
 const App = () => {
@@ -52,6 +52,8 @@ const App = () => {
   const fetchWorkerDimensions = useWorkerDimensionStore(
     (state) => state.fetchWorkerDimensions
   );
+  const coverages = useCoverageStore((state) => state.coverages);
+  const fetchCoverages = useCoverageStore((state) => state.fetchCoverages);
 
   const teams = useTeamStore((state) => state.teams);
   const selectedTeam = useTeamStore((state) => state.selectedTeam);
@@ -69,21 +71,6 @@ const App = () => {
       setSelectedTeam(teams[0]);
     }
   }, [teams, setSelectedTeam]);
-
-  const shiftDefaults = shifts
-    ? shifts.map((s) => {
-        const shift: ShiftDefaultT = {
-          id: s.id,
-          name: s.name,
-          startTime: s.startTime,
-          endTime: s.endTime,
-          isTimeOff: s.isTimeOff,
-          staffing: s.staffing,
-          color: s.color,
-        };
-        return shift;
-      })
-    : [];
 
   const shiftsIdName = shifts
     ? shifts.map((s) => {
@@ -112,12 +99,14 @@ const App = () => {
       fetchWorkerDimensions(selectedTeam.id);
       fetchShifts(selectedTeam.id);
       fetchShiftDimensions(selectedTeam.id);
+      fetchCoverages(selectedTeam.id);
     }
   }, [
     fetchWorkers,
     fetchWorkerDimensions,
     fetchShifts,
     fetchShiftDimensions,
+    fetchCoverages,
     selectedTeam,
   ]);
 
@@ -143,7 +132,13 @@ const App = () => {
           />
         );
       case "coverages":
-        return <CoverageTab team={selectedTeam} shifts={shiftDefaults} />;
+        return (
+          <CoverageTab
+            team={selectedTeam}
+            shifts={shifts}
+            coverages={coverages}
+          />
+        );
       case "constraints":
         return <ConstraintTab team={selectedTeam} />;
       case "requests":
