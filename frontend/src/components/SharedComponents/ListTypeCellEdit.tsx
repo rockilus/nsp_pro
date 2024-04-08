@@ -13,7 +13,7 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 // Types
-import { ConstraintDefaultColors } from "../constants";
+import { ConstraintDefaultColors } from "../../utils/constants";
 
 interface Props {
   selectedOptions: string[];

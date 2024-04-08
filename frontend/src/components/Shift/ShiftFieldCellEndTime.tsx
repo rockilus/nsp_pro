@@ -84,6 +84,7 @@ export default function ShiftFieldCellEndTime({
       component="th"
       scope="row"
       onClick={() => setEditing({ [shift.id]: "End time" })}
+      sx={{ paddingY: 0, cursor: "pointer" }}
     >
       {editing ? (
         selectEndTime()

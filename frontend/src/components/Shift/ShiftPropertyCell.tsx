@@ -62,6 +62,10 @@ export default function ShiftPropertyCell({
         onClick={() =>
           setEditing({ [shiftProperty.shiftId]: shiftDimension.id })
         }
+        sx={{
+          paddingY: 0,
+          cursor: shiftDimension.entryType === "list" ? "default" : "pointer",
+        }}
       >
         {shiftDimension.entryType === "list" ? (
           <ShiftPropertyCellList

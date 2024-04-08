@@ -62,6 +62,7 @@ export default function WorkerPropertyCell({
         onClick={() =>
           setEditing({ [workerProperty.workerId]: workerDimension.id })
         }
+        sx={{ paddingY: 0 }}
       >
         {workerDimension.entryType === "list" ? (
           <WorkerPropertyCellList

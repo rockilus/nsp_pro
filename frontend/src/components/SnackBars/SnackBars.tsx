@@ -5,7 +5,7 @@ import Snackbar from "@mui/material/Snackbar";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 //Stores
-import { useSnackBarStore } from "../stores/snackbarStore";
+import { useSnackBarStore } from "../../stores/snackbarStore";
 
 export default function SimpleSnackbar() {
   const snackBar = useSnackBarStore((state) => state.snackBar);

@@ -1,13 +1,11 @@
-import React, { useEffect } from "react";
+import React from "react";
 // MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 // Components
 import ShiftTable from "./ShiftTable";
-// Stores
-import { useShiftStore } from "../../stores/shiftStore";
-import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
 // Types
+import { ShiftT, ShiftDimensionT } from "./types";
 import { TeamT } from "../../containers/types";
 // Constants
 import {
@@ -17,52 +15,47 @@ import {
 
 interface Props {
   team: TeamT;
+  shifts: ShiftT[];
+  shiftDimensions: ShiftDimensionT[];
 }
 
-export default function ShiftTab({ team }: Props) {
-  const shifts = useShiftStore((state) => state.shifts);
-  const fetchShifts = useShiftStore((state) => state.fetchShifts);
-
-  const shiftDimensions = useShiftDimensionStore(
-    (state) => state.shiftDimensions
-  );
-  const fetchShiftDimensions = useShiftDimensionStore(
-    (state) => state.fetchShiftDimensions
-  );
-
-  useEffect(() => {
-    fetchShifts(team.id);
-  }, [fetchShifts, team.id]);
-
-  useEffect(() => {
-    fetchShiftDimensions(team.id);
-  }, [fetchShiftDimensions, team.id]);
-
+export default function ShiftTab({ team, shifts, shiftDimensions }: Props) {
   return (
     <Box style={{ width: "100%" }}>
-      <Typography variant="h4" align="left">
-        Shifts configuration
-      </Typography>
-      <Typography variant="h4" align="left">
-        Shifts
-      </Typography>
-      <ShiftTable
-        team={team}
-        isRest={false}
-        shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
-        shifts={shifts.filter((s) => !s.isTimeOff)}
-        defaultShiftFields={DefaultWorkShiftFields}
-      />
-      <Typography variant="h4" align="left">
-        Rest
-      </Typography>
-      <ShiftTable
-        team={team}
-        isRest={true}
-        shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
-        shifts={shifts.filter((s) => s.isTimeOff)}
-        defaultShiftFields={DefaultRestShiftFields}
-      />
+      <Box
+        sx={{
+          border: "1px solid grey",
+          margin: 2,
+          overflowX: "auto",
+          borderRadius: 2,
+          backgroundColor: "none",
+        }}
+      >
+        <ShiftTable
+          team={team}
+          isRest={false}
+          shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
+          shifts={shifts.filter((s) => !s.isTimeOff)}
+          defaultShiftFields={DefaultWorkShiftFields}
+        />
+      </Box>
+      <Box
+        sx={{
+          border: "1px solid grey",
+          margin: 2,
+          overflowX: "auto",
+          borderRadius: 2,
+          backgroundColor: "none",
+        }}
+      >
+        <ShiftTable
+          team={team}
+          isRest={true}
+          shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
+          shifts={shifts.filter((s) => s.isTimeOff)}
+          defaultShiftFields={DefaultRestShiftFields}
+        />
+      </Box>
     </Box>
   );
 }

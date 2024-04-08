@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 // MUI
-import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
-import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -15,7 +13,8 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 // Components
 import NewWorkerDimensionForm from "./NewWorkerDimensionForm";
-import PopoverRHS from "../../utils/PopoverRHS";
+import PopoverRHS from "../SharedComponents/PopoverRHS";
+import TableAddButton from "../SharedComponents/TableAddButton";
 import WorkerPropertyCell from "./WorkerPropertyCell";
 import WorkerDimensionCell from "./WorkerDimensionCell";
 import WorkerFieldCell from "./WorkerFieldCell";
@@ -78,20 +77,7 @@ export default function WorkerTable({
                   </Typography>
                   <PopoverRHS
                     title={"New property"}
-                    buttonContent={
-                      <Button
-                        sx={{
-                          borderRadius: 4,
-                          textTransform: "none",
-                          border: "1px solid",
-                          height: "30px",
-                          color: "grey.700",
-                          marginY: 1,
-                        }}
-                      >
-                        Add property
-                      </Button>
-                    }
+                    buttonContent={<TableAddButton text="Add property" />}
                     content={
                       <NewWorkerDimensionForm
                         setOpenParent={setPopoverRhsOpen}
@@ -105,37 +91,22 @@ export default function WorkerTable({
             </TableRow>
             <TableRow>
               {defaultWorkerFields.map((field, index) => (
-                <TableCell key={index} sx={{ paddingY: 1, fontWeight: "bold" }}>
-                  {field}
+                <TableCell key={index} sx={{ paddingY: 0, fontWeight: "bold" }}>
+                  <Box
+                    sx={{
+                      minHeight: 45,
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    {field}
+                  </Box>
                 </TableCell>
               ))}
               {workerDimensions.map((wd, wdIndex) => (
                 <WorkerDimensionCell key={wdIndex} workerDimension={wd} />
               ))}
-              <TableCell sx={{ padding: 0, width: 110 }}>
-                {/* <PopoverRHS
-                  title={"New property"}
-                  buttonContent={
-                    <Button
-                      sx={{
-                        borderRadius: 4,
-                        textTransform: "none",
-                        border: "1px solid",
-                        height: "30px",
-                        color: "grey.700",
-                        marginY: 1,
-                      }}
-                    >
-                      Add property
-                    </Button>
-                  }
-                  content={
-                    <NewWorkerDimensionForm setOpenParent={setPopoverRhsOpen} />
-                  }
-                  open={popoverRhsOpen}
-                  setOpen={setPopoverRhsOpen}
-                /> */}
-              </TableCell>
+              <TableCell sx={{ padding: 0, width: 110 }}></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -177,7 +148,7 @@ export default function WorkerTable({
                     />
                   );
                 })}
-                <TableCell component="th" scope="row">
+                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
                   <Box sx={{ display: "flex" }}>
                     <Button onClick={() => deleteWorker(worker.id, team.id)}>
                       <DeleteIcon />
@@ -193,19 +164,10 @@ export default function WorkerTable({
                 }
                 sx={{ paddingY: 0 }}
               >
-                <Button
-                  onClick={handleAddWorker}
-                  sx={{
-                    borderRadius: 4,
-                    textTransform: "none",
-                    border: "1px solid",
-                    height: "30px",
-                    color: "grey.700",
-                    marginY: 1,
-                  }}
-                >
-                  Add worker
-                </Button>
+                <TableAddButton
+                  text="Add worker"
+                  handleClick={handleAddWorker}
+                />
               </TableCell>
             </TableRow>
           </TableBody>

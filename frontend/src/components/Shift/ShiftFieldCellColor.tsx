@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { CirclePicker, ColorResult } from "react-color";
-
+// MUI
 import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
 import Menu from "@mui/material/Menu";
 import TableCell from "@mui/material/TableCell";
 
@@ -33,20 +34,21 @@ export default function ShiftFieldCellColor({ shift }: Props) {
   };
 
   return (
-    <TableCell component="th" scope="row" sx={{ width: 30 }}>
+    <TableCell component="th" scope="row" sx={{ width: 30, paddingY: 0 }}>
       <Box style={{ width: "100%" }}>
         <Box
           onClick={handleClick}
           sx={{ display: "inline-flex", minWidth: 0, cursor: "pointer" }}
         >
-          <div
+          <Chip
+            label=""
             style={{
-              width: "28px",
-              height: "28px",
-              borderRadius: "50%",
+              width: "30px",
+              height: "22px",
               backgroundColor: shift.color,
+              cursor: "pointer",
             }}
-          ></div>
+          />
         </Box>
         <Menu
           id="basic-menu"

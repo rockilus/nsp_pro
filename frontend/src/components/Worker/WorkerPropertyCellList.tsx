@@ -2,8 +2,8 @@ import React, { useState } from "react";
 // MUI
 import Chip from "@mui/material/Chip";
 // Components
-import ListTypeCellEdit from "../../utils/WorkerShiftUtils/ListTypeCellEdit";
-import PopoverAnchorElOver from "../../utils/PopoverAnchorElOver";
+import ListTypeCellEdit from "../SharedComponents/ListTypeCellEdit";
+import PopoverAnchorElOver from "../SharedComponents/PopoverAnchorElOver";
 // Stores
 import { useWorkerStore } from "../../stores/workerStore";
 import { useTeamStore } from "../../stores/teamStore";

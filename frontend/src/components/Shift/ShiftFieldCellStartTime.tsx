@@ -81,6 +81,7 @@ export default function ShiftFieldCellStartTime({
       component="th"
       scope="row"
       onClick={() => setEditing({ [shift.id]: "Start time" })}
+      sx={{ paddingY: 0, cursor: "pointer" }}
     >
       {editing ? selectStartTime() : shift.startTime.format("HH:mm")}
     </TableCell>

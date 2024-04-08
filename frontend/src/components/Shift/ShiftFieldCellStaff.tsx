@@ -38,6 +38,7 @@ export default function ShiftFieldCellStaff({
       component="th"
       scope="row"
       onClick={() => setEditing({ [shift.id]: "Staffing" })}
+      sx={{ paddingY: 0, cursor: "pointer" }}
     >
       {editing ? (
         <TextField
