@@ -60,6 +60,7 @@ export default function PopoverRHS({
             backgroundColor: "transparent",
             boxShadow: "none",
           },
+          padding: 0,
         }}
       >
         {buttonContent}

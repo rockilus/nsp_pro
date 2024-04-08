@@ -11,14 +11,13 @@ interface Props {
 const TabButton = ({ tab, isSelected, handleSelectTab }: Props) => {
   return (
     <Button
-      key={tab.id}
       onClick={() => handleSelectTab(tab.id)}
       sx={{
         borderRadius: 4,
         textTransform: "none",
         border: isSelected ? "1px solid" : "none",
         height: "30px",
-        color: "#65676b",
+        color: "grey.700",
       }}
     >
       {tab.label}
