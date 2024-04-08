@@ -1,11 +1,11 @@
 import React from "react";
-import SessionReact from "supertokens-auth-react/recipe/session";
-import HomePage from "../containers/HomePage";
+import AppProvider from "../providers/AppProvider";
+import App from "../containers/App";
 
 export default function Home() {
   return (
-    <SessionReact.SessionAuth>
-      <HomePage />
-    </SessionReact.SessionAuth>
+    <AppProvider>
+      <App />
+    </AppProvider>
   );
 }
