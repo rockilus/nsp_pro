@@ -1,3 +1,4 @@
+import time
 from typing import List
 
 from core.team import Team
@@ -15,6 +16,18 @@ async def create_team(team: Team) -> Team:
 
 
 async def get_user_teams(user_id: str) -> List[Team]:
+    start_time_get_user_teams = time.time()
     team_ids = await authz_role_assignment_get_user_team_ids(user_id, "leader")
-    teams = [team_db.get_team_by_id(team_id) for team_id in team_ids]
+    end_time_get_user_teams = time.time()
+    start_time_get_teams_from_db = time.time()
+    teams = team_db.get_teams_by_ids(team_ids)
+    end_time_get_teams_from_db = time.time()
+    total_time_get_user_teams = (
+        end_time_get_user_teams - start_time_get_user_teams
+    )
+    total_time_get_teams_from_db = (
+        end_time_get_teams_from_db - start_time_get_teams_from_db
+    )
+    print(f"Total time to get user teams:    {total_time_get_user_teams}")
+    print(f"Total time to get teams from db: {total_time_get_teams_from_db}")
     return teams

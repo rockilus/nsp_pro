@@ -1,9 +1,7 @@
+import time
 from typing import List
 
 import humps
-from fastapi import APIRouter, Depends
-from pydantic import TypeAdapter
-
 from core.team import Team
 from errors import NotAuthorizedError  # MessageTypeError,
 from errors import (
@@ -11,9 +9,14 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from fastapi import APIRouter, Depends
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
+from pydantic import TypeAdapter
 from routes.api_model import TeamMessage
 from scripts.setup_database import team_db
 from services.team_services import get_user_teams
@@ -34,12 +37,24 @@ router = APIRouter()
 async def get_teams(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[TeamMessage]:
+    start_time = time.time()
     try:
+        start_time_get_teams = time.time()
         teams = await get_user_teams(session.get_user_id())
+        end_time_get_teams = time.time()
+        start_time_convert = time.time()
         response = [core_to_msg_team(t) for t in teams]
+        end_time_convert = time.time()
     except Exception as e:
         log_info("Failed to get teams")
         handle_routes_errors(e)
+    end_time = time.time()
+    total_time = end_time - start_time
+    total_time_get_teams = end_time_get_teams - start_time_get_teams
+    total_time_convert = end_time_convert - start_time_convert
+    print(f"Total time teams:            {total_time}")
+    print(f"Total time to get teams:     {total_time_get_teams}")
+    print(f"Total time to convert teams: {total_time_convert}")
     return response
 
 
@@ -50,8 +65,12 @@ def update_team(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> TeamMessage:
     try:
-        if not authz_check(session.get_user_id(), "update-team", "team", team_id):
-            raise NotAuthorizedError("You do not have permission to update a team")
+        if not authz_check(
+            session.get_user_id(), "update-team", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update a team"
+            )
         team_data = msg_to_core_team(team)
         updated_team = team_db.update_team(team_data)
         response = core_to_msg_team(updated_team)

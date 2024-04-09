@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from typing import List
+import time
 
 import humps
 from fastapi import APIRouter, Depends
@@ -13,7 +14,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import TemplateMessage
@@ -26,19 +30,36 @@ async def get_constraint_templates(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[TemplateMessage]:
+    start_time = time.time()
     try:
+        start_time_authz = time.time()
         if not await authz_check(
             session.get_user_id(), "read-constraint-templates", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to get constraint templates"
             )
-        response = [
-            core_to_msg_constraint_template(ct) for ct in build_templates(team_id)
-        ]
+        end_time_authz = time.time()
+        start_time_build_templates = time.time()
+        templates = build_templates(team_id)
+        end_time_build_templates = time.time()
+        start_time_convert = time.time()
+        response = [core_to_msg_constraint_template(ct) for ct in templates]
+        end_time_convert = time.time()
     except Exception as e:
         log_info("Failed to get constraint templates")
         handle_routes_errors(e)
+    end_time = time.time()
+    total_time = end_time - start_time
+    total_time_authz = end_time_authz - start_time_authz
+    total_time_build_templates = (
+        end_time_build_templates - start_time_build_templates
+    )
+    total_time_convert = end_time_convert - start_time_convert
+    print(f"Total time constraint templates: {total_time}")
+    print(f"Total time to authz:             {total_time_authz}")
+    print(f"Total time to build templates:   {total_time_build_templates}")
+    print(f"Total time to convert templates: {total_time_convert}")
     return response
 
 

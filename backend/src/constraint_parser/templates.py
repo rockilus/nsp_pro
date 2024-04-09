@@ -1,4 +1,5 @@
 from typing import Dict, List
+import time
 
 from core.constraint import Template, TemplateBlock
 from scripts.setup_database import (
@@ -19,10 +20,17 @@ def build_templates(team_id: str) -> List[Template]:
 
 
 def build_worker_options(team_id: str) -> Dict:
+    start_time_get_workers = time.time()
     workers = worker_db.get_workers(team_id)
+    end_time_get_workers = time.time()
+    print(
+        f"Time to get workers: {end_time_get_workers-start_time_get_workers}"
+    )
     worker_options = {
         "all": [{"name": "all workers", "id": "", "id_type": ""}],
-        "workers": [{"name": w.name, "id": w.id, "id_type": "worker"} for w in workers],
+        "workers": [
+            {"name": w.name, "id": w.id, "id_type": "worker"} for w in workers
+        ],
     }
     worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id)
     for worker_dimension in worker_dimensions:
@@ -66,21 +74,30 @@ def build_worker_options(team_id: str) -> Dict:
                     "id": worker_dimension.id,
                     "id_type": "worker_dimension",
                 }
-                for wp_value in list(set(str(wp.value) for wp in worker_properties))
+                for wp_value in list(
+                    set(str(wp.value) for wp in worker_properties)
+                )
             ]
     return worker_options
 
 
 def build_shift_options(team_id: str) -> Dict:
+    start_time_get_shifts = time.time()
     shifts = shift_db.get_shifts(team_id)
+    end_time_get_shifts = time.time()
+    print(f"Time to get shifts: {end_time_get_shifts-start_time_get_shifts}")
     shift_options = {
         "all": [{"name": "all shifts", "id": "", "id_type": ""}],
-        "shifts": [{"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts],
+        "shifts": [
+            {"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts
+        ],
     }
     shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
     for shift_dimension in shift_dimensions:
-        shift_properties = shift_property_db.get_shift_properties_by_shift_dimension_id(
-            shift_dimension.id
+        shift_properties = (
+            shift_property_db.get_shift_properties_by_shift_dimension_id(
+                shift_dimension.id
+            )
         )
         if shift_dimension.entry_type == "bool":
             shift_options[shift_dimension.name] = [
@@ -117,12 +134,16 @@ def build_shift_options(team_id: str) -> Dict:
                     "id": shift_dimension.id,
                     "id_type": "shift_dimension",
                 }
-                for sp_value in list(set(str(sp.value) for sp in shift_properties))
+                for sp_value in list(
+                    set(str(sp.value) for sp in shift_properties)
+                )
             ]
     return shift_options
 
 
-def build_templates_list(worker_options: Dict, shift_options: Dict) -> List[Template]:
+def build_templates_list(
+    worker_options: Dict, shift_options: Dict
+) -> List[Template]:
     return [
         Template(
             id="0",
@@ -536,10 +557,12 @@ constraints = [
     "Number of duties on thursdays should be evenly spread across eligible "
     + "workers",
     "Number of duties on thursdays should be evenly spread across surgeons",
-    "Number of duties on fridays should be evenly spread across eligible " + "workers",
+    "Number of duties on fridays should be evenly spread across eligible "
+    + "workers",
     "Number of duties on saturdays should be evenly spread across eligible "
     + "workers",
-    "Number of duties on sunday should be evenly spread across eligible " + "workers",
+    "Number of duties on sunday should be evenly spread across eligible "
+    + "workers",
     "Number of duties on bank holidays should be evenly spread across "
     + "eligible workers",
     "Number of duties should be evenly spread across eligible workers",
