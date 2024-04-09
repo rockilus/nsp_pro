@@ -1,6 +1,6 @@
 from typing import List
 
-from core.constraint import Block
+from core import Block
 
 
 def blocks_to_string(blocks: List[Block]) -> str:
@@ -10,7 +10,9 @@ def blocks_to_string(blocks: List[Block]) -> str:
             block_values = block.value
             if all(isinstance(v, dict) for v in block.value):
                 block_values = [v["name"] for v in block_values]  # type: ignore
-            if len(block_values) > 1 and all(isinstance(v, str) for v in block_values):
+            if len(block_values) > 1 and all(
+                isinstance(v, str) for v in block_values
+            ):
                 values.append(
                     ', '.join(block_values[:-1])  # type: ignore
                     + ' and '

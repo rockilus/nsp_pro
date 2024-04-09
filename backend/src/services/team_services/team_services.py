@@ -1,7 +1,7 @@
 import time
 from typing import List
 
-from core.team import Team
+from core import Team
 from integrations.authorization import (
     authz_role_assignment_get_user_team_ids,
     authz_team_resource_instance_create,

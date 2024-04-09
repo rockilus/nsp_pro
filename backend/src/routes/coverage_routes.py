@@ -2,11 +2,7 @@ from dataclasses import asdict
 from typing import List
 
 import humps
-from fastapi import APIRouter, Depends
-from pydantic import TypeAdapter
-
-from core.coverage import Coverage, ShiftDemand
-from core.shift import Shift
+from core import Coverage, Shift, ShiftDemand
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -14,9 +10,14 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from fastapi import APIRouter, Depends
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
+from pydantic import TypeAdapter
 from routes.api_model import CoverageMessage, ShiftDemandMessage
 from scripts.setup_database import coverage_db, shift_db, shift_demand_db
 
@@ -33,11 +34,17 @@ async def create_coverage(
         if not await authz_check(
             session.get_user_id(), "create-coverage", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to create a coverage")
+            raise NotAuthorizedError(
+                "You do not have permission to create a coverage"
+            )
         c_data = msg_to_core_coverage(coverage)
         c_created = coverage_db.create_coverage(c_data)
-        shift_demands = shift_demand_db.get_shift_demands_by_coverage(c_created)
-        shifts = [shift_db.get_shift_by_id(sd.shift_id) for sd in shift_demands]
+        shift_demands = shift_demand_db.get_shift_demands_by_coverage(
+            c_created
+        )
+        shifts = [
+            shift_db.get_shift_by_id(sd.shift_id) for sd in shift_demands
+        ]
         response = core_to_msg_coverage_and_shift_demands(
             c_created, shift_demands, shifts
         )
@@ -47,7 +54,9 @@ async def create_coverage(
     return response
 
 
-@router.post("/coverages/{coverage_id}/shift_demands/teams/{team_id}", status_code=201)
+@router.post(
+    "/coverages/{coverage_id}/shift_demands/teams/{team_id}", status_code=201
+)
 async def create_shift_demand(
     team_id: str,
     shift_demand: ShiftDemandMessage,
@@ -79,7 +88,9 @@ async def get_coverages(
         if not await authz_check(
             session.get_user_id(), "read-coverages", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to get coverages")
+            raise NotAuthorizedError(
+                "You do not have permission to get coverages"
+            )
         coverages = coverage_db.get_coverages(team_id)
         shift_demands = [
             shift_demand_db.get_shift_demands_by_coverage(coverage)
@@ -109,19 +120,27 @@ async def update_coverage(
         if not await authz_check(
             session.get_user_id(), "update-coverage", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to update a coverage")
+            raise NotAuthorizedError(
+                "You do not have permission to update a coverage"
+            )
         cov_data = msg_to_core_coverage(updated_coverage)
         cov = coverage_db.update_coverage(cov_data)
         shift_demands = shift_demand_db.get_shift_demands_by_coverage(cov)
-        shifts = [shift_db.get_shift_by_id(sd.shift_id) for sd in shift_demands]
-        response = core_to_msg_coverage_and_shift_demands(cov, shift_demands, shifts)
+        shifts = [
+            shift_db.get_shift_by_id(sd.shift_id) for sd in shift_demands
+        ]
+        response = core_to_msg_coverage_and_shift_demands(
+            cov, shift_demands, shifts
+        )
     except Exception as e:
         log_info("Failed to update coverage")
         handle_routes_errors(e)
     return response
 
 
-@router.put("/coverages/{coverage_id}/shift_demands/{shift_demand_id}/teams/{team_id}")
+@router.put(
+    "/coverages/{coverage_id}/shift_demands/{shift_demand_id}/teams/{team_id}"
+)
 async def update_shift_demand(
     team_id: str,
     req: ShiftDemandMessage,
@@ -154,7 +173,9 @@ async def delete_coverage(
         if not await authz_check(
             session.get_user_id(), "delete-coverage", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to delete a coverage")
+            raise NotAuthorizedError(
+                "You do not have permission to delete a coverage"
+            )
         shift_demand_db.delete_shift_demands_by_coverage_id(coverage_id)
         coverage_db.delete_coverage(coverage_id)
     except Exception as e:
@@ -174,7 +195,9 @@ async def delete_shift_demand(
     if not await authz_check(
         session.get_user_id(), "delete-shift-demand", "team", team_id
     ):
-        raise NotAuthorizedError("You do not have permission to delete a shift demand")
+        raise NotAuthorizedError(
+            "You do not have permission to delete a shift demand"
+        )
     shift_demand_db.delete_shift_demand(shift_demand_id)
     return {"message": "Shift demand deleted successfully"}
 
@@ -212,7 +235,9 @@ def core_to_msg_shift_demand_and_shift(
     try:
         sd_msg = validator.validate_python(as_dict)
     except Exception as e:
-        log_info("Failed to convert ShiftDemand and Shift to ShiftDemandMessage")
+        log_info(
+            "Failed to convert ShiftDemand and Shift to ShiftDemandMessage"
+        )
         handle_message_errors(e)
     return sd_msg
 

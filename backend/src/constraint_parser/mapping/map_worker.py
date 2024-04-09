@@ -1,8 +1,10 @@
 from typing import Dict, List
 
-from constraint_parser.mapping.utils import cast_to_dict_block_value, find_block_by_name
-from core.constraint import Block, ConstraintBuild, DictBlockValue, VarWorker
-from core.worker import Worker
+from constraint_parser.mapping.utils import (
+    cast_to_dict_block_value,
+    find_block_by_name,
+)
+from core import Block, ConstraintBuild, DictBlockValue, VarWorker, Worker
 from utils.constants import Constants
 
 

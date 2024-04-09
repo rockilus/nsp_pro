@@ -2,7 +2,7 @@ import time
 from typing import List
 
 import humps
-from core.team import Team
+from core import Team
 from errors import NotAuthorizedError  # MessageTypeError,
 from errors import (
     handle_create_core_object_error,

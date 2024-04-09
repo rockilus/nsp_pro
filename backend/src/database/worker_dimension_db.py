@@ -2,7 +2,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core.worker import WorkerDimension
+from core import WorkerDimension
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -41,9 +41,13 @@ class WorkerDimensionDB:
         except Exception as e:
             log_info("Failed to get worker dimensions from database")
             handle_get_document_error(e)
-        return [doc_to_core_worker_dimension(wd) for wd in list(worker_dimensions)]
+        return [
+            doc_to_core_worker_dimension(wd) for wd in list(worker_dimensions)
+        ]
 
-    def get_worker_dimension_by_id(self, worker_dimension_id: str) -> WorkerDimension:
+    def get_worker_dimension_by_id(
+        self, worker_dimension_id: str
+    ) -> WorkerDimension:
         try:
             # pylint: disable=no-member
             worker_dimension = WorkerDimensionDocument.objects.get(  # type: ignore
@@ -76,9 +80,13 @@ class WorkerDimensionDB:
                 entry_type=entry_type, team=team_id
             )
         except Exception as e:
-            log_info("Failed to get worker dimensions by entry type from database")
+            log_info(
+                "Failed to get worker dimensions by entry type from database"
+            )
             handle_get_document_error(e)
-        return [doc_to_core_worker_dimension(wd) for wd in list(worker_dimensions)]
+        return [
+            doc_to_core_worker_dimension(wd) for wd in list(worker_dimensions)
+        ]
 
     def update_worker_dimension(
         self, worker_dimension: WorkerDimension
@@ -104,7 +112,9 @@ class WorkerDimensionDB:
                 id=worker_dimension_id
             )
         except Exception as e:
-            log_info("Failed to get worker dimension by id to delete from database")
+            log_info(
+                "Failed to get worker dimension by id to delete from database"
+            )
             handle_get_document_error(e)
         try:
             worker_dimension.delete()
@@ -133,7 +143,9 @@ def core_to_doc_worker_dimension(
             entry_options=dataclass_obj.entry_options,
         )
     except Exception as e:
-        log_info("Failed to convert WorkerDimension to WorkerDimensionDocument")
+        log_info(
+            "Failed to convert WorkerDimension to WorkerDimensionDocument"
+        )
         handle_create_document_error(e)
     return wd_doc
 
@@ -151,6 +163,8 @@ def doc_to_core_worker_dimension(
             entry_options=[*doc_obj.entry_options],
         )
     except Exception as e:
-        log_info("Failed to convert WorkerDimensionDocument to WorkerDimension")
+        log_info(
+            "Failed to convert WorkerDimensionDocument to WorkerDimension"
+        )
         handle_create_core_object_error(e)
     return worker_dimension

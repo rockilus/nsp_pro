@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core.worker import Worker, WorkerProperty
+from core import Worker, WorkerProperty
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -13,12 +13,21 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import WorkerMessage, WorkerPropertyMessage
-from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
-from services.worker_services import add_back_worker_property_to_constraint_build
+from scripts.setup_database import (
+    worker_db,
+    worker_dimension_db,
+    worker_property_db,
+)
+from services.worker_services import (
+    add_back_worker_property_to_constraint_build,
+)
 from services.worker_services import delete_worker as delete_worker_service
 
 router = APIRouter()
@@ -34,7 +43,9 @@ async def create_worker(
         if not await authz_check(
             session.get_user_id(), "create-worker", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to create a worker")
+            raise NotAuthorizedError(
+                "You do not have permission to create a worker"
+            )
         w_data = msg_to_core_worker(worker)
         worker_created = worker_db.create_worker(w_data)
         wd_bool = worker_dimension_db.get_worker_dimensions_by_entry_type(
@@ -68,7 +79,9 @@ async def get_workers(
         if not await authz_check(
             session.get_user_id(), "read-workers", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to get workers")
+            raise NotAuthorizedError(
+                "You do not have permission to get workers"
+            )
         workers = worker_db.get_workers(team_id)
         workers_properties = [
             worker_property_db.get_worker_properties_by_worker_id(worker.id)
@@ -94,20 +107,28 @@ async def update_worker(
         if not await authz_check(
             session.get_user_id(), "update-worker", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to update a worker")
+            raise NotAuthorizedError(
+                "You do not have permission to update a worker"
+            )
         w_data = msg_to_core_worker(worker)
         updated_worker = worker_db.update_worker(w_data)
-        worker_properties = worker_property_db.get_worker_properties_by_worker_id(
-            updated_worker.id
+        worker_properties = (
+            worker_property_db.get_worker_properties_by_worker_id(
+                updated_worker.id
+            )
         )
-        response = core_to_msg_worker_and_properties(updated_worker, worker_properties)
+        response = core_to_msg_worker_and_properties(
+            updated_worker, worker_properties
+        )
     except Exception as e:
         log_info("Failed to update worker")
         handle_routes_errors(e)
     return response
 
 
-@router.put("/workers/{worker_id}/properties/{worker_dimension_id}/teams/{team_id}")
+@router.put(
+    "/workers/{worker_id}/properties/{worker_dimension_id}/teams/{team_id}"
+)
 async def update_worker_property(
     team_id: str,
     worker_property: WorkerPropertyMessage,
@@ -151,7 +172,9 @@ async def delete_worker(
         if not await authz_check(
             session.get_user_id(), "delete-worker", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to delete a worker")
+            raise NotAuthorizedError(
+                "You do not have permission to delete a worker"
+            )
         delete_worker_service(worker_id)
     except Exception as e:
         log_info("Failed to delete worker")
@@ -203,7 +226,9 @@ def core_to_msg_worker_and_properties(
 # message to core
 def msg_to_core_worker(msg: WorkerMessage) -> Worker:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake = {k: v for k, v in data_snake.items() if k != "worker_properties"}
+    data_snake = {
+        k: v for k, v in data_snake.items() if k != "worker_properties"
+    }
     try:
         worker = Worker(**data_snake)
     except Exception as e:

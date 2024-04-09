@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core.constraint import Block, ConstraintBuild, MissingProperty
+from core import Block, ConstraintBuild, MissingProperty
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -13,7 +13,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
@@ -62,9 +65,13 @@ async def get_constraints(
         if not await authz_check(
             session.get_user_id(), "read-constraints", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to get constraints")
+            raise NotAuthorizedError(
+                "You do not have permission to get constraints"
+            )
         constraint_builds = constraint_build_db.get_constraint_builds(team_id)
-        response = [core_to_msg_constraint_build(cb) for cb in constraint_builds]
+        response = [
+            core_to_msg_constraint_build(cb) for cb in constraint_builds
+        ]
     except Exception as e:
         log_info("Failed to get constraints")
         handle_routes_errors(e)
@@ -145,7 +152,9 @@ def core_to_msg_missing_property(
     try:
         mp_msg = validator.validate_python(as_dict)
     except Exception as e:
-        log_info("Failed to convert core MissingProperty to MissingPropertyMessage")
+        log_info(
+            "Failed to convert core MissingProperty to MissingPropertyMessage"
+        )
         handle_message_errors(e)
     return mp_msg
 
@@ -155,7 +164,8 @@ def core_to_msg_constraint_build(
 ) -> ConstraintBuildMessage:
     blocks = [core_to_msg_block(b) for b in constraint_build.blocks]
     missing_properties = [
-        core_to_msg_missing_property(mp) for mp in constraint_build.missing_properties
+        core_to_msg_missing_property(mp)
+        for mp in constraint_build.missing_properties
     ]
     try:
         data = asdict(constraint_build)
@@ -169,7 +179,9 @@ def core_to_msg_constraint_build(
     try:
         cb_msg = validator.validate_python(as_dict)
     except Exception as e:
-        log_info("Failed to convert core ConstraintBuild to ConstraintBuildMessage")
+        log_info(
+            "Failed to convert core ConstraintBuild to ConstraintBuildMessage"
+        )
         handle_message_errors(e)
     return cb_msg
 

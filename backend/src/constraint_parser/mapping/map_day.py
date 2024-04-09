@@ -2,18 +2,24 @@ from datetime import date
 from typing import List
 
 from constraint_parser.mapping.utils import find_block_by_name
-from core.constraint import Block, ConstraintBuild, VarDay
+from core import Block, ConstraintBuild, VarDay
 from utils.constants import Constants
 
 
 class MapDay:
     def __call__(self, cstr_build: ConstraintBuild) -> VarDay:
         return VarDay(
-            selector=self.get_selector(cstr_build.blocks, cstr_build.constraint_type),
-            target=self.get_target(cstr_build.blocks, cstr_build.constraint_type),
+            selector=self.get_selector(
+                cstr_build.blocks, cstr_build.constraint_type
+            ),
+            target=self.get_target(
+                cstr_build.blocks, cstr_build.constraint_type
+            ),
             start_date=date.today(),
             end_date=date.today(),
-            interval=self.get_interval(cstr_build.blocks, cstr_build.constraint_type),
+            interval=self.get_interval(
+                cstr_build.blocks, cstr_build.constraint_type
+            ),
         )
 
     def get_selector(
@@ -25,11 +31,15 @@ class MapDay:
             if cstr_type == "sum":
                 if timing_block.value == "per week":
                     return "week"
-                raise ValueError(f"Operator {timing_block.value} not recognized")
+                raise ValueError(
+                    f"Operator {timing_block.value} not recognized"
+                )
             if cstr_type == "seq":
                 if timing_block.value == "consecutive":
                     return "all"
-                raise ValueError(f"Operator {timing_block.value} not recognized")
+                raise ValueError(
+                    f"Operator {timing_block.value} not recognized"
+                )
             if cstr_type == "ord":
                 if timing_block.value in ["before", "after"]:
                     if weekday_block:

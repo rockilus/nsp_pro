@@ -3,7 +3,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core.schedule import Schedule
+from core import Schedule
 from database.db import DB
 from errors import (
     handle_create_core_object_error,

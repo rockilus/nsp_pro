@@ -1,4 +1,4 @@
-from core.constraint import MissingProperty
+from core import MissingProperty
 from scripts.setup_database import (
     assignment_db,
     constraint_build_db,
@@ -35,11 +35,15 @@ def delete_worker_from_constraint_build(worker_id: str) -> None:
 def delete_worker_property_from_constraint_build(worker_id: str) -> None:
     wps = worker_property_db.get_worker_properties_by_worker_id(worker_id)
     for wp in wps:
-        wd = worker_dimension_db.get_worker_dimension_by_id(wp.worker_dimension_id)
+        wd = worker_dimension_db.get_worker_dimension_by_id(
+            wp.worker_dimension_id
+        )
         if wd.entry_type == "bool":
             continue
-        wps_dim = worker_property_db.get_worker_properties_by_worker_dimension_id(
-            wp.worker_dimension_id
+        wps_dim = (
+            worker_property_db.get_worker_properties_by_worker_dimension_id(
+                wp.worker_dimension_id
+            )
         )
         if wd.entry_type == "list":
             if isinstance(wp.value, list):
@@ -59,7 +63,9 @@ def delete_worker_property_from_constraint_build(worker_id: str) -> None:
                 )
         else:
             wps_dim_same_value = [
-                wpd for wpd in wps_dim if wpd.value == wp.value and wpd.id != wp.id
+                wpd
+                for wpd in wps_dim
+                if wpd.value == wp.value and wpd.id != wp.id
             ]
             if not wps_dim_same_value:
                 update_cbs_for_change_worker_property(
@@ -74,7 +80,10 @@ def update_cbs_for_change_worker_property(
         worker_dimension_id, value
     )
     for cb in cbs:
-        if any(mp.dimension_id == worker_dimension_id for mp in cb.missing_properties):
+        if any(
+            mp.dimension_id == worker_dimension_id
+            for mp in cb.missing_properties
+        ):
             for mp in cb.missing_properties:
                 if mp.dimension_id == worker_dimension_id:
                     mp.property_values.append(value)  # type: ignore
@@ -110,7 +119,10 @@ def add_back_worker_property_to_constraint_build(
     for cb in cbs:
         new_mps = []
         for mp in cb.missing_properties:
-            if mp.dimension_id == worker_dimension_id and value in mp.property_values:
+            if (
+                mp.dimension_id == worker_dimension_id
+                and value in mp.property_values
+            ):
                 mp.property_values.remove(value)
                 if not mp.property_values:
                     continue
@@ -134,7 +146,9 @@ def delete_worker_from_objective_breach(worker_id: str) -> None:
 def delete_worker_from_constraint(worker_id: str) -> None:
     constraints = constraint_db.get_constraints_by_worker_id(worker_id)
     for constraint in constraints:
-        new_targets = [w for w in constraint.worker_var.target_ids if w != worker_id]
+        new_targets = [
+            w for w in constraint.worker_var.target_ids if w != worker_id
+        ]
         if not new_targets:
             constraint_db.delete_constraint(constraint.id)
             continue

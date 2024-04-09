@@ -1,5 +1,5 @@
 # pylint: disable=R0801
-from core.constraint import MissingProperty
+from core import MissingProperty
 from scripts.setup_database import (
     assignment_db,
     constraint_build_db,
@@ -38,7 +38,9 @@ def delete_shift_from_constraint_build(shift_id: str) -> None:
 def delete_shift_property_from_constraint_build(shift_id: str) -> None:
     sps = shift_property_db.get_shift_properties_by_shift_id(shift_id)
     for sp in sps:
-        sd = shift_dimension_db.get_shift_dimension_by_id(sp.shift_dimension_id)
+        sd = shift_dimension_db.get_shift_dimension_by_id(
+            sp.shift_dimension_id
+        )
         if sd.entry_type == "bool":
             continue
         sps_dim = shift_property_db.get_shift_properties_by_shift_dimension_id(
@@ -62,7 +64,9 @@ def delete_shift_property_from_constraint_build(shift_id: str) -> None:
                 )
         else:
             sps_dim_same_value = [
-                spd for spd in sps_dim if spd.value == sp.value and spd.id != sp.id
+                spd
+                for spd in sps_dim
+                if spd.value == sp.value and spd.id != sp.id
             ]
             if not sps_dim_same_value:
                 update_cbs_for_change_shift_property(
@@ -77,7 +81,10 @@ def update_cbs_for_change_shift_property(
         shift_dimension_id, value
     )
     for cb in cbs:
-        if any(mp.dimension_id == shift_dimension_id for mp in cb.missing_properties):
+        if any(
+            mp.dimension_id == shift_dimension_id
+            for mp in cb.missing_properties
+        ):
             for mp in cb.missing_properties:
                 if mp.dimension_id == shift_dimension_id:
                     mp.property_values.append(value)  # type: ignore
@@ -113,7 +120,10 @@ def add_back_shift_property_to_constraint_build(
     for cb in cbs:
         new_mps = []
         for mp in cb.missing_properties:
-            if mp.dimension_id == shift_dimension_id and value in mp.property_values:
+            if (
+                mp.dimension_id == shift_dimension_id
+                and value in mp.property_values
+            ):
                 mp.property_values.remove(value)
                 if not mp.property_values:
                     continue
@@ -137,13 +147,17 @@ def delete_shift_from_objective_breach(shift_id: str) -> None:
 def delete_shift_from_constraint(shift_id: str) -> None:
     constraints = constraint_db.get_constraints_by_shift_id_in_target(shift_id)
     for constraint in constraints:
-        new_targets = [s for s in constraint.shift_var.target_ids if s != shift_id]
+        new_targets = [
+            s for s in constraint.shift_var.target_ids if s != shift_id
+        ]
         if not new_targets:
             constraint_db.delete_constraint(constraint.id)
             continue
         constraint.shift_var.target_ids = new_targets
         constraint_db.update_constraint(constraint)
-    constraints = constraint_db.get_constraints_by_shift_id_in_reference(shift_id)
+    constraints = constraint_db.get_constraints_by_shift_id_in_reference(
+        shift_id
+    )
     for constraint in constraints:
         new_references = [
             s for s in constraint.shift_var.reference_ids if s != shift_id
@@ -153,9 +167,13 @@ def delete_shift_from_constraint(shift_id: str) -> None:
             continue
         constraint.shift_var.reference_ids = new_references
         constraint_db.update_constraint(constraint)
-    constraints = constraint_db.get_constraints_by_shift_id_in_relative(shift_id)
+    constraints = constraint_db.get_constraints_by_shift_id_in_relative(
+        shift_id
+    )
     for constraint in constraints:
-        new_relatives = [s for s in constraint.shift_var.relative_ids if s != shift_id]
+        new_relatives = [
+            s for s in constraint.shift_var.relative_ids if s != shift_id
+        ]
         if not new_relatives:
             constraint_db.delete_constraint(constraint.id)
             continue

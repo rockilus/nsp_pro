@@ -2,9 +2,7 @@ from datetime import date, datetime
 from typing import List, Union
 
 from bson import ObjectId
-
-from core.schedule import Assignment, Schedule
-from core.worker import Worker
+from core import Assignment, Schedule, Worker
 from database.db import DB
 from database.schedule_db import core_to_doc_schedule
 from database.worker_db import core_to_doc_worker
@@ -37,7 +35,9 @@ class AssignmentDB:
             handle_save_document_error(e)
         return doc_to_core_assignment(a_saved)
 
-    def create_assignments(self, assignments: List[Assignment]) -> List[Assignment]:
+    def create_assignments(
+        self, assignments: List[Assignment]
+    ) -> List[Assignment]:
         try:
             a_docs = core_to_doc_assignments_new(assignments)
         except Exception as e:
@@ -108,7 +108,9 @@ class AssignmentDB:
             handle_get_document_error(e)
         return [doc_to_core_assignment(a) for a in list(assignments)]
 
-    def get_assignments_by_schedule_id(self, schedule_id: str) -> List[Assignment]:
+    def get_assignments_by_schedule_id(
+        self, schedule_id: str
+    ) -> List[Assignment]:
         try:
             # pylint: disable=no-member
             assignments = AssignmentDocument.objects.filter(  # type: ignore

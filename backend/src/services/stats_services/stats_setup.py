@@ -1,6 +1,6 @@
 from typing import List
 
-from core.schedule import Stat
+from core import Stat
 from scripts.setup_database import (
     assignment_db,
     schedule_db,

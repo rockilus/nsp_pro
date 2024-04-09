@@ -1,8 +1,10 @@
 from typing import List
 
-from core.constraint import Block, ConstraintBuild
+from core import Block, ConstraintBuild
 from scripts.setup_database import constraint_build_db
-from services.constraint_build_services.blocks_to_string import blocks_to_string
+from services.constraint_build_services.blocks_to_string import (
+    blocks_to_string,
+)
 from services.constraint_build_services.delete_constraint_build import (
     delete_constraint_build_and_dependencies,
 )

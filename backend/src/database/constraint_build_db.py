@@ -2,7 +2,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core.constraint import Block, ConstraintBuild, MissingProperty
+from core import Block, ConstraintBuild, MissingProperty
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -43,18 +43,24 @@ class ConstraintBuildDB:
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
-    def get_constraint_builds_active(self, team_id: str) -> List[ConstraintBuild]:
+    def get_constraint_builds_active(
+        self, team_id: str
+    ) -> List[ConstraintBuild]:
         try:
             # pylint: disable=no-member
             cb_docs = ConstraintBuildDocument.objects(  # type: ignore
                 active=True, team=team_id
             )
         except Exception as e:
-            log_info('Failed to get active constraint build documents from database')
+            log_info(
+                'Failed to get active constraint build documents from database'
+            )
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
-    def get_constraint_build_by_id(self, constraint_build_id: str) -> ConstraintBuild:
+    def get_constraint_build_by_id(
+        self, constraint_build_id: str
+    ) -> ConstraintBuild:
         try:
             # pylint: disable=no-member
             cb_doc = ConstraintBuildDocument.objects.get(  # type: ignore
@@ -86,11 +92,15 @@ class ConstraintBuildDB:
                 }
             )
         except Exception as e:
-            log_info('Failed to get constraint build by worker id from database')
+            log_info(
+                'Failed to get constraint build by worker id from database'
+            )
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
-    def get_constraint_builds_by_shift_id(self, shift_id: str) -> List[ConstraintBuild]:
+    def get_constraint_builds_by_shift_id(
+        self, shift_id: str
+    ) -> List[ConstraintBuild]:
         try:
             # pylint: disable=no-member
             cb_docs = ConstraintBuildDocument.objects(  # type: ignore
@@ -115,7 +125,9 @@ class ConstraintBuildDB:
                 }
             )
         except Exception as e:
-            log_info('Failed to get constraint build by shift id from database')
+            log_info(
+                'Failed to get constraint build by shift id from database'
+            )
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
@@ -296,7 +308,9 @@ def core_to_doc_missing_property(
             property_values=dataclass_obj.property_values,
         )
     except Exception as e:
-        log_info('Failed to convert MissingProperty to MissingPropertyDocument')
+        log_info(
+            'Failed to convert MissingProperty to MissingPropertyDocument'
+        )
         handle_create_document_error(e)
     return mp_doc
 
@@ -327,7 +341,9 @@ def core_to_doc_constraint_build(
             ],
         )
     except Exception as e:
-        log_info('Failed to convert ConstraintBuild to ConstraintBuildDocument')
+        log_info(
+            'Failed to convert ConstraintBuild to ConstraintBuildDocument'
+        )
         handle_create_document_error(e)
     return cb_doc
 
@@ -359,7 +375,9 @@ def doc_to_core_missing_property(
             property_values=list(doc_obj.property_values),
         )
     except Exception as e:
-        log_info('Failed to convert MissingPropertyDocument to MissingProperty')
+        log_info(
+            'Failed to convert MissingPropertyDocument to MissingProperty'
+        )
         handle_create_core_object_error(e)
     return missing_property
 
@@ -379,10 +397,13 @@ def doc_to_core_constraint_build(
             priority=doc_obj.priority,
             active=doc_obj.active,
             missing_properties=[
-                doc_to_core_missing_property(mp) for mp in doc_obj.missing_properties
+                doc_to_core_missing_property(mp)
+                for mp in doc_obj.missing_properties
             ],
         )
     except Exception as e:
-        log_info('Failed to convert ConstraintBuildDocument to ConstraintBuild')
+        log_info(
+            'Failed to convert ConstraintBuildDocument to ConstraintBuild'
+        )
         handle_create_core_object_error(e)
     return constraint_build

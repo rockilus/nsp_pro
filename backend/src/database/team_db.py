@@ -2,7 +2,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core.team import Team
+from core import Team
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -54,6 +54,22 @@ class TeamDB:
             t_docs = TeamDocument.objects.filter(id__in=team_ids)  # type: ignore
         except Exception as e:
             log_info("Failed to get teams by ids from database")
+            handle_get_document_error(e)
+        try:
+            teams = [doc_to_core_team(team) for team in t_docs]
+        except Exception as e:
+            log_info("Failed to convert TeamDocument to Team")
+            handle_create_core_object_error(e)
+        return teams
+
+    def get_teams_by_leader_id(self, leader_id: str) -> List[Team]:
+        try:
+            # pylint: disable=no-member
+            t_docs = TeamDocument.objects.filter(  # type: ignore
+                team_leaders__contains=leader_id
+            )
+        except Exception as e:
+            log_info("Failed to get teams by leader ids from database")
             handle_get_document_error(e)
         try:
             teams = [doc_to_core_team(team) for team in t_docs]

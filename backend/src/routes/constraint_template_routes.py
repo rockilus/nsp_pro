@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
 from constraint_parser.templates import build_templates
-from core.constraint import Template
+from core import Template
 from errors import (
     MessageTypeError,
     NotAuthorizedError,

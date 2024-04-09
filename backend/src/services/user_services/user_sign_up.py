@@ -1,4 +1,4 @@
-from core.user import User
+from core import User
 from integrations.authorization import authz_user_sync
 from scripts.setup_database import user_db
 

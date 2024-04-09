@@ -2,9 +2,15 @@ from datetime import date
 from typing import Dict, List
 
 from constraint_parser import parse_constraint
-from core.constraint import Constraint, ConstraintBuild, VarDay, VarShift, VarWorker
-from core.shift import Shift
-from core.worker import Worker
+from core import (
+    Constraint,
+    ConstraintBuild,
+    Shift,
+    VarDay,
+    VarShift,
+    VarWorker,
+    Worker,
+)
 
 
 # pylint: disable=too-many-arguments

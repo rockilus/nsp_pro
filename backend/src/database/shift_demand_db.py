@@ -1,8 +1,7 @@
-from typing import List
+from typing import Dict, List
 
 from bson import ObjectId
-
-from core.coverage import Coverage, ShiftDemand
+from core import Coverage, ShiftDemand
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -42,7 +41,9 @@ class ShiftDemandDB:
             handle_get_document_error(e)
         return doc_to_core_shift_demand(shift_demand)
 
-    def get_shift_demands_by_coverage(self, coverage: Coverage) -> List[ShiftDemand]:
+    def get_shift_demands_by_coverage(
+        self, coverage: Coverage
+    ) -> List[ShiftDemand]:
         try:
             # pylint: disable=no-member
             shift_demands = ShiftDemandDocument.objects.filter(  # type: ignore
@@ -53,6 +54,34 @@ class ShiftDemandDB:
             handle_get_document_error(e)
         return [doc_to_core_shift_demand(sd) for sd in list(shift_demands)]
 
+    def get_shift_demands_by_coverage_ids(
+        self, coverage_ids: List[str]
+    ) -> Dict[str, List[ShiftDemand]]:
+        try:
+            # pylint: disable=no-member
+            sd_docs = ShiftDemandDocument.objects.filter(  # type: ignore
+                coverage__in=coverage_ids
+            )
+        except Exception as e:
+            log_info(
+                "Failed to get shift demands by coverage ids from database"
+            )
+            handle_get_document_error(e)
+        try:
+            shift_demands = [
+                doc_to_core_shift_demand(sd) for sd in list(sd_docs)
+            ]
+        except Exception as e:
+            log_info("Failed to convert ShiftDemandDocument to ShiftDemand")
+            handle_create_core_object_error(e)
+        out: Dict[str, List[ShiftDemand]] = {}
+        for sd in shift_demands:
+            coverage_id = sd.coverage_id
+            if coverage_id not in out:
+                out[coverage_id] = []
+            out[coverage_id].append(sd)
+        return out
+
     def get_shift_demands_by_coverage_selector(
         self, coverage_selector
     ) -> List[ShiftDemand]:
@@ -62,7 +91,9 @@ class ShiftDemandDB:
                 coverage=coverage_selector.coverage_id
             )
         except Exception as e:
-            log_info("Failed to get shift demands by coverage selector from database")
+            log_info(
+                "Failed to get shift demands by coverage selector from database"
+            )
             handle_get_document_error(e)
         return [doc_to_core_shift_demand(sd) for sd in list(shift_demands)]
 
@@ -88,7 +119,9 @@ class ShiftDemandDB:
                 id=shift_demand_id
             )
         except Exception as e:
-            log_info("Failed to get shift demand by id to delete from database")
+            log_info(
+                "Failed to get shift demand by id to delete from database"
+            )
             handle_get_document_error(e)
         try:
             shift_demand.delete()
@@ -148,14 +181,11 @@ def core_to_doc_shift_demand(
 
 # document to core
 def doc_to_core_shift_demand(doc_obj: ShiftDemandDocument) -> ShiftDemand:
-    try:
-        shift_demand = ShiftDemand(
-            id=doc_obj.id,
-            day_index=doc_obj.day_index,
-            shift_id=doc_obj.shift.id,
-            coverage_id=doc_obj.coverage.id,
-        )
-    except Exception as e:
-        log_info("Failed to convert ShiftDemandDocument to ShiftDemand")
-        handle_create_core_object_error(e)
-    return shift_demand
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["id"] = doc_dict["_id"]
+    doc_dict["shift_id"] = doc_dict["shift"]
+    doc_dict["coverage_id"] = doc_dict["coverage"]
+    doc_dict.pop("_id")
+    doc_dict.pop("shift")
+    doc_dict.pop("coverage")
+    return ShiftDemand(**doc_dict)

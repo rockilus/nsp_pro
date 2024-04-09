@@ -6,7 +6,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core.fixed_assignment import FixedAssignment
+from core import FixedAssignment
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -14,7 +14,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import FixedAssignmentMessage
@@ -38,7 +41,7 @@ async def create_fixed_assignment(
             )
         fa_data = msg_to_core_fixed_assignment(req)
         fixed_assignment = fixed_assignment_db.create_fixed_assignment(fa_data)
-        response = fixed_assignment_to_api_msg(fixed_assignment)
+        response = core_to_msg_fixed_assignment(fixed_assignment)
     except Exception as e:
         log_info("Failed to create fixed assignment")
         handle_routes_errors(e)
@@ -59,7 +62,9 @@ async def get_fixed_assignments(
             )
         workers = worker_db.get_workers(team_id)
         fixed_assignments = fixed_assignment_db.get_fixed_assignments(workers)
-        response = [fixed_assignment_to_api_msg(fa) for fa in fixed_assignments]
+        response = [
+            core_to_msg_fixed_assignment(fa) for fa in fixed_assignments
+        ]
     except Exception as e:
         log_info("Failed to get fixed assignments")
         handle_routes_errors(e)
@@ -81,7 +86,7 @@ async def update_fixed_assignment(
             )
         fa_data = msg_to_core_fixed_assignment(updated_fixed_assignment)
         fixed_assignment = fixed_assignment_db.update_fixed_assignment(fa_data)
-        response = fixed_assignment_to_api_msg(fixed_assignment)
+        response = core_to_msg_fixed_assignment(fixed_assignment)
     except Exception as e:
         log_info("Failed to update fixed assignment")
         handle_routes_errors(e)
@@ -110,7 +115,7 @@ async def delete_fixed_assignment(
 
 # Mappers
 # core to message
-def fixed_assignment_to_api_msg(
+def core_to_msg_fixed_assignment(
     fixed_assignment: FixedAssignment,
 ) -> FixedAssignmentMessage:
     try:
@@ -133,7 +138,9 @@ def msg_to_core_fixed_assignment(
     msg: FixedAssignmentMessage,
 ) -> FixedAssignment:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["date"] = datetime.combine(data_snake["date"], datetime.min.time())
+    data_snake["date"] = datetime.combine(
+        data_snake["date"], datetime.min.time()
+    )
     try:
         fixed_assignment = FixedAssignment(**data_snake)
     except Exception as e:

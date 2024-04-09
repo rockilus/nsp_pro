@@ -1,8 +1,10 @@
 from typing import Dict, List
 
-from constraint_parser.mapping.utils import cast_to_dict_block_value, find_block_by_name
-from core.constraint import Block, ConstraintBuild, DictBlockValue, VarShift
-from core.shift import Shift
+from constraint_parser.mapping.utils import (
+    cast_to_dict_block_value,
+    find_block_by_name,
+)
+from core import Block, ConstraintBuild, DictBlockValue, Shift, VarShift
 from utils.constants import Constants
 
 
@@ -11,7 +13,9 @@ class MapShift:
         self.shifts = shifts
         self.shift_dim_dict = shift_dim_dict
 
-    def __call__(self, cstr_build: ConstraintBuild, cstr_operator: str) -> VarShift:
+    def __call__(
+        self, cstr_build: ConstraintBuild, cstr_operator: str
+    ) -> VarShift:
         shift_values = (
             self.get_shift_values(cstr_build.blocks, "shift")
             if cstr_build.constraint_type != "ord"
@@ -28,7 +32,9 @@ class MapShift:
             else []
         )
         return VarShift(
-            selector=self.get_selector(shift_values, cstr_build.constraint_type),
+            selector=self.get_selector(
+                shift_values, cstr_build.constraint_type
+            ),
             target_ids=self.get_target_ids(
                 shift_values, cstr_build.constraint_type, cstr_operator
             ),
@@ -55,13 +61,18 @@ class MapShift:
         cstr_type: str,
         cstr_operator: str = "",
     ) -> List[str]:
-        if self.get_selector(values, cstr_type) == "all" and cstr_type != "ord":
+        if (
+            self.get_selector(values, cstr_type) == "all"
+            and cstr_type != "ord"
+        ):
             return []
         out = []
         for value in values:
             if value.id_type == "shift":
                 if not self.check_shift_id(value.id):
-                    raise ValueError(f"Shift {value.name} with id {value.id} not found")
+                    raise ValueError(
+                        f"Shift {value.name} with id {value.id} not found"
+                    )
                 out.append(value.id)
             else:
                 if value.id not in self.shift_dim_dict:
@@ -80,7 +91,9 @@ class MapShift:
         return any(s.id == shift_id for s in self.shifts)
 
     @staticmethod
-    def get_shift_values(blocks: List[Block], block_name: str) -> List[DictBlockValue]:
+    def get_shift_values(
+        blocks: List[Block], block_name: str
+    ) -> List[DictBlockValue]:
         shift_block = find_block_by_name(blocks, block_name)
         if shift_block:
             if isinstance(shift_block.value, list) and all(

@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import List
 
-from core.coverage import CoverageSelector
+from core import CoverageSelector
 
 
 def build_no_coverage_date(
@@ -10,10 +10,13 @@ def build_no_coverage_date(
     coverage_selectors: List[CoverageSelector],
 ) -> List[date]:
     delta = end_date - start_date
-    no_cov_date = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
+    no_cov_date = [
+        start_date + timedelta(days=i) for i in range(delta.days + 1)
+    ]
     for coverage_selector in coverage_selectors:
         for day in range(
-            (coverage_selector.end_date - coverage_selector.start_date).days + 1
+            (coverage_selector.end_date - coverage_selector.start_date).days
+            + 1
         ):
             cov_date = coverage_selector.start_date + timedelta(days=day)
             if cov_date in no_cov_date:

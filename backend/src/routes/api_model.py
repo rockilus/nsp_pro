@@ -237,3 +237,22 @@ class TeamMessage(BaseModel):
 # Health
 class HealthCheck(BaseModel):
     status: str
+
+
+# Bulk
+class BulkMessage(BaseModel):
+    teams: List[TeamMessage]
+    workers: List[WorkerMessage]
+    workerDimensions: List[WorkerDimensionMessage]
+    shifts: List[ShiftMessage]
+    shiftDimensions: List[ShiftDimensionMessage]
+    coverages: List[CoverageMessage]
+    constraints: List[ConstraintBuildMessage]
+    constraintTemplates: List[TemplateMessage]
+    fixedAssignments: List[FixedAssignmentMessage]
+    requests: List[RequestMessage]
+    coverageSelectors: List[CoverageSelectorMessage]
+    assignments: List[AssignmentMessage]
+    schedules: List[ScheduleMessage]
+    objectiveBreaches: List[ObjectiveBreachMessage]
+    statsOptions: StatsOptionsMessage

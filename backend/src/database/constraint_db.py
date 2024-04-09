@@ -3,7 +3,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core.constraint import Constraint, VarDay, VarShift, VarWorker
+from core import Constraint, VarDay, VarShift, VarWorker
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -78,7 +78,9 @@ class ConstraintDB:
             handle_get_document_error(e)
         return [doc_to_core_constraint(c) for c in list(constraints)]
 
-    def get_constraints_by_shift_id_in_target(self, shift_id: str) -> List[Constraint]:
+    def get_constraints_by_shift_id_in_target(
+        self, shift_id: str
+    ) -> List[Constraint]:
         try:
             # pylint: disable=no-member
             constraints = ConstraintDocument.objects.filter(  # type: ignore
@@ -179,7 +181,9 @@ class ConstraintDB:
                 constraint_build=constraint_build_id
             )
         except Exception as e:
-            log_info("Failed to get constraints by constraint build id to delete")
+            log_info(
+                "Failed to get constraints by constraint build id to delete"
+            )
             handle_get_document_error(e)
         try:
             for constraint in list(constraints):
@@ -338,8 +342,12 @@ def doc_to_core_var_day(doc_obj: VarDayDocument) -> VarDay:
         var_day = VarDay(
             selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
             target=doc_obj.target,
-            start_date=datetime.combine(doc_obj.start_date, datetime.min.time()).date(),
-            end_date=datetime.combine(doc_obj.end_date, datetime.min.time()).date(),
+            start_date=datetime.combine(
+                doc_obj.start_date, datetime.min.time()
+            ).date(),
+            end_date=datetime.combine(
+                doc_obj.end_date, datetime.min.time()
+            ).date(),
             interval=doc_obj.interval,
         )
     except Exception as e:
@@ -381,7 +389,9 @@ def doc_to_core_constraint(doc_obj: ConstraintDocument) -> Constraint:
             active=doc_obj.active,
             schedule_id=str(doc_obj.schedule.id),
             constraint_build_id=(
-                str(doc_obj.constraint_build.id) if doc_obj.constraint_build else ""
+                str(doc_obj.constraint_build.id)
+                if doc_obj.constraint_build
+                else ""
             ),
         )
     except Exception as e:
