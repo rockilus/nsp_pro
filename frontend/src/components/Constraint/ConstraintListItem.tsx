@@ -80,7 +80,7 @@ export default function ConstraintListItem({
   };
 
   return (
-    <Grid item xs={12} md={12} xl={12}>
+    <Grid item xs={12} md={12} xl={12} sx={{ paddingX: 1 }}>
       <Grid
         container
         spacing={0}

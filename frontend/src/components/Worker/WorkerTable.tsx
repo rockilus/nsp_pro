@@ -67,10 +67,12 @@ export default function WorkerTable({
                 sx={{ paddingY: 0 }}
               >
                 <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  width="100%"
-                  alignItems="center"
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    alignItems: "center",
+                  }}
                 >
                   <Box display="flex" alignItems="center" minHeight={45}>
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>

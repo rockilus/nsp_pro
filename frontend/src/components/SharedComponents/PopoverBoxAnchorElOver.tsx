@@ -1,7 +1,8 @@
 import * as React from "react";
 // MUI
-import Popover from "@mui/material/Popover";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Popover from "@mui/material/Popover";
 
 interface Props {
   buttonContent: React.ReactNode;
@@ -10,17 +11,15 @@ interface Props {
   setOpen: (open: boolean) => void;
 }
 
-export default function PopoverAnchorElOver({
+export default function PopoverBoxAnchorElOver({
   buttonContent,
   content,
   open,
   setOpen,
 }: Props) {
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
-    null
-  );
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
     setOpen(true);
   };
@@ -39,28 +38,7 @@ export default function PopoverAnchorElOver({
         height: "100%",
       }}
     >
-      <Button
-        aria-describedby={id}
-        variant="contained"
-        onClick={handleClick}
-        sx={{
-          backgroundColor: "transparent",
-          border: "none",
-          boxShadow: "none",
-          "&:hover": {
-            backgroundColor: "transparent",
-            boxShadow: "none",
-          },
-          textTransform: "none",
-          justifyContent: "flex-start",
-          padding: 0,
-          width: "100%",
-          height: "100%",
-          minHeight: 20,
-        }}
-      >
-        {buttonContent}
-      </Button>
+      <Box onClick={handleClick}>{buttonContent}</Box>
       <Popover
         id={id}
         open={open}

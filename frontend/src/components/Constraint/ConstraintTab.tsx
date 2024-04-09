@@ -1,48 +1,49 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 // MUI
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import Zoom from "@mui/material/Zoom";
 // Components
 import ConstraintList from "./ConstraintList";
 import NewConstraint from "./NewConstraint";
-// Stores
-import { useConstraintStore } from "../../stores/constraintStore";
-import { useConstraintTemplateStore } from "../../stores/constraintTemplateStore";
 // Types
 import { TeamT } from "../../containers/types";
+import { ConstraintT, TemplateT } from "./types";
 
 interface Props {
   team: TeamT;
+  constraints: ConstraintT[];
+  constraintTemplates: TemplateT[];
 }
 
-export default function ConstraintTab({ team }: Props) {
-  const constraints = useConstraintStore((state) => state.constraints);
-  const fetchConstraints = useConstraintStore(
-    (state) => state.fetchConstraints
-  );
+export default function ConstraintTab({
+  team,
+  constraints,
+  constraintTemplates,
+}: Props) {
+  const [addingConstraint, setAddingConstraint] = useState<boolean>(false);
 
-  const constraintTemplates = useConstraintTemplateStore(
-    (state) => state.constraintTemplates
-  );
-  const fetchConstraintTemplates = useConstraintTemplateStore(
-    (state) => state.fetchConstraintTemplates
-  );
+  const handleOpenAddConstraint = () => {
+    setAddingConstraint(true);
+  };
 
-  useEffect(() => {
-    fetchConstraints(team.id);
-    fetchConstraintTemplates(team.id);
-  }, [fetchConstraints, fetchConstraintTemplates, team.id]);
+  const handleCloseAddConstraint = () => {
+    setAddingConstraint(false);
+  };
 
   return (
     <Box style={{ width: "100%", backgroundColor: "white" }}>
-      <Typography variant="h4" align="left" color="black">
-        Constraints Configuration
-      </Typography>
-      <NewConstraint team={team} constraintTemplates={constraintTemplates} />
+      {addingConstraint && (
+        <NewConstraint
+          team={team}
+          constraintTemplates={constraintTemplates}
+          handleCloseAddConstraint={handleCloseAddConstraint}
+        />
+      )}
       <ConstraintList
         team={team}
         constraints={constraints}
         constraintTemplates={constraintTemplates}
+        handleOpenAddConstraint={handleOpenAddConstraint}
       />
     </Box>
   );

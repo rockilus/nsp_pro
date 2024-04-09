@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-
+// MUI
 import Chip from "@mui/material/Chip";
 import ClearIcon from "@mui/icons-material/Clear";
 import List from "@mui/material/List";
@@ -13,8 +13,9 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import ListSubheader from "@mui/material/ListSubheader";
-
+// Types
 import { BlockT, TemplateBlockT, TemplateOptionValueT } from "./types";
+// Constants
 import { ConstraintDefaultColors } from "../../utils/constants";
 
 interface Props {
