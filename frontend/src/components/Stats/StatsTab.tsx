@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 // MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -7,27 +7,26 @@ import StatsTable from "./StatsTable";
 import StatsConfig from "./StatsConfig";
 // Stores
 import { useStatStore } from "../../stores/statStore";
-import { useStatsOptionsStore } from "../../stores/statsOptionsStore";
 // Types
-import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 import { TeamT } from "../../containers/types";
+import { ShiftT } from "../Shift/types";
+import { WorkerT } from "../Worker/types";
+import { StatsOptionsT } from "../Schedule/types";
 
 interface Props {
   team: TeamT;
-  workers: WorkerIdNameT[];
-  shifts: ShiftIdNameT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
+  statsOptions: StatsOptionsT | null;
 }
 
-export default function StatsTab({ team, workers, shifts }: Props) {
-  const statsOptions = useStatsOptionsStore((state) => state.statsOptions);
-  const fetchStatsOptions = useStatsOptionsStore(
-    (state) => state.fetchStatsOptions
-  );
+export default function StatsTab({
+  team,
+  workers,
+  shifts,
+  statsOptions,
+}: Props) {
   const stats = useStatStore((state) => state.stats);
-
-  useEffect(() => {
-    fetchStatsOptions(team.id);
-  }, [fetchStatsOptions, team.id]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>

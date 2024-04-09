@@ -1,6 +1,7 @@
 import React from "react";
+// MUI
 import TableCell from "@mui/material/TableCell";
-
+// Types
 import { CellT } from "./types";
 
 interface Props {

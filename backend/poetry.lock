@@ -2648,17 +2648,17 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyam
 
 [[package]]
 name = "supertokens-python"
-version = "0.18.9"
+version = "0.18.10"
 description = "SuperTokens SDK for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "supertokens_python-0.18.9-py3-none-any.whl", hash = "sha256:34f8b2bab953cb8084db6cdcfe9b9ba0d93679a147400f9b870eee4e1e31f365"},
-    {file = "supertokens_python-0.18.9.tar.gz", hash = "sha256:a0ba1e65f6f1665989458d0ceb063fdda8d20b92a101de1052f4a56ada775e6e"},
+    {file = "supertokens_python-0.18.10-py3-none-any.whl", hash = "sha256:c7a05de527cfc7df11576cab78ec08b6c90ec19d911d480f1b7b6c800bfc6ed9"},
+    {file = "supertokens_python-0.18.10.tar.gz", hash = "sha256:7de6abae9964f3cad5531fce1615f753a7a3fe669c400c567bf446294966be6c"},
 ]
 
 [package.dependencies]
-aiosmtplib = "1.1.6"
+aiosmtplib = ">=1.1.6,<4.0.0"
 asgiref = ">=3.4.1,<4"
 Deprecated = "1.2.13"
 httpx = ">=0.15.0,<=0.26.0"

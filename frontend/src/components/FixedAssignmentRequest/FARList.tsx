@@ -7,14 +7,15 @@ import Grid from "@mui/material/Grid";
 import FARListItem from "./FARListItem";
 // Types
 import { FarT } from "./types";
-import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 import { TeamT } from "../../containers/types";
+import { ShiftT } from "../Shift/types";
+import { WorkerT } from "../Worker/types";
 
 interface Props {
   team: TeamT;
   fars: FarT[];
-  workers: WorkerIdNameT[];
-  shifts: ShiftIdNameT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
 }
 
 export default function FARList({ team, fars, workers, shifts }: Props) {

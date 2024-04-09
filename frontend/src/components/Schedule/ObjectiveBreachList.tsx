@@ -1,22 +1,21 @@
 import React from "react";
-
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
+// MUI
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import List from "@mui/material/List";
 import Typography from "@mui/material/Typography";
-
+// Components
 import ConstraintBreachItem from "./ObjectiveBreachItem";
-import { ObjectiveBreachT, ShiftIdNameT, WorkerIdNameT } from "./types";
+// Types
+import { ObjectiveBreachT } from "./types";
+import { ShiftT } from "../Shift/types";
+import { WorkerT } from "../Worker/types";
 
 interface Props {
   objectiveBreaches: ObjectiveBreachT[];
   CBsDisplayed: string[];
-  workers: WorkerIdNameT[];
-  shifts: ShiftIdNameT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
   addCBsDisplayed: (ids: string[]) => void;
   removeCBsDisplayed: (ids: string[]) => void;
 }

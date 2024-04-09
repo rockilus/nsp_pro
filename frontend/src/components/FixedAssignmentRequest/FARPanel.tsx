@@ -18,14 +18,15 @@ import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
 import { useRequestStore } from "../../stores/requestStore";
 // Types
 import { FixedAssignmentT, RequestT, FarT } from "./types";
-import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 import { TeamT } from "../../containers/types";
+import { ShiftT } from "../Shift/types";
+import { WorkerT } from "../Worker/types";
 
 interface Props {
   team: TeamT;
   far: FarT;
-  workers: WorkerIdNameT[];
-  shifts: ShiftIdNameT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
   handleClose: () => void;
 }
 

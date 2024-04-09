@@ -12,8 +12,6 @@ import { StatsOptionsT } from "../Schedule/types";
 import { TeamT } from "../../containers/types";
 // Constants
 import { emptyStatsOptions } from "../../utils/emptyObjects";
-import { ST } from "next/dist/shared/lib/utils";
-import { log } from "console";
 
 dayjs.extend(utc);
 

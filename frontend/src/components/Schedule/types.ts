@@ -75,18 +75,6 @@ export type ValidateT = {
 };
 
 // Types for components
-
-export type ShiftIdNameT = {
-  id: string;
-  name: string;
-  isTimeOff: boolean;
-};
-
-export type WorkerIdNameT = {
-  id: string;
-  name: string;
-};
-
 export type ColumnT = {
   date: dayjs.Dayjs;
   name: string;

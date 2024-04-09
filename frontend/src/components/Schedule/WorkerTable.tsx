@@ -4,8 +4,6 @@ import dayjs from "dayjs";
 import ScheduleTable from "./ScheduleTable";
 // Types
 import {
-  ShiftIdNameT,
-  WorkerIdNameT,
   ColumnT,
   RowT,
   CellT,
@@ -14,14 +12,16 @@ import {
   ObjectiveBreachT,
 } from "./types";
 import { TeamT } from "../../containers/types";
+import { ShiftT } from "../Shift/types";
+import { WorkerT } from "../Worker/types";
 
 interface Props {
   team: TeamT;
   schedules: ScheduleT[];
   assignments: AssignmentT[];
   objectiveBreaches: ObjectiveBreachT[];
-  workers: WorkerIdNameT[];
-  shifts: ShiftIdNameT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
   displayCBs: boolean;
   CBsDisplayed: string[];
 }
