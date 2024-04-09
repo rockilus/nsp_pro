@@ -20,7 +20,7 @@ type ShiftStateT = {
   deleteShift: (shiftId: string, teamId: string) => void;
 };
 
-const toShiftT = (data: any): ShiftT => {
+export const toShiftT = (data: any): ShiftT => {
   return {
     ...data,
     startTime: dayjs.utc(data.startTime),

@@ -52,16 +52,6 @@ class ShiftMessage(BaseModel):
     shiftProperties: List[ShiftPropertyMessage]
 
 
-class ShiftDefaultMessage(BaseModel):
-    id: str
-    name: str
-    startTime: datetime
-    endTime: datetime
-    isTimeOff: bool
-    staffing: int
-    color: str
-
-
 class ShiftDimensionMessage(BaseModel):
     id: str
     isRest: bool
@@ -80,7 +70,7 @@ class NewShiftDimensionMessage(BaseModel):
 class ShiftDemandMessage(BaseModel):
     id: str
     dayIndex: int
-    shift: ShiftDefaultMessage
+    shift: ShiftMessage
     coverageId: str
 
 

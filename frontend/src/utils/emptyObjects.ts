@@ -1,12 +1,13 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
-import { ShiftDefaultT } from "../components/Shift/types";
+import { ShiftT } from "../components/Shift/types";
 import { ScheduleT, StatsOptionsT } from "../components/Schedule/types";
 
 dayjs.extend(utc);
 
-export const emptyShiftDefault: ShiftDefaultT = {
+export const emptyShift: ShiftT = {
+  teamId: "",
   id: "",
   name: "",
   startTime: dayjs(),
@@ -14,6 +15,7 @@ export const emptyShiftDefault: ShiftDefaultT = {
   staffing: 0,
   color: "",
   isTimeOff: false,
+  shiftProperties: [],
 };
 
 export const emptySchedule: ScheduleT = {

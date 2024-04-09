@@ -72,9 +72,11 @@ export default function WorkerTable({
                   width="100%"
                   alignItems="center"
                 >
-                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                    Workers
-                  </Typography>
+                  <Box display="flex" alignItems="center" minHeight={45}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                      Workers
+                    </Typography>
+                  </Box>
                   <PopoverRHS
                     title={"New property"}
                     buttonContent={<TableAddButton text="Add property" />}
@@ -164,10 +166,12 @@ export default function WorkerTable({
                 }
                 sx={{ paddingY: 0 }}
               >
-                <TableAddButton
-                  text="Add worker"
-                  handleClick={handleAddWorker}
-                />
+                <Box display="flex" alignItems="center" minHeight={45}>
+                  <TableAddButton
+                    text="Add worker"
+                    handleClick={handleAddWorker}
+                  />
+                </Box>
               </TableCell>
             </TableRow>
           </TableBody>

@@ -4,7 +4,7 @@ import CoverageEvent from "./CoverageEvent";
 import ShiftDemandButton from "./ShiftDemandButton";
 // Types
 import { ColOverlayT } from "./types";
-import { ShiftDefaultT } from "../Shift/types";
+import { ShiftT } from "../Shift/types";
 import { TeamT } from "../../containers/types";
 // Constants
 import {
@@ -14,13 +14,13 @@ import {
   NumHoursInDay,
   NumQuarterHoursInHour,
 } from "../../utils/constants";
-import { emptyShiftDefault } from "../../utils/emptyObjects";
+import { emptyShift } from "../../utils/emptyObjects";
 
 interface Props {
   team: TeamT;
   coverageId: string;
   colOverlays: ColOverlayT[];
-  shifts: ShiftDefaultT[];
+  shifts: ShiftT[];
 }
 
 export default function CoveragesOverlay({
@@ -78,7 +78,7 @@ export default function CoveragesOverlay({
                 shiftDemand={{
                   id: "",
                   dayIndex: colIndex - 1,
-                  shift: emptyShiftDefault,
+                  shift: emptyShift,
                   coverageId: coverageId,
                 }}
                 shifts={shifts}

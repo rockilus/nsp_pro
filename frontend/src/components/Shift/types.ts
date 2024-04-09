@@ -28,16 +28,6 @@ export type ShiftT = {
   shiftProperties: ShiftPropertyT[];
 };
 
-export type ShiftDefaultT = {
-  id: string;
-  name: string;
-  startTime: dayjs.Dayjs;
-  endTime: dayjs.Dayjs;
-  isTimeOff: boolean;
-  staffing: number;
-  color: string;
-};
-
 export type NewShiftDimensionT = {
   newDimension: ShiftDimensionT;
   newProperties: ShiftPropertyT[];

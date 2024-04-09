@@ -1,11 +1,7 @@
 import React from "react";
 // MUI
-import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
 // Components
 import CoverageItem from "./CoverageItem";
 // Types
@@ -48,26 +44,7 @@ export default function CoverageList({
             handleDeleteCoverage={handleDeleteCoverage}
           />
         ))}
-        <ListItemButton sx={{ padding: 0 }}>
-          <ListItem
-            onClick={handleAddCoverage}
-            style={{ height: 28, padding: "0 0 0 10px" }} // padding top, right, bottom, left
-          >
-            <AddIcon fontSize="small" sx={{ color: "grey" }} />
-            <ListItemText primary="New" sx={{ color: "grey" }} />
-          </ListItem>
-        </ListItemButton>
       </List>
     </Box>
   );
-}
-
-{
-  /* <ListItem
-secondaryAction={
-  <IconButton edge="end" aria-label="delete">
-      <EditIcon />
-    </IconButton>
-  }
-  > */
 }

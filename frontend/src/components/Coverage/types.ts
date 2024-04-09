@@ -1,9 +1,9 @@
-import { ShiftDefaultT } from "../Shift/types";
+import { ShiftT } from "../Shift/types";
 
 export type ShiftDemandT = {
   id: string;
   dayIndex: number; // from 0 to 6
-  shift: ShiftDefaultT;
+  shift: ShiftT;
   coverageId: string;
 };
 
@@ -12,12 +12,6 @@ export type CoverageT = {
   teamId: string;
   name: string;
   shiftDemands: ShiftDemandT[];
-};
-
-export type ShiftT = {
-  id: string;
-  name: string;
-  // ... any other properties of a shift
 };
 
 export type ColOverlayT = {

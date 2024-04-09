@@ -13,15 +13,15 @@ import WorkIcon from "@mui/icons-material/Work";
 import { useCoverageStore } from "../../stores/coverageStore";
 // Types
 import { ShiftDemandT } from "./types";
-import { ShiftDefaultT } from "../Shift/types";
+import { ShiftT } from "../Shift/types";
 // Constants
-import { emptyShiftDefault } from "../../utils/emptyObjects";
+import { emptyShift } from "../../utils/emptyObjects";
 import { TeamT } from "../../containers/types";
 
 interface Props {
   team: TeamT;
   shiftDemand: ShiftDemandT;
-  shifts: ShiftDefaultT[];
+  shifts: ShiftT[];
   handleClose: () => void;
 }
 
@@ -69,7 +69,7 @@ export default function ShiftDemandPanel({
                 ...SDState,
                 shift:
                   shifts.find((s) => s.id === (e.target.value as string)) ||
-                  emptyShiftDefault,
+                  emptyShift,
               })
             }
           >

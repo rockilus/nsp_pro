@@ -7,13 +7,13 @@ import Typography from "@mui/material/Typography";
 import ShiftDemandButton from "./ShiftDemandButton";
 // Types
 import { SDOverlayT } from "./types";
-import { ShiftDefaultT } from "../Shift/types";
+import { ShiftT } from "../Shift/types";
 import { TeamT } from "../../containers/types";
 
 interface Props {
   team: TeamT;
   SDOverlay: SDOverlayT;
-  shifts: ShiftDefaultT[];
+  shifts: ShiftT[];
 }
 
 export default function CoverageEvent({ team, SDOverlay, shifts }: Props) {

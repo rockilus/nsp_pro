@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 // MUI
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 // Components
 import CoverageCalendar from "./CoverageCalendar";
 import CoverageOptions from "./CoverageOptions";
@@ -9,34 +8,25 @@ import CoverageOptions from "./CoverageOptions";
 import { useCoverageStore } from "../../stores/coverageStore";
 // Types
 import { CoverageT } from "./types";
-import { ShiftDefaultT } from "../Shift/types";
+import { ShiftT } from "../Shift/types";
 import { TeamT } from "../../containers/types";
 
 type Props = {
   team: TeamT;
-  shifts: ShiftDefaultT[];
+  shifts: ShiftT[];
+  coverages: CoverageT[];
 };
 
-export default function CoverageTab({ team, shifts }: Props) {
-  // remote interactions via stores
-  const coverages = useCoverageStore((state) => state.coverages);
-  const fetchCoverages = useCoverageStore((state) => state.fetchCoverages);
+export default function CoverageTab({ team, shifts, coverages }: Props) {
   const addCoverage = useCoverageStore((state) => state.addCoverage);
   const updateCoverage = useCoverageStore((state) => state.updateCoverage);
   const deleteCoverage = useCoverageStore((state) => state.deleteCoverage);
 
-  // local states via states
   const [selectedCoverage, setSelectedCoverage] = useState<
     CoverageT | undefined
   >(undefined);
   const [editingName, setEditingName] = useState<boolean>(false);
 
-  // Fetch coverages from the API on mount
-  useEffect(() => {
-    fetchCoverages(team.id);
-  }, [fetchCoverages, team.id]);
-
-  // handlers for callbacks
   const handleUpdateCoverage = async (updatedCoverage: CoverageT) => {
     updateCoverage(updatedCoverage);
     setEditingName(false);
@@ -70,15 +60,11 @@ export default function CoverageTab({ team, shifts }: Props) {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <Typography variant="h4" align="left">
-        Coverage
-      </Typography>
       <Box sx={{ display: "flex", flexDirection: "row" }}>
         <CoverageOptions
           coverages={coverages}
           selectedCoverage={selectedCoverage}
           editingName={editingName}
-          shifts={shifts}
           handleAddCoverage={handleAddCoverage}
           handleSelectCoverage={handleSelectCoverage}
           setEditingName={setEditingName}

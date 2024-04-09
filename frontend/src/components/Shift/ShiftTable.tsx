@@ -87,9 +87,11 @@ export default function ShiftTable({
                   width="100%"
                   alignItems="center"
                 >
-                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                    {isRest ? "Rest shifts" : "Shifts"}
-                  </Typography>
+                  <Box display="flex" alignItems="center" minHeight={45}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                      {isRest ? "Rest shifts" : "Shifts"}
+                    </Typography>
+                  </Box>
                   <PopoverRHS
                     title={"New property"}
                     buttonContent={<TableAddButton text="Add property" />}
@@ -180,10 +182,14 @@ export default function ShiftTable({
                 colSpan={defaultShiftFields.length + shiftDimensions.length + 1}
                 sx={{ paddingY: 0 }}
               >
-                <TableAddButton
-                  text={isRest ? "Add rest" : "Add shift"}
-                  handleClick={handleAddShift}
-                />
+                <Box
+                  sx={{ display: "flex", alignItems: "center", minHeight: 45 }}
+                >
+                  <TableAddButton
+                    text={isRest ? "Add rest" : "Add shift"}
+                    handleClick={handleAddShift}
+                  />
+                </Box>
               </TableCell>
             </TableRow>
           </TableBody>
