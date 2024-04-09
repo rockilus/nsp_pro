@@ -1,6 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
-
+// MUI
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+// Components
 import BlockDisplay from "./BlockDisplay";
+// Stores
+import { useConstraintStore } from "../../stores/constraintStore";
+// Types
 import {
   ConstraintT,
   TemplateT,
@@ -8,7 +14,6 @@ import {
   TemplateBlockT,
   TemplateOptionValueT,
 } from "./types";
-import { useConstraintStore } from "../../stores/constraintStore";
 
 interface Props {
   constraint: ConstraintT;
@@ -103,16 +108,25 @@ export default function ConstraintEdit({
   }, [initialConstraintState]);
 
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
+        alignItems: "center",
+        width: "100%",
       }}
     >
       <div style={{ display: "flex", flexDirection: "row" }}>
         {constraintTemplate?.blocks.map((templateBlock, index) => (
-          <div key={index} style={{ marginRight: "5px" }}>
+          <div
+            key={index}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginRight: "5px",
+            }}
+          >
             <BlockDisplay
               block={findBlockByName(templateBlock.name)}
               templateBlock={templateBlock}
@@ -121,7 +135,13 @@ export default function ConstraintEdit({
           </div>
         ))}
       </div>
-      <button onClick={handleSaveConstraint}>Add</button>
-    </div>
+      <Button
+        variant="contained"
+        onClick={handleSaveConstraint}
+        sx={{ textTransform: "none", height: 35, width: 60 }}
+      >
+        {constraint.id === "" ? "Add" : "Save"}
+      </Button>
+    </Box>
   );
 }

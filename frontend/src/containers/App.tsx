@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-// MUI
-import Box from "@mui/material/Box";
 // Components
 import NavAppBar from "../components/AppBar/NavAppBar";
 import ConstraintTab from "../components/Constraint/ConstraintTab";
@@ -13,6 +11,8 @@ import SimpleSnackbar from "../components/SnackBars/SnackBars";
 import StatsTab from "../components/Stats/StatsTab";
 import WorkerTab from "../components/Worker/WorkerTab";
 // Stores
+import { useConstraintStore } from "../stores/constraintStore";
+import { useConstraintTemplateStore } from "../stores/constraintTemplateStore";
 import { useCoverageStore } from "../stores/coverageStore";
 import { useShiftStore } from "../stores/shiftStore";
 import { useShiftDimensionStore } from "../stores/shiftDimensionStore";
@@ -59,6 +59,17 @@ const App = () => {
   const selectedTeam = useTeamStore((state) => state.selectedTeam);
   const fetchTeams = useTeamStore((state) => state.fetchTeams);
   const setSelectedTeam = useTeamStore((state) => state.setSelectedTeam);
+  const constraints = useConstraintStore((state) => state.constraints);
+  const fetchConstraints = useConstraintStore(
+    (state) => state.fetchConstraints
+  );
+
+  const constraintTemplates = useConstraintTemplateStore(
+    (state) => state.constraintTemplates
+  );
+  const fetchConstraintTemplates = useConstraintTemplateStore(
+    (state) => state.fetchConstraintTemplates
+  );
 
   useEffect(() => {
     if (teams.length === 0) {
@@ -100,6 +111,8 @@ const App = () => {
       fetchShifts(selectedTeam.id);
       fetchShiftDimensions(selectedTeam.id);
       fetchCoverages(selectedTeam.id);
+      fetchConstraints(selectedTeam.id);
+      fetchConstraintTemplates(selectedTeam.id);
     }
   }, [
     fetchWorkers,
@@ -107,6 +120,8 @@ const App = () => {
     fetchShifts,
     fetchShiftDimensions,
     fetchCoverages,
+    fetchConstraints,
+    fetchConstraintTemplates,
     selectedTeam,
   ]);
 
@@ -140,7 +155,13 @@ const App = () => {
           />
         );
       case "constraints":
-        return <ConstraintTab team={selectedTeam} />;
+        return (
+          <ConstraintTab
+            team={selectedTeam}
+            constraints={constraints}
+            constraintTemplates={constraintTemplates}
+          />
+        );
       case "requests":
         return (
           <FARTab
