@@ -13,19 +13,12 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import NewWorkerDimensionMessage, WorkerDimensionMessage
 from routes.worker_routes import core_to_msg_worker_property
-from scripts.setup_database import (
-    worker_db,
-    worker_dimension_db,
-    worker_property_db,
-)
+from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
 from services.worker_services import (
     delete_worker_dimension as delete_worker_dimension_service,
 )
@@ -82,9 +75,7 @@ async def get_worker_dimensions(
                 "You do not have permission to get worker dimensions"
             )
         worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id)
-        response = [
-            core_to_msg_worker_dimension(wd) for wd in worker_dimensions
-        ]
+        response = [core_to_msg_worker_dimension(wd) for wd in worker_dimensions]
     except Exception as e:
         log_info("Failed to get worker dimensions")
         handle_routes_errors(e)

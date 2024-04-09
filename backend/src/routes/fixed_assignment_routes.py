@@ -14,10 +14,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import FixedAssignmentMessage
@@ -62,9 +59,7 @@ async def get_fixed_assignments(
             )
         workers = worker_db.get_workers(team_id)
         fixed_assignments = fixed_assignment_db.get_fixed_assignments(workers)
-        response = [
-            core_to_msg_fixed_assignment(fa) for fa in fixed_assignments
-        ]
+        response = [core_to_msg_fixed_assignment(fa) for fa in fixed_assignments]
     except Exception as e:
         log_info("Failed to get fixed assignments")
         handle_routes_errors(e)
@@ -138,9 +133,7 @@ def msg_to_core_fixed_assignment(
     msg: FixedAssignmentMessage,
 ) -> FixedAssignment:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["date"] = datetime.combine(
-        data_snake["date"], datetime.min.time()
-    )
+    data_snake["date"] = datetime.combine(data_snake["date"], datetime.min.time())
     try:
         fixed_assignment = FixedAssignment(**data_snake)
     except Exception as e:

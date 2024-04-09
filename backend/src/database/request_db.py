@@ -2,6 +2,7 @@ from datetime import date, datetime
 from typing import List
 
 from bson import ObjectId
+
 from core import Request, Worker
 from database.db import DB
 from database.worker_db import core_to_doc_worker
@@ -97,9 +98,7 @@ class RequestDB:
                 worker=worker_id  # type: ignore
             )
         except Exception as e:
-            log_info(
-                "Failed to get requests by worker id to delete from database"
-            )
+            log_info("Failed to get requests by worker id to delete from database")
             handle_get_document_error(e)
         try:
             for r in requests:
@@ -115,9 +114,7 @@ class RequestDB:
                 shift=shift_id  # type: ignore
             )
         except Exception as e:
-            log_info(
-                "Failed to get requests by shift id to delete from database"
-            )
+            log_info("Failed to get requests by shift id to delete from database")
             handle_get_document_error(e)
         try:
             for r in requests:

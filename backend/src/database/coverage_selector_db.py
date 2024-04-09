@@ -44,10 +44,7 @@ class CoverageSelectorDB:
         except Exception as e:
             log_info("Failed to get coverage selectors from database")
             handle_get_document_error(e)
-        return [
-            doc_to_core_coverage_selector(cs)
-            for cs in list(coverage_selectors)
-        ]
+        return [doc_to_core_coverage_selector(cs) for cs in list(coverage_selectors)]
 
     def get_coverage_selector_by_id(
         self, coverage_selector_id: str
@@ -75,10 +72,7 @@ class CoverageSelectorDB:
         except Exception as e:
             log_info("Failed to get coverage selectors by dates from database")
             handle_get_document_error(e)
-        return [
-            doc_to_core_coverage_selector(cs)
-            for cs in list(coverage_selectors)
-        ]
+        return [doc_to_core_coverage_selector(cs) for cs in list(coverage_selectors)]
 
     def update_coverage_selector(
         self, coverage_selector: CoverageSelector
@@ -104,9 +98,7 @@ class CoverageSelectorDB:
                 id=coverage_selector_id
             )
         except Exception as e:
-            log_info(
-                "Failed to get coverage selector by id to delete from database"
-            )
+            log_info("Failed to get coverage selector by id to delete from database")
             handle_get_document_error(e)
         try:
             coverage_selector.delete()
@@ -145,9 +137,7 @@ def core_to_doc_coverage_selector(
             coverage=coverage if dataclass_obj.coverage_id != "" else None,
         )
     except Exception as e:
-        log_info(
-            "Failed to convert CoverageSelector to CoverageSelectorDocument"
-        )
+        log_info("Failed to convert CoverageSelector to CoverageSelectorDocument")
         handle_create_document_error(e)
     return cs_doc
 
@@ -165,8 +155,6 @@ def doc_to_core_coverage_selector(
             coverage_id=str(doc_obj.coverage.id) if doc_obj.coverage else "",
         )
     except Exception as e:
-        log_info(
-            "Failed to convert CoverageSelectorDocument to CoverageSelector"
-        )
+        log_info("Failed to convert CoverageSelectorDocument to CoverageSelector")
         handle_create_core_object_error(e)
     return coverage_selector

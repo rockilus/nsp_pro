@@ -22,9 +22,7 @@ async def get_user_teams(user_id: str) -> List[Team]:
     start_time_get_teams_from_db = time.time()
     teams = team_db.get_teams_by_ids(team_ids)
     end_time_get_teams_from_db = time.time()
-    total_time_get_user_teams = (
-        end_time_get_user_teams - start_time_get_user_teams
-    )
+    total_time_get_user_teams = end_time_get_user_teams - start_time_get_user_teams
     total_time_get_teams_from_db = (
         end_time_get_teams_from_db - start_time_get_teams_from_db
     )

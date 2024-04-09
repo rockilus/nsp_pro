@@ -20,9 +20,7 @@ class StatsOptionsDB:
     def __init__(self, db: DB):
         self.db = db
 
-    def create_stats_options(
-        self, stats_options: StatsOptions
-    ) -> StatsOptions:
+    def create_stats_options(self, stats_options: StatsOptions) -> StatsOptions:
         so_doc = core_to_doc_stats_options(stats_options)
         so_doc.id = str(ObjectId())
         try:
@@ -41,9 +39,7 @@ class StatsOptionsDB:
         except Exception as e:
             log_info("Failed to get stats options from database")
             handle_get_document_error(e)
-        return (
-            doc_to_core_stats_options(stats_options) if stats_options else None
-        )
+        return doc_to_core_stats_options(stats_options) if stats_options else None
 
     def get_stats_options_by_id(self, stats_options_id: str) -> StatsOptions:
         try:
@@ -56,9 +52,7 @@ class StatsOptionsDB:
             handle_get_document_error(e)
         return doc_to_core_stats_options(stats_options)
 
-    def update_stats_options(
-        self, stats_options: StatsOptions
-    ) -> StatsOptions:
+    def update_stats_options(self, stats_options: StatsOptions) -> StatsOptions:
         so_doc = core_to_doc_stats_options(stats_options)
         try:
             # pylint: disable=no-member
@@ -80,9 +74,7 @@ class StatsOptionsDB:
                 id=stats_options_id
             )
         except Exception as e:
-            log_info(
-                "Failed to get stats options by id to delete from database"
-            )
+            log_info("Failed to get stats options by id to delete from database")
             handle_get_document_error(e)
         try:
             stats_options.delete()

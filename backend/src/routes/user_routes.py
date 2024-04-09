@@ -12,10 +12,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import User as UserMessage
@@ -33,12 +30,8 @@ async def update_user(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> UserMessage:
     try:
-        if not await authz_check(
-            session.get_user_id(), "update-user", "user", user_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to update a user"
-            )
+        if not await authz_check(session.get_user_id(), "update-user", "user", user_id):
+            raise NotAuthorizedError("You do not have permission to update a user")
         u_data = msg_to_core_user(user)
         updated_user = user_db.update_user(u_data)
         response = core_to_msg_user(updated_user)
@@ -56,9 +49,7 @@ def core_to_msg_user(user: User) -> UserMessage:
     except Exception as e:
         log_info("Failed to convert User to dictionary")
         raise MessageTypeError(str(e)) from e
-    data = {
-        k: v for k, v in data.items() if k not in ["hashed_password", "roles"]
-    }
+    data = {k: v for k, v in data.items() if k not in ["hashed_password", "roles"]}
     as_dict = humps.camelize(data)
     validator = TypeAdapter(UserMessage)
     try:

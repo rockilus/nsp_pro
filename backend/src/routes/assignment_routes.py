@@ -14,10 +14,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import AssignmentMessage
@@ -132,9 +129,7 @@ def core_to_msg_assignment(assignment: Assignment) -> AssignmentMessage:
 # message to core
 def msg_to_core_assignment(msg: AssignmentMessage) -> Assignment:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["date"] = datetime.combine(
-        data_snake["start_date"], datetime.min.time()
-    )
+    data_snake["date"] = datetime.combine(data_snake["start_date"], datetime.min.time())
     try:
         assignment = Assignment(**data_snake)
     except Exception as e:

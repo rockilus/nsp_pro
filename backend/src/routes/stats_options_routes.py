@@ -2,6 +2,9 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
+from fastapi import APIRouter, Depends
+from pydantic import TypeAdapter
+
 from core import Stat, StatsOptions
 from errors import (
     MessageTypeError,
@@ -10,14 +13,9 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from fastapi import APIRouter, Depends
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
-from pydantic import TypeAdapter
 from routes.api_model import StatMessage, StatsMessage, StatsOptionsMessage
 from scripts.setup_database import stats_options_db
 from services.stats_services import stats_setup

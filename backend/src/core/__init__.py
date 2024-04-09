@@ -26,6 +26,7 @@ from core.team import Team
 from core.user import User
 from core.worker import Worker, WorkerDimension, WorkerProperty
 
+# pylint: disable=R0801
 __all__ = [
     "Assignment",
     "Block",

@@ -13,7 +13,5 @@ def parse_constraint(
     shift_dim_dict: Dict,
     schedule_id: str,
 ) -> Constraint:
-    map_constraint = MapConstaint(
-        workers, shifts, worker_dim_dict, shift_dim_dict
-    )
+    map_constraint = MapConstaint(workers, shifts, worker_dim_dict, shift_dim_dict)
     return map_constraint(cstr_build, schedule_id)

@@ -13,18 +13,11 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import ShiftMessage, ShiftPropertyMessage
-from scripts.setup_database import (
-    shift_db,
-    shift_dimension_db,
-    shift_property_db,
-)
+from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
 from services.shift_services import add_back_shift_property_to_constraint_build
 from services.shift_services import delete_shift as delete_shift_service
 
@@ -41,14 +34,10 @@ async def create_shift(
         if not await authz_check(
             session.get_user_id(), "create-shift", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to create a shift"
-            )
+            raise NotAuthorizedError("You do not have permission to create a shift")
         s_data = msg_to_core_to_shift(shift)
         shift_created = shift_db.create_shift(s_data)
-        sd_bool = shift_dimension_db.get_shift_dimensions_by_entry_type(
-            "bool", team_id
-        )
+        sd_bool = shift_dimension_db.get_shift_dimensions_by_entry_type("bool", team_id)
         sp_bool = []
         for wd in sd_bool:
             sp_bool.append(
@@ -74,12 +63,8 @@ async def get_shifts(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ShiftMessage]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shifts", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shifts"
-            )
+        if not await authz_check(session.get_user_id(), "read-shifts", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = shift_db.get_shifts(team_id)
         shifts_properties = [
             shift_property_db.get_shift_properties_by_shift_id(shift.id)
@@ -105,26 +90,20 @@ async def update_shift(
         if not await authz_check(
             session.get_user_id(), "update-shift", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update shifts"
-            )
+            raise NotAuthorizedError("You do not have permission to update shifts")
         shift_data = msg_to_core_to_shift(shift)
         updated_shift = shift_db.update_shift(shift_data)
         shift_properties = shift_property_db.get_shift_properties_by_shift_id(
             updated_shift.id
         )
-        response = core_to_msg_shift_and_properties(
-            updated_shift, shift_properties
-        )
+        response = core_to_msg_shift_and_properties(updated_shift, shift_properties)
     except Exception as e:
         log_info("Failed to update shift")
         handle_routes_errors(e)
     return response
 
 
-@router.put(
-    "/shifts/{shift_id}/properties/{shift_dimension_id}/teams/{team_id}"
-)
+@router.put("/shifts/{shift_id}/properties/{shift_dimension_id}/teams/{team_id}")
 async def update_shift_property(
     team_id: str,
     shift_property: ShiftPropertyMessage,
@@ -168,9 +147,7 @@ async def delete_shift(
         if not await authz_check(
             session.get_user_id(), "delete-shift", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to delete shifts"
-            )
+            raise NotAuthorizedError("You do not have permission to delete shifts")
         delete_shift_service(shift_id)
     except Exception as e:
         log_info("Failed to delete shift")
@@ -223,9 +200,7 @@ def core_to_msg_shift_and_properties(
 # message to core
 def msg_to_core_to_shift(msg: ShiftMessage) -> Shift:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake = {
-        k: v for k, v in data_snake.items() if k != "shift_properties"
-    }
+    data_snake = {k: v for k, v in data_snake.items() if k != "shift_properties"}
     try:
         shift = Shift(**data_snake)
     except Exception as e:

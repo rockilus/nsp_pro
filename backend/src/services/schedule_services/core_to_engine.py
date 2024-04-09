@@ -44,9 +44,7 @@ def core_to_engine_inputs(
         requests, fixed_assignments
     )
     start_date_hist = (
-        min(a.date for a in prev_assignments)
-        if prev_assignments
-        else start_date
+        min(a.date for a in prev_assignments) if prev_assignments else start_date
     )
     end_date_hist = start_date - timedelta(days=1)
     variable_space = VariableSpace(
@@ -55,9 +53,7 @@ def core_to_engine_inputs(
         shifts=[shift.id for shift in shifts],
     )
     dates = _build_dates(start_date_hist, end_date)
-    s_durations, s_start_times, s_end_times = _build_interval_parameters(
-        shifts, dates
-    )
+    s_durations, s_start_times, s_end_times = _build_interval_parameters(shifts, dates)
     inputs = Inputs(
         variable_space=variable_space,
         coverage=CoverageEngine(
@@ -94,10 +90,7 @@ def _build_shift_demands(
     sd_engine = []
     shifts_not_off = [s for s in shifts if not s.is_time_off]
     shift_demands_flat = [
-        sd
-        for sds_list in shift_demands
-        if sds_list is not None
-        for sd in sds_list
+        sd for sds_list in shift_demands if sds_list is not None for sd in sds_list
     ]
     for s in shifts_not_off:
         for day in range((end_date - start_date).days + 1):
@@ -156,9 +149,7 @@ def _core_to_engine_requests_and_fixed_assignments(
             )
     else:
         fa_engine = [
-            AssignmentEngine(
-                worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id
-            )
+            AssignmentEngine(worker_id=fa.worker_id, date=fa.date, shift_id=fa.shift_id)
             for fa in fixed_assignments
         ]
     return r_engine, fa_engine
@@ -176,9 +167,7 @@ def core_to_engine_sol_hint(
             if any(
                 a.worker_id == w
                 and a.date
-                == datetime.strptime(
-                    d, Constants.ENGINE_STRING_DATE_FORMAT
-                ).date()
+                == datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
                 and a.shift_id == s
                 for a in assignments
             )
@@ -247,9 +236,7 @@ def _core_to_engine_var_shift(var_shift: VarShift) -> VarShiftEngine:
 def _build_day_coordinates(start_date: date, end_date: date) -> List[str]:
     delta = end_date - start_date
     dates = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
-    return [
-        date.strftime(Constants.ENGINE_STRING_DATE_FORMAT) for date in dates
-    ]
+    return [date.strftime(Constants.ENGINE_STRING_DATE_FORMAT) for date in dates]
 
 
 def _build_dates(start_date: date, end_date: date) -> List[date]:
@@ -259,23 +246,17 @@ def _build_dates(start_date: date, end_date: date) -> List[date]:
 
 def _build_interval_parameters(
     shifts: List[Shift], dates=List[date]
-) -> Tuple[
-    Dict[str, int], Dict[Tuple[str, str], int], Dict[Tuple[str, str], int]
-]:
+) -> Tuple[Dict[str, int], Dict[Tuple[str, str], int], Dict[Tuple[str, str], int]]:
     s_durations = {}
     s_start_times = {}
     s_end_times = {}
     for s in shifts:
-        s_durations[s.id] = int(
-            (s.end_time - s.start_time).total_seconds() // 60 - 1
-        )
+        s_durations[s.id] = int((s.end_time - s.start_time).total_seconds() // 60 - 1)
         day_diff = (s.end_time.date() - s.start_time.date()).days
         for d in dates:
             d_string = d.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
             s_start_times[d_string, s.id] = int(
-                s.start_time.replace(
-                    year=d.year, month=d.month, day=d.day
-                ).timestamp()
+                s.start_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
                 // Constants.NUM_SECONDS_MINUTE
             )
 

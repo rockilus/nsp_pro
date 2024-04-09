@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 from bson import ObjectId
+
 from core import Coverage, ShiftDemand
 from database.db import DB
 from errors import (
@@ -41,9 +42,7 @@ class ShiftDemandDB:
             handle_get_document_error(e)
         return doc_to_core_shift_demand(shift_demand)
 
-    def get_shift_demands_by_coverage(
-        self, coverage: Coverage
-    ) -> List[ShiftDemand]:
+    def get_shift_demands_by_coverage(self, coverage: Coverage) -> List[ShiftDemand]:
         try:
             # pylint: disable=no-member
             shift_demands = ShiftDemandDocument.objects.filter(  # type: ignore
@@ -63,14 +62,10 @@ class ShiftDemandDB:
                 coverage__in=coverage_ids
             )
         except Exception as e:
-            log_info(
-                "Failed to get shift demands by coverage ids from database"
-            )
+            log_info("Failed to get shift demands by coverage ids from database")
             handle_get_document_error(e)
         try:
-            shift_demands = [
-                doc_to_core_shift_demand(sd) for sd in list(sd_docs)
-            ]
+            shift_demands = [doc_to_core_shift_demand(sd) for sd in list(sd_docs)]
         except Exception as e:
             log_info("Failed to convert ShiftDemandDocument to ShiftDemand")
             handle_create_core_object_error(e)
@@ -91,9 +86,7 @@ class ShiftDemandDB:
                 coverage=coverage_selector.coverage_id
             )
         except Exception as e:
-            log_info(
-                "Failed to get shift demands by coverage selector from database"
-            )
+            log_info("Failed to get shift demands by coverage selector from database")
             handle_get_document_error(e)
         return [doc_to_core_shift_demand(sd) for sd in list(shift_demands)]
 
@@ -119,9 +112,7 @@ class ShiftDemandDB:
                 id=shift_demand_id
             )
         except Exception as e:
-            log_info(
-                "Failed to get shift demand by id to delete from database"
-            )
+            log_info("Failed to get shift demand by id to delete from database")
             handle_get_document_error(e)
         try:
             shift_demand.delete()

@@ -1,65 +1,80 @@
 from dataclasses import asdict
-from typing import List
-import time
+from typing import Dict, List
 
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
 from constraint_parser.templates import build_templates
-from core import Template
+from core import ShiftProperty, Template, WorkerProperty
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import TemplateMessage
+from scripts.setup_database import (
+    shift_db,
+    shift_dimension_db,
+    shift_property_db,
+    worker_db,
+    worker_dimension_db,
+    worker_property_db,
+)
 
 router = APIRouter()
 
 
+# pylint: disable=too-many-locals
 @router.get("/constraint-templates/teams/{team_id}")
 async def get_constraint_templates(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[TemplateMessage]:
-    start_time = time.time()
     try:
-        start_time_authz = time.time()
         if not await authz_check(
             session.get_user_id(), "read-constraint-templates", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to get constraint templates"
             )
-        end_time_authz = time.time()
-        start_time_build_templates = time.time()
-        templates = build_templates(team_id)
-        end_time_build_templates = time.time()
-        start_time_convert = time.time()
+        workers = worker_db.get_workers(team_id)
+        worker_properties = worker_property_db.get_worker_properties_by_worker_ids(
+            [w.id for w in workers]
+        )
+        worker_properties_wd: Dict[str, List[WorkerProperty]] = {}
+        for wp in worker_properties:
+            wd_id = wp.worker_dimension_id
+            if wd_id not in worker_properties_wd:
+                worker_properties_wd[wd_id] = []
+        worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id)
+        shifts = shift_db.get_shifts(team_id)
+        shift_properties = shift_property_db.get_shift_properties_by_shift_ids(
+            [s.id for s in shifts]
+        )
+        shift_properties_sd: Dict[str, List[ShiftProperty]] = {}
+        for sp in shift_properties:
+            sd_id = sp.shift_dimension_id
+            if sd_id not in shift_properties_sd:
+                shift_properties_sd[sd_id] = []
+            shift_properties_sd[sd_id].append(sp)
+        shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
+        templates = build_templates(
+            workers,
+            worker_dimensions,
+            worker_properties_wd,
+            shifts,
+            shift_dimensions,
+            shift_properties_sd,
+        )
         response = [core_to_msg_constraint_template(ct) for ct in templates]
-        end_time_convert = time.time()
     except Exception as e:
         log_info("Failed to get constraint templates")
         handle_routes_errors(e)
-    end_time = time.time()
-    total_time = end_time - start_time
-    total_time_authz = end_time_authz - start_time_authz
-    total_time_build_templates = (
-        end_time_build_templates - start_time_build_templates
-    )
-    total_time_convert = end_time_convert - start_time_convert
-    print(f"Total time constraint templates: {total_time}")
-    print(f"Total time to authz:             {total_time_authz}")
-    print(f"Total time to build templates:   {total_time_build_templates}")
-    print(f"Total time to convert templates: {total_time_convert}")
     return response
 
 

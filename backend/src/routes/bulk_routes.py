@@ -2,6 +2,9 @@ import time
 from typing import Dict, List
 
 import humps
+from fastapi import APIRouter, Depends
+from pydantic import TypeAdapter
+
 from constraint_parser.templates import build_templates
 from core import (
     Assignment,
@@ -23,20 +26,10 @@ from core import (
     WorkerDimension,
     WorkerProperty,
 )
-from errors import (
-    MessageTypeError,
-    NotAuthorizedError,
-    handle_message_errors,
-    handle_routes_errors,
-)
-from fastapi import APIRouter, Depends
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from errors import NotAuthorizedError, handle_routes_errors
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
-from pydantic import TypeAdapter
 from routes.api_model import (
     AssignmentMessage,
     BulkMessage,
@@ -56,6 +49,8 @@ from routes.api_model import (
     WorkerMessage,
 )
 from routes.assignment_routes import core_to_msg_assignment
+from routes.constraint_routes import core_to_msg_constraint_build
+from routes.constraint_template_routes import core_to_msg_constraint_template
 from routes.coverage_routes import core_to_msg_coverage_and_shift_demands
 from routes.coverage_selector_routes import core_to_msg_coverage_selector
 from routes.fixed_assignment_routes import core_to_msg_fixed_assignment
@@ -68,8 +63,6 @@ from routes.stats_options_routes import core_to_msg_stats_options
 from routes.team_routes import core_to_msg_team
 from routes.worker_dimension_routes import core_to_msg_worker_dimension
 from routes.worker_routes import core_to_msg_worker_and_properties
-from routes.constraint_routes import core_to_msg_constraint_build
-from routes.constraint_template_routes import core_to_msg_constraint_template
 from scripts.setup_database import (
     assignment_db,
     constraint_build_db,
@@ -93,32 +86,28 @@ from scripts.setup_database import (
 router = APIRouter()
 
 
+# pylint: disable=too-many-locals, too-many-statements
 @router.get("/bulk")
 async def get_constraint_templates(
     session: SessionContainerType = Depends(authn_verify_session()),
-) -> List[TemplateMessage]:
+) -> BulkMessage:
     start_time = time.time()
     try:
         user_id = session.get_user_id()
         teams = team_db.get_teams_by_leader_id(user_id)
         team_id = teams[0].id
-        if not await authz_check(
-            user_id, "read-constraint-templates", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to get constraint templates"
-            )
+        if not await authz_check(user_id, "read-constraint-templates", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to get bulk")
         workers = worker_db.get_workers(team_id)
-        worker_properties = (
-            worker_property_db.get_worker_properties_by_worker_ids(
-                [w.id for w in workers]
-            )
+        worker_properties = worker_property_db.get_worker_properties_by_worker_ids(
+            [w.id for w in workers]
         )
         worker_properties_w: Dict[str, List[WorkerProperty]] = {}
         worker_properties_wd: Dict[str, List[WorkerProperty]] = {}
         for wp in worker_properties:
             worker_id = wp.worker_id
             wd_id = wp.worker_dimension_id
+            # pylint: disable=R0801
             if worker_id not in worker_properties_w:
                 worker_properties_w[worker_id] = []
             worker_properties_w[worker_id].append(wp)
@@ -148,12 +137,10 @@ async def get_constraint_templates(
         shift_demand_shifts: Dict[str, List[Shift]] = {}
         for c in coverages:
             shift_demand_shifts[c.id] = [
-                s
-                for sd in shift_demands[c.id]
-                for s in shifts
-                if s.id == sd.shift_id
+                s for sd in shift_demands[c.id] for s in shifts if s.id == sd.shift_id
             ]
         constraint_builds = constraint_build_db.get_constraint_builds(team_id)
+        # pylint: disable=R0801
         constraint_templates = build_templates(
             workers,
             worker_dimensions,
@@ -162,16 +149,12 @@ async def get_constraint_templates(
             shift_dimensions,
             shift_properties_sd,
         )
-        fixed_assignments = fixed_assignment_db.get_fixed_assignments(team_id)
-        requests = request_db.get_requests(team_id)
-        coverage_selectors = coverage_selector_db.get_coverage_selectors(
-            team_id
-        )
-        assignments = assignment_db.get_assignments(team_id)
+        fixed_assignments = fixed_assignment_db.get_fixed_assignments(workers)
+        requests = request_db.get_requests(workers)
+        coverage_selectors = coverage_selector_db.get_coverage_selectors(team_id)
         schedules = schedule_db.get_schedules(team_id)
-        objective_breaches = objective_breach_db.get_objective_breaches(
-            team_id
-        )
+        assignments = assignment_db.get_assignments(schedules)
+        objective_breaches = objective_breach_db.get_objective_breaches(schedules)
         stats_options = stats_options_db.get_stats_options(team_id)
         response = core_to_msg_bulk(
             teams,
@@ -205,6 +188,7 @@ async def get_constraint_templates(
 
 # Mappers
 # core to message
+# pylint: disable=too-many-arguments, too-many-locals
 def core_to_msg_bulk(
     teams: List[Team],
     workers: List[Worker],
@@ -224,7 +208,7 @@ def core_to_msg_bulk(
     assignments: List[Assignment],
     schedules: List[Schedule],
     objective_breaches: List[ObjectiveBreach],
-    stats_options: StatsOptions,
+    stats_options: StatsOptions | None,
 ) -> BulkMessage:
     data: Dict[
         str,
@@ -247,15 +231,13 @@ def core_to_msg_bulk(
     ] = {}
     data["teams"] = [core_to_msg_team(t) for t in teams]
     data["workers"] = [
-        core_to_msg_worker_and_properties(w, worker_properties[w.id])
-        for w in workers
+        core_to_msg_worker_and_properties(w, worker_properties[w.id]) for w in workers
     ]
     data["worker_dimensions"] = [
         core_to_msg_worker_dimension(wd) for wd in worker_dimensions
     ]
     data["shifts"] = [
-        core_to_msg_shift_and_properties(s, shift_properties[s.id])
-        for s in shifts
+        core_to_msg_shift_and_properties(s, shift_properties[s.id]) for s in shifts
     ]
     data["shift_dimensions"] = [
         core_to_msg_shift_dimension(sd) for sd in shift_dimensions
@@ -266,9 +248,7 @@ def core_to_msg_bulk(
         )
         for c in coverages
     ]
-    data["constraints"] = [
-        core_to_msg_constraint_build(c) for c in constraints
-    ]
+    data["constraints"] = [core_to_msg_constraint_build(c) for c in constraints]
     data["constraint_templates"] = [
         core_to_msg_constraint_template(ct) for ct in constraint_templates
     ]
