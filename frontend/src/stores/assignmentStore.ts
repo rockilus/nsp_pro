@@ -13,6 +13,7 @@ const apiUrlAssignment = process.env.NEXT_PUBLIC_API_URL + "/assignments";
 type AssignmentStateT = {
   assignments: AssignmentT[];
   fetchAssignments: (teamId: string) => void;
+  fetchAssignmentsStore: (assignments: AssignmentT[]) => void;
   addAssignment: (assignment: AssignmentT, teamId: string) => void;
   updateAssignmentStore: (
     scheuleId: string,
@@ -68,6 +69,10 @@ export const useAssignmentStore = create<AssignmentStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  fetchAssignmentsStore: (assignments) => {
+    set({ assignments: assignments.map(toAssignmentT) });
   },
 
   addAssignment: async (assignment, teamId) => {

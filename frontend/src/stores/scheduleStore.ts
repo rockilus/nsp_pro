@@ -21,6 +21,7 @@ type ScheduleStateT = {
   // schedule: ScheduleT;
   schedules: ScheduleT[];
   fetchSchedules: (teamId: string) => void;
+  fetchSchedulesStore: (schedules: ScheduleT[]) => void;
   addSchedule: (schedule: ScheduleT) => void;
   solveSchedule: (scheduleId: string, teamId: string) => void;
   updateSchedule: (updatedSchedule: ScheduleT) => void;
@@ -95,6 +96,10 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  fetchSchedulesStore: (schedules) => {
+    set({ schedules: schedules.map(toScheduleT) });
   },
 
   addSchedule: async (schedule) => {

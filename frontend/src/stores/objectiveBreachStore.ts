@@ -14,6 +14,7 @@ const apiUrlObjectiveBreach =
 type ObjectiveBreachStateT = {
   objectiveBreaches: ObjectiveBreachT[];
   fetchObjectiveBreaches: (teamId: string) => void;
+  fetchObjectiveBreachesStore: (objectiveBreaches: ObjectiveBreachT[]) => void;
   addObjectiveBreach: (
     objectiveBreach: ObjectiveBreachT,
     teamId: string
@@ -82,6 +83,12 @@ export const useObjectiveBreachStore = create<ObjectiveBreachStateT>()(
             "error"
           );
       }
+    },
+
+    fetchObjectiveBreachesStore: (objectiveBreaches) => {
+      set({
+        objectiveBreaches: objectiveBreaches.map(toObjectiveBreachT),
+      });
     },
 
     addObjectiveBreach: async (objectiveBreach, teamId) => {

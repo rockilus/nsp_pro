@@ -14,6 +14,7 @@ const apiUrlWorkerDimensions =
 type WorkerDimensionStateT = {
   workerDimensions: WorkerDimensionT[];
   fetchWorkerDimensions: (teamId: string) => void;
+  fetchWorkerDimensionsStore: (workerDimensions: WorkerDimensionT[]) => void;
   addWorkerDimension: (WorkerDimension: WorkerDimensionT) => Promise<boolean>;
   updateWorkerDimension: (
     updatedWorkerDimension: WorkerDimensionT
@@ -59,6 +60,10 @@ export const useWorkerDimensionStore = create<WorkerDimensionStateT>()(
             "error"
           );
       }
+    },
+
+    fetchWorkerDimensionsStore: (workerDimensions) => {
+      set({ workerDimensions });
     },
 
     addWorkerDimension: async (workerDimension) => {

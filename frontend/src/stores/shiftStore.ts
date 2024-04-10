@@ -10,6 +10,7 @@ const apiUrlShifts = process.env.NEXT_PUBLIC_API_URL + "/shifts";
 type ShiftStateT = {
   shifts: ShiftT[];
   fetchShifts: (teamId: string) => void;
+  fetchShiftsStore: (shifts: ShiftT[]) => void;
   addShift: (shift: ShiftT) => void;
   addPropertiesToStore: (newProperties: ShiftPropertyT[]) => void;
   updateShift: (updatedShift: ShiftT) => void;
@@ -64,6 +65,10 @@ export const useShiftStore = create<ShiftStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  fetchShiftsStore: (shifts) => {
+    set({ shifts: shifts.map((shift: any) => toShiftT(shift)) });
   },
 
   addShift: async (shift) => {

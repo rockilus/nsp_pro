@@ -9,6 +9,7 @@ const apiUrlConstraints = process.env.NEXT_PUBLIC_API_URL + "/constraints";
 type ConstraintStateT = {
   constraints: ConstraintT[];
   fetchConstraints: (teamId: string) => void;
+  fetchConstraintsStore: (constraints: ConstraintT[]) => void;
   addConstraint: (constraint: ConstraintT) => void;
   updateConstraint: (updatedConstraint: ConstraintT) => void;
   deleteConstraint: (constraintId: string, teamId: string) => void;
@@ -51,6 +52,10 @@ export const useConstraintStore = create<ConstraintStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  fetchConstraintsStore: (constraints) => {
+    set({ constraints });
   },
 
   addConstraint: async (constraint) => {

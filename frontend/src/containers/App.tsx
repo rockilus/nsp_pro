@@ -26,6 +26,7 @@ import { useStatsOptionsStore } from "../stores/statsOptionsStore";
 import { useTeamStore } from "../stores/teamStore";
 import { useWorkerStore } from "../stores/workerStore";
 import { useWorkerDimensionStore } from "../stores/workerDimensionStore";
+import { useBulkFetchStore } from "../stores/bulkFetchStore";
 // Types
 import {
   FixedAssignmentT,
@@ -46,6 +47,8 @@ const App = () => {
   ];
 
   const [selectedTabId, setSelectedTabId] = useState<string>(tabs[0].id); // Get selectedTab from AppBar (if using Context)
+
+  const fetchBulk = useBulkFetchStore((state) => state.fetchBulk);
 
   const shifts = useShiftStore((state) => state.shifts);
   const fetchShifts = useShiftStore((state) => state.fetchShifts);
@@ -147,9 +150,10 @@ const App = () => {
 
   useEffect(() => {
     if (teams.length === 0) {
-      fetchTeams();
+      // fetchTeams();
+      fetchBulk();
     }
-  }, [fetchTeams, teams]);
+  }, [fetchBulk, teams]);
 
   useEffect(() => {
     if (teams.length > 0) {
@@ -157,40 +161,40 @@ const App = () => {
     }
   }, [teams, setSelectedTeam]);
 
-  useEffect(() => {
-    if (selectedTeam) {
-      fetchWorkers(selectedTeam.id);
-      fetchWorkerDimensions(selectedTeam.id);
-      fetchShifts(selectedTeam.id);
-      fetchShiftDimensions(selectedTeam.id);
-      fetchCoverages(selectedTeam.id);
-      fetchConstraints(selectedTeam.id);
-      fetchConstraintTemplates(selectedTeam.id);
-      fetchFixedAssignments(selectedTeam.id);
-      fetchRequests(selectedTeam.id);
-      fetchCoverageSelectors(selectedTeam.id);
-      fetchAssignments(selectedTeam.id);
-      fetchSchedules(selectedTeam.id);
-      fetchObjectiveBreaches(selectedTeam.id);
-      fetchStatsOptions(selectedTeam.id);
-    }
-  }, [
-    fetchWorkers,
-    fetchWorkerDimensions,
-    fetchShifts,
-    fetchShiftDimensions,
-    fetchCoverages,
-    fetchConstraints,
-    fetchConstraintTemplates,
-    fetchFixedAssignments,
-    fetchRequests,
-    fetchCoverageSelectors,
-    fetchAssignments,
-    fetchSchedules,
-    fetchObjectiveBreaches,
-    fetchStatsOptions,
-    selectedTeam,
-  ]);
+  // useEffect(() => {
+  //   if (selectedTeam) {
+  //     fetchWorkers(selectedTeam.id);
+  //     fetchWorkerDimensions(selectedTeam.id);
+  //     fetchShifts(selectedTeam.id);
+  //     fetchShiftDimensions(selectedTeam.id);
+  //     fetchCoverages(selectedTeam.id);
+  //     fetchConstraints(selectedTeam.id);
+  //     fetchConstraintTemplates(selectedTeam.id);
+  //     fetchFixedAssignments(selectedTeam.id);
+  //     fetchRequests(selectedTeam.id);
+  //     fetchCoverageSelectors(selectedTeam.id);
+  //     fetchAssignments(selectedTeam.id);
+  //     fetchSchedules(selectedTeam.id);
+  //     fetchObjectiveBreaches(selectedTeam.id);
+  //     fetchStatsOptions(selectedTeam.id);
+  //   }
+  // }, [
+  //   fetchWorkers,
+  //   fetchWorkerDimensions,
+  //   fetchShifts,
+  //   fetchShiftDimensions,
+  //   fetchCoverages,
+  //   fetchConstraints,
+  //   fetchConstraintTemplates,
+  //   fetchFixedAssignments,
+  //   fetchRequests,
+  //   fetchCoverageSelectors,
+  //   fetchAssignments,
+  //   fetchSchedules,
+  //   fetchObjectiveBreaches,
+  //   fetchStatsOptions,
+  //   selectedTeam,
+  // ]);
 
   const renderTabContent = () => {
     if (!selectedTeam) {

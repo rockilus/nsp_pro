@@ -27,7 +27,7 @@ export type SnackBarT = {
   type: string; // "success" | "error" | "warning" | "info";
 };
 
-export type Bulk = {
+export type BulkT = {
   teams: TeamT[];
   workers: WorkerT[];
   workerDimensions: WorkerDimensionT[];

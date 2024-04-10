@@ -255,4 +255,4 @@ class BulkMessage(BaseModel):
     assignments: List[AssignmentMessage]
     schedules: List[ScheduleMessage]
     objectiveBreaches: List[ObjectiveBreachMessage]
-    statsOptions: StatsOptionsMessage
+    statsOptions: StatsOptionsMessage | None

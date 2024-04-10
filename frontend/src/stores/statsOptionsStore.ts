@@ -14,6 +14,7 @@ const apiUrlStatsOptions = process.env.NEXT_PUBLIC_API_URL + "/stats-options";
 type StatsOptionsStateT = {
   statsOptions: StatsOptionsT | null;
   fetchStatsOptions: (teamId: string) => void;
+  fetchStatsOptionsStore: (statsOptions: StatsOptionsT) => void;
   addStatsOptions: (statsOptions: StatsOptionsT) => void;
   updateStatsOptions: (updatedStatsOptions: StatsOptionsT) => void;
 };
@@ -75,6 +76,12 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  fetchStatsOptionsStore: (statsOptions) => {
+    set((state) => ({
+      statsOptions: toStatsOptionsT(statsOptions),
+    }));
   },
 
   addStatsOptions: async (statsOptions) => {

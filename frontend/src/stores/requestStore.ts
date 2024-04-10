@@ -9,6 +9,7 @@ const apiUrlRequests = process.env.NEXT_PUBLIC_API_URL + "/requests";
 type RequestStateT = {
   requests: RequestT[];
   fetchRequests: (teamId: string) => void;
+  fetchRequestsStore: (requests: RequestT[]) => void;
   addRequest: (request: RequestT, teamId: string) => void;
   updateRequest: (updatedRequest: RequestT, teamId: string) => void;
   deleteRequest: (requestId: string, teamId: string) => void;
@@ -55,6 +56,10 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  fetchRequestsStore: (requests) => {
+    set({ requests });
   },
 
   addRequest: async (request, teamId) => {

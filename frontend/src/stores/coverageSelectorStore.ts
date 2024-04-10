@@ -10,6 +10,7 @@ const apiUrlCoverageSelectors =
 type CoverageSelectorStateT = {
   coverageSelectors: CoverageSelectorT[];
   fetchCoverageSelectors: (teamId: string) => void;
+  fetchCoverageSelectorsStore: (coverageSelectors: CoverageSelectorT[]) => void;
   addCoverageSelector: (coverageSelector: CoverageSelectorT) => void;
   updateCoverageSelector: (updatedCoverageSelector: CoverageSelectorT) => void;
   deleteCoverageSelector: (coverageSelectorId: string, teamId: string) => void;
@@ -54,6 +55,10 @@ export const useCoverageSelectorStore = create<CoverageSelectorStateT>()(
             "error"
           );
       }
+    },
+
+    fetchCoverageSelectorsStore: (coverageSelectors) => {
+      set({ coverageSelectors });
     },
 
     addCoverageSelector: async (coverageSelector) => {

@@ -10,6 +10,7 @@ from integrations.authorization import authz_services  # noqa: F401
 from logger import log_middleware
 from routes import (
     router_assignment,
+    router_bulk,
     router_constraint,
     router_constraint_template,
     router_coverage,
@@ -47,6 +48,7 @@ app.add_middleware(BaseHTTPMiddleware, dispatch=log_middleware)
 
 
 app.include_router(router_assignment)
+app.include_router(router_bulk)
 app.include_router(router_constraint)
 app.include_router(router_constraint_template)
 app.include_router(router_coverage)
