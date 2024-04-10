@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core.constraint import Block, ConstraintBuild, MissingProperty
+from core import Block, ConstraintBuild, MissingProperty
 from errors import (
     MessageTypeError,
     NotAuthorizedError,

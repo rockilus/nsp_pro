@@ -4,7 +4,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core.coverage import CoverageSelector
+from core import CoverageSelector
 from database.db import DB
 from errors import (
     handle_create_core_object_error,

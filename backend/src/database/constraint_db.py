@@ -3,7 +3,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core.constraint import Constraint, VarDay, VarShift, VarWorker
+from core import Constraint, VarDay, VarShift, VarWorker
 from database.db import DB
 from errors import (
     handle_create_core_object_error,

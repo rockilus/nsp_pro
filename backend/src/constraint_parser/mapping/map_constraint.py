@@ -4,9 +4,7 @@ from constraint_parser.mapping.map_day import MapDay
 from constraint_parser.mapping.map_shift import MapShift
 from constraint_parser.mapping.map_worker import MapWorker
 from constraint_parser.mapping.utils import find_block_by_name
-from core.constraint import Block, Constraint, ConstraintBuild
-from core.shift import Shift
-from core.worker import Worker
+from core import Block, Constraint, ConstraintBuild, Shift, Worker
 from utils.constants import Constants
 
 

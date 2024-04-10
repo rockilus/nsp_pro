@@ -3,9 +3,7 @@ from typing import List
 
 import numpy as np
 
-from core.schedule import Assignment, Stat, StatsOptions
-from core.shift import Shift
-from core.worker import Worker
+from core import Assignment, Shift, Stat, StatsOptions, Worker
 from utils.constants import Constants
 
 

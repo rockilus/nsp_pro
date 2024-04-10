@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from core.constraint import Block, DictBlockValue
+from core import Block, DictBlockValue
 
 
 def find_block_by_name(blocks: List[Block], name: str) -> Block | None:

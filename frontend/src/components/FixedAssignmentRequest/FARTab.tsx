@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React from "react";
 // MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
@@ -7,72 +7,20 @@ import Typography from "@mui/material/Typography";
 // Components
 import FARButton from "./FARButton";
 import FARList from "./FARList";
-// Stores
-import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
-import { useRequestStore } from "../../stores/requestStore";
 // Types
-import { FixedAssignmentT, RequestT, FarT } from "./types";
-import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
+import { FarT } from "./types";
 import { TeamT } from "../../containers/types";
+import { ShiftT } from "../Shift/types";
+import { WorkerT } from "../Worker/types";
 
 interface Props {
   team: TeamT;
-  workers: WorkerIdNameT[];
-  shifts: ShiftIdNameT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
+  fars: FarT[];
 }
 
-export default function FARTab({ team, workers, shifts }: Props) {
-  const [fars, setFars] = useState<FarT[]>([]);
-  const fixedAssignments = useFixedAssignmentStore(
-    (state) => state.fixedAssignments
-  );
-  const requests = useRequestStore((state) => state.requests);
-  const fetchFixedAssignments = useFixedAssignmentStore(
-    (state) => state.fetchFixedAssignments
-  );
-  const fetchRequests = useRequestStore((state) => state.fetchRequests);
-
-  const FixedAssignmentToFar = (fa: FixedAssignmentT): FarT => {
-    const far: FarT = {
-      ...fa,
-      priority: "",
-      isFA: true,
-    };
-    return far;
-  };
-  const RequestoFar = (r: RequestT) => {
-    const far: FarT = {
-      ...r,
-      isFA: false,
-    };
-    return far;
-  };
-
-  const buildFarsArray = useCallback(
-    (fixedAssignments: FixedAssignmentT[], requests: RequestT[]): FarT[] => {
-      const fars: FarT[] = [
-        ...fixedAssignments.map(FixedAssignmentToFar),
-        ...requests.map(RequestoFar),
-      ];
-      return fars.sort((a, b) => {
-        return a.date.getTime() - b.date.getTime();
-      });
-    },
-    []
-  );
-
-  useEffect(() => {
-    fetchFixedAssignments(team.id);
-  }, [fetchFixedAssignments, team.id]);
-
-  useEffect(() => {
-    fetchRequests(team.id);
-  }, [fetchRequests, team.id]);
-
-  useEffect(() => {
-    setFars(buildFarsArray(fixedAssignments, requests));
-  }, [fixedAssignments, requests, buildFarsArray]);
-
+export default function FARTab({ team, workers, shifts, fars }: Props) {
   const dateToTimeZero = (date: Date): Date => {
     return new Date(
       Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0)

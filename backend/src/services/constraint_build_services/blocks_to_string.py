@@ -1,6 +1,6 @@
 from typing import List
 
-from core.constraint import Block
+from core import Block
 
 
 def blocks_to_string(blocks: List[Block]) -> str:

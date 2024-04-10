@@ -1,5 +1,5 @@
 import React from "react";
-
+// MUI
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -7,18 +7,15 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-
-import {
-  StatT,
-  ColumnStatsT,
-  WorkerIdNameT,
-  ShiftIdNameT,
-} from "../Schedule/types";
+// Types
+import { StatT, ColumnStatsT } from "../Schedule/types";
+import { ShiftT } from "../Shift/types";
+import { WorkerT } from "../Worker/types";
 
 interface Props {
   stats: StatT[];
-  workers: WorkerIdNameT[];
-  shifts: ShiftIdNameT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
 }
 
 export default function StatsTable({ stats, workers, shifts }: Props) {

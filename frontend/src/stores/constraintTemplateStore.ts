@@ -10,6 +10,7 @@ const apiUrlConstraints =
 type ConstraintTemplateStateT = {
   constraintTemplates: TemplateT[];
   fetchConstraintTemplates: (teamId: string) => void;
+  fetchConstraintTemplatesStore: (constraintTemplates: TemplateT[]) => void;
 };
 
 export const useConstraintTemplateStore = create<ConstraintTemplateStateT>()(
@@ -51,6 +52,10 @@ export const useConstraintTemplateStore = create<ConstraintTemplateStateT>()(
           );
         return;
       }
+    },
+
+    fetchConstraintTemplatesStore: (constraintTemplates) => {
+      set({ constraintTemplates });
     },
   })
 );

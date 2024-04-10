@@ -1,35 +1,46 @@
 from typing import Dict, List
 
-from core.constraint import Template, TemplateBlock
-from scripts.setup_database import (
-    shift_db,
-    shift_dimension_db,
-    shift_property_db,
-    worker_db,
-    worker_dimension_db,
-    worker_property_db,
+from core import (
+    Shift,
+    ShiftDimension,
+    ShiftProperty,
+    Template,
+    TemplateBlock,
+    Worker,
+    WorkerDimension,
+    WorkerProperty,
 )
 from utils.constants import Constants
 
 
-def build_templates(team_id: str) -> List[Template]:
-    worker_options = build_worker_options(team_id)
-    shift_options = build_shift_options(team_id)
+# pylint: disable=too-many-arguments
+def build_templates(
+    workers: List[Worker],
+    worker_dimensions: List[WorkerDimension],
+    worker_properties: Dict[str, List[WorkerProperty]],
+    shifts: List[Shift],
+    shift_dimensions: List[ShiftDimension],
+    shift_properties: Dict[str, List[ShiftProperty]],
+) -> List[Template]:
+    worker_options = build_worker_options(workers, worker_dimensions, worker_properties)
+    shift_options = build_shift_options(shifts, shift_dimensions, shift_properties)
     return build_templates_list(worker_options, shift_options)
 
 
-def build_worker_options(team_id: str) -> Dict:
-    workers = worker_db.get_workers(team_id)
+def build_worker_options(
+    workers: List[Worker],
+    worker_dimensions: List[WorkerDimension],
+    worker_properties: Dict[str, List[WorkerProperty]],
+) -> Dict:
     worker_options = {
         "all": [{"name": "all workers", "id": "", "id_type": ""}],
         "workers": [{"name": w.name, "id": w.id, "id_type": "worker"} for w in workers],
     }
-    worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id)
     for worker_dimension in worker_dimensions:
-        worker_properties = (
-            worker_property_db.get_worker_properties_by_worker_dimension_id(
-                worker_dimension.id
-            )
+        worker_properties_wd = (
+            worker_properties[worker_dimension.id]
+            if worker_dimension.id in worker_properties
+            else []
         )
         if worker_dimension.entry_type == "bool":
             worker_options[worker_dimension.name] = [
@@ -54,7 +65,7 @@ def build_worker_options(team_id: str) -> Dict:
                 for wp_value in list(
                     set(
                         str(item)
-                        for wp in worker_properties
+                        for wp in worker_properties_wd
                         for item in wp.value  # type: ignore
                     )
                 )
@@ -66,21 +77,25 @@ def build_worker_options(team_id: str) -> Dict:
                     "id": worker_dimension.id,
                     "id_type": "worker_dimension",
                 }
-                for wp_value in list(set(str(wp.value) for wp in worker_properties))
+                for wp_value in list(set(str(wp.value) for wp in worker_properties_wd))
             ]
     return worker_options
 
 
-def build_shift_options(team_id: str) -> Dict:
-    shifts = shift_db.get_shifts(team_id)
+def build_shift_options(
+    shifts: List[Shift],
+    shift_dimensions: List[ShiftDimension],
+    shift_properties: Dict[str, List[ShiftProperty]],
+) -> Dict:
     shift_options = {
         "all": [{"name": "all shifts", "id": "", "id_type": ""}],
         "shifts": [{"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts],
     }
-    shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
     for shift_dimension in shift_dimensions:
-        shift_properties = shift_property_db.get_shift_properties_by_shift_dimension_id(
-            shift_dimension.id
+        shift_properties_sd = (
+            shift_properties[shift_dimension.id]
+            if shift_dimension.id in shift_properties
+            else []
         )
         if shift_dimension.entry_type == "bool":
             shift_options[shift_dimension.name] = [
@@ -105,7 +120,7 @@ def build_shift_options(team_id: str) -> Dict:
                 for sp_value in list(
                     set(
                         str(item)
-                        for sp in shift_properties
+                        for sp in shift_properties_sd
                         for item in sp.value  # type: ignore
                     )
                 )
@@ -117,7 +132,7 @@ def build_shift_options(team_id: str) -> Dict:
                     "id": shift_dimension.id,
                     "id_type": "shift_dimension",
                 }
-                for sp_value in list(set(str(sp.value) for sp in shift_properties))
+                for sp_value in list(set(str(sp.value) for sp in shift_properties_sd))
             ]
     return shift_options
 

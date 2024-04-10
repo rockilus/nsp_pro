@@ -6,8 +6,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpOkResult,
 )
 
-from core.team import Team
-from core.user import User
+from core import Team, User
 from integrations.authorization.authz_services import authz_role_assignment_assign
 from services.team_services.team_services import create_team
 from services.user_services.user_sign_up import create_user

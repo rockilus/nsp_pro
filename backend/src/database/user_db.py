@@ -1,4 +1,4 @@
-from core.user import User
+from core import User
 from database.db import DB
 from errors import (
     handle_create_core_object_error,

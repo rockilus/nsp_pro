@@ -10,6 +10,7 @@ type TeamStateT = {
   teams: TeamT[];
   selectedTeam: TeamT | null;
   fetchTeams: () => void;
+  fetchTeamsStore: (teams: TeamT[], selectedTeamId: string) => void;
   clearTeams: () => void;
   setSelectedTeam: (team: TeamT | null) => void;
 };
@@ -46,6 +47,11 @@ export const useTeamStore = create<TeamStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  fetchTeamsStore: (teams: TeamT[], selectedTeamId: string) => {
+    const selectedTeam = teams.find((team) => team.id === selectedTeamId);
+    set({ teams: teams, selectedTeam: selectedTeam });
   },
 
   clearTeams: () => {

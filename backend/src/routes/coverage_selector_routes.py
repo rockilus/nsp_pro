@@ -6,7 +6,7 @@ import humps
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
-from core.coverage import CoverageSelector
+from core import CoverageSelector
 from errors import (
     MessageTypeError,
     NotAuthorizedError,

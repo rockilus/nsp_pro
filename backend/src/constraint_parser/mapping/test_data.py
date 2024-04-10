@@ -1,16 +1,16 @@
 # pylint: disable = too-many-lines
 from datetime import date, datetime
 
-from core.constraint import (
+from core import (
     Block,
     Constraint,
     ConstraintBuild,
+    Shift,
     VarDay,
     VarShift,
     VarWorker,
+    Worker,
 )
-from core.shift import Shift
-from core.worker import Worker
 
 shifts = [
     Shift(

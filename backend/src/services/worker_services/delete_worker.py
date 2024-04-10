@@ -1,4 +1,4 @@
-from core.constraint import MissingProperty
+from core import MissingProperty
 from scripts.setup_database import (
     assignment_db,
     constraint_build_db,

@@ -6,7 +6,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core.request import Request
+from core import Request
 from errors import (
     MessageTypeError,
     NotAuthorizedError,

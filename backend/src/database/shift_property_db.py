@@ -2,7 +2,7 @@ from typing import Dict, List, Union
 
 from bson import ObjectId
 
-from core.shift import Shift, ShiftDimension, ShiftProperty
+from core import Shift, ShiftDimension, ShiftProperty
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -41,6 +41,24 @@ class ShiftPropertyDB:
             log_info("Failed to get shift properties by shift from database")
             handle_get_document_error(e)
         return [doc_to_core_shift_property(sp) for sp in list(shift_properties)]
+
+    def get_shift_properties_by_shift_ids(
+        self, shift_ids: List[str]
+    ) -> List[ShiftProperty]:
+        try:
+            # pylint: disable=no-member
+            sp_docs = ShiftPropertyDocument.objects.filter(  # type: ignore
+                shift__in=shift_ids
+            )
+        except Exception as e:
+            log_info("Failed to get shift properties by shift ids from database")
+            handle_get_document_error(e)
+        try:
+            shift_properties = [doc_to_core_shift_property(sp) for sp in list(sp_docs)]
+        except Exception as e:
+            log_info("Failed to convert WorkerPropertyDocument to WorkerProperty")
+            handle_create_core_object_error(e)
+        return shift_properties
 
     def get_shift_properties_by_shift_dimension_id(
         self, sd_id: str
@@ -233,14 +251,11 @@ def core_to_doc_shift_property(
 def doc_to_core_shift_property(
     doc_obj: ShiftPropertyDocument,
 ) -> ShiftProperty:
-    try:
-        shift_property = ShiftProperty(
-            id=doc_obj.id,
-            value=doc_obj.value,
-            shift_id=doc_obj.shift.id,
-            shift_dimension_id=doc_obj.shift_dimension.id,
-        )
-    except Exception as e:
-        log_info("Failed to convert ShiftPropertyDocument to ShiftProperty")
-        handle_create_core_object_error(e)
-    return shift_property
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["id"] = doc_dict["_id"]
+    doc_dict["shift_id"] = doc_dict["shift"]
+    doc_dict["shift_dimension_id"] = doc_dict["shift_dimension"]
+    doc_dict.pop("_id")
+    doc_dict.pop("shift")
+    doc_dict.pop("shift_dimension")
+    return ShiftProperty(**doc_dict)

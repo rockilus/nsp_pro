@@ -3,8 +3,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core.fixed_assignment import FixedAssignment
-from core.worker import Worker
+from core import FixedAssignment, Worker
 from database.db import DB
 from database.worker_db import core_to_doc_worker
 from errors import (

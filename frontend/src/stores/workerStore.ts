@@ -9,6 +9,7 @@ const apiUrlWorkers = process.env.NEXT_PUBLIC_API_URL + "/workers";
 type WorkerStateT = {
   workers: WorkerT[];
   fetchWorkers: (teamId: string) => void;
+  fetchWorkersStore: (workers: WorkerT[]) => void;
   addWorker: (worker: WorkerT) => void;
   addPropertiesToStore: (newProperties: WorkerPropertyT[]) => void;
   updateWorker: (updatedWorker: WorkerT) => void;
@@ -53,6 +54,10 @@ export const useWorkerStore = create<WorkerStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  fetchWorkersStore: (workers) => {
+    set({ workers });
   },
 
   addWorker: async (worker: WorkerT) => {

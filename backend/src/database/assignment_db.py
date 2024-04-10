@@ -3,8 +3,7 @@ from typing import List, Union
 
 from bson import ObjectId
 
-from core.schedule import Assignment, Schedule
-from core.worker import Worker
+from core import Assignment, Schedule, Worker
 from database.db import DB
 from database.schedule_db import core_to_doc_schedule
 from database.worker_db import core_to_doc_worker

@@ -3,7 +3,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core.schedule import ObjectiveBreach, Schedule, Variable
+from core import ObjectiveBreach, Schedule, Variable
 from database.db import DB
 from database.schedule_db import core_to_doc_schedule
 from errors import (

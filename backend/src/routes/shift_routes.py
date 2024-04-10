@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core.shift import Shift, ShiftProperty
+from core import Shift, ShiftProperty
 from errors import (
     MessageTypeError,
     NotAuthorizedError,

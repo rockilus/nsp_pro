@@ -2,7 +2,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core.constraint import Block, ConstraintBuild, MissingProperty
+from core import Block, ConstraintBuild, MissingProperty
 from database.db import DB
 from errors import (
     handle_create_core_object_error,

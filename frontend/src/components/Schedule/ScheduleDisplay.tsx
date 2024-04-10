@@ -3,22 +3,18 @@ import React from "react";
 import ShiftTable from "./ShiftTable";
 import WorkerTable from "./WorkerTable";
 // Types
-import {
-  ShiftIdNameT,
-  WorkerIdNameT,
-  AssignmentT,
-  ScheduleT,
-  ObjectiveBreachT,
-} from "./types";
+import { AssignmentT, ScheduleT, ObjectiveBreachT } from "./types";
 import { TeamT } from "../../containers/types";
+import { ShiftT } from "../Shift/types";
+import { WorkerT } from "../Worker/types";
 
 interface Props {
   team: TeamT;
   schedules: ScheduleT[];
   assignments: AssignmentT[];
   objectiveBreaches: ObjectiveBreachT[];
-  workers: WorkerIdNameT[];
-  shifts: ShiftIdNameT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
   selectedDisplay: string;
   displayCBs: boolean;
   CBsDisplayed: string[];

@@ -1,9 +1,7 @@
 from typing import Dict, List
 
 from constraint_parser.mapping.map_constraint import MapConstaint
-from core.constraint import Constraint, ConstraintBuild
-from core.shift import Shift
-from core.worker import Worker
+from core import Constraint, ConstraintBuild, Shift, Worker
 
 
 # pylint: disable=too-many-arguments

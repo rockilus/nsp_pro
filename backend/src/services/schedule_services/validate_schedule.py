@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from core.schedule import Assignment, Schedule
+from core import Assignment, Schedule
 from scripts.setup_database import assignment_db, schedule_db
 
 

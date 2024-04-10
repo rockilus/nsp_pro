@@ -1,11 +1,11 @@
 from dataclasses import asdict
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core.schedule import Stat, StatsOptions
+from core import Stat, StatsOptions
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -131,8 +131,8 @@ def core_to_msg_stat(stat: Stat) -> StatMessage:
 
 
 def core_to_msg_stats_options(
-    stats_options: Union[StatsOptions, None],
-) -> Union[StatsOptionsMessage, None]:
+    stats_options: StatsOptions | None,
+) -> StatsOptionsMessage | None:
     if stats_options is None:
         return None
     try:
@@ -151,15 +151,11 @@ def core_to_msg_stats_options(
 
 
 def core_to_msg_stats(
-    stats_options: Union[StatsOptions, None], stats: List[Stat]
+    stats_options: StatsOptions | None, stats: List[Stat]
 ) -> StatsMessage:
     data: Dict[
         str,
-        Union[
-            StatsOptionsMessage,
-            List[StatMessage],
-            None,
-        ],
+        StatsOptionsMessage | List[StatMessage] | None,
     ] = {}
     data["stats_options"] = core_to_msg_stats_options(stats_options)
     data["stats"] = [core_to_msg_stat(s) for s in stats]

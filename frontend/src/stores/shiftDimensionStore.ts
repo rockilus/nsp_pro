@@ -11,6 +11,7 @@ const apiUrlShiftDimensions =
 type ShiftDimensionStateT = {
   shiftDimensions: ShiftDimensionT[];
   fetchShiftDimensions: (teamId: string) => void;
+  fetchShiftDimensionsStore: (shiftDimensions: ShiftDimensionT[]) => void;
   addShiftDimension: (ShiftDimension: ShiftDimensionT) => Promise<boolean>;
   updateShiftDimension: (
     updatedShiftDimension: ShiftDimensionT
@@ -55,6 +56,10 @@ export const useShiftDimensionStore = create<ShiftDimensionStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  fetchShiftDimensionsStore: (shiftDimensions) => {
+    set({ shiftDimensions });
   },
 
   addShiftDimension: async (shiftDimension) => {

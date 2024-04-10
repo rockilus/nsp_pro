@@ -2,7 +2,7 @@ from datetime import datetime
 
 from bson import ObjectId
 
-from core.schedule import StatsOptions
+from core import StatsOptions
 from database.db import DB
 from errors import (
     handle_create_core_object_error,

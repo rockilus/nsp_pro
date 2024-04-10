@@ -2,7 +2,7 @@ from datetime import date
 from typing import List
 
 from constraint_parser.mapping.utils import find_block_by_name
-from core.constraint import Block, ConstraintBuild, VarDay
+from core import Block, ConstraintBuild, VarDay
 from utils.constants import Constants
 
 

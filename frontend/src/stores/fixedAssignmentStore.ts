@@ -10,6 +10,7 @@ const apiUrlFixedAssignments =
 type FixedAssignmentStateT = {
   fixedAssignments: FixedAssignmentT[];
   fetchFixedAssignments: (teamId: string) => void;
+  fetchFixedAssignmentsStore: (fixedAssignments: FixedAssignmentT[]) => void;
   addFixedAssignment: (
     fixedAssignment: FixedAssignmentT,
     teamId: string
@@ -66,6 +67,10 @@ export const useFixedAssignmentStore = create<FixedAssignmentStateT>()(
             "error"
           );
       }
+    },
+
+    fetchFixedAssignmentsStore: (fixedAssignments) => {
+      set({ fixedAssignments: fixedAssignments.map(toFixedAssignmentT) });
     },
 
     addFixedAssignment: async (fixedAssignment, teamId) => {

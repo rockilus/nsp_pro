@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core.worker import WorkerDimension, WorkerProperty
+from core import WorkerDimension, WorkerProperty
 from errors import (
     MessageTypeError,
     NotAuthorizedError,

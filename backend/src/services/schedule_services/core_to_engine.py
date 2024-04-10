@@ -1,13 +1,18 @@
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Tuple
 
-from core.constraint import Constraint, VarDay, VarShift, VarWorker
-from core.coverage import ShiftDemand
-from core.fixed_assignment import FixedAssignment
-from core.request import Request
-from core.schedule import Assignment
-from core.shift import Shift
-from core.worker import Worker
+from core import (
+    Assignment,
+    Constraint,
+    FixedAssignment,
+    Request,
+    Shift,
+    ShiftDemand,
+    VarDay,
+    VarShift,
+    VarWorker,
+    Worker,
+)
 from engine import Assignment as AssignmentEngine
 from engine import Constraint as ConstraintEngine
 from engine import Coverage as CoverageEngine

@@ -1,8 +1,7 @@
 from typing import Dict, List
 
 from constraint_parser.mapping.utils import cast_to_dict_block_value, find_block_by_name
-from core.constraint import Block, ConstraintBuild, DictBlockValue, VarShift
-from core.shift import Shift
+from core import Block, ConstraintBuild, DictBlockValue, Shift, VarShift
 from utils.constants import Constants
 
 

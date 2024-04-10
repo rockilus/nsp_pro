@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import List
 
-from core.coverage import CoverageSelector
+from core import CoverageSelector
 
 
 def build_no_coverage_date(

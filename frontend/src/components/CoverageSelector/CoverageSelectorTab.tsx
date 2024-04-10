@@ -19,24 +19,24 @@ import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Stores
 import { useCoverageSelectorStore } from "../../stores/coverageSelectorStore";
-import { useCoverageStore } from "../../stores/coverageStore";
 // Types
 import { CoverageSelectorT } from "./types";
 import { TeamT } from "../../containers/types";
+import { CoverageT } from "../Coverage/types";
 
 interface Props {
   team: TeamT;
+  coverageSelectors: CoverageSelectorT[];
+  coverages: CoverageT[];
 }
 
-export default function CoverageSelectorTab({ team }: Props) {
+export default function CoverageSelectorTab({
+  team,
+  coverageSelectors,
+  coverages,
+}: Props) {
   const columns = useMemo(() => ["Start date", "End date", "Coverage"], []);
 
-  const coverageSelectors = useCoverageSelectorStore(
-    (state) => state.coverageSelectors
-  );
-  const fetchCoverageSelectors = useCoverageSelectorStore(
-    (state) => state.fetchCoverageSelectors
-  );
   const addCoverageSelector = useCoverageSelectorStore(
     (state) => state.addCoverageSelector
   );
@@ -46,17 +46,6 @@ export default function CoverageSelectorTab({ team }: Props) {
   const deleteCoverageSelector = useCoverageSelectorStore(
     (state) => state.deleteCoverageSelector
   );
-
-  const coverages = useCoverageStore((state) => state.coverages);
-  const fetchCoverages = useCoverageStore((state) => state.fetchCoverages);
-
-  useEffect(() => {
-    fetchCoverageSelectors(team.id);
-  }, [fetchCoverageSelectors, team.id]);
-
-  useEffect(() => {
-    fetchCoverages(team.id);
-  }, [fetchCoverages, team.id]);
 
   // Rows
 

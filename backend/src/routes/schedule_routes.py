@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core.schedule import Assignment, ObjectiveBreach, Schedule, Stat
+from core import Assignment, ObjectiveBreach, Schedule, Stat
 from errors import (
     MessageTypeError,
     NotAuthorizedError,

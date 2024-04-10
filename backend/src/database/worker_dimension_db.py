@@ -2,7 +2,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core.worker import WorkerDimension
+from core import WorkerDimension
 from database.db import DB
 from errors import (
     handle_create_core_object_error,

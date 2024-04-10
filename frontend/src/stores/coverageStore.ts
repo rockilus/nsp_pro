@@ -14,6 +14,7 @@ const apiUrlCoverages = process.env.NEXT_PUBLIC_API_URL + "/coverages";
 type CoverageStateT = {
   coverages: CoverageT[];
   fetchCoverages: (teamId: string) => void;
+  fetchCoveragesStore: (coverages: CoverageT[]) => void;
   addCoverage: (coverage: CoverageT) => Promise<CoverageT | null>;
   addShiftDemand: (shiftDemand: ShiftDemandT, teamId: string) => void;
   updateCoverage: (updatedCoverage: CoverageT) => void;
@@ -61,6 +62,18 @@ export const useCoverageStore = create<CoverageStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  fetchCoveragesStore: (coverages) => {
+    set({
+      coverages: coverages.map((coverage: CoverageT) => ({
+        ...coverage,
+        shiftDemands: coverage.shiftDemands.map((shiftDemand) => ({
+          ...shiftDemand,
+          shift: toShiftT(shiftDemand.shift),
+        })),
+      })),
+    });
   },
 
   addCoverage: async (coverage) => {

@@ -2,8 +2,7 @@ from typing import List
 
 from permit import Permit, PermitConnectionError  # type: ignore
 
-from core.team import Team
-from core.user import User
+from core import Team, User
 from errors import AuthzConnectionError, handle_permit_errors
 from logger import log_debug, log_info
 from utils.env_config import PDP_API_KEY, PDP_URL

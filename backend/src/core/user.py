@@ -9,11 +9,3 @@ class User:
     first_name: str
     last_name: str
     workers: List[str]
-
-
-@dataclass
-class UserSignUp:
-    username: str
-    password: str
-    first_name: str
-    last_name: str

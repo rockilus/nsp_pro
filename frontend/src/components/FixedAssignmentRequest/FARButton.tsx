@@ -6,15 +6,16 @@ import Menu from "@mui/material/Menu";
 import FARPanel from "./FARPanel";
 // Types
 import { FarT } from "./types";
-import { ShiftIdNameT, WorkerIdNameT } from "../Schedule/types";
 import { TeamT } from "../../containers/types";
+import { ShiftT } from "../Shift/types";
+import { WorkerT } from "../Worker/types";
 
 interface Props {
   team: TeamT;
   buttonElement: React.ReactNode;
   far: FarT;
-  workers: WorkerIdNameT[];
-  shifts: ShiftIdNameT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
 }
 
 export default function FARButton({

@@ -1,8 +1,7 @@
 from dataclasses import asdict
 from typing import List, Tuple
 
-from core.constraint import Constraint
-from core.schedule import Assignment, ObjectiveBreach, Schedule, Variable
+from core import Assignment, Constraint, ObjectiveBreach, Schedule, Variable
 from engine import Assignment as AssignmentEngine
 from engine import ConstraintBreach as ConstraintBreachEngine
 from engine import Outputs
