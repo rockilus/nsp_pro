@@ -1,4 +1,3 @@
-import time
 from dataclasses import asdict
 
 import humps
@@ -36,7 +35,6 @@ router = APIRouter()
 async def get_constraint_templates(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> BulkMessage:
-    start_time = time.time()
     try:
         user_id = session.get_user_id()
         teams = team_db.get_teams_by_leader_id(user_id)
@@ -48,9 +46,6 @@ async def get_constraint_templates(
     except Exception as e:
         log_info("Failed to get constraint templates")
         handle_routes_errors(e)
-    end_time = time.time()
-    total_time = end_time - start_time
-    print(f"Total time: {total_time}")
     return response
 
 

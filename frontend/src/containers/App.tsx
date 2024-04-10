@@ -48,6 +48,7 @@ const App = () => {
 
   const [selectedTabId, setSelectedTabId] = useState<string>(tabs[0].id); // Get selectedTab from AppBar (if using Context)
   const [fars, setFars] = useState<FarT[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const fetchBulk = useBulkFetchStore((state) => state.fetchBulk);
 
@@ -109,11 +110,17 @@ const App = () => {
     []
   );
 
+  const fetchInitialData = useCallback(async () => {
+    setIsLoading(true);
+    await fetchBulk();
+    setIsLoading(false);
+  }, [fetchBulk]);
+
   useEffect(() => {
     if (teams.length === 0) {
-      fetchBulk();
+      fetchInitialData();
     }
-  }, [fetchBulk, teams]);
+  }, [fetchInitialData, teams]);
 
   useEffect(() => {
     setFars(buildFarsArray(fixedAssignments, requests));
