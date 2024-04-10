@@ -3,7 +3,6 @@ from models.constraint import Constraint, VarDay, VarShift, VarWorker
 from models.constraint_build import Block, ConstraintBuild, MissingProperty
 from models.coverage import Coverage
 from models.coverage_selector import CoverageSelector
-from models.fixed_assignment import FixedAssignment
 from models.objective_breach import ObjectiveBreach
 from models.request import Request
 from models.schedule import Schedule
@@ -29,7 +28,6 @@ __all__ = [
     "MissingProperty",
     "Coverage",
     "CoverageSelector",
-    "FixedAssignment",
     "ObjectiveBreach",
     "Request",
     "Schedule",

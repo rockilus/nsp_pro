@@ -8,7 +8,6 @@ from engine.tests.engine_test import TestEngine
 # pylint: disable=unused-import
 from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
 from engine.types.input_output_types import (
-    Assignment,
     Constraint,
     Inputs,
     Outputs,
@@ -79,23 +78,27 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 after shift s1
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         inputs.constraints = [constraint_ord_hard]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
         next_assignment = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date == fixed_assignments[0].date + timedelta(days=1)
+            if a.worker_id == requests[0].worker_id
+            and a.date == requests[0].date + timedelta(days=1)
         ][0]
         assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
 
@@ -106,25 +109,29 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # Shift s3 after shift s1
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_hard.operator = "yes"
         constraint_ord_hard.shift_var.relative = ["s3"]
         inputs.constraints = [constraint_ord_hard]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
         next_assignment = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date == fixed_assignments[0].date + timedelta(days=1)
+            if a.worker_id == requests[0].worker_id
+            and a.date == requests[0].date + timedelta(days=1)
         ][0]
         assert next_assignment.shift_id == constraint_ord_hard.shift_var.relative[0]
 
@@ -135,20 +142,28 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 after shift s1
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         inputs.constraints = [constraint_ord_hard]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
 
         assert not outputs.is_solution and len(outputs.assignments) == 0
@@ -160,22 +175,30 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # Shift s3 after shift s1, while fixed assignment s4 after s1
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s4",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         inputs.constraints = [constraint_ord_hard]
         constraint_ord_hard.operator = "yes"
         constraint_ord_hard.shift_var.relative = ["s3"]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
 
         assert not outputs.is_solution and len(outputs.assignments) == 0
@@ -187,21 +210,29 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days after shift s1
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-15"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_hard.day_var.interval = 3
         inputs.constraints = [constraint_ord_hard]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -218,7 +249,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == requests[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
@@ -232,22 +263,30 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days after shift s1
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-15"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_hard.operator = "yes"
         constraint_ord_hard.day_var.interval = 3
         inputs.constraints = [constraint_ord_hard]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -264,7 +303,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == requests[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative[0]
@@ -278,21 +317,29 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days after shift s1
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-15"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_hard.day_var.interval = -3
         inputs.constraints = [constraint_ord_hard]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -309,7 +356,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == requests[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
@@ -323,22 +370,30 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days after shift s1
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-15"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_hard.operator = "yes"
         constraint_ord_hard.day_var.interval = -3
         inputs.constraints = [constraint_ord_hard]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -355,7 +410,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == requests[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative[0]
@@ -369,38 +424,58 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days after shift s1 on week day index 0
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-06"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-09"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-15"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         inputs.constraints = [constraint_ord_hard]
         constraint_ord_hard.day_var.selector = "week_day_index"
         constraint_ord_hard.day_var.interval = 3
         constraint_ord_hard.day_var.target = 0
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -420,7 +495,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == requests[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
@@ -434,31 +509,51 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # Shift s0 three days after shift s1 on week day index 0
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-06"),
                 shift_id="s2",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-09"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-15"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_hard.operator = "yes"
@@ -466,7 +561,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard.day_var.interval = 3
         inputs.constraints = [constraint_ord_hard]
         constraint_ord_hard.day_var.target = 0
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -484,7 +579,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == requests[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative[0]
@@ -498,38 +593,58 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # No shift s0 three days before shift s1 on week day index 0
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-13"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-09"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-15"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_hard.day_var.selector = "week_day_index"
         constraint_ord_hard.day_var.interval = -3
         constraint_ord_hard.day_var.target = 0
         inputs.constraints = [constraint_ord_hard]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -547,7 +662,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == requests[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
@@ -561,31 +676,51 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard: Constraint,
     ) -> None:
         # Shift s0 three days before shift s1 on week day index 0
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s2",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-13"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-09"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-15"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_hard.operator = "yes"
@@ -593,7 +728,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_ord_hard.day_var.interval = 3
         constraint_ord_hard.day_var.target = 0
         inputs.constraints = [constraint_ord_hard]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
@@ -611,7 +746,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         next_assignments = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id and a.date in dates
+            if a.worker_id == requests[0].worker_id and a.date in dates
         ]
         assert (
             next_assignment.shift_id == constraint_ord_hard.shift_var.relative[0]
@@ -627,25 +762,27 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_ord_soft: Constraint,
     ) -> None:
         # No shift s0 after shift s1
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-        ]
-        requests = [
             Request(
                 id="request",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
         ]
         inputs.constraints = [constraint_ord_soft]
-        inputs.fixed_assignments = fixed_assignments
         inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -653,8 +790,8 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         next_assignment = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date == fixed_assignments[0].date + timedelta(days=1)
+            if a.worker_id == requests[0].worker_id
+            and a.date == requests[0].date + timedelta(days=1)
         ][0]
         assert next_assignment.shift_id != constraint_ord_soft.shift_var.relative[0]
         assert outputs.objective_value == 1
@@ -666,19 +803,22 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_ord_soft: Constraint,
     ) -> None:
         # Shift s3 after shift s1
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-        ]
-        requests = [
             Request(
                 id="request",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s4",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -686,7 +826,6 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_ord_soft.operator = "yes"
         constraint_ord_soft.shift_var.relative = ["s3"]
         inputs.constraints = [constraint_ord_soft]
-        inputs.fixed_assignments = fixed_assignments
         inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -694,8 +833,8 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         next_assignment = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date == fixed_assignments[0].date + timedelta(days=1)
+            if a.worker_id == requests[0].worker_id
+            and a.date == requests[0].date + timedelta(days=1)
         ][0]
         assert next_assignment.shift_id == constraint_ord_soft.shift_var.relative[0]
         assert outputs.objective_value == 1
@@ -708,11 +847,15 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_ord_soft: Constraint,
     ) -> None:
         # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_soft.operator = "yes"
@@ -720,15 +863,15 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             constraint_ord_hard,
             constraint_ord_soft,
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
         next_assignment = [
             a
             for a in assignments
-            if a.worker_id == fixed_assignments[0].worker_id
-            and a.date == fixed_assignments[0].date + timedelta(days=1)
+            if a.worker_id == requests[0].worker_id
+            and a.date == requests[0].date + timedelta(days=1)
         ][0]
         assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
 
@@ -740,11 +883,15 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_ord_soft: Constraint,
     ) -> None:
         # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_soft.operator = "yes"
@@ -752,7 +899,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             constraint_ord_hard,
             constraint_ord_soft,
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
 
         assert outputs.objective_value == constraint_ord_soft.penalty
@@ -765,11 +912,15 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_ord_soft: Constraint,
     ) -> None:
         # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_soft.operator = "yes"
@@ -777,18 +928,18 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             constraint_ord_hard,
             constraint_ord_soft,
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
 
         expected_variables = [
             (
-                fixed_assignments[0].worker_id,
-                fixed_assignments[0].date,
+                requests[0].worker_id,
+                requests[0].date,
                 constraint_ord_soft.shift_var.reference[0],
             ),
             (
-                fixed_assignments[0].worker_id,
-                fixed_assignments[0].date + timedelta(days=1),
+                requests[0].worker_id,
+                requests[0].date + timedelta(days=1),
                 constraint_ord_soft.shift_var.relative[0],
             ),
         ]
@@ -813,11 +964,15 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_ord_soft: Constraint,
     ) -> None:
         # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         constraint_ord_soft.operator = "yes"
@@ -825,7 +980,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             constraint_ord_hard,
             constraint_ord_soft,
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         outputs = engine_solve(inputs)
 
         assert outputs.objective_value == constraint_ord_soft.penalty

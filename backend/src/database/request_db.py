@@ -145,7 +145,7 @@ def core_to_doc_request(dataclass_obj: Request) -> RequestDocument:
             worker=worker,
             date=dataclass_obj.date,
             shift=shift,
-            priority=dataclass_obj.priority,
+            priority=dataclass_obj.hard,
             status=dataclass_obj.status,
         )
     except Exception as e:
@@ -163,7 +163,7 @@ def doc_to_core_request(doc_obj: RequestDocument) -> Request:
             worker_id=doc_obj.worker.id,
             date=date_datetime,
             shift_id=doc_obj.shift.id,
-            priority=doc_obj.priority,
+            hard=doc_obj.hard,
             status=doc_obj.status,
         )
     except Exception as e:

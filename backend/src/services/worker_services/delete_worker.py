@@ -3,7 +3,6 @@ from scripts.setup_database import (
     assignment_db,
     constraint_build_db,
     constraint_db,
-    fixed_assignment_db,
     objective_breach_db,
     request_db,
     worker_db,
@@ -22,7 +21,6 @@ def delete_worker(worker_id: str) -> None:
     delete_worker_from_constraint(worker_id)
     worker_property_db.delete_worker_properties_by_worker_id(worker_id)
     assignment_db.delete_assignments_by_worker_id(worker_id)
-    fixed_assignment_db.delete_fixed_assignments_by_worker_id(worker_id)
     request_db.delete_requests_by_worker_id(worker_id)
     worker_db.delete_worker(worker_id)
 

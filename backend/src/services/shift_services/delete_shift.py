@@ -4,7 +4,6 @@ from scripts.setup_database import (
     assignment_db,
     constraint_build_db,
     constraint_db,
-    fixed_assignment_db,
     objective_breach_db,
     request_db,
     shift_db,
@@ -23,7 +22,6 @@ def delete_shift(shift_id: str) -> None:
     delete_shift_from_constraint(shift_id)
     shift_property_db.delete_shift_properties_by_shift_id(shift_id)
     assignment_db.delete_assignments_by_shift_id(shift_id)
-    fixed_assignment_db.delete_fixed_assignments_by_shift_id(shift_id)
     request_db.delete_requests_by_shift_id(shift_id)
     shift_db.delete_shift(shift_id)
 

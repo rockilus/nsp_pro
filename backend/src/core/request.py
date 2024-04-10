@@ -8,5 +8,5 @@ class Request:
     worker_id: str
     date: date
     shift_id: str
-    priority: str
+    hard: bool
     status: str

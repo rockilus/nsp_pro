@@ -4,7 +4,6 @@ from database.constraint_db import ConstraintDB
 from database.coverage_db import CoverageDB
 from database.coverage_selector_db import CoverageSelectorDB
 from database.db import DB
-from database.fixed_assignment_db import FixedAssignmentDB
 from database.objective_breach_db import ObjectiveBreachDB
 from database.request_db import RequestDB
 from database.schedule_db import ScheduleDB
@@ -28,7 +27,6 @@ __all__ = [
     "CoverageDB",
     "CoverageSelectorDB",
     "DB",
-    "FixedAssignmentDB",
     "ObjectiveBreachDB",
     "RequestDB",
     "ScheduleDB",

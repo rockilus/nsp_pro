@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 from datetime import date, timedelta
 from typing import Callable, List
 
@@ -97,49 +98,81 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_seq_hard: Constraint,
     ) -> None:
         # Exactly 4 shift off per week
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w1",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w2",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w3",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w4",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w5",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w6",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w7",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         constraint_seq_hard.operator = "equal"
         inputs.constraints = [constraint_seq_hard]
         outputs = engine_solve(inputs)
@@ -169,49 +202,81 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_seq_hard: Constraint,
     ) -> None:
         # At least 4 shift off per week
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w1",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w2",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w3",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w4",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w5",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w6",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w7",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         constraint_seq_hard.operator = "greater_than_or_equal"
         inputs.constraints = [constraint_seq_hard]
         outputs = engine_solve(inputs)
@@ -225,109 +290,171 @@ class TestConstraintHard(TestEngine, TestConstraint):
 
         assert min(counts) >= constraint_seq_hard.target_value
 
-    def test_less_than_or_equal_with_fixed_assignments(
+    def test_less_than_or_equal_with_hard_requests(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
         constraint_seq_hard: Constraint,
     ) -> None:
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-04"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-05"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-06"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-07"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-08"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
 
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         inputs.constraints = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
+        target_assignments = [
+            Assignment(r.worker_id, r.date, r.shift_id) for r in requests
+        ]
 
-        assert all(a in assignments for a in fixed_assignments)
+        assert all(a in assignments for a in target_assignments)
 
-    def test_greater_than_or_equal_with_fixed_assignments(
+    def test_greater_than_or_equal_with_hard_requests(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
         constraint_seq_hard: Constraint,
     ) -> None:
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-04"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-05"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-06"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-07"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-08"),
                 shift_id="s1",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
 
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         constraint_seq_hard.operator = "greater_than_or_equal"
         constraint_seq_hard.shift_var.target = ["s1"]
         inputs.constraints = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
+        target_assignments = [
+            Assignment(r.worker_id, r.date, r.shift_id) for r in requests
+        ]
 
-        assert all(a in assignments for a in fixed_assignments)
+        assert all(a in assignments for a in target_assignments)
 
     def test_less_than_or_equal_with_requests_conflict(
         self,
@@ -342,6 +469,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -350,6 +478,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -358,6 +487,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-04"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -366,6 +496,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-05"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -374,6 +505,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-06"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -405,6 +537,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -413,6 +546,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -421,6 +555,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-04"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -429,6 +564,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-05"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -437,6 +573,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-06"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -445,6 +582,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w1",
                 date=date.fromisoformat("2023-10-04"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -453,6 +591,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w1",
                 date=date.fromisoformat("2023-10-05"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -461,6 +600,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w1",
                 date=date.fromisoformat("2023-10-06"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -502,6 +642,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -510,6 +651,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -518,6 +660,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-04"),
                 shift_id="s0",
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             ),
@@ -563,49 +706,81 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_seq_soft: Constraint,
     ) -> None:
         # Exactly 4 shift off per week
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w1",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w2",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w3",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w4",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w5",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w6",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w7",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         constraint_seq_soft.operator = "equal"
         inputs.constraints = [constraint_seq_soft]
         outputs = engine_solve(inputs)
@@ -635,49 +810,81 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_seq_soft: Constraint,
     ) -> None:
         # At least 2 shift off per week
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w1",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w2",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w3",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w4",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w5",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w6",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w7",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         constraint_seq_soft.operator = "greater_than_or_equal"
         inputs.constraints = [constraint_seq_soft]
         outputs = engine_solve(inputs)
@@ -699,14 +906,18 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_seq_soft: Constraint,
     ) -> None:
         # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         constraint_seq_hard.operator = "equal"
         inputs.constraints = [
             constraint_seq_hard,
@@ -717,12 +928,12 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         count_min = min_consecutive_shift_count(
             assignments,
-            fixed_assignments[0].worker_id,
+            requests[0].worker_id,
             constraint_seq_hard.shift_var.target[0],
         )
         count_max = max_consecutive_shift_count(
             assignments,
-            fixed_assignments[0].worker_id,
+            requests[0].worker_id,
             constraint_seq_hard.shift_var.target[0],
         )
 
@@ -739,14 +950,18 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_seq_soft: Constraint,
     ) -> None:
         # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-10"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         constraint_seq_hard.operator = "equal"
         inputs.constraints = [
             constraint_seq_hard,
@@ -766,14 +981,18 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_seq_soft: Constraint,
     ) -> None:
         # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         constraint_seq_hard.operator = "equal"
         inputs.constraints = [
             constraint_seq_hard,
@@ -783,24 +1002,24 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         expected_variables = [
             (
-                fixed_assignments[0].worker_id,
-                fixed_assignments[0].date,
-                fixed_assignments[0].shift_id,
+                requests[0].worker_id,
+                requests[0].date,
+                requests[0].shift_id,
             ),
             (
-                fixed_assignments[0].worker_id,
-                fixed_assignments[0].date + timedelta(days=1),
-                fixed_assignments[0].shift_id,
+                requests[0].worker_id,
+                requests[0].date + timedelta(days=1),
+                requests[0].shift_id,
             ),
             (
-                fixed_assignments[0].worker_id,
-                fixed_assignments[0].date + timedelta(days=2),
-                fixed_assignments[0].shift_id,
+                requests[0].worker_id,
+                requests[0].date + timedelta(days=2),
+                requests[0].shift_id,
             ),
             (
-                fixed_assignments[0].worker_id,
-                fixed_assignments[0].date + timedelta(days=3),
-                fixed_assignments[0].shift_id,
+                requests[0].worker_id,
+                requests[0].date + timedelta(days=3),
+                requests[0].shift_id,
             ),
         ]
 
@@ -824,14 +1043,18 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_seq_soft: Constraint,
     ) -> None:
         # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         constraint_seq_hard.operator = "equal"
         inputs.constraints = [
             constraint_seq_hard,
