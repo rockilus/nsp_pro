@@ -39,7 +39,7 @@ async def get_constraint_templates(
         user_id = session.get_user_id()
         teams = team_db.get_teams_by_leader_id(user_id)
         team_id = teams[0].id
-        if not await authz_check(user_id, "read-constraint-templates", "team", team_id):
+        if not await authz_check(user_id, "read-bulk", "team", team_id):
             raise NotAuthorizedError("You do not have permission to get bulk")
         bulk = build_bulk(teams, team_id)
         response = core_to_msg_bulk(bulk)
