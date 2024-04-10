@@ -50,8 +50,8 @@ export const useTeamStore = create<TeamStateT>()((set) => ({
   },
 
   fetchTeamsStore: (teams: TeamT[], selectedTeamId: string) => {
-    set({ teams });
     const selectedTeam = teams.find((team) => team.id === selectedTeamId);
+    set({ teams: teams, selectedTeam: selectedTeam });
   },
 
   clearTeams: () => {

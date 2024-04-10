@@ -241,7 +241,7 @@ class HealthCheck(BaseModel):
 
 # Bulk
 class BulkMessage(BaseModel):
-    selectedTeam: str | None
+    selectedTeamId: str | None
     teams: List[TeamMessage]
     workers: List[WorkerMessage]
     workerDimensions: List[WorkerDimensionMessage]

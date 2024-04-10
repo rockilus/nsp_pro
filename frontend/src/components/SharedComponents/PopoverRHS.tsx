@@ -48,9 +48,8 @@ export default function PopoverRHS({
 
   return (
     <Box>
-      <Button
+      <Box
         aria-describedby={id}
-        variant="contained"
         onClick={handleClick}
         sx={{
           backgroundColor: "transparent",
@@ -64,7 +63,7 @@ export default function PopoverRHS({
         }}
       >
         {buttonContent}
-      </Button>
+      </Box>
       <Popover
         id={id}
         open={open}

@@ -38,6 +38,8 @@ export const useBulkFetchStore = create<BulkFetchStateT>()((set) => ({
       const response = await fetch(apiUrlBulk, options);
       const responseData = await response.json();
       if (!response.ok) {
+        console.log("response not OK");
+
         useSnackBarStore
           .getState()
           .updateSnackBar(
@@ -75,6 +77,8 @@ export const useBulkFetchStore = create<BulkFetchStateT>()((set) => ({
         .fetchObjectiveBreachesStore(bulk.objectiveBreaches);
       useStatsOptionsStore.getState().fetchStatsOptionsStore(bulk.statsOptions);
     } catch (error) {
+      console.log("error caught");
+
       console.error("Failed to fetch bulk:", error);
       useSnackBarStore
         .getState()

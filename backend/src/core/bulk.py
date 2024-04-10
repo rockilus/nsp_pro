@@ -14,7 +14,7 @@ from core.worker import Worker, WorkerDimension, WorkerProperty
 # pylint: disable=too-many-instance-attributes
 @dataclass
 class Bulk:
-    selected_team: Optional[str] = None
+    selected_team_id: Optional[str] = None
     teams: List[Team] = field(default_factory=list)
     workers: List[Worker] = field(default_factory=list)
     worker_properties_w: Dict[str, List[WorkerProperty]] = field(default_factory=dict)

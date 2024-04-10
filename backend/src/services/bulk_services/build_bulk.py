@@ -24,7 +24,7 @@ from scripts.setup_database import (
 
 # pylint: disable=too-many-locals
 def build_bulk(teams: List[Team], selected_team_id: str) -> Bulk:
-    bulk = Bulk(selected_team=selected_team_id, teams=teams)
+    bulk = Bulk(selected_team_id=selected_team_id, teams=teams)
     bulk.workers = worker_db.get_workers(selected_team_id)
     worker_properties = worker_property_db.get_worker_properties_by_worker_ids(
         [w.id for w in bulk.workers]

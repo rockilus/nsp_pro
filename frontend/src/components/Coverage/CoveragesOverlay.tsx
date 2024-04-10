@@ -1,5 +1,6 @@
 import React from "react";
 // Components
+import Button from "@mui/material/Button";
 import CoverageEvent from "./CoverageEvent";
 import ShiftDemandButton from "./ShiftDemandButton";
 // Types
@@ -48,8 +49,8 @@ export default function CoveragesOverlay({
               <ShiftDemandButton
                 team={team}
                 buttonElement={
-                  <button
-                    style={{
+                  <Button
+                    sx={{
                       cursor: "pointer",
                       opacity: 0.5,
                       backgroundColor: "transparent",
@@ -73,7 +74,7 @@ export default function CoveragesOverlay({
                       (e.target as HTMLElement).style.backgroundColor =
                         "transparent";
                     }}
-                  ></button>
+                  ></Button>
                 }
                 shiftDemand={{
                   id: "",
