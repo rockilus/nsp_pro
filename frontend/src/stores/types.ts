@@ -28,6 +28,7 @@ export type SnackBarT = {
 };
 
 export type BulkT = {
+  selectedTeamId: string;
   teams: TeamT[];
   workers: WorkerT[];
   workerDimensions: WorkerDimensionT[];

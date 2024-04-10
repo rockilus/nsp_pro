@@ -1,4 +1,5 @@
 from services import (
+    bulk_services,
     constraint_build_services,
     constraint_services,
     schedule_services,
@@ -9,6 +10,7 @@ from services import (
 )
 
 __all__ = [
+    "bulk_services",
     "constraint_build_services",
     "constraint_services",
     "schedule_services",

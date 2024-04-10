@@ -1,3 +1,4 @@
+from core.bulk import Bulk
 from core.constraint import (
     Block,
     Constraint,
@@ -28,6 +29,7 @@ from core.worker import Worker, WorkerDimension, WorkerProperty
 
 # pylint: disable=R0801
 __all__ = [
+    "Bulk",
     "Assignment",
     "Block",
     "Constraint",

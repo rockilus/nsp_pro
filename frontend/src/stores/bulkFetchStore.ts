@@ -47,7 +47,7 @@ export const useBulkFetchStore = create<BulkFetchStateT>()((set) => ({
         return;
       }
       const bulk: BulkT = responseData;
-      useTeamStore.getState().fetchTeamsStore(bulk.teams);
+      useTeamStore.getState().fetchTeamsStore(bulk.teams, bulk.selectedTeamId);
       useWorkerStore.getState().fetchWorkersStore(bulk.workers);
       useWorkerDimensionStore
         .getState()
