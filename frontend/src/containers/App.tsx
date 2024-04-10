@@ -47,73 +47,38 @@ const App = () => {
   ];
 
   const [selectedTabId, setSelectedTabId] = useState<string>(tabs[0].id); // Get selectedTab from AppBar (if using Context)
+  const [fars, setFars] = useState<FarT[]>([]);
 
   const fetchBulk = useBulkFetchStore((state) => state.fetchBulk);
 
-  const shifts = useShiftStore((state) => state.shifts);
-  const fetchShifts = useShiftStore((state) => state.fetchShifts);
-  const shiftDimensions = useShiftDimensionStore(
-    (state) => state.shiftDimensions
-  );
-  const fetchShiftDimensions = useShiftDimensionStore(
-    (state) => state.fetchShiftDimensions
-  );
+  const teams = useTeamStore((state) => state.teams);
+  const selectedTeam = useTeamStore((state) => state.selectedTeam);
   const workers = useWorkerStore((state) => state.workers);
-  const fetchWorkers = useWorkerStore((state) => state.fetchWorkers);
   const workerDimensions = useWorkerDimensionStore(
     (state) => state.workerDimensions
   );
-  const fetchWorkerDimensions = useWorkerDimensionStore(
-    (state) => state.fetchWorkerDimensions
+  const shifts = useShiftStore((state) => state.shifts);
+  const shiftDimensions = useShiftDimensionStore(
+    (state) => state.shiftDimensions
   );
   const coverages = useCoverageStore((state) => state.coverages);
-  const fetchCoverages = useCoverageStore((state) => state.fetchCoverages);
-
-  const teams = useTeamStore((state) => state.teams);
-  const selectedTeam = useTeamStore((state) => state.selectedTeam);
-  const fetchTeams = useTeamStore((state) => state.fetchTeams);
-  const setSelectedTeam = useTeamStore((state) => state.setSelectedTeam);
   const constraints = useConstraintStore((state) => state.constraints);
-  const fetchConstraints = useConstraintStore(
-    (state) => state.fetchConstraints
-  );
   const constraintTemplates = useConstraintTemplateStore(
     (state) => state.constraintTemplates
   );
-  const fetchConstraintTemplates = useConstraintTemplateStore(
-    (state) => state.fetchConstraintTemplates
-  );
-  const [fars, setFars] = useState<FarT[]>([]);
   const fixedAssignments = useFixedAssignmentStore(
     (state) => state.fixedAssignments
   );
   const requests = useRequestStore((state) => state.requests);
-  const fetchFixedAssignments = useFixedAssignmentStore(
-    (state) => state.fetchFixedAssignments
-  );
-  const fetchRequests = useRequestStore((state) => state.fetchRequests);
   const coverageSelectors = useCoverageSelectorStore(
     (state) => state.coverageSelectors
   );
-  const fetchCoverageSelectors = useCoverageSelectorStore(
-    (state) => state.fetchCoverageSelectors
-  );
   const schedules = useScheduleStore((state) => state.schedules);
-  const fetchSchedules = useScheduleStore((state) => state.fetchSchedules);
   const assignments = useAssignmentStore((state) => state.assignments);
-  const fetchAssignments = useAssignmentStore(
-    (state) => state.fetchAssignments
-  );
   const objectiveBreaches = useObjectiveBreachStore(
     (state) => state.objectiveBreaches
   );
-  const fetchObjectiveBreaches = useObjectiveBreachStore(
-    (state) => state.fetchObjectiveBreaches
-  );
   const statsOptions = useStatsOptionsStore((state) => state.statsOptions);
-  const fetchStatsOptions = useStatsOptionsStore(
-    (state) => state.fetchStatsOptions
-  );
 
   const FixedAssignmentToFar = (fa: FixedAssignmentT): FarT => {
     const far: FarT = {
@@ -145,56 +110,14 @@ const App = () => {
   );
 
   useEffect(() => {
-    setFars(buildFarsArray(fixedAssignments, requests));
-  }, [fixedAssignments, requests, buildFarsArray]);
-
-  useEffect(() => {
     if (teams.length === 0) {
-      // fetchTeams();
       fetchBulk();
     }
   }, [fetchBulk, teams]);
 
   useEffect(() => {
-    if (teams.length > 0) {
-      setSelectedTeam(teams[0]);
-    }
-  }, [teams, setSelectedTeam]);
-
-  // useEffect(() => {
-  //   if (selectedTeam) {
-  //     fetchWorkers(selectedTeam.id);
-  //     fetchWorkerDimensions(selectedTeam.id);
-  //     fetchShifts(selectedTeam.id);
-  //     fetchShiftDimensions(selectedTeam.id);
-  //     fetchCoverages(selectedTeam.id);
-  //     fetchConstraints(selectedTeam.id);
-  //     fetchConstraintTemplates(selectedTeam.id);
-  //     fetchFixedAssignments(selectedTeam.id);
-  //     fetchRequests(selectedTeam.id);
-  //     fetchCoverageSelectors(selectedTeam.id);
-  //     fetchAssignments(selectedTeam.id);
-  //     fetchSchedules(selectedTeam.id);
-  //     fetchObjectiveBreaches(selectedTeam.id);
-  //     fetchStatsOptions(selectedTeam.id);
-  //   }
-  // }, [
-  //   fetchWorkers,
-  //   fetchWorkerDimensions,
-  //   fetchShifts,
-  //   fetchShiftDimensions,
-  //   fetchCoverages,
-  //   fetchConstraints,
-  //   fetchConstraintTemplates,
-  //   fetchFixedAssignments,
-  //   fetchRequests,
-  //   fetchCoverageSelectors,
-  //   fetchAssignments,
-  //   fetchSchedules,
-  //   fetchObjectiveBreaches,
-  //   fetchStatsOptions,
-  //   selectedTeam,
-  // ]);
+    setFars(buildFarsArray(fixedAssignments, requests));
+  }, [fixedAssignments, requests, buildFarsArray]);
 
   const renderTabContent = () => {
     if (!selectedTeam) {
