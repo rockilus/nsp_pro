@@ -10,29 +10,27 @@ import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import Select from "@mui/material/Select";
-import ThermostatIcon from "@mui/icons-material/Thermostat";
 import WorkIcon from "@mui/icons-material/Work";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Stores
-import { useFixedAssignmentStore } from "../../stores/fixedAssignmentStore";
 import { useRequestStore } from "../../stores/requestStore";
 // Types
-import { FixedAssignmentT, RequestT, FarT } from "./types";
+import { RequestT } from "./types";
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
 import { WorkerT } from "../Worker/types";
 
 interface Props {
   team: TeamT;
-  far: FarT;
+  request: RequestT;
   workers: WorkerT[];
   shifts: ShiftT[];
   handleClose: () => void;
 }
 
-export default function FARPanel({
+export default function RequestPanel({
   team,
-  far,
+  request,
   workers,
   shifts,
   handleClose,
@@ -43,108 +41,33 @@ export default function FARPanel({
     );
   };
 
-  const [FAPanel, setFAPanel] = useState<boolean>(far.isFA);
-
-  const [farState, setFarState] = useState<FarT>({
-    id: far.id,
-    workerId: far.workerId,
-    date: far.date,
-    shiftId: far.shiftId,
-    priority: far.priority,
-    isFA: far.isFA,
-    status: far.status,
+  const [requestState, setRequestState] = useState<RequestT>({
+    id: request.id,
+    workerId: request.workerId,
+    date: request.date,
+    shiftId: request.shiftId,
+    hard: request.hard,
+    status: request.status,
   });
 
-  const addFixedAssignment = useFixedAssignmentStore(
-    (state) => state.addFixedAssignment
-  );
-  const updateFixedAssignment = useFixedAssignmentStore(
-    (state) => state.updateFixedAssignment
-  );
-  const deleteFixedAssignment = useFixedAssignmentStore(
-    (state) => state.deleteFixedAssignment
-  );
   const addRequest = useRequestStore((state) => state.addRequest);
   const updateRequest = useRequestStore((state) => state.updateRequest);
   const deleteRequest = useRequestStore((state) => state.deleteRequest);
 
-  const handleSaveFar = async () => {
-    if (farState.id === "") {
-      if (FAPanel) {
-        const fixedAssignment = farState as FixedAssignmentT;
-        await addFixedAssignment(fixedAssignment, team.id);
-        if (!far.isFA && far.id !== "") {
-          deleteRequest(far.id, team.id);
-        }
-      } else {
-        const request = farState as RequestT;
-        await addRequest(request, team.id);
-        if (!far.isFA && far.id !== "") {
-          deleteRequest(far.id, team.id);
-        }
-      }
+  const handleSaveRequest = async () => {
+    if (requestState.id === "") {
+      await addRequest(request, team.id);
     } else {
-      if (FAPanel) {
-        const fixedAssignment = farState as FixedAssignmentT;
-        updateFixedAssignment(fixedAssignment, team.id);
-      } else {
-        const request = farState as RequestT;
-        updateRequest(request, team.id);
-      }
+      updateRequest(request, team.id);
     }
     handleClose();
   };
 
-  const handleDeleteFar = async () => {
-    if (farState.id !== "") {
-      if (FAPanel) {
-        deleteFixedAssignment(farState.id, team.id);
-      } else {
-        deleteRequest(farState.id, team.id);
-      }
+  const handleDeleteRequest = async () => {
+    if (requestState.id !== "") {
+      deleteRequest(requestState.id, team.id);
     }
     handleClose();
-  };
-
-  const handleSelectFA = () => {
-    setFAPanel(true);
-    setFarState({
-      ...farState,
-      id: far.isFA ? far.id : "",
-      isFA: true,
-    });
-  };
-
-  const handleSelectR = () => {
-    setFAPanel(false);
-    setFarState({
-      ...farState,
-      id: far.isFA ? "" : far.id,
-      isFA: false,
-    });
-  };
-
-  const selectFAR = () => {
-    const variantFA = FAPanel ? "contained" : "text";
-    const variantR = FAPanel ? "text" : "contained";
-    return (
-      <Box sx={{ display: "flex", flexDirection: "row" }}>
-        <Button
-          variant={variantFA}
-          sx={{ textTransform: "none", marginRight: 1 }}
-          onClick={handleSelectFA}
-        >
-          Fixed Assignment
-        </Button>
-        <Button
-          variant={variantR}
-          sx={{ textTransform: "none" }}
-          onClick={handleSelectR}
-        >
-          Request
-        </Button>
-      </Box>
-    );
   };
 
   const selectWorker = () => {
@@ -152,11 +75,11 @@ export default function FARPanel({
       <Box sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}>
         <FormControl fullWidth>
           <Select
-            value={farState.workerId}
+            value={requestState.workerId}
             label="Worker"
             onChange={(e) =>
-              setFarState({
-                ...farState,
+              setRequestState({
+                ...requestState,
                 workerId: e.target.value as string,
               })
             }
@@ -176,11 +99,11 @@ export default function FARPanel({
       <Box sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}>
         <FormControl fullWidth>
           <Select
-            value={farState.shiftId}
+            value={requestState.shiftId}
             label="Shift"
             onChange={(e) =>
-              setFarState({
-                ...farState,
+              setRequestState({
+                ...requestState,
                 shiftId: e.target.value as string,
               })
             }
@@ -188,32 +111,6 @@ export default function FARPanel({
             {shifts.map((shift) => (
               <MenuItem key={shift.id} value={shift.id}>
                 {shift.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-    );
-  };
-
-  const selectPriority = () => {
-    const priorityOptions = ["low", "medium", "high"];
-    return (
-      <Box sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}>
-        <FormControl fullWidth>
-          <Select
-            value={farState.priority}
-            label="Shift"
-            onChange={(e) =>
-              setFarState({
-                ...farState,
-                priority: e.target.value as string,
-              })
-            }
-          >
-            {priorityOptions.map((option, index) => (
-              <MenuItem key={index} value={option}>
-                {option}
               </MenuItem>
             ))}
           </Select>
@@ -242,7 +139,7 @@ export default function FARPanel({
           marginBottom: 1,
         }}
       >
-        {selectFAR()}
+        New request
         <IconButton onClick={handleClose} sx={{ marginRight: 2 }}>
           <CloseIcon color="disabled" />
         </IconButton>
@@ -271,10 +168,10 @@ export default function FARPanel({
         <AccessTimeIcon sx={{ marginLeft: 2, marginRight: 1 }} />
         <DatePicker
           sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}
-          value={dayjs(farState.date)}
+          value={dayjs(requestState.date)}
           onChange={(newValue) =>
-            setFarState({
-              ...farState,
+            setRequestState({
+              ...requestState,
               date: dateToTimeZero(newValue?.toDate() || new Date()),
             })
           }
@@ -292,20 +189,6 @@ export default function FARPanel({
         <WorkIcon sx={{ marginLeft: 2, marginRight: 1 }} />
         {selectShift()}
       </Box>
-      {!farState.isFA && (
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            width: "100%",
-            marginBottom: 1,
-          }}
-        >
-          <ThermostatIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-          {selectPriority()}
-        </Box>
-      )}
       <Box
         sx={{
           display: "flex",
@@ -315,12 +198,12 @@ export default function FARPanel({
           width: "100%",
         }}
       >
-        {farState.id !== "" && (
+        {requestState.id !== "" && (
           <Button
             variant="contained"
             color="primary"
             sx={{ marginRight: 2 }}
-            onClick={handleDeleteFar}
+            onClick={handleDeleteRequest}
           >
             Delete
           </Button>
@@ -329,7 +212,7 @@ export default function FARPanel({
           variant="contained"
           color="primary"
           sx={{ marginRight: 2 }}
-          onClick={handleSaveFar}
+          onClick={handleSaveRequest}
         >
           Save
         </Button>

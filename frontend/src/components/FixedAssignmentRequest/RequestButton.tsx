@@ -3,9 +3,9 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Menu from "@mui/material/Menu";
 // Components
-import FARPanel from "./FARPanel";
+import RequestPanel from "./RequestPanel";
 // Types
-import { FarT } from "./types";
+import { RequestT } from "./types";
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
 import { WorkerT } from "../Worker/types";
@@ -13,15 +13,15 @@ import { WorkerT } from "../Worker/types";
 interface Props {
   team: TeamT;
   buttonElement: React.ReactNode;
-  far: FarT;
+  request: RequestT;
   workers: WorkerT[];
   shifts: ShiftT[];
 }
 
-export default function FARButton({
+export default function RequestButton({
   team,
   buttonElement,
-  far,
+  request,
   workers,
   shifts,
 }: Props) {
@@ -56,9 +56,9 @@ export default function FARButton({
           },
         }}
       >
-        <FARPanel
+        <RequestPanel
           team={team}
-          far={far}
+          request={request}
           workers={workers}
           shifts={shifts}
           handleClose={handleClose}

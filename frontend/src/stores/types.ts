@@ -3,10 +3,7 @@ import { WorkerT, WorkerDimensionT } from "../components/Worker/types";
 import { ShiftT, ShiftDimensionT } from "../components/Shift/types";
 import { CoverageT } from "../components/Coverage/types";
 import { ConstraintT, TemplateT } from "../components/Constraint/types";
-import {
-  FixedAssignmentT,
-  RequestT,
-} from "../components/FixedAssignmentRequest/types";
+import { RequestT } from "../components/FixedAssignmentRequest/types";
 import { CoverageSelectorT } from "../components/CoverageSelector/types";
 import {
   AssignmentT,
@@ -37,7 +34,6 @@ export type BulkT = {
   coverages: CoverageT[];
   constraints: ConstraintT[];
   constraintTemplates: TemplateT[];
-  fixedAssignments: FixedAssignmentT[];
   requests: RequestT[];
   coverageSelectors: CoverageSelectorT[];
   assignments: AssignmentT[];

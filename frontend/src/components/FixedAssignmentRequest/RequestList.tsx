@@ -4,31 +4,36 @@ import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import Grid from "@mui/material/Grid";
 // Components
-import FARListItem from "./FARListItem";
+import RequestListItem from "./RequestListItem";
 // Types
-import { FarT } from "./types";
+import { RequestT } from "./types";
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
 import { WorkerT } from "../Worker/types";
 
 interface Props {
   team: TeamT;
-  fars: FarT[];
+  requests: RequestT[];
   workers: WorkerT[];
   shifts: ShiftT[];
 }
 
-export default function FARList({ team, fars, workers, shifts }: Props) {
+export default function RequestList({
+  team,
+  requests,
+  workers,
+  shifts,
+}: Props) {
   return (
     <Box sx={{ flexGrow: 1, maxWidth: 752 }}>
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
           <List dense={true}>
-            {fars.map((far) => (
-              <FARListItem
+            {requests.map((far) => (
+              <RequestListItem
                 key={far.id}
                 team={team}
-                far={far}
+                request={far}
                 workers={workers}
                 shifts={shifts}
               />
