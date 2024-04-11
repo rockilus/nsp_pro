@@ -1,20 +1,17 @@
 import React, { useState } from "react";
 // MUI
-import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 // Components
 import PopoverRHS from "../SharedComponents/PopoverRHS";
-import RequestList from "./RequestList";
 import RequestPanel from "./RequestPanel";
+import RequestTable from "./RequestTable";
 import TableAddButton from "../SharedComponents/TableAddButton";
 import { emptyRequest } from "../../utils/emptyObjects";
-import RequestTable from "./RequestTable";
 // Types
 import { RequestT } from "./types";
-import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
+import { TeamT } from "../../containers/types";
 import { WorkerT } from "../Worker/types";
 
 interface Props {
@@ -91,12 +88,6 @@ export default function RequestTab({ team, workers, shifts, requests }: Props) {
         workers={workers}
         shifts={shifts}
       />
-      {/* <RequestList
-        team={team}
-        requests={requests}
-        workers={workers}
-        shifts={shifts}
-      /> */}
     </Box>
   );
 }
