@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import React, { useState } from "react";
 // MUI
 import Box from "@mui/material/Box";
@@ -57,13 +58,8 @@ export default function RequestTableRow({
     return shift?.name;
   };
 
-  const formatDate = (date: Date): string => {
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: "long",
-      day: "numeric",
-      month: "short",
-    };
-    return new Intl.DateTimeFormat("en-US", options).format(date);
+  const formatDate = (date: dayjs.Dayjs): string => {
+    return dayjs(date).format("dddd, MMM D");
   };
 
   return (

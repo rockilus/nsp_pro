@@ -12,8 +12,6 @@ import WorkIcon from "@mui/icons-material/Work";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Stores
 import { useRequestStore } from "../../stores/requestStore";
-// Utils
-import { dateToTimeZero } from "../../utils/dateUtils";
 // Types
 import { RequestT } from "./types";
 import { TeamT } from "../../containers/types";
@@ -141,7 +139,7 @@ export default function RequestPanel({
           onChange={(newValue) =>
             setRequestState({
               ...requestState,
-              date: dateToTimeZero(newValue?.toDate() || new Date()),
+              date: newValue?.startOf("day") || dayjs.utc().startOf("day"),
             })
           }
         />

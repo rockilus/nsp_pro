@@ -1,7 +1,5 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-// Utils
-import { dateToTimeZero } from "./dateUtils";
 // Types
 import { ShiftT } from "../components/Shift/types";
 import { ScheduleT, StatsOptionsT } from "../components/Schedule/types";
@@ -44,7 +42,7 @@ export const emptyStatsOptions: StatsOptionsT = {
 export const emptyRequest: RequestT = {
   id: "",
   workerId: "",
-  date: dateToTimeZero(new Date()),
+  date: dayjs.utc().startOf("day"),
   shiftId: "",
   hard: true,
   status: "pending",
