@@ -99,7 +99,9 @@ export default function RequestTableRow({
                 request={request}
                 workers={workers}
                 shifts={shifts}
-                handleClose={() => {}}
+                handleClose={() => {
+                  setOpen(false);
+                }}
               />
             }
             open={open}
