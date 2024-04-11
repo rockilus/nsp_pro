@@ -12,7 +12,7 @@ from engine.model.add_constraint_ord import AddConstraintOrd
 from engine.model.add_constraint_seq import AddConstraintSeq
 from engine.model.add_constraint_sum import AddConstraintSum
 from engine.model.add_coverage import AddCoverage
-from engine.model.add_far import AddFAR
+from engine.model.add_request import AddRequest
 from engine.types.input_output_types import Constraint, Inputs, ShiftDemand
 from engine.types.model_types import BenchmarkTimes, Objective
 
@@ -108,7 +108,7 @@ class Model:
             self.shifts,
             self.obj,
         )
-        self.add_far = AddFAR(self.model, self.variables, self.workers, self.obj)
+        self.add_far = AddRequest(self.model, self.variables, self.workers, self.obj)
 
     def set_up_model(self, inputs: Inputs) -> None:
         self.bt.total_start = time.time()
@@ -123,7 +123,6 @@ class Model:
         self.add_at_least_one_shift_per_day_constraint()
         self.add_coverage.add_coverage(inputs.coverage.coverage)
         self.add_custom_constraints(inputs.constraints, inputs.coverage.coverage)
-        self.add_far.add_fixed_assignments(inputs.fixed_assignments)
         self.add_far.add_requests(inputs.requests)
         self.bt.constraints_end = time.time()
         self.bt.objective_start = time.time()

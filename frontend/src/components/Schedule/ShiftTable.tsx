@@ -50,7 +50,7 @@ export default function ShiftTable({
                 variable.date.isSame(assignment.date) &&
                 variable.shiftId === assignment.shiftId
             )) ||
-          (["fixed_assignment", "request"].includes(ob.objectiveCategory) &&
+          (ob.objectiveCategory === "request" &&
             ob.variables.some(
               (variable) =>
                 variable.workerId === assignment.workerId &&

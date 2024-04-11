@@ -4,7 +4,7 @@ import NavAppBar from "../components/AppBar/NavAppBar";
 import ConstraintTab from "../components/Constraint/ConstraintTab";
 import CoverageSelectorTab from "../components/CoverageSelector/CoverageSelectorTab";
 import CoverageTab from "../components/Coverage/CoverageTab";
-import FARTab from "../components/FixedAssignmentRequest/FARTab";
+import RequestTab from "../components/Request/RequestTab";
 import ScheduleTab from "../components/Schedule/ScheduleTab";
 import ShiftTab from "../components/Shift/ShiftTab";
 import SimpleSnackbar from "../components/SnackBars/SnackBars";
@@ -16,7 +16,6 @@ import { useConstraintStore } from "../stores/constraintStore";
 import { useConstraintTemplateStore } from "../stores/constraintTemplateStore";
 import { useCoverageSelectorStore } from "../stores/coverageSelectorStore";
 import { useCoverageStore } from "../stores/coverageStore";
-import { useFixedAssignmentStore } from "../stores/fixedAssignmentStore";
 import { useObjectiveBreachStore } from "../stores/objectiveBreachStore";
 import { useRequestStore } from "../stores/requestStore";
 import { useScheduleStore } from "../stores/scheduleStore";
@@ -27,12 +26,6 @@ import { useTeamStore } from "../stores/teamStore";
 import { useWorkerStore } from "../stores/workerStore";
 import { useWorkerDimensionStore } from "../stores/workerDimensionStore";
 import { useBulkFetchStore } from "../stores/bulkFetchStore";
-// Types
-import {
-  FixedAssignmentT,
-  RequestT,
-  FarT,
-} from "../components/FixedAssignmentRequest/types";
 
 const App = () => {
   const tabs = [
@@ -47,7 +40,6 @@ const App = () => {
   ];
 
   const [selectedTabId, setSelectedTabId] = useState<string>(tabs[0].id); // Get selectedTab from AppBar (if using Context)
-  const [fars, setFars] = useState<FarT[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const fetchBulk = useBulkFetchStore((state) => state.fetchBulk);
@@ -67,9 +59,6 @@ const App = () => {
   const constraintTemplates = useConstraintTemplateStore(
     (state) => state.constraintTemplates
   );
-  const fixedAssignments = useFixedAssignmentStore(
-    (state) => state.fixedAssignments
-  );
   const requests = useRequestStore((state) => state.requests);
   const coverageSelectors = useCoverageSelectorStore(
     (state) => state.coverageSelectors
@@ -80,35 +69,6 @@ const App = () => {
     (state) => state.objectiveBreaches
   );
   const statsOptions = useStatsOptionsStore((state) => state.statsOptions);
-
-  const FixedAssignmentToFar = (fa: FixedAssignmentT): FarT => {
-    const far: FarT = {
-      ...fa,
-      priority: "",
-      isFA: true,
-    };
-    return far;
-  };
-  const RequestoFar = (r: RequestT) => {
-    const far: FarT = {
-      ...r,
-      isFA: false,
-    };
-    return far;
-  };
-
-  const buildFarsArray = useCallback(
-    (fixedAssignments: FixedAssignmentT[], requests: RequestT[]): FarT[] => {
-      const fars: FarT[] = [
-        ...fixedAssignments.map(FixedAssignmentToFar),
-        ...requests.map(RequestoFar),
-      ];
-      return fars.sort((a, b) => {
-        return a.date.getTime() - b.date.getTime();
-      });
-    },
-    []
-  );
 
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
@@ -121,10 +81,6 @@ const App = () => {
       fetchInitialData();
     }
   }, [fetchInitialData, teams]);
-
-  useEffect(() => {
-    setFars(buildFarsArray(fixedAssignments, requests));
-  }, [fixedAssignments, requests, buildFarsArray]);
 
   const renderTabContent = () => {
     if (!selectedTeam) {
@@ -165,11 +121,11 @@ const App = () => {
         );
       case "requests":
         return (
-          <FARTab
+          <RequestTab
             team={selectedTeam}
             workers={workers}
             shifts={shifts}
-            fars={fars}
+            requests={requests}
           />
         );
       case "cov_selector":

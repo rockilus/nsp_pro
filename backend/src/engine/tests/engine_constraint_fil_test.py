@@ -95,6 +95,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 shift_id="s0",
                 date=date.fromisoformat("2023-10-02"),
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             )
@@ -131,6 +132,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w0",
                 shift_id="s2",
                 date=date.fromisoformat("2023-10-02"),
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             )
@@ -168,6 +170,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w2",
                 shift_id="s0",
                 date=date.fromisoformat("2023-10-02"),
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             )
@@ -212,6 +215,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 worker_id="w2",
                 shift_id="s2",
                 date=date.fromisoformat("2023-10-02"),
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             )
@@ -259,6 +263,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 worker_id="w0",
                 shift_id="s0",
                 date=date.fromisoformat("2023-10-02"),
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             )
@@ -295,6 +300,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 worker_id="w0",
                 shift_id="s2",
                 date=date.fromisoformat("2023-10-02"),
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             )
@@ -332,6 +338,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 worker_id="w2",
                 shift_id="s0",
                 date=date.fromisoformat("2023-10-02"),
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             )
@@ -376,6 +383,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 worker_id="w2",
                 shift_id="s2",
                 date=date.fromisoformat("2023-10-02"),
+                hard=False,
                 hard_to_soft=False,
                 penalty=1,
             )

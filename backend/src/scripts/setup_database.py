@@ -5,7 +5,6 @@ from database import (
     ConstraintDB,
     CoverageDB,
     CoverageSelectorDB,
-    FixedAssignmentDB,
     ObjectiveBreachDB,
     RequestDB,
     ScheduleDB,
@@ -37,7 +36,6 @@ constraint_build_db = ConstraintBuildDB(db)
 constraint_db = ConstraintDB(db)
 coverage_db = CoverageDB(db)
 coverage_selector_db = CoverageSelectorDB(db)
-fixed_assignment_db = FixedAssignmentDB(db)
 objective_breach_db = ObjectiveBreachDB(db)
 request_db = RequestDB(db)
 schedule_db = ScheduleDB(db)

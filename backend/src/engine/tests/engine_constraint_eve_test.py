@@ -8,11 +8,11 @@ from engine.tests.engine_test import TestEngine
 # pylint: disable=unused-import
 from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
 from engine.types.input_output_types import (
-    Assignment,
     Constraint,
     Coverage,
     Inputs,
     Outputs,
+    Request,
     ShiftDemand,
     VarDay,
     VarShift,
@@ -128,7 +128,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         assert all(count <= 1 for count in counts)
 
     # pylint: disable=too-many-locals
-    def test_expected_assignment_with_fixed_assignment(
+    def test_expected_assignment_with_hard_request(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
@@ -138,16 +138,20 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         # Total demand of 42 shifts s0 across 8 workers, i.e. 5.25 shifts per
         # worker. Shifts must be spread evenly for worker w0. One fixed
         # assignment that doesn't conflict with constraint
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             )
         ]
         target_shifts = ["s0"]
         quantity = 3
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.days, target_shifts, quantity
@@ -182,7 +186,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         assert all(count <= 1 for count in counts)
 
     # pylint: disable=too-many-locals
-    def test_expected_assignment_with_fixed_assignment_conflict(
+    def test_expected_assignment_with_hard_request_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
@@ -192,21 +196,29 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         # Total demand of 42 shifts s0 across 8 workers, i.e. 5.25 shifts per
         # worker. Shifts must be spread evenly for worker w0. Two fixed
         # assignments that conflict with constraint
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         target_shifts = ["s0"]
         quantity = 3
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.days, target_shifts, quantity
@@ -272,7 +284,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         assert objective_eve == 0
 
-    def test_expected_objective_with_fixed_assignment_conflict(
+    def test_expected_objective_with_hard_request_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
@@ -282,21 +294,29 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         # Total demand of 42 shifts s0 across 8 workers, i.e. 5.25 shifts per
         # worker. Shifts must be spread evenly for worker w0. Two fixed
         # assignments that conflict with constraint
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         target_shifts = ["s0"]
         quantity = 3
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         inputs.constraints = [constraint_fai_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.days, target_shifts, quantity
@@ -313,7 +333,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         assert objective_eve == constraint_eve_soft.penalty
 
     # pylint: disable=too-many-locals
-    def test_expected_constraint_breaches_with_fixed_assignment_conflict(
+    def test_expected_constraint_breaches_with_hard_request_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
@@ -323,21 +343,29 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         # Total demand of 42 shifts s0 across 8 workers, i.e. 5.25 shifts per
         # worker. Shifts must be spread evenly for worker w0. Two fixed
         # assignments that conflict with constraint
-        fixed_assignments = [
-            Assignment(
+        requests = [
+            Request(
+                id="request0",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
-            Assignment(
+            Request(
+                id="request1",
                 worker_id="w0",
                 date=date.fromisoformat("2023-10-03"),
                 shift_id="s0",
+                hard=True,
+                hard_to_soft=False,
+                penalty=0,
             ),
         ]
         target_shifts = ["s0"]
         quantity = 3
-        inputs.fixed_assignments = fixed_assignments
+        inputs.requests = requests
         inputs.constraints = [constraint_fai_soft, constraint_eve_soft]
         inputs.coverage = build_coverage(
             inputs.variable_space.days, target_shifts, quantity

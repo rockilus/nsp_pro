@@ -1,5 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import DateTimeField, ReferenceField, StringField
+from mongoengine.fields import BooleanField, DateTimeField, ReferenceField, StringField
 
 
 class Request(Document):
@@ -9,7 +9,7 @@ class Request(Document):
     worker = ReferenceField("Worker", required=True)
     date = DateTimeField(required=True)
     shift = ReferenceField("Shift", required=True)
-    priority = StringField(required=True, choices=["low", "medium", "high"])
+    hard = BooleanField(required=True)
     status = StringField(
         required=True,
         choices=["pending", "approved", "rejected", "disabled"],

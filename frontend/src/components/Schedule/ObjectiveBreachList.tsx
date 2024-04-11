@@ -31,9 +31,6 @@ export default function ObjectiveBreachList({
   const CBsConstraint: ObjectiveBreachT[] = objectiveBreaches
     .filter((cb) => cb.objectiveCategory === "constraint")
     .sort((a, b) => (a.hardToSoft ? -1 : 1));
-  const CBsFA: ObjectiveBreachT[] = objectiveBreaches.filter(
-    (cb) => cb.objectiveCategory === "fixed_assignment"
-  );
   const CBsRequest: ObjectiveBreachT[] = objectiveBreaches.filter(
     (cb) => cb.objectiveCategory === "request"
   );
@@ -60,21 +57,6 @@ export default function ObjectiveBreachList({
     }
   };
 
-  const checkedFA: boolean = CBsFA.some((cb) => CBsDisplayed.includes(cb.id));
-
-  const checkColorFA: string = CBsFA.every((cb) => CBsDisplayed.includes(cb.id))
-    ? "primary"
-    : "default";
-
-  const switchDisplayCBsFA = () => {
-    if (CBsFA.every((cb) => CBsDisplayed.includes(cb.id))) {
-      removeCBsDisplayed(CBsFA.map((cb) => cb.id));
-    } else {
-      for (let cb of CBsFA.filter((cb) => !CBsDisplayed.includes(cb.id))) {
-        addCBsDisplayed(CBsFA.map((cb) => cb.id));
-      }
-    }
-  };
   const checkedRequest: boolean = CBsRequest.some((cb) =>
     CBsDisplayed.includes(cb.id)
   );
@@ -116,38 +98,6 @@ export default function ObjectiveBreachList({
           </Box>
           <List dense={true}>
             {CBsConstraint.map((constraintBreach, index) => (
-              <ConstraintBreachItem
-                key={index}
-                objectiveBreach={constraintBreach}
-                CBDisplayed={CBsDisplayed.includes(constraintBreach.id)}
-                workers={workers}
-                shifts={shifts}
-                addCBsDisplayed={addCBsDisplayed}
-                removeCBsDisplayed={removeCBsDisplayed}
-              />
-            ))}
-          </List>
-        </Box>
-      )}
-      {CBsFA.length > 0 && (
-        <Box sx={{ display: "flex", flexDirection: "column" }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignContent: "left",
-              alignItems: "center",
-            }}
-          >
-            <Checkbox
-              checked={checkedFA}
-              color={checkColorFA as "primary" | "default"}
-              onClick={switchDisplayCBsFA}
-            />
-            <Typography>Fixed Assignments</Typography>
-          </Box>
-          <List dense={true}>
-            {CBsFA.map((constraintBreach, index) => (
               <ConstraintBreachItem
                 key={index}
                 objectiveBreach={constraintBreach}

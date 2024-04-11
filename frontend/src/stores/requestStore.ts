@@ -1,8 +1,12 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
 // Stores
 import { useSnackBarStore } from "./snackbarStore";
 // Types
-import { RequestT } from "../components/FixedAssignmentRequest/types";
+import { RequestT } from "../components/Request/types";
+
+dayjs.extend(utc);
 
 const apiUrlRequests = process.env.NEXT_PUBLIC_API_URL + "/requests";
 
@@ -18,7 +22,7 @@ type RequestStateT = {
 const toRequestT = (data: any) => {
   const r: RequestT = {
     ...data,
-    date: new Date(data.date),
+    date: dayjs.utc(data.date),
   };
   return r;
 };

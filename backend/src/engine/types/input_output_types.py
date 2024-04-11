@@ -35,6 +35,7 @@ class Request:
     worker_id: str
     date: date
     shift_id: str
+    hard: bool
     hard_to_soft: bool
     penalty: int
 
@@ -92,7 +93,6 @@ class Inputs:
     variable_space: VariableSpace
     coverage: Coverage
     requests: List[Request]
-    fixed_assignments: List[Assignment]
     constraints: List[Constraint]
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
@@ -113,7 +113,7 @@ class Inputs:
 @dataclass
 class ConstraintBreach:
     constraint_id: str
-    category: Literal["request", "fixed_assignment", "constraint"]
+    category: Literal["request", "constraint"]
     variables: List[Tuple[str, date, str]]
     value_diff: int
     hard_to_soft: bool

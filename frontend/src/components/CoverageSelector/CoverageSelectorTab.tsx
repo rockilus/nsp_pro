@@ -19,6 +19,8 @@ import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Stores
 import { useCoverageSelectorStore } from "../../stores/coverageSelectorStore";
+// Utils
+import { dateToTimeZero } from "../../utils/dateUtils";
 // Types
 import { CoverageSelectorT } from "./types";
 import { TeamT } from "../../containers/types";
@@ -48,13 +50,6 @@ export default function CoverageSelectorTab({
   );
 
   // Rows
-
-  const dateToTimeZero = (date: Date): Date => {
-    return new Date(
-      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0)
-    );
-  };
-
   const handleAddCoverageSelector = async () => {
     const newCoverageSelector: CoverageSelectorT = {
       id: "",

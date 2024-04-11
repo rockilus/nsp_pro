@@ -12,7 +12,6 @@ from core.constraint import (
     VarWorker,
 )
 from core.coverage import Coverage, CoverageSelector, ShiftDemand
-from core.fixed_assignment import FixedAssignment
 from core.request import Request
 from core.schedule import (
     Assignment,
@@ -44,7 +43,6 @@ __all__ = [
     "Coverage",
     "CoverageSelector",
     "ShiftDemand",
-    "FixedAssignment",
     "Request",
     "ObjectiveBreach",
     "Schedule",

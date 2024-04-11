@@ -19,7 +19,6 @@ from scripts.setup_database import (
     constraint_build_db,
     constraint_db,
     coverage_selector_db,
-    fixed_assignment_db,
     objective_breach_db,
     request_db,
     schedule_db,
@@ -33,7 +32,7 @@ from services.constraint_services import build_constraints
 from services.schedule_services.core_to_engine import core_to_engine_inputs
 from services.schedule_services.engine_to_core import engine_to_core_outputs
 from services.schedule_services.inputs_processing import build_no_coverage_date
-from services.schedule_services.outputs_processing import update_far_status
+from services.schedule_services.outputs_processing import update_request_status
 from services.stats_services import stats_setup
 
 
@@ -50,9 +49,6 @@ def solve_schedule(
     cstr_builds = constraint_build_db.get_constraint_builds_active(schedule.team_id)
     coverage_selectors = coverage_selector_db.get_coverage_selector_by_dates(
         schedule.start_date, schedule.end_date, schedule.team_id
-    )
-    fixed_assignments = fixed_assignment_db.get_fixed_assignments_by_dates(
-        schedule.start_date, schedule.end_date, workers
     )
     requests = request_db.get_requests_by_dates(
         schedule.start_date, schedule.end_date, workers
@@ -79,7 +75,6 @@ def solve_schedule(
         schedule.end_date,
         shifts,
         shift_demands,
-        fixed_assignments,
         requests,
         constraints,
         prev_assignments,
@@ -101,7 +96,7 @@ def solve_schedule(
     )
     end_time_process_outputs = time.time()
     start_time_update_db = time.time()
-    update_far_status(schedule, assignments)
+    update_request_status(schedule, assignments)
     updated_schedule = schedule_db.update_schedule(schedule)
     updated_assignments = save_assignments(assignments, updated_schedule)
     new_objective_breaches = save_objective_breaches(

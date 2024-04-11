@@ -104,7 +104,7 @@ class RequestMessage(BaseModel):
     workerId: str
     date: date
     shiftId: str
-    priority: str
+    hard: bool
     status: str
 
 
@@ -250,7 +250,6 @@ class BulkMessage(BaseModel):
     coverages: List[CoverageMessage]
     constraints: List[ConstraintBuildMessage]
     constraintTemplates: List[TemplateMessage]
-    fixedAssignments: List[FixedAssignmentMessage]
     requests: List[RequestMessage]
     coverageSelectors: List[CoverageSelectorMessage]
     assignments: List[AssignmentMessage]

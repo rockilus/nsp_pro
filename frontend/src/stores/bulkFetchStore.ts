@@ -10,7 +10,6 @@ import { useShiftDimensionStore } from "./shiftDimensionStore";
 import { useCoverageStore } from "./coverageStore";
 import { useConstraintStore } from "./constraintStore";
 import { useConstraintTemplateStore } from "./constraintTemplateStore";
-import { useFixedAssignmentStore } from "./fixedAssignmentStore";
 import { useRequestStore } from "./requestStore";
 import { useCoverageSelectorStore } from "./coverageSelectorStore";
 import { useScheduleStore } from "./scheduleStore";
@@ -63,9 +62,6 @@ export const useBulkFetchStore = create<BulkFetchStateT>()((set) => ({
       useConstraintTemplateStore
         .getState()
         .fetchConstraintTemplatesStore(bulk.constraintTemplates);
-      useFixedAssignmentStore
-        .getState()
-        .fetchFixedAssignmentsStore(bulk.fixedAssignments);
       useRequestStore.getState().fetchRequestsStore(bulk.requests);
       useCoverageSelectorStore
         .getState()

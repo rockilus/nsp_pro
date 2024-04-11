@@ -4,7 +4,6 @@ from routes.constraint_routes import router as router_constraint
 from routes.constraint_template_routes import router as router_constraint_template
 from routes.coverage_routes import router as router_coverage
 from routes.coverage_selector_routes import router as router_coverage_selector
-from routes.fixed_assignment_routes import router as router_fixed_assignment
 from routes.health_routes import router as router_health
 from routes.objective_breach_routes import router as router_objective_breach
 from routes.request_routes import router as router_request
@@ -24,7 +23,6 @@ __all__ = [
     "router_constraint_template",
     "router_coverage",
     "router_coverage_selector",
-    "router_fixed_assignment",
     "router_health",
     "router_objective_breach",
     "router_request",

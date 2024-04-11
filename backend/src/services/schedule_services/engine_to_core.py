@@ -71,7 +71,7 @@ def _engine_to_core_objective_breach(
             description = _build_description_cb_fil(cb)
         else:
             description = f"{constraint.constraint_type} constraint not implemented yet"
-    elif cb.category in ["request", "fixed_assignment"]:
+    elif cb.category == "request":
         description = _build_description_cb_far(cb, assignments)
     else:
         description = f"{cb.category} constraint not implemented yet"

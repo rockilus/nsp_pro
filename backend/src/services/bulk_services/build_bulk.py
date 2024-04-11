@@ -7,7 +7,6 @@ from scripts.setup_database import (
     constraint_build_db,
     coverage_db,
     coverage_selector_db,
-    fixed_assignment_db,
     objective_breach_db,
     request_db,
     schedule_db,
@@ -81,7 +80,6 @@ def build_bulk(teams: List[Team], selected_team_id: str) -> Bulk:
         bulk.shift_dimensions,
         shift_properties_sd,
     )
-    bulk.fixed_assignments = fixed_assignment_db.get_fixed_assignments(bulk.workers)
     bulk.requests = request_db.get_requests(bulk.workers)
     bulk.coverage_selectors = coverage_selector_db.get_coverage_selectors(
         selected_team_id
