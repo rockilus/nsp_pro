@@ -4,7 +4,7 @@ import NavAppBar from "../components/AppBar/NavAppBar";
 import ConstraintTab from "../components/Constraint/ConstraintTab";
 import CoverageSelectorTab from "../components/CoverageSelector/CoverageSelectorTab";
 import CoverageTab from "../components/Coverage/CoverageTab";
-import RequestTab from "../components/FixedAssignmentRequest/RequestTab";
+import RequestTab from "../components/Request/RequestTab";
 import ScheduleTab from "../components/Schedule/ScheduleTab";
 import ShiftTab from "../components/Shift/ShiftTab";
 import SimpleSnackbar from "../components/SnackBars/SnackBars";

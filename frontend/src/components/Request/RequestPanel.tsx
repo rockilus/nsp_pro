@@ -4,9 +4,7 @@ import dayjs from "dayjs";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import CloseIcon from "@mui/icons-material/Close";
 import FormControl from "@mui/material/FormControl";
-import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import Select from "@mui/material/Select";
@@ -14,6 +12,8 @@ import WorkIcon from "@mui/icons-material/Work";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Stores
 import { useRequestStore } from "../../stores/requestStore";
+// Utils
+import { dateToTimeZero } from "../../utils/dateUtils";
 // Types
 import { RequestT } from "./types";
 import { TeamT } from "../../containers/types";
@@ -35,12 +35,6 @@ export default function RequestPanel({
   shifts,
   handleClose,
 }: Props) {
-  const dateToTimeZero = (date: Date): Date => {
-    return new Date(
-      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0)
-    );
-  };
-
   const [requestState, setRequestState] = useState<RequestT>({
     id: request.id,
     workerId: request.workerId,
@@ -52,20 +46,12 @@ export default function RequestPanel({
 
   const addRequest = useRequestStore((state) => state.addRequest);
   const updateRequest = useRequestStore((state) => state.updateRequest);
-  const deleteRequest = useRequestStore((state) => state.deleteRequest);
 
   const handleSaveRequest = async () => {
     if (requestState.id === "") {
-      await addRequest(request, team.id);
+      await addRequest(requestState, team.id);
     } else {
-      updateRequest(request, team.id);
-    }
-    handleClose();
-  };
-
-  const handleDeleteRequest = async () => {
-    if (requestState.id !== "") {
-      deleteRequest(requestState.id, team.id);
+      updateRequest(requestState, team.id);
     }
     handleClose();
   };
@@ -132,23 +118,6 @@ export default function RequestPanel({
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "space-between",
-          width: "100%",
-          marginLeft: 2,
-          marginRight: 2,
-          marginBottom: 1,
-        }}
-      >
-        New request
-        <IconButton onClick={handleClose} sx={{ marginRight: 2 }}>
-          <CloseIcon color="disabled" />
-        </IconButton>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
           width: "100%",
           marginBottom: 1,
         }}
@@ -198,16 +167,6 @@ export default function RequestPanel({
           width: "100%",
         }}
       >
-        {requestState.id !== "" && (
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ marginRight: 2 }}
-            onClick={handleDeleteRequest}
-          >
-            Delete
-          </Button>
-        )}
         <Button
           variant="contained"
           color="primary"

@@ -74,7 +74,13 @@ export default function WorkerTable({
                     alignItems: "center",
                   }}
                 >
-                  <Box display="flex" alignItems="center" minHeight={45}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      minHeight: 45,
+                    }}
+                  >
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
                       Workers
                     </Typography>

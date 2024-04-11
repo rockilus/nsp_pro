@@ -63,6 +63,15 @@ export const CovHeadRowHeight = 20; // in pixels
 export const CovBodyRowHeight = 12; // in pixels
 export const CovBorderThick = 1; // in pixels
 
+// Requests
+export const RequestTableFields = {
+  Worker: "workerId",
+  Shift: "shiftId",
+  Date: "date",
+  Hard: "hard",
+  Status: "status",
+};
+
 //Schedules
 export const SolveStatusList = [
   "Not solved",

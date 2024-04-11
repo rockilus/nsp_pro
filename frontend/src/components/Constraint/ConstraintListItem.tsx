@@ -5,10 +5,10 @@ import ClearIcon from "@mui/icons-material/Clear";
 import EditIcon from "@mui/icons-material/Edit";
 import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
-import ToggleButton from "@mui/material/ToggleButton";
 import Typography from "@mui/material/Typography";
 // Components
 import ConstraintButton from "./ConstraintButton";
+import { hardSoftButton } from "../SharedComponents/HardSoftButton";
 // Stores
 import { useConstraintStore } from "../../stores/constraintStore";
 // Types
@@ -57,28 +57,6 @@ export default function ConstraintListItem({
     );
   };
 
-  const hardSoftButton = () => {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <ToggleButton
-          value="hard"
-          // color="primary"
-          // selected={constraint.hard}
-          onChange={handleToggleHard}
-          sx={{ height: 30 }}
-        >
-          {constraint.hard ? "Hard" : "Soft"}
-        </ToggleButton>
-      </Box>
-    );
-  };
-
   return (
     <Grid item xs={12} md={12} xl={12} sx={{ paddingX: 1 }}>
       <Grid
@@ -122,7 +100,7 @@ export default function ConstraintListItem({
           )}
         </Grid>
         <Grid item xs={3}>
-          {hardSoftButton()}
+          {hardSoftButton(constraint.hard, handleToggleHard)}
         </Grid>
         <Grid item xs={1}>
           <Box sx={{ display: "flex", flexDirection: "row" }}>

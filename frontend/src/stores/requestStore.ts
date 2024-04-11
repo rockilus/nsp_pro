@@ -2,7 +2,7 @@ import { create } from "zustand";
 // Stores
 import { useSnackBarStore } from "./snackbarStore";
 // Types
-import { RequestT } from "../components/FixedAssignmentRequest/types";
+import { RequestT } from "../components/Request/types";
 
 const apiUrlRequests = process.env.NEXT_PUBLIC_API_URL + "/requests";
 

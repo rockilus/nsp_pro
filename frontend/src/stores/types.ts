@@ -3,7 +3,7 @@ import { WorkerT, WorkerDimensionT } from "../components/Worker/types";
 import { ShiftT, ShiftDimensionT } from "../components/Shift/types";
 import { CoverageT } from "../components/Coverage/types";
 import { ConstraintT, TemplateT } from "../components/Constraint/types";
-import { RequestT } from "../components/FixedAssignmentRequest/types";
+import { RequestT } from "../components/Request/types";
 import { CoverageSelectorT } from "../components/CoverageSelector/types";
 import {
   AssignmentT,
