@@ -17,6 +17,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+// Components
+import TableAddButton from "../SharedComponents/TableAddButton";
 // Stores
 import { useCoverageSelectorStore } from "../../stores/coverageSelectorStore";
 // Utils
@@ -96,7 +98,6 @@ export default function CoverageSelectorTab({
                 ? coverageSelector.coverageId
                 : ""
             }
-            label="Coverage"
             onChange={(e) => handleUpdateCoverageId(e, coverageSelector)}
           >
             {coverages.map((coverage) => (
@@ -111,17 +112,59 @@ export default function CoverageSelectorTab({
   };
 
   return (
-    <Box style={{ width: "100%" }}>
-      <Typography variant="h4" align="left">
-        Coverage Selection
-      </Typography>
+    <Box
+      sx={{
+        border: "1px solid grey",
+        margin: 2,
+        overflowX: "auto",
+        borderRadius: 2,
+        backgroundColor: "none",
+      }}
+    >
       <TableContainer component={Paper} style={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
+          <TableHead sx={{ backgroundColor: "grey.100" }}>
+            <TableRow>
+              <TableCell colSpan={columns.length + 1} sx={{ paddingY: 0 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    alignItems: "center",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      minHeight: 45,
+                    }}
+                  >
+                    <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                      Coverage selectors
+                    </Typography>
+                  </Box>
+                </Box>
+              </TableCell>
+            </TableRow>
             <TableRow>
               {columns.map((column, colIndex) => (
-                <TableCell key={colIndex} component="th" scope="row">
-                  {column}
+                <TableCell
+                  key={colIndex}
+                  component="th"
+                  scope="row"
+                  sx={{ paddingY: 0, fontWeight: "bold" }}
+                >
+                  <Box
+                    sx={{
+                      minHeight: 45,
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    {column}
+                  </Box>
                 </TableCell>
               ))}
               <TableCell></TableCell>
@@ -175,12 +218,14 @@ export default function CoverageSelectorTab({
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow>
-              <TableCell colSpan={columns.length}>
-                <Button onClick={handleAddCoverageSelector}>
-                  <AddIcon />
-                  New
-                </Button>
+            <TableRow sx={{ backgroundColor: "grey.100" }}>
+              <TableCell colSpan={columns.length + 1} sx={{ paddingY: 0 }}>
+                <Box display="flex" alignItems="center" minHeight={45}>
+                  <TableAddButton
+                    text="Add coverage selector"
+                    handleClick={handleAddCoverageSelector}
+                  />
+                </Box>
               </TableCell>
             </TableRow>
           </TableBody>
