@@ -1,7 +1,6 @@
 import React from "react";
 // MUI
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 // Components
 import WorkerTable from "./WorkerTable";
 // Types

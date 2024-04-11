@@ -3,9 +3,10 @@ import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 // Components
-import ScheduleDisplay from "./ScheduleDisplay";
+import ScheduleDisplay from "./Table/ScheduleDisplay";
 import ObjectiveBreachList from "./ObjectiveBreachList";
-import ScheduleOptions from "./ScheduleOptions";
+import ScheduleOptions from "./ScheduleOptions/ScheduleOptions";
+import ScheduleDisplayOptions from "./DisplayOptions/ScheduleDisplayOptions";
 // Types
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
@@ -41,18 +42,25 @@ export default function ScheduleTab({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <Typography variant="h4" align="left">
-        Schedule
-      </Typography>
-      <ScheduleOptions
-        team={team}
-        schedules={schedules}
-        selectedDisplay={selectedDisplay}
-        displayCBs={displayCBs}
-        setSelectedDisplay={setSelectedDisplay}
-        switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
-      />
+    <Box sx={{ display: "flex", flexDirection: "row" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", width: 800, margin: 2 }}
+      >
+        <ScheduleOptions
+          team={team}
+          schedules={schedules}
+          selectedDisplay={selectedDisplay}
+          displayCBs={displayCBs}
+          setSelectedDisplay={setSelectedDisplay}
+          switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
+        />
+        <ScheduleDisplayOptions
+          selectedDisplay={selectedDisplay}
+          displayCBs={displayCBs}
+          setSelectedDisplay={setSelectedDisplay}
+          switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
+        />
+      </Box>
       <ScheduleDisplay
         team={team}
         schedules={schedules}
@@ -64,9 +72,7 @@ export default function ScheduleTab({
         displayCBs={displayCBs}
         CBsDisplayed={CBsDisplayed}
       />
-      <Typography variant="h4" align="left">
-        Objective breaches
-      </Typography>
+
       <ObjectiveBreachList
         objectiveBreaches={objectiveBreaches} // schedule.objectiveBreaches
         CBsDisplayed={CBsDisplayed}

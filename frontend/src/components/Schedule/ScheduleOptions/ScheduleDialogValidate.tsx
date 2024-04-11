@@ -8,16 +8,16 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 // Stores
-import { useScheduleStore } from "../../stores/scheduleStore";
+import { useScheduleStore } from "../../../stores/scheduleStore";
 // Types
-import { TeamT } from "../../containers/types";
+import { TeamT } from "../../../containers/types";
 
 interface Props {
   team: TeamT;
   scheduleId: string;
 }
 
-export default function ScheduleValidateDialog({ team, scheduleId }: Props) {
+export default function ScheduleDialogValidate({ team, scheduleId }: Props) {
   const [open, setOpen] = useState(false);
   const validateSchedule = useScheduleStore((state) => state.validateSchedule);
 
@@ -30,12 +30,16 @@ export default function ScheduleValidateDialog({ team, scheduleId }: Props) {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", marginRight: 1 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
       <Button
         variant="outlined"
         onClick={handleClickOpen}
-        fullWidth
-        sx={{ paddingLeft: 0.2, paddingRight: 0.2 }}
+        sx={{
+          paddingLeft: 0.2,
+          paddingRight: 0.2,
+          marginLeft: "8px",
+          textTransform: "none",
+        }}
       >
         Validate
       </Button>
