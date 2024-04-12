@@ -88,8 +88,7 @@ export default function ScheduleWIP({ team, schedule }: Props) {
           <Box
             sx={{
               backgroundColor: "#1976d2",
-              height: "36.5px",
-              width: "64px",
+              height: "35px",
               borderRadius: "4px",
               display: "flex",
               justifyContent: "center",
@@ -104,7 +103,12 @@ export default function ScheduleWIP({ team, schedule }: Props) {
             variant="contained"
             color="primary"
             onClick={handleSolve}
-            sx={{ paddingLeft: 0.2, paddingRight: 0.2, margin: "8px" }}
+            sx={{
+              paddingLeft: 0.2,
+              paddingRight: 0.2,
+              margin: "8px",
+              height: "35px",
+            }}
           >
             Solve
           </Button>

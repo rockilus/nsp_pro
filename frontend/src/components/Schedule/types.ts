@@ -21,7 +21,7 @@ export type VariableT = {
 
 export type ObjectiveBreachT = {
   id: string;
-  objctiveId: string;
+  objectiveId: string;
   objectiveCategory: string;
   variables: VariableT[];
   hardToSoft: boolean;

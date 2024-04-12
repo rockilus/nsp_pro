@@ -111,6 +111,7 @@ export default function ScheduleDisplayOptions({
                   checked={displayCBs}
                   onChange={switchDisplayCBs}
                   inputProps={{ "aria-label": "controlled" }}
+                  size="small"
                 />
               }
             />

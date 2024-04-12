@@ -9,12 +9,14 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
-
+import { red } from "@mui/material/colors";
+// Utils
+import { getBreachType } from "../../../utils/scheduleUtils";
 // Types
 import { TeamT } from "../../../containers/types";
 import { ShiftT } from "../../Shift/types";
 import { WorkerT } from "../../Worker/types";
-import { AssignmentT, ScheduleT } from "../types";
+import { AssignmentT, ScheduleT, ObjectiveBreachT } from "../types";
 import { Box } from "@mui/material";
 
 interface Props {
@@ -24,6 +26,8 @@ interface Props {
   assignments: AssignmentT[];
   schedules: ScheduleT[];
   dates: dayjs.Dayjs[];
+  breaches: ObjectiveBreachT[];
+  showBreaches: boolean;
 }
 
 export default function ScheduleTableWorker({
@@ -33,10 +37,9 @@ export default function ScheduleTableWorker({
   assignments,
   schedules,
   dates,
+  breaches,
+  showBreaches,
 }: Props) {
-  console.log("dates", dates);
-  console.log("assignments", assignments);
-
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -107,14 +110,41 @@ export default function ScheduleTableWorker({
                 </Box>
               </TableCell>
               {dates.map((date, dateIndex) => {
-                const assignment = assignments.find(
+                const targetAs = assignments.filter(
                   (a) => a.workerId === worker.id && a.date.isSame(date, "date")
                 );
 
                 return (
-                  <TableCell key={dateIndex} align="center">
-                    {assignment &&
-                      shifts.find((s) => s.id === assignment.shiftId)?.name}
+                  <TableCell key={dateIndex} sx={{ align: "center" }}>
+                    {targetAs.map((a, aIndex) => {
+                      const shift = shifts.find((s) => s.id === a.shiftId);
+                      const targetBs = breaches.filter((b) =>
+                        b.variables.find(
+                          (v) =>
+                            v.workerId === a.workerId &&
+                            v.date.isSame(a.date, "date")
+                        )
+                      );
+                      const backColor = getBreachType(targetBs);
+                      return (
+                        <Box
+                          key={aIndex}
+                          sx={{
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: showBreaches
+                              ? backColor === "hardBreach"
+                                ? red[200]
+                                : backColor === "softBreach"
+                                ? red[100]
+                                : "none"
+                              : "none",
+                          }}
+                        >
+                          {a && shift && shift.name}
+                        </Box>
+                      );
+                    })}
                   </TableCell>
                 );
               })}

@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 // Components
 import ScheduleDisplay from "./Table/ScheduleDisplay";
-import ObjectiveBreachList from "./ObjectiveBreachList";
+import ObjectiveBreachList from "./Breaches/ObjectiveBreachList";
 import ScheduleOptions from "./ScheduleOptions/ScheduleOptions";
 import ScheduleDisplayOptions from "./DisplayOptions/ScheduleDisplayOptions";
 // Types
@@ -31,7 +31,7 @@ export default function ScheduleTab({
   objectiveBreaches,
 }: Props) {
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
-  const [displayCBs, setDisplayCBs] = useState<boolean>(true);
+  const [showBreaches, setShowBreaches] = useState<boolean>(true);
   const [CBsDisplayed, setCBsDisplayed] = useState<string[]>([]);
 
   const addCBsDisplayed = (ids: string[]) => {
@@ -50,29 +50,28 @@ export default function ScheduleTab({
           team={team}
           schedules={schedules}
           selectedDisplay={selectedDisplay}
-          displayCBs={displayCBs}
+          displayCBs={showBreaches}
           setSelectedDisplay={setSelectedDisplay}
-          switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
+          switchDisplayCBs={() => setShowBreaches(!showBreaches)}
         />
         <ScheduleDisplayOptions
           selectedDisplay={selectedDisplay}
-          displayCBs={displayCBs}
+          displayCBs={showBreaches}
           setSelectedDisplay={setSelectedDisplay}
-          switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
+          switchDisplayCBs={() => setShowBreaches(!showBreaches)}
         />
       </Box>
       <ScheduleDisplay
         team={team}
         schedules={schedules}
         assignments={assignments}
-        objectiveBreaches={objectiveBreaches}
+        breaches={objectiveBreaches}
         workers={workers}
         shifts={shifts}
         selectedDisplay={selectedDisplay}
-        displayCBs={displayCBs}
+        showBreaches={showBreaches}
         CBsDisplayed={CBsDisplayed}
       />
-
       <ObjectiveBreachList
         objectiveBreaches={objectiveBreaches} // schedule.objectiveBreaches
         CBsDisplayed={CBsDisplayed}

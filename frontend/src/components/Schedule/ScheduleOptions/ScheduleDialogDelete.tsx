@@ -39,6 +39,7 @@ export default function ScheduleDialogDelete({ team, scheduleId }: Props) {
           paddingLeft: 0.2,
           paddingRight: 0.2,
           textTransform: "none",
+          height: "35px",
         }}
       >
         Delete

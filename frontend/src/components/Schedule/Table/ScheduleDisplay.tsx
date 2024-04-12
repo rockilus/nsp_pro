@@ -19,11 +19,11 @@ interface Props {
   team: TeamT;
   schedules: ScheduleT[];
   assignments: AssignmentT[];
-  objectiveBreaches: ObjectiveBreachT[];
+  breaches: ObjectiveBreachT[];
   workers: WorkerT[];
   shifts: ShiftT[];
   selectedDisplay: string;
-  displayCBs: boolean;
+  showBreaches: boolean;
   CBsDisplayed: string[];
 }
 
@@ -31,11 +31,11 @@ export default function ScheduleDisplay({
   team,
   schedules,
   assignments,
-  objectiveBreaches,
+  breaches,
   workers,
   shifts,
   selectedDisplay,
-  displayCBs,
+  showBreaches,
   CBsDisplayed,
 }: Props) {
   const getDates = (schedules: ScheduleT[]): dayjs.Dayjs[] => {
@@ -63,6 +63,8 @@ export default function ScheduleDisplay({
         assignments={assignments}
         schedules={schedules}
         dates={getDates(schedules)}
+        breaches={breaches}
+        showBreaches={showBreaches}
       />
     ),
     worker: (
@@ -73,6 +75,8 @@ export default function ScheduleDisplay({
         assignments={assignments}
         schedules={schedules}
         dates={getDates(schedules)}
+        breaches={breaches}
+        showBreaches={showBreaches}
       />
     ),
   };
