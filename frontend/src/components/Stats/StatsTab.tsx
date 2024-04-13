@@ -11,7 +11,7 @@ import { useStatStore } from "../../stores/statStore";
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
 import { WorkerT } from "../Worker/types";
-import { StatsOptionsT } from "../Schedule/types";
+import { StatsOptionsT } from "./types";
 
 interface Props {
   team: TeamT;

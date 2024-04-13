@@ -4,8 +4,7 @@ import { create } from "zustand";
 // Stores
 import { useSnackBarStore } from "./snackbarStore";
 // Types
-import { StatT } from "../components/Schedule/types";
-
+import { StatT } from "../components/Stats/types";
 dayjs.extend(utc);
 
 const apiUrlStat = process.env.NEXT_PUBLIC_API_URL + "/stats";

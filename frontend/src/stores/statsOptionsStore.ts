@@ -5,7 +5,7 @@ import { create } from "zustand";
 import { useStatStore } from "./statStore";
 import { useSnackBarStore } from "./snackbarStore";
 // Types
-import { StatsOptionsT, StatsT } from "../components/Schedule/types";
+import { StatsOptionsT, StatsT } from "../components/Stats/types";
 
 dayjs.extend(utc);
 

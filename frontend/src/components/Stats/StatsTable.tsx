@@ -8,7 +8,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Types
-import { StatT, ColumnStatsT } from "../Schedule/types";
+import { StatT, ColumnStatsT } from "./types";
 import { ShiftT } from "../Shift/types";
 import { WorkerT } from "../Worker/types";
 

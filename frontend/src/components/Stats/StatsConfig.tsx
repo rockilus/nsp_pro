@@ -8,7 +8,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Stores
 import { useStatsOptionsStore } from "../../stores/statsOptionsStore";
 // Types
-import { StatsOptionsT } from "../Schedule/types";
+import { StatsOptionsT } from "./types";
 import { TeamT } from "../../containers/types";
 // Constants
 import { emptyStatsOptions } from "../../utils/emptyObjects";
