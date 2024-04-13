@@ -75,24 +75,6 @@ export type ValidateT = {
 };
 
 // Types for components
-export type ColumnT = {
-  date: dayjs.Dayjs;
-  name: string;
-  noCoverage: boolean;
-  schedule: ScheduleT | null;
-  status: string;
-};
-
-export type RowT = CellT[];
-
-export type CellT = {
-  date: dayjs.Dayjs;
-  value: string;
-  rowSpan: number;
-  noCoverage: boolean;
-  objectiveBreach: ObjectiveBreachT[];
-};
-
 export type ColumnStatsT = {
   name: string;
   label: string;
