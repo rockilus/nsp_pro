@@ -3,9 +3,10 @@ import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 // Components
-import ScheduleDisplay from "./ScheduleDisplay";
-import ObjectiveBreachList from "./ObjectiveBreachList";
-import ScheduleOptions from "./ScheduleOptions";
+import ScheduleDisplay from "./Table/ScheduleDisplay";
+import ObjectiveBreachList from "./Breaches/ObjectiveBreachList";
+import ScheduleOptions from "./ScheduleOptions/ScheduleOptions";
+import ScheduleDisplayOptions from "./DisplayOptions/ScheduleDisplayOptions";
 // Types
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
@@ -30,7 +31,7 @@ export default function ScheduleTab({
   objectiveBreaches,
 }: Props) {
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
-  const [displayCBs, setDisplayCBs] = useState<boolean>(true);
+  const [showBreaches, setShowBreaches] = useState<boolean>(true);
   const [CBsDisplayed, setCBsDisplayed] = useState<string[]>([]);
 
   const addCBsDisplayed = (ids: string[]) => {
@@ -41,32 +42,36 @@ export default function ScheduleTab({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <Typography variant="h4" align="left">
-        Schedule
-      </Typography>
-      <ScheduleOptions
-        team={team}
-        schedules={schedules}
-        selectedDisplay={selectedDisplay}
-        displayCBs={displayCBs}
-        setSelectedDisplay={setSelectedDisplay}
-        switchDisplayCBs={() => setDisplayCBs(!displayCBs)}
-      />
+    <Box sx={{ display: "flex", flexDirection: "row" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", width: 800, margin: 2 }}
+      >
+        <ScheduleOptions
+          team={team}
+          schedules={schedules}
+          selectedDisplay={selectedDisplay}
+          displayCBs={showBreaches}
+          setSelectedDisplay={setSelectedDisplay}
+          switchDisplayCBs={() => setShowBreaches(!showBreaches)}
+        />
+        <ScheduleDisplayOptions
+          selectedDisplay={selectedDisplay}
+          displayCBs={showBreaches}
+          setSelectedDisplay={setSelectedDisplay}
+          switchDisplayCBs={() => setShowBreaches(!showBreaches)}
+        />
+      </Box>
       <ScheduleDisplay
         team={team}
         schedules={schedules}
         assignments={assignments}
-        objectiveBreaches={objectiveBreaches}
+        breaches={objectiveBreaches}
         workers={workers}
         shifts={shifts}
         selectedDisplay={selectedDisplay}
-        displayCBs={displayCBs}
+        showBreaches={showBreaches}
         CBsDisplayed={CBsDisplayed}
       />
-      <Typography variant="h4" align="left">
-        Objective breaches
-      </Typography>
       <ObjectiveBreachList
         objectiveBreaches={objectiveBreaches} // schedule.objectiveBreaches
         CBsDisplayed={CBsDisplayed}

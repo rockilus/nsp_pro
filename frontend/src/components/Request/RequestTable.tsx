@@ -35,7 +35,10 @@ export default function RequestTable({
 }: Props) {
   return (
     <>
-      <TableContainer component={Paper} sx={{ width: "100%" }}>
+      <TableContainer
+        component={Paper}
+        sx={{ width: "100%", borderRadius: "0 0 8px 8px" }}
+      >
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead sx={{ backgroundColor: "grey.100" }}>
             <TableRow>

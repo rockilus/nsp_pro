@@ -5,19 +5,20 @@ import utc from "dayjs/plugin/utc";
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import ToggleButton from "@mui/material/ToggleButton";
+import Typography from "@mui/material/Typography";
 // Components
-import SchedulePanelDialog from "./SchedulePanelDialog";
+import ScheduleDisplayOptions from "../DisplayOptions/ScheduleDisplayOptions";
+import SchedulePanelDialog from "../SchedulePanelDialog";
 import ScheduleWIP from "./ScheduleWIP";
 // Types
-import { ScheduleT } from "./types";
-import { TeamT } from "../../containers/types";
+import { ScheduleT } from "../types";
+import { TeamT } from "../../../containers/types";
 // Utils
-import { emptySchedule } from "../../utils/emptyObjects";
+import { emptySchedule } from "../../../utils/emptyObjects";
 
 dayjs.extend(utc);
 
@@ -76,45 +77,48 @@ export default function ScheduleOptions({
     <Box
       sx={{
         display: "flex",
-        flexDirection: "row",
-        backgroundColor: "grey.100",
+        flexDirection: "column",
+        alignSelf: "flex-start",
+        width: "100%",
+        border: "1px solid grey",
+        borderRadius: 2,
       }}
     >
-      {scheduleWIP ? (
-        <ScheduleWIP team={team} schedule={scheduleWIP} />
-      ) : (
-        <SchedulePanelDialog
-          team={team}
-          buttonElement={createScheduleButton()}
-          schedule={newScheduleWIP}
-        />
-      )}
-      <Divider
-        orientation="vertical"
-        sx={{ marginLeft: 2, marginRight: 2, height: 30 }}
-      />
-      <Box sx={{ minWidth: 120 }}>
-        <FormControl fullWidth>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={selectedDisplay}
-            onChange={handleChange}
-          >
-            <MenuItem value={"shift"}>Shift</MenuItem>
-            <MenuItem value={"worker"}>Worker</MenuItem>
-            {/* <MenuItem value={"week"}>Week</MenuItem> */}
-          </Select>
-        </FormControl>
-      </Box>
-      <ToggleButton
-        value="breaches"
-        color="primary"
-        selected={displayCBs}
-        onChange={switchDisplayCBs}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          minHeight: 45,
+          paddingLeft: 1,
+          borderBottom: "1px solid lightgrey",
+          backgroundColor: "grey.100",
+          borderRadius: "8px 8px 0 0",
+        }}
       >
-        Breaches
-      </ToggleButton>
+        <Typography
+          variant="subtitle1"
+          align="left"
+          sx={{ fontWeight: "bold" }}
+        >
+          Schedules
+        </Typography>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {scheduleWIP ? (
+          <ScheduleWIP team={team} schedule={scheduleWIP} />
+        ) : (
+          <SchedulePanelDialog
+            team={team}
+            buttonElement={createScheduleButton()}
+            schedule={newScheduleWIP}
+          />
+        )}
+      </Box>
     </Box>
   );
 }

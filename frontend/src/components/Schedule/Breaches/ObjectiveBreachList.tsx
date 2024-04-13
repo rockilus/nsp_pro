@@ -7,9 +7,9 @@ import Typography from "@mui/material/Typography";
 // Components
 import ConstraintBreachItem from "./ObjectiveBreachItem";
 // Types
-import { ObjectiveBreachT } from "./types";
-import { ShiftT } from "../Shift/types";
-import { WorkerT } from "../Worker/types";
+import { ObjectiveBreachT } from "../types";
+import { ShiftT } from "../../Shift/types";
+import { WorkerT } from "../../Worker/types";
 
 interface Props {
   objectiveBreaches: ObjectiveBreachT[];
@@ -78,30 +78,45 @@ export default function ObjectiveBreachList({
   };
 
   return (
-    <Box sx={{ flexGrow: 1, maxWidth: 752 }}>
-      {CBsConstraint.length > 0 && (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignSelf: "flex-start",
+        width: "100%",
+        border: "1px solid grey",
+        borderRadius: 2,
+        margin: 2,
+        marginLeft: 0,
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          minHeight: 45,
+          paddingLeft: 1,
+          borderBottom: "1px solid lightgrey",
+          backgroundColor: "grey.100",
+          borderRadius: "8px 8px 0 0",
+        }}
+      >
+        <Typography
+          variant="subtitle1"
+          align="left"
+          sx={{ fontWeight: "bold" }}
+        >
+          Breaches
+        </Typography>
+      </Box>
+      <Box sx={{ flexGrow: 1, maxWidth: 752 }}>
         <Box sx={{ display: "flex", flexDirection: "column" }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignContent: "left",
-              alignItems: "center",
-            }}
-          >
-            <Checkbox
-              checked={checkedConstraint}
-              color={checkColorConstraint as "primary" | "default"}
-              onClick={switchDisplayCBsConstraint}
-            />
-            <Typography>Constraints</Typography>
-          </Box>
           <List dense={true}>
-            {CBsConstraint.map((constraintBreach, index) => (
+            {objectiveBreaches.map((breach, index) => (
               <ConstraintBreachItem
                 key={index}
-                objectiveBreach={constraintBreach}
-                CBDisplayed={CBsDisplayed.includes(constraintBreach.id)}
+                objectiveBreach={breach}
+                CBDisplayed={CBsDisplayed.includes(breach.id)}
                 workers={workers}
                 shifts={shifts}
                 addCBsDisplayed={addCBsDisplayed}
@@ -110,39 +125,7 @@ export default function ObjectiveBreachList({
             ))}
           </List>
         </Box>
-      )}
-      {CBsRequest.length > 0 && (
-        <Box sx={{ display: "flex", flexDirection: "column" }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignContent: "left",
-              alignItems: "center",
-            }}
-          >
-            <Checkbox
-              checked={checkedRequest}
-              color={checkColorRequest as "primary" | "default"}
-              onClick={switchDisplayCBsRequest}
-            />
-            <Typography>Requests</Typography>
-          </Box>
-          <List dense={true}>
-            {CBsRequest.map((constraintBreach, index) => (
-              <ConstraintBreachItem
-                key={index}
-                objectiveBreach={constraintBreach}
-                CBDisplayed={CBsDisplayed.includes(constraintBreach.id)}
-                workers={workers}
-                shifts={shifts}
-                addCBsDisplayed={addCBsDisplayed}
-                removeCBsDisplayed={removeCBsDisplayed}
-              />
-            ))}
-          </List>
-        </Box>
-      )}
+      </Box>
     </Box>
   );
 }

@@ -8,18 +8,18 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 // Stores
-import { useScheduleStore } from "../../stores/scheduleStore";
+import { useScheduleStore } from "../../../stores/scheduleStore";
 // Types
-import { TeamT } from "../../containers/types";
+import { TeamT } from "../../../containers/types";
 
 interface Props {
   team: TeamT;
   scheduleId: string;
 }
 
-export default function ScheduleValidateDialog({ team, scheduleId }: Props) {
+export default function ScheduleDialogDelete({ team, scheduleId }: Props) {
   const [open, setOpen] = useState(false);
-  const validateSchedule = useScheduleStore((state) => state.validateSchedule);
+  const deleteSchedule = useScheduleStore((state) => state.deleteSchedule);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -30,14 +30,19 @@ export default function ScheduleValidateDialog({ team, scheduleId }: Props) {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", marginRight: 1 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
       <Button
         variant="outlined"
         onClick={handleClickOpen}
-        fullWidth
-        sx={{ paddingLeft: 0.2, paddingRight: 0.2 }}
+        color="error"
+        sx={{
+          paddingLeft: 0.2,
+          paddingRight: 0.2,
+          textTransform: "none",
+          height: "35px",
+        }}
       >
-        Validate
+        Delete
       </Button>
       <Dialog
         open={open}
@@ -46,27 +51,26 @@ export default function ScheduleValidateDialog({ team, scheduleId }: Props) {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Validate this schedule?"}
+          {"Delete this schedule?"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Validating this schedule will send the assignments to your team for
-            the schedule period. Changes to the schedule will be limited.
+            Deleting this schedule will delete its configuration and all its
+            assignments. This action is not reversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="error">
-            Cancel
-          </Button>
           <Button
+            color="error"
             onClick={() => {
-              validateSchedule(scheduleId, team.id);
+              deleteSchedule(scheduleId, team.id);
               handleClose();
             }}
             autoFocus
           >
-            Validate
+            Delete
           </Button>
+          <Button onClick={handleClose}>Cancel</Button>
         </DialogActions>
       </Dialog>
     </Box>
