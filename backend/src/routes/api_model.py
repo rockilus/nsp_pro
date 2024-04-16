@@ -157,25 +157,6 @@ class AssignmentMessage(BaseModel):
     status: str
 
 
-class StatMessage(BaseModel):
-    workerId: str
-    name: str
-    cluster: str
-    value: int | float
-
-
-class StatsOptionsMessage(BaseModel):
-    id: str
-    teamId: str
-    startDate: date
-    endDate: date
-
-
-class StatsMessage(BaseModel):
-    statsOptions: StatsOptionsMessage | None
-    stats: List[StatMessage]
-
-
 class VariableMessage(BaseModel):
     workerId: str
     date: date
@@ -200,6 +181,52 @@ class ScheduleMessage(BaseModel):
     solveStatus: str
     status: str
     missingCoverageDates: List[date]
+
+
+# Stats
+class ShiftPropertyHeaderMessage(BaseModel):
+    shiftDimensionId: str
+    propertyValue: str | int | float | bool
+
+
+class StatsHeaderMessage(BaseModel):
+    id: str
+    statsOptionsId: str
+    type: str
+    value: str
+    shiftsSelected: str
+    shiftIds: List[str]
+    shiftPropertyHeaders: List[ShiftPropertyHeaderMessage]
+
+
+class StatsValueMessage(BaseModel):
+    workerId: str
+    headerId: str
+    value: int | float
+
+
+class StatsMessage(BaseModel):
+    statsHeaders: List[StatsHeaderMessage]
+    statsValues: List[StatsValueMessage]
+
+
+class StatMessage(BaseModel):
+    workerId: str
+    name: str
+    cluster: str
+    value: int | float
+
+
+class StatsOptionsMessage(BaseModel):
+    id: str
+    teamId: str
+    startDate: date
+    endDate: date
+
+
+class StatsOptionsAndStatsMessage(BaseModel):
+    statsOptions: StatsOptionsMessage | None
+    stats: List[StatMessage]
 
 
 class SolutionMessage(BaseModel):

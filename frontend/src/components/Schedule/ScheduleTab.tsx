@@ -46,14 +46,7 @@ export default function ScheduleTab({
       <Box
         sx={{ display: "flex", flexDirection: "column", width: 800, margin: 2 }}
       >
-        <ScheduleOptions
-          team={team}
-          schedules={schedules}
-          selectedDisplay={selectedDisplay}
-          displayCBs={showBreaches}
-          setSelectedDisplay={setSelectedDisplay}
-          switchDisplayCBs={() => setShowBreaches(!showBreaches)}
-        />
+        <ScheduleOptions team={team} schedules={schedules} />
         <ScheduleDisplayOptions
           selectedDisplay={selectedDisplay}
           displayCBs={showBreaches}

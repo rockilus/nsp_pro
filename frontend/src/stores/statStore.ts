@@ -4,40 +4,50 @@ import { create } from "zustand";
 // Stores
 import { useSnackBarStore } from "./snackbarStore";
 // Types
-import { StatT } from "../components/Stats/types";
+import { StatsT } from "../components/Stats/types";
 dayjs.extend(utc);
 
 const apiUrlStat = process.env.NEXT_PUBLIC_API_URL + "/stats";
 
 type StatStateT = {
-  stats: StatT[];
-  fetchStats: () => void;
-  addStat: (stat: StatT) => void;
-  updateStatStore: (updatedStats: StatT[]) => void;
-  deleteSStore: () => void;
+  stats: StatsT | null;
+  fetchStats: (
+    timeFrame: string,
+    tableValue: string,
+    tableColumn: string,
+    teamId: string
+  ) => void;
+  // addStat: (stat: StatT) => void;
+  // updateStatStore: (updatedStats: StatT[]) => void;
+  // deleteSStore: () => void;
 };
 
-export const toStatT = (data: any) => {
-  const stat: StatT = {
-    ...data,
-    date: dayjs.utc(data.date),
-  };
-  return stat;
-};
+// export const toStatT = (data: any) => {
+//   const stat: StatT = {
+//     ...data,
+//     date: dayjs.utc(data.date),
+//   };
+//   return stat;
+// };
 
 export const useStatStore = create<StatStateT>()((set) => ({
-  stats: [],
+  stats: null,
 
-  fetchStats: async () => {
+  fetchStats: async (timeFrame, tableValue, tableColumn, teamId) => {
     const options: RequestInit = {
-      method: "GET",
+      method: "POST",
       credentials: "include" as RequestCredentials,
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        time_frame: timeFrame,
+        table_value: tableValue,
+        table_column: tableColumn,
+      }),
     };
     try {
-      const response = await fetch(apiUrlStat, options);
+      const response = await fetch(`${apiUrlStat}/teams/${teamId}`, options);
       const responseData = await response.json();
       if (!response.ok) {
         useSnackBarStore
@@ -48,7 +58,7 @@ export const useStatStore = create<StatStateT>()((set) => ({
           );
         return;
       }
-      const stats: StatT[] = responseData.map(toStatT);
+      const stats: StatsT = responseData;
       set({ stats });
     } catch (error) {
       console.error("Failed to fetch stat:", error);
@@ -61,46 +71,46 @@ export const useStatStore = create<StatStateT>()((set) => ({
     }
   },
 
-  addStat: async (stat) => {
-    try {
-      const response = await fetch(apiUrlStat, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(stat),
-      });
-      const responseData = await response.json();
-      if (!response.ok) {
-        useSnackBarStore
-          .getState()
-          .updateSnackBar(
-            "Failed to add stat: " + responseData.detail,
-            "error"
-          );
-        return;
-      }
-      const newStat: StatT = toStatT(responseData);
-      set((state) => ({
-        stats: [...state.stats, newStat],
-      }));
-    } catch (error) {
-      console.error("Failed to add stat:", error);
-      useSnackBarStore
-        .getState()
-        .updateSnackBar("Failed to add stat, please try again later", "error");
-    }
-  },
+  // addStat: async (stat) => {
+  //   try {
+  //     const response = await fetch(apiUrlStat, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(stat),
+  //     });
+  //     const responseData = await response.json();
+  //     if (!response.ok) {
+  //       useSnackBarStore
+  //         .getState()
+  //         .updateSnackBar(
+  //           "Failed to add stat: " + responseData.detail,
+  //           "error"
+  //         );
+  //       return;
+  //     }
+  //     const newStat: StatT = toStatT(responseData);
+  //     set((state) => ({
+  //       stats: [...state.stats, newStat],
+  //     }));
+  //   } catch (error) {
+  //     console.error("Failed to add stat:", error);
+  //     useSnackBarStore
+  //       .getState()
+  //       .updateSnackBar("Failed to add stat, please try again later", "error");
+  //   }
+  // },
 
-  updateStatStore: (updatedStats) => {
-    set((state) => ({
-      stats: updatedStats,
-    }));
-  },
+  // updateStatStore: (updatedStats) => {
+  //   set((state) => ({
+  //     stats: updatedStats,
+  //   }));
+  // },
 
-  deleteSStore: () => {
-    set((state) => ({
-      stats: [],
-    }));
-  },
+  // deleteSStore: () => {
+  //   set((state) => ({
+  //     stats: [],
+  //   }));
+  // },
 }));

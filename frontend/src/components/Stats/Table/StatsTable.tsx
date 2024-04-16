@@ -8,12 +8,12 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Types
-import { StatT, ColumnStatsT } from "./types";
-import { ShiftT } from "../Shift/types";
-import { WorkerT } from "../Worker/types";
+import { StatT, ColumnStatsT, StatsT, StatsValueT } from "../types";
+import { ShiftT } from "../../Shift/types";
+import { WorkerT } from "../../Worker/types";
 
 interface Props {
-  stats: StatT[];
+  stats: StatsT;
   workers: WorkerT[];
   shifts: ShiftT[];
 }
@@ -66,14 +66,14 @@ export default function StatsTable({ stats, workers, shifts }: Props) {
     }, {});
   };
 
-  const { clusters, headers } = buildHeaders();
-  const rows: StatT[][] = Object.values(groupByWorkerId(stats));
+  // const { clusters, headers } = buildHeaders();
+  // const rows: StatT[][] = Object.values(groupByWorkerId(stats));
 
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
-          <TableRow>
+          {/* <TableRow>
             {clusters.map((cluster, clusterIndex) => (
               <TableCell
                 key={clusterIndex}
@@ -84,38 +84,49 @@ export default function StatsTable({ stats, workers, shifts }: Props) {
                 {cluster.label}
               </TableCell>
             ))}
+          </TableRow> */}
+          <TableRow>
+            <TableCell></TableCell>
+            <TableCell
+              align="center"
+              colSpan={stats.statsHeaders.length}
+              sx={{ borderLeft: borderStyle }}
+            >
+              {stats.statsHeaders[0].shiftsSelected}
+            </TableCell>
           </TableRow>
           <TableRow>
-            {headers.map((header, headerIndex) => (
+            <TableCell></TableCell>
+            {stats.statsHeaders.map((header, headerIndex) => (
               <TableCell
                 key={headerIndex}
+                align="center"
                 sx={{ borderLeft: headerIndex > 0 ? borderStyle : null }}
               >
-                {header.label}
+                {header.type === "shift"
+                  ? shifts.find((s) => s.id === header.value)?.name
+                  : header.value}
               </TableCell>
             ))}
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row, rowIndex) => (
-            <TableRow key={rowIndex}>
-              <TableCell align="left">
-                {workers.find((w) => w.id === row[0].workerId)?.name}
-              </TableCell>
-              {headers.map((header, headerIndex) => {
-                const stat: StatT | null =
-                  row.find(
-                    (s) =>
-                      s.name === header.name && s.cluster === header.cluster
+          {workers.map((worker, wIndex) => (
+            <TableRow key={wIndex}>
+              <TableCell align="left">{worker.name}</TableCell>
+              {stats.statsHeaders.map((header, headerIndex) => {
+                const statsValue: StatsValueT | null =
+                  stats.statsValues.find(
+                    (s) => s.headerId === header.id && s.workerId === worker.id
                   ) || null;
                 return (
-                  stat && (
+                  statsValue && (
                     <TableCell
-                      key={headerIndex}
+                      key={wIndex + headerIndex}
                       align="center"
                       sx={{ borderLeft: borderStyle }}
                     >
-                      {stat.value}
+                      {statsValue.value}
                     </TableCell>
                   )
                 );

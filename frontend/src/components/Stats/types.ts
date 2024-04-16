@@ -8,6 +8,32 @@ export type StatsOptionsT = {
   endDate: dayjs.Dayjs;
 };
 
+export type ShiftPropertyHeaderT = {
+  shiftDimensionId: string;
+  propertyValue: string | number | boolean;
+};
+
+export type StatsHeaderT = {
+  id: string;
+  statsOptionsId: string;
+  type: string;
+  value: string;
+  shiftsSelected: string;
+  shiftIds: string[];
+  shiftPropertyHeaders: ShiftPropertyHeaderT[];
+};
+
+export type StatsValueT = {
+  workerId: string;
+  headerId: string;
+  value: number;
+};
+
+export type StatsT = {
+  statsHeaders: StatsHeaderT[];
+  statsValues: StatsValueT[];
+};
+
 export type StatT = {
   workerId: string;
   name: string;
@@ -15,10 +41,10 @@ export type StatT = {
   value: number;
 };
 
-export type StatsT = {
-  statsOptions: StatsOptionsT | null;
-  stats: StatT[];
-};
+// export type StatsT = {
+//   statsOptions: StatsOptionsT | null;
+//   stats: StatT[];
+// };
 
 // Types for components
 export type ColumnStatsT = {

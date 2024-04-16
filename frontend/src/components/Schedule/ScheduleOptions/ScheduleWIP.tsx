@@ -10,7 +10,6 @@ import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
-import { styled } from "@mui/material/styles";
 // Components
 import ScheduleDialogDelete from "./ScheduleDialogDelete";
 import ScheduleDialogValidate from "./ScheduleDialogValidate";
@@ -28,14 +27,6 @@ interface Props {
   team: TeamT;
   schedule: ScheduleT;
 }
-
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: "center",
-  color: theme.palette.text.secondary,
-}));
 
 export default function ScheduleWIP({ team, schedule }: Props) {
   const [isSolving, setIsSolving] = useState(false);

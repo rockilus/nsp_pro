@@ -5,13 +5,8 @@ import utc from "dayjs/plugin/utc";
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import FormControl from "@mui/material/FormControl";
-import MenuItem from "@mui/material/MenuItem";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import ToggleButton from "@mui/material/ToggleButton";
 import Typography from "@mui/material/Typography";
 // Components
-import ScheduleDisplayOptions from "../DisplayOptions/ScheduleDisplayOptions";
 import SchedulePanelDialog from "../SchedulePanelDialog";
 import ScheduleWIP from "./ScheduleWIP";
 // Types
@@ -25,24 +20,9 @@ dayjs.extend(utc);
 interface Props {
   team: TeamT;
   schedules: ScheduleT[];
-  selectedDisplay: string;
-  displayCBs: boolean;
-  setSelectedDisplay: (newSelectedDisplay: string) => void;
-  switchDisplayCBs: () => void;
 }
 
-export default function ScheduleOptions({
-  team,
-  schedules,
-  selectedDisplay,
-  displayCBs,
-  setSelectedDisplay,
-  switchDisplayCBs,
-}: Props) {
-  const handleChange = (event: SelectChangeEvent) => {
-    setSelectedDisplay(event.target.value as string);
-  };
-
+export default function ScheduleOptions({ team, schedules }: Props) {
   const scheduleWIP = schedules.find((schedule) => schedule.status === "WIP");
   const scheduleWIPStartDate =
     schedules.length > 0

@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Stat, StatsOptions
+from core import Stat, StatsOptions, Stats, StatsHeader, StatsValue
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -13,22 +13,32 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
-from routes.api_model import StatMessage, StatsMessage, StatsOptionsMessage
+from routes.api_model import (
+    StatMessage,
+    StatsOptionsAndStatsMessage,
+    StatsOptionsMessage,
+    StatsValueMessage,
+    StatsHeaderMessage,
+    StatsMessage,
+)
 from scripts.setup_database import stats_options_db
 from services.stats_services import stats_setup
 
 router = APIRouter()
 
 
-@router.post("/stats-options/teams/{team_id}", status_code=201)
+@router.post("/stats/stats-options/teams/{team_id}", status_code=201)
 async def create_stats_options(
     team_id: str,
     req: StatsOptionsMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
-) -> StatsMessage:
+) -> StatsOptionsAndStatsMessage:
     try:
         if not await authz_check(
             session.get_user_id(), "create-stats-options", "team", team_id
@@ -39,18 +49,18 @@ async def create_stats_options(
         s_data = msg_to_core_stats_options(req)
         stats_options = stats_options_db.create_stats_options(s_data)
         stats = stats_setup(team_id)
-        response = core_to_msg_stats(stats_options, stats)
+        response = core_to_msg_stats_options_and_stats(stats_options, stats)
     except Exception as e:
         log_info("Failed to create stats options")
         handle_routes_errors(e)
     return response
 
 
-@router.get("/stats-options/teams/{team_id}")
+@router.get("/stats/stats-options/teams/{team_id}")
 async def get_stats_options(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-) -> StatsMessage:
+) -> StatsOptionsAndStatsMessage:
     try:
         if not await authz_check(
             session.get_user_id(), "read-stats-options", "team", team_id
@@ -60,19 +70,46 @@ async def get_stats_options(
             )
         stats_options = stats_options_db.get_stats_options(team_id)
         stats = stats_setup(team_id)
-        response = core_to_msg_stats(stats_options, stats)
+        response = core_to_msg_stats_options_and_stats(stats_options, stats)
     except Exception as e:
         log_info("Failed to get stats options")
         handle_routes_errors(e)
     return response
 
 
-@router.put("/stats-options/{stats_options_id}/teams/{team_id}")
+@router.post("/stats/teams/{team_id}")
+async def get_stats(
+    team_id: str,
+    options: Dict[str, str],
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> StatsMessage:
+    try:
+        if not await authz_check(
+            session.get_user_id(), "read-stats-options", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to get stats options",
+            )
+        # stats_options = stats_options_db.get_stats_options(team_id)
+        stats = stats_setup(
+            team_id,
+            options["time_frame"],
+            options["table_value"],
+            options["table_column"],
+        )
+        response = core_to_msg_stats(stats)
+    except Exception as e:
+        log_info("Failed to get stats options")
+        handle_routes_errors(e)
+    return response
+
+
+@router.put("/stats/stats-options/{stats_options_id}/teams/{team_id}")
 async def update_stats_options(
     team_id: str,
     stats_options_api: StatsOptionsMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
-) -> StatsMessage:
+) -> StatsOptionsAndStatsMessage:
     try:
         if not await authz_check(
             session.get_user_id(), "update-stats-options", "team", team_id
@@ -85,14 +122,16 @@ async def update_stats_options(
             stats_options_data
         )
         stats = stats_setup(team_id)
-        response = core_to_msg_stats(updated_stats_options, stats)
+        response = core_to_msg_stats_options_and_stats(
+            updated_stats_options, stats
+        )
     except Exception as e:
         log_info("Failed to update stats options")
         handle_routes_errors(e)
     return response
 
 
-@router.delete("/stats-options/{stats_options_id}/teams/{team_id}")
+@router.delete("/stats/stats-options/{stats_options_id}/teams/{team_id}")
 async def delete_stats_options(
     stats_options_id: str,
     team_id: str,
@@ -114,6 +153,36 @@ async def delete_stats_options(
 
 # Mappers
 # core to message
+def core_to_msg_stats_value(stats_value: StatsValue) -> StatsValueMessage:
+    data = asdict(stats_value)
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(StatsValueMessage)
+    return validator.validate_python(as_dict)
+
+
+def core_to_msg_stats_header(stats_header: StatsHeader) -> StatsHeaderMessage:
+    data = asdict(stats_header)
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(StatsHeaderMessage)
+    return validator.validate_python(as_dict)
+
+
+def core_to_msg_stats(stats: Stats) -> StatsMessage:
+    data: Dict[
+        str,
+        List[StatsHeaderMessage] | List[StatsValueMessage],
+    ] = {}
+    data["stats_headers"] = [
+        core_to_msg_stats_header(sh) for sh in stats.stats_headers
+    ]
+    data["stats_values"] = [
+        core_to_msg_stats_value(sv) for sv in stats.stats_values
+    ]
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(StatsMessage)
+    return validator.validate_python(as_dict)
+
+
 def core_to_msg_stat(stat: Stat) -> StatMessage:
     try:
         data = asdict(stat)
@@ -150,9 +219,9 @@ def core_to_msg_stats_options(
     return so_msg
 
 
-def core_to_msg_stats(
+def core_to_msg_stats_options_and_stats(
     stats_options: StatsOptions | None, stats: List[Stat]
-) -> StatsMessage:
+) -> StatsOptionsAndStatsMessage:
     data: Dict[
         str,
         StatsOptionsMessage | List[StatMessage] | None,
@@ -160,7 +229,7 @@ def core_to_msg_stats(
     data["stats_options"] = core_to_msg_stats_options(stats_options)
     data["stats"] = [core_to_msg_stat(s) for s in stats]
     as_dict = humps.camelize(data)
-    validator = TypeAdapter(StatsMessage)
+    validator = TypeAdapter(StatsOptionsAndStatsMessage)
     try:
         s_msg = validator.validate_python(as_dict)
     except Exception as e:

@@ -5,7 +5,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 # pylint: disable=unused-import
 from integrations.authentication import authn_services  # noqa: F401
-from integrations.authentication import authn_get_cors_headers, authn_get_middleware
+from integrations.authentication import (
+    authn_get_cors_headers,
+    authn_get_middleware,
+)
 from integrations.authorization import authz_services  # noqa: F401
 from logger import log_middleware
 from routes import (
@@ -21,7 +24,7 @@ from routes import (
     router_schedule,
     router_shift,
     router_shift_dimension,
-    router_stats_options,
+    router_stats,
     router_team,
     router_user,
     router_worker,
@@ -58,7 +61,7 @@ app.include_router(router_request)
 app.include_router(router_schedule)
 app.include_router(router_shift)
 app.include_router(router_shift_dimension)
-app.include_router(router_stats_options)
+app.include_router(router_stats)
 app.include_router(router_team)
 app.include_router(router_user)
 app.include_router(router_worker)

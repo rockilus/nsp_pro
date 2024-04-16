@@ -6,7 +6,10 @@ from pydantic import TypeAdapter
 
 from core import Bulk
 from errors import NotAuthorizedError, handle_routes_errors
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import BulkMessage
@@ -20,7 +23,7 @@ from routes.request_routes import core_to_msg_request
 from routes.schedule_routes import core_to_msg_schedule
 from routes.shift_dimension_routes import core_to_msg_shift_dimension
 from routes.shift_routes import core_to_msg_shift_and_properties
-from routes.stats_options_routes import core_to_msg_stats_options
+from routes.stats_routes import core_to_msg_stats_options
 from routes.team_routes import core_to_msg_team
 from routes.worker_dimension_routes import core_to_msg_worker_dimension
 from routes.worker_routes import core_to_msg_worker_and_properties
