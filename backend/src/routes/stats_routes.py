@@ -6,7 +6,15 @@ from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
 from constraint_parser import build_shift_options
-from core import ShiftProperty, Stat, Stats, StatsHeader, StatsOptions, StatsValue
+from core import (
+    DictBlockValue,
+    GetStatsOptions,
+    ShiftProperty,
+    Stats,
+    StatsHeader,
+    StatsOptions,
+    StatsValue,
+)
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -18,7 +26,7 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
-    StatMessage,
+    GetStatsOptionsMessage,
     StatsHeaderMessage,
     StatsMessage,
     StatsOptionsAndStatsMessage,
@@ -51,7 +59,8 @@ async def create_stats_options(
             )
         s_data = msg_to_core_stats_options(req)
         stats_options = stats_options_db.create_stats_options(s_data)
-        stats = build_stats(team_id)
+        # stats = build_stats(team_id)
+        stats = Stats([], [])
         response = core_to_msg_stats_options_and_stats(stats_options, stats)
     except Exception as e:
         log_info("Failed to create stats options")
@@ -72,7 +81,8 @@ async def get_stats_options(
                 "You do not have permission to get stats options",
             )
         stats_options = stats_options_db.get_stats_options(team_id)
-        stats = build_stats(team_id)
+        # stats = build_stats(team_id)
+        stats = Stats([], [])
         response = core_to_msg_stats_options_and_stats(stats_options, stats)
     except Exception as e:
         log_info("Failed to get stats options")
@@ -94,6 +104,7 @@ async def get_shift_options(
             )
         shifts = shift_db.get_shifts(team_id)
         shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
+        # pylint: disable=R0801
         shift_properties = shift_property_db.get_shift_properties_by_shift_ids(
             [s.id for s in shifts]
         )
@@ -116,7 +127,7 @@ async def get_shift_options(
 @router.post("/stats/teams/{team_id}")
 async def calculate_stats(
     team_id: str,
-    options: Dict[str, str],
+    options: GetStatsOptionsMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> StatsMessage:
     try:
@@ -127,11 +138,13 @@ async def calculate_stats(
                 "You do not have permission to get stats options",
             )
         # stats_options = stats_options_db.get_stats_options(team_id)
+        data = msg_to_core_get_stats_options(options)
         stats = build_stats(
             team_id,
-            options["time_frame"],
-            options["table_value"],
-            options["table_column"],
+            data.time_frame,
+            data.table_value,
+            data.table_column,
+            data.selected_shifts,
         )
         response = core_to_msg_stats(stats)
     except Exception as e:
@@ -157,7 +170,8 @@ async def update_stats_options(
         updated_stats_options = stats_options_db.update_stats_options(
             stats_options_data
         )
-        stats = build_stats(team_id)
+        # stats = build_stats(team_id)
+        stats = Stats([], [])
         response = core_to_msg_stats_options_and_stats(updated_stats_options, stats)
     except Exception as e:
         log_info("Failed to update stats options")
@@ -213,22 +227,6 @@ def core_to_msg_stats(stats: Stats) -> StatsMessage:
     return validator.validate_python(as_dict)
 
 
-def core_to_msg_stat(stat: Stat) -> StatMessage:
-    try:
-        data = asdict(stat)
-    except Exception as e:
-        log_info("Failed to convert Stat to dictionary")
-        raise MessageTypeError(str(e)) from e
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(StatMessage)
-    try:
-        s_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert Stat to StatMessage")
-        handle_message_errors(e)
-    return s_msg
-
-
 def core_to_msg_stats_options(
     stats_options: StatsOptions | None,
 ) -> StatsOptionsMessage | None:
@@ -250,14 +248,14 @@ def core_to_msg_stats_options(
 
 
 def core_to_msg_stats_options_and_stats(
-    stats_options: StatsOptions | None, stats: List[Stat]
+    stats_options: StatsOptions | None, stats: Stats
 ) -> StatsOptionsAndStatsMessage:
     data: Dict[
         str,
-        StatsOptionsMessage | List[StatMessage] | None,
+        StatsOptionsMessage | StatsMessage | None,
     ] = {}
     data["stats_options"] = core_to_msg_stats_options(stats_options)
-    data["stats"] = [core_to_msg_stat(s) for s in stats]
+    data["stats"] = core_to_msg_stats(stats)
     as_dict = humps.camelize(data)
     validator = TypeAdapter(StatsOptionsAndStatsMessage)
     try:
@@ -277,3 +275,18 @@ def msg_to_core_stats_options(msg: StatsOptionsMessage) -> StatsOptions:
         log_info("Failed to convert StatsOptionsMessage to StatsOptions")
         handle_create_core_object_error(e)
     return stats_options
+
+
+def msg_to_core_get_stats_options(
+    msg: GetStatsOptionsMessage,
+) -> GetStatsOptions:
+    data_snake = humps.decamelize(msg.model_dump())
+    data_snake["selected_shifts"] = [
+        DictBlockValue(**ss) for ss in data_snake["selected_shifts"]
+    ]
+    try:
+        out = GetStatsOptions(**data_snake)
+    except Exception as e:
+        log_info("Failed to convert GetStatsOptionsMessage to GetStatsOptions")
+        handle_create_core_object_error(e)
+    return out

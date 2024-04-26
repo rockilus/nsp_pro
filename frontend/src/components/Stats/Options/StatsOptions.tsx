@@ -57,6 +57,7 @@ export default function StatsOptions({
   const [selectedShifts, setSelectedShifts] = useState<TemplateOptionValueT[]>(
     []
   );
+  console.log("selectedShifts", selectedShifts);
 
   const addStatsOptions = useStatsOptionsStore(
     (state) => state.addStatsOptions
@@ -101,7 +102,13 @@ export default function StatsOptions({
   };
 
   const handleGetStats = () => {
-    fetchStats(selectedTimeFrame, selectTableValue, selectTableColumn, team.id);
+    fetchStats(
+      selectedTimeFrame,
+      selectTableValue,
+      selectTableColumn,
+      selectedShifts,
+      team.id
+    );
   };
 
   const handleGetShiftOptions = () => {

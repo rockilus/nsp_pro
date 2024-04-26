@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import List
 
+from core.constraint import DictBlockValue
+
 
 @dataclass
 class Stat:
@@ -54,3 +56,11 @@ class TemplateStats:
     name: str
     label: str
     stats_headers: List[StatsHeader]
+
+
+@dataclass
+class GetStatsOptions:
+    time_frame: str
+    table_value: str
+    table_column: str
+    selected_shifts: List[DictBlockValue]

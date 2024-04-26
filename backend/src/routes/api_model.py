@@ -226,7 +226,7 @@ class StatsOptionsMessage(BaseModel):
 
 class StatsOptionsAndStatsMessage(BaseModel):
     statsOptions: StatsOptionsMessage | None
-    stats: List[StatMessage]
+    stats: StatsMessage
 
 
 class SolutionMessage(BaseModel):
@@ -241,13 +241,21 @@ class ValidateMessage(BaseModel):
     assignments: List[AssignmentMessage]
 
 
-# Authentication
-class Token(BaseModel):  # can be deleted
-    access_token: str
-    token_type: str
+class DictBlockValueMessage(BaseModel):
+    name: str
+    id: str
+    idType: str
 
 
-class User(BaseModel):
+class GetStatsOptionsMessage(BaseModel):
+    timeFrame: str
+    tableValue: str
+    tableColumn: str
+    selectedShifts: List[DictBlockValueMessage]
+
+
+# User
+class UserMessage(BaseModel):
     id: str
     username: str
     firstName: str

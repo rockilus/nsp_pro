@@ -35,3 +35,8 @@ export type StatT = {
 };
 
 export type StatsShiftOptionsT = Record<string, TemplateOptionValueT[]>;
+
+export type StatsOptionsAndStatsT = {
+  statsOptions: StatsOptionsT | null;
+  stats: StatsT;
+};

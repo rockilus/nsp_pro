@@ -17,6 +17,7 @@ type StatStateT = {
     timeFrame: string,
     tableValue: string,
     tableColumn: string,
+    selectedShifts: TemplateOptionValueT[],
     teamId: string
   ) => void;
   fetchShiftOptions: (teamId: string) => void;
@@ -37,7 +38,13 @@ export const useStatStore = create<StatStateT>()((set) => ({
   stats: null,
   shiftOptions: {},
 
-  fetchStats: async (timeFrame, tableValue, tableColumn, teamId) => {
+  fetchStats: async (
+    timeFrame,
+    tableValue,
+    tableColumn,
+    selectedShifts,
+    teamId
+  ) => {
     const options: RequestInit = {
       method: "POST",
       credentials: "include" as RequestCredentials,
@@ -45,9 +52,10 @@ export const useStatStore = create<StatStateT>()((set) => ({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        time_frame: timeFrame,
-        table_value: tableValue,
-        table_column: tableColumn,
+        timeFrame: timeFrame,
+        tableValue: tableValue,
+        tableColumn: tableColumn,
+        selectedShifts: selectedShifts,
       }),
     };
     try {
