@@ -6,10 +6,7 @@ from pydantic import TypeAdapter
 
 from core import Bulk
 from errors import NotAuthorizedError, handle_routes_errors
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import BulkMessage

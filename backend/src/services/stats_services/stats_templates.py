@@ -1,5 +1,3 @@
-from core import StatsHeader, TemplateStats
-
 #     custom: "Custom",
 #     days_workerd: "Days worked",
 #     time_worked: "Time worked",

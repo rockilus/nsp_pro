@@ -1,175 +1,276 @@
-from datetime import timedelta
-from typing import List
+from datetime import date
+from typing import Dict, List
 
-import numpy as np
-
-from core import (
-    Assignment,
-    Shift,
-    Stat,
-    StatsOptions,
-    Worker,
-    Stats,
-    StatsHeader,
-    StatsValue,
+from core import Assignment, Stats
+from scripts.setup_database import assignment_db, schedule_db, shift_db, worker_db
+from services.stats_services.buid_dates import build_dates
+from services.stats_services.calc_per_week_day import (
+    calc_stats_all,
+    calc_stats_per_month,
+    calc_stats_per_week,
+    calc_stats_per_weekday,
+    calc_stats_per_year,
 )
-from utils.constants import Constants
+from services.stats_services.core_to_np import (
+    core_to_np_assignments_binary,
+    core_to_np_assignments_worked_time,
+)
+from services.stats_services.np_to_core import (
+    np_to_core_days_worked_all,
+    np_to_core_days_worked_per_month,
+    np_to_core_days_worked_per_week,
+    np_to_core_days_worked_per_weekday,
+    np_to_core_days_worked_per_year,
+    np_to_core_nb_times_shift,
+)
 
 
-class BuildStats:
-    def __init__(
-        self,
-        stats_options: StatsOptions,
-        workers: List[Worker],
-        shifts: List[Shift],
-    ) -> None:
-        self.workers = workers
-        self.shifts = shifts
-        self.worker_ids = [w.id for w in workers]
-        self.start_date = stats_options.start_date
-        self.end_date = stats_options.end_date
-        self.shift_ids = [s.id for s in shifts]
-        self.shift_w_ids = [s.id for s in shifts if s.name != "Off"]
-        self.shift_off_ids = [s.id for s in shifts if s.name == "Off"]
-
-    def build_stats(
-        self, assignments: List[Assignment], target_stats: str
-    ) -> Stats:
-        a_array = self.core_to_np_assignments(assignments)
-        aw_array = self.a_array_to_aw_array(a_array)
-        if target_stats == "days_worked":
-            days_worked_array = self.build_days_worked_array(aw_array)
-            return self.np_to_core_days_worked(days_worked_array)
-        if target_stats == "time_worked":
-            worked_times_stats = self.build_time_worked_array(aw_array)
-        worked_shifts_stats = self.build_worked_shifts_stats(a_array)
-
-        return worked_shifts_stats + worked_times_stats
-
-    def core_to_np_assignments(
-        self, assignments: List[Assignment]
-    ) -> np.ndarray:
-        schedule_array = np.zeros(
-            (
-                len(self.worker_ids),
-                (self.end_date - self.start_date).days + 1,
-                len(self.shift_ids),
-            ),
-            dtype=int,
+def build_stats(
+    team_id: str, time_frame: str, target_value: str, target_column: str
+) -> Stats:
+    # stats_options = stats_options_db.get_stats_options(team_id)
+    # if stats_options is None:
+    #     return Stats([], [])
+    schedules = schedule_db.get_schedules(team_id)
+    workers = worker_db.get_workers(team_id)
+    start_date, end_date, date_to_i = build_dates(time_frame, schedules)
+    shifts = shift_db.get_shifts(team_id)
+    assignments = assignment_db.get_assignments_by_dates(
+        start_date, end_date, schedules
+    )
+    worker_to_i = {worker.id: i for i, worker in enumerate(workers)}
+    # shift_to_i = {shift.id: i for i, shift in enumerate(shifts)}
+    work_shift_to_i = {
+        shift.id: i for i, shift in enumerate([s for s in shifts if not s.is_time_off])
+    }
+    work_shift_to_duration = {
+        shift.id: (shift.end_time - shift.start_time).total_seconds() / 3600
+        for shift in shifts
+        if not shift.is_time_off
+    }
+    rest_shift_to_i = {
+        shift.id: i for i, shift in enumerate([s for s in shifts if s.is_time_off])
+    }
+    i_to_worker = {i: worker for worker, i in worker_to_i.items()}
+    i_to_work_shift = {i: shift for shift, i in work_shift_to_i.items()}
+    i_to_rest_shift = {i: shift for shift, i in rest_shift_to_i.items()}
+    if target_value == "nb_days_worked":
+        return build_stats_nb_days_worked(
+            target_column,
+            worker_to_i,
+            date_to_i,
+            work_shift_to_i,
+            i_to_worker,
+            assignments,
         )
-        for assignment in assignments:
-            schedule_array[
-                self.worker_ids.index(assignment.worker_id),
-                (assignment.date - self.start_date).days,
-                self.shift_ids.index(assignment.shift_id),
-            ] = 1
-        return schedule_array
-
-    def a_array_to_aw_array(self, a_array: np.ndarray) -> np.ndarray:
-        indices_to_remove = [
-            self.shift_ids.index(s) for s in self.shift_off_ids
-        ]
-        aw_array = np.delete(a_array, indices_to_remove, axis=2)
-        return aw_array
-
-    def build_days_worked_array(self, a_array: np.ndarray) -> np.ndarray:
-        a_array_sum_shifts = a_array.sum(axis=2)
-        dates = [
-            self.start_date + timedelta(days=i)
-            for i in range((self.end_date - self.start_date).days + 1)
-        ]
-        weekdays = np.array([d.weekday() for d in dates])
-        weekdays = np.tile(weekdays, (len(a_array_sum_shifts), 1))
-        out = np.zeros(
-            (len(a_array_sum_shifts), Constants.NUM_DAYS_WEEK), dtype=int
+    if target_value == "time_worked":
+        return build_stats_time_worked(
+            target_column,
+            worker_to_i,
+            date_to_i,
+            work_shift_to_i,
+            work_shift_to_duration,
+            i_to_worker,
+            assignments,
         )
-        for day in range(Constants.NUM_DAYS_WEEK):
-            out[:, day] = np.sum(
-                a_array_sum_shifts * (weekdays == day), axis=1
-            )
-        return out
-
-    def np_to_core_days_worked(self, dw_array: np.ndarray) -> Stats:
-        stats_headers = [
-            StatsHeader(
-                id=f"default_{d}",
-                stats_options_id="",
-                type="weekday",
-                value=Constants.WEEK_DAYS[d],
-                shifts_selected="all_shifts",
-                shift_ids=[],
-                shift_property_headers=[],
-            )
-            for d in range(Constants.NUM_DAYS_WEEK)
-        ]
-        stats_values = [
-            StatsValue(
-                worker_id=self.worker_ids[w],
-                header_id=f"default_{d}",
-                value=dw_array[w, d],
-            )
-            for w in range(len(dw_array))
-            for d in range(Constants.NUM_DAYS_WEEK)
-        ]
-        return Stats(stats_headers=stats_headers, stats_values=stats_values)
-
-        # return [
-        #     Stat(
-        #         worker_id=self.worker_ids[w],
-        #         name=Constants.WEEK_DAYS[d].capitalize(),
-        #         cluster="Worked days",
-        #         value=out[w, d],
-        #     )
-        #     for w in range(len(out))
-        #     for d in range(Constants.NUM_DAYS_WEEK)
-        # ]
-
-    def build_worked_shifts_stats(self, a_array: np.ndarray) -> List[Stat]:
-        out = a_array.sum(axis=1)
-        return [
-            Stat(
-                worker_id=self.worker_ids[w],
-                name=self.shift_ids[s],
-                cluster="Worked shifts",
-                value=out[w, s],
-            )
-            for w in range(len(out))
-            for s in range(len(self.shift_ids))
-        ]
-
-    def build_time_worked_array(self, a_array: np.ndarray) -> np.ndarray:
-        w_shifts = a_array.sum(axis=1)
-        w_times = np.array(
-            [
-                (s.end_time - s.start_time).total_seconds() / 3600
-                for s in self.shifts
-                if s.name != "Off"
-            ],
-            dtype=float,
+    if target_value == "nb_shifts_worked":
+        return build_stats_nb_shifts_worked(
+            target_column,
+            worker_to_i,
+            date_to_i,
+            work_shift_to_i,
+            i_to_worker,
+            assignments,
         )
-        out = w_shifts * w_times
-        return out
+    if target_value == "nb_rest_days":
+        return build_stats_nb_days_rest(
+            target_column,
+            worker_to_i,
+            date_to_i,
+            work_shift_to_i,
+            i_to_worker,
+            assignments,
+        )
+    if target_value == "nb_rest_shifts":
+        return build_stats_nb_shifts_worked(
+            target_column,
+            worker_to_i,
+            date_to_i,
+            rest_shift_to_i,
+            i_to_worker,
+            assignments,
+        )
+    if target_value == "nb_times_shift":
+        return build_stats_nb_times_shifts(
+            worker_to_i,
+            date_to_i,
+            work_shift_to_i,
+            i_to_worker,
+            i_to_work_shift,
+            assignments,
+        )
+    if target_value == "nb_times_rest":
+        return build_stats_nb_times_shifts(
+            worker_to_i,
+            date_to_i,
+            rest_shift_to_i,
+            i_to_worker,
+            i_to_rest_shift,
+            assignments,
+        )
+    raise ValueError(f"Unknown target_value: {target_value}")
 
-    def np_to_core_time_worked(self, tw_array: np.ndarray) -> Stats:
-        stats_headers = [
-            StatsHeader(
-                id=f"default_{s}",
-                stats_options_id="",
-                type="shift",
-                value=self.shift_ids[s],
-                shifts_selected="all_shifts",
-                shift_ids=[],
-                shift_property_headers=[],
-            )
-            for s in range(len(self.shift_ids))
-        ]
-        # return [
-        #     Stat(
-        #         worker_id=self.worker_ids[w],
-        #         name=self.shift_w_ids[s],
-        #         cluster="Worked times",
-        #         value=out[w, s],
-        #     )
-        #     for w in range(len(out))
-        #     for s in range(len(self.shift_w_ids))
-        # ]
+
+def build_stats_nb_days_worked(
+    target_column: str,
+    worker_to_i: Dict[str, int],
+    date_to_i: Dict[date, int],
+    shift_to_i: Dict[str, int],
+    i_to_worker: Dict[int, str],
+    assignments: List[Assignment],
+) -> Stats:
+    a_array = core_to_np_assignments_binary(
+        worker_to_i, date_to_i, shift_to_i, assignments
+    )
+    if target_column == "weekday":
+        stats_array = calc_stats_per_weekday(a_array, date_to_i, True)
+        return np_to_core_days_worked_per_weekday(stats_array, i_to_worker)
+    if target_column == "week":
+        stats_array, year_week_nb_to_i = calc_stats_per_week(a_array, date_to_i, True)
+        return np_to_core_days_worked_per_week(
+            stats_array, i_to_worker, year_week_nb_to_i
+        )
+    if target_column == "month":
+        stats_array, year_month_to_i = calc_stats_per_month(a_array, date_to_i, True)
+        return np_to_core_days_worked_per_month(
+            stats_array, i_to_worker, year_month_to_i
+        )
+    if target_column == "year":
+        stats_array, year_to_i = calc_stats_per_year(a_array, date_to_i, True)
+        return np_to_core_days_worked_per_year(stats_array, i_to_worker, year_to_i)
+    if target_column == "all":
+        stats_array = calc_stats_all(a_array, True)
+        return np_to_core_days_worked_all(stats_array, i_to_worker)
+    raise ValueError(f"Unknown target_column: {target_column}")
+
+
+def build_stats_nb_shifts_worked(
+    target_column: str,
+    worker_to_i: Dict[str, int],
+    date_to_i: Dict[date, int],
+    shift_to_i: Dict[str, int],
+    i_to_worker: Dict[int, str],
+    assignments: List[Assignment],
+) -> Stats:
+    a_array = core_to_np_assignments_binary(
+        worker_to_i, date_to_i, shift_to_i, assignments
+    )
+    if target_column == "weekday":
+        stats_array = calc_stats_per_weekday(a_array, date_to_i)
+        return np_to_core_days_worked_per_weekday(stats_array, i_to_worker)
+    if target_column == "week":
+        stats_array, year_week_nb_to_i = calc_stats_per_week(a_array, date_to_i)
+        return np_to_core_days_worked_per_week(
+            stats_array, i_to_worker, year_week_nb_to_i
+        )
+    if target_column == "month":
+        stats_array, year_month_to_i = calc_stats_per_month(a_array, date_to_i)
+        return np_to_core_days_worked_per_month(
+            stats_array, i_to_worker, year_month_to_i
+        )
+    if target_column == "year":
+        stats_array, year_to_i = calc_stats_per_year(a_array, date_to_i)
+        return np_to_core_days_worked_per_year(stats_array, i_to_worker, year_to_i)
+    if target_column == "all":
+        stats_array = calc_stats_all(a_array)
+        return np_to_core_days_worked_all(stats_array, i_to_worker)
+    raise ValueError(f"Unknown target_column: {target_column}")
+
+
+def build_stats_time_worked(
+    target_column: str,
+    worker_to_i: Dict[str, int],
+    date_to_i: Dict[date, int],
+    shift_to_i: Dict[str, int],
+    work_shift_to_duration: Dict[str, float],
+    i_to_worker: Dict[int, str],
+    assignments: List[Assignment],
+) -> Stats:
+    a_array = core_to_np_assignments_worked_time(
+        worker_to_i, date_to_i, shift_to_i, work_shift_to_duration, assignments
+    )
+    if target_column == "weekday":
+        stats_array = calc_stats_per_weekday(a_array, date_to_i)
+        return np_to_core_days_worked_per_weekday(stats_array, i_to_worker)
+    if target_column == "week":
+        stats_array, year_week_nb_to_i = calc_stats_per_week(a_array, date_to_i)
+        return np_to_core_days_worked_per_week(
+            stats_array, i_to_worker, year_week_nb_to_i
+        )
+    if target_column == "month":
+        stats_array, year_month_to_i = calc_stats_per_month(a_array, date_to_i)
+        return np_to_core_days_worked_per_month(
+            stats_array, i_to_worker, year_month_to_i
+        )
+    if target_column == "year":
+        stats_array, year_to_i = calc_stats_per_year(a_array, date_to_i)
+        return np_to_core_days_worked_per_year(stats_array, i_to_worker, year_to_i)
+    if target_column == "all":
+        stats_array = calc_stats_all(a_array)
+        return np_to_core_days_worked_all(stats_array, i_to_worker)
+    raise ValueError(f"Unknown target_column: {target_column}")
+
+
+def build_stats_nb_days_rest(
+    target_column: str,
+    worker_to_i: Dict[str, int],
+    date_to_i: Dict[date, int],
+    shift_to_i: Dict[str, int],
+    i_to_worker: Dict[int, str],
+    assignments: List[Assignment],
+) -> Stats:
+    a_array = core_to_np_assignments_binary(
+        worker_to_i, date_to_i, shift_to_i, assignments
+    )
+    if target_column == "weekday":
+        stats_array = calc_stats_per_weekday(a_array, date_to_i, True, True)
+        return np_to_core_days_worked_per_weekday(stats_array, i_to_worker)
+    if target_column == "week":
+        stats_array, year_week_nb_to_i = calc_stats_per_week(
+            a_array, date_to_i, True, True
+        )
+        return np_to_core_days_worked_per_week(
+            stats_array, i_to_worker, year_week_nb_to_i
+        )
+    if target_column == "month":
+        stats_array, year_month_to_i = calc_stats_per_month(
+            a_array, date_to_i, True, True
+        )
+        return np_to_core_days_worked_per_month(
+            stats_array, i_to_worker, year_month_to_i
+        )
+    if target_column == "year":
+        stats_array, year_to_i = calc_stats_per_year(a_array, date_to_i, True, True)
+        return np_to_core_days_worked_per_year(stats_array, i_to_worker, year_to_i)
+    if target_column == "all":
+        stats_array = calc_stats_all(a_array, True, True)
+        return np_to_core_days_worked_all(stats_array, i_to_worker)
+    raise ValueError(f"Unknown target_column: {target_column}")
+
+
+def build_stats_nb_times_shifts(
+    # target_column: str,
+    worker_to_i: Dict[str, int],
+    date_to_i: Dict[date, int],
+    shift_to_i: Dict[str, int],
+    i_to_worker: Dict[int, str],
+    i_to_shift: Dict[int, str],
+    assignments: List[Assignment],
+) -> Stats:
+    a_array = core_to_np_assignments_binary(
+        worker_to_i, date_to_i, shift_to_i, assignments
+    )
+    # if target_column == "work_shifts":
+    stats_array = a_array.sum(axis=1)
+    return np_to_core_nb_times_shift(stats_array, i_to_worker, i_to_shift)
+    # raise ValueError(f"Unknown target_column: {target_column}")

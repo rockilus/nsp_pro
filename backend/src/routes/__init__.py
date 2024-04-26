@@ -1,9 +1,7 @@
 from routes.assignment_routes import router as router_assignment
 from routes.bulk_routes import router as router_bulk
 from routes.constraint_routes import router as router_constraint
-from routes.constraint_template_routes import (
-    router as router_constraint_template,
-)
+from routes.constraint_template_routes import router as router_constraint_template
 from routes.coverage_routes import router as router_coverage
 from routes.coverage_selector_routes import router as router_coverage_selector
 from routes.health_routes import router as router_health

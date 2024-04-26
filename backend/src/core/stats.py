@@ -30,9 +30,7 @@ class StatsHeader:
     id: str
     stats_options_id: str
     type: str  # weekday, week, month, year, shift
-    value: (
-        str  # weekday index, week number, month number, year number, shift_id
-    )
+    value: (str)  # weekday index, week number, month number, year number, shift_id
     shifts_selected: str  # all_shifts, custom
     shift_ids: List[str]
     shift_property_headers: List[ShiftPropertyHeader]

@@ -5,18 +5,21 @@ import { create } from "zustand";
 import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { StatsT } from "../components/Stats/types";
+import { TemplateOptionValueT } from "../components/Constraint/types";
 dayjs.extend(utc);
 
 const apiUrlStat = process.env.NEXT_PUBLIC_API_URL + "/stats";
 
 type StatStateT = {
   stats: StatsT | null;
+  shiftOptions: Record<string, TemplateOptionValueT[]>;
   fetchStats: (
     timeFrame: string,
     tableValue: string,
     tableColumn: string,
     teamId: string
   ) => void;
+  fetchShiftOptions: (teamId: string) => void;
   // addStat: (stat: StatT) => void;
   // updateStatStore: (updatedStats: StatT[]) => void;
   // deleteSStore: () => void;
@@ -32,6 +35,7 @@ type StatStateT = {
 
 export const useStatStore = create<StatStateT>()((set) => ({
   stats: null,
+  shiftOptions: {},
 
   fetchStats: async (timeFrame, tableValue, tableColumn, teamId) => {
     const options: RequestInit = {
@@ -66,6 +70,34 @@ export const useStatStore = create<StatStateT>()((set) => ({
         .getState()
         .updateSnackBar(
           "Failed to fetch stats, please try again later",
+          "error"
+        );
+    }
+  },
+
+  fetchShiftOptions: async (teamId) => {
+    try {
+      const response = await fetch(
+        `${apiUrlStat}/shift-options/teams/${teamId}`
+      );
+      const responseData = await response.json();
+      if (!response.ok) {
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to fetch shift options: " + responseData.detail,
+            "error"
+          );
+        return;
+      }
+      const shiftOptions: Record<string, TemplateOptionValueT[]> = responseData;
+      set({ shiftOptions });
+    } catch (error) {
+      console.error("Failed to fetch shift options:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to fetch shift options, please try again later",
           "error"
         );
     }

@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from constraint_parser.templates import build_templates
+from constraint_parser import build_templates
 from core import Bulk, Shift, ShiftProperty, Team, WorkerProperty
 from scripts.setup_database import (
     assignment_db,

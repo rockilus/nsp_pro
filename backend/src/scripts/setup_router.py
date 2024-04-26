@@ -5,10 +5,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 # pylint: disable=unused-import
 from integrations.authentication import authn_services  # noqa: F401
-from integrations.authentication import (
-    authn_get_cors_headers,
-    authn_get_middleware,
-)
+from integrations.authentication import authn_get_cors_headers, authn_get_middleware
 from integrations.authorization import authz_services  # noqa: F401
 from logger import log_middleware
 from routes import (

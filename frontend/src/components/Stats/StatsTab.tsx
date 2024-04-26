@@ -11,7 +11,7 @@ import { useStatStore } from "../../stores/statStore";
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
 import { WorkerT } from "../Worker/types";
-import { StatsOptionsT } from "./types";
+import { StatsOptionsT, StatsShiftOptionsT } from "./types";
 // Constants
 import { emptyStatsOptions } from "../../utils/emptyObjects";
 
@@ -20,6 +20,7 @@ interface Props {
   workers: WorkerT[];
   shifts: ShiftT[];
   statsOptions: StatsOptionsT | null;
+  statsShiftOptions: StatsShiftOptionsT;
 }
 
 export default function StatsTab({
@@ -27,6 +28,7 @@ export default function StatsTab({
   workers,
   shifts,
   statsOptions,
+  statsShiftOptions,
 }: Props) {
   const stats = useStatStore((state) => state.stats);
 
@@ -39,6 +41,7 @@ export default function StatsTab({
             ? statsOptions
             : { ...emptyStatsOptions, teamId: team.id }
         }
+        statsShiftOptions={statsShiftOptions}
       />
       {stats && <StatsTable stats={stats} workers={workers} shifts={shifts} />}
     </Box>

@@ -1,7 +1,8 @@
 from datetime import date
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 import numpy as np
+
 from utils.constants import Constants
 
 
@@ -49,9 +50,7 @@ def calc_stats_per_week(
     unique_year_week_numbers = np.unique(year_week_numbers, axis=0)
 
     # Sum the shifts for each worker for each unique year-week number pair
-    out = np.zeros(
-        (a_array.shape[0], len(unique_year_week_numbers)), dtype=int
-    )
+    out = np.zeros((a_array.shape[0], len(unique_year_week_numbers)), dtype=int)
     for i, year_week_number in enumerate(unique_year_week_numbers):
         # Get a mask of the dates that are in the current year and week
         mask = np.all(year_week_numbers == year_week_number, axis=1)

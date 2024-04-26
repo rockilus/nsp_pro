@@ -26,28 +26,37 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 // Components
 import TableRowScheduleWIP from "../../Schedule/ScheduleOptions/TableRowScheduleWIP";
 import PopoverAnchorElOver from "../../SharedComponents/PopoverAnchorElOver";
+import ShiftOptionsDisplay from "./ShiftOptionsDisplay";
 // Stores
 import { useStatsOptionsStore } from "../../../stores/statsOptionsStore";
 import { useStatStore } from "../../../stores/statStore";
 // Types
-import { StatsOptionsT } from "../types";
+import { StatsOptionsT, StatsShiftOptionsT } from "../types";
 import { TeamT } from "../../../containers/types";
-import { validateClaims } from "supertokens-auth-react/recipe/session";
+import { TemplateOptionValueT } from "../../Constraint/types";
 
 dayjs.extend(utc);
 
 interface Props {
   team: TeamT;
   statsOptions: StatsOptionsT;
+  statsShiftOptions: StatsShiftOptionsT;
 }
 
-export default function StatsOptions({ team, statsOptions }: Props) {
+export default function StatsOptions({
+  team,
+  statsOptions,
+  statsShiftOptions,
+}: Props) {
   const [statsOptionsState, setStatsOptionsState] =
     useState<StatsOptionsT>(statsOptions);
   const [selectedTimeFrame, setSelectedTimeFrame] =
     useState<string>("last_12_months");
   const [selectTableValue, setSelectedTableValue] = useState<string>("");
   const [selectTableColumn, setSelectedTableColumn] = useState<string>("");
+  const [selectedShifts, setSelectedShifts] = useState<TemplateOptionValueT[]>(
+    []
+  );
 
   const addStatsOptions = useStatsOptionsStore(
     (state) => state.addStatsOptions
@@ -56,6 +65,8 @@ export default function StatsOptions({ team, statsOptions }: Props) {
     (state) => state.updateStatsOptions
   );
   const fetchStats = useStatStore((state) => state.fetchStats);
+  const shiftOptions = useStatStore((state) => state.shiftOptions);
+  const fetchShiftOptions = useStatStore((state) => state.fetchShiftOptions);
 
   const updateStatsOptionsStartDate = (newValue: dayjs.Dayjs) => {
     const updatedStatsOptions = { ...statsOptionsState, startDate: newValue };
@@ -89,11 +100,21 @@ export default function StatsOptions({ team, statsOptions }: Props) {
     setSelectedTimeFrame(event.target.value as string);
   };
 
-  const [selectedIndex, setSelectedIndex] = React.useState(1);
-
   const handleGetStats = () => {
     fetchStats(selectedTimeFrame, selectTableValue, selectTableColumn, team.id);
   };
+
+  const handleGetShiftOptions = () => {
+    fetchShiftOptions(team.id);
+  };
+
+  const handleEditSelectedShifts = (
+    newSelectedShifts: TemplateOptionValueT[]
+  ) => {
+    setSelectedShifts(newSelectedShifts);
+  };
+
+  console.log("shiftOptions", shiftOptions);
 
   const timeOptions = [
     { name: "last_12_months", label: "Last 12 months" },
@@ -275,7 +296,13 @@ export default function StatsOptions({ team, statsOptions }: Props) {
             />
             <TableRowScheduleWIP
               name="Shifts"
-              content={"Add here a shift selector"}
+              content={
+                <ShiftOptionsDisplay
+                  selectedShifts={selectedShifts}
+                  statsShiftOptions={statsShiftOptions}
+                  handleEditSelectedShifts={handleEditSelectedShifts}
+                />
+              }
             />
           </TableBody>
         </Table>
@@ -298,6 +325,19 @@ export default function StatsOptions({ team, statsOptions }: Props) {
           }}
         >
           Get stats
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleGetShiftOptions}
+          sx={{
+            paddingLeft: 0.2,
+            paddingRight: 0.2,
+            margin: "8px",
+            height: "35px",
+          }}
+        >
+          Get shift options
         </Button>
       </Box>
     </Box>

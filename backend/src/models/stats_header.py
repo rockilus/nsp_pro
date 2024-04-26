@@ -22,10 +22,6 @@ class StatsHeader(Document):
         required=True, choices=["weekday", "week", "month", "year", "shift"]
     )
     value = StringField(required=True)
-    shifts_selected = StringField(
-        required=True, choices=["all_shifts", "custom"]
-    )
+    shifts_selected = StringField(required=True, choices=["all_shifts", "custom"])
     shifts = ListField(ReferenceField("Shift"))
-    shift_property_headers = ListField(
-        EmbeddedDocumentField(ShiftPropertyHeader)
-    )
+    shift_property_headers = ListField(EmbeddedDocumentField(ShiftPropertyHeader))

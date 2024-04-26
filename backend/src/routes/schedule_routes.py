@@ -13,10 +13,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
@@ -40,9 +37,7 @@ from services.schedule_services import solve_schedule as solve_schedule_service
 from services.schedule_services import (
     to_past_schedules_and_assignments as to_past_schedules_and_assignments_service,
 )
-from services.schedule_services import (
-    validate_schedule as validate_schedule_service,
-)
+from services.schedule_services import validate_schedule as validate_schedule_service
 
 router = APIRouter()
 
@@ -83,8 +78,8 @@ async def solve_schedule(
                 "You do not have permission to solve a schedule",
             )
         schedule = schedule_db.get_schedule_by_id(schedule_id)
-        schedule, assignments, objective_breaches, stats = (
-            solve_schedule_service(schedule)
+        schedule, assignments, objective_breaches, stats = solve_schedule_service(
+            schedule
         )
         response = core_to_msg_solution(
             schedule, assignments, objective_breaches, stats
@@ -95,9 +90,7 @@ async def solve_schedule(
     return response
 
 
-@router.post(
-    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
-)
+@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -175,9 +168,7 @@ async def delete_schedule(
                 "You do not have permission to delete a schedule",
             )
         assignment_db.delete_assignments_by_schedule_id(schedule_id)
-        objective_breach_db.delete_objective_breaches_by_schedule_id(
-            schedule_id
-        )
+        objective_breach_db.delete_objective_breaches_by_schedule_id(schedule_id)
         constraint_db.delete_constraints_by_schedule_id(schedule_id)
         schedule_db.delete_schedule(schedule_id)
     except Exception as e:

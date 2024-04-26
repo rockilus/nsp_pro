@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
+import { TemplateOptionValueT } from "../Constraint/types";
 
-// Stats
 export type StatsOptionsT = {
   id: string;
   teamId: string;
@@ -8,19 +8,12 @@ export type StatsOptionsT = {
   endDate: dayjs.Dayjs;
 };
 
-export type ShiftPropertyHeaderT = {
-  shiftDimensionId: string;
-  propertyValue: string | number | boolean;
-};
-
 export type StatsHeaderT = {
   id: string;
   statsOptionsId: string;
   type: string;
   value: string;
-  shiftsSelected: string;
-  shiftIds: string[];
-  shiftPropertyHeaders: ShiftPropertyHeaderT[];
+  selectedShifts: TemplateOptionValueT[];
 };
 
 export type StatsValueT = {
@@ -41,15 +34,4 @@ export type StatT = {
   value: number;
 };
 
-// export type StatsT = {
-//   statsOptions: StatsOptionsT | null;
-//   stats: StatT[];
-// };
-
-// Types for components
-export type ColumnStatsT = {
-  name: string;
-  label: string;
-  columnSpan: number;
-  cluster: string;
-};
+export type StatsShiftOptionsT = Record<string, TemplateOptionValueT[]>;

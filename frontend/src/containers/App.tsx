@@ -26,6 +26,9 @@ import { useTeamStore } from "../stores/teamStore";
 import { useWorkerStore } from "../stores/workerStore";
 import { useWorkerDimensionStore } from "../stores/workerDimensionStore";
 import { useBulkFetchStore } from "../stores/bulkFetchStore";
+// Types
+import { StatsShiftOptionsT } from "../components/Stats/types";
+import { TemplateT } from "../components/Constraint/types";
 
 const App = () => {
   const tabs = [
@@ -69,6 +72,17 @@ const App = () => {
     (state) => state.objectiveBreaches
   );
   const statsOptions = useStatsOptionsStore((state) => state.statsOptions);
+
+  const findShiftBlock = (templates: TemplateT[]): StatsShiftOptionsT => {
+    for (let template of templates) {
+      for (let block of template.blocks) {
+        if (block.name === "shift") {
+          return block.options as StatsShiftOptionsT;
+        }
+      }
+    }
+    return {};
+  };
 
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
@@ -154,6 +168,7 @@ const App = () => {
             workers={workers}
             shifts={shifts}
             statsOptions={statsOptions}
+            statsShiftOptions={findShiftBlock(constraintTemplates)}
           />
         );
       default:

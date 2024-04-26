@@ -5,7 +5,8 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Stat, StatsOptions, Stats, StatsHeader, StatsValue
+from constraint_parser import build_shift_options
+from core import ShiftProperty, Stat, Stats, StatsHeader, StatsOptions, StatsValue
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -13,22 +14,24 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
     StatMessage,
+    StatsHeaderMessage,
+    StatsMessage,
     StatsOptionsAndStatsMessage,
     StatsOptionsMessage,
     StatsValueMessage,
-    StatsHeaderMessage,
-    StatsMessage,
 )
-from scripts.setup_database import stats_options_db
-from services.stats_services import stats_setup
+from scripts.setup_database import (
+    shift_db,
+    shift_dimension_db,
+    shift_property_db,
+    stats_options_db,
+)
+from services.stats_services import build_stats
 
 router = APIRouter()
 
@@ -48,7 +51,7 @@ async def create_stats_options(
             )
         s_data = msg_to_core_stats_options(req)
         stats_options = stats_options_db.create_stats_options(s_data)
-        stats = stats_setup(team_id)
+        stats = build_stats(team_id)
         response = core_to_msg_stats_options_and_stats(stats_options, stats)
     except Exception as e:
         log_info("Failed to create stats options")
@@ -69,7 +72,7 @@ async def get_stats_options(
                 "You do not have permission to get stats options",
             )
         stats_options = stats_options_db.get_stats_options(team_id)
-        stats = stats_setup(team_id)
+        stats = build_stats(team_id)
         response = core_to_msg_stats_options_and_stats(stats_options, stats)
     except Exception as e:
         log_info("Failed to get stats options")
@@ -77,8 +80,41 @@ async def get_stats_options(
     return response
 
 
+@router.get("/stats/shift-options/teams/{team_id}")
+async def get_shift_options(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> Dict:
+    try:
+        if not await authz_check(
+            session.get_user_id(), "read-stats-options", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to get stats options",
+            )
+        shifts = shift_db.get_shifts(team_id)
+        shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
+        shift_properties = shift_property_db.get_shift_properties_by_shift_ids(
+            [s.id for s in shifts]
+        )
+        shift_properties_sd: Dict[str, List[ShiftProperty]] = {}
+        for sp in shift_properties:
+            sd_id = sp.shift_dimension_id
+            if sd_id not in shift_properties_sd:
+                shift_properties_sd[sd_id] = []
+            shift_properties_sd[sd_id].append(sp)
+        shift_options = build_shift_options(
+            shifts, shift_dimensions, shift_properties_sd
+        )
+        response = shift_options
+    except Exception as e:
+        log_info("Failed to get stats options")
+        handle_routes_errors(e)
+    return response
+
+
 @router.post("/stats/teams/{team_id}")
-async def get_stats(
+async def calculate_stats(
     team_id: str,
     options: Dict[str, str],
     session: SessionContainerType = Depends(authn_verify_session()),
@@ -91,7 +127,7 @@ async def get_stats(
                 "You do not have permission to get stats options",
             )
         # stats_options = stats_options_db.get_stats_options(team_id)
-        stats = stats_setup(
+        stats = build_stats(
             team_id,
             options["time_frame"],
             options["table_value"],
@@ -121,10 +157,8 @@ async def update_stats_options(
         updated_stats_options = stats_options_db.update_stats_options(
             stats_options_data
         )
-        stats = stats_setup(team_id)
-        response = core_to_msg_stats_options_and_stats(
-            updated_stats_options, stats
-        )
+        stats = build_stats(team_id)
+        response = core_to_msg_stats_options_and_stats(updated_stats_options, stats)
     except Exception as e:
         log_info("Failed to update stats options")
         handle_routes_errors(e)
@@ -172,12 +206,8 @@ def core_to_msg_stats(stats: Stats) -> StatsMessage:
         str,
         List[StatsHeaderMessage] | List[StatsValueMessage],
     ] = {}
-    data["stats_headers"] = [
-        core_to_msg_stats_header(sh) for sh in stats.stats_headers
-    ]
-    data["stats_values"] = [
-        core_to_msg_stats_value(sv) for sv in stats.stats_values
-    ]
+    data["stats_headers"] = [core_to_msg_stats_header(sh) for sh in stats.stats_headers]
+    data["stats_values"] = [core_to_msg_stats_value(sv) for sv in stats.stats_values]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(StatsMessage)
     return validator.validate_python(as_dict)
