@@ -29,6 +29,8 @@ import { useBulkFetchStore } from "../stores/bulkFetchStore";
 // Types
 import { StatsShiftOptionsT } from "../components/Stats/types";
 import { TemplateT } from "../components/Constraint/types";
+// Constants
+import { emptyStatsOptions } from "../utils/emptyObjects";
 
 const App = () => {
   const tabs = [
@@ -167,7 +169,11 @@ const App = () => {
             team={selectedTeam}
             workers={workers}
             shifts={shifts}
-            statsOptions={statsOptions}
+            statsOptions={
+              statsOptions
+                ? statsOptions
+                : { ...emptyStatsOptions, teamId: selectedTeam.id }
+            }
             statsShiftOptions={findShiftBlock(constraintTemplates)}
           />
         );

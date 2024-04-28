@@ -53,7 +53,7 @@ export const useStatStore = create<StatStateT>()((set) => ({
       },
       body: JSON.stringify({
         timeFrame: timeFrame,
-        tableValue: tableValue,
+        statsUnit: tableValue,
         tableColumn: tableColumn,
         selectedShifts: selectedShifts,
       }),

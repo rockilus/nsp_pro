@@ -1,5 +1,6 @@
 import React from "react";
 // MUI
+import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -7,19 +8,38 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+// Stores
+import { useStatsOptionsStore } from "../../../stores/statsOptionsStore";
 // Types
-import { StatsT, StatsValueT } from "../types";
+import { StatsT, StatsValueT, StatsHeaderT, StatsOptionsT } from "../types";
 import { ShiftT } from "../../Shift/types";
 import { WorkerT } from "../../Worker/types";
 
 interface Props {
+  statsOptions: StatsOptionsT;
   stats: StatsT;
   workers: WorkerT[];
   shifts: ShiftT[];
 }
 
-export default function StatsTable({ stats, workers, shifts }: Props) {
+export default function StatsTable({
+  statsOptions,
+  stats,
+  workers,
+  shifts,
+}: Props) {
   const borderStyle = "1px solid #E8E8E8";
+  const updateStatsOptions = useStatsOptionsStore(
+    (state) => state.updateStatsOptions
+  );
+
+  const handleAddHeaderToCustom = (starsHeader: StatsHeaderT) => {
+    const updatedStatsOptions = {
+      ...statsOptions,
+      statsHeaders: [...statsOptions.customHeaders, starsHeader],
+    };
+    updateStatsOptions(updatedStatsOptions);
+  };
 
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
@@ -55,9 +75,23 @@ export default function StatsTable({ stats, workers, shifts }: Props) {
                 align="center"
                 sx={{ borderLeft: headerIndex > 0 ? borderStyle : null }}
               >
-                {header.type === "shift"
+                {header.headerUnit === "shift"
                   ? shifts.find((s) => s.id === header.value)?.name
                   : header.value}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  sx={{
+                    textTransform: "none",
+                    fontStyle: "italic",
+                    fontSize: "0.7rem",
+                    padding: "2px",
+                  }}
+                  onClick={() => handleAddHeaderToCustom(header)}
+                >
+                  Add custom
+                </Button>
               </TableCell>
             ))}
           </TableRow>

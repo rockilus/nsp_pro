@@ -12,14 +12,12 @@ import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
 import { WorkerT } from "../Worker/types";
 import { StatsOptionsT, StatsShiftOptionsT } from "./types";
-// Constants
-import { emptyStatsOptions } from "../../utils/emptyObjects";
 
 interface Props {
   team: TeamT;
   workers: WorkerT[];
   shifts: ShiftT[];
-  statsOptions: StatsOptionsT | null;
+  statsOptions: StatsOptionsT;
   statsShiftOptions: StatsShiftOptionsT;
 }
 
@@ -36,14 +34,17 @@ export default function StatsTab({
     <Box sx={{ display: "flex", flexDirection: "row" }}>
       <StatsOptions
         team={team}
-        statsOptions={
-          statsOptions
-            ? statsOptions
-            : { ...emptyStatsOptions, teamId: team.id }
-        }
+        statsOptions={statsOptions}
         statsShiftOptions={statsShiftOptions}
       />
-      {stats && <StatsTable stats={stats} workers={workers} shifts={shifts} />}
+      {stats && (
+        <StatsTable
+          statsOptions={statsOptions}
+          stats={stats}
+          workers={workers}
+          shifts={shifts}
+        />
+      )}
     </Box>
   );
 }

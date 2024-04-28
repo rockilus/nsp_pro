@@ -1,17 +1,11 @@
 import dayjs from "dayjs";
 import { TemplateOptionValueT } from "../Constraint/types";
 
-export type StatsOptionsT = {
-  id: string;
-  teamId: string;
-  startDate: dayjs.Dayjs;
-  endDate: dayjs.Dayjs;
-};
-
 export type StatsHeaderT = {
   id: string;
   statsOptionsId: string;
-  type: string;
+  statsUnit: string;
+  headerUnit: string;
   value: string;
   selectedShifts: TemplateOptionValueT[];
 };
@@ -25,6 +19,14 @@ export type StatsValueT = {
 export type StatsT = {
   statsHeaders: StatsHeaderT[];
   statsValues: StatsValueT[];
+};
+
+export type StatsOptionsT = {
+  id: string;
+  teamId: string;
+  startDate: dayjs.Dayjs;
+  endDate: dayjs.Dayjs;
+  customHeaders: StatsHeaderT[];
 };
 
 export type StatT = {

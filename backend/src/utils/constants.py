@@ -69,6 +69,18 @@ class Constants:
     VAR_DAY_SELECTOR_OPTIONS = Literal["all", "week", "period", "week_day_index"]
     VAR_SHIFT_SELECTOR_OPTIONS = Literal["all", "equal"]
 
+    # Stats
+    STATS_UNIT_OPTIONS = Literal[
+        "nb_days_worked",
+        "time_worked",
+        "nb_shifts_worked",
+        "nb_rest_days",
+        "nb_rest_shifts",
+        "nb_times_shift",
+        "nb_times_rest",
+    ]
+    HEADER_UNIT_OPTIONS = Literal["weekday", "week", "month", "year", "all", "shift"]
+
     # Routes
     USER_ERROR_MESSAGE_GENERIC: str = (
         "an error occurred while processing your request, please try again later."

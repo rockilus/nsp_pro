@@ -3,6 +3,7 @@ from datetime import date
 from typing import List
 
 from core.constraint import DictBlockValue
+from utils.constants import Constants
 
 
 @dataclass
@@ -11,14 +12,6 @@ class Stat:
     name: str
     cluster: str
     value: int | float
-
-
-@dataclass
-class StatsOptions:
-    id: str
-    team_id: str
-    start_date: date
-    end_date: date
 
 
 @dataclass
@@ -31,11 +24,10 @@ class ShiftPropertyHeader:
 class StatsHeader:
     id: str
     stats_options_id: str
-    type: str  # weekday, week, month, year, shift
+    stats_unit: Constants.STATS_UNIT_OPTIONS
+    header_unit: Constants.HEADER_UNIT_OPTIONS
     value: (str)  # weekday index, week number, month number, year number, shift_id
-    shifts_selected: str  # all_shifts, custom
-    shift_ids: List[str]
-    shift_property_headers: List[ShiftPropertyHeader]
+    selected_shifts: List[DictBlockValue]
 
 
 @dataclass
@@ -52,6 +44,15 @@ class Stats:
 
 
 @dataclass
+class StatsOptions:
+    id: str
+    team_id: str
+    start_date: date
+    end_date: date
+    # custom_headers: List[StatsHeader]
+
+
+@dataclass
 class TemplateStats:
     name: str
     label: str
@@ -61,6 +62,6 @@ class TemplateStats:
 @dataclass
 class GetStatsOptions:
     time_frame: str
-    table_value: str
+    stats_unit: Constants.STATS_UNIT_OPTIONS
     table_column: str
     selected_shifts: List[DictBlockValue]

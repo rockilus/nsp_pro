@@ -142,7 +142,7 @@ async def calculate_stats(
         stats = build_stats(
             team_id,
             data.time_frame,
-            data.table_value,
+            data.stats_unit,
             data.table_column,
             data.selected_shifts,
         )

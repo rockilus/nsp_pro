@@ -184,19 +184,19 @@ class ScheduleMessage(BaseModel):
 
 
 # Stats
-class ShiftPropertyHeaderMessage(BaseModel):
-    shiftDimensionId: str
-    propertyValue: str | int | float | bool
+class DictBlockValueMessage(BaseModel):
+    name: str
+    id: str
+    idType: str
 
 
 class StatsHeaderMessage(BaseModel):
     id: str
     statsOptionsId: str
-    type: str
+    statsUnit: str
+    headerUnit: str
     value: str
-    shiftsSelected: str
-    shiftIds: List[str]
-    shiftPropertyHeaders: List[ShiftPropertyHeaderMessage]
+    selectedShifts: List[DictBlockValueMessage]
 
 
 class StatsValueMessage(BaseModel):
@@ -241,15 +241,9 @@ class ValidateMessage(BaseModel):
     assignments: List[AssignmentMessage]
 
 
-class DictBlockValueMessage(BaseModel):
-    name: str
-    id: str
-    idType: str
-
-
 class GetStatsOptionsMessage(BaseModel):
     timeFrame: str
-    tableValue: str
+    statsUnit: str
     tableColumn: str
     selectedShifts: List[DictBlockValueMessage]
 

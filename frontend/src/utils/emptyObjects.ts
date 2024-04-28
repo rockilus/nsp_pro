@@ -38,6 +38,7 @@ export const emptyStatsOptions: StatsOptionsT = {
   teamId: "",
   startDate: dayjs.utc().startOf("day"),
   endDate: dayjs.utc().startOf("day"),
+  customHeaders: [],
 };
 
 export const emptyRequest: RequestT = {
