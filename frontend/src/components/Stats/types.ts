@@ -43,3 +43,12 @@ export type StatsOptionsAndStatsT = {
   statsOptions: StatsOptionsT | null;
   stats: StatsT;
 };
+
+export type GetStatsOptionsT = {
+  timeFrame: string;
+  startDate: dayjs.Dayjs;
+  endDate: dayjs.Dayjs;
+  statsUnit: string;
+  headerUnit: string;
+  selectedShifts: TemplateOptionValueT[];
+};

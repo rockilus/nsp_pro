@@ -169,11 +169,6 @@ const App = () => {
             team={selectedTeam}
             workers={workers}
             shifts={shifts}
-            statsOptions={
-              statsOptions
-                ? statsOptions
-                : { ...emptyStatsOptions, teamId: selectedTeam.id }
-            }
             statsShiftOptions={findShiftBlock(constraintTemplates)}
           />
         );
