@@ -192,11 +192,12 @@ class DictBlockValueMessage(BaseModel):
 
 class StatsHeaderMessage(BaseModel):
     id: str
-    statsOptionsId: str
+    teamId: str
     statsUnit: str
     headerUnit: str
     value: str
     selectedShifts: List[DictBlockValueMessage]
+    inCustom: bool
 
 
 class StatsValueMessage(BaseModel):
@@ -244,7 +245,7 @@ class ValidateMessage(BaseModel):
 class GetStatsOptionsMessage(BaseModel):
     timeFrame: str
     statsUnit: str
-    tableColumn: str
+    headerUnit: str
     selectedShifts: List[DictBlockValueMessage]
 
 

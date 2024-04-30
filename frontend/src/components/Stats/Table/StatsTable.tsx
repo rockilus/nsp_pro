@@ -9,36 +9,33 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Stores
-import { useStatsOptionsStore } from "../../../stores/statsOptionsStore";
+import { useStatStore } from "../../../stores/statsStore";
 // Types
 import { StatsT, StatsValueT, StatsHeaderT, StatsOptionsT } from "../types";
 import { ShiftT } from "../../Shift/types";
 import { WorkerT } from "../../Worker/types";
+import { TeamT } from "../../../containers/types";
 
 interface Props {
-  statsOptions: StatsOptionsT;
   stats: StatsT;
   workers: WorkerT[];
   shifts: ShiftT[];
 }
 
-export default function StatsTable({
-  statsOptions,
-  stats,
-  workers,
-  shifts,
-}: Props) {
+export default function StatsTable({ stats, workers, shifts }: Props) {
   const borderStyle = "1px solid #E8E8E8";
-  const updateStatsOptions = useStatsOptionsStore(
-    (state) => state.updateStatsOptions
+
+  const addHeaderToCustom = useStatStore((state) => state.addHeaderToCustom);
+  const deleteHeaderFromCustom = useStatStore(
+    (state) => state.deleteHeaderFromCustom
   );
 
-  const handleAddHeaderToCustom = (starsHeader: StatsHeaderT) => {
-    const updatedStatsOptions = {
-      ...statsOptions,
-      statsHeaders: [...statsOptions.customHeaders, starsHeader],
-    };
-    updateStatsOptions(updatedStatsOptions);
+  const handleAddDeleteHeaderToCustom = (statsHeader: StatsHeaderT) => {
+    if (statsHeader.inCustom) {
+      deleteHeaderFromCustom(statsHeader.id, statsHeader.teamId);
+    } else {
+      addHeaderToCustom(statsHeader);
+    }
   };
 
   return (
@@ -80,7 +77,7 @@ export default function StatsTable({
                   : header.value}
                 <Button
                   variant="contained"
-                  color="primary"
+                  color={header.inCustom ? "info" : "primary"}
                   size="small"
                   sx={{
                     textTransform: "none",
@@ -88,7 +85,7 @@ export default function StatsTable({
                     fontSize: "0.7rem",
                     padding: "2px",
                   }}
-                  onClick={() => handleAddHeaderToCustom(header)}
+                  onClick={() => handleAddDeleteHeaderToCustom(header)}
                 >
                   Add custom
                 </Button>

@@ -17,7 +17,7 @@ class StatsHeader(Document):
     meta = {"collection": "stats_headers"}
 
     id = StringField(primary_key=True, required=True)
-    stats_options = ReferenceField("StatsOptions", required=True)
+    team = ReferenceField("Team", required=True)
     stats_unit = StringField(
         required=True,
         # pylint: disable = R0801
@@ -32,7 +32,8 @@ class StatsHeader(Document):
         ],
     )
     header_unit = StringField(
-        required=True, choices=["weekday", "week", "month", "year", "shift"]
+        required=True,
+        choices=["weekday", "week", "month", "year", "all", "shift"],
     )
     value = StringField(required=True)
     selected_shifts = ListField(EmbeddedDocumentField(DictBlockValue), required=True)

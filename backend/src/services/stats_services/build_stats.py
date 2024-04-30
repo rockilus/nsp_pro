@@ -2,12 +2,13 @@ from datetime import date
 from typing import Dict, List
 
 from constraint_parser import parse_selected_shifts
-from core import Assignment, DictBlockValue, Stats
+from core import Assignment, DictBlockValue, Stats, StatsHeader
 from scripts.setup_database import (
     assignment_db,
     schedule_db,
     shift_db,
     shift_property_db,
+    stats_header_db,
     worker_db,
 )
 from services.stats_services.buid_dates import build_dates
@@ -38,7 +39,7 @@ def build_stats(
     team_id: str,
     time_frame: str,
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    table_column: str,
+    header_unit: str,
     selected_shifts: List[DictBlockValue],
 ) -> Stats:
     # stats_options = stats_options_db.get_stats_options(team_id)
@@ -51,6 +52,9 @@ def build_stats(
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
     assignments = assignment_db.get_assignments_by_dates(
         start_date, end_date, schedules
+    )
+    stats_headers = stats_header_db.get_stats_headers_by_team_unit_shifts(
+        team_id, stats_unit, header_unit
     )
     selected_shifts_ids = parse_selected_shifts(selected_shifts, shifts, shift_dim_dict)
     worker_to_i = {worker.id: i for i, worker in enumerate(workers)}
@@ -77,7 +81,8 @@ def build_stats(
     i_to_rest_shift = {i: shift for shift, i in rest_shift_to_i.items()}
     if stats_unit == "nb_days_worked":
         return build_stats_nb_days_worked(
-            table_column,
+            team_id,
+            header_unit,
             worker_to_i,
             date_to_i,
             work_shift_to_i,
@@ -85,10 +90,12 @@ def build_stats(
             assignments,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
     if stats_unit == "time_worked":
         return build_stats_time_worked(
-            table_column,
+            team_id,
+            header_unit,
             worker_to_i,
             date_to_i,
             work_shift_to_i,
@@ -97,10 +104,12 @@ def build_stats(
             assignments,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
     if stats_unit == "nb_shifts_worked":
         return build_stats_nb_shifts_worked(
-            table_column,
+            team_id,
+            header_unit,
             worker_to_i,
             date_to_i,
             work_shift_to_i,
@@ -108,10 +117,12 @@ def build_stats(
             assignments,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
     if stats_unit == "nb_rest_days":
         return build_stats_nb_days_rest(
-            table_column,
+            team_id,
+            header_unit,
             worker_to_i,
             date_to_i,
             work_shift_to_i,
@@ -119,10 +130,12 @@ def build_stats(
             assignments,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
     if stats_unit == "nb_rest_shifts":
         return build_stats_nb_shifts_worked(
-            table_column,
+            team_id,
+            header_unit,
             worker_to_i,
             date_to_i,
             rest_shift_to_i,
@@ -130,9 +143,11 @@ def build_stats(
             assignments,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
     if stats_unit == "nb_times_shift":
         return build_stats_nb_times_shifts(
+            team_id,
             worker_to_i,
             date_to_i,
             work_shift_to_i,
@@ -141,9 +156,11 @@ def build_stats(
             assignments,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
     if stats_unit == "nb_times_rest":
         return build_stats_nb_times_shifts(
+            team_id,
             worker_to_i,
             date_to_i,
             rest_shift_to_i,
@@ -152,13 +169,15 @@ def build_stats(
             assignments,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
     raise ValueError(f"Unknown target_value: {stats_unit}")
 
 
 # pylint: disable=too-many-arguments
 def build_stats_nb_days_worked(
-    target_column: str,
+    team_id: str,
+    header_unit: str,
     worker_to_i: Dict[str, int],
     date_to_i: Dict[date, int],
     shift_to_i: Dict[str, int],
@@ -166,49 +185,71 @@ def build_stats_nb_days_worked(
     assignments: List[Assignment],
     stats_unit: Constants.STATS_UNIT_OPTIONS,
     selected_shifts: List[DictBlockValue],
+    stats_headers: List[StatsHeader],
 ) -> Stats:
     a_array = core_to_np_assignments_binary(
         worker_to_i, date_to_i, shift_to_i, assignments
     )
-    if target_column == "weekday":
+    if header_unit == "weekday":
         stats_array = calc_stats_per_weekday(a_array, date_to_i, True)
         return np_to_core_days_worked_per_weekday(
-            stats_array, i_to_worker, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    if target_column == "week":
+    if header_unit == "week":
         stats_array, year_week_nb_to_i = calc_stats_per_week(a_array, date_to_i, True)
         return np_to_core_days_worked_per_week(
             stats_array,
             i_to_worker,
             year_week_nb_to_i,
+            team_id,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
-    if target_column == "month":
+    if header_unit == "month":
         stats_array, year_month_to_i = calc_stats_per_month(a_array, date_to_i, True)
         return np_to_core_days_worked_per_month(
             stats_array,
             i_to_worker,
             year_month_to_i,
+            team_id,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
-    if target_column == "year":
+    if header_unit == "year":
         stats_array, year_to_i = calc_stats_per_year(a_array, date_to_i, True)
         return np_to_core_days_worked_per_year(
-            stats_array, i_to_worker, year_to_i, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            year_to_i,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    if target_column == "all":
+    if header_unit == "all":
         stats_array = calc_stats_all(a_array, True)
         return np_to_core_days_worked_all(
-            stats_array, i_to_worker, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    raise ValueError(f"Unknown target_column: {target_column}")
+    raise ValueError(f"Unknown target_column: {header_unit}")
 
 
 # pylint: disable=too-many-arguments
 def build_stats_nb_shifts_worked(
-    target_column: str,
+    team_id: str,
+    header_unit: str,
     worker_to_i: Dict[str, int],
     date_to_i: Dict[date, int],
     shift_to_i: Dict[str, int],
@@ -216,49 +257,71 @@ def build_stats_nb_shifts_worked(
     assignments: List[Assignment],
     stats_unit: Constants.STATS_UNIT_OPTIONS,
     selected_shifts: List[DictBlockValue],
+    stats_headers: List[StatsHeader],
 ) -> Stats:
     a_array = core_to_np_assignments_binary(
         worker_to_i, date_to_i, shift_to_i, assignments
     )
-    if target_column == "weekday":
+    if header_unit == "weekday":
         stats_array = calc_stats_per_weekday(a_array, date_to_i)
         return np_to_core_days_worked_per_weekday(
-            stats_array, i_to_worker, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    if target_column == "week":
+    if header_unit == "week":
         stats_array, year_week_nb_to_i = calc_stats_per_week(a_array, date_to_i)
         return np_to_core_days_worked_per_week(
             stats_array,
             i_to_worker,
             year_week_nb_to_i,
+            team_id,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
-    if target_column == "month":
+    if header_unit == "month":
         stats_array, year_month_to_i = calc_stats_per_month(a_array, date_to_i)
         return np_to_core_days_worked_per_month(
             stats_array,
             i_to_worker,
             year_month_to_i,
+            team_id,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
-    if target_column == "year":
+    if header_unit == "year":
         stats_array, year_to_i = calc_stats_per_year(a_array, date_to_i)
         return np_to_core_days_worked_per_year(
-            stats_array, i_to_worker, year_to_i, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            year_to_i,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    if target_column == "all":
+    if header_unit == "all":
         stats_array = calc_stats_all(a_array)
         return np_to_core_days_worked_all(
-            stats_array, i_to_worker, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    raise ValueError(f"Unknown target_column: {target_column}")
+    raise ValueError(f"Unknown target_column: {header_unit}")
 
 
 # pylint: disable=too-many-arguments
 def build_stats_time_worked(
-    target_column: str,
+    team_id: str,
+    header_unit: str,
     worker_to_i: Dict[str, int],
     date_to_i: Dict[date, int],
     shift_to_i: Dict[str, int],
@@ -267,49 +330,71 @@ def build_stats_time_worked(
     assignments: List[Assignment],
     stats_unit: Constants.STATS_UNIT_OPTIONS,
     selected_shifts: List[DictBlockValue],
+    stats_headers: List[StatsHeader],
 ) -> Stats:
     a_array = core_to_np_assignments_worked_time(
         worker_to_i, date_to_i, shift_to_i, work_shift_to_duration, assignments
     )
-    if target_column == "weekday":
+    if header_unit == "weekday":
         stats_array = calc_stats_per_weekday(a_array, date_to_i)
         return np_to_core_days_worked_per_weekday(
-            stats_array, i_to_worker, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    if target_column == "week":
+    if header_unit == "week":
         stats_array, year_week_nb_to_i = calc_stats_per_week(a_array, date_to_i)
         return np_to_core_days_worked_per_week(
             stats_array,
             i_to_worker,
             year_week_nb_to_i,
+            team_id,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
-    if target_column == "month":
+    if header_unit == "month":
         stats_array, year_month_to_i = calc_stats_per_month(a_array, date_to_i)
         return np_to_core_days_worked_per_month(
             stats_array,
             i_to_worker,
             year_month_to_i,
+            team_id,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
-    if target_column == "year":
+    if header_unit == "year":
         stats_array, year_to_i = calc_stats_per_year(a_array, date_to_i)
         return np_to_core_days_worked_per_year(
-            stats_array, i_to_worker, year_to_i, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            year_to_i,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    if target_column == "all":
+    if header_unit == "all":
         stats_array = calc_stats_all(a_array)
         return np_to_core_days_worked_all(
-            stats_array, i_to_worker, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    raise ValueError(f"Unknown target_column: {target_column}")
+    raise ValueError(f"Unknown target_column: {header_unit}")
 
 
 # pylint: disable=too-many-arguments
 def build_stats_nb_days_rest(
-    target_column: str,
+    team_id: str,
+    header_unit: str,
     worker_to_i: Dict[str, int],
     date_to_i: Dict[date, int],
     shift_to_i: Dict[str, int],
@@ -317,16 +402,22 @@ def build_stats_nb_days_rest(
     assignments: List[Assignment],
     stats_unit: Constants.STATS_UNIT_OPTIONS,
     selected_shifts: List[DictBlockValue],
+    stats_headers: List[StatsHeader],
 ) -> Stats:
     a_array = core_to_np_assignments_binary(
         worker_to_i, date_to_i, shift_to_i, assignments
     )
-    if target_column == "weekday":
+    if header_unit == "weekday":
         stats_array = calc_stats_per_weekday(a_array, date_to_i, True, True)
         return np_to_core_days_worked_per_weekday(
-            stats_array, i_to_worker, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    if target_column == "week":
+    if header_unit == "week":
         stats_array, year_week_nb_to_i = calc_stats_per_week(
             a_array, date_to_i, True, True
         )
@@ -334,10 +425,12 @@ def build_stats_nb_days_rest(
             stats_array,
             i_to_worker,
             year_week_nb_to_i,
+            team_id,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
-    if target_column == "month":
+    if header_unit == "month":
         stats_array, year_month_to_i = calc_stats_per_month(
             a_array, date_to_i, True, True
         )
@@ -345,24 +438,38 @@ def build_stats_nb_days_rest(
             stats_array,
             i_to_worker,
             year_month_to_i,
+            team_id,
             stats_unit,
             selected_shifts,
+            stats_headers,
         )
-    if target_column == "year":
+    if header_unit == "year":
         stats_array, year_to_i = calc_stats_per_year(a_array, date_to_i, True, True)
         return np_to_core_days_worked_per_year(
-            stats_array, i_to_worker, year_to_i, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            year_to_i,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    if target_column == "all":
+    if header_unit == "all":
         stats_array = calc_stats_all(a_array, True, True)
         return np_to_core_days_worked_all(
-            stats_array, i_to_worker, stats_unit, selected_shifts
+            stats_array,
+            i_to_worker,
+            team_id,
+            stats_unit,
+            selected_shifts,
+            stats_headers,
         )
-    raise ValueError(f"Unknown target_column: {target_column}")
+    raise ValueError(f"Unknown target_column: {header_unit}")
 
 
 # pylint: disable=too-many-arguments
 def build_stats_nb_times_shifts(
+    team_id: str,
     # target_column: str,
     worker_to_i: Dict[str, int],
     date_to_i: Dict[date, int],
@@ -372,6 +479,7 @@ def build_stats_nb_times_shifts(
     assignments: List[Assignment],
     stats_unit: Constants.STATS_UNIT_OPTIONS,
     selected_shifts: List[DictBlockValue],
+    stats_headers: List[StatsHeader],
 ) -> Stats:
     a_array = core_to_np_assignments_binary(
         worker_to_i, date_to_i, shift_to_i, assignments
@@ -379,6 +487,12 @@ def build_stats_nb_times_shifts(
     # if target_column == "work_shifts":
     stats_array = a_array.sum(axis=1)
     return np_to_core_nb_times_shift(
-        stats_array, i_to_worker, i_to_shift, stats_unit, selected_shifts
+        stats_array,
+        i_to_worker,
+        i_to_shift,
+        team_id,
+        stats_unit,
+        selected_shifts,
+        stats_headers,
     )
     # raise ValueError(f"Unknown target_column: {target_column}")

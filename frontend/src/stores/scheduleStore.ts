@@ -7,7 +7,7 @@ import {
   useObjectiveBreachStore,
   toObjectiveBreachT,
 } from "./objectiveBreachStore";
-import { useStatStore } from "./statStore";
+import { useStatStore } from "./statsStore";
 import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { ScheduleT, SolutionT, ValidateT } from "../components/Schedule/types";

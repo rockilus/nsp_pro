@@ -37,6 +37,7 @@ from scripts.setup_database import (
     shift_db,
     shift_dimension_db,
     shift_property_db,
+    stats_header_db,
     stats_options_db,
 )
 from services.stats_services import build_stats
@@ -68,6 +69,29 @@ async def create_stats_options(
     return response
 
 
+@router.post("/stats/stats-headers/teams/{team_id}", status_code=201)
+async def create_stats_header(
+    team_id: str,
+    req: StatsHeaderMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> StatsHeaderMessage:
+    try:
+        if not await authz_check(
+            session.get_user_id(), "create-stats-header", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to create a stats header",
+            )
+        sh_data = msg_to_core_stats_header(req)
+        stats_header = stats_header_db.create_stats_header(sh_data)
+        # stats = build_stats(team_id)
+        response = core_to_msg_stats_header(stats_header)
+    except Exception as e:
+        log_info("Failed to create stats header")
+        handle_routes_errors(e)
+    return response
+
+
 @router.get("/stats/stats-options/teams/{team_id}")
 async def get_stats_options(
     team_id: str,
@@ -86,6 +110,26 @@ async def get_stats_options(
         response = core_to_msg_stats_options_and_stats(stats_options, stats)
     except Exception as e:
         log_info("Failed to get stats options")
+        handle_routes_errors(e)
+    return response
+
+
+@router.get("/stats/teams/{team_id}")
+async def get_stats(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> StatsMessage:
+    try:
+        if not await authz_check(session.get_user_id(), "read-stats", "team", team_id):
+            raise NotAuthorizedError(
+                "You do not have permission to get stats",
+            )
+        stats_headers = stats_header_db.get_stats_headers_by_team_id(team_id)
+        # stats = build_stats(team_id)
+        stats = Stats(stats_headers, [])
+        response = core_to_msg_stats(stats)
+    except Exception as e:
+        log_info("Failed to get stats")
         handle_routes_errors(e)
     return response
 
@@ -143,7 +187,7 @@ async def calculate_stats(
             team_id,
             data.time_frame,
             data.stats_unit,
-            data.table_column,
+            data.header_unit,
             data.selected_shifts,
         )
         response = core_to_msg_stats(stats)
@@ -179,6 +223,30 @@ async def update_stats_options(
     return response
 
 
+@router.put("/stats/stats-header/{stats_header_id}/teams/{team_id}")
+async def update_stats_header(
+    team_id: str,
+    req: StatsHeaderMessage,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> StatsMessage:
+    try:
+        if not await authz_check(
+            session.get_user_id(), "update-stats-header", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update stats options",
+            )
+        sh_data = msg_to_core_stats_header(req)
+        stats_header = stats_header_db.update_stats_header(sh_data)
+        # stats = build_stats(team_id)
+        stats = Stats([stats_header], [])
+        response = core_to_msg_stats(stats)
+    except Exception as e:
+        log_info("Failed to update stats header")
+        handle_routes_errors(e)
+    return response
+
+
 @router.delete("/stats/stats-options/{stats_options_id}/teams/{team_id}")
 async def delete_stats_options(
     stats_options_id: str,
@@ -196,7 +264,27 @@ async def delete_stats_options(
     except Exception as e:
         log_info("Failed to delete stats options")
         handle_routes_errors(e)
-    return {"message": "CoverageSelector deleted"}
+    return {"message": "StatsOptions deleted"}
+
+
+@router.delete("/stats/stats-headers/{stats_header_id}/teams/{team_id}")
+async def delete_stats_header(
+    stats_header_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> Dict:
+    try:
+        if not await authz_check(
+            session.get_user_id(), "delete-stats-header", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to delete stats header",
+            )
+        stats_header_db.delete_stats_header(stats_header_id)
+    except Exception as e:
+        log_info("Failed to delete stats header")
+        handle_routes_errors(e)
+    return {"message": "StatsHeader deleted"}
 
 
 # Mappers
@@ -290,3 +378,16 @@ def msg_to_core_get_stats_options(
         log_info("Failed to convert GetStatsOptionsMessage to GetStatsOptions")
         handle_create_core_object_error(e)
     return out
+
+
+def msg_to_core_stats_header(msg: StatsHeaderMessage) -> StatsHeader:
+    data_snake = humps.decamelize(msg.model_dump())
+    data_snake["selected_shifts"] = [
+        DictBlockValue(**ss) for ss in data_snake["selected_shifts"]
+    ]
+    try:
+        stats_header = StatsHeader(**data_snake)
+    except Exception as e:
+        log_info("Failed to convert StatsHeaderMessage to StatsHeader")
+        handle_create_core_object_error(e)
+    return stats_header

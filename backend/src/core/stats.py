@@ -23,11 +23,12 @@ class ShiftPropertyHeader:
 @dataclass
 class StatsHeader:
     id: str
-    stats_options_id: str
+    team_id: str
     stats_unit: Constants.STATS_UNIT_OPTIONS
     header_unit: Constants.HEADER_UNIT_OPTIONS
     value: (str)  # weekday index, week number, month number, year number, shift_id
     selected_shifts: List[DictBlockValue]
+    in_custom: bool
 
 
 @dataclass
@@ -63,5 +64,5 @@ class TemplateStats:
 class GetStatsOptions:
     time_frame: str
     stats_unit: Constants.STATS_UNIT_OPTIONS
-    table_column: str
+    header_unit: str
     selected_shifts: List[DictBlockValue]

@@ -29,7 +29,7 @@ import PopoverAnchorElOver from "../../SharedComponents/PopoverAnchorElOver";
 import ShiftOptionsDisplay from "./ShiftOptionsDisplay";
 // Stores
 import { useStatsOptionsStore } from "../../../stores/statsOptionsStore";
-import { useStatStore } from "../../../stores/statStore";
+import { useStatStore } from "../../../stores/statsStore";
 // Types
 import { StatsOptionsT, StatsShiftOptionsT } from "../types";
 import { TeamT } from "../../../containers/types";
@@ -57,7 +57,6 @@ export default function StatsOptions({
   const [selectedShifts, setSelectedShifts] = useState<TemplateOptionValueT[]>(
     []
   );
-  console.log("selectedShifts", selectedShifts);
 
   const addStatsOptions = useStatsOptionsStore(
     (state) => state.addStatsOptions
@@ -121,8 +120,6 @@ export default function StatsOptions({
     setSelectedShifts(newSelectedShifts);
   };
 
-  console.log("shiftOptions", shiftOptions);
-
   const timeOptions = [
     { name: "last_12_months", label: "Last 12 months" },
     { name: "last_24_months", label: "Last 24 months" },
@@ -176,8 +173,6 @@ export default function StatsOptions({
     { name: "year", label: "Year" },
     { name: "all", label: "All" },
   ];
-
-  console.log("statsOptions", statsOptions);
 
   return (
     <Box

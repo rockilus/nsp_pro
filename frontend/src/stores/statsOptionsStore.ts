@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
 // Stores
-import { useStatStore } from "./statStore";
+import { useStatStore } from "./statsStore";
 import { useSnackBarStore } from "./snackbarStore";
 // Types
 import {

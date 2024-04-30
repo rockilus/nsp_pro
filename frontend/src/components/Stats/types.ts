@@ -3,11 +3,12 @@ import { TemplateOptionValueT } from "../Constraint/types";
 
 export type StatsHeaderT = {
   id: string;
-  statsOptionsId: string;
+  teamId: string;
   statsUnit: string;
   headerUnit: string;
   value: string;
   selectedShifts: TemplateOptionValueT[];
+  inCustom: boolean;
 };
 
 export type StatsValueT = {

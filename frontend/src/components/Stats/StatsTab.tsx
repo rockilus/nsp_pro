@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 import StatsTable from "./Table/StatsTable";
 import StatsOptions from "./Options/StatsOptions";
 // Stores
-import { useStatStore } from "../../stores/statStore";
+import { useStatStore } from "../../stores/statsStore";
 // Types
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
@@ -37,14 +37,7 @@ export default function StatsTab({
         statsOptions={statsOptions}
         statsShiftOptions={statsShiftOptions}
       />
-      {stats && (
-        <StatsTable
-          statsOptions={statsOptions}
-          stats={stats}
-          workers={workers}
-          shifts={shifts}
-        />
-      )}
+      {stats && <StatsTable stats={stats} workers={workers} shifts={shifts} />}
     </Box>
   );
 }
