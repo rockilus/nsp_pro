@@ -29,8 +29,6 @@ import { useBulkFetchStore } from "../stores/bulkFetchStore";
 // Types
 import { StatsShiftOptionsT } from "../components/Stats/types";
 import { TemplateT } from "../components/Constraint/types";
-// Constants
-import { emptyStatsOptions } from "../utils/emptyObjects";
 
 const App = () => {
   const tabs = [

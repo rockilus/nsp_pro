@@ -4,15 +4,16 @@ import utc from "dayjs/plugin/utc";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import FormControl from "@mui/material/FormControl";
+import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
 // Components
 import TableRowScheduleWIP from "../../Schedule/ScheduleOptions/TableRowScheduleWIP";
 import ShiftOptionsDisplay from "./ShiftOptionsDisplay";
@@ -50,6 +51,7 @@ export default function StatsOptions({
     headerUnit: "weekday",
     selectedShifts: [{ name: "all shifts", id: "", idType: "" }],
   });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const fetchStats = useStatStore((state) => state.fetchStats);
 
@@ -84,7 +86,9 @@ export default function StatsOptions({
   };
 
   const handleGetStats = async () => {
+    setIsLoading(true);
     await fetchStats(getStatsOptions, team.id);
+    setIsLoading(false);
     setShowingCustom(getStatsOptions.statsUnit === "custom");
   };
 
@@ -147,55 +151,58 @@ export default function StatsOptions({
                 </FormControl>
               }
             />
-            <TableRowScheduleWIP
-              name="Start"
-              content={
-                <DatePicker
-                  value={getStatsOptions.startDate}
-                  onChange={(newValue) => {
-                    setGetStatsOptions((prevState) => ({
-                      ...prevState,
-                      startDate: newValue
-                        ? dayjs.utc(newValue).startOf("day")
-                        : dayjs.utc().startOf("day"),
-                    }));
-                  }}
-                  sx={{
-                    width: "160px",
-                    "& .MuiOutlinedInput-input": {
-                      fontSize: "0.875rem",
-                      height: "40px",
-                      paddingY: 0,
-                    },
-                  }}
-                />
-              }
-            />
-            <TableRowScheduleWIP
-              name="End"
-              content={
-                <DatePicker
-                  value={getStatsOptions.endDate}
-                  onChange={(newValue) => {
-                    setGetStatsOptions((prevState) => ({
-                      ...prevState,
-                      endDate: newValue
-                        ? dayjs.utc(newValue).startOf("day")
-                        : dayjs.utc().startOf("day"),
-                    }));
-                  }}
-                  sx={{
-                    width: "160px",
-                    "& .MuiOutlinedInput-input": {
-                      fontSize: "0.875rem",
-                      height: "40px",
-                      paddingY: 0,
-                    },
-                  }}
-                />
-              }
-            />
-
+            {getStatsOptions.timeFrame === "custom" && (
+              <TableRowScheduleWIP
+                name="Start"
+                content={
+                  <DatePicker
+                    value={getStatsOptions.startDate}
+                    onChange={(newValue) => {
+                      setGetStatsOptions((prevState) => ({
+                        ...prevState,
+                        startDate: newValue
+                          ? dayjs.utc(newValue).startOf("day")
+                          : dayjs.utc().startOf("day"),
+                      }));
+                    }}
+                    sx={{
+                      width: "160px",
+                      "& .MuiOutlinedInput-input": {
+                        fontSize: "0.875rem",
+                        height: "40px",
+                        paddingY: 0,
+                      },
+                    }}
+                  />
+                }
+              />
+            )}
+            {getStatsOptions.timeFrame === "custom" && (
+              <TableRowScheduleWIP
+                name="End"
+                content={
+                  <DatePicker
+                    value={getStatsOptions.endDate}
+                    onChange={(newValue) => {
+                      setGetStatsOptions((prevState) => ({
+                        ...prevState,
+                        endDate: newValue
+                          ? dayjs.utc(newValue).startOf("day")
+                          : dayjs.utc().startOf("day"),
+                      }));
+                    }}
+                    sx={{
+                      width: "160px",
+                      "& .MuiOutlinedInput-input": {
+                        fontSize: "0.875rem",
+                        height: "40px",
+                        paddingY: 0,
+                      },
+                    }}
+                  />
+                }
+              />
+            )}
             <TableRowScheduleWIP
               name="Stats"
               content={
@@ -259,19 +266,35 @@ export default function StatsOptions({
           </TableBody>
         </Table>
       </TableContainer>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleGetStats}
-        sx={{
-          paddingLeft: 0.2,
-          paddingRight: 0.2,
-          margin: "8px",
-          height: "35px",
-        }}
-      >
-        Get stats
-      </Button>
+      {isLoading ? (
+        <Box
+          sx={{
+            backgroundColor: "#1976d2",
+            height: "35px",
+            borderRadius: "4px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            margin: 1,
+          }}
+        >
+          <CircularProgress size={20} sx={{ color: "white" }} />
+        </Box>
+      ) : (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleGetStats}
+          sx={{
+            paddingLeft: 0.2,
+            paddingRight: 0.2,
+            margin: "8px",
+            height: "35px",
+          }}
+        >
+          Get stats
+        </Button>
+      )}
     </Box>
   );
 }
