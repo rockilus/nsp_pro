@@ -7,7 +7,7 @@ import {
   useObjectiveBreachStore,
   toObjectiveBreachT,
 } from "./objectiveBreachStore";
-import { useStatStore } from "./statStore";
+import { useStatStore } from "./statsStore";
 import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { ScheduleT, SolutionT, ValidateT } from "../components/Schedule/types";
@@ -172,7 +172,7 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       useObjectiveBreachStore
         .getState()
         .updateObjectiveBreachStore(newSolution.objectiveBreaches);
-      useStatStore.getState().updateStatStore(newSolution.stats);
+      // useStatStore.getState().updateStatStore(newSolution.stats);
     } catch (error) {
       console.error("Failed to solve schedule:", error);
       useSnackBarStore
@@ -289,7 +289,7 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       useObjectiveBreachStore
         .getState()
         .deleteOBStoreWithScheduleId(scheduleId);
-      useStatStore.getState().deleteSStore();
+      // useStatStore.getState().deleteSStore();
     } catch (error) {
       console.error("Failed to delete schedule:", error);
       useSnackBarStore

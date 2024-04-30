@@ -1,4 +1,6 @@
 import dayjs from "dayjs";
+// Types
+import { StatT } from "../Stats/types";
 
 // Types for store
 
@@ -29,26 +31,6 @@ export type ObjectiveBreachT = {
   scheduleId: string;
 };
 
-// Stats
-export type StatsOptionsT = {
-  id: string;
-  teamId: string;
-  startDate: dayjs.Dayjs;
-  endDate: dayjs.Dayjs;
-};
-
-export type StatT = {
-  workerId: string;
-  name: string;
-  cluster: string;
-  value: number;
-};
-
-export type StatsT = {
-  statsOptions: StatsOptionsT | null;
-  stats: StatT[];
-};
-
 // Schedule
 export type ScheduleT = {
   id: string;
@@ -72,12 +54,4 @@ export type SolutionT = {
 export type ValidateT = {
   schedule: ScheduleT;
   assignments: AssignmentT[];
-};
-
-// Types for components
-export type ColumnStatsT = {
-  name: string;
-  label: string;
-  columnSpan: number;
-  cluster: string;
 };

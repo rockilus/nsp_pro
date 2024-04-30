@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Union
+from typing import List
 
 
 @dataclass
@@ -30,22 +30,6 @@ class ObjectiveBreach:
     hard_to_soft: bool
     description: str
     schedule_id: str
-
-
-@dataclass
-class Stat:
-    worker_id: str
-    name: str
-    cluster: str
-    value: Union[int, float]
-
-
-@dataclass
-class StatsOptions:
-    id: str
-    team_id: str
-    start_date: date
-    end_date: date
 
 
 @dataclass

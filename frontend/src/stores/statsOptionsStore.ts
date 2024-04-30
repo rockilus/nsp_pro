@@ -2,10 +2,14 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
 // Stores
-import { useStatStore } from "./statStore";
+import { useStatStore } from "./statsStore";
 import { useSnackBarStore } from "./snackbarStore";
 // Types
-import { StatsOptionsT, StatsT } from "../components/Schedule/types";
+import {
+  StatsOptionsT,
+  StatsT,
+  StatsOptionsAndStatsT,
+} from "../components/Stats/types";
 
 dayjs.extend(utc);
 
@@ -28,12 +32,12 @@ const toStatsOptionsT = (data: any) => {
   return statsOptions;
 };
 
-const toStatsT = (data: any) => {
-  const stats: StatsT = {
+const toStatsOptionsAndStatsT = (data: any) => {
+  const statsOptionsAndStats: StatsOptionsAndStatsT = {
     statsOptions: data.statsOptions ? toStatsOptionsT(data.statsOptions) : null,
     stats: data.stats,
   };
-  return stats;
+  return statsOptionsAndStats;
 };
 
 export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
@@ -62,7 +66,8 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
           );
         return;
       }
-      const newStats: StatsT = toStatsT(responseData);
+      const newStats: StatsOptionsAndStatsT =
+        toStatsOptionsAndStatsT(responseData);
       set((state) => ({
         statsOptions: newStats.statsOptions,
       }));
@@ -109,7 +114,8 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
           );
         return;
       }
-      const newStats: StatsT = toStatsT(responseData);
+      const newStats: StatsOptionsAndStatsT =
+        toStatsOptionsAndStatsT(responseData);
       set((state) => ({
         statsOptions: newStats.statsOptions,
       }));
@@ -147,7 +153,8 @@ export const useStatsOptionsStore = create<StatsOptionsStateT>()((set) => ({
           );
         return;
       }
-      const newStats: StatsT = toStatsT(responseData);
+      const newStats: StatsOptionsAndStatsT =
+        toStatsOptionsAndStatsT(responseData);
       set((state) => ({
         statsOptions: newStats.statsOptions,
       }));

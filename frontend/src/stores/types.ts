@@ -9,8 +9,8 @@ import {
   AssignmentT,
   ScheduleT,
   ObjectiveBreachT,
-  StatsOptionsT,
 } from "../components/Schedule/types";
+import { StatsOptionsT } from "../components/Stats/types";
 import { TeamT } from "../containers/types";
 
 export type ResponseStatusT = {

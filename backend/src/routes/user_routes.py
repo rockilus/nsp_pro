@@ -15,7 +15,7 @@ from errors import (
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
-from routes.api_model import User as UserMessage
+from routes.api_model import UserMessage
 from scripts.setup_database import user_db
 
 # from scripts.setup_database import user_db

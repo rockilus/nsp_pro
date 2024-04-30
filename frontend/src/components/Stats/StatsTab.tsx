@@ -3,21 +3,22 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 // Components
-import StatsTable from "./StatsTable";
-import StatsConfig from "./StatsConfig";
+import StatsTable from "./Table/StatsTable";
+import StatsOptions from "./Options/StatsOptions";
 // Stores
-import { useStatStore } from "../../stores/statStore";
+import { useStatStore } from "../../stores/statsStore";
 // Types
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
 import { WorkerT } from "../Worker/types";
-import { StatsOptionsT } from "../Schedule/types";
+import { StatsOptionsT, StatsShiftOptionsT } from "./types";
 
 interface Props {
   team: TeamT;
   workers: WorkerT[];
   shifts: ShiftT[];
-  statsOptions: StatsOptionsT | null;
+  statsOptions: StatsOptionsT;
+  statsShiftOptions: StatsShiftOptionsT;
 }
 
 export default function StatsTab({
@@ -25,18 +26,18 @@ export default function StatsTab({
   workers,
   shifts,
   statsOptions,
+  statsShiftOptions,
 }: Props) {
   const stats = useStatStore((state) => state.stats);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <Typography variant="h4" align="left">
-        Stats
-      </Typography>
-      <StatsConfig team={team} statsOptions={statsOptions} />
-      {stats.length > 0 && (
-        <StatsTable stats={stats} workers={workers} shifts={shifts} />
-      )}
+    <Box sx={{ display: "flex", flexDirection: "row" }}>
+      <StatsOptions
+        team={team}
+        statsOptions={statsOptions}
+        statsShiftOptions={statsShiftOptions}
+      />
+      {stats && <StatsTable stats={stats} workers={workers} shifts={shifts} />}
     </Box>
   );
 }

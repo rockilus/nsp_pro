@@ -4,8 +4,9 @@ from typing import Dict, List, Optional
 from core.constraint import ConstraintBuild, Template
 from core.coverage import Coverage, CoverageSelector, ShiftDemand
 from core.request import Request
-from core.schedule import Assignment, ObjectiveBreach, Schedule, StatsOptions
+from core.schedule import Assignment, ObjectiveBreach, Schedule
 from core.shift import Shift, ShiftDimension, ShiftProperty
+from core.stats import StatsOptions
 from core.team import Team
 from core.worker import Worker, WorkerDimension, WorkerProperty
 

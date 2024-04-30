@@ -157,25 +157,6 @@ class AssignmentMessage(BaseModel):
     status: str
 
 
-class StatMessage(BaseModel):
-    workerId: str
-    name: str
-    cluster: str
-    value: int | float
-
-
-class StatsOptionsMessage(BaseModel):
-    id: str
-    teamId: str
-    startDate: date
-    endDate: date
-
-
-class StatsMessage(BaseModel):
-    statsOptions: StatsOptionsMessage | None
-    stats: List[StatMessage]
-
-
 class VariableMessage(BaseModel):
     workerId: str
     date: date
@@ -202,6 +183,53 @@ class ScheduleMessage(BaseModel):
     missingCoverageDates: List[date]
 
 
+# Stats
+class DictBlockValueMessage(BaseModel):
+    name: str
+    id: str
+    idType: str
+
+
+class StatsHeaderMessage(BaseModel):
+    id: str
+    teamId: str
+    statsUnit: str
+    headerUnit: str
+    value: str
+    selectedShifts: List[DictBlockValueMessage]
+    inCustom: bool
+
+
+class StatsValueMessage(BaseModel):
+    workerId: str
+    headerId: str
+    value: int | float
+
+
+class StatsMessage(BaseModel):
+    statsHeaders: List[StatsHeaderMessage]
+    statsValues: List[StatsValueMessage]
+
+
+class StatMessage(BaseModel):
+    workerId: str
+    name: str
+    cluster: str
+    value: int | float
+
+
+class StatsOptionsMessage(BaseModel):
+    id: str
+    teamId: str
+    startDate: date
+    endDate: date
+
+
+class StatsOptionsAndStatsMessage(BaseModel):
+    statsOptions: StatsOptionsMessage | None
+    stats: StatsMessage
+
+
 class SolutionMessage(BaseModel):
     schedule: ScheduleMessage
     assignments: List[AssignmentMessage]
@@ -214,13 +242,15 @@ class ValidateMessage(BaseModel):
     assignments: List[AssignmentMessage]
 
 
-# Authentication
-class Token(BaseModel):  # can be deleted
-    access_token: str
-    token_type: str
+class GetStatsOptionsMessage(BaseModel):
+    timeFrame: str
+    statsUnit: str
+    headerUnit: str
+    selectedShifts: List[DictBlockValueMessage]
 
 
-class User(BaseModel):
+# User
+class UserMessage(BaseModel):
     id: str
     username: str
     firstName: str

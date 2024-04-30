@@ -21,7 +21,7 @@ from routes import (
     router_schedule,
     router_shift,
     router_shift_dimension,
-    router_stats_options,
+    router_stats,
     router_team,
     router_user,
     router_worker,
@@ -58,7 +58,7 @@ app.include_router(router_request)
 app.include_router(router_schedule)
 app.include_router(router_shift)
 app.include_router(router_shift_dimension)
-app.include_router(router_stats_options)
+app.include_router(router_stats)
 app.include_router(router_team)
 app.include_router(router_user)
 app.include_router(router_worker)

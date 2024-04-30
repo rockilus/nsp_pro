@@ -10,7 +10,7 @@ from core import (
     Schedule,
     Shift,
     ShiftDemand,
-    Stat,
+    Stats,
     Worker,
 )
 from engine import Engine
@@ -33,13 +33,12 @@ from services.schedule_services.core_to_engine import core_to_engine_inputs
 from services.schedule_services.engine_to_core import engine_to_core_outputs
 from services.schedule_services.inputs_processing import build_no_coverage_date
 from services.schedule_services.outputs_processing import update_request_status
-from services.stats_services import stats_setup
 
 
 # pylint: disable=too-many-locals, too-many-statements
 def solve_schedule(
     schedule: Schedule,
-) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach], List[Stat]]:
+) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach], Stats]:
     start_time = time.time()
     start_time_db = time.time()
     workers = worker_db.get_workers(schedule.team_id)
@@ -104,7 +103,8 @@ def solve_schedule(
     )
     end_time_update_db = time.time()
     start_time_stats = time.time()
-    stats = stats_setup(schedule.team_id)
+    # stats = build_stats(schedule.team_id)
+    stats = Stats([], [])
     end_time_stats = time.time()
     end_time = time.time()
     # time stats
