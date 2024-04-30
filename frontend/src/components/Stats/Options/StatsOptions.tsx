@@ -53,6 +53,14 @@ export default function StatsOptions({
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const statsUnitWithFrequency = [
+    "nb_days_worked",
+    "time_worked",
+    "nb_shifts_worked",
+    "nb_rest_days",
+    "nb_rest_shifts",
+  ];
+
   const fetchStats = useStatStore((state) => state.fetchStats);
 
   const handleChangeSelectedStatsUnit = (event: SelectChangeEvent) => {
@@ -228,41 +236,45 @@ export default function StatsOptions({
                 </FormControl>
               }
             />
-            <TableRowScheduleWIP
-              name="Frequency"
-              content={
-                <FormControl>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={getStatsOptions.headerUnit}
-                    onChange={handleChangeSelectedHeaderUnit}
-                    sx={{
-                      fontSize: "0.875rem",
-                      height: "40px",
-                      width: "160px",
-                      paddingY: 0,
-                    }}
-                  >
-                    {headerUnitOptions.map((option, index) => (
-                      <MenuItem key={index} value={option.name}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              }
-            />
-            <TableRowScheduleWIP
-              name="Shifts"
-              content={
-                <ShiftOptionsDisplay
-                  selectedShifts={getStatsOptions.selectedShifts}
-                  statsShiftOptions={statsShiftOptions}
-                  handleEditSelectedShifts={handleEditSelectedShifts}
-                />
-              }
-            />
+            {statsUnitWithFrequency.includes(getStatsOptions.statsUnit) && (
+              <TableRowScheduleWIP
+                name="Frequency"
+                content={
+                  <FormControl>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={getStatsOptions.headerUnit}
+                      onChange={handleChangeSelectedHeaderUnit}
+                      sx={{
+                        fontSize: "0.875rem",
+                        height: "40px",
+                        width: "160px",
+                        paddingY: 0,
+                      }}
+                    >
+                      {headerUnitOptions.map((option, index) => (
+                        <MenuItem key={index} value={option.name}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                }
+              />
+            )}
+            {getStatsOptions.statsUnit !== "custom" && (
+              <TableRowScheduleWIP
+                name="Shifts"
+                content={
+                  <ShiftOptionsDisplay
+                    selectedShifts={getStatsOptions.selectedShifts}
+                    statsShiftOptions={statsShiftOptions}
+                    handleEditSelectedShifts={handleEditSelectedShifts}
+                  />
+                }
+              />
+            )}
           </TableBody>
         </Table>
       </TableContainer>
