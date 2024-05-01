@@ -56,6 +56,7 @@ export default function StatsTable({
         overflowX: "auto",
         borderRadius: 2,
         backgroundColor: "none",
+        width: "100%",
       }}
     >
       <TableContainer component={Paper} style={{ width: "100%" }}>
