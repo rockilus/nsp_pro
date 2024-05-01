@@ -5,10 +5,10 @@ from constraint_parser import parse_selected_shifts
 from core import (
     Assignment,
     DictBlockValue,
-    GetStatsOptions,
     Shift,
     Stats,
     StatsHeader,
+    StatsOptions,
     Worker,
 )
 from scripts.setup_database import (
@@ -45,7 +45,7 @@ from utils.constants import Constants
 # pylint: disable=too-many-locals
 def build_stats(
     team_id: str,
-    stats_options: GetStatsOptions,
+    stats_options: StatsOptions,
 ) -> Stats:
     schedules = schedule_db.get_schedules(team_id)
     workers = worker_db.get_workers(team_id)

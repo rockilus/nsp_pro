@@ -31,7 +31,7 @@ class Stats:
 
 
 @dataclass
-class GetStatsOptions:
+class StatsOptions:
     time_frame: Constants.STATS_TIME_FRAME_OPTIONS
     start_date: date
     end_date: date

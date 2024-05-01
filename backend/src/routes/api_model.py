@@ -222,7 +222,7 @@ class StatsMessage(BaseModel):
     statsValues: List[StatsValueMessage]
 
 
-class GetStatsOptionsMessage(BaseModel):
+class StatsOptionsMessage(BaseModel):
     timeFrame: str
     startDate: date
     endDate: date

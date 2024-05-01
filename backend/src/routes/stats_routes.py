@@ -8,10 +8,10 @@ from pydantic import TypeAdapter
 from constraint_parser import build_shift_options
 from core import (
     DictBlockValue,
-    GetStatsOptions,
     ShiftProperty,
     Stats,
     StatsHeader,
+    StatsOptions,
     StatsValue,
 )
 from errors import (
@@ -23,9 +23,9 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
-    GetStatsOptionsMessage,
     StatsHeaderMessage,
     StatsMessage,
+    StatsOptionsMessage,
     StatsValueMessage,
 )
 from scripts.setup_database import (
@@ -99,7 +99,7 @@ async def get_shift_options(
 @router.post("/stats/teams/{team_id}")
 async def calculate_stats(
     team_id: str,
-    options: GetStatsOptionsMessage,
+    options: StatsOptionsMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> StatsMessage:
     try:
@@ -109,7 +109,7 @@ async def calculate_stats(
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )
-        stats_options = msg_to_core_get_stats_options(options)
+        stats_options = msg_to_core_stats_options(options)
         stats = build_stats(team_id, stats_options)
         response = core_to_msg_stats(stats)
     except Exception as e:
@@ -167,17 +167,17 @@ def core_to_msg_stats(stats: Stats) -> StatsMessage:
 
 
 # message to core
-def msg_to_core_get_stats_options(
-    msg: GetStatsOptionsMessage,
-) -> GetStatsOptions:
+def msg_to_core_stats_options(
+    msg: StatsOptionsMessage,
+) -> StatsOptions:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake["selected_shifts"] = [
         DictBlockValue(**ss) for ss in data_snake["selected_shifts"]
     ]
     try:
-        out = GetStatsOptions(**data_snake)
+        out = StatsOptions(**data_snake)
     except Exception as e:
-        log_info("Failed to convert GetStatsOptionsMessage to GetStatsOptions")
+        log_info("Failed to convert StatsOptionsMessage to StatsOptions")
         handle_create_core_object_error(e)
     return out
 

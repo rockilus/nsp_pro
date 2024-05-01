@@ -4,11 +4,7 @@ import { create } from "zustand";
 // Stores
 import { useSnackBarStore } from "./snackbarStore";
 // Types
-import {
-  StatsT,
-  StatsHeaderT,
-  GetStatsOptionsT,
-} from "../components/Stats/types";
+import { StatsT, StatsHeaderT, StatsOptionsT } from "../components/Stats/types";
 import { TemplateOptionValueT } from "../components/Constraint/types";
 dayjs.extend(utc);
 
@@ -17,7 +13,7 @@ const apiUrlStat = process.env.NEXT_PUBLIC_API_URL + "/stats";
 type StatsStateT = {
   stats: StatsT | null;
   shiftOptions: Record<string, TemplateOptionValueT[]>;
-  fetchStats: (getStatOptions: GetStatsOptionsT, teamId: string) => void;
+  fetchStats: (getStatOptions: StatsOptionsT, teamId: string) => void;
   fetchShiftOptions: (teamId: string) => void;
   addHeaderToCustom: (header: StatsHeaderT) => void;
   deleteHeaderFromCustom: (headerId: string, teamId: string) => void;

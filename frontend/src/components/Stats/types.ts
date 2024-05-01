@@ -24,7 +24,7 @@ export type StatsT = {
 
 export type StatsShiftOptionsT = Record<string, TemplateOptionValueT[]>;
 
-export type GetStatsOptionsT = {
+export type StatsOptionsT = {
   timeFrame: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
