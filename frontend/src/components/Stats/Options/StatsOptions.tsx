@@ -1,178 +1,104 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
-import DraftsIcon from "@mui/icons-material/Drafts";
-import InboxIcon from "@mui/icons-material/Inbox";
-import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
+import CircularProgress from "@mui/material/CircularProgress";
+import FormControl from "@mui/material/FormControl";
+import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 // Components
 import TableRowScheduleWIP from "../../Schedule/ScheduleOptions/TableRowScheduleWIP";
-import PopoverAnchorElOver from "../../SharedComponents/PopoverAnchorElOver";
 import ShiftOptionsDisplay from "./ShiftOptionsDisplay";
 // Stores
-import { useStatsOptionsStore } from "../../../stores/statsOptionsStore";
 import { useStatStore } from "../../../stores/statsStore";
 // Types
-import { StatsOptionsT, StatsShiftOptionsT } from "../types";
+import { StatsShiftOptionsT, GetStatsOptionsT } from "../types";
 import { TeamT } from "../../../containers/types";
 import { TemplateOptionValueT } from "../../Constraint/types";
+// Constants
+import {
+  statsUnitOptions,
+  headerUnitOptions,
+  timeFrameOptions,
+} from "../../../utils/constants";
 
 dayjs.extend(utc);
 
 interface Props {
   team: TeamT;
-  statsOptions: StatsOptionsT;
   statsShiftOptions: StatsShiftOptionsT;
+  setShowingCustom: (showingCustom: boolean) => void;
 }
 
 export default function StatsOptions({
   team,
-  statsOptions,
   statsShiftOptions,
+  setShowingCustom,
 }: Props) {
-  const [statsOptionsState, setStatsOptionsState] =
-    useState<StatsOptionsT>(statsOptions);
-  const [selectedTimeFrame, setSelectedTimeFrame] =
-    useState<string>("last_12_months");
-  const [selectTableValue, setSelectedTableValue] = useState<string>("");
-  const [selectTableColumn, setSelectedTableColumn] = useState<string>("");
-  const [selectedShifts, setSelectedShifts] = useState<TemplateOptionValueT[]>(
-    []
-  );
+  const [getStatsOptions, setGetStatsOptions] = useState<GetStatsOptionsT>({
+    timeFrame: "last_12_months",
+    startDate: dayjs.utc().startOf("day"),
+    endDate: dayjs.utc().startOf("day").subtract(1, "year"),
+    statsUnit: "custom",
+    headerUnit: "weekday",
+    selectedShifts: [{ name: "all shifts", id: "", idType: "" }],
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const addStatsOptions = useStatsOptionsStore(
-    (state) => state.addStatsOptions
-  );
-  const updateStatsOptions = useStatsOptionsStore(
-    (state) => state.updateStatsOptions
-  );
+  const statsUnitWithFrequency = [
+    "nb_days_worked",
+    "time_worked",
+    "nb_shifts_worked",
+    "nb_rest_days",
+    "nb_rest_shifts",
+  ];
+
   const fetchStats = useStatStore((state) => state.fetchStats);
-  const shiftOptions = useStatStore((state) => state.shiftOptions);
-  const fetchShiftOptions = useStatStore((state) => state.fetchShiftOptions);
 
-  const updateStatsOptionsStartDate = (newValue: dayjs.Dayjs) => {
-    const updatedStatsOptions = { ...statsOptionsState, startDate: newValue };
-    setStatsOptionsState(updatedStatsOptions);
-    handleSave(updatedStatsOptions);
+  const handleChangeSelectedStatsUnit = (event: SelectChangeEvent) => {
+    setGetStatsOptions({
+      ...getStatsOptions,
+      statsUnit: event.target.value as string,
+    });
   };
 
-  const updateStatsOptionsEndDate = (newValue: dayjs.Dayjs) => {
-    const updatedStatsOptions = { ...statsOptionsState, endDate: newValue };
-    setStatsOptionsState(updatedStatsOptions);
-    handleSave(updatedStatsOptions);
-  };
-
-  const handleSave = (newStatsOptions: StatsOptionsT) => {
-    if (newStatsOptions.id) {
-      updateStatsOptions(newStatsOptions);
-    } else {
-      addStatsOptions(newStatsOptions);
-    }
-  };
-
-  const handleChangeSelectedValue = (event: SelectChangeEvent) => {
-    setSelectedTableValue(event.target.value as string);
-  };
-
-  const handleChangeSelectedColumn = (event: SelectChangeEvent) => {
-    setSelectedTableColumn(event.target.value as string);
+  const handleChangeSelectedHeaderUnit = (event: SelectChangeEvent) => {
+    setGetStatsOptions({
+      ...getStatsOptions,
+      headerUnit: event.target.value as string,
+    });
   };
 
   const handleChangeSelectedTimeFrame = (event: SelectChangeEvent) => {
-    setSelectedTimeFrame(event.target.value as string);
-  };
-
-  const handleGetStats = () => {
-    fetchStats(
-      selectedTimeFrame,
-      selectTableValue,
-      selectTableColumn,
-      selectedShifts,
-      team.id
-    );
-  };
-
-  const handleGetShiftOptions = () => {
-    fetchShiftOptions(team.id);
+    setGetStatsOptions({
+      ...getStatsOptions,
+      timeFrame: event.target.value as string,
+    });
   };
 
   const handleEditSelectedShifts = (
     newSelectedShifts: TemplateOptionValueT[]
   ) => {
-    setSelectedShifts(newSelectedShifts);
+    setGetStatsOptions((prevState) => ({
+      ...prevState,
+      selectedShifts: newSelectedShifts,
+    }));
   };
 
-  const timeOptions = [
-    { name: "last_12_months", label: "Last 12 months" },
-    { name: "last_24_months", label: "Last 24 months" },
-    { name: "last_36_months", label: "Last 36 months" },
-    { name: "custom", label: "Custom" },
-  ];
-
-  const valueOptions: Record<string, string>[] = [
-    { name: "custom", label: "Custom", description: "Custom stats" },
-    {
-      name: "nb_days_worked",
-      label: "Nb days worked",
-      description: "Number of days worked",
-    },
-    {
-      name: "time_worked",
-      label: "Time worked",
-      description: "Total time worked",
-    },
-    {
-      name: "nb_shifts_worked",
-      label: "Nb shifts worked",
-      description: "Number of shifts worked",
-    },
-    {
-      name: "nb_rest_days",
-      label: "Nb rest days",
-      description: "Number of rest days",
-    },
-    {
-      name: "nb_rest_shifts",
-      label: "Nb rest shifts",
-      description: "Number of rest shifts",
-    },
-    {
-      name: "nb_times_shift",
-      label: "Nb time shift",
-      description: "Number of times a shift was worked",
-    },
-    {
-      name: "nb_times_rest",
-      label: "Nb time rest",
-      description: "Number of times a rest was taken",
-    },
-  ];
-
-  const columnOptions = [
-    { name: "weekday", label: "Weekday" },
-    { name: "week", label: "Week" },
-    { name: "month", label: "Month" },
-    { name: "year", label: "Year" },
-    { name: "all", label: "All" },
-  ];
+  const handleGetStats = async () => {
+    setIsLoading(true);
+    await fetchStats(getStatsOptions, team.id);
+    setIsLoading(false);
+    setShowingCustom(getStatsOptions.statsUnit === "custom");
+  };
 
   return (
     <Box
@@ -202,7 +128,7 @@ export default function StatsOptions({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          Stats
+          Stats options
         </Typography>
       </Box>
       <TableContainer component={Paper} style={{ width: "100%" }}>
@@ -211,14 +137,20 @@ export default function StatsOptions({
             <TableRowScheduleWIP
               name="Time frame"
               content={
-                <FormControl fullWidth>
+                <FormControl>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={selectedTimeFrame}
+                    value={getStatsOptions.timeFrame}
                     onChange={handleChangeSelectedTimeFrame}
+                    sx={{
+                      fontSize: "0.875rem",
+                      height: "40px",
+                      width: "160px",
+                      paddingY: 0,
+                    }}
                   >
-                    {timeOptions.map((option, index) => (
+                    {timeFrameOptions.map((option, index) => (
                       <MenuItem key={index} value={option.name}>
                         {option.label}
                       </MenuItem>
@@ -227,48 +159,75 @@ export default function StatsOptions({
                 </FormControl>
               }
             />
-            <TableRowScheduleWIP
-              name="Start"
-              content={
-                <DatePicker
-                  value={statsOptionsState.startDate}
-                  onChange={(newValue) => {
-                    updateStatsOptionsStartDate(
-                      newValue
-                        ? dayjs.utc(newValue).startOf("day")
-                        : dayjs.utc().startOf("day")
-                    );
-                  }}
-                />
-              }
-            />
-            <TableRowScheduleWIP
-              name="End"
-              content={
-                <DatePicker
-                  value={statsOptionsState.endDate}
-                  onChange={(newValue) => {
-                    updateStatsOptionsEndDate(
-                      newValue
-                        ? dayjs.utc(newValue).startOf("day")
-                        : dayjs.utc().startOf("day")
-                    );
-                  }}
-                />
-              }
-            />
-
+            {getStatsOptions.timeFrame === "custom" && (
+              <TableRowScheduleWIP
+                name="Start"
+                content={
+                  <DatePicker
+                    value={getStatsOptions.startDate}
+                    onChange={(newValue) => {
+                      setGetStatsOptions((prevState) => ({
+                        ...prevState,
+                        startDate: newValue
+                          ? dayjs.utc(newValue).startOf("day")
+                          : dayjs.utc().startOf("day"),
+                      }));
+                    }}
+                    sx={{
+                      width: "160px",
+                      "& .MuiOutlinedInput-input": {
+                        fontSize: "0.875rem",
+                        height: "40px",
+                        paddingY: 0,
+                      },
+                    }}
+                  />
+                }
+              />
+            )}
+            {getStatsOptions.timeFrame === "custom" && (
+              <TableRowScheduleWIP
+                name="End"
+                content={
+                  <DatePicker
+                    value={getStatsOptions.endDate}
+                    onChange={(newValue) => {
+                      setGetStatsOptions((prevState) => ({
+                        ...prevState,
+                        endDate: newValue
+                          ? dayjs.utc(newValue).startOf("day")
+                          : dayjs.utc().startOf("day"),
+                      }));
+                    }}
+                    sx={{
+                      width: "160px",
+                      "& .MuiOutlinedInput-input": {
+                        fontSize: "0.875rem",
+                        height: "40px",
+                        paddingY: 0,
+                      },
+                    }}
+                  />
+                }
+              />
+            )}
             <TableRowScheduleWIP
               name="Stats"
               content={
-                <FormControl fullWidth>
+                <FormControl>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={selectTableValue}
-                    onChange={handleChangeSelectedValue}
+                    value={getStatsOptions.statsUnit}
+                    onChange={handleChangeSelectedStatsUnit}
+                    sx={{
+                      fontSize: "0.875rem",
+                      height: "40px",
+                      width: "160px",
+                      paddingY: 0,
+                    }}
                   >
-                    {valueOptions.map((option, index) => (
+                    {statsUnitOptions.map((option, index) => (
                       <MenuItem key={index} value={option.name}>
                         {option.label}
                       </MenuItem>
@@ -277,44 +236,63 @@ export default function StatsOptions({
                 </FormControl>
               }
             />
-            <TableRowScheduleWIP
-              name="Frequency"
-              content={
-                <FormControl fullWidth>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={selectTableColumn}
-                    onChange={handleChangeSelectedColumn}
-                  >
-                    {columnOptions.map((option, index) => (
-                      <MenuItem key={index} value={option.name}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              }
-            />
-            <TableRowScheduleWIP
-              name="Shifts"
-              content={
-                <ShiftOptionsDisplay
-                  selectedShifts={selectedShifts}
-                  statsShiftOptions={statsShiftOptions}
-                  handleEditSelectedShifts={handleEditSelectedShifts}
-                />
-              }
-            />
+            {statsUnitWithFrequency.includes(getStatsOptions.statsUnit) && (
+              <TableRowScheduleWIP
+                name="Frequency"
+                content={
+                  <FormControl>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={getStatsOptions.headerUnit}
+                      onChange={handleChangeSelectedHeaderUnit}
+                      sx={{
+                        fontSize: "0.875rem",
+                        height: "40px",
+                        width: "160px",
+                        paddingY: 0,
+                      }}
+                    >
+                      {headerUnitOptions.map((option, index) => (
+                        <MenuItem key={index} value={option.name}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                }
+              />
+            )}
+            {getStatsOptions.statsUnit !== "custom" && (
+              <TableRowScheduleWIP
+                name="Shifts"
+                content={
+                  <ShiftOptionsDisplay
+                    selectedShifts={getStatsOptions.selectedShifts}
+                    statsShiftOptions={statsShiftOptions}
+                    handleEditSelectedShifts={handleEditSelectedShifts}
+                  />
+                }
+              />
+            )}
           </TableBody>
         </Table>
       </TableContainer>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      {isLoading ? (
+        <Box
+          sx={{
+            backgroundColor: "#1976d2",
+            height: "35px",
+            borderRadius: "4px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            margin: 1,
+          }}
+        >
+          <CircularProgress size={20} sx={{ color: "white" }} />
+        </Box>
+      ) : (
         <Button
           variant="contained"
           color="primary"
@@ -328,20 +306,7 @@ export default function StatsOptions({
         >
           Get stats
         </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleGetShiftOptions}
-          sx={{
-            paddingLeft: 0.2,
-            paddingRight: 0.2,
-            margin: "8px",
-            height: "35px",
-          }}
-        >
-          Get shift options
-        </Button>
-      </Box>
+      )}
     </Box>
   );
 }

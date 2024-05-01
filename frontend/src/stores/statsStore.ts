@@ -4,7 +4,11 @@ import { create } from "zustand";
 // Stores
 import { useSnackBarStore } from "./snackbarStore";
 // Types
-import { StatsT, StatsHeaderT } from "../components/Stats/types";
+import {
+  StatsT,
+  StatsHeaderT,
+  GetStatsOptionsT,
+} from "../components/Stats/types";
 import { TemplateOptionValueT } from "../components/Constraint/types";
 dayjs.extend(utc);
 
@@ -13,13 +17,7 @@ const apiUrlStat = process.env.NEXT_PUBLIC_API_URL + "/stats";
 type StatsStateT = {
   stats: StatsT | null;
   shiftOptions: Record<string, TemplateOptionValueT[]>;
-  fetchStats: (
-    timeFrame: string,
-    statsUnit: string,
-    headerUnit: string,
-    selectedShifts: TemplateOptionValueT[],
-    teamId: string
-  ) => void;
+  fetchStats: (getStatOptions: GetStatsOptionsT, teamId: string) => void;
   fetchShiftOptions: (teamId: string) => void;
   addHeaderToCustom: (header: StatsHeaderT) => void;
   updateHeaderInCustom: (header: StatsHeaderT) => void;
@@ -41,25 +39,14 @@ export const useStatStore = create<StatsStateT>()((set) => ({
   stats: null,
   shiftOptions: {},
 
-  fetchStats: async (
-    timeFrame,
-    statsUnit,
-    headerUnit,
-    selectedShifts,
-    teamId
-  ) => {
+  fetchStats: async (getStatsOptions, teamId) => {
     const options: RequestInit = {
       method: "POST",
       credentials: "include" as RequestCredentials,
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        timeFrame: timeFrame,
-        statsUnit: statsUnit,
-        headerUnit: headerUnit,
-        selectedShifts: selectedShifts,
-      }),
+      body: JSON.stringify(getStatsOptions),
     };
     try {
       const response = await fetch(`${apiUrlStat}/teams/${teamId}`, options);

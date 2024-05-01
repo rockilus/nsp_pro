@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 // MUI
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 // Components
 import StatsTable from "./Table/StatsTable";
 import StatsOptions from "./Options/StatsOptions";
@@ -11,13 +12,14 @@ import { useStatStore } from "../../stores/statsStore";
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
 import { WorkerT } from "../Worker/types";
-import { StatsOptionsT, StatsShiftOptionsT } from "./types";
+import { StatsShiftOptionsT } from "./types";
+
+dayjs.extend(utc);
 
 interface Props {
   team: TeamT;
   workers: WorkerT[];
   shifts: ShiftT[];
-  statsOptions: StatsOptionsT;
   statsShiftOptions: StatsShiftOptionsT;
 }
 
@@ -25,19 +27,26 @@ export default function StatsTab({
   team,
   workers,
   shifts,
-  statsOptions,
   statsShiftOptions,
 }: Props) {
+  const [showingCustom, setShowingCustom] = useState<boolean>(true);
   const stats = useStatStore((state) => state.stats);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "row" }}>
       <StatsOptions
         team={team}
-        statsOptions={statsOptions}
         statsShiftOptions={statsShiftOptions}
+        setShowingCustom={setShowingCustom}
       />
-      {stats && <StatsTable stats={stats} workers={workers} shifts={shifts} />}
+      {stats && (
+        <StatsTable
+          stats={stats}
+          showingCustom={showingCustom}
+          workers={workers}
+          shifts={shifts}
+        />
+      )}
     </Box>
   );
 }

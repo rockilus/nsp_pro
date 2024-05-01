@@ -109,3 +109,56 @@ export const ConstraintColorActiveBack: string = "#ffffff";
 export const ConstraintColorInactiveBack: string = "#f0efed";
 export const ConstraintColorActiveText: string = "#000000";
 export const ConstraintColorInactiveText: string = "#808080";
+
+// Stats
+export const statsUnitOptions: Record<string, string>[] = [
+  { name: "custom", label: "Custom", description: "Custom stats" },
+  {
+    name: "nb_days_worked",
+    label: "Nb days worked",
+    description: "Number of days worked",
+  },
+  {
+    name: "time_worked",
+    label: "Time worked",
+    description: "Total time worked",
+  },
+  {
+    name: "nb_shifts_worked",
+    label: "Nb shifts worked",
+    description: "Number of shifts worked",
+  },
+  {
+    name: "nb_rest_days",
+    label: "Nb rest days",
+    description: "Number of rest days",
+  },
+  {
+    name: "nb_rest_shifts",
+    label: "Nb rest shifts",
+    description: "Number of rest shifts",
+  },
+  {
+    name: "nb_times_shift",
+    label: "Nb time shift",
+    description: "Number of times a shift was worked",
+  },
+  {
+    name: "nb_times_rest",
+    label: "Nb time rest",
+    description: "Number of times a rest was taken",
+  },
+];
+export const headerUnitOptions = [
+  { name: "weekday", label: "Weekday" },
+  { name: "week", label: "Week" },
+  { name: "month", label: "Month" },
+  { name: "year", label: "Year" },
+  { name: "all", label: "All" },
+];
+export const timeFrameOptions = [
+  { name: "last_12_months", label: "Last 12 months" },
+  { name: "last_24_months", label: "Last 24 months" },
+  { name: "last_36_months", label: "Last 36 months" },
+  { name: "custom", label: "Custom" },
+];
