@@ -120,7 +120,7 @@ export const statsUnitOptions: Record<string, string>[] = [
   },
   {
     name: "time_worked",
-    label: "Time worked",
+    label: "Time worked (h)",
     description: "Total time worked",
   },
   {

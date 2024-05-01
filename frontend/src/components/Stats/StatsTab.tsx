@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // MUI
 import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 // Components
 import StatsTable from "./Table/StatsTable";
 import StatsOptions from "./Options/StatsOptions";
@@ -39,13 +40,53 @@ export default function StatsTab({
         statsShiftOptions={statsShiftOptions}
         setShowingCustom={setShowingCustom}
       />
-      {stats && (
-        <StatsTable
-          stats={stats}
-          showingCustom={showingCustom}
-          workers={workers}
-          shifts={shifts}
-        />
+      {stats ? (
+        showingCustom && stats.statsHeaders.length === 0 ? (
+          <Box
+            sx={{
+              margin: 2,
+              marginLeft: 0,
+              overflowX: "auto",
+              backgroundColor: "none",
+              width: "100%",
+            }}
+          >
+            <Typography
+              variant="body1"
+              color="textSecondary"
+              sx={{ fontStyle: "italic" }}
+            >
+              {
+                'You do not have any custom stats. Select another "Stats" in stats options and start adding custom stats.'
+              }
+            </Typography>
+          </Box>
+        ) : (
+          <StatsTable
+            stats={stats}
+            showingCustom={showingCustom}
+            workers={workers}
+            shifts={shifts}
+          />
+        )
+      ) : (
+        <Box
+          sx={{
+            margin: 2,
+            marginLeft: 0,
+            overflowX: "auto",
+            backgroundColor: "none",
+            width: "100%",
+          }}
+        >
+          <Typography
+            variant="body1"
+            color="textSecondary"
+            sx={{ fontStyle: "italic" }}
+          >
+            {'Select your stats options and click on "get stats" button.'}
+          </Typography>
+        </Box>
       )}
     </Box>
   );
