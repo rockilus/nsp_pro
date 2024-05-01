@@ -3,7 +3,6 @@ import utc from "dayjs/plugin/utc";
 // Types
 import { ShiftT } from "../components/Shift/types";
 import { ScheduleT } from "../components/Schedule/types";
-import { StatsOptionsT } from "../components/Stats/types";
 import { RequestT } from "../components/Request/types";
 
 dayjs.extend(utc);
@@ -31,14 +30,6 @@ export const emptySchedule: ScheduleT = {
   // assignments: [],
   // objectiveBreaches: [],
   // stats: [],
-};
-
-export const emptyStatsOptions: StatsOptionsT = {
-  id: "",
-  teamId: "",
-  startDate: dayjs.utc().startOf("day"),
-  endDate: dayjs.utc().startOf("day"),
-  customHeaders: [],
 };
 
 export const emptyRequest: RequestT = {

@@ -10,7 +10,6 @@ import {
   ScheduleT,
   ObjectiveBreachT,
 } from "../components/Schedule/types";
-import { StatsOptionsT } from "../components/Stats/types";
 import { TeamT } from "../containers/types";
 
 export type ResponseStatusT = {
@@ -39,5 +38,4 @@ export type BulkT = {
   assignments: AssignmentT[];
   schedules: ScheduleT[];
   objectiveBreaches: ObjectiveBreachT[];
-  statsOptions: StatsOptionsT;
 };

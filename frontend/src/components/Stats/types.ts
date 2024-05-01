@@ -22,27 +22,7 @@ export type StatsT = {
   statsValues: StatsValueT[];
 };
 
-export type StatsOptionsT = {
-  id: string;
-  teamId: string;
-  startDate: dayjs.Dayjs;
-  endDate: dayjs.Dayjs;
-  customHeaders: StatsHeaderT[];
-};
-
-export type StatT = {
-  workerId: string;
-  name: string;
-  cluster: string;
-  value: number;
-};
-
 export type StatsShiftOptionsT = Record<string, TemplateOptionValueT[]>;
-
-export type StatsOptionsAndStatsT = {
-  statsOptions: StatsOptionsT | null;
-  stats: StatsT;
-};
 
 export type GetStatsOptionsT = {
   timeFrame: string;

@@ -22,18 +22,7 @@ type StatsStateT = {
   addHeaderToCustom: (header: StatsHeaderT) => void;
   updateHeaderInCustom: (header: StatsHeaderT) => void;
   deleteHeaderFromCustom: (headerId: string, teamId: string) => void;
-  // addStat: (stat: StatT) => void;
-  // updateStatStore: (updatedStats: StatT[]) => void;
-  // deleteSStore: () => void;
 };
-
-// export const toStatT = (data: any) => {
-//   const stat: StatT = {
-//     ...data,
-//     date: dayjs.utc(data.date),
-//   };
-//   return stat;
-// };
 
 export const useStatStore = create<StatsStateT>()((set) => ({
   stats: null,
@@ -224,47 +213,4 @@ export const useStatStore = create<StatsStateT>()((set) => ({
         );
     }
   },
-
-  // addStat: async (stat) => {
-  //   try {
-  //     const response = await fetch(apiUrlStat, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(stat),
-  //     });
-  //     const responseData = await response.json();
-  //     if (!response.ok) {
-  //       useSnackBarStore
-  //         .getState()
-  //         .updateSnackBar(
-  //           "Failed to add stat: " + responseData.detail,
-  //           "error"
-  //         );
-  //       return;
-  //     }
-  //     const newStat: StatT = toStatT(responseData);
-  //     set((state) => ({
-  //       stats: [...state.stats, newStat],
-  //     }));
-  //   } catch (error) {
-  //     console.error("Failed to add stat:", error);
-  //     useSnackBarStore
-  //       .getState()
-  //       .updateSnackBar("Failed to add stat, please try again later", "error");
-  //   }
-  // },
-
-  // updateStatStore: (updatedStats) => {
-  //   set((state) => ({
-  //     stats: updatedStats,
-  //   }));
-  // },
-
-  // deleteSStore: () => {
-  //   set((state) => ({
-  //     stats: [],
-  //   }));
-  // },
 }));

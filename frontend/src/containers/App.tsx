@@ -21,7 +21,6 @@ import { useRequestStore } from "../stores/requestStore";
 import { useScheduleStore } from "../stores/scheduleStore";
 import { useShiftStore } from "../stores/shiftStore";
 import { useShiftDimensionStore } from "../stores/shiftDimensionStore";
-import { useStatsOptionsStore } from "../stores/statsOptionsStore";
 import { useTeamStore } from "../stores/teamStore";
 import { useWorkerStore } from "../stores/workerStore";
 import { useWorkerDimensionStore } from "../stores/workerDimensionStore";
@@ -71,7 +70,6 @@ const App = () => {
   const objectiveBreaches = useObjectiveBreachStore(
     (state) => state.objectiveBreaches
   );
-  const statsOptions = useStatsOptionsStore((state) => state.statsOptions);
 
   const findShiftBlock = (templates: TemplateT[]): StatsShiftOptionsT => {
     for (let template of templates) {
