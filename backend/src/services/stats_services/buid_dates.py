@@ -5,7 +5,10 @@ from core import Schedule
 
 
 def build_dates(
-    time_frame: str, schedules: List[Schedule]
+    time_frame: str,
+    start_date: date,
+    end_date: date,
+    schedules: List[Schedule],
 ) -> Tuple[date, date, Dict[date, int]]:
     min_schedule_date = min(s.start_date for s in schedules)
     max_schedule_date = max(s.end_date for s in schedules)
@@ -71,4 +74,17 @@ def build_dates(
                 )
             },
         )
-    return (min_schedule_date, max_schedule_date, {})
+    if time_frame == "custom":
+        start = max(min_schedule_date, start_date)
+        end = min(max_schedule_date, end_date)
+        return (
+            start,
+            end,
+            {
+                date: i
+                for i, date in enumerate(
+                    [start + timedelta(days=i) for i in range((end - start).days + 1)]
+                )
+            },
+        )
+    raise ValueError("Invalid time_frame")

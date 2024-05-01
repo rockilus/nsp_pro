@@ -10,7 +10,6 @@ from core import (
     Schedule,
     Shift,
     ShiftDemand,
-    Stats,
     Worker,
 )
 from engine import Engine
@@ -38,7 +37,7 @@ from services.schedule_services.outputs_processing import update_request_status
 # pylint: disable=too-many-locals, too-many-statements
 def solve_schedule(
     schedule: Schedule,
-) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach], Stats]:
+) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach]]:
     start_time = time.time()
     start_time_db = time.time()
     workers = worker_db.get_workers(schedule.team_id)
@@ -102,10 +101,6 @@ def solve_schedule(
         updated_schedule, objective_breaches
     )
     end_time_update_db = time.time()
-    start_time_stats = time.time()
-    # stats = build_stats(schedule.team_id)
-    stats = Stats([], [])
-    end_time_stats = time.time()
     end_time = time.time()
     # time stats
     total_time = end_time - start_time
@@ -114,7 +109,6 @@ def solve_schedule(
     total_time_engine = end_time_engine - start_time_engine
     total_time_process_outputs = end_time_process_outputs - start_time_process_outputs
     total_time_update_db = end_time_update_db - start_time_update_db
-    total_time_stats = end_time_stats - start_time_stats
     print(f"total time:           {total_time:.2f}s")
     print(
         "db time:              "
@@ -141,12 +135,7 @@ def solve_schedule(
         + f"{total_time_update_db:.2f}s "
         + f"({(total_time_update_db / total_time) * 100:.0f}%)"
     )
-    print(
-        "stats time:           "
-        + f"{total_time_stats:.2f}s "
-        + f"({(total_time_stats / total_time) * 100:.0f}%)"
-    )
-    return updated_schedule, updated_assignments, new_objective_breaches, stats
+    return updated_schedule, updated_assignments, new_objective_breaches
 
 
 def save_assignments(

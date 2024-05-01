@@ -20,7 +20,6 @@ from routes.request_routes import core_to_msg_request
 from routes.schedule_routes import core_to_msg_schedule
 from routes.shift_dimension_routes import core_to_msg_shift_dimension
 from routes.shift_routes import core_to_msg_shift_and_properties
-from routes.stats_routes import core_to_msg_stats_options
 from routes.team_routes import core_to_msg_team
 from routes.worker_dimension_routes import core_to_msg_worker_dimension
 from routes.worker_routes import core_to_msg_worker_and_properties
@@ -88,7 +87,6 @@ def core_to_msg_bulk(bulk: Bulk) -> BulkMessage:
     data["objective_breaches"] = [
         core_to_msg_objective_breach(ob) for ob in bulk.objective_breaches
     ]
-    data["stats_options"] = core_to_msg_stats_options(bulk.stats_options)
     data.pop("constraint_builds")
     as_dict = humps.camelize(data)
     validator = TypeAdapter(BulkMessage)

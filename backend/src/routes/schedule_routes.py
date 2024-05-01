@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Assignment, ObjectiveBreach, Schedule, Stats
+from core import Assignment, ObjectiveBreach, Schedule
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -21,12 +21,10 @@ from routes.api_model import (
     ObjectiveBreachMessage,
     ScheduleMessage,
     SolutionMessage,
-    StatsMessage,
     ValidateMessage,
 )
 from routes.assignment_routes import core_to_msg_assignment
 from routes.objective_breach_routes import core_to_msg_objective_breach
-from routes.stats_routes import core_to_msg_stats
 from scripts.setup_database import (
     assignment_db,
     constraint_db,
@@ -78,12 +76,8 @@ async def solve_schedule(
                 "You do not have permission to solve a schedule",
             )
         schedule = schedule_db.get_schedule_by_id(schedule_id)
-        schedule, assignments, objective_breaches, stats = solve_schedule_service(
-            schedule
-        )
-        response = core_to_msg_solution(
-            schedule, assignments, objective_breaches, stats
-        )
+        schedule, assignments, objective_breaches = solve_schedule_service(schedule)
+        response = core_to_msg_solution(schedule, assignments, objective_breaches)
     except Exception as e:
         log_info("Failed to solve schedule")
         handle_routes_errors(e)
@@ -199,21 +193,16 @@ def core_to_msg_solution(
     schedule: Schedule,
     assignments: List[Assignment],
     objective_breaches: List[ObjectiveBreach],
-    stats: Stats,
 ) -> SolutionMessage:
     data: Dict[
         str,
-        ScheduleMessage
-        | List[AssignmentMessage]
-        | List[ObjectiveBreachMessage]
-        | StatsMessage,
+        ScheduleMessage | List[AssignmentMessage] | List[ObjectiveBreachMessage],
     ] = {}
     data["schedule"] = core_to_msg_schedule(schedule)
     data["assignments"] = [core_to_msg_assignment(a) for a in assignments]
     data["objective_breaches"] = [
         core_to_msg_objective_breach(ob) for ob in objective_breaches
     ]
-    data["stats"] = core_to_msg_stats(stats)
     as_dict = humps.camelize(data)
     validator = TypeAdapter(SolutionMessage)
     try:
@@ -246,7 +235,7 @@ def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake = {
         k: v
         for k, v in data_snake.items()
-        if k not in ["assignments", "objective_breaches", "stats"]
+        if k not in ["assignments", "objective_breaches"]
     }
     try:
         schedule = Schedule(**data_snake)

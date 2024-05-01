@@ -70,6 +70,9 @@ class Constants:
     VAR_SHIFT_SELECTOR_OPTIONS = Literal["all", "equal"]
 
     # Stats
+    STATS_TIME_FRAME_OPTIONS = Literal[
+        "last_12_months", "last_24_months", "last_36_months", "custom"
+    ]
     STATS_UNIT_OPTIONS = Literal[
         "nb_days_worked",
         "time_worked",

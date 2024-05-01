@@ -20,7 +20,7 @@ import ShiftOptionsDisplay from "./ShiftOptionsDisplay";
 // Stores
 import { useStatStore } from "../../../stores/statsStore";
 // Types
-import { StatsShiftOptionsT, GetStatsOptionsT } from "../types";
+import { StatsShiftOptionsT, StatsOptionsT } from "../types";
 import { TeamT } from "../../../containers/types";
 import { TemplateOptionValueT } from "../../Constraint/types";
 // Constants
@@ -43,10 +43,10 @@ export default function StatsOptions({
   statsShiftOptions,
   setShowingCustom,
 }: Props) {
-  const [getStatsOptions, setGetStatsOptions] = useState<GetStatsOptionsT>({
+  const [statsOptions, setStatsOptions] = useState<StatsOptionsT>({
     timeFrame: "last_12_months",
-    startDate: dayjs.utc().startOf("day"),
-    endDate: dayjs.utc().startOf("day").subtract(1, "year"),
+    startDate: dayjs.utc().startOf("day").subtract(1, "year"),
+    endDate: dayjs.utc().startOf("day"),
     statsUnit: "custom",
     headerUnit: "weekday",
     selectedShifts: [{ name: "all shifts", id: "", idType: "" }],
@@ -64,22 +64,22 @@ export default function StatsOptions({
   const fetchStats = useStatStore((state) => state.fetchStats);
 
   const handleChangeSelectedStatsUnit = (event: SelectChangeEvent) => {
-    setGetStatsOptions({
-      ...getStatsOptions,
+    setStatsOptions({
+      ...statsOptions,
       statsUnit: event.target.value as string,
     });
   };
 
   const handleChangeSelectedHeaderUnit = (event: SelectChangeEvent) => {
-    setGetStatsOptions({
-      ...getStatsOptions,
+    setStatsOptions({
+      ...statsOptions,
       headerUnit: event.target.value as string,
     });
   };
 
   const handleChangeSelectedTimeFrame = (event: SelectChangeEvent) => {
-    setGetStatsOptions({
-      ...getStatsOptions,
+    setStatsOptions({
+      ...statsOptions,
       timeFrame: event.target.value as string,
     });
   };
@@ -87,7 +87,7 @@ export default function StatsOptions({
   const handleEditSelectedShifts = (
     newSelectedShifts: TemplateOptionValueT[]
   ) => {
-    setGetStatsOptions((prevState) => ({
+    setStatsOptions((prevState) => ({
       ...prevState,
       selectedShifts: newSelectedShifts,
     }));
@@ -95,9 +95,9 @@ export default function StatsOptions({
 
   const handleGetStats = async () => {
     setIsLoading(true);
-    await fetchStats(getStatsOptions, team.id);
+    await fetchStats(statsOptions, team.id);
     setIsLoading(false);
-    setShowingCustom(getStatsOptions.statsUnit === "custom");
+    setShowingCustom(statsOptions.statsUnit === "custom");
   };
 
   return (
@@ -141,7 +141,7 @@ export default function StatsOptions({
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={getStatsOptions.timeFrame}
+                    value={statsOptions.timeFrame}
                     onChange={handleChangeSelectedTimeFrame}
                     sx={{
                       fontSize: "0.875rem",
@@ -159,14 +159,14 @@ export default function StatsOptions({
                 </FormControl>
               }
             />
-            {getStatsOptions.timeFrame === "custom" && (
+            {statsOptions.timeFrame === "custom" && (
               <TableRowScheduleWIP
                 name="Start"
                 content={
                   <DatePicker
-                    value={getStatsOptions.startDate}
+                    value={statsOptions.startDate}
                     onChange={(newValue) => {
-                      setGetStatsOptions((prevState) => ({
+                      setStatsOptions((prevState) => ({
                         ...prevState,
                         startDate: newValue
                           ? dayjs.utc(newValue).startOf("day")
@@ -185,14 +185,14 @@ export default function StatsOptions({
                 }
               />
             )}
-            {getStatsOptions.timeFrame === "custom" && (
+            {statsOptions.timeFrame === "custom" && (
               <TableRowScheduleWIP
                 name="End"
                 content={
                   <DatePicker
-                    value={getStatsOptions.endDate}
+                    value={statsOptions.endDate}
                     onChange={(newValue) => {
-                      setGetStatsOptions((prevState) => ({
+                      setStatsOptions((prevState) => ({
                         ...prevState,
                         endDate: newValue
                           ? dayjs.utc(newValue).startOf("day")
@@ -218,7 +218,7 @@ export default function StatsOptions({
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={getStatsOptions.statsUnit}
+                    value={statsOptions.statsUnit}
                     onChange={handleChangeSelectedStatsUnit}
                     sx={{
                       fontSize: "0.875rem",
@@ -236,7 +236,7 @@ export default function StatsOptions({
                 </FormControl>
               }
             />
-            {statsUnitWithFrequency.includes(getStatsOptions.statsUnit) && (
+            {statsUnitWithFrequency.includes(statsOptions.statsUnit) && (
               <TableRowScheduleWIP
                 name="Frequency"
                 content={
@@ -244,7 +244,7 @@ export default function StatsOptions({
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      value={getStatsOptions.headerUnit}
+                      value={statsOptions.headerUnit}
                       onChange={handleChangeSelectedHeaderUnit}
                       sx={{
                         fontSize: "0.875rem",
@@ -263,12 +263,12 @@ export default function StatsOptions({
                 }
               />
             )}
-            {getStatsOptions.statsUnit !== "custom" && (
+            {statsOptions.statsUnit !== "custom" && (
               <TableRowScheduleWIP
                 name="Shifts"
                 content={
                   <ShiftOptionsDisplay
-                    selectedShifts={getStatsOptions.selectedShifts}
+                    selectedShifts={statsOptions.selectedShifts}
                     statsShiftOptions={statsShiftOptions}
                     handleEditSelectedShifts={handleEditSelectedShifts}
                   />

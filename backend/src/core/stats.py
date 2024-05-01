@@ -7,20 +7,6 @@ from utils.constants import Constants
 
 
 @dataclass
-class Stat:
-    worker_id: str
-    name: str
-    cluster: str
-    value: int | float
-
-
-@dataclass
-class ShiftPropertyHeader:
-    shift_dimension_id: str
-    property_value: str | int | float | bool
-
-
-@dataclass
 class StatsHeader:
     id: str
     team_id: str
@@ -46,23 +32,9 @@ class Stats:
 
 @dataclass
 class StatsOptions:
-    id: str
-    team_id: str
+    time_frame: Constants.STATS_TIME_FRAME_OPTIONS
     start_date: date
     end_date: date
-    # custom_headers: List[StatsHeader]
-
-
-@dataclass
-class TemplateStats:
-    name: str
-    label: str
-    stats_headers: List[StatsHeader]
-
-
-@dataclass
-class GetStatsOptions:
-    time_frame: str
     stats_unit: Constants.STATS_UNIT_OPTIONS
-    header_unit: str
+    header_unit: Constants.HEADER_UNIT_OPTIONS
     selected_shifts: List[DictBlockValue]

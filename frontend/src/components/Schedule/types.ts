@@ -1,8 +1,4 @@
 import dayjs from "dayjs";
-// Types
-import { StatT } from "../Stats/types";
-
-// Types for store
 
 // Assignment
 export type AssignmentT = {
@@ -47,7 +43,6 @@ export type SolutionT = {
   schedule: ScheduleT;
   assignments: AssignmentT[];
   objectiveBreaches: ObjectiveBreachT[];
-  stats: StatT[];
 };
 
 // Validate

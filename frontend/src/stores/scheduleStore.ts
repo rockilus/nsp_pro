@@ -7,11 +7,9 @@ import {
   useObjectiveBreachStore,
   toObjectiveBreachT,
 } from "./objectiveBreachStore";
-import { useStatStore } from "./statsStore";
 import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { ScheduleT, SolutionT, ValidateT } from "../components/Schedule/types";
-import { use } from "react";
 
 dayjs.extend(utc);
 
@@ -46,7 +44,6 @@ const toSolutionT = (data: any) => {
     schedule: toScheduleT(data.schedule),
     assignments: data.assignments.map(toAssignmentT),
     objectiveBreaches: data.objectiveBreaches.map(toObjectiveBreachT),
-    stats: data.stats,
   };
   return solution;
 };
@@ -172,7 +169,6 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       useObjectiveBreachStore
         .getState()
         .updateObjectiveBreachStore(newSolution.objectiveBreaches);
-      // useStatStore.getState().updateStatStore(newSolution.stats);
     } catch (error) {
       console.error("Failed to solve schedule:", error);
       useSnackBarStore
@@ -289,7 +285,6 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
       useObjectiveBreachStore
         .getState()
         .deleteOBStoreWithScheduleId(scheduleId);
-      // useStatStore.getState().deleteSStore();
     } catch (error) {
       console.error("Failed to delete schedule:", error);
       useSnackBarStore

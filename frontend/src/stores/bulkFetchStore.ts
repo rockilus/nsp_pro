@@ -14,7 +14,6 @@ import { useRequestStore } from "./requestStore";
 import { useCoverageSelectorStore } from "./coverageSelectorStore";
 import { useScheduleStore } from "./scheduleStore";
 import { useObjectiveBreachStore } from "./objectiveBreachStore";
-import { useStatsOptionsStore } from "./statsOptionsStore";
 // Types
 import { BulkT } from "./types";
 
@@ -71,7 +70,6 @@ export const useBulkFetchStore = create<BulkFetchStateT>()((set) => ({
       useObjectiveBreachStore
         .getState()
         .fetchObjectiveBreachesStore(bulk.objectiveBreaches);
-      useStatsOptionsStore.getState().fetchStatsOptionsStore(bulk.statsOptions);
     } catch (error) {
       console.log("error caught");
 

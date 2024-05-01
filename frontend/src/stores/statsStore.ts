@@ -4,11 +4,7 @@ import { create } from "zustand";
 // Stores
 import { useSnackBarStore } from "./snackbarStore";
 // Types
-import {
-  StatsT,
-  StatsHeaderT,
-  GetStatsOptionsT,
-} from "../components/Stats/types";
+import { StatsT, StatsHeaderT, StatsOptionsT } from "../components/Stats/types";
 import { TemplateOptionValueT } from "../components/Constraint/types";
 dayjs.extend(utc);
 
@@ -17,23 +13,11 @@ const apiUrlStat = process.env.NEXT_PUBLIC_API_URL + "/stats";
 type StatsStateT = {
   stats: StatsT | null;
   shiftOptions: Record<string, TemplateOptionValueT[]>;
-  fetchStats: (getStatOptions: GetStatsOptionsT, teamId: string) => void;
+  fetchStats: (getStatOptions: StatsOptionsT, teamId: string) => void;
   fetchShiftOptions: (teamId: string) => void;
   addHeaderToCustom: (header: StatsHeaderT) => void;
-  updateHeaderInCustom: (header: StatsHeaderT) => void;
   deleteHeaderFromCustom: (headerId: string, teamId: string) => void;
-  // addStat: (stat: StatT) => void;
-  // updateStatStore: (updatedStats: StatT[]) => void;
-  // deleteSStore: () => void;
 };
-
-// export const toStatT = (data: any) => {
-//   const stat: StatT = {
-//     ...data,
-//     date: dayjs.utc(data.date),
-//   };
-//   return stat;
-// };
 
 export const useStatStore = create<StatsStateT>()((set) => ({
   stats: null,
@@ -147,46 +131,6 @@ export const useStatStore = create<StatsStateT>()((set) => ({
     }
   },
 
-  updateHeaderInCustom: async (header) => {
-    try {
-      const response = await fetch(`${apiUrlStat}/stats-headers/${header.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(header),
-      });
-      const responseData = await response.json();
-      if (!response.ok) {
-        useSnackBarStore
-          .getState()
-          .updateSnackBar(
-            "Failed to update header in custom: " + responseData.detail,
-            "error"
-          );
-        return;
-      }
-      const updatedHeader: StatsHeaderT = responseData;
-      set((state) => ({
-        stats: {
-          statsHeaders:
-            state.stats?.statsHeaders.map((h) =>
-              h.id === header.id ? updatedHeader : h
-            ) || [],
-          statsValues: state.stats?.statsValues || [],
-        },
-      }));
-    } catch (error) {
-      console.error("Failed to update header in custom:", error);
-      useSnackBarStore
-        .getState()
-        .updateSnackBar(
-          "Failed to update header in custom, please try again later",
-          "error"
-        );
-    }
-  },
-
   deleteHeaderFromCustom: async (headerId, teamId) => {
     try {
       const response = await fetch(
@@ -224,47 +168,4 @@ export const useStatStore = create<StatsStateT>()((set) => ({
         );
     }
   },
-
-  // addStat: async (stat) => {
-  //   try {
-  //     const response = await fetch(apiUrlStat, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(stat),
-  //     });
-  //     const responseData = await response.json();
-  //     if (!response.ok) {
-  //       useSnackBarStore
-  //         .getState()
-  //         .updateSnackBar(
-  //           "Failed to add stat: " + responseData.detail,
-  //           "error"
-  //         );
-  //       return;
-  //     }
-  //     const newStat: StatT = toStatT(responseData);
-  //     set((state) => ({
-  //       stats: [...state.stats, newStat],
-  //     }));
-  //   } catch (error) {
-  //     console.error("Failed to add stat:", error);
-  //     useSnackBarStore
-  //       .getState()
-  //       .updateSnackBar("Failed to add stat, please try again later", "error");
-  //   }
-  // },
-
-  // updateStatStore: (updatedStats) => {
-  //   set((state) => ({
-  //     stats: updatedStats,
-  //   }));
-  // },
-
-  // deleteSStore: () => {
-  //   set((state) => ({
-  //     stats: [],
-  //   }));
-  // },
 }));

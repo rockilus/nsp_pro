@@ -183,6 +183,17 @@ class ScheduleMessage(BaseModel):
     missingCoverageDates: List[date]
 
 
+class SolutionMessage(BaseModel):
+    schedule: ScheduleMessage
+    assignments: List[AssignmentMessage]
+    objectiveBreaches: List[ObjectiveBreachMessage]
+
+
+class ValidateMessage(BaseModel):
+    schedule: ScheduleMessage
+    assignments: List[AssignmentMessage]
+
+
 # Stats
 class DictBlockValueMessage(BaseModel):
     name: str
@@ -211,39 +222,10 @@ class StatsMessage(BaseModel):
     statsValues: List[StatsValueMessage]
 
 
-class StatMessage(BaseModel):
-    workerId: str
-    name: str
-    cluster: str
-    value: int | float
-
-
 class StatsOptionsMessage(BaseModel):
-    id: str
-    teamId: str
+    timeFrame: str
     startDate: date
     endDate: date
-
-
-class StatsOptionsAndStatsMessage(BaseModel):
-    statsOptions: StatsOptionsMessage | None
-    stats: StatsMessage
-
-
-class SolutionMessage(BaseModel):
-    schedule: ScheduleMessage
-    assignments: List[AssignmentMessage]
-    objectiveBreaches: List[ObjectiveBreachMessage]
-    stats: List[StatMessage]
-
-
-class ValidateMessage(BaseModel):
-    schedule: ScheduleMessage
-    assignments: List[AssignmentMessage]
-
-
-class GetStatsOptionsMessage(BaseModel):
-    timeFrame: str
     statsUnit: str
     headerUnit: str
     selectedShifts: List[DictBlockValueMessage]
@@ -285,4 +267,3 @@ class BulkMessage(BaseModel):
     assignments: List[AssignmentMessage]
     schedules: List[ScheduleMessage]
     objectiveBreaches: List[ObjectiveBreachMessage]
-    statsOptions: StatsOptionsMessage | None
