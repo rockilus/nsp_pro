@@ -14,7 +14,6 @@ from scripts.setup_database import (
     shift_demand_db,
     shift_dimension_db,
     shift_property_db,
-    stats_options_db,
     worker_db,
     worker_dimension_db,
     worker_property_db,
@@ -87,5 +86,4 @@ def build_bulk(teams: List[Team], selected_team_id: str) -> Bulk:
     bulk.schedules = schedule_db.get_schedules(selected_team_id)
     bulk.assignments = assignment_db.get_assignments(bulk.schedules)
     bulk.objective_breaches = objective_breach_db.get_objective_breaches(bulk.schedules)
-    bulk.stats_options = stats_options_db.get_stats_options(selected_team_id)
     return bulk

@@ -6,7 +6,6 @@ from core.coverage import Coverage, CoverageSelector, ShiftDemand
 from core.request import Request
 from core.schedule import Assignment, ObjectiveBreach, Schedule
 from core.shift import Shift, ShiftDimension, ShiftProperty
-from core.stats import StatsOptions
 from core.team import Team
 from core.worker import Worker, WorkerDimension, WorkerProperty
 
@@ -32,4 +31,3 @@ class Bulk:
     assignments: List[Assignment] = field(default_factory=list)
     schedules: List[Schedule] = field(default_factory=list)
     objective_breaches: List[ObjectiveBreach] = field(default_factory=list)
-    stats_options: Optional[StatsOptions] = None

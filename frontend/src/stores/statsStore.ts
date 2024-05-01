@@ -20,7 +20,6 @@ type StatsStateT = {
   fetchStats: (getStatOptions: GetStatsOptionsT, teamId: string) => void;
   fetchShiftOptions: (teamId: string) => void;
   addHeaderToCustom: (header: StatsHeaderT) => void;
-  updateHeaderInCustom: (header: StatsHeaderT) => void;
   deleteHeaderFromCustom: (headerId: string, teamId: string) => void;
 };
 
@@ -131,46 +130,6 @@ export const useStatStore = create<StatsStateT>()((set) => ({
         .getState()
         .updateSnackBar(
           "Failed to add header to custom, please try again later",
-          "error"
-        );
-    }
-  },
-
-  updateHeaderInCustom: async (header) => {
-    try {
-      const response = await fetch(`${apiUrlStat}/stats-headers/${header.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(header),
-      });
-      const responseData = await response.json();
-      if (!response.ok) {
-        useSnackBarStore
-          .getState()
-          .updateSnackBar(
-            "Failed to update header in custom: " + responseData.detail,
-            "error"
-          );
-        return;
-      }
-      const updatedHeader: StatsHeaderT = responseData;
-      set((state) => ({
-        stats: {
-          statsHeaders:
-            state.stats?.statsHeaders.map((h) =>
-              h.id === header.id ? updatedHeader : h
-            ) || [],
-          statsValues: state.stats?.statsValues || [],
-        },
-      }));
-    } catch (error) {
-      console.error("Failed to update header in custom:", error);
-      useSnackBarStore
-        .getState()
-        .updateSnackBar(
-          "Failed to update header in custom, please try again later",
           "error"
         );
     }

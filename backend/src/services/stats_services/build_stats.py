@@ -42,9 +42,6 @@ def build_stats(
     header_unit: str,
     selected_shifts: List[DictBlockValue],
 ) -> Stats:
-    # stats_options = stats_options_db.get_stats_options(team_id)
-    # if stats_options is None:
-    #     return Stats([], [])
     schedules = schedule_db.get_schedules(team_id)
     workers = worker_db.get_workers(team_id)
     start_date, end_date, date_to_i = build_dates(time_frame, schedules)

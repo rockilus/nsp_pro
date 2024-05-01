@@ -15,15 +15,7 @@ from core.coverage import Coverage, CoverageSelector, ShiftDemand
 from core.request import Request
 from core.schedule import Assignment, ObjectiveBreach, Schedule, Variable
 from core.shift import Shift, ShiftDimension, ShiftProperty
-from core.stats import (
-    GetStatsOptions,
-    Stat,
-    Stats,
-    StatsHeader,
-    StatsOptions,
-    StatsValue,
-    TemplateStats,
-)
+from core.stats import GetStatsOptions, Stats, StatsHeader, StatsValue
 from core.team import Team
 from core.user import User
 from core.worker import Worker, WorkerDimension, WorkerProperty
@@ -53,12 +45,9 @@ __all__ = [
     "ShiftDimension",
     "ShiftProperty",
     "GetStatsOptions",
-    "Stat",
     "Stats",
     "StatsHeader",
-    "StatsOptions",
     "StatsValue",
-    "TemplateStats",
     "Team",
     "User",
     "Worker",
