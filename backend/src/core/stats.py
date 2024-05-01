@@ -32,9 +32,9 @@ class Stats:
 
 @dataclass
 class GetStatsOptions:
-    time_frame: str
+    time_frame: Constants.STATS_TIME_FRAME_OPTIONS
     start_date: date
     end_date: date
     stats_unit: Constants.STATS_UNIT_OPTIONS
-    header_unit: str
+    header_unit: Constants.HEADER_UNIT_OPTIONS
     selected_shifts: List[DictBlockValue]

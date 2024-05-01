@@ -45,8 +45,8 @@ export default function StatsOptions({
 }: Props) {
   const [getStatsOptions, setGetStatsOptions] = useState<GetStatsOptionsT>({
     timeFrame: "last_12_months",
-    startDate: dayjs.utc().startOf("day"),
-    endDate: dayjs.utc().startOf("day").subtract(1, "year"),
+    startDate: dayjs.utc().startOf("day").subtract(1, "year"),
+    endDate: dayjs.utc().startOf("day"),
     statsUnit: "custom",
     headerUnit: "weekday",
     selectedShifts: [{ name: "all shifts", id: "", idType: "" }],

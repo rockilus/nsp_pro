@@ -109,14 +109,8 @@ async def calculate_stats(
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )
-        data = msg_to_core_get_stats_options(options)
-        stats = build_stats(
-            team_id,
-            data.time_frame,
-            data.stats_unit,
-            data.header_unit,
-            data.selected_shifts,
-        )
+        stats_options = msg_to_core_get_stats_options(options)
+        stats = build_stats(team_id, stats_options)
         response = core_to_msg_stats(stats)
     except Exception as e:
         log_info("Failed to get stats options")

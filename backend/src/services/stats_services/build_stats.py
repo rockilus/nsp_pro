@@ -2,7 +2,15 @@ from datetime import date
 from typing import Dict, List, Tuple
 
 from constraint_parser import parse_selected_shifts
-from core import Assignment, DictBlockValue, Shift, Stats, StatsHeader, Worker
+from core import (
+    Assignment,
+    DictBlockValue,
+    GetStatsOptions,
+    Shift,
+    Stats,
+    StatsHeader,
+    Worker,
+)
 from scripts.setup_database import (
     assignment_db,
     schedule_db,
@@ -34,56 +42,25 @@ from services.stats_services.np_to_core import (
 from utils.constants import Constants
 
 
-# pylint: disable=too-many-locals, too-many-return-statements
+# pylint: disable=too-many-locals
 def build_stats(
     team_id: str,
-    time_frame: str,
-    stats_unit: Constants.STATS_UNIT_OPTIONS,
-    header_unit: str,
-    selected_shifts: List[DictBlockValue],
+    stats_options: GetStatsOptions,
 ) -> Stats:
     schedules = schedule_db.get_schedules(team_id)
     workers = worker_db.get_workers(team_id)
-    start_date, end_date, date_to_i = build_dates(time_frame, schedules)
+    start_date, end_date, date_to_i = build_dates(
+        stats_options.time_frame,
+        stats_options.start_date,
+        stats_options.end_date,
+        schedules,
+    )
     shifts = shift_db.get_shifts(team_id)
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
     assignments = assignment_db.get_assignments_by_dates(
         start_date, end_date, schedules
     )
-    # selected_shifts_ids = parse_selected_shifts(
-    #     selected_shifts, shifts, shift_dim_dict
-    # )
-    # worker_to_i = {worker.id: i for i, worker in enumerate(workers)}
-    # # shift_to_i = {shift.id: i for i, shift in enumerate(shifts)}
-    # work_shift_to_i = {
-    #     shift.id: i
-    #     for i, shift in enumerate(
-    #         [
-    #             s
-    #             for s in shifts
-    #             if not s.is_time_off and s.id in selected_shifts_ids
-    #         ]
-    #     )
-    # }
-    # work_shift_to_duration = {
-    #     shift.id: (shift.end_time - shift.start_time).total_seconds() / 3600
-    #     for shift in shifts
-    #     if not shift.is_time_off and shift.id in selected_shifts_ids
-    # }
-    # rest_shift_to_i = {
-    #     shift.id: i
-    #     for i, shift in enumerate(
-    #         [
-    #             s
-    #             for s in shifts
-    #             if s.is_time_off and s.id in selected_shifts_ids
-    #         ]
-    #     )
-    # }
-    # i_to_worker = {i: worker for worker, i in worker_to_i.items()}
-    # i_to_work_shift = {i: shift for shift, i in work_shift_to_i.items()}
-    # i_to_rest_shift = {i: shift for shift, i in rest_shift_to_i.items()}
-    if stats_unit == "custom":
+    if stats_options.stats_unit == "custom":
         stats_headers = stats_header_db.get_stats_headers_by_team_id(team_id)
         return build_stats_custom(
             team_id,
@@ -95,7 +72,7 @@ def build_stats(
             stats_headers,
         )
     stats_headers = stats_header_db.get_stats_headers_by_team_unit_shifts(
-        team_id, stats_unit, header_unit
+        team_id, stats_options.stats_unit, stats_options.header_unit
     )
     (
         worker_to_i,
@@ -105,10 +82,12 @@ def build_stats(
         i_to_worker,
         i_to_work_shift,
         i_to_rest_shift,
-    ) = build_work_shift_indexes(workers, shifts, shift_dim_dict, selected_shifts)
+    ) = build_work_shift_indexes(
+        workers, shifts, shift_dim_dict, stats_options.selected_shifts
+    )
     return build_stats_for_stats_unit(
         team_id,
-        header_unit,
+        stats_options.header_unit,
         worker_to_i,
         date_to_i,
         work_shift_to_i,
@@ -118,103 +97,10 @@ def build_stats(
         i_to_work_shift,
         i_to_rest_shift,
         assignments,
-        stats_unit,
-        selected_shifts,
+        stats_options.stats_unit,
+        stats_options.selected_shifts,
         stats_headers,
     )
-    # if stats_unit == "nb_days_worked":
-    #     return build_stats_nb_days_worked(
-    #         team_id,
-    #         header_unit,
-    #         worker_to_i,
-    #         date_to_i,
-    #         work_shift_to_i,
-    #         i_to_worker,
-    #         assignments,
-    #         stats_unit,
-    #         selected_shifts,
-    #         stats_headers,
-    #     )
-    # if stats_unit == "time_worked":
-    #     return build_stats_time_worked(
-    #         team_id,
-    #         header_unit,
-    #         worker_to_i,
-    #         date_to_i,
-    #         work_shift_to_i,
-    #         work_shift_to_duration,
-    #         i_to_worker,
-    #         assignments,
-    #         stats_unit,
-    #         selected_shifts,
-    #         stats_headers,
-    #     )
-    # if stats_unit == "nb_shifts_worked":
-    #     return build_stats_nb_shifts_worked(
-    #         team_id,
-    #         header_unit,
-    #         worker_to_i,
-    #         date_to_i,
-    #         work_shift_to_i,
-    #         i_to_worker,
-    #         assignments,
-    #         stats_unit,
-    #         selected_shifts,
-    #         stats_headers,
-    #     )
-    # if stats_unit == "nb_rest_days":
-    #     return build_stats_nb_days_rest(
-    #         team_id,
-    #         header_unit,
-    #         worker_to_i,
-    #         date_to_i,
-    #         work_shift_to_i,
-    #         i_to_worker,
-    #         assignments,
-    #         stats_unit,
-    #         selected_shifts,
-    #         stats_headers,
-    #     )
-    # if stats_unit == "nb_rest_shifts":
-    #     return build_stats_nb_shifts_worked(
-    #         team_id,
-    #         header_unit,
-    #         worker_to_i,
-    #         date_to_i,
-    #         rest_shift_to_i,
-    #         i_to_worker,
-    #         assignments,
-    #         stats_unit,
-    #         selected_shifts,
-    #         stats_headers,
-    #     )
-    # if stats_unit == "nb_times_shift":
-    #     return build_stats_nb_times_shifts(
-    #         team_id,
-    #         worker_to_i,
-    #         date_to_i,
-    #         work_shift_to_i,
-    #         i_to_worker,
-    #         i_to_work_shift,
-    #         assignments,
-    #         stats_unit,
-    #         selected_shifts,
-    #         stats_headers,
-    #     )
-    # if stats_unit == "nb_times_rest":
-    #     return build_stats_nb_times_shifts(
-    #         team_id,
-    #         worker_to_i,
-    #         date_to_i,
-    #         rest_shift_to_i,
-    #         i_to_worker,
-    #         i_to_rest_shift,
-    #         assignments,
-    #         stats_unit,
-    #         selected_shifts,
-    #         stats_headers,
-    #     )
-    # raise ValueError(f"Unknown target_value: {stats_unit}")
 
 
 def build_work_shift_indexes(
@@ -325,7 +211,7 @@ def build_stats_custom(
     return stats
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-return-statements
 def build_stats_for_stats_unit(
     team_id: str,
     header_unit: str,
