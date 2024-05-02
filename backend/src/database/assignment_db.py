@@ -38,7 +38,7 @@ class AssignmentDB:
 
     def create_assignments(self, assignments: List[Assignment]) -> List[Assignment]:
         try:
-            a_docs = core_to_doc_assignments(assignments, True)
+            a_docs = core_to_doc_assignments(assignments, creating=True)
         except Exception as e:
             log_info("Failed to convert Assignments to AssignmentDocuments")
             handle_create_document_error(e)
