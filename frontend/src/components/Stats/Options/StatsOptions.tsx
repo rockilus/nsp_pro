@@ -128,7 +128,7 @@ export default function StatsOptions({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          Stats options
+          Stats
         </Typography>
       </Box>
       <TableContainer component={Paper} style={{ width: "100%" }}>

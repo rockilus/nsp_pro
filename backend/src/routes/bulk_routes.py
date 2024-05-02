@@ -83,7 +83,7 @@ def core_to_msg_bulk(bulk: Bulk) -> BulkMessage:
         core_to_msg_coverage_selector(cs) for cs in bulk.coverage_selectors
     ]
     data["assignments"] = [core_to_msg_assignment(a) for a in bulk.assignments]
-    data["schedules"] = [core_to_msg_schedule(s) for s in bulk.schedules]
+    data["schedule"] = core_to_msg_schedule(bulk.schedule) if bulk.schedule else None
     data["objective_breaches"] = [
         core_to_msg_objective_breach(ob) for ob in bulk.objective_breaches
     ]

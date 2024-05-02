@@ -40,6 +40,17 @@ class ScheduleDB:
             handle_get_document_error(e)
         return [doc_to_core_schedule(c) for c in list(schedules)]
 
+    def get_schedule_wip(self, team_id: str) -> Schedule:
+        try:
+            # pylint: disable=no-member
+            schedule = ScheduleDocument.objects.get(  # type: ignore
+                team=team_id, status="wip"
+            )
+        except Exception as e:
+            log_info("Failed to get WIP schedule from database")
+            handle_get_document_error(e)
+        return doc_to_core_schedule(schedule)
+
     def get_schedule_by_id(self, schedule_id: str) -> Schedule:
         try:
             # pylint: disable=no-member

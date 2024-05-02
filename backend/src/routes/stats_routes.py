@@ -69,7 +69,7 @@ async def get_shift_options(
 ) -> Dict:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-stats-options", "team", team_id
+            session.get_user_id(), "read-shift-options", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
@@ -103,9 +103,7 @@ async def calculate_stats(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> StatsMessage:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-stats-options", "team", team_id
-        ):
+        if not await authz_check(session.get_user_id(), "read-stats", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )

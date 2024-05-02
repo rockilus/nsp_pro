@@ -10,6 +10,7 @@ import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import ScheduleDialogDelete from "./ScheduleDialogDelete";
 import ScheduleDialogValidate from "./ScheduleDialogValidate";
@@ -31,6 +32,7 @@ interface Props {
 export default function ScheduleWIP({ team, schedule }: Props) {
   const [isSolving, setIsSolving] = useState(false);
   const solveSchedule = useScheduleStore((state) => state.solveSchedule);
+  const updateSchedule = useScheduleStore((state) => state.updateSchedule);
 
   const handleSolve = async () => {
     setIsSolving(true);
@@ -45,11 +47,49 @@ export default function ScheduleWIP({ team, schedule }: Props) {
           <TableBody>
             <TableRowScheduleWIP
               name="Start"
-              content={schedule.startDate.format("D MMM YYYY")}
+              content={
+                <DatePicker
+                  value={schedule.startDate}
+                  onChange={(newValue) => {
+                    if (!newValue) return;
+                    updateSchedule({
+                      ...schedule,
+                      startDate: dayjs.utc(newValue),
+                    });
+                  }}
+                  sx={{
+                    width: "160px",
+                    "& .MuiOutlinedInput-input": {
+                      fontSize: "0.875rem",
+                      height: "40px",
+                      paddingY: 0,
+                    },
+                  }}
+                />
+              }
             />
             <TableRowScheduleWIP
               name="End"
-              content={schedule.endDate.format("D MMM YYYY")}
+              content={
+                <DatePicker
+                  value={schedule.endDate}
+                  onChange={(newValue) => {
+                    if (!newValue) return;
+                    updateSchedule({
+                      ...schedule,
+                      endDate: dayjs.utc(newValue),
+                    });
+                  }}
+                  sx={{
+                    width: "160px",
+                    "& .MuiOutlinedInput-input": {
+                      fontSize: "0.875rem",
+                      height: "40px",
+                      paddingY: 0,
+                    },
+                  }}
+                />
+              }
             />
             <TableRowScheduleWIP
               name="Status"
@@ -111,7 +151,7 @@ export default function ScheduleWIP({ team, schedule }: Props) {
             margin: "0 8px 8px 8px",
           }}
         >
-          <ScheduleDialogDelete team={team} scheduleId={schedule.id} />
+          {/* <ScheduleDialogDelete team={team} scheduleId={schedule.id} /> */}
           <ScheduleDialogValidate team={team} scheduleId={schedule.id} />
         </Box>
       </Box>

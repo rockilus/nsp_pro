@@ -18,6 +18,7 @@ from scripts.setup_database import (
     worker_dimension_db,
     worker_property_db,
 )
+from services.schedule_services import get_schedule_wip
 
 
 # pylint: disable=too-many-locals
@@ -83,7 +84,10 @@ def build_bulk(teams: List[Team], selected_team_id: str) -> Bulk:
     bulk.coverage_selectors = coverage_selector_db.get_coverage_selectors(
         selected_team_id
     )
-    bulk.schedules = schedule_db.get_schedules(selected_team_id)
-    bulk.assignments = assignment_db.get_assignments(bulk.schedules)
-    bulk.objective_breaches = objective_breach_db.get_objective_breaches(bulk.schedules)
+    schedules = schedule_db.get_schedules(selected_team_id)
+    bulk.schedule = get_schedule_wip(schedules, selected_team_id)
+    bulk.assignments = assignment_db.get_assignments(schedules)
+    bulk.objective_breaches = objective_breach_db.get_objective_breaches(
+        [bulk.schedule]
+    )
     return bulk

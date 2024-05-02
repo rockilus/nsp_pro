@@ -38,7 +38,7 @@ class AssignmentDB:
 
     def create_assignments(self, assignments: List[Assignment]) -> List[Assignment]:
         try:
-            a_docs = core_to_doc_assignments_new(assignments)
+            a_docs = core_to_doc_assignments(assignments, True)
         except Exception as e:
             log_info("Failed to convert Assignments to AssignmentDocuments")
             handle_create_document_error(e)
@@ -170,6 +170,20 @@ class AssignmentDB:
             handle_save_document_error(e)
         return doc_to_core_assignment(a_saved)
 
+    def update_assignments(self, assignments: List[Assignment]) -> List[Assignment]:
+        try:
+            a_docs = core_to_doc_assignments(assignments)
+        except Exception as e:
+            log_info("Failed to convert Assignments to AssignmentDocuments")
+            handle_create_document_error(e)
+        try:
+            for a_doc in a_docs:
+                a_doc.save()
+        except Exception as e:
+            log_info("Failed to update assignments")
+            handle_save_document_error(e)
+        return [doc_to_core_assignment(a) for a in a_docs]
+
     def delete_assignment(self, assignment_id: str) -> None:
         try:
             # pylint: disable=no-member
@@ -269,8 +283,8 @@ def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
     return assignment_doc
 
 
-def core_to_doc_assignments_new(
-    dataclass_objs: List[Assignment],
+def core_to_doc_assignments(
+    dataclass_objs: List[Assignment], creating: bool = False
 ) -> List[AssignmentDocument]:
     worker_ids = list(set(doc.worker_id for doc in dataclass_objs))
     # pylint: disable=no-member
@@ -307,7 +321,7 @@ def core_to_doc_assignments_new(
         # a_dict.pop("schedule_id")
         # assignment_doc = AssignmentDocument(**a_dict)
         assignment_doc = AssignmentDocument(
-            id=str(ObjectId()),
+            id=str(ObjectId()) if creating else dataclass_obj.id,
             worker=workers.get(dataclass_obj.worker_id),
             date=datetime(
                 dataclass_obj.date.year,

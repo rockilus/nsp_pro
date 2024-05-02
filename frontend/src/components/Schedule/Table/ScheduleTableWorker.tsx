@@ -1,5 +1,4 @@
 import dayjs from "dayjs";
-import React from "react";
 // MUI
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -11,20 +10,23 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { red } from "@mui/material/colors";
 // Utils
-import { getBreachType } from "../../../utils/scheduleUtils";
+import {
+  getBreachType,
+  getCellBackgroundColor,
+} from "../../../utils/scheduleUtils";
 // Types
+import { Box } from "@mui/material";
 import { TeamT } from "../../../containers/types";
 import { ShiftT } from "../../Shift/types";
 import { WorkerT } from "../../Worker/types";
-import { AssignmentT, ScheduleT, ObjectiveBreachT } from "../types";
-import { Box } from "@mui/material";
+import { AssignmentT, ObjectiveBreachT, ScheduleT } from "../types";
 
 interface Props {
   team: TeamT;
   shifts: ShiftT[];
   workers: WorkerT[];
   assignments: AssignmentT[];
-  schedules: ScheduleT[];
+  schedule: ScheduleT;
   dates: dayjs.Dayjs[];
   breaches: ObjectiveBreachT[];
   showBreaches: boolean;
@@ -35,7 +37,7 @@ export default function ScheduleTableWorker({
   shifts,
   workers,
   assignments,
-  schedules,
+  schedule,
   dates,
   breaches,
   showBreaches,
@@ -68,11 +70,18 @@ export default function ScheduleTableWorker({
                       fontSize: "0.75rem",
                       color: "grey.500",
                       textAlign: "center",
+                      backgroundColor: getCellBackgroundColor(date, schedule),
                     }}
                   >
                     {date.format("MMM")}
                   </Typography>
-                  <Typography sx={{ fontSize: "0.8rem", textAlign: "center" }}>
+                  <Typography
+                    sx={{
+                      fontSize: "0.8rem",
+                      textAlign: "center",
+                      backgroundColor: getCellBackgroundColor(date, schedule),
+                    }}
+                  >
                     {date.format("ddd")}
                   </Typography>
                   <Typography
@@ -80,6 +89,7 @@ export default function ScheduleTableWorker({
                       fontSize: "0.9rem",
                       fontWeight: "bold",
                       textAlign: "center",
+                      backgroundColor: getCellBackgroundColor(date, schedule),
                     }}
                   >
                     {date.format("DD")}
@@ -115,7 +125,13 @@ export default function ScheduleTableWorker({
                 );
 
                 return (
-                  <TableCell key={dateIndex} sx={{ align: "center" }}>
+                  <TableCell
+                    key={dateIndex}
+                    sx={{
+                      align: "center",
+                      backgroundColor: getCellBackgroundColor(date, schedule),
+                    }}
+                  >
                     {targetAs.map((a, aIndex) => {
                       const shift = shifts.find((s) => s.id === a.shiftId);
                       const targetBs = breaches.filter((b) =>

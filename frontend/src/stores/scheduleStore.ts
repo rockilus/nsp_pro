@@ -10,17 +10,17 @@ import {
 import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { ScheduleT, SolutionT, ValidateT } from "../components/Schedule/types";
+import { use } from "react";
 
 dayjs.extend(utc);
 
 const apiUrlSchedule = process.env.NEXT_PUBLIC_API_URL + "/schedules";
 
 type ScheduleStateT = {
-  // schedule: ScheduleT;
-  schedules: ScheduleT[];
-  fetchSchedules: (teamId: string) => void;
-  fetchSchedulesStore: (schedules: ScheduleT[]) => void;
-  addSchedule: (schedule: ScheduleT) => void;
+  schedule: ScheduleT | null;
+  fetchSchedule: (teamId: string) => void;
+  fetchScheduleStore: (schedule: ScheduleT) => void;
+  addSchedule: (teamId: string) => void;
   solveSchedule: (scheduleId: string, teamId: string) => void;
   updateSchedule: (updatedSchedule: ScheduleT) => void;
   validateSchedule: (scheduleId: string, teamId: string) => void;
@@ -57,9 +57,9 @@ const toValidateT = (data: any) => {
 };
 
 export const useScheduleStore = create<ScheduleStateT>()((set) => ({
-  schedules: [],
+  schedule: null,
 
-  fetchSchedules: async (teamId) => {
+  fetchSchedule: async (teamId) => {
     const options: RequestInit = {
       method: "GET",
       credentials: "include" as RequestCredentials,
@@ -82,8 +82,8 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
           );
         return;
       }
-      const schedules: ScheduleT[] = responseData.map(toScheduleT);
-      set({ schedules });
+      const schedule: ScheduleT = responseData.map(toScheduleT);
+      set({ schedule: schedule });
     } catch (error) {
       console.error("Failed to fetch schedule:", error);
       useSnackBarStore
@@ -95,22 +95,18 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
     }
   },
 
-  fetchSchedulesStore: (schedules) => {
-    set({ schedules: schedules.map(toScheduleT) });
+  fetchScheduleStore: (schedule) => {
+    set({ schedule: toScheduleT(schedule) });
   },
 
-  addSchedule: async (schedule) => {
+  addSchedule: async (teamId) => {
     try {
-      const response = await fetch(
-        `${apiUrlSchedule}/teams/${schedule.teamId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(schedule),
-        }
-      );
+      const response = await fetch(`${apiUrlSchedule}/teams/${teamId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       const responseData = await response.json();
       if (!response.ok) {
         useSnackBarStore
@@ -122,9 +118,7 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
         return;
       }
       const newSchedule: ScheduleT = toScheduleT(responseData);
-      set((state) => ({
-        schedules: [...state.schedules, newSchedule],
-      }));
+      set({ schedule: newSchedule });
     } catch (error) {
       console.error("Failed to add schedule:", error);
       useSnackBarStore
@@ -158,11 +152,7 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
         return;
       }
       const newSolution: SolutionT = toSolutionT(responseData);
-      set((state) => ({
-        schedules: state.schedules.map((s) =>
-          s.id === newSolution.schedule.id ? newSolution.schedule : s
-        ),
-      }));
+      set({ schedule: newSolution.schedule });
       useAssignmentStore
         .getState()
         .updateAssignmentStore(scheduleId, newSolution.assignments);
@@ -203,11 +193,7 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
         return;
       }
       const newSchedule: ScheduleT = toScheduleT(responseData);
-      set((state) => ({
-        schedules: state.schedules.map((s) =>
-          s.id === newSchedule.id ? newSchedule : s
-        ),
-      }));
+      set({ schedule: newSchedule });
     } catch (error) {
       console.error("Failed to update schedule:", error);
       useSnackBarStore
@@ -241,14 +227,11 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
         return;
       }
       const newValidate: ValidateT = toValidateT(responseData);
-      set((state) => ({
-        schedules: state.schedules.map((s) =>
-          s.id === newValidate.schedule.id ? newValidate.schedule : s
-        ),
-      }));
+      set({ schedule: newValidate.schedule });
       useAssignmentStore
         .getState()
         .updateAssignmentStore(scheduleId, newValidate.assignments);
+      useObjectiveBreachStore.getState().fetchObjectiveBreachesStore([]);
     } catch (error) {
       console.error("Failed to validate schedule:", error);
       useSnackBarStore
@@ -278,9 +261,7 @@ export const useScheduleStore = create<ScheduleStateT>()((set) => ({
           );
         return;
       }
-      set((state) => ({
-        schedules: state.schedules.filter((s) => s.id !== scheduleId),
-      }));
+      set({ schedule: null });
       useAssignmentStore.getState().deleteAStoreWithScheduleId(scheduleId);
       useObjectiveBreachStore
         .getState()

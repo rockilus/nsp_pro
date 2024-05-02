@@ -109,23 +109,40 @@ export default function ObjectiveBreachList({
           Breaches
         </Typography>
       </Box>
-      <Box sx={{ flexGrow: 1, maxWidth: 752 }}>
-        <Box sx={{ display: "flex", flexDirection: "column" }}>
-          <List dense={true}>
-            {objectiveBreaches.map((breach, index) => (
-              <ConstraintBreachItem
-                key={index}
-                objectiveBreach={breach}
-                CBDisplayed={CBsDisplayed.includes(breach.id)}
-                workers={workers}
-                shifts={shifts}
-                addCBsDisplayed={addCBsDisplayed}
-                removeCBsDisplayed={removeCBsDisplayed}
-              />
-            ))}
-          </List>
+      {objectiveBreaches.length === 0 ? (
+        <Box
+          sx={{
+            margin: 2,
+            backgroundColor: "none",
+          }}
+        >
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            sx={{ fontStyle: "italic" }}
+          >
+            {"No breach."}
+          </Typography>
         </Box>
-      </Box>
+      ) : (
+        <Box sx={{ flexGrow: 1, maxWidth: 752 }}>
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <List dense={true}>
+              {objectiveBreaches.map((breach, index) => (
+                <ConstraintBreachItem
+                  key={index}
+                  objectiveBreach={breach}
+                  CBDisplayed={CBsDisplayed.includes(breach.id)}
+                  workers={workers}
+                  shifts={shifts}
+                  addCBsDisplayed={addCBsDisplayed}
+                  removeCBsDisplayed={removeCBsDisplayed}
+                />
+              ))}
+            </List>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }

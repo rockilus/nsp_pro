@@ -28,6 +28,7 @@ import { useBulkFetchStore } from "../stores/bulkFetchStore";
 // Types
 import { StatsShiftOptionsT } from "../components/Stats/types";
 import { TemplateT } from "../components/Constraint/types";
+import { ScheduleT } from "../components/Schedule/types";
 
 const App = () => {
   const tabs = [
@@ -65,7 +66,7 @@ const App = () => {
   const coverageSelectors = useCoverageSelectorStore(
     (state) => state.coverageSelectors
   );
-  const schedules = useScheduleStore((state) => state.schedules);
+  const schedule = useScheduleStore((state) => state.schedule);
   const assignments = useAssignmentStore((state) => state.assignments);
   const objectiveBreaches = useObjectiveBreachStore(
     (state) => state.objectiveBreaches
@@ -154,7 +155,7 @@ const App = () => {
             team={selectedTeam}
             workers={workers}
             shifts={shifts}
-            schedules={schedules}
+            schedule={schedule}
             assignments={assignments}
             objectiveBreaches={objectiveBreaches}
           />

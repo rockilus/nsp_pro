@@ -17,7 +17,7 @@ dayjs.extend(utc);
 
 interface Props {
   team: TeamT;
-  schedules: ScheduleT[];
+  schedule: ScheduleT;
   assignments: AssignmentT[];
   breaches: ObjectiveBreachT[];
   workers: WorkerT[];
@@ -29,7 +29,7 @@ interface Props {
 
 export default function ScheduleDisplay({
   team,
-  schedules,
+  schedule,
   assignments,
   breaches,
   workers,
@@ -38,20 +38,37 @@ export default function ScheduleDisplay({
   showBreaches,
   CBsDisplayed,
 }: Props) {
-  const getDates = (schedules: ScheduleT[]): dayjs.Dayjs[] => {
-    const dates = new Set<string>();
-    for (let schedule of schedules) {
-      if (schedule.startDate && schedule.endDate) {
-        let currentDate = schedule.startDate;
-        while (currentDate <= schedule.endDate) {
-          dates.add(dayjs.utc(currentDate).format("YYYY-MM-DD"));
-          currentDate = currentDate.add(1, "day");
-        }
+  const getDatesFromAssignments = (
+    assignments: AssignmentT[]
+  ): dayjs.Dayjs[] => {
+    if (assignments.length === 0) {
+      return [];
+    }
+
+    let minDate = assignments[0].date;
+    let maxDate = assignments[0].date;
+
+    for (let assignment of assignments) {
+      if (assignment.date.isBefore(minDate)) {
+        minDate = assignment.date;
+      }
+      if (assignment.date.isAfter(maxDate)) {
+        maxDate = assignment.date;
       }
     }
-    return Array.from(dates)
-      .map((date) => dayjs.utc(date))
-      .sort((a, b) => a.valueOf() - b.valueOf());
+
+    const dates = [];
+    let currentDate = minDate;
+
+    while (currentDate.isBefore(maxDate)) {
+      dates.push(currentDate);
+      currentDate = currentDate.add(1, "day");
+    }
+    console.log("first date:", dates[0]);
+    console.log("first assignment date:", assignments[0]);
+    console.log("isSame:", dates[0].isSame(assignments[0].date, "date"));
+
+    return dates;
   };
 
   const scheduleDisplays: { [key: string]: JSX.Element } = {
@@ -61,8 +78,8 @@ export default function ScheduleDisplay({
         shifts={shifts}
         workers={workers}
         assignments={assignments}
-        schedules={schedules}
-        dates={getDates(schedules)}
+        schedule={schedule}
+        dates={getDatesFromAssignments(assignments)}
         breaches={breaches}
         showBreaches={showBreaches}
       />
@@ -73,8 +90,8 @@ export default function ScheduleDisplay({
         shifts={shifts}
         workers={workers}
         assignments={assignments}
-        schedules={schedules}
-        dates={getDates(schedules)}
+        schedule={schedule}
+        dates={getDatesFromAssignments(assignments)}
         breaches={breaches}
         showBreaches={showBreaches}
       />

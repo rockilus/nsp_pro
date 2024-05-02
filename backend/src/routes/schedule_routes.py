@@ -32,10 +32,8 @@ from scripts.setup_database import (
     schedule_db,
 )
 from services.schedule_services import solve_schedule as solve_schedule_service
-from services.schedule_services import (
-    to_past_schedules_and_assignments as to_past_schedules_and_assignments_service,
-)
 from services.schedule_services import validate_schedule as validate_schedule_service
+from services.schedule_services.get_schedule_wip import get_schedule_wip
 
 router = APIRouter()
 
@@ -43,7 +41,6 @@ router = APIRouter()
 @router.post("/schedules/teams/{team_id}", status_code=201)
 async def create_schedule(
     team_id: str,
-    schedule: ScheduleMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> ScheduleMessage:
     try:
@@ -53,9 +50,9 @@ async def create_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to create a schedule",
             )
-        s_data = msg_to_core_schedule(schedule)
-        s_created = schedule_db.create_schedule(s_data)
-        response = core_to_msg_schedule(s_created)
+        schedules = schedule_db.get_schedules(team_id)
+        schedule_wip = get_schedule_wip(schedules, team_id)
+        response = core_to_msg_schedule(schedule_wip)
     except Exception as e:
         log_info("Failed to create schedule")
         handle_routes_errors(e)
@@ -97,7 +94,9 @@ async def validate_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to validate a schedule",
             )
-        schedule, assignments = validate_schedule_service(schedule_id)
+        assignments = validate_schedule_service(schedule_id)
+        schedules = schedule_db.get_schedules(team_id)
+        schedule = get_schedule_wip(schedules, team_id)
         response = core_to_msg_validate(schedule, assignments)
     except Exception as e:
         log_info("Failed to validate schedule")
@@ -106,10 +105,10 @@ async def validate_schedule(
 
 
 @router.get("/schedules/teams/{team_id}")
-async def get_schedules(
+async def get_schedule(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-) -> List[ScheduleMessage]:
+) -> ScheduleMessage:
     try:
         if not await authz_check(
             session.get_user_id(), "read-schedules", "team", team_id
@@ -117,9 +116,9 @@ async def get_schedules(
             raise NotAuthorizedError(
                 "You do not have permission to get schedules",
             )
-        to_past_schedules_and_assignments_service(team_id)
         schedules = schedule_db.get_schedules(team_id)
-        response = [core_to_msg_schedule(s) for s in schedules]
+        schedule = get_schedule_wip(schedules, team_id)
+        response = core_to_msg_schedule(schedule)
     except Exception as e:
         log_info("Failed to get schedules")
         handle_routes_errors(e)
