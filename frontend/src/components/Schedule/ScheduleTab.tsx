@@ -54,7 +54,7 @@ export default function ScheduleTab({
           switchDisplayCBs={() => setShowBreaches(!showBreaches)}
         />
       </Box>
-      {assignments.length === 0 && !schedule ? (
+      {assignments.length === 0 || !schedule ? (
         <Box
           sx={{
             margin: 2,
