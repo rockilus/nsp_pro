@@ -19,11 +19,11 @@ import { BulkT } from "./types";
 
 const apiUrlBulk = process.env.NEXT_PUBLIC_API_URL + "/bulk";
 
-type BulkFetchStateT = {
+type BulkStateT = {
   fetchBulk: () => void;
 };
 
-export const useBulkFetchStore = create<BulkFetchStateT>()((set) => ({
+export const useBulkFetchStore = create<BulkStateT>()((set) => ({
   fetchBulk: async () => {
     const options: RequestInit = {
       method: "GET",
@@ -66,7 +66,7 @@ export const useBulkFetchStore = create<BulkFetchStateT>()((set) => ({
         .getState()
         .fetchCoverageSelectorsStore(bulk.coverageSelectors);
       useAssignmentStore.getState().fetchAssignmentsStore(bulk.assignments);
-      useScheduleStore.getState().fetchSchedulesStore(bulk.schedules);
+      useScheduleStore.getState().fetchScheduleStore(bulk.schedule);
       useObjectiveBreachStore
         .getState()
         .fetchObjectiveBreachesStore(bulk.objectiveBreaches);

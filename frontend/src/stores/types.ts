@@ -36,6 +36,6 @@ export type BulkT = {
   requests: RequestT[];
   coverageSelectors: CoverageSelectorT[];
   assignments: AssignmentT[];
-  schedules: ScheduleT[];
+  schedule: ScheduleT;
   objectiveBreaches: ObjectiveBreachT[];
 };

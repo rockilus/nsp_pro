@@ -17,7 +17,7 @@ interface Props {
   team: TeamT;
   workers: WorkerT[];
   shifts: ShiftT[];
-  schedules: ScheduleT[];
+  schedule: ScheduleT | null;
   assignments: AssignmentT[];
   objectiveBreaches: ObjectiveBreachT[];
 }
@@ -26,7 +26,7 @@ export default function ScheduleTab({
   team,
   workers,
   shifts,
-  schedules,
+  schedule,
   assignments,
   objectiveBreaches,
 }: Props) {
@@ -46,7 +46,7 @@ export default function ScheduleTab({
       <Box
         sx={{ display: "flex", flexDirection: "column", width: 800, margin: 2 }}
       >
-        <ScheduleOptions team={team} schedules={schedules} />
+        <ScheduleOptions team={team} schedule={schedule} />
         <ScheduleDisplayOptions
           selectedDisplay={selectedDisplay}
           displayCBs={showBreaches}
@@ -54,17 +54,37 @@ export default function ScheduleTab({
           switchDisplayCBs={() => setShowBreaches(!showBreaches)}
         />
       </Box>
-      <ScheduleDisplay
-        team={team}
-        schedules={schedules}
-        assignments={assignments}
-        breaches={objectiveBreaches}
-        workers={workers}
-        shifts={shifts}
-        selectedDisplay={selectedDisplay}
-        showBreaches={showBreaches}
-        CBsDisplayed={CBsDisplayed}
-      />
+      {assignments.length === 0 && !schedule ? (
+        <Box
+          sx={{
+            margin: 2,
+            marginLeft: 0,
+            overflowX: "auto",
+            backgroundColor: "none",
+            width: "100%",
+          }}
+        >
+          <Typography
+            variant="body1"
+            color="textSecondary"
+            sx={{ fontStyle: "italic" }}
+          >
+            {"Configure your schedule and solve it to get your planning."}
+          </Typography>
+        </Box>
+      ) : (
+        <ScheduleDisplay
+          team={team}
+          schedule={schedule as ScheduleT}
+          assignments={assignments}
+          breaches={objectiveBreaches}
+          workers={workers}
+          shifts={shifts}
+          selectedDisplay={selectedDisplay}
+          showBreaches={showBreaches}
+          CBsDisplayed={CBsDisplayed}
+        />
+      )}
       <ObjectiveBreachList
         objectiveBreaches={objectiveBreaches} // schedule.objectiveBreaches
         CBsDisplayed={CBsDisplayed}

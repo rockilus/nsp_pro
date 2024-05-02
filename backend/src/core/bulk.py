@@ -29,5 +29,5 @@ class Bulk:
     requests: List[Request] = field(default_factory=list)
     coverage_selectors: List[CoverageSelector] = field(default_factory=list)
     assignments: List[Assignment] = field(default_factory=list)
-    schedules: List[Schedule] = field(default_factory=list)
+    schedule: Optional[Schedule] = None
     objective_breaches: List[ObjectiveBreach] = field(default_factory=list)

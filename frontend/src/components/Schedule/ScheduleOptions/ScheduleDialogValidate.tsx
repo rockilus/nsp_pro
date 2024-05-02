@@ -37,7 +37,7 @@ export default function ScheduleDialogValidate({ team, scheduleId }: Props) {
         sx={{
           paddingLeft: 0.2,
           paddingRight: 0.2,
-          marginLeft: "8px",
+          // marginLeft: "8px",
           textTransform: "none",
           height: "35px",
         }}

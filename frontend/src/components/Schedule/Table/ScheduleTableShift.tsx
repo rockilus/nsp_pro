@@ -11,7 +11,10 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { red } from "@mui/material/colors";
 // Utils
-import { getBreachType } from "../../../utils/scheduleUtils";
+import {
+  getBreachType,
+  getCellBackgroundColor,
+} from "../../../utils/scheduleUtils";
 // Types
 import { TeamT } from "../../../containers/types";
 import { ShiftT } from "../../Shift/types";
@@ -24,7 +27,7 @@ interface Props {
   shifts: ShiftT[];
   workers: WorkerT[];
   assignments: AssignmentT[];
-  schedules: ScheduleT[];
+  schedule: ScheduleT;
   dates: dayjs.Dayjs[];
   breaches: ObjectiveBreachT[];
   showBreaches: boolean;
@@ -35,7 +38,7 @@ export default function ScheduleTableShift({
   shifts,
   workers,
   assignments,
-  schedules,
+  schedule,
   dates,
   breaches,
   showBreaches,
@@ -68,13 +71,20 @@ export default function ScheduleTableShift({
               }}
             ></TableCell>
             {dates.map((date, dateIndex) => (
-              <TableCell key={dateIndex} sx={{ padding: 0 }}>
+              <TableCell
+                key={dateIndex}
+                sx={{
+                  padding: 0,
+                  backgroundColor: getCellBackgroundColor(date, schedule),
+                }}
+              >
                 <Box>
                   <Typography
                     sx={{
                       fontSize: "0.75rem",
                       color: "grey.500",
                       textAlign: "center",
+                      backgroundColor: getCellBackgroundColor(date, schedule),
                     }}
                   >
                     {date.format("MMM")}
@@ -138,7 +148,13 @@ export default function ScheduleTableShift({
                   );
 
                   return (
-                    <TableCell key={dateIndex} sx={{ align: "center" }}>
+                    <TableCell
+                      key={dateIndex}
+                      sx={{
+                        align: "center",
+                        backgroundColor: getCellBackgroundColor(date, schedule),
+                      }}
+                    >
                       {targetAs.map((a, aIndex) => {
                         const worker = workers.find((w) => w.id === a.workerId);
                         const targetBs = breaches.filter((b) =>

@@ -63,25 +63,6 @@ export default function StatsTable({
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead sx={{ backgroundColor: "grey.100" }}>
             <TableRow>
-              <TableCell
-                align="left"
-                colSpan={stats.statsHeaders.length + 1}
-                sx={{ borderLeft: borderStyle, paddingY: 0 }}
-              >
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    display: "flex",
-                    fontWeight: "bold",
-                    height: 45,
-                    alignItems: "center",
-                  }}
-                >
-                  Stats
-                </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow>
               <TableCell></TableCell>
               {stats.statsHeaders.map((header, headerIndex) => (
                 <TableCell

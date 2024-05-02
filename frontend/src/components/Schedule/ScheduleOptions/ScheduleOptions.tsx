@@ -2,57 +2,27 @@ import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // MUI
-import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 // Components
-import SchedulePanelDialog from "../SchedulePanelDialog";
 import ScheduleWIP from "./ScheduleWIP";
+// Stores
+import { useScheduleStore } from "../../../stores/scheduleStore";
 // Types
 import { ScheduleT } from "../types";
 import { TeamT } from "../../../containers/types";
 // Utils
-import { emptySchedule } from "../../../utils/emptyObjects";
 
 dayjs.extend(utc);
 
 interface Props {
   team: TeamT;
-  schedules: ScheduleT[];
+  schedule: ScheduleT | null;
 }
 
-export default function ScheduleOptions({ team, schedules }: Props) {
-  const scheduleWIP = schedules.find((schedule) => schedule.status === "WIP");
-  const scheduleWIPStartDate =
-    schedules.length > 0
-      ? schedules
-          .filter((schedule) => schedule.status === "validated")
-          ?.reduce(
-            (latestSchedule, currentSchedule) =>
-              currentSchedule.endDate > latestSchedule.endDate
-                ? currentSchedule
-                : latestSchedule,
-            { endDate: dayjs.utc().startOf("day") }
-          )
-          .endDate.startOf("day") || dayjs.utc().startOf("day")
-      : dayjs.utc().startOf("day");
-  const newScheduleWIP = {
-    ...emptySchedule,
-    teamId: team.id,
-    startDate: scheduleWIPStartDate.add(1, "day"),
-    endDate: scheduleWIPStartDate.add(1, "month"),
-  };
-
-  const createScheduleButton = () => {
-    return (
-      <Button variant="contained" sx={{ paddingLeft: 0.3, paddingRight: 1 }}>
-        <AddIcon />
-        Schedule
-      </Button>
-    );
-  };
-
+export default function ScheduleOptions({ team, schedule }: Props) {
+  const addSchedule = useScheduleStore((state) => state.addSchedule);
   return (
     <Box
       sx={{
@@ -80,23 +50,33 @@ export default function ScheduleOptions({ team, schedules }: Props) {
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          Schedules
+          Schedule
         </Typography>
       </Box>
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
+          width: "100%",
         }}
       >
-        {scheduleWIP ? (
-          <ScheduleWIP team={team} schedule={scheduleWIP} />
+        {schedule ? (
+          <ScheduleWIP team={team} schedule={schedule} />
         ) : (
-          <SchedulePanelDialog
-            team={team}
-            buttonElement={createScheduleButton()}
-            schedule={newScheduleWIP}
-          />
+          <Button
+            variant="contained"
+            onClick={() => addSchedule(team.id)}
+            sx={{
+              paddingLeft: 0.3,
+              paddingRight: 1,
+              margin: "8px",
+              height: "35px",
+              // width: "100%",
+              textTransform: "none",
+            }}
+          >
+            Create schedule
+          </Button>
         )}
       </Box>
     </Box>

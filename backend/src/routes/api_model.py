@@ -265,5 +265,5 @@ class BulkMessage(BaseModel):
     requests: List[RequestMessage]
     coverageSelectors: List[CoverageSelectorMessage]
     assignments: List[AssignmentMessage]
-    schedules: List[ScheduleMessage]
+    schedule: ScheduleMessage
     objectiveBreaches: List[ObjectiveBreachMessage]
