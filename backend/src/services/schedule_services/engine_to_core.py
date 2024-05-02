@@ -40,6 +40,8 @@ def _engine_to_core_objective_breaches(
 ) -> List[ObjectiveBreach]:
     out = []
     for ob in objective_breaches:
+        if not _has_variable_in_schedule(ob, schedule):
+            continue
         if ob.category == "constraint":
             for c in constraints:
                 if c.id == ob.constraint_id:
@@ -257,3 +259,12 @@ def _build_description_cb_far(
         shift_assigned,
     ]
     return " ".join(string_list)
+
+
+def _has_variable_in_schedule(
+    breach: ConstraintBreachEngine, schedule: Schedule
+) -> bool:
+    for _, variable_date, _ in breach.variables:
+        if schedule.start_date <= variable_date <= schedule.end_date:
+            return True
+    return False
