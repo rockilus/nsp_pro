@@ -1,14 +1,13 @@
 from typing import List
 
-from core import Assignment, Schedule
-from scripts.setup_database import request_db, worker_db
+from core import Assignment, Request
+from scripts.setup_database import request_db
 
 
-def update_request_status(schedule: Schedule, assignments: List[Assignment]) -> None:
-    workers = worker_db.get_workers(schedule.team_id)
-    requests = request_db.get_requests_by_dates(
-        schedule.start_date, schedule.end_date, workers
-    )
+def update_request_status(
+    assignments: List[Assignment], requests: List[Request]
+) -> None:
+    updated_requests = []
     for r in requests:
         assignment = next(
             (
@@ -24,4 +23,5 @@ def update_request_status(schedule: Schedule, assignments: List[Assignment]) -> 
             r.status = "rejected"
         else:
             r.status = "approved"
-        request_db.update_request(r)
+        updated_requests.append(r)
+    request_db.update_requests(updated_requests)

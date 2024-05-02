@@ -94,7 +94,7 @@ def solve_schedule(
     )
     end_time_process_outputs = time.time()
     start_time_update_db = time.time()
-    update_request_status(schedule, assignments)
+    update_request_status(assignments, requests)
     updated_schedule = schedule_db.update_schedule(schedule)
     updated_assignments = save_assignments(assignments, updated_schedule)
     new_objective_breaches = save_objective_breaches(
@@ -151,13 +151,11 @@ def save_assignments(
 def save_objective_breaches(
     schedule: Schedule, objective_breaches: List[ObjectiveBreach]
 ) -> List[ObjectiveBreach]:
-    existing_ob = objective_breach_db.get_objective_breaches_by_schedule_id(schedule.id)
-    if existing_ob:
-        for ob in existing_ob:
-            objective_breach_db.delete_objective_breach(ob.id)
-    return [
-        objective_breach_db.create_objective_breach(ob) for ob in objective_breaches
-    ]
+    objective_breach_db.delete_objective_breaches_by_schedule_id(schedule.id)
+    if not objective_breaches:
+        return []
+    out = objective_breach_db.create_objective_breaches(objective_breaches)
+    return out
 
 
 # pylint: disable=too-many-arguments
@@ -178,10 +176,7 @@ def setup_constraints(
         schedule_id,
         cstr_builds,
     )
-    out = []
-    for constraint in constraints:
-        out.append(constraint_db.create_constraint(constraint))
-    return out
+    return constraint_db.create_constraints(constraints)
 
 
 def setup_shift_demands(

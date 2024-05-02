@@ -7,7 +7,6 @@ from core import ObjectiveBreach, Schedule, Variable
 from database.db import DB
 from database.schedule_db import core_to_doc_schedule
 from errors import (
-    handle_create_core_object_error,
     handle_create_document_error,
     handle_delete_document_error,
     handle_get_document_error,
@@ -36,6 +35,22 @@ class ObjectiveBreachDB:
             log_info("Failed to save objective breach to database")
             handle_save_document_error(e)
         return doc_to_core_objective_breach(ob_saved)
+
+    def create_objective_breaches(
+        self, objective_breaches: List[ObjectiveBreach]
+    ) -> List[ObjectiveBreach]:
+        try:
+            ob_docs = core_to_doc_objective_breaches(objective_breaches, creating=True)
+        except Exception as e:
+            log_info("Failed to convert ObjectBreaches to ObjectiveBreachDocuments")
+            handle_create_document_error(e)
+        try:
+            # pylint: disable=no-member
+            ob_saved = ObjectiveBreachDocument.objects.insert(ob_docs)  # type: ignore
+        except Exception as e:
+            log_info("Failed to save assignments to database")
+            handle_save_document_error(e)
+        return [doc_to_core_objective_breach(a) for a in ob_saved]
 
     def get_objective_breaches(
         self, schedules: List[Schedule]
@@ -136,17 +151,11 @@ class ObjectiveBreachDB:
     def delete_objective_breaches_by_schedule_id(self, schedule_id: str) -> None:
         try:
             # pylint: disable=no-member
-            objective_breaches = ObjectiveBreachDocument.objects.filter(  # type: ignore
+            ObjectiveBreachDocument.objects(  # type: ignore
                 schedule=schedule_id
-            )
+            ).delete()
         except Exception as e:
-            log_info("Failed to get objective breaches by schedule id to delete")
-            handle_get_document_error(e)
-        try:
-            for ob in objective_breaches:
-                ob.delete()
-        except Exception as e:
-            log_info("Failed to delete objective breaches")
+            log_info("Failed to delete objective breaches by schedule id")
             handle_delete_document_error(e)
 
 
@@ -211,34 +220,69 @@ def core_to_doc_objective_breach(
     return ob_doc
 
 
-# document to core
-def doc_to_core_variable(doc_var: VariableDocument) -> Variable:
-    try:
-        variable = Variable(
-            worker_id=doc_var.worker.id,
-            date=doc_var.date.date(),
-            shift_id=doc_var.shift.id,
+def core_to_doc_objective_breaches(
+    dataclass_objs: List[ObjectiveBreach],
+    creating: bool = False,
+) -> List[ObjectiveBreachDocument]:
+    # pylint: disable=R0801
+    worker_ids = list(set(v.worker_id for doc in dataclass_objs for v in doc.variables))
+    # pylint: disable=no-member
+    workers = {
+        worker.id: worker
+        for worker in WorkerDocument.objects.filter(id__in=worker_ids)  # type: ignore
+    }
+    shift_ids = list(set(v.shift_id for doc in dataclass_objs for v in doc.variables))
+    shifts = {
+        shift.id: shift
+        for shift in ShiftDocument.objects.filter(id__in=shift_ids)  # type: ignore
+    }
+    schedule_ids = list(set(doc.schedule_id for doc in dataclass_objs))
+    schedules = {
+        schedule.id: schedule
+        for schedule in ScheduleDocument.objects.filter(  # type: ignore
+            id__in=schedule_ids
         )
-    except Exception as e:
-        log_info("Failed to convert VariableDocument to Variable")
-        handle_create_core_object_error(e)
-    return variable
+    }
+    out = []
+    for dataclass_obj in dataclass_objs:
+        assignment_doc = ObjectiveBreachDocument(
+            id=str(ObjectId()) if creating else dataclass_obj.id,
+            objective_id=dataclass_obj.objective_id,
+            objective_category=dataclass_obj.objective_category,
+            variables=[
+                VariableDocument(
+                    worker=workers.get(v.worker_id),
+                    date=datetime(v.date.year, v.date.month, v.date.day),
+                    shift=shifts.get(v.shift_id),
+                )
+                for v in dataclass_obj.variables
+            ],
+            hard_to_soft=dataclass_obj.hard_to_soft,
+            description=dataclass_obj.description,
+            schedule=schedules.get(dataclass_obj.schedule_id),
+        )
+        out.append(assignment_doc)
+    return out
+
+
+# document to core
+def doc_to_core_variable(doc_obj: VariableDocument) -> Variable:
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["worker_id"] = doc_dict["worker"]
+    doc_dict["date"] = doc_dict["date"].date()
+    doc_dict["shift_id"] = doc_dict["shift"]
+    doc_dict.pop("worker")
+    doc_dict.pop("shift")
+    return Variable(**doc_dict)
 
 
 def doc_to_core_objective_breach(
     doc_obj: ObjectiveBreachDocument,
 ) -> ObjectiveBreach:
-    try:
-        objective_breach = ObjectiveBreach(
-            id=doc_obj.id,
-            objective_id=doc_obj.objective_id,
-            objective_category=doc_obj.objective_category,
-            variables=[doc_to_core_variable(v) for v in doc_obj.variables],
-            hard_to_soft=doc_obj.hard_to_soft,
-            description=doc_obj.description,
-            schedule_id=doc_obj.schedule.id,
-        )
-    except Exception as e:
-        log_info("Failed to convert ObjectiveBreachDocument to ObjectiveBreach")
-        handle_create_core_object_error(e)
-    return objective_breach
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["id"] = doc_dict["_id"]
+    doc_dict["variables"] = [doc_to_core_variable(v) for v in doc_obj.variables]
+    doc_dict["schedule_id"] = doc_dict["schedule"]
+    doc_dict.pop("_id")
+    doc_dict.pop("schedule")
+    return ObjectiveBreach(**doc_dict)

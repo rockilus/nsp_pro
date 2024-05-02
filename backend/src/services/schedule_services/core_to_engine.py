@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
 from core import (
@@ -37,7 +37,6 @@ def core_to_engine_inputs(
     prev_assignments: List[Assignment],
     wip_assignments: List[Assignment],
 ) -> Inputs:
-    r_engine = _core_to_engine_requests(requests)
     start_date_hist = (
         min(a.date for a in prev_assignments) if prev_assignments else start_date
     )
@@ -47,27 +46,33 @@ def core_to_engine_inputs(
         days=_build_day_coordinates(start_date_hist, end_date),
         shifts=[shift.id for shift in shifts],
     )
+    coverage_engine = CoverageEngine(
+        _build_shift_demands(shift_demands, shifts, start_date, end_date)
+    )
+    requests_engine = _core_to_engine_requests(requests)
+    constraints_engine = [_core_to_engine_constraint(c) for c in constraints]
+    fixed_values_engine = core_to_engine_sol_hint(
+        variable_space.workers,
+        _build_day_coordinates(start_date_hist, end_date_hist),
+        variable_space.shifts,
+        prev_assignments,
+    )
+    sol_hint_engine = core_to_engine_sol_hint(
+        variable_space.workers,
+        _build_day_coordinates(start_date, end_date),
+        variable_space.shifts,
+        wip_assignments,
+    )
     dates = _build_dates(start_date_hist, end_date)
     s_durations, s_start_times, s_end_times = _build_interval_parameters(shifts, dates)
+
     inputs = Inputs(
         variable_space=variable_space,
-        coverage=CoverageEngine(
-            _build_shift_demands(shift_demands, shifts, start_date, end_date)
-        ),
-        requests=r_engine,
-        constraints=[_core_to_engine_constraint(c) for c in constraints],
-        fixed_values=core_to_engine_sol_hint(
-            variable_space.workers,
-            _build_day_coordinates(start_date_hist, end_date_hist),
-            variable_space.shifts,
-            prev_assignments,
-        ),
-        sol_hint=core_to_engine_sol_hint(
-            variable_space.workers,
-            _build_day_coordinates(start_date, end_date),
-            variable_space.shifts,
-            wip_assignments,
-        ),
+        coverage=coverage_engine,
+        requests=requests_engine,
+        constraints=constraints_engine,
+        fixed_values=fixed_values_engine,
+        sol_hint=sol_hint_engine,
         shift_durations=s_durations,
         shift_start_times=s_start_times,
         shift_end_times=s_end_times,
@@ -146,22 +151,14 @@ def core_to_engine_sol_hint(
     shifts: List[str],
     assignments: List[Assignment],
 ) -> Dict[Tuple[str, str, str], int]:
-    return {
-        (w, d, s): (
-            1
-            if any(
-                a.worker_id == w
-                and a.date
-                == datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-                and a.shift_id == s
-                for a in assignments
-            )
-            else 0
-        )
-        for w in workers
-        for d in days
-        for s in shifts
-    }
+    out = {(w, d, s): 0 for w in workers for d in days for s in shifts}
+    for a in assignments:
+        out[
+            a.worker_id,
+            a.date.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
+            a.shift_id,
+        ] = 1
+    return out
 
 
 def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:

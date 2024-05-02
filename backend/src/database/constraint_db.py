@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List
 
 from bson import ObjectId
@@ -6,7 +5,6 @@ from bson import ObjectId
 from core import Constraint, VarDay, VarShift, VarWorker
 from database.db import DB
 from errors import (
-    handle_create_core_object_error,
     handle_create_document_error,
     handle_delete_document_error,
     handle_get_document_error,
@@ -27,7 +25,6 @@ class ConstraintDB:
     def __init__(self, db: DB):
         self.db = db
 
-    # pylint: disable=too-many-arguments
     def create_constraint(self, constraint: Constraint) -> Constraint:
         constraint_doc = core_to_doc_constraint(constraint)
         constraint_doc.id = str(ObjectId())
@@ -37,6 +34,20 @@ class ConstraintDB:
             log_info("Failed to save constraint to database")
             handle_save_document_error(e)
         return doc_to_core_constraint(constraint_saved)
+
+    def create_constraints(self, constraints: List[Constraint]) -> List[Constraint]:
+        try:
+            c_docs = core_to_doc_constraints(constraints, creating=True)
+        except Exception as e:
+            log_info("Failed to convert Constraints to ConstraintDocuments")
+            handle_create_document_error(e)
+        try:
+            # pylint: disable=no-member
+            c_saved = ConstraintDocument.objects.insert(c_docs)  # type: ignore
+        except Exception as e:
+            log_info("Failed to save constraints to database")
+            handle_save_document_error(e)
+        return [doc_to_core_constraint(c) for c in c_saved]
 
     def get_constraints(self) -> List[Constraint]:
         try:
@@ -273,6 +284,97 @@ def core_to_doc_var_shift(dataclass_obj: VarShift) -> VarShiftDocument:
     return vs_doc
 
 
+def core_to_doc_constraints(
+    dataclass_objs: List[Constraint], creating: bool = False
+) -> List[ConstraintDocument]:
+    # pylint: disable=R0801
+    worker_ids = list(
+        set(w_id for doc in dataclass_objs for w_id in doc.worker_var.target_ids)
+    )
+    # pylint: disable=no-member
+    workers = {
+        worker.id: worker
+        for worker in WorkerDocument.objects.filter(id__in=worker_ids)  # type: ignore
+    }
+    shift_ids = list(
+        set(
+            [s_id for doc in dataclass_objs for s_id in doc.shift_var.target_ids]
+            + [s_id for doc in dataclass_objs for s_id in doc.shift_var.reference_ids]
+            + [s_id for doc in dataclass_objs for s_id in doc.shift_var.relative_ids]
+        )
+    )
+    shifts = {
+        shift.id: shift
+        for shift in ShiftDocument.objects.filter(id__in=shift_ids)  # type: ignore
+    }
+    schedule_ids = list(set(doc.schedule_id for doc in dataclass_objs))
+    schedules = {
+        schedule.id: schedule
+        for schedule in ScheduleDocument.objects.filter(  # type: ignore
+            id__in=schedule_ids
+        )
+    }
+    constraint_build_ids = list(
+        set(
+            doc.constraint_build_id
+            for doc in dataclass_objs
+            if doc.constraint_build_id != ""
+        )
+    )
+    constraint_builds = {
+        constraint_build.id: constraint_build
+        for constraint_build in ConstraintBuildDocument.objects.filter(  # type: ignore
+            id__in=constraint_build_ids
+        )
+    }
+    out = []
+    for dataclass_obj in dataclass_objs:
+        constraint_doc = ConstraintDocument(
+            id=str(ObjectId()) if creating else dataclass_obj.id,
+            constraint_type=dataclass_obj.constraint_type,
+            operator=dataclass_obj.operator,
+            target_value=dataclass_obj.target_value,
+            target_unit=dataclass_obj.target_unit,
+            worker_var=VarWorkerDocument(
+                selector=dataclass_obj.worker_var.selector,
+                target=[
+                    workers.get(w_id) for w_id in dataclass_obj.worker_var.target_ids
+                ],
+                num_eligible_workers=dataclass_obj.worker_var.num_eligible_workers,
+            ),
+            day_var=VarDayDocument(
+                selector=dataclass_obj.day_var.selector,
+                target=dataclass_obj.day_var.target,
+                start_date=dataclass_obj.day_var.start_date,
+                end_date=dataclass_obj.day_var.end_date,
+                interval=dataclass_obj.day_var.interval,
+            ),
+            shift_var=VarShiftDocument(
+                selector=dataclass_obj.shift_var.selector,
+                target=[
+                    shifts.get(s_id) for s_id in dataclass_obj.shift_var.target_ids
+                ],
+                reference=[
+                    shifts.get(s_id) for s_id in dataclass_obj.shift_var.reference_ids
+                ],
+                relative=[
+                    shifts.get(s_id) for s_id in dataclass_obj.shift_var.relative_ids
+                ],
+            ),
+            hard=dataclass_obj.hard,
+            priority=dataclass_obj.priority,
+            active=dataclass_obj.active,
+            schedule=schedules.get(dataclass_obj.schedule_id),
+            constraint_build=(
+                constraint_builds.get(dataclass_obj.constraint_build_id)
+                if dataclass_obj.constraint_build_id != ""
+                else None
+            ),
+        )
+        out.append(constraint_doc)
+    return out
+
+
 def core_to_doc_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
     worker_var = core_to_doc_var_worker(dataclass_obj.worker_var)
     day_var = core_to_doc_var_day(dataclass_obj.day_var)
@@ -321,70 +423,39 @@ def core_to_doc_constraint(dataclass_obj: Constraint) -> ConstraintDocument:
 
 # document to core
 def doc_to_core_var_worker(doc_obj: VarWorkerDocument) -> VarWorker:
-    try:
-        var_worker = VarWorker(
-            selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
-            target_ids=[w.id for w in doc_obj.target],
-            num_eligible_workers=doc_obj.num_eligible_workers,
-        )
-    except Exception as e:
-        log_info("Failed to convert VarWorkerDocument to VarWorker")
-        handle_create_core_object_error(e)
-    return var_worker
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["target_ids"] = doc_dict["target"]
+    doc_dict.pop("target")
+    return VarWorker(**doc_dict)
 
 
 def doc_to_core_var_day(doc_obj: VarDayDocument) -> VarDay:
-    try:
-        var_day = VarDay(
-            selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
-            target=doc_obj.target,
-            start_date=datetime.combine(doc_obj.start_date, datetime.min.time()).date(),
-            end_date=datetime.combine(doc_obj.end_date, datetime.min.time()).date(),
-            interval=doc_obj.interval,
-        )
-    except Exception as e:
-        log_info("Failed to convert VarDayDocument to VarDay")
-        handle_create_core_object_error(e)
-    return var_day
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["start_date"] = doc_dict["start_date"].date()
+    doc_dict["end_date"] = doc_dict["end_date"].date()
+    return VarDay(**doc_dict)
 
 
 def doc_to_core_var_shift(doc_obj: VarShiftDocument) -> VarShift:
-    try:
-        var_shift = VarShift(
-            selector=doc_obj.selector if doc_obj.selector else "",  # type: ignore
-            target_ids=[s.id for s in doc_obj.target],
-            reference_ids=[s.id for s in doc_obj.reference],
-            relative_ids=[s.id for s in doc_obj.relative],
-        )
-    except Exception as e:
-        log_info("Failed to convert VarShiftDocument to VarShift")
-        handle_create_core_object_error(e)
-    return var_shift
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["target_ids"] = doc_dict["target"]
+    doc_dict["reference_ids"] = doc_dict["reference"]
+    doc_dict["relative_ids"] = doc_dict["relative"]
+    doc_dict.pop("target")
+    doc_dict.pop("reference")
+    doc_dict.pop("relative")
+    return VarShift(**doc_dict)
 
 
 def doc_to_core_constraint(doc_obj: ConstraintDocument) -> Constraint:
-    worker_var = doc_to_core_var_worker(doc_obj.worker_var)
-    day_var = doc_to_core_var_day(doc_obj.day_var)
-    shift_var = doc_to_core_var_shift(doc_obj.shift_var)
-    try:
-        constraint = Constraint(
-            id=str(doc_obj.id),
-            constraint_type=doc_obj.constraint_type,  # type: ignore
-            operator=doc_obj.operator if doc_obj.operator else "",  # type: ignore
-            target_value=doc_obj.target_value,
-            target_unit=doc_obj.target_unit,
-            worker_var=worker_var,
-            day_var=day_var,
-            shift_var=shift_var,
-            hard=doc_obj.hard,
-            priority=doc_obj.priority,
-            active=doc_obj.active,
-            schedule_id=str(doc_obj.schedule.id),
-            constraint_build_id=(
-                str(doc_obj.constraint_build.id) if doc_obj.constraint_build else ""
-            ),
-        )
-    except Exception as e:
-        log_info("Failed to convert ConstraintDocument to Constraint")
-        handle_create_core_object_error(e)
-    return constraint
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["id"] = doc_dict["_id"]
+    doc_dict["worker_var"] = doc_to_core_var_worker(doc_obj.worker_var)
+    doc_dict["day_var"] = doc_to_core_var_day(doc_obj.day_var)
+    doc_dict["shift_var"] = doc_to_core_var_shift(doc_obj.shift_var)
+    doc_dict["schedule_id"] = doc_dict["schedule"]
+    doc_dict["constraint_build_id"] = doc_dict["constraint_build"]
+    doc_dict.pop("_id")
+    doc_dict.pop("schedule")
+    doc_dict.pop("constraint_build")
+    return Constraint(**doc_dict)

@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import List
 
 from bson import ObjectId
@@ -7,7 +7,6 @@ from core import Request, Worker
 from database.db import DB
 from database.worker_db import core_to_doc_worker
 from errors import (
-    handle_create_core_object_error,
     handle_create_document_error,
     handle_delete_document_error,
     handle_get_document_error,
@@ -77,6 +76,20 @@ class RequestDB:
             log_info("Failed to update request to database")
             handle_save_document_error(e)
         return doc_to_core_request(r_saved)
+
+    def update_requests(self, requests: List[Request]) -> List[Request]:
+        try:
+            r_docs = core_to_doc_requests(requests)
+        except Exception as e:
+            log_info("Failed to convert Requests to RequestDocuments")
+            handle_create_document_error(e)
+        try:
+            for r_doc in r_docs:
+                r_doc.save()
+        except Exception as e:
+            log_info("Failed to update requests")
+            handle_save_document_error(e)
+        return [doc_to_core_request(r) for r in r_docs]
 
     def delete_request(self, request_id: str) -> None:
         try:
@@ -154,19 +167,44 @@ def core_to_doc_request(dataclass_obj: Request) -> RequestDocument:
     return r_doc
 
 
+def core_to_doc_requests(
+    dataclass_objs: List[Request], creating: bool = False
+) -> List[RequestDocument]:
+    # pylint: disable=R0801
+    worker_ids = list(set(doc.worker_id for doc in dataclass_objs))
+    # pylint: disable=no-member
+    workers = {
+        worker.id: worker
+        for worker in WorkerDocument.objects.filter(id__in=worker_ids)  # type: ignore
+    }
+    shift_ids = list(set(doc.shift_id for doc in dataclass_objs))
+    shifts = {
+        shift.id: shift
+        for shift in ShiftDocument.objects.filter(id__in=shift_ids)  # type: ignore
+    }
+    out = []
+    for dataclass_obj in dataclass_objs:
+        request_doc = RequestDocument(
+            id=str(ObjectId()) if creating else dataclass_obj.id,
+            worker=workers.get(dataclass_obj.worker_id),
+            date=dataclass_obj.date,
+            shift=shifts.get(dataclass_obj.shift_id),
+            hard=dataclass_obj.hard,
+            status=dataclass_obj.status,
+        )
+        out.append(request_doc)
+    return out
+
+
 # document to core
 def doc_to_core_request(doc_obj: RequestDocument) -> Request:
-    date_datetime = datetime.combine(doc_obj.date, datetime.min.time()).date()
-    try:
-        request = Request(
-            id=doc_obj.id,
-            worker_id=doc_obj.worker.id,
-            date=date_datetime,
-            shift_id=doc_obj.shift.id,
-            hard=doc_obj.hard,
-            status=doc_obj.status,
-        )
-    except Exception as e:
-        log_info("Failed to convert RequestDocument to Request")
-        handle_create_core_object_error(e)
-    return request
+    # pylint: disable=R0801
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["id"] = doc_dict["_id"]
+    doc_dict["worker_id"] = doc_dict["worker"]
+    doc_dict["date"] = doc_dict["date"].date()
+    doc_dict["shift_id"] = doc_dict["shift"]
+    doc_dict.pop("_id")
+    doc_dict.pop("worker")
+    doc_dict.pop("shift")
+    return Request(**doc_dict)
