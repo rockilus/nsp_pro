@@ -4,7 +4,7 @@ import { ShiftT, ShiftDimensionT } from "../components/Shift/types";
 import { CoverageT } from "../components/Coverage/types";
 import { ConstraintT, TemplateT } from "../components/Constraint/types";
 import { RequestT } from "../components/Request/types";
-import { CoverageSelectorT } from "../components/CoverageSelector/types";
+import { CoverageSelectorT } from "../components/ScheduleOptions/types";
 import {
   AssignmentT,
   ScheduleT,

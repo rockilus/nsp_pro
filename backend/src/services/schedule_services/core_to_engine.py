@@ -6,7 +6,7 @@ from core import (
     Constraint,
     Request,
     Shift,
-    ShiftDemand,
+    ShiftDemandDate,
     VarDay,
     VarShift,
     VarWorker,
@@ -31,7 +31,7 @@ def core_to_engine_inputs(
     start_date: date,
     end_date: date,
     shifts: List[Shift],
-    shift_demands: List[List[ShiftDemand] | None],
+    shift_demand_dates: List[ShiftDemandDate],
     requests: List[Request],
     constraints: List[Constraint],
     prev_assignments: List[Assignment],
@@ -47,7 +47,7 @@ def core_to_engine_inputs(
         shifts=[shift.id for shift in shifts],
     )
     coverage_engine = CoverageEngine(
-        _build_shift_demands(shift_demands, shifts, start_date, end_date)
+        [ShiftDemandEngine(**sd.__dict__) for sd in shift_demand_dates]
     )
     requests_engine = _core_to_engine_requests(requests)
     constraints_engine = [_core_to_engine_constraint(c) for c in constraints]
@@ -78,44 +78,6 @@ def core_to_engine_inputs(
         shift_end_times=s_end_times,
     )
     return inputs
-
-
-def _build_shift_demands(
-    shift_demands: List[List[ShiftDemand] | None],
-    shifts: List[Shift],
-    start_date: date,
-    end_date: date,
-) -> List[ShiftDemandEngine]:
-    sd_engine = []
-    shifts_not_off = [s for s in shifts if not s.is_time_off]
-    shift_demands_flat = [
-        sd for sds_list in shift_demands if sds_list is not None for sd in sds_list
-    ]
-    for s in shifts_not_off:
-        for day in range((end_date - start_date).days + 1):
-            cov_date = start_date + timedelta(days=day)
-            sds = [
-                sd
-                for sd in shift_demands_flat
-                if sd.day_index == cov_date.weekday() and sd.shift_id == s.id
-            ]
-            if sds:
-                sd_engine.append(
-                    ShiftDemandEngine(
-                        date=cov_date,
-                        shift_id=s.id,
-                        staffing=s.staffing * len(sds),
-                    )
-                )
-            else:
-                sd_engine.append(
-                    ShiftDemandEngine(
-                        date=cov_date,
-                        shift_id=s.id,
-                        staffing=0,
-                    )
-                )
-    return sd_engine
 
 
 def _core_to_engine_requests(requests: List[Request]) -> List[RequestEngine]:

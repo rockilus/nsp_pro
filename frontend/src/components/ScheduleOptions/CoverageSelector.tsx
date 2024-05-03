@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 // MUI
-import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
@@ -21,25 +22,30 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import TableAddButton from "../SharedComponents/TableAddButton";
 // Stores
 import { useCoverageSelectorStore } from "../../stores/coverageSelectorStore";
-// Utils
-import { dateToTimeZero } from "../../utils/dateUtils";
 // Types
 import { CoverageSelectorT } from "./types";
 import { TeamT } from "../../containers/types";
 import { CoverageT } from "../Coverage/types";
+import { ScheduleT } from "../Schedule/types";
+// Constants
+import { coverageSelectorColumns } from "../../utils/constants";
+
+dayjs.extend(utc);
 
 interface Props {
   team: TeamT;
+  schedule: ScheduleT;
   coverageSelectors: CoverageSelectorT[];
   coverages: CoverageT[];
 }
 
-export default function CoverageSelectorTab({
+export default function CoverageSelector({
   team,
+  schedule,
   coverageSelectors,
   coverages,
 }: Props) {
-  const columns = useMemo(() => ["Start date", "End date", "Coverage"], []);
+  const columns = useMemo(() => coverageSelectorColumns, []);
 
   const addCoverageSelector = useCoverageSelectorStore(
     (state) => state.addCoverageSelector
@@ -55,12 +61,13 @@ export default function CoverageSelectorTab({
   const handleAddCoverageSelector = async () => {
     const newCoverageSelector: CoverageSelectorT = {
       id: "",
-      teamId: team.id,
-      startDate: dateToTimeZero(new Date()),
-      endDate: dateToTimeZero(new Date()),
+      scheduleId: schedule.id,
+      fullPeriod: true,
+      startDate: schedule.startDate,
+      endDate: schedule.endDate,
       coverageId: "",
     };
-    await addCoverageSelector(newCoverageSelector);
+    await addCoverageSelector(newCoverageSelector, team.id);
   };
 
   const handleUpdateCoverageId = (
@@ -71,13 +78,7 @@ export default function CoverageSelectorTab({
       ...coverageSelector,
       coverageId: event.target.value as string,
     };
-    updateCoverageSelector(updatedCoverageSelector);
-  };
-
-  const handleUpdateCoverageSelector = (
-    updatedCoverageSelector: CoverageSelectorT
-  ) => {
-    updateCoverageSelector(updatedCoverageSelector);
+    updateCoverageSelector(updatedCoverageSelector, team.id);
   };
 
   const handleDeleteCoverageSelector = (rowId: string) => {
@@ -177,29 +178,53 @@ export default function CoverageSelectorTab({
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  <DatePicker
-                    value={dayjs(coverageSelector.startDate)}
-                    onChange={(newValue) =>
-                      handleUpdateCoverageSelector({
-                        ...coverageSelector,
-                        startDate: dateToTimeZero(
-                          newValue?.toDate() || new Date()
-                        ),
-                      })
+                  <Checkbox
+                    checked={coverageSelector.fullPeriod}
+                    onChange={() =>
+                      updateCoverageSelector(
+                        {
+                          ...coverageSelector,
+                          fullPeriod: !coverageSelector.fullPeriod,
+                        },
+                        team.id
+                      )
                     }
                   />
                 </TableCell>
                 <TableCell component="th" scope="row">
                   <DatePicker
+                    disabled={coverageSelector.fullPeriod}
+                    minDate={schedule.startDate}
+                    maxDate={coverageSelector.endDate}
+                    value={dayjs(coverageSelector.startDate)}
+                    onChange={(newValue) => {
+                      if (!newValue) return;
+                      updateCoverageSelector(
+                        {
+                          ...coverageSelector,
+                          startDate: dayjs.utc(newValue),
+                        },
+                        team.id
+                      );
+                    }}
+                  />
+                </TableCell>
+                <TableCell component="th" scope="row">
+                  <DatePicker
+                    disabled={coverageSelector.fullPeriod}
+                    minDate={coverageSelector.startDate}
+                    maxDate={schedule.endDate}
                     value={dayjs(coverageSelector.endDate)}
-                    onChange={(newValue) =>
-                      handleUpdateCoverageSelector({
-                        ...coverageSelector,
-                        endDate: dateToTimeZero(
-                          newValue?.toDate() || new Date()
-                        ),
-                      })
-                    }
+                    onChange={(newValue: dayjs.Dayjs | null) => {
+                      if (!newValue) return;
+                      updateCoverageSelector(
+                        {
+                          ...coverageSelector,
+                          endDate: dayjs.utc(newValue),
+                        },
+                        team.id
+                      );
+                    }}
                   />
                 </TableCell>
                 <TableCell component="th" scope="row">

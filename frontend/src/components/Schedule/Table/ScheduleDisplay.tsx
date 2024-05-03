@@ -64,10 +64,6 @@ export default function ScheduleDisplay({
       dates.push(currentDate);
       currentDate = currentDate.add(1, "day");
     }
-    console.log("first date:", dates[0]);
-    console.log("first assignment date:", assignments[0]);
-    console.log("isSame:", dates[0].isSame(assignments[0].date, "date"));
-
     return dates;
   };
 

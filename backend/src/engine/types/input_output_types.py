@@ -15,6 +15,7 @@ class VariableSpace:
     shifts: List[str]
 
 
+# pylint: disable=R0801
 @dataclass
 class ShiftDemand:
     date: date

@@ -11,7 +11,7 @@ from core.constraint import (
     VarShift,
     VarWorker,
 )
-from core.coverage import Coverage, CoverageSelector, ShiftDemand
+from core.coverage import Coverage, CoverageSelector, ShiftDemand, ShiftDemandDate
 from core.request import Request
 from core.schedule import Assignment, ObjectiveBreach, Schedule, Variable
 from core.shift import Shift, ShiftDimension, ShiftProperty
@@ -37,6 +37,7 @@ __all__ = [
     "Coverage",
     "CoverageSelector",
     "ShiftDemand",
+    "ShiftDemandDate",
     "Request",
     "ObjectiveBreach",
     "Schedule",
