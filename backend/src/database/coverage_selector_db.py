@@ -1,5 +1,4 @@
 # mypy: disable-error-code="attr-defined"
-from datetime import date
 from typing import List
 
 from bson import ObjectId
@@ -16,7 +15,7 @@ from errors import (
 from logger import log_info
 from models import Coverage as CoverageDocument
 from models import CoverageSelector as CoverageSelectorDocument
-from models import Team as TeamDocument
+from models import Schedule as ScheduleDocument
 
 
 class CoverageSelectorDB:
@@ -35,11 +34,11 @@ class CoverageSelectorDB:
             handle_save_document_error(e)
         return doc_to_core_coverage_selector(cs_saved)
 
-    def get_coverage_selectors(self, team_id: str) -> List[CoverageSelector]:
+    def get_coverage_selectors(self, schedule_id: str) -> List[CoverageSelector]:
         try:
             # pylint: disable=no-member
             coverage_selectors = CoverageSelectorDocument.objects.filter(
-                team=team_id
+                schedule=schedule_id
             )  # type: ignore
         except Exception as e:
             log_info("Failed to get coverage selectors from database")
@@ -58,21 +57,6 @@ class CoverageSelectorDB:
             log_info("Failed to get coverage selector by id from database")
             handle_get_document_error(e)
         return doc_to_core_coverage_selector(coverage_selector)
-
-    def get_coverage_selector_by_dates(
-        self, start_date: date, end_date: date, team_id: str
-    ) -> List[CoverageSelector]:
-        try:
-            # pylint: disable=no-member
-            coverage_selectors = CoverageSelectorDocument.objects.filter(
-                start_date__lte=end_date,
-                end_date__gte=start_date,
-                team=team_id,
-            )
-        except Exception as e:
-            log_info("Failed to get coverage selectors by dates from database")
-            handle_get_document_error(e)
-        return [doc_to_core_coverage_selector(cs) for cs in list(coverage_selectors)]
 
     def update_coverage_selector(
         self, coverage_selector: CoverageSelector
@@ -115,9 +99,11 @@ def core_to_doc_coverage_selector(
     # pylint: disable=R0801
     try:
         # pylint: disable=no-member
-        team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
+        schedule = ScheduleDocument.objects.get(  # type: ignore
+            id=dataclass_obj.schedule_id
+        )
     except Exception as e:
-        log_info("Failed to get team from database")
+        log_info("Failed to get schedule from database")
         handle_get_document_error(e)
     if dataclass_obj.coverage_id != "":
         try:
@@ -131,7 +117,8 @@ def core_to_doc_coverage_selector(
     try:
         cs_doc = CoverageSelectorDocument(
             id=dataclass_obj.id,
-            team=team,
+            schedule=schedule,
+            full_period=dataclass_obj.full_period,
             start_date=dataclass_obj.start_date,
             end_date=dataclass_obj.end_date,
             coverage=coverage if dataclass_obj.coverage_id != "" else None,
@@ -149,7 +136,8 @@ def doc_to_core_coverage_selector(
     try:
         coverage_selector = CoverageSelector(
             id=doc_obj.id,
-            team_id=doc_obj.team.id,
+            schedule_id=doc_obj.schedule.id,
+            full_period=doc_obj.full_period,
             start_date=doc_obj.start_date.date(),
             end_date=doc_obj.end_date.date(),
             coverage_id=str(doc_obj.coverage.id) if doc_obj.coverage else "",

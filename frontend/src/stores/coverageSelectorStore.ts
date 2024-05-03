@@ -1,26 +1,36 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
 // Stores
 import { useSnackBarStore } from "./snackbarStore";
 // Types
-import { CoverageSelectorT } from "../components/CoverageSelector/types";
+import { CoverageSelectorT } from "../components/ScheduleOptions/types";
+
+dayjs.extend(utc);
 
 const apiUrlCoverageSelectors =
   process.env.NEXT_PUBLIC_API_URL + "/coverage-selectors";
 
 type CoverageSelectorStateT = {
   coverageSelectors: CoverageSelectorT[];
-  fetchCoverageSelectors: (teamId: string) => void;
+  fetchCoverageSelectors: (scheduleId: string, teamId: string) => void;
   fetchCoverageSelectorsStore: (coverageSelectors: CoverageSelectorT[]) => void;
-  addCoverageSelector: (coverageSelector: CoverageSelectorT) => void;
-  updateCoverageSelector: (updatedCoverageSelector: CoverageSelectorT) => void;
+  addCoverageSelector: (
+    coverageSelector: CoverageSelectorT,
+    teamId: string
+  ) => void;
+  updateCoverageSelector: (
+    updatedCoverageSelector: CoverageSelectorT,
+    teamId: string
+  ) => void;
   deleteCoverageSelector: (coverageSelectorId: string, teamId: string) => void;
 };
 
 const toCoverageSelectorT = (data: any) => {
   const covSel: CoverageSelectorT = {
     ...data,
-    startDate: new Date(data.startDate),
-    endDate: new Date(data.endDate),
+    startDate: dayjs.utc(data.startDate),
+    endDate: dayjs.utc(data.endDate),
   };
   return covSel;
 };
@@ -29,10 +39,10 @@ export const useCoverageSelectorStore = create<CoverageSelectorStateT>()(
   (set) => ({
     coverageSelectors: [],
 
-    fetchCoverageSelectors: async (teamId) => {
+    fetchCoverageSelectors: async (scheduleId, teamId) => {
       try {
         const response = await fetch(
-          `${apiUrlCoverageSelectors}/teams/${teamId}`
+          `${apiUrlCoverageSelectors}/schedules/${scheduleId}/teams/${teamId}`
         );
         const responseData = await response.json();
         if (!response.ok) {
@@ -58,13 +68,13 @@ export const useCoverageSelectorStore = create<CoverageSelectorStateT>()(
     },
 
     fetchCoverageSelectorsStore: (coverageSelectors) => {
-      set({ coverageSelectors });
+      set({ coverageSelectors: coverageSelectors.map(toCoverageSelectorT) });
     },
 
-    addCoverageSelector: async (coverageSelector) => {
+    addCoverageSelector: async (coverageSelector, teamId) => {
       try {
         const response = await fetch(
-          `${apiUrlCoverageSelectors}/teams/${coverageSelector.teamId}`,
+          `${apiUrlCoverageSelectors}/teams/${teamId}`,
           {
             method: "POST",
             headers: {
@@ -98,10 +108,10 @@ export const useCoverageSelectorStore = create<CoverageSelectorStateT>()(
       }
     },
 
-    updateCoverageSelector: async (updatedCoverageSelector) => {
+    updateCoverageSelector: async (updatedCoverageSelector, teamId) => {
       try {
         const response = await fetch(
-          `${apiUrlCoverageSelectors}/${updatedCoverageSelector.id}/teams/${updatedCoverageSelector.teamId}`,
+          `${apiUrlCoverageSelectors}/${updatedCoverageSelector.id}/teams/${teamId}`,
           {
             method: "PUT",
             headers: {

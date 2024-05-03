@@ -14,24 +14,36 @@ export const WeekDays = [
 export const NumHoursInDay = 24;
 export const NumQuarterHoursInHour = 4;
 
+// App
+export const tabs: { id: string; label: string }[] = [
+  { id: "workers", label: "Workers" },
+  { id: "shifts", label: "Shifts" },
+  { id: "coverages", label: "Coverages" },
+  { id: "constraints", label: "Constraints" },
+  { id: "requests", label: "Requests" },
+  { id: "schedule_options", label: "Schedule Options" },
+  { id: "schedule", label: "Schedule" },
+  { id: "stats", label: "Stats" },
+];
+
 // Workers
-export const DefaultWorkerFields = ["Name"];
+export const DefaultWorkerFields: string[] = ["Name"];
 
 // Shifts
-export const DefaultWorkShiftFields = [
+export const DefaultWorkShiftFields: string[] = [
   "Color",
   "Name",
   "Start time",
   "End time",
   "Staffing",
 ];
-export const DefaultRestShiftFields = [
+export const DefaultRestShiftFields: string[] = [
   "Color",
   "Name",
   "Start time",
   "End time",
 ];
-export const ShiftColors = [
+export const ShiftColors: string[] = [
   "#0030C6",
   "#C60093",
   "#C69500",
@@ -42,7 +54,7 @@ export const ShiftColors = [
   "#00ABA6",
 ];
 
-export const PropertyTypes = {
+export const PropertyTypes: Record<string, string> = {
   str: "String",
   int: "Integer",
   bool: "Boolean",
@@ -57,48 +69,14 @@ export const DefaultProperties: Record<string, string | boolean | string[]> = {
 };
 
 //Coverages
-export const CovTimeColWidth = 50; // in pixels
-export const CovTimeColPadR = 10; // in pixels
-export const CovHeadRowHeight = 20; // in pixels
-export const CovBodyRowHeight = 12; // in pixels
-export const CovBorderThick = 1; // in pixels
-
-// Requests
-export const RequestTableFields = {
-  Worker: "workerId",
-  Shift: "shiftId",
-  Date: "date",
-  Hard: "hard",
-  Status: "status",
-};
-
-//Schedules
-export const SolveStatusList = [
-  "Not solved",
-  "Solved",
-  "No solution",
-  "Soft breached",
-  "Hard breached",
-];
-export const SolveStatusColors = [
-  "default",
-  "success",
-  "error",
-  "warning",
-  "error",
-];
-export const ColorNoCoverage = "#E0E0E0";
-export const ColorPast = "#D5A8DC";
-export const ColorValidated = "#AFDCA8";
-
-// User
-export const SignInGrantType = "password";
-
-// Style
-export const DrawerWidth: number = 240;
+export const CovTimeColWidth: number = 50; // in pixels
+export const CovTimeColPadR: number = 10; // in pixels
+export const CovHeadRowHeight: number = 20; // in pixels
+export const CovBodyRowHeight: number = 12; // in pixels
+export const CovBorderThick: number = 1; // in pixels
 
 // Constraints
-export const PriorityLevels = ["low", "medium", "high"];
+export const PriorityLevels: string[] = ["low", "medium", "high"];
 export const ConstraintDefaultColors: ConstraintColorsT = {
   shade0: "#f0efed",
   shade1: "#DFDFDF",
@@ -109,6 +87,48 @@ export const ConstraintColorActiveBack: string = "#ffffff";
 export const ConstraintColorInactiveBack: string = "#f0efed";
 export const ConstraintColorActiveText: string = "#000000";
 export const ConstraintColorInactiveText: string = "#808080";
+
+// Requests
+export const RequestTableFields: Record<string, string> = {
+  Worker: "workerId",
+  Shift: "shiftId",
+  Date: "date",
+  Hard: "hard",
+  Status: "status",
+};
+
+// Schedule Options
+export const coverageSelectorColumns: string[] = [
+  "Full period",
+  "Start date",
+  "End date",
+  "Coverage",
+];
+
+//Schedules
+export const SolveStatusList: string[] = [
+  "Not solved",
+  "Solved",
+  "No solution",
+  "Soft breached",
+  "Hard breached",
+];
+export const SolveStatusColors: string[] = [
+  "default",
+  "success",
+  "error",
+  "warning",
+  "error",
+];
+export const ColorNoCoverage: string = "#E0E0E0";
+export const ColorPast: string = "#D5A8DC";
+export const ColorValidated: string = "#AFDCA8";
+
+// User
+export const SignInGrantType: string = "password";
+
+// Style
+export const DrawerWidth: number = 240;
 
 // Stats
 export const statsUnitOptions: Record<string, string>[] = [
@@ -149,14 +169,14 @@ export const statsUnitOptions: Record<string, string>[] = [
     description: "Number of times a rest was taken",
   },
 ];
-export const headerUnitOptions = [
+export const headerUnitOptions: Record<string, string>[] = [
   { name: "weekday", label: "Weekday" },
   { name: "week", label: "Week" },
   { name: "month", label: "Month" },
   { name: "year", label: "Year" },
   { name: "all", label: "All" },
 ];
-export const timeFrameOptions = [
+export const timeFrameOptions: Record<string, string>[] = [
   { name: "last_12_months", label: "Last 12 months" },
   { name: "last_24_months", label: "Last 24 months" },
   { name: "last_36_months", label: "Last 36 months" },

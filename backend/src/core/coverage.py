@@ -15,6 +15,13 @@ class ShiftDemand:
 
 
 @dataclass
+class ShiftDemandDate:
+    date: date
+    shift_id: str
+    staffing: int
+
+
+@dataclass
 class Coverage:
     id: str
     team_id: str
@@ -24,7 +31,8 @@ class Coverage:
 @dataclass
 class CoverageSelector:
     id: str
-    team_id: str
+    schedule_id: str
     coverage_id: str
+    full_period: bool
     start_date: date
     end_date: date

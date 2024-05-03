@@ -5,11 +5,9 @@ from core import (
     Assignment,
     Constraint,
     ConstraintBuild,
-    CoverageSelector,
     ObjectiveBreach,
     Schedule,
     Shift,
-    ShiftDemand,
     Worker,
 )
 from engine import Engine
@@ -28,6 +26,9 @@ from scripts.setup_database import (
     worker_property_db,
 )
 from services.constraint_services import build_constraints
+from services.coverage_selector_services.build_shift_demand_date import (
+    build_shift_demand_dates,
+)
 from services.schedule_services.core_to_engine import core_to_engine_inputs
 from services.schedule_services.engine_to_core import engine_to_core_outputs
 from services.schedule_services.inputs_processing import build_no_coverage_date
@@ -45,8 +46,9 @@ def solve_schedule(
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
     cstr_builds = constraint_build_db.get_constraint_builds_active(schedule.team_id)
-    coverage_selectors = coverage_selector_db.get_coverage_selector_by_dates(
-        schedule.start_date, schedule.end_date, schedule.team_id
+    coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule.id)
+    shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
+        coverage_selectors
     )
     requests = request_db.get_requests_by_dates(
         schedule.start_date, schedule.end_date, workers
@@ -66,13 +68,15 @@ def solve_schedule(
         schedule.id,
         cstr_builds,
     )
-    shift_demands = setup_shift_demands(coverage_selectors)
+    shift_demand_dates = build_shift_demand_dates(
+        schedule, coverage_selectors, shift_demands, shifts
+    )
     inputs = core_to_engine_inputs(
         workers,
         schedule.start_date,
         schedule.end_date,
         shifts,
-        shift_demands,
+        shift_demand_dates,
         requests,
         constraints,
         prev_assignments,
@@ -177,17 +181,3 @@ def setup_constraints(
         cstr_builds,
     )
     return constraint_db.create_constraints(constraints)
-
-
-def setup_shift_demands(
-    coverage_selectors: List[CoverageSelector],
-) -> List[List[ShiftDemand] | None]:
-    out: List[List[ShiftDemand] | None] = []
-    for coverage_selector in coverage_selectors:
-        if coverage_selector.coverage_id == "":
-            out.append(None)
-            continue
-        out.append(
-            shift_demand_db.get_shift_demands_by_coverage_selector(coverage_selector)
-        )
-    return out

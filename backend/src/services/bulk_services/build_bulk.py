@@ -81,11 +81,11 @@ def build_bulk(teams: List[Team], selected_team_id: str) -> Bulk:
         shift_properties_sd,
     )
     bulk.requests = request_db.get_requests(bulk.workers)
-    bulk.coverage_selectors = coverage_selector_db.get_coverage_selectors(
-        selected_team_id
-    )
     schedules = schedule_db.get_schedules(selected_team_id)
     bulk.schedule = get_schedule_wip(schedules, selected_team_id)
+    bulk.coverage_selectors = coverage_selector_db.get_coverage_selectors(
+        bulk.schedule.id
+    )
     bulk.assignments = assignment_db.get_assignments(schedules)
     bulk.objective_breaches = objective_breach_db.get_objective_breaches(
         [bulk.schedule]

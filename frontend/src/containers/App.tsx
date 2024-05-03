@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 // Components
 import NavAppBar from "../components/AppBar/NavAppBar";
 import ConstraintTab from "../components/Constraint/ConstraintTab";
-import CoverageSelectorTab from "../components/CoverageSelector/CoverageSelectorTab";
 import CoverageTab from "../components/Coverage/CoverageTab";
 import RequestTab from "../components/Request/RequestTab";
+import ScheduleOptionsTab from "../components/ScheduleOptions/ScheduleOptionsTab";
 import ScheduleTab from "../components/Schedule/ScheduleTab";
 import ShiftTab from "../components/Shift/ShiftTab";
 import SimpleSnackbar from "../components/SnackBars/SnackBars";
@@ -28,20 +28,10 @@ import { useBulkFetchStore } from "../stores/bulkFetchStore";
 // Types
 import { StatsShiftOptionsT } from "../components/Stats/types";
 import { TemplateT } from "../components/Constraint/types";
-import { ScheduleT } from "../components/Schedule/types";
+// Constants
+import { tabs } from "../utils/constants";
 
 const App = () => {
-  const tabs = [
-    { id: "workers", label: "Workers" },
-    { id: "shifts", label: "Shifts" },
-    { id: "coverages", label: "Coverages" },
-    { id: "constraints", label: "Constraints" },
-    { id: "requests", label: "Requests" },
-    { id: "cov_selector", label: "Coverage selector" },
-    { id: "schedule", label: "Schedule" },
-    { id: "stats", label: "Stats" },
-  ];
-
   const [selectedTabId, setSelectedTabId] = useState<string>(tabs[0].id); // Get selectedTab from AppBar (if using Context)
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -141,10 +131,11 @@ const App = () => {
             requests={requests}
           />
         );
-      case "cov_selector":
+      case "schedule_options":
         return (
-          <CoverageSelectorTab
+          <ScheduleOptionsTab
             team={selectedTeam}
+            schedule={schedule}
             coverageSelectors={coverageSelectors}
             coverages={coverages}
           />

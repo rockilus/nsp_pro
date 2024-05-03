@@ -36,6 +36,8 @@ class ConstraintDB:
         return doc_to_core_constraint(constraint_saved)
 
     def create_constraints(self, constraints: List[Constraint]) -> List[Constraint]:
+        if not constraints:
+            return []
         try:
             c_docs = core_to_doc_constraints(constraints, creating=True)
         except Exception as e:

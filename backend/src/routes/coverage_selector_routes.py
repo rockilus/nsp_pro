@@ -45,9 +45,10 @@ async def create_coverage_selector(
     return response
 
 
-@router.get("/coverage-selectors/teams/{team_id}")
+@router.get("/coverage-selectors/schedules/{schedule_id}/teams/{team_id}")
 async def get_coverage_selectors(
     team_id: str,
+    schedule_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[CoverageSelectorMessage]:
     try:
@@ -57,7 +58,7 @@ async def get_coverage_selectors(
             raise NotAuthorizedError(
                 "You do not have permission to get coverage selectors"
             )
-        coverage_selectors = coverage_selector_db.get_coverage_selectors(team_id)
+        coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule_id)
         response = [core_to_msg_coverage_selector(w) for w in coverage_selectors]
     except Exception as e:
         log_info("Failed to get coverage selectors")

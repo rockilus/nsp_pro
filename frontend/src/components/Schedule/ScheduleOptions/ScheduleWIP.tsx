@@ -19,8 +19,9 @@ import TableRowScheduleWIP from "./TableRowScheduleWIP";
 import { useScheduleStore } from "../../../stores/scheduleStore";
 // Types
 import { ScheduleT } from "../types";
-import { SolveStatusList, SolveStatusColors } from "../../../utils/constants";
 import { TeamT } from "../../../containers/types";
+//Constants
+import { SolveStatusList, SolveStatusColors } from "../../../utils/constants";
 
 dayjs.extend(utc);
 
