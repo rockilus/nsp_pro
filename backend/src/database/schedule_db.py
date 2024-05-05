@@ -6,13 +6,12 @@ from bson import ObjectId
 from core import Schedule
 from database.db import DB
 from errors import (
-    handle_create_core_object_error,
-    handle_create_document_error,
     handle_delete_document_error,
     handle_get_document_error,
     handle_save_document_error,
 )
 from logger import log_info
+from models import ConstraintBuild as ConstraintBuildDocument
 from models import Schedule as ScheduleDocument
 from models import Team as TeamDocument
 
@@ -107,53 +106,63 @@ class ScheduleDB:
 # Mappers
 # core to document
 def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
-    try:
-        # pylint: disable=no-member
-        team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
-    except Exception as e:
-        log_info("Failed to get team by id for schedule")
-        handle_get_document_error(e)
-    try:
-        s_doc = ScheduleDocument(
-            id=dataclass_obj.id,
-            team=team,
-            start_date=datetime(
-                dataclass_obj.start_date.year,
-                dataclass_obj.start_date.month,
-                dataclass_obj.start_date.day,
-            ),
-            end_date=datetime(
-                dataclass_obj.end_date.year,
-                dataclass_obj.end_date.month,
-                dataclass_obj.end_date.day,
-            ),
-            solve_status=dataclass_obj.solve_status,
-            status=dataclass_obj.status,
-            missing_coverage_dates=dataclass_obj.missing_coverage_dates,
-        )
-    except Exception as e:
-        log_info("Failed to convert Schedule to ScheduleDocument")
-        handle_create_document_error(e)
+    # pylint: disable=no-member
+    team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
+    # pylint: disable=no-member
+    constraint_builds = ConstraintBuildDocument.objects.filter(  # type: ignore
+        id__in=dataclass_obj.constraint_build_ids
+    )
+    s_doc = ScheduleDocument(
+        id=dataclass_obj.id,
+        team=team,
+        start_date=datetime(
+            dataclass_obj.start_date.year,
+            dataclass_obj.start_date.month,
+            dataclass_obj.start_date.day,
+        ),
+        end_date=datetime(
+            dataclass_obj.end_date.year,
+            dataclass_obj.end_date.month,
+            dataclass_obj.end_date.day,
+        ),
+        solve_status=dataclass_obj.solve_status,
+        status=dataclass_obj.status,
+        missing_coverage_dates=dataclass_obj.missing_coverage_dates,
+        constraint_builds=constraint_builds,
+    )
     return s_doc
 
 
 # document to core
 def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
-    try:
-        schedule = Schedule(
-            id=doc_obj.id,
-            team_id=doc_obj.team.id,
-            start_date=doc_obj.start_date.date(),
-            end_date=doc_obj.end_date.date(),
-            solve_status=doc_obj.solve_status,
-            status=doc_obj.status,
-            missing_coverage_dates=[
-                d.date()
-                for d in doc_obj.missing_coverage_dates
-                if isinstance(d, datetime)
-            ],
-        )
-    except Exception as e:
-        log_info("Failed to convert ScheduleDocument to Schedule")
-        handle_create_core_object_error(e)
-    return schedule
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["id"] = doc_dict["_id"]
+    doc_dict["team_id"] = doc_dict["team"]
+    doc_dict["start_date"] = doc_dict["start_date"].date()
+    doc_dict["end_date"] = doc_dict["end_date"].date()
+    doc_dict["missing_coverage_dates"] = [
+        d.date() for d in doc_dict["missing_coverage_dates"]
+    ]
+    doc_dict["constraint_build_ids"] = doc_dict["constraint_builds"]
+    doc_dict.pop("_id")
+    doc_dict.pop("team")
+    doc_dict.pop("constraint_builds")
+    return Schedule(**doc_dict)
+    # try:
+    #     schedule = Schedule(
+    #         id=doc_obj.id,
+    #         team_id=doc_obj.team.id,
+    #         start_date=doc_obj.start_date.date(),
+    #         end_date=doc_obj.end_date.date(),
+    #         solve_status=doc_obj.solve_status,
+    #         status=doc_obj.status,
+    #         missing_coverage_dates=[
+    #             d.date()
+    #             for d in doc_obj.missing_coverage_dates
+    #             if isinstance(d, datetime)
+    #         ],
+    #     )
+    # except Exception as e:
+    #     log_info("Failed to convert ScheduleDocument to Schedule")
+    #     handle_create_core_object_error(e)
+    # return schedule

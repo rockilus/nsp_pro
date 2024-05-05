@@ -14,3 +14,4 @@ class Schedule(Document):
     )  # Not solved, Solved, Hard breached, Soft breached, No solution
     status = StringField(required=True)  # WIP, valid, past
     missing_coverage_dates = ListField(DateTimeField())
+    constraint_builds = ListField(ReferenceField("ConstraintBuild"))

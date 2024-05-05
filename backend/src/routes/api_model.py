@@ -182,6 +182,7 @@ class ScheduleMessage(BaseModel):
     solveStatus: str
     status: str
     missingCoverageDates: List[date]
+    constraintBuildIds: List[str]
 
 
 class SolutionMessage(BaseModel):

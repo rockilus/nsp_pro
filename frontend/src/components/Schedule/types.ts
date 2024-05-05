@@ -36,6 +36,7 @@ export type ScheduleT = {
   solveStatus: string;
   status: string;
   missingCoverageDates: dayjs.Dayjs[];
+  constraintBuildIds: string[];
 };
 
 // Solution

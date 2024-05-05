@@ -45,7 +45,9 @@ def solve_schedule(
     shifts = shift_db.get_shifts(schedule.team_id)
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
-    cstr_builds = constraint_build_db.get_constraint_builds_active(schedule.team_id)
+    cstr_builds = constraint_build_db.get_active_constraint_build_by_ids(
+        schedule.constraint_build_ids
+    )
     coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule.id)
     shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
         coverage_selectors

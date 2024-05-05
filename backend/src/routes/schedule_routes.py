@@ -231,11 +231,11 @@ def core_to_msg_validate(
 # message to core
 def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake = {
-        k: v
-        for k, v in data_snake.items()
-        if k not in ["assignments", "objective_breaches"]
-    }
+    # data_snake = {
+    #     k: v
+    #     for k, v in data_snake.items()
+    #     if k not in ["assignments", "objective_breaches"]
+    # }
     try:
         schedule = Schedule(**data_snake)
     except Exception as e:

@@ -26,5 +26,6 @@ def get_schedule_wip(schedules: List[Schedule], team_id: str) -> Schedule:
             solve_status="Not solved",
             status="wip",
             missing_coverage_dates=[],
+            constraint_build_ids=[],
         )
     )
