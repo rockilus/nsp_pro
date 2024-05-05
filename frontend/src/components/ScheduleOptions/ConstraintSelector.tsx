@@ -12,6 +12,8 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
+// Components
+import TableAddButton from "../SharedComponents/TableAddButton";
 // Stores
 import { useScheduleStore } from "../../stores/scheduleStore";
 // Types
@@ -39,6 +41,22 @@ export default function ConstraintSelector({ schedule, constraints }: Props) {
       constraintBuildIds: schedule.constraintBuildIds.includes(constraintId)
         ? schedule.constraintBuildIds.filter((id) => id !== constraintId)
         : [...schedule.constraintBuildIds, constraintId],
+    };
+    updateSchedule(updatedSchedule);
+  };
+
+  const handleAddAllConstraints = () => {
+    const updatedSchedule = {
+      ...schedule,
+      constraintBuildIds: constraints.map((c) => c.id),
+    };
+    updateSchedule(updatedSchedule);
+  };
+
+  const handleRemoveAllConstraints = () => {
+    const updatedSchedule = {
+      ...schedule,
+      constraintBuildIds: [],
     };
     updateSchedule(updatedSchedule);
   };
@@ -77,6 +95,22 @@ export default function ConstraintSelector({ schedule, constraints }: Props) {
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
                       Constraints
                     </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      minHeight: 45,
+                    }}
+                  >
+                    <TableAddButton
+                      text="Select all"
+                      handleClick={handleAddAllConstraints}
+                    />
+                    <TableAddButton
+                      text="Select none"
+                      handleClick={handleRemoveAllConstraints}
+                    />
                   </Box>
                 </Box>
               </TableCell>

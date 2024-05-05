@@ -6,16 +6,14 @@ from bson import ObjectId
 from core import Schedule
 from database.db import DB
 from errors import (
-    handle_create_core_object_error,
-    handle_create_document_error,
     handle_delete_document_error,
     handle_get_document_error,
     handle_save_document_error,
 )
 from logger import log_info
+from models import ConstraintBuild as ConstraintBuildDocument
 from models import Schedule as ScheduleDocument
 from models import Team as TeamDocument
-from models import ConstraintBuild as ConstraintBuildDocument
 
 
 class ScheduleDB:

@@ -65,6 +65,19 @@ class ConstraintBuildDB:
             handle_get_document_error(e)
         return doc_to_core_constraint_build(cb_doc)
 
+    def get_active_constraint_build_by_ids(
+        self, constraint_build_ids: List[str]
+    ) -> List[ConstraintBuild]:
+        try:
+            # pylint: disable=no-member
+            cb_docs = ConstraintBuildDocument.objects(  # type: ignore
+                id__in=constraint_build_ids, active=True
+            )
+        except Exception as e:
+            log_info('Failed to get active constraint build by ids from database')
+            handle_get_document_error(e)
+        return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
+
     def get_constraint_builds_by_worker_id(
         self, worker_id: str
     ) -> List[ConstraintBuild]:

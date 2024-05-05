@@ -1,10 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import (
-    DateTimeField,
-    ListField,
-    ReferenceField,
-    StringField,
-)
+from mongoengine.fields import DateTimeField, ListField, ReferenceField, StringField
 
 
 class Schedule(Document):

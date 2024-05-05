@@ -19,19 +19,6 @@ export const emptyShift: ShiftT = {
   shiftProperties: [],
 };
 
-export const emptySchedule: ScheduleT = {
-  id: "",
-  teamId: "",
-  startDate: dayjs.utc().startOf("day"),
-  endDate: dayjs.utc().startOf("day"),
-  solveStatus: "Not solved",
-  status: "WIP",
-  missingCoverageDates: [],
-  // assignments: [],
-  // objectiveBreaches: [],
-  // stats: [],
-};
-
 export const emptyRequest: RequestT = {
   id: "",
   workerId: "",
