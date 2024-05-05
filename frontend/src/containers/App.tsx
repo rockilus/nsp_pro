@@ -138,6 +138,7 @@ const App = () => {
             schedule={schedule}
             coverageSelectors={coverageSelectors}
             coverages={coverages}
+            constraints={constraints}
           />
         );
       case "schedule":

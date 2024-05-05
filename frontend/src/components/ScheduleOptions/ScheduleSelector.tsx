@@ -42,6 +42,7 @@ export default function ScheduleSelector({ team, schedule }: Props) {
         width: "100%",
         border: "1px solid grey",
         borderRadius: 2,
+        margin: 2,
       }}
     >
       <Box

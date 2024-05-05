@@ -117,6 +117,7 @@ export default function CoverageSelector({
       sx={{
         border: "1px solid grey",
         margin: 2,
+        marginTop: 0,
         overflowX: "auto",
         borderRadius: 2,
         backgroundColor: "none",
@@ -143,7 +144,7 @@ export default function CoverageSelector({
                     }}
                   >
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      Coverage selectors
+                      Coverage
                     </Typography>
                   </Box>
                 </Box>
