@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Assignment, ObjectiveBreach, Schedule
+from core import Assignment, ObjectiveBreach, QuickStaffing, Schedule
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -19,6 +19,7 @@ from logger import log_info
 from routes.api_model import (
     AssignmentMessage,
     ObjectiveBreachMessage,
+    QuickStaffingMessage,
     ScheduleMessage,
     SolutionMessage,
     ValidateMessage,
@@ -172,12 +173,31 @@ async def delete_schedule(
 
 # Mappers
 # core to message
+def core_to_msg_quick_staffing(qs: QuickStaffing) -> QuickStaffingMessage:
+    try:
+        data = asdict(qs)
+    except Exception as e:
+        log_info("Failed to convert QuickStaffing to dictionary")
+        raise MessageTypeError(str(e)) from e
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(QuickStaffingMessage)
+    try:
+        qs_msg = validator.validate_python(as_dict)
+    except Exception as e:
+        log_info("Failed to convert QuickStaffing to QuickStaffingMessage")
+        handle_message_errors(e)
+    return qs_msg
+
+
 def core_to_msg_schedule(schedule: Schedule) -> ScheduleMessage:
     try:
         data = asdict(schedule)
     except Exception as e:
         log_info("Failed to convert Schedule to dictionary")
         raise MessageTypeError(str(e)) from e
+    data["quick_staffings"] = [
+        core_to_msg_quick_staffing(qs) for qs in schedule.quick_staffings
+    ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ScheduleMessage)
     try:
@@ -229,13 +249,21 @@ def core_to_msg_validate(
 
 
 # message to core
+def msg_to_core_quick_staffing(msg: QuickStaffingMessage) -> QuickStaffing:
+    data_snake = humps.decamelize(msg.model_dump())
+    try:
+        quick_staffing = QuickStaffing(**data_snake)
+    except Exception as e:
+        log_info("Failed to convert QuickStaffingMessage to QuickStaffing")
+        handle_create_core_object_error(e)
+    return quick_staffing
+
+
 def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake = humps.decamelize(msg.model_dump())
-    # data_snake = {
-    #     k: v
-    #     for k, v in data_snake.items()
-    #     if k not in ["assignments", "objective_breaches"]
-    # }
+    data_snake["quick_staffings"] = [
+        msg_to_core_quick_staffing(qs) for qs in msg.quickStaffings
+    ]
     try:
         schedule = Schedule(**data_snake)
     except Exception as e:

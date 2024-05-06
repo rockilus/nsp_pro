@@ -28,6 +28,12 @@ export type ObjectiveBreachT = {
 };
 
 // Schedule
+export type QuickStaffingT = {
+  workerId: string;
+  shiftId: string;
+  target: number;
+};
+
 export type ScheduleT = {
   id: string;
   teamId: string;
@@ -37,6 +43,7 @@ export type ScheduleT = {
   status: string;
   missingCoverageDates: dayjs.Dayjs[];
   constraintBuildIds: string[];
+  quickStaffings: QuickStaffingT[];
 };
 
 // Solution

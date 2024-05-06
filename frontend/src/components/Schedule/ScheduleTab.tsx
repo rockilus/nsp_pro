@@ -7,6 +7,7 @@ import ScheduleDisplay from "./Table/ScheduleDisplay";
 import ObjectiveBreachList from "./Breaches/ObjectiveBreachList";
 import ScheduleOptions from "./ScheduleOptions/ScheduleOptions";
 import ScheduleDisplayOptions from "./DisplayOptions/ScheduleDisplayOptions";
+import QuickStaffingTable from "./QuickStaffing";
 // Types
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
@@ -53,6 +54,22 @@ export default function ScheduleTab({
           setSelectedDisplay={setSelectedDisplay}
           switchDisplayCBs={() => setShowBreaches(!showBreaches)}
         />
+        <ObjectiveBreachList
+          objectiveBreaches={objectiveBreaches} // schedule.objectiveBreaches
+          CBsDisplayed={CBsDisplayed}
+          workers={workers}
+          shifts={shifts}
+          addCBsDisplayed={addCBsDisplayed}
+          removeCBsDisplayed={removeCBsDisplayed}
+        />
+        {schedule && (
+          <QuickStaffingTable
+            shifts={shifts}
+            workers={workers}
+            assignments={assignments}
+            schedule={schedule as ScheduleT}
+          />
+        )}
       </Box>
       {assignments.length === 0 || !schedule ? (
         <Box
@@ -85,14 +102,6 @@ export default function ScheduleTab({
           CBsDisplayed={CBsDisplayed}
         />
       )}
-      <ObjectiveBreachList
-        objectiveBreaches={objectiveBreaches} // schedule.objectiveBreaches
-        CBsDisplayed={CBsDisplayed}
-        workers={workers}
-        shifts={shifts}
-        addCBsDisplayed={addCBsDisplayed}
-        removeCBsDisplayed={removeCBsDisplayed}
-      />
     </Box>
   );
 }

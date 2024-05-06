@@ -1,19 +1,28 @@
 from datetime import date
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from constraint_parser import parse_constraint
-from core import Constraint, ConstraintBuild, Shift, VarDay, VarShift, VarWorker, Worker
+from core import (
+    Constraint,
+    ConstraintBuild,
+    Schedule,
+    Shift,
+    VarDay,
+    VarShift,
+    VarWorker,
+    Worker,
+)
 
 
 # pylint: disable=too-many-arguments
 def build_constraints(
+    schedule: Schedule,
     workers: List[Worker],
     shifts: List[Shift],
     worker_dim_dict: Dict,
     shift_dim_dict: Dict,
-    schedule_id: str,
     cstr_builds: List[ConstraintBuild],
-) -> List[Constraint]:
+) -> Tuple[List[Constraint], List[Constraint]]:
     user_constraints = [
         # pylint: disable=R0801
         parse_constraint(
@@ -22,11 +31,12 @@ def build_constraints(
             shifts,
             worker_dim_dict,
             shift_dim_dict,
-            schedule_id,
+            schedule.id,
         )
         for cstr_build in cstr_builds
     ]
-    return user_constraints
+    quick_staffing_constraints = build_quick_staffing_constraints(schedule)
+    return user_constraints, quick_staffing_constraints
 
 
 def build_default_constraints(
@@ -72,3 +82,39 @@ def build_default_fairness_constraints(
             )
         )
     return out
+
+
+def build_quick_staffing_constraints(schedule: Schedule) -> List[Constraint]:
+    return [
+        Constraint(
+            id="",
+            constraint_type="sum",
+            operator="equal",
+            target_value=qs.target,
+            target_unit="shift",
+            worker_var=VarWorker(
+                selector="equal",
+                target_ids=[qs.worker_id],
+                num_eligible_workers=0,
+            ),
+            day_var=VarDay(
+                selector="period",
+                target=0,
+                start_date=schedule.start_date,
+                end_date=schedule.end_date,
+                interval=0,
+            ),
+            shift_var=VarShift(
+                selector="equal",
+                target_ids=[qs.shift_id],
+                reference_ids=[],
+                relative_ids=[],
+            ),
+            active=True,
+            hard=False,
+            priority="high",
+            schedule_id=schedule.id,
+            constraint_build_id="",
+        )
+        for qs in schedule.quick_staffings
+    ]
