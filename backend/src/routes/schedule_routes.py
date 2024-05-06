@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Assignment, ObjectiveBreach, Schedule, QuickStaffing
+from core import Assignment, ObjectiveBreach, QuickStaffing, Schedule
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -13,19 +13,16 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
     AssignmentMessage,
     ObjectiveBreachMessage,
+    QuickStaffingMessage,
     ScheduleMessage,
     SolutionMessage,
     ValidateMessage,
-    QuickStaffingMessage,
 )
 from routes.assignment_routes import core_to_msg_assignment
 from routes.objective_breach_routes import core_to_msg_objective_breach
@@ -36,9 +33,7 @@ from scripts.setup_database import (
     schedule_db,
 )
 from services.schedule_services import solve_schedule as solve_schedule_service
-from services.schedule_services import (
-    validate_schedule as validate_schedule_service,
-)
+from services.schedule_services import validate_schedule as validate_schedule_service
 from services.schedule_services.get_schedule_wip import get_schedule_wip
 
 router = APIRouter()
@@ -79,21 +74,15 @@ async def solve_schedule(
                 "You do not have permission to solve a schedule",
             )
         schedule = schedule_db.get_schedule_by_id(schedule_id)
-        schedule, assignments, objective_breaches = solve_schedule_service(
-            schedule
-        )
-        response = core_to_msg_solution(
-            schedule, assignments, objective_breaches
-        )
+        schedule, assignments, objective_breaches = solve_schedule_service(schedule)
+        response = core_to_msg_solution(schedule, assignments, objective_breaches)
     except Exception as e:
         log_info("Failed to solve schedule")
         handle_routes_errors(e)
     return response
 
 
-@router.post(
-    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
-)
+@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -173,9 +162,7 @@ async def delete_schedule(
                 "You do not have permission to delete a schedule",
             )
         assignment_db.delete_assignments_by_schedule_id(schedule_id)
-        objective_breach_db.delete_objective_breaches_by_schedule_id(
-            schedule_id
-        )
+        objective_breach_db.delete_objective_breaches_by_schedule_id(schedule_id)
         constraint_db.delete_constraints_by_schedule_id(schedule_id)
         schedule_db.delete_schedule(schedule_id)
     except Exception as e:
@@ -228,9 +215,7 @@ def core_to_msg_solution(
 ) -> SolutionMessage:
     data: Dict[
         str,
-        ScheduleMessage
-        | List[AssignmentMessage]
-        | List[ObjectiveBreachMessage],
+        ScheduleMessage | List[AssignmentMessage] | List[ObjectiveBreachMessage],
     ] = {}
     data["schedule"] = core_to_msg_schedule(schedule)
     data["assignments"] = [core_to_msg_assignment(a) for a in assignments]

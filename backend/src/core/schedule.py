@@ -45,9 +45,7 @@ class Schedule:
     team_id: str
     start_date: date
     end_date: date
-    solve_status: (
-        str  # Not solved, Solved, Hard breached, Soft breached, No solution
-    )
+    solve_status: (str)  # Not solved, Solved, Hard breached, Soft breached, No solution
     status: str  # WIP, valid, past
     missing_coverage_dates: List[date]
     constraint_build_ids: List[str]

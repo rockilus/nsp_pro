@@ -63,11 +63,11 @@ def solve_schedule(
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
     constraints = setup_constraints(
+        schedule,
         workers,
         shifts,
         worker_dim_dict,
         shift_dim_dict,
-        schedule.id,
         cstr_builds,
     )
     shift_demand_dates = build_shift_demand_dates(
@@ -166,20 +166,21 @@ def save_objective_breaches(
 
 # pylint: disable=too-many-arguments
 def setup_constraints(
+    schedule: Schedule,
     workers: List[Worker],
     shifts: List[Shift],
     worker_dim_dict: Dict,
     shift_dim_dict: Dict,
-    schedule_id: str,
     cstr_builds: List[ConstraintBuild],
 ) -> List[Constraint]:
-    constraint_db.delete_constraints_by_schedule_id(schedule_id)
-    constraints = build_constraints(
+    constraint_db.delete_constraints_by_schedule_id(schedule.id)
+    constraints_user, constraints_qs = build_constraints(
+        schedule,
         workers,
         shifts,
         worker_dim_dict,
         shift_dim_dict,
-        schedule_id,
         cstr_builds,
     )
-    return constraint_db.create_constraints(constraints)
+    constraints_user_saved = constraint_db.create_constraints(constraints_user)
+    return constraints_user_saved + constraints_qs

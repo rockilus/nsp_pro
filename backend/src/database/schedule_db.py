@@ -2,6 +2,7 @@ from datetime import date, datetime
 from typing import List
 
 from bson import ObjectId
+
 from core import QuickStaffing, Schedule
 from database.db import DB
 from errors import (
@@ -114,9 +115,7 @@ def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
     constraint_builds = ConstraintBuildDocument.objects.filter(  # type: ignore
         id__in=dataclass_obj.constraint_build_ids
     )
-    worker_ids = list(
-        set(qs.worker_id for qs in dataclass_obj.quick_staffings)
-    )
+    worker_ids = list(set(qs.worker_id for qs in dataclass_obj.quick_staffings))
     workers = {
         worker.id: worker
         for worker in WorkerDocument.objects.filter(id__in=worker_ids)  # type: ignore
