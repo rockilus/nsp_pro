@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Assignment, ObjectiveBreach, Schedule
+from core import Assignment, ObjectiveBreach, Schedule, QuickStaffing
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -13,7 +13,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
@@ -22,6 +25,7 @@ from routes.api_model import (
     ScheduleMessage,
     SolutionMessage,
     ValidateMessage,
+    QuickStaffingMessage,
 )
 from routes.assignment_routes import core_to_msg_assignment
 from routes.objective_breach_routes import core_to_msg_objective_breach
@@ -32,7 +36,9 @@ from scripts.setup_database import (
     schedule_db,
 )
 from services.schedule_services import solve_schedule as solve_schedule_service
-from services.schedule_services import validate_schedule as validate_schedule_service
+from services.schedule_services import (
+    validate_schedule as validate_schedule_service,
+)
 from services.schedule_services.get_schedule_wip import get_schedule_wip
 
 router = APIRouter()
@@ -73,15 +79,21 @@ async def solve_schedule(
                 "You do not have permission to solve a schedule",
             )
         schedule = schedule_db.get_schedule_by_id(schedule_id)
-        schedule, assignments, objective_breaches = solve_schedule_service(schedule)
-        response = core_to_msg_solution(schedule, assignments, objective_breaches)
+        schedule, assignments, objective_breaches = solve_schedule_service(
+            schedule
+        )
+        response = core_to_msg_solution(
+            schedule, assignments, objective_breaches
+        )
     except Exception as e:
         log_info("Failed to solve schedule")
         handle_routes_errors(e)
     return response
 
 
-@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
+@router.post(
+    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
+)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -161,7 +173,9 @@ async def delete_schedule(
                 "You do not have permission to delete a schedule",
             )
         assignment_db.delete_assignments_by_schedule_id(schedule_id)
-        objective_breach_db.delete_objective_breaches_by_schedule_id(schedule_id)
+        objective_breach_db.delete_objective_breaches_by_schedule_id(
+            schedule_id
+        )
         constraint_db.delete_constraints_by_schedule_id(schedule_id)
         schedule_db.delete_schedule(schedule_id)
     except Exception as e:
@@ -172,12 +186,31 @@ async def delete_schedule(
 
 # Mappers
 # core to message
+def core_to_msg_quick_staffing(qs: QuickStaffing) -> QuickStaffingMessage:
+    try:
+        data = asdict(qs)
+    except Exception as e:
+        log_info("Failed to convert QuickStaffing to dictionary")
+        raise MessageTypeError(str(e)) from e
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(QuickStaffingMessage)
+    try:
+        qs_msg = validator.validate_python(as_dict)
+    except Exception as e:
+        log_info("Failed to convert QuickStaffing to QuickStaffingMessage")
+        handle_message_errors(e)
+    return qs_msg
+
+
 def core_to_msg_schedule(schedule: Schedule) -> ScheduleMessage:
     try:
         data = asdict(schedule)
     except Exception as e:
         log_info("Failed to convert Schedule to dictionary")
         raise MessageTypeError(str(e)) from e
+    data["quick_staffings"] = [
+        core_to_msg_quick_staffing(qs) for qs in schedule.quick_staffings
+    ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ScheduleMessage)
     try:
@@ -195,7 +228,9 @@ def core_to_msg_solution(
 ) -> SolutionMessage:
     data: Dict[
         str,
-        ScheduleMessage | List[AssignmentMessage] | List[ObjectiveBreachMessage],
+        ScheduleMessage
+        | List[AssignmentMessage]
+        | List[ObjectiveBreachMessage],
     ] = {}
     data["schedule"] = core_to_msg_schedule(schedule)
     data["assignments"] = [core_to_msg_assignment(a) for a in assignments]
@@ -229,13 +264,21 @@ def core_to_msg_validate(
 
 
 # message to core
+def msg_to_core_quick_staffing(msg: QuickStaffingMessage) -> QuickStaffing:
+    data_snake = humps.decamelize(msg.model_dump())
+    try:
+        quick_staffing = QuickStaffing(**data_snake)
+    except Exception as e:
+        log_info("Failed to convert QuickStaffingMessage to QuickStaffing")
+        handle_create_core_object_error(e)
+    return quick_staffing
+
+
 def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake = humps.decamelize(msg.model_dump())
-    # data_snake = {
-    #     k: v
-    #     for k, v in data_snake.items()
-    #     if k not in ["assignments", "objective_breaches"]
-    # }
+    data_snake["quick_staffings"] = [
+        msg_to_core_quick_staffing(qs) for qs in msg.quickStaffings
+    ]
     try:
         schedule = Schedule(**data_snake)
     except Exception as e:

@@ -33,7 +33,6 @@ interface Props {
 export default function ScheduleWIP({ team, schedule }: Props) {
   const [isSolving, setIsSolving] = useState(false);
   const solveSchedule = useScheduleStore((state) => state.solveSchedule);
-  const updateSchedule = useScheduleStore((state) => state.updateSchedule);
 
   const handleSolve = async () => {
     setIsSolving(true);
@@ -48,49 +47,11 @@ export default function ScheduleWIP({ team, schedule }: Props) {
           <TableBody>
             <TableRowScheduleWIP
               name="Start"
-              content={
-                <DatePicker
-                  value={schedule.startDate}
-                  onChange={(newValue) => {
-                    if (!newValue) return;
-                    updateSchedule({
-                      ...schedule,
-                      startDate: dayjs.utc(newValue),
-                    });
-                  }}
-                  sx={{
-                    width: "160px",
-                    "& .MuiOutlinedInput-input": {
-                      fontSize: "0.875rem",
-                      height: "40px",
-                      paddingY: 0,
-                    },
-                  }}
-                />
-              }
+              content={schedule.startDate.format("D MMM YYYY")}
             />
             <TableRowScheduleWIP
               name="End"
-              content={
-                <DatePicker
-                  value={schedule.endDate}
-                  onChange={(newValue) => {
-                    if (!newValue) return;
-                    updateSchedule({
-                      ...schedule,
-                      endDate: dayjs.utc(newValue),
-                    });
-                  }}
-                  sx={{
-                    width: "160px",
-                    "& .MuiOutlinedInput-input": {
-                      fontSize: "0.875rem",
-                      height: "40px",
-                      paddingY: 0,
-                    },
-                  }}
-                />
-              }
+              content={schedule.endDate.format("D MMM YYYY")}
             />
             <TableRowScheduleWIP
               name="Status"

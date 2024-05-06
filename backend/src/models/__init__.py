@@ -5,7 +5,7 @@ from models.coverage import Coverage
 from models.coverage_selector import CoverageSelector
 from models.objective_breach import ObjectiveBreach
 from models.request import Request
-from models.schedule import Schedule
+from models.schedule import QuickStaffing, Schedule
 from models.shift import Shift
 from models.shift_demand import ShiftDemand
 from models.shift_dimension import ShiftDimension
@@ -30,6 +30,7 @@ __all__ = [
     "CoverageSelector",
     "ObjectiveBreach",
     "Request",
+    "QuickStaffing",
     "Schedule",
     "Shift",
     "ShiftDemand",

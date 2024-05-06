@@ -33,15 +33,25 @@ class ObjectiveBreach:
 
 
 @dataclass
+class QuickStaffing:
+    worker_id: str
+    shift_id: str
+    target: int
+
+
+@dataclass
 class Schedule:
     id: str
     team_id: str
     start_date: date
     end_date: date
-    solve_status: (str)  # Not solved, Solved, Hard breached, Soft breached, No solution
+    solve_status: (
+        str  # Not solved, Solved, Hard breached, Soft breached, No solution
+    )
     status: str  # WIP, valid, past
     missing_coverage_dates: List[date]
     constraint_build_ids: List[str]
+    quick_staffings: List[QuickStaffing]
 
 
 # @dataclass

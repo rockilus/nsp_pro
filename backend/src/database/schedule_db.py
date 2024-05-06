@@ -2,8 +2,7 @@ from datetime import date, datetime
 from typing import List
 
 from bson import ObjectId
-
-from core import Schedule
+from core import QuickStaffing, Schedule
 from database.db import DB
 from errors import (
     handle_delete_document_error,
@@ -12,8 +11,11 @@ from errors import (
 )
 from logger import log_info
 from models import ConstraintBuild as ConstraintBuildDocument
+from models import QuickStaffing as QuickStaffingDocument
 from models import Schedule as ScheduleDocument
+from models import Shift as ShiftDocument
 from models import Team as TeamDocument
+from models import Worker as WorkerDocument
 
 
 class ScheduleDB:
@@ -112,6 +114,19 @@ def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
     constraint_builds = ConstraintBuildDocument.objects.filter(  # type: ignore
         id__in=dataclass_obj.constraint_build_ids
     )
+    worker_ids = list(
+        set(qs.worker_id for qs in dataclass_obj.quick_staffings)
+    )
+    workers = {
+        worker.id: worker
+        for worker in WorkerDocument.objects.filter(id__in=worker_ids)  # type: ignore
+    }
+    shift_ids = list(set(qs.shift_id for qs in dataclass_obj.quick_staffings))
+    shifts = {
+        shift.id: shift
+        for shift in ShiftDocument.objects.filter(id__in=shift_ids)  # type: ignore
+    }
+
     s_doc = ScheduleDocument(
         id=dataclass_obj.id,
         team=team,
@@ -129,11 +144,30 @@ def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
         status=dataclass_obj.status,
         missing_coverage_dates=dataclass_obj.missing_coverage_dates,
         constraint_builds=constraint_builds,
+        quick_staffings=[
+            QuickStaffingDocument(
+                worker=workers.get(qs.worker_id),
+                shift=shifts.get(qs.shift_id),
+                target=qs.target,
+            )
+            for qs in dataclass_obj.quick_staffings
+        ],
     )
     return s_doc
 
 
 # document to core
+def doc_to_core_quick_staffing(
+    doc_obj: QuickStaffingDocument,
+) -> QuickStaffing:
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["worker_id"] = doc_dict["worker"]
+    doc_dict["shift_id"] = doc_dict["shift"]
+    doc_dict.pop("worker")
+    doc_dict.pop("shift")
+    return QuickStaffing(**doc_dict)
+
+
 def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
@@ -144,6 +178,9 @@ def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
         d.date() for d in doc_dict["missing_coverage_dates"]
     ]
     doc_dict["constraint_build_ids"] = doc_dict["constraint_builds"]
+    doc_dict["quick_staffings"] = [
+        doc_to_core_quick_staffing(qs) for qs in doc_obj.quick_staffings
+    ]
     doc_dict.pop("_id")
     doc_dict.pop("team")
     doc_dict.pop("constraint_builds")

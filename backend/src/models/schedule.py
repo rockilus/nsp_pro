@@ -1,5 +1,18 @@
-from mongoengine import Document
-from mongoengine.fields import DateTimeField, ListField, ReferenceField, StringField
+from mongoengine import Document, EmbeddedDocument
+from mongoengine.fields import (
+    DateTimeField,
+    EmbeddedDocumentField,
+    IntField,
+    ListField,
+    ReferenceField,
+    StringField,
+)
+
+
+class QuickStaffing(EmbeddedDocument):
+    worker = ReferenceField("Worker", required=True)
+    shift = ReferenceField("Shift", required=True)
+    target = IntField(required=True)
 
 
 class Schedule(Document):
@@ -15,3 +28,4 @@ class Schedule(Document):
     status = StringField(required=True)  # WIP, valid, past
     missing_coverage_dates = ListField(DateTimeField())
     constraint_builds = ListField(ReferenceField("ConstraintBuild"))
+    quick_staffings = ListField(EmbeddedDocumentField(QuickStaffing))

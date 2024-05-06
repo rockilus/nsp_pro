@@ -174,6 +174,12 @@ class ObjectiveBreachMessage(BaseModel):
     scheduleId: str
 
 
+class QuickStaffingMessage(BaseModel):
+    workerId: str
+    shiftId: str
+    target: int
+
+
 class ScheduleMessage(BaseModel):
     id: str
     teamId: str
@@ -183,6 +189,7 @@ class ScheduleMessage(BaseModel):
     status: str
     missingCoverageDates: List[date]
     constraintBuildIds: List[str]
+    quickStaffings: List[QuickStaffingMessage]
 
 
 class SolutionMessage(BaseModel):
