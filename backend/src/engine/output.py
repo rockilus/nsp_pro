@@ -65,6 +65,8 @@ class Output:
 
         for i, var in enumerate(self.model.obj.int_vars):
             if self.model.solver.Value(var) > 0:
+                if var.Name() == "":
+                    continue
                 var_name = VarName(**json.loads(var.Name()))
                 variables = [
                     (v[0], date.fromisoformat(v[1]), v[2])

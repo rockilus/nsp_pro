@@ -113,6 +113,7 @@ export default function QuickStaffingTable({
     <Box
       sx={{
         border: "1px solid grey",
+        width: "400px",
         overflowX: "auto",
         borderRadius: 2,
         backgroundColor: "none",
