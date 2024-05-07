@@ -121,6 +121,17 @@ class Model:
         self.bt.constraints_start = time.time()
         self.no_interval_overlap()
         self.add_at_least_one_shift_per_day_constraint()
+        if not inputs.sol_hint:
+            solving_dates = [
+                d
+                for d in self.days
+                if d not in [fvd for _, fvd, _ in inputs.fixed_values]
+            ]
+            cov_shifts = list(
+                set(sd.shift_id for sd in inputs.coverage.coverage if sd.staffing > 0)
+            )
+            self.spread_through_time(solving_dates, cov_shifts)
+            self.spread_across_workers(solving_dates, cov_shifts)
         self.add_coverage.add_coverage(inputs.coverage.coverage)
         self.add_custom_constraints(inputs.constraints, inputs.coverage.coverage)
         self.add_far.add_requests(inputs.requests)
@@ -186,6 +197,168 @@ class Model:
             self.model.AddNoOverlap(
                 [self.intervals[w, d, s] for d in self.days for s in self.shifts]
             )
+
+    def spread_through_time(
+        self, solving_dates: List[str], cov_shifts: List[str]
+    ) -> None:
+        interval = 7
+        for w in self.workers:
+            for s in cov_shifts:
+                weekly_staffings = []
+                # per week, with final week potentially shorter
+                # for start_d in range(0, len(solving_dates), interval):
+                #     weekly_staffing = self.model.NewIntVar(
+                #         0, 100, f"{solving_dates[start_d]}"
+                #     )
+                #     weekly_staffing_vars = [
+                #         self.variables[w, solving_dates[d], s]  # type: ignore
+                #         for d in range(
+                #             start_d,
+                #             min(start_d + interval, len(solving_dates)),
+                #         )
+                #     ]
+                #     self.model.Add(
+                #         weekly_staffing == sum(weekly_staffing_vars)
+                #     )
+                #     weekly_staffings.append(weekly_staffing)
+                # per entire weeks only
+                # for start_d in range(0, len(solving_dates), interval):
+                #     if start_d + interval > len(solving_dates):
+                #         break
+                #     weekly_staffing = self.model.NewIntVar(
+                #         0, 100, f"{solving_dates[start_d]}"
+                #     )
+                #     weekly_staffing_vars = [
+                #         self.variables[w, solving_dates[d], s]  # type: ignore
+                #         for d in range(
+                #             start_d,
+                #             min(start_d + interval, len(solving_dates)),
+                #         )
+                #     ]
+                #     self.model.Add(
+                #         weekly_staffing == sum(weekly_staffing_vars)
+                #     )
+                #     weekly_staffings.append(weekly_staffing)
+                # per rolling weeks
+                for start_d in range(len(solving_dates) - interval):
+                    weekly_staffing = self.model.NewIntVar(
+                        0, 100, f"{solving_dates[start_d]}"
+                    )
+                    weekly_staffing_vars = [
+                        self.variables[w, solving_dates[start_d + d], s]
+                        for d in range(interval)
+                    ]
+                    self.model.Add(weekly_staffing == sum(weekly_staffing_vars))
+                    weekly_staffings.append(weekly_staffing)
+
+                min_weekly_staffing = self.model.NewIntVar(0, 100, "")
+                self.model.AddMinEquality(min_weekly_staffing, weekly_staffings)
+                for ws in weekly_staffings:
+                    # var_name = build_var_name(
+                    #     Constraint(
+                    #         id=f"spread_{w}_{ws.Name()}_{s}",
+                    #         constraint_type="sum",
+                    #         operator="equal",
+                    #         target_value=0,
+                    #         target_unit="shift",
+                    #         worker_var=VarWorker(
+                    #             selector="equal",
+                    #             target=[],
+                    #             num_eligible_workers=0,
+                    #         ),
+                    #         day_var=VarDay(
+                    #             selector="all",
+                    #             target=0,
+                    #             start_date=date.today(),
+                    #             end_date=date.today(),
+                    #             interval=0,
+                    #         ),
+                    #         shift_var=VarShift(
+                    #             selector="equal",
+                    #             target=[],
+                    #             reference=[],
+                    #             relative=[],
+                    #         ),
+                    #         hard=False,
+                    #         hard_to_soft=False,
+                    #         penalty=0,
+                    #     ),
+                    #     [],
+                    #     "constraint",
+                    # )
+                    delta = self.model.NewIntVar(0, 100, "")
+                    self.model.Add(delta == ws - min_weekly_staffing)
+                    excess = self.model.NewIntVar(
+                        0,
+                        100,
+                        # var_name,
+                        "",
+                    )
+                    self.model.AddAbsEquality(excess, delta)
+                    self.obj.int_vars.append(excess)
+                    self.obj.int_coeffs.append(1)
+
+    def spread_across_workers(
+        self, solving_dates: List[str], cov_shifts: List[str]
+    ) -> None:
+        staffings = []
+        for w in self.workers:
+            worker_staffing_vars = [
+                self.variables[w, d, s] for d in solving_dates for s in cov_shifts
+            ]
+            worker_staffing = self.model.NewIntVar(
+                0, len(self.shifts) * len(solving_dates), f"{w}"
+            )
+            self.model.Add(worker_staffing == sum(worker_staffing_vars))
+            staffings.append(worker_staffing)
+        min_staffing = self.model.NewIntVar(
+            0, len(self.shifts) * len(solving_dates), ""
+        )
+        self.model.AddMinEquality(min_staffing, staffings)
+        for stf in staffings:
+            # var_name = build_var_name(
+            #     Constraint(
+            #         id=f"spread_{stf.Name()}",
+            #         constraint_type="sum",
+            #         operator="equal",
+            #         target_value=0,
+            #         target_unit="shift",
+            #         worker_var=VarWorker(
+            #             selector="equal",
+            #             target=[],
+            #             num_eligible_workers=0,
+            #         ),
+            #         day_var=VarDay(
+            #             selector="all",
+            #             target=0,
+            #             start_date=date.today(),
+            #             end_date=date.today(),
+            #             interval=0,
+            #         ),
+            #         shift_var=VarShift(
+            #             selector="equal",
+            #             target=[],
+            #             reference=[],
+            #             relative=[],
+            #         ),
+            #         hard=False,
+            #         hard_to_soft=False,
+            #         penalty=0,
+            #     ),
+            #     [],
+            #     "constraint",
+            # )
+            delta = self.model.NewIntVar(0, len(self.shifts) * len(solving_dates), "")
+            self.model.Add(delta == stf - min_staffing)
+            excess = self.model.NewIntVar(
+                0,
+                len(self.shifts) * len(solving_dates),
+                # var_name,
+                "",
+            )
+            self.model.AddAbsEquality(excess, delta)
+            self.obj.int_vars.append(excess)
+            self.obj.int_coeffs.append(10)
 
     def add_custom_constraints(
         self, constraints: List[Constraint], coverage: List[ShiftDemand]
