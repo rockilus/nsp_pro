@@ -3,21 +3,29 @@ import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 // Components
-import ScheduleDisplay from "./Table/ScheduleDisplay";
+import AssignmentOptions from "./AssignmentOptions";
 import ObjectiveBreachList from "./Breaches/ObjectiveBreachList";
-import ScheduleOptions from "./ScheduleOptions/ScheduleOptions";
-import ScheduleDisplayOptions from "./DisplayOptions/ScheduleDisplayOptions";
 import QuickStaffingTable from "./QuickStaffing";
+import ScheduleDisplay from "./Table/ScheduleDisplay";
+import ScheduleDisplayOptions from "./DisplayOptions/ScheduleDisplayOptions";
+import ScheduleOptions from "./ScheduleOptions/ScheduleOptions";
 // Types
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
 import { WorkerT } from "../Worker/types";
-import { ScheduleT, ObjectiveBreachT, AssignmentT } from "./types";
+import {
+  ScheduleT,
+  ObjectiveBreachT,
+  AssignmentT,
+  SelectedCellT,
+} from "./types";
+import { RequestT } from "../Request/types";
 
 interface Props {
   team: TeamT;
   workers: WorkerT[];
   shifts: ShiftT[];
+  requests: RequestT[];
   schedule: ScheduleT | null;
   assignments: AssignmentT[];
   objectiveBreaches: ObjectiveBreachT[];
@@ -27,6 +35,7 @@ export default function ScheduleTab({
   team,
   workers,
   shifts,
+  requests,
   schedule,
   assignments,
   objectiveBreaches,
@@ -34,6 +43,7 @@ export default function ScheduleTab({
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
   const [CBsDisplayed, setCBsDisplayed] = useState<string[]>([]);
+  const [selectedCell, setSelectedCell] = useState<SelectedCellT | null>(null);
 
   const addCBsDisplayed = (ids: string[]) => {
     setCBsDisplayed(Array.from(new Set([...CBsDisplayed, ...ids])));
@@ -97,9 +107,22 @@ export default function ScheduleTab({
           breaches={objectiveBreaches}
           workers={workers}
           shifts={shifts}
+          requests={requests}
           selectedDisplay={selectedDisplay}
           showBreaches={showBreaches}
           CBsDisplayed={CBsDisplayed}
+          setSelectedCell={setSelectedCell}
+        />
+      )}
+      {selectedCell && (
+        <AssignmentOptions
+          team={team}
+          workers={workers}
+          shifts={shifts}
+          assignments={assignments}
+          selectedCell={selectedCell}
+          selectedDisplay={selectedDisplay}
+          setSelectedCell={setSelectedCell}
         />
       )}
     </Box>

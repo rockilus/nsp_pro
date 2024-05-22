@@ -11,6 +11,7 @@ class Assignment:
     shift_id: str
     schedule_id: str
     status: str  # wip, valid, past
+    fixed: bool
 
 
 @dataclass

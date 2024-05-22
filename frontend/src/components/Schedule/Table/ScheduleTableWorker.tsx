@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 // MUI
+import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -8,39 +9,48 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
-import { red } from "@mui/material/colors";
+// Components
+import ScheduleTableCellContent from "./ScheduleTableCellContent";
 // Utils
-import {
-  getBreachType,
-  getCellBackgroundColor,
-} from "../../../utils/scheduleUtils";
+import { getCellBackgroundColor } from "../../../utils/scheduleUtils";
 // Types
-import { Box } from "@mui/material";
 import { TeamT } from "../../../containers/types";
 import { ShiftT } from "../../Shift/types";
 import { WorkerT } from "../../Worker/types";
-import { AssignmentT, ObjectiveBreachT, ScheduleT } from "../types";
+import {
+  AssignmentT,
+  ObjectiveBreachT,
+  ScheduleT,
+  SelectedCellT,
+} from "../types";
+import { RequestT } from "../../Request/types";
 
 interface Props {
   team: TeamT;
   shifts: ShiftT[];
   workers: WorkerT[];
+  requests: RequestT[];
   assignments: AssignmentT[];
   schedule: ScheduleT;
   dates: dayjs.Dayjs[];
   breaches: ObjectiveBreachT[];
   showBreaches: boolean;
+  selectedDisplay: string;
+  setSelectedCell: (selectedCell: SelectedCellT | null) => void;
 }
 
 export default function ScheduleTableWorker({
   team,
   shifts,
   workers,
+  requests,
   assignments,
   schedule,
   dates,
   breaches,
   showBreaches,
+  selectedDisplay,
+  setSelectedCell,
 }: Props) {
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
@@ -141,24 +151,27 @@ export default function ScheduleTableWorker({
                             v.date.isSame(a.date, "date")
                         )
                       );
-                      const backColor = getBreachType(targetBs);
+                      const targetRequests = requests.filter(
+                        (r) =>
+                          r.workerId === a.workerId &&
+                          r.date.isSame(a.date, "date")
+                      );
                       return (
-                        <Box
-                          key={aIndex}
-                          sx={{
-                            width: "100%",
-                            height: "100%",
-                            backgroundColor: showBreaches
-                              ? backColor === "hardBreach"
-                                ? red[200]
-                                : backColor === "softBreach"
-                                ? red[100]
-                                : "none"
-                              : "none",
-                          }}
-                        >
-                          {a && shift && shift.name}
-                        </Box>
+                        shift && (
+                          <ScheduleTableCellContent
+                            key={aIndex}
+                            team={team}
+                            worker={worker}
+                            shift={shift}
+                            requests={targetRequests}
+                            assignment={a}
+                            schedule={schedule}
+                            breaches={targetBs}
+                            showBreaches={showBreaches}
+                            selectedDisplay={selectedDisplay}
+                            setSelectedCell={setSelectedCell}
+                          />
+                        )
                       );
                     })}
                   </TableCell>

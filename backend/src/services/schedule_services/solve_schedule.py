@@ -58,7 +58,11 @@ def solve_schedule(
     team_schedules = schedule_db.get_schedules(schedule.team_id)
     prev_assignments = assignment_db.get_assignments_by_status(
         ["past", "validated"], team_schedules
-    )
+    )  # validated assignments
+    wip_fixed_assignments = assignment_db.get_assignments_wip_fixed(
+        team_schedules
+    )  # assignments wip and fixed
+    set_assignments = prev_assignments + wip_fixed_assignments
     wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
@@ -81,7 +85,7 @@ def solve_schedule(
         shift_demand_dates,
         requests,
         constraints,
-        prev_assignments,
+        set_assignments,
         wip_assignments,
     )
     end_time_engine_inputs = time.time()
@@ -102,7 +106,9 @@ def solve_schedule(
     start_time_update_db = time.time()
     update_request_status(assignments, requests)
     updated_schedule = schedule_db.update_schedule(schedule)
-    updated_assignments = save_assignments(assignments, updated_schedule)
+    updated_assignments = save_assignments(
+        assignments, updated_schedule, wip_fixed_assignments
+    )
     new_objective_breaches = save_objective_breaches(
         updated_schedule, objective_breaches
     )
@@ -145,11 +151,22 @@ def solve_schedule(
 
 
 def save_assignments(
-    assignments: List[Assignment], schedule: Schedule
+    assignments: List[Assignment],
+    schedule: Schedule,
+    fixed_assignments: List[Assignment],
 ) -> List[Assignment]:
     assignment_db.delete_assignments_by_schedule_id(schedule.id)
     if not assignments:
         return []
+    for assignment in assignments:
+        for fixed_assignment in fixed_assignments:
+            if (
+                assignment.date == fixed_assignment.date
+                and assignment.shift_id == fixed_assignment.shift_id
+                and assignment.worker_id == fixed_assignment.worker_id
+            ):
+                assignment.fixed = True
+                break
     out = assignment_db.create_assignments(assignments)
     return out
 

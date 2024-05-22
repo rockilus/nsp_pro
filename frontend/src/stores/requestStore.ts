@@ -63,7 +63,7 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
   },
 
   fetchRequestsStore: (requests) => {
-    set({ requests });
+    set({ requests: requests.map(toRequestT) });
   },
 
   addRequest: async (request, teamId) => {
@@ -122,9 +122,10 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
           );
         return;
       }
+      const newRequest: RequestT = toRequestT(responseData);
       set((state) => ({
         requests: state.requests.map((fa) =>
-          fa.id === updatedRequest.id ? updatedRequest : fa
+          fa.id === newRequest.id ? newRequest : fa
         ),
       }));
     } catch (error) {

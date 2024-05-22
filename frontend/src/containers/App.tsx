@@ -147,6 +147,7 @@ const App = () => {
             team={selectedTeam}
             workers={workers}
             shifts={shifts}
+            requests={requests}
             schedule={schedule}
             assignments={assignments}
             objectiveBreaches={objectiveBreaches}

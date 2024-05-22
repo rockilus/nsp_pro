@@ -8,10 +8,16 @@ import ScheduleTableShift from "./ScheduleTableShift";
 import ScheduleTableWorker from "./ScheduleTableWorker";
 
 // Types
-import { AssignmentT, ScheduleT, ObjectiveBreachT } from "../types";
+import {
+  AssignmentT,
+  ScheduleT,
+  ObjectiveBreachT,
+  SelectedCellT,
+} from "../types";
 import { TeamT } from "../../../containers/types";
 import { ShiftT } from "../../Shift/types";
 import { WorkerT } from "../../Worker/types";
+import { RequestT } from "../../Request/types";
 
 dayjs.extend(utc);
 
@@ -22,9 +28,11 @@ interface Props {
   breaches: ObjectiveBreachT[];
   workers: WorkerT[];
   shifts: ShiftT[];
+  requests: RequestT[];
   selectedDisplay: string;
   showBreaches: boolean;
   CBsDisplayed: string[];
+  setSelectedCell: (selectedCell: SelectedCellT | null) => void;
 }
 
 export default function ScheduleDisplay({
@@ -34,9 +42,11 @@ export default function ScheduleDisplay({
   breaches,
   workers,
   shifts,
+  requests,
   selectedDisplay,
   showBreaches,
   CBsDisplayed,
+  setSelectedCell,
 }: Props) {
   const getDatesFromAssignments = (
     assignments: AssignmentT[]
@@ -73,11 +83,14 @@ export default function ScheduleDisplay({
         team={team}
         shifts={shifts}
         workers={workers}
+        requests={requests}
         assignments={assignments}
         schedule={schedule}
         dates={getDatesFromAssignments(assignments)}
         breaches={breaches}
         showBreaches={showBreaches}
+        selectedDisplay={selectedDisplay}
+        setSelectedCell={setSelectedCell}
       />
     ),
     worker: (
@@ -85,11 +98,14 @@ export default function ScheduleDisplay({
         team={team}
         shifts={shifts}
         workers={workers}
+        requests={requests}
         assignments={assignments}
         schedule={schedule}
         dates={getDatesFromAssignments(assignments)}
         breaches={breaches}
         showBreaches={showBreaches}
+        selectedDisplay={selectedDisplay}
+        setSelectedCell={setSelectedCell}
       />
     ),
   };

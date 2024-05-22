@@ -155,6 +155,24 @@ class AssignmentDB:
             handle_create_core_object_error(e)
         return assigments
 
+    def get_assignments_wip_fixed(self, schedules: List[Schedule]) -> List[Assignment]:
+        try:
+            # pylint: disable=no-member
+            a_docs = AssignmentDocument.objects.filter(  # type: ignore
+                status="wip",
+                fixed=True,
+                schedule__in=[s.id for s in schedules],
+            )
+        except Exception as e:
+            log_info("Failed to get assignments by status from database")
+            handle_get_document_error(e)
+        try:
+            assigments = [doc_to_core_assignment(a) for a in list(a_docs)]
+        except Exception as e:
+            log_info("Failed to convert AssignmentDocuments to Assignments")
+            handle_create_core_object_error(e)
+        return assigments
+
     def update_assignment(self, assignment: Assignment) -> Assignment:
         a_doc = core_to_doc_assignment(assignment)
         try:
@@ -275,6 +293,7 @@ def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
             shift=shift,
             schedule=schedule,
             status=dataclass_obj.status,
+            fixed=dataclass_obj.fixed,
         )
     # pylint: disable=broad-except
     except Exception as e:
@@ -331,6 +350,7 @@ def core_to_doc_assignments(
             shift=shifts.get(dataclass_obj.shift_id),
             schedule=schedules.get(dataclass_obj.schedule_id),
             status=dataclass_obj.status,
+            fixed=dataclass_obj.fixed,
         )
         out.append(assignment_doc)
     return out
