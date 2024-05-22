@@ -5,6 +5,7 @@ import { create } from "zustand";
 import { useSnackBarStore } from "./snackbarStore";
 // Types
 import { RequestT } from "../components/Request/types";
+import { stat } from "fs";
 
 dayjs.extend(utc);
 
@@ -16,13 +17,15 @@ type RequestStateT = {
   fetchRequestsStore: (requests: RequestT[]) => void;
   addRequest: (request: RequestT, teamId: string) => void;
   updateRequest: (updatedRequest: RequestT, teamId: string) => void;
+  updateRequestStore: (updatedRequests: RequestT[]) => void;
   deleteRequest: (requestId: string, teamId: string) => void;
 };
 
-const toRequestT = (data: any) => {
+export const toRequestT = (data: any) => {
   const r: RequestT = {
     ...data,
-    date: dayjs.utc(data.date),
+    startDate: dayjs.utc(data.startDate),
+    endDate: dayjs.utc(data.endDate),
   };
   return r;
 };
@@ -137,6 +140,20 @@ export const useRequestStore = create<RequestStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  updateRequestStore: (updatedRequests) => {
+    console.log("updatedRequests", updatedRequests);
+
+    set((state) => ({
+      requests: state.requests.map((r) => {
+        const updatedRequest = updatedRequests.find((ur) => ur.id === r.id);
+        if (updatedRequest) {
+          return updatedRequest;
+        }
+        return r;
+      }),
+    }));
   },
 
   deleteRequest: async (requestId, teamId) => {

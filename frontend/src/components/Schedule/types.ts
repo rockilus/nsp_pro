@@ -56,6 +56,7 @@ export type SolutionT = {
   schedule: ScheduleT;
   assignments: AssignmentT[];
   objectiveBreaches: ObjectiveBreachT[];
+  requests: RequestT[];
 };
 
 // Validate

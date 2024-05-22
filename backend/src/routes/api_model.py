@@ -103,7 +103,8 @@ class FixedAssignmentMessage(BaseModel):
 class RequestMessage(BaseModel):
     id: str
     workerId: str
-    date: date
+    startDate: date
+    endDate: date
     shiftId: str
     hard: bool
     status: str
@@ -197,6 +198,7 @@ class SolutionMessage(BaseModel):
     schedule: ScheduleMessage
     assignments: List[AssignmentMessage]
     objectiveBreaches: List[ObjectiveBreachMessage]
+    requests: List[RequestMessage]
 
 
 class ValidateMessage(BaseModel):

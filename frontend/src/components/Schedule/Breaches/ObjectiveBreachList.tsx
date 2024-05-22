@@ -1,7 +1,6 @@
 import React from "react";
 // MUI
 import Box from "@mui/material/Box";
-import Checkbox from "@mui/material/Checkbox";
 import List from "@mui/material/List";
 import Typography from "@mui/material/Typography";
 // Components

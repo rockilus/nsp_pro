@@ -2,12 +2,9 @@ import * as React from "react";
 import dayjs from "dayjs";
 import minMax from "dayjs/plugin/minMax";
 // MUI
-import Checkbox from "@mui/material/Checkbox";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import ListItem from "@mui/material/ListItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import Typography from "@mui/material/Typography";
 // Types
 import { ObjectiveBreachT } from "../types";
 import { ShiftT } from "../../Shift/types";

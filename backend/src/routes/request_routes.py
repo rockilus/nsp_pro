@@ -120,8 +120,14 @@ def core_to_msg_request(request: Request) -> RequestMessage:
 
 # message to core
 def msg_to_core_request(msg: RequestMessage) -> Request:
+    # pylint: disable=R0801
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["date"] = datetime.combine(data_snake["date"], datetime.min.time())
+    data_snake["start_date"] = datetime.combine(
+        data_snake["start_date"], datetime.min.time()
+    )
+    data_snake["end_date"] = datetime.combine(
+        data_snake["end_date"], datetime.min.time()
+    )
     try:
         request = Request(**data_snake)
     except Exception as e:

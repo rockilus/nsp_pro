@@ -10,9 +10,7 @@ import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
-import ScheduleDialogDelete from "./ScheduleDialogDelete";
 import ScheduleDialogValidate from "./ScheduleDialogValidate";
 import TableRowScheduleWIP from "./TableRowScheduleWIP";
 // Stores

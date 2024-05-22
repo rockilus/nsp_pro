@@ -6,7 +6,8 @@ from datetime import date
 class Request:
     id: str
     worker_id: str
-    date: date
+    start_date: date
+    end_date: date
     shift_id: str
     hard: bool
     status: str

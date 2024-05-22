@@ -83,27 +83,31 @@ def core_to_engine_inputs(
 def _core_to_engine_requests(requests: List[Request]) -> List[RequestEngine]:
     out = []
     for r in requests:
-        out.append(
-            RequestEngine(
-                id=r.id,
-                worker_id=r.worker_id,
-                date=r.date,
-                shift_id=r.shift_id,
-                hard=r.hard,
-                hard_to_soft=Constants.HARD_TO_SOFT and r.hard,
-                penalty=(
-                    getattr(
-                        penalty_map.request,
-                        "hard",
-                    )
-                    if Constants.HARD_TO_SOFT and r.hard
-                    else getattr(
-                        penalty_map.request,
-                        "medium",
-                    )
-                ),
+        for d in [
+            r.start_date + timedelta(days=x)
+            for x in range((r.end_date - r.start_date).days + 1)
+        ]:
+            out.append(
+                RequestEngine(
+                    id=r.id,
+                    worker_id=r.worker_id,
+                    date=d,
+                    shift_id=r.shift_id,
+                    hard=r.hard,
+                    hard_to_soft=Constants.HARD_TO_SOFT and r.hard,
+                    penalty=(
+                        getattr(
+                            penalty_map.request,
+                            "hard",
+                        )
+                        if Constants.HARD_TO_SOFT and r.hard
+                        else getattr(
+                            penalty_map.request,
+                            "medium",
+                        )
+                    ),
+                )
             )
-        )
     return out
 
 

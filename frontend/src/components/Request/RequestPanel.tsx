@@ -4,10 +4,12 @@ import dayjs from "dayjs";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import Select from "@mui/material/Select";
+import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Stores
@@ -36,11 +38,15 @@ export default function RequestPanel({
   const [requestState, setRequestState] = useState<RequestT>({
     id: request.id,
     workerId: request.workerId,
-    date: request.date,
+    startDate: request.startDate,
+    endDate: request.endDate,
     shiftId: request.shiftId,
     hard: request.hard,
     status: request.status,
   });
+  const [dateRange, setDateRange] = useState<boolean>(
+    !request.startDate.isSame(request.endDate, "day")
+  );
 
   const addRequest = useRequestStore((state) => state.addRequest);
   const updateRequest = useRequestStore((state) => state.updateRequest);
@@ -49,9 +55,38 @@ export default function RequestPanel({
     if (requestState.id === "") {
       await addRequest(requestState, team.id);
     } else {
-      updateRequest(requestState, team.id);
+      if (
+        requestState.workerId === request.workerId &&
+        requestState.startDate === request.startDate &&
+        requestState.endDate === request.endDate &&
+        requestState.shiftId === request.shiftId &&
+        requestState.hard === request.hard
+      ) {
+        handleClose();
+        return;
+      }
+      const updatedRequest = {
+        ...requestState,
+        status: "pending",
+      };
+      updateRequest(updatedRequest, team.id);
     }
     handleClose();
+  };
+
+  const handleSelectDateRange = () => {
+    if (dateRange) {
+      setRequestState({
+        ...requestState,
+        endDate: requestState.startDate,
+      });
+    } else {
+      setRequestState({
+        ...requestState,
+        endDate: request.endDate,
+      });
+    }
+    setDateRange(!dateRange);
   };
 
   const selectWorker = () => {
@@ -129,20 +164,62 @@ export default function RequestPanel({
           flexDirection: "row",
           alignItems: "center",
           width: "100%",
+        }}
+      >
+        <Checkbox
+          checked={dateRange}
+          onChange={handleSelectDateRange}
+          size="small"
+          sx={{ marginLeft: "49px", height: "30px", width: "30px" }}
+        />
+        <Typography sx={{ fontSize: "0.8rem" }}>Date range</Typography>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          width: "100%",
           marginBottom: 1,
         }}
       >
         <AccessTimeIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-        <DatePicker
-          sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}
-          value={dayjs(requestState.date)}
-          onChange={(newValue) =>
-            setRequestState({
-              ...requestState,
-              date: newValue?.startOf("day") || dayjs.utc().startOf("day"),
-            })
-          }
-        />
+        <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
+          <DatePicker
+            minDate={dayjs.utc().startOf("day")}
+            sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}
+            value={dayjs(requestState.startDate)}
+            onChange={(newValue) =>
+              setRequestState({
+                ...requestState,
+                startDate:
+                  newValue?.startOf("day") || dayjs.utc().startOf("day"),
+                endDate: !dateRange
+                  ? newValue?.startOf("day") || dayjs.utc().startOf("day")
+                  : requestState.endDate,
+              })
+            }
+          />
+          {dateRange && (
+            <DatePicker
+              minDate={requestState.startDate}
+              sx={{
+                marginLeft: 1,
+                marginTop: "1px",
+                marginRight: 2,
+                width: "100%",
+              }}
+              value={dayjs(requestState.endDate)}
+              onChange={(newValue) =>
+                setRequestState({
+                  ...requestState,
+                  endDate:
+                    newValue?.startOf("day") || dayjs.utc().startOf("day"),
+                })
+              }
+            />
+          )}
+        </Box>
       </Box>
       <Box
         sx={{
