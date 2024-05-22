@@ -7,32 +7,16 @@ import CloseIcon from "@mui/icons-material/Close";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import FormControl from "@mui/material/FormControl";
 import IconButton from "@mui/material/IconButton";
-import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
-import Paper from "@mui/material/Paper";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
-import { red } from "@mui/material/colors";
-//Components
-import TableRowScheduleWIP from "./ScheduleOptions/TableRowScheduleWIP";
 // Stores
 import { useAssignmentStore } from "../../stores/assignmentStore";
 // Types
 import { TeamT } from "../../containers/types";
 import { ShiftT } from "../Shift/types";
 import { WorkerT } from "../Worker/types";
-import {
-  AssignmentT,
-  ScheduleT,
-  ObjectiveBreachT,
-  SelectedCellT,
-} from "./types";
+import { AssignmentT, SelectedCellT } from "./types";
 
 interface Props {
   team: TeamT;
@@ -86,7 +70,6 @@ export default function AssignmentOptions({
     );
   };
 
-  console.log("selectedCell: ", selectedCell);
   const breachesNoRequests = selectedCell.breaches.filter(
     (b) => b.objectiveCategory !== "request"
   );

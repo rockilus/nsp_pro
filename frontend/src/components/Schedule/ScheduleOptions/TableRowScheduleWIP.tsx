@@ -1,13 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // MUI
 import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
-// Types
-import { ScheduleT } from "../types";
-import { TeamT } from "../../../containers/types";
 
 dayjs.extend(utc);
 
