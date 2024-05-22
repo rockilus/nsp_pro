@@ -1,5 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import DateTimeField, ReferenceField, StringField
+from mongoengine.fields import BooleanField, DateTimeField, ReferenceField, StringField
 
 
 class Assignment(Document):
@@ -11,3 +11,4 @@ class Assignment(Document):
     shift = ReferenceField("Shift", required=True)
     schedule = ReferenceField("Schedule", required=True)
     status = StringField(required=True)  # wip, valid, past
+    fixed = BooleanField(required=True)

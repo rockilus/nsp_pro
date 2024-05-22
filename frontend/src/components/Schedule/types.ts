@@ -1,4 +1,8 @@
 import dayjs from "dayjs";
+// Types
+import { ShiftT } from "../Shift/types";
+import { WorkerT } from "../Worker/types";
+import { RequestT } from "../Request/types";
 
 // Assignment
 export type AssignmentT = {
@@ -8,6 +12,7 @@ export type AssignmentT = {
   shiftId: string;
   scheduleId: string;
   status: string;
+  fixed: boolean;
 };
 
 // Objective Breach
@@ -57,4 +62,13 @@ export type SolutionT = {
 export type ValidateT = {
   schedule: ScheduleT;
   assignments: AssignmentT[];
+};
+
+export type SelectedCellT = {
+  assignment: AssignmentT;
+  worker: WorkerT;
+  shift: ShiftT;
+  dataDisplayed: string;
+  requests: RequestT[];
+  breaches: ObjectiveBreachT[];
 };

@@ -156,6 +156,7 @@ class AssignmentMessage(BaseModel):
     shiftId: str
     scheduleId: str
     status: str
+    fixed: bool
 
 
 class VariableMessage(BaseModel):

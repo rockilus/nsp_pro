@@ -275,6 +275,7 @@ def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
             shift=shift,
             schedule=schedule,
             status=dataclass_obj.status,
+            fixed=dataclass_obj.fixed,
         )
     # pylint: disable=broad-except
     except Exception as e:
@@ -331,6 +332,7 @@ def core_to_doc_assignments(
             shift=shifts.get(dataclass_obj.shift_id),
             schedule=schedules.get(dataclass_obj.schedule_id),
             status=dataclass_obj.status,
+            fixed=dataclass_obj.fixed,
         )
         out.append(assignment_doc)
     return out

@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import React from "react";
 // MUI
+import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -10,6 +11,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { red } from "@mui/material/colors";
+// Components
+import ScheduleTableCellContent from "./ScheduleTableCellContent";
 // Utils
 import {
   getBreachType,
@@ -19,30 +22,41 @@ import {
 import { TeamT } from "../../../containers/types";
 import { ShiftT } from "../../Shift/types";
 import { WorkerT } from "../../Worker/types";
-import { AssignmentT, ScheduleT, ObjectiveBreachT } from "../types";
-import { Box } from "@mui/material";
+import {
+  AssignmentT,
+  ScheduleT,
+  ObjectiveBreachT,
+  SelectedCellT,
+} from "../types";
+import { RequestT } from "../../Request/types";
 
 interface Props {
   team: TeamT;
   shifts: ShiftT[];
   workers: WorkerT[];
+  requests: RequestT[];
   assignments: AssignmentT[];
   schedule: ScheduleT;
   dates: dayjs.Dayjs[];
   breaches: ObjectiveBreachT[];
   showBreaches: boolean;
+  setSelectedCell: (selectedCell: SelectedCellT | null) => void;
 }
 
 export default function ScheduleTableShift({
   team,
   shifts,
   workers,
+  requests,
   assignments,
   schedule,
   dates,
   breaches,
   showBreaches,
+  setSelectedCell,
 }: Props) {
+  console.log("breaches: ", breaches);
+
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -156,33 +170,37 @@ export default function ScheduleTableShift({
                       }}
                     >
                       {targetAs.map((a, aIndex) => {
-                        const worker = workers.find((w) => w.id === a.workerId);
+                        const worker =
+                          workers.find((w) => w.id === a.workerId) || null;
                         const targetBs = breaches.filter((b) =>
                           b.variables.find(
                             (v) =>
                               v.workerId === a.workerId &&
-                              v.date.isSame(a.date, "date") &&
-                              v.shiftId === a.shiftId
+                              v.date.isSame(a.date, "date")
+                            // v.shiftId === a.shiftId
                           )
                         );
-                        const backColor = getBreachType(targetBs);
+                        const targetRequests = requests.filter(
+                          (r) =>
+                            r.workerId === a.workerId &&
+                            r.date.isSame(a.date, "date")
+                        );
                         return (
-                          <Box
-                            key={aIndex}
-                            sx={{
-                              width: "100%",
-                              height: "100%",
-                              backgroundColor: showBreaches
-                                ? backColor === "hardBreach"
-                                  ? red[200]
-                                  : backColor === "softBreach"
-                                  ? red[100]
-                                  : "none"
-                                : "none",
-                            }}
-                          >
-                            {a && worker && worker.name}
-                          </Box>
+                          worker && (
+                            <ScheduleTableCellContent
+                              key={aIndex}
+                              team={team}
+                              worker={worker}
+                              shift={shift}
+                              requests={targetRequests}
+                              assignment={a}
+                              schedule={schedule}
+                              breaches={targetBs}
+                              showBreaches={showBreaches}
+                              dataDisplayed="worker"
+                              setSelectedCell={setSelectedCell}
+                            />
+                          )
                         );
                       })}
                     </TableCell>
