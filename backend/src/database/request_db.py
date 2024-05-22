@@ -55,7 +55,9 @@ class RequestDB:
         try:
             # pylint: disable=no-member
             requests = RequestDocument.objects.filter(  # type: ignore
-                date__gte=start_date, date__lte=end_date, worker__in=w_docs
+                start_date__gte=start_date,
+                end_date__lte=end_date,
+                worker__in=w_docs,
             )
         except Exception as e:
             log_info("Failed to get requests by dates from database")
@@ -156,7 +158,8 @@ def core_to_doc_request(dataclass_obj: Request) -> RequestDocument:
         r_doc = RequestDocument(
             id=dataclass_obj.id,
             worker=worker,
-            date=dataclass_obj.date,
+            start_date=dataclass_obj.start_date,
+            end_date=dataclass_obj.end_date,
             shift=shift,
             hard=dataclass_obj.hard,
             status=dataclass_obj.status,
@@ -187,7 +190,8 @@ def core_to_doc_requests(
         request_doc = RequestDocument(
             id=str(ObjectId()) if creating else dataclass_obj.id,
             worker=workers.get(dataclass_obj.worker_id),
-            date=dataclass_obj.date,
+            start_date=dataclass_obj.start_date,
+            end_date=dataclass_obj.end_date,
             shift=shifts.get(dataclass_obj.shift_id),
             hard=dataclass_obj.hard,
             status=dataclass_obj.status,
@@ -202,7 +206,8 @@ def doc_to_core_request(doc_obj: RequestDocument) -> Request:
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["worker_id"] = doc_dict["worker"]
-    doc_dict["date"] = doc_dict["date"].date()
+    doc_dict["start_date"] = doc_dict["start_date"].date()
+    doc_dict["end_date"] = doc_dict["end_date"].date()
     doc_dict["shift_id"] = doc_dict["shift"]
     doc_dict.pop("_id")
     doc_dict.pop("worker")

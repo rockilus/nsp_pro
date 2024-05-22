@@ -7,7 +7,8 @@ class Request(Document):
 
     id = StringField(primary_key=True, required=True)
     worker = ReferenceField("Worker", required=True)
-    date = DateTimeField(required=True)
+    start_date = DateTimeField(required=True)
+    end_date = DateTimeField(required=True)
     shift = ReferenceField("Shift", required=True)
     hard = BooleanField(required=True)
     status = StringField(

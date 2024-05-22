@@ -6,6 +6,7 @@ from core import (
     Constraint,
     ConstraintBuild,
     ObjectiveBreach,
+    Request,
     Schedule,
     Shift,
     Worker,
@@ -38,7 +39,7 @@ from services.schedule_services.outputs_processing import update_request_status
 # pylint: disable=too-many-locals, too-many-statements
 def solve_schedule(
     schedule: Schedule,
-) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach]]:
+) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach], List[Request]]:
     start_time = time.time()
     start_time_db = time.time()
     workers = worker_db.get_workers(schedule.team_id)
@@ -104,7 +105,7 @@ def solve_schedule(
     )
     end_time_process_outputs = time.time()
     start_time_update_db = time.time()
-    update_request_status(assignments, requests)
+    updated_requests = update_request_status(assignments, requests)
     updated_schedule = schedule_db.update_schedule(schedule)
     updated_assignments = save_assignments(
         assignments, updated_schedule, wip_fixed_assignments
@@ -147,7 +148,12 @@ def solve_schedule(
         + f"{total_time_update_db:.2f}s "
         + f"({(total_time_update_db / total_time) * 100:.0f}%)"
     )
-    return updated_schedule, updated_assignments, new_objective_breaches
+    return (
+        updated_schedule,
+        updated_assignments,
+        new_objective_breaches,
+        updated_requests,
+    )
 
 
 def save_assignments(

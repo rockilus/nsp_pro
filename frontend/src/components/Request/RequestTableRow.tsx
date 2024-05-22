@@ -70,7 +70,13 @@ export default function RequestTableRow({
             if (field === "workerId") {
               return getWorkerName(request.workerId);
             } else if (field === "date") {
-              return formatDate(request.date);
+              if (request.startDate.isSame(request.endDate, "day")) {
+                return formatDate(request.startDate);
+              } else {
+                return `${formatDate(request.startDate)} - ${formatDate(
+                  request.endDate
+                )}`;
+              }
             } else if (field === "shiftId") {
               return getShiftName(request.shiftId);
             } else if (field === "hard") {

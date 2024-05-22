@@ -1,4 +1,6 @@
 import dayjs from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import React from "react";
 // MUI
 import Box from "@mui/material/Box";
@@ -25,6 +27,9 @@ import {
   SelectedCellT,
 } from "../types";
 import { RequestT } from "../../Request/types";
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 interface Props {
   team: TeamT;
@@ -179,7 +184,8 @@ export default function ScheduleTableShift({
                         const targetRequests = requests.filter(
                           (r) =>
                             r.workerId === a.workerId &&
-                            r.date.isSame(a.date, "date")
+                            r.startDate.isSameOrBefore(a.date, "date") &&
+                            r.endDate.isSameOrAfter(a.date, "date")
                         );
                         return (
                           worker && (

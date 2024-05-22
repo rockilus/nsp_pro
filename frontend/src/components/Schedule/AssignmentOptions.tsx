@@ -333,9 +333,17 @@ export default function AssignmentOptions({
                   align="left"
                   sx={{ fontSize: "0.8rem", paddingLeft: "10px" }}
                 >
-                  {`${workers.find((w) => w.id === request.workerId)?.name} - 
-          ${shifts.find((s) => s.id === request.shiftId)?.name} - 
-          ${request.date.format("D MMM YYYY")}`}
+                  {`${
+                    workers.find((w) => w.id === request.workerId)?.name || ""
+                  } - 
+  ${shifts.find((s) => s.id === request.shiftId)?.name || ""} - 
+  ${
+    request.startDate?.isSame(request?.endDate)
+      ? request.startDate.format("D MMM YYYY")
+      : `${request.startDate.format("D MMM YYYY")} - ${request.endDate.format(
+          "D MMM YYYY"
+        )}`
+  }`}
                 </Typography>
                 <FiberManualRecordIcon
                   sx={{

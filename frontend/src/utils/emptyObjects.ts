@@ -22,7 +22,8 @@ export const emptyShift: ShiftT = {
 export const emptyRequest: RequestT = {
   id: "",
   workerId: "",
-  date: dayjs.utc().startOf("day"),
+  startDate: dayjs.utc().startOf("day"),
+  endDate: dayjs.utc().startOf("day"),
   shiftId: "",
   hard: true,
   status: "pending",
