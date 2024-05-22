@@ -121,6 +121,7 @@ export default function ScheduleTab({
           shifts={shifts}
           assignments={assignments}
           selectedCell={selectedCell}
+          selectedDisplay={selectedDisplay}
           setSelectedCell={setSelectedCell}
         />
       )}

@@ -89,6 +89,7 @@ export default function ScheduleDisplay({
         dates={getDatesFromAssignments(assignments)}
         breaches={breaches}
         showBreaches={showBreaches}
+        selectedDisplay={selectedDisplay}
         setSelectedCell={setSelectedCell}
       />
     ),
@@ -97,11 +98,14 @@ export default function ScheduleDisplay({
         team={team}
         shifts={shifts}
         workers={workers}
+        requests={requests}
         assignments={assignments}
         schedule={schedule}
         dates={getDatesFromAssignments(assignments)}
         breaches={breaches}
         showBreaches={showBreaches}
+        selectedDisplay={selectedDisplay}
+        setSelectedCell={setSelectedCell}
       />
     ),
   };

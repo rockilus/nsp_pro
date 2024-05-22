@@ -10,14 +10,10 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
-import { red } from "@mui/material/colors";
 // Components
 import ScheduleTableCellContent from "./ScheduleTableCellContent";
 // Utils
-import {
-  getBreachType,
-  getCellBackgroundColor,
-} from "../../../utils/scheduleUtils";
+import { getCellBackgroundColor } from "../../../utils/scheduleUtils";
 // Types
 import { TeamT } from "../../../containers/types";
 import { ShiftT } from "../../Shift/types";
@@ -40,6 +36,7 @@ interface Props {
   dates: dayjs.Dayjs[];
   breaches: ObjectiveBreachT[];
   showBreaches: boolean;
+  selectedDisplay: string;
   setSelectedCell: (selectedCell: SelectedCellT | null) => void;
 }
 
@@ -53,10 +50,9 @@ export default function ScheduleTableShift({
   dates,
   breaches,
   showBreaches,
+  selectedDisplay,
   setSelectedCell,
 }: Props) {
-  console.log("breaches: ", breaches);
-
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -197,7 +193,7 @@ export default function ScheduleTableShift({
                               schedule={schedule}
                               breaches={targetBs}
                               showBreaches={showBreaches}
-                              dataDisplayed="worker"
+                              selectedDisplay={selectedDisplay}
                               setSelectedCell={setSelectedCell}
                             />
                           )

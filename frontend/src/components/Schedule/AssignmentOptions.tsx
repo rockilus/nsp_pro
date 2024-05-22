@@ -40,6 +40,7 @@ interface Props {
   shifts: ShiftT[];
   assignments: AssignmentT[];
   selectedCell: SelectedCellT;
+  selectedDisplay: string;
   setSelectedCell: (selectedCell: SelectedCellT | null) => void;
 }
 
@@ -49,6 +50,7 @@ export default function AssignmentOptions({
   shifts,
   assignments,
   selectedCell,
+  selectedDisplay,
   setSelectedCell,
 }: Props) {
   const [selectedAssignment, setSelectedAssignment] = useState<AssignmentT>(
@@ -160,7 +162,7 @@ export default function AssignmentOptions({
             Assignment
           </Typography>
         </Box>
-        {selectedAssignment.fixed ? (
+        {selectedAssignment.fixed || selectedAssignment.status !== "wip" ? (
           <Box
             sx={{
               display: "flex",
@@ -168,7 +170,7 @@ export default function AssignmentOptions({
               justifyContent: "space-between",
             }}
           >
-            {selectedCell.dataDisplayed === "worker" && (
+            {selectedDisplay === "shift" && (
               <Box>
                 <Typography
                   align="left"
@@ -202,7 +204,7 @@ export default function AssignmentOptions({
                 </FormControl>
               </Box>
             )}
-            {selectedCell.dataDisplayed === "shift" && (
+            {selectedDisplay === "worker" && (
               <Box>
                 <Typography
                   align="left"
@@ -236,22 +238,23 @@ export default function AssignmentOptions({
                 </FormControl>
               </Box>
             )}
-
-            <Button
-              onClick={handleChangeAssignmentFixed}
-              sx={{
-                borderRadius: 4,
-                textTransform: "none",
-                fontSize: "0.8rem",
-                border: "1px solid",
-                height: "20px",
-                color: "grey.700",
-                paddingY: 0,
-                paddingX: 0,
-              }}
-            >
-              Unset
-            </Button>
+            {selectedAssignment.status === "wip" && (
+              <Button
+                onClick={handleChangeAssignmentFixed}
+                sx={{
+                  borderRadius: 4,
+                  textTransform: "none",
+                  fontSize: "0.8rem",
+                  border: "1px solid",
+                  height: "20px",
+                  color: "grey.700",
+                  paddingY: 0,
+                  paddingX: 0,
+                }}
+              >
+                Unset
+              </Button>
+            )}
           </Box>
         ) : (
           <Box
@@ -261,7 +264,7 @@ export default function AssignmentOptions({
               justifyContent: "space-between",
             }}
           >
-            {selectedCell.dataDisplayed === "worker" && (
+            {selectedDisplay === "shift" && (
               <Typography
                 align="left"
                 sx={{ fontSize: "0.8rem", paddingLeft: "10px" }}
@@ -272,7 +275,7 @@ export default function AssignmentOptions({
                 }`}
               </Typography>
             )}
-            {selectedCell.dataDisplayed === "shift" && (
+            {selectedDisplay === "worker" && (
               <Typography
                 align="left"
                 sx={{ fontSize: "0.8rem", paddingLeft: "10px" }}
@@ -301,131 +304,135 @@ export default function AssignmentOptions({
           </Box>
         )}
       </Box>
-      <Box>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            minHeight: 25,
-            width: "300px",
-            paddingLeft: 1,
-            borderBottom: "1px solid lightgrey",
-            backgroundColor: "grey.100",
-          }}
-        >
-          <Typography
-            // variant="body2"
-            align="left"
-            sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
-          >
-            Requests
-          </Typography>
-        </Box>
-        {selectedCell.requests.length === 0 ? (
-          <Typography
-            align="left"
+      {selectedAssignment.date.isAfter(dayjs.utc(dayjs().startOf("day"))) && (
+        <Box>
+          <Box
             sx={{
-              fontSize: "0.8rem",
-              paddingLeft: "10px",
-              color: "grey.700",
-              fontStyle: "italic",
+              display: "flex",
+              alignItems: "center",
+              minHeight: 25,
+              width: "300px",
+              paddingLeft: 1,
+              borderBottom: "1px solid lightgrey",
+              backgroundColor: "grey.100",
             }}
           >
-            No requests
-          </Typography>
-        ) : (
-          selectedCell.requests.map((request, index) => (
-            <Box
-              key={index}
+            <Typography
+              // variant="body2"
+              align="left"
+              sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
+            >
+              Requests
+            </Typography>
+          </Box>
+          {selectedCell.requests.length === 0 ? (
+            <Typography
+              align="left"
               sx={{
-                display: "flex",
-                flexDirection: "row",
+                fontSize: "0.8rem",
+                paddingLeft: "10px",
+                color: "grey.700",
+                fontStyle: "italic",
               }}
             >
-              <Typography
-                align="left"
-                sx={{ fontSize: "0.8rem", paddingLeft: "10px" }}
+              No requests
+            </Typography>
+          ) : (
+            selectedCell.requests.map((request, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                }}
               >
-                {`${workers.find((w) => w.id === request.workerId)?.name} - 
+                <Typography
+                  align="left"
+                  sx={{ fontSize: "0.8rem", paddingLeft: "10px" }}
+                >
+                  {`${workers.find((w) => w.id === request.workerId)?.name} - 
           ${shifts.find((s) => s.id === request.shiftId)?.name} - 
           ${request.date.format("D MMM YYYY")}`}
-              </Typography>
-              <FiberManualRecordIcon
-                sx={{
-                  fontSize: "1.1rem",
-                  marginLeft: "10px",
-                  color:
-                    request.status === "approved"
-                      ? "green"
-                      : request.status === "rejected"
-                      ? "red"
-                      : request.status === "pending"
-                      ? "grey"
-                      : "none",
-                }}
-              />
-            </Box>
-          ))
-        )}
-      </Box>
-      <Box>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            minHeight: 25,
-            width: "300px",
-            paddingLeft: 1,
-            borderBottom: "1px solid lightgrey",
-            backgroundColor: "grey.100",
-          }}
-        >
-          <Typography
-            // variant="body2"
-            align="left"
-            sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
-          >
-            Breaches
-          </Typography>
+                </Typography>
+                <FiberManualRecordIcon
+                  sx={{
+                    fontSize: "1.1rem",
+                    marginLeft: "10px",
+                    color:
+                      request.status === "approved"
+                        ? "green"
+                        : request.status === "rejected"
+                        ? "red"
+                        : request.status === "pending"
+                        ? "grey"
+                        : "none",
+                  }}
+                />
+              </Box>
+            ))
+          )}
         </Box>
-        {breachesNoRequests.length === 0 ? (
-          <Typography
-            align="left"
+      )}
+      {selectedAssignment.status === "wip" && (
+        <Box>
+          <Box
             sx={{
-              fontSize: "0.8rem",
-              paddingLeft: "10px",
-              color: "grey.700",
-              fontStyle: "italic",
+              display: "flex",
+              alignItems: "center",
+              minHeight: 25,
+              width: "300px",
+              paddingLeft: 1,
+              borderBottom: "1px solid lightgrey",
+              backgroundColor: "grey.100",
             }}
           >
-            No breaches
-          </Typography>
-        ) : (
-          breachesNoRequests.map((breach, index) => (
-            <Box
-              key={index}
+            <Typography
+              // variant="body2"
+              align="left"
+              sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
+            >
+              Breaches
+            </Typography>
+          </Box>
+          {breachesNoRequests.length === 0 ? (
+            <Typography
+              align="left"
               sx={{
-                display: "flex",
-                flexDirection: "row",
+                fontSize: "0.8rem",
+                paddingLeft: "10px",
+                color: "grey.700",
+                fontStyle: "italic",
               }}
             >
-              <Typography
-                align="left"
-                sx={{ fontSize: "0.8rem", paddingLeft: "10px" }}
-              >
-                {breach.description}
-              </Typography>
-              <FiberManualRecordIcon
+              No breaches
+            </Typography>
+          ) : (
+            breachesNoRequests.map((breach, index) => (
+              <Box
+                key={index}
                 sx={{
-                  fontSize: "1.1rem",
-                  marginLeft: "10px",
-                  color: breach.hardToSoft ? "red" : "orange",
+                  display: "flex",
+                  flexDirection: "row",
                 }}
-              />
-            </Box>
-          ))
-        )}
-      </Box>
+              >
+                <Typography
+                  align="left"
+                  sx={{ fontSize: "0.8rem", paddingLeft: "10px" }}
+                >
+                  {breach.description}
+                </Typography>
+                <FiberManualRecordIcon
+                  sx={{
+                    fontSize: "1.1rem",
+                    marginLeft: "10px",
+                    color: breach.hardToSoft ? "red" : "orange",
+                  }}
+                />
+              </Box>
+            ))
+          )}
+        </Box>
+      )}
     </Box>
   );
 }

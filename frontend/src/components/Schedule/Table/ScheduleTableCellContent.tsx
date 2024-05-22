@@ -37,7 +37,7 @@ interface Props {
   schedule: ScheduleT;
   breaches: ObjectiveBreachT[];
   showBreaches: boolean;
-  dataDisplayed: string;
+  selectedDisplay: string;
   setSelectedCell: (seletedCell: SelectedCellT | null) => void;
 }
 
@@ -50,7 +50,7 @@ export default function ScheduleTableCellContent({
   schedule,
   breaches,
   showBreaches,
-  dataDisplayed,
+  selectedDisplay,
   setSelectedCell,
 }: Props) {
   const backColor = getBreachType(breaches);
@@ -62,7 +62,6 @@ export default function ScheduleTableCellContent({
           assignment: assignment,
           worker: worker,
           shift: shift,
-          dataDisplayed: dataDisplayed,
           requests: requests,
           breaches: breaches,
         })
@@ -77,11 +76,15 @@ export default function ScheduleTableCellContent({
             ? red[100]
             : "none"
           : "none",
+        border:
+          assignment.status === "wip" && assignment.fixed
+            ? "3px solid #bdbdbd"
+            : "none",
         cursor: "pointer",
       }}
     >
-      {dataDisplayed === "shift" && assignment && shift && shift.name}
-      {dataDisplayed === "worker" && assignment && worker && worker.name}
+      {selectedDisplay === "worker" && assignment && shift && shift.name}
+      {selectedDisplay === "shift" && assignment && worker && worker.name}
     </Box>
   );
 }

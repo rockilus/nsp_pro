@@ -68,7 +68,6 @@ export type SelectedCellT = {
   assignment: AssignmentT;
   worker: WorkerT;
   shift: ShiftT;
-  dataDisplayed: string;
   requests: RequestT[];
   breaches: ObjectiveBreachT[];
 };
