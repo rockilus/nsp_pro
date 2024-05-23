@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -39,6 +40,8 @@ export default function WorkerTable({
   workers,
   defaultWorkerFields,
 }: Props) {
+  const { t } = useTranslation();
+
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
@@ -82,7 +85,7 @@ export default function WorkerTable({
                     }}
                   >
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      Workers
+                      {t("title")}
                     </Typography>
                   </Box>
                   <PopoverRHS
