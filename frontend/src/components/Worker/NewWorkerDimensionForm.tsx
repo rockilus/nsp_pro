@@ -32,10 +32,10 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
   const [listError, setListError] = useState<boolean>(false);
 
   const PropertyTypes: Record<string, string> = {
-    str: t("worker.type_str"),
-    int: t("worker.type_int"),
-    bool: t("worker.type_bool"),
-    list: t("worker.type_list"),
+    str: t("worker_shift.type_str"),
+    int: t("worker_shift.type_int"),
+    bool: t("worker_shift.type_bool"),
+    list: t("worker_shift.type_list"),
   };
 
   const selectedTeam = useTeamStore((state) => state.selectedTeam);
@@ -117,7 +117,7 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
         value={name}
         onChange={handleNameChange}
         error={nameError}
-        helperText={nameError ? t("worker.name_helper_text") : ""}
+        helperText={nameError ? t("worker_shift.name_helper_text") : ""}
         sx={{ width: "100%" }}
       />
       <Box mt={2}>
@@ -126,7 +126,7 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
           style={{ minWidth: 120, width: "100%" }}
         >
           <InputLabel id="demo-simple-select-label">
-            {t("worker.property_type")}
+            {t("worker_shift.property_type")}
           </InputLabel>
           <Select
             value={type}
@@ -144,7 +144,7 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
           </Select>
           {typeError && (
             <FormHelperText error>
-              {t("worker.property_type_helper_text")}
+              {t("worker_shift.property_type_helper_text")}
             </FormHelperText>
           )}
         </FormControl>

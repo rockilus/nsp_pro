@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -15,8 +16,6 @@ import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
 import { useTeamStore } from "../../stores/teamStore";
 // Types
 import { ShiftDimensionT } from "./types";
-// Constant
-import { PropertyTypes } from "../../utils/constants";
 
 interface Props {
   isRest: boolean;
@@ -27,12 +26,21 @@ export default function NewShiftDimensionForm({
   isRest,
   setOpenParent,
 }: Props) {
+  const { t } = useTranslation();
+
   const [name, setName] = useState<string>("");
   const [type, setType] = useState<string>("");
   const [listOptions, setListOptions] = useState<string[]>([]);
   const [nameError, setNameError] = useState<boolean>(false);
   const [typeError, setTypeError] = useState<boolean>(false);
   const [listError, setListError] = useState<boolean>(false);
+
+  const PropertyTypes: Record<string, string> = {
+    str: t("worker_shift.type_str"),
+    int: t("worker_shift.type_int"),
+    bool: t("worker_shift.type_bool"),
+    list: t("worker_shift.type_list"),
+  };
 
   const selectedTeam = useTeamStore((state) => state.selectedTeam);
   const addShiftDimension = useShiftDimensionStore(
@@ -109,7 +117,7 @@ export default function NewShiftDimensionForm({
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
-        label="Name"
+        label={t("common.name")}
         variant="outlined"
         value={name}
         onChange={handleNameChange}
@@ -129,7 +137,7 @@ export default function NewShiftDimensionForm({
             variant="outlined"
             error={typeError}
             style={{ minWidth: 120, width: "100%" }}
-            label="Type"
+            label={t("worker_shift.property_type")}
           >
             {Object.keys(PropertyTypes).map((key) => (
               <MenuItem value={key} key={key}>
@@ -138,7 +146,9 @@ export default function NewShiftDimensionForm({
             ))}
           </Select>
           {typeError && (
-            <FormHelperText error>Please select an option</FormHelperText>
+            <FormHelperText error>
+              {t("worker_shift.property_type_helper_text")}
+            </FormHelperText>
           )}
         </FormControl>
       </Box>
@@ -154,7 +164,7 @@ export default function NewShiftDimensionForm({
       )}
       <div style={{ display: "flex", justifyContent: "right", marginTop: 10 }}>
         <Button variant="contained" onClick={handleAddElement}>
-          Add
+          {t("common.add")}
         </Button>
       </div>
     </Box>

@@ -89,9 +89,9 @@ export default function WorkerTable({
                     </Typography>
                   </Box>
                   <PopoverRHS
-                    title={t("worker.new_property")}
+                    title={t("worker_shift.new_property")}
                     buttonContent={
-                      <TableAddButton text={t("worker.add_property")} />
+                      <TableAddButton text={t("common.property")} />
                     }
                     content={
                       <NewWorkerDimensionForm
@@ -181,7 +181,7 @@ export default function WorkerTable({
               >
                 <Box display="flex" alignItems="center" minHeight={45}>
                   <TableAddButton
-                    text={t("worker.add_worker")}
+                    text={t("common.worker")}
                     handleClick={handleAddWorker}
                   />
                 </Box>

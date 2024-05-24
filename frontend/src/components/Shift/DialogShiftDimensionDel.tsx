@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -16,6 +17,8 @@ interface Props {
 }
 
 export default function DialogShiftDimensionDel({ shiftDimensionId }: Props) {
+  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
 
   const selectedTeam = useTeamStore((state) => state.selectedTeam);
@@ -34,7 +37,7 @@ export default function DialogShiftDimensionDel({ shiftDimensionId }: Props) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <Button variant="outlined" onClick={handleClickOpen} fullWidth>
-        Delete property
+        {t("common.delete")}
       </Button>
       <Dialog
         open={open}
@@ -43,12 +46,11 @@ export default function DialogShiftDimensionDel({ shiftDimensionId }: Props) {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Delete this property for all?"}
+          {t("worker_shift.delete_title")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Deleting this property will remove it from all workers. This action
-            cannot be undone.
+            {t("shift.delete_text")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -61,10 +63,10 @@ export default function DialogShiftDimensionDel({ shiftDimensionId }: Props) {
             }}
             color="error"
           >
-            Delete all
+            {t("worker_shift.delete_confirm")}
           </Button>
           <Button onClick={handleClose} autoFocus>
-            Cancel
+            {t("common.cancel")}
           </Button>
         </DialogActions>
       </Dialog>

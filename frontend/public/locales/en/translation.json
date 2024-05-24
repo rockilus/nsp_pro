@@ -1,27 +1,41 @@
 {
     "common": {
-        "name": "Name",
         "add": "Add",
         "cancel": "Cancel",
+        "color": "Color",
         "delete": "Delete",
-        "save": "Save"
+        "end_time": "End time",
+        "name": "Name",
+        "property": "Property",
+        "rest": "Rest",
+        "save": "Save",
+        "shift": "Shift",
+        "staffing": "Staffing",
+        "start_time": "Start time",
+        "worker": "Worker"
     },
     "worker": {
-        "workers": "Workers",
         "add_property": "Add Property",
-        "add_worker": "Add Worker",
+        "delete_text": "Deleting this property will remove it from all workers. This action cannot be undone.",
+        "property_new_option": "New option",
+        "property_new_option_helper_text": "Please enter an option",
+        "workers": "Workers"
+    },
+    "shift": {
+        "delete_text": "Deleting this property will remove it from all shifts. This action cannot be undone.",
+        "rest_shifts": "Rest shifts",
+        "shifts": "Shifts"
+    },
+    "worker_shift": {
+        "delete_confirm": "Delete all",
+        "delete_title": "Delete this property for all?",
         "name_helper_text": "Please enter a name",
         "new_property": "New property",
         "property_type": "Property type",
         "property_type_helper_text": "Please select an option",
-        "type_str": "Text",
-        "type_int": "Number",
         "type_bool": "True/False",
+        "type_int": "Number",
         "type_list": "Tags",
-        "property_new_option": "New option",
-        "property_new_option_helper_text": "Please enter an option",
-        "delete_title": "Delete this property for all?",
-        "delete_text": "Deleting this property will remove it from all workers. This action cannot be undone.",
-        "delete_confirm": "Delete all"
+        "type_str": "Text"
     }
 }

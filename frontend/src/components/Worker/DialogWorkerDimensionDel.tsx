@@ -46,7 +46,7 @@ export default function DialogWorkerDimensionDel({ workerDimensionId }: Props) {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {t("worker.delete_title")}
+          {t("worker_shift.delete_title")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
@@ -63,7 +63,7 @@ export default function DialogWorkerDimensionDel({ workerDimensionId }: Props) {
             }}
             color="error"
           >
-            {t("worker.delete_confirm")}
+            {t("worker_shift.delete_confirm")}
           </Button>
           <Button onClick={handleClose} autoFocus>
             {t("common.cancel")}
