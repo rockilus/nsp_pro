@@ -53,14 +53,24 @@ def core_to_msg_bulk(bulk: Bulk) -> BulkMessage:
     data = asdict(bulk)
     data["teams"] = [core_to_msg_team(t) for t in bulk.teams]
     data["workers"] = [
-        core_to_msg_worker_and_properties(w, bulk.worker_properties_w[w.id])
+        core_to_msg_worker_and_properties(
+            w,
+            (
+                bulk.worker_properties_w[w.id]
+                if w.id in bulk.worker_properties_w
+                else []
+            ),
+        )
         for w in bulk.workers
     ]
     data["worker_dimensions"] = [
         core_to_msg_worker_dimension(wd) for wd in bulk.worker_dimensions
     ]
     data["shifts"] = [
-        core_to_msg_shift_and_properties(s, bulk.shift_properties_s[s.id])
+        core_to_msg_shift_and_properties(
+            s,
+            (bulk.shift_properties_s[s.id] if s.id in bulk.shift_properties_s else []),
+        )
         for s in bulk.shifts
     ]
     data["shift_dimensions"] = [

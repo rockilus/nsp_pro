@@ -42,7 +42,7 @@ export default function WorkerFieldCellName({
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [worker.id]: "Name" })}
+      onClick={() => setEditing({ [worker.id]: "name" })}
       sx={{ paddingY: 0 }}
     >
       {editing ? (

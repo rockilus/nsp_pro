@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -30,7 +31,7 @@ interface Props {
   team: TeamT;
   workerDimensions: WorkerDimensionT[];
   workers: WorkerT[];
-  defaultWorkerFields: string[];
+  defaultWorkerFields: Record<string, string>[];
 }
 
 export default function WorkerTable({
@@ -39,6 +40,8 @@ export default function WorkerTable({
   workers,
   defaultWorkerFields,
 }: Props) {
+  const { t } = useTranslation();
+
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
@@ -82,12 +85,14 @@ export default function WorkerTable({
                     }}
                   >
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      Workers
+                      {t("worker.workers")}
                     </Typography>
                   </Box>
                   <PopoverRHS
-                    title={"New property"}
-                    buttonContent={<TableAddButton text="Add property" />}
+                    title={t("worker.new_property")}
+                    buttonContent={
+                      <TableAddButton text={t("worker.add_property")} />
+                    }
                     content={
                       <NewWorkerDimensionForm
                         setOpenParent={setPopoverRhsOpen}
@@ -109,7 +114,7 @@ export default function WorkerTable({
                       alignItems: "center",
                     }}
                   >
-                    {field}
+                    {field.label}
                   </Box>
                 </TableCell>
               ))}
@@ -129,7 +134,7 @@ export default function WorkerTable({
                   <WorkerFieldCell
                     key={index}
                     worker={worker}
-                    workerField={field}
+                    workerField={field.name}
                     editing={bodyEditing}
                     setEditing={setBodyEditing}
                   />
@@ -176,7 +181,7 @@ export default function WorkerTable({
               >
                 <Box display="flex" alignItems="center" minHeight={45}>
                   <TableAddButton
-                    text="Add worker"
+                    text={t("worker.add_worker")}
                     handleClick={handleAddWorker}
                   />
                 </Box>

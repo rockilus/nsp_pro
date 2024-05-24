@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -18,6 +19,8 @@ export default function DimensionListInput({
   addOption,
   removeOption,
 }: Props) {
+  const { t } = useTranslation();
+
   const [newOption, setNewOption] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
 
@@ -48,13 +51,15 @@ export default function DimensionListInput({
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
-        label="New Option"
+        label={t("worker.property_new_option")}
         variant="outlined"
         value={newOption}
         onChange={handleInputChange}
         onKeyDown={handleKeyPress}
         error={error || listError}
-        helperText={error || listError ? "Please enter an option" : ""}
+        helperText={
+          error || listError ? t("worker.property_new_option_helper_text") : ""
+        }
         sx={{ width: "100%" }}
       />
       <Box mt={2}>

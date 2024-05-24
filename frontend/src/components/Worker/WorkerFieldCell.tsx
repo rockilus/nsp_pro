@@ -18,10 +18,10 @@ export default function WorkerFieldCell({
   editing,
   setEditing,
 }: Props) {
-  return workerField === "Name" ? (
+  return workerField === "name" ? (
     <WorkerFieldCellName
       worker={worker}
-      editing={editing[worker.id] === "Name"}
+      editing={editing[worker.id] === "name"}
       setEditing={setEditing}
     />
   ) : (
