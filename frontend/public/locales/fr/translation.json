@@ -10,7 +10,7 @@
         "rest": "Repos",
         "save": "Sauvegarder",
         "shift": "Tache",
-        "staffing": "Staffing",
+        "staffing": "Effectif",
         "start_time": "Début",
         "worker": "Travailleur"
     },
@@ -23,6 +23,7 @@
     "shift": {
         "name_helper_text": "Entrez le nom de la tâche",
         "delete_text": "Supprimer cette propriété la retirera de toutes les tâches. Cette action ne peut pas être annulée.",
+        "delete_title": "Supprimer cette propriété pour toutes les tâches?",
         "rest_shifts": "Repos",
         "shifts": "Tâches"
     },

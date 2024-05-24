@@ -132,7 +132,7 @@ export default function NewShiftDimensionForm({
         >
           <InputLabel id="demo-simple-select-label">Type</InputLabel>
           <Select
-            value={type}
+            value={t("worker_shift.property_type")}
             onChange={handleTypeChange}
             variant="outlined"
             error={typeError}
