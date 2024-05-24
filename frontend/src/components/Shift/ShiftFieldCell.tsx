@@ -7,7 +7,6 @@ import ShiftFieldCellName from "./ShiftFieldCellName";
 import ShiftFieldCellStartTime from "./ShiftFieldCellStartTime";
 import ShiftFieldCellEndTime from "./ShiftFieldCellEndTime";
 import ShiftFieldCellStaff from "./ShiftFieldCellStaff";
-import ShiftFieldCellIsTimeOff from "./ShiftFieldCellIsTimeOff";
 import { ShiftT } from "./types";
 
 interface Props {
@@ -23,34 +22,32 @@ export default function ShiftFieldCell({
   editing,
   setEditing,
 }: Props) {
-  return shiftField === "Color" ? (
+  return shiftField === "color" ? (
     <ShiftFieldCellColor shift={shift} />
-  ) : shiftField === "Name" ? (
+  ) : shiftField === "name" ? (
     <ShiftFieldCellName
       shift={shift}
-      editing={editing[shift.id] === "Name"}
+      editing={editing[shift.id] === "name"}
       setEditing={setEditing}
     />
-  ) : shiftField === "Start time" ? (
+  ) : shiftField === "start_time" ? (
     <ShiftFieldCellStartTime
       shift={shift}
-      editing={editing[shift.id] === "Start time"}
+      editing={editing[shift.id] === "start_time"}
       setEditing={setEditing}
     />
-  ) : shiftField === "End time" ? (
+  ) : shiftField === "end_time" ? (
     <ShiftFieldCellEndTime
       shift={shift}
-      editing={editing[shift.id] === "End time"}
+      editing={editing[shift.id] === "end_time"}
       setEditing={setEditing}
     />
-  ) : shiftField === "Staffing" ? (
+  ) : shiftField === "staffing" ? (
     <ShiftFieldCellStaff
       shift={shift}
-      editing={editing[shift.id] === "Staffing"}
+      editing={editing[shift.id] === "staffing"}
       setEditing={setEditing}
     />
-  ) : shiftField === "Is time off" ? (
-    <ShiftFieldCellIsTimeOff shift={shift} />
   ) : (
     <TableCell></TableCell>
   );

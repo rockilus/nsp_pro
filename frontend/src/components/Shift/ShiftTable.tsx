@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "react-i18next";
 // MUI
 import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
@@ -36,7 +37,7 @@ interface Props {
   isRest: boolean;
   shiftDimensions: ShiftDimensionT[];
   shifts: ShiftT[];
-  defaultShiftFields: string[];
+  defaultShiftFields: Record<string, string>[];
 }
 
 export default function ShiftTable({
@@ -46,6 +47,8 @@ export default function ShiftTable({
   shifts,
   defaultShiftFields,
 }: Props) {
+  const { t } = useTranslation();
+
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
@@ -89,12 +92,14 @@ export default function ShiftTable({
                 >
                   <Box display="flex" alignItems="center" minHeight={45}>
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      {isRest ? "Rest shifts" : "Shifts"}
+                      {isRest ? t("shift.rest_shifts") : t("shift.shifts")}
                     </Typography>
                   </Box>
                   <PopoverRHS
-                    title={"New property"}
-                    buttonContent={<TableAddButton text="Add property" />}
+                    title={t("worker_shift.new_property")}
+                    buttonContent={
+                      <TableAddButton text={t("common.property")} />
+                    }
                     content={
                       <NewShiftDimensionForm
                         isRest={isRest}
@@ -117,7 +122,7 @@ export default function ShiftTable({
                       alignItems: "center",
                     }}
                   >
-                    {field}
+                    {field.label}
                   </Box>
                 </TableCell>
               ))}
@@ -139,7 +144,7 @@ export default function ShiftTable({
                   <ShiftFieldCell
                     key={index}
                     shift={shift}
-                    shiftField={field}
+                    shiftField={field.name}
                     editing={bodyEditing}
                     setEditing={setBodyEditing}
                   />
@@ -186,7 +191,7 @@ export default function ShiftTable({
                   sx={{ display: "flex", alignItems: "center", minHeight: 45 }}
                 >
                   <TableAddButton
-                    text={isRest ? "Add rest" : "Add shift"}
+                    text={isRest ? t("common.rest") : t("common.shift")}
                     handleClick={handleAddShift}
                   />
                 </Box>

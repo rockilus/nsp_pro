@@ -51,14 +51,16 @@ export default function DimensionListInput({
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
-        label={t("worker.property_new_option")}
+        label={t("worker_shift.property_new_option")}
         variant="outlined"
         value={newOption}
         onChange={handleInputChange}
         onKeyDown={handleKeyPress}
         error={error || listError}
         helperText={
-          error || listError ? t("worker.property_new_option_helper_text") : ""
+          error || listError
+            ? t("worker_shift.property_new_option_helper_text")
+            : ""
         }
         sx={{ width: "100%" }}
       />

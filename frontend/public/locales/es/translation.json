@@ -1,27 +1,42 @@
 {
     "common": {
-        "name": "Nombre",
         "add": "Añadir",
         "cancel": "Cancelar",
+        "color": "Color",
         "delete": "Eliminar",
-        "save": "Guardar"
+        "end_time": "Fin",
+        "name": "Nombre",
+        "property": "Propiedad",
+        "rest": "Descanso",
+        "save": "Guardar",
+        "shift": "Turno",
+        "staffing": "Personal",
+        "start_time": "Principio",
+        "worker": "Trabajador"
     },
     "worker": {
-        "workers": "Trabajadores",
-        "add_property": "Añadir propiedad",
-        "add_worker": "Añadir trabajador",
         "name_helper_text": "Por favor, introduce un nombre",
+        "delete_text": "Eliminar esta propiedad la eliminará de todos los trabajadores. Esta acción no se puede deshacer.",
+        "delete_title": "Eliminar esta propiedad de todos los trabajadores?",
+        "workers": "Trabajadores"
+    },
+    "shift": {
+        "name_helper_text": "Por favor, introduce un nombre",
+        "delete_text": "Eliminar esta propiedad la eliminará de todos los turnos. Esta acción no se puede deshacer.",
+        "delete_title": "Eliminar esta propiedad de todos los turnos?",
+        "rest_shifts": "Descansos",
+        "shifts": "Turnos"
+    },
+    "worker_shift": {
+        "delete_confirm": "Eliminar para todos",
         "new_property": "Nueva propiedad",
+        "property_new_option": "Nueva opción",
+        "property_new_option_helper_text": "Por favor, introduce una nueva opción",
         "property_type": "Tipo de propiedad",
         "property_type_helper_text": "Por favor, selecciona un tipo de propiedad",
         "type_str": "Texto",
         "type_int": "Número",
         "type_bool": "Si/No",
-        "type_list": "Tags",
-        "property_new_option": "Nueva opción",
-        "property_new_option_helper_text": "Por favor, introduce una nueva opción",
-        "delete_title": "Eliminar esta propiedad de todos los trabajadores?",
-        "delete_text": "Eliminar esta propiedad la eliminará de todos los trabajadores. Esta acción no se puede deshacer.",
-        "delete_confirm": "Eliminar para todos"
+        "type_list": "Tags"
     }
 }

@@ -1,17 +1,12 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 // Components
 import ShiftTable from "./ShiftTable";
 // Types
 import { ShiftT, ShiftDimensionT } from "./types";
 import { TeamT } from "../../containers/types";
-// Constants
-import {
-  DefaultWorkShiftFields,
-  DefaultRestShiftFields,
-} from "../../utils/constants";
 
 interface Props {
   team: TeamT;
@@ -20,6 +15,22 @@ interface Props {
 }
 
 export default function ShiftTab({ team, shifts, shiftDimensions }: Props) {
+  const { t } = useTranslation();
+
+  const DefaultWorkShiftFields: Record<string, string>[] = [
+    { name: "color", label: t("common.color") },
+    { name: "name", label: t("common.name") },
+    { name: "start_time", label: t("common.start_time") },
+    { name: "end_time", label: t("common.end_time") },
+    { name: "staffing", label: t("common.staffing") },
+  ];
+  const DefaultRestShiftFields: Record<string, string>[] = [
+    { name: "color", label: t("common.color") },
+    { name: "name", label: t("common.name") },
+    { name: "start_time", label: t("common.start_time") },
+    { name: "end_time", label: t("common.end_time") },
+  ];
+
   return (
     <Box style={{ width: "100%" }}>
       <Box

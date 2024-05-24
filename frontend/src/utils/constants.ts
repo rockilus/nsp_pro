@@ -27,19 +27,6 @@ export const tabs: { id: string; label: string }[] = [
 ];
 
 // Shifts
-export const DefaultWorkShiftFields: string[] = [
-  "Color",
-  "Name",
-  "Start time",
-  "End time",
-  "Staffing",
-];
-export const DefaultRestShiftFields: string[] = [
-  "Color",
-  "Name",
-  "Start time",
-  "End time",
-];
 export const ShiftColors: string[] = [
   "#0030C6",
   "#C60093",
@@ -50,13 +37,6 @@ export const ShiftColors: string[] = [
   "#5BAB00",
   "#00ABA6",
 ];
-
-export const PropertyTypes: Record<string, string> = {
-  str: "String",
-  int: "Integer",
-  bool: "Boolean",
-  list: "List",
-};
 
 export const DefaultProperties: Record<string, string | boolean | string[]> = {
   str: "",

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -11,6 +12,7 @@ import { useShiftDimensionStore } from "../../stores/shiftDimensionStore";
 import { useTeamStore } from "../../stores/teamStore";
 // Types
 import { ShiftDimensionT } from "./types";
+import { use } from "i18next";
 
 interface Props {
   shiftDimension: ShiftDimensionT;
@@ -21,6 +23,8 @@ export default function UpdateShiftDimensionForm({
   shiftDimension,
   setOpenParent,
 }: Props) {
+  const { t } = useTranslation();
+
   const [name, setName] = useState<string>(shiftDimension.name);
   const [listOptions, setListOptions] = useState<string[]>(
     shiftDimension.entryOptions
@@ -110,12 +114,12 @@ export default function UpdateShiftDimensionForm({
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
-        label="Name"
+        label={t("common.name")}
         variant="outlined"
         value={name}
         onChange={handleNameChange}
         error={nameError}
-        helperText={nameError ? "Please enter a name" : ""}
+        helperText={nameError ? t("shift.name_helper_text") : ""}
         onKeyDown={handleKeyPress}
         sx={{ width: "100%" }}
       />
@@ -135,7 +139,7 @@ export default function UpdateShiftDimensionForm({
           onClick={() => handleAddElement()}
           sx={{ marginRight: 1 }}
         >
-          Save
+          {t("common.save")}
         </Button>
         <DialogShiftDimensionDel shiftDimensionId={shiftDimension.id} />
       </div>
