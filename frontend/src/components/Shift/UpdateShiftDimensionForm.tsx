@@ -119,7 +119,7 @@ export default function UpdateShiftDimensionForm({
         value={name}
         onChange={handleNameChange}
         error={nameError}
-        helperText={nameError ? t("worker_shift.name_helper_text") : ""}
+        helperText={nameError ? t("shift.name_helper_text") : ""}
         onKeyDown={handleKeyPress}
         sx={{ width: "100%" }}
       />

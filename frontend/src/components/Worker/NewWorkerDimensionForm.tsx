@@ -117,7 +117,7 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
         value={name}
         onChange={handleNameChange}
         error={nameError}
-        helperText={nameError ? t("worker_shift.name_helper_text") : ""}
+        helperText={nameError ? t("worker.name_helper_text") : ""}
         sx={{ width: "100%" }}
       />
       <Box mt={2}>

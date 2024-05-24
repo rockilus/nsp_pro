@@ -1,27 +1,41 @@
 {
     "common": {
-        "name": "Nom",
         "add": "Ajouter",
         "cancel": "Annuler",
+        "color": "Couleur",
         "delete": "Supprimer",
-        "save": "Sauvegarder"
+        "end_time": "Fin",
+        "name": "Nom",
+        "property": "Propriété",
+        "rest": "Repos",
+        "save": "Sauvegarder",
+        "shift": "Tache",
+        "staffing": "Staffing",
+        "start_time": "Début",
+        "worker": "Travailleur"
     },
     "worker": {
-        "workers": "Travailleurs",
-        "add_property": "Ajouter propriété",
-        "add_worker": "Ajouter travailleur",
         "name_helper_text": "Entrez le nom du travailleur",
+        "delete_text": "Supprimer cette propriété la retirera de tous les travailleurs. Cette action ne peut pas être annulée.",
+        "delete_title": "Supprimer cette propriété pour tous les travailleurs?",
+        "workers": "Travailleurs"
+    },
+    "shift": {
+        "name_helper_text": "Entrez le nom de la tâche",
+        "delete_text": "Supprimer cette propriété la retirera de toutes les tâches. Cette action ne peut pas être annulée.",
+        "rest_shifts": "Repos",
+        "shifts": "Tâches"
+    },
+    "worker_shift": {
+        "delete_confirm": "Supprimer pour tous",
         "new_property": "Nouvelle propriété",
+        "property_new_option": "Nouvelle option",
+        "property_new_option_helper_text": "Entrez une nouvelle option",
         "property_type": "Type de propriété",
         "property_type_helper_text": "Sélectionnez le type de propriété",
         "type_str": "Texte",
         "type_int": "Nombre",
         "type_bool": "Vrai/Faux",
-        "type_list": "Tags",
-        "property_new_option": "Nouvelle option",
-        "property_new_option_helper_text": "Entrez une nouvelle option",
-        "delete_title": "Supprimer cette propriété pour tous les travailleurs?",
-        "delete_text": "Supprimer cette propriété la retirera de tous les travailleurs. Cette action ne peut pas être annulée.",
-        "delete_confirm": "Supprimer pour tous"
+        "type_list": "Tags"
     }
 }

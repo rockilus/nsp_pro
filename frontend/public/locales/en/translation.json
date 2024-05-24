@@ -15,22 +15,22 @@
         "worker": "Worker"
     },
     "worker": {
-        "add_property": "Add Property",
+        "name_helper_text": "Please enter a name",
         "delete_text": "Deleting this property will remove it from all workers. This action cannot be undone.",
-        "property_new_option": "New option",
-        "property_new_option_helper_text": "Please enter an option",
+        "delete_title": "Delete this property for all?",
         "workers": "Workers"
     },
     "shift": {
+        "name_helper_text": "Please enter a name",
         "delete_text": "Deleting this property will remove it from all shifts. This action cannot be undone.",
         "rest_shifts": "Rest shifts",
         "shifts": "Shifts"
     },
     "worker_shift": {
         "delete_confirm": "Delete all",
-        "delete_title": "Delete this property for all?",
-        "name_helper_text": "Please enter a name",
         "new_property": "New property",
+        "property_new_option": "New option",
+        "property_new_option_helper_text": "Please enter an option",
         "property_type": "Property type",
         "property_type_helper_text": "Please select an option",
         "type_bool": "True/False",
