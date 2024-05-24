@@ -1,7 +1,27 @@
 {
-    "title": "Trabajadores",
-    "description": {
-        "part1": "To get started, edit <1>src/App.js</1> and save to reload.",
-        "part2": "Switch language between english and german using buttons above."
+    "common": {
+        "name": "Nombre",
+        "add": "Añadir",
+        "cancel": "Cancelar",
+        "delete": "Eliminar",
+        "save": "Guardar"
+    },
+    "worker": {
+        "workers": "Trabajadores",
+        "add_property": "Añadir propiedad",
+        "add_worker": "Añadir trabajador",
+        "name_helper_text": "Por favor, introduce un nombre",
+        "new_property": "Nueva propiedad",
+        "property_type": "Tipo de propiedad",
+        "property_type_helper_text": "Por favor, selecciona un tipo de propiedad",
+        "type_str": "Texto",
+        "type_int": "Número",
+        "type_bool": "Si/No",
+        "type_list": "Tags",
+        "property_new_option": "Nueva opción",
+        "property_new_option_helper_text": "Por favor, introduce una nueva opción",
+        "delete_title": "Eliminar esta propiedad de todos los trabajadores?",
+        "delete_text": "Eliminar esta propiedad la eliminará de todos los trabajadores. Esta acción no se puede deshacer.",
+        "delete_confirm": "Eliminar para todos"
     }
 }

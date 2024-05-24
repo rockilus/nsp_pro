@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -21,6 +22,8 @@ export default function UpdateWorkerDimensionForm({
   workerDimension,
   setOpenParent,
 }: Props) {
+  const { t } = useTranslation();
+
   const [name, setName] = useState<string>(workerDimension.name);
   const [listOptions, setListOptions] = useState<string[]>(
     workerDimension.entryOptions
@@ -109,12 +112,12 @@ export default function UpdateWorkerDimensionForm({
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
-        label="Name"
+        label={t("common.name")}
         variant="outlined"
         value={name}
         onChange={handleNameChange}
         error={nameError}
-        helperText={nameError ? "Please enter a name" : ""}
+        helperText={nameError ? t("worker.name_helper_text") : ""}
         onKeyDown={handleKeyPress}
         sx={{ width: "100%" }}
       />
@@ -134,7 +137,7 @@ export default function UpdateWorkerDimensionForm({
           onClick={() => handleAddElement()}
           sx={{ marginRight: 1 }}
         >
-          Save
+          {t("common.save")}
         </Button>
         <DialogWorkerDimensionDel workerDimensionId={workerDimension.id} />
       </div>

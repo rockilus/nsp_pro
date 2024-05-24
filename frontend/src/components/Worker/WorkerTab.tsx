@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 // Components
@@ -6,8 +7,6 @@ import WorkerTable from "./WorkerTable";
 // Types
 import { WorkerT, WorkerDimensionT } from "./types";
 import { TeamT } from "../../containers/types";
-// Constants
-import { DefaultWorkerFields } from "../../utils/constants";
 
 interface Props {
   team: TeamT;
@@ -16,6 +15,10 @@ interface Props {
 }
 
 export default function WorkerTab({ team, workers, workerDimensions }: Props) {
+  const { t } = useTranslation();
+  const DefaultWorkerFields: Record<string, string>[] = [
+    { name: "name", label: t("common.name") },
+  ];
   return (
     <Box
       sx={{

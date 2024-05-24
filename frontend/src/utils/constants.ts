@@ -26,9 +26,6 @@ export const tabs: { id: string; label: string }[] = [
   { id: "stats", label: "Stats" },
 ];
 
-// Workers
-export const DefaultWorkerFields: string[] = ["Name"];
-
 // Shifts
 export const DefaultWorkShiftFields: string[] = [
   "Color",

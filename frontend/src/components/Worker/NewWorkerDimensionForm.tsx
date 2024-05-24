@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -15,20 +16,27 @@ import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
 import { useTeamStore } from "../../stores/teamStore";
 // Types
 import { WorkerDimensionT } from "./types";
-// Constant
-import { PropertyTypes } from "../../utils/constants";
 
 interface Props {
   setOpenParent: (open: boolean) => void | null;
 }
 
 export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
+  const { t } = useTranslation();
+
   const [name, setName] = useState<string>("");
   const [type, setType] = useState<string>("");
   const [listOptions, setListOptions] = useState<string[]>([]);
   const [nameError, setNameError] = useState<boolean>(false);
   const [typeError, setTypeError] = useState<boolean>(false);
   const [listError, setListError] = useState<boolean>(false);
+
+  const PropertyTypes: Record<string, string> = {
+    str: t("worker.type_str"),
+    int: t("worker.type_int"),
+    bool: t("worker.type_bool"),
+    list: t("worker.type_list"),
+  };
 
   const selectedTeam = useTeamStore((state) => state.selectedTeam);
   const addWorkerDimension = useWorkerDimensionStore(
@@ -104,12 +112,12 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
-        label="Name"
+        label={t("common.name")}
         variant="outlined"
         value={name}
         onChange={handleNameChange}
         error={nameError}
-        helperText={nameError ? "Please enter a name" : ""}
+        helperText={nameError ? t("worker.name_helper_text") : ""}
         sx={{ width: "100%" }}
       />
       <Box mt={2}>
@@ -117,7 +125,9 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
           variant="outlined"
           style={{ minWidth: 120, width: "100%" }}
         >
-          <InputLabel id="demo-simple-select-label">Type</InputLabel>
+          <InputLabel id="demo-simple-select-label">
+            {t("worker.property_type")}
+          </InputLabel>
           <Select
             value={type}
             onChange={handleTypeChange}
@@ -133,7 +143,9 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
             ))}
           </Select>
           {typeError && (
-            <FormHelperText error>Please select an option</FormHelperText>
+            <FormHelperText error>
+              {t("worker.property_type_helper_text")}
+            </FormHelperText>
           )}
         </FormControl>
       </Box>
@@ -149,7 +161,7 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
       )}
       <div style={{ display: "flex", justifyContent: "right", marginTop: 10 }}>
         <Button variant="contained" onClick={handleAddElement}>
-          Add
+          {t("common.add")}
         </Button>
       </div>
     </Box>

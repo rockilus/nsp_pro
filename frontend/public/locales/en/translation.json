@@ -1,7 +1,27 @@
 {
-    "title": "Workers",
-    "description": {
-        "part1": "To get started, edit <1>src/App.js</1> and save to reload.",
-        "part2": "Switch language between english and german using buttons above."
+    "common": {
+        "name": "Name",
+        "add": "Add",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "save": "Save"
+    },
+    "worker": {
+        "workers": "Workers",
+        "add_property": "Add Property",
+        "add_worker": "Add Worker",
+        "name_helper_text": "Please enter a name",
+        "new_property": "New property",
+        "property_type": "Property type",
+        "property_type_helper_text": "Please select an option",
+        "type_str": "Text",
+        "type_int": "Number",
+        "type_bool": "True/False",
+        "type_list": "Tags",
+        "property_new_option": "New option",
+        "property_new_option_helper_text": "Please enter an option",
+        "delete_title": "Delete this property for all?",
+        "delete_text": "Deleting this property will remove it from all workers. This action cannot be undone.",
+        "delete_confirm": "Delete all"
     }
 }
