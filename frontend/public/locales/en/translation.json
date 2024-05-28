@@ -21,6 +21,7 @@
         "staffing": "Staffing",
         "status": "Status",
         "start_time": "Start time",
+        "type": "Type",
         "worker": "Worker"
     },
     "worker": {
@@ -56,7 +57,7 @@
     "request": {
         "date_range": "Date range",
         "new_request": "New request",
-        "requests": "Requests",
+        "requests": "Requests"
     },
     "week_days": {
         "monday": "Monday",

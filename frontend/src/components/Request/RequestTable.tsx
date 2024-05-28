@@ -36,7 +36,7 @@ export default function RequestTable({
     { name: "workerId", label: t("common.worker") },
     { name: "shiftId", label: t("common.shift") },
     { name: "date", label: t("common.date") },
-    { name: "hard", label: t("common.hard") },
+    { name: "hard", label: t("common.type") },
     { name: "status", label: t("common.status") },
   ];
 
