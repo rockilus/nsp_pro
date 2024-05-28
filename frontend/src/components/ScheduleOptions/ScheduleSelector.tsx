@@ -14,6 +14,7 @@ import TableContainer from "@mui/material/TableContainer";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import TableRowScheduleWIP from "../Schedule/ScheduleOptions/TableRowScheduleWIP";
+import { GetStatusLabel } from "../SharedComponents/getScheduleStatusLabel";
 // Stores
 import { useScheduleStore } from "../../stores/scheduleStore";
 // Types
@@ -34,18 +35,6 @@ export default function ScheduleSelector({ team, schedule }: Props) {
 
   const addSchedule = useScheduleStore((state) => state.addSchedule);
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
-
-  const statusOptions: Record<string, string>[] = [
-    { name: "Not solved", label: t("campaign.not_solved") },
-    { name: "Solved", label: t("campaign.solved") },
-    { name: "No solution", label: t("campaign.no_solution") },
-    { name: "Soft breached", label: "Soft breached" },
-    { name: "Hard breached", label: "Hard breached" },
-  ];
-
-  const getStatusLabel = (status: string) => {
-    return statusOptions.find((option) => option.name === status)?.label || "";
-  };
 
   return (
     <Box
@@ -139,7 +128,7 @@ export default function ScheduleSelector({ team, schedule }: Props) {
                   name={t("common.status")}
                   content={
                     <Chip
-                      label={getStatusLabel(schedule.solveStatus)}
+                      label={GetStatusLabel(schedule.solveStatus)}
                       color={
                         (SolveStatusColors[
                           SolveStatusList.indexOf(schedule.solveStatus)

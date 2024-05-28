@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -18,6 +19,8 @@ interface Props {
 }
 
 export default function ScheduleDialogValidate({ team, scheduleId }: Props) {
+  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
   const validateSchedule = useScheduleStore((state) => state.validateSchedule);
 
@@ -42,7 +45,7 @@ export default function ScheduleDialogValidate({ team, scheduleId }: Props) {
           height: "35px",
         }}
       >
-        Validate
+        {t("common.validate")}
       </Button>
       <Dialog
         open={open}
@@ -51,17 +54,16 @@ export default function ScheduleDialogValidate({ team, scheduleId }: Props) {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Validate this schedule?"}
+          {t("schedule.validate_title")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Validating this schedule will send the assignments to your team for
-            the schedule period. Changes to the schedule will be limited.
+            {t("schedule.validate_text")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="error">
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={() => {
@@ -70,7 +72,7 @@ export default function ScheduleDialogValidate({ team, scheduleId }: Props) {
             }}
             autoFocus
           >
-            Validate
+            {t("common.validate")}
           </Button>
         </DialogActions>
       </Dialog>

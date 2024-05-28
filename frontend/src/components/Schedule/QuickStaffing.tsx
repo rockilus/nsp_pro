@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { useTranslation } from "react-i18next";
 // MUI
 import AdjustIcon from "@mui/icons-material/Adjust";
 import AddIcon from "@mui/icons-material/Add";
@@ -39,6 +40,8 @@ export default function QuickStaffingTable({
   assignments,
   schedule,
 }: Props) {
+  const { t } = useTranslation();
+
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
 
   const countAssignments = (
@@ -135,7 +138,7 @@ export default function QuickStaffingTable({
                   }}
                 >
                   <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                    Quick staffing
+                    {t("schedule.quick_staffing")}
                   </Typography>
                 </Box>
               </TableCell>

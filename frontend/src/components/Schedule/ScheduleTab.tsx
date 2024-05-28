@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -40,6 +41,8 @@ export default function ScheduleTab({
   assignments,
   objectiveBreaches,
 }: Props) {
+  const { t } = useTranslation();
+
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
   const [CBsDisplayed, setCBsDisplayed] = useState<string[]>([]);
@@ -96,7 +99,7 @@ export default function ScheduleTab({
             color="textSecondary"
             sx={{ fontStyle: "italic" }}
           >
-            {"Configure your schedule and solve it to get your planning."}
+            {t("schedule.no_schedule_text")}
           </Typography>
         </Box>
       ) : (

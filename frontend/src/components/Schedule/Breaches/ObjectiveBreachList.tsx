@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
@@ -27,6 +28,8 @@ export default function ObjectiveBreachList({
   addCBsDisplayed,
   removeCBsDisplayed,
 }: Props) {
+  const { t } = useTranslation();
+
   const CBsConstraint: ObjectiveBreachT[] = objectiveBreaches
     .filter((cb) => cb.objectiveCategory === "constraint")
     .sort((a, b) => (a.hardToSoft ? -1 : 1));
@@ -105,7 +108,7 @@ export default function ObjectiveBreachList({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          Breaches
+          {t("schedule.breaches")}
         </Typography>
       </Box>
       {objectiveBreaches.length === 0 ? (

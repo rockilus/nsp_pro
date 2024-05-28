@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -13,6 +14,7 @@ import TableContainer from "@mui/material/TableContainer";
 // Components
 import ScheduleDialogValidate from "./ScheduleDialogValidate";
 import TableRowScheduleWIP from "./TableRowScheduleWIP";
+import { GetStatusLabel } from "../../SharedComponents/getScheduleStatusLabel";
 // Stores
 import { useScheduleStore } from "../../../stores/scheduleStore";
 // Types
@@ -29,6 +31,8 @@ interface Props {
 }
 
 export default function ScheduleWIP({ team, schedule }: Props) {
+  const { t } = useTranslation();
+
   const [isSolving, setIsSolving] = useState(false);
   const solveSchedule = useScheduleStore((state) => state.solveSchedule);
 
@@ -44,18 +48,18 @@ export default function ScheduleWIP({ team, schedule }: Props) {
         <Table aria-label="simple table">
           <TableBody>
             <TableRowScheduleWIP
-              name="Start"
+              name={t("common.start")}
               content={schedule.startDate.format("D MMM YYYY")}
             />
             <TableRowScheduleWIP
-              name="End"
+              name={t("common.end")}
               content={schedule.endDate.format("D MMM YYYY")}
             />
             <TableRowScheduleWIP
-              name="Status"
+              name={t("common.status")}
               content={
                 <Chip
-                  label={schedule.solveStatus}
+                  label={GetStatusLabel(schedule.solveStatus)}
                   color={
                     (SolveStatusColors[
                       SolveStatusList.indexOf(schedule.solveStatus)
@@ -101,7 +105,7 @@ export default function ScheduleWIP({ team, schedule }: Props) {
               height: "35px",
             }}
           >
-            Solve
+            {t("common.solve")}
           </Button>
         )}
         <Box
