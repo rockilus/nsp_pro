@@ -1,18 +1,27 @@
 {
     "common": {
         "add": "Añadir",
+        "approved": "Aprobado",
         "cancel": "Cancelar",
         "color": "Color",
+        "date": "Fecha",
         "delete": "Eliminar",
         "end_time": "Fin",
+        "hard": "Obligatorio",
         "name": "Nombre",
+        "pending": "Pendiente",
         "planner": "Agenda",
         "property": "Propiedad",
+        "rejected": "Rechazado",
+        "request": "Solicitud",
         "rest": "Descanso",
         "save": "Guardar",
         "shift": "Turno",
+        "soft": "Opcional",
         "staffing": "Personal",
+        "status": "Estado",
         "start_time": "Principio",
+        "type": "Tipo",
         "worker": "Trabajador"
     },
     "worker": {
@@ -44,6 +53,11 @@
         "new_planner": "Nuevo agenda",
         "shift_demand": "Demanda de turnos",
         "weekly_planners": "Agendas semanales"
+    },
+    "request": {
+        "date_range": "Rango de fechas",
+        "new_request": "Nueva solicitud",
+        "requests": "Solicitudes"
     },
     "week_days": {
         "monday": "Lunes",
