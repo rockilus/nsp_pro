@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -27,8 +28,6 @@ import { CoverageSelectorT } from "./types";
 import { TeamT } from "../../containers/types";
 import { CoverageT } from "../Coverage/types";
 import { ScheduleT } from "../Schedule/types";
-// Constants
-import { coverageSelectorColumns } from "../../utils/constants";
 
 dayjs.extend(utc);
 
@@ -45,7 +44,17 @@ export default function CoverageSelector({
   coverageSelectors,
   coverages,
 }: Props) {
-  const columns = useMemo(() => coverageSelectorColumns, []);
+  const { t } = useTranslation();
+
+  const columns = useMemo(() => {
+    const coverageSelectorColumns: Record<string, string>[] = [
+      { name: "full_period", label: t("campaign.full_period") },
+      { name: "start_date", label: t("common.start_date") },
+      { name: "end_date", label: t("common.end_date") },
+      { name: "coverage", label: t("common.planner") },
+    ];
+    return coverageSelectorColumns;
+  }, [t]);
 
   const addCoverageSelector = useCoverageSelectorStore(
     (state) => state.addCoverageSelector
@@ -144,7 +153,7 @@ export default function CoverageSelector({
                     }}
                   >
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      Coverage
+                      {t("coverage.planners")}
                     </Typography>
                   </Box>
                 </Box>
@@ -165,7 +174,7 @@ export default function CoverageSelector({
                       alignItems: "center",
                     }}
                   >
-                    {column}
+                    {column.label}
                   </Box>
                 </TableCell>
               ))}
@@ -248,7 +257,7 @@ export default function CoverageSelector({
               <TableCell colSpan={columns.length + 1} sx={{ paddingY: 0 }}>
                 <Box display="flex" alignItems="center" minHeight={45}>
                   <TableAddButton
-                    text="Add coverage selector"
+                    text={t("common.planner")}
                     handleClick={handleAddCoverageSelector}
                   />
                 </Box>
