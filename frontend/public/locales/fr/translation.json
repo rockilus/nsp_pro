@@ -6,6 +6,7 @@
         "delete": "Supprimer",
         "end_time": "Fin",
         "name": "Nom",
+        "planner": "Agenda",
         "property": "Propriété",
         "rest": "Repos",
         "save": "Sauvegarder",
@@ -38,5 +39,19 @@
         "type_int": "Nombre",
         "type_bool": "Vrai/Faux",
         "type_list": "Tags"
+    },
+    "coverage": {
+        "new_planner": "Nouvel agenda",
+        "shift_demand": "Demande de tâche",
+        "weekly_planners": "Agendas hebdomadaires"
+    },
+    "week_days": {
+        "monday": "Lundi",
+        "tuesday": "Mardi",
+        "wednesday": "Mercredi",
+        "thursday": "Jeudi",
+        "friday": "Vendredi",
+        "saturday": "Samedi",
+        "sunday": "Dimanche"
     }
 }

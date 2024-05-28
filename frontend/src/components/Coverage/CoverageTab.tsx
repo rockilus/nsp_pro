@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 // Components
@@ -18,6 +19,8 @@ type Props = {
 };
 
 export default function CoverageTab({ team, shifts, coverages }: Props) {
+  const { t } = useTranslation();
+
   const addCoverage = useCoverageStore((state) => state.addCoverage);
   const updateCoverage = useCoverageStore((state) => state.updateCoverage);
   const deleteCoverage = useCoverageStore((state) => state.deleteCoverage);
@@ -36,7 +39,7 @@ export default function CoverageTab({ team, shifts, coverages }: Props) {
     const templateCoverage: CoverageT = {
       id: `id-${Date.now()}`,
       teamId: team.id,
-      name: "New coverage",
+      name: t("coverage.new_planner"),
       shiftDemands: [],
     };
     const newCoverage = await addCoverage(templateCoverage);

@@ -6,6 +6,7 @@
         "delete": "Eliminar",
         "end_time": "Fin",
         "name": "Nombre",
+        "planner": "Agenda",
         "property": "Propiedad",
         "rest": "Descanso",
         "save": "Guardar",
@@ -38,5 +39,19 @@
         "type_int": "Número",
         "type_bool": "Si/No",
         "type_list": "Tags"
+    },
+    "coverage": {
+        "new_planner": "Nuevo agenda",
+        "shift_demand": "Demanda de turnos",
+        "weekly_planners": "Agendas semanales"
+    },
+    "week_days": {
+        "monday": "Lunes",
+        "tuesday": "Martes",
+        "wednesday": "Miércoles",
+        "thursday": "Jueves",
+        "friday": "Viernes",
+        "saturday": "Sábado",
+        "sunday": "Domingo"
     }
 }
