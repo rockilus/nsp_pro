@@ -1,8 +1,7 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import DeleteIcon from "@mui/icons-material/Delete";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -17,8 +16,6 @@ import { WorkerT } from "../Worker/types";
 import { RequestT } from "../Request/types";
 import { ShiftT } from "../Shift/types";
 import { TeamT } from "../../containers/types";
-// Constants
-import { RequestTableFields } from "../../utils/constants";
 
 interface Props {
   team: TeamT;
@@ -33,6 +30,16 @@ export default function RequestTable({
   workers,
   shifts,
 }: Props) {
+  const { t } = useTranslation();
+
+  const requestTableFields: Record<string, string>[] = [
+    { name: "workerId", label: t("common.worker") },
+    { name: "shiftId", label: t("common.shift") },
+    { name: "date", label: t("common.date") },
+    { name: "hard", label: t("common.type") },
+    { name: "status", label: t("common.status") },
+  ];
+
   return (
     <>
       <TableContainer
@@ -42,7 +49,7 @@ export default function RequestTable({
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead sx={{ backgroundColor: "grey.100" }}>
             <TableRow>
-              {Object.keys(RequestTableFields).map((field, index) => (
+              {requestTableFields.map((field, index) => (
                 <TableCell key={index} sx={{ paddingY: 0, fontWeight: "bold" }}>
                   <Box
                     sx={{
@@ -51,7 +58,7 @@ export default function RequestTable({
                       minHeight: 45,
                     }}
                   >
-                    {field}
+                    {field.label}
                   </Box>
                 </TableCell>
               ))}
@@ -66,6 +73,7 @@ export default function RequestTable({
                 request={request}
                 workers={workers}
                 shifts={shifts}
+                requestTableFields={requestTableFields}
               />
             ))}
           </TableBody>

@@ -8,7 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 // Components
 import ConstraintButton from "./ConstraintButton";
-import { hardSoftButton } from "../SharedComponents/HardSoftButton";
+import { HardSoftButton } from "../SharedComponents/HardSoftButton";
 // Stores
 import { useConstraintStore } from "../../stores/constraintStore";
 // Types
@@ -100,7 +100,7 @@ export default function ConstraintListItem({
           )}
         </Grid>
         <Grid item xs={3}>
-          {hardSoftButton(constraint.hard, handleToggleHard)}
+          {HardSoftButton(constraint.hard, handleToggleHard)}
         </Grid>
         <Grid item xs={1}>
           <Box sx={{ display: "flex", flexDirection: "row" }}>

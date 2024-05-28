@@ -1,18 +1,27 @@
 {
     "common": {
         "add": "Ajouter",
+        "approved": "Approuvé",
         "cancel": "Annuler",
         "color": "Couleur",
+        "date": "Date",
         "delete": "Supprimer",
         "end_time": "Fin",
+        "hard": "Strict",
         "name": "Nom",
+        "pending": "En attente",
         "planner": "Agenda",
         "property": "Propriété",
+        "rejected": "Rejeté",
+        "request": "Demande",
         "rest": "Repos",
         "save": "Sauvegarder",
         "shift": "Tache",
+        "soft": "Flexible",
         "staffing": "Effectif",
+        "status": "Statut",
         "start_time": "Début",
+        "type": "Type",
         "worker": "Travailleur"
     },
     "worker": {
@@ -44,6 +53,11 @@
         "new_planner": "Nouvel agenda",
         "shift_demand": "Demande de tâche",
         "weekly_planners": "Agendas hebdomadaires"
+    },
+    "request": {
+        "date_range": "Plage de dates",
+        "new_request": "Nouvelle demande",
+        "requests": "Demandes"
     },
     "week_days": {
         "monday": "Lundi",

@@ -1,11 +1,15 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import ToggleButton from "@mui/material/ToggleButton";
 
-export const hardSoftButton = (hard: boolean, handleToggleHard: () => void) => {
+const HardSoftButton = (hard: boolean, handleToggleHard: () => void) => {
+  const { t } = useTranslation();
   return (
     <ToggleButton value="hard" onChange={handleToggleHard} sx={{ height: 30 }}>
-      {hard ? "Hard" : "Soft"}
+      {hard ? t("common.hard") : t("common.soft")}
     </ToggleButton>
   );
 };
+
+export { HardSoftButton };

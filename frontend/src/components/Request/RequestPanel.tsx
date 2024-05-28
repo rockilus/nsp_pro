@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 // MUI
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Box from "@mui/material/Box";
@@ -35,6 +36,8 @@ export default function RequestPanel({
   shifts,
   handleClose,
 }: Props) {
+  const { t } = useTranslation();
+
   const [requestState, setRequestState] = useState<RequestT>({
     id: request.id,
     workerId: request.workerId,
@@ -172,7 +175,9 @@ export default function RequestPanel({
           size="small"
           sx={{ marginLeft: "49px", height: "30px", width: "30px" }}
         />
-        <Typography sx={{ fontSize: "0.8rem" }}>Date range</Typography>
+        <Typography sx={{ fontSize: "0.8rem" }}>
+          {t("request.date_range")}
+        </Typography>
       </Box>
       <Box
         sx={{
@@ -248,7 +253,7 @@ export default function RequestPanel({
           sx={{ marginRight: 2 }}
           onClick={handleSaveRequest}
         >
-          Save
+          {t("common.save")}
         </Button>
       </Box>
     </Box>

@@ -65,15 +65,6 @@ export const ConstraintColorInactiveBack: string = "#f0efed";
 export const ConstraintColorActiveText: string = "#000000";
 export const ConstraintColorInactiveText: string = "#808080";
 
-// Requests
-export const RequestTableFields: Record<string, string> = {
-  Worker: "workerId",
-  Shift: "shiftId",
-  Date: "date",
-  Hard: "hard",
-  Status: "status",
-};
-
 // Schedule Options
 export const coverageSelectorColumns: string[] = [
   "Full period",

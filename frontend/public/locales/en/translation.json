@@ -1,18 +1,27 @@
 {
     "common": {
         "add": "Add",
+        "approved": "Approved",
         "cancel": "Cancel",
         "color": "Color",
+        "date": "Date",
         "delete": "Delete",
         "end_time": "End time",
+        "hard": "Hard",
         "name": "Name",
+        "pending": "Pending",
         "planner": "Planner",
         "property": "Property",
+        "rejected": "Rejected",
+        "request": "Request",
         "rest": "Rest",
         "save": "Save",
         "shift": "Shift",
+        "soft": "Soft",
         "staffing": "Staffing",
+        "status": "Status",
         "start_time": "Start time",
+        "type": "Type",
         "worker": "Worker"
     },
     "worker": {
@@ -44,6 +53,11 @@
         "new_planner": "New planner",
         "shift_demand": "Shift demand",
         "weekly_planners": "Weekly planners"
+    },
+    "request": {
+        "date_range": "Date range",
+        "new_request": "New request",
+        "requests": "Requests"
     },
     "week_days": {
         "monday": "Monday",
