@@ -2,10 +2,13 @@
     "common": {
         "add": "Add",
         "approved": "Approved",
+        "campaign": "Campaign",
         "cancel": "Cancel",
         "color": "Color",
         "date": "Date",
         "delete": "Delete",
+        "end": "End",
+        "end_date": "End date",
         "end_time": "End time",
         "hard": "Hard",
         "name": "Name",
@@ -20,6 +23,8 @@
         "soft": "Soft",
         "staffing": "Staffing",
         "status": "Status",
+        "start": "Start",
+        "start_date": "Start date",
         "start_time": "Start time",
         "type": "Type",
         "worker": "Worker"
@@ -51,13 +56,28 @@
     },
     "coverage": {
         "new_planner": "New planner",
+        "planners": "Planners",
         "shift_demand": "Shift demand",
         "weekly_planners": "Weekly planners"
+    },
+    "constraint": {
+        "constraints": "Constraints"
     },
     "request": {
         "date_range": "Date range",
         "new_request": "New request",
         "requests": "Requests"
+    },
+    "campaign": {
+        "full_period": "Full period",
+        "hard_breach": "Hard breached",
+        "no_solution": "No solution",
+        "not_solved": "Not solved",
+        "select_all": "Select all",
+        "select_none": "Select none",
+        "soft_breach": "Soft breached",
+        "solved": "Solved",
+        "start_new_campaign": "Start new campaign"
     },
     "week_days": {
         "monday": "Monday",

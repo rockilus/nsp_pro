@@ -2,10 +2,13 @@
     "common": {
         "add": "Ajouter",
         "approved": "Approuvé",
+        "campaign": "Campagne",
         "cancel": "Annuler",
         "color": "Couleur",
         "date": "Date",
         "delete": "Supprimer",
+        "end": "Fin",
+        "end_date": "Date de fin",
         "end_time": "Fin",
         "hard": "Strict",
         "name": "Nom",
@@ -20,6 +23,8 @@
         "soft": "Flexible",
         "staffing": "Effectif",
         "status": "Statut",
+        "start": "Début",
+        "start_date": "Date de début",
         "start_time": "Début",
         "type": "Type",
         "worker": "Travailleur"
@@ -51,13 +56,28 @@
     },
     "coverage": {
         "new_planner": "Nouvel agenda",
+        "planners": "Agendas",
         "shift_demand": "Demande de tâche",
         "weekly_planners": "Agendas hebdomadaires"
+    },
+    "constraint": {
+        "constraints": "Contraintes"
     },
     "request": {
         "date_range": "Plage de dates",
         "new_request": "Nouvelle demande",
         "requests": "Demandes"
+    },
+    "campaign": {
+        "full_period": "Période complète",
+        "hard_breach": "Enfreint strict",
+        "no_solution": "Pas de solution",
+        "not_solved": "Non résolu",
+        "select_all": "Tout sélectionner",
+        "select_none": "Tout désélectionner",
+        "soft_breach": "Enfreint flexible",
+        "solved": "Résolu",
+        "start_new_campaign": "Démarrer une nouvelle campagne"
     },
     "week_days": {
         "monday": "Lundi",

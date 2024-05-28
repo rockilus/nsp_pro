@@ -1,6 +1,7 @@
 import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -12,7 +13,6 @@ import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
-import ScheduleWIP from "../Schedule/ScheduleOptions/ScheduleWIP";
 import TableRowScheduleWIP from "../Schedule/ScheduleOptions/TableRowScheduleWIP";
 // Stores
 import { useScheduleStore } from "../../stores/scheduleStore";
@@ -30,8 +30,22 @@ interface Props {
 }
 
 export default function ScheduleSelector({ team, schedule }: Props) {
+  const { t } = useTranslation();
+
   const addSchedule = useScheduleStore((state) => state.addSchedule);
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
+
+  const statusOptions: Record<string, string>[] = [
+    { name: "Not solved", label: t("campaign.not_solved") },
+    { name: "Solved", label: t("campaign.solved") },
+    { name: "No solution", label: t("campaign.no_solution") },
+    { name: "Soft breached", label: "Soft breached" },
+    { name: "Hard breached", label: "Hard breached" },
+  ];
+
+  const getStatusLabel = (status: string) => {
+    return statusOptions.find((option) => option.name === status)?.label || "";
+  };
 
   return (
     <Box
@@ -61,7 +75,7 @@ export default function ScheduleSelector({ team, schedule }: Props) {
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          Schedule
+          {t("common.campaign")}
         </Typography>
       </Box>
       <Box
@@ -76,7 +90,7 @@ export default function ScheduleSelector({ team, schedule }: Props) {
             <Table aria-label="simple table">
               <TableBody>
                 <TableRowScheduleWIP
-                  name="Start"
+                  name={t("common.start")}
                   content={
                     <DatePicker
                       value={schedule.startDate}
@@ -99,7 +113,7 @@ export default function ScheduleSelector({ team, schedule }: Props) {
                   }
                 />
                 <TableRowScheduleWIP
-                  name="End"
+                  name={t("common.end")}
                   content={
                     <DatePicker
                       value={schedule.endDate}
@@ -122,10 +136,10 @@ export default function ScheduleSelector({ team, schedule }: Props) {
                   }
                 />
                 <TableRowScheduleWIP
-                  name="Status"
+                  name={t("common.status")}
                   content={
                     <Chip
-                      label={schedule.solveStatus}
+                      label={getStatusLabel(schedule.solveStatus)}
                       color={
                         (SolveStatusColors[
                           SolveStatusList.indexOf(schedule.solveStatus)
@@ -152,7 +166,7 @@ export default function ScheduleSelector({ team, schedule }: Props) {
               textTransform: "none",
             }}
           >
-            Create schedule
+            {t("campaign.start_new_campaign")}
           </Button>
         )}
       </Box>

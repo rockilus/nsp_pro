@@ -1,6 +1,7 @@
 import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
@@ -33,6 +34,8 @@ interface Props {
 }
 
 export default function ConstraintSelector({ schedule, constraints }: Props) {
+  const { t } = useTranslation();
+
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
 
   const handleUpdateScheduleConstraintIds = (constraintId: string) => {
@@ -93,7 +96,7 @@ export default function ConstraintSelector({ schedule, constraints }: Props) {
                     }}
                   >
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      Constraints
+                      {t("constraint.constraints")}
                     </Typography>
                   </Box>
                   <Box
@@ -104,12 +107,14 @@ export default function ConstraintSelector({ schedule, constraints }: Props) {
                     }}
                   >
                     <TableAddButton
-                      text="Select all"
+                      text={t("campaign.select_all")}
                       handleClick={handleAddAllConstraints}
+                      showIcon={false}
                     />
                     <TableAddButton
-                      text="Select none"
+                      text={t("campaign.select_none")}
                       handleClick={handleRemoveAllConstraints}
+                      showIcon={false}
                     />
                   </Box>
                 </Box>

@@ -6,13 +6,14 @@ import Button from "@mui/material/Button";
 interface Props {
   text: string;
   handleClick?: () => void;
+  showIcon?: boolean;
 }
 
-const TableAddButton = ({ text, handleClick }: Props) => {
+const TableAddButton = ({ text, handleClick, showIcon = true }: Props) => {
   return (
     <Button
       onClick={() => handleClick && handleClick()}
-      startIcon={<AddIcon sx={{ height: "17px" }} />}
+      startIcon={showIcon ? <AddIcon sx={{ height: "17px" }} /> : null}
       sx={{
         borderRadius: 4,
         textTransform: "none",
