@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -17,6 +18,8 @@ interface Props {
 }
 
 export default function CoverageEvent({ team, SDOverlay, shifts }: Props) {
+  const { t } = useTranslation();
+
   const covEventWidth = Math.floor(SDOverlay.width / SDOverlay.widthDivisor); // px
   const covEventPadL = 2; // px
   const covEventMarginB = -0.75;
@@ -81,8 +84,8 @@ export default function CoverageEvent({ team, SDOverlay, shifts }: Props) {
               overflow: "hidden",
             }}
           >
+            {`${t("common.staffing")}: `}
             {SDOverlay.shiftDemand.shift.staffing}
-            {" staff"}
           </Typography>
         </Stack>
       </Box>

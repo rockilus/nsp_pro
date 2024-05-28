@@ -6,6 +6,7 @@
         "delete": "Delete",
         "end_time": "End time",
         "name": "Name",
+        "planner": "Planner",
         "property": "Property",
         "rest": "Rest",
         "save": "Save",
@@ -38,5 +39,19 @@
         "type_int": "Number",
         "type_list": "Tags",
         "type_str": "Text"
+    },
+    "coverage": {
+        "new_planner": "New planner",
+        "shift_demand": "Shift demand",
+        "weekly_planners": "Weekly planners"
+    },
+    "week_days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
     }
 }

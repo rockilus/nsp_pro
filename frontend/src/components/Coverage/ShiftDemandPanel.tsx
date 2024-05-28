@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -31,6 +32,8 @@ export default function ShiftDemandPanel({
   shifts,
   handleClose,
 }: Props) {
+  const { t } = useTranslation();
+
   const [SDState, setSDState] = useState<ShiftDemandT>(shiftDemand);
 
   const addShiftDemand = useCoverageStore((state) => state.addShiftDemand);
@@ -63,7 +66,7 @@ export default function ShiftDemandPanel({
         <FormControl fullWidth>
           <Select
             value={SDState.shift.id}
-            label="Shift"
+            label={t("common.shift")}
             onChange={(e) =>
               setSDState({
                 ...SDState,
@@ -104,7 +107,7 @@ export default function ShiftDemandPanel({
           marginBottom: 1,
         }}
       >
-        <Typography>Shift Demand</Typography>
+        <Typography>{t("coverage.shift_demand")}</Typography>
         <IconButton onClick={handleClose} sx={{ marginRight: 2 }}>
           <CloseIcon color="disabled" />
         </IconButton>
@@ -137,7 +140,7 @@ export default function ShiftDemandPanel({
             sx={{ marginRight: 2 }}
             onClick={handleDeleteSD}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         )}
         <Button
@@ -146,7 +149,7 @@ export default function ShiftDemandPanel({
           sx={{ marginRight: 2 }}
           onClick={handleSaveSD}
         >
-          Save
+          {t("common.save")}
         </Button>
       </Box>
     </Box>

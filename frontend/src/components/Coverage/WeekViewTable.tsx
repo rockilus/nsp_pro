@@ -1,7 +1,8 @@
 import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-
+import { useTranslation } from "react-i18next";
+// MUI
 import {
   Table,
   TableBody,
@@ -10,9 +11,8 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-
+// Constants
 import {
-  WeekDays,
   CovTimeColWidth,
   CovTimeColPadR,
   CovHeadRowHeight,
@@ -27,6 +27,18 @@ type Props = {
 };
 
 export default function WeekViewTable({ dayColWidth }: Props) {
+  const { t } = useTranslation();
+
+  const WeekDays = [
+    t("week_days.monday"),
+    t("week_days.tuesday"),
+    t("week_days.wednesday"),
+    t("week_days.thursday"),
+    t("week_days.friday"),
+    t("week_days.saturday"),
+    t("week_days.sunday"),
+  ];
+
   // Generate time slots with 15-minute intervals
   const timeSlots: dayjs.Dayjs[] = [];
   let startTime = dayjs.utc().startOf("day");
