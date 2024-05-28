@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -22,6 +23,8 @@ interface Props {
 }
 
 export default function RequestTab({ team, workers, shifts, requests }: Props) {
+  const { t } = useTranslation();
+
   const [popoverRhsOpen, setPopoverRhsOpen] = useState<boolean>(false);
 
   const handleClosePopoverRhs = () => {
@@ -63,11 +66,11 @@ export default function RequestTab({ team, workers, shifts, requests }: Props) {
             align="left"
             sx={{ fontWeight: "bold" }}
           >
-            Requests
+            {t("request.requests")}
           </Typography>
           <PopoverRHS
-            title={"New request"}
-            buttonContent={<TableAddButton text="Add request" />}
+            title={t("request.new_request")}
+            buttonContent={<TableAddButton text={t("common.request")} />}
             content={
               <RequestPanel
                 team={team}
