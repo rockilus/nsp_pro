@@ -2,10 +2,13 @@
     "common": {
         "add": "Añadir",
         "approved": "Aprobado",
+        "campaign": "Campaña",
         "cancel": "Cancelar",
         "color": "Color",
         "date": "Fecha",
         "delete": "Eliminar",
+        "end": "Fin",
+        "end_date": "Fecha de fin",
         "end_time": "Fin",
         "hard": "Obligatorio",
         "name": "Nombre",
@@ -20,7 +23,9 @@
         "soft": "Opcional",
         "staffing": "Personal",
         "status": "Estado",
-        "start_time": "Principio",
+        "start": "Inicio",
+        "start_date": "Fecha de inicio",
+        "start_time": "Inicio",
         "type": "Tipo",
         "worker": "Trabajador"
     },
@@ -51,13 +56,28 @@
     },
     "coverage": {
         "new_planner": "Nuevo agenda",
+        "planners": "Agendas",
         "shift_demand": "Demanda de turnos",
         "weekly_planners": "Agendas semanales"
+    },
+    "constraint": {
+        "constraints": "Restricciones"
     },
     "request": {
         "date_range": "Rango de fechas",
         "new_request": "Nueva solicitud",
         "requests": "Solicitudes"
+    },
+    "campaign": {
+        "full_period": "Periodo completo",
+        "hard_breach": "Incumplimiento obligatoria",
+        "no_solution": "No solución",
+        "not_solved": "No resolvido",
+        "select_all": "Seleccionar todo",
+        "select_none": "Deseleccionar todo",
+        "soft_breach": "Incumplimiento opcional",
+        "solved": "Resuelto",
+        "start_new_campaign": "Iniciar nueva campaña"
     },
     "week_days": {
         "monday": "Lunes",

@@ -49,8 +49,8 @@ export default function CoverageSelector({
   const columns = useMemo(() => {
     const coverageSelectorColumns: Record<string, string>[] = [
       { name: "full_period", label: t("campaign.full_period") },
-      { name: "start_date", label: t("common.start_date") },
-      { name: "end_date", label: t("common.end_date") },
+      { name: "start_date", label: t("common.start") },
+      { name: "end_date", label: t("common.end") },
       { name: "coverage", label: t("common.planner") },
     ];
     return coverageSelectorColumns;

@@ -90,7 +90,7 @@ export default function ScheduleSelector({ team, schedule }: Props) {
             <Table aria-label="simple table">
               <TableBody>
                 <TableRowScheduleWIP
-                  name={t("common.start_date")}
+                  name={t("common.start")}
                   content={
                     <DatePicker
                       value={schedule.startDate}
@@ -113,7 +113,7 @@ export default function ScheduleSelector({ team, schedule }: Props) {
                   }
                 />
                 <TableRowScheduleWIP
-                  name={t("common.end_date")}
+                  name={t("common.end")}
                   content={
                     <DatePicker
                       value={schedule.endDate}
