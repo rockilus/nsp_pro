@@ -53,7 +53,7 @@ export default function ScheduleOptions({ team, schedule }: Props) {
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          {t("campaign.campaign")}
+          {t("common.campaign")}
         </Typography>
       </Box>
       <Box
