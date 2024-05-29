@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 // Components
@@ -20,6 +21,8 @@ export default function ShiftOptionsDisplay({
   statsShiftOptions,
   handleEditSelectedShifts,
 }: Props) {
+  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
 
   const blockDisplay = () => {
@@ -33,7 +36,7 @@ export default function ShiftOptionsDisplay({
                 )
                 .join(", ")
             )
-          : "Select shift options"}
+          : t("stats.select_shift")}
       </div>
     );
   };

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -30,14 +31,60 @@ export default function StatsTab({
   shifts,
   statsShiftOptions,
 }: Props) {
+  const { t } = useTranslation();
+
   const [showingCustom, setShowingCustom] = useState<boolean>(true);
   const stats = useStatStore((state) => state.stats);
+
+  const statsUnitOptions: Record<string, string>[] = [
+    {
+      name: "custom",
+      label: t("stats.stats_unit_custom"),
+      description: t("stats.stats_description_custom"),
+    },
+    {
+      name: "nb_days_worked",
+      label: t("stats.stats_unit_nb_days_worked"),
+      description: t("stats.stats_description_nb_days_worked"),
+    },
+    {
+      name: "time_worked",
+      label: t("stats.stats_unit_time_worked"),
+      description: t("stats.stats_description_time_worked"),
+    },
+    {
+      name: "nb_shifts_worked",
+      label: t("stats.stats_unit_nb_shifts_worked"),
+      description: t("stats.stats_description_nb_shifts_worked"),
+    },
+    {
+      name: "nb_rest_days",
+      label: t("stats.stats_unit_nb_rest_days"),
+      description: t("stats.stats_description_nb_rest_days"),
+    },
+    {
+      name: "nb_rest_shifts",
+      label: t("stats.stats_unit_nb_rest_shifts"),
+      description: t("stats.stats_description_nb_rest_shifts"),
+    },
+    {
+      name: "nb_times_shift",
+      label: t("stats.stats_unit_nb_time_shift"),
+      description: t("stats.stats_description_nb_time_shift"),
+    },
+    {
+      name: "nb_times_rest",
+      label: t("stats.stats_unit_nb_time_rest"),
+      description: t("stats.stats_description_nb_time_rest"),
+    },
+  ];
 
   return (
     <Box sx={{ display: "flex", flexDirection: "row" }}>
       <StatsOptions
         team={team}
         statsShiftOptions={statsShiftOptions}
+        statsUnitOptions={statsUnitOptions}
         setShowingCustom={setShowingCustom}
       />
       {stats ? (
@@ -56,9 +103,7 @@ export default function StatsTab({
               color="textSecondary"
               sx={{ fontStyle: "italic" }}
             >
-              {
-                'You do not have any custom stats. Select another "Stats" in stats options and start adding custom stats.'
-              }
+              {t("stats.no_custom_stats")}
             </Typography>
           </Box>
         ) : (
@@ -67,6 +112,7 @@ export default function StatsTab({
             showingCustom={showingCustom}
             workers={workers}
             shifts={shifts}
+            statsUnitOptions={statsUnitOptions}
           />
         )
       ) : (
@@ -84,7 +130,7 @@ export default function StatsTab({
             color="textSecondary"
             sx={{ fontStyle: "italic" }}
           >
-            {'Select your stats options and click on "get stats" button.'}
+            {t("stats.no_stats_selected")}
           </Typography>
         </Box>
       )}
