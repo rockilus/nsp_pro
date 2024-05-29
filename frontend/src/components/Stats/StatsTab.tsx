@@ -59,23 +59,23 @@ export default function StatsTab({
     },
     {
       name: "nb_rest_days",
-      label: t("stats.stats_unit_custom"),
-      description: t("stats.stats_unit_custom"),
+      label: t("stats.stats_unit_nb_rest_days"),
+      description: t("stats.stats_description_nb_rest_days"),
     },
     {
       name: "nb_rest_shifts",
-      label: t("stats.stats_unit_nb_rest_days"),
+      label: t("stats.stats_unit_nb_rest_shifts"),
       description: t("stats.stats_description_nb_rest_shifts"),
     },
     {
       name: "nb_times_shift",
-      label: t("stats.stats_unit_custom"),
-      description: t("stats.stats_unit_custom"),
+      label: t("stats.stats_unit_nb_time_shift"),
+      description: t("stats.stats_description_nb_time_shift"),
     },
     {
       name: "nb_times_rest",
-      label: t("stats.stats_unit_nb_time_shift"),
-      description: t("stats.stats_description_nb_time_shift"),
+      label: t("stats.stats_unit_nb_time_rest"),
+      description: t("stats.stats_description_nb_time_rest"),
     },
   ];
 

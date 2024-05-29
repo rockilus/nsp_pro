@@ -63,7 +63,7 @@ export default function StatsOptions({
     { name: "last_12_months", label: t("stats.time_frame_ltm") },
     { name: "last_24_months", label: t("stats.time_frame_24_months") },
     { name: "last_36_months", label: t("stats.time_frame_36_months") },
-    { name: "custom", label: t("stats.custom") },
+    { name: "custom", label: t("stats.time_frame_custom") },
   ];
 
   const statsUnitWithFrequency = [
