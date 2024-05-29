@@ -93,8 +93,8 @@
         "no_breaches": "No breaches",
         "no_schedule_text": "Start a new campaign and solve it to get your schedule.",
         "quick_staffing": "Quick staffing",
-        "validate_text": "Validating this schedule will send the assignments to your team for the schedule period. Changes to the schedule will be limited.",
-        "validate_title": "Validate this schedule?"
+        "validate_text": "Validating this campaign will send the assignments to your team for the campaign period. Changes to the schedule once validated may require consulting your team.",
+        "validate_title": "Validate this campaign?"
     },
     "week_days": {
         "monday": "Monday",
