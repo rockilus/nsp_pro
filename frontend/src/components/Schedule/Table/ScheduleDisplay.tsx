@@ -6,7 +6,6 @@ import Box from "@mui/material/Box";
 // Components
 import ScheduleTableShift from "./ScheduleTableShift";
 import ScheduleTableWorker from "./ScheduleTableWorker";
-
 // Types
 import {
   AssignmentT,

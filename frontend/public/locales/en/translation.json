@@ -2,11 +2,13 @@
     "common": {
         "add": "Add",
         "approved": "Approved",
+        "assignment": "Assignment",
         "campaign": "Campaign",
         "cancel": "Cancel",
         "color": "Color",
         "date": "Date",
         "delete": "Delete",
+        "display": "Display",
         "end": "End",
         "end_date": "End date",
         "end_time": "End time",
@@ -19,14 +21,20 @@
         "request": "Request",
         "rest": "Rest",
         "save": "Save",
+        "selection": "Selection",
+        "set": "Set",
         "shift": "Shift",
         "soft": "Soft",
+        "solve": "Solve",
         "staffing": "Staffing",
         "status": "Status",
         "start": "Start",
         "start_date": "Start date",
         "start_time": "Start time",
         "type": "Type",
+        "unset": "Unset",
+        "validate": "Validate",
+        "view": "View",
         "worker": "Worker"
     },
     "worker": {
@@ -66,6 +74,7 @@
     "request": {
         "date_range": "Date range",
         "new_request": "New request",
+        "no_requests": "No requests",
         "requests": "Requests"
     },
     "campaign": {
@@ -78,6 +87,14 @@
         "soft_breach": "Soft breached",
         "solved": "Solved",
         "start_new_campaign": "Start new campaign"
+    },
+    "schedule": {
+        "breaches": "Breaches",
+        "no_breaches": "No breaches",
+        "no_schedule_text": "Start a new campaign and solve it to get your schedule.",
+        "quick_staffing": "Quick staffing",
+        "validate_text": "Validating this campaign will send the assignments to your team for the campaign period. Changes to the schedule once validated may require consulting your team.",
+        "validate_title": "Validate this campaign?"
     },
     "week_days": {
         "monday": "Monday",

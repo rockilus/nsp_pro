@@ -1,6 +1,7 @@
 import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -22,6 +23,8 @@ interface Props {
 }
 
 export default function ScheduleOptions({ team, schedule }: Props) {
+  const { t } = useTranslation();
+
   const addSchedule = useScheduleStore((state) => state.addSchedule);
   return (
     <Box
@@ -50,7 +53,7 @@ export default function ScheduleOptions({ team, schedule }: Props) {
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          Schedule
+          {t("common.campaign")}
         </Typography>
       </Box>
       <Box

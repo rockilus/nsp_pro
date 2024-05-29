@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -37,6 +38,8 @@ export default function AssignmentOptions({
   selectedDisplay,
   setSelectedCell,
 }: Props) {
+  const { t } = useTranslation();
+
   const [selectedAssignment, setSelectedAssignment] = useState<AssignmentT>(
     assignments.find((a) => a.id === selectedCell.assignment.id) ||
       selectedCell.assignment
@@ -118,7 +121,7 @@ export default function AssignmentOptions({
             align="left"
             sx={{ fontWeight: "bold" }}
           >
-            Selection
+            {t("common.selection")}
           </Typography>
         </Box>
         <IconButton onClick={handleClose}>
@@ -142,7 +145,7 @@ export default function AssignmentOptions({
             align="left"
             sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
           >
-            Assignment
+            {t("common.assignment")}
           </Typography>
         </Box>
         {selectedAssignment.fixed || selectedAssignment.status !== "wip" ? (
@@ -235,7 +238,7 @@ export default function AssignmentOptions({
                   paddingX: 0,
                 }}
               >
-                Unset
+                {t("common.unset")}
               </Button>
             )}
           </Box>
@@ -282,7 +285,7 @@ export default function AssignmentOptions({
                 paddingX: 0,
               }}
             >
-              Set
+              {t("common.set")}
             </Button>
           </Box>
         )}
@@ -305,7 +308,7 @@ export default function AssignmentOptions({
               align="left"
               sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
             >
-              Requests
+              {t("request.requests")}
             </Typography>
           </Box>
           {selectedCell.requests.length === 0 ? (
@@ -318,7 +321,7 @@ export default function AssignmentOptions({
                 fontStyle: "italic",
               }}
             >
-              No requests
+              {t("request.no_requests")}
             </Typography>
           ) : (
             selectedCell.requests.map((request, index) => (
@@ -382,7 +385,7 @@ export default function AssignmentOptions({
               align="left"
               sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
             >
-              Breaches
+              {t("schedule.breaches")}
             </Typography>
           </Box>
           {breachesNoRequests.length === 0 ? (
@@ -395,7 +398,7 @@ export default function AssignmentOptions({
                 fontStyle: "italic",
               }}
             >
-              No breaches
+              {t("schedule.no_breaches")}
             </Typography>
           ) : (
             breachesNoRequests.map((breach, index) => (

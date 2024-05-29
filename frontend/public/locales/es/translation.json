@@ -2,11 +2,13 @@
     "common": {
         "add": "Añadir",
         "approved": "Aprobado",
+        "assignment": "Asignación",
         "campaign": "Campaña",
         "cancel": "Cancelar",
         "color": "Color",
         "date": "Fecha",
         "delete": "Eliminar",
+        "display": "Visualización",
         "end": "Fin",
         "end_date": "Fecha de fin",
         "end_time": "Fin",
@@ -19,14 +21,20 @@
         "request": "Solicitud",
         "rest": "Descanso",
         "save": "Guardar",
+        "selection": "Selección",
+        "set": "Fijar",
         "shift": "Turno",
         "soft": "Opcional",
+        "solve": "Resolver",
         "staffing": "Personal",
         "status": "Estado",
         "start": "Inicio",
         "start_date": "Fecha de inicio",
         "start_time": "Inicio",
         "type": "Tipo",
+        "unset": "Cancelar",
+        "validate": "Validar",
+        "view": "Vista",
         "worker": "Trabajador"
     },
     "worker": {
@@ -66,6 +74,7 @@
     "request": {
         "date_range": "Rango de fechas",
         "new_request": "Nueva solicitud",
+        "no_requests": "No hay solicitudes",
         "requests": "Solicitudes"
     },
     "campaign": {
@@ -78,6 +87,14 @@
         "soft_breach": "Incumplimiento opcional",
         "solved": "Resuelto",
         "start_new_campaign": "Iniciar nueva campaña"
+    },
+    "schedule": {
+        "breaches": "Incumplimientos",
+        "no_breaches": "No hay incumplimientos",
+        "no_schedule_text": "Inicia una nueva campaña y resuélvela para obtener tu horario.",
+        "quick_staffing": "Asignación rápida",
+        "validate_text": "Validar esta campaña enviará las asignaciones a tu equipo para el periodo de la campaña. Cambios en el horario una vez validado pueden requerir consultar a tu equipo.",
+        "validate_title": "Validar la campaña?"
     },
     "week_days": {
         "monday": "Lunes",

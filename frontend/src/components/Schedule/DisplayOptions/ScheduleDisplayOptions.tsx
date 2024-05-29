@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -25,6 +26,8 @@ export default function ScheduleDisplayOptions({
   setSelectedDisplay,
   switchDisplayCBs,
 }: Props) {
+  const { t } = useTranslation();
+
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
     newAlignment: string
@@ -62,7 +65,7 @@ export default function ScheduleDisplayOptions({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          Display
+          {t("common.display")}
         </Typography>
       </Box>
       <TableContainer
@@ -72,7 +75,7 @@ export default function ScheduleDisplayOptions({
         <Table aria-label="simple table">
           <TableBody>
             <TableRowScheduleWIP
-              name="View"
+              name={t("common.view")}
               content={
                 <ToggleButtonGroup
                   color="primary"
@@ -89,7 +92,7 @@ export default function ScheduleDisplayOptions({
                       fontSize: "0.75rem",
                     }}
                   >
-                    Shift
+                    {t("common.shift")}
                   </ToggleButton>
                   <ToggleButton
                     value="worker"
@@ -99,13 +102,13 @@ export default function ScheduleDisplayOptions({
                       fontSize: "0.75rem",
                     }}
                   >
-                    Worker
+                    {t("common.worker")}
                   </ToggleButton>
                 </ToggleButtonGroup>
               }
             />
             <TableRowScheduleWIP
-              name="Breaches"
+              name={t("schedule.breaches")}
               content={
                 <Switch
                   checked={displayCBs}

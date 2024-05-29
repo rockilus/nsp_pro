@@ -2,11 +2,13 @@
     "common": {
         "add": "Ajouter",
         "approved": "Approuvé",
+        "assignment": "Affectation",
         "campaign": "Campagne",
         "cancel": "Annuler",
         "color": "Couleur",
         "date": "Date",
         "delete": "Supprimer",
+        "display": "Affichage",
         "end": "Fin",
         "end_date": "Date de fin",
         "end_time": "Fin",
@@ -19,14 +21,20 @@
         "request": "Demande",
         "rest": "Repos",
         "save": "Sauvegarder",
+        "selection": "Sélection",
+        "set": "Fixer",
         "shift": "Tache",
         "soft": "Flexible",
+        "solve": "Résoudre",
         "staffing": "Effectif",
         "status": "Statut",
         "start": "Début",
         "start_date": "Date de début",
         "start_time": "Début",
         "type": "Type",
+        "unset": "Annuler",
+        "validate": "Valider",
+        "view": "Vue",
         "worker": "Travailleur"
     },
     "worker": {
@@ -66,6 +74,7 @@
     "request": {
         "date_range": "Plage de dates",
         "new_request": "Nouvelle demande",
+        "no_requests": "Aucune demande",
         "requests": "Demandes"
     },
     "campaign": {
@@ -78,6 +87,14 @@
         "soft_breach": "Enfreint flexible",
         "solved": "Résolu",
         "start_new_campaign": "Démarrer une nouvelle campagne"
+    },
+    "schedule": {
+        "breaches": "Enfreintes",
+        "no_breaches": "Aucune enfreinte",
+        "no_schedule_text": "Start a new campaign and solve it to get your schedule.",
+        "quick_staffing": "Affectation rapide",
+        "validate_text": "Valider cette campagne enverra les affectations à votre équipe pour la période de la campagne. Changer le planning une fois qu'il a été validé peut necessité la consultation de votre équipe.",
+        "validate_title": "Valider cette campagne?"
     },
     "week_days": {
         "monday": "Lundi",
