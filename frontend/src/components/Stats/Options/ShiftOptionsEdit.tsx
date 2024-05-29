@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Chip from "@mui/material/Chip";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -32,6 +33,8 @@ export default function ShiftOptionsEdit({
   handleEditSelectedShifts,
   handleClose,
 }: Props) {
+  const { t } = useTranslation();
+
   function isDictionary(obj: any): obj is Record<string, unknown> {
     return (
       obj !== null &&
@@ -365,7 +368,7 @@ export default function ShiftOptionsEdit({
             padding: "0 16px 6px 16px",
           }}
         >
-          Select one or more
+          {t("stats.select_one_or_more")}
         </div>
         <List
           sx={{

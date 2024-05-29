@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -16,14 +17,13 @@ import { useStatStore } from "../../../stores/statsStore";
 import { StatsT, StatsValueT, StatsHeaderT } from "../types";
 import { ShiftT } from "../../Shift/types";
 import { WorkerT } from "../../Worker/types";
-// Constants
-import { statsUnitOptions } from "../../../utils/constants";
 
 interface Props {
   stats: StatsT;
   showingCustom: boolean;
   workers: WorkerT[];
   shifts: ShiftT[];
+  statsUnitOptions: Record<string, string>[];
 }
 
 export default function StatsTable({
@@ -31,7 +31,10 @@ export default function StatsTable({
   showingCustom,
   workers,
   shifts,
+  statsUnitOptions,
 }: Props) {
+  const { t } = useTranslation();
+
   const borderStyle = "1px solid #E8E8E8";
 
   const addHeaderToCustom = useStatStore((state) => state.addHeaderToCustom);
@@ -98,7 +101,7 @@ export default function StatsTable({
                     }}
                     onClick={() => handleAddDeleteHeaderToCustom(header)}
                   >
-                    Custom
+                    {t("common.custom")}
                   </Button>
                 </TableCell>
               ))}

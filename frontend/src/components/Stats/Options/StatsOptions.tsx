@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -23,26 +24,24 @@ import { useStatStore } from "../../../stores/statsStore";
 import { StatsShiftOptionsT, StatsOptionsT } from "../types";
 import { TeamT } from "../../../containers/types";
 import { TemplateOptionValueT } from "../../Constraint/types";
-// Constants
-import {
-  statsUnitOptions,
-  headerUnitOptions,
-  timeFrameOptions,
-} from "../../../utils/constants";
 
 dayjs.extend(utc);
 
 interface Props {
   team: TeamT;
   statsShiftOptions: StatsShiftOptionsT;
+  statsUnitOptions: Record<string, string>[];
   setShowingCustom: (showingCustom: boolean) => void;
 }
 
 export default function StatsOptions({
   team,
   statsShiftOptions,
+  statsUnitOptions,
   setShowingCustom,
 }: Props) {
+  const { t } = useTranslation();
+
   const [statsOptions, setStatsOptions] = useState<StatsOptionsT>({
     timeFrame: "last_12_months",
     startDate: dayjs.utc().startOf("day").subtract(1, "year"),
@@ -52,6 +51,20 @@ export default function StatsOptions({
     selectedShifts: [{ name: "all shifts", id: "", idType: "" }],
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const headerUnitOptions: Record<string, string>[] = [
+    { name: "weekday", label: t("stats.frequency_weekday") },
+    { name: "week", label: t("stats.frequency_week") },
+    { name: "month", label: t("stats.frequency_month") },
+    { name: "year", label: t("stats.frequency_year") },
+    { name: "all", label: t("stats.frequency_all") },
+  ];
+  const timeFrameOptions: Record<string, string>[] = [
+    { name: "last_12_months", label: t("stats.time_frame_ltm") },
+    { name: "last_24_months", label: t("stats.time_frame_24_months") },
+    { name: "last_36_months", label: t("stats.time_frame_36_months") },
+    { name: "custom", label: t("stats.custom") },
+  ];
 
   const statsUnitWithFrequency = [
     "nb_days_worked",
@@ -128,14 +141,14 @@ export default function StatsOptions({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          Stats
+          {t("common.stats")}
         </Typography>
       </Box>
       <TableContainer component={Paper} style={{ width: "100%" }}>
         <Table aria-label="simple table">
           <TableBody>
             <TableRowScheduleWIP
-              name="Time frame"
+              name={t("stats.time_frame")}
               content={
                 <FormControl>
                   <Select
@@ -161,7 +174,7 @@ export default function StatsOptions({
             />
             {statsOptions.timeFrame === "custom" && (
               <TableRowScheduleWIP
-                name="Start"
+                name={t("common.start")}
                 content={
                   <DatePicker
                     value={statsOptions.startDate}
@@ -187,7 +200,7 @@ export default function StatsOptions({
             )}
             {statsOptions.timeFrame === "custom" && (
               <TableRowScheduleWIP
-                name="End"
+                name={t("common.end")}
                 content={
                   <DatePicker
                     value={statsOptions.endDate}
@@ -212,7 +225,7 @@ export default function StatsOptions({
               />
             )}
             <TableRowScheduleWIP
-              name="Stats"
+              name={t("common.stats")}
               content={
                 <FormControl>
                   <Select
@@ -238,7 +251,7 @@ export default function StatsOptions({
             />
             {statsUnitWithFrequency.includes(statsOptions.statsUnit) && (
               <TableRowScheduleWIP
-                name="Frequency"
+                name={t("stats.view_by")}
                 content={
                   <FormControl>
                     <Select
@@ -265,7 +278,7 @@ export default function StatsOptions({
             )}
             {statsOptions.statsUnit !== "custom" && (
               <TableRowScheduleWIP
-                name="Shifts"
+                name={t("shift.shifts")}
                 content={
                   <ShiftOptionsDisplay
                     selectedShifts={statsOptions.selectedShifts}
@@ -304,7 +317,7 @@ export default function StatsOptions({
             height: "35px",
           }}
         >
-          Get stats
+          {t("stats.get_stats")}
         </Button>
       )}
     </Box>
