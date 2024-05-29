@@ -38,5 +38,5 @@ def delete_item_with_id_from_constraint_build(
         if skip_to_next_cb:
             continue
         cb.blocks = new_blocks
-        cb.text = blocks_to_string(new_blocks)
+        cb.text = blocks_to_string(new_blocks, cb.language)
         constraint_build_db.update_constraint_build(cb)

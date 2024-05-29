@@ -50,11 +50,13 @@ class MissingProperty:
 
 
 @dataclass
+# pylint: disable=too-many-instance-attributes
 class ConstraintBuild:
     id: str
     team_id: str
     constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
     template_id: str
+    language: str
     blocks: List[Block]
     text: str
     hard: bool
@@ -94,4 +96,5 @@ class Template:
     id: str
     constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
     text: str
+    language: str
     blocks: List[TemplateBlock]

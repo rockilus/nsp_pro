@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // Components
 import BlockEditString from "./BlockEditString";
+import GetBlockNameLabel from "../SharedComponents/GetBlockNameLabel";
 import PopoverBoxAnchorElOver from "../SharedComponents/PopoverBoxAnchorElOver";
 import {
   blockDisplayName,
@@ -21,15 +23,30 @@ export default function BlockDisplayString({
   templateBlock,
   handleEditBlock,
 }: Props) {
+  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
+
+  const translateOptionName = (name: string): string => {
+    switch (name) {
+      case "at least":
+        return t("constraint.operator_at_least");
+      case "exactly":
+        return t("constraint.operator_exactly");
+      case "at most":
+        return t("constraint.operator_at_most");
+      default:
+        return name;
+    }
+  };
 
   const blockDisplay = () => {
     return (
       <div>
         {block && block.value !== ""
-          ? blockDislayValue(block.value as string)
+          ? blockDislayValue(translateOptionName(block.value as string))
           : blockDisplayPlaceholder(templateBlock.placeholder)}
-        {blockDisplayName(templateBlock.name)}
+        {blockDisplayName(GetBlockNameLabel(templateBlock.name))}
       </div>
     );
   };
@@ -47,6 +64,7 @@ export default function BlockDisplayString({
           templateBlock={templateBlock}
           handleEditBlock={handleEditBlock}
           handleClose={handleClose}
+          translateOptionName={translateOptionName}
         />
       }
       open={open}

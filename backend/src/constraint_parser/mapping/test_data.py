@@ -192,6 +192,7 @@ test_data = [
             team_id="0",
             constraint_type="seq",
             template_id="0",
+            language="en",
             blocks=[
                 Block(
                     name="worker",
@@ -251,6 +252,7 @@ test_data = [
             team_id="0",
             constraint_type="seq",
             template_id="0",
+            language="en",
             blocks=[
                 Block(
                     name="worker",
@@ -308,6 +310,7 @@ test_data = [
             team_id="0",
             constraint_type="seq",
             template_id="0",
+            language="en",
             blocks=[
                 Block(
                     name="worker",
@@ -379,6 +382,7 @@ test_data = [
             team_id="0",
             constraint_type="seq",
             template_id="0",
+            language="en",
             blocks=[
                 Block(
                     name="worker",
@@ -450,6 +454,7 @@ test_data = [
             team_id="0",
             constraint_type="sum",
             template_id="1",
+            language="en",
             blocks=[
                 Block(
                     name="worker",
@@ -509,6 +514,7 @@ test_data = [
             team_id="0",
             constraint_type="ord",
             template_id="2",
+            language="en",
             blocks=[
                 Block(name="operator", type="string", value="no"),
                 Block(
@@ -573,6 +579,7 @@ test_data = [
             team_id="0",
             constraint_type="ord",
             template_id="3",
+            language="en",
             blocks=[
                 Block(name="text", type="string", value="if"),
                 Block(
@@ -638,6 +645,7 @@ test_data = [
             team_id="0",
             constraint_type="ord",
             template_id="4",
+            language="en",
             blocks=[
                 Block(name="text", type="string", value="if"),
                 Block(
@@ -705,6 +713,7 @@ test_data = [
             team_id="0",
             constraint_type="ord",
             template_id="4",
+            language="en",
             blocks=[
                 Block(name="text", type="string", value="if"),
                 Block(
@@ -773,6 +782,7 @@ test_data = [
             team_id="0",
             constraint_type="fil",
             template_id="5",
+            language="en",
             blocks=[
                 Block(
                     name="worker",
@@ -829,6 +839,7 @@ test_data = [
             team_id="0",
             constraint_type="fil",
             template_id="5",
+            language="en",
             blocks=[
                 Block(
                     name="worker",
@@ -886,6 +897,7 @@ test_data = [
             team_id="0",
             constraint_type="eve",
             template_id="6",
+            language="en",
             blocks=[
                 Block(
                     name="shift",
@@ -948,6 +960,7 @@ test_data = [
             team_id="0",
             constraint_type="fai",
             template_id="7",
+            language="en",
             blocks=[
                 Block(
                     name="shift",

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import CloseIcon from "@mui/icons-material/Close";
@@ -22,6 +23,8 @@ export default function NewConstraint({
   constraintTemplates,
   handleCloseAddConstraint,
 }: Props) {
+  const { t } = useTranslation();
+
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateT | null>(
     null
   );
@@ -59,7 +62,7 @@ export default function NewConstraint({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          Add constraint
+          {t("constraint.new_constraint")}
         </Typography>
         <IconButton onClick={handleCloseAddConstraint}>
           <CloseIcon />
@@ -80,6 +83,7 @@ export default function NewConstraint({
               teamId: team.id,
               constraintType: selectedTemplate.constraintType,
               templateId: selectedTemplate.id,
+              language: selectedTemplate.language,
               blocks: [],
               text: "",
               hard: true,
@@ -94,7 +98,7 @@ export default function NewConstraint({
             variant="body2"
             sx={{ fontStyle: "italic", color: "grey" }}
           >
-            Select constraint template in list below.
+            {t("constraint.select_template")}
           </Typography>
         )}
       </Box>

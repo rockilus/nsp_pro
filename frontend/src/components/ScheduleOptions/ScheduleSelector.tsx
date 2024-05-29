@@ -14,7 +14,7 @@ import TableContainer from "@mui/material/TableContainer";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import TableRowScheduleWIP from "../Schedule/ScheduleOptions/TableRowScheduleWIP";
-import { GetStatusLabel } from "../SharedComponents/getScheduleStatusLabel";
+import { GetStatusLabel } from "../SharedComponents/GetStatusLabel";
 // Stores
 import { useScheduleStore } from "../../stores/scheduleStore";
 // Types

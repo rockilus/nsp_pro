@@ -5,14 +5,16 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-
+import { useTranslation } from "react-i18next";
+// MUI
 import Chip from "@mui/material/Chip";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
-
+// Types
 import { BlockT, TemplateBlockT } from "./types";
+// Constants
 import { ConstraintDefaultColors } from "../../utils/constants";
 
 interface Props {
@@ -20,6 +22,7 @@ interface Props {
   templateBlock: TemplateBlockT;
   handleEditBlock: (block: BlockT) => void;
   handleClose: () => void;
+  translateOptionName: (name: string) => string;
 }
 
 export default function BlockEditString({
@@ -27,7 +30,10 @@ export default function BlockEditString({
   templateBlock,
   handleEditBlock,
   handleClose,
+  translateOptionName,
 }: Props) {
+  const { t } = useTranslation();
+
   const initialValue = useCallback((): string => {
     if (block === null) {
       return "";
@@ -175,7 +181,7 @@ export default function BlockEditString({
         >
           {valueState.length > 0 && (
             <Chip
-              label={valueState}
+              label={translateOptionName(valueState)}
               sx={{
                 color: ConstraintDefaultColors.shade3,
                 background: ConstraintDefaultColors.shade1,
@@ -211,7 +217,7 @@ export default function BlockEditString({
             padding: "0 16px 6px 16px",
           }}
         >
-          {"Select one " + templateBlock.name}
+          {t("constraint.select_one")}
         </div>
         <List dense={true} sx={{ padding: "0 0 0 0" }}>
           {filteredOptions.map((option) => (
@@ -225,7 +231,7 @@ export default function BlockEditString({
             >
               <ListItem sx={{ padding: "0 16px 0 16px" }}>
                 <ListItemText
-                  primary={option}
+                  primary={translateOptionName(option)}
                   style={{ color: ConstraintDefaultColors.shade3 }}
                 />
               </ListItem>

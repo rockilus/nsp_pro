@@ -14,7 +14,7 @@ import TableContainer from "@mui/material/TableContainer";
 // Components
 import ScheduleDialogValidate from "./ScheduleDialogValidate";
 import TableRowScheduleWIP from "./TableRowScheduleWIP";
-import { GetStatusLabel } from "../../SharedComponents/getScheduleStatusLabel";
+import { GetStatusLabel } from "../../SharedComponents/GetStatusLabel";
 // Stores
 import { useScheduleStore } from "../../../stores/scheduleStore";
 // Types

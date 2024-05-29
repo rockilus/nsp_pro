@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -24,6 +25,8 @@ export default function ConstraintEdit({
   constraint,
   constraintTemplate,
 }: Props) {
+  const { t } = useTranslation();
+
   const initialBlockValue = (
     templateBlock: TemplateBlockT
   ): string | number | string[] | TemplateOptionValueT[] => {
@@ -140,7 +143,7 @@ export default function ConstraintEdit({
         onClick={handleSaveConstraint}
         sx={{ textTransform: "none", height: 35, width: 60 }}
       >
-        {constraint.id === "" ? "Add" : "Save"}
+        {constraint.id === "" ? t("common.add") : t("common.save")}
       </Button>
     </Box>
   );

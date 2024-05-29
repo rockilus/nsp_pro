@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -23,6 +24,8 @@ export default function ConstraintList({
   constraintTemplates,
   handleOpenAddConstraint,
 }: Props) {
+  const { t } = useTranslation();
+
   const findTemplateById = (id: string): TemplateT | null => {
     const template = constraintTemplates.find((template) => template.id === id);
     return template ? template : null;
@@ -63,10 +66,10 @@ export default function ConstraintList({
             align="left"
             sx={{ fontWeight: "bold" }}
           >
-            Constraints
+            {t("constraint.constraints")}
           </Typography>
           <TableAddButton
-            text="Add constraint"
+            text={t("common.constraint")}
             handleClick={handleOpenAddConstraint}
           />
         </Box>

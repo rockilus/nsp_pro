@@ -45,6 +45,7 @@ class ConstraintBuild(Document):
         required=True, choices=["sum", "seq", "ord", "fil", "fai", "eve"]
     )
     template_id = StringField(required=True)
+    language = StringField(required=True, choices=["en", "es", "fr"])
     blocks = ListField(EmbeddedDocumentField(Block))
     text = StringField(required=True)
     hard = BooleanField(required=True)

@@ -127,6 +127,7 @@ class ConstraintBuildMessage(BaseModel):
     teamId: str
     constraintType: str
     templateId: str
+    language: str
     blocks: List[BlockMessage]
     text: str
     hard: bool
@@ -146,6 +147,7 @@ class TemplateMessage(BaseModel):
     id: str
     constraintType: str
     text: str
+    language: str
     blocks: List[TemplateBlockMessage]
 
 

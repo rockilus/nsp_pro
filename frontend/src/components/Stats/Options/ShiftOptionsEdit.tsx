@@ -368,7 +368,7 @@ export default function ShiftOptionsEdit({
             padding: "0 16px 6px 16px",
           }}
         >
-          {t("stats.select_one_or_more")}
+          {t("constraint.select_one_or_more")}
         </div>
         <List
           sx={{

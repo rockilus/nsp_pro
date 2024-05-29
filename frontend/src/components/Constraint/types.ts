@@ -3,6 +3,7 @@ export type ConstraintT = {
   teamId: string;
   constraintType: string;
   templateId: string;
+  language: string;
   blocks: BlockT[];
   text: string;
   hard: boolean;
@@ -38,6 +39,7 @@ export type TemplateT = {
   id: string;
   constraintType: string;
   text: string;
+  language: string;
   blocks: TemplateBlockT[];
 };
 

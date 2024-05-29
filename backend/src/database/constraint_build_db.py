@@ -329,6 +329,7 @@ def core_to_doc_constraint_build(
             team=team,
             constraint_type=dataclass_obj.constraint_type,
             template_id=dataclass_obj.template_id,
+            language=dataclass_obj.language,
             blocks=[core_to_doc_block(b) for b in dataclass_obj.blocks],
             text=dataclass_obj.text,
             hard=dataclass_obj.hard,
@@ -386,6 +387,7 @@ def doc_to_core_constraint_build(
             team_id=doc_obj.team.id,
             constraint_type=doc_obj.constraint_type,  # type: ignore
             template_id=doc_obj.template_id,
+            language=doc_obj.language,
             blocks=[doc_to_core_block(b) for b in doc_obj.blocks],
             text=doc_obj.text,
             hard=doc_obj.hard,
