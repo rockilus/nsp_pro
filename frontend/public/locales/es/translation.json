@@ -152,7 +152,8 @@
         "time_frame_24_months": "Últimos 24 meses",
         "time_frame_36_months": "Últimos 36 meses",
         "time_frame_custom": "Personalizado",
-        "view_by": "Ver por"
+        "view_by": "Ver por",
+        "week_short": "S"
     },
     "week_days": {
         "monday": "Lunes",
@@ -162,5 +163,19 @@
         "friday": "Viernes",
         "saturday": "Sábado",
         "sunday": "Domingo"
+    },
+    "month_names": {
+        "january": "Enero",
+        "february": "Febrero",
+        "march": "Marzo",
+        "april": "Abril",
+        "may": "Mayo",
+        "june": "Junio",
+        "july": "Julio",
+        "august": "Agosto",
+        "september": "Septiembre",
+        "october": "Octubre",
+        "november": "Noviembre",
+        "december": "Diciembre"
     }
 }
