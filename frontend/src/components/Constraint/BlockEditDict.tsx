@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Chip from "@mui/material/Chip";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -23,6 +24,7 @@ interface Props {
   templateBlock: TemplateBlockT;
   handleEditBlock: (block: BlockT) => void;
   handleClose: () => void;
+  translateOptionName: (name: string) => string;
 }
 
 export default function BlockEditDict({
@@ -30,7 +32,23 @@ export default function BlockEditDict({
   templateBlock,
   handleEditBlock,
   handleClose,
+  translateOptionName,
 }: Props) {
+  const { t } = useTranslation();
+
+  const translateSectionLabel = (label: string) => {
+    switch (label) {
+      case "workers":
+        return t("worker.workers");
+      case "shifts":
+        return t("shift.shifts");
+      case "all":
+        return t("common.all");
+      default:
+        return label;
+    }
+  };
+
   function isDictionary(obj: any): obj is Record<string, unknown> {
     return (
       obj !== null &&
@@ -326,7 +344,7 @@ export default function BlockEditDict({
           {valueState.map((option, index) => (
             <Chip
               key={index}
-              label={option.name}
+              label={translateOptionName(option.name)}
               onDelete={() => handleDeleteFromSelected(option)}
               deleteIcon={
                 <ClearIcon
@@ -372,7 +390,7 @@ export default function BlockEditDict({
             padding: "0 16px 6px 16px",
           }}
         >
-          Select one or more
+          {t("constraint.select_one_or_more")}
         </div>
         <List
           sx={{
@@ -390,7 +408,9 @@ export default function BlockEditDict({
             (sectionLabel: string, sectionIndex: number) => (
               <li key={`section-${sectionIndex}`}>
                 <ul>
-                  <ListSubheader>{sectionLabel}</ListSubheader>
+                  <ListSubheader>
+                    {translateSectionLabel(sectionLabel)}
+                  </ListSubheader>
                   {filteredOptions[sectionLabel].map(
                     (option: TemplateOptionValueT, index: number) => (
                       <ListItemButton
@@ -407,7 +427,7 @@ export default function BlockEditDict({
                       >
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText
-                            primary={option.name}
+                            primary={translateOptionName(option.name)}
                             style={{ color: ConstraintDefaultColors.shade3 }}
                           />
                         </ListItem>

@@ -44,7 +44,7 @@ async def create_constraint(
                 "You do not have permission to create a constraint"
             )
         cb_data = msg_to_core_constraint_build(req)
-        cb_data.text = blocks_to_string(cb_data.blocks)
+        cb_data.text = blocks_to_string(cb_data.blocks, cb_data.language)
         constraint_build = constraint_build_db.create_constraint_build(cb_data)
         response = core_to_msg_constraint_build(constraint_build)
     except Exception as e:
@@ -85,7 +85,7 @@ async def update_constraint(
                 "You do not have permission to update a constraint"
             )
         cb_data = msg_to_core_constraint_build(updated_constraint_build)
-        cb_data.text = blocks_to_string(cb_data.blocks)
+        cb_data.text = blocks_to_string(cb_data.blocks, cb_data.language)
         cb_updated = constraint_build_db.update_constraint_build(cb_data)
         response = core_to_msg_constraint_build(cb_updated)
     except Exception as e:

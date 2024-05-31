@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
@@ -20,6 +21,8 @@ export default function TemplateList({
   selectedTemplate,
   handleSelectedTemplate,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <Box
       sx={{
@@ -45,7 +48,7 @@ export default function TemplateList({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          Templates
+          {t("constraint.templates")}
         </Typography>
       </Box>
       <Box

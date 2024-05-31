@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // Components
 import BlockEditString from "./BlockEditString";
+import GetBlockNameLabel from "../SharedComponents/GetBlockNameLabel";
 import PopoverBoxAnchorElOver from "../SharedComponents/PopoverBoxAnchorElOver";
 import {
   blockDisplayName,
@@ -21,15 +23,62 @@ export default function BlockDisplayString({
   templateBlock,
   handleEditBlock,
 }: Props) {
+  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
+
+  const translateOptionName = (name: string): string => {
+    // console.log("name", name);
+
+    switch (name) {
+      case "at least":
+        return t("constraint.operator_at_least");
+      case "exactly":
+        return t("constraint.operator_exactly");
+      case "at most":
+        return t("constraint.operator_at_most");
+      case "per week":
+        return t("constraint.timing_per_week");
+      case "per month":
+        return t("constraint.timing_per_month");
+      case "per year":
+        return t("constraint.timing_per_year");
+      case "no":
+        return t("constraint.operator_no");
+      case "after":
+        return t("constraint.timing_after");
+      case "before":
+        return t("constraint.timing_before");
+      case "monday":
+        return t("week_days.monday");
+      case "tuesday":
+        return t("week_days.tuesday");
+      case "wednesday":
+        return t("week_days.wednesday");
+      case "thursday":
+        return t("week_days.thursday");
+      case "friday":
+        return t("week_days.friday");
+      case "saturday":
+        return t("week_days.saturday");
+      case "sunday":
+        return t("week_days.sunday");
+      case "should only":
+        return t("constraint.operator_should_only");
+      case "should not":
+        return t("constraint.operator_should_not");
+      default:
+        return name;
+    }
+  };
 
   const blockDisplay = () => {
     return (
       <div>
         {block && block.value !== ""
-          ? blockDislayValue(block.value as string)
+          ? blockDislayValue(translateOptionName(block.value as string))
           : blockDisplayPlaceholder(templateBlock.placeholder)}
-        {blockDisplayName(templateBlock.name)}
+        {blockDisplayName(GetBlockNameLabel(templateBlock.name))}
       </div>
     );
   };
@@ -47,6 +96,7 @@ export default function BlockDisplayString({
           templateBlock={templateBlock}
           handleEditBlock={handleEditBlock}
           handleClose={handleClose}
+          translateOptionName={translateOptionName}
         />
       }
       open={open}

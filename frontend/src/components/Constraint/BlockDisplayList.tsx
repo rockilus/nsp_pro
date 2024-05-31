@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 // Components
 import BlockEditList from "./BlockEditList";
+import GetBlockNameLabel from "../SharedComponents/GetBlockNameLabel";
 import PopoverBoxAnchorElOver from "../SharedComponents/PopoverBoxAnchorElOver";
 import {
   blockDisplayName,
@@ -29,7 +30,7 @@ export default function BlockDisplayList({
         {block && Array.isArray(block.value) && block.value.length !== 0
           ? blockDislayValue(block.value.join(", "))
           : blockDisplayPlaceholder(templateBlock.placeholder)}
-        {blockDisplayName(templateBlock.name)}
+        {blockDisplayName(GetBlockNameLabel(templateBlock.name))}
       </div>
     );
   };

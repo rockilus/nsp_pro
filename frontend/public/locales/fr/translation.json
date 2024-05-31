@@ -1,12 +1,14 @@
 {
     "common": {
         "add": "Ajouter",
+        "all": "Tous",
         "approved": "Approuvé",
         "assignment": "Affectation",
         "campaign": "Campagne",
         "cancel": "Annuler",
         "color": "Couleur",
         "custom": "Perso",
+        "constraint": "Contrainte",
         "date": "Date",
         "delete": "Supprimer",
         "display": "Affichage",
@@ -71,7 +73,28 @@
         "weekly_planners": "Agendas hebdomadaires"
     },
     "constraint": {
-        "constraints": "Contraintes"
+        "all_workers": "Tous les travailleurs",
+        "all_shifts": "Toutes les tâches",
+        "constraints": "Contraintes",
+        "new_constraint": "Nouvelle contrainte",
+        "operator": "Opérateur",
+        "operator_at_least": "au moins",
+        "operator_at_most": "au plus",
+        "operator_exactly": "exactement",
+        "operator_no": "Pas de",
+        "operator_should_not": "ne doit pas",
+        "operator_should_only": "doit seulement",
+        "select_one_or_more": "Sélectionnez un ou plusieurs",
+        "select_one": "Sélectionnez un",
+        "select_template": "Sélectionnez un modèle de contrainte dans la liste ci-dessous.",
+        "templates": "Modèles",
+        "timing": "Temporalité",
+        "timing_after": "après",
+        "timing_before": "avant",
+        "timing_per_month": "par mois",
+        "timing_per_week": "par semaine",
+        "timing_per_year": "par an",
+        "week_day": "Jour de la semaine"
     },
     "request": {
         "date_range": "Plage de dates",
@@ -107,7 +130,6 @@
         "get_stats": "Obtenir les stats",
         "no_custom_stats": "Vous n'avez pas de stats personnalisées. Sélectionnez une autre 'Stats' dans les options de stats et commencez à ajouter des stats personnalisées.",
         "no_stats_selected": "Sélectionnez vos options de stats et cliquez sur le bouton 'Obtenir les stats'.",
-        "select_one_or_more": "Sélectionnez une ou plusieurs",
         "select_shift": "Sélectionnez une tâche",
         "stats_description_custom": "Stats personnalisées",
         "stats_description_nb_days_worked": "Nombre de jours travaillés",

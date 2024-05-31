@@ -1,11 +1,13 @@
 {
     "common": {
         "add": "Añadir",
+        "all": "Todo",
         "approved": "Aprobado",
         "assignment": "Asignación",
         "campaign": "Campaña",
         "cancel": "Cancelar",
         "color": "Color",
+        "constraint": "Restricción",
         "custom": "Perso",
         "date": "Fecha",
         "delete": "Eliminar",
@@ -71,7 +73,28 @@
         "weekly_planners": "Agendas semanales"
     },
     "constraint": {
-        "constraints": "Restricciones"
+        "all_workers": "Todos los trabajadores",
+        "all_shifts": "Todos los turnos",
+        "constraints": "Restricciones",
+        "new_constraint": "Nueva restricción",
+        "operator": "Operador",
+        "operator_at_least": "al menos",
+        "operator_at_most": "como máximo",
+        "operator_exactly": "exactamente",
+        "operator_no": "No",
+        "operator_should_not": "no debe",
+        "operator_should_only": "sólo debe",
+        "select_one": "Selecciona uno",
+        "select_one_or_more": "Selecciona una o más",
+        "select_template": "Selecciona una plantilla de restricción en la lista de abajo.",
+        "templates": "Plantilla",
+        "timing": "Temporalidad",
+        "timing_after": "después",
+        "timing_before": "antes",
+        "timing_per_month": "por mes",
+        "timing_per_week": "por semana",
+        "timing_per_year": "por año",
+        "week_day": "Día de la semana"
     },
     "request": {
         "date_range": "Rango de fechas",
@@ -107,7 +130,6 @@
         "get_stats": "Obtener estadísticas",
         "no_custom_stats": "No tienes estadísticas personalizadas. Selecciona otra 'Estadísticas' en las opciones de estadísticas y comienza a añadir estadísticas personalizadas.",
         "no_stats_selected": "Selecciona tus opciones de estadísticas y haz clic en el botón 'obtener estadísticas'.",
-        "select_one_or_more": "Selecciona una o más",
         "select_shift": "Selecciona un turno",
         "stats_description_custom": "Estadísticas personalizadas",
         "stats_description_nb_days_worked": "Número de días trabajados",

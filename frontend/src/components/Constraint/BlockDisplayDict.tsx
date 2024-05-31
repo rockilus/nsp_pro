@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // Components
 import BlockEditDict from "./BlockEditDict";
+import GetBlockNameLabel from "../SharedComponents/GetBlockNameLabel";
 import PopoverBoxAnchorElOver from "../SharedComponents/PopoverBoxAnchorElOver";
 import {
   blockDisplayName,
@@ -21,7 +23,20 @@ export default function BlockDisplayDict({
   templateBlock,
   handleEditBlock,
 }: Props) {
+  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
+
+  const translateOptionName = (name: string) => {
+    switch (name) {
+      case "all workers":
+        return t("constraint.all_workers");
+      case "all shifts":
+        return t("constraint.all_shifts");
+      default:
+        return name;
+    }
+  };
 
   const blockDisplay = () => {
     return (
@@ -30,12 +45,14 @@ export default function BlockDisplayDict({
           ? blockDislayValue(
               block.value
                 .map((item) =>
-                  typeof item === "object" && "name" in item ? item.name : ""
+                  typeof item === "object" && "name" in item
+                    ? translateOptionName(item.name)
+                    : ""
                 )
                 .join(", ")
             )
           : blockDisplayPlaceholder(templateBlock.placeholder)}
-        {blockDisplayName(templateBlock.name)}
+        {blockDisplayName(GetBlockNameLabel(templateBlock.name))}
       </div>
     );
   };
@@ -53,6 +70,7 @@ export default function BlockDisplayDict({
           templateBlock={templateBlock}
           handleEditBlock={handleEditBlock}
           handleClose={handleClose}
+          translateOptionName={translateOptionName}
         />
       }
       open={open}
