@@ -50,6 +50,77 @@ export default function StatsTable({
     }
   };
 
+  // const translateHeaderValue = (name: string): string => {
+  //   const translations: Record<string, string> = {
+  //     Monday: "week_days.monday",
+  //     Tuesday: "week_days.tuesday",
+  //     Wednesday: "week_days.wednesday",
+  //     Thursday: "week_days.thursday",
+  //     Friday: "week_days.friday",
+  //     Saturday: "week_days.saturday",
+  //     Sunday: "week_days.sunday",
+  //   };
+
+  //   const weekPattern = /^(\d{4}) W(\d{1,2})$/;
+  //   const match = name.match(weekPattern);
+
+  //   if (match) {
+  //     const year = match[1];
+  //     const week = match[2];
+  //     return `${year} ${t("stats.week_short")}${week}`;
+  //   }
+
+  //   return translations[name] ? t(translations[name]) : name;
+  // };
+
+  const translateHeaderValue = (name: string): string => {
+    const translations: Record<string, string> = {
+      Monday: "week_days.monday",
+      Tuesday: "week_days.tuesday",
+      Wednesday: "week_days.wednesday",
+      Thursday: "week_days.thursday",
+      Friday: "week_days.friday",
+      Saturday: "week_days.saturday",
+      Sunday: "week_days.sunday",
+    };
+
+    const weekPattern = /^(\d{4}) W(\d{1,2})$/;
+    const monthPattern =
+      /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4})$/;
+    const matchWeek = name.match(weekPattern);
+    const matchMonth = name.match(monthPattern);
+
+    const monthAbbreviations: Record<string, string> = {
+      jan: "january",
+      feb: "february",
+      mar: "march",
+      apr: "april",
+      may: "may",
+      jun: "june",
+      jul: "july",
+      aug: "august",
+      sep: "september",
+      oct: "october",
+      nov: "november",
+      dec: "december",
+    };
+
+    if (matchWeek) {
+      const year = matchWeek[1];
+      const week = matchWeek[2];
+      return `${year} ${t("stats.week_short")}${week}`;
+    }
+
+    if (matchMonth) {
+      const monthAbbreviation = matchMonth[1].toLowerCase();
+      const month = monthAbbreviations[monthAbbreviation];
+      const year = matchMonth[2];
+      return `${t(`month_names.${month}`).substring(0, 3)} ${year}`;
+    }
+
+    return translations[name] ? t(translations[name]) : name;
+  };
+
   return (
     <Box
       sx={{
@@ -82,7 +153,7 @@ export default function StatsTable({
                   <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
                     {header.headerUnit === "shift"
                       ? shifts.find((s) => s.id === header.value)?.name
-                      : header.value}
+                      : translateHeaderValue(header.value)}
                   </Typography>
                   <Button
                     sx={{
@@ -119,7 +190,13 @@ export default function StatsTable({
                       variant="body1"
                       sx={{ fontStyle: "italic", fontSize: "0.8rem" }}
                     >
-                      {header.selectedShifts.map((ss) => ss.name).join(", ")}
+                      {header.selectedShifts
+                        .map((ss) =>
+                          ss.name === "all shifts"
+                            ? t("constraint.all_shifts")
+                            : ss.name
+                        )
+                        .join(", ")}{" "}
                     </Typography>
                   </TableCell>
                 ))}
