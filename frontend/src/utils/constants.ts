@@ -14,18 +14,6 @@ export const WeekDays = [
 export const NumHoursInDay = 24;
 export const NumQuarterHoursInHour = 4;
 
-// App
-export const tabs: { id: string; label: string }[] = [
-  { id: "workers", label: "Workers" },
-  { id: "shifts", label: "Shifts" },
-  { id: "coverages", label: "Coverages" },
-  { id: "constraints", label: "Constraints" },
-  { id: "requests", label: "Requests" },
-  { id: "schedule_options", label: "Schedule Options" },
-  { id: "schedule", label: "Schedule" },
-  { id: "stats", label: "Stats" },
-];
-
 // Shifts
 export const ShiftColors: string[] = [
   "#0030C6",

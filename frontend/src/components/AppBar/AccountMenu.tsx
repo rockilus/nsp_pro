@@ -1,6 +1,7 @@
 import * as React from "react";
 import SessionReact from "supertokens-auth-react/recipe/session";
 import SuperTokensReact from "supertokens-auth-react";
+import { useTranslation } from "react-i18next";
 // MUI
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import IconButton from "@mui/material/IconButton";
@@ -9,7 +10,14 @@ import MenuItem from "@mui/material/MenuItem";
 // Stores
 import { useTeamStore } from "../../stores/teamStore";
 
-export default function AccountMenu() {
+interface Props {
+  tabs: { id: string; label: string; type: string }[];
+  handleSelectTab: (tabId: string) => void;
+}
+
+export default function AccountMenu({ tabs, handleSelectTab }: Props) {
+  const { t } = useTranslation();
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const clearTeams = useTeamStore((state) => state.clearTeams);
 
@@ -54,9 +62,21 @@ export default function AccountMenu() {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        {/* <MenuItem onClick={handleClose}>Profile</MenuItem>
-              <MenuItem onClick={handleClose}>My account</MenuItem> */}
-        <MenuItem onClick={handleLogout}>Sign Out</MenuItem>
+        {tabs
+          .filter((t) => t.type === "config")
+          .map((tab) => (
+            <MenuItem
+              key={tab.id}
+              onClick={() => {
+                handleSelectTab(tab.id);
+                handleClose();
+              }}
+            >
+              {tab.label}
+            </MenuItem>
+          ))}
+        {/* <MenuItem onClick={handleClose}>My account</MenuItem> */}
+        <MenuItem onClick={handleLogout}>{t("common.sign_out")}</MenuItem>
       </Menu>
     </div>
   );
