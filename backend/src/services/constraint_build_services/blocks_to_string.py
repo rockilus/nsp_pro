@@ -139,17 +139,13 @@ def blocks_to_string(blocks: List[Block], language: str) -> str:
                 block_values = [v["name"] for v in block_values]  # type: ignore
             if block.name == "shift":
                 block_values = [
-                    translate_shift_block_value(str(v), language)
-                    for v in block_values
+                    translate_shift_block_value(str(v), language) for v in block_values
                 ]
             elif block.name == "worker":
                 block_values = [
-                    translate_worker_block_value(str(v), language)
-                    for v in block_values
+                    translate_worker_block_value(str(v), language) for v in block_values
                 ]
-            if len(block_values) > 1 and all(
-                isinstance(v, str) for v in block_values
-            ):
+            if len(block_values) > 1 and all(isinstance(v, str) for v in block_values):
                 values.append(
                     ', '.join(block_values[:-1])  # type: ignore
                     + ' and '
@@ -160,17 +156,11 @@ def blocks_to_string(blocks: List[Block], language: str) -> str:
         else:
             block_value = block.value
             if block.name == "operator":
-                block_value = translate_operator_block_value(
-                    str(block_value), language
-                )
+                block_value = translate_operator_block_value(str(block_value), language)
             if block.name == "timing":
-                block_value = translate_timing_block_value(
-                    str(block_value), language
-                )
+                block_value = translate_timing_block_value(str(block_value), language)
             if block.name == "weekday":
-                block_value = translate_weekday_block_value(
-                    str(block_value), language
-                )
+                block_value = translate_weekday_block_value(str(block_value), language)
             values.append(str(block_value))
     joined_values = ' '.join(values)
     capitalized_values = joined_values.capitalize()

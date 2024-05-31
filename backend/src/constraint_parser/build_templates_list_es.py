@@ -326,7 +326,8 @@ def build_templates_list_es(
         Template(
             id="6",
             constraint_type="eve",
-            text="Las guardias el domingo deben ser repartidas de manera igual en el tiempo para todos los trabajadores",
+            text="Las guardias el domingo deben ser repartidas de manera "
+            + "igual en el tiempo para todos los trabajadores",
             language="es",
             blocks=[
                 TemplateBlock(
@@ -357,7 +358,8 @@ def build_templates_list_es(
                     name="text",
                     type="string",
                     options=[],
-                    placeholder="deben ser repartidas de manera igual en el tiempo para",
+                    placeholder="deben ser repartidas de manera igual en el "
+                    + "tiempo para",
                 ),
                 TemplateBlock(
                     name="worker",
@@ -371,7 +373,8 @@ def build_templates_list_es(
         Template(
             id="7",
             constraint_type="fai",
-            text="Las guardias el domingo deben ser repartidas de manera equitativa entre todos los trabajadores",
+            text="Las guardias el domingo deben ser repartidas de manera "
+            + "equitativa entre todos los trabajadores",
             language="es",
             blocks=[
                 TemplateBlock(
