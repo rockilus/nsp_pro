@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 from constraint_parser.build_templates_list_en import build_templates_list_en
+from constraint_parser.build_templates_list_es import build_templates_list_es
 from constraint_parser.build_templates_list_fr import build_templates_list_fr
 from core import (
     Shift,
@@ -22,9 +23,13 @@ def build_templates(
     shift_dimensions: List[ShiftDimension],
     shift_properties: Dict[str, List[ShiftProperty]],
 ) -> List[Template]:
-    worker_options = build_worker_options(workers, worker_dimensions, worker_properties)
-    shift_options = build_shift_options(shifts, shift_dimensions, shift_properties)
-    return build_templates_list(worker_options, shift_options, "fr")
+    worker_options = build_worker_options(
+        workers, worker_dimensions, worker_properties
+    )
+    shift_options = build_shift_options(
+        shifts, shift_dimensions, shift_properties
+    )
+    return build_templates_list(worker_options, shift_options, "es")
 
 
 def build_worker_options(
@@ -34,7 +39,9 @@ def build_worker_options(
 ) -> Dict:
     worker_options = {
         "all": [{"name": "all workers", "id": "", "id_type": ""}],
-        "workers": [{"name": w.name, "id": w.id, "id_type": "worker"} for w in workers],
+        "workers": [
+            {"name": w.name, "id": w.id, "id_type": "worker"} for w in workers
+        ],
     }
     for worker_dimension in worker_dimensions:
         worker_properties_wd = (
@@ -77,7 +84,9 @@ def build_worker_options(
                     "id": worker_dimension.id,
                     "id_type": "worker_dimension",
                 }
-                for wp_value in list(set(str(wp.value) for wp in worker_properties_wd))
+                for wp_value in list(
+                    set(str(wp.value) for wp in worker_properties_wd)
+                )
             ]
     return worker_options
 
@@ -89,7 +98,9 @@ def build_shift_options(
 ) -> Dict:
     shift_options = {
         "all": [{"name": "all shifts", "id": "", "id_type": ""}],
-        "shifts": [{"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts],
+        "shifts": [
+            {"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts
+        ],
     }
     for shift_dimension in shift_dimensions:
         shift_properties_sd = (
@@ -132,7 +143,9 @@ def build_shift_options(
                     "id": shift_dimension.id,
                     "id_type": "shift_dimension",
                 }
-                for sp_value in list(set(str(sp.value) for sp in shift_properties_sd))
+                for sp_value in list(
+                    set(str(sp.value) for sp in shift_properties_sd)
+                )
             ]
     return shift_options
 
@@ -144,4 +157,6 @@ def build_templates_list(
         return build_templates_list_en(worker_options, shift_options)
     if lang_code == "fr":
         return build_templates_list_fr(worker_options, shift_options)
+    if lang_code == "es":
+        return build_templates_list_es(worker_options, shift_options)
     raise ValueError(f"Language code {lang_code} not supported")

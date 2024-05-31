@@ -81,11 +81,20 @@
         "operator_at_least": "au moins",
         "operator_at_most": "au plus",
         "operator_exactly": "exactement",
+        "operator_no": "Pas de",
+        "operator_should_not": "ne doit pas",
+        "operator_should_only": "doit seulement",
         "select_one_or_more": "Sélectionnez un ou plusieurs",
         "select_one": "Sélectionnez un",
         "select_template": "Sélectionnez un modèle de contrainte dans la liste ci-dessous.",
         "templates": "Modèles",
-        "timing": "Temporalité"
+        "timing": "Temporalité",
+        "timing_after": "après",
+        "timing_before": "avant",
+        "timing_per_month": "par mois",
+        "timing_per_week": "par semaine",
+        "timing_per_year": "par an",
+        "week_day": "Jour de la semaine"
     },
     "request": {
         "date_range": "Plage de dates",

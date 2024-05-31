@@ -28,6 +28,8 @@ export default function BlockDisplayString({
   const [open, setOpen] = useState(false);
 
   const translateOptionName = (name: string): string => {
+    // console.log("name", name);
+
     switch (name) {
       case "at least":
         return t("constraint.operator_at_least");
@@ -35,6 +37,36 @@ export default function BlockDisplayString({
         return t("constraint.operator_exactly");
       case "at most":
         return t("constraint.operator_at_most");
+      case "per week":
+        return t("constraint.timing_per_week");
+      case "per month":
+        return t("constraint.timing_per_month");
+      case "per year":
+        return t("constraint.timing_per_year");
+      case "no":
+        return t("constraint.operator_no");
+      case "after":
+        return t("constraint.timing_after");
+      case "before":
+        return t("constraint.timing_before");
+      case "monday":
+        return t("week_days.monday");
+      case "tuesday":
+        return t("week_days.tuesday");
+      case "wednesday":
+        return t("week_days.wednesday");
+      case "thursday":
+        return t("week_days.thursday");
+      case "friday":
+        return t("week_days.friday");
+      case "saturday":
+        return t("week_days.saturday");
+      case "sunday":
+        return t("week_days.sunday");
+      case "should only":
+        return t("constraint.operator_should_only");
+      case "should not":
+        return t("constraint.operator_should_not");
       default:
         return name;
     }
