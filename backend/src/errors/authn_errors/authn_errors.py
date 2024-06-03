@@ -2,3 +2,15 @@ class AuthnGeneralError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+
+
+class AuthnEmailAlreadyExistsError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+class UpdateEmailError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)

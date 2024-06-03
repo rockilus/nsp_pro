@@ -16,7 +16,7 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import UserMessage
-from scripts.setup_database import user_db
+from services.user_services import update_user as update_user_service
 
 # from scripts.setup_database import user_db
 
@@ -33,7 +33,7 @@ async def update_user(
         if not await authz_check(session.get_user_id(), "update", "user", user_id):
             raise NotAuthorizedError("You do not have permission to update a user")
         u_data = msg_to_core_user(user)
-        updated_user = user_db.update_user(u_data)
+        updated_user = await update_user_service(u_data)
         response = core_to_msg_user(updated_user)
     except Exception as e:
         log_info("Failed to update user")
