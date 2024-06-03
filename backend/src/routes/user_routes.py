@@ -30,7 +30,7 @@ async def update_user(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> UserMessage:
     try:
-        if not await authz_check(session.get_user_id(), "update-user", "user", user_id):
+        if not await authz_check(session.get_user_id(), "update", "user", user_id):
             raise NotAuthorizedError("You do not have permission to update a user")
         u_data = msg_to_core_user(user)
         updated_user = user_db.update_user(u_data)

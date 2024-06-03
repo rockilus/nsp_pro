@@ -8,7 +8,7 @@ import { UserT } from "../components/UserProfile/types";
 
 dayjs.extend(utc);
 
-const apiUrlUser = process.env.NEXT_PUBLIC_API_URL + "/user";
+const apiUrlUser = process.env.NEXT_PUBLIC_API_URL + "/users";
 
 type UserStateT = {
   user: UserT | null;
