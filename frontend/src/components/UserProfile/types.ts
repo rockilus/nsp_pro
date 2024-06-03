@@ -1,6 +1,7 @@
 export type UserT = {
   id: string;
-  username: string;
+  email: string;
   firstName: string;
   lastName: string;
+  workers: string[];
 };

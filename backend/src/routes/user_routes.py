@@ -49,7 +49,6 @@ def core_to_msg_user(user: User) -> UserMessage:
     except Exception as e:
         log_info("Failed to convert User to dictionary")
         raise MessageTypeError(str(e)) from e
-    data = {k: v for k, v in data.items() if k not in ["hashed_password", "roles"]}
     as_dict = humps.camelize(data)
     validator = TypeAdapter(UserMessage)
     try:

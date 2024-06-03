@@ -10,9 +10,11 @@ import ScheduleTab from "../components/Schedule/ScheduleTab";
 import ShiftTab from "../components/Shift/ShiftTab";
 import SimpleSnackbar from "../components/SnackBars/SnackBars";
 import StatsTab from "../components/Stats/StatsTab";
+import UserProfileTab from "../components/UserProfile/UserProfileTab";
 import WorkerTab from "../components/Worker/WorkerTab";
 // Stores
 import { useAssignmentStore } from "../stores/assignmentStore";
+import { useBulkFetchStore } from "../stores/bulkFetchStore";
 import { useConstraintStore } from "../stores/constraintStore";
 import { useConstraintTemplateStore } from "../stores/constraintTemplateStore";
 import { useCoverageSelectorStore } from "../stores/coverageSelectorStore";
@@ -23,9 +25,9 @@ import { useScheduleStore } from "../stores/scheduleStore";
 import { useShiftStore } from "../stores/shiftStore";
 import { useShiftDimensionStore } from "../stores/shiftDimensionStore";
 import { useTeamStore } from "../stores/teamStore";
+import { useUserStore } from "../stores/userStore";
 import { useWorkerStore } from "../stores/workerStore";
 import { useWorkerDimensionStore } from "../stores/workerDimensionStore";
-import { useBulkFetchStore } from "../stores/bulkFetchStore";
 // Types
 import { StatsShiftOptionsT } from "../components/Stats/types";
 import { TemplateT } from "../components/Constraint/types";
@@ -74,6 +76,7 @@ const App = () => {
   const objectiveBreaches = useObjectiveBreachStore(
     (state) => state.objectiveBreaches
   );
+  const user = useUserStore((state) => state.user);
 
   const findShiftBlock = (templates: TemplateT[]): StatsShiftOptionsT => {
     for (let template of templates) {
@@ -176,7 +179,7 @@ const App = () => {
           />
         );
       case "profile":
-        return "Here will be the profile page.";
+        return <UserProfileTab user={user} />;
       default:
         return null;
     }
