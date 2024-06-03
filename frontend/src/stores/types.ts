@@ -11,6 +11,7 @@ import {
   ObjectiveBreachT,
 } from "../components/Schedule/types";
 import { TeamT } from "../containers/types";
+import { UserT } from "../components/UserProfile/types";
 
 export type ResponseStatusT = {
   statusOK: boolean;
@@ -25,6 +26,7 @@ export type SnackBarT = {
 
 export type BulkT = {
   selectedTeamId: string;
+  user: UserT;
   teams: TeamT[];
   workers: WorkerT[];
   workerDimensions: WorkerDimensionT[];

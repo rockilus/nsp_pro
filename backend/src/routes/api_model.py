@@ -248,9 +248,10 @@ class StatsOptionsMessage(BaseModel):
 # User
 class UserMessage(BaseModel):
     id: str
-    username: str
     firstName: str
     lastName: str
+    email: str
+    workers: List[str]
 
 
 # Team
@@ -268,6 +269,7 @@ class HealthCheck(BaseModel):
 # Bulk
 class BulkMessage(BaseModel):
     selectedTeamId: str | None
+    user: UserMessage
     teams: List[TeamMessage]
     workers: List[WorkerMessage]
     workerDimensions: List[WorkerDimensionMessage]

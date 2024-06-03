@@ -19,14 +19,17 @@
         "name": "Nom",
         "pending": "En attente",
         "planner": "Agenda",
+        "profile": "Profil",
         "property": "Propriété",
         "rejected": "Rejeté",
         "request": "Demande",
         "rest": "Repos",
         "save": "Sauvegarder",
+        "schedule": "Planning",
         "selection": "Sélection",
         "set": "Fixer",
         "shift": "Tache",
+        "sign_out": "Déconnexion",
         "soft": "Flexible",
         "solve": "Résoudre",
         "staffing": "Effectif",
@@ -67,6 +70,7 @@
         "type_list": "Tags"
     },
     "coverage": {
+        "coverages": "Agendas",
         "new_planner": "Nouvel agenda",
         "planners": "Agendas",
         "shift_demand": "Demande de tâche",
@@ -154,6 +158,13 @@
         "time_frame_custom": "Personnalisé",
         "view_by": "Voir par",
         "week_short": "S"
+    },
+    "user": {
+        "email": "Email",
+        "first_name": "Prénom",
+        "last_name": "Nom",
+        "no_user_found": "Aucun utilisateur trouvé",
+        "user_profile": "Profil utilisateur"
     },
     "week_days": {
         "monday": "Lundi",

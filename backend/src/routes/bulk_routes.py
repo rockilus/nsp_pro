@@ -21,6 +21,7 @@ from routes.schedule_routes import core_to_msg_schedule
 from routes.shift_dimension_routes import core_to_msg_shift_dimension
 from routes.shift_routes import core_to_msg_shift_and_properties
 from routes.team_routes import core_to_msg_team
+from routes.user_routes import core_to_msg_user
 from routes.worker_dimension_routes import core_to_msg_worker_dimension
 from routes.worker_routes import core_to_msg_worker_and_properties
 from scripts.setup_database import team_db
@@ -39,7 +40,7 @@ async def get_constraint_templates(
         team_id = teams[0].id
         if not await authz_check(user_id, "read-bulk", "team", team_id):
             raise NotAuthorizedError("You do not have permission to get bulk")
-        bulk = build_bulk(teams, team_id)
+        bulk = build_bulk(user_id, teams, team_id)
         response = core_to_msg_bulk(bulk)
     except Exception as e:
         log_info("Failed to get constraint templates")
@@ -51,6 +52,7 @@ async def get_constraint_templates(
 # core to message
 def core_to_msg_bulk(bulk: Bulk) -> BulkMessage:
     data = asdict(bulk)
+    data["user"] = core_to_msg_user(bulk.user) if bulk.user else None
     data["teams"] = [core_to_msg_team(t) for t in bulk.teams]
     data["workers"] = [
         core_to_msg_worker_and_properties(

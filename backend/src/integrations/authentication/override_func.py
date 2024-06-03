@@ -46,6 +46,7 @@ def override_emailpassword_functions(
                 print("user and team created in mongodb:", email)
                 print("assigning user as leader of team in permit.io:", email)
                 await authz_role_assignment_assign(user_id, "team", team.id, "leader")
+                await authz_role_assignment_assign(user_id, "user", user_id, "owner")
                 print("user assigned as leader of team in permit.io:", email)
         return result  # type: ignore
 

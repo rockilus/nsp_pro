@@ -3,23 +3,13 @@ import * as React from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import Menu from "@mui/material/Menu";
-import MenuIcon from "@mui/icons-material/Menu";
-import Container from "@mui/material/Container";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import Tooltip from "@mui/material/Tooltip";
-import MenuItem from "@mui/material/MenuItem";
-import AdbIcon from "@mui/icons-material/Adb";
 import Image from "next/image";
 //Components
 import TabButton from "./TabButton";
 import AccountMenu from "./AccountMenu";
 
 interface Props {
-  tabs: { id: string; label: string }[];
+  tabs: { id: string; label: string; type: string }[];
   selectedTabId: string;
   handleSelectTab: (tabId: string) => void;
 }
@@ -49,17 +39,19 @@ const NavAppBar = ({ tabs, selectedTabId, handleSelectTab }: Props) => {
           />
           <Box display="flex" justifyContent="center" alignItems="center">
             {/* <div style={{ display: "flex", justifyContent: "space-evenly" }}> */}
-            {tabs.map((tab) => (
-              <TabButton
-                key={tab.id}
-                tab={tab}
-                isSelected={tab.id === selectedTabId}
-                handleSelectTab={handleSelectTab}
-              />
-            ))}
+            {tabs
+              .filter((t) => t.type === "core")
+              .map((tab) => (
+                <TabButton
+                  key={tab.id}
+                  tab={tab}
+                  isSelected={tab.id === selectedTabId}
+                  handleSelectTab={handleSelectTab}
+                />
+              ))}
           </Box>
           {/* </div> */}
-          <AccountMenu />
+          <AccountMenu tabs={tabs} handleSelectTab={handleSelectTab} />
         </Box>
       </Toolbar>
     </AppBar>

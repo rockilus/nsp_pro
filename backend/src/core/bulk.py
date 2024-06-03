@@ -7,6 +7,7 @@ from core.request import Request
 from core.schedule import Assignment, ObjectiveBreach, Schedule
 from core.shift import Shift, ShiftDimension, ShiftProperty
 from core.team import Team
+from core.user import User
 from core.worker import Worker, WorkerDimension, WorkerProperty
 
 
@@ -14,6 +15,7 @@ from core.worker import Worker, WorkerDimension, WorkerProperty
 @dataclass
 class Bulk:
     selected_team_id: Optional[str] = None
+    user: Optional[User] = None
     teams: List[Team] = field(default_factory=list)
     workers: List[Worker] = field(default_factory=list)
     worker_properties_w: Dict[str, List[WorkerProperty]] = field(default_factory=dict)

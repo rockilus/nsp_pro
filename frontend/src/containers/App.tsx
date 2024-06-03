@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 // Components
 import NavAppBar from "../components/AppBar/NavAppBar";
 import ConstraintTab from "../components/Constraint/ConstraintTab";
@@ -9,9 +10,11 @@ import ScheduleTab from "../components/Schedule/ScheduleTab";
 import ShiftTab from "../components/Shift/ShiftTab";
 import SimpleSnackbar from "../components/SnackBars/SnackBars";
 import StatsTab from "../components/Stats/StatsTab";
+import UserProfileTab from "../components/UserProfile/UserProfileTab";
 import WorkerTab from "../components/Worker/WorkerTab";
 // Stores
 import { useAssignmentStore } from "../stores/assignmentStore";
+import { useBulkFetchStore } from "../stores/bulkFetchStore";
 import { useConstraintStore } from "../stores/constraintStore";
 import { useConstraintTemplateStore } from "../stores/constraintTemplateStore";
 import { useCoverageSelectorStore } from "../stores/coverageSelectorStore";
@@ -22,16 +25,28 @@ import { useScheduleStore } from "../stores/scheduleStore";
 import { useShiftStore } from "../stores/shiftStore";
 import { useShiftDimensionStore } from "../stores/shiftDimensionStore";
 import { useTeamStore } from "../stores/teamStore";
+import { useUserStore } from "../stores/userStore";
 import { useWorkerStore } from "../stores/workerStore";
 import { useWorkerDimensionStore } from "../stores/workerDimensionStore";
-import { useBulkFetchStore } from "../stores/bulkFetchStore";
 // Types
 import { StatsShiftOptionsT } from "../components/Stats/types";
 import { TemplateT } from "../components/Constraint/types";
-// Constants
-import { tabs } from "../utils/constants";
 
 const App = () => {
+  const { t } = useTranslation();
+
+  const tabs: { id: string; label: string; type: string }[] = [
+    { id: "workers", label: t("worker.workers"), type: "core" },
+    { id: "shifts", label: t("shift.shifts"), type: "core" },
+    { id: "coverages", label: t("coverage.coverages"), type: "core" },
+    { id: "constraints", label: t("constraint.constraints"), type: "core" },
+    { id: "requests", label: t("request.requests"), type: "core" },
+    { id: "campaign", label: t("common.campaign"), type: "core" },
+    { id: "schedule", label: t("common.schedule"), type: "core" },
+    { id: "stats", label: t("common.stats"), type: "core" },
+    { id: "profile", label: t("common.profile"), type: "config" },
+  ];
+
   const [selectedTabId, setSelectedTabId] = useState<string>(tabs[0].id); // Get selectedTab from AppBar (if using Context)
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -61,6 +76,7 @@ const App = () => {
   const objectiveBreaches = useObjectiveBreachStore(
     (state) => state.objectiveBreaches
   );
+  const user = useUserStore((state) => state.user);
 
   const findShiftBlock = (templates: TemplateT[]): StatsShiftOptionsT => {
     for (let template of templates) {
@@ -131,7 +147,7 @@ const App = () => {
             requests={requests}
           />
         );
-      case "schedule_options":
+      case "campaign":
         return (
           <ScheduleOptionsTab
             team={selectedTeam}
@@ -162,6 +178,8 @@ const App = () => {
             statsShiftOptions={findShiftBlock(constraintTemplates)}
           />
         );
+      case "profile":
+        return <UserProfileTab user={user} />;
       default:
         return null;
     }

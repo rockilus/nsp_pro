@@ -4,15 +4,16 @@ import { create } from "zustand";
 // Stores
 import { useSnackBarStore } from "./snackbarStore";
 // Types
-import { UserT } from "../components/Login/types";
+import { UserT } from "../components/UserProfile/types";
 
 dayjs.extend(utc);
 
-const apiUrlUser = process.env.NEXT_PUBLIC_API_URL + "/user";
+const apiUrlUser = process.env.NEXT_PUBLIC_API_URL + "/users";
 
 type UserStateT = {
   user: UserT | null;
   fetchUser: () => void;
+  fetchUserStore: (user: UserT) => void;
   updateUser: (updatedUser: UserT) => void;
   // deleteUser: (id: string) => void;
 };
@@ -48,6 +49,10 @@ export const useUserStore = create<UserStateT>()((set) => ({
           "error"
         );
     }
+  },
+
+  fetchUserStore: (user: UserT) => {
+    set({ user: user });
   },
 
   updateUser: async (updatedUser) => {

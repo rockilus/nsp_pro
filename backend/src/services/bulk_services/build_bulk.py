@@ -14,6 +14,7 @@ from scripts.setup_database import (
     shift_demand_db,
     shift_dimension_db,
     shift_property_db,
+    user_db,
     worker_db,
     worker_dimension_db,
     worker_property_db,
@@ -22,8 +23,9 @@ from services.schedule_services import get_schedule_wip
 
 
 # pylint: disable=too-many-locals
-def build_bulk(teams: List[Team], selected_team_id: str) -> Bulk:
+def build_bulk(user_id: str, teams: List[Team], selected_team_id: str) -> Bulk:
     bulk = Bulk(selected_team_id=selected_team_id, teams=teams)
+    bulk.user = user_db.get_user_by_id(user_id)
     bulk.workers = worker_db.get_workers(selected_team_id)
     worker_properties = worker_property_db.get_worker_properties_by_worker_ids(
         [w.id for w in bulk.workers]

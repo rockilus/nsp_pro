@@ -19,14 +19,17 @@
         "name": "Name",
         "pending": "Pending",
         "planner": "Planner",
+        "profile": "Profile",
         "property": "Property",
         "rejected": "Rejected",
         "request": "Request",
         "rest": "Rest",
         "save": "Save",
+        "schedule": "Schedule",
         "selection": "Selection",
         "set": "Set",
         "shift": "Shift",
+        "sign_out": "Sign out",
         "soft": "Soft",
         "solve": "Solve",
         "staffing": "Staffing",
@@ -67,6 +70,7 @@
         "type_str": "Text"
     },
     "coverage": {
+        "coverages": "Coverages",
         "new_planner": "New planner",
         "planners": "Planners",
         "shift_demand": "Shift demand",
@@ -154,6 +158,13 @@
         "time_frame_custom": "Custom",
         "view_by": "View by",
         "week_short": "W"
+    },
+    "user": {
+        "email": "Email",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "no_user_found": "No user found",
+        "user_profile": "User profile"
     },
     "week_days": {
         "monday": "Monday",
