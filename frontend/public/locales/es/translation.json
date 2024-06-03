@@ -159,6 +159,13 @@
         "view_by": "Ver por",
         "week_short": "S"
     },
+    "user": {
+        "email": "Email",
+        "first_name": "Nombre",
+        "last_name": "Apellido",
+        "no_user_found": "No se ha encontrado ningún usuario",
+        "user_profile": "Perfil de usuario"
+    },
     "week_days": {
         "monday": "Lunes",
         "tuesday": "Martes",
