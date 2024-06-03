@@ -1,4 +1,8 @@
 from errors.authn_errors.authn_error_handlers import handle_supertokens_errors
+from errors.authn_errors.authn_errors import (
+    AuthnEmailAlreadyExistsError,
+    UpdateEmailError,
+)
 from errors.authz_errors.authz_error_handlers import handle_permit_errors
 from errors.authz_errors.authz_errors import AuthzConnectionError
 from errors.core_errors.core_error_handlers import handle_create_core_object_error
@@ -16,6 +20,8 @@ from errors.routes_errors.routes_errors import NotAuthorizedError
 
 __all__ = [
     "handle_supertokens_errors",
+    "AuthnEmailAlreadyExistsError",
+    "UpdateEmailError",
     "handle_permit_errors",
     "AuthzConnectionError",
     "handle_create_core_object_error",
