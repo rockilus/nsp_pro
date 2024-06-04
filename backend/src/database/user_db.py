@@ -1,7 +1,6 @@
 from core import User
 from database.db import DB
 from errors import (
-    handle_create_core_object_error,
     handle_create_document_error,
     handle_delete_document_error,
     handle_get_document_error,
@@ -83,6 +82,7 @@ def core_to_doc_user(dataclass_obj: User) -> UserDocument:
             first_name=dataclass_obj.first_name,
             last_name=dataclass_obj.last_name,
             workers=[],
+            language=dataclass_obj.language,
         )
     except Exception as e:
         log_info("Failed to convert User to UserDocument")
@@ -92,15 +92,20 @@ def core_to_doc_user(dataclass_obj: User) -> UserDocument:
 
 # document to core
 def doc_to_core_user(doc_obj: UserDocument) -> User:
-    try:
-        user = User(
-            id=doc_obj.id,
-            email=doc_obj.email,
-            first_name=doc_obj.first_name if doc_obj.first_name else "",
-            last_name=doc_obj.last_name if doc_obj.last_name else "",
-            workers=[],
-        )
-    except Exception as e:
-        log_info("Failed to convert UserDocument to User")
-        handle_create_core_object_error(e)
-    return user
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["id"] = doc_dict["_id"]
+    doc_dict.pop("_id")
+    return User(**doc_dict)
+    # try:
+    #     user = User(
+    #         id=doc_obj.id,
+    #         email=doc_obj.email,
+    #         first_name=doc_obj.first_name if doc_obj.first_name else "",
+    #         last_name=doc_obj.last_name if doc_obj.last_name else "",
+    #         workers=[],
+    #         language=doc_obj.language,
+    #     )
+    # except Exception as e:
+    #     log_info("Failed to convert UserDocument to User")
+    #     handle_create_core_object_error(e)
+    # return user

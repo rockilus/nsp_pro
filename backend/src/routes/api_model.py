@@ -252,6 +252,7 @@ class UserMessage(BaseModel):
     lastName: str
     email: str
     workers: List[str]
+    language: str
 
 
 class PasswordDataMessage(BaseModel):

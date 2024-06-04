@@ -164,6 +164,7 @@
         "current_password": "Mot de passe actuel",
         "email": "Email",
         "first_name": "Prénom",
+        "incorrect_password": "Mot de passe incorrect",
         "last_name": "Nom",
         "new_password": "Nouveau mot de passe",
         "new_password_confirm": "Confirmer le nouveau mot de passe",

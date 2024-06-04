@@ -4,4 +4,5 @@ export type UserT = {
   firstName: string;
   lastName: string;
   workers: string[];
+  language: string;
 };
