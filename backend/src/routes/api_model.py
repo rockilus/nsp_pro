@@ -254,6 +254,16 @@ class UserMessage(BaseModel):
     workers: List[str]
 
 
+class PasswordDataMessage(BaseModel):
+    password: str
+    newPassword: str
+    newPasswordConfirm: str
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print("PasswordDataMessage initialized")
+
+
 # Team
 class TeamMessage(BaseModel):
     id: str

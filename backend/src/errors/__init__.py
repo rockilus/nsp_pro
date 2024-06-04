@@ -1,7 +1,11 @@
 from errors.authn_errors.authn_error_handlers import handle_supertokens_errors
 from errors.authn_errors.authn_errors import (
     AuthnEmailAlreadyExistsError,
-    UpdateEmailError,
+    AuthnPasswordChangeError,
+    AuthnPasswordPolicyViolationError,
+    AuthnUpdateEmailError,
+    AuthnUserNotFoundError,
+    AuthnWrongCredentialsError,
 )
 from errors.authz_errors.authz_error_handlers import handle_permit_errors
 from errors.authz_errors.authz_errors import AuthzConnectionError
@@ -16,12 +20,19 @@ from errors.database_errors.document_error_handlers import (
 from errors.message_errors.message_error_handlers import handle_message_errors
 from errors.message_errors.message_errors import MessageTypeError
 from errors.routes_errors.routes_error_handlers import handle_routes_errors
-from errors.routes_errors.routes_errors import NotAuthorizedError
+from errors.routes_errors.routes_errors import (
+    NotAuthorizedError,
+    PasswordsDoNotMatchError,
+)
 
 __all__ = [
     "handle_supertokens_errors",
     "AuthnEmailAlreadyExistsError",
-    "UpdateEmailError",
+    "AuthnPasswordChangeError",
+    "AuthnPasswordPolicyViolationError",
+    "AuthnUserNotFoundError",
+    "AuthnWrongCredentialsError",
+    "AuthnUpdateEmailError",
     "handle_permit_errors",
     "AuthzConnectionError",
     "handle_create_core_object_error",
@@ -34,4 +45,5 @@ __all__ = [
     "MessageTypeError",
     "handle_routes_errors",
     "NotAuthorizedError",
+    "PasswordsDoNotMatchError",
 ]
