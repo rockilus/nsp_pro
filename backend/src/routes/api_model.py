@@ -254,6 +254,12 @@ class UserMessage(BaseModel):
     workers: List[str]
 
 
+class PasswordDataMessage(BaseModel):
+    currentPassword: str
+    newPassword: str
+    newPasswordConfirm: str
+
+
 # Team
 class TeamMessage(BaseModel):
     id: str

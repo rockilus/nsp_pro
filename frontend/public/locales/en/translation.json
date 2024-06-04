@@ -160,10 +160,19 @@
         "week_short": "W"
     },
     "user": {
+        "change_password": "Change password",
+        "current_password": "Current password",
         "email": "Email",
         "first_name": "First name",
+        "incorrect_password": "Incorrect password",
         "last_name": "Last name",
+        "new_password": "New password",
+        "new_password_confirm": "Confirm new password",
         "no_user_found": "No user found",
+        "password": "Password",
+        "password_empty_error": "Please enter a password",
+        "password_match_error": "Passwords do not match",
+        "update_password": "Update password",
         "user_profile": "User profile"
     },
     "week_days": {

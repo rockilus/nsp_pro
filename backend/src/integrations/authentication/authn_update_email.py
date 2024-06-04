@@ -4,7 +4,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     UpdateEmailOrPasswordOkResult,
 )
 
-from errors import AuthnEmailAlreadyExistsError, UpdateEmailError
+from errors import AuthnEmailAlreadyExistsError, AuthnUpdateEmailError
 
 
 async def authn_update_user_email(user_id: str, email: str) -> None:
@@ -13,4 +13,4 @@ async def authn_update_user_email(user_id: str, email: str) -> None:
         return
     if isinstance(update_response, UpdateEmailOrPasswordEmailAlreadyExistsError):
         raise AuthnEmailAlreadyExistsError(str(update_response))
-    raise UpdateEmailError("Unknown error")
+    raise AuthnUpdateEmailError("Unknown error")

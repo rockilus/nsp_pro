@@ -1,5 +1,9 @@
 from fastapi import HTTPException
 
+from errors.authn_errors.authn_errors import (
+    AuthnPasswordPolicyViolationError,
+    AuthnWrongCredentialsError,
+)
 from errors.authz_errors.authz_errors import (
     AuthzApiErrorError,
     AuthzConnectionError,
@@ -47,6 +51,15 @@ def handle_routes_errors(error: Exception):
         raise HTTPException(
             status_code=422,
             detail="invalid input value, please check your data",
+        )
+    if isinstance(error, AuthnWrongCredentialsError):
+        raise HTTPException(
+            status_code=403, detail="incorrect password, please try again"
+        )
+    if isinstance(error, AuthnPasswordPolicyViolationError):
+        raise HTTPException(
+            status_code=400,
+            detail=error.message,
         )
     if isinstance(
         error,
