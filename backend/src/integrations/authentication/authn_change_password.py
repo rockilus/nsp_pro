@@ -39,5 +39,5 @@ async def authn_change_password(
     if isinstance(update_response, UpdateEmailOrPasswordOkResult):
         return
     if isinstance(update_response, UpdateEmailOrPasswordPasswordPolicyViolationError):
-        raise AuthnPasswordPolicyViolationError(str(update_response))
+        raise AuthnPasswordPolicyViolationError(str(update_response.failure_reason))
     raise AuthnPasswordChangeError("Unknown error")

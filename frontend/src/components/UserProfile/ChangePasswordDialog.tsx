@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 // MUI
+import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -43,6 +44,7 @@ export default function ChangePasswordDialog({ user }: Props) {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showNewPasswordConfirm, setShowNewPasswordConfirm] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string>("");
 
   const updatePassword = useUserStore((state) => state.updatePassword);
 
@@ -62,7 +64,7 @@ export default function ChangePasswordDialog({ user }: Props) {
     setOpen(false);
   };
 
-  const handleUpdatePassword = () => {
+  const handleUpdatePassword = async () => {
     if (passwordData.currentPassword === "") {
       setCurrentPasswordError(true);
       return;
@@ -75,8 +77,10 @@ export default function ChangePasswordDialog({ user }: Props) {
       setNewPasswordConfirmError(true);
       return;
     }
-    updatePassword(passwordData, user.id);
-    handleClose();
+    const success = await updatePassword(passwordData, user.id);
+    if (success) {
+      handleClose();
+    }
   };
 
   return (

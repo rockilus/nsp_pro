@@ -22,7 +22,7 @@ type UserStateT = {
       newPasswordConfirm: string;
     },
     userId: string
-  ) => void;
+  ) => Promise<boolean>;
   // deleteUser: (id: string) => void;
 };
 
@@ -114,11 +114,12 @@ export const useUserStore = create<UserStateT>()((set) => ({
             "Failed to update password: " + responseData.detail,
             "error"
           );
-        return;
+        return false;
       }
       useSnackBarStore
         .getState()
         .updateSnackBar("Password updated successfully", "success");
+      return true;
     } catch (error) {
       console.error("Failed to update password:", error);
       useSnackBarStore
@@ -127,6 +128,7 @@ export const useUserStore = create<UserStateT>()((set) => ({
           "Failed to update password, please try again later",
           "error"
         );
+      return false;
     }
   },
 
