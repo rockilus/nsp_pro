@@ -15,6 +15,11 @@ type UserStateT = {
   fetchUser: () => void;
   fetchUserStore: (user: UserT) => void;
   updateUser: (updatedUser: UserT) => void;
+  updatePassword: (passwordData: {
+    currentPassword: string;
+    newPassword: string;
+    newPasswordConfirm: string;
+  }) => void;
   // deleteUser: (id: string) => void;
 };
 
@@ -84,6 +89,39 @@ export const useUserStore = create<UserStateT>()((set) => ({
         .getState()
         .updateSnackBar(
           "Failed to update user, please try again later",
+          "error"
+        );
+    }
+  },
+
+  updatePassword: async (passwordData) => {
+    try {
+      const response = await fetch(`${apiUrlUser}/password`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(passwordData),
+      });
+      const responseData = await response.json();
+      if (!response.ok) {
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to update password: " + responseData.detail,
+            "error"
+          );
+        return;
+      }
+      useSnackBarStore
+        .getState()
+        .updateSnackBar("Password updated successfully", "success");
+    } catch (error) {
+      console.error("Failed to update password:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to update password, please try again later",
           "error"
         );
     }

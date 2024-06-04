@@ -14,6 +14,8 @@ import TableContainer from "@mui/material/TableContainer";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+// Components
+import ChangePasswordDialog from "./ChangePasswordDialog";
 // Stores
 import { useUserStore } from "../../stores/userStore";
 // Types
@@ -160,6 +162,17 @@ export default function UserProfileTab({ user }: Props) {
                   </TableRow>
                 )
               )}
+              <TableRow
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+              >
+                <TableCell sx={{ paddingY: 0 }}>{t("user.password")}</TableCell>
+                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
+                  <Typography>●●●●●●●●●</Typography>
+                </TableCell>
+                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
+                  <ChangePasswordDialog />
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
