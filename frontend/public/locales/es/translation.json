@@ -160,10 +160,18 @@
         "week_short": "S"
     },
     "user": {
+        "change_password": "Cambiar contraseña",
+        "current_password": "Contraseña actual",
         "email": "Email",
         "first_name": "Nombre",
         "last_name": "Apellido",
+        "new_password": "Nueva contraseña",
+        "new_password_confirm": "Confirmar nueva contraseña",
         "no_user_found": "No se ha encontrado ningún usuario",
+        "password": "Contraseña",
+        "password_empty_error": "La contraseña no puede estar vacía",
+        "password_match_error": "Las contraseñas no coinciden",
+        "update_password": "Actualizar contraseña",
         "user_profile": "Perfil de usuario"
     },
     "week_days": {

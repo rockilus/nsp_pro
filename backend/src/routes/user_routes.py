@@ -44,16 +44,18 @@ async def update_user(
     return response
 
 
-@router.put("/users/password")
+@router.put("/users/{user_id}/change-password")
 async def change_user_password(
+    user_id: str,
     password_data: PasswordDataMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
     try:
-        user_id = session.get_user_id()
-        tenant_id = session.get_tenant_id()
-        if not await authz_check(user_id, "update", "user", user_id):
+        if not await authz_check(
+            session.get_user_id(), "change-password", "user", user_id
+        ):
             raise NotAuthorizedError("You do not have permission to update a user")
+        tenant_id = session.get_tenant_id()
         p_data = msg_to_core_password_data(password_data)
         if p_data.new_password != p_data.new_password_confirm:
             raise PasswordsDoNotMatchError("Passwords do not match")

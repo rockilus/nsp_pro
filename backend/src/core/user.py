@@ -13,6 +13,6 @@ class User:
 
 @dataclass
 class PasswordData:
-    password: str
+    current_password: str
     new_password: str
     new_password_confirm: str

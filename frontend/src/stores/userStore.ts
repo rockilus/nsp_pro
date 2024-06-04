@@ -15,11 +15,14 @@ type UserStateT = {
   fetchUser: () => void;
   fetchUserStore: (user: UserT) => void;
   updateUser: (updatedUser: UserT) => void;
-  updatePassword: (passwordData: {
-    currentPassword: string;
-    newPassword: string;
-    newPasswordConfirm: string;
-  }) => void;
+  updatePassword: (
+    passwordData: {
+      currentPassword: string;
+      newPassword: string;
+      newPasswordConfirm: string;
+    },
+    userId: string
+  ) => void;
   // deleteUser: (id: string) => void;
 };
 
@@ -94,9 +97,9 @@ export const useUserStore = create<UserStateT>()((set) => ({
     }
   },
 
-  updatePassword: async (passwordData) => {
+  updatePassword: async (passwordData, userId) => {
     try {
-      const response = await fetch(`${apiUrlUser}/password`, {
+      const response = await fetch(`${apiUrlUser}/${userId}/change-password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

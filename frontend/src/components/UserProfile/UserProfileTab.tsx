@@ -170,7 +170,7 @@ export default function UserProfileTab({ user }: Props) {
                   <Typography>●●●●●●●●●</Typography>
                 </TableCell>
                 <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-                  <ChangePasswordDialog />
+                  <ChangePasswordDialog user={user} />
                 </TableCell>
               </TableRow>
             </TableBody>

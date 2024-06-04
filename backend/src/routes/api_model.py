@@ -255,13 +255,9 @@ class UserMessage(BaseModel):
 
 
 class PasswordDataMessage(BaseModel):
-    password: str
+    currentPassword: str
     newPassword: str
     newPasswordConfirm: str
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        print("PasswordDataMessage initialized")
 
 
 # Team

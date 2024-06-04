@@ -24,7 +24,10 @@ async def change_user_password(
     user_id: str, tenant_id: str, password_data: PasswordData
 ) -> None:
     await authn_change_password(
-        user_id, tenant_id, password_data.password, password_data.new_password
+        user_id,
+        tenant_id,
+        password_data.current_password,
+        password_data.new_password,
     )
 
 

@@ -15,8 +15,14 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 // Stores
 import { useUserStore } from "../../stores/userStore";
+// Types
+import { UserT } from "./types";
 
-export default function ChangePasswordDialog() {
+interface Props {
+  user: UserT;
+}
+
+export default function ChangePasswordDialog({ user }: Props) {
   const { t } = useTranslation();
 
   const [passwordData, setPasswordData] = useState<{
@@ -69,7 +75,7 @@ export default function ChangePasswordDialog() {
       setNewPasswordConfirmError(true);
       return;
     }
-    updatePassword(passwordData);
+    updatePassword(passwordData, user.id);
     handleClose();
   };
 
