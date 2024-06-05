@@ -4,10 +4,12 @@ import i18n from "i18next";
 // MUI
 import Box from "@mui/material/Box";
 import CheckIcon from "@mui/icons-material/Check";
+import Chip from "@mui/material/Chip";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import FormControl from "@mui/material/FormControl";
 import IconButton from "@mui/material/IconButton";
+import Link from "@mui/material/Link";
 import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
@@ -39,11 +41,14 @@ export default function UserProfileTab({ user }: Props) {
 
   const fetchUser = useUserStore((state) => state.fetchUser);
   const updateUser = useUserStore((state) => state.updateUser);
+  const sendVerificationEmail = useUserStore(
+    (state) => state.sendVerificationEmail
+  );
 
   const tableFields: Record<string, string>[] = [
     { name: "firstName", label: t("user.first_name") },
     { name: "lastName", label: t("user.last_name") },
-    { name: "email", label: t("user.email") },
+    // { name: "email", label: t("user.email") },
   ];
 
   const handleEditConfirm = () => {
@@ -177,6 +182,76 @@ export default function UserProfileTab({ user }: Props) {
                   </TableRow>
                 )
               )}
+              <TableRow
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+              >
+                <TableCell sx={{ paddingY: 0 }}>{t("user.email")}</TableCell>
+                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
+                  {fieldEditing === "email" ? (
+                    <TextField
+                      fullWidth
+                      type="text"
+                      name="email"
+                      value={userState.email}
+                      onChange={(e) => {
+                        setUserState({
+                          ...userState,
+                          email: e.target.value,
+                        });
+                      }}
+                      onBlur={handleEditConfirm}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleEditConfirm();
+                        } else if (e.key === "Escape") {
+                          handleEditCancel();
+                        }
+                      }}
+                      autoFocus
+                    />
+                  ) : (
+                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                      <Box sx={{ display: "flex", flexDirection: "row" }}>
+                        <Typography>{user.email}</Typography>
+                        {/* <Chip
+                          label={t("user.verified")}
+                          color="success"
+                          variant="outlined"
+                          sx={{ height: "20px" }}
+                        /> */}
+                        <Chip
+                          label={t("user.not_verified")}
+                          color="default"
+                          variant="outlined"
+                          sx={{ height: "20px" }}
+                        />
+                      </Box>
+                      <Link
+                        onClick={() => sendVerificationEmail(user.id)}
+                        sx={{ cursor: "pointer", underline: "hover" }}
+                      >
+                        {t("user.send_verification_email")}
+                      </Link>
+                    </Box>
+                  )}
+                </TableCell>
+                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
+                  {fieldEditing === "email" ? (
+                    <>
+                      <IconButton onClick={handleEditConfirm}>
+                        <CheckIcon />
+                      </IconButton>
+                      <IconButton onClick={handleEditCancel}>
+                        <CloseIcon />
+                      </IconButton>
+                    </>
+                  ) : (
+                    <IconButton onClick={() => setFieldEditing("email")}>
+                      <EditIcon />
+                    </IconButton>
+                  )}
+                </TableCell>
+              </TableRow>
               <TableRow
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >

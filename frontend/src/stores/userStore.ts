@@ -24,6 +24,7 @@ type UserStateT = {
     },
     userId: string
   ) => Promise<boolean>;
+  sendVerificationEmail: (userId: string) => Promise<boolean>;
   // deleteUser: (id: string) => void;
 };
 
@@ -133,6 +134,43 @@ export const useUserStore = create<UserStateT>()((set) => ({
         .getState()
         .updateSnackBar(
           "Failed to update password, please try again later",
+          "error"
+        );
+      return false;
+    }
+  },
+
+  sendVerificationEmail: async (userId) => {
+    try {
+      const response = await fetch(
+        `${apiUrlUser}/${userId}/send-verification-email`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const responseData = await response.json();
+      if (!response.ok) {
+        useSnackBarStore
+          .getState()
+          .updateSnackBar(
+            "Failed to send verification email: " + responseData.detail,
+            "error"
+          );
+        return false;
+      }
+      useSnackBarStore
+        .getState()
+        .updateSnackBar("Verification email sent successfully", "success");
+      return true;
+    } catch (error) {
+      console.error("Failed to send verification email:", error);
+      useSnackBarStore
+        .getState()
+        .updateSnackBar(
+          "Failed to send verification email, please try again later",
           "error"
         );
       return false;
