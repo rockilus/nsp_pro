@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import i18n from "i18next";
 // MUI
 import Box from "@mui/material/Box";
 import CheckIcon from "@mui/icons-material/Check";
@@ -7,7 +8,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import FormControl from "@mui/material/FormControl";
 import IconButton from "@mui/material/IconButton";
-import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
@@ -47,9 +47,6 @@ export default function UserProfileTab({ user }: Props) {
   ];
 
   const handleEditConfirm = () => {
-    console.log("user", user);
-    console.log("userState", userState);
-
     if (userState && user) {
       const userKeys = Object.keys(user);
       for (let key of userKeys) {
@@ -61,6 +58,10 @@ export default function UserProfileTab({ user }: Props) {
           updateUser(userState);
           break;
         }
+      }
+      if (userState.language !== user.language) {
+        i18n.changeLanguage(userState.language);
+        localStorage.setItem("i18nextLng", userState.language);
       }
     }
     setFieldEditing(null);

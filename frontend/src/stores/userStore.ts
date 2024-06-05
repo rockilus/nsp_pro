@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { create } from "zustand";
+import i18n from "i18next";
 // Stores
 import { useSnackBarStore } from "./snackbarStore";
 // Types
@@ -60,6 +61,12 @@ export const useUserStore = create<UserStateT>()((set) => ({
   },
 
   fetchUserStore: (user: UserT) => {
+    const language = localStorage.getItem("i18nextLng");
+    if (!language || language !== user.language) {
+      i18n.changeLanguage(user.language);
+      localStorage.setItem("i18nextLng", user.language);
+    }
+
     set({ user: user });
   },
 
