@@ -170,11 +170,14 @@
         "new_password": "New password",
         "new_password_confirm": "Confirm new password",
         "no_user_found": "No user found",
+        "not_verified": "Not verified",
         "password": "Password",
         "password_empty_error": "Please enter a password",
         "password_match_error": "Passwords do not match",
+        "send_verification_email": "Send verification email",
         "update_password": "Update password",
-        "user_profile": "User profile"
+        "user_profile": "User profile",
+        "verified": "Verified"
     },
     "week_days": {
         "monday": "Monday",
