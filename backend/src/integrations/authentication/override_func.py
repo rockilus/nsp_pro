@@ -38,6 +38,7 @@ def override_emailpassword_functions(
                         first_name="",
                         last_name="",
                         workers=[],
+                        language="en",
                     )
                 )
                 team = await create_team(

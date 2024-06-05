@@ -164,6 +164,7 @@
         "current_password": "Contraseña actual",
         "email": "Email",
         "first_name": "Nombre",
+        "incorrect_password": "Contraseña incorrecta",
         "last_name": "Apellido",
         "new_password": "Nueva contraseña",
         "new_password_confirm": "Confirmar nueva contraseña",

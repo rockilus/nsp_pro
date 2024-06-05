@@ -83,5 +83,11 @@ export const ColorValidated: string = "#AFDCA8";
 // User
 export const SignInGrantType: string = "password";
 
+export const languages: Record<string, string> = {
+  en: "English",
+  es: "Español",
+  fr: "Français",
+};
+
 // Style
 export const DrawerWidth: number = 240;

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Literal
 
 
 @dataclass
@@ -9,6 +9,7 @@ class User:
     first_name: str
     last_name: str
     workers: List[str]
+    language: Literal["en", "es", "fr"]
 
 
 @dataclass

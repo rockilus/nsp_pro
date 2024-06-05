@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import i18n from "i18next";
 // MUI
 import Box from "@mui/material/Box";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
+import FormControl from "@mui/material/FormControl";
 import IconButton from "@mui/material/IconButton";
+import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -20,6 +24,8 @@ import ChangePasswordDialog from "./ChangePasswordDialog";
 import { useUserStore } from "../../stores/userStore";
 // Types
 import { UserT } from "./types";
+// Constants
+import { languages } from "../../utils/constants";
 
 interface Props {
   user: UserT | null;
@@ -53,6 +59,10 @@ export default function UserProfileTab({ user }: Props) {
           break;
         }
       }
+      if (userState.language !== user.language) {
+        i18n.changeLanguage(userState.language);
+        localStorage.setItem("i18nextLng", userState.language);
+      }
     }
     setFieldEditing(null);
   };
@@ -60,6 +70,11 @@ export default function UserProfileTab({ user }: Props) {
   const handleEditCancel = () => {
     setUserState(user);
     setFieldEditing(null);
+  };
+
+  const handleChange = (event: SelectChangeEvent) => {
+    if (!userState) return;
+    setUserState({ ...userState, language: event.target.value as string });
   };
 
   useEffect(() => {
@@ -171,6 +186,47 @@ export default function UserProfileTab({ user }: Props) {
                 </TableCell>
                 <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
                   <ChangePasswordDialog user={user} />
+                </TableCell>
+              </TableRow>
+              <TableRow
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+              >
+                <TableCell sx={{ paddingY: 0 }}>{t("user.language")}</TableCell>
+                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
+                  {fieldEditing === "language" ? (
+                    <FormControl fullWidth>
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={userState.language}
+                        onChange={handleChange}
+                      >
+                        {Object.keys(languages).map((lang) => (
+                          <MenuItem key={lang} value={lang}>
+                            {languages[lang]}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  ) : (
+                    <Typography>{languages[user.language]}</Typography>
+                  )}
+                </TableCell>
+                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
+                  {fieldEditing === "language" ? (
+                    <>
+                      <IconButton onClick={handleEditConfirm}>
+                        <CheckIcon />
+                      </IconButton>
+                      <IconButton onClick={handleEditCancel}>
+                        <CloseIcon />
+                      </IconButton>
+                    </>
+                  ) : (
+                    <IconButton onClick={() => setFieldEditing("language")}>
+                      <EditIcon />
+                    </IconButton>
+                  )}
                 </TableCell>
               </TableRow>
             </TableBody>

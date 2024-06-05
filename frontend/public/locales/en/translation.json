@@ -165,6 +165,7 @@
         "email": "Email",
         "first_name": "First name",
         "incorrect_password": "Incorrect password",
+        "language": "Language",
         "last_name": "Last name",
         "new_password": "New password",
         "new_password_confirm": "Confirm new password",
