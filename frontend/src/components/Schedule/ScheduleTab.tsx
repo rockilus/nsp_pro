@@ -48,6 +48,8 @@ export default function ScheduleTab({
   const [CBsDisplayed, setCBsDisplayed] = useState<string[]>([]);
   const [selectedCell, setSelectedCell] = useState<SelectedCellT | null>(null);
 
+  console.log("selectedCell", selectedCell);
+
   const addCBsDisplayed = (ids: string[]) => {
     setCBsDisplayed(Array.from(new Set([...CBsDisplayed, ...ids])));
   };

@@ -23,10 +23,11 @@ class Engine:
             inputs.shift_end_times,
         )
         start_time = time.time()
-        model.set_up_model(inputs)
+        # model.set_up_model(inputs)
+        model.sequential_solve(inputs)
         end_time = time.time()
         print("Time to set up model: ", end_time - start_time)
-        model.solve()
+        # model.solve()
         print(f"Branches:        {model.solver.NumBranches()}")
         print(f"Wall time:       {model.solver.WallTime()} s")
         print(f"Objective value: {model.solver.ObjectiveValue()}")

@@ -69,7 +69,7 @@ class ShiftDemandDB:
         except Exception as e:
             log_info("Failed to convert ShiftDemandDocument to ShiftDemand")
             handle_create_core_object_error(e)
-        out: Dict[str, List[ShiftDemand]] = {}
+        out: Dict[str, List[ShiftDemand]] = {c_id: [] for c_id in coverage_ids}
         for sd in shift_demands:
             coverage_id = sd.coverage_id
             if coverage_id not in out:
