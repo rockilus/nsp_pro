@@ -13,6 +13,7 @@ from engine.model.add_constraint_seq import AddConstraintSeq
 from engine.model.add_constraint_sum import AddConstraintSum
 from engine.model.add_coverage import AddCoverage
 from engine.model.add_request import AddRequest
+from engine.model.solver_solution_callback import SolverSolutionCallback
 from engine.types.input_output_types import Constraint, Inputs, ShiftDemand
 from engine.types.model_types import BenchmarkTimes, Objective
 
@@ -185,9 +186,8 @@ class Model:
 
         self.spread_across_workers(solving_dates, cov_shifts)
         self.add_objective()
-        self.status = self.solver.Solve(  # type: ignore
-            self.model, self.solution_printer
-        )
+        solution_callback = SolverSolutionCallback(0)
+        self.status = self.solver.Solve(self.model, solution_callback)  # type: ignore
         self.print_model_metadata("FAIRNESS")
         if self.status == cp_model.INFEASIBLE:
             self.model = temp_model
@@ -491,71 +491,3 @@ class Model:
         print(f"Wall time:       {self.solver.WallTime()} s")
         print(f"Objective value: {self.solver.ObjectiveValue()}")
         print(f"Status:          {self.solver.StatusName()}")
-
-
-# from __future__ import absolute_import
-# from __future__ import division
-# from __future__ import print_function
-
-# from ortools.sat.python import cp_model
-
-
-# class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
-#   """Print intermediate solutions."""
-
-#   def __init__(self, variables):
-#     self.__variables = variables
-#     self.__solution_count = 0
-
-#   def NewSolution(self):
-#     self.__solution_count += 1
-#     for v in self.__variables:
-#       print('%s=%i' % (v, self.Value(v)), end=' ')
-#     print()
-
-#   def SolutionCount(self):
-#     return self.__solution_count
-
-
-# def mod_or_start():
-#   model = cp_model.CpModel()
-
-#   start = 7
-#   end = 20
-#   x = model.NewIntVar(start, end - 1, 'x')  # 8..19
-#   y = model.NewIntVar(start, end - 1, 'y')  # 8..19
-
-#   x_is_start = model.NewBoolVar('x_is_start')
-#   y_is_start = model.NewBoolVar('y_is_start')
-#   x_is_modulo_5 = model.NewBoolVar('x_is_modulo_5')
-#   y_is_modulo_5 = model.NewBoolVar('y_is_modulo_5')
-
-#   model.Add(x == start).OnlyEnforceIf(x_is_start)
-#   model.Add(y == start).OnlyEnforceIf(y_is_start)
-
-#   # Buggy.
-#   # model.AddModuloEquality(0, x, 5).OnlyEnforceIf(x_is_modulo_5)
-#   # model.AddModuloEquality(0, y, 5).OnlyEnforceIf(y_is_modulo_5)
-
-#   # Workaround until the modulo code is fixed.
-#   sub_x = model.NewIntVar(start // 5, end // 5, 'sub_x')
-#   sub_y = model.NewIntVar(start // 5, end // 5, 'sub_y')
-#   model.Add(x == 5 * sub_x).OnlyEnforceIf(x_is_modulo_5)
-#   model.Add(y == 5 * sub_y).OnlyEnforceIf(y_is_modulo_5)
-#   # Remove duplicate solutions
-#   model.Add(sub_x == start // 5).OnlyEnforceIf(x_is_modulo_5.Not())
-#   model.Add(sub_y == start // 5).OnlyEnforceIf(y_is_modulo_5.Not())
-
-#   # At least one option is true.
-#   model.AddBoolOr([x_is_start, x_is_modulo_5])
-#   model.AddBoolOr([y_is_start, y_is_modulo_5])
-
-#   # Create a solver and solve.
-#   solver = cp_model.CpSolver()
-#   solution_printer = VarArraySolutionPrinter([x, y])
-#   status = solver.SearchForAllSolutions(model, solution_printer)
-#   print('Status = %s' % solver.StatusName(status))
-#   print('Number of solutions found: %i' % solution_printer.SolutionCount())
-
-
-# mod_or_start()
