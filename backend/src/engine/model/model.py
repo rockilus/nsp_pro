@@ -110,6 +110,78 @@ class Model:
         )
         self.add_far = AddRequest(self.model, self.variables, self.workers, self.obj)
 
+    # pylint: disable=too-many-statements
+    def sequential_solve(self, inputs: Inputs) -> None:
+        self.solver.parameters.max_time_in_seconds = 20.0
+
+        self.build_variables()
+        self.set_fixed_variables(inputs.fixed_values)
+        self.add_solution_hint(inputs.sol_hint)
+        self.no_interval_overlap()
+        self.add_at_least_one_shift_per_day_constraint()
+        self.status = self.solver.Solve(self.model, self.solution_printer)
+        self.print_model_metadata("NAKED")
+
+        if self.status == cp_model.INFEASIBLE:
+            return
+        temp_model = self.model
+
+        if len(inputs.coverage.coverage) > 0:
+            self.add_coverage.add_coverage(inputs.coverage.coverage)
+            self.add_objective()
+            self.status = self.solver.Solve(self.model, self.solution_printer)
+            self.print_model_metadata("COVERAGE")
+            if self.status == cp_model.INFEASIBLE:
+                self.model = temp_model
+                return
+            temp_model = self.model
+
+        if len(inputs.requests) > 0:
+            self.add_far.add_requests(inputs.requests)
+            self.add_objective()
+            self.status = self.solver.Solve(self.model, self.solution_printer)
+            self.print_model_metadata("REQUESTS")
+            if self.status == cp_model.INFEASIBLE:
+                self.model = temp_model
+                return
+            temp_model = self.model
+
+        if len(inputs.constraints) > 0:
+            self.add_custom_constraints(inputs.constraints, inputs.coverage.coverage)
+            self.add_objective()
+            self.status = self.solver.Solve(self.model, self.solution_printer)
+            self.print_model_metadata("CONSTRAINTS")
+            if self.status == cp_model.INFEASIBLE:
+                self.model = temp_model
+                return
+            temp_model = self.model
+
+        # if not inputs.sol_hint:
+        solving_dates = [
+            d for d in self.days if d not in [fvd for _, fvd, _ in inputs.fixed_values]
+        ]
+        cov_shifts = list(
+            set(sd.shift_id for sd in inputs.coverage.coverage if sd.staffing > 0)
+        )
+
+        self.spread_through_time(solving_dates, cov_shifts)
+        self.add_objective()
+        self.status = self.solver.Solve(self.model, self.solution_printer)
+        self.print_model_metadata("EVENNESS")
+        if self.status == cp_model.INFEASIBLE:
+            self.model = temp_model
+            return
+        temp_model = self.model
+
+        self.spread_across_workers(solving_dates, cov_shifts)
+        self.add_objective()
+        self.status = self.solver.Solve(self.model, self.solution_printer)
+        self.print_model_metadata("FAIRNESS")
+        if self.status == cp_model.INFEASIBLE:
+            self.model = temp_model
+            return
+        temp_model = self.model
+
     def set_up_model(self, inputs: Inputs) -> None:
         self.bt.total_start = time.time()
         self.bt.full_setup_start = time.time()
@@ -400,3 +472,78 @@ class Model:
             self.model, self.solution_printer
         )
         self.bt.total_end = time.time()
+
+    def print_model_metadata(self, model_description: str) -> None:
+        print(f"----------- {model_description} -----------")
+        print(f"Branches:        {self.solver.NumBranches()}")
+        print(f"Wall time:       {self.solver.WallTime()} s")
+        print(f"Objective value: {self.solver.ObjectiveValue()}")
+        print(f"Status:          {self.solver.StatusName()}")
+
+
+# from __future__ import absolute_import
+# from __future__ import division
+# from __future__ import print_function
+
+# from ortools.sat.python import cp_model
+
+
+# class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
+#   """Print intermediate solutions."""
+
+#   def __init__(self, variables):
+#     self.__variables = variables
+#     self.__solution_count = 0
+
+#   def NewSolution(self):
+#     self.__solution_count += 1
+#     for v in self.__variables:
+#       print('%s=%i' % (v, self.Value(v)), end=' ')
+#     print()
+
+#   def SolutionCount(self):
+#     return self.__solution_count
+
+
+# def mod_or_start():
+#   model = cp_model.CpModel()
+
+#   start = 7
+#   end = 20
+#   x = model.NewIntVar(start, end - 1, 'x')  # 8..19
+#   y = model.NewIntVar(start, end - 1, 'y')  # 8..19
+
+#   x_is_start = model.NewBoolVar('x_is_start')
+#   y_is_start = model.NewBoolVar('y_is_start')
+#   x_is_modulo_5 = model.NewBoolVar('x_is_modulo_5')
+#   y_is_modulo_5 = model.NewBoolVar('y_is_modulo_5')
+
+#   model.Add(x == start).OnlyEnforceIf(x_is_start)
+#   model.Add(y == start).OnlyEnforceIf(y_is_start)
+
+#   # Buggy.
+#   # model.AddModuloEquality(0, x, 5).OnlyEnforceIf(x_is_modulo_5)
+#   # model.AddModuloEquality(0, y, 5).OnlyEnforceIf(y_is_modulo_5)
+
+#   # Workaround until the modulo code is fixed.
+#   sub_x = model.NewIntVar(start // 5, end // 5, 'sub_x')
+#   sub_y = model.NewIntVar(start // 5, end // 5, 'sub_y')
+#   model.Add(x == 5 * sub_x).OnlyEnforceIf(x_is_modulo_5)
+#   model.Add(y == 5 * sub_y).OnlyEnforceIf(y_is_modulo_5)
+#   # Remove duplicate solutions
+#   model.Add(sub_x == start // 5).OnlyEnforceIf(x_is_modulo_5.Not())
+#   model.Add(sub_y == start // 5).OnlyEnforceIf(y_is_modulo_5.Not())
+
+#   # At least one option is true.
+#   model.AddBoolOr([x_is_start, x_is_modulo_5])
+#   model.AddBoolOr([y_is_start, y_is_modulo_5])
+
+#   # Create a solver and solve.
+#   solver = cp_model.CpSolver()
+#   solution_printer = VarArraySolutionPrinter([x, y])
+#   status = solver.SearchForAllSolutions(model, solution_printer)
+#   print('Status = %s' % solver.StatusName(status))
+#   print('Number of solutions found: %i' % solution_printer.SolutionCount())
+
+
+# mod_or_start()

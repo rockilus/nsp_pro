@@ -39,7 +39,7 @@ export default function ShiftFieldCellName({
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [shift.id]: "Name" })}
+      onClick={() => setEditing({ [shift.id]: "name" })}
       sx={{ paddingY: 0, cursor: "pointer" }}
     >
       {editing ? (

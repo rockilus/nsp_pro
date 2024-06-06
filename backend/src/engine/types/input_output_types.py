@@ -114,7 +114,7 @@ class Inputs:
 @dataclass
 class ConstraintBreach:
     constraint_id: str
-    category: Literal["request", "constraint"]
+    category: Literal["request", "constraint", "coverage"]
     variables: List[Tuple[str, date, str]]
     value_diff: int
     hard_to_soft: bool

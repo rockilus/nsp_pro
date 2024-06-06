@@ -73,6 +73,16 @@ export default function AssignmentOptions({
     );
   };
 
+  const handleChangeAssignmentShift = (event: SelectChangeEvent) => {
+    updateAssignment(
+      {
+        ...selectedAssignment,
+        shiftId: event.target.value as string,
+      },
+      team.id
+    );
+  };
+
   const breachesNoRequests = selectedCell.breaches.filter(
     (b) => b.objectiveCategory !== "request"
   );
@@ -207,7 +217,7 @@ export default function AssignmentOptions({
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
                     value={selectedAssignment.shiftId}
-                    onChange={handleChangeAssignmentWorker}
+                    onChange={handleChangeAssignmentShift}
                     sx={{
                       fontSize: "0.8rem",
                       height: "25px",
