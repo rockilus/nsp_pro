@@ -119,7 +119,9 @@ class Model:
         self.add_solution_hint(inputs.sol_hint)
         self.no_interval_overlap()
         self.add_at_least_one_shift_per_day_constraint()
-        self.status = self.solver.Solve(self.model, self.solution_printer)
+        self.status = self.solver.Solve(  # type: ignore
+            self.model, self.solution_printer
+        )
         self.print_model_metadata("NAKED")
 
         if self.status == cp_model.INFEASIBLE:
@@ -129,7 +131,9 @@ class Model:
         if len(inputs.coverage.coverage) > 0:
             self.add_coverage.add_coverage(inputs.coverage.coverage)
             self.add_objective()
-            self.status = self.solver.Solve(self.model, self.solution_printer)
+            self.status = self.solver.Solve(  # type: ignore
+                self.model, self.solution_printer
+            )
             self.print_model_metadata("COVERAGE")
             if self.status == cp_model.INFEASIBLE:
                 self.model = temp_model
@@ -139,7 +143,9 @@ class Model:
         if len(inputs.requests) > 0:
             self.add_far.add_requests(inputs.requests)
             self.add_objective()
-            self.status = self.solver.Solve(self.model, self.solution_printer)
+            self.status = self.solver.Solve(  # type: ignore
+                self.model, self.solution_printer
+            )
             self.print_model_metadata("REQUESTS")
             if self.status == cp_model.INFEASIBLE:
                 self.model = temp_model
@@ -149,7 +155,9 @@ class Model:
         if len(inputs.constraints) > 0:
             self.add_custom_constraints(inputs.constraints, inputs.coverage.coverage)
             self.add_objective()
-            self.status = self.solver.Solve(self.model, self.solution_printer)
+            self.status = self.solver.Solve(  # type: ignore
+                self.model, self.solution_printer
+            )
             self.print_model_metadata("CONSTRAINTS")
             if self.status == cp_model.INFEASIBLE:
                 self.model = temp_model
@@ -166,7 +174,9 @@ class Model:
 
         self.spread_through_time(solving_dates, cov_shifts)
         self.add_objective()
-        self.status = self.solver.Solve(self.model, self.solution_printer)
+        self.status = self.solver.Solve(  # type: ignore
+            self.model, self.solution_printer
+        )
         self.print_model_metadata("EVENNESS")
         if self.status == cp_model.INFEASIBLE:
             self.model = temp_model
@@ -175,7 +185,9 @@ class Model:
 
         self.spread_across_workers(solving_dates, cov_shifts)
         self.add_objective()
-        self.status = self.solver.Solve(self.model, self.solution_printer)
+        self.status = self.solver.Solve(  # type: ignore
+            self.model, self.solution_printer
+        )
         self.print_model_metadata("FAIRNESS")
         if self.status == cp_model.INFEASIBLE:
             self.model = temp_model
