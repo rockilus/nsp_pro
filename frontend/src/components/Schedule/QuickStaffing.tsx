@@ -44,21 +44,25 @@ export default function QuickStaffingTable({
 
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
 
-  const countAssignments = (
-    workerId: string,
-    shiftId: string,
-    startDate: dayjs.Dayjs,
-    endDate: dayjs.Dayjs
-  ) => {
-    const count = assignments.filter(
+  const countAssignments = ({
+    startDate,
+    endDate,
+    workerId,
+    shiftId,
+  }: {
+    startDate: dayjs.Dayjs;
+    endDate: dayjs.Dayjs;
+    workerId?: string;
+    shiftId?: string;
+  }) => {
+    return assignments.filter(
       (a) =>
-        a.workerId === workerId &&
-        a.shiftId === shiftId &&
+        (!workerId || a.workerId === workerId) &&
+        (!shiftId || a.shiftId === shiftId) &&
         a.date.isSameOrAfter(startDate) &&
-        a.date.isSameOrBefore(endDate)
+        a.date.isSameOrBefore(endDate) &&
+        !shifts.find((s) => s.id === a.shiftId)?.isTimeOff
     ).length;
-
-    return count;
   };
 
   const handleCreateQuickStaffing = (
@@ -127,7 +131,7 @@ export default function QuickStaffingTable({
           <TableHead sx={{ backgroundColor: "grey.100" }}>
             <TableRow>
               <TableCell
-                colSpan={shifts.filter((s) => !s.isTimeOff).length + 1}
+                colSpan={shifts.filter((s) => !s.isTimeOff).length + 2}
                 sx={{ paddingY: 0 }}
               >
                 <Box
@@ -173,6 +177,17 @@ export default function QuickStaffingTable({
                     </Typography>
                   </TableCell>
                 ))}
+              <TableCell>
+                <Typography
+                  sx={{
+                    fontSize: "0.75rem",
+                    textAlign: "center",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {t("common.total")}
+                </Typography>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -206,12 +221,12 @@ export default function QuickStaffingTable({
                 {shifts
                   .filter((s) => !s.isTimeOff)
                   .map((shift, shiftIndex) => {
-                    const staffing = countAssignments(
-                      worker.id,
-                      shift.id,
-                      schedule.startDate,
-                      schedule.endDate
-                    );
+                    const staffing = countAssignments({
+                      startDate: schedule.startDate,
+                      endDate: schedule.endDate,
+                      workerId: worker.id,
+                      shiftId: shift.id,
+                    });
                     const quickStaffing = schedule.quickStaffings.find(
                       (qs) =>
                         qs.workerId === worker.id && qs.shiftId === shift.id
@@ -368,8 +383,93 @@ export default function QuickStaffingTable({
                       </TableCell>
                     );
                   })}
+                <TableCell sx={{ background: "#FCFCFC" }}>
+                  <Typography
+                    sx={{
+                      fontSize: "0.75rem",
+                      textAlign: "center",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {countAssignments({
+                      startDate: schedule.startDate,
+                      endDate: schedule.endDate,
+                      workerId: worker.id,
+                    })}
+                  </Typography>
+                </TableCell>
               </TableRow>
             ))}
+            <TableRow>
+              <TableCell
+                sx={{
+                  position: "sticky",
+                  left: 0,
+                  backgroundColor: "#FCFCFC",
+                  padding: 0,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: "100px",
+                    padding: "10px",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: "0.75rem",
+                      textAlign: "left",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {t("common.total")}
+                  </Typography>
+                </Box>
+              </TableCell>
+              {shifts
+                .filter((s) => !s.isTimeOff)
+                .map((shift, shiftIndex) => {
+                  const staffing = countAssignments({
+                    startDate: schedule.startDate,
+                    endDate: schedule.endDate,
+                    shiftId: shift.id,
+                  });
+                  return (
+                    <TableCell
+                      key={shiftIndex}
+                      sx={{
+                        //   align: "center",
+                        padding: 0,
+                        background: "#FCFCFC",
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: "0.75rem",
+                          textAlign: "center",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {staffing}
+                      </Typography>
+                    </TableCell>
+                  );
+                })}
+              <TableCell sx={{ background: "#FCFCFC" }}>
+                <Typography
+                  sx={{
+                    fontSize: "0.75rem",
+                    textAlign: "center",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {countAssignments({
+                    startDate: schedule.startDate,
+                    endDate: schedule.endDate,
+                  })}
+                </Typography>
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
