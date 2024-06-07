@@ -38,6 +38,7 @@
         "start_date": "Start date",
         "start_time": "Start time",
         "stats": "Stats",
+        "total": "Total",
         "type": "Type",
         "unset": "Unset",
         "validate": "Validate",
