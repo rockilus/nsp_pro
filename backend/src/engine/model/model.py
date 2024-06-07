@@ -166,6 +166,7 @@ class Model:
             temp_model = self.model
 
         # if not inputs.sol_hint:
+        # if False:
         solving_dates = [
             d for d in self.days if d not in [fvd for _, fvd, _ in inputs.fixed_values]
         ]
