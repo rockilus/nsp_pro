@@ -22,10 +22,11 @@ def build_templates(
     shifts: List[Shift],
     shift_dimensions: List[ShiftDimension],
     shift_properties: Dict[str, List[ShiftProperty]],
+    lang_code: str,
 ) -> List[Template]:
     worker_options = build_worker_options(workers, worker_dimensions, worker_properties)
     shift_options = build_shift_options(shifts, shift_dimensions, shift_properties)
-    return build_templates_list(worker_options, shift_options, "es")
+    return build_templates_list(worker_options, shift_options, lang_code)
 
 
 def build_worker_options(
@@ -56,7 +57,7 @@ def build_worker_options(
                     "id_type": "worker_dimension",
                 },
             ]
-        if worker_dimension.entry_type == "list":
+        elif worker_dimension.entry_type == "list":
             worker_options[worker_dimension.name] = [
                 {
                     "name": str(wp_value),
@@ -111,7 +112,7 @@ def build_shift_options(
                     "id_type": "shift_dimension",
                 },
             ]
-        if shift_dimension.entry_type == "list":
+        elif shift_dimension.entry_type == "list":
             shift_options[shift_dimension.name] = [
                 {
                     "name": str(sp_value),

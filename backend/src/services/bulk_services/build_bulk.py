@@ -81,6 +81,7 @@ def build_bulk(user_id: str, teams: List[Team], selected_team_id: str) -> Bulk:
         bulk.shifts,
         bulk.shift_dimensions,
         shift_properties_sd,
+        bulk.user.language,
     )
     bulk.requests = request_db.get_requests(bulk.workers)
     schedules = schedule_db.get_schedules(selected_team_id)

@@ -21,6 +21,7 @@ from scripts.setup_database import (
     shift_db,
     shift_dimension_db,
     shift_property_db,
+    user_db,
     worker_db,
     worker_dimension_db,
     worker_property_db,
@@ -42,6 +43,7 @@ async def get_constraint_templates(
             raise NotAuthorizedError(
                 "You do not have permission to get constraint templates"
             )
+        user = user_db.get_user_by_id(session.get_user_id())
         workers = worker_db.get_workers(team_id)
         worker_properties = worker_property_db.get_worker_properties_by_worker_ids(
             [w.id for w in workers]
@@ -70,6 +72,7 @@ async def get_constraint_templates(
             shifts,
             shift_dimensions,
             shift_properties_sd,
+            user.language,
         )
         response = [core_to_msg_constraint_template(ct) for ct in templates]
     except Exception as e:
