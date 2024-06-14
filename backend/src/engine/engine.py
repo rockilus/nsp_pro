@@ -1,4 +1,5 @@
-# import os
+import json
+import os
 import time
 
 from engine.model.model import Model
@@ -14,6 +15,13 @@ from engine.types.input_output_types import Inputs, Outputs
 class Engine:
     # pylint: disable=too-few-public-methods
     def solve(self, inputs: Inputs) -> Outputs:
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        print(current_path)
+        model_config_file_path = os.path.join(current_path, "model_config.json")
+        print(model_config_file_path)
+        # model_config_file_path = "model_config.json"
+        with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
+            model_config = json.load(penalties_file)
         model = Model(
             inputs.variable_space.workers,
             inputs.variable_space.days,
@@ -21,6 +29,7 @@ class Engine:
             inputs.shift_durations,
             inputs.shift_start_times,
             inputs.shift_end_times,
+            model_config,
         )
         start_time = time.time()
         # model.set_up_model(inputs)

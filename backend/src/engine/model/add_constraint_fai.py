@@ -7,13 +7,16 @@ from engine.model.utils.model_utils import (
     build_shifts_in_coverage,
     build_var_name,
     get_average_nb_shifts_per_worker,
+    get_nested_value,
 )
 from engine.types.input_output_types import Constraint, ShiftDemand
 
 
 class AddConstraintFai(AddConstraint):
     def add_constraint(
-        self, constraint: Constraint, coverage: List[ShiftDemand]
+        self,
+        constraint: Constraint,
+        coverage: List[ShiftDemand],
     ) -> None:
         w_vars, d_vars, s_vars = self.get_vars_coordinates(
             constraint, build_shifts_in_coverage(coverage)
@@ -41,12 +44,31 @@ class AddConstraintFai(AddConstraint):
         cstr_vars: List[cp_model.IntVar],
         target_average: float,
     ) -> None:
-        if constraint.penalty != 0:
-            target_average_int = int(target_average)
-            var_name = build_var_name(constraint, cstr_vars, "constraint")
+        penalty = get_nested_value(
+            self.model_config,
+            [
+                "penalties",
+                "user_constraint",
+                "fai",
+                "hard" if constraint.hard else "soft",
+            ],
+        )
+        target_average_int = int(target_average)
+        var_name = build_var_name(constraint, cstr_vars, "constraint")
+        delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
+        # pylint: disable=R0801
+        self.model.Add(delta == sum(cstr_vars) - target_average_int)
+        excess = self.model.NewIntVar(
+            -len(cstr_vars),
+            len(cstr_vars),
+            var_name,
+        )
+        self.model.AddAbsEquality(excess, delta)
+        self.obj.int_vars.append(excess)
+        self.obj.int_coeffs.append(penalty)
+        if target_average != target_average_int:
             delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
-            # pylint: disable=R0801
-            self.model.Add(delta == sum(cstr_vars) - target_average_int)
+            self.model.Add(delta == sum(cstr_vars) - target_average_int - 1)
             excess = self.model.NewIntVar(
                 -len(cstr_vars),
                 len(cstr_vars),
@@ -54,15 +76,4 @@ class AddConstraintFai(AddConstraint):
             )
             self.model.AddAbsEquality(excess, delta)
             self.obj.int_vars.append(excess)
-            self.obj.int_coeffs.append(constraint.penalty)
-            if target_average != target_average_int:
-                delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
-                self.model.Add(delta == sum(cstr_vars) - target_average_int - 1)
-                excess = self.model.NewIntVar(
-                    -len(cstr_vars),
-                    len(cstr_vars),
-                    var_name,
-                )
-                self.model.AddAbsEquality(excess, delta)
-                self.obj.int_vars.append(excess)
-                self.obj.int_coeffs.append(constraint.penalty)
+            self.obj.int_coeffs.append(penalty)

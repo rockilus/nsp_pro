@@ -20,6 +20,7 @@ class AddConstraint:
         days: List[str],
         shifts: List[str],
         obj: Objective,
+        model_config: Dict,
     ) -> None:
         self.model = model
         self.variables = variables
@@ -28,6 +29,7 @@ class AddConstraint:
         self.days = days
         self.shifts = shifts
         self.obj = obj
+        self.model_config = model_config
 
     def get_vars_coordinates(
         self,

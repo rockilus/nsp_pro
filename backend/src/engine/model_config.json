@@ -1,0 +1,50 @@
+{
+    "penalties": {
+        "system_constraint": {
+            "eve": {
+                "hard": 1,
+                "soft": 1
+            },
+            "fai": {
+                "hard": 1,
+                "soft": 1
+            }
+        },
+        "user_constraint": {
+            "eve": {
+                "hard": 1,
+                "soft": 1
+            },
+            "fai": {
+                "hard": 1,
+                "soft": 1
+            },
+            "fil": {
+                "hard": 1,
+                "soft": 1
+            },
+            "ord": {
+                "hard": 1,
+                "soft": 1
+            },
+            "seq": {
+                "hard": 1,
+                "soft": 1
+            },
+            "sum": {
+                "hard": 1,
+                "soft": 1
+            }
+        },
+        "coverage": {
+            "hard": 1
+        },
+        "request": {
+            "hard": 1,
+            "soft": 1
+        }
+    },
+    "solver_params": {
+        "max_time_in_seconds": 20
+    }
+}

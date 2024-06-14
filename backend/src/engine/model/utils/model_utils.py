@@ -1,6 +1,6 @@
 import json
 from dataclasses import asdict
-from typing import List, Literal, Set
+from typing import Any, List, Literal, Set
 
 from ortools.sat.python import cp_model  # type: ignore
 
@@ -47,9 +47,7 @@ def build_var_name(
                 cstr_vars=[var.Name() for var in cstr_vars],
                 category=category,
                 hard_to_soft=(
-                    constraint.hard_to_soft
-                    if not isinstance(constraint, ShiftDemand)
-                    else True
+                    True if isinstance(constraint, ShiftDemand) else constraint.hard
                 ),
             )
         )
@@ -68,7 +66,7 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
                     if isinstance(var, cp_model._NotBooleanVariable)
                 ],
                 category="constraint",
-                hard_to_soft=constraint.hard_to_soft,
+                hard_to_soft=constraint.hard,
             )
         )
     )
@@ -78,3 +76,12 @@ def build_shifts_in_coverage(coverage: List[ShiftDemand]) -> Set[str]:
     return set(
         shift_demand.shift_id for shift_demand in coverage if shift_demand.staffing > 0
     )
+
+
+def get_nested_value(d: dict, keys: list) -> Any:
+    for key in keys:
+        if key in d:
+            d = d[key]
+        else:
+            raise KeyError(f"Key {key} does not exist in the dictionary.")
+    return d
