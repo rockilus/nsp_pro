@@ -16,10 +16,7 @@ class Engine:
     # pylint: disable=too-few-public-methods
     def solve(self, inputs: Inputs) -> Outputs:
         current_path = os.path.dirname(os.path.realpath(__file__))
-        print(current_path)
         model_config_file_path = os.path.join(current_path, "model_config.json")
-        print(model_config_file_path)
-        # model_config_file_path = "model_config.json"
         with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
             model_config = json.load(penalties_file)
         model = Model(

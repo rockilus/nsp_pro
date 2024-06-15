@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import date, datetime, timedelta
 from typing import Callable, List
 
@@ -83,10 +84,9 @@ class TestConstraint:
 
     @pytest.fixture
     def penalty(self) -> int:
-        model_config_file_path = (
-            "/Users/felipekharaba/Documents/Documents – "
-            + "Felipe’s MacBook Pro/nsp_pro/backend/src/engine/model_config.json"
-        )
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        parent_path = os.path.dirname(current_path)
+        model_config_file_path = os.path.join(parent_path, "model_config.json")
         with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
             model_config = json.load(penalties_file)
         return get_nested_value(
