@@ -1,8 +1,11 @@
+import json
+import os
 from datetime import date, datetime, timedelta
 from typing import Callable, List
 
 import pytest
 
+from engine.model.utils.model_utils import get_nested_value
 from engine.tests.engine_test import TestEngine
 
 # pylint: disable=unused-import
@@ -66,6 +69,23 @@ class TestConstraint:
             hard=False,
             hard_to_soft=False,
             penalty=20,
+        )
+
+    @pytest.fixture
+    def penalty(self) -> int:
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        parent_path = os.path.dirname(current_path)
+        model_config_file_path = os.path.join(parent_path, "model_config.json")
+        with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
+            model_config = json.load(penalties_file)
+        return get_nested_value(
+            model_config,
+            [
+                "penalties",
+                "user_constraint",
+                "sum",
+                "soft",
+            ],
         )
 
 
@@ -334,12 +354,14 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             for dur in worked_durations
         )
 
+    # pylint: disable=too-many-arguments
     def test_expected_objective_for_hard_soft_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
         constraint_sum_hard: Constraint,
         constraint_sum_soft: Constraint,
+        penalty: int,
     ) -> None:
         # Worker w0 works excalty 12 hours per week hard, at most 8 hours per
         # week soft
@@ -354,7 +376,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         assert (
             outputs.objective_value
-            == constraint_sum_soft.penalty
+            == penalty
             * len(constraint_sum_hard.worker_var.target)
             * len(dates_weeks)
             * abs(constraint_sum_hard.target_value - constraint_sum_soft.target_value)

@@ -1,11 +1,35 @@
+import json
+import os
 from datetime import date
 from typing import Callable
 
+import pytest
+
+from engine.model.utils.model_utils import get_nested_value
 from engine.tests.engine_test import TestEngine
 
 # pylint: disable=unused-import
 from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
 from engine.types.input_output_types import Assignment, Inputs, Outputs, Request
+
+
+# pylint: disable=too-few-public-methods
+class TestRequest:
+    @pytest.fixture
+    def penalty(self) -> int:
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        parent_path = os.path.dirname(current_path)
+        model_config_file_path = os.path.join(parent_path, "model_config.json")
+        with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
+            model_config = json.load(penalties_file)
+        return get_nested_value(
+            model_config,
+            [
+                "penalties",
+                "request",
+                "soft",
+            ],
+        )
 
 
 # pylint: disable=R0801
@@ -81,7 +105,7 @@ class TestRequestHard(TestEngine):
 
 
 # pylint: disable=R0801
-class TestRequestSoft(TestEngine):
+class TestRequestSoft(TestEngine, TestRequest):
     def test_expected_assignment_for_request(
         self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
     ) -> None:
@@ -167,7 +191,10 @@ class TestRequestSoft(TestEngine):
         assert outputs.objective_value == 0
 
     def test_objective_if_requests_not_fullfilled(
-        self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        penalty: int,
     ) -> None:
         requests = [
             Request(
@@ -228,7 +255,7 @@ class TestRequestSoft(TestEngine):
         inputs.requests = requests
         outputs = engine_solve(inputs)
 
-        assert outputs.objective_value == sum(r.penalty for r in requests if not r.hard)
+        assert outputs.objective_value == sum(penalty for r in requests if not r.hard)
 
     def test_expected_assignment_for_request_conflict(
         self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
@@ -265,7 +292,10 @@ class TestRequestSoft(TestEngine):
         assert target_assignment in outputs.assignments
 
     def test_objective_for_request_conflict(
-        self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        penalty: int,
     ) -> None:
         requests = [
             Request(
@@ -290,7 +320,7 @@ class TestRequestSoft(TestEngine):
         inputs.requests = requests
         outputs = engine_solve(inputs)
 
-        assert outputs.objective_value == requests[0].penalty
+        assert outputs.objective_value == penalty
 
     def test_constraint_breaches_variables_for_conflict(
         self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]

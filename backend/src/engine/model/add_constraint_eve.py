@@ -6,6 +6,7 @@ from engine.model.add_constraint_sum import AddConstraintSum
 from engine.model.utils.model_utils import (
     build_shifts_in_coverage,
     get_average_nb_shifts_per_worker,
+    get_nested_value,
 )
 from engine.types.input_output_types import (
     Constraint,
@@ -18,9 +19,28 @@ from engine.types.input_output_types import (
 
 class AddConstraintEve(AddConstraint):
     # pylint: disable=too-many-arguments
-    def __init__(self, model, variables, durations, workers, days, shifts, obj) -> None:
+    def __init__(
+        self,
+        model,
+        variables,
+        durations,
+        workers,
+        days,
+        shifts,
+        obj,
+        model_config,
+    ) -> None:
         # pylint: disable=R0801
-        super().__init__(model, variables, durations, workers, days, shifts, obj)
+        super().__init__(
+            model,
+            variables,
+            durations,
+            workers,
+            days,
+            shifts,
+            obj,
+            model_config,
+        )
         self.add_constraint_sum = AddConstraintSum(
             self.model,
             self.variables,
@@ -29,6 +49,7 @@ class AddConstraintEve(AddConstraint):
             self.days,
             self.shifts,
             self.obj,
+            self.model_config,
         )
 
     def add_constraint(
@@ -65,7 +86,7 @@ class AddConstraintEve(AddConstraint):
                 period_lengths,
             )
             for constraint_sum in constraints_sum:
-                self.add_constraint_sum.add_constraint(constraint_sum)
+                self.add_constraint_sum.add_constraint(constraint_sum, False)
 
     def convert_constraint_eve_to_constraints_sum(
         self,
@@ -75,6 +96,15 @@ class AddConstraintEve(AddConstraint):
         period_lengths: List[int],
     ) -> List[Constraint]:
         constraints_sum = []
+        penalty = get_nested_value(
+            self.model_config,
+            [
+                "penalties",
+                "user_constraint",
+                "eve",
+                "hard" if constraint.hard else "soft",
+            ],
+        )
         for index, period_length in enumerate(period_lengths):
             cum_days = sum(period_lengths[:index])
             start_date = date.fromisoformat(self.days[0]) + timedelta(days=cum_days)
@@ -105,8 +135,8 @@ class AddConstraintEve(AddConstraint):
                         relative=[],
                     ),
                     hard=False,
-                    hard_to_soft=constraint.hard_to_soft,
-                    penalty=constraint.penalty,
+                    hard_to_soft=False,
+                    penalty=penalty,
                 )
             )
         return constraints_sum

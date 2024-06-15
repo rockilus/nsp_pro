@@ -1,8 +1,12 @@
+# pylint: disable=too-many-lines
+import json
+import os
 from datetime import date, datetime, timedelta
 from typing import Callable
 
 import pytest
 
+from engine.model.utils.model_utils import get_nested_value
 from engine.tests.engine_test import TestEngine
 
 # pylint: disable=unused-import
@@ -67,6 +71,23 @@ class TestConstraint:
             hard=False,
             hard_to_soft=False,
             penalty=20,
+        )
+
+    @pytest.fixture
+    def penalty(self) -> int:
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        parent_path = os.path.dirname(current_path)
+        model_config_file_path = os.path.join(parent_path, "model_config.json")
+        with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
+            model_config = json.load(penalties_file)
+        return get_nested_value(
+            model_config,
+            [
+                "penalties",
+                "user_constraint",
+                "ord",
+                "soft",
+            ],
         )
 
 
@@ -875,12 +896,14 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         ][0]
         assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
 
+    # pylint: disable=too-many-arguments
     def test_expected_objective_for_hard_soft_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
         constraint_ord_hard: Constraint,
         constraint_ord_soft: Constraint,
+        penalty: int,
     ) -> None:
         # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
         requests = [
@@ -902,7 +925,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         inputs.requests = requests
         outputs = engine_solve(inputs)
 
-        assert outputs.objective_value == constraint_ord_soft.penalty
+        assert outputs.objective_value == penalty
 
     def test_expected_constraint_breaches_variables_for_hard_soft_conflict(
         self,
@@ -956,12 +979,14 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             for exp_variable in expected_variables
         )
 
+    # pylint: disable=too-many-arguments
     def test_expected_constraint_breaches_value_diff_for_hard_soft_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
         constraint_ord_hard: Constraint,
         constraint_ord_soft: Constraint,
+        penalty: int,
     ) -> None:
         # No shift s0 after shift s1 hard, shift s0 after shift s1 soft
         requests = [
@@ -983,4 +1008,4 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         inputs.requests = requests
         outputs = engine_solve(inputs)
 
-        assert outputs.objective_value == constraint_ord_soft.penalty
+        assert outputs.objective_value == penalty

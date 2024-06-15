@@ -3,24 +3,31 @@ from typing import List
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import build_var_name, build_var_name_seq
+from engine.model.utils.model_utils import (
+    build_var_name,
+    build_var_name_seq,
+    get_nested_value,
+)
 from engine.types.input_output_types import Constraint
 
 
 class AddConstraintSeq(AddConstraint):
-    def add_constraint(self, constraint: Constraint) -> None:
+    def add_constraint(self, constraint: Constraint, hard_to_soft: bool) -> None:
         w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
         for w in w_vars:
             for s in s_vars:
                 constraint_vars = []
                 for d in d_vars:
                     constraint_vars.append(self.variables[w, d, s])
-            self._add_constraint_seq_to_model(constraint, constraint_vars)
+            self._add_constraint_seq_to_model(constraint, constraint_vars, hard_to_soft)
 
     def _add_constraint_seq_to_model(
-        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
+        self,
+        constraint: Constraint,
+        cstr_vars: List[cp_model.IntVar],
+        hard_to_soft: bool,
     ) -> None:
-        if constraint.hard:
+        if constraint.hard and not hard_to_soft:
             if constraint.operator == "less_than_or_equal":
                 self._add_constraint_seq_less_than_or_equal_hard_to_model(
                     constraint, cstr_vars
@@ -41,23 +48,32 @@ class AddConstraintSeq(AddConstraint):
                     f"Sum constraint operator {constraint.operator} "
                     + "not implemented"
                 )
+        # pylint: disable=R0801
         else:
-            if constraint.penalty != 0:
-                if constraint.operator == "less_than_or_equal":
-                    self._add_constraint_seq_less_than_or_equal_soft_to_model(
-                        constraint, cstr_vars
-                    )
-                elif constraint.operator == "equal":
-                    self._add_constraint_seq_less_than_or_equal_soft_to_model(
-                        constraint, cstr_vars
-                    )
-                    self._add_constraint_seq_greater_than_or_equal_soft_to_model(
-                        constraint, cstr_vars
-                    )
-                elif constraint.operator == "greater_than_or_equal":
-                    self._add_constraint_seq_greater_than_or_equal_soft_to_model(
-                        constraint, cstr_vars
-                    )
+            penalty = get_nested_value(
+                self.model_config,
+                [
+                    "penalties",
+                    "user_constraint",
+                    "seq",
+                    "hard" if constraint.hard else "soft",
+                ],
+            )
+            if constraint.operator == "less_than_or_equal":
+                self._add_constraint_seq_less_than_or_equal_soft_to_model(
+                    constraint, cstr_vars, penalty
+                )
+            elif constraint.operator == "equal":
+                self._add_constraint_seq_less_than_or_equal_soft_to_model(
+                    constraint, cstr_vars, penalty
+                )
+                self._add_constraint_seq_greater_than_or_equal_soft_to_model(
+                    constraint, cstr_vars, penalty
+                )
+            elif constraint.operator == "greater_than_or_equal":
+                self._add_constraint_seq_greater_than_or_equal_soft_to_model(
+                    constraint, cstr_vars, penalty
+                )
 
     def _add_constraint_seq_less_than_or_equal_hard_to_model(
         self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
@@ -80,7 +96,10 @@ class AddConstraintSeq(AddConstraint):
                 )
 
     def _add_constraint_seq_less_than_or_equal_soft_to_model(
-        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
+        self,
+        constraint: Constraint,
+        cstr_vars: List[cp_model.IntVar],
+        penalty: int,
     ) -> None:
         # i = 0
         # for length in range(constraint.target_value + 1, len(cstr_vars) + 1):
@@ -109,12 +128,15 @@ class AddConstraintSeq(AddConstraint):
                 lit.Not()
             )
             self.obj.bool_vars.append(lit)
-            self.obj.bool_coeffs.append(constraint.penalty)
+            self.obj.bool_coeffs.append(penalty)
         #     i += 1
         # print("num iter less than", i)
 
     def _add_constraint_seq_greater_than_or_equal_soft_to_model(
-        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
+        self,
+        constraint: Constraint,
+        cstr_vars: List[cp_model.IntVar],
+        penalty: int,
     ) -> None:
         # i = 0
         for length in range(1, constraint.target_value):
@@ -127,7 +149,7 @@ class AddConstraintSeq(AddConstraint):
                 self.model.AddBoolOr(span)
                 self.obj.bool_vars.append(lit)
                 self.obj.bool_coeffs.append(
-                    constraint.penalty * (constraint.target_value - length)
+                    penalty * (constraint.target_value - length)
                 )
         #         i += 1
         # print("num iter greater than", i)

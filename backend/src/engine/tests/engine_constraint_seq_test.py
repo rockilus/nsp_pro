@@ -1,9 +1,12 @@
 # pylint: disable=too-many-lines
+import json
+import os
 from datetime import date, timedelta
 from typing import Callable, List
 
 import pytest
 
+from engine.model.utils.model_utils import get_nested_value
 from engine.tests.engine_test import TestEngine
 
 # pylint: disable=unused-import
@@ -68,6 +71,23 @@ class TestConstraint:
             hard=False,
             hard_to_soft=False,
             penalty=20,
+        )
+
+    @pytest.fixture
+    def penalty(self) -> int:
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        parent_path = os.path.dirname(current_path)
+        model_config_file_path = os.path.join(parent_path, "model_config.json")
+        with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
+            model_config = json.load(penalties_file)
+        return get_nested_value(
+            model_config,
+            [
+                "penalties",
+                "user_constraint",
+                "seq",
+                "soft",
+            ],
         )
 
 
@@ -942,12 +962,14 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             and count_max == constraint_seq_hard.target_value
         )
 
+    # pylint: disable=too-many-arguments
     def test_expected_objective_for_hard_soft_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
         constraint_seq_hard: Constraint,
         constraint_seq_soft: Constraint,
+        penalty: int,
     ) -> None:
         # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
         requests = [
@@ -969,7 +991,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         ]
         outputs = engine_solve(inputs)
 
-        assert outputs.objective_value == constraint_seq_soft.penalty * (
+        assert outputs.objective_value == penalty * (
             constraint_seq_hard.target_value - constraint_seq_soft.target_value
         )
 
