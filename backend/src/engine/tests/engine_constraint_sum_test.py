@@ -1,8 +1,10 @@
+import json
 from datetime import date, datetime, timedelta
 from typing import Callable, List
 
 import pytest
 
+from engine.model.utils.model_utils import get_nested_value
 from engine.tests.engine_test import TestEngine
 
 # pylint: disable=unused-import
@@ -66,6 +68,24 @@ class TestConstraint:
             hard=False,
             hard_to_soft=False,
             penalty=20,
+        )
+
+    @pytest.fixture
+    def penalty(self) -> int:
+        model_config_file_path = (
+            "/Users/felipekharaba/Documents/Documents – "
+            + "Felipe’s MacBook Pro/nsp_pro/backend/src/engine/model_config.json"
+        )
+        with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
+            model_config = json.load(penalties_file)
+        return get_nested_value(
+            model_config,
+            [
+                "penalties",
+                "user_constraint",
+                "sum",
+                "soft",
+            ],
         )
 
 
@@ -327,12 +347,14 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         assert all(count == constraint_sum_hard.target_value for count in counts)
 
+    # pylint: disable=too-many-arguments
     def test_expected_objective_for_hard_soft_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
         constraint_sum_hard: Constraint,
         constraint_sum_soft: Constraint,
+        penalty: int,
     ) -> None:
         # Excalty 4 shifts off per week hard, at most 2 shifts off per week soft
         constraint_sum_hard.operator = "equal"
@@ -344,7 +366,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         dates_weeks = get_dates_weeks(inputs.variable_space.days)
 
-        assert outputs.objective_value == constraint_sum_soft.penalty * len(
+        assert outputs.objective_value == penalty * len(
             inputs.variable_space.workers
         ) * len(dates_weeks) * abs(
             constraint_sum_hard.target_value - constraint_sum_soft.target_value

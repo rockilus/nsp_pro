@@ -1,8 +1,10 @@
+import json
 from datetime import date, datetime, timedelta
 from typing import Callable, List
 
 import pytest
 
+from engine.model.utils.model_utils import get_nested_value
 from engine.tests.engine_test import TestEngine
 
 # pylint: disable=unused-import
@@ -77,6 +79,24 @@ class TestConstraint:
             hard=False,
             hard_to_soft=False,
             penalty=20,
+        )
+
+    @pytest.fixture
+    def penalty(self) -> int:
+        model_config_file_path = (
+            "/Users/felipekharaba/Documents/Documents – "
+            + "Felipe’s MacBook Pro/nsp_pro/backend/src/engine/model_config.json"
+        )
+        with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
+            model_config = json.load(penalties_file)
+        return get_nested_value(
+            model_config,
+            [
+                "penalties",
+                "user_constraint",
+                "fil",
+                "soft",
+            ],
         )
 
 
@@ -443,12 +463,14 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             for assignment in assignments_target_w
         )
 
+    # pylint: disable=too-many-arguments
     def test_expected_objective_for_hard_soft_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
         constraint_fil_hard: Constraint,
         constraint_fil_soft: Constraint,
+        penalty: int,
     ) -> None:
         # Worker w0 and w1 should not work shift s0 or s1 (hard)
         # Worker w0 and w1 should only work shift s0 or s1 (soft)
@@ -459,7 +481,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         ]
         outputs = engine_solve(inputs)
 
-        assert outputs.objective_value == constraint_fil_soft.penalty * len(
+        assert outputs.objective_value == penalty * len(
             constraint_fil_soft.worker_var.target
         ) * len(inputs.variable_space.days)
 
