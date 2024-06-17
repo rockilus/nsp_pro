@@ -121,6 +121,7 @@ def core_to_doc_coverage_selector(
             full_period=dataclass_obj.full_period,
             start_date=dataclass_obj.start_date,
             end_date=dataclass_obj.end_date,
+            # pylint: disable=possibly-used-before-assignment
             coverage=coverage if dataclass_obj.coverage_id != "" else None,
         )
     except Exception as e:
