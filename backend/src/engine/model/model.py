@@ -4,14 +4,7 @@ from typing import Dict, List, Tuple
 # from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.model.add_constraint_eve import AddConstraintEve
-from engine.model.add_constraint_fai import AddConstraintFai
-from engine.model.add_constraint_fil import AddConstraintFil
-from engine.model.add_constraint_ord import AddConstraintOrd
-from engine.model.add_constraint_seq import AddConstraintSeq
-from engine.model.add_constraint_sum import AddConstraintSum
-from engine.model.add_coverage import AddCoverage
-from engine.model.add_request import AddRequest
+from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import get_nested_value
 from engine.types.input_output_types import Constraint, Inputs, ShiftDemand
 from engine.types.model_types import BenchmarkTimes, Objective
@@ -47,80 +40,13 @@ class Model:
         self.status = 0
         self.bt = BenchmarkTimes()
 
-        self.add_constraint_sum = AddConstraintSum(
+        self.add_constraint_factory = AddConstraintFactory(
             self.model,
             self.variables,
             self.durations,
             self.workers,
             self.days,
             self.shifts,
-            self.obj,
-            self.model_config,
-        )
-        self.add_constraint_seq = AddConstraintSeq(
-            self.model,
-            self.variables,
-            self.durations,
-            self.workers,
-            self.days,
-            self.shifts,
-            self.obj,
-            self.model_config,
-        )
-        self.add_constraint_ord = AddConstraintOrd(
-            self.model,
-            self.variables,
-            self.durations,
-            self.workers,
-            self.days,
-            self.shifts,
-            self.obj,
-            self.model_config,
-        )
-        self.add_constraint_fil = AddConstraintFil(
-            self.model,
-            self.variables,
-            self.durations,
-            self.workers,
-            self.days,
-            self.shifts,
-            self.obj,
-            self.model_config,
-        )
-        self.add_constraint_fai = AddConstraintFai(
-            self.model,
-            self.variables,
-            self.durations,
-            self.workers,
-            self.days,
-            self.shifts,
-            self.obj,
-            self.model_config,
-        )
-        self.add_constraint_eve = AddConstraintEve(
-            self.model,
-            self.variables,
-            self.durations,
-            self.workers,
-            self.days,
-            self.shifts,
-            self.obj,
-            self.model_config,
-        )
-        self.add_coverage = AddCoverage(
-            self.model,
-            self.variables,
-            self.durations,
-            self.workers,
-            self.days,
-            self.shifts,
-            self.obj,
-            self.model_config,
-        )
-        self.add_far = AddRequest(
-            self.model,
-            self.variables,
-            self.workers,
             self.obj,
             self.model_config,
         )
@@ -223,16 +149,19 @@ class Model:
         )
         if self.status != cp_model.INFEASIBLE:
             return
+        self.reset_model()
         self.solve_model_hts_custom(
             inputs, coverage_hts=False, request_hts=True, constraint_hts=False
         )
         if self.status != cp_model.INFEASIBLE:
             return
+        self.reset_model()
         self.solve_model_hts_custom(
             inputs, coverage_hts=False, request_hts=True, constraint_hts=True
         )
         if self.status != cp_model.INFEASIBLE:
             return
+        self.reset_model()
         self.solve_model_hts_custom(
             inputs, coverage_hts=True, request_hts=True, constraint_hts=True
         )
@@ -244,19 +173,22 @@ class Model:
         request_hts: bool,
         constraint_hts: bool,
     ) -> None:
-        # self.model = cp_model.CpModel()
         self.build_variables()
         self.set_fixed_variables(inputs.fixed_values)
         self.add_solution_hint(inputs.sol_hint)
         self.no_interval_overlap()
         self.add_at_least_one_shift_per_day_constraint()
-        self.status = self.solver.Solve(  # type: ignore
-            self.model, self.solution_printer
-        )
-        self.print_model_metadata("NAKED")
+        # self.status = self.solver.Solve(  # type: ignore
+        #     self.model, self.solution_printer
+        # )
+        # self.print_model_metadata("NAKED")
 
-        self.add_coverage.add_coverage(inputs.coverage.coverage, coverage_hts)
-        self.add_far.add_requests(inputs.requests, request_hts)
+        self.add_constraint_factory.add_coverage.add_coverage(
+            inputs.coverage.coverage, coverage_hts
+        )
+        self.add_constraint_factory.add_request.add_requests(
+            inputs.requests, request_hts
+        )
         self.add_custom_constraints(
             inputs.constraints, inputs.coverage.coverage, constraint_hts
         )
@@ -265,6 +197,25 @@ class Model:
         self.print_model_metadata(
             f"COVERAGE_HTS: {coverage_hts}, REQUEST_HTS: {request_hts}, "
             + f"CONSTRAINT_HTS: {constraint_hts}"
+        )
+
+    def reset_model(self) -> None:
+        self.model = cp_model.CpModel()
+        self.variables = {}
+        self.intervals = {}
+        self.obj = Objective()
+        self.status = 0
+        self.bt = BenchmarkTimes()
+
+        self.add_constraint_factory = AddConstraintFactory(
+            self.model,
+            self.variables,
+            self.durations,
+            self.workers,
+            self.days,
+            self.shifts,
+            self.obj,
+            self.model_config,
         )
 
     # def set_up_model(self, inputs: Inputs) -> None:
@@ -531,17 +482,29 @@ class Model:
     ) -> None:
         for constraint in constraints:
             if constraint.constraint_type == "sum":
-                self.add_constraint_sum.add_constraint(constraint, hard_to_soft)
+                self.add_constraint_factory.add_constraint_sum.add_constraint(
+                    constraint, hard_to_soft
+                )
             elif constraint.constraint_type == "seq":
-                self.add_constraint_seq.add_constraint(constraint, hard_to_soft)
+                self.add_constraint_factory.add_constraint_seq.add_constraint(
+                    constraint, hard_to_soft
+                )
             elif constraint.constraint_type == "ord":
-                self.add_constraint_ord.add_constraint(constraint, hard_to_soft)
+                self.add_constraint_factory.add_constraint_ord.add_constraint(
+                    constraint, hard_to_soft
+                )
             elif constraint.constraint_type == "fil":
-                self.add_constraint_fil.add_constraint(constraint, hard_to_soft)
+                self.add_constraint_factory.add_constraint_fil.add_constraint(
+                    constraint, hard_to_soft
+                )
             elif constraint.constraint_type == "fai":
-                self.add_constraint_fai.add_constraint(constraint, coverage)
+                self.add_constraint_factory.add_constraint_fai.add_constraint(
+                    constraint, coverage
+                )
             elif constraint.constraint_type == "eve":
-                self.add_constraint_eve.add_constraint(constraint, coverage)
+                self.add_constraint_factory.add_constraint_eve.add_constraint(
+                    constraint, coverage
+                )
 
     def add_objective(self) -> None:
         self.model.Minimize(

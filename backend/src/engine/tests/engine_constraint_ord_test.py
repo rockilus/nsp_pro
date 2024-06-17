@@ -90,6 +90,23 @@ class TestConstraint:
             ],
         )
 
+    @pytest.fixture
+    def penalty_hard(self) -> int:
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        parent_path = os.path.dirname(current_path)
+        model_config_file_path = os.path.join(parent_path, "model_config.json")
+        with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
+            model_config = json.load(penalties_file)
+        return get_nested_value(
+            model_config,
+            [
+                "penalties",
+                "user_constraint",
+                "ord",
+                "hard",
+            ],
+        )
+
 
 class TestConstraintHard(TestEngine, TestConstraint):
     def test_expected_assignment_for_no(
@@ -156,11 +173,12 @@ class TestConstraintHard(TestEngine, TestConstraint):
         ][0]
         assert next_assignment.shift_id == constraint_ord_hard.shift_var.relative[0]
 
-    def test_no_solution_for_no_if_conflict(
+    def test_solution_for_no_if_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
         constraint_ord_hard: Constraint,
+        penalty_hard: int,
     ) -> None:
         # No shift s0 after shift s1
         requests = [
@@ -187,13 +205,14 @@ class TestConstraintHard(TestEngine, TestConstraint):
         inputs.requests = requests
         outputs = engine_solve(inputs)
 
-        assert not outputs.is_solution and len(outputs.assignments) == 0
+        assert outputs.is_solution and outputs.objective_value == penalty_hard
 
-    def test_no_solution_for_yes_if_conflict(
+    def test_solution_for_yes_if_conflict(
         self,
         inputs: Inputs,
         engine_solve: Callable[[Inputs], Outputs],
         constraint_ord_hard: Constraint,
+        penalty_hard: int,
     ) -> None:
         # Shift s3 after shift s1, while fixed assignment s4 after s1
         requests = [
@@ -222,7 +241,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         inputs.requests = requests
         outputs = engine_solve(inputs)
 
-        assert not outputs.is_solution and len(outputs.assignments) == 0
+        assert outputs.is_solution and outputs.objective_value == penalty_hard
 
     def test_expected_assignment_for_no_interval_plus_three(
         self,

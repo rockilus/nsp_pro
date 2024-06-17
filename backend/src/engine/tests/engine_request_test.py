@@ -31,9 +31,25 @@ class TestRequest:
             ],
         )
 
+    @pytest.fixture
+    def penalty_hard(self) -> int:
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        parent_path = os.path.dirname(current_path)
+        model_config_file_path = os.path.join(parent_path, "model_config.json")
+        with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
+            model_config = json.load(penalties_file)
+        return get_nested_value(
+            model_config,
+            [
+                "penalties",
+                "request",
+                "hard",
+            ],
+        )
+
 
 # pylint: disable=R0801
-class TestRequestHard(TestEngine):
+class TestRequestHard(TestEngine, TestRequest):
     def test_expected_assignment_for_hard_requests(
         self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
     ) -> None:
@@ -75,8 +91,11 @@ class TestRequestHard(TestEngine):
 
         assert all(a in assignments for a in target_assignments)
 
-    def test_no_solution_if_hard_request_conflict(
-        self, inputs: Inputs, engine_solve: Callable[[Inputs], Outputs]
+    def test_solution_if_hard_request_conflict(
+        self,
+        inputs: Inputs,
+        engine_solve: Callable[[Inputs], Outputs],
+        penalty_hard: int,
     ) -> None:
         requests = [
             Request(
@@ -101,7 +120,7 @@ class TestRequestHard(TestEngine):
         inputs.requests = requests
         outputs = engine_solve(inputs)
 
-        assert not outputs.is_solution and len(outputs.assignments) == 0
+        assert outputs.is_solution and outputs.objective_value == penalty_hard
 
 
 # pylint: disable=R0801
