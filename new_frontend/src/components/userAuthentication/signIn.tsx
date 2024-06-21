@@ -39,8 +39,6 @@ export default function SignIn() {
   const initialState: State = { message: null, errors: {} };
   const [state, dispatch] = useFormState(signInClicked, initialState);
 
-  console.log("state", state);
-
   const pathName = usePathname();
   const { replace } = useRouter();
 
