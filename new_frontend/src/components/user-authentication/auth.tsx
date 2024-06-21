@@ -5,7 +5,7 @@ import { redirectToAuth } from "supertokens-auth-react";
 import SuperTokens from "supertokens-auth-react/ui";
 import { EmailPasswordPreBuiltUI } from "supertokens-auth-react/recipe/emailpassword/prebuiltui";
 // Components
-import UserAuthentication from "@/components/userAuthentication/userAuthentication";
+import UserAuthentication from "@/components/user-authentication/user-authentication";
 
 export default function Auth() {
   // if the user visits a page that is not handled by us (like /auth/random), then we redirect them back to the auth page.

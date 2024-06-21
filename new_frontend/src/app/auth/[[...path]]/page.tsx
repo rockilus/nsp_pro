@@ -4,9 +4,9 @@ import SuperTokens from "supertokens-auth-react/ui";
 import { EmailPasswordPreBuiltUI } from "supertokens-auth-react/recipe/emailpassword/prebuiltui";
 import { redirect } from "next/navigation";
 // Components
-import UserAuthentication from "@/components/userAuthentication/userAuthentication";
+import UserAuthentication from "@/components/user-authentication/user-authentication";
 import { getSSRSessionHelper } from "@/components/home";
-import Auth from "@/components/userAuthentication/auth";
+import Auth from "@/components/user-authentication/auth";
 
 export default async function AuthPage() {
   const { accessTokenPayload, hasToken, error } = await getSSRSessionHelper();
