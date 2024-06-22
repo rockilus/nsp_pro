@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SuperTokensProvider } from "../components/supertokensProvider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
+import { TeamStoreProvider } from "@/providers/team-store-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,7 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <SuperTokensProvider>
         <AppRouterCacheProvider>
-          <body className={inter.className}>{children}</body>
+          <TeamStoreProvider>
+            <body className={inter.className}>{children}</body>
+          </TeamStoreProvider>
         </AppRouterCacheProvider>
       </SuperTokensProvider>
     </html>
