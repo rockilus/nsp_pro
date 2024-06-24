@@ -15,7 +15,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 // Lib
-import { signInClicked, State } from "@/app/lib/authentication";
+import { signUpClicked, State } from "@/app/lib/authentication";
 
 // function Copyright(props: any) {
 //   return (
@@ -35,18 +35,17 @@ import { signInClicked, State } from "@/app/lib/authentication";
 //   );
 // }
 
-export default function SignIn() {
+export default function SignUp() {
   const initialState: State = { message: null, errors: {} };
-  const [state, dispatch] = useFormState(signInClicked, initialState);
-
+  const [state, dispatch] = useFormState(signUpClicked, initialState);
   console.log("state", state);
 
   const pathName = usePathname();
   const { replace } = useRouter();
 
-  const handleGoToSignUp = () => {
+  const handleGoToSignIn = () => {
     const params = new URLSearchParams();
-    params.set("show", "signup");
+    params.set("show", "signin");
     replace(`${pathName}?${params.toString()}`);
   };
 
@@ -73,62 +72,81 @@ export default function SignIn() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign in
+          Sign up
         </Typography>
-        <Box component="form" sx={{ mt: 1 }} action={dispatch}>
-          <TextField
-            error={!!state?.errors?.email}
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
-            autoFocus
-            helperText={state?.errors?.email?.join(", ")}
-            onChange={handleClearEmailErrors}
-          />
-          <TextField
-            error={!!state?.errors?.password}
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            helperText={state?.errors?.password?.join(", ")}
-            onChange={handleClearPasswordErrors}
-          />
+        <Box component="form" action={dispatch} sx={{ mt: 3 }}>
+          <Grid container spacing={2}>
+            {/* <Grid item xs={12} sm={6}>
+                <TextField
+                  autoComplete="given-name"
+                  name="firstName"
+                  required
+                  fullWidth
+                  id="firstName"
+                  label="First Name"
+                  autoFocus
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  required
+                  fullWidth
+                  id="lastName"
+                  label="Last Name"
+                  name="lastName"
+                  autoComplete="family-name"
+                />
+              </Grid> */}
+            <Grid item xs={12}>
+              <TextField
+                error={!!state?.errors?.email}
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                helperText={state?.errors?.email?.join(", ")}
+                onChange={handleClearEmailErrors}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                error={!!state?.errors?.password}
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="new-password"
+                helperText={state?.errors?.password?.join(", ")}
+                onChange={handleClearPasswordErrors}
+              />
+            </Grid>
+          </Grid>
           <Button
             type="submit"
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
           >
-            Sign In
+            Sign Up
           </Button>
-          <Grid container>
-            <Grid item xs>
-              <Link href="#" variant="body2">
-                Forgot password?
-              </Link>
-            </Grid>
+          <Grid container justifyContent="flex-end">
             <Grid item>
               <Link
                 variant="body2"
-                onClick={handleGoToSignUp}
+                onClick={handleGoToSignIn}
                 sx={{ cursor: "pointer" }}
               >
-                {"Don't have an account? Sign Up"}
+                Already have an account? Sign in
               </Link>
             </Grid>
           </Grid>
         </Box>
       </Box>
-      {/* <Copyright sx={{ mt: 8, mb: 4 }} /> */}
+      {/* <Copyright sx={{ mt: 5 }} /> */}
     </Container>
   );
 }

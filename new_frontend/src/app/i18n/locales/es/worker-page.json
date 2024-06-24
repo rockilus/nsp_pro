@@ -1,0 +1,21 @@
+{
+    "add": "Añadir",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "delete_confirm": "Eliminar para todos",
+    "delete_text": "Eliminar esta propiedad la eliminará de todos los trabajadores. Esta acción no se puede deshacer.",
+    "delete_title": "Eliminar esta propiedad de todos los trabajadores?",
+    "name": "Nombre",
+    "name_helper_text": "Por favor, introduce un nombre",
+    "new_property": "Nueva propiedad",
+    "property": "Propiedad",
+    "property_type": "Tipo de propiedad",
+    "property_type_helper_text": "Por favor, selecciona un tipo de propiedad",
+    "save": "Guardar",
+    "type_str": "Texto",
+    "type_int": "Número",
+    "type_bool": "Si/No",
+    "type_list": "Tags",
+    "workers": "Trabajadores",
+    "worker": "Trabajador"
+}

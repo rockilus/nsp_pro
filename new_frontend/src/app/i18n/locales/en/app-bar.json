@@ -1,0 +1,10 @@
+{
+    "campaign": "Campaign",
+    "constraints": "Constraints",
+    "coverages": "Coverages",
+    "requests": "Requests",
+    "schedule": "Schedule",
+    "shifts": "Shifts",
+    "stats": "Stats",
+    "workers": "Workers"
+}

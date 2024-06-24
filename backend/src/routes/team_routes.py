@@ -1,5 +1,5 @@
 import time
-from typing import List
+from typing import Dict, List
 
 import humps
 from fastapi import APIRouter, Depends
@@ -53,6 +53,21 @@ async def get_teams(
     print(f"Total time teams:            {total_time}")
     print(f"Total time to get teams:     {total_time_get_teams}")
     print(f"Total time to convert teams: {total_time_convert}")
+    return response
+
+
+@router.get("/teams/selected-team-id")
+async def get_selected_team_id(
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> Dict[str, str]:
+    try:
+        user_id = session.get_user_id()
+        teams = team_db.get_teams_by_leader_id(user_id)
+        team_id = teams[0].id
+        response = {"selectedTeamId": team_id}
+    except Exception as e:
+        log_info("Failed to get selected team id")
+        handle_routes_errors(e)
     return response
 
 
