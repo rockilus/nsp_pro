@@ -1,5 +1,5 @@
 import time
-from typing import List, Dict
+from typing import Dict, List
 
 import humps
 from fastapi import APIRouter, Depends
@@ -12,10 +12,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import TeamMessage
@@ -81,12 +78,8 @@ def update_team(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> TeamMessage:
     try:
-        if not authz_check(
-            session.get_user_id(), "update-team", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to update a team"
-            )
+        if not authz_check(session.get_user_id(), "update-team", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to update a team")
         team_data = msg_to_core_team(team)
         updated_team = team_db.update_team(team_data)
         response = core_to_msg_team(updated_team)
