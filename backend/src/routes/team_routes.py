@@ -1,5 +1,5 @@
 import time
-from typing import List
+from typing import List, Dict
 
 import humps
 from fastapi import APIRouter, Depends
@@ -12,7 +12,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import TeamMessage
@@ -56,6 +59,21 @@ async def get_teams(
     return response
 
 
+@router.get("/teams/selected-team-id")
+async def get_selected_team_id(
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> Dict[str, str]:
+    try:
+        user_id = session.get_user_id()
+        teams = team_db.get_teams_by_leader_id(user_id)
+        team_id = teams[0].id
+        response = {"selectedTeamId": team_id}
+    except Exception as e:
+        log_info("Failed to get selected team id")
+        handle_routes_errors(e)
+    return response
+
+
 @router.put("/teams/{team_id}")
 def update_team(
     team_id: str,
@@ -63,8 +81,12 @@ def update_team(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> TeamMessage:
     try:
-        if not authz_check(session.get_user_id(), "update-team", "team", team_id):
-            raise NotAuthorizedError("You do not have permission to update a team")
+        if not authz_check(
+            session.get_user_id(), "update-team", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update a team"
+            )
         team_data = msg_to_core_team(team)
         updated_team = team_db.update_team(team_data)
         response = core_to_msg_team(updated_team)

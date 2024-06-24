@@ -2,31 +2,28 @@ import React, { useState } from "react";
 // MUI
 import Chip from "@mui/material/Chip";
 // Components
-import ListTypeCellEdit from "../SharedComponents/ListTypeCellEdit";
-import PopoverAnchorElOver from "../SharedComponents/PopoverAnchorElOver";
-// Stores
-import { useWorkerStore } from "../../stores/workerStore";
-import { useTeamStore } from "../../stores/teamStore";
+import ListTypeCellEdit from "../inputs/list-type-cell-edit";
+import PopoverAnchorElOver from "../inputs/popover-anchor-el-over";
 // Types
 import { WorkerDimensionT, WorkerPropertyT } from "../../types/worker";
 
-interface Props {
-  workerDimension: WorkerDimensionT;
-  workerProperty: WorkerPropertyT;
-}
-
 export default function WorkerPropertyCellList({
+  selectedTeamId,
   workerDimension,
   workerProperty,
-}: Props) {
+  handleUpdateWorkerProperty,
+}: {
+  selectedTeamId: string;
+  workerDimension: WorkerDimensionT;
+  workerProperty: WorkerPropertyT;
+  handleUpdateWorkerProperty: (
+    workerProperty: WorkerPropertyT,
+    teamId: string
+  ) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [valueState, setValueState] = useState<string[]>(
     workerProperty.value as string[]
-  );
-
-  const selectedTeam = useTeamStore((state) => state.selectedTeam);
-  const updateWorkerProperty = useWorkerStore(
-    (state) => state.updateWorkerProperty
   );
 
   const handleClose = () => {
@@ -37,14 +34,17 @@ export default function WorkerPropertyCellList({
     if (workerDimension.entryType === "list" && Array.isArray(valueState)) {
       const updatedValue = [...valueState, value];
       setValueState(updatedValue);
-      if (!selectedTeam) {
+      if (!selectedTeamId) {
         console.error("No team selected");
         return;
       }
-      updateWorkerProperty(selectedTeam.id, {
-        ...workerProperty,
-        value: updatedValue,
-      });
+      handleUpdateWorkerProperty(
+        {
+          ...workerProperty,
+          value: updatedValue,
+        },
+        selectedTeamId
+      );
     } else {
       console.error("Cannot add list value to non-list property");
     }
@@ -54,14 +54,17 @@ export default function WorkerPropertyCellList({
     if (workerDimension.entryType === "list" && Array.isArray(valueState)) {
       const updatedValue = valueState.filter((v) => v !== value);
       setValueState(updatedValue);
-      if (!selectedTeam) {
+      if (!selectedTeamId) {
         console.error("No team selected");
         return;
       }
-      updateWorkerProperty(selectedTeam.id, {
-        ...workerProperty,
-        value: updatedValue,
-      });
+      handleUpdateWorkerProperty(
+        {
+          ...workerProperty,
+          value: updatedValue,
+        },
+        selectedTeamId
+      );
     } else {
       console.error("Cannot remove list value from non-list property");
     }

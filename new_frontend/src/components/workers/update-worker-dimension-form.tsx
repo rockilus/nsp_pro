@@ -5,23 +5,24 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 // Component
-import DimensionListInput from "../SharedComponents/DimensionListInput";
-import DialogWorkerDimensionDel from "./DialogWorkerDimensionDel";
-// Stores
-import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
-import { useTeamStore } from "../../stores/teamStore";
+import DimensionListInput from "../inputs/dimension-list-input";
+import DialogWorkerDimensionDel from "./dialog-worker-dimension-del";
 // Types
 import { WorkerDimensionT } from "../../types/worker";
 
-interface Props {
-  workerDimension: WorkerDimensionT;
-  setOpenParent: (open: boolean) => void | null;
-}
-
 export default function UpdateWorkerDimensionForm({
+  selectedTeamId,
   workerDimension,
   setOpenParent,
-}: Props) {
+  handleUpdateWorkerDimension,
+  handleDeleteWorkerDimension,
+}: {
+  selectedTeamId: string;
+  workerDimension: WorkerDimensionT;
+  setOpenParent: (open: boolean) => void | null;
+  handleUpdateWorkerDimension: (workerDimension: WorkerDimensionT) => void;
+  handleDeleteWorkerDimension: (workerDimensionId: string) => void;
+}) {
   const { t } = useTranslation();
 
   const [name, setName] = useState<string>(workerDimension.name);
@@ -30,11 +31,6 @@ export default function UpdateWorkerDimensionForm({
   );
   const [nameError, setNameError] = useState<boolean>(false);
   const [listError, setListError] = useState<boolean>(false);
-
-  const selectedTeam = useTeamStore((state) => state.selectedTeam);
-  const updateWorkerDimension = useWorkerDimensionStore(
-    (state) => state.updateWorkerDimension
-  );
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setName(event.target.value);
@@ -73,7 +69,7 @@ export default function UpdateWorkerDimensionForm({
       name.trim() !== "" &&
       workerDimension.entryType !== "" &&
       (workerDimension.entryType !== "list" || listOptions.length > 0) &&
-      selectedTeam
+      selectedTeamId
     ) {
       if (
         name !== workerDimension.name ||
@@ -82,13 +78,15 @@ export default function UpdateWorkerDimensionForm({
       ) {
         const newWorkerDimension: WorkerDimensionT = {
           id: workerDimension.id,
-          teamId: selectedTeam.id,
+          teamId: selectedTeamId,
           name: name,
           entryType: workerDimension.entryType,
           entryOptions: updatedOptions ? updatedOptions : listOptions,
         };
-        const addedOK = await updateWorkerDimension(newWorkerDimension);
-        if (addedOK && !updatedOptions) {
+        // const addedOK = await handleUpdateWorkerDimension(newWorkerDimension);
+        // if (addedOK && !updatedOptions) {
+        await handleUpdateWorkerDimension(newWorkerDimension);
+        if (!updatedOptions) {
           setName("");
           setListOptions([]);
           if (setOpenParent) {
@@ -139,7 +137,10 @@ export default function UpdateWorkerDimensionForm({
         >
           {t("common.save")}
         </Button>
-        <DialogWorkerDimensionDel workerDimensionId={workerDimension.id} />
+        <DialogWorkerDimensionDel
+          workerDimensionId={workerDimension.id}
+          handleDeleteWorkerDimension={handleDeleteWorkerDimension}
+        />
       </div>
     </Box>
   );

@@ -4,48 +4,53 @@ import Checkbox from "@mui/material/Checkbox";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
 // Components
-import WorkerPropertyCellList from "./WorkerPropertyCellList";
-// Stores
-import { useWorkerStore } from "../../stores/workerStore";
+import WorkerPropertyCellList from "./worker-property-cell-list";
 // Types
 import { WorkerPropertyT, WorkerDimensionT } from "../../types/worker";
-import { TeamT } from "../../containers/types";
-
-interface Props {
-  team: TeamT;
-  workerProperty: WorkerPropertyT;
-  workerDimension: WorkerDimensionT;
-  editing: boolean;
-  setEditing: Dispatch<SetStateAction<{}>>;
-}
 
 export default function WorkerPropertyCell({
-  team,
+  selectedTeamId,
   workerProperty,
   workerDimension,
   editing,
   setEditing,
-}: Props) {
+  handleUpdateWorkerProperty,
+}: {
+  selectedTeamId: string;
+  workerProperty: WorkerPropertyT;
+  workerDimension: WorkerDimensionT;
+  editing: boolean;
+  setEditing: Dispatch<SetStateAction<{}>>;
+  handleUpdateWorkerProperty: (
+    workerProperty: WorkerPropertyT,
+    teamId: string
+  ) => void;
+}) {
   const [valueState, setValueState] = useState<
     string | number | boolean | string[]
   >(workerProperty.value);
 
-  const updateWorkerProperty = useWorkerStore(
-    (state) => state.updateWorkerProperty
-  );
-
   const handleEditConfirm = async () => {
     if (valueState !== workerProperty.value) {
-      updateWorkerProperty(team.id, { ...workerProperty, value: valueState });
+      handleUpdateWorkerProperty(
+        {
+          ...workerProperty,
+          value: valueState,
+        },
+        selectedTeamId
+      );
     }
     setEditing({});
   };
 
   const handleToggle = () => {
-    updateWorkerProperty(team.id, {
-      ...workerProperty,
-      value: !workerProperty.value,
-    });
+    handleUpdateWorkerProperty(
+      {
+        ...workerProperty,
+        value: !workerProperty.value,
+      },
+      selectedTeamId
+    );
   };
 
   const handleEditCancel = () => {
@@ -66,8 +71,10 @@ export default function WorkerPropertyCell({
       >
         {workerDimension.entryType === "list" ? (
           <WorkerPropertyCellList
+            selectedTeamId={selectedTeamId}
             workerDimension={workerDimension}
             workerProperty={workerProperty}
+            handleUpdateWorkerProperty={handleUpdateWorkerProperty}
           />
         ) : editing && workerDimension.entryType !== "bool" ? (
           workerDimension.entryType === "int" ? (

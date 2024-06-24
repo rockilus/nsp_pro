@@ -8,23 +8,17 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-// Stores
-import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
-import { useTeamStore } from "../../stores/teamStore";
 
-interface Props {
+export default function DialogWorkerDimensionDel({
+  workerDimensionId,
+  handleDeleteWorkerDimension,
+}: {
   workerDimensionId: string;
-}
-
-export default function DialogWorkerDimensionDel({ workerDimensionId }: Props) {
+  handleDeleteWorkerDimension: (workerDimensionId: string) => void;
+}) {
   const { t } = useTranslation();
 
   const [open, setOpen] = useState(false);
-
-  const selectedTeam = useTeamStore((state) => state.selectedTeam);
-  const deleteWorkerDimension = useWorkerDimensionStore(
-    (state) => state.deleteWorkerDimension
-  );
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -56,10 +50,8 @@ export default function DialogWorkerDimensionDel({ workerDimensionId }: Props) {
         <DialogActions>
           <Button
             onClick={() => {
-              if (selectedTeam) {
-                deleteWorkerDimension(workerDimensionId, selectedTeam.id);
-                handleClose();
-              }
+              handleDeleteWorkerDimension(workerDimensionId);
+              handleClose();
             }}
             color="error"
           >

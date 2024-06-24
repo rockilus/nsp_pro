@@ -10,18 +10,21 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 // Component
-import DimensionListInput from "../SharedComponents/DimensionListInput";
-// Stores
-import { useWorkerDimensionStore } from "../../stores/workerDimensionStore";
-import { useTeamStore } from "../../stores/teamStore";
+import DimensionListInput from "@/components/inputs/dimension-list-input";
 // Types
-import { WorkerDimensionT } from "../../types/worker";
+import { WorkerDimensionT } from "@/types/worker";
 
-interface Props {
+export default function NewWorkerDimensionForm({
+  selectedTeamId,
+  setOpenParent,
+  handleAddWorkerDimension,
+}: {
+  selectedTeamId: string;
   setOpenParent: (open: boolean) => void | null;
-}
-
-export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
+  handleAddWorkerDimension: (
+    newWorkerDimension: WorkerDimensionT
+  ) => Promise<boolean>;
+}) {
   const { t } = useTranslation();
 
   const [name, setName] = useState<string>("");
@@ -37,11 +40,6 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
     bool: t("worker_shift.type_bool"),
     list: t("worker_shift.type_list"),
   };
-
-  const selectedTeam = useTeamStore((state) => state.selectedTeam);
-  const addWorkerDimension = useWorkerDimensionStore(
-    (state) => state.addWorkerDimension
-  );
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setName(event.target.value);
@@ -88,16 +86,16 @@ export default function NewWorkerDimensionForm({ setOpenParent }: Props) {
       name.trim() !== "" &&
       type !== "" &&
       (type !== "list" || listOptions.length > 0) &&
-      selectedTeam
+      selectedTeamId
     ) {
       const newWorkerDimension: WorkerDimensionT = {
         id: "",
-        teamId: selectedTeam.id,
+        teamId: selectedTeamId,
         name: name,
         entryType: type,
         entryOptions: listOptions,
       };
-      const addedOK = await addWorkerDimension(newWorkerDimension);
+      const addedOK = await handleAddWorkerDimension(newWorkerDimension);
       if (addedOK) {
         setName("");
         setType("");

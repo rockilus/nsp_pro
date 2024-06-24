@@ -3,29 +3,25 @@ import React, { Dispatch, SetStateAction, useState } from "react";
 import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
-// Stores
-import { useWorkerStore } from "../../stores/workerStore";
 // Types
 import { WorkerT } from "../../types/worker";
-
-interface Props {
-  worker: WorkerT;
-  editing: boolean;
-  setEditing: Dispatch<SetStateAction<{}>>;
-}
 
 export default function WorkerFieldCellName({
   worker,
   editing,
   setEditing,
-}: Props) {
+  handleUpdateWorker,
+}: {
+  worker: WorkerT;
+  editing: boolean;
+  setEditing: Dispatch<SetStateAction<{}>>;
+  handleUpdateWorker: (updatedWorker: WorkerT) => void;
+}) {
   const [valueState, setValueState] = useState(worker.name);
-
-  const updateWorker = useWorkerStore((state) => state.updateWorker);
 
   const handleEditConfirm = async () => {
     if (valueState !== worker.name) {
-      updateWorker({
+      handleUpdateWorker({
         ...worker,
         name: valueState,
       });

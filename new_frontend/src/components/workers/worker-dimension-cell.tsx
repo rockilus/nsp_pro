@@ -8,16 +8,22 @@ import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
 import Typography from "@mui/material/Typography";
 // Components
-import PopoverAnchorElBelow from "../SharedComponents/PopoverAnchorElBelow";
-import UpdateWorkerDimensionForm from "./UpdateWorkerDimensionForm";
+import PopoverAnchorElBelow from "../inputs/popover-anchor-el-below";
+import UpdateWorkerDimensionForm from "./update-worker-dimension-form";
 // Types
 import { WorkerDimensionT } from "../../types/worker";
 
-interface Props {
+export default function WorkerDimensionCell({
+  selectedTeamId,
+  workerDimension,
+  handleUpdateWorkerDimension,
+  handleDeleteWorkerDimension,
+}: {
+  selectedTeamId: string;
   workerDimension: WorkerDimensionT;
-}
-
-export default function WorkerDimensionCell({ workerDimension }: Props) {
+  handleUpdateWorkerDimension: (workerDimension: WorkerDimensionT) => void;
+  handleDeleteWorkerDimension: (workerDimensionId: string) => void;
+}) {
   const [popoverAnchorOpen, setPopoverAnchorOpen] = useState(false);
 
   const iconsPrefix: Record<string, React.ReactNode> = {
@@ -58,8 +64,11 @@ export default function WorkerDimensionCell({ workerDimension }: Props) {
         buttonContent={cellContent()}
         content={
           <UpdateWorkerDimensionForm
+            selectedTeamId={selectedTeamId}
             workerDimension={workerDimension}
             setOpenParent={setPopoverAnchorOpen}
+            handleUpdateWorkerDimension={handleUpdateWorkerDimension}
+            handleDeleteWorkerDimension={handleDeleteWorkerDimension}
           />
         }
         open={popoverAnchorOpen}

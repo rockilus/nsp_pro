@@ -13,48 +13,61 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 // Components
-import NewWorkerDimensionForm from "./NewWorkerDimensionForm";
-import PopoverRHS from "../SharedComponents/PopoverRHS";
-import TableAddButton from "../SharedComponents/TableAddButton";
-import WorkerPropertyCell from "./WorkerPropertyCell";
-import WorkerDimensionCell from "./WorkerDimensionCell";
-import WorkerFieldCell from "./WorkerFieldCell";
-// Stores
-import { useWorkerStore } from "../../stores/workerStore";
+import NewWorkerDimensionForm from "./new-worker-dimension-form";
+import PopoverRHS from "../inputs/popover-rhs";
+import TableAddButton from "../buttons/table-add-button";
+import WorkerPropertyCell from "./worker-property-cell";
+import WorkerDimensionCell from "./worker-dimension-cell";
+import WorkerFieldCell from "./worker-field-cell";
 // Types
-import { WorkerDimensionT, WorkerT } from "../../types/worker";
-import { TeamT } from "../../containers/types";
-// Constants
-import { DefaultProperties } from "../../utils/constants";
-
-interface Props {
-  team: TeamT;
-  workerDimensions: WorkerDimensionT[];
-  workers: WorkerT[];
-  defaultWorkerFields: Record<string, string>[];
-}
+import { WorkerDimensionT, WorkerT, WorkerPropertyT } from "../../types/worker";
 
 export default function WorkerTable({
-  team,
+  selectedTeamId,
   workerDimensions,
   workers,
   defaultWorkerFields,
-}: Props) {
+  handleAddWorker,
+  handleDeleteWorker,
+  handleAddWorkerDimension,
+  handleUpdateWorkerProperty,
+  handleUpdateWorkerDimension,
+  handleUpdateWorker,
+  handleDeleteWorkerDimension,
+}: {
+  selectedTeamId: string;
+  workerDimensions: WorkerDimensionT[];
+  workers: WorkerT[];
+  defaultWorkerFields: Record<string, string>[];
+  handleAddWorker: () => void;
+  handleDeleteWorker: (workerId: string) => void;
+  handleAddWorkerDimension: (
+    newWorkerDimension: WorkerDimensionT
+  ) => Promise<boolean>;
+  handleUpdateWorkerProperty: (
+    workerProperty: WorkerPropertyT,
+    teamId: string
+  ) => void;
+  handleUpdateWorkerDimension: (workerDimension: WorkerDimensionT) => void;
+  handleUpdateWorker: (updatedWorker: WorkerT) => void;
+  handleDeleteWorkerDimension: (workerDimensionId: string) => void;
+}) {
   const { t } = useTranslation();
 
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
-  const addWorker = useWorkerStore((state) => state.addWorker);
-  const deleteWorker = useWorkerStore((state) => state.deleteWorker);
-
-  const handleAddWorker = () => {
-    addWorker({
-      id: "",
-      teamId: team.id,
-      name: "",
-      workerProperties: [],
-    });
+  const defaultProperties: {
+    str: string;
+    int: string;
+    bool: boolean;
+    list: string[];
+    [key: string]: string | boolean | string[];
+  } = {
+    str: "",
+    int: "",
+    bool: false,
+    list: [],
   };
 
   return (
@@ -95,7 +108,9 @@ export default function WorkerTable({
                     }
                     content={
                       <NewWorkerDimensionForm
+                        selectedTeamId={selectedTeamId}
                         setOpenParent={setPopoverRhsOpen}
+                        handleAddWorkerDimension={handleAddWorkerDimension}
                       />
                     }
                     open={popoverRhsOpen}
@@ -119,7 +134,13 @@ export default function WorkerTable({
                 </TableCell>
               ))}
               {workerDimensions.map((wd, wdIndex) => (
-                <WorkerDimensionCell key={wdIndex} workerDimension={wd} />
+                <WorkerDimensionCell
+                  key={wdIndex}
+                  selectedTeamId={selectedTeamId}
+                  workerDimension={wd}
+                  handleUpdateWorkerDimension={handleUpdateWorkerDimension}
+                  handleDeleteWorkerDimension={handleDeleteWorkerDimension}
+                />
               ))}
               <TableCell sx={{ padding: 0, width: 110 }}></TableCell>
             </TableRow>
@@ -137,6 +158,7 @@ export default function WorkerTable({
                     workerField={field.name}
                     editing={bodyEditing}
                     setEditing={setBodyEditing}
+                    handleUpdateWorker={handleUpdateWorker}
                   />
                 ))}
                 {workerDimensions.map((wd, wdIndex) => {
@@ -146,7 +168,7 @@ export default function WorkerTable({
                   return (
                     <WorkerPropertyCell
                       key={wdIndex}
-                      team={team}
+                      selectedTeamId={selectedTeamId}
                       workerProperty={
                         workerProperty
                           ? workerProperty
@@ -154,18 +176,19 @@ export default function WorkerTable({
                               id: "",
                               workerId: worker.id,
                               workerDimensionId: wd.id,
-                              value: DefaultProperties[wd.entryType],
+                              value: defaultProperties[wd.entryType],
                             }
                       }
                       workerDimension={wd}
                       editing={bodyEditing[worker.id] === wd.id}
                       setEditing={setBodyEditing}
+                      handleUpdateWorkerProperty={handleUpdateWorkerProperty}
                     />
                   );
                 })}
                 <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
                   <Box sx={{ display: "flex" }}>
-                    <Button onClick={() => deleteWorker(worker.id, team.id)}>
+                    <Button onClick={() => handleDeleteWorker(worker.id)}>
                       <DeleteIcon />
                     </Button>
                   </Box>
