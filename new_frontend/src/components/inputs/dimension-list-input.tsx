@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -14,12 +14,19 @@ interface Props {
 }
 
 export default function DimensionListInput({
+  lng,
   options,
   listError,
   addOption,
   removeOption,
-}: Props) {
-  const { t } = useTranslation();
+}: {
+  lng: string;
+  options: string[];
+  listError: boolean;
+  addOption: (newOption: string) => void;
+  removeOption: (index: number) => void;
+}) {
+  const { t } = useTranslation(lng, "inputs-components");
 
   const [newOption, setNewOption] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
@@ -51,16 +58,14 @@ export default function DimensionListInput({
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
-        label={t("worker_shift.property_new_option")}
+        label={t("property_new_option")}
         variant="outlined"
         value={newOption}
         onChange={handleInputChange}
         onKeyDown={handleKeyPress}
         error={error || listError}
         helperText={
-          error || listError
-            ? t("worker_shift.property_new_option_helper_text")
-            : ""
+          error || listError ? t("property_new_option_helper_text") : ""
         }
         sx={{ width: "100%" }}
       />

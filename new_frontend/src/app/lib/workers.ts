@@ -152,7 +152,10 @@ export async function addWorkerDimension(workerDimension: WorkerDimensionT) {
     if (!response.ok) {
       throw new Error("Failed to add worker dimension: " + responseData.detail);
     }
-    return responseData as WorkerDimensionT;
+    return responseData as {
+      newDimension: WorkerDimensionT;
+      newProperties: WorkerPropertyT[];
+    };
   } catch (error) {
     console.error("Failed to add worker dimension:", error);
     throw new Error("Failed to add worker dimension, please try again later");

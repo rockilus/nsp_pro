@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -11,19 +11,21 @@ import DialogWorkerDimensionDel from "./dialog-worker-dimension-del";
 import { WorkerDimensionT } from "../../types/worker";
 
 export default function UpdateWorkerDimensionForm({
+  lng,
   selectedTeamId,
   workerDimension,
   setOpenParent,
   handleUpdateWorkerDimension,
   handleDeleteWorkerDimension,
 }: {
+  lng: string;
   selectedTeamId: string;
   workerDimension: WorkerDimensionT;
   setOpenParent: (open: boolean) => void | null;
   handleUpdateWorkerDimension: (workerDimension: WorkerDimensionT) => void;
   handleDeleteWorkerDimension: (workerDimensionId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "worker-page");
 
   const [name, setName] = useState<string>(workerDimension.name);
   const [listOptions, setListOptions] = useState<string[]>(
@@ -110,18 +112,19 @@ export default function UpdateWorkerDimensionForm({
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
-        label={t("common.name")}
+        label={t("name")}
         variant="outlined"
         value={name}
         onChange={handleNameChange}
         error={nameError}
-        helperText={nameError ? t("worker.name_helper_text") : ""}
+        helperText={nameError ? t("name_helper_text") : ""}
         onKeyDown={handleKeyPress}
         sx={{ width: "100%" }}
       />
       {workerDimension.entryType === "list" && (
         <Box mt={2}>
           <DimensionListInput
+            lng={lng}
             options={listOptions}
             listError={listError}
             addOption={handleAddOption}
@@ -135,9 +138,10 @@ export default function UpdateWorkerDimensionForm({
           onClick={() => handleAddElement()}
           sx={{ marginRight: 1 }}
         >
-          {t("common.save")}
+          {t("save")}
         </Button>
         <DialogWorkerDimensionDel
+          lng={lng}
           workerDimensionId={workerDimension.id}
           handleDeleteWorkerDimension={handleDeleteWorkerDimension}
         />

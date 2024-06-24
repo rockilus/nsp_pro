@@ -14,11 +14,13 @@ import UpdateWorkerDimensionForm from "./update-worker-dimension-form";
 import { WorkerDimensionT } from "../../types/worker";
 
 export default function WorkerDimensionCell({
+  lng,
   selectedTeamId,
   workerDimension,
   handleUpdateWorkerDimension,
   handleDeleteWorkerDimension,
 }: {
+  lng: string;
   selectedTeamId: string;
   workerDimension: WorkerDimensionT;
   handleUpdateWorkerDimension: (workerDimension: WorkerDimensionT) => void;
@@ -64,6 +66,7 @@ export default function WorkerDimensionCell({
         buttonContent={cellContent()}
         content={
           <UpdateWorkerDimensionForm
+            lng={lng}
             selectedTeamId={selectedTeamId}
             workerDimension={workerDimension}
             setOpenParent={setPopoverAnchorOpen}

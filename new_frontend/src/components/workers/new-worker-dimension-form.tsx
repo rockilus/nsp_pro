@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -15,17 +15,19 @@ import DimensionListInput from "@/components/inputs/dimension-list-input";
 import { WorkerDimensionT } from "@/types/worker";
 
 export default function NewWorkerDimensionForm({
+  lng,
   selectedTeamId,
   setOpenParent,
   handleAddWorkerDimension,
 }: {
+  lng: string;
   selectedTeamId: string;
   setOpenParent: (open: boolean) => void | null;
   handleAddWorkerDimension: (
     newWorkerDimension: WorkerDimensionT
   ) => Promise<boolean>;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "worker-page");
 
   const [name, setName] = useState<string>("");
   const [type, setType] = useState<string>("");
@@ -35,10 +37,10 @@ export default function NewWorkerDimensionForm({
   const [listError, setListError] = useState<boolean>(false);
 
   const PropertyTypes: Record<string, string> = {
-    str: t("worker_shift.type_str"),
-    int: t("worker_shift.type_int"),
-    bool: t("worker_shift.type_bool"),
-    list: t("worker_shift.type_list"),
+    str: t("type_str"),
+    int: t("type_int"),
+    bool: t("type_bool"),
+    list: t("type_list"),
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,12 +112,12 @@ export default function NewWorkerDimensionForm({
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
-        label={t("common.name")}
+        label={t("name")}
         variant="outlined"
         value={name}
         onChange={handleNameChange}
         error={nameError}
-        helperText={nameError ? t("worker.name_helper_text") : ""}
+        helperText={nameError ? t("name_helper_text") : ""}
         sx={{ width: "100%" }}
       />
       <Box mt={2}>
@@ -124,7 +126,7 @@ export default function NewWorkerDimensionForm({
           style={{ minWidth: 120, width: "100%" }}
         >
           <InputLabel id="demo-simple-select-label">
-            {t("worker_shift.property_type")}
+            {t("property_type")}
           </InputLabel>
           <Select
             value={type}
@@ -142,7 +144,7 @@ export default function NewWorkerDimensionForm({
           </Select>
           {typeError && (
             <FormHelperText error>
-              {t("worker_shift.property_type_helper_text")}
+              {t("property_type_helper_text")}
             </FormHelperText>
           )}
         </FormControl>
@@ -150,6 +152,7 @@ export default function NewWorkerDimensionForm({
       {type === "list" && (
         <Box mt={2}>
           <DimensionListInput
+            lng={lng}
             options={listOptions}
             listError={listError}
             addOption={handleAddOption}
@@ -159,7 +162,7 @@ export default function NewWorkerDimensionForm({
       )}
       <div style={{ display: "flex", justifyContent: "right", marginTop: 10 }}>
         <Button variant="contained" onClick={handleAddElement}>
-          {t("common.add")}
+          {t("add")}
         </Button>
       </div>
     </Box>

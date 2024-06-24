@@ -8,7 +8,13 @@ import { getSelectedTeamId } from "@/app/lib/team";
 // Components
 import WorkerTab from "@/components/workers/worker-tab";
 
-export default function Page() {
+export default function Page({
+  params: { lng },
+}: {
+  params: {
+    lng: string;
+  };
+}) {
   const selectedTeamId = useTeamStore((state) => state.selectedTeamId);
   const setSelectedTeamId = useTeamStore((state) => state.setSelectedTeamId);
 
@@ -24,5 +30,5 @@ export default function Page() {
   }, [selectedTeamId, setSelectedTeamId]);
 
   // return <p>{`Workers Page ${selectedTeamId}`}</p>;
-  return <WorkerTab selectedTeamId={selectedTeamId} />;
+  return <WorkerTab lng={lng} selectedTeamId={selectedTeamId} />;
 }

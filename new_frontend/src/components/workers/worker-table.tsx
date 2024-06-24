@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -23,6 +23,7 @@ import WorkerFieldCell from "./worker-field-cell";
 import { WorkerDimensionT, WorkerT, WorkerPropertyT } from "../../types/worker";
 
 export default function WorkerTable({
+  lng,
   selectedTeamId,
   workerDimensions,
   workers,
@@ -35,6 +36,7 @@ export default function WorkerTable({
   handleUpdateWorker,
   handleDeleteWorkerDimension,
 }: {
+  lng: string;
   selectedTeamId: string;
   workerDimensions: WorkerDimensionT[];
   workers: WorkerT[];
@@ -52,10 +54,12 @@ export default function WorkerTable({
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
   handleDeleteWorkerDimension: (workerDimensionId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "worker-page");
 
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
+
+  console.log("workerDimensions", workerDimensions);
 
   const defaultProperties: {
     str: string;
@@ -98,16 +102,15 @@ export default function WorkerTable({
                     }}
                   >
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      {t("worker.workers")}
+                      {t("workers")}
                     </Typography>
                   </Box>
                   <PopoverRHS
-                    title={t("worker_shift.new_property")}
-                    buttonContent={
-                      <TableAddButton text={t("common.property")} />
-                    }
+                    title={t("new_property")}
+                    buttonContent={<TableAddButton text={t("property")} />}
                     content={
                       <NewWorkerDimensionForm
+                        lng={lng}
                         selectedTeamId={selectedTeamId}
                         setOpenParent={setPopoverRhsOpen}
                         handleAddWorkerDimension={handleAddWorkerDimension}
@@ -135,6 +138,7 @@ export default function WorkerTable({
               ))}
               {workerDimensions.map((wd, wdIndex) => (
                 <WorkerDimensionCell
+                  lng={lng}
                   key={wdIndex}
                   selectedTeamId={selectedTeamId}
                   workerDimension={wd}
@@ -204,7 +208,7 @@ export default function WorkerTable({
               >
                 <Box display="flex" alignItems="center" minHeight={45}>
                   <TableAddButton
-                    text={t("common.worker")}
+                    text={t("worker")}
                     handleClick={handleAddWorker}
                   />
                 </Box>

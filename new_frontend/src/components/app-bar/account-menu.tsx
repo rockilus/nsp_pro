@@ -8,7 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 // Stores
-import { useTeamStore } from "../../stores/teamStore";
+// import { useTeamStore } from "../../stores/teamStore";
 
 interface Props {
   tabs: { id: string; label: string; type: string }[];
@@ -19,11 +19,11 @@ export default function AccountMenu({ tabs, handleSelectTab }: Props) {
   const { t } = useTranslation();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const clearTeams = useTeamStore((state) => state.clearTeams);
+  // const clearTeams = useTeamStore((state) => state.clearTeams);
 
   const handleLogout = async () => {
     await SessionReact.signOut();
-    clearTeams();
+    // clearTeams();
     SuperTokensReact.redirectToAuth();
   };
 

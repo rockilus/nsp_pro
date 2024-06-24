@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -10,13 +10,15 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
 export default function DialogWorkerDimensionDel({
+  lng,
   workerDimensionId,
   handleDeleteWorkerDimension,
 }: {
+  lng: string;
   workerDimensionId: string;
   handleDeleteWorkerDimension: (workerDimensionId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "worker-page");
 
   const [open, setOpen] = useState(false);
 
@@ -31,7 +33,7 @@ export default function DialogWorkerDimensionDel({
   return (
     <Box>
       <Button variant="outlined" onClick={handleClickOpen}>
-        {t("common.delete")}
+        {t("delete")}
       </Button>
       <Dialog
         open={open}
@@ -39,12 +41,10 @@ export default function DialogWorkerDimensionDel({
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {t("worker_shift.delete_title")}
-        </DialogTitle>
+        <DialogTitle id="alert-dialog-title">{t("delete_title")}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {t("worker.delete_text")}
+            {t("delete_text")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -55,10 +55,10 @@ export default function DialogWorkerDimensionDel({
             }}
             color="error"
           >
-            {t("worker_shift.delete_confirm")}
+            {t("delete_confirm")}
           </Button>
           <Button onClick={handleClose} autoFocus>
-            {t("common.cancel")}
+            {t("cancel")}
           </Button>
         </DialogActions>
       </Dialog>
