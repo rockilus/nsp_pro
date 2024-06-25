@@ -59,8 +59,6 @@ export default function WorkerTable({
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
-  console.log("workerDimensions", workerDimensions);
-
   const defaultProperties: {
     str: string;
     int: string;
@@ -138,8 +136,8 @@ export default function WorkerTable({
               ))}
               {workerDimensions.map((wd, wdIndex) => (
                 <WorkerDimensionCell
-                  lng={lng}
                   key={wdIndex}
+                  lng={lng}
                   selectedTeamId={selectedTeamId}
                   workerDimension={wd}
                   handleUpdateWorkerDimension={handleUpdateWorkerDimension}

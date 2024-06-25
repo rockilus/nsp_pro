@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "react-i18next";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -12,22 +12,24 @@ import TextField from "@mui/material/TextField";
 // Component
 import DimensionListInput from "../inputs/dimension-list-input";
 // Types
-import { WorkerDimensionT } from "../../types/worker";
+import { ShiftDimensionT } from "../../types/shift";
 
-export default function NewWorkerDimensionForm({
+export default function NewShiftDimensionForm({
   lng,
   selectedTeamId,
+  isRest,
   setOpenParent,
-  handleAddWorkerDimension,
+  handleAddShiftDimension,
 }: {
   lng: string;
   selectedTeamId: string;
+  isRest: boolean;
   setOpenParent: (open: boolean) => void | null;
-  handleAddWorkerDimension: (
-    newWorkerDimension: WorkerDimensionT
+  handleAddShiftDimension: (
+    newShiftDimension: ShiftDimensionT
   ) => Promise<boolean>;
 }) {
-  const { t } = useTranslation(lng, "worker-page");
+  const { t } = useTranslation();
 
   const [name, setName] = useState<string>("");
   const [type, setType] = useState<string>("");
@@ -37,10 +39,10 @@ export default function NewWorkerDimensionForm({
   const [listError, setListError] = useState<boolean>(false);
 
   const PropertyTypes: Record<string, string> = {
-    str: t("type_str"),
-    int: t("type_int"),
-    bool: t("type_bool"),
-    list: t("type_list"),
+    str: t("worker_shift.type_str"),
+    int: t("worker_shift.type_int"),
+    bool: t("worker_shift.type_bool"),
+    list: t("worker_shift.type_list"),
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,14 +92,15 @@ export default function NewWorkerDimensionForm({
       (type !== "list" || listOptions.length > 0) &&
       selectedTeamId
     ) {
-      const newWorkerDimension: WorkerDimensionT = {
+      const newShiftDimension: ShiftDimensionT = {
         id: "",
+        isRest: isRest,
         teamId: selectedTeamId,
         name: name,
         entryType: type,
         entryOptions: listOptions,
       };
-      const addedOK = await handleAddWorkerDimension(newWorkerDimension);
+      const addedOK = await handleAddShiftDimension(newShiftDimension);
       if (addedOK) {
         setName("");
         setType("");
@@ -112,12 +115,12 @@ export default function NewWorkerDimensionForm({
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
-        label={t("name")}
+        label={t("common.name")}
         variant="outlined"
         value={name}
         onChange={handleNameChange}
         error={nameError}
-        helperText={nameError ? t("name_helper_text") : ""}
+        helperText={nameError ? "Please enter a name" : ""}
         sx={{ width: "100%" }}
       />
       <Box mt={2}>
@@ -125,16 +128,14 @@ export default function NewWorkerDimensionForm({
           variant="outlined"
           style={{ minWidth: 120, width: "100%" }}
         >
-          <InputLabel id="demo-simple-select-label">
-            {t("property_type")}
-          </InputLabel>
+          <InputLabel id="demo-simple-select-label">Type</InputLabel>
           <Select
-            value={type}
+            value={t("worker_shift.property_type")}
             onChange={handleTypeChange}
             variant="outlined"
             error={typeError}
             style={{ minWidth: 120, width: "100%" }}
-            label="Type"
+            label={t("worker_shift.property_type")}
           >
             {Object.keys(PropertyTypes).map((key) => (
               <MenuItem value={key} key={key}>
@@ -144,7 +145,7 @@ export default function NewWorkerDimensionForm({
           </Select>
           {typeError && (
             <FormHelperText error>
-              {t("property_type_helper_text")}
+              {t("worker_shift.property_type_helper_text")}
             </FormHelperText>
           )}
         </FormControl>
@@ -162,7 +163,7 @@ export default function NewWorkerDimensionForm({
       )}
       <div style={{ display: "flex", justifyContent: "right", marginTop: 10 }}>
         <Button variant="contained" onClick={handleAddElement}>
-          {t("add")}
+          {t("common.add")}
         </Button>
       </div>
     </Box>
