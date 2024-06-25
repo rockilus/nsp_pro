@@ -1,0 +1,16 @@
+{
+    "approved": "Approuvé",
+    "date": "Date",
+    "date_range": "Plage de dates",
+    "new_request": "Nouvelle demande",
+    "no_requests": "Aucune demande",
+    "pending": "En attente",
+    "rejected": "Rejeté",
+    "request": "Demande",
+    "requests": "Demandes",
+    "save": "Sauvegarder",
+    "shift": "Tache",
+    "status": "Statut",
+    "type": "Type",
+    "worker": "Travailleur"
+}
