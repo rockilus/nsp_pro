@@ -2,11 +2,11 @@
 
 import { useEffect } from "react";
 // Stores
-import { useTeamStore } from "@/providers/team-store-provider";
+import { useTeamStore } from "../../../../providers/team-store-provider";
 // Actions
-import { getSelectedTeamId } from "@/app/lib/team";
+import { getSelectedTeamId } from "../../../lib/team";
 // Components
-import WorkerTab from "@/components/workers/worker-tab";
+import WorkerTab from "../../../../components/workers/worker-tab";
 
 export default function Page({
   params: { lng },
@@ -29,6 +29,5 @@ export default function Page({
     fetchTeamId();
   }, [selectedTeamId, setSelectedTeamId]);
 
-  // return <p>{`Workers Page ${selectedTeamId}`}</p>;
   return <WorkerTab lng={lng} selectedTeamId={selectedTeamId} />;
 }

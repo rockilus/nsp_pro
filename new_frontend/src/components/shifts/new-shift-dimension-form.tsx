@@ -12,22 +12,24 @@ import TextField from "@mui/material/TextField";
 // Component
 import DimensionListInput from "../inputs/dimension-list-input";
 // Types
-import { WorkerDimensionT } from "../../types/worker";
+import { ShiftDimensionT } from "../../types/shift";
 
-export default function NewWorkerDimensionForm({
+export default function NewShiftDimensionForm({
   lng,
   selectedTeamId,
+  isRest,
   setOpenParent,
-  handleAddWorkerDimension,
+  handleAddShiftDimension,
 }: {
   lng: string;
   selectedTeamId: string;
+  isRest: boolean;
   setOpenParent: (open: boolean) => void | null;
-  handleAddWorkerDimension: (
-    newWorkerDimension: WorkerDimensionT
+  handleAddShiftDimension: (
+    newShiftDimension: ShiftDimensionT
   ) => Promise<boolean>;
 }) {
-  const { t } = useTranslation(lng, "worker-page");
+  const { t } = useTranslation(lng, "shift-page");
 
   const [name, setName] = useState<string>("");
   const [type, setType] = useState<string>("");
@@ -90,14 +92,15 @@ export default function NewWorkerDimensionForm({
       (type !== "list" || listOptions.length > 0) &&
       selectedTeamId
     ) {
-      const newWorkerDimension: WorkerDimensionT = {
+      const newShiftDimension: ShiftDimensionT = {
         id: "",
+        isRest: isRest,
         teamId: selectedTeamId,
         name: name,
         entryType: type,
         entryOptions: listOptions,
       };
-      const addedOK = await handleAddWorkerDimension(newWorkerDimension);
+      const addedOK = await handleAddShiftDimension(newShiftDimension);
       if (addedOK) {
         setName("");
         setType("");
@@ -117,7 +120,7 @@ export default function NewWorkerDimensionForm({
         value={name}
         onChange={handleNameChange}
         error={nameError}
-        helperText={nameError ? t("name_helper_text") : ""}
+        helperText={nameError ? "Please enter a name" : ""}
         sx={{ width: "100%" }}
       />
       <Box mt={2}>
@@ -125,16 +128,14 @@ export default function NewWorkerDimensionForm({
           variant="outlined"
           style={{ minWidth: 120, width: "100%" }}
         >
-          <InputLabel id="demo-simple-select-label">
-            {t("property_type")}
-          </InputLabel>
+          <InputLabel id="demo-simple-select-label">Type</InputLabel>
           <Select
-            value={type}
+            value={t("property_type")}
             onChange={handleTypeChange}
             variant="outlined"
             error={typeError}
             style={{ minWidth: 120, width: "100%" }}
-            label="Type"
+            label={t("property_type")}
           >
             {Object.keys(PropertyTypes).map((key) => (
               <MenuItem value={key} key={key}>

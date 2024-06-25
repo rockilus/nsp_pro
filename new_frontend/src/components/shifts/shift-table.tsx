@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
@@ -13,48 +15,52 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 // Components
-import NewWorkerDimensionForm from "./new-worker-dimension-form";
+import NewShiftDimensionForm from "./new-shift-dimension-form";
 import PopoverRHS from "../inputs/popover-rhs";
+import ShiftDimensionCell from "./shift-dimension-cell";
+import ShiftFieldCell from "./shift-field-cell";
+import ShiftPropertyCell from "./shift-property-cell";
 import TableAddButton from "../buttons/table-add-button";
-import WorkerPropertyCell from "./worker-property-cell";
-import WorkerDimensionCell from "./worker-dimension-cell";
-import WorkerFieldCell from "./worker-field-cell";
 // Types
-import { WorkerDimensionT, WorkerT, WorkerPropertyT } from "../../types/worker";
+import { ShiftDimensionT, ShiftT, ShiftPropertyT } from "../../types/shift";
 
-export default function WorkerTable({
+dayjs.extend(utc);
+
+export default function ShiftTable({
   lng,
   selectedTeamId,
-  workerDimensions,
-  workers,
-  defaultWorkerFields,
-  handleAddWorker,
-  handleDeleteWorker,
-  handleAddWorkerDimension,
-  handleUpdateWorkerProperty,
-  handleUpdateWorkerDimension,
-  handleUpdateWorker,
-  handleDeleteWorkerDimension,
+  isRest,
+  shiftDimensions,
+  shifts,
+  defaultShiftFields,
+  handleAddShift,
+  handleDeleteShift,
+  handleAddShiftDimension,
+  handleUpdateShiftProperty,
+  handleUpdateShiftDimension,
+  handleUpdateShift,
+  handleDeleteShiftDimension,
 }: {
   lng: string;
   selectedTeamId: string;
-  workerDimensions: WorkerDimensionT[];
-  workers: WorkerT[];
-  defaultWorkerFields: Record<string, string>[];
-  handleAddWorker: () => void;
-  handleDeleteWorker: (workerId: string) => void;
-  handleAddWorkerDimension: (
-    newWorkerDimension: WorkerDimensionT
+  isRest: boolean;
+  shiftDimensions: ShiftDimensionT[];
+  shifts: ShiftT[];
+  defaultShiftFields: Record<string, string>[];
+  handleAddShift: (isRest: boolean) => void;
+  handleDeleteShift: (shiftId: string) => void;
+  handleAddShiftDimension: (
+    newShiftDimension: ShiftDimensionT
   ) => Promise<boolean>;
-  handleUpdateWorkerProperty: (
-    workerProperty: WorkerPropertyT,
+  handleUpdateShiftProperty: (
+    shiftProperty: ShiftPropertyT,
     teamId: string
   ) => void;
-  handleUpdateWorkerDimension: (workerDimension: WorkerDimensionT) => void;
-  handleUpdateWorker: (updatedWorker: WorkerT) => void;
-  handleDeleteWorkerDimension: (workerDimensionId: string) => void;
+  handleUpdateShiftDimension: (shiftDimension: ShiftDimensionT) => void;
+  handleUpdateShift: (updatedShift: ShiftT) => void;
+  handleDeleteShiftDimension: (shiftDimensionId: string) => void;
 }) {
-  const { t } = useTranslation(lng, "worker-page");
+  const { t } = useTranslation(lng, "shift-page");
 
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
@@ -74,44 +80,35 @@ export default function WorkerTable({
 
   return (
     <>
-      <TableContainer component={Paper} sx={{ width: "100%" }}>
+      <TableContainer component={Paper} style={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead sx={{ backgroundColor: "grey.100" }}>
             <TableRow>
               <TableCell
-                colSpan={
-                  defaultWorkerFields.length + workerDimensions.length + 1
-                }
+                colSpan={defaultShiftFields.length + shiftDimensions.length + 1}
                 sx={{ paddingY: 0 }}
               >
                 <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    alignItems: "center",
-                  }}
+                  display="flex"
+                  justifyContent="space-between"
+                  width="100%"
+                  alignItems="center"
                 >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      minHeight: 45,
-                    }}
-                  >
+                  <Box display="flex" alignItems="center" minHeight={45}>
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      {t("workers")}
+                      {isRest ? t("rest_shifts") : t("shifts")}
                     </Typography>
                   </Box>
                   <PopoverRHS
                     title={t("new_property")}
                     buttonContent={<TableAddButton text={t("property")} />}
                     content={
-                      <NewWorkerDimensionForm
+                      <NewShiftDimensionForm
                         lng={lng}
                         selectedTeamId={selectedTeamId}
+                        isRest={isRest}
                         setOpenParent={setPopoverRhsOpen}
-                        handleAddWorkerDimension={handleAddWorkerDimension}
+                        handleAddShiftDimension={handleAddShiftDimension}
                       />
                     }
                     open={popoverRhsOpen}
@@ -121,7 +118,7 @@ export default function WorkerTable({
               </TableCell>
             </TableRow>
             <TableRow>
-              {defaultWorkerFields.map((field, index) => (
+              {defaultShiftFields.map((field, index) => (
                 <TableCell key={index} sx={{ paddingY: 0, fontWeight: "bold" }}>
                   <Box
                     sx={{
@@ -134,63 +131,65 @@ export default function WorkerTable({
                   </Box>
                 </TableCell>
               ))}
-              {workerDimensions.map((wd, wdIndex) => (
-                <WorkerDimensionCell
-                  key={wdIndex}
+              {shiftDimensions.map((sd, sdIndex) => (
+                <ShiftDimensionCell
+                  key={sdIndex}
                   lng={lng}
                   selectedTeamId={selectedTeamId}
-                  workerDimension={wd}
-                  handleUpdateWorkerDimension={handleUpdateWorkerDimension}
-                  handleDeleteWorkerDimension={handleDeleteWorkerDimension}
+                  shiftDimension={sd}
+                  handleUpdateShiftDimension={handleUpdateShiftDimension}
+                  handleDeleteShiftDimension={handleDeleteShiftDimension}
                 />
               ))}
               <TableCell sx={{ padding: 0, width: 110 }}></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {workers.map((worker, workerIndex) => (
+            {shifts.map((shift, shiftIndex) => (
               <TableRow
-                key={workerIndex}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                key={shiftIndex}
+                sx={{
+                  "&:last-child td, &:last-child th": { border: 0 },
+                }}
               >
-                {defaultWorkerFields.map((field, index) => (
-                  <WorkerFieldCell
+                {defaultShiftFields.map((field, index) => (
+                  <ShiftFieldCell
                     key={index}
-                    worker={worker}
-                    workerField={field.name}
+                    shift={shift}
+                    shiftField={field.name}
                     editing={bodyEditing}
                     setEditing={setBodyEditing}
-                    handleUpdateWorker={handleUpdateWorker}
+                    handleUpdateShift={handleUpdateShift}
                   />
                 ))}
-                {workerDimensions.map((wd, wdIndex) => {
-                  const workerProperty = worker.workerProperties.find(
-                    (wp) => wp.workerDimensionId === wd.id
+                {shiftDimensions.map((sd, sdIndex) => {
+                  const shiftProperty = shift.shiftProperties.find(
+                    (sp) => sp.shiftDimensionId === sd.id
                   );
                   return (
-                    <WorkerPropertyCell
-                      key={wdIndex}
+                    <ShiftPropertyCell
+                      key={sdIndex}
                       selectedTeamId={selectedTeamId}
-                      workerProperty={
-                        workerProperty
-                          ? workerProperty
+                      shiftProperty={
+                        shiftProperty
+                          ? shiftProperty
                           : {
                               id: "",
-                              workerId: worker.id,
-                              workerDimensionId: wd.id,
-                              value: defaultProperties[wd.entryType],
+                              shiftId: shift.id,
+                              shiftDimensionId: sd.id,
+                              value: defaultProperties[sd.entryType],
                             }
                       }
-                      workerDimension={wd}
-                      editing={bodyEditing[worker.id] === wd.id}
+                      shiftDimension={sd}
+                      editing={bodyEditing[shift.id] === sd.id}
                       setEditing={setBodyEditing}
-                      handleUpdateWorkerProperty={handleUpdateWorkerProperty}
+                      handleUpdateShiftProperty={handleUpdateShiftProperty}
                     />
                   );
                 })}
                 <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
                   <Box sx={{ display: "flex" }}>
-                    <Button onClick={() => handleDeleteWorker(worker.id)}>
+                    <Button onClick={() => handleDeleteShift(shift.id)}>
                       <DeleteIcon />
                     </Button>
                   </Box>
@@ -199,15 +198,15 @@ export default function WorkerTable({
             ))}
             <TableRow sx={{ backgroundColor: "grey.100" }}>
               <TableCell
-                colSpan={
-                  defaultWorkerFields.length + workerDimensions.length + 1
-                }
+                colSpan={defaultShiftFields.length + shiftDimensions.length + 1}
                 sx={{ paddingY: 0 }}
               >
-                <Box display="flex" alignItems="center" minHeight={45}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", minHeight: 45 }}
+                >
                   <TableAddButton
-                    text={t("worker")}
-                    handleClick={handleAddWorker}
+                    text={isRest ? t("rest") : t("shift")}
+                    handleClick={() => handleAddShift(isRest)}
                   />
                 </Box>
               </TableCell>

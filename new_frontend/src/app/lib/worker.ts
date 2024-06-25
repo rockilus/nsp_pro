@@ -1,6 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 // Types
-import { WorkerT, WorkerDimensionT, WorkerPropertyT } from "@/types/worker";
+import { WorkerT, WorkerDimensionT, WorkerPropertyT } from "../../types/worker";
 
 const apiUrlWorkers = process.env.NEXT_PUBLIC_API_URL + "/workers";
 const apiUrlWorkerDimensions =

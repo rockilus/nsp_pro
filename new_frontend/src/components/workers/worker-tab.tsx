@@ -16,7 +16,7 @@ import {
   updateWorkerDimension,
   updateWorker,
   deleteWorkerDimension,
-} from "../../app/lib/workers";
+} from "../../app/lib/worker";
 // Types
 import { WorkerT, WorkerDimensionT, WorkerPropertyT } from "../../types/worker";
 
