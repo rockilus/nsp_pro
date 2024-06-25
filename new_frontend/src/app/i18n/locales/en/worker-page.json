@@ -1,0 +1,21 @@
+{
+    "add": "Add",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "delete_confirm": "Delete all",
+    "delete_text": "Deleting this property will remove it from all workers. This action cannot be undone.",
+    "delete_title": "Delete this property for all?",
+    "name": "Name",
+    "name_helper_text": "Please enter a name",
+    "new_property": "New property",
+    "property": "Property",
+    "property_type": "Property type",
+    "property_type_helper_text": "Please select an option",
+    "save": "Save",
+    "type_bool": "True/False",
+    "type_int": "Number",
+    "type_list": "Tags",
+    "type_str": "Text",
+    "worker": "Worker",
+    "workers": "Workers"
+}
