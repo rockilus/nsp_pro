@@ -35,17 +35,17 @@ export default function ShiftTab({
   const [shiftDimensions, setShiftDimensions] = useState<ShiftDimensionT[]>([]);
 
   const DefaultWorkShiftFields: Record<string, string>[] = [
-    { name: "color", label: t("common.color") },
-    { name: "name", label: t("common.name") },
-    { name: "start_time", label: t("common.start_time") },
-    { name: "end_time", label: t("common.end_time") },
-    { name: "staffing", label: t("common.staffing") },
+    { name: "color", label: t("color") },
+    { name: "name", label: t("name") },
+    { name: "start_time", label: t("start_time") },
+    { name: "end_time", label: t("end_time") },
+    { name: "staffing", label: t("staffing") },
   ];
   const DefaultRestShiftFields: Record<string, string>[] = [
-    { name: "color", label: t("common.color") },
-    { name: "name", label: t("common.name") },
-    { name: "start_time", label: t("common.start_time") },
-    { name: "end_time", label: t("common.end_time") },
+    { name: "color", label: t("color") },
+    { name: "name", label: t("name") },
+    { name: "start_time", label: t("start_time") },
+    { name: "end_time", label: t("end_time") },
   ];
 
   const roundTime = (dt: dayjs.Dayjs): dayjs.Dayjs => {
@@ -213,11 +213,19 @@ export default function ShiftTab({
         }}
       >
         <ShiftTable
-          team={selectedTeamId}
+          lng={lng}
+          selectedTeamId={selectedTeamId}
           isRest={false}
           shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
           shifts={shifts.filter((s) => !s.isTimeOff)}
           defaultShiftFields={DefaultWorkShiftFields}
+          handleAddShift={handleAddShift}
+          handleDeleteShift={handleDeleteShift}
+          handleAddShiftDimension={handleAddShiftDimension}
+          handleUpdateShiftProperty={handleUpdateShiftProperty}
+          handleUpdateShiftDimension={handleUpdateShiftDimension}
+          handleUpdateShift={handleUpdateShift}
+          handleDeleteShiftDimension={handleDeleteShiftDimension}
         />
       </Box>
       <Box
@@ -230,11 +238,19 @@ export default function ShiftTab({
         }}
       >
         <ShiftTable
-          team={selectedTeamId}
+          lng={lng}
+          selectedTeamId={selectedTeamId}
           isRest={true}
           shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
           shifts={shifts.filter((s) => s.isTimeOff)}
-          defaultShiftFields={DefaultRestShiftFields}
+          defaultShiftFields={DefaultWorkShiftFields}
+          handleAddShift={handleAddShift}
+          handleDeleteShift={handleDeleteShift}
+          handleAddShiftDimension={handleAddShiftDimension}
+          handleUpdateShiftProperty={handleUpdateShiftProperty}
+          handleUpdateShiftDimension={handleUpdateShiftDimension}
+          handleUpdateShift={handleUpdateShift}
+          handleDeleteShiftDimension={handleDeleteShiftDimension}
         />
       </Box>
     </Box>

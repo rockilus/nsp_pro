@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -25,7 +25,7 @@ export default function UpdateShiftDimensionForm({
   handleUpdateShiftDimension: (shiftDimension: ShiftDimensionT) => void;
   handleDeleteShiftDimension: (shiftDimensionId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "shift-page");
 
   const [name, setName] = useState<string>(shiftDimension.name);
   const [listOptions, setListOptions] = useState<string[]>(
@@ -113,18 +113,19 @@ export default function UpdateShiftDimensionForm({
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
-        label={t("common.name")}
+        label={t("name")}
         variant="outlined"
         value={name}
         onChange={handleNameChange}
         error={nameError}
-        helperText={nameError ? t("shift.name_helper_text") : ""}
+        helperText={nameError ? t("name_helper_text") : ""}
         onKeyDown={handleKeyPress}
         sx={{ width: "100%" }}
       />
       {shiftDimension.entryType === "list" && (
         <Box mt={2}>
           <DimensionListInput
+            lng={lng}
             options={listOptions}
             listError={listError}
             addOption={handleAddOption}
@@ -138,7 +139,7 @@ export default function UpdateShiftDimensionForm({
           onClick={() => handleAddElement()}
           sx={{ marginRight: 1 }}
         >
-          {t("common.save")}
+          {t("save")}
         </Button>
         <DialogShiftDimensionDel
           lng={lng}

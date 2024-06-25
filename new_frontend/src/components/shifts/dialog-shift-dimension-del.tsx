@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -18,7 +18,7 @@ export default function DialogShiftDimensionDel({
   shiftDimensionId: string;
   handleDeleteShiftDimension: (shiftDimensionId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "shift-page");
 
   const [open, setOpen] = useState(false);
 
@@ -33,7 +33,7 @@ export default function DialogShiftDimensionDel({
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <Button variant="outlined" onClick={handleClickOpen} fullWidth>
-        {t("common.delete")}
+        {t("delete")}
       </Button>
       <Dialog
         open={open}
@@ -41,12 +41,10 @@ export default function DialogShiftDimensionDel({
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {t("worker_shift.delete_title")}
-        </DialogTitle>
+        <DialogTitle id="alert-dialog-title">{t("delete_title")}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {t("shift.delete_text")}
+            {t("delete_text")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -57,10 +55,10 @@ export default function DialogShiftDimensionDel({
             }}
             color="error"
           >
-            {t("worker_shift.delete_confirm")}
+            {t("delete_confirm")}
           </Button>
           <Button onClick={handleClose} autoFocus>
-            {t("common.cancel")}
+            {t("cancel")}
           </Button>
         </DialogActions>
       </Dialog>

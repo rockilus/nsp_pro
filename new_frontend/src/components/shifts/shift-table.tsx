@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -60,7 +60,7 @@ export default function ShiftTable({
   handleUpdateShift: (updatedShift: ShiftT) => void;
   handleDeleteShiftDimension: (shiftDimensionId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "shift-page");
 
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
@@ -96,14 +96,12 @@ export default function ShiftTable({
                 >
                   <Box display="flex" alignItems="center" minHeight={45}>
                     <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      {isRest ? t("shift.rest_shifts") : t("shift.shifts")}
+                      {isRest ? t("rest_shifts") : t("shifts")}
                     </Typography>
                   </Box>
                   <PopoverRHS
-                    title={t("shift_shift.new_property")}
-                    buttonContent={
-                      <TableAddButton text={t("common.property")} />
-                    }
+                    title={t("new_property")}
+                    buttonContent={<TableAddButton text={t("property")} />}
                     content={
                       <NewShiftDimensionForm
                         lng={lng}
@@ -207,7 +205,7 @@ export default function ShiftTable({
                   sx={{ display: "flex", alignItems: "center", minHeight: 45 }}
                 >
                   <TableAddButton
-                    text={isRest ? t("common.rest") : t("common.shift")}
+                    text={isRest ? t("rest") : t("shift")}
                     handleClick={() => handleAddShift(isRest)}
                   />
                 </Box>
