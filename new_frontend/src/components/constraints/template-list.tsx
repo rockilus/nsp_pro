@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
@@ -12,16 +12,16 @@ import { TemplateT } from "../../types/constraint";
 
 export default function TemplateList({
   lng,
-  constraintTemplates,
+  templates,
   selectedTemplate,
   handleSelectedTemplate,
 }: {
   lng: string;
-  constraintTemplates: TemplateT[];
+  templates: TemplateT[];
   selectedTemplate: TemplateT | null;
   handleSelectedTemplate: (ct: TemplateT) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "constraint-page");
 
   return (
     <Box
@@ -48,7 +48,7 @@ export default function TemplateList({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          {t("constraint.templates")}
+          {t("templates")}
         </Typography>
       </Box>
       <Box
@@ -60,7 +60,7 @@ export default function TemplateList({
         }}
       >
         <List dense={true} sx={{ padding: "0 0 0 0" }}>
-          {constraintTemplates.map((ct, index) => (
+          {templates.map((ct, index) => (
             <ListItemButton
               key={index}
               onClick={() => {

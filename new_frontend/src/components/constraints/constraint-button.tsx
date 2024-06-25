@@ -56,7 +56,7 @@ export default function ConstraintButton({
         <ConstraintEdit
           lng={lng}
           constraint={constraint}
-          constraintTemplate={constraintTemplate}
+          template={constraintTemplate}
           handleAddConstraint={handleAddConstraint}
           handleUpdateConstraint={handleUpdateConstraint}
         />

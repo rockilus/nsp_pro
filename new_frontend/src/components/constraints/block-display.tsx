@@ -48,6 +48,7 @@ export default function BlockDisplay({
         />
       ) : templateBlock.type === "number" ? (
         <BlockDisplayNumber
+          lng={lng}
           block={block}
           templateBlock={templateBlock}
           handleEditBlock={handleEditBlock}

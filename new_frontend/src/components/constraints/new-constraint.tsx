@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import CloseIcon from "@mui/icons-material/Close";
@@ -14,19 +14,19 @@ import { TemplateT, ConstraintT } from "../../types/constraint";
 export default function NewConstraint({
   lng,
   selectedTeamId,
-  constraintTemplates,
+  templates,
   handleCloseAddConstraint,
   handleAddConstraint,
   handleUpdateConstraint,
 }: {
   lng: string;
   selectedTeamId: string;
-  constraintTemplates: TemplateT[];
+  templates: TemplateT[];
   handleCloseAddConstraint: () => void;
   handleAddConstraint: (constraint: ConstraintT) => void;
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "constraint-page");
 
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateT | null>(
     null
@@ -65,7 +65,7 @@ export default function NewConstraint({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          {t("constraint.new_constraint")}
+          {t("new_constraint")}
         </Typography>
         <IconButton onClick={handleCloseAddConstraint}>
           <CloseIcon />
@@ -95,7 +95,7 @@ export default function NewConstraint({
               active: true,
               missingProperties: [],
             }}
-            constraintTemplate={selectedTemplate}
+            template={selectedTemplate}
             handleAddConstraint={handleAddConstraint}
             handleUpdateConstraint={handleUpdateConstraint}
           />
@@ -104,13 +104,13 @@ export default function NewConstraint({
             variant="body2"
             sx={{ fontStyle: "italic", color: "grey" }}
           >
-            {t("constraint.select_template")}
+            {t("select_template")}
           </Typography>
         )}
       </Box>
       <TemplateList
         lng={lng}
-        constraintTemplates={constraintTemplates}
+        templates={templates}
         selectedTemplate={selectedTemplate}
         handleSelectedTemplate={handleSelectedTemplate}
       />

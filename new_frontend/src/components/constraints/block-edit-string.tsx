@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Chip from "@mui/material/Chip";
 import List from "@mui/material/List";
@@ -32,7 +32,7 @@ export default function BlockEditString({
   handleClose: () => void;
   translateOptionName: (name: string) => string;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "constraint-page");
 
   const initialValue = useCallback((): string => {
     if (block === null) {
@@ -217,7 +217,7 @@ export default function BlockEditString({
             padding: "0 16px 6px 16px",
           }}
         >
-          {t("constraint.select_one")}
+          {t("select_one")}
         </div>
         <List dense={true} sx={{ padding: "0 0 0 0" }}>
           {filteredOptions.map((option) => (

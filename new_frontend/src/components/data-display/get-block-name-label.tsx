@@ -1,16 +1,18 @@
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 
 const GetBlockNameLabel = (lng: string, name: string) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "constraint-page");
+  console.log("name", name);
+
   const blockNameLabels: Record<string, string>[] = [
-    { name: "worker", label: t("common.worker") },
-    { name: "shift", label: t("common.shift") },
-    { name: "shift_reference", label: t("common.shift") },
-    { name: "shift_relative", label: t("common.shift") },
-    { name: "operator", label: t("constraint.operator") },
+    { name: "worker", label: t("worker") },
+    { name: "shift", label: t("shift") },
+    { name: "shift_reference", label: t("shift") },
+    { name: "shift_relative", label: t("shift") },
+    { name: "operator", label: t("operator") },
     { name: "#", label: "#" },
-    { name: "timing", label: t("constraint.timing") },
-    { name: "weekday", label: t("constraint.week_day") },
+    { name: "timing", label: t("timing") },
+    { name: "weekday", label: t("week_day") },
   ];
   return blockNameLabels.find((item) => item.name === name)?.label || name;
 };

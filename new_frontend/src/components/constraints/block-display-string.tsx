@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // Components
 import BlockEditString from "./block-edit-string";
 import GetBlockNameLabel from "../data-display/get-block-name-label";
@@ -23,21 +23,21 @@ export default function BlockDisplayString({
   templateBlock: TemplateBlockT;
   handleEditBlock: (block: BlockT) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "constraint-page");
 
   const [open, setOpen] = useState(false);
 
   const translateOptionName = (name: string): string => {
     const translations: Record<string, string> = {
-      "at least": "constraint.operator_at_least",
-      exactly: "constraint.operator_exactly",
-      "at most": "constraint.operator_at_most",
-      "per week": "constraint.timing_per_week",
-      "per month": "constraint.timing_per_month",
-      "per year": "constraint.timing_per_year",
-      no: "constraint.operator_no",
-      after: "constraint.timing_after",
-      before: "constraint.timing_before",
+      "at least": "operator_at_least",
+      exactly: "operator_exactly",
+      "at most": "operator_at_most",
+      "per week": "timing_per_week",
+      "per month": "timing_per_month",
+      "per year": "timing_per_year",
+      no: "operator_no",
+      after: "timing_after",
+      before: "timing_before",
       monday: "week_days.monday",
       tuesday: "week_days.tuesday",
       wednesday: "week_days.wednesday",
@@ -45,8 +45,8 @@ export default function BlockDisplayString({
       friday: "week_days.friday",
       saturday: "week_days.saturday",
       sunday: "week_days.sunday",
-      "should only": "constraint.operator_should_only",
-      "should not": "constraint.operator_should_not",
+      "should only": "operator_should_only",
+      "should not": "operator_should_not",
     };
 
     return translations[name] ? t(translations[name]) : name;

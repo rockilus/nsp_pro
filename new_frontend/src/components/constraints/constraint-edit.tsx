@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -17,17 +17,17 @@ import {
 export default function ConstraintEdit({
   lng,
   constraint,
-  constraintTemplate,
+  template,
   handleAddConstraint,
   handleUpdateConstraint,
 }: {
   lng: string;
   constraint: ConstraintT;
-  constraintTemplate: TemplateT | null;
+  template: TemplateT | null;
   handleAddConstraint: (constraint: ConstraintT) => void;
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "constraint-page");
 
   const initialBlockValue = (
     templateBlock: TemplateBlockT
@@ -56,8 +56,8 @@ export default function ConstraintEdit({
   const initialConstraintState = useCallback((): ConstraintT => {
     if (constraint.id === "") {
       const blocks: BlockT[] = [];
-      if (constraintTemplate && constraintTemplate.blocks) {
-        for (let block of constraintTemplate.blocks) {
+      if (template && template.blocks) {
+        for (let block of template.blocks) {
           blocks.push({
             name: block.name,
             type: block.type,
@@ -69,7 +69,7 @@ export default function ConstraintEdit({
     } else {
       return constraint;
     }
-  }, [constraint, constraintTemplate]);
+  }, [constraint, template]);
 
   const [constraintState, setConstraintState] = useState(
     initialConstraintState
@@ -119,7 +119,7 @@ export default function ConstraintEdit({
       }}
     >
       <div style={{ display: "flex", flexDirection: "row" }}>
-        {constraintTemplate?.blocks.map((templateBlock, index) => (
+        {template?.blocks.map((templateBlock, index) => (
           <div
             key={index}
             style={{
@@ -142,7 +142,7 @@ export default function ConstraintEdit({
         onClick={handleSaveConstraint}
         sx={{ textTransform: "none", height: 35, width: 60 }}
       >
-        {constraint.id === "" ? t("common.add") : t("common.save")}
+        {constraint.id === "" ? t("add") : t("save")}
       </Button>
     </Box>
   );

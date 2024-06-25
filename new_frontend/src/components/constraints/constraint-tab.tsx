@@ -83,7 +83,7 @@ export default function ConstraintTab({
           <NewConstraint
             lng={lng}
             selectedTeamId={selectedTeamId}
-            constraintTemplates={templates}
+            templates={templates}
             handleCloseAddConstraint={handleCloseAddConstraint}
             handleAddConstraint={handleAddConstraint}
             handleUpdateConstraint={handleUpdateConstraint}

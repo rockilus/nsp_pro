@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // Components
 import BlockEditDict from "./block-edit-dict";
 import GetBlockNameLabel from "../data-display/get-block-name-label";
@@ -23,16 +23,16 @@ export default function BlockDisplayDict({
   templateBlock: TemplateBlockT;
   handleEditBlock: (block: BlockT) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "constraint-page");
 
   const [open, setOpen] = useState(false);
 
   const translateOptionName = (name: string) => {
     switch (name) {
       case "all workers":
-        return t("constraint.all_workers");
+        return t("all_workers");
       case "all shifts":
-        return t("constraint.all_shifts");
+        return t("all_shifts");
       default:
         return name;
     }
@@ -52,7 +52,7 @@ export default function BlockDisplayDict({
                 .join(", ")
             )
           : blockDisplayPlaceholder(templateBlock.placeholder)}
-        {blockDisplayName(GetBlockNameLabel(templateBlock.name))}
+        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name))}
       </div>
     );
   };
@@ -66,6 +66,7 @@ export default function BlockDisplayDict({
       buttonContent={blockDisplay()}
       content={
         <BlockEditDict
+          lng={lng}
           block={block}
           templateBlock={templateBlock}
           handleEditBlock={handleEditBlock}

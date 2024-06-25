@@ -11,7 +11,7 @@ const HardSoftButton = (
   const { t } = useTranslation(lng, "constraint-page");
   return (
     <ToggleButton value="hard" onChange={handleToggleHard} sx={{ height: 30 }}>
-      {hard ? t("common.hard") : t("common.soft")}
+      {hard ? t("hard") : t("soft")}
     </ToggleButton>
   );
 };

@@ -11,17 +11,17 @@ import {
 // Types
 import { TemplateBlockT, BlockT } from "../../types/constraint";
 
-interface Props {
-  block: BlockT | null;
-  templateBlock: TemplateBlockT;
-  handleEditBlock: (block: BlockT) => void;
-}
-
 export default function BlockDisplayNumber({
+  lng,
   block,
   templateBlock,
   handleEditBlock,
-}: Props) {
+}: {
+  lng: string;
+  block: BlockT | null;
+  templateBlock: TemplateBlockT;
+  handleEditBlock: (block: BlockT) => void;
+}) {
   const [open, setOpen] = useState(false);
 
   const blockDisplay = () => {
@@ -30,7 +30,7 @@ export default function BlockDisplayNumber({
         {block && block.value !== ""
           ? blockDislayValue(block.value as number)
           : blockDisplayPlaceholder(templateBlock.placeholder)}
-        {blockDisplayName(GetBlockNameLabel(templateBlock.name))}
+        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name))}
       </div>
     );
   };

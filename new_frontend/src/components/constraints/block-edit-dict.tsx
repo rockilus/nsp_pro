@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Chip from "@mui/material/Chip";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -24,28 +24,30 @@ import {
 import { ConstraintDefaultColors } from "../../constants/constants";
 
 export default function BlockEditDict({
+  lng,
   block,
   templateBlock,
   handleEditBlock,
   handleClose,
   translateOptionName,
 }: {
+  lng: string;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
   handleEditBlock: (block: BlockT) => void;
   handleClose: () => void;
   translateOptionName: (name: string) => string;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "constraint-page");
 
   const translateSectionLabel = (label: string) => {
     switch (label) {
       case "workers":
-        return t("worker.workers");
+        return t("workers");
       case "shifts":
-        return t("shift.shifts");
+        return t("shifts");
       case "all":
-        return t("common.all");
+        return t("all");
       default:
         return label;
     }
@@ -392,7 +394,7 @@ export default function BlockEditDict({
             padding: "0 16px 6px 16px",
           }}
         >
-          {t("constraint.select_one_or_more")}
+          {t("select_one_or_more")}
         </div>
         <List
           sx={{
