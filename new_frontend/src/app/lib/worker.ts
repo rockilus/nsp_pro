@@ -10,7 +10,7 @@ const apiUrlWorkerDimensions =
 // Worker //
 //////////////////////////
 
-export async function getworkers(teamId: string) {
+export async function getWorkers(teamId: string) {
   noStore();
   const options: RequestInit = {
     method: "GET",
@@ -261,7 +261,7 @@ export async function updateWorkerProperty(
 export async function getWorkersTabData(teamId: string) {
   try {
     const workersTabData = await Promise.all([
-      getworkers(teamId),
+      getWorkers(teamId),
       getWorkerDimensions(teamId),
     ]);
     return { workers: workersTabData[0], workerDimensions: workersTabData[1] };
