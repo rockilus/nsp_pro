@@ -7,7 +7,7 @@ const apiUrlShifts = process.env.NEXT_PUBLIC_API_URL + "/shifts";
 const apiUrlShiftDimensions =
   process.env.NEXT_PUBLIC_API_URL + "/shift-dimensions";
 
-const toShiftT = (data: any): ShiftT => {
+export const toShiftT = (data: any): ShiftT => {
   return {
     ...data,
     startTime: dayjs.utc(data.startTime),
@@ -19,7 +19,7 @@ const toShiftT = (data: any): ShiftT => {
 // Shift //
 //////////////////////////
 
-export async function getshifts(teamId: string) {
+export async function getShifts(teamId: string) {
   noStore();
   const options: RequestInit = {
     method: "GET",
@@ -264,7 +264,7 @@ export async function updateShiftProperty(
 export async function getShiftsTabData(teamId: string) {
   try {
     const shiftsTabData = await Promise.all([
-      getshifts(teamId),
+      getShifts(teamId),
       getShiftDimensions(teamId),
     ]);
     return { shifts: shiftsTabData[0], shiftDimensions: shiftsTabData[1] };
