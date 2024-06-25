@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 // Components
@@ -26,7 +26,7 @@ export default function CoverageTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "coverage-page");
 
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [coverages, setCoverages] = useState<CoverageT[]>([]);
@@ -53,7 +53,7 @@ export default function CoverageTab({
       // id: `id-${Date.now()}`,
       id: "",
       teamId: selectedTeamId,
-      name: t("coverage.new_planner"),
+      name: t("new_planner"),
       shiftDemands: [],
     });
     setCoverages([...coverages, newCoverage]);

@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -30,7 +30,7 @@ export default function CoverageOptions({
   handleUpdateCoverage: (updatedCoverage: CoverageT) => void;
   handleDeleteCoverage: (coverageId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "coverage-page");
 
   return (
     <Box
@@ -59,7 +59,7 @@ export default function CoverageOptions({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          {t("coverage.weekly_planners")}
+          {t("weekly_planners")}
         </Typography>
       </Box>
       <CoverageList
@@ -80,10 +80,7 @@ export default function CoverageOptions({
           borderTop: "1px solid lightgrey",
         }}
       >
-        <TableAddButton
-          text={t("common.planner")}
-          handleClick={handleAddCoverage}
-        />
+        <TableAddButton text={t("planner")} handleClick={handleAddCoverage} />
       </Box>
     </Box>
   );

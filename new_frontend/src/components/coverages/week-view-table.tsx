@@ -1,7 +1,7 @@
 import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import {
   Table,
@@ -29,16 +29,16 @@ export default function WeekViewTable({
   lng: string;
   dayColWidth: number;
 }) {
-  const { t } = useTranslation();
+  const { t: t_week_days } = useTranslation(lng, "week_days");
 
   const WeekDays = [
-    t("week_days.monday"),
-    t("week_days.tuesday"),
-    t("week_days.wednesday"),
-    t("week_days.thursday"),
-    t("week_days.friday"),
-    t("week_days.saturday"),
-    t("week_days.sunday"),
+    t_week_days("monday"),
+    t_week_days("tuesday"),
+    t_week_days("wednesday"),
+    t_week_days("thursday"),
+    t_week_days("friday"),
+    t_week_days("saturday"),
+    t_week_days("sunday"),
   ];
 
   // Generate time slots with 15-minute intervals
