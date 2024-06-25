@@ -1,0 +1,16 @@
+{
+    "approved": "Approved",
+    "date": "Date",
+    "date_range": "Date range",
+    "new_request": "New request",
+    "no_requests": "No requests",
+    "pending": "Pending",
+    "rejected": "Rejected",
+    "request": "Request",
+    "requests": "Requests",
+    "save": "Save",
+    "shift": "Shift",
+    "status": "Status",
+    "type": "Type",
+    "worker": "Worker"
+}

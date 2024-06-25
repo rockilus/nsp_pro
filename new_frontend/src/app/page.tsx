@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { HomePage } from "../components/home";
 import { TeamStoreProvider } from "@/providers/team-store-provider";
 
