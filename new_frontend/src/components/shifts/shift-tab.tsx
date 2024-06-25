@@ -27,7 +27,7 @@ export default function ShiftTab({
   selectedTeamId,
 }: {
   lng: string;
-  selectedTeamId: string;
+  selectedTeamId: string | null;
 }) {
   const { t } = useTranslation(lng, "shift-page");
 
@@ -202,57 +202,59 @@ export default function ShiftTab({
   }, [selectedTeamId]);
 
   return (
-    <Box style={{ width: "100%" }}>
-      <Box
-        sx={{
-          border: "1px solid grey",
-          margin: 2,
-          overflowX: "auto",
-          borderRadius: 2,
-          backgroundColor: "none",
-        }}
-      >
-        <ShiftTable
-          lng={lng}
-          selectedTeamId={selectedTeamId}
-          isRest={false}
-          shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
-          shifts={shifts.filter((s) => !s.isTimeOff)}
-          defaultShiftFields={DefaultWorkShiftFields}
-          handleAddShift={handleAddShift}
-          handleDeleteShift={handleDeleteShift}
-          handleAddShiftDimension={handleAddShiftDimension}
-          handleUpdateShiftProperty={handleUpdateShiftProperty}
-          handleUpdateShiftDimension={handleUpdateShiftDimension}
-          handleUpdateShift={handleUpdateShift}
-          handleDeleteShiftDimension={handleDeleteShiftDimension}
-        />
+    selectedTeamId && (
+      <Box style={{ width: "100%" }}>
+        <Box
+          sx={{
+            border: "1px solid grey",
+            margin: 2,
+            overflowX: "auto",
+            borderRadius: 2,
+            backgroundColor: "none",
+          }}
+        >
+          <ShiftTable
+            lng={lng}
+            selectedTeamId={selectedTeamId}
+            isRest={false}
+            shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
+            shifts={shifts.filter((s) => !s.isTimeOff)}
+            defaultShiftFields={DefaultWorkShiftFields}
+            handleAddShift={handleAddShift}
+            handleDeleteShift={handleDeleteShift}
+            handleAddShiftDimension={handleAddShiftDimension}
+            handleUpdateShiftProperty={handleUpdateShiftProperty}
+            handleUpdateShiftDimension={handleUpdateShiftDimension}
+            handleUpdateShift={handleUpdateShift}
+            handleDeleteShiftDimension={handleDeleteShiftDimension}
+          />
+        </Box>
+        <Box
+          sx={{
+            border: "1px solid grey",
+            margin: 2,
+            overflowX: "auto",
+            borderRadius: 2,
+            backgroundColor: "none",
+          }}
+        >
+          <ShiftTable
+            lng={lng}
+            selectedTeamId={selectedTeamId}
+            isRest={true}
+            shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
+            shifts={shifts.filter((s) => s.isTimeOff)}
+            defaultShiftFields={DefaultWorkShiftFields}
+            handleAddShift={handleAddShift}
+            handleDeleteShift={handleDeleteShift}
+            handleAddShiftDimension={handleAddShiftDimension}
+            handleUpdateShiftProperty={handleUpdateShiftProperty}
+            handleUpdateShiftDimension={handleUpdateShiftDimension}
+            handleUpdateShift={handleUpdateShift}
+            handleDeleteShiftDimension={handleDeleteShiftDimension}
+          />
+        </Box>
       </Box>
-      <Box
-        sx={{
-          border: "1px solid grey",
-          margin: 2,
-          overflowX: "auto",
-          borderRadius: 2,
-          backgroundColor: "none",
-        }}
-      >
-        <ShiftTable
-          lng={lng}
-          selectedTeamId={selectedTeamId}
-          isRest={true}
-          shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
-          shifts={shifts.filter((s) => s.isTimeOff)}
-          defaultShiftFields={DefaultWorkShiftFields}
-          handleAddShift={handleAddShift}
-          handleDeleteShift={handleDeleteShift}
-          handleAddShiftDimension={handleAddShiftDimension}
-          handleUpdateShiftProperty={handleUpdateShiftProperty}
-          handleUpdateShiftDimension={handleUpdateShiftDimension}
-          handleUpdateShift={handleUpdateShift}
-          handleDeleteShiftDimension={handleDeleteShiftDimension}
-        />
-      </Box>
-    </Box>
+    )
   );
 }
