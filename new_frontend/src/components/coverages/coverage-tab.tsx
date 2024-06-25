@@ -7,8 +7,8 @@ import CoverageCalendar from "./coverage-calendar";
 import CoverageOptions from "./coverage-options";
 // Actions
 import {
-  addCoverage,
   getCoveragesTabData,
+  addCoverage,
   updateCoverage,
   deleteCoverage,
   addShiftDemand,
