@@ -4,18 +4,9 @@ import dayjs from "dayjs";
 import { getShifts } from "./shift";
 import { getWorkers } from "./worker";
 // Types
-import { ShiftT } from "../../types/shift";
 import { RequestT } from "../../types/request";
 
 const apiUrlRequests = process.env.NEXT_PUBLIC_API_URL + "/requests";
-
-export const toShiftT = (data: any): ShiftT => {
-  return {
-    ...data,
-    startTime: dayjs.utc(data.startTime),
-    endTime: dayjs.utc(data.endTime),
-  };
-};
 
 export const toRequestT = (data: any) => {
   const r: RequestT = {

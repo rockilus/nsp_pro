@@ -1,8 +1,12 @@
 {
     "coverages": "Coverages",
+    "delete": "Delete",
     "new_planner": "New planner",
     "planner": "Planner",
     "planners": "Planners",
+    "save": "Save",
+    "shift": "Shift",
     "shift_demand": "Shift demand",
+    "staffing": "Staffing",
     "weekly_planners": "Weekly planners"
 }

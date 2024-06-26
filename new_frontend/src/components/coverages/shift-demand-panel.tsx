@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -32,7 +32,7 @@ export default function ShiftDemandPanel({
   handleUpdateShiftDemand: (shiftDemand: ShiftDemandT) => void;
   handleDeleteShiftDemand: (coverageId: string, shiftDemandId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "coverage-page");
 
   const [SDState, setSDState] = useState<ShiftDemandT>(shiftDemand);
 
@@ -70,7 +70,7 @@ export default function ShiftDemandPanel({
         <FormControl fullWidth>
           <Select
             value={SDState.shift.id}
-            label={t("common.shift")}
+            label={t("shift")}
             onChange={(e) =>
               setSDState({
                 ...SDState,
@@ -111,7 +111,7 @@ export default function ShiftDemandPanel({
           marginBottom: 1,
         }}
       >
-        <Typography>{t("coverage.shift_demand")}</Typography>
+        <Typography>{t("shift_demand")}</Typography>
         <IconButton onClick={handleClose} sx={{ marginRight: 2 }}>
           <CloseIcon color="disabled" />
         </IconButton>
@@ -144,7 +144,7 @@ export default function ShiftDemandPanel({
             sx={{ marginRight: 2 }}
             onClick={handleDeleteSD}
           >
-            {t("common.delete")}
+            {t("delete")}
           </Button>
         )}
         <Button
@@ -153,7 +153,7 @@ export default function ShiftDemandPanel({
           sx={{ marginRight: 2 }}
           onClick={handleSaveSD}
         >
-          {t("common.save")}
+          {t("save")}
         </Button>
       </Box>
     </Box>

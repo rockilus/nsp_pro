@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -25,7 +25,7 @@ export default function CoverageEvent({
   handleUpdateShiftDemand: (shiftDemand: ShiftDemandT) => void;
   handleDeleteShiftDemand: (coverageId: string, shiftDemandId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "coverage-page");
 
   const covEventWidth = Math.floor(SDOverlay.width / SDOverlay.widthDivisor); // px
   const covEventPadL = 2; // px
@@ -91,7 +91,7 @@ export default function CoverageEvent({
               overflow: "hidden",
             }}
           >
-            {`${t("common.staffing")}: `}
+            {`${t("staffing")}: `}
             {SDOverlay.shiftDemand.shift.staffing}
           </Typography>
         </Stack>

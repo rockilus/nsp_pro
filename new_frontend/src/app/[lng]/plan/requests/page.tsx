@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 // Stores
 import { useTeamStore } from "../../../../providers/team-store-provider";
 // Actions
@@ -31,9 +29,5 @@ export default function Page({
     fetchTeamId();
   }, [selectedTeamId, setSelectedTeamId]);
 
-  return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <RequestTab lng={lng} selectedTeamId={selectedTeamId} />
-    </LocalizationProvider>
-  );
+  return <RequestTab lng={lng} selectedTeamId={selectedTeamId} />;
 }

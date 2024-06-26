@@ -1,0 +1,18 @@
+{
+    "campaign": "Campagne",
+    "constraints": "Contraintes",
+    "end": "Fin",
+    "full_period": "Période complète",
+    "hard_breach": "Enfreint strict",
+    "no_solution": "Pas de solution",
+    "not_solved": "Non résolu",
+    "planner": "Agenda",
+    "planners": "Agendas",
+    "select_all": "Tout sélectionner",
+    "select_none": "Tout désélectionner",
+    "soft_breach": "Enfreint flexible",
+    "solved": "Résolu",
+    "start": "Début",
+    "start_new_campaign": "Démarrer une nouvelle campagne",
+    "status": "Statut"
+}

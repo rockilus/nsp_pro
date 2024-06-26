@@ -1,8 +1,12 @@
 {
     "coverages": "Agendas",
+    "delete": "Supprimer",
     "new_planner": "Nouvel agenda",
     "planner": "Agenda",
     "planners": "Agendas",
+    "save": "Sauvegarder",
+    "shift": "Tache",
     "shift_demand": "Demande de tâche",
+    "staffing": "Effectif",
     "weekly_planners": "Agendas hebdomadaires"
 }
