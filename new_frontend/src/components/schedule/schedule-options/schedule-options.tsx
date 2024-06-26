@@ -1,7 +1,7 @@
 import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -27,7 +27,7 @@ export default function ScheduleOptions({
   handleSolveSchedule: (scheduleId: string) => void;
   handleValidateSchedule: (scheduleId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "schedule-page");
 
   return (
     <Box
@@ -56,7 +56,7 @@ export default function ScheduleOptions({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          {t("common.campaign")}
+          {t("campaign")}
         </Typography>
       </Box>
       <Box

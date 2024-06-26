@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import React, { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -35,7 +35,7 @@ export default function AssignmentOptions({
   setSelectedCell: (selectedCell: SelectedCellT | null) => void;
   handleUpdateAssignment: (assignment: AssignmentT) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "schedule-page");
 
   const [selectedAssignment, setSelectedAssignment] = useState<AssignmentT>(
     assignments.find((a) => a.id === selectedCell.assignment.id) ||
@@ -115,7 +115,7 @@ export default function AssignmentOptions({
             align="left"
             sx={{ fontWeight: "bold" }}
           >
-            {t("common.selection")}
+            {t("selection")}
           </Typography>
         </Box>
         <IconButton onClick={handleClose}>
@@ -139,7 +139,7 @@ export default function AssignmentOptions({
             align="left"
             sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
           >
-            {t("common.assignment")}
+            {t("assignment")}
           </Typography>
         </Box>
         {selectedAssignment.fixed || selectedAssignment.status !== "wip" ? (
@@ -232,7 +232,7 @@ export default function AssignmentOptions({
                   paddingX: 0,
                 }}
               >
-                {t("common.unset")}
+                {t("unset")}
               </Button>
             )}
           </Box>
@@ -279,7 +279,7 @@ export default function AssignmentOptions({
                 paddingX: 0,
               }}
             >
-              {t("common.set")}
+              {t("set")}
             </Button>
           </Box>
         )}
@@ -302,7 +302,7 @@ export default function AssignmentOptions({
               align="left"
               sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
             >
-              {t("request.requests")}
+              {t("requests")}
             </Typography>
           </Box>
           {selectedCell.requests.length === 0 ? (
@@ -315,7 +315,7 @@ export default function AssignmentOptions({
                 fontStyle: "italic",
               }}
             >
-              {t("request.no_requests")}
+              {t("no_requests")}
             </Typography>
           ) : (
             selectedCell.requests.map((request, index) => (
@@ -379,7 +379,7 @@ export default function AssignmentOptions({
               align="left"
               sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
             >
-              {t("schedule.breaches")}
+              {t("breaches")}
             </Typography>
           </Box>
           {breachesNoRequests.length === 0 ? (
@@ -392,7 +392,7 @@ export default function AssignmentOptions({
                 fontStyle: "italic",
               }}
             >
-              {t("schedule.no_breaches")}
+              {t("no_breaches")}
             </Typography>
           ) : (
             breachesNoRequests.map((breach, index) => (

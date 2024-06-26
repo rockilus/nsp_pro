@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -26,7 +26,7 @@ export default function ScheduleDisplayOptions({
   setSelectedDisplay: (newSelectedDisplay: string) => void;
   switchDisplayCBs: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "schedule-page");
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
@@ -65,7 +65,7 @@ export default function ScheduleDisplayOptions({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          {t("common.display")}
+          {t("display")}
         </Typography>
       </Box>
       <TableContainer
@@ -75,7 +75,7 @@ export default function ScheduleDisplayOptions({
         <Table aria-label="simple table">
           <TableBody>
             <TableRowScheduleWIP
-              name={t("common.view")}
+              name={t("view")}
               content={
                 <ToggleButtonGroup
                   color="primary"
@@ -92,7 +92,7 @@ export default function ScheduleDisplayOptions({
                       fontSize: "0.75rem",
                     }}
                   >
-                    {t("common.shift")}
+                    {t("shift")}
                   </ToggleButton>
                   <ToggleButton
                     value="worker"
@@ -102,13 +102,13 @@ export default function ScheduleDisplayOptions({
                       fontSize: "0.75rem",
                     }}
                   >
-                    {t("common.worker")}
+                    {t("worker")}
                   </ToggleButton>
                 </ToggleButtonGroup>
               }
             />
             <TableRowScheduleWIP
-              name={t("schedule.breaches")}
+              name={t("breaches")}
               content={
                 <Switch
                   checked={displayCBs}

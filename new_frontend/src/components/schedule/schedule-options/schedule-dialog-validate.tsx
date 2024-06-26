@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -18,7 +18,7 @@ export default function ScheduleDialogValidate({
   scheduleId: string;
   handleValidateSchedule: (scheduleId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "schedule-page");
 
   const [open, setOpen] = useState(false);
 
@@ -43,7 +43,7 @@ export default function ScheduleDialogValidate({
           height: "35px",
         }}
       >
-        {t("common.validate")}
+        {t("validate")}
       </Button>
       <Dialog
         open={open}
@@ -51,17 +51,15 @@ export default function ScheduleDialogValidate({
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {t("schedule.validate_title")}
-        </DialogTitle>
+        <DialogTitle id="alert-dialog-title">{t("validate_title")}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {t("schedule.validate_text")}
+            {t("validate_text")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="error">
-            {t("common.cancel")}
+            {t("cancel")}
           </Button>
           <Button
             onClick={() => {
@@ -70,7 +68,7 @@ export default function ScheduleDialogValidate({
             }}
             autoFocus
           >
-            {t("common.validate")}
+            {t("validate")}
           </Button>
         </DialogActions>
       </Dialog>

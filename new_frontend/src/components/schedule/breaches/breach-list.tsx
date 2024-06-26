@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
@@ -28,7 +28,7 @@ export default function BreachList({
   addCBsDisplayed: (ids: string[]) => void;
   removeCBsDisplayed: (ids: string[]) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "schedule-page");
 
   const CBsConstraint: ObjectiveBreachT[] = breaches
     .filter((cb) => cb.objectiveCategory === "constraint")
@@ -108,7 +108,7 @@ export default function BreachList({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          {t("schedule.breaches")}
+          {t("breaches")}
         </Typography>
       </Box>
       {breaches.length === 0 ? (

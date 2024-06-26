@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -36,7 +36,7 @@ export default function ScheduleWIP({
   handleSolveSchedule: (scheduleId: string) => void;
   handleValidateSchedule: (scheduleId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "schedule-page");
 
   const [isSolving, setIsSolving] = useState(false);
 
@@ -52,15 +52,15 @@ export default function ScheduleWIP({
         <Table aria-label="simple table">
           <TableBody>
             <TableRowScheduleWIP
-              name={t("common.start")}
+              name={t("start")}
               content={schedule.startDate.format("D MMM YYYY")}
             />
             <TableRowScheduleWIP
-              name={t("common.end")}
+              name={t("end")}
               content={schedule.endDate.format("D MMM YYYY")}
             />
             <TableRowScheduleWIP
-              name={t("common.status")}
+              name={t("status")}
               content={
                 <Chip
                   label={GetStatusLabel(lng, schedule.solveStatus)}
@@ -109,7 +109,7 @@ export default function ScheduleWIP({
               height: "35px",
             }}
           >
-            {t("common.solve")}
+            {t("solve")}
           </Button>
         )}
         <Box

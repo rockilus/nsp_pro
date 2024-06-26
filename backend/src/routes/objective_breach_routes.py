@@ -13,10 +13,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import ObjectiveBreachMessage, VariableMessage
@@ -38,12 +35,8 @@ async def get_objective_breaches(
                 "You do not have permission to get objective breaches",
             )
         team_schedules = schedule_db.get_schedules(team_id)
-        objective_breaches = objective_breach_db.get_objective_breaches(
-            team_schedules
-        )
-        response = [
-            core_to_msg_objective_breach(a) for a in objective_breaches
-        ]
+        objective_breaches = objective_breach_db.get_objective_breaches(team_schedules)
+        response = [core_to_msg_objective_breach(a) for a in objective_breaches]
     except Exception as e:
         log_info("Failed to get objective breaches")
         handle_routes_errors(e)
@@ -63,9 +56,7 @@ async def update_objective_breach(
             raise NotAuthorizedError(
                 "You do not have permission to update objective breaches",
             )
-        objective_breach_data = msg_to_core_objective_breach(
-            objective_breach_api
-        )
+        objective_breach_data = msg_to_core_objective_breach(objective_breach_api)
         updated_objective_breach = objective_breach_db.update_objective_breach(
             objective_breach_data
         )

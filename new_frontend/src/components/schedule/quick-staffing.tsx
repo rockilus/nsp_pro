@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import AdjustIcon from "@mui/icons-material/Adjust";
 import AddIcon from "@mui/icons-material/Add";
@@ -40,7 +40,7 @@ export default function QuickStaffingTable({
   schedule: ScheduleT;
   handleUpdateSchedule: (schedule: ScheduleT) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "schedule-page");
 
   const countAssignments = ({
     startDate,
@@ -140,7 +140,7 @@ export default function QuickStaffingTable({
                   }}
                 >
                   <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                    {t("schedule.quick_staffing")}
+                    {t("quick_staffing")}
                   </Typography>
                 </Box>
               </TableCell>
@@ -183,7 +183,7 @@ export default function QuickStaffingTable({
                     fontWeight: "bold",
                   }}
                 >
-                  {t("common.total")}
+                  {t("total")}
                 </Typography>
               </TableCell>
             </TableRow>
@@ -420,7 +420,7 @@ export default function QuickStaffingTable({
                       fontWeight: "bold",
                     }}
                   >
-                    {t("common.total")}
+                    {t("total")}
                   </Typography>
                 </Box>
               </TableCell>

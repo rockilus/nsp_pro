@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -37,7 +37,7 @@ export default function ScheduleTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "schedule-page");
 
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
@@ -198,7 +198,7 @@ export default function ScheduleTab({
             color="textSecondary"
             sx={{ fontStyle: "italic" }}
           >
-            {t("schedule.no_schedule_text")}
+            {t("no_schedule_text")}
           </Typography>
         </Box>
       ) : (
