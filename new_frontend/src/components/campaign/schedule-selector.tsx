@@ -16,7 +16,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import TableRowScheduleWIP from "../data-display/table-row-schedule-wip";
 import { GetStatusLabel } from "../data-display/get-status-label";
 // Types
-import { ScheduleT } from "../../types/schedule_temp";
+import { ScheduleT } from "../../types/schedule";
 //Constants
 import { SolveStatusList, SolveStatusColors } from "../../constants/constants";
 

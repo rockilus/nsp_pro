@@ -16,7 +16,7 @@ import Typography from "@mui/material/Typography";
 // Components
 import TableAddButton from "../buttons/table-add-button";
 // Types
-import { ScheduleT } from "../../types/schedule_temp";
+import { ScheduleT } from "../../types/schedule";
 import { ConstraintT } from "../../types/constraint";
 // Constants
 import {

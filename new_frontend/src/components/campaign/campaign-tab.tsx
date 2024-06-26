@@ -16,7 +16,7 @@ import { addSchedule, updateSchedule } from "../../app/lib/schedule";
 // Types
 import { CoverageSelectorT } from "../../types/campaign";
 import { CoverageT } from "../../types/coverage";
-import { ScheduleT } from "../../types/schedule_temp";
+import { ScheduleT } from "../../types/schedule";
 import { ConstraintT } from "../../types/constraint";
 
 export default function CampaignTab({

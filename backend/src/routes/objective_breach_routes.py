@@ -22,7 +22,7 @@ from scripts.setup_database import objective_breach_db, schedule_db
 router = APIRouter()
 
 
-@router.get("/objective_breaches/teams/{team_id}")
+@router.get("/breaches/teams/{team_id}")
 async def get_objective_breaches(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
@@ -43,7 +43,7 @@ async def get_objective_breaches(
     return response
 
 
-@router.put("/objective_breaches/{objective_breach_id}/teams/{team_id}")
+@router.put("/breaches/{objective_breach_id}/teams/{team_id}")
 async def update_objective_breach(
     team_id: str,
     objective_breach_api: ObjectiveBreachMessage,
@@ -67,7 +67,7 @@ async def update_objective_breach(
     return response
 
 
-@router.delete("/objective_breaches/{objective_breach_id}/teams/{team_id}")
+@router.delete("/breaches/{objective_breach_id}/teams/{team_id}")
 async def delete_objective_breach(
     objective_breach_id: str,
     team_id: str,
