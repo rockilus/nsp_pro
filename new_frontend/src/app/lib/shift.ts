@@ -1,7 +1,10 @@
 import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 // Types
 import { ShiftT, ShiftDimensionT, ShiftPropertyT } from "../../types/shift";
+
+dayjs.extend(utc);
 
 const apiUrlShifts = process.env.NEXT_PUBLIC_API_URL + "/shifts";
 const apiUrlShiftDimensions =
@@ -18,28 +21,6 @@ export const toShiftT = (data: any): ShiftT => {
 //////////////////////////
 // Shift //
 //////////////////////////
-
-export async function getShifts(teamId: string) {
-  noStore();
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(`${apiUrlShifts}/teams/${teamId}`, options);
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to fetch shifts: " + responseData.detail);
-    }
-    return responseData.map(toShiftT) as ShiftT[];
-  } catch (error) {
-    console.error("Failed to fetch shifts:", error);
-    throw new Error("Failed to fetch shifts, please try again later");
-  }
-}
 
 export async function addShift(shift: ShiftT) {
   const options: RequestInit = {
@@ -65,25 +46,25 @@ export async function addShift(shift: ShiftT) {
   }
 }
 
-export async function deleteShift(shiftId: string, teamId: string) {
+export async function getShifts(teamId: string) {
+  noStore();
   const options: RequestInit = {
-    method: "DELETE",
+    method: "GET",
+    credentials: "include" as RequestCredentials,
     headers: {
       "Content-Type": "application/json",
     },
   };
   try {
-    const response = await fetch(
-      `${apiUrlShifts}/${shiftId}/teams/${teamId}`,
-      options
-    );
+    const response = await fetch(`${apiUrlShifts}/teams/${teamId}`, options);
     const responseData = await response.json();
     if (!response.ok) {
-      throw new Error("Failed to delete shift: " + responseData.detail);
+      throw new Error("Failed to fetch shifts: " + responseData.detail);
     }
+    return responseData.map(toShiftT) as ShiftT[];
   } catch (error) {
-    console.error("Failed to delete shift:", error);
-    throw new Error("Failed to delete shift, please try again later");
+    console.error("Failed to fetch shifts:", error);
+    throw new Error("Failed to fetch shifts, please try again later");
   }
 }
 
@@ -111,36 +92,31 @@ export async function updateShift(updatedShift: ShiftT) {
   }
 }
 
-//////////////////////////
-// Shift Dimensions //
-//////////////////////////
-
-export async function getShiftDimensions(teamId: string) {
-  noStore();
+export async function deleteShift(shiftId: string, teamId: string) {
   const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
+    method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },
   };
   try {
     const response = await fetch(
-      `${apiUrlShiftDimensions}/teams/${teamId}`,
+      `${apiUrlShifts}/${shiftId}/teams/${teamId}`,
       options
     );
     const responseData = await response.json();
     if (!response.ok) {
-      throw new Error(
-        "Failed to fetch shift dimensions: " + responseData.detail
-      );
+      throw new Error("Failed to delete shift: " + responseData.detail);
     }
-    return responseData as ShiftDimensionT[];
   } catch (error) {
-    console.error("Failed to fetch shift dimensions:", error);
-    throw new Error("Failed to fetch shift dimensions, please try again later");
+    console.error("Failed to delete shift:", error);
+    throw new Error("Failed to delete shift, please try again later");
   }
 }
+
+//////////////////////////
+// Shift Dimensions //
+//////////////////////////
 
 export async function addShiftDimension(shiftDimension: ShiftDimensionT) {
   const options: RequestInit = {
@@ -166,6 +142,33 @@ export async function addShiftDimension(shiftDimension: ShiftDimensionT) {
   } catch (error) {
     console.error("Failed to add shift dimension:", error);
     throw new Error("Failed to add shift dimension, please try again later");
+  }
+}
+
+export async function getShiftDimensions(teamId: string) {
+  noStore();
+  const options: RequestInit = {
+    method: "GET",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const response = await fetch(
+      `${apiUrlShiftDimensions}/teams/${teamId}`,
+      options
+    );
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        "Failed to fetch shift dimensions: " + responseData.detail
+      );
+    }
+    return responseData as ShiftDimensionT[];
+  } catch (error) {
+    console.error("Failed to fetch shift dimensions:", error);
+    throw new Error("Failed to fetch shift dimensions, please try again later");
   }
 }
 
