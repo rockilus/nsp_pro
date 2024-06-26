@@ -24,7 +24,7 @@ import TableAddButton from "../buttons/table-add-button";
 // Types
 import { CoverageSelectorT } from "../../types/campaign";
 import { CoverageT } from "../../types/coverage";
-import { ScheduleT } from "../../types/schedule_temp";
+import { ScheduleT } from "../../types/schedule";
 
 dayjs.extend(utc);
 

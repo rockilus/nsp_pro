@@ -2,11 +2,14 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Actions
-import { toAssignmentT } from "./assignment";
-import { toObjectiveBreachT } from "./breach";
-import { toRequestT } from "./request";
+import { toAssignmentT, getAssignments } from "./assignment";
+import { toBreachT, getBreaches } from "./breach";
+import { toRequestT, getRequests } from "./request";
+import { getWorkers } from "./worker";
+import { getShifts } from "./shift";
 // Types
-import { ScheduleT, SolutionT, ValidateT } from "../../types/schedule_temp";
+import { ScheduleT, AssignmentT, ObjectiveBreachT } from "../../types/schedule";
+import { RequestT } from "../../types/request";
 
 dayjs.extend(utc);
 
@@ -20,22 +23,6 @@ export const toScheduleT = (data: any): ScheduleT => {
     missingCoverageDates: data.missingCoverageDates.map((isoDate: string) =>
       dayjs.utc(isoDate)
     ),
-  };
-};
-
-const toSolutionT = (data: any): SolutionT => {
-  return {
-    schedule: toScheduleT(data.schedule),
-    assignments: data.assignments.map(toAssignmentT),
-    objectiveBreaches: data.objectiveBreaches.map(toObjectiveBreachT),
-    requests: data.requests.map(toRequestT),
-  };
-};
-
-const toValidateT = (data: any): ValidateT => {
-  return {
-    schedule: toScheduleT(data.schedule),
-    assignments: data.assignments.map(toAssignmentT),
   };
 };
 
@@ -79,7 +66,17 @@ export async function solveSchedule(scheduleId: string, teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to solve schedule: " + responseData.detail);
     }
-    return toSolutionT(responseData) as SolutionT;
+    return {
+      schedule: toScheduleT(responseData.schedule),
+      assignments: responseData.assignments.map(toAssignmentT),
+      breaches: responseData.objectiveBreaches.map(toBreachT),
+      requests: responseData.requests.map(toRequestT),
+    } as {
+      schedule: ScheduleT;
+      assignments: AssignmentT[];
+      breaches: ObjectiveBreachT[];
+      requests: RequestT[];
+    };
   } catch (error) {
     console.error("Failed to solve schedule:", error);
     throw new Error("Failed to solve schedule, please try again later");
@@ -102,7 +99,10 @@ export async function validateSchedule(scheduleId: string, teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to validate schedule: " + responseData.detail);
     }
-    return toValidateT(responseData) as ValidateT;
+    return {
+      schedule: toScheduleT(responseData.schedule),
+      assignments: responseData.assignments.map(toAssignmentT),
+    } as { schedule: ScheduleT; assignments: AssignmentT[] };
   } catch (error) {
     console.error("Failed to validate schedule:", error);
     throw new Error("Failed to validate schedule, please try again later");
@@ -178,18 +178,31 @@ export async function deleteSchedule(scheduleId: string, teamId: string) {
 }
 
 //////////////////////////
-// Campaign Tab Data //
+// Schedule Tab Data //
 //////////////////////////
 
-// export async function getCampaignTabData(teamId: string) {
-//   try {
-//     const campaignTabData = await Promise.all([
-//       getShifts(teamId),
-//       getShiftDimensions(teamId),
-//     ]);
-//     return { shifts: campaignTabData[0], shiftDimensions: campaignTabData[1] };
-//   } catch (error) {
-//     console.error("Failed to fetch shifts tab data:", error);
-//     throw new Error("Failed to fetch shifts tab data, please try again later");
-//   }
-// }
+export async function getScheduleTabData(teamId: string) {
+  try {
+    const campaignTabData = await Promise.all([
+      getAssignments(teamId),
+      getBreaches(teamId),
+      getRequests(teamId),
+      getSchedule(teamId),
+      getShifts(teamId),
+      getWorkers(teamId),
+    ]);
+    return {
+      assignments: campaignTabData[0],
+      breaches: campaignTabData[1],
+      requests: campaignTabData[2],
+      schedule: campaignTabData[3],
+      shifts: campaignTabData[4],
+      workers: campaignTabData[5],
+    };
+  } catch (error) {
+    console.error("Failed to fetch schedule tab data:", error);
+    throw new Error(
+      "Failed to fetch schedule tab data, please try again later"
+    );
+  }
+}

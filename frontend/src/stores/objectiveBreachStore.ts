@@ -8,8 +8,7 @@ import { ObjectiveBreachT, VariableT } from "../components/Schedule/types";
 
 dayjs.extend(utc);
 
-const apiUrlObjectiveBreach =
-  process.env.NEXT_PUBLIC_API_URL + "/objective_breaches";
+const apiUrlObjectiveBreach = process.env.NEXT_PUBLIC_API_URL + "/breaches";
 
 type ObjectiveBreachStateT = {
   objectiveBreaches: ObjectiveBreachT[];
