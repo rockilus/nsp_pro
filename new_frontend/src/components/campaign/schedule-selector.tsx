@@ -1,7 +1,7 @@
 import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -33,7 +33,7 @@ export default function ScheduleSelector({
   handleAddSchedule: () => void;
   handleUpdateSchedule: (schedule: ScheduleT) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "campaign-page");
 
   return (
     <Box
@@ -63,7 +63,7 @@ export default function ScheduleSelector({
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          {t("common.campaign")}
+          {t("campaign")}
         </Typography>
       </Box>
       <Box
@@ -78,7 +78,7 @@ export default function ScheduleSelector({
             <Table aria-label="simple table">
               <TableBody>
                 <TableRowScheduleWIP
-                  name={t("common.start")}
+                  name={t("start")}
                   content={
                     <DatePicker
                       value={schedule.startDate}
@@ -101,7 +101,7 @@ export default function ScheduleSelector({
                   }
                 />
                 <TableRowScheduleWIP
-                  name={t("common.end")}
+                  name={t("end")}
                   content={
                     <DatePicker
                       value={schedule.endDate}
@@ -124,7 +124,7 @@ export default function ScheduleSelector({
                   }
                 />
                 <TableRowScheduleWIP
-                  name={t("common.status")}
+                  name={t("status")}
                   content={
                     <Chip
                       label={GetStatusLabel(lng, schedule.solveStatus)}
@@ -154,7 +154,7 @@ export default function ScheduleSelector({
               textTransform: "none",
             }}
           >
-            {t("campaign.start_new_campaign")}
+            {t("start_new_campaign")}
           </Button>
         )}
       </Box>

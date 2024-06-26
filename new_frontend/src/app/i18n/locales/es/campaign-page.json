@@ -1,0 +1,18 @@
+{
+    "campaign": "Campaña",
+    "constraints": "Restricciones",
+    "end": "Fin",
+    "full_period": "Periodo completo",
+    "hard_breach": "Incumplimiento obligatoria",
+    "no_solution": "No solución",
+    "not_solved": "No resolvido",
+    "planner": "Agenda",
+    "planners": "Agendas",
+    "select_all": "Seleccionar todo",
+    "select_none": "Deseleccionar todo",
+    "soft_breach": "Incumplimiento opcional",
+    "solved": "Resuelto",
+    "start": "Inicio",
+    "start_new_campaign": "Iniciar nueva campaña",
+    "status": "Estado"
+}
