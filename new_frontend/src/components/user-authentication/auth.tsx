@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { redirectToAuth } from "supertokens-auth-react";
 import SuperTokens from "supertokens-auth-react/ui";
 import { EmailPasswordPreBuiltUI } from "supertokens-auth-react/recipe/emailpassword/prebuiltui";
+import { EmailVerificationPreBuiltUI } from "supertokens-auth-react/recipe/emailverification/prebuiltui";
+
 // Components
 import UserAuthentication from "@/components/user-authentication/user-authentication";
 
@@ -11,7 +13,12 @@ export default function Auth() {
   // if the user visits a page that is not handled by us (like /auth/random), then we redirect them back to the auth page.
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
-    if (SuperTokens.canHandleRoute([EmailPasswordPreBuiltUI]) === false) {
+    if (
+      SuperTokens.canHandleRoute([
+        EmailPasswordPreBuiltUI,
+        // EmailVerificationPreBuiltUI,
+      ]) === false
+    ) {
       redirectToAuth({ redirectBack: false });
     } else {
       setLoaded(true);
@@ -19,9 +26,14 @@ export default function Auth() {
   }, []);
 
   if (loaded) {
-    // return SuperTokens.getRoutingComponent([EmailPasswordPreBuiltUI]);
-    return <UserAuthentication />;
+    return SuperTokens.getRoutingComponent([
+      EmailPasswordPreBuiltUI,
+      // EmailVerificationPreBuiltUI,
+    ]);
+    // return <UserAuthentication />;
   }
 
   return null;
 }
+
+// http://0.0.0.0:3000/auth/verify-email?rid=emailverification
