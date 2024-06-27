@@ -2,9 +2,9 @@ import dayjs from "dayjs";
 // MUI
 import { grey, brown } from "@mui/material/colors";
 // Types
-import { ObjectiveBreachT, ScheduleT } from "../../types/schedule";
+import { BreachT, ScheduleT } from "../../types/schedule";
 
-export const getBreachType = (breaches: ObjectiveBreachT[]): string => {
+export const getBreachType = (breaches: BreachT[]): string => {
   if (breaches.length === 0) {
     return "noBreach";
   }

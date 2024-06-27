@@ -10,7 +10,7 @@ import { WorkerT } from "../../../types/worker";
 import {
   AssignmentT,
   ScheduleT,
-  ObjectiveBreachT,
+  BreachT,
   SelectedCellT,
 } from "../../../types/schedule";
 import { RequestT } from "../../../types/request";
@@ -30,7 +30,7 @@ export default function ScheduleTableCellContent({
   requests: RequestT[];
   assignment: AssignmentT;
   schedule: ScheduleT;
-  breaches: ObjectiveBreachT[];
+  breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
   setSelectedCell: (seletedCell: SelectedCellT | null) => void;

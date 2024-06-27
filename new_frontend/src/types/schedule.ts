@@ -22,7 +22,7 @@ export type VariableT = {
   shiftId: string;
 };
 
-export type ObjectiveBreachT = {
+export type BreachT = {
   id: string;
   objectiveId: string;
   objectiveCategory: string;
@@ -55,7 +55,7 @@ export type ScheduleT = {
 export type SolutionT = {
   schedule: ScheduleT;
   assignments: AssignmentT[];
-  objectiveBreaches: ObjectiveBreachT[];
+  objectiveBreaches: BreachT[];
   requests: RequestT[];
 };
 
@@ -70,5 +70,5 @@ export type SelectedCellT = {
   worker: WorkerT;
   shift: ShiftT;
   requests: RequestT[];
-  breaches: ObjectiveBreachT[];
+  breaches: BreachT[];
 };

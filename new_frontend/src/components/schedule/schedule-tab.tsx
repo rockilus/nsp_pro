@@ -24,7 +24,7 @@ import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import {
   ScheduleT,
-  ObjectiveBreachT,
+  BreachT,
   AssignmentT,
   SelectedCellT,
 } from "../../types/schedule";
@@ -44,7 +44,7 @@ export default function ScheduleTab({
   const [requests, setRequests] = useState<RequestT[]>([]);
   const [schedule, setSchedule] = useState<ScheduleT | null>(null);
   const [assignments, setAssignments] = useState<AssignmentT[]>([]);
-  const [breaches, setBreaches] = useState<ObjectiveBreachT[]>([]);
+  const [breaches, setBreaches] = useState<BreachT[]>([]);
 
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
@@ -165,7 +165,7 @@ export default function ScheduleTab({
         />
         <BreachList
           lng={lng}
-          breaches={breaches} // schedule.objectiveBreaches
+          breaches={breaches}
           CBsDisplayed={CBsDisplayed}
           workers={workers}
           shifts={shifts}

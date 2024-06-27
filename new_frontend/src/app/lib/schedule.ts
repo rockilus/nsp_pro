@@ -8,7 +8,7 @@ import { toRequestT, getRequests } from "./request";
 import { getWorkers } from "./worker";
 import { getShifts } from "./shift";
 // Types
-import { ScheduleT, AssignmentT, ObjectiveBreachT } from "../../types/schedule";
+import { ScheduleT, AssignmentT, BreachT } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 
 dayjs.extend(utc);
@@ -74,7 +74,7 @@ export async function solveSchedule(scheduleId: string, teamId: string) {
     } as {
       schedule: ScheduleT;
       assignments: AssignmentT[];
-      breaches: ObjectiveBreachT[];
+      breaches: BreachT[];
       requests: RequestT[];
     };
   } catch (error) {

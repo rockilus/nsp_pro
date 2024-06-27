@@ -22,7 +22,7 @@ import { WorkerT } from "../../../types/worker";
 import {
   AssignmentT,
   ScheduleT,
-  ObjectiveBreachT,
+  BreachT,
   SelectedCellT,
 } from "../../../types/schedule";
 import { RequestT } from "../../../types/request";
@@ -48,7 +48,7 @@ export default function ScheduleTableShift({
   assignments: AssignmentT[];
   schedule: ScheduleT;
   dates: dayjs.Dayjs[];
-  breaches: ObjectiveBreachT[];
+  breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
   setSelectedCell: (selectedCell: SelectedCellT | null) => void;
