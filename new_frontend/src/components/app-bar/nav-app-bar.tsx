@@ -6,7 +6,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Image from "next/image";
 //Components
 import AccountMenu from "./account-menu";
-import NavLinks from "@/components/app-bar/nav-links";
+import NavLinks from "./nav-links";
 
 const logoWidthOriginal = 753;
 const logoHeightOriginal = 98;
@@ -32,7 +32,7 @@ const NavAppBar = ({ lng }: { lng: string }) => {
             priority
           />
           <NavLinks lng={lng} />
-          {/* <AccountMenu tabs={tabs} handleSelectTab={handleSelectTab} /> */}
+          <AccountMenu lng={lng} />
         </Box>
       </Toolbar>
     </AppBar>

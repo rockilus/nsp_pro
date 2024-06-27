@@ -1,0 +1,21 @@
+{
+    "cancel": "Annuler",
+    "change_password": "Changer le mot de passe",
+    "current_password": "Mot de passe actuel",
+    "email": "Email",
+    "first_name": "Prénom",
+    "incorrect_password": "Mot de passe incorrect",
+    "language": "Langue",
+    "last_name": "Nom",
+    "new_password": "Nouveau mot de passe",
+    "new_password_confirm": "Confirmer le nouveau mot de passe",
+    "no_user_found": "Aucun utilisateur trouvé",
+    "not_verified": "Non vérifié",
+    "password": "Mot de passe",
+    "password_empty_error": "Le mot de passe ne peut pas être vide",
+    "password_match_error": "Les mots de passe ne correspondent pas",
+    "send_verification_email": "Envoyer un email de vérification",
+    "update_password": "Mettre à jour le mot de passe",
+    "user_profile": "Profil utilisateur",
+    "verified": "Vérifié"
+}

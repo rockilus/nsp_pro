@@ -1,25 +1,28 @@
+"use client";
+
 import * as React from "react";
 import SessionReact from "supertokens-auth-react/recipe/session";
 import SuperTokensReact from "supertokens-auth-react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/app/i18n/client";
+import Link from "next/link";
 // MUI
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-// Stores
-// import { useTeamStore } from "../../stores/teamStore";
 
-interface Props {
-  tabs: { id: string; label: string; type: string }[];
-  handleSelectTab: (tabId: string) => void;
-}
-
-export default function AccountMenu({ tabs, handleSelectTab }: Props) {
-  const { t } = useTranslation();
+export default function AccountMenu({ lng }: { lng: string }) {
+  const { t } = useTranslation(lng, "app-bar");
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  // const clearTeams = useTeamStore((state) => state.clearTeams);
+
+  const links: { name: string; label: string; href: string }[] = [
+    {
+      name: "profile",
+      label: t("profile"),
+      href: `/${lng}/plan/profile`,
+    },
+  ];
 
   const handleLogout = async () => {
     await SessionReact.signOut();
@@ -62,21 +65,23 @@ export default function AccountMenu({ tabs, handleSelectTab }: Props) {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        {tabs
-          .filter((t) => t.type === "config")
-          .map((tab) => (
+        {links.map((link) => {
+          return (
             <MenuItem
-              key={tab.id}
-              onClick={() => {
-                handleSelectTab(tab.id);
-                handleClose();
-              }}
+              key={link.name}
+              // onClick={() => {
+              //   handleSelectTab(tab.id);
+              //   handleClose();
+              // }}
             >
-              {tab.label}
+              <Link key={link.name} href={link.href}>
+                {link.label}
+              </Link>
             </MenuItem>
-          ))}
+          );
+        })}
         {/* <MenuItem onClick={handleClose}>My account</MenuItem> */}
-        <MenuItem onClick={handleLogout}>{t("common.sign_out")}</MenuItem>
+        <MenuItem onClick={handleLogout}>{t("sign_out")}</MenuItem>
       </Menu>
     </div>
   );

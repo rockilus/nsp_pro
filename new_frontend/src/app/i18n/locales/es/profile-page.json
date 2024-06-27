@@ -1,0 +1,21 @@
+{
+    "cancel": "Cancelar",
+    "change_password": "Cambiar contraseña",
+    "current_password": "Contraseña actual",
+    "email": "Email",
+    "first_name": "Nombre",
+    "incorrect_password": "Contraseña incorrecta",
+    "language": "Idioma",
+    "last_name": "Apellido",
+    "new_password": "Nueva contraseña",
+    "new_password_confirm": "Confirmar nueva contraseña",
+    "no_user_found": "No se ha encontrado ningún usuario",
+    "not_verified": "No verificado",
+    "password": "Contraseña",
+    "password_empty_error": "La contraseña no puede estar vacía",
+    "password_match_error": "Las contraseñas no coinciden",
+    "send_verification_email": "Enviar email de verificación",
+    "update_password": "Actualizar contraseña",
+    "user_profile": "Perfil de usuario",
+    "verified": "Verificado"
+}

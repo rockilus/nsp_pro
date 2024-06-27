@@ -26,6 +26,22 @@ from services.user_services import update_user as update_user_service
 router = APIRouter()
 
 
+@router.get("/users/me")
+async def get_current_user(
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> UserMessage:
+    try:
+        user_id = session.get_user_id()
+        if not await authz_check(user_id, "read", "user", user_id):
+            raise NotAuthorizedError("You do not have permission to read the user")
+        user = user_db.get_user_by_id(user_id)
+        response = core_to_msg_user(user)
+    except Exception as e:
+        log_info("Failed to get current user")
+        handle_routes_errors(e)
+    return response
+
+
 @router.put("/users/{user_id}")
 async def update_user(
     user_id: str,

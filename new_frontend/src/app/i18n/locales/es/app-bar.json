@@ -2,8 +2,10 @@
     "campaign": "Campaña",
     "constraints": "Restricciones",
     "coverages": "Agendas",
+    "profile": "Perfil",
     "requests": "Solicitudes",
     "schedule": "Horario",
+    "sign_out": "Cerrar sesión",
     "shifts": "Turnos",
     "stats": "Estadísticas",
     "workers": "Trabajadores"
