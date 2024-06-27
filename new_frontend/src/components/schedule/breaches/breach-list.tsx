@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 // Components
 import BreachItem from "./breach-item";
 // Types
-import { ObjectiveBreachT } from "../../../types/schedule";
+import { BreachT } from "../../../types/schedule";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 
@@ -21,7 +21,7 @@ export default function BreachList({
   removeCBsDisplayed,
 }: {
   lng: string;
-  breaches: ObjectiveBreachT[];
+  breaches: BreachT[];
   CBsDisplayed: string[];
   workers: WorkerT[];
   shifts: ShiftT[];
@@ -30,10 +30,10 @@ export default function BreachList({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  const CBsConstraint: ObjectiveBreachT[] = breaches
+  const CBsConstraint: BreachT[] = breaches
     .filter((cb) => cb.objectiveCategory === "constraint")
     .sort((a, b) => (a.hardToSoft ? -1 : 1));
-  const CBsRequest: ObjectiveBreachT[] = breaches.filter(
+  const CBsRequest: BreachT[] = breaches.filter(
     (cb) => cb.objectiveCategory === "request"
   );
 

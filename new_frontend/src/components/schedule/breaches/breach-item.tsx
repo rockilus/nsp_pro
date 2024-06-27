@@ -6,7 +6,7 @@ import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 // Types
-import { ObjectiveBreachT } from "../../../types/schedule";
+import { BreachT } from "../../../types/schedule";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 
@@ -20,7 +20,7 @@ export default function BreachItem({
   addCBsDisplayed,
   removeCBsDisplayed,
 }: {
-  breach: ObjectiveBreachT;
+  breach: BreachT;
   CBDisplayed: boolean;
   workers: WorkerT[];
   shifts: ShiftT[];
@@ -76,8 +76,8 @@ export default function BreachItem({
       {getShiftNames()}
 
       <Typography variant="body2">
-        {objectiveBreach.objectiveCategory.charAt(0).toUpperCase() +
-          objectiveBreach.objectiveCategory.slice(1)}
+        {breach.objectiveCategory.charAt(0).toUpperCase() +
+          breach.objectiveCategory.slice(1)}
       </Typography> */}
       <ListItemText primary={breach.description} />
       <FiberManualRecordIcon

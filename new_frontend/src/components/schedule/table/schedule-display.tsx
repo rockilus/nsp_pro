@@ -10,7 +10,7 @@ import ScheduleTableWorker from "./schedule-table-worker";
 import {
   AssignmentT,
   ScheduleT,
-  ObjectiveBreachT,
+  BreachT,
   SelectedCellT,
 } from "../../../types/schedule";
 import { ShiftT } from "../../../types/shift";
@@ -33,7 +33,7 @@ export default function ScheduleDisplay({
 }: {
   schedule: ScheduleT;
   assignments: AssignmentT[];
-  breaches: ObjectiveBreachT[];
+  breaches: BreachT[];
   workers: WorkerT[];
   shifts: ShiftT[];
   requests: RequestT[];

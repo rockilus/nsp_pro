@@ -20,7 +20,7 @@ import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 import {
   AssignmentT,
-  ObjectiveBreachT,
+  BreachT,
   ScheduleT,
   SelectedCellT,
 } from "../../../types/schedule";
@@ -47,7 +47,7 @@ export default function ScheduleTableWorker({
   assignments: AssignmentT[];
   schedule: ScheduleT;
   dates: dayjs.Dayjs[];
-  breaches: ObjectiveBreachT[];
+  breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
   setSelectedCell: (selectedCell: SelectedCellT | null) => void;

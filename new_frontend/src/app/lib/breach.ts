@@ -2,13 +2,13 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { ObjectiveBreachT, VariableT } from "../../types/schedule";
+import { BreachT, VariableT } from "../../types/schedule";
 
 dayjs.extend(utc);
 
 const apiUrlBreach = process.env.NEXT_PUBLIC_API_URL + "/breaches";
 
-export const toBreachT = (data: any): ObjectiveBreachT => {
+export const toBreachT = (data: any): BreachT => {
   return {
     ...data,
     variables: data.variables.map((variable: any) => {
@@ -40,7 +40,7 @@ export async function getBreaches(teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to fetch breaches: " + responseData.detail);
     }
-    return responseData.map(toBreachT) as ObjectiveBreachT[];
+    return responseData.map(toBreachT) as BreachT[];
   } catch (error) {
     console.error("Failed to fetch breaches:", error);
     throw new Error("Failed to fetch breaches, please try again later");
