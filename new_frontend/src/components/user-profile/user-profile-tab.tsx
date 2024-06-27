@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "../../app/i18n/client";
-import i18n from "i18next";
 // MUI
 import Box from "@mui/material/Box";
 import CheckIcon from "@mui/icons-material/Check";
@@ -87,9 +86,8 @@ export default function UserProfileTab({ lng }: { lng: string }) {
           break;
         }
       }
-      if (userState.language !== user.language) {
-        i18n.changeLanguage(userState.language);
-        localStorage.setItem("i18nextLng", userState.language);
+      if (userState.language !== lng) {
+        window.location.href = `/${userState.language}/plan/profile`;
       }
     }
     setFieldEditing(null);
