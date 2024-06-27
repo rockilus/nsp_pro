@@ -14,16 +14,39 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from integrations.email_sender import send_verification_email
 from logger import log_info
 from routes.api_model import PasswordDataMessage, UserMessage
 from scripts.setup_database import user_db
-from services.user_services import change_user_password as change_user_password_service
+from services.user_services import (
+    change_user_password as change_user_password_service,
+)
 from services.user_services import update_user as update_user_service
 
 router = APIRouter()
+
+
+@router.get("/users/me")
+async def get_current_user(
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> UserMessage:
+    try:
+        user_id = session.get_user_id()
+        if not await authz_check(user_id, "read", "user", user_id):
+            raise NotAuthorizedError(
+                "You do not have permission to read the user"
+            )
+        user = user_db.get_user_by_id(user_id)
+        response = core_to_msg_user(user)
+    except Exception as e:
+        log_info("Failed to get current user")
+        handle_routes_errors(e)
+    return response
 
 
 @router.put("/users/{user_id}")
@@ -33,8 +56,12 @@ async def update_user(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> UserMessage:
     try:
-        if not await authz_check(session.get_user_id(), "update", "user", user_id):
-            raise NotAuthorizedError("You do not have permission to update a user")
+        if not await authz_check(
+            session.get_user_id(), "update", "user", user_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update a user"
+            )
         u_data = msg_to_core_user(user)
         updated_user = await update_user_service(u_data)
         response = core_to_msg_user(updated_user)
@@ -54,7 +81,9 @@ async def change_user_password(
         if not await authz_check(
             session.get_user_id(), "change-password", "user", user_id
         ):
-            raise NotAuthorizedError("You do not have permission to update a user")
+            raise NotAuthorizedError(
+                "You do not have permission to update a user"
+            )
         tenant_id = session.get_tenant_id()
         p_data = msg_to_core_password_data(password_data)
         if p_data.new_password != p_data.new_password_confirm:
@@ -73,7 +102,9 @@ async def request_verification_email(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> Dict:
     try:
-        if not await authz_check(session.get_user_id(), "update", "user", user_id):
+        if not await authz_check(
+            session.get_user_id(), "update", "user", user_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to request verification email"
             )
