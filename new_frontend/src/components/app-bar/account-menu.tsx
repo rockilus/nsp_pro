@@ -3,7 +3,7 @@
 import * as React from "react";
 import SessionReact from "supertokens-auth-react/recipe/session";
 import SuperTokensReact from "supertokens-auth-react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/app/i18n/client";
 import Link from "next/link";
 // MUI
 import AccountCircle from "@mui/icons-material/AccountCircle";
@@ -12,14 +12,14 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
 export default function AccountMenu({ lng }: { lng: string }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "app-bar");
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const links: { name: string; label: string; href: string }[] = [
     {
       name: "profile",
-      label: t("common.profile"),
+      label: t("profile"),
       href: `/${lng}/plan/profile`,
     },
   ];
@@ -81,7 +81,7 @@ export default function AccountMenu({ lng }: { lng: string }) {
           );
         })}
         {/* <MenuItem onClick={handleClose}>My account</MenuItem> */}
-        <MenuItem onClick={handleLogout}>{t("common.sign_out")}</MenuItem>
+        <MenuItem onClick={handleLogout}>{t("sign_out")}</MenuItem>
       </Menu>
     </div>
   );

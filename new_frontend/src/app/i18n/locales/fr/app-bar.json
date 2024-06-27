@@ -2,8 +2,10 @@
     "campaign": "Campagne",
     "constraints": "Contraintes",
     "coverages": "Agendas",
+    "profile": "Profil",
     "requests": "Demandes",
     "schedule": "Planning",
+    "sign_out": "Déconnexion",
     "shifts": "Tâches",
     "stats": "Stats",
     "workers": "Travailleurs"
