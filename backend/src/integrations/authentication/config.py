@@ -31,7 +31,7 @@ app_info = InputAppInfo(
 framework = "fastapi"
 
 recipe_list = [
-    # emailverification.init(mode="REQUIRED"),
+    emailverification.init(mode="REQUIRED"),
     session.init(),
     emailpassword.init(
         override=emailpassword.InputOverrideConfig(

@@ -1,9 +1,11 @@
 import EmailPasswordReact from "supertokens-auth-react/recipe/emailpassword";
+import EmailVerification from "supertokens-auth-react/recipe/emailverification";
 import Session from "supertokens-auth-react/recipe/session";
 import { appInfo } from "./appInfo";
 import { useRouter } from "next/navigation";
 import { SuperTokensConfig } from "supertokens-auth-react/lib/build/types";
 import { EmailPasswordPreBuiltUI } from "supertokens-auth-react/recipe/emailpassword/prebuiltui";
+import { EmailVerificationPreBuiltUI } from "supertokens-auth-react/recipe/emailverification/prebuiltui";
 
 const routerInfo: { router?: ReturnType<typeof useRouter>; pathName?: string } =
   {};
@@ -19,7 +21,11 @@ export function setRouter(
 export const frontendConfig = (): SuperTokensConfig => {
   return {
     appInfo,
-    recipeList: [EmailPasswordReact.init(), Session.init()],
+    recipeList: [
+      EmailPasswordReact.init(),
+      EmailVerification.init({ mode: "REQUIRED" }),
+      Session.init(),
+    ],
     windowHandler: (orig) => {
       return {
         ...orig,
@@ -38,4 +44,7 @@ export const recipeDetails = {
   docsLink: "https://supertokens.com/docs/emailpassword/introduction",
 };
 
-export const PreBuiltUIList = [EmailPasswordPreBuiltUI];
+export const PreBuiltUIList = [
+  EmailPasswordPreBuiltUI,
+  EmailVerificationPreBuiltUI,
+];
