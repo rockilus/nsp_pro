@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
@@ -26,7 +26,7 @@ export default function ChangePasswordDialog({
     newPasswordConfirm: string;
   }) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "profile-page");
 
   const [passwordData, setPasswordData] = useState<{
     currentPassword: string;
@@ -93,7 +93,7 @@ export default function ChangePasswordDialog({
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {t("user.change_password")}
+          {t("change_password")}
         </DialogTitle>
         <DialogContent>
           <Box
@@ -108,7 +108,7 @@ export default function ChangePasswordDialog({
           >
             <TextField
               id="outlined-password-input"
-              label={t("user.current_password")}
+              label={t("current_password")}
               type={showCurrentPassword ? "text" : "password"}
               InputProps={{
                 endAdornment: (
@@ -137,13 +137,11 @@ export default function ChangePasswordDialog({
                 }
               }}
               error={currentPasswordError}
-              helperText={
-                currentPasswordError ? t("user.password_empty_error") : ""
-              }
+              helperText={currentPasswordError ? t("password_empty_error") : ""}
             />
             <TextField
               id="outlined-password-input"
-              label={t("user.new_password")}
+              label={t("new_password")}
               type={showNewPassword ? "text" : "password"}
               InputProps={{
                 endAdornment: (
@@ -170,13 +168,11 @@ export default function ChangePasswordDialog({
                 }
               }}
               error={newPasswordError}
-              helperText={
-                newPasswordError ? t("user.password_empty_error") : ""
-              }
+              helperText={newPasswordError ? t("password_empty_error") : ""}
             />
             <TextField
               id="outlined-password-input"
-              label={t("user.new_password_confirm")}
+              label={t("new_password_confirm")}
               type={showNewPasswordConfirm ? "text" : "password"}
               InputProps={{
                 endAdornment: (
@@ -210,15 +206,15 @@ export default function ChangePasswordDialog({
               }}
               error={newPasswordConfirmError}
               helperText={
-                newPasswordConfirmError ? t("user.password_match_error") : ""
+                newPasswordConfirmError ? t("password_match_error") : ""
               }
             />
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>{t("common.cancel")}</Button>
+          <Button onClick={handleClose}>{t("cancel")}</Button>
           <Button onClick={handleUpdatePasswordClick} autoFocus>
-            {t("user.update_password")}
+            {t("update_password")}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../app/i18n/client";
 import i18n from "i18next";
 // MUI
 import Box from "@mui/material/Box";
@@ -35,16 +35,16 @@ import { UserT } from "../../types/user";
 import { languages } from "../../constants/constants";
 
 export default function UserProfileTab({ lng }: { lng: string }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(lng, "profile-page");
 
   const [user, setUser] = useState<UserT | null>(null);
   const [fieldEditing, setFieldEditing] = useState<string | null>(null);
   const [userState, setUserState] = useState<UserT | null>(user);
 
   const tableFields: Record<string, string>[] = [
-    { name: "firstName", label: t("user.first_name") },
-    { name: "lastName", label: t("user.last_name") },
-    // { name: "email", label: t("user.email") },
+    { name: "firstName", label: t("first_name") },
+    { name: "lastName", label: t("last_name") },
+    // { name: "email", label: t("email") },
   ];
 
   //////////////////////////
@@ -146,7 +146,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
           align="left"
           sx={{ fontWeight: "bold" }}
         >
-          {t("user.user_profile")}
+          {t("user_profile")}
         </Typography>
       </Box>
       {user && userState ? (
@@ -215,7 +215,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
               <TableRow
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
-                <TableCell sx={{ paddingY: 0 }}>{t("user.email")}</TableCell>
+                <TableCell sx={{ paddingY: 0 }}>{t("email")}</TableCell>
                 <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
                   {fieldEditing === "email" ? (
                     <TextField
@@ -244,13 +244,13 @@ export default function UserProfileTab({ lng }: { lng: string }) {
                       <Box sx={{ display: "flex", flexDirection: "row" }}>
                         <Typography>{user.email}</Typography>
                         {/* <Chip
-                          label={t("user.verified")}
+                          label={t("verified")}
                           color="success"
                           variant="outlined"
                           sx={{ height: "20px" }}
                         /> */}
                         <Chip
-                          label={t("user.not_verified")}
+                          label={t("not_verified")}
                           color="default"
                           variant="outlined"
                           sx={{ height: "20px" }}
@@ -260,7 +260,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
                         onClick={handleSendVerificationEmail}
                         sx={{ cursor: "pointer", underline: "hover" }}
                       >
-                        {t("user.send_verification_email")}
+                        {t("send_verification_email")}
                       </Link>
                     </Box>
                   )}
@@ -285,7 +285,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
               <TableRow
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
-                <TableCell sx={{ paddingY: 0 }}>{t("user.password")}</TableCell>
+                <TableCell sx={{ paddingY: 0 }}>{t("password")}</TableCell>
                 <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
                   <Typography>●●●●●●●●●</Typography>
                 </TableCell>
@@ -299,7 +299,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
               <TableRow
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
-                <TableCell sx={{ paddingY: 0 }}>{t("user.language")}</TableCell>
+                <TableCell sx={{ paddingY: 0 }}>{t("language")}</TableCell>
                 <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
                   {fieldEditing === "language" ? (
                     <FormControl fullWidth>
@@ -341,7 +341,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
           </Table>
         </TableContainer>
       ) : (
-        <Box sx={{ padding: 2 }}>{t("user.no_user_found")}</Box>
+        <Box sx={{ padding: 2 }}>{t("no_user_found")}</Box>
       )}
     </Box>
   );
