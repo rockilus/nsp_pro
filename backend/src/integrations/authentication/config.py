@@ -1,7 +1,13 @@
+from integrations.authentication.authn_emails import (
+    custom_emailverification_delivery,
+)
 from integrations.authentication.override_func import (
     override_emailpassword_functions,
 )
 from supertokens_python import InputAppInfo, SupertokensConfig
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig,
+)
 from supertokens_python.recipe import (
     dashboard,
     emailpassword,
@@ -31,7 +37,12 @@ app_info = InputAppInfo(
 framework = "fastapi"
 
 recipe_list = [
-    emailverification.init(mode="REQUIRED"),
+    emailverification.init(
+        mode="REQUIRED",
+        email_delivery=EmailDeliveryConfig(
+            override=custom_emailverification_delivery
+        ),
+    ),
     session.init(),
     emailpassword.init(
         override=emailpassword.InputOverrideConfig(
