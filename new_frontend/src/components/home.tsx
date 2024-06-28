@@ -1,11 +1,11 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-// Components
-import { TryRefreshComponent } from "./tryRefreshClientComponent";
-import { SessionAuthForNextJS } from "./sessionAuthForNextJS";
 import jwksClient from "jwks-rsa";
 import JsonWebToken from "jsonwebtoken";
 import type { JwtHeader, JwtPayload, SigningKeyCallback } from "jsonwebtoken";
+// Components
+import { TryRefreshComponent } from "./tryRefreshClientComponent";
+import { SessionAuthForNextJS } from "./sessionAuthForNextJS";
 import { appInfo } from "../config/appInfo";
 
 const client = jwksClient({
@@ -57,14 +57,30 @@ export async function getSSRSessionHelper(): Promise<{
   try {
     if (accessToken) {
       const decoded = await verifyToken(accessToken);
-      return { accessTokenPayload: decoded, hasToken, error: undefined };
+      return {
+        accessTokenPayload: decoded,
+        hasToken,
+        error: undefined,
+      };
     }
-    return { accessTokenPayload: undefined, hasToken, error: undefined };
+    return {
+      accessTokenPayload: undefined,
+      hasToken,
+      error: undefined,
+    };
   } catch (error) {
     if (error instanceof JsonWebToken.TokenExpiredError) {
-      return { accessTokenPayload: undefined, hasToken, error: undefined };
+      return {
+        accessTokenPayload: undefined,
+        hasToken,
+        error: undefined,
+      };
     }
-    return { accessTokenPayload: undefined, hasToken, error: error as Error };
+    return {
+      accessTokenPayload: undefined,
+      hasToken,
+      error: error as Error,
+    };
   }
 }
 
@@ -103,9 +119,11 @@ export async function HomePage() {
    * SessionAuthForNextJS will handle proper redirection for the user based on the different session states.
    * It will redirect to the login page if the session does not exist etc.
    */
+  console.log("rendering HomePage");
+
   return (
-    <SessionAuthForNextJS>
-      <div>Your user id is: {accessTokenPayload.sub}</div>
-    </SessionAuthForNextJS>
+    // <SessionAuthForNextJS>
+    <div>Your user id is: {accessTokenPayload.sub}</div>
+    // </SessionAuthForNextJS>
   );
 }

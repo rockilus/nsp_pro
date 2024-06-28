@@ -4,8 +4,11 @@ import { redirect } from "next/navigation";
 import { TryRefreshComponent } from "./tryRefreshClientComponent";
 import { SessionAuthForNextJS } from "./sessionAuthForNextJS";
 import { getSSRSessionHelper } from "./home";
+import { checkEmailVerified } from "./checkEmailVerified";
 
 const SessionHandler = async ({ children }: { children: React.ReactNode }) => {
+  console.log("SessionHandler running...");
+
   const { accessTokenPayload, hasToken, error } = await getSSRSessionHelper();
 
   if (error) {
@@ -20,6 +23,8 @@ const SessionHandler = async ({ children }: { children: React.ReactNode }) => {
   // `accessTokenPayload` will be undefined if it the session does not exist or has expired
   if (accessTokenPayload === undefined) {
     if (!hasToken) {
+      console.log("redirecting to /auth");
+
       /**
        * This means that the user is not logged in. If you want to display some other UI in this
        * case, you can do so here.
@@ -36,7 +41,11 @@ const SessionHandler = async ({ children }: { children: React.ReactNode }) => {
     return <TryRefreshComponent key={Date.now()} />;
   }
 
-  return <SessionAuthForNextJS>{children}</SessionAuthForNextJS>;
+  return (
+    <SessionAuthForNextJS doRedirection={true} requireAuth={true}>
+      {children}
+    </SessionAuthForNextJS>
+  );
 };
 
 export default SessionHandler;
