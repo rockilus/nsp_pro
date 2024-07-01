@@ -1,10 +1,18 @@
-import { signUp, signIn } from "supertokens-web-js/recipe/emailpassword";
+import {
+  signUp,
+  signIn,
+  sendPasswordResetEmail,
+} from "supertokens-web-js/recipe/emailpassword";
 import {
   sendVerificationEmail,
   verifyEmail,
 } from "supertokens-web-js/recipe/emailverification";
 import Session from "supertokens-web-js/recipe/session";
 import z from "zod";
+
+//////////////////////////
+// Authentication //
+//////////////////////////
 
 const FormSchema = z.object({
   email: z.string({
@@ -77,8 +85,6 @@ export async function signUpClicked(
             },
           ],
         });
-
-        console.log("response", response);
 
         if (response.status === "FIELD_ERROR") {
           // one of the input formFields failed validaiton
@@ -226,11 +232,13 @@ export async function signInClicked(
       }
       break;
     default:
-      console.log("default case");
-
       return { message: "Failed to sign in." };
   }
 }
+
+//////////////////////////
+// Verify email //
+//////////////////////////
 
 export async function sendEmail() {
   try {
@@ -285,5 +293,110 @@ export async function checkAuthNSessionExist() {
   } else {
     // user has not logged in yet
     return false;
+  }
+}
+
+//////////////////////////
+// Reset password //
+//////////////////////////
+
+const FormSchemaReset = z.object({
+  email: z.string({
+    invalid_type_error: "Please enter a valid email address.",
+  }),
+});
+
+export type StateReset = {
+  errors?: {
+    email?: string[];
+  };
+  message?: string | null;
+};
+
+export async function sendEmailClicked(
+  prevState: StateReset | undefined | null,
+  formData: FormData | string
+) {
+  switch (typeof formData) {
+    case "string":
+      switch (formData) {
+        case "CLEAR_EMAIL_ERROR":
+          return {
+            errors: {
+              email: undefined,
+            },
+            message: null,
+          };
+        case "CLEAR_EMAIL_SUCCESS":
+          return {
+            errors: {
+              email: undefined,
+            },
+            message: null,
+          };
+        default:
+          return prevState;
+      }
+    case "object":
+      const validatedFields = FormSchemaReset.safeParse({
+        email: formData.get("email"),
+      });
+
+      if (!validatedFields.success) {
+        return {
+          errors: validatedFields.error.flatten().fieldErrors,
+          message: "Missing Fields.",
+        };
+      }
+
+      const { email } = validatedFields.data;
+
+      try {
+        let response = await sendPasswordResetEmail({
+          formFields: [
+            {
+              id: "email",
+              value: email,
+            },
+          ],
+        });
+        let errorState = null;
+        if (response.status === "FIELD_ERROR") {
+          response.formFields.forEach((formField) => {
+            if (formField.id === "email") {
+              // Email validation failed (for example incorrect email syntax).
+              errorState = {
+                errors: {
+                  email: [formField.error],
+                },
+                message: "Failed to send reset password email.",
+              };
+            }
+          });
+        } else if (response.status === "PASSWORD_RESET_NOT_ALLOWED") {
+          // this can happen due to automatic account linking. Please read our account linking docs
+          errorState = {
+            errors: {
+              email: [response.reason],
+            },
+            message: "Failed to send reset password email.",
+          };
+        } else {
+          // reset password email sent.
+          return { message: "success" };
+        }
+        return errorState;
+      } catch (err: any) {
+        if (err.isSuperTokensGeneralError === true) {
+          // this may be a custom error message sent from the API by you.
+          window.alert(err.message);
+        } else {
+          window.alert("Oops! Something went wrong.");
+        }
+      }
+
+      break;
+    default:
+      return { message: "Failed to send reset password email." };
   }
 }

@@ -17,25 +17,7 @@ import Container from "@mui/material/Container";
 // Lib
 import { signInClicked, State } from "../../app/lib/authentication";
 
-// function Copyright(props: any) {
-//   return (
-//     <Typography
-//       variant="body2"
-//       color="text.secondary"
-//       align="center"
-//       {...props}
-//     >
-//       {"Copyright © "}
-//       <Link color="inherit" href="https://mui.com/">
-//         Your Website
-//       </Link>{" "}
-//       {new Date().getFullYear()}
-//       {"."}
-//     </Typography>
-//   );
-// }
-
-export default function SignIn() {
+export default function ResetPassword() {
   const initialState: State = { message: null, errors: {} };
   const [state, dispatch] = useFormState(signInClicked, initialState);
 
@@ -110,7 +92,7 @@ export default function SignIn() {
           </Button>
           <Grid container>
             <Grid item xs>
-              <Link href="/auth/reset-password" variant="body2">
+              <Link href="#" variant="body2">
                 Forgot password?
               </Link>
             </Grid>
@@ -126,7 +108,6 @@ export default function SignIn() {
           </Grid>
         </Box>
       </Box>
-      {/* <Copyright sx={{ mt: 8, mb: 4 }} /> */}
     </Container>
   );
 }
