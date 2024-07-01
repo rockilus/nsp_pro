@@ -7,7 +7,10 @@ from supertokens_python.recipe import (
     session,
 )
 
-from integrations.authentication.authn_emails import custom_emailverification_delivery
+from integrations.authentication.authn_emails import (
+    custom_email_deliver,
+    custom_emailverification_delivery,
+)
 from integrations.authentication.override_func import override_emailpassword_functions
 from utils.env_config import (
     API_URL,
@@ -40,7 +43,8 @@ recipe_list = [
     emailpassword.init(
         override=emailpassword.InputOverrideConfig(
             functions=override_emailpassword_functions
-        )
+        ),
+        email_delivery=EmailDeliveryConfig(override=custom_email_deliver),
     ),
     dashboard.init(
         admins=list(ST_DASHBOARD_ADMINS),
