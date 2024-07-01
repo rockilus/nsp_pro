@@ -3,8 +3,8 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 // Components
-import SignIn from "@/components/user-authentication/sign-in";
-import SignUp from "@/components/user-authentication/sign-up";
+import SignIn from "./sign-in";
+import SignUp from "./sign-up";
 
 export default function UserAuthentication() {
   const searchParams = useSearchParams();

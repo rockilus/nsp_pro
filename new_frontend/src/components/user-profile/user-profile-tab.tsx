@@ -22,12 +22,7 @@ import Typography from "@mui/material/Typography";
 // Components
 import ChangePasswordDialog from "./change-password-dialog";
 // Actions
-import {
-  getUser,
-  updateUser,
-  updatePassword,
-  sendVerificationEmail,
-} from "../../app/lib/user";
+import { getUser, updateUser, updatePassword } from "../../app/lib/user";
 // Types
 import { UserT } from "../../types/user";
 // Constants
@@ -64,13 +59,6 @@ export default function UserProfileTab({ lng }: { lng: string }) {
       throw new Error("User not found");
     }
     await updatePassword(passwordData, user.id);
-  };
-
-  const handleSendVerificationEmail = async () => {
-    if (!user) {
-      throw new Error("User not found");
-    }
-    await sendVerificationEmail(user.id);
   };
 
   const handleEditConfirm = () => {
@@ -254,12 +242,6 @@ export default function UserProfileTab({ lng }: { lng: string }) {
                           sx={{ height: "20px" }}
                         />
                       </Box>
-                      <Link
-                        onClick={handleSendVerificationEmail}
-                        sx={{ cursor: "pointer", underline: "hover" }}
-                      >
-                        {t("send_verification_email")}
-                      </Link>
                     </Box>
                   )}
                 </TableCell>

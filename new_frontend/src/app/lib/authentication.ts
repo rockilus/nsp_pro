@@ -1,5 +1,9 @@
-import { error } from "console";
 import { signUp, signIn } from "supertokens-web-js/recipe/emailpassword";
+import {
+  sendVerificationEmail,
+  verifyEmail,
+} from "supertokens-web-js/recipe/emailverification";
+import Session from "supertokens-web-js/recipe/session";
 import z from "zod";
 
 const FormSchema = z.object({
@@ -225,5 +229,61 @@ export async function signInClicked(
       console.log("default case");
 
       return { message: "Failed to sign in." };
+  }
+}
+
+export async function sendEmail() {
+  try {
+    let response = await sendVerificationEmail();
+    if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+      // This can happen if the info about email verification in the session was outdated.
+      // Redirect the user to the home page
+      return "alreadyVerified";
+    } else {
+      // email was sent successfully.
+      return "success";
+    }
+  } catch (err: any) {
+    return "error";
+    // if (err.isSuperTokensGeneralError === true) {
+    //   // this may be a custom error message sent from the API by you.
+    //   // window.alert(err.message);
+    //   console.log(err.message);
+    // } else {
+    //   // window.alert("Oops! Something went wrong.");
+    //   console.log("Oops! Something went wrong.");
+    //   throw err;
+    // }
+  }
+}
+
+export async function consumeVerificationCode() {
+  try {
+    let response = await verifyEmail();
+    if (response.status === "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR") {
+      // This can happen if the verification code is expired or invalid.
+      // You should ask the user to retry
+
+      return "invalidToken";
+    } else {
+      // email was verified successfully.
+      return "success";
+    }
+  } catch (err: any) {
+    return "error";
+    //   if (err.isSuperTokensGeneralError === true) {
+    //     // this may be a custom error message sent from the API by you.
+    //   } else {
+    //   }
+  }
+}
+
+export async function checkAuthNSessionExist() {
+  if (await Session.doesSessionExist()) {
+    // user is logged in
+    return true;
+  } else {
+    // user has not logged in yet
+    return false;
   }
 }

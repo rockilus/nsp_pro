@@ -15,7 +15,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 // Lib
-import { signUpClicked, State } from "@/app/lib/authentication";
+import { signUpClicked, State } from "../../app/lib/authentication";
 
 // function Copyright(props: any) {
 //   return (

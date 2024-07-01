@@ -1,9 +1,10 @@
+import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import { SuperTokensProvider } from "../components/supertokensProvider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
-import { TeamStoreProvider } from "@/providers/team-store-provider";
+// Components
+import { SuperTokensProvider } from "../components/supertokensProvider";
+import { TeamStoreProvider } from "../providers/team-store-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 

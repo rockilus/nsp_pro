@@ -16,7 +16,6 @@ from errors import (
 )
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
-from integrations.email_sender import send_verification_email
 from logger import log_info
 from routes.api_model import PasswordDataMessage, UserMessage
 from scripts.setup_database import user_db
@@ -79,25 +78,6 @@ async def change_user_password(
         response = {"message": "Password updated successfully"}
     except Exception as e:
         log_info("Failed to update user password")
-        handle_routes_errors(e)
-    return response
-
-
-@router.post("/users/{user_id}/send-verification-email")
-async def request_verification_email(
-    user_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> Dict:
-    try:
-        if not await authz_check(session.get_user_id(), "update", "user", user_id):
-            raise NotAuthorizedError(
-                "You do not have permission to request verification email"
-            )
-        user = user_db.get_user_by_id(user_id)
-        send_verification_email(user)
-        response = {"message": "Verification email sent successfully"}
-    except Exception as e:
-        log_info("Failed to send verification email")
         handle_routes_errors(e)
     return response
 

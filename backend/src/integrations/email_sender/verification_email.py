@@ -3,7 +3,7 @@ import boto3  # type: ignore
 from core import User
 
 
-def send_verification_email(user: User) -> None:
+def send_verification_email(user: User, email_verify_link: str) -> None:
     session = boto3.Session(profile_name="felipe_kharaba_dev")
     credentials = session.get_credentials()
     client = boto3.client(
@@ -35,7 +35,7 @@ def send_verification_email(user: User) -> None:
   Thank you for signing up for MyApp! <br>
   To verify your email address and start using the app,
   please click the link below: <br>
-  <a href="{"get_verification_link(user_email)"}">Verify Email</a>
+  <a href="{email_verify_link}">Verify Email</a>
   """,
                     'Charset': 'UTF-8',
                 },

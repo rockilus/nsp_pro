@@ -1,5 +1,7 @@
+// Components
 import { HomePage } from "../components/home";
-import { TeamStoreProvider } from "@/providers/team-store-provider";
+// Providers
+import { TeamStoreProvider } from "../providers/team-store-provider";
 
 export default function Home() {
   return (
