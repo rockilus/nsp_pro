@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { TryRefreshComponent } from "./tryRefreshClientComponent";
 import { SessionAuthForNextJS } from "./sessionAuthForNextJS";
 import { getSSRSessionHelper } from "./home";
-import { checkEmailVerified } from "./checkEmailVerified";
 
 const SessionHandler = async ({ children }: { children: React.ReactNode }) => {
   console.log("SessionHandler running...");
