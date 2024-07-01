@@ -82,29 +82,3 @@ export async function updatePassword(
     throw new Error("Failed to update password, please try again later");
   }
 }
-
-export async function sendVerificationEmail(userId: string) {
-  const options: RequestInit = {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlUsers}/${userId}/send-verification-email`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        "Failed to send verification email: " + responseData.detail
-      );
-    }
-  } catch (error) {
-    console.error("Failed to send verification email:", error);
-    throw new Error(
-      "Failed to send verification email, please try again later"
-    );
-  }
-}

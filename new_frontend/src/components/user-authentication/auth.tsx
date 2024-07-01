@@ -7,7 +7,7 @@ import { EmailPasswordPreBuiltUI } from "supertokens-auth-react/recipe/emailpass
 import { EmailVerificationPreBuiltUI } from "supertokens-auth-react/recipe/emailverification/prebuiltui";
 
 // Components
-import UserAuthentication from "@/components/user-authentication/user-authentication";
+import UserAuthentication from "./user-authentication";
 
 export default function Auth() {
   return <UserAuthentication />;
