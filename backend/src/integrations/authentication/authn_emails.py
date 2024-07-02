@@ -16,21 +16,27 @@ from supertokens_python.recipe.emailverification.types import (
     EmailTemplateVars as EVEmailTemplateVars,
 )
 
-from integrations.email_sender.verification_email import send_verification_email
+from integrations.email_sender.verification_email import (
+    send_reset_password_email,
+    send_verification_email,
+)
 from scripts.setup_database import user_db
 
 
 def custom_email_deliver(
     original_implementation: EmailDeliveryOverrideInput,
 ) -> EmailDeliveryOverrideInput:
-    original_send_email = original_implementation.send_email
+    # original_send_email = original_implementation.send_email
 
+    # pylint: disable=unused-argument
     async def send_email(
         template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -> None:
-        # Or use the original implementation which calls the default service,
-        # or a service that you may have specified in the email_delivery object.
-        return await original_send_email(template_vars, user_context)
+        user = user_db.get_user_by_id(template_vars.user.id)
+        send_reset_password_email(
+            user=user,
+            reset_password_link=template_vars.password_reset_link,
+        )
 
     original_implementation.send_email = send_email  # type: ignore
     return original_implementation
