@@ -1,6 +1,8 @@
+from core import Config
 from database import (
     DB,
     AssignmentDB,
+    ConfigDB,
     ConstraintBuildDB,
     ConstraintDB,
     CoverageDB,
@@ -20,8 +22,21 @@ from database import (
     WorkerPropertyDB,
 )
 from errors import DBConnectionError
-from logger import log_critical
+from logger import log_critical, log_info
 from utils.env_config import DB_URI
+
+
+def ensure_config_exists():
+    if config_db.get_config() is None:
+        config_db.create_config(
+            Config(
+                id="",
+                signup_emails_whitelist_enabled=True,
+                signup_emails_whitelist=[],
+            )
+        )
+        log_info("Config document not found. Created a new one.")
+
 
 db = DB(DB_URI)
 try:
@@ -32,6 +47,7 @@ except DBConnectionError as e:
 
 
 assignment_db = AssignmentDB(db)
+config_db = ConfigDB(db)
 constraint_build_db = ConstraintBuildDB(db)
 constraint_db = ConstraintDB(db)
 coverage_db = CoverageDB(db)
@@ -49,3 +65,6 @@ user_db = UserDB(db)
 worker_db = WorkerDB(db)
 worker_dimension_db = WorkerDimensionDB(db)
 worker_property_db = WorkerPropertyDB(db)
+
+
+ensure_config_exists()
