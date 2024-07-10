@@ -16,6 +16,7 @@ from supertokens_python.utils import find_first_occurrence_in_list
 
 from core import Team, User
 from integrations.authorization.authz_services import authz_role_assignment_assign
+from integrations.email_sender.verification_email import send_signup_attempt_email
 from scripts.setup_database import config_db
 from services.team_services.team_services import create_team
 from services.user_services.user_sign_up import create_user
@@ -47,9 +48,17 @@ def override_emailpassword_apis(original_implementation: APIInterface):
             raise Exception("Config not found in database")
         if config.signup_emails_whitelist_enabled:
             if email not in config.signup_emails_whitelist:
+                if email not in config.signup_emails_attempt:
+                    config = config_db.add_signup_email_attempt(email)
+                    send_signup_attempt_email(email)
                 print("SENDING CUSTOM RESPONSE")
-                api_options.response.set_status_code(403)
-                json_dict = {'detail': 'email_not_on_whitelist'}
+                api_options.response.set_status_code(200)
+                # json_dict = {'detail': 'email_not_on_whitelist'}
+                json_dict = {
+                    "status": "SIGN_UP_NOT_ALLOWED",
+                    "reason": "EMAIL_NOT_IN_WHITELIST",
+                    "fetchResponse": None,
+                }
                 api_options.response.set_json_content(json_dict)
                 return GeneralErrorResponse("email_not_on_whitelist")  # type: ignore
 
@@ -70,13 +79,6 @@ def override_emailpassword_functions(
     async def sign_up(
         email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
     ) -> Coroutine[Any, Any, SignUpOkResult | SignUpEmailAlreadyExistsError]:
-        # config = config_db.get_config()
-        # if config is None:
-        #     raise Exception("Config not found in database")
-        # if config.signup_emails_whitelist_enabled:
-        #     if email not in config.signup_emails_whitelist:
-        #         raise Exception("Email not in whitelist")
-
         # First we call the original implementation of signInUpPOST.
         print("sending sign up request to supertokens:", email)
         result = await original_sign_up(email, password, tenant_id, user_context)

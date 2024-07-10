@@ -33,6 +33,7 @@ def ensure_config_exists():
                 id="",
                 signup_emails_whitelist_enabled=True,
                 signup_emails_whitelist=[],
+                signup_emails_attempt=[],
             )
         )
         log_info("Config document not found. Created a new one.")

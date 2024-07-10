@@ -3,6 +3,7 @@ from bson import ObjectId
 from core import Config
 from database.db import DB
 from errors import (
+    DocumentDoesNotExistError,
     handle_create_document_error,
     handle_get_document_error,
     handle_save_document_error,
@@ -36,6 +37,22 @@ class ConfigDB:
             handle_get_document_error(e)
         return doc_to_core_config(config)
 
+    def update_config(self, config: Config) -> Config:
+        config_doc = core_to_doc_config(config)
+        try:
+            config_saved = config_doc.save()
+        except Exception as e:
+            log_info("Failed to save config to database")
+            handle_save_document_error(e)
+        return doc_to_core_config(config_saved)
+
+    def add_signup_email_attempt(self, email: str) -> Config:
+        config = self.get_config()
+        if config is None:
+            raise DocumentDoesNotExistError("Config not found in database")
+        config.signup_emails_attempt.append(email)
+        return self.update_config(config)
+
 
 # Mappers
 # core to document
@@ -48,6 +65,7 @@ def core_to_doc_config(dataclass_obj: Config) -> ConfigDocument:
                 dataclass_obj.signup_emails_whitelist_enabled
             ),
             signup_emails_whitelist=dataclass_obj.signup_emails_whitelist,
+            signup_emails_attempt=dataclass_obj.signup_emails_attempt,
         )
     except Exception as e:
         log_info("Failed to convert Config to ConfigDocument")

@@ -104,3 +104,37 @@ def send_reset_password_email(user: User, reset_password_link: str) -> None:
         # ConfigurationSetName='string',
     )
     print(response)
+
+
+def send_signup_attempt_email(email: str) -> None:
+    session = boto3.Session(profile_name="felipe_kharaba_dev")
+    credentials = session.get_credentials()
+    client = boto3.client(
+        'ses',
+        aws_access_key_id=credentials.access_key,
+        aws_secret_access_key=credentials.secret_key,
+        region_name='eu-west-3',
+    )
+
+    response = client.send_email(
+        Source='noreply@rockilus.com',
+        Destination={
+            'ToAddresses': [
+                "felipe.kharaba@rockilus.com",
+            ],
+        },
+        Message={
+            'Subject': {
+                'Data': "new_beta_test_request_signup",
+                'Charset': "UTF-8",
+            },
+            'Body': {
+                'Text': {'Data': 'string', 'Charset': 'UTF-8'},
+                'Html': {
+                    'Data': f"user email: {email}",
+                    'Charset': 'UTF-8',
+                },
+            },
+        },
+    )
+    print(response)
