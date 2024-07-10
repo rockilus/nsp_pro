@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useFormState } from "react-dom";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -17,25 +18,9 @@ import Container from "@mui/material/Container";
 // Lib
 import { signUpClicked, State } from "../../app/lib/authentication";
 
-// function Copyright(props: any) {
-//   return (
-//     <Typography
-//       variant="body2"
-//       color="text.secondary"
-//       align="center"
-//       {...props}
-//     >
-//       {"Copyright © "}
-//       <Link color="inherit" href="https://mui.com/">
-//         Your Website
-//       </Link>{" "}
-//       {new Date().getFullYear()}
-//       {"."}
-//     </Typography>
-//   );
-// }
+export default function SignUp({ lng }: { lng: string }) {
+  const { t } = useTranslation(lng, "auth-page");
 
-export default function SignUp() {
   const initialState: State = { message: null, errors: {} };
   const [state, dispatch] = useFormState(signUpClicked, initialState);
   console.log("state", state);
@@ -72,38 +57,17 @@ export default function SignUp() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign up
+          {t("sign_up")}
         </Typography>
         <Box component="form" action={dispatch} sx={{ mt: 3 }}>
           <Grid container spacing={2}>
-            {/* <Grid item xs={12} sm={6}>
-                <TextField
-                  autoComplete="given-name"
-                  name="firstName"
-                  required
-                  fullWidth
-                  id="firstName"
-                  label="First Name"
-                  autoFocus
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  id="lastName"
-                  label="Last Name"
-                  name="lastName"
-                  autoComplete="family-name"
-                />
-              </Grid> */}
             <Grid item xs={12}>
               <TextField
                 error={!!state?.errors?.email}
                 required
                 fullWidth
                 id="email"
-                label="Email Address"
+                label={t("email_address")}
                 name="email"
                 autoComplete="email"
                 helperText={state?.errors?.email?.join(", ")}
@@ -116,7 +80,7 @@ export default function SignUp() {
                 required
                 fullWidth
                 name="password"
-                label="Password"
+                label={t("password")}
                 type="password"
                 id="password"
                 autoComplete="new-password"
@@ -131,7 +95,7 @@ export default function SignUp() {
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
           >
-            Sign Up
+            {t("sign_up")}
           </Button>
           <Grid container justifyContent="flex-end">
             <Grid item>
@@ -140,13 +104,12 @@ export default function SignUp() {
                 onClick={handleGoToSignIn}
                 sx={{ cursor: "pointer" }}
               >
-                Already have an account? Sign in
+                {t("to_sign_in")}
               </Link>
             </Grid>
           </Grid>
         </Box>
       </Box>
-      {/* <Copyright sx={{ mt: 5 }} /> */}
     </Container>
   );
 }

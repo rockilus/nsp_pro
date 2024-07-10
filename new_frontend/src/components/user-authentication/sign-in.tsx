@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useFormState } from "react-dom";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -17,25 +18,9 @@ import Container from "@mui/material/Container";
 // Lib
 import { signInClicked, State } from "../../app/lib/authentication";
 
-// function Copyright(props: any) {
-//   return (
-//     <Typography
-//       variant="body2"
-//       color="text.secondary"
-//       align="center"
-//       {...props}
-//     >
-//       {"Copyright © "}
-//       <Link color="inherit" href="https://mui.com/">
-//         Your Website
-//       </Link>{" "}
-//       {new Date().getFullYear()}
-//       {"."}
-//     </Typography>
-//   );
-// }
+export default function SignIn({ lng }: { lng: string }) {
+  const { t } = useTranslation(lng, "auth-page");
 
-export default function SignIn() {
   const initialState: State = { message: null, errors: {} };
   const [state, dispatch] = useFormState(signInClicked, initialState);
 
@@ -71,7 +56,7 @@ export default function SignIn() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign in
+          {t("sign_in")}
         </Typography>
         <Box component="form" sx={{ mt: 1 }} action={dispatch}>
           <TextField
@@ -80,7 +65,7 @@ export default function SignIn() {
             required
             fullWidth
             id="email"
-            label="Email Address"
+            label={t("email_address")}
             name="email"
             autoComplete="email"
             autoFocus
@@ -93,7 +78,7 @@ export default function SignIn() {
             required
             fullWidth
             name="password"
-            label="Password"
+            label={t("password")}
             type="password"
             id="password"
             autoComplete="current-password"
@@ -106,12 +91,12 @@ export default function SignIn() {
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
           >
-            Sign In
+            {t("sign_in")}
           </Button>
           <Grid container>
             <Grid item xs>
               <Link href="/auth/reset-password" variant="body2">
-                Forgot password?
+                {t("forgot_password")}
               </Link>
             </Grid>
             <Grid item>
@@ -120,13 +105,12 @@ export default function SignIn() {
                 onClick={handleGoToSignUp}
                 sx={{ cursor: "pointer" }}
               >
-                {"Don't have an account? Sign Up"}
+                {t("to_sign_up")}
               </Link>
             </Grid>
           </Grid>
         </Box>
       </Box>
-      {/* <Copyright sx={{ mt: 8, mb: 4 }} /> */}
     </Container>
   );
 }

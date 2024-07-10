@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useFormState } from "react-dom";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -17,7 +18,9 @@ import {
   StateNewPassword,
 } from "../../app/lib/authentication";
 
-export default function ResetPassword() {
+export default function ResetPassword({ lng }: { lng: string }) {
+  const { t } = useTranslation(lng, "auth-page");
+
   const initialState: StateNewPassword = { message: null, errors: {} };
   const [state, dispatch] = useFormState(newPasswordEntered, initialState);
 
@@ -48,10 +51,10 @@ export default function ResetPassword() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Success
+            {t("success")}
           </Typography>
           <Typography variant="body1">
-            Your password was successfully changed.
+            {t("password_change_success")}
           </Typography>
           <Box component="form" sx={{ mt: 1 }}>
             <Button
@@ -60,7 +63,7 @@ export default function ResetPassword() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign in
+              {t("sign_in")}
             </Button>
           </Box>
         </Box>
@@ -77,11 +80,9 @@ export default function ResetPassword() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Invalid token
+            {t("invalid_link")}
           </Typography>
-          <Typography variant="body1">
-            Your reset password token expired, please try again.
-          </Typography>
+          <Typography variant="body1">{t("invalid_link_message")}</Typography>
           <Box component="form" sx={{ mt: 1 }}>
             <Button
               fullWidth
@@ -89,7 +90,7 @@ export default function ResetPassword() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign in
+              {t("sign_in")}
             </Button>
           </Box>
         </Box>
@@ -106,11 +107,9 @@ export default function ResetPassword() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Reset password
+            {t("reset_password")}
           </Typography>
-          <Typography variant="body1">
-            Enter a new password for your account.
-          </Typography>
+          <Typography variant="body1">{t("reset_password_message")}</Typography>
           <Box component="form" sx={{ mt: 1 }} action={dispatch}>
             <TextField
               error={!!state?.errors?.password}
@@ -118,7 +117,7 @@ export default function ResetPassword() {
               required
               fullWidth
               name="password"
-              label="New password"
+              label={t("new_password")}
               type="password"
               id="password"
               autoComplete="new-password"
@@ -131,7 +130,7 @@ export default function ResetPassword() {
               required
               fullWidth
               name="passwordConfirm"
-              label="Confirm password"
+              label={t("confirm_password")}
               type="password"
               id="passwordConfirm"
               autoComplete="new-password"
@@ -144,7 +143,7 @@ export default function ResetPassword() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Change password
+              {t("change_password")}
             </Button>
           </Box>
         </Box>

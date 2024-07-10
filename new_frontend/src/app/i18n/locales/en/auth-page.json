@@ -1,0 +1,23 @@
+{
+    "back_to_sign_in": "Back to sign in",
+    "change_password": "Change password",
+    "confirm_password": "Confirm password",
+    "email_address": "Email address",
+    "forgot_password": "Forgot password?",
+    "invalid_link": "Invalid link",
+    "invalid_ling_message": "Your reset password link expired, please try again.",
+    "new_password": "New password",
+    "password": "Password",
+    "password_change_success": "Your password was successfully changed.",
+    "password_email_sent": "A password reset email has been sent to your email address.",
+    "resend_email": "Resend or change email",
+    "reset_password": "Reset password",
+    "reset_password_message": "Enter a new password for your account.",
+    "reset_password_send_link_message": "We will send you an email to reset your password.",
+    "send_reset_link": "Send email",
+    "sign_in": "Sign in",
+    "sign_up": "Sign up",
+    "success": "Success",
+    "to_sign_in": "Already have an account? Sign in",
+    "to_sign_up": "Don't have an account? Sign up"
+}

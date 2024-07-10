@@ -6,15 +6,21 @@ import { useSearchParams } from "next/navigation";
 import ResetPassword from "../../../../components/user-authentication/reset-password";
 import SendResetPassword from "../../../../components/user-authentication/send-reset-password";
 
-export default function Page() {
+export default function Page({
+  params: { lng },
+}: {
+  params: {
+    lng: string;
+  };
+}) {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const rid = searchParams.get("rid");
   const emailSent = searchParams.get("emailSent");
 
   if (rid === "emailpassword" && token !== null) {
-    return <ResetPassword />;
+    return <ResetPassword lng={lng} />;
   } else {
-    return <SendResetPassword />;
+    return <SendResetPassword lng={lng} />;
   }
 }
