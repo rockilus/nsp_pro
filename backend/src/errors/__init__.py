@@ -17,6 +17,7 @@ from errors.database_errors.document_error_handlers import (
     handle_get_document_error,
     handle_save_document_error,
 )
+from errors.database_errors.document_errors import DocumentDoesNotExistError
 from errors.message_errors.message_error_handlers import handle_message_errors
 from errors.message_errors.message_errors import MessageTypeError
 from errors.routes_errors.routes_error_handlers import handle_routes_errors
@@ -41,6 +42,7 @@ __all__ = [
     "handle_delete_document_error",
     "handle_get_document_error",
     "handle_save_document_error",
+    "DocumentDoesNotExistError",
     "handle_message_errors",
     "MessageTypeError",
     "handle_routes_errors",

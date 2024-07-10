@@ -123,7 +123,24 @@ export async function signUpClicked(
           // the reason string is a user friendly message
           // about what went wrong. It can also contain a support code which users
           // can tell you so you know why their sign up was not allowed.
-          window.alert(response.reason);
+          if (response.reason === "EMAIL_NOT_IN_WHITELIST") {
+            return {
+              errors: {
+                email: [
+                  "Thank you for your interest in Rockilus! We're " +
+                    "currently in a private beta phase. We'll reach out to " +
+                    "you soon.",
+                ],
+              },
+              message: "Failed to sign up.",
+            };
+          }
+          return {
+            errors: {
+              email: [response.reason],
+            },
+            message: "Failed to sign up.",
+          };
         } else {
           // sign up successful. The session tokens are automatically handled by
           // the frontend SDK.
