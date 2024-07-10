@@ -3,8 +3,8 @@
 import React from "react";
 import { useSearchParams } from "next/navigation";
 // Components
-import VerifyEmail from "../../../components/user-authentication/verify-email";
-import ConsumeEmailVerification from "../../../components/user-authentication/consume-email-verification";
+import ResetPassword from "../../../../components/user-authentication/reset-password";
+import SendResetPassword from "../../../../components/user-authentication/send-reset-password";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -12,9 +12,9 @@ export default function Page() {
   const rid = searchParams.get("rid");
   const emailSent = searchParams.get("emailSent");
 
-  if (rid === "emailverification" && token !== null) {
-    return <ConsumeEmailVerification />;
+  if (rid === "emailpassword" && token !== null) {
+    return <ResetPassword />;
   } else {
-    return <VerifyEmail />;
+    return <SendResetPassword />;
   }
 }

@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 // Components
-import { getSSRSessionHelper } from "../../../components/home";
-import Auth from "../../../components/user-authentication/auth";
-import AuthSupertokens from "../../../components/user-authentication/supertokens-auth-ui";
+import { getSSRSessionHelper } from "../../../../components/home";
+import Auth from "../../../../components/user-authentication/auth";
+import AuthSupertokens from "../../../../components/user-authentication/supertokens-auth-ui";
 
 export default async function AuthPage() {
   const { accessTokenPayload, hasToken, error } = await getSSRSessionHelper();
