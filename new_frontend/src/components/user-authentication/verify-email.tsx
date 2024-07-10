@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -14,7 +15,9 @@ import SnackBarComponent from "../feedback/snack-bar";
 // Actions
 import { sendEmail } from "../../app/lib/authentication";
 
-export default function VerifyEmail() {
+export default function VerifyEmail({ lng }: { lng: string }) {
+  const { t } = useTranslation(lng, "auth-page");
+
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
 
@@ -49,10 +52,10 @@ export default function VerifyEmail() {
           <MailOutlineIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Email verification
+          {t("email_verification")}
         </Typography>
         <Typography variant="body1">
-          A verification email was sent, check your inbox.
+          {t("email_verification_message")}
         </Typography>
         <Button
           onClick={handleSendEmail}
@@ -60,17 +63,17 @@ export default function VerifyEmail() {
           variant="contained"
           sx={{ mt: 3, mb: 2 }}
         >
-          Resend email
+          {t("resend_email")}
         </Button>
       </Box>
       <SnackBarComponent
-        message="Email sent successfully."
+        message={t("send_email_success_message")}
         severity="success"
         open={openSuccess}
         handleClose={() => setOpenSuccess(false)}
       />
       <SnackBarComponent
-        message="Something went wrong."
+        message={t("error_message")}
         severity="error"
         open={openError}
         handleClose={() => setOpenError(false)}

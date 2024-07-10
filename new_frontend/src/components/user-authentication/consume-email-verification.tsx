@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
@@ -18,7 +19,9 @@ import {
   checkAuthNSessionExist,
 } from "../../app/lib/authentication";
 
-export default function ConsumeEmailVerification() {
+export default function ConsumeEmailVerification({ lng }: { lng: string }) {
+  const { t } = useTranslation(lng, "auth-page");
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSession, setIsSession] = useState(false);
   const [openError, setOpenError] = useState(false);
@@ -65,14 +68,14 @@ export default function ConsumeEmailVerification() {
           <MailOutlineIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Verifying email
+          {t("verifying_email")}
         </Typography>
         {isLoading ? (
           <CircularProgress />
         ) : (
           <div>
             <Typography variant="body1">
-              Click here to verify your email.
+              {t("verify_email_button_message")}
             </Typography>
             <Button
               onClick={handleConsumeVerificationEmail}
@@ -80,13 +83,13 @@ export default function ConsumeEmailVerification() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Verify email
+              {t("verify_email")}
             </Button>
           </div>
         )}
       </Box>
       <SnackBarComponent
-        message="Something went wrong."
+        message={t("error_message")}
         severity="error"
         open={openError}
         handleClose={() => setOpenError(false)}
