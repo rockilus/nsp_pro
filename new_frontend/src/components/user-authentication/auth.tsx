@@ -9,6 +9,6 @@ import { EmailVerificationPreBuiltUI } from "supertokens-auth-react/recipe/email
 // Components
 import UserAuthentication from "./user-authentication";
 
-export default function Auth() {
-  return <UserAuthentication />;
+export default function Auth({ lng }: { lng: string }) {
+  return <UserAuthentication lng={lng} />;
 }

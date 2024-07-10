@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useFormState } from "react-dom";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -14,7 +15,9 @@ import Container from "@mui/material/Container";
 // Lib
 import { sendEmailClicked, StateReset } from "../../app/lib/authentication";
 
-export default function SendResetPassword() {
+export default function SendResetPassword({ lng }: { lng: string }) {
+  const { t } = useTranslation(lng, "auth-page");
+
   const initialState: StateReset = { message: null, errors: {} };
   const [state, dispatch] = useFormState(sendEmailClicked, initialState);
 
@@ -43,9 +46,7 @@ export default function SendResetPassword() {
           <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
             <LockOutlinedIcon />
           </Avatar>
-          <Typography variant="body1">
-            A password reset email has been sent to your email address.
-          </Typography>
+          <Typography variant="body1">{t("password_email_sent")}</Typography>
           <Grid container>
             <Grid item xs>
               <Link
@@ -53,12 +54,12 @@ export default function SendResetPassword() {
                 variant="body2"
                 sx={{ cursor: "pointer" }}
               >
-                Resend or change email
+                {t("resend_email")}
               </Link>
             </Grid>
             <Grid item>
               <Link variant="body2" href="/auth" sx={{ cursor: "pointer" }}>
-                {"Back to sign in"}
+                {t("back_to_sign_in")}
               </Link>
             </Grid>
           </Grid>
@@ -76,10 +77,10 @@ export default function SendResetPassword() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Reset password
+            {t("reset_password")}
           </Typography>
           <Typography variant="body1">
-            We will send you an email to reset your password
+            {t("reset_password_send_link_message")}
           </Typography>
           <Box component="form" sx={{ mt: 1 }} action={dispatch}>
             <TextField
@@ -88,7 +89,7 @@ export default function SendResetPassword() {
               required
               fullWidth
               id="email"
-              label="Email Address"
+              label={t("email_address")}
               name="email"
               autoComplete="email"
               autoFocus
@@ -101,14 +102,14 @@ export default function SendResetPassword() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Send email
+              {t("send_reset_link")}
             </Button>
 
             <Grid container>
               <Grid item xs></Grid>
               <Grid item>
                 <Link variant="body2" href="/auth" sx={{ cursor: "pointer" }}>
-                  {"Back to sign in"}
+                  {t("back_to_sign_in")}
                 </Link>
               </Grid>
             </Grid>

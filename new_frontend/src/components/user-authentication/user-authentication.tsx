@@ -6,9 +6,9 @@ import { useSearchParams } from "next/navigation";
 import SignIn from "./sign-in";
 import SignUp from "./sign-up";
 
-export default function UserAuthentication() {
+export default function UserAuthentication({ lng }: { lng: string }) {
   const searchParams = useSearchParams();
   const show = searchParams.get("show")?.toString();
 
-  return show === "signup" ? <SignUp /> : <SignIn />;
+  return show === "signup" ? <SignUp lng={lng} /> : <SignIn lng={lng} />;
 }
