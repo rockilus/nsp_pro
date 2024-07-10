@@ -1,0 +1,23 @@
+{
+    "back_to_sign_in": "Volver a iniciar sesión",
+    "change_password": "Cambiar contraseña",
+    "confirm_password": "Confirmar contraseña",
+    "email_address": "Correo electrónico",
+    "forgot_password": "¿Olvidaste tu contraseña?",
+    "invalid_link": "Enlace inválido",
+    "invalid_ling_message": "Tu enlace para restablecer la contraseña expiró, por favor intenta nuevamente.",
+    "new_password": "Nueva contraseña",
+    "password": "Contraseña",
+    "password_change_success": "Cambio de contraseña exitoso.",
+    "password_email_sent": "Se ha enviado un enlace para restablecer tu contraseña a tu dirección de correo electrónico.",
+    "resend_email": "Reenviar o cambiar correo electrónico",
+    "reset_password": "Restablecer contraseña",
+    "reset_password_message": "Ingresa una nueva contraseña para tu cuenta.",
+    "reset_password_send_link_message": "Te enviaremos un correo electrónico para restablecer tu contraseña.",
+    "send_reset_link": "Enviar correo",
+    "sign_in": "Iniciar sesión",
+    "sign_up": "Registrarse",
+    "success": "Éxito",
+    "to_sign_in": "¿Ya tienes una cuenta? Inicia sesión",
+    "to_sign_up": "¿No tienes una cuenta? Regístrate"
+}
