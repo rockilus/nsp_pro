@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import acceptLanguage from "accept-language";
-import { fallbackLng, languages, cookieName } from "@/app/i18n/settings";
+import { fallbackLng, languages, cookieName } from "./app/i18n/settings";
 import { redirectAuth } from "./middleware/redirect-auth";
 import { handleLanguage } from "./middleware/handle-language";
 
@@ -14,43 +14,21 @@ export const config = {
 };
 
 export function middleware(req: NextRequest) {
+  const imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"];
+  const isImageRequest = imageExtensions.some((ext) =>
+    req.nextUrl.pathname.endsWith(ext)
+  );
+
   if (
     req.nextUrl.pathname.indexOf("icon") > -1 ||
-    req.nextUrl.pathname.indexOf("chrome") > -1
-  )
+    req.nextUrl.pathname.indexOf("chrome") > -1 ||
+    isImageRequest
+  ) {
     return NextResponse.next();
-  // let lng: string | undefined | null;
-  // if (req.cookies.has(cookieName))
-  //   lng = acceptLanguage.get(req.cookies.get(cookieName)?.value);
-  // if (!lng) lng = acceptLanguage.get(req.headers.get("Accept-Language"));
-  // if (!lng) lng = fallbackLng;
-
-  // console.log("lng", lng);
-
-  // // Redirect if lng in path is not supported
-  // if (
-  //   !languages.some((loc) => req.nextUrl.pathname.startsWith(`/${loc}`)) &&
-  //   !req.nextUrl.pathname.startsWith("/_next")
-  // ) {
-  //   return NextResponse.redirect(
-  //     new URL(`/${lng}${req.nextUrl.pathname}`, req.url)
-  //   );
-  // }
-
-  // if (req.headers.has("referer")) {
-  //   const refererUrl = new URL(req.headers.get("referer") || "");
-  //   const lngInReferer = languages.find((l) =>
-  //     refererUrl.pathname.startsWith(`/${l}`)
-  //   );
-  //   const response = NextResponse.next();
-  //   if (lngInReferer) response.cookies.set(cookieName, lngInReferer);
-  //   return response;
-  // }
+  }
 
   const response = redirectAuth(req);
   if (response) return response;
 
   return handleLanguage(req);
-
-  // return NextResponse.next();
 }
