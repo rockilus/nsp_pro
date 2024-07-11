@@ -1,7 +1,6 @@
 import { languages } from "../../i18n/settings";
 // Components
-import NavAppBar from "../../../components/app-bar/nav-app-bar";
-import SessionHandler from "../../../components/session-handler";
+import NavAppBarAuth from "../../../components/user-authentication/nav-app-bar-auth";
 
 export async function generateStaticParams() {
   return languages.map((lng) => ({ lng }));
@@ -17,13 +16,11 @@ export default function Layout({
   };
 }) {
   return (
-    <SessionHandler>
-      <>
-        <header>
-          <NavAppBar lng={lng} />
-        </header>
-        <main>{children}</main>
-      </>
-    </SessionHandler>
+    <>
+      <header>
+        <NavAppBarAuth lng={lng} />
+      </header>
+      <main>{children}</main>
+    </>
   );
 }
