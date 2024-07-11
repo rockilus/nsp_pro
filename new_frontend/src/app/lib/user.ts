@@ -1,10 +1,19 @@
 import { unstable_noStore as noStore } from "next/cache";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 // Types
-import { WorkerT, WorkerDimensionT, WorkerPropertyT } from "../../types/worker";
 import { UserT } from "../../types/user";
-import { User } from "supertokens-web-js/types";
+
+dayjs.extend(utc);
 
 const apiUrlUsers = process.env.NEXT_PUBLIC_API_URL + "/users";
+
+export const toUserT = (data: any): UserT => {
+  return {
+    ...data,
+    signUpAt: dayjs.utc(data.signUpAt),
+  };
+};
 
 //////////////////////////
 // User //
@@ -25,7 +34,7 @@ export async function getUser() {
     if (!response.ok) {
       throw new Error("Failed to fetch user: " + responseData.detail);
     }
-    return responseData as UserT;
+    return toUserT(responseData) as UserT;
   } catch (error) {
     console.error("Failed to fetch user:", error);
     throw new Error("Failed to fetch user, please try again later");
@@ -46,7 +55,7 @@ export async function updateUser(user: UserT) {
     if (!response.ok) {
       throw new Error("Failed to update user: " + responseData.detail);
     }
-    return responseData as UserT;
+    return toUserT(responseData) as UserT;
   } catch (error) {
     console.error("Failed to update user:", error);
     throw new Error("Failed to update user, please try again later");

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
 from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID
@@ -91,6 +92,7 @@ def override_emailpassword_apis(original_implementation: APIInterface):
                         last_name="",
                         workers=[],
                         language=language,  # type: ignore
+                        sign_up_at=datetime.now(timezone.utc),
                     )
                 )
                 team = await create_team(
@@ -135,6 +137,7 @@ def override_emailpassword_functions(
                         last_name="",
                         workers=[],
                         language="en",
+                        sign_up_at=datetime.now(timezone.utc),
                     )
                 )
                 team = await create_team(

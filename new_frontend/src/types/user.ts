@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 export type UserT = {
   id: string;
   email: string;
@@ -5,4 +7,5 @@ export type UserT = {
   lastName: string;
   workers: string[];
   language: string;
+  signUpDate: dayjs.Dayjs;
 };

@@ -188,7 +188,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
                   >
                     <TableCell sx={{ paddingY: 0 }}>{field.label}</TableCell>
                     <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-                      {user[field.name as keyof typeof user]}
+                      {user[field.name as keyof typeof user] as string}
                     </TableCell>
                     <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
                       <IconButton onClick={() => setFieldEditing(field.name)}>

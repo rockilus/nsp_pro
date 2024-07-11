@@ -253,6 +253,7 @@ class UserMessage(BaseModel):
     email: str
     workers: List[str]
     language: str
+    signUpAt: datetime
 
 
 class PasswordDataMessage(BaseModel):

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import List
 
 from utils.constants import SUPPORTED_LANGUAGES_LITERAL
@@ -12,6 +13,7 @@ class User:
     last_name: str
     workers: List[str]
     language: SUPPORTED_LANGUAGES_LITERAL
+    sign_up_at: datetime
 
 
 @dataclass

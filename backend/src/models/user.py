@@ -1,5 +1,8 @@
+from datetime import datetime, timezone
+
 from mongoengine import Document
 from mongoengine.fields import (
+    DateTimeField,
     EmailField,
     ListField,
     ReferenceField,
@@ -16,3 +19,4 @@ class User(Document):
     last_name = StringField()
     workers = ListField(ReferenceField("Worker"))
     language = StringField(required=True, choices=["en", "es", "fr"])
+    sign_up_at = DateTimeField(default=datetime.now(timezone.utc))
