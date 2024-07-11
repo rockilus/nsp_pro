@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
 from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID
@@ -5,9 +6,6 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface,
     APIOptions,
     GeneralErrorResponse,
-    RecipeInterface,
-    SignUpEmailAlreadyExistsError,
-    SignUpOkResult,
     SignUpPostEmailAlreadyExistsError,
     SignUpPostOkResult,
 )
@@ -20,6 +18,7 @@ from integrations.email_sender.verification_email import send_signup_attempt_ema
 from scripts.setup_database import config_db
 from services.team_services.team_services import create_team
 from services.user_services.user_sign_up import create_user
+from utils.constants import SUPPORTED_LANGUAGES_LIST
 
 
 def override_emailpassword_apis(original_implementation: APIInterface):
@@ -42,6 +41,16 @@ def override_emailpassword_apis(original_implementation: APIInterface):
             # pylint: disable=broad-exception-raised
             raise Exception("Should never come here")
         email = email_form_field.value
+        language_form_field = find_first_occurrence_in_list(
+            lambda x: x.id == "language", form_fields
+        )
+        if language_form_field is None:
+            # pylint: disable=broad-exception-raised
+            raise Exception("Should never come here")
+        language = language_form_field.value
+        if language not in SUPPORTED_LANGUAGES_LIST:
+            # pylint: disable=broad-exception-raised
+            raise Exception(f"Language {language} not supported")
         config = config_db.get_config()
         if config is None:
             # pylint: disable=broad-exception-raised
@@ -65,27 +74,9 @@ def override_emailpassword_apis(original_implementation: APIInterface):
         result = await original_sign_up_post(
             form_fields, tenant_id, api_options, user_context
         )
-        return result  # type: ignore
-
-    original_implementation.sign_up_post = sign_up_post  # type: ignore
-    return original_implementation
-
-
-def override_emailpassword_functions(
-    original_implementation: RecipeInterface,
-) -> RecipeInterface:
-    original_sign_up = original_implementation.sign_up
-
-    async def sign_up(
-        email: str, password: str, tenant_id: str, user_context: Dict[str, Any]
-    ) -> Coroutine[Any, Any, SignUpOkResult | SignUpEmailAlreadyExistsError]:
-        # First we call the original implementation of signInUpPOST.
-        print("sending sign up request to supertokens:", email)
-        result = await original_sign_up(email, password, tenant_id, user_context)
-        print("supertokens response:", isinstance(result, SignUpOkResult), email)
 
         # Post sign in/up response, we check if it was successful
-        if isinstance(result, SignUpOkResult):
+        if isinstance(result, SignUpPostOkResult):
             user_id = result.user.user_id
             email = result.user.email
             if result.user:
@@ -97,7 +88,8 @@ def override_emailpassword_functions(
                         first_name="",
                         last_name="",
                         workers=[],
-                        language="en",
+                        language=language,  # type: ignore
+                        sign_up_at=datetime.now(timezone.utc),
                     )
                 )
                 team = await create_team(
@@ -108,8 +100,8 @@ def override_emailpassword_functions(
                 await authz_role_assignment_assign(user_id, "team", team.id, "leader")
                 await authz_role_assignment_assign(user_id, "user", user_id, "owner")
                 print("user assigned as leader of team in permit.io:", email)
+
         return result  # type: ignore
 
-    original_implementation.sign_up = sign_up  # type: ignore
-
+    original_implementation.sign_up_post = sign_up_post  # type: ignore
     return original_implementation

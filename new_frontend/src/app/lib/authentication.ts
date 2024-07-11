@@ -10,6 +10,7 @@ import {
 } from "supertokens-web-js/recipe/emailverification";
 import Session from "supertokens-web-js/recipe/session";
 import z from "zod";
+import { languages } from "../i18n/settings";
 
 const passwordValidator = z
   .string()
@@ -23,11 +24,12 @@ const passwordValidator = z
 // Authentication //
 //////////////////////////
 
-const FormSchema = z.object({
+const FormSchemaSignUp = z.object({
   email: z.string({
     invalid_type_error: "Please enter a valid email address.",
   }),
   password: passwordValidator,
+  language: z.string(),
 });
 
 export type State = {
@@ -65,9 +67,10 @@ export async function signUpClicked(
           return prevState;
       }
     case "object":
-      const validatedFields = FormSchema.safeParse({
+      const validatedFields = FormSchemaSignUp.safeParse({
         email: formData.get("email"),
         password: formData.get("password"),
+        language: formData.get("language"),
       });
 
       if (!validatedFields.success) {
@@ -77,7 +80,9 @@ export async function signUpClicked(
         };
       }
 
-      const { email, password } = validatedFields.data;
+      console.log("validationField.data", validatedFields.data);
+
+      const { email, password, language } = validatedFields.data;
 
       try {
         let response = await signUp({
@@ -89,6 +94,10 @@ export async function signUpClicked(
             {
               id: "password",
               value: password,
+            },
+            {
+              id: "language",
+              value: language,
             },
           ],
         });
@@ -160,6 +169,13 @@ export async function signUpClicked(
   }
 }
 
+const FormSchemaSignIn = z.object({
+  email: z.string({
+    invalid_type_error: "Please enter a valid email address.",
+  }),
+  password: passwordValidator,
+});
+
 export async function signInClicked(
   prevState: State | undefined | null,
   formData: FormData | string
@@ -187,7 +203,7 @@ export async function signInClicked(
           return prevState;
       }
     case "object":
-      const validatedFields = FormSchema.safeParse({
+      const validatedFields = FormSchemaSignIn.safeParse({
         email: formData.get("email"),
         password: formData.get("password"),
       });
