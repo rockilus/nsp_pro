@@ -43,7 +43,6 @@ recipe_list = [
     session.init(),
     emailpassword.init(
         override=emailpassword.InputOverrideConfig(
-            # functions=override_emailpassword_functions,
             apis=override_emailpassword_apis,
         ),
         email_delivery=EmailDeliveryConfig(override=custom_email_deliver),
