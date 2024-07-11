@@ -22,7 +22,19 @@ export const frontendConfig = (): SuperTokensConfig => {
   return {
     appInfo,
     recipeList: [
-      EmailPasswordReact.init(),
+      EmailPasswordReact.init({
+        signInAndUpFeature: {
+          signUpForm: {
+            formFields: [
+              {
+                id: "language",
+                label: "Language",
+                placeholder: "Preferred language",
+              },
+            ],
+          },
+        },
+      }),
       EmailVerification.init({ mode: "REQUIRED" }),
       Session.init(),
     ],

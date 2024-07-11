@@ -89,6 +89,7 @@ export default function SignUp({ lng }: { lng: string }) {
               />
             </Grid>
           </Grid>
+          <input type="hidden" name="language" value={lng} />
           <Button
             type="submit"
             fullWidth

@@ -6,15 +6,13 @@ from supertokens_python.recipe import (
     emailverification,
     session,
 )
+from supertokens_python.recipe.emailpassword import InputFormField
 
 from integrations.authentication.authn_emails import (
     custom_email_deliver,
     custom_emailverification_delivery,
 )
-from integrations.authentication.override_func import (
-    override_emailpassword_apis,
-    override_emailpassword_functions,
-)
+from integrations.authentication.override_func import override_emailpassword_apis
 from utils.env_config import (
     API_URL,
     CLIENT_URL,
@@ -45,10 +43,13 @@ recipe_list = [
     session.init(),
     emailpassword.init(
         override=emailpassword.InputOverrideConfig(
-            functions=override_emailpassword_functions,
+            # functions=override_emailpassword_functions,
             apis=override_emailpassword_apis,
         ),
         email_delivery=EmailDeliveryConfig(override=custom_email_deliver),
+        sign_up_feature=emailpassword.InputSignUpFeature(
+            form_fields=[InputFormField(id='language')]
+        ),
     ),
     dashboard.init(
         admins=list(ST_DASHBOARD_ADMINS),

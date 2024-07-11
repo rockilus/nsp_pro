@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Literal, Tuple
+from typing import List, Literal, Tuple
 
 
 @dataclass
@@ -88,3 +88,8 @@ class Constants:
     USER_ERROR_MESSAGE_GENERIC: str = (
         "an error occurred while processing your request, please try again later."
     )
+
+
+# User
+SUPPORTED_LANGUAGES_LIST: List[str] = ["en", "es", "fr"]
+SUPPORTED_LANGUAGES_LITERAL = Literal["en", "es", "fr"]

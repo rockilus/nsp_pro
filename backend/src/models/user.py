@@ -1,5 +1,10 @@
 from mongoengine import Document
-from mongoengine.fields import EmailField, ListField, ReferenceField, StringField
+from mongoengine.fields import (
+    EmailField,
+    ListField,
+    ReferenceField,
+    StringField,
+)
 
 
 class User(Document):
