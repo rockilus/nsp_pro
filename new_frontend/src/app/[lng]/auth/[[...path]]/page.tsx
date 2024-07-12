@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { getSSRSessionHelper } from "../../../../components/home";
 import Auth from "../../../../components/user-authentication/auth";
 import AuthSupertokens from "../../../../components/user-authentication/supertokens-auth-ui";
+// Constants
+import { PostSignInRoute } from "../../../../constants/constants";
 
 export default async function AuthPage({
   params: { lng },
@@ -18,7 +20,7 @@ export default async function AuthPage({
     console.log("redirecting to /");
 
     // if (hasToken && emailVerified) {
-    return redirect("/");
+    return redirect(PostSignInRoute);
   }
   return <Auth lng={lng} />;
   // return <AuthSupertokens />;
