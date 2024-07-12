@@ -8,6 +8,9 @@ import { getSelectedTeamId } from "../../../lib/team";
 // Components
 import WorkerTab from "../../../../components/workers/worker-tab";
 
+import TablesSkeleton from "../../../../components/skeletons/tables-skeleton";
+import AgendasSkeleton from "../../../../components/skeletons/agendas-skeleton";
+
 export default function Page({
   params: { lng },
 }: {
@@ -29,5 +32,6 @@ export default function Page({
     fetchTeamId();
   }, [selectedTeamId, setSelectedTeamId]);
 
-  return <WorkerTab lng={lng} selectedTeamId={selectedTeamId} />;
+  // return <WorkerTab lng={lng} selectedTeamId={selectedTeamId} />;
+  return <AgendasSkeleton />;
 }
