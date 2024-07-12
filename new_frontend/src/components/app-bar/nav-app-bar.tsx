@@ -16,7 +16,14 @@ const logoHeight = logoHeightOriginal * logoAdjustFactor;
 
 const NavAppBar = ({ lng }: { lng: string }) => {
   return (
-    <AppBar position="static" sx={{ backgroundColor: "white" }}>
+    <AppBar
+      position="static"
+      sx={{
+        backgroundColor: "white",
+        boxShadow: "none",
+        borderBottom: "1px solid lightgray",
+      }}
+    >
       <Toolbar>
         <Box
           display="flex"

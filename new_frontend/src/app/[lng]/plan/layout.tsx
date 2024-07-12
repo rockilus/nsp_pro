@@ -1,4 +1,6 @@
 import { languages } from "../../i18n/settings";
+// MUI
+import CssBaseline from "@mui/material/CssBaseline";
 // Components
 import NavAppBar from "../../../components/app-bar/nav-app-bar";
 import SessionHandler from "../../../components/session-handler";
@@ -19,6 +21,7 @@ export default function Layout({
   return (
     <SessionHandler>
       <>
+        <CssBaseline />
         <header>
           <NavAppBar lng={lng} />
         </header>
