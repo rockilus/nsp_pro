@@ -10,6 +10,8 @@ import {
 } from "supertokens-web-js/recipe/emailverification";
 import Session from "supertokens-web-js/recipe/session";
 import z from "zod";
+// Constants
+import { PostSignInRoute } from "../../constants/constants";
 import { languages } from "../i18n/settings";
 
 const passwordValidator = z
@@ -153,7 +155,7 @@ export async function signUpClicked(
         } else {
           // sign up successful. The session tokens are automatically handled by
           // the frontend SDK.
-          window.location.href = "/";
+          window.location.href = `${language}${PostSignInRoute}`;
         }
       } catch (err: any) {
         if (err.isSuperTokensGeneralError === true) {
@@ -260,7 +262,7 @@ export async function signInClicked(
         } else {
           // sign in successful. The session tokens are automatically handled by
           // the frontend SDK.
-          window.location.href = "/";
+          window.location.href = PostSignInRoute;
         }
       } catch (err: any) {
         if (err.isSuperTokensGeneralError === true) {

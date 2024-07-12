@@ -13,6 +13,7 @@ export const WeekDays = [
 ];
 export const NumHoursInDay = 24;
 export const NumQuarterHoursInHour = 4;
+export const PostSignInRoute = "/plan/workers";
 
 // Shifts
 export const ShiftColors: string[] = [

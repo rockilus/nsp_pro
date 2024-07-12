@@ -23,7 +23,6 @@ export default function SignUp({ lng }: { lng: string }) {
 
   const initialState: State = { message: null, errors: {} };
   const [state, dispatch] = useFormState(signUpClicked, initialState);
-  console.log("state", state);
 
   const pathName = usePathname();
   const { replace } = useRouter();
