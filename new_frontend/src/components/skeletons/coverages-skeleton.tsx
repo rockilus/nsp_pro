@@ -6,7 +6,7 @@ import Stack from "@mui/material/Stack";
 import BaseTableSkeleton from "./base-table-skeleton";
 import WeeklyCalendarSkeleton from "./weekly-calendar-skeleton";
 
-export default function AgendasSkeleton() {
+export default function CoveragesSkeleton() {
   return (
     <Box
       sx={{
