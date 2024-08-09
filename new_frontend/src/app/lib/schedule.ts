@@ -10,10 +10,12 @@ import { getShifts } from "./shift";
 // Types
 import { ScheduleT, AssignmentT, BreachT } from "../../types/schedule";
 import { RequestT } from "../../types/request";
+// Env Vars
+import { API_URL } from "./env";
 
 dayjs.extend(utc);
 
-const apiUrlSchedule = process.env.NEXT_PUBLIC_API_URL + "/schedules";
+const apiUrlSchedule = API_URL + "/schedules";
 
 export const toScheduleT = (data: any): ScheduleT => {
   return {

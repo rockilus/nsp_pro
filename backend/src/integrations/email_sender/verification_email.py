@@ -1,17 +1,24 @@
 import boto3  # type: ignore
 
 from core import User
+from utils.env_config import ENVIRONMENT
 
 
 def send_verification_email(user: User, email_verify_link: str) -> None:
-    session = boto3.Session(profile_name="felipe_kharaba_dev")
-    credentials = session.get_credentials()
-    client = boto3.client(
-        'ses',
-        aws_access_key_id=credentials.access_key,
-        aws_secret_access_key=credentials.secret_key,
-        region_name='eu-west-3',
-    )
+    if ENVIRONMENT == "development":
+        session = boto3.Session(profile_name="felipe_kharaba_dev")
+        credentials = session.get_credentials()
+        client = boto3.client(
+            'ses',
+            aws_access_key_id=credentials.access_key,
+            aws_secret_access_key=credentials.secret_key,
+            region_name='eu-west-3',
+        )
+    else:
+        client = boto3.client(
+            'ses',
+            region_name='eu-west-3',
+        )
     print("client", client)
 
     response = client.send_email(
@@ -56,14 +63,20 @@ def send_verification_email(user: User, email_verify_link: str) -> None:
 
 
 def send_reset_password_email(user: User, reset_password_link: str) -> None:
-    session = boto3.Session(profile_name="felipe_kharaba_dev")
-    credentials = session.get_credentials()
-    client = boto3.client(
-        'ses',
-        aws_access_key_id=credentials.access_key,
-        aws_secret_access_key=credentials.secret_key,
-        region_name='eu-west-3',
-    )
+    if ENVIRONMENT == "development":
+        session = boto3.Session(profile_name="felipe_kharaba_dev")
+        credentials = session.get_credentials()
+        client = boto3.client(
+            'ses',
+            aws_access_key_id=credentials.access_key,
+            aws_secret_access_key=credentials.secret_key,
+            region_name='eu-west-3',
+        )
+    else:
+        client = boto3.client(
+            'ses',
+            region_name='eu-west-3',
+        )
     print("client", client)
 
     response = client.send_email(
@@ -107,14 +120,20 @@ def send_reset_password_email(user: User, reset_password_link: str) -> None:
 
 
 def send_signup_attempt_email(email: str) -> None:
-    session = boto3.Session(profile_name="felipe_kharaba_dev")
-    credentials = session.get_credentials()
-    client = boto3.client(
-        'ses',
-        aws_access_key_id=credentials.access_key,
-        aws_secret_access_key=credentials.secret_key,
-        region_name='eu-west-3',
-    )
+    if ENVIRONMENT == "development":
+        session = boto3.Session(profile_name="felipe_kharaba_dev")
+        credentials = session.get_credentials()
+        client = boto3.client(
+            'ses',
+            aws_access_key_id=credentials.access_key,
+            aws_secret_access_key=credentials.secret_key,
+            region_name='eu-west-3',
+        )
+    else:
+        client = boto3.client(
+            'ses',
+            region_name='eu-west-3',
+        )
 
     response = client.send_email(
         Source='noreply@rockilus.com',

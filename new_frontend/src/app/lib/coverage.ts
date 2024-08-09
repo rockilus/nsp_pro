@@ -3,8 +3,10 @@ import { unstable_noStore as noStore } from "next/cache";
 import { toShiftT, getShifts } from "./shift";
 // Types
 import { CoverageT, ShiftDemandT } from "../../types/coverage";
+// Env Vars
+import { API_URL } from "./env";
 
-const apiUrlCoverages = process.env.NEXT_PUBLIC_API_URL + "/coverages";
+const apiUrlCoverages = API_URL + "/coverages";
 
 export const toShiftDemandT = (shiftDemand: any): ShiftDemandT => ({
   ...shiftDemand,

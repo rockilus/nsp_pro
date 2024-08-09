@@ -18,6 +18,7 @@ from utils.env_config import (
     CLIENT_URL,
     ST_API_KEY,
     ST_CONNECTION_URI,
+    ST_COOKIE_DOMAIN,
     ST_DASHBOARD_ADMINS,
 )
 
@@ -40,7 +41,7 @@ recipe_list = [
         mode="REQUIRED",
         email_delivery=EmailDeliveryConfig(override=custom_emailverification_delivery),
     ),
-    session.init(),
+    session.init(cookie_domain=ST_COOKIE_DOMAIN),
     emailpassword.init(
         override=emailpassword.InputOverrideConfig(
             apis=override_emailpassword_apis,

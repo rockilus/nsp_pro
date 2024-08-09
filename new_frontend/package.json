@@ -31,6 +31,7 @@
     "react-cookie": "^7.1.4",
     "react-dom": "^18",
     "react-i18next": "^14.1.2",
+    "sharp": "^0.33.4",
     "supertokens-auth-react": "^0.42.2",
     "supertokens-node": "^18.0.0",
     "supertokens-web-js": "^0.12.0",

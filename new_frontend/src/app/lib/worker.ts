@@ -1,10 +1,11 @@
 import { unstable_noStore as noStore } from "next/cache";
 // Types
 import { WorkerT, WorkerDimensionT, WorkerPropertyT } from "../../types/worker";
+// Env Vars
+import { API_URL } from "./env";
 
-const apiUrlWorkers = process.env.NEXT_PUBLIC_API_URL + "/workers";
-const apiUrlWorkerDimensions =
-  process.env.NEXT_PUBLIC_API_URL + "/worker-dimensions";
+const apiUrlWorkers = API_URL + "/workers";
+const apiUrlWorkerDimensions = API_URL + "/worker-dimensions";
 
 //////////////////////////
 // Worker //
@@ -230,7 +231,7 @@ export async function updateWorkerProperty(
   teamId: string
 ) {
   const options: RequestInit = {
-    method: "PATCH",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },

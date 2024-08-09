@@ -1,10 +1,11 @@
 import { unstable_noStore as noStore } from "next/cache";
 // Types
 import { ConstraintT, TemplateT } from "../../types/constraint";
+// Env Vars
+import { API_URL } from "./env";
 
-const apiUrlConstraints = process.env.NEXT_PUBLIC_API_URL + "/constraints";
-const apiUrlTemplates =
-  process.env.NEXT_PUBLIC_API_URL + "/constraint-templates";
+const apiUrlConstraints = API_URL + "/constraints";
+const apiUrlTemplates = API_URL + "/constraint-templates";
 
 //////////////////////////
 // Constraint //
