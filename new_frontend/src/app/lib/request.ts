@@ -5,8 +5,10 @@ import { getShifts } from "./shift";
 import { getWorkers } from "./worker";
 // Types
 import { RequestT } from "../../types/request";
+// Env Vars
+import { API_URL } from "./env";
 
-const apiUrlRequests = process.env.NEXT_PUBLIC_API_URL + "/requests";
+const apiUrlRequests = API_URL + "/requests";
 
 export const toRequestT = (data: any) => {
   const r: RequestT = {

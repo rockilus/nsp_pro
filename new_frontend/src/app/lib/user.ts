@@ -3,10 +3,12 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
 import { UserT } from "../../types/user";
+// Env Vars
+import { API_URL } from "./env";
 
 dayjs.extend(utc);
 
-const apiUrlUsers = process.env.NEXT_PUBLIC_API_URL + "/users";
+const apiUrlUsers = API_URL + "/users";
 
 export const toUserT = (data: any): UserT => {
   return {

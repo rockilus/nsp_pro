@@ -3,12 +3,13 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
 import { ShiftT, ShiftDimensionT, ShiftPropertyT } from "../../types/shift";
+// Env Vars
+import { API_URL } from "./env";
 
 dayjs.extend(utc);
 
-const apiUrlShifts = process.env.NEXT_PUBLIC_API_URL + "/shifts";
-const apiUrlShiftDimensions =
-  process.env.NEXT_PUBLIC_API_URL + "/shift-dimensions";
+const apiUrlShifts = API_URL + "/shifts";
+const apiUrlShiftDimensions = API_URL + "/shift-dimensions";
 
 export const toShiftT = (data: any): ShiftT => {
   return {
@@ -236,7 +237,7 @@ export async function updateShiftProperty(
   teamId: string
 ) {
   const options: RequestInit = {
-    method: "PATCH",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },

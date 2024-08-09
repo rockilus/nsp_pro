@@ -10,6 +10,8 @@ const SessionHandler = async ({ children }: { children: React.ReactNode }) => {
 
   const { accessTokenPayload, hasToken, error } = await getSSRSessionHelper();
 
+  console.log("accessTokenPayload", accessTokenPayload);
+
   if (error) {
     return (
       <div>

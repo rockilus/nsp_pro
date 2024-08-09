@@ -1,6 +1,8 @@
 import { unstable_noStore as noStore } from "next/cache";
+// Env Vars
+import { API_URL } from "./env";
 
-const apiUrlTeam = process.env.NEXT_PUBLIC_API_URL + "/teams";
+const apiUrlTeam = API_URL + "/teams";
 
 export async function getSelectedTeamId() {
   noStore();

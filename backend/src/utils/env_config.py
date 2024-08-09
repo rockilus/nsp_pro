@@ -62,9 +62,14 @@ ST_API_KEY: str = get_env_variable("ST_API_KEY")
 ST_DASHBOARD_ADMINS: Tuple[str, ...] = tuple(
     get_env_variable("ST_DASHBOARD_ADMINS").split(",")
 )
+ST_COOKIE_DOMAIN: str = get_env_variable("ST_COOKIE_DOMAIN")
 # Permit.io config
 PDP_URL: str = get_env_variable("PDP_URL")
 PDP_API_KEY: str = get_env_variable("PDP_API_KEY")
 
 # Uvicorn config
 UVICORN_RELOAD: bool = bool(get_env_variable("UVICORN_RELOAD"))
+
+
+print("ST_COOKIE_DOMAIN", ST_COOKIE_DOMAIN)
+print("API_URL", API_URL)

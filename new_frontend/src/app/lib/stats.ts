@@ -9,8 +9,10 @@ import {
   StatsOptionsT,
   StatsShiftOptionsT,
 } from "../../types/stats";
+// Env Vars
+import { API_URL } from "./env";
 
-const apiUrlStats = process.env.NEXT_PUBLIC_API_URL + "/stats";
+const apiUrlStats = API_URL + "/stats";
 
 //////////////////////////
 // Stats //

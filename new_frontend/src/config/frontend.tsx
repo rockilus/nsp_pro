@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { SuperTokensConfig } from "supertokens-auth-react/lib/build/types";
 import { EmailPasswordPreBuiltUI } from "supertokens-auth-react/recipe/emailpassword/prebuiltui";
 import { EmailVerificationPreBuiltUI } from "supertokens-auth-react/recipe/emailverification/prebuiltui";
+import { ST_FRONTEND_DOMAIN } from "../app/lib/env";
 
 const routerInfo: { router?: ReturnType<typeof useRouter>; pathName?: string } =
   {};
@@ -19,6 +20,8 @@ export function setRouter(
 }
 
 export const frontendConfig = (): SuperTokensConfig => {
+  console.log("appInfo", appInfo);
+
   return {
     appInfo,
     recipeList: [
@@ -36,7 +39,9 @@ export const frontendConfig = (): SuperTokensConfig => {
         },
       }),
       EmailVerification.init({ mode: "REQUIRED" }),
-      Session.init(),
+      Session.init({
+        sessionTokenFrontendDomain: ST_FRONTEND_DOMAIN,
+      }),
     ],
     windowHandler: (orig) => {
       return {

@@ -7,11 +7,12 @@ import { getCoverages } from "./coverage";
 import { getConstraints } from "./constraint";
 // Types
 import { CoverageSelectorT } from "../../types/campaign";
+// Env Vars
+import { API_URL } from "./env";
 
 dayjs.extend(utc);
 
-const apiUrlCoverageSelectors =
-  process.env.NEXT_PUBLIC_API_URL + "/coverage-selectors";
+const apiUrlCoverageSelectors = API_URL + "/coverage-selectors";
 
 const toCoverageSelectorT = (data: any): CoverageSelectorT => {
   return {

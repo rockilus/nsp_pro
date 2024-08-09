@@ -3,10 +3,12 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
 import { BreachT, VariableT } from "../../types/schedule";
+// Env Vars
+import { API_URL } from "./env";
 
 dayjs.extend(utc);
 
-const apiUrlBreach = process.env.NEXT_PUBLIC_API_URL + "/breaches";
+const apiUrlBreach = API_URL + "/breaches";
 
 export const toBreachT = (data: any): BreachT => {
   return {

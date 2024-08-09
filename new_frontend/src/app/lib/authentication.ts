@@ -285,6 +285,19 @@ export async function signInClicked(
 export async function sendEmail() {
   try {
     let response = await sendVerificationEmail();
+    //   {
+    //   options: {
+    //     preAPIHook: async (input) => {
+    //       // Add the 'Access-Control-Allow-Origin' header
+    //       input.requestInit.headers = {
+    //         ...input.requestInit.headers,
+    //         "Access-Control-Allow-Origin": "https://app.rockilus.com",
+    //       };
+
+    //       return input;
+    //     },
+    //   },
+    // }
     if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
       // This can happen if the info about email verification in the session was outdated.
       // Redirect the user to the home page

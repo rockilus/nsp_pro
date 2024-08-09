@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     curl
 RUN pip3 install pipx
 RUN pipx install poetry
-ENV PATH="$HOME/.local/bin:$PATH"
+ENV PATH="/root/.local/bin:$PATH"
 COPY poetry.lock pyproject.toml /backend/
 RUN /root/.local/bin/poetry lock
 RUN /root/.local/bin/poetry install
