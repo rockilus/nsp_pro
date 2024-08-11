@@ -14,7 +14,6 @@ import resourcesToBackend from "i18next-resources-to-backend";
 // import LocizeBackend from 'i18next-locize-backend'
 import LanguageDetector from "i18next-browser-languagedetector";
 import { getOptions, languages, cookieName } from "./settings";
-import { set } from "zod";
 
 const runsOnServerSide = typeof window === "undefined";
 
