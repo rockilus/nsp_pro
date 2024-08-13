@@ -13,7 +13,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import TemplateMessage
@@ -45,14 +48,17 @@ async def get_constraint_templates(
             )
         user = user_db.get_user_by_id(session.get_user_id())
         workers = worker_db.get_workers(team_id)
-        worker_properties = worker_property_db.get_worker_properties_by_worker_ids(
-            [w.id for w in workers]
+        worker_properties = (
+            worker_property_db.get_worker_properties_by_worker_ids(
+                [w.id for w in workers]
+            )
         )
         worker_properties_wd: Dict[str, List[WorkerProperty]] = {}
         for wp in worker_properties:
             wd_id = wp.worker_dimension_id
             if wd_id not in worker_properties_wd:
                 worker_properties_wd[wd_id] = []
+            worker_properties_wd[wd_id].append(wp)
         worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id)
         shifts = shift_db.get_shifts(team_id)
         shift_properties = shift_property_db.get_shift_properties_by_shift_ids(
