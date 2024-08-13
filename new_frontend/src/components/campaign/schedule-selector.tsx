@@ -14,7 +14,8 @@ import TableContainer from "@mui/material/TableContainer";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import TableRowScheduleWIP from "../data-display/table-row-schedule-wip";
-import { GetStatusLabel } from "../data-display/get-status-label";
+import useStatusLabel from "../data-display/get-status-label";
+
 // Types
 import { ScheduleT } from "../../types/schedule";
 //Constants
@@ -34,6 +35,7 @@ export default function ScheduleSelector({
   handleUpdateSchedule: (schedule: ScheduleT) => void;
 }) {
   const { t } = useTranslation(lng, "campaign-page");
+  const getStatusLabel = useStatusLabel(lng); // Use the custom hook
 
   return (
     <Box
@@ -127,7 +129,7 @@ export default function ScheduleSelector({
                   name={t("status")}
                   content={
                     <Chip
-                      label={GetStatusLabel(lng, schedule.solveStatus)}
+                      label={getStatusLabel(schedule.solveStatus)}
                       color={
                         (SolveStatusColors[
                           SolveStatusList.indexOf(schedule.solveStatus)

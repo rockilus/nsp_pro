@@ -48,27 +48,76 @@ export function useTranslation<
   const [cookies, setCookie] = useCookies([cookieName]);
   const ret = useTranslationOrg(ns, options);
   const { i18n } = ret;
-  if (runsOnServerSide && lng && i18n.resolvedLanguage !== lng) {
-    i18n.changeLanguage(lng);
-  } else {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [activeLng, setActiveLng] = useState(i18n.resolvedLanguage);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useEffect(() => {
-      if (activeLng === i18n.resolvedLanguage) return;
-      setActiveLng(i18n.resolvedLanguage);
-    }, [activeLng, i18n.resolvedLanguage]);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useEffect(() => {
-      if (!lng || i18n.resolvedLanguage === lng) return;
+  const [activeLng, setActiveLng] = useState(i18n.resolvedLanguage);
+
+  useEffect(() => {
+    if (!runsOnServerSide && lng && i18n.resolvedLanguage !== lng) {
       i18n.changeLanguage(lng);
-    }, [lng, i18n]);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useEffect(() => {
-      if (cookies.i18next === lng) return;
-      setCookie(cookieName, lng, { path: "/" });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [lng, cookies.i18next]);
-  }
+    }
+  }, [lng, i18n]);
+
+  useEffect(() => {
+    if (activeLng === i18n.resolvedLanguage) return;
+    setActiveLng(i18n.resolvedLanguage);
+  }, [activeLng, i18n.resolvedLanguage]);
+
+  useEffect(() => {
+    if (!lng || i18n.resolvedLanguage === lng) return;
+    i18n.changeLanguage(lng);
+  }, [lng, i18n]);
+
+  useEffect(() => {
+    if (cookies.i18next === lng) return;
+    setCookie(cookieName, lng, { path: "/" });
+  }, [lng, cookies.i18next, setCookie]);
+
   return ret;
 }
+
+// export function useTranslation<
+//   Ns extends FlatNamespace,
+//   KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined
+// >(
+//   lng: string,
+//   ns?: Ns,
+//   options?: UseTranslationOptions<KPrefix>
+// ): UseTranslationResponse<FallbackNs<Ns>, KPrefix> {
+//   const [cookies, setCookie] = useCookies([cookieName]);
+//   const ret = useTranslationOrg(ns, options);
+//   const { i18n } = ret;
+
+//   // console.log("lng", lng);
+//   // console.log("runsOnServerSide", runsOnServerSide);
+//   // console.log("i18n.resolvedLanguage", i18n.resolvedLanguage);
+
+//   if (runsOnServerSide && lng && i18n.resolvedLanguage !== lng) {
+//     i18n.changeLanguage(lng);
+//   } else {
+//     // eslint-disable-next-line react-hooks/rules-of-hooks
+//     const [activeLng, setActiveLng] = useState(i18n.resolvedLanguage);
+
+//     console.log("activeLng", activeLng);
+
+//     // eslint-disable-next-line react-hooks/rules-of-hooks
+//     useEffect(() => {
+//       if (activeLng === i18n.resolvedLanguage) return;
+//       console.log("setActiveLng");
+//       setActiveLng(i18n.resolvedLanguage);
+//     }, [activeLng, i18n.resolvedLanguage]);
+//     // eslint-disable-next-line react-hooks/rules-of-hooks
+//     useEffect(() => {
+//       if (!lng || i18n.resolvedLanguage === lng) return;
+//       console.log("changeLanguage");
+//       i18n.changeLanguage(lng);
+//     }, [lng, i18n]);
+//     // eslint-disable-next-line react-hooks/rules-of-hooks
+//     useEffect(() => {
+//       if (cookies.i18next === lng) return;
+//       console.log("setCookie");
+//       setCookie(cookieName, lng, { path: "/" });
+//       // eslint-disable-next-line react-hooks/exhaustive-deps
+//     }, [lng, cookies.i18next]);
+
+//   }
+//   return ret;
+// }
