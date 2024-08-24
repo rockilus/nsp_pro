@@ -1,0 +1,11 @@
+.sJ9Raf::after {
+    border-bottom-color: #E8E8E8;
+    content: "";
+    border-bottom: #E8E8E8 1px solid;
+    position: absolute;
+    width: 100%;
+    margin-top: -1px;
+    z-index: 3;
+    pointer-events: none;
+  }
+  

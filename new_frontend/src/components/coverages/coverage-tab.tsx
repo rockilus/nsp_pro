@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 // Components
 import CoverageCalendar from "./coverage-calendar";
 import CoverageOptions from "./coverage-options";
+import WeeklyCalendar from "./weekly-calendar";
 // Actions
 import {
   getCoveragesTabData,
@@ -162,6 +163,7 @@ export default function CoverageTab({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
+      <WeeklyCalendar />
       <Box sx={{ display: "flex", flexDirection: "row" }}>
         <CoverageOptions
           lng={lng}
