@@ -163,7 +163,7 @@ export default function CoverageTab({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <WeeklyCalendar />
+      <WeeklyCalendar lng={lng} />
       <Box sx={{ display: "flex", flexDirection: "row" }}>
         <CoverageOptions
           lng={lng}

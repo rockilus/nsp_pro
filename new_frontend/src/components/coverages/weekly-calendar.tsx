@@ -1,12 +1,17 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "../../app/i18n/client";
 // Styles
 import "./weekly-calendar.css";
+// Types
+import { CoverageT } from "../../types/coverage";
 
 dayjs.extend(utc);
 
-export default function WeeklyCalendar({}: {}) {
+export default function WeeklyCalendar({ lng }: { lng: string }) {
+  const { t } = useTranslation(lng, "week_days");
+
   const tableRef = useRef<HTMLTableElement>(null);
   const [dayColWidth, setDayColWidth] = useState<number>(80);
 
@@ -22,23 +27,14 @@ export default function WeeklyCalendar({}: {}) {
   }
 
   const WeekDays = [
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-    "sunday",
+    t("monday"),
+    t("tuesday"),
+    t("wednesday"),
+    t("thursday"),
+    t("friday"),
+    t("saturday"),
+    t("sunday"),
   ];
-  // const WeekDays = [
-  //   t("monday"),
-  //   t("tuesday"),
-  //   t("wednesday"),
-  //   t("thursday"),
-  //   t("friday"),
-  //   t("saturday"),
-  //   t("sunday"),
-  // ];
 
   const rowHeight = "48px";
 
@@ -57,21 +53,79 @@ export default function WeeklyCalendar({}: {}) {
     return () => window.removeEventListener("resize", handleResize);
   }, [setDayColWidth, WeekDays.length]);
 
-  console.log("clientWidth:", tableRef.current?.clientWidth);
-
-  console.log("dayColWidth:", dayColWidth);
-
   return (
     <div ref={tableRef}>
-      <div>Header</div>
-      {/* Calendar */}
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "flex-end",
+        }}
+      >
+        {/* Times column */}
+        <div
+          style={{ height: rowHeight, width: "40px", textAlign: "right" }}
+        ></div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Days columns */}
+          <div style={{ display: "flex", flexDirection: "row" }}>
+            <div style={{ width: "8px" }}></div>
+            {WeekDays.map((day, index) => (
+              <div
+                key={`${day}-${index}`}
+                style={{
+                  minWidth: "68px",
+                  width: dayColWidth,
+                  textAlign: "center",
+                }}
+              >
+                {day.slice(0, 3)}
+              </div>
+            ))}
+          </div>
+          {/* All day row */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+            }}
+          >
+            <div
+              style={{ width: "8px", borderRight: `1px solid #E8E8E8` }}
+            ></div>
+            {WeekDays.map((day, index) => (
+              <div
+                key={`${day}-${index}`}
+                style={{
+                  minWidth: "68px",
+                  minHeight: "16px",
+                  width: dayColWidth,
+                  borderRight: `1px solid #E8E8E8`,
+                }}
+              ></div>
+            ))}
+          </div>
+        </div>
+      </div>
+      {/* Body */}
       <div style={{ display: "flex", flexDirection: "row" }}>
         {/* Times column */}
         <div>
           {timeHours.map((time, index) => (
             <div
               key={`${time}-${index}`}
-              style={{ height: rowHeight, width: "40px", textAlign: "right" }}
+              style={{
+                height: rowHeight,
+                width: "40px",
+                textAlign: "right",
+                paddingRight: "6px",
+              }}
             >
               <span
                 style={{
