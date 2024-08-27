@@ -2,18 +2,29 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
+// Components
+import eventToDiv from "./event-to-div";
+// Methods
+import shiftDemandsToEvents from "./sds-to-events";
 // Styles
 import "./weekly-calendar.css";
 // Types
-import { CoverageT } from "../../types/coverage";
+import { CoverageT, EventT } from "../../types/coverage";
 
 dayjs.extend(utc);
 
-export default function WeeklyCalendar({ lng }: { lng: string }) {
+export default function WeeklyCalendar({
+  lng,
+  coverage,
+}: {
+  lng: string;
+  coverage: CoverageT | null;
+}) {
   const { t } = useTranslation(lng, "week_days");
 
   const tableRef = useRef<HTMLTableElement>(null);
   const [dayColWidth, setDayColWidth] = useState<number>(80);
+  const [events, setEvents] = useState<EventT[]>([]);
 
   const timeHours: dayjs.Dayjs[] = [];
   let startTime = dayjs.utc().startOf("day");
@@ -36,7 +47,8 @@ export default function WeeklyCalendar({ lng }: { lng: string }) {
     t("sunday"),
   ];
 
-  const rowHeight = "48px";
+  // const rowHeight = "48px";
+  const rowHeight = 48;
 
   useEffect(() => {
     const handleResize = () => {
@@ -52,6 +64,13 @@ export default function WeeklyCalendar({ lng }: { lng: string }) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [setDayColWidth, WeekDays.length]);
+
+  useEffect(() => {
+    if (coverage) {
+      const events = shiftDemandsToEvents(coverage.shiftDemands);
+      setEvents(events);
+    }
+  }, [coverage]);
 
   return (
     <div ref={tableRef}>
@@ -152,18 +171,128 @@ export default function WeeklyCalendar({ lng }: { lng: string }) {
             ))}
           </div>
           <div style={{ width: "8px", borderRight: `1px solid #E8E8E8` }}></div>
-          {WeekDays.map((day, index) => (
-            <div
-              key={`${day}-${index}`}
-              style={{
-                minWidth: "68px",
-                width: dayColWidth,
-                borderRight: `1px solid #E8E8E8`,
-              }}
-            ></div>
-          ))}
+          {WeekDays.map((day, index) => {
+            const dayEvents = events.filter(
+              (event) => event.shiftDemand.dayIndex === index
+            );
+            return (
+              <div
+                key={`${day}-${index}`}
+                style={{
+                  minWidth: "68px",
+                  width: dayColWidth,
+                  borderRight: `1px solid #E8E8E8`,
+                  position: "relative",
+                }}
+              >
+                {dayEvents.map((event, index) => {
+                  return eventToDiv(event, rowHeight, dayColWidth);
+                })}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
   );
+}
+
+{
+  /* Events */
+}
+{
+  /* {index === 0 && (
+                <div
+                  style={{
+                    top: "30px",
+                    left: "0",
+                    // width: "100%",
+                    width: dayColWidth - 1,
+                    height: "30px",
+                    backgroundColor: "rgba(0, 0, 255, 0.7)",
+                    color: "white",
+                    borderRadius: "4px",
+                    position: "absolute",
+                    zIndex: 5,
+                  }}
+                >
+                  Test
+                </div>
+              )}
+              {index === 0 && (
+                <div
+                  style={{
+                    top: "70px",
+                    left: "0",
+                    width: (dayColWidth - 1) / 2 - 0.5,
+                    height: "30px",
+                    backgroundColor: "rgba(0, 0, 255, 0.7)",
+                    color: "white",
+                    borderRadius: "4px",
+                    position: "absolute",
+                    zIndex: 5,
+                  }}
+                >
+                  Test
+                </div>
+              )}
+              {index === 0 && (
+                <div
+                  style={{
+                    top: "70px",
+                    left: (dayColWidth - 1) / 2 + 0.5,
+                    width: (dayColWidth - 1) / 2 - 0.5,
+                    height: "30px",
+                    marginRight: "1px",
+                    backgroundColor: "rgba(0, 0, 0, 0.7)",
+                    color: "white",
+                    borderRadius: "4px",
+                    position: "absolute",
+                    zIndex: 5,
+                  }}
+                >
+                  Test
+                </div>
+              )}
+              {index === 0 && (
+                <div
+                  style={{
+                    top: rowHeight * 22,
+                    left: 0,
+                    width: dayColWidth - 1,
+                    height: rowHeight * 2,
+                    marginRight: "1px",
+                    backgroundColor: "rgba(255, 0, 0, 0.7)",
+                    color: "white",
+                    borderTopLeftRadius: "4px",
+                    borderTopRightRadius: "4px",
+                    position: "absolute",
+                    zIndex: 5,
+                  }}
+                >
+                  Test
+                </div>
+              )}
+              {index === 1 && (
+                <div
+                  style={{
+                    top: 0,
+                    left: 0,
+                    width: dayColWidth - 1,
+                    height: rowHeight * 2,
+                    marginRight: "1px",
+                    backgroundColor: "rgba(255, 0, 0)",
+                    opacity: 0.7,
+                    color: "white",
+                    borderTopLeftRadius: "0px",
+                    borderTopRightRadius: "0px",
+                    borderBottomLeftRadius: "4px",
+                    borderBottomRightRadius: "4px",
+                    position: "absolute",
+                    zIndex: 5,
+                  }}
+                >
+                  Test
+                </div>
+              )} */
 }

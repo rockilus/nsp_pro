@@ -22,7 +22,7 @@ export default function CoverageOptions({
 }: {
   lng: string;
   coverages: CoverageT[];
-  selectedCoverage: CoverageT | undefined;
+  selectedCoverage: CoverageT | null;
   editingName: boolean;
   handleSelectCoverage: (coverage: CoverageT) => void;
   setEditingName: (editingName: boolean) => void;

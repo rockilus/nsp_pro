@@ -32,9 +32,9 @@ export default function CoverageTab({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [coverages, setCoverages] = useState<CoverageT[]>([]);
 
-  const [selectedCoverage, setSelectedCoverage] = useState<
-    CoverageT | undefined
-  >(undefined);
+  const [selectedCoverage, setSelectedCoverage] = useState<CoverageT | null>(
+    null
+  );
   const [editingName, setEditingName] = useState<boolean>(false);
 
   const handleSelectCoverage = (coverage: CoverageT) => {
@@ -78,7 +78,7 @@ export default function CoverageTab({
     }
     await deleteCoverage(coverageId, selectedTeamId);
     setCoverages(coverages.filter((coverage) => coverage.id !== coverageId));
-    setSelectedCoverage(undefined);
+    setSelectedCoverage(null);
     setEditingName(false);
   };
 
@@ -163,7 +163,7 @@ export default function CoverageTab({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <WeeklyCalendar lng={lng} />
+      <WeeklyCalendar lng={lng} coverage={selectedCoverage} />
       <Box sx={{ display: "flex", flexDirection: "row" }}>
         <CoverageOptions
           lng={lng}
