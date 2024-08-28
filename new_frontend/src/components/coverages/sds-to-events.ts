@@ -8,45 +8,71 @@ import {
 
 const shiftDemandsToEvents = (shiftDemands: ShiftDemandT[]): EventT[] => {
   const out: EventT[] = [];
-  const nextDayOverlapSDs = buildNextDayOverlapSDs(shiftDemands);
-  const shiftDemandsWithNextDayOverlap = [
-    ...shiftDemands,
-    ...nextDayOverlapSDs,
-  ];
-  const groupedShiftDemands = groupByDayIndex(shiftDemandsWithNextDayOverlap);
+  const shiftDemandsCalendar = buildShiftDemandCalendar(shiftDemands);
+  const groupedShiftDemands = groupByDayIndex(shiftDemandsCalendar);
   groupedShiftDemands.forEach((group, dayIndex) => {
     const overlapIdGroups = groupOverlappingShifts(group);
-    const events = convertShiftDemandToEvent(
-      group,
-      overlapIdGroups,
-      dayIndex,
-      nextDayOverlapSDs
-    );
+    const events = convertShiftDemandToEvent(group, overlapIdGroups);
     out.push(...events);
   });
   return out;
 };
 
-const buildNextDayOverlapSDs = (
+const buildShiftDemandCalendar = (
   shiftDemands: ShiftDemandT[]
-): ShiftDemandT[] => {
-  const out: ShiftDemandT[] = [];
+): ShiftDemandCalendarT[] => {
+  const out: ShiftDemandCalendarT[] = [];
   shiftDemands.forEach((shiftDemand) => {
-    // out.push(shiftDemand);
-    if (shiftDemand.shift.startTime.day() !== shiftDemand.shift.endTime.day()) {
+    const isTwoDays =
+      shiftDemand.shift.startTime.day() !== shiftDemand.shift.endTime.day();
+    if (!isTwoDays) {
       out.push({
         ...shiftDemand,
+        isTwoDays,
+        isSecondDay: false,
+        startTime: shiftDemand.shift.startTime,
+        endTime: shiftDemand.shift.endTime,
+      });
+    } else {
+      out.push({
+        ...shiftDemand,
+        isTwoDays,
+        isSecondDay: false,
+        startTime: shiftDemand.shift.startTime,
+        endTime: shiftDemand.shift.startTime.endOf("day"),
+      });
+      out.push({
+        ...shiftDemand,
+        isTwoDays,
+        isSecondDay: true,
         dayIndex: (shiftDemand.dayIndex + 1) % 7,
+        startTime: shiftDemand.shift.endTime.startOf("day"),
+        endTime: shiftDemand.shift.endTime,
       });
     }
   });
   return out;
 };
 
+const shiftDemandCalendarToShiftDemand = (
+  shiftDemand: ShiftDemandCalendarT
+): ShiftDemandT => {
+  return {
+    id: shiftDemand.id,
+    dayIndex: shiftDemand.dayIndex,
+    shift: shiftDemand.shift,
+    coverageId: shiftDemand.coverageId,
+  };
+};
+
+const setDayJSDate = (date: dayjs.Dayjs): dayjs.Dayjs => {
+  return date.set("year", 2021).set("month", 0).set("date", 1);
+};
+
 const groupByDayIndex = (
-  shiftDemands: ShiftDemandT[]
-): Map<number, ShiftDemandT[]> => {
-  const map = new Map<number, ShiftDemandT[]>();
+  shiftDemands: ShiftDemandCalendarT[]
+): Map<number, ShiftDemandCalendarT[]> => {
+  const map = new Map<number, ShiftDemandCalendarT[]>();
   shiftDemands.forEach((shiftDemand) => {
     const dayIndex = shiftDemand.dayIndex;
     if (!map.has(dayIndex)) {
@@ -59,34 +85,38 @@ const groupByDayIndex = (
 
 // Main function to group overlapping shift demands
 export const groupOverlappingShifts = (
-  shiftDemands: ShiftDemandT[]
+  shiftDemands: ShiftDemandCalendarT[]
 ): string[][] => {
   const overlappingGroups: string[][] = [];
 
   // Iterate over all shift demands
   for (let i = 0; i < shiftDemands.length; i++) {
     const currentShiftDemand = shiftDemands[i];
-    let maxStartTime = currentShiftDemand.shift.startTime;
-    let minEndTime = currentShiftDemand.shift.endTime;
+    let maxStartTime = setDayJSDate(currentShiftDemand.startTime);
+    let minEndTime = setDayJSDate(currentShiftDemand.endTime);
     const overlappingShifts = [currentShiftDemand.id];
 
     // Compare with the other shift demands
     for (let j = 0; j < shiftDemands.length; j++) {
       if (i !== j) {
         const otherShiftDemand = shiftDemands[j];
+        const otherSDStartTimeSameDay = setDayJSDate(
+          otherShiftDemand.startTime
+        );
+        const otherSDEndTimeSameDay = setDayJSDate(otherShiftDemand.endTime);
 
         // Check if they overlap
         if (
-          otherShiftDemand.shift.startTime.isBefore(minEndTime) &&
-          otherShiftDemand.shift.endTime.isAfter(maxStartTime)
+          otherSDStartTimeSameDay.isBefore(minEndTime) &&
+          otherSDEndTimeSameDay.isAfter(maxStartTime)
         ) {
           overlappingShifts.push(otherShiftDemand.id);
-          maxStartTime = maxStartTime.isAfter(otherShiftDemand.shift.startTime)
+          maxStartTime = maxStartTime.isAfter(otherSDStartTimeSameDay)
             ? maxStartTime
-            : otherShiftDemand.shift.startTime;
-          minEndTime = minEndTime.isBefore(otherShiftDemand.shift.endTime)
+            : otherSDStartTimeSameDay;
+          minEndTime = minEndTime.isBefore(otherSDEndTimeSameDay)
             ? minEndTime
-            : otherShiftDemand.shift.endTime;
+            : otherSDEndTimeSameDay;
         }
       }
     }
@@ -111,11 +141,8 @@ export const groupOverlappingShifts = (
 };
 
 const convertShiftDemandToEvent = (
-  shiftDemands: ShiftDemandT[],
-  // nextDayOverlapSDs: ShiftDemandT[],
-  overlapIdGroups: string[][],
-  dayIndex: number,
-  nextDayOverlapSDs: ShiftDemandT[]
+  shiftDemands: ShiftDemandCalendarT[],
+  overlapIdGroups: string[][]
 ): EventT[] => {
   const events: EventT[] = [];
 
@@ -161,37 +188,21 @@ const convertShiftDemandToEvent = (
             }
           }
         }
-        // Check if shift demand is second day of a two days shift
-        const isTwoDay = nextDayOverlapSDs.some(
-          (sd) => sd.id === shiftDemand.id
-        );
-        const isSecondDay = nextDayOverlapSDs.some(
-          (sd) => sd.id === shiftDemand.id && sd.dayIndex === dayIndex
-        );
-        console.log("shiftDemand", shiftDemand);
-        console.log("dayIndex", dayIndex);
-        console.log("isSecondDay", isSecondDay);
-        console.log("nextDayOverlapSDs", nextDayOverlapSDs);
-        const startHour = isSecondDay
-          ? 0
-          : shiftDemand.shift.startTime.hour() +
-            shiftDemand.shift.startTime.minute() / 60;
-        const endHour =
-          isTwoDay && !isSecondDay
-            ? 24
-            : shiftDemand.shift.endTime.hour() +
-              shiftDemand.shift.endTime.minute() / 60;
-        const durationHour = endHour - startHour;
 
         const event: EventT = {
-          startHour: startHour,
-          durationHour: durationHour,
+          startHour:
+            shiftDemand.startTime.hour() + shiftDemand.startTime.minute() / 60,
+          durationHour:
+            shiftDemand.endTime.diff(shiftDemand.startTime, "minute", true) /
+            60,
           numOverlap: numOverlap,
           indexPosition: indexPosition,
           maxOverlap: maxOverlap,
-          borderTopRadius: !isTwoDay || !isSecondDay,
-          borderBottomRadius: !(isTwoDay && !isSecondDay),
-          shiftDemand,
+          borderTopRadius: !shiftDemand.isTwoDays || !shiftDemand.isSecondDay,
+          borderBottomRadius: !(
+            shiftDemand.isTwoDays && !shiftDemand.isSecondDay
+          ),
+          shiftDemand: shiftDemandCalendarToShiftDemand(shiftDemand),
         };
         events.push(event);
       }
