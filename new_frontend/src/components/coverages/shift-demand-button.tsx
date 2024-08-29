@@ -39,7 +39,7 @@ export default function ShiftDemandButton({
     <Box style={{ width: "100%" }}>
       <Box
         onClick={handleClick}
-        sx={{ display: "inline-flex", minWidth: 0, cursor: "pointer" }}
+        sx={{ display: "inline-flex", minWidth: 0, width: "100%" }}
       >
         {buttonElement}
       </Box>

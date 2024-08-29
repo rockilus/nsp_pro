@@ -2,23 +2,35 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
+// MUI
+import Button from "@mui/material/Button";
 // Components
 import EventToDiv from "./event-to-div";
+import ShiftDemandButton from "./shift-demand-button";
 // Methods
 import shiftDemandsToEvents from "./sds-to-events";
 // Styles
 import "./weekly-calendar.css";
 // Types
-import { CoverageT, EventT } from "../../types/coverage";
+import { CoverageT, EventT, ShiftDemandT } from "../../types/coverage";
+import { ShiftT } from "../../types/shift";
 
 dayjs.extend(utc);
 
 export default function WeeklyCalendar({
   lng,
   coverage,
+  shifts,
+  handleAddShiftDemand,
+  handleUpdateShiftDemand,
+  handleDeleteShiftDemand,
 }: {
   lng: string;
   coverage: CoverageT | null;
+  shifts: ShiftT[];
+  handleAddShiftDemand: (shiftDemand: ShiftDemandT) => void;
+  handleUpdateShiftDemand: (shiftDemand: ShiftDemandT) => void;
+  handleDeleteShiftDemand: (coverageId: string, shiftDemandId: string) => void;
 }) {
   const { t: t_week_days } = useTranslation(lng, "week_days");
   const { t } = useTranslation(lng, "coverage-page");
@@ -26,6 +38,18 @@ export default function WeeklyCalendar({
   const tableRef = useRef<HTMLTableElement>(null);
   const [dayColWidth, setDayColWidth] = useState<number>(80);
   const [events, setEvents] = useState<EventT[]>([]);
+
+  const emptyShift = {
+    teamId: "",
+    id: "",
+    name: "",
+    startTime: dayjs(),
+    endTime: dayjs(),
+    staffing: 0,
+    color: "",
+    isTimeOff: false,
+    shiftProperties: [],
+  };
 
   const timeHours: dayjs.Dayjs[] = [];
   let startTime = dayjs.utc().startOf("day");
@@ -48,8 +72,36 @@ export default function WeeklyCalendar({
     t_week_days("sunday"),
   ];
 
-  // const rowHeight = "48px";
   const rowHeight = 48;
+
+  const addShiftDemandButton = () => {
+    return (
+      <Button
+        sx={{
+          cursor: "pointer",
+          backgroundColor: "transparent",
+          border: "none",
+          // transition: "background-color 0.3s ease",
+          width: "100%",
+          height: "100%",
+          textTransform: "none",
+          paddingY: "0px",
+          fontSize: "0.9rem",
+          fontWeight: "bold",
+          // color: "blue.900",
+          color: "primary",
+        }}
+        onMouseOver={(e) => {
+          (e.target as HTMLElement).style.backgroundColor = "lightgrey";
+        }}
+        onMouseOut={(e) => {
+          (e.target as HTMLElement).style.backgroundColor = "transparent";
+        }}
+      >
+        {t("add_shift")}
+      </Button>
+    );
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -103,6 +155,8 @@ export default function WeeklyCalendar({
                   minWidth: "68px",
                   width: dayColWidth,
                   textAlign: "center",
+                  color: "#70757a",
+                  fontWeight: "500",
                 }}
               >
                 {day.slice(0, 3)}
@@ -123,18 +177,45 @@ export default function WeeklyCalendar({
               <div
                 key={`${day}-${index}`}
                 style={{
+                  // display: "flex",
+                  // flexDirection: "row",
+                  // justifyContent: "center",
                   minWidth: "68px",
                   minHeight: "16px",
                   width: dayColWidth,
                   borderRight: `1px solid #E8E8E8`,
                 }}
-              ></div>
+              >
+                {coverage && (
+                  <ShiftDemandButton
+                    lng={lng}
+                    buttonElement={addShiftDemandButton()}
+                    shiftDemand={{
+                      id: "",
+                      dayIndex: index,
+                      shift: emptyShift,
+                      coverageId: coverage.id,
+                    }}
+                    shifts={shifts}
+                    handleAddShiftDemand={handleAddShiftDemand}
+                    handleUpdateShiftDemand={handleUpdateShiftDemand}
+                    handleDeleteShiftDemand={handleDeleteShiftDemand}
+                  />
+                )}
+              </div>
             ))}
           </div>
         </div>
       </div>
       {/* Body */}
-      <div style={{ display: "flex", flexDirection: "row" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          // overflow: "auto",
+          // flex: 1,
+        }}
+      >
         {/* Times column */}
         <div>
           {timeHours.map((time, index) => (
