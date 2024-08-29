@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // Components
-import eventToDiv from "./event-to-div";
+import EventToDiv from "./event-to-div";
 // Methods
 import shiftDemandsToEvents from "./sds-to-events";
 // Styles
@@ -20,7 +20,8 @@ export default function WeeklyCalendar({
   lng: string;
   coverage: CoverageT | null;
 }) {
-  const { t } = useTranslation(lng, "week_days");
+  const { t: t_week_days } = useTranslation(lng, "week_days");
+  const { t } = useTranslation(lng, "coverage-page");
 
   const tableRef = useRef<HTMLTableElement>(null);
   const [dayColWidth, setDayColWidth] = useState<number>(80);
@@ -38,13 +39,13 @@ export default function WeeklyCalendar({
   }
 
   const WeekDays = [
-    t("monday"),
-    t("tuesday"),
-    t("wednesday"),
-    t("thursday"),
-    t("friday"),
-    t("saturday"),
-    t("sunday"),
+    t_week_days("monday"),
+    t_week_days("tuesday"),
+    t_week_days("wednesday"),
+    t_week_days("thursday"),
+    t_week_days("friday"),
+    t_week_days("saturday"),
+    t_week_days("sunday"),
   ];
 
   // const rowHeight = "48px";
@@ -186,7 +187,12 @@ export default function WeeklyCalendar({
                 }}
               >
                 {dayEvents.map((event, index) => {
-                  return eventToDiv(event, rowHeight, dayColWidth);
+                  return EventToDiv(
+                    event,
+                    rowHeight,
+                    dayColWidth,
+                    t("staffing")
+                  );
                 })}
               </div>
             );
@@ -195,104 +201,4 @@ export default function WeeklyCalendar({
       </div>
     </div>
   );
-}
-
-{
-  /* Events */
-}
-{
-  /* {index === 0 && (
-                <div
-                  style={{
-                    top: "30px",
-                    left: "0",
-                    // width: "100%",
-                    width: dayColWidth - 1,
-                    height: "30px",
-                    backgroundColor: "rgba(0, 0, 255, 0.7)",
-                    color: "white",
-                    borderRadius: "4px",
-                    position: "absolute",
-                    zIndex: 5,
-                  }}
-                >
-                  Test
-                </div>
-              )}
-              {index === 0 && (
-                <div
-                  style={{
-                    top: "70px",
-                    left: "0",
-                    width: (dayColWidth - 1) / 2 - 0.5,
-                    height: "30px",
-                    backgroundColor: "rgba(0, 0, 255, 0.7)",
-                    color: "white",
-                    borderRadius: "4px",
-                    position: "absolute",
-                    zIndex: 5,
-                  }}
-                >
-                  Test
-                </div>
-              )}
-              {index === 0 && (
-                <div
-                  style={{
-                    top: "70px",
-                    left: (dayColWidth - 1) / 2 + 0.5,
-                    width: (dayColWidth - 1) / 2 - 0.5,
-                    height: "30px",
-                    marginRight: "1px",
-                    backgroundColor: "rgba(0, 0, 0, 0.7)",
-                    color: "white",
-                    borderRadius: "4px",
-                    position: "absolute",
-                    zIndex: 5,
-                  }}
-                >
-                  Test
-                </div>
-              )}
-              {index === 0 && (
-                <div
-                  style={{
-                    top: rowHeight * 22,
-                    left: 0,
-                    width: dayColWidth - 1,
-                    height: rowHeight * 2,
-                    marginRight: "1px",
-                    backgroundColor: "rgba(255, 0, 0, 0.7)",
-                    color: "white",
-                    borderTopLeftRadius: "4px",
-                    borderTopRightRadius: "4px",
-                    position: "absolute",
-                    zIndex: 5,
-                  }}
-                >
-                  Test
-                </div>
-              )}
-              {index === 1 && (
-                <div
-                  style={{
-                    top: 0,
-                    left: 0,
-                    width: dayColWidth - 1,
-                    height: rowHeight * 2,
-                    marginRight: "1px",
-                    backgroundColor: "rgba(255, 0, 0)",
-                    opacity: 0.7,
-                    color: "white",
-                    borderTopLeftRadius: "0px",
-                    borderTopRightRadius: "0px",
-                    borderBottomLeftRadius: "4px",
-                    borderBottomRightRadius: "4px",
-                    position: "absolute",
-                    zIndex: 5,
-                  }}
-                >
-                  Test
-                </div>
-              )} */
 }
