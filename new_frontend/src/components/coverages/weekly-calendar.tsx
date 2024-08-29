@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, use } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
@@ -54,7 +54,6 @@ export default function WeeklyCalendar({
   const timeHours: dayjs.Dayjs[] = [];
   let startTime = dayjs.utc().startOf("day");
   const endTime = dayjs.utc(startTime).add(1, "day").startOf("day");
-  //   console.log("endTime:", endTime.format("HH:mm"));
 
   // Loop through 15-minute intervals and generate time slots
   while (startTime.isBefore(endTime)) {

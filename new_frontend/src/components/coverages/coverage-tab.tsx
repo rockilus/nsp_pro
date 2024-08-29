@@ -101,6 +101,17 @@ export default function CoverageTab({
           : coverage
       )
     );
+    if (selectedCoverage && selectedCoverage.id === newShiftDemand.coverageId) {
+      setSelectedCoverage((prevCoverage) => {
+        if (!prevCoverage) {
+          return null;
+        }
+        return {
+          ...prevCoverage,
+          shiftDemands: [...prevCoverage.shiftDemands, newShiftDemand],
+        };
+      });
+    }
   };
 
   const handleUpdateShiftDemand = async (updatedShiftDemand: ShiftDemandT) => {
@@ -122,6 +133,24 @@ export default function CoverageTab({
           : coverage
       )
     );
+    if (
+      selectedCoverage &&
+      selectedCoverage.id === updatedShiftDemand.coverageId
+    ) {
+      setSelectedCoverage((prevCoverage) => {
+        if (!prevCoverage) {
+          return null;
+        }
+        return {
+          ...prevCoverage,
+          shiftDemands: prevCoverage.shiftDemands.map((shiftDemand) =>
+            shiftDemand.id === updatedShiftDemand.id
+              ? updatedShiftDemand
+              : shiftDemand
+          ),
+        };
+      });
+    }
   };
 
   const handleDeleteShiftDemand = async (
@@ -144,6 +173,19 @@ export default function CoverageTab({
           : coverage
       )
     );
+    if (selectedCoverage && selectedCoverage.id === coverageId) {
+      setSelectedCoverage((prevCoverage) => {
+        if (!prevCoverage) {
+          return null;
+        }
+        return {
+          ...prevCoverage,
+          shiftDemands: prevCoverage.shiftDemands.filter(
+            (shiftDemand) => shiftDemand.id !== shiftDemandId
+          ),
+        };
+      });
+    }
   };
 
   useEffect(() => {
