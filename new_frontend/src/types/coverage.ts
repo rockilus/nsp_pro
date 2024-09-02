@@ -48,7 +48,10 @@ export type ShiftDemandCalendarT = {
 export type EventT = {
   startHour: number;
   durationHour: number;
-  numOverlap: number;
+  startXNumerator: number;
+  startXDenominator: number;
+  widthNumerator: number;
+  widthDenominator: number;
   indexPosition: number;
   maxOverlap: number;
   borderTopRadius: boolean;

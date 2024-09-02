@@ -11,6 +11,8 @@ const EventToDiv = (
   columnWidth: number,
   staffingLabel: string
 ): JSX.Element => {
+  // console.log(event);
+
   const spaceBetween = 1;
   const borderWidth = 1;
   const width =
