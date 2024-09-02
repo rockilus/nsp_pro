@@ -15,16 +15,34 @@ const EventToDiv = (
 
   const spaceBetween = 1;
   const borderWidth = 1;
+  // const width =
+  //   (columnWidth - borderWidth - spaceBetween * (event.maxOverlap - 1)) /
+  //   event.maxOverlap;
+  // const startX = (width + spaceBetween) * event.indexPosition
+
+  // startXNumerator: number;
+  // startXDenominator: number;
+  // widthNumerator: number;
+  // widthDenominator: number;
+  // indexPosition: number;
+  // maxOverlap: number;
+
+  const defaultWidth =
+    (columnWidth - borderWidth - spaceBetween * (event.widthDenominator - 1)) /
+    event.widthDenominator;
+  const startX = (defaultWidth + spaceBetween) * event.indexPosition;
   const width =
-    (columnWidth - borderWidth - spaceBetween * (event.maxOverlap - 1)) /
-    event.maxOverlap;
+    ((columnWidth - borderWidth - spaceBetween * (event.widthDenominator - 1)) *
+      event.widthNumerator) /
+      event.widthDenominator +
+    spaceBetween * (event.widthNumerator - 1);
   const textBottomMargin = -0.75;
   return (
     <div
       key={event.shiftDemand.id}
       style={{
         top: rowHeight * event.startHour,
-        left: (width + spaceBetween) * event.indexPosition,
+        left: startX,
         width: width,
         height: rowHeight * event.durationHour,
         backgroundColor: event.shiftDemand.shift.color,

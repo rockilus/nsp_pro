@@ -14,18 +14,21 @@ const shiftDemandsToEvents = (shiftDemands: ShiftDemandT[]): EventT[] => {
   const groupedShiftDemands = groupByDayIndex(shiftDemandsCalendar);
   // Iterate over each day
   groupedShiftDemands.forEach((group, dayIndex) => {
-    // const overlapIdGroups = groupOverlappingShifts(group);
-    // const events = convertShiftDemandToEvent(group, overlapIdGroups);
     const overlappingDict = buildOverlappingDict(group);
-    const convertedDict = covertOverlappingDictToShiftNames(
-      overlappingDict,
-      shiftDemandsCalendar
-    );
-    console.log("convertedDict", convertedDict);
+
+    // const convertedDict = covertOverlappingDictToShiftNames(
+    //   overlappingDict,
+    //   shiftDemandsCalendar
+    // );
+    // console.log("convertedDict", convertedDict);
 
     const events = convertShiftDemandToEvent(group, overlappingDict);
     out.push(...events);
   });
+
+  // const shiftNameToEventDict = buildShiftNameToEventDict(out);
+  // console.log("shiftNameToEventDict", shiftNameToEventDict);
+
   return out;
 };
 
@@ -34,22 +37,6 @@ const getShiftNameByShiftDemandId = (
   shiftDemands: ShiftDemandCalendarT[]
 ): string => {
   return shiftDemands.find((sd) => sd.id === id)?.shift.name ?? "";
-};
-
-const covertOverlappingDictToShiftNames = (
-  overlappingDict: Map<string, string[][]>,
-  shiftDemands: ShiftDemandCalendarT[]
-): Map<string, string[][]> => {
-  const convertedDict = new Map<string, string[][]>();
-
-  overlappingDict.forEach((value, key) => {
-    const newValue = value.map((array) =>
-      array.map((id) => getShiftNameByShiftDemandId(id, shiftDemands))
-    );
-    convertedDict.set(getShiftNameByShiftDemandId(key, shiftDemands), newValue);
-  });
-
-  return convertedDict;
 };
 
 const buildShiftDemandCalendar = (
@@ -174,72 +161,6 @@ export const groupOverlappingShifts = (
   return overlappingGroups;
 };
 
-// const buildOverlappingDict = (
-//   shiftDemands: ShiftDemandCalendarT[]
-// ): Map<string, string[][]> => {
-//   const overlappingDict = new Map<string, string[][]>();
-
-//   // Iterate over all shift demands
-//   for (let i = 0; i < shiftDemands.length; i++) {
-//     const currentShiftDemand = shiftDemands[i];
-//     let maxStartTime = setDayJSDate(currentShiftDemand.startTime);
-//     let minEndTime = setDayJSDate(currentShiftDemand.endTime);
-//     const overlappingShifts = [currentShiftDemand.id];
-
-//     // Compare with the other shift demands
-//     for (let j = 0; j < shiftDemands.length; j++) {
-//       if (i !== j) {
-//         const otherShiftDemand = shiftDemands[j];
-//         const otherSDStartTimeSameDay = setDayJSDate(
-//           otherShiftDemand.startTime
-//         );
-//         const otherSDEndTimeSameDay = setDayJSDate(otherShiftDemand.endTime);
-
-//         // Check if they overlap
-//         if (
-//           otherSDStartTimeSameDay.isBefore(minEndTime) &&
-//           otherSDEndTimeSameDay.isAfter(maxStartTime)
-//         ) {
-//           overlappingShifts.push(otherShiftDemand.id);
-//           maxStartTime = maxStartTime.isAfter(otherSDStartTimeSameDay)
-//             ? maxStartTime
-//             : otherSDStartTimeSameDay;
-//           minEndTime = minEndTime.isBefore(otherSDEndTimeSameDay)
-//             ? minEndTime
-//             : otherSDEndTimeSameDay;
-//         }
-//       }
-//     }
-
-//     // Sort the array to prevent different orders being considered unique
-//     overlappingShifts.sort();
-
-//     // Check if this group already exists or is a subset of another
-//     const isSubsetOrDuplicate =
-//       overlappingDict
-//         .get(currentShiftDemand.id)
-//         ?.some((existingGroup) =>
-//           overlappingShifts.every((id) => existingGroup.includes(id))
-//         ) ?? false;
-
-//     // Add the group if it's unique
-//     if (!isSubsetOrDuplicate) {
-//       if (overlappingDict.has(currentShiftDemand.id)) {
-//         // If the key exists, append overlappingShifts to the existing array
-//         const existingArray = overlappingDict.get(currentShiftDemand.id);
-//         if (existingArray) {
-//           existingArray.push(overlappingShifts);
-//         }
-//       } else {
-//         // If the key does not exist, create a new entry with the key and value
-//         overlappingDict.set(currentShiftDemand.id, [overlappingShifts]);
-//       }
-//     }
-//   }
-
-//   return overlappingDict;
-// };
-
 const isSubsetMethod = (arr1: string[], arr2: string[]): boolean => {
   const isSubset = arr1.every((item) => arr2.includes(item));
   return arr1.length !== arr2.length && isSubset;
@@ -315,123 +236,6 @@ const buildOverlappingDict = (
   return overlappingDict;
 };
 
-const orderOverlappingEvents = (
-  events: EventT[],
-  overlapIdGroups: string[][]
-): EventT[] => {
-  // Sort events by maxOverlap and durationHour
-  events.sort((a, b) => {
-    if (b.maxOverlap !== a.maxOverlap) {
-      return b.maxOverlap - a.maxOverlap;
-    }
-    return b.durationHour - a.durationHour;
-  });
-  // Build array of overlapping events
-  const overlapEventsGroups = overlapIdGroups.map((group) =>
-    group.map((id) => events.find((event) => event.shiftDemand.id === id)!)
-  );
-  events.map((event) => {
-    const groupsIncludeEvent = overlapEventsGroups.filter((group) =>
-      group.some((e) => e.shiftDemand.id === event.shiftDemand.id)
-    );
-    groupsIncludeEvent.forEach((group) => {});
-  });
-
-  overlapEventsGroups.forEach((group, index) => {
-    const groupEvents = events.filter((event) =>
-      group.includes(event.shiftDemand.id)
-    );
-  });
-};
-
-function findKeyWithLongestSubarray(
-  overlappingDict: Map<string, string[][]>,
-  convertedToEvents: string[]
-): string | null {
-  let longestKeys: string[] = [];
-  let longestKey: string | null = null;
-  let longestSubarrayLength = 0;
-  let longestValueLength = 0;
-
-  overlappingDict.forEach((value, key) => {
-    if (convertedToEvents.includes(key)) {
-      return; // Skip this iteration and move to the next key-value pair
-    }
-    value.forEach((subarray) => {
-      if (subarray.length > longestSubarrayLength) {
-        longestKeys = [key];
-        longestSubarrayLength = subarray.length;
-      } else if (subarray.length === longestSubarrayLength) {
-        longestKeys.push(key);
-      }
-    });
-  });
-
-  if (longestKeys.length === 0) {
-    return null; // Return null if the map is empty
-  } else if (longestKeys.length === 1) {
-    return longestKeys[0]; // Return the only key if there is only one
-  } else {
-    longestKeys.forEach((key) => {
-      const value = overlappingDict.get(key);
-      if (value && value.length > longestValueLength) {
-        longestKey = key;
-        longestValueLength = value.length;
-      }
-    });
-    return longestKey;
-  }
-}
-
-const findItemInLongestArrayRepeating = (
-  overlappingArray: string[][],
-  convertedToEvent: string[]
-): string | null => {
-  let longestArrays: string[][] = [];
-  let longestArrayLength: number = 0;
-  let mostRepeatItem: string | null = null;
-  let mostRepeatItemRepeat: number = 0;
-
-  overlappingArray.forEach((array) => {
-    if (array.every((id) => convertedToEvent.includes(id))) {
-      return; // Skip this iteration and move to the next array
-    }
-    if (array.length > longestArrayLength) {
-      longestArrays = [array];
-      longestArrayLength = array.length;
-    } else if (array.length === longestArrayLength) {
-      longestArrays.push(array);
-    }
-  });
-
-  longestArrays.forEach((array) => {
-    array.forEach((item) => {
-      const repeat = overlappingArray.filter((a) => a.includes(item)).length;
-      if (repeat > mostRepeatItemRepeat) {
-        mostRepeatItem = item;
-        mostRepeatItemRepeat = repeat;
-      }
-    });
-  });
-};
-
-const findKeyWithLongestArray = (
-  overlappingDict: Map<string, string[]>,
-  convertedToEvent: string[]
-): string | null => {
-  let longestKey: string | null = null;
-  let longestLength = 0;
-
-  overlappingDict.forEach((value, key) => {
-    if (!convertedToEvent.includes(key) && value.length > longestLength) {
-      longestKey = key;
-      longestLength = value.length;
-    }
-  });
-
-  return longestKey;
-};
-
 const getLengthLongestSubarrayInArray = (array: string[][]): number => {
   let maxLength = 0;
 
@@ -469,9 +273,6 @@ const getSDwithMostOverlapGroups = (
   let out: string | null = null;
 
   overlappingDict.forEach((value, key) => {
-    // console.log("key", key);
-    // console.log("value", value);
-
     const numOverlapGroupsOfTargetLength = value.filter(
       (array) => array.length === targetLength
     ).length;
@@ -484,28 +285,74 @@ const getSDwithMostOverlapGroups = (
     const length = value.length;
     if (length >= maxOverlapGroups) {
       maxOverlapGroups = length;
-      // out = key;
       if (numOverlapGroupsOfTargetLength > maxTargetLengthOverlapGroups) {
         maxTargetLengthOverlapGroups = numOverlapGroupsOfTargetLength;
         out = key;
       }
     }
   });
-  // console.log("out", out);
-
   return out;
 };
 
-const getIndexPosition = (
-  currentOverlaps: string[][],
+const getMaxOverlap = (events: EventT[]): number => {
+  let maxOverlap: number = 0;
+
+  events.forEach((event) => {
+    if (event.maxOverlap > maxOverlap) {
+      maxOverlap = event.maxOverlap;
+    }
+  });
+
+  return maxOverlap;
+};
+
+const getLargestAvailableWidth = (
+  indexPosition: number,
   events: EventT[],
-  maxOverlaps: number
-): number | null => {
+  maxOverlap: number
+): number => {
+  let largestAvailableWidth: number = 0;
+  let widthLeftUsed: number = 0;
+  for (let i = 0; i < maxOverlap; i++) {
+    const eventWithIndex = events.find((event) => event.startXNumerator === i);
+    if (eventWithIndex && i < indexPosition) {
+      widthLeftUsed += eventWithIndex.widthNumerator;
+    } else if (!eventWithIndex && i >= indexPosition) {
+      largestAvailableWidth++;
+    } else if (eventWithIndex && i >= indexPosition) {
+      return largestAvailableWidth;
+    }
+  }
+  return largestAvailableWidth;
+};
+
+const getHorizontalLocationParams = (
+  shiftDemandId: string,
+  overlappingDict: Map<string, string[][]>,
+  events: EventT[]
+): {
+  startXNumerator: number;
+  startXDenominator: number;
+  widthNumerator: number;
+  widthDenominator: number;
+  indexPosition: number;
+  maxOverlap: number;
+} | null => {
   const currentEvents: EventT[] = [];
+  let longestOverlapConvertedToEvents: boolean = false;
+  const longestOverlapEvents: EventT[] = [];
+
+  const currentOverlaps = overlappingDict.get(shiftDemandId) ?? [];
+  const maxOverlaps = getLengthLongestSubarrayInArray(currentOverlaps) + 1;
+
   currentOverlaps.forEach((array) => {
     const eventsInArray = events.filter((event) =>
       array.includes(event.shiftDemand.id)
     );
+    if (eventsInArray.length === maxOverlaps - 1) {
+      longestOverlapConvertedToEvents = true;
+      longestOverlapEvents.push(...eventsInArray);
+    }
     eventsInArray.forEach((event) => {
       if (
         !currentEvents.find((e) => e.shiftDemand.id === event.shiftDemand.id)
@@ -514,15 +361,51 @@ const getIndexPosition = (
       }
     });
   });
-  console.log("maxOverlaps", maxOverlaps);
-  console.log("currentEvents", currentEvents);
-
+  const maxOverlapsAdjacentEvents = Math.max(
+    maxOverlaps,
+    getMaxOverlap(currentEvents)
+  );
   for (let i = 0; i < maxOverlaps; i++) {
     const isIndexUsed = currentEvents.some(
       (event) => event.indexPosition === i
     );
+    // if (shiftDemandId === "66cdc25936a18b21829be1a7") {
+    //   console.log("TEST 4");
+    //   console.log("isIndexUsed", isIndexUsed);
+    //   console.log("i", i);
+    //   console.log("currentEvents", currentEvents);
+    //   console.log(
+    //     "longestOverlapConvertedToEvents",
+    //     longestOverlapConvertedToEvents
+    //   );
+    //   console.log("longestOverlapEvents", longestOverlapEvents);
+    //   console.log("maxOverlapsAdjacentEvents", maxOverlapsAdjacentEvents);
+    //   console.log("maxOverlaps", maxOverlaps);
+    // }
     if (!isIndexUsed) {
-      return i;
+      if (!longestOverlapConvertedToEvents) {
+        return {
+          startXNumerator: i,
+          startXDenominator: maxOverlapsAdjacentEvents,
+          widthNumerator: 1,
+          widthDenominator: maxOverlapsAdjacentEvents,
+          indexPosition: i,
+          maxOverlap: maxOverlaps,
+        };
+      } else {
+        return {
+          startXNumerator: i,
+          startXDenominator: maxOverlapsAdjacentEvents,
+          widthNumerator: getLargestAvailableWidth(
+            i,
+            longestOverlapEvents,
+            maxOverlapsAdjacentEvents
+          ),
+          widthDenominator: maxOverlapsAdjacentEvents,
+          indexPosition: i,
+          maxOverlap: maxOverlaps,
+        };
+      }
     }
   }
   return null;
@@ -538,27 +421,33 @@ const createEvent = (
   if (!shiftDemand) {
     return null;
   }
-  const shiftDemandOverlaps = overlappingDict.get(shiftDemandId) ?? [];
-  const maxOverlaps = getLengthLongestSubarrayInArray(shiftDemandOverlaps) + 1;
-  const indexPosition = getIndexPosition(
-    shiftDemandOverlaps,
-    events,
-    maxOverlaps
+  const horizontalLocationParams = getHorizontalLocationParams(
+    shiftDemandId,
+    overlappingDict,
+    events
   );
-  if (indexPosition === null) {
+  if (horizontalLocationParams === null) {
     return null;
   }
+  const {
+    startXNumerator,
+    startXDenominator,
+    widthNumerator,
+    widthDenominator,
+    indexPosition,
+    maxOverlap,
+  } = horizontalLocationParams;
   return {
     startHour:
       shiftDemand.startTime.hour() + shiftDemand.startTime.minute() / 60,
     durationHour:
       shiftDemand.endTime.diff(shiftDemand.startTime, "minute", true) / 60,
-    startXNumerator: 0,
-    startXDenominator: maxOverlaps,
-    widthNumerator: 1,
-    widthDenominator: maxOverlaps,
+    startXNumerator: startXNumerator,
+    startXDenominator: startXDenominator,
+    widthNumerator: widthNumerator,
+    widthDenominator: widthDenominator,
     indexPosition: indexPosition,
-    maxOverlap: maxOverlaps,
+    maxOverlap: maxOverlap,
     borderTopRadius: !shiftDemand.isTwoDays || !shiftDemand.isSecondDay,
     borderBottomRadius: !(shiftDemand.isTwoDays && !shiftDemand.isSecondDay),
     shiftDemand: shiftDemandCalendarToShiftDemand(shiftDemand),
@@ -656,12 +545,39 @@ const convertShiftDemandToEvent = (
       break;
     }
     currentOverlapLength--;
-    console.log(
-      "currentOverlapLength value at end of loop: ",
-      currentOverlapLength
-    );
   }
   return events;
+};
+
+////////////////////////////////////////
+// For debugguging purposes
+////////////////////////////////////////
+const covertOverlappingDictToShiftNames = (
+  overlappingDict: Map<string, string[][]>,
+  shiftDemands: ShiftDemandCalendarT[]
+): Map<string, string[][]> => {
+  const convertedDict = new Map<string, string[][]>();
+
+  overlappingDict.forEach((value, key) => {
+    const newValue = value.map((array) =>
+      array.map((id) => getShiftNameByShiftDemandId(id, shiftDemands))
+    );
+    convertedDict.set(getShiftNameByShiftDemandId(key, shiftDemands), newValue);
+  });
+
+  return convertedDict;
+};
+
+const buildShiftNameToEventDict = (events: EventT[]): Map<string, EventT[]> => {
+  const out = new Map<string, EventT[]>();
+  events.forEach((event) => {
+    const shiftName = event.shiftDemand.shift.name;
+    if (!out.has(shiftName)) {
+      out.set(shiftName, []);
+    }
+    out.get(shiftName)!.push(event);
+  });
+  return out;
 };
 
 export default shiftDemandsToEvents;
