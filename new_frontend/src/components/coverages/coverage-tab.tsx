@@ -3,7 +3,6 @@ import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 // Components
-import CoverageCalendar from "./coverage-calendar";
 import CoverageOptions from "./coverage-options";
 import WeeklyCalendar from "./weekly-calendar";
 // Actions
@@ -224,21 +223,6 @@ export default function CoverageTab({
           handleUpdateCoverage={handleUpdateCoverage}
           handleDeleteCoverage={handleDeleteCoverage}
         />
-        {/* <CoverageCalendar
-          lng={lng}
-          coverageId={selectedCoverage?.id || ""}
-          shiftDemands={
-            selectedCoverage
-              ? coverages.find(
-                  (coverage) => coverage.id === selectedCoverage.id
-                )?.shiftDemands || []
-              : []
-          }
-          shifts={shifts}
-          handleAddShiftDemand={handleAddShiftDemand}
-          handleUpdateShiftDemand={handleUpdateShiftDemand}
-          handleDeleteShiftDemand={handleDeleteShiftDemand}
-        /> */}
         <WeeklyCalendar
           lng={lng}
           coverage={selectedCoverage}
