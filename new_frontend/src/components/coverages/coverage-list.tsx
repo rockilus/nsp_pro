@@ -17,7 +17,7 @@ export default function CoverageList({
   handleDeleteCoverage,
 }: {
   coverages: CoverageT[];
-  selectedCoverage: CoverageT | undefined;
+  selectedCoverage: CoverageT | null;
   editingName: boolean;
   handleSelectCoverage: (coverage: CoverageT) => void;
   setEditingName: (editingName: boolean) => void;

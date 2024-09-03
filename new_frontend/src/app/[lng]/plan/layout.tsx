@@ -20,13 +20,13 @@ export default function Layout({
 }) {
   return (
     <SessionHandler>
-      <>
+      <div style={{ overflow: "hidden", height: "100vh" }}>
         <CssBaseline />
         <header>
           <NavAppBar lng={lng} />
         </header>
         <main>{children}</main>
-      </>
+      </div>
     </SessionHandler>
   );
 }

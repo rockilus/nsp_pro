@@ -13,6 +13,8 @@ export default function ShiftDemandButton({
   buttonElement,
   shiftDemand,
   shifts,
+  width,
+  height,
   handleAddShiftDemand,
   handleUpdateShiftDemand,
   handleDeleteShiftDemand,
@@ -21,6 +23,8 @@ export default function ShiftDemandButton({
   buttonElement: React.ReactNode;
   shiftDemand: ShiftDemandT;
   shifts: ShiftT[];
+  width?: number;
+  height?: number;
   handleAddShiftDemand: (shiftDemand: ShiftDemandT) => void;
   handleUpdateShiftDemand: (shiftDemand: ShiftDemandT) => void;
   handleDeleteShiftDemand: (coverageId: string, shiftDemandId: string) => void;
@@ -36,10 +40,16 @@ export default function ShiftDemandButton({
   };
 
   return (
-    <Box style={{ width: "100%" }}>
+    <Box style={{ width: "100%", height: "100%" }}>
       <Box
         onClick={handleClick}
-        sx={{ display: "inline-flex", minWidth: 0, cursor: "pointer" }}
+        sx={{
+          display: "inline-flex",
+          minWidth: 0,
+          width: "100%",
+          height: "100%",
+          cursor: "pointer",
+        }}
       >
         {buttonElement}
       </Box>

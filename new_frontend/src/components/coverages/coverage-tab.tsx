@@ -3,8 +3,8 @@ import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 // Components
-import CoverageCalendar from "./coverage-calendar";
 import CoverageOptions from "./coverage-options";
+import WeeklyCalendar from "./weekly-calendar";
 // Actions
 import {
   getCoveragesTabData,
@@ -31,9 +31,9 @@ export default function CoverageTab({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [coverages, setCoverages] = useState<CoverageT[]>([]);
 
-  const [selectedCoverage, setSelectedCoverage] = useState<
-    CoverageT | undefined
-  >(undefined);
+  const [selectedCoverage, setSelectedCoverage] = useState<CoverageT | null>(
+    null
+  );
   const [editingName, setEditingName] = useState<boolean>(false);
 
   const handleSelectCoverage = (coverage: CoverageT) => {
@@ -77,7 +77,7 @@ export default function CoverageTab({
     }
     await deleteCoverage(coverageId, selectedTeamId);
     setCoverages(coverages.filter((coverage) => coverage.id !== coverageId));
-    setSelectedCoverage(undefined);
+    setSelectedCoverage(null);
     setEditingName(false);
   };
 
@@ -100,6 +100,17 @@ export default function CoverageTab({
           : coverage
       )
     );
+    if (selectedCoverage && selectedCoverage.id === newShiftDemand.coverageId) {
+      setSelectedCoverage((prevCoverage) => {
+        if (!prevCoverage) {
+          return null;
+        }
+        return {
+          ...prevCoverage,
+          shiftDemands: [...prevCoverage.shiftDemands, newShiftDemand],
+        };
+      });
+    }
   };
 
   const handleUpdateShiftDemand = async (updatedShiftDemand: ShiftDemandT) => {
@@ -121,6 +132,24 @@ export default function CoverageTab({
           : coverage
       )
     );
+    if (
+      selectedCoverage &&
+      selectedCoverage.id === updatedShiftDemand.coverageId
+    ) {
+      setSelectedCoverage((prevCoverage) => {
+        if (!prevCoverage) {
+          return null;
+        }
+        return {
+          ...prevCoverage,
+          shiftDemands: prevCoverage.shiftDemands.map((shiftDemand) =>
+            shiftDemand.id === updatedShiftDemand.id
+              ? updatedShiftDemand
+              : shiftDemand
+          ),
+        };
+      });
+    }
   };
 
   const handleDeleteShiftDemand = async (
@@ -143,6 +172,19 @@ export default function CoverageTab({
           : coverage
       )
     );
+    if (selectedCoverage && selectedCoverage.id === coverageId) {
+      setSelectedCoverage((prevCoverage) => {
+        if (!prevCoverage) {
+          return null;
+        }
+        return {
+          ...prevCoverage,
+          shiftDemands: prevCoverage.shiftDemands.filter(
+            (shiftDemand) => shiftDemand.id !== shiftDemandId
+          ),
+        };
+      });
+    }
   };
 
   useEffect(() => {
@@ -161,7 +203,14 @@ export default function CoverageTab({
   }, [selectedTeamId]);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        // height: "100%",
+        // overflow:""
+      }}
+    >
       <Box sx={{ display: "flex", flexDirection: "row" }}>
         <CoverageOptions
           lng={lng}
@@ -174,16 +223,9 @@ export default function CoverageTab({
           handleUpdateCoverage={handleUpdateCoverage}
           handleDeleteCoverage={handleDeleteCoverage}
         />
-        <CoverageCalendar
+        <WeeklyCalendar
           lng={lng}
-          coverageId={selectedCoverage?.id || ""}
-          shiftDemands={
-            selectedCoverage
-              ? coverages.find(
-                  (coverage) => coverage.id === selectedCoverage.id
-                )?.shiftDemands || []
-              : []
-          }
+          coverage={selectedCoverage}
           shifts={shifts}
           handleAddShiftDemand={handleAddShiftDemand}
           handleUpdateShiftDemand={handleUpdateShiftDemand}

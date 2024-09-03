@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+// Types
 import { ShiftT } from "./shift";
 
 export type ShiftDemandT = {
@@ -14,20 +16,27 @@ export type CoverageT = {
   shiftDemands: ShiftDemandT[];
 };
 
-export type ColOverlayT = {
-  left: number;
-  width: number;
-  color: string;
-  SDOverlays: SDOverlayT[];
+export type ShiftDemandCalendarT = {
+  id: string;
+  dayIndex: number; // from 0 to 6
+  shift: ShiftT;
+  isTwoDays: boolean;
+  isSecondDay: boolean;
+  startTime: dayjs.Dayjs;
+  endTime: dayjs.Dayjs;
+  coverageId: string;
 };
 
-export type SDOverlayT = {
-  top: number;
-  left: number;
-  height: number;
-  width: number;
-  color: string;
-  widthDivisor: number;
-  widthIndex: number;
+export type EventT = {
+  startHour: number;
+  durationHour: number;
+  startXNumerator: number;
+  startXDenominator: number;
+  widthNumerator: number;
+  widthDenominator: number;
+  indexPosition: number;
+  maxOverlap: number;
+  borderTopRadius: boolean;
+  borderBottomRadius: boolean;
   shiftDemand: ShiftDemandT;
 };
