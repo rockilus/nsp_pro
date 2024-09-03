@@ -16,11 +16,11 @@ const shiftDemandsToEvents = (shiftDemands: ShiftDemandT[]): EventT[] => {
   groupedShiftDemands.forEach((group, dayIndex) => {
     const overlappingDict = buildOverlappingDict(group);
 
-    // const convertedDict = covertOverlappingDictToShiftNames(
-    //   overlappingDict,
-    //   shiftDemandsCalendar
-    // );
-    // console.log("convertedDict", convertedDict);
+    const convertedDict = covertOverlappingDictToShiftNames(
+      overlappingDict,
+      shiftDemandsCalendar
+    );
+    console.log("convertedDict", convertedDict);
 
     const events = convertShiftDemandToEvent(group, overlappingDict);
     out.push(...events);
@@ -283,8 +283,11 @@ const getSDwithMostOverlapGroups = (
       return;
     }
     const length = value.length;
-    if (length >= maxOverlapGroups) {
+    if (length > maxOverlapGroups) {
       maxOverlapGroups = length;
+      maxTargetLengthOverlapGroups = numOverlapGroupsOfTargetLength;
+      out = key;
+    } else if (length === maxOverlapGroups) {
       if (numOverlapGroupsOfTargetLength > maxTargetLengthOverlapGroups) {
         maxTargetLengthOverlapGroups = numOverlapGroupsOfTargetLength;
         out = key;
