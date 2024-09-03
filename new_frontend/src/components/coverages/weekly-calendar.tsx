@@ -85,7 +85,7 @@ export default function WeeklyCalendar({
           height: "100%",
           textTransform: "none",
           paddingY: "0px",
-          fontSize: "0.9rem",
+          fontSize: "0.8rem",
           fontWeight: "bold",
           // color: "blue.900",
           color: "primary",
@@ -125,7 +125,13 @@ export default function WeeklyCalendar({
   }, [coverage]);
 
   return (
-    <div ref={tableRef}>
+    <div
+      ref={tableRef}
+      style={{
+        width: "100%",
+        // overflow: "hidden"
+      }}
+    >
       {/* Header */}
       <div
         style={{
@@ -211,8 +217,8 @@ export default function WeeklyCalendar({
         style={{
           display: "flex",
           flexDirection: "row",
-          // overflow: "auto",
-          // flex: 1,
+          overflow: "auto",
+          height: "calc(100vh - 150px)",
         }}
       >
         {/* Times column */}
@@ -241,12 +247,19 @@ export default function WeeklyCalendar({
           ))}
         </div>
         {/* Days columns */}
-        <div style={{ display: "flex", flexDirection: "row" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            position: "relative",
+            height: rowHeight * 24,
+          }}
+        >
           <div aria-hidden="true" className="aLC8Le">
             {timeHours.map((time, index) => (
               <div
                 key={`${time}-${index}`}
-                className="sJ9Raf"
+                className="time-divider"
                 style={{ height: rowHeight }}
               ></div>
             ))}

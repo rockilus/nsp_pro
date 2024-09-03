@@ -204,15 +204,14 @@ export default function CoverageTab({
   }, [selectedTeamId]);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <WeeklyCalendar
-        lng={lng}
-        coverage={selectedCoverage}
-        shifts={shifts}
-        handleAddShiftDemand={handleAddShiftDemand}
-        handleUpdateShiftDemand={handleUpdateShiftDemand}
-        handleDeleteShiftDemand={handleDeleteShiftDemand}
-      />
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        // height: "100%",
+        // overflow:""
+      }}
+    >
       <Box sx={{ display: "flex", flexDirection: "row" }}>
         <CoverageOptions
           lng={lng}
@@ -225,7 +224,7 @@ export default function CoverageTab({
           handleUpdateCoverage={handleUpdateCoverage}
           handleDeleteCoverage={handleDeleteCoverage}
         />
-        <CoverageCalendar
+        {/* <CoverageCalendar
           lng={lng}
           coverageId={selectedCoverage?.id || ""}
           shiftDemands={
@@ -235,6 +234,14 @@ export default function CoverageTab({
                 )?.shiftDemands || []
               : []
           }
+          shifts={shifts}
+          handleAddShiftDemand={handleAddShiftDemand}
+          handleUpdateShiftDemand={handleUpdateShiftDemand}
+          handleDeleteShiftDemand={handleDeleteShiftDemand}
+        /> */}
+        <WeeklyCalendar
+          lng={lng}
+          coverage={selectedCoverage}
           shifts={shifts}
           handleAddShiftDemand={handleAddShiftDemand}
           handleUpdateShiftDemand={handleUpdateShiftDemand}
