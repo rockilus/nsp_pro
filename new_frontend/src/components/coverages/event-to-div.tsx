@@ -2,31 +2,35 @@ import React from "react";
 // MUI
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+// Components
+import EventDivContent from "./event-div-content";
 // Types
-import { EventT } from "../../types/coverage";
+import { EventT, ShiftDemandT } from "../../types/coverage";
+import { ShiftT } from "../../types/shift";
 
-const EventToDiv = (
-  event: EventT,
-  rowHeight: number,
-  columnWidth: number,
-  staffingLabel: string
-): JSX.Element => {
-  // console.log(event);
-
+export default function EventToDiv({
+  lng,
+  event,
+  rowHeight,
+  columnWidth,
+  staffingLabel,
+  shifts,
+  handleAddShiftDemand,
+  handleUpdateShiftDemand,
+  handleDeleteShiftDemand,
+}: {
+  lng: string;
+  event: EventT;
+  rowHeight: number;
+  columnWidth: number;
+  staffingLabel: string;
+  shifts: ShiftT[];
+  handleAddShiftDemand: (shiftDemand: ShiftDemandT) => void;
+  handleUpdateShiftDemand: (shiftDemand: ShiftDemandT) => void;
+  handleDeleteShiftDemand: (coverageId: string, shiftDemandId: string) => void;
+}) {
   const spaceBetween = 1;
   const borderWidth = 1;
-  // const width =
-  //   (columnWidth - borderWidth - spaceBetween * (event.maxOverlap - 1)) /
-  //   event.maxOverlap;
-  // const startX = (width + spaceBetween) * event.indexPosition
-
-  // startXNumerator: number;
-  // startXDenominator: number;
-  // widthNumerator: number;
-  // widthDenominator: number;
-  // indexPosition: number;
-  // maxOverlap: number;
-
   const defaultWidth =
     (columnWidth - borderWidth - spaceBetween * (event.widthDenominator - 1)) /
     event.widthDenominator;
@@ -36,6 +40,7 @@ const EventToDiv = (
       event.widthNumerator) /
       event.widthDenominator +
     spaceBetween * (event.widthNumerator - 1);
+  const height = rowHeight * event.durationHour;
   const textBottomMargin = -0.75;
   return (
     <div
@@ -44,7 +49,7 @@ const EventToDiv = (
         top: rowHeight * event.startHour,
         left: startX,
         width: width,
-        height: rowHeight * event.durationHour,
+        height: height,
         backgroundColor: event.shiftDemand.shift.color,
         opacity: 0.8,
         color: "white",
@@ -56,7 +61,7 @@ const EventToDiv = (
         zIndex: 5,
       }}
     >
-      <Stack direction="column" spacing={0} alignItems="left">
+      {/* <Stack direction="column" spacing={0} alignItems="left">
         <Typography
           variant="caption"
           display="block"
@@ -106,9 +111,18 @@ const EventToDiv = (
           {`${staffingLabel}: `}
           {event.shiftDemand.shift.staffing}
         </Typography>
-      </Stack>
+      </Stack> */}
+      <EventDivContent
+        lng={lng}
+        shiftDemand={event.shiftDemand}
+        shifts={shifts}
+        staffingLabel={staffingLabel}
+        width={width}
+        height={height}
+        handleAddShiftDemand={handleAddShiftDemand}
+        handleUpdateShiftDemand={handleUpdateShiftDemand}
+        handleDeleteShiftDemand={handleDeleteShiftDemand}
+      />
     </div>
   );
-};
-
-export default EventToDiv;
+}

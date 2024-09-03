@@ -267,11 +267,19 @@ export default function WeeklyCalendar({
                 }}
               >
                 {dayEvents.map((event, index) => {
-                  return EventToDiv(
-                    event,
-                    rowHeight,
-                    dayColWidth,
-                    t("staffing")
+                  return (
+                    <EventToDiv
+                      key={`${event.shiftDemand.id}-${index}`}
+                      lng={lng}
+                      event={event}
+                      rowHeight={rowHeight}
+                      columnWidth={dayColWidth}
+                      staffingLabel={t("staffing")}
+                      shifts={shifts}
+                      handleAddShiftDemand={handleAddShiftDemand}
+                      handleUpdateShiftDemand={handleUpdateShiftDemand}
+                      handleDeleteShiftDemand={handleDeleteShiftDemand}
+                    />
                   );
                 })}
               </div>
