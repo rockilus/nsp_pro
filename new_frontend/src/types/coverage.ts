@@ -16,24 +16,6 @@ export type CoverageT = {
   shiftDemands: ShiftDemandT[];
 };
 
-export type ColOverlayT = {
-  left: number;
-  width: number;
-  color: string;
-  SDOverlays: SDOverlayT[];
-};
-
-export type SDOverlayT = {
-  top: number;
-  left: number;
-  height: number;
-  width: number;
-  color: string;
-  widthDivisor: number;
-  widthIndex: number;
-  shiftDemand: ShiftDemandT;
-};
-
 export type ShiftDemandCalendarT = {
   id: string;
   dayIndex: number; // from 0 to 6
@@ -57,18 +39,4 @@ export type EventT = {
   borderTopRadius: boolean;
   borderBottomRadius: boolean;
   shiftDemand: ShiftDemandT;
-
-  // top: 0,
-  // left: 0,
-  // width: dayColWidth - 1,
-  // height: rowHeight * 2,
-  // backgroundColor: "rgba(255, 0, 0, 0.7)",
-  // opacity: 0.7,
-  // color: "white",
-  // borderTopLeftRadius: "0px",
-  // borderTopRightRadius: "0px",
-  // borderBottomLeftRadius: "4px",
-  // borderBottomRightRadius: "4px",
-  // position: "absolute",
-  // zIndex: 5,
 };
