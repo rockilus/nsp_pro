@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Link from "next/link";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
@@ -33,6 +34,9 @@ export default function ScheduleNavBar({
   handleSolveSchedule: (scheduleId: string) => void;
   handleValidateSchedule: (scheduleId: string) => void;
 }) {
+  const [isHoveredCreateCampaign, setIsHoveredCreateCampaign] =
+    useState<boolean>(false);
+
   return (
     <div
       style={{
@@ -58,7 +62,33 @@ export default function ScheduleNavBar({
           handleValidateSchedule={handleValidateSchedule}
         />
       ) : (
-        <button>Go to campaign</button>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            width: "470px",
+          }}
+        >
+          <Link href={`/${lng}/plan/campaign`}>
+            <button
+              style={{
+                borderRadius: "4px",
+                border: "1px solid #e5e7eb",
+                height: "35px",
+                padding: "0 15px",
+                fontSize: "0.9rem",
+                fontWeight: 550,
+                color: "#616161",
+                backgroundColor: isHoveredCreateCampaign ? "#f0f0f0" : "white",
+              }}
+              onMouseEnter={() => setIsHoveredCreateCampaign(true)}
+              onMouseLeave={() => setIsHoveredCreateCampaign(false)}
+            >
+              Create campaign to start solving
+            </button>
+          </Link>
+        </div>
       )}
     </div>
   );
