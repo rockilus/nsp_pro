@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import utc from "dayjs/plugin/utc";
 // Components
 import DataViewSelector from "./data-view-selector";
 import TimeViewSelector from "./time-view-selector";
@@ -11,24 +8,32 @@ import CampaignInfo from "./campaign-info";
 // Types
 import { ScheduleT } from "../../../types/schedule";
 
-dayjs.extend(utc);
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
-
 export default function ScheduleNavBar({
   lng,
+  currentPeriodStart,
+  currentPeriodEnd,
+  selectedTimeView,
   selectedDisplay,
   showBreaches,
   schedule,
+  handleNextPeriod,
+  handlePreviousPeriod,
+  handleChangeSelectedTimeView,
   setSelectedDisplay,
   switchShowBreaches,
   handleSolveSchedule,
   handleValidateSchedule,
 }: {
   lng: string;
+  currentPeriodStart: dayjs.Dayjs;
+  currentPeriodEnd: dayjs.Dayjs;
+  selectedTimeView: string;
   selectedDisplay: string;
   showBreaches: boolean;
   schedule: ScheduleT | null;
+  handleNextPeriod: () => void;
+  handlePreviousPeriod: () => void;
+  handleChangeSelectedTimeView: (newSelectedTimeView: string) => void;
   setSelectedDisplay: (newSelectedDisplay: string) => void;
   switchShowBreaches: () => void;
   handleSolveSchedule: (scheduleId: string) => void;
@@ -46,7 +51,14 @@ export default function ScheduleNavBar({
         padding: "3px 16px",
       }}
     >
-      <TimeViewSelector />
+      <TimeViewSelector
+        currentPeriodStart={currentPeriodStart}
+        currentPeriodEnd={currentPeriodEnd}
+        selectedTimeView={selectedTimeView}
+        handleNextPeriod={handleNextPeriod}
+        handlePreviousPeriod={handlePreviousPeriod}
+        handleChangeSelectedTimeView={handleChangeSelectedTimeView}
+      />
       <DataViewSelector
         lng={lng}
         selectedDisplay={selectedDisplay}

@@ -53,6 +53,8 @@ export default function ScheduleTableShift({
   selectedDisplay: string;
   setSelectedCell: (selectedCell: SelectedCellT | null) => void;
 }) {
+  console.log("dates", dates);
+
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -89,16 +91,6 @@ export default function ScheduleTableShift({
                 }}
               >
                 <Box>
-                  <Typography
-                    sx={{
-                      fontSize: "0.75rem",
-                      color: "grey.500",
-                      textAlign: "center",
-                      backgroundColor: getCellBackgroundColor(date, schedule),
-                    }}
-                  >
-                    {date.format("MMM")}
-                  </Typography>
                   <Typography sx={{ fontSize: "0.8rem", textAlign: "center" }}>
                     {date.format("ddd")}
                   </Typography>

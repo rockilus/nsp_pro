@@ -183,10 +183,14 @@ export async function deleteSchedule(scheduleId: string, teamId: string) {
 // Schedule Tab Data //
 //////////////////////////
 
-export async function getScheduleTabData(teamId: string) {
+export async function getScheduleTabData(
+  startDate: dayjs.Dayjs,
+  endDate: dayjs.Dayjs,
+  teamId: string
+) {
   try {
     const campaignTabData = await Promise.all([
-      getAssignments(teamId),
+      getAssignments(startDate, endDate, teamId),
       getBreaches(teamId),
       getRequests(teamId),
       getSchedule(teamId),

@@ -7,19 +7,26 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 dayjs.extend(utc);
 
-export default function TimeViewSelector({}: {}) {
+export default function TimeViewSelector({
+  currentPeriodStart,
+  currentPeriodEnd,
+  selectedTimeView,
+  handleNextPeriod,
+  handlePreviousPeriod,
+  handleChangeSelectedTimeView,
+}: {
+  currentPeriodStart: dayjs.Dayjs;
+  currentPeriodEnd: dayjs.Dayjs;
+  selectedTimeView: string;
+  handleNextPeriod: () => void;
+  handlePreviousPeriod: () => void;
+  handleChangeSelectedTimeView: (newSelectedTimeView: string) => void;
+}) {
   const [isHoveredToday, setIsHoveredToday] = useState<boolean>(false);
   const [isHoveredPrevious, setIsHoveredPrevious] = useState<boolean>(false);
   const [isHoveredNext, setIsHoveredNext] = useState<boolean>(false);
   const [isHoveredTimeSelect, setIsHoveredTimeSelect] =
     useState<boolean>(false);
-  const [selectedTimeView, setSelectedTimeView] = useState<string>("week");
-  const [currentPeriodStart, setCurrentPeriodStart] = useState<dayjs.Dayjs>(
-    dayjs.utc().startOf(selectedTimeView === "month" ? "month" : "week")
-  );
-  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<dayjs.Dayjs>(
-    dayjs.utc().endOf(selectedTimeView === "month" ? "month" : "week")
-  );
 
   function getPeriodLabel(start: dayjs.Dayjs, end: dayjs.Dayjs): string {
     if (start.isSame(end, "month") && start.isSame(end, "year")) {
@@ -50,6 +57,7 @@ export default function TimeViewSelector({}: {}) {
         Today
       </button>
       <button
+        onClick={handlePreviousPeriod}
         style={{
           borderRadius: "50%",
           height: "30px",
@@ -64,6 +72,7 @@ export default function TimeViewSelector({}: {}) {
         <NavigateBeforeIcon />
       </button>
       <button
+        onClick={handleNextPeriod}
         style={{
           borderRadius: "50%",
           height: "30px",
@@ -92,7 +101,7 @@ export default function TimeViewSelector({}: {}) {
       </span>
       <select
         value={selectedTimeView}
-        onChange={(e) => setSelectedTimeView(e.target.value)}
+        onChange={(e) => handleChangeSelectedTimeView(e.target.value)}
         style={{
           borderRadius: "4px",
           border: "1px solid #e5e7eb",

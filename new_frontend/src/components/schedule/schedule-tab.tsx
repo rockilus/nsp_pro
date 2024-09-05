@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import isoWeek from "dayjs/plugin/isoWeek";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
@@ -19,7 +22,7 @@ import {
   validateSchedule,
   updateSchedule,
 } from "../../app/lib/schedule";
-import { updateAssignment } from "../../app/lib/assignment";
+import { getAssignments, updateAssignment } from "../../app/lib/assignment";
 // Types
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
@@ -30,6 +33,9 @@ import {
   SelectedCellT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
+
+dayjs.extend(utc);
+dayjs.extend(isoWeek);
 
 export default function ScheduleTab({
   lng,
@@ -51,6 +57,17 @@ export default function ScheduleTab({
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
   const [CBsDisplayed, setCBsDisplayed] = useState<string[]>([]);
   const [selectedCell, setSelectedCell] = useState<SelectedCellT | null>(null);
+
+  const [selectedTimeView, setSelectedTimeView] = useState<string>("week");
+  const [currentPeriodStart, setCurrentPeriodStart] = useState<dayjs.Dayjs>(
+    dayjs.utc().startOf(selectedTimeView === "month" ? "month" : "isoWeek")
+  );
+  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<dayjs.Dayjs>(
+    dayjs.utc().endOf(selectedTimeView === "month" ? "month" : "isoWeek")
+  );
+  console.log("selectedTimeView", selectedTimeView);
+  console.log("currentPeriodStart", currentPeriodStart);
+  console.log("currentPeriodEnd", currentPeriodEnd);
 
   const addCBsDisplayed = (ids: string[]) => {
     setCBsDisplayed(Array.from(new Set([...CBsDisplayed, ...ids])));
@@ -123,6 +140,76 @@ export default function ScheduleTab({
     );
   };
 
+  const handleNextPeriod = async () => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    const newPeriodStart = currentPeriodStart.add(
+      1,
+      selectedTimeView === "month" ? "month" : "week"
+    );
+    const newPeriodEnd = currentPeriodEnd.add(
+      1,
+      selectedTimeView === "month" ? "month" : "week"
+    );
+    setCurrentPeriodStart(newPeriodStart);
+    setCurrentPeriodEnd(newPeriodEnd);
+    const assigmentsNewPeriod = await getAssignments(
+      newPeriodStart,
+      newPeriodEnd,
+      selectedTeamId
+    );
+    setAssignments(assigmentsNewPeriod);
+  };
+
+  const handlePreviousPeriod = async () => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    const newPeriodStart = currentPeriodStart.subtract(
+      1,
+      selectedTimeView === "month" ? "month" : "week"
+    );
+    const newPeriodEnd = currentPeriodEnd.subtract(
+      1,
+      selectedTimeView === "month" ? "month" : "week"
+    );
+    setCurrentPeriodStart(newPeriodStart);
+    setCurrentPeriodEnd(newPeriodEnd);
+    const assigmentsNewPeriod = await getAssignments(
+      newPeriodStart,
+      newPeriodEnd,
+      selectedTeamId
+    );
+    setAssignments(assigmentsNewPeriod);
+  };
+
+  const handleChangeSelectedTimeView = async (newSelectedTimeView: string) => {
+    console.log("handleChangeSelectedTimeView called", newSelectedTimeView);
+
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    setSelectedTimeView(newSelectedTimeView);
+    let newPeriodStart = currentPeriodStart;
+    let newPeriodEnd = currentPeriodEnd;
+    if (newSelectedTimeView === "month") {
+      newPeriodStart = currentPeriodEnd.startOf("month");
+      newPeriodEnd = currentPeriodEnd.endOf("month");
+    } else if (newSelectedTimeView === "week") {
+      newPeriodStart = currentPeriodStart.startOf("isoWeek");
+      newPeriodEnd = currentPeriodStart.endOf("isoWeek");
+    }
+    setCurrentPeriodStart(currentPeriodStart.startOf("month"));
+    setCurrentPeriodEnd(currentPeriodEnd.endOf("month"));
+    const assigmentsNewPeriod = await getAssignments(
+      newPeriodStart,
+      newPeriodEnd,
+      selectedTeamId
+    );
+    setAssignments(assigmentsNewPeriod);
+  };
+
   useEffect(() => {
     const fetchScheduleTabData = async () => {
       if (selectedTeamId) {
@@ -133,7 +220,11 @@ export default function ScheduleTab({
           schedule: fetchedSchedule,
           workers: fetchedWorkers,
           shifts: fetchedShifts,
-        } = await getScheduleTabData(selectedTeamId);
+        } = await getScheduleTabData(
+          currentPeriodStart,
+          currentPeriodEnd,
+          selectedTeamId
+        );
         setAssignments(fetchedAssignments);
         setBreaches(fetchedBreaches);
         setRequests(fetchedRequests);
@@ -143,22 +234,28 @@ export default function ScheduleTab({
       }
     };
     fetchScheduleTabData();
-  }, [selectedTeamId]);
+  }, [selectedTeamId, currentPeriodStart, currentPeriodEnd]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <ScheduleNavBar
         lng={lng}
+        currentPeriodStart={currentPeriodStart}
+        currentPeriodEnd={currentPeriodEnd}
+        selectedTimeView={selectedTimeView}
         selectedDisplay={selectedDisplay}
         showBreaches={showBreaches}
         schedule={schedule}
+        handleNextPeriod={handleNextPeriod}
+        handlePreviousPeriod={handlePreviousPeriod}
+        handleChangeSelectedTimeView={handleChangeSelectedTimeView}
         setSelectedDisplay={setSelectedDisplay}
         switchShowBreaches={() => setShowBreaches(!showBreaches)}
         handleSolveSchedule={handleSolveSchedule}
         handleValidateSchedule={handleValidateSchedule}
       />
       <Box sx={{ display: "flex", flexDirection: "row" }}>
-        <Box
+        {/* <Box
           sx={{
             display: "flex",
             flexDirection: "column",
@@ -199,7 +296,7 @@ export default function ScheduleTab({
               handleUpdateSchedule={handleUpdateSchedule}
             />
           )}
-        </Box>
+        </Box> */}
         {assignments.length === 0 || !schedule ? (
           <Box
             sx={{
@@ -221,6 +318,8 @@ export default function ScheduleTab({
         ) : (
           <ScheduleDisplay
             schedule={schedule as ScheduleT}
+            startDate={currentPeriodStart}
+            endDate={currentPeriodEnd}
             assignments={assignments}
             breaches={breaches}
             workers={workers}

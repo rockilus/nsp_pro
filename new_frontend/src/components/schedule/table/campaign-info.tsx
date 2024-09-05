@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
@@ -17,8 +16,6 @@ import {
   SolveStatusList,
   SolveStatusColors,
 } from "../../../constants/constants";
-
-dayjs.extend(utc);
 
 export default function ScheduleWIP({
   lng,

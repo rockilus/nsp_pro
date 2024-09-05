@@ -1,9 +1,9 @@
 from dataclasses import asdict
-from datetime import datetime
-from typing import Dict, List
+from datetime import date, datetime
+from typing import Dict, List, Optional
 
 import humps
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from pydantic import TypeAdapter
 
 from core import Assignment
@@ -48,6 +48,8 @@ async def create_assignment(
 @router.get("/assignments/teams/{team_id}")
 async def get_assignments(
     team_id: str,
+    start_date: Optional[date] = Query(None, alias="start_date"),
+    end_date: Optional[date] = Query(None, alias="end_date"),
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[AssignmentMessage]:
     try:
@@ -57,8 +59,12 @@ async def get_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to get assignments",
             )
+        if start_date is None or end_date is None:
+            raise ValueError("Start date and end date are required")
         schedules = schedule_db.get_schedules(team_id)
-        assignments = assignment_db.get_assignments(schedules)
+        assignments = assignment_db.get_assignments_by_dates(
+            start_date, end_date, schedules
+        )
         response = [core_to_msg_assignment(a) for a in assignments]
     except Exception as e:
         log_info("Failed to get assignments")
