@@ -11,13 +11,11 @@ import AssignmentOptions from "./assignment-options";
 import BreachList from "./breaches/breach-list";
 import QuickStaffingTable from "./quick-staffing";
 import ScheduleDisplay from "./table/schedule-display";
-import ScheduleDisplayOptions from "./display-options/schedule-display-options";
-import ScheduleOptions from "./schedule-options/schedule-options";
-import ScheduleNavBar from "./table/schedule-nav-bar";
+import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
+import LHSTab from "./breaches/lhs-tab";
 // Actions
 import {
   getScheduleTabData,
-  addSchedule,
   solveSchedule,
   validateSchedule,
   updateSchedule,
@@ -65,9 +63,6 @@ export default function ScheduleTab({
   const [currentPeriodEnd, setCurrentPeriodEnd] = useState<dayjs.Dayjs>(
     dayjs.utc().endOf(selectedTimeView === "month" ? "month" : "isoWeek")
   );
-  console.log("selectedTimeView", selectedTimeView);
-  console.log("currentPeriodStart", currentPeriodStart);
-  console.log("currentPeriodEnd", currentPeriodEnd);
 
   const addCBsDisplayed = (ids: string[]) => {
     setCBsDisplayed(Array.from(new Set([...CBsDisplayed, ...ids])));
@@ -79,14 +74,6 @@ export default function ScheduleTab({
   //////////////////////////
   // Schedule Actions
   //////////////////////////
-
-  const handleAddSchedule = async () => {
-    if (!selectedTeamId) {
-      throw new Error("No team selected");
-    }
-    const newSchedule = await addSchedule(selectedTeamId);
-    setSchedule(newSchedule);
-  };
 
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
     const newSchedule = await updateSchedule(schedule);
@@ -236,6 +223,37 @@ export default function ScheduleTab({
     fetchScheduleTabData();
   }, [selectedTeamId, currentPeriodStart, currentPeriodEnd]);
 
+  const lhsTabContent = () => {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <BreachList
+          lng={lng}
+          breaches={breaches}
+          CBsDisplayed={CBsDisplayed}
+          workers={workers}
+          shifts={shifts}
+          addCBsDisplayed={addCBsDisplayed}
+          removeCBsDisplayed={removeCBsDisplayed}
+        />
+        {schedule && (
+          <QuickStaffingTable
+            lng={lng}
+            shifts={shifts}
+            workers={workers}
+            assignments={assignments}
+            schedule={schedule as ScheduleT}
+            handleUpdateSchedule={handleUpdateSchedule}
+          />
+        )}
+      </div>
+    );
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <ScheduleNavBar
@@ -254,49 +272,8 @@ export default function ScheduleTab({
         handleSolveSchedule={handleSolveSchedule}
         handleValidateSchedule={handleValidateSchedule}
       />
-      <Box sx={{ display: "flex", flexDirection: "row" }}>
-        {/* <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            width: 800,
-            margin: 2,
-          }}
-        >
-          <ScheduleOptions
-            lng={lng}
-            schedule={schedule}
-            handleAddSchedule={handleAddSchedule}
-            handleSolveSchedule={handleSolveSchedule}
-            handleValidateSchedule={handleValidateSchedule}
-          />
-          <ScheduleDisplayOptions
-            lng={lng}
-            selectedDisplay={selectedDisplay}
-            displayCBs={showBreaches}
-            setSelectedDisplay={setSelectedDisplay}
-            switchDisplayCBs={() => setShowBreaches(!showBreaches)}
-          />
-          <BreachList
-            lng={lng}
-            breaches={breaches}
-            CBsDisplayed={CBsDisplayed}
-            workers={workers}
-            shifts={shifts}
-            addCBsDisplayed={addCBsDisplayed}
-            removeCBsDisplayed={removeCBsDisplayed}
-          />
-          {schedule && (
-            <QuickStaffingTable
-              lng={lng}
-              shifts={shifts}
-              workers={workers}
-              assignments={assignments}
-              schedule={schedule as ScheduleT}
-              handleUpdateSchedule={handleUpdateSchedule}
-            />
-          )}
-        </Box> */}
+      <div style={{ display: "flex", flexDirection: "row" }}>
+        <LHSTab tabContent={lhsTabContent()} />
         {assignments.length === 0 || !schedule ? (
           <Box
             sx={{
@@ -343,7 +320,7 @@ export default function ScheduleTab({
             handleUpdateAssignment={handleUpdateAssignment}
           />
         )}
-      </Box>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,74 @@
+.lhs-tab-container {
+    display: flex;
+    height: 100vh;
+    transition: width 0.3s ease; /* Add transition for smooth animation */
+  }
+  
+.lhs-tab-container.closed {
+    width: 30px; /* Width when the drawer is closed */
+  }
+  
+.lhs-tab-container.open {
+    width: 330px; /* Width when the drawer is open */
+  }
+
+.drawer {
+    position: relative;
+    width: 300px; /* Width of the BreachList when open */
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    height: 100%;
+}
+
+.drawer.closed {
+    transform: translateX(-100%);
+}
+
+.drawer.open {
+    transform: translateX(0);
+}
+
+.drawer-content {
+    padding: 0 5px;
+    height: 84%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.tab-button {
+    position: absolute;
+    top: 110px;
+    left: 0;
+    height: 60px;
+    width: 25px;
+    transform: translateY(-50%);
+    background-color: #f0f0f0;
+    color: #616161;
+    font-size: 1.0rem;
+    font-weight: 600;
+    writing-mode: vertical-rl;
+    text-align: center;
+    padding: 10px 0;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+    border-radius: 0 5px 5px 0;
+    transition: transform 0.3s ease;
+}
+
+.tab-button.closed {
+    transform: translateX(0);
+  }
+  
+.tab-button.open {
+    transform: translateX(300px);
+  }
+
+.main-content {
+  flex-grow: 1;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.drawer.open ~ .main-content {
+  margin-left: 300px; /* Same as the width of the BreachList */
+}

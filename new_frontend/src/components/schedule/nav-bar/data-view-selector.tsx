@@ -4,7 +4,7 @@ import { useTranslation } from "../../../app/i18n/client";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
-export default function ScheduleDisplayOptions({
+export default function DataViewSelector({
   lng,
   selectedDisplay,
   showBreaches,

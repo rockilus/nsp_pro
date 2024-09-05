@@ -53,8 +53,6 @@ export default function ScheduleTableShift({
   selectedDisplay: string;
   setSelectedCell: (selectedCell: SelectedCellT | null) => void;
 }) {
-  console.log("dates", dates);
-
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
