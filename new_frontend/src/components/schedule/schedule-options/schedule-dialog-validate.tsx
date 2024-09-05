@@ -31,14 +31,13 @@ export default function ScheduleDialogValidate({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+    <Box sx={{ display: "flex", flexDirection: "column" }}>
       <Button
         variant="outlined"
         onClick={handleClickOpen}
         sx={{
           paddingLeft: 0.2,
           paddingRight: 0.2,
-          // marginLeft: "8px",
           textTransform: "none",
           height: "35px",
         }}

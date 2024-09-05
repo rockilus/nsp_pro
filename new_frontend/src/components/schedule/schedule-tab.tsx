@@ -10,6 +10,7 @@ import QuickStaffingTable from "./quick-staffing";
 import ScheduleDisplay from "./table/schedule-display";
 import ScheduleDisplayOptions from "./display-options/schedule-display-options";
 import ScheduleOptions from "./schedule-options/schedule-options";
+import ScheduleNavBar from "./table/schedule-nav-bar";
 // Actions
 import {
   getScheduleTabData,
@@ -145,88 +146,105 @@ export default function ScheduleTab({
   }, [selectedTeamId]);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "row" }}>
-      <Box
-        sx={{ display: "flex", flexDirection: "column", width: 800, margin: 2 }}
-      >
-        <ScheduleOptions
-          lng={lng}
-          schedule={schedule}
-          handleAddSchedule={handleAddSchedule}
-          handleSolveSchedule={handleSolveSchedule}
-          handleValidateSchedule={handleValidateSchedule}
-        />
-        <ScheduleDisplayOptions
-          lng={lng}
-          selectedDisplay={selectedDisplay}
-          displayCBs={showBreaches}
-          setSelectedDisplay={setSelectedDisplay}
-          switchDisplayCBs={() => setShowBreaches(!showBreaches)}
-        />
-        <BreachList
-          lng={lng}
-          breaches={breaches}
-          CBsDisplayed={CBsDisplayed}
-          workers={workers}
-          shifts={shifts}
-          addCBsDisplayed={addCBsDisplayed}
-          removeCBsDisplayed={removeCBsDisplayed}
-        />
-        {schedule && (
-          <QuickStaffingTable
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <ScheduleNavBar
+        lng={lng}
+        selectedDisplay={selectedDisplay}
+        showBreaches={showBreaches}
+        schedule={schedule}
+        setSelectedDisplay={setSelectedDisplay}
+        switchShowBreaches={() => setShowBreaches(!showBreaches)}
+        handleSolveSchedule={handleSolveSchedule}
+        handleValidateSchedule={handleValidateSchedule}
+      />
+      <Box sx={{ display: "flex", flexDirection: "row" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            width: 800,
+            margin: 2,
+          }}
+        >
+          <ScheduleOptions
             lng={lng}
-            shifts={shifts}
+            schedule={schedule}
+            handleAddSchedule={handleAddSchedule}
+            handleSolveSchedule={handleSolveSchedule}
+            handleValidateSchedule={handleValidateSchedule}
+          />
+          <ScheduleDisplayOptions
+            lng={lng}
+            selectedDisplay={selectedDisplay}
+            displayCBs={showBreaches}
+            setSelectedDisplay={setSelectedDisplay}
+            switchDisplayCBs={() => setShowBreaches(!showBreaches)}
+          />
+          <BreachList
+            lng={lng}
+            breaches={breaches}
+            CBsDisplayed={CBsDisplayed}
             workers={workers}
-            assignments={assignments}
+            shifts={shifts}
+            addCBsDisplayed={addCBsDisplayed}
+            removeCBsDisplayed={removeCBsDisplayed}
+          />
+          {schedule && (
+            <QuickStaffingTable
+              lng={lng}
+              shifts={shifts}
+              workers={workers}
+              assignments={assignments}
+              schedule={schedule as ScheduleT}
+              handleUpdateSchedule={handleUpdateSchedule}
+            />
+          )}
+        </Box>
+        {assignments.length === 0 || !schedule ? (
+          <Box
+            sx={{
+              margin: 2,
+              marginLeft: 0,
+              overflowX: "auto",
+              backgroundColor: "none",
+              width: "100%",
+            }}
+          >
+            <Typography
+              variant="body1"
+              color="textSecondary"
+              sx={{ fontStyle: "italic" }}
+            >
+              {t("no_schedule_text")}
+            </Typography>
+          </Box>
+        ) : (
+          <ScheduleDisplay
             schedule={schedule as ScheduleT}
-            handleUpdateSchedule={handleUpdateSchedule}
+            assignments={assignments}
+            breaches={breaches}
+            workers={workers}
+            shifts={shifts}
+            requests={requests}
+            selectedDisplay={selectedDisplay}
+            showBreaches={showBreaches}
+            CBsDisplayed={CBsDisplayed}
+            setSelectedCell={setSelectedCell}
+          />
+        )}
+        {selectedCell && (
+          <AssignmentOptions
+            lng={lng}
+            workers={workers}
+            shifts={shifts}
+            assignments={assignments}
+            selectedCell={selectedCell}
+            selectedDisplay={selectedDisplay}
+            setSelectedCell={setSelectedCell}
+            handleUpdateAssignment={handleUpdateAssignment}
           />
         )}
       </Box>
-      {assignments.length === 0 || !schedule ? (
-        <Box
-          sx={{
-            margin: 2,
-            marginLeft: 0,
-            overflowX: "auto",
-            backgroundColor: "none",
-            width: "100%",
-          }}
-        >
-          <Typography
-            variant="body1"
-            color="textSecondary"
-            sx={{ fontStyle: "italic" }}
-          >
-            {t("no_schedule_text")}
-          </Typography>
-        </Box>
-      ) : (
-        <ScheduleDisplay
-          schedule={schedule as ScheduleT}
-          assignments={assignments}
-          breaches={breaches}
-          workers={workers}
-          shifts={shifts}
-          requests={requests}
-          selectedDisplay={selectedDisplay}
-          showBreaches={showBreaches}
-          CBsDisplayed={CBsDisplayed}
-          setSelectedCell={setSelectedCell}
-        />
-      )}
-      {selectedCell && (
-        <AssignmentOptions
-          lng={lng}
-          workers={workers}
-          shifts={shifts}
-          assignments={assignments}
-          selectedCell={selectedCell}
-          selectedDisplay={selectedDisplay}
-          setSelectedCell={setSelectedCell}
-          handleUpdateAssignment={handleUpdateAssignment}
-        />
-      )}
-    </Box>
+    </div>
   );
 }
