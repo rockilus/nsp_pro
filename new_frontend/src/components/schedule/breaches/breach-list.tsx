@@ -1,9 +1,5 @@
 import React from "react";
 import { useTranslation } from "../../../app/i18n/client";
-// MUI
-import Box from "@mui/material/Box";
-import List from "@mui/material/List";
-import Typography from "@mui/material/Typography";
 // Components
 import BreachItem from "./breach-item";
 // Types
@@ -80,71 +76,63 @@ export default function BreachList({
   };
 
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         display: "flex",
         flexDirection: "column",
         alignSelf: "flex-start",
         width: "100%",
-        border: "1px solid grey",
-        borderRadius: 2,
-        margin: 2,
-        marginLeft: 0,
+        margin: "10px 10px 5px 5px",
       }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          minHeight: 45,
-          paddingLeft: 1,
-          borderBottom: "1px solid lightgrey",
-          backgroundColor: "grey.100",
-          borderRadius: "8px 8px 0 0",
+      <span
+        style={{
+          fontSize: "1rem",
+          fontWeight: 600,
+          color: "#3C4043",
         }}
       >
-        <Typography
-          variant="subtitle1"
-          align="left"
-          sx={{ fontWeight: "bold" }}
-        >
-          {t("breaches")}
-        </Typography>
-      </Box>
+        {t("breaches")}
+      </span>
       {breaches.length === 0 ? (
-        <Box
-          sx={{
-            margin: 2,
-            backgroundColor: "none",
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            borderBottom: "0.5px solid lightgrey",
+            padding: "5px 0",
+            alignItems: "center",
           }}
         >
-          <Typography
-            variant="body2"
-            color="textSecondary"
-            sx={{ fontStyle: "italic" }}
+          <span
+            style={{
+              fontWeight: 400,
+              fontSize: "0.875rem",
+              fontStyle: "italic",
+              lineHeight: "1.4",
+              letterSpacing: "0.001rem",
+              margin: "0",
+              padding: "0 5px 0 0",
+            }}
           >
             {"No breach."}
-          </Typography>
-        </Box>
+          </span>
+        </div>
       ) : (
-        <Box sx={{ flexGrow: 1, maxWidth: 752 }}>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <List dense={true}>
-              {breaches.map((breach, index) => (
-                <BreachItem
-                  key={index}
-                  breach={breach}
-                  CBDisplayed={CBsDisplayed.includes(breach.id)}
-                  workers={workers}
-                  shifts={shifts}
-                  addCBsDisplayed={addCBsDisplayed}
-                  removeCBsDisplayed={removeCBsDisplayed}
-                />
-              ))}
-            </List>
-          </Box>
-        </Box>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {breaches.map((breach, index) => (
+            <BreachItem
+              key={index}
+              breach={breach}
+              CBDisplayed={CBsDisplayed.includes(breach.id)}
+              workers={workers}
+              shifts={shifts}
+              addCBsDisplayed={addCBsDisplayed}
+              removeCBsDisplayed={removeCBsDisplayed}
+            />
+          ))}
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
