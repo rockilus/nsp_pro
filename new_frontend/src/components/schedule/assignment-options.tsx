@@ -42,10 +42,6 @@ export default function AssignmentOptions({
       selectedCell.assignment
   );
 
-  const handleClose = () => {
-    setSelectedCell(null);
-  };
-
   const handleChangeAssignmentFixed = () => {
     handleUpdateAssignment({
       ...selectedAssignment,
@@ -79,69 +75,34 @@ export default function AssignmentOptions({
   }, [selectedCell, assignments]);
 
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         display: "flex",
         flexDirection: "column",
         alignSelf: "flex-start",
-        margin: 2,
-        marginLeft: 0,
-        width: "400px",
-        border: "1px solid grey",
-        borderRadius: 2,
+        width: "100%",
+        padding: "10px 10px 5px 10px",
       }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          minHeight: 45,
-          paddingLeft: 1,
-          borderBottom: "1px solid lightgrey",
-          backgroundColor: "grey.100",
-          borderRadius: "8px 8px 0 0",
+      <span
+        style={{
+          fontSize: "1rem",
+          fontWeight: 600,
+          color: "#3C4043",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            minHeight: 45,
+        {t("selection")}
+      </span>
+      <div style={{ marginTop: "10px" }}>
+        <span
+          style={{
+            fontSize: "0.8rem",
+            fontWeight: 600,
+            color: "#3C4043",
           }}
         >
-          <Typography
-            variant="subtitle1"
-            align="left"
-            sx={{ fontWeight: "bold" }}
-          >
-            {t("selection")}
-          </Typography>
-        </Box>
-        <IconButton onClick={handleClose}>
-          <CloseIcon color="disabled" />
-        </IconButton>
-      </Box>
-      <Box>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            minHeight: 25,
-            width: "300px",
-            paddingLeft: 1,
-            borderBottom: "1px solid lightgrey",
-            backgroundColor: "grey.100",
-          }}
-        >
-          <Typography
-            // variant="body2"
-            align="left"
-            sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
-          >
-            {t("assignment")}
-          </Typography>
-        </Box>
+          {t("assignment")}
+        </span>
         {selectedAssignment.fixed || selectedAssignment.status !== "wip" ? (
           <Box
             sx={{
@@ -156,7 +117,6 @@ export default function AssignmentOptions({
                   align="left"
                   sx={{
                     fontSize: "0.8rem",
-                    paddingLeft: "10px",
                   }}
                 >
                   {`${selectedCell.shift.name} - 
@@ -190,7 +150,6 @@ export default function AssignmentOptions({
                   align="left"
                   sx={{
                     fontSize: "0.8rem",
-                    paddingLeft: "10px",
                   }}
                 >
                   {`${selectedCell.worker.name} - 
@@ -245,10 +204,7 @@ export default function AssignmentOptions({
             }}
           >
             {selectedDisplay === "shift" && (
-              <Typography
-                align="left"
-                sx={{ fontSize: "0.8rem", paddingLeft: "10px" }}
-              >
+              <Typography align="left" sx={{ fontSize: "0.8rem" }}>
                 {`${selectedCell.shift.name} - 
             ${selectedAssignment.date.format("D MMM YYYY")}: ${
                   selectedCell.worker.name
@@ -256,10 +212,7 @@ export default function AssignmentOptions({
               </Typography>
             )}
             {selectedDisplay === "worker" && (
-              <Typography
-                align="left"
-                sx={{ fontSize: "0.8rem", paddingLeft: "10px" }}
-              >
+              <Typography align="left" sx={{ fontSize: "0.8rem" }}>
                 {`${selectedCell.worker.name} -
             ${selectedAssignment.date.format("D MMM YYYY")}: ${
                   selectedCell.shift.name
@@ -269,10 +222,10 @@ export default function AssignmentOptions({
             <Button
               onClick={handleChangeAssignmentFixed}
               sx={{
-                borderRadius: 4,
+                borderRadius: "4px",
                 textTransform: "none",
                 fontSize: "0.8rem",
-                border: "1px solid",
+                border: "1px solid rgb(229, 231, 235)",
                 height: "20px",
                 color: "grey.700",
                 paddingY: 0,
@@ -283,34 +236,23 @@ export default function AssignmentOptions({
             </Button>
           </Box>
         )}
-      </Box>
+      </div>
       {selectedAssignment.date.isAfter(dayjs.utc(dayjs().startOf("day"))) && (
-        <Box>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              minHeight: 25,
-              width: "300px",
-              paddingLeft: 1,
-              borderBottom: "1px solid lightgrey",
-              backgroundColor: "grey.100",
+        <div style={{ marginTop: "10px" }}>
+          <span
+            style={{
+              fontSize: "0.8rem",
+              fontWeight: 600,
+              color: "#3C4043",
             }}
           >
-            <Typography
-              // variant="body2"
-              align="left"
-              sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
-            >
-              {t("requests")}
-            </Typography>
-          </Box>
+            {t("requests")}
+          </span>
           {selectedCell.requests.length === 0 ? (
             <Typography
               align="left"
               sx={{
                 fontSize: "0.8rem",
-                paddingLeft: "10px",
                 color: "grey.700",
                 fontStyle: "italic",
               }}
@@ -326,10 +268,7 @@ export default function AssignmentOptions({
                   flexDirection: "row",
                 }}
               >
-                <Typography
-                  align="left"
-                  sx={{ fontSize: "0.8rem", paddingLeft: "10px" }}
-                >
+                <Typography align="left" sx={{ fontSize: "0.8rem" }}>
                   {`${
                     workers.find((w) => w.id === request.workerId)?.name || ""
                   } - 
@@ -359,35 +298,24 @@ export default function AssignmentOptions({
               </Box>
             ))
           )}
-        </Box>
+        </div>
       )}
       {selectedAssignment.status === "wip" && (
-        <Box>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              minHeight: 25,
-              width: "300px",
-              paddingLeft: 1,
-              borderBottom: "1px solid lightgrey",
-              backgroundColor: "grey.100",
+        <div style={{ marginTop: "10px" }}>
+          <span
+            style={{
+              fontSize: "0.8rem",
+              fontWeight: 600,
+              color: "#3C4043",
             }}
           >
-            <Typography
-              // variant="body2"
-              align="left"
-              sx={{ fontWeight: "bold", fontSize: "0.8rem" }}
-            >
-              {t("breaches")}
-            </Typography>
-          </Box>
+            {t("breaches")}
+          </span>
           {breachesNoRequests.length === 0 ? (
             <Typography
               align="left"
               sx={{
                 fontSize: "0.8rem",
-                paddingLeft: "10px",
                 color: "grey.700",
                 fontStyle: "italic",
               }}
@@ -403,10 +331,7 @@ export default function AssignmentOptions({
                   flexDirection: "row",
                 }}
               >
-                <Typography
-                  align="left"
-                  sx={{ fontSize: "0.8rem", paddingLeft: "10px" }}
-                >
+                <Typography align="left" sx={{ fontSize: "0.8rem" }}>
                   {breach.description}
                 </Typography>
                 <FiberManualRecordIcon
@@ -419,8 +344,8 @@ export default function AssignmentOptions({
               </Box>
             ))
           )}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

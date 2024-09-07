@@ -31,17 +31,34 @@
 .drawer-content {
     padding: 0 5px;
     height: 84%;
-    overflow-y: scroll;
+    width: 300px;
+    overflow-y: auto;
     overflow-x: hidden;
 }
 
-.tab-button {
+.buttons-container {
+    display: flex; /* Added */
+    flex-direction: column; /* Added */
+    align-items: center; /* Optional: Center items horizontally */
     position: absolute;
     top: 110px;
     left: 0;
-    height: 60px;
     width: 25px;
     transform: translateY(-50%);
+    transition: transform 0.3s ease;
+}
+
+.buttons-container.closed {
+    transform: translateX(0);
+}
+  
+.buttons-container.open {
+    transform: translateX(300px);
+}
+
+.tab-button {
+    height: auto;
+    width: 25px;
     background-color: #f0f0f0;
     color: #616161;
     font-size: 1.0rem;
@@ -52,16 +69,13 @@
     cursor: pointer;
     border: 1px solid #e5e7eb;
     border-radius: 0 5px 5px 0;
-    transition: transform 0.3s ease;
+    margin-bottom: 1px;
 }
 
-.tab-button.closed {
-    transform: translateX(0);
-  }
-  
-.tab-button.open {
-    transform: translateX(300px);
-  }
+.tab-button.selected {
+    color: #1976d2;
+    background-color: rgba(25, 118, 210, 0.08)
+}
 
 .main-content {
   flex-grow: 1;

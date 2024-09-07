@@ -1,8 +1,6 @@
 import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-// MUI
-import Box from "@mui/material/Box";
 // Components
 import ScheduleTableShift from "./schedule-table-shift";
 import ScheduleTableWorker from "./schedule-table-worker";
@@ -31,7 +29,7 @@ export default function ScheduleDisplay({
   selectedDisplay,
   showBreaches,
   CBsDisplayed,
-  setSelectedCell,
+  handleCellSelection,
 }: {
   schedule: ScheduleT;
   startDate: dayjs.Dayjs;
@@ -44,7 +42,7 @@ export default function ScheduleDisplay({
   selectedDisplay: string;
   showBreaches: boolean;
   CBsDisplayed: string[];
-  setSelectedCell: (selectedCell: SelectedCellT | null) => void;
+  handleCellSelection: (selectedCell: SelectedCellT) => void;
 }) {
   const buildDates = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
     const dates = [];
@@ -69,7 +67,7 @@ export default function ScheduleDisplay({
         breaches={breaches}
         showBreaches={showBreaches}
         selectedDisplay={selectedDisplay}
-        setSelectedCell={setSelectedCell}
+        handleCellSelection={handleCellSelection}
       />
     ),
     worker: (
@@ -83,7 +81,7 @@ export default function ScheduleDisplay({
         breaches={breaches}
         showBreaches={showBreaches}
         selectedDisplay={selectedDisplay}
-        setSelectedCell={setSelectedCell}
+        handleCellSelection={handleCellSelection}
       />
     ),
   };

@@ -64,11 +64,26 @@ export default function ScheduleTab({
     dayjs.utc().endOf(selectedTimeView === "month" ? "month" : "isoWeek")
   );
 
+  const [selectedTab, setSelectedTab] = useState<string | null>(null);
+
+  const toggleTab = (tabName: string) => {
+    if (selectedTab === tabName) {
+      setSelectedTab(null);
+    } else {
+      setSelectedTab(tabName);
+    }
+  };
+
   const addCBsDisplayed = (ids: string[]) => {
     setCBsDisplayed(Array.from(new Set([...CBsDisplayed, ...ids])));
   };
   const removeCBsDisplayed = (ids: string[]) => {
     setCBsDisplayed(CBsDisplayed.filter((cbId) => !ids.includes(cbId)));
+  };
+
+  const handleCellSelection = (selectedCell: SelectedCellT) => {
+    setSelectedCell(selectedCell);
+    setSelectedTab("Selected assignment");
   };
 
   //////////////////////////
@@ -223,35 +238,40 @@ export default function ScheduleTab({
     fetchScheduleTabData();
   }, [selectedTeamId, currentPeriodStart, currentPeriodEnd]);
 
-  const lhsTabContent = () => {
-    return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <BreachList
-          lng={lng}
-          breaches={breaches}
-          CBsDisplayed={CBsDisplayed}
-          workers={workers}
-          shifts={shifts}
-          addCBsDisplayed={addCBsDisplayed}
-          removeCBsDisplayed={removeCBsDisplayed}
-        />
-        {schedule && (
-          <QuickStaffingTable
-            lng={lng}
-            shifts={shifts}
-            workers={workers}
-            assignments={assignments}
-            schedule={schedule as ScheduleT}
-            handleUpdateSchedule={handleUpdateSchedule}
-          />
-        )}
-      </div>
-    );
+  const lhsTabContent = {
+    Breaches: (
+      <BreachList
+        lng={lng}
+        breaches={breaches}
+        CBsDisplayed={CBsDisplayed}
+        workers={workers}
+        shifts={shifts}
+        addCBsDisplayed={addCBsDisplayed}
+        removeCBsDisplayed={removeCBsDisplayed}
+      />
+    ),
+    "Quick staffing": schedule ? (
+      <QuickStaffingTable
+        lng={lng}
+        shifts={shifts}
+        workers={workers}
+        assignments={assignments}
+        schedule={schedule as ScheduleT}
+        handleUpdateSchedule={handleUpdateSchedule}
+      />
+    ) : null,
+    "Selected assignment": selectedCell ? (
+      <AssignmentOptions
+        lng={lng}
+        workers={workers}
+        shifts={shifts}
+        assignments={assignments}
+        selectedCell={selectedCell}
+        selectedDisplay={selectedDisplay}
+        setSelectedCell={setSelectedCell}
+        handleUpdateAssignment={handleUpdateAssignment}
+      />
+    ) : null,
   };
 
   return (
@@ -273,7 +293,11 @@ export default function ScheduleTab({
         handleValidateSchedule={handleValidateSchedule}
       />
       <div style={{ display: "flex", flexDirection: "row" }}>
-        <LHSTab tabContent={lhsTabContent()} />
+        <LHSTab
+          tabContent={lhsTabContent}
+          selectedTab={selectedTab}
+          toggleTab={toggleTab}
+        />
         {assignments.length === 0 || !schedule ? (
           <Box
             sx={{
@@ -305,19 +329,7 @@ export default function ScheduleTab({
             selectedDisplay={selectedDisplay}
             showBreaches={showBreaches}
             CBsDisplayed={CBsDisplayed}
-            setSelectedCell={setSelectedCell}
-          />
-        )}
-        {selectedCell && (
-          <AssignmentOptions
-            lng={lng}
-            workers={workers}
-            shifts={shifts}
-            assignments={assignments}
-            selectedCell={selectedCell}
-            selectedDisplay={selectedDisplay}
-            setSelectedCell={setSelectedCell}
-            handleUpdateAssignment={handleUpdateAssignment}
+            handleCellSelection={handleCellSelection}
           />
         )}
       </div>
