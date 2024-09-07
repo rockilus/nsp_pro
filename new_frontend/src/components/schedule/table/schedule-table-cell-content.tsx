@@ -23,7 +23,7 @@ export default function ScheduleTableCellContent({
   breaches,
   showBreaches,
   selectedDisplay,
-  setSelectedCell,
+  handleCellSelection,
 }: {
   worker: WorkerT;
   shift: ShiftT;
@@ -33,14 +33,14 @@ export default function ScheduleTableCellContent({
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
-  setSelectedCell: (seletedCell: SelectedCellT | null) => void;
+  handleCellSelection: (seletedCell: SelectedCellT) => void;
 }) {
   const backColor = getBreachType(breaches);
 
   return (
     <Box
       onClick={() =>
-        setSelectedCell({
+        handleCellSelection({
           assignment: assignment,
           worker: worker,
           shift: shift,

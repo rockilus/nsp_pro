@@ -3,8 +3,6 @@ import dayjs from "dayjs";
 import minMax from "dayjs/plugin/minMax";
 // MUI
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
 // Types
 import { BreachT } from "../../../types/schedule";
 import { ShiftT } from "../../../types/shift";
@@ -64,25 +62,30 @@ export default function BreachItem({
   };
 
   return (
-    <ListItem
-      sx={{
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
         borderBottom: "0.5px solid lightgrey",
+        padding: "5px 0",
+        alignItems: "center",
       }}
     >
-      {/* {getDates()}
-      <br />
-      {getWorkerNames()}
-      <br />
-      {getShiftNames()}
-
-      <Typography variant="body2">
-        {breach.objectiveCategory.charAt(0).toUpperCase() +
-          breach.objectiveCategory.slice(1)}
-      </Typography> */}
-      <ListItemText primary={breach.description} />
+      <span
+        style={{
+          fontWeight: 400,
+          fontSize: "0.875rem",
+          lineHeight: "1.4",
+          letterSpacing: "0.001rem",
+          margin: "0",
+          padding: "0 5px 0 0",
+        }}
+      >
+        {breach.description}
+      </span>
       <FiberManualRecordIcon
         sx={{ color: breach.hardToSoft ? "red" : "orange" }}
       />
-    </ListItem>
+    </div>
   );
 }

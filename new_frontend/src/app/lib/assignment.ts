@@ -21,7 +21,11 @@ export const toAssignmentT = (data: any): AssignmentT => {
 // Assignment //
 //////////////////////////
 
-export async function getAssignments(teamId: string) {
+export async function getAssignments(
+  startDate: dayjs.Dayjs,
+  endDate: dayjs.Dayjs,
+  teamId: string
+) {
   noStore();
   const options: RequestInit = {
     method: "GET",
@@ -30,11 +34,12 @@ export async function getAssignments(teamId: string) {
       "Content-Type": "application/json",
     },
   };
+  const startDateStr = startDate.format("YYYY-MM-DD");
+  const endDateStr = endDate.format("YYYY-MM-DD");
+  const url = `${apiUrlAssignment}/teams/${teamId}?start_date=${startDateStr}&end_date=${endDateStr}`;
+
   try {
-    const response = await fetch(
-      `${apiUrlAssignment}/teams/${teamId}`,
-      options
-    );
+    const response = await fetch(url, options);
     const responseData = await response.json();
     if (!response.ok) {
       throw new Error("Failed to fetch assignments: " + responseData.detail);

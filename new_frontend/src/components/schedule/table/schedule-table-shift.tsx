@@ -40,7 +40,7 @@ export default function ScheduleTableShift({
   breaches,
   showBreaches,
   selectedDisplay,
-  setSelectedCell,
+  handleCellSelection,
 }: {
   shifts: ShiftT[];
   workers: WorkerT[];
@@ -51,7 +51,7 @@ export default function ScheduleTableShift({
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
-  setSelectedCell: (selectedCell: SelectedCellT | null) => void;
+  handleCellSelection: (selectedCell: SelectedCellT) => void;
 }) {
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
@@ -89,16 +89,6 @@ export default function ScheduleTableShift({
                 }}
               >
                 <Box>
-                  <Typography
-                    sx={{
-                      fontSize: "0.75rem",
-                      color: "grey.500",
-                      textAlign: "center",
-                      backgroundColor: getCellBackgroundColor(date, schedule),
-                    }}
-                  >
-                    {date.format("MMM")}
-                  </Typography>
                   <Typography sx={{ fontSize: "0.8rem", textAlign: "center" }}>
                     {date.format("ddd")}
                   </Typography>
@@ -194,7 +184,7 @@ export default function ScheduleTableShift({
                               breaches={targetBs}
                               showBreaches={showBreaches}
                               selectedDisplay={selectedDisplay}
-                              setSelectedCell={setSelectedCell}
+                              handleCellSelection={handleCellSelection}
                             />
                           )
                         );

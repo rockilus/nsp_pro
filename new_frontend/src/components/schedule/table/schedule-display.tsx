@@ -1,8 +1,6 @@
 import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-// MUI
-import Box from "@mui/material/Box";
 // Components
 import ScheduleTableShift from "./schedule-table-shift";
 import ScheduleTableWorker from "./schedule-table-worker";
@@ -21,6 +19,8 @@ dayjs.extend(utc);
 
 export default function ScheduleDisplay({
   schedule,
+  startDate,
+  endDate,
   assignments,
   breaches,
   workers,
@@ -29,9 +29,11 @@ export default function ScheduleDisplay({
   selectedDisplay,
   showBreaches,
   CBsDisplayed,
-  setSelectedCell,
+  handleCellSelection,
 }: {
   schedule: ScheduleT;
+  startDate: dayjs.Dayjs;
+  endDate: dayjs.Dayjs;
   assignments: AssignmentT[];
   breaches: BreachT[];
   workers: WorkerT[];
@@ -40,31 +42,13 @@ export default function ScheduleDisplay({
   selectedDisplay: string;
   showBreaches: boolean;
   CBsDisplayed: string[];
-  setSelectedCell: (selectedCell: SelectedCellT | null) => void;
+  handleCellSelection: (selectedCell: SelectedCellT) => void;
 }) {
-  const getDatesFromAssignments = (
-    assignments: AssignmentT[]
-  ): dayjs.Dayjs[] => {
-    if (assignments.length === 0) {
-      return [];
-    }
-
-    let minDate = assignments[0].date;
-    let maxDate = assignments[0].date;
-
-    for (let assignment of assignments) {
-      if (assignment.date.isBefore(minDate)) {
-        minDate = assignment.date;
-      }
-      if (assignment.date.isAfter(maxDate)) {
-        maxDate = assignment.date;
-      }
-    }
-
+  const buildDates = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
     const dates = [];
-    let currentDate = minDate;
+    let currentDate = startDate;
 
-    while (currentDate.isBefore(maxDate)) {
+    while (currentDate.isBefore(endDate)) {
       dates.push(currentDate);
       currentDate = currentDate.add(1, "day");
     }
@@ -79,11 +63,11 @@ export default function ScheduleDisplay({
         requests={requests}
         assignments={assignments}
         schedule={schedule}
-        dates={getDatesFromAssignments(assignments)}
+        dates={buildDates(startDate, endDate)}
         breaches={breaches}
         showBreaches={showBreaches}
         selectedDisplay={selectedDisplay}
-        setSelectedCell={setSelectedCell}
+        handleCellSelection={handleCellSelection}
       />
     ),
     worker: (
@@ -93,27 +77,27 @@ export default function ScheduleDisplay({
         requests={requests}
         assignments={assignments}
         schedule={schedule}
-        dates={getDatesFromAssignments(assignments)}
+        dates={buildDates(startDate, endDate)}
         breaches={breaches}
         showBreaches={showBreaches}
         selectedDisplay={selectedDisplay}
-        setSelectedCell={setSelectedCell}
+        handleCellSelection={handleCellSelection}
       />
     ),
   };
 
-  return (
-    <Box
-      sx={{
-        border: "1px solid grey",
-        margin: 2,
-        marginLeft: 0,
-        overflowX: "auto",
-        borderRadius: 2,
-        backgroundColor: "none",
-      }}
-    >
-      {scheduleDisplays[selectedDisplay]}
-    </Box>
-  );
+  return scheduleDisplays[selectedDisplay];
+  // <Box
+  //   sx={{
+  //     border: "1px solid grey",
+  //     margin: 2,
+  //     marginLeft: 0,
+  //     overflowX: "auto",
+  //     borderRadius: 2,
+  //     backgroundColor: "none",
+  //   }}
+  // >
+  //   {scheduleDisplays[selectedDisplay]}
+  // </Box>
+  // );
 }

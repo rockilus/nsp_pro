@@ -115,36 +115,27 @@ export default function QuickStaffingTable({
   };
 
   return (
-    <Box
-      sx={{
-        border: "1px solid grey",
-        width: "400px",
-        overflowX: "auto",
-        borderRadius: 2,
-        backgroundColor: "none",
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignSelf: "flex-start",
+        width: "100%",
+        margin: "10px 10px 5px 5px",
       }}
     >
+      <span
+        style={{
+          fontSize: "1rem",
+          fontWeight: 600,
+          color: "#3C4043",
+        }}
+      >
+        {t("quick_staffing")}
+      </span>
       <TableContainer component={Paper} style={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead sx={{ backgroundColor: "grey.100" }}>
-            <TableRow>
-              <TableCell
-                colSpan={shifts.filter((s) => !s.isTimeOff).length + 2}
-                sx={{ paddingY: 0 }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    minHeight: 45,
-                  }}
-                >
-                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                    {t("quick_staffing")}
-                  </Typography>
-                </Box>
-              </TableCell>
-            </TableRow>
+          <TableHead>
             <TableRow>
               <TableCell
                 sx={{
@@ -153,26 +144,29 @@ export default function QuickStaffingTable({
                   padding: 0,
                 }}
               >
-                <Box
-                  sx={{
-                    width: "100px",
+                <div
+                  style={{
+                    width: "50px",
                     padding: "10px",
                   }}
-                ></Box>
+                ></div>
               </TableCell>
               {shifts
                 .filter((s) => !s.isTimeOff)
                 .map((shift, shiftIndex) => (
                   <TableCell key={shiftIndex} sx={{ padding: 0 }}>
-                    <Typography
-                      sx={{
-                        fontSize: "0.75rem",
-                        textAlign: "center",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {shift.name}
-                    </Typography>
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      <Typography
+                        sx={{
+                          fontSize: "0.75rem",
+                          textAlign: "center",
+                          fontWeight: "bold",
+                          writingMode: "vertical-rl",
+                        }}
+                      >
+                        {shift.name}
+                      </Typography>
+                    </div>
                   </TableCell>
                 ))}
               <TableCell>
@@ -199,9 +193,9 @@ export default function QuickStaffingTable({
                     padding: 0,
                   }}
                 >
-                  <Box
-                    sx={{
-                      width: "100px",
+                  <div
+                    style={{
+                      width: "50px",
                       padding: "10px",
                     }}
                   >
@@ -214,7 +208,7 @@ export default function QuickStaffingTable({
                     >
                       {worker.name}
                     </Typography>
-                  </Box>
+                  </div>
                 </TableCell>
                 {shifts
                   .filter((s) => !s.isTimeOff)
@@ -237,17 +231,18 @@ export default function QuickStaffingTable({
                           padding: 0,
                         }}
                       >
-                        <Box
-                          sx={{
+                        <div
+                          style={{
                             display: "flex",
                             flexDirection: "column",
                             justifyContent: "center",
                           }}
                         >
-                          <Box
-                            sx={{
+                          <div
+                            style={{
                               display: "flex",
                               justifyContent: "center",
+                              width: "50px",
                             }}
                           >
                             <Typography
@@ -266,18 +261,18 @@ export default function QuickStaffingTable({
                             >
                               {staffing}
                             </Typography>
-                          </Box>
+                          </div>
                           {quickStaffing ? (
-                            <Box
-                              sx={{
+                            <div
+                              style={{
                                 display: "flex",
                                 flexDirection: "column",
                                 // alignContent: "center",
                                 // justifyContent: "center",
                               }}
                             >
-                              <Box
-                                sx={{
+                              <div
+                                style={{
                                   display: "flex",
                                   flexDirection: "row",
                                   //   alignContent: "center",
@@ -328,9 +323,9 @@ export default function QuickStaffingTable({
                                 >
                                   <AddIcon sx={{ height: "10px" }} />
                                 </IconButton>
-                              </Box>
-                              <Box
-                                sx={{
+                              </div>
+                              <div
+                                style={{
                                   display: "flex",
                                   justifyContent: "center",
                                 }}
@@ -350,11 +345,11 @@ export default function QuickStaffingTable({
                                 >
                                   <ClearIcon sx={{ height: "10px" }} />
                                 </IconButton>
-                              </Box>
-                            </Box>
+                              </div>
+                            </div>
                           ) : (
-                            <Box
-                              sx={{
+                            <div
+                              style={{
                                 display: "flex",
                                 justifyContent: "center",
                               }}
@@ -375,9 +370,9 @@ export default function QuickStaffingTable({
                               >
                                 <AdjustIcon sx={{ height: "10px" }} />
                               </IconButton>
-                            </Box>
+                            </div>
                           )}
-                        </Box>
+                        </div>
                       </TableCell>
                     );
                   })}
@@ -407,9 +402,9 @@ export default function QuickStaffingTable({
                   padding: 0,
                 }}
               >
-                <Box
-                  sx={{
-                    width: "100px",
+                <div
+                  style={{
+                    width: "50px",
                     padding: "10px",
                   }}
                 >
@@ -422,7 +417,7 @@ export default function QuickStaffingTable({
                   >
                     {t("total")}
                   </Typography>
-                </Box>
+                </div>
               </TableCell>
               {shifts
                 .filter((s) => !s.isTimeOff)
@@ -471,6 +466,6 @@ export default function QuickStaffingTable({
           </TableBody>
         </Table>
       </TableContainer>
-    </Box>
+    </div>
   );
 }
