@@ -11,15 +11,17 @@ export default function TimeViewSelector({
   currentPeriodStart,
   currentPeriodEnd,
   selectedTimeView,
-  handleNextPeriod,
+  handleToday,
   handlePreviousPeriod,
+  handleNextPeriod,
   handleChangeSelectedTimeView,
 }: {
   currentPeriodStart: dayjs.Dayjs;
   currentPeriodEnd: dayjs.Dayjs;
   selectedTimeView: string;
-  handleNextPeriod: () => void;
+  handleToday: () => void;
   handlePreviousPeriod: () => void;
+  handleNextPeriod: () => void;
   handleChangeSelectedTimeView: (newSelectedTimeView: string) => void;
 }) {
   const [isHoveredToday, setIsHoveredToday] = useState<boolean>(false);
@@ -41,6 +43,7 @@ export default function TimeViewSelector({
   return (
     <div style={{ display: "flex", alignItems: "center", width: "430px" }}>
       <button
+        onClick={handleToday}
         style={{
           borderRadius: "4px",
           border: "1px solid #e5e7eb",

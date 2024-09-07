@@ -142,18 +142,22 @@ export default function ScheduleTab({
     );
   };
 
-  const handleNextPeriod = async () => {
+  const handleToday = async () => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const newPeriodStart = currentPeriodStart.add(
-      1,
-      selectedTimeView === "month" ? "month" : "week"
-    );
-    const newPeriodEnd = currentPeriodEnd.add(
-      1,
-      selectedTimeView === "month" ? "month" : "week"
-    );
+    const newPeriodStart =
+      selectedTimeView === "week"
+        ? dayjs.utc().startOf("isoWeek")
+        : selectedTimeView === "month"
+        ? dayjs.utc().startOf("month")
+        : dayjs.utc(); // Default to current time if neither "week" nor "month"
+    const newPeriodEnd =
+      selectedTimeView === "week"
+        ? dayjs.utc().endOf("isoWeek")
+        : selectedTimeView === "month"
+        ? dayjs.utc().endOf("month")
+        : dayjs.utc(); // Default to current time if neither "week" nor "month"
     setCurrentPeriodStart(newPeriodStart);
     setCurrentPeriodEnd(newPeriodEnd);
     const assigmentsNewPeriod = await getAssignments(
@@ -173,6 +177,28 @@ export default function ScheduleTab({
       selectedTimeView === "month" ? "month" : "week"
     );
     const newPeriodEnd = currentPeriodEnd.subtract(
+      1,
+      selectedTimeView === "month" ? "month" : "week"
+    );
+    setCurrentPeriodStart(newPeriodStart);
+    setCurrentPeriodEnd(newPeriodEnd);
+    const assigmentsNewPeriod = await getAssignments(
+      newPeriodStart,
+      newPeriodEnd,
+      selectedTeamId
+    );
+    setAssignments(assigmentsNewPeriod);
+  };
+
+  const handleNextPeriod = async () => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    const newPeriodStart = currentPeriodStart.add(
+      1,
+      selectedTimeView === "month" ? "month" : "week"
+    );
+    const newPeriodEnd = currentPeriodEnd.add(
       1,
       selectedTimeView === "month" ? "month" : "week"
     );
@@ -284,8 +310,9 @@ export default function ScheduleTab({
         selectedDisplay={selectedDisplay}
         showBreaches={showBreaches}
         schedule={schedule}
-        handleNextPeriod={handleNextPeriod}
+        handleToday={handleToday}
         handlePreviousPeriod={handlePreviousPeriod}
+        handleNextPeriod={handleNextPeriod}
         handleChangeSelectedTimeView={handleChangeSelectedTimeView}
         setSelectedDisplay={setSelectedDisplay}
         switchShowBreaches={() => setShowBreaches(!showBreaches)}

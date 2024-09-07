@@ -16,8 +16,9 @@ export default function ScheduleNavBar({
   selectedDisplay,
   showBreaches,
   schedule,
-  handleNextPeriod,
+  handleToday,
   handlePreviousPeriod,
+  handleNextPeriod,
   handleChangeSelectedTimeView,
   setSelectedDisplay,
   switchShowBreaches,
@@ -31,8 +32,9 @@ export default function ScheduleNavBar({
   selectedDisplay: string;
   showBreaches: boolean;
   schedule: ScheduleT | null;
-  handleNextPeriod: () => void;
+  handleToday: () => void;
   handlePreviousPeriod: () => void;
+  handleNextPeriod: () => void;
   handleChangeSelectedTimeView: (newSelectedTimeView: string) => void;
   setSelectedDisplay: (newSelectedDisplay: string) => void;
   switchShowBreaches: () => void;
@@ -55,8 +57,9 @@ export default function ScheduleNavBar({
         currentPeriodStart={currentPeriodStart}
         currentPeriodEnd={currentPeriodEnd}
         selectedTimeView={selectedTimeView}
-        handleNextPeriod={handleNextPeriod}
+        handleToday={handleToday}
         handlePreviousPeriod={handlePreviousPeriod}
+        handleNextPeriod={handleNextPeriod}
         handleChangeSelectedTimeView={handleChangeSelectedTimeView}
       />
       <DataViewSelector
