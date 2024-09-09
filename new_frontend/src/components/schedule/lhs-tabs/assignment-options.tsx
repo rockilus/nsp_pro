@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import React, { useState, useEffect } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -12,9 +12,9 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
 // Types
-import { ShiftT } from "../../types/shift";
-import { WorkerT } from "../../types/worker";
-import { AssignmentT, SelectedCellT } from "../../types/schedule";
+import { ShiftT } from "../../../types/shift";
+import { WorkerT } from "../../../types/worker";
+import { AssignmentT, SelectedCellT } from "../../../types/schedule";
 
 export default function AssignmentOptions({
   lng,

@@ -3,6 +3,9 @@
 import { useEffect } from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import "dayjs/locale/en-gb";
+import "dayjs/locale/fr";
+import "dayjs/locale/es";
 // Stores
 import { useTeamStore } from "../../../../providers/team-store-provider";
 // Actions
@@ -32,7 +35,10 @@ export default function Page({
   }, [selectedTeamId, setSelectedTeamId]);
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <LocalizationProvider
+      dateAdapter={AdapterDayjs}
+      adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
+    >
       <CampaignTab lng={lng} selectedTeamId={selectedTeamId} />
     </LocalizationProvider>
   );

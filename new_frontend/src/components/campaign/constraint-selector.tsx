@@ -15,6 +15,9 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 // Components
 import TableAddButton from "../buttons/table-add-button";
+// Styles
+import "./campaign-tab.css";
+import "./constraint-selector.css";
 // Types
 import { ScheduleT } from "../../types/schedule";
 import { ConstraintT } from "../../types/constraint";
@@ -66,105 +69,59 @@ export default function ConstraintSelector({
   };
 
   return (
-    <Box
-      sx={{
-        border: "1px solid grey",
-        margin: 2,
-        marginTop: 0,
-        overflowX: "auto",
-        borderRadius: 2,
-        backgroundColor: "none",
-      }}
-    >
-      <TableContainer component={Paper} style={{ width: "100%" }}>
+    <div className="constraint-selector-container">
+      <div className="title-container">
+        <span className="title">{t("constraints")}</span>
+        <div className="select-buttons-container">
+          <button className="select-button" onClick={handleAddAllConstraints}>
+            {t("select_all")}
+          </button>
+          <button
+            className="select-button unselect-button"
+            onClick={handleRemoveAllConstraints}
+          >
+            {t("select_none")}
+          </button>
+        </div>
+      </div>
+      <TableContainer>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead sx={{ backgroundColor: "grey.100" }}>
-            <TableRow>
-              <TableCell colSpan={2} sx={{ paddingY: 0 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      minHeight: 45,
-                    }}
-                  >
-                    <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      {t("constraints")}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      minHeight: 45,
-                    }}
-                  >
-                    <TableAddButton
-                      text={t("select_all")}
-                      handleClick={handleAddAllConstraints}
-                      showIcon={false}
-                    />
-                    <TableAddButton
-                      text={t("select_none")}
-                      handleClick={handleRemoveAllConstraints}
-                      showIcon={false}
-                    />
-                  </Box>
-                </Box>
-              </TableCell>
-            </TableRow>
-          </TableHead>
           <TableBody>
             {constraints.map((constraint) => (
               <TableRow
                 key={constraint.id}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
-                <TableCell component="th" scope="row">
-                  <Checkbox
-                    checked={schedule.constraintBuildIds.includes(
-                      constraint.id
-                    )}
-                    onChange={() =>
-                      handleUpdateScheduleConstraintIds(constraint.id)
-                    }
-                  />
+                <TableCell component="th" scope="row" sx={{ padding: 0 }}>
+                  <div className="check-cell-container">
+                    <Checkbox
+                      checked={schedule.constraintBuildIds.includes(
+                        constraint.id
+                      )}
+                      onChange={() =>
+                        handleUpdateScheduleConstraintIds(constraint.id)
+                      }
+                    />
+                  </div>
                 </TableCell>
-                <TableCell component="th" scope="row">
-                  <Typography
-                    variant="subtitle2"
-                    align="left"
-                    color={
+                <TableCell component="th" scope="row" sx={{ padding: 0 }}>
+                  <span
+                    className={
                       constraint.active
-                        ? ConstraintColorActiveText
-                        : ConstraintColorInactiveText
+                        ? "constraint-active"
+                        : "constraint-inactive"
                     }
                   >
                     {constraint.text}
-                  </Typography>
+                  </span>
                   {constraint.missingProperties.length > 0 && (
-                    <div
-                      className="field-name"
-                      style={{
-                        fontSize: "10px",
-                        fontStyle: "italic",
-                        color: ConstraintColorInactiveText,
-                      }}
-                    >
+                    <span className="constraint-missing-properties">
                       {"No " +
                         constraint.missingProperties
                           .flatMap((mp) => mp.propertyValues)
                           .join(", ") +
                         " property"}
-                    </div>
+                    </span>
                   )}
                 </TableCell>
               </TableRow>
@@ -172,6 +129,6 @@ export default function ConstraintSelector({
           </TableBody>
         </Table>
       </TableContainer>
-    </Box>
+    </div>
   );
 }

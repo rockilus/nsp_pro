@@ -116,6 +116,7 @@ export default function ScheduleWIP({
           sx={{
             backgroundColor: "#1976d2",
             height: "35px",
+            width: "65px",
             borderRadius: "4px",
             display: "flex",
             justifyContent: "center",
@@ -137,6 +138,7 @@ export default function ScheduleWIP({
             marginLeft: spaceBetween,
             marginRight: spaceBetween,
             height: "35px",
+            width: "65px",
           }}
         >
           {t("solve")}
