@@ -7,12 +7,12 @@ import { useTranslation } from "../../app/i18n/client";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 // Components
-import AssignmentOptions from "./assignment-options";
-import BreachList from "./breaches/breach-list";
-import QuickStaffingTable from "./quick-staffing";
+import AssignmentOptions from "./lhs-tabs/assignment-options";
+import BreachList from "./lhs-tabs/breach-list";
+import QuickStaffingTable from "./lhs-tabs/quick-staffing";
 import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
-import LHSTab from "./breaches/lhs-tab";
+import LHSTab from "./lhs-tabs/lhs-tab";
 // Actions
 import {
   getScheduleTabData,

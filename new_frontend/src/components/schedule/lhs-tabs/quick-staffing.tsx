@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import AdjustIcon from "@mui/icons-material/Adjust";
 import AddIcon from "@mui/icons-material/Add";
@@ -18,9 +18,13 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 // Types
-import { ShiftT } from "../../types/shift";
-import { WorkerT } from "../../types/worker";
-import { AssignmentT, ScheduleT, QuickStaffingT } from "../../types/schedule";
+import { ShiftT } from "../../../types/shift";
+import { WorkerT } from "../../../types/worker";
+import {
+  AssignmentT,
+  ScheduleT,
+  QuickStaffingT,
+} from "../../../types/schedule";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);

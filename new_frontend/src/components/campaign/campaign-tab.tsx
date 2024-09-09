@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "../../app/i18n/client";
 // MUI
-import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 // Components
 import CoverageSelector from "./coverage-selector";
 import ScheduleSelector from "./schedule-selector";
 import ConstraintSelector from "./constraint-selector";
+// Skeletons
+import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
 import {
   getCampaignTabData,
@@ -26,6 +29,9 @@ export default function CampaignTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
+  const { t } = useTranslation(lng, "campaign-page");
+
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [schedule, setSchedule] = useState<ScheduleT | null>(null);
   const [coverages, setCoverages] = useState<CoverageT[]>([]);
   const [constraints, setConstraints] = useState<ConstraintT[]>([]);
@@ -100,6 +106,7 @@ export default function CampaignTab({
 
   useEffect(() => {
     const fetchCampaignTabData = async () => {
+      setIsLoading(true);
       if (selectedTeamId) {
         const out: {
           schedule: ScheduleT;
@@ -115,26 +122,23 @@ export default function CampaignTab({
           setCoverageSelectors(coverageSelectors);
         }
       }
+      setIsLoading(false);
     };
+
     fetchCampaignTabData();
   }, [selectedTeamId]);
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-      }}
-    >
-      <ScheduleSelector
-        lng={lng}
-        schedule={schedule}
-        handleAddSchedule={handleAddSchedule}
-        handleUpdateSchedule={handleUpdateSchedule}
-      />
-      {schedule && (
-        <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
+    <div className="campaign-tab-container">
+      {isLoading ? (
+        <TablesSkeleton numTables={3} numInternalRows={3} />
+      ) : schedule ? (
+        <div>
+          <ScheduleSelector
+            lng={lng}
+            schedule={schedule}
+            handleUpdateSchedule={handleUpdateSchedule}
+          />
           <CoverageSelector
             lng={lng}
             schedule={schedule}
@@ -150,8 +154,22 @@ export default function CampaignTab({
             constraints={constraints}
             handleUpdateSchedule={handleUpdateSchedule}
           />
-        </Box>
+        </div>
+      ) : (
+        <Button
+          variant="contained"
+          onClick={handleAddSchedule}
+          sx={{
+            paddingLeft: 0.3,
+            paddingRight: 1,
+            margin: "8px",
+            height: "35px",
+            textTransform: "none",
+          }}
+        >
+          {t("start_new_campaign")}
+        </Button>
       )}
-    </Box>
+    </div>
   );
 }

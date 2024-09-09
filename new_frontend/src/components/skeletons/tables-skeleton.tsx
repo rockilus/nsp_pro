@@ -13,16 +13,10 @@ export default function TablesSkeleton({
   numInternalRows: number;
 }) {
   return (
-    <Box
-      sx={{
-        margin: 2,
-      }}
-    >
-      <Stack spacing="20px">
-        {Array.from({ length: numTables }).map((_, index) => (
-          <BaseTableSkeleton key={index} numInternalRows={numInternalRows} />
-        ))}
-      </Stack>
-    </Box>
+    <Stack spacing="20px">
+      {Array.from({ length: numTables }).map((_, index) => (
+        <BaseTableSkeleton key={index} numInternalRows={numInternalRows} />
+      ))}
+    </Stack>
   );
 }

@@ -40,6 +40,7 @@ export default function ScheduleDialogValidate({
           paddingRight: 0.2,
           textTransform: "none",
           height: "35px",
+          width: "65px",
         }}
       >
         {t("validate")}

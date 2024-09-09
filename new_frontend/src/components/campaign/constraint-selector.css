@@ -1,0 +1,47 @@
+.constraint-selector-container {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  width: 100%;
+  padding: 20px 0 0 0;
+}
+
+.title-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.select-button {
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  width: 100px;
+  height: 35px;
+  padding: 0 5px;
+  font-size: 0.9rem;
+  font-weight: 550;
+  color: #616161;
+  background-color: white;
+}
+
+.add-planner-button:hover {
+  background-color: #f0f0f0;
+}
+
+.unselect-button {
+  margin-left: 5px;
+}
+
+.constraint-active {
+  color: #000000;
+}
+
+.constraint-inactive {
+  color: #808080;
+}
+
+.constraint-missing-properties {
+  font-size: "10px";
+  font-style: "italic";
+  color: #808080;
+}

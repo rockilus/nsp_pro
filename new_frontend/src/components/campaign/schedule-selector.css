@@ -1,0 +1,54 @@
+.campaign-info-container {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  width: 100%;
+  padding: 0 0 20px 0;
+}
+
+.campaign-info {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.campaign-info-row {
+  display: flex;
+  flex-direction: row;
+  padding: 2px 0;
+  height: 45px;
+}
+
+.row-label-container {
+  display: flex;
+  align-items: center;
+  width: 150px;
+}
+
+.row-label {
+  color: #3c4043;
+  font-size: 0.9rem;
+}
+
+.row-value-container {
+  display: flex;
+  align-items: center;
+  width: 300px;
+}
+
+.custom-date-picker {
+  width: 160px;
+}
+
+.custom-date-picker .MuiOutlinedInput-input {
+  font-size: 0.875rem;
+  height: 40px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.status-chip {
+  height: 40px;
+  font-size: 0.75rem;
+  font-weight: 550;
+}

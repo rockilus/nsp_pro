@@ -3,19 +3,14 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
-import TableRowScheduleWIP from "../data-display/table-row-schedule-wip";
 import useStatusLabel from "../data-display/get-status-label";
-
+// Styles
+import "./campaign-tab.css";
+import "./schedule-selector.css";
 // Types
 import { ScheduleT } from "../../types/schedule";
 //Constants
@@ -26,140 +21,78 @@ dayjs.extend(utc);
 export default function ScheduleSelector({
   lng,
   schedule,
-  handleAddSchedule,
   handleUpdateSchedule,
 }: {
   lng: string;
-  schedule: ScheduleT | null;
-  handleAddSchedule: () => void;
+  schedule: ScheduleT;
   handleUpdateSchedule: (schedule: ScheduleT) => void;
 }) {
   const { t } = useTranslation(lng, "campaign-page");
   const getStatusLabel = useStatusLabel(lng); // Use the custom hook
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignSelf: "flex-start",
-        width: "100%",
-        border: "1px solid grey",
-        borderRadius: 2,
-        margin: 2,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          minHeight: 45,
-          paddingLeft: 1,
-          borderBottom: "1px solid lightgrey",
-          backgroundColor: "grey.100",
-          borderRadius: "8px 8px 0 0",
-        }}
-      >
-        <Typography
-          variant="subtitle1"
-          align="left"
-          sx={{ fontWeight: "bold" }}
-        >
-          {t("campaign")}
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-        }}
-      >
-        {schedule ? (
-          <TableContainer component={Paper} style={{ width: "100%" }}>
-            <Table aria-label="simple table">
-              <TableBody>
-                <TableRowScheduleWIP
-                  name={t("start")}
-                  content={
-                    <DatePicker
-                      value={schedule.startDate}
-                      onChange={(newValue) => {
-                        if (!newValue) return;
-                        handleUpdateSchedule({
-                          ...schedule,
-                          startDate: dayjs.utc(newValue),
-                        });
-                      }}
-                      sx={{
-                        width: "160px",
-                        "& .MuiOutlinedInput-input": {
-                          fontSize: "0.875rem",
-                          height: "40px",
-                          paddingY: 0,
-                        },
-                      }}
-                    />
-                  }
-                />
-                <TableRowScheduleWIP
-                  name={t("end")}
-                  content={
-                    <DatePicker
-                      value={schedule.endDate}
-                      onChange={(newValue) => {
-                        if (!newValue) return;
-                        handleUpdateSchedule({
-                          ...schedule,
-                          endDate: dayjs.utc(newValue),
-                        });
-                      }}
-                      sx={{
-                        width: "160px",
-                        "& .MuiOutlinedInput-input": {
-                          fontSize: "0.875rem",
-                          height: "40px",
-                          paddingY: 0,
-                        },
-                      }}
-                    />
-                  }
-                />
-                <TableRowScheduleWIP
-                  name={t("status")}
-                  content={
-                    <Chip
-                      label={getStatusLabel(schedule.solveStatus)}
-                      color={
-                        (SolveStatusColors[
-                          SolveStatusList.indexOf(schedule.solveStatus)
-                        ] as "default" | "success" | "error" | "warning") ||
-                        "default"
-                      }
-                      sx={{ height: "25px", fontSize: "0.75rem" }}
-                    />
-                  }
-                />
-              </TableBody>
-            </Table>
-          </TableContainer>
-        ) : (
-          <Button
-            variant="contained"
-            onClick={handleAddSchedule}
-            sx={{
-              paddingLeft: 0.3,
-              paddingRight: 1,
-              margin: "8px",
-              height: "35px",
-              // width: "100%",
-              textTransform: "none",
-            }}
-          >
-            {t("start_new_campaign")}
-          </Button>
-        )}
-      </Box>
-    </Box>
+    <div className="campaign-info-container">
+      <span className="title">{t("campaign")}</span>
+      <div className="campaign-info">
+        <div className="campaign-info-row">
+          <div className="row-label-container">
+            <span className="row-label">{t("start")}</span>
+          </div>
+          <div className="row-value-container">
+            {
+              <DatePicker
+                className="custom-date-picker"
+                value={schedule.startDate}
+                onChange={(newValue) => {
+                  if (!newValue) return;
+                  handleUpdateSchedule({
+                    ...schedule,
+                    startDate: dayjs.utc(newValue),
+                  });
+                }}
+              />
+            }
+          </div>
+        </div>
+        <div className="campaign-info-row">
+          <div className="row-label-container">
+            <span className="row-label">{t("end")}</span>
+          </div>
+          <div className="row-value-container">
+            {
+              <DatePicker
+                className="custom-date-picker"
+                value={schedule.endDate}
+                onChange={(newValue) => {
+                  if (!newValue) return;
+                  handleUpdateSchedule({
+                    ...schedule,
+                    endDate: dayjs.utc(newValue),
+                  });
+                }}
+              />
+            }
+          </div>
+        </div>
+        <div className="campaign-info-row">
+          <div className="row-label-container">
+            <span className="row-label">{t("status")}</span>
+          </div>
+          <div className="row-value-container">
+            {
+              <Chip
+                className="status-chip"
+                label={getStatusLabel(schedule.solveStatus)}
+                color={
+                  (SolveStatusColors[
+                    SolveStatusList.indexOf(schedule.solveStatus)
+                  ] as "default" | "success" | "error" | "warning") || "default"
+                }
+              />
+            }
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

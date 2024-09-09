@@ -3,13 +3,12 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
-import Box from "@mui/material/Box";
+import AddIcon from "@mui/icons-material/Add";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
-import Paper from "@mui/material/Paper";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -17,10 +16,10 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-// Components
-import TableAddButton from "../buttons/table-add-button";
+// Styles
+import "./campaign-tab.css";
+import "./coverage-selector.css";
 // Types
 import { CoverageSelectorT } from "../../types/campaign";
 import { CoverageT } from "../../types/coverage";
@@ -70,9 +69,10 @@ export default function CoverageSelector({
 
   const selectCoverage = (coverageSelector: CoverageSelectorT) => {
     return (
-      <Box sx={{ minWidth: 120 }}>
+      <div className="select-coverage-container">
         <FormControl fullWidth>
           <Select
+            className="custom-planner-select"
             labelId="demo-simple-select-label"
             id="demo-simple-select"
             value={
@@ -83,163 +83,141 @@ export default function CoverageSelector({
                 : ""
             }
             onChange={(e) => handleUpdateCoverageId(e, coverageSelector)}
+            sx={{ fontSize: "0.875rem" }}
           >
             {coverages.map((coverage) => (
-              <MenuItem key={coverage.id} value={coverage.id}>
+              <MenuItem
+                className="custom-planner-menu-item"
+                key={coverage.id}
+                value={coverage.id}
+                sx={{ fontSize: "0.875rem" }}
+              >
                 {coverage.name}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-      </Box>
+      </div>
     );
   };
 
   return (
-    <Box
-      sx={{
-        border: "1px solid grey",
-        margin: 2,
-        marginTop: 0,
-        overflowX: "auto",
-        borderRadius: 2,
-        backgroundColor: "none",
-      }}
-    >
-      <TableContainer component={Paper} style={{ width: "100%" }}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead sx={{ backgroundColor: "grey.100" }}>
-            <TableRow>
-              <TableCell colSpan={columns.length + 1} sx={{ paddingY: 0 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      minHeight: 45,
-                    }}
+    <div className="coverage-selector-container">
+      <span className="title">{t("planners")}</span>
+      <div className="coverage-selector-table-container">
+        <TableContainer sx={{ overflow: "hidden" }}>
+          <Table stickyHeader aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                {columns.map((column, colIndex) => (
+                  <TableCell
+                    key={colIndex}
+                    component="th"
+                    scope="row"
+                    sx={{ padding: 0 }}
                   >
-                    <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      {t("planners")}
-                    </Typography>
-                  </Box>
-                </Box>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              {columns.map((column, colIndex) => (
-                <TableCell
-                  key={colIndex}
-                  component="th"
-                  scope="row"
-                  sx={{ paddingY: 0, fontWeight: "bold" }}
-                >
-                  <Box
-                    sx={{
-                      minHeight: 45,
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    {column.label}
-                  </Box>
-                </TableCell>
-              ))}
-              <TableCell></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {coverageSelectors.map((coverageSelector) => (
-              <TableRow
-                key={coverageSelector.id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  <Checkbox
-                    checked={coverageSelector.fullPeriod}
-                    onChange={() =>
-                      handleUpdateCoverageSelector({
-                        ...coverageSelector,
-                        fullPeriod: !coverageSelector.fullPeriod,
-                      })
-                    }
-                  />
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  <DatePicker
-                    disabled={coverageSelector.fullPeriod}
-                    minDate={schedule.startDate}
-                    maxDate={coverageSelector.endDate}
-                    value={dayjs(coverageSelector.startDate)}
-                    onChange={(newValue) => {
-                      if (!newValue) return;
-                      handleUpdateCoverageSelector({
-                        ...coverageSelector,
-                        startDate: dayjs.utc(newValue),
-                      });
-                    }}
-                  />
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  <DatePicker
-                    disabled={coverageSelector.fullPeriod}
-                    minDate={coverageSelector.startDate}
-                    maxDate={schedule.endDate}
-                    value={dayjs(coverageSelector.endDate)}
-                    onChange={(newValue: dayjs.Dayjs | null) => {
-                      if (!newValue) return;
-                      handleUpdateCoverageSelector({
-                        ...coverageSelector,
-                        endDate: dayjs.utc(newValue),
-                      });
-                    }}
-                  />
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {selectCoverage(coverageSelector)}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  <Box sx={{ display: "flex" }}>
-                    <Button
-                      onClick={() =>
-                        handleDeleteCoverageSelector(coverageSelector.id)
-                      }
-                    >
-                      <DeleteIcon />
-                    </Button>
-                  </Box>
-                </TableCell>
+                    <div className="column-label-container">
+                      <span className="column-label">{column.label}</span>
+                    </div>
+                  </TableCell>
+                ))}
+                <TableCell></TableCell>
               </TableRow>
-            ))}
-            <TableRow sx={{ backgroundColor: "grey.100" }}>
-              <TableCell colSpan={columns.length + 1} sx={{ paddingY: 0 }}>
-                <Box display="flex" alignItems="center" minHeight={45}>
-                  <TableAddButton
-                    text={t("planner")}
-                    handleClick={() =>
-                      handleAddCoverageSelector({
-                        id: "",
-                        scheduleId: schedule.id,
-                        fullPeriod: true,
-                        startDate: schedule.startDate,
-                        endDate: schedule.endDate,
-                        coverageId: "",
-                      })
-                    }
-                  />
-                </Box>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+            </TableHead>
+            <TableBody>
+              {coverageSelectors.map((coverageSelector) => (
+                <TableRow
+                  key={coverageSelector.id}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row" sx={{ padding: 0 }}>
+                    <div className="cell-content-container">
+                      <Checkbox
+                        checked={coverageSelector.fullPeriod}
+                        onChange={() =>
+                          handleUpdateCoverageSelector({
+                            ...coverageSelector,
+                            fullPeriod: !coverageSelector.fullPeriod,
+                          })
+                        }
+                        sx={{ padding: 0 }}
+                      />
+                    </div>
+                  </TableCell>
+                  <TableCell component="th" scope="row" sx={{ padding: 0 }}>
+                    <DatePicker
+                      className="custom-date-picker"
+                      disabled={coverageSelector.fullPeriod}
+                      minDate={schedule.startDate}
+                      maxDate={coverageSelector.endDate}
+                      value={dayjs(coverageSelector.startDate)}
+                      onChange={(newValue) => {
+                        if (!newValue) return;
+                        handleUpdateCoverageSelector({
+                          ...coverageSelector,
+                          startDate: dayjs.utc(newValue),
+                        });
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell component="th" scope="row" sx={{ padding: 0 }}>
+                    <div className="cell-content-container">
+                      <DatePicker
+                        className="custom-date-picker"
+                        disabled={coverageSelector.fullPeriod}
+                        minDate={coverageSelector.startDate}
+                        maxDate={schedule.endDate}
+                        value={dayjs(coverageSelector.endDate)}
+                        onChange={(newValue: dayjs.Dayjs | null) => {
+                          if (!newValue) return;
+                          handleUpdateCoverageSelector({
+                            ...coverageSelector,
+                            endDate: dayjs.utc(newValue),
+                          });
+                        }}
+                      />{" "}
+                    </div>
+                  </TableCell>
+                  <TableCell component="th" scope="row" sx={{ padding: 0 }}>
+                    <div className="cell-content-container">
+                      {selectCoverage(coverageSelector)}
+                    </div>
+                  </TableCell>
+                  <TableCell component="th" scope="row" sx={{ padding: 0 }}>
+                    <div className="cell-content-container">
+                      <Button
+                        onClick={() =>
+                          handleDeleteCoverageSelector(coverageSelector.id)
+                        }
+                      >
+                        <DeleteIcon />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </div>
+      <div>
+        <button
+          className="add-planner-button"
+          onClick={() =>
+            handleAddCoverageSelector({
+              id: "",
+              scheduleId: schedule.id,
+              fullPeriod: true,
+              startDate: schedule.startDate,
+              endDate: schedule.endDate,
+              coverageId: "",
+            })
+          }
+        >
+          <AddIcon sx={{ height: "17px" }} />
+          {t("planner")}
+        </button>
+      </div>
+    </div>
   );
 }
