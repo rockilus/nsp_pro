@@ -1,10 +1,11 @@
-const apiBasePath = "/auth/";
+import { API_URL, CLIENT_URL } from "../app/lib/env";
 
-export const websiteDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
+const apiBasePath = "/auth/";
 
 export const appInfo = {
   appName: "nsp_pro",
-  websiteDomain: websiteDomain as string,
-  apiDomain: process.env.NEXT_PUBLIC_API_URL as string,
+  // websiteDomain: CLIENT_URL as string,
+  websiteDomain: process.env.NEXT_PUBLIC_CLIENT_URL as string,
+  apiDomain: API_URL as string,
   apiBasePath,
 };

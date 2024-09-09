@@ -16,9 +16,9 @@ services:
       - "7766:7000"
 
 
-  new-frontend:
+  frontend:
     build: 
-      context: "./new_frontend"
+      context: "./frontend"
       args:
         API_URL: "http://localhost:4000"
         CLIENT_URL: "http://localhost:3000"
