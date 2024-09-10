@@ -125,13 +125,7 @@ export default function WeeklyCalendar({
   }, [coverage]);
 
   return (
-    <div
-      ref={tableRef}
-      style={{
-        width: "100%",
-        // overflow: "hidden"
-      }}
-    >
+    <div className="weekly-calendar-container" ref={tableRef}>
       {/* Header */}
       <div
         style={{
@@ -164,7 +158,7 @@ export default function WeeklyCalendar({
                   fontWeight: "500",
                 }}
               >
-                {day.slice(0, 3)}
+                <span className="day-header">{day.slice(0, 3)}</span>
               </div>
             ))}
           </div>
@@ -218,7 +212,7 @@ export default function WeeklyCalendar({
           display: "flex",
           flexDirection: "row",
           overflow: "auto",
-          height: "calc(100vh - 150px)",
+          height: "calc(100vh - 130px)",
         }}
       >
         {/* Times column */}

@@ -1,15 +1,15 @@
 import React from "react";
 import { useTranslation } from "../../app/i18n/client";
-// MUI
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 // Components
 import CoverageList from "./coverage-list";
 import TableAddButton from "../buttons/table-add-button";
+// Styles
+import "../../styles/text-styles.css";
+import "./coverage-selector.css";
 // Types
 import { CoverageT } from "../../types/coverage";
 
-export default function CoverageOptions({
+export default function CoverageSelector({
   lng,
   coverages,
   selectedCoverage,
@@ -33,35 +33,8 @@ export default function CoverageOptions({
   const { t } = useTranslation(lng, "coverage-page");
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignSelf: "flex-start",
-        backgroundColor: "grey.100",
-        minWidth: 200,
-        border: "1px solid grey",
-        borderRadius: 2,
-        margin: 2,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          minHeight: 45,
-          paddingLeft: 1,
-          borderBottom: "1px solid lightgrey",
-        }}
-      >
-        <Typography
-          variant="subtitle1"
-          align="left"
-          sx={{ fontWeight: "bold" }}
-        >
-          {t("weekly_planners")}
-        </Typography>
-      </Box>
+    <div className="coverage-selector-container">
+      <span className="title">{t("weekly_planners")}</span>
       <CoverageList
         coverages={coverages}
         selectedCoverage={selectedCoverage}
@@ -71,17 +44,7 @@ export default function CoverageOptions({
         handleUpdateCoverage={handleUpdateCoverage}
         handleDeleteCoverage={handleDeleteCoverage}
       />
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          minHeight: 45,
-          paddingLeft: 1,
-          borderTop: "1px solid lightgrey",
-        }}
-      >
-        <TableAddButton text={t("planner")} handleClick={handleAddCoverage} />
-      </Box>
-    </Box>
+      <TableAddButton text={t("planner")} handleClick={handleAddCoverage} />
+    </div>
   );
 }
