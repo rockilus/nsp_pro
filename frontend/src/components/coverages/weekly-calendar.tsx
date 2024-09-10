@@ -235,7 +235,7 @@ export default function WeeklyCalendar({
                   fontSize: 10,
                 }}
               >
-                {time.format("HH:mm")}
+                {time.isSame(time.startOf("day")) ? null : time.format("HH:mm")}
               </span>
             </div>
           ))}
