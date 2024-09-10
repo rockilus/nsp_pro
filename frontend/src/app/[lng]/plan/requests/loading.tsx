@@ -1,5 +1,12 @@
+// Skeletons
 import TablesSkeleton from "../../../../components/skeletons/tables-skeleton";
+// Styles
+import "../../../../styles/tab-container-styles.css";
 
 export default function Loading() {
-  return <TablesSkeleton numTables={1} numInternalRows={3} />;
+  return (
+    <div className="tab-container">
+      <TablesSkeleton numTables={1} numInternalRows={3} />;
+    </div>
+  );
 }

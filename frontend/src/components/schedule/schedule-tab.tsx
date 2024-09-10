@@ -13,6 +13,8 @@ import QuickStaffingTable from "./lhs-tabs/quick-staffing";
 import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
+// Skeletons
+import ScheduleSkeleton from "../skeletons/schedule-skeleton";
 // Actions
 import {
   getScheduleTabData,
@@ -21,6 +23,8 @@ import {
   updateSchedule,
 } from "../../app/lib/schedule";
 import { getAssignments, updateAssignment } from "../../app/lib/assignment";
+// Styles
+import "../../styles/tab-container-styles.css";
 // Types
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
@@ -31,6 +35,7 @@ import {
   SelectedCellT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
+import { set } from "zod";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -44,6 +49,7 @@ export default function ScheduleTab({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [requests, setRequests] = useState<RequestT[]>([]);
@@ -240,6 +246,7 @@ export default function ScheduleTab({
 
   useEffect(() => {
     const fetchScheduleTabData = async () => {
+      setIsLoading(true);
       if (selectedTeamId) {
         const {
           assignments: fetchedAssignments,
@@ -259,6 +266,7 @@ export default function ScheduleTab({
         setSchedule(fetchedSchedule);
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
+        setIsLoading(false);
       }
     };
     fetchScheduleTabData();
@@ -301,65 +309,71 @@ export default function ScheduleTab({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <ScheduleNavBar
-        lng={lng}
-        currentPeriodStart={currentPeriodStart}
-        currentPeriodEnd={currentPeriodEnd}
-        selectedTimeView={selectedTimeView}
-        selectedDisplay={selectedDisplay}
-        showBreaches={showBreaches}
-        schedule={schedule}
-        handleToday={handleToday}
-        handlePreviousPeriod={handlePreviousPeriod}
-        handleNextPeriod={handleNextPeriod}
-        handleChangeSelectedTimeView={handleChangeSelectedTimeView}
-        setSelectedDisplay={setSelectedDisplay}
-        switchShowBreaches={() => setShowBreaches(!showBreaches)}
-        handleSolveSchedule={handleSolveSchedule}
-        handleValidateSchedule={handleValidateSchedule}
-      />
-      <div style={{ display: "flex", flexDirection: "row" }}>
-        <LHSTab
-          tabContent={lhsTabContent}
-          selectedTab={selectedTab}
-          toggleTab={toggleTab}
-        />
-        {assignments.length === 0 || !schedule ? (
-          <Box
-            sx={{
-              margin: 2,
-              marginLeft: 0,
-              overflowX: "auto",
-              backgroundColor: "none",
-              width: "100%",
-            }}
-          >
-            <Typography
-              variant="body1"
-              color="textSecondary"
-              sx={{ fontStyle: "italic" }}
-            >
-              {t("no_schedule_text")}
-            </Typography>
-          </Box>
-        ) : (
-          <ScheduleDisplay
-            schedule={schedule as ScheduleT}
-            startDate={currentPeriodStart}
-            endDate={currentPeriodEnd}
-            assignments={assignments}
-            breaches={breaches}
-            workers={workers}
-            shifts={shifts}
-            requests={requests}
+    <div className="tab-container-ultrawide">
+      {isLoading ? (
+        <ScheduleSkeleton />
+      ) : (
+        <div>
+          <ScheduleNavBar
+            lng={lng}
+            currentPeriodStart={currentPeriodStart}
+            currentPeriodEnd={currentPeriodEnd}
+            selectedTimeView={selectedTimeView}
             selectedDisplay={selectedDisplay}
             showBreaches={showBreaches}
-            CBsDisplayed={CBsDisplayed}
-            handleCellSelection={handleCellSelection}
+            schedule={schedule}
+            handleToday={handleToday}
+            handlePreviousPeriod={handlePreviousPeriod}
+            handleNextPeriod={handleNextPeriod}
+            handleChangeSelectedTimeView={handleChangeSelectedTimeView}
+            setSelectedDisplay={setSelectedDisplay}
+            switchShowBreaches={() => setShowBreaches(!showBreaches)}
+            handleSolveSchedule={handleSolveSchedule}
+            handleValidateSchedule={handleValidateSchedule}
           />
-        )}
-      </div>
+          <div style={{ display: "flex", flexDirection: "row" }}>
+            <LHSTab
+              tabContent={lhsTabContent}
+              selectedTab={selectedTab}
+              toggleTab={toggleTab}
+            />
+            {assignments.length === 0 || !schedule ? (
+              <Box
+                sx={{
+                  margin: 2,
+                  marginLeft: 0,
+                  overflowX: "auto",
+                  backgroundColor: "none",
+                  width: "100%",
+                }}
+              >
+                <Typography
+                  variant="body1"
+                  color="textSecondary"
+                  sx={{ fontStyle: "italic" }}
+                >
+                  {t("no_schedule_text")}
+                </Typography>
+              </Box>
+            ) : (
+              <ScheduleDisplay
+                schedule={schedule as ScheduleT}
+                startDate={currentPeriodStart}
+                endDate={currentPeriodEnd}
+                assignments={assignments}
+                breaches={breaches}
+                workers={workers}
+                shifts={shifts}
+                requests={requests}
+                selectedDisplay={selectedDisplay}
+                showBreaches={showBreaches}
+                CBsDisplayed={CBsDisplayed}
+                handleCellSelection={handleCellSelection}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

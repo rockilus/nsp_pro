@@ -1,5 +1,12 @@
+// Skeletons
 import CoveragesSkeleton from "../../../../components/skeletons/coverages-skeleton";
+// Styles
+import "../../../../styles/tab-container-styles.css";
 
 export default function Loading() {
-  return <CoveragesSkeleton />;
+  return (
+    <div className="tab-container-ultrawide">
+      <CoveragesSkeleton />
+    </div>
+  );
 }
