@@ -6,14 +6,12 @@ import { useTranslation } from "../../app/i18n/client";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
 // Components
 import NewShiftDimensionForm from "./new-shift-dimension-form";
 import PopoverRHS from "../inputs/popover-rhs";
@@ -21,6 +19,9 @@ import ShiftDimensionCell from "./shift-dimension-cell";
 import ShiftFieldCell from "./shift-field-cell";
 import ShiftPropertyCell from "./shift-property-cell";
 import TableAddButton from "../buttons/table-add-button";
+// Styles
+import "../../styles/text-styles.css";
+import "../../styles/table-styles.css";
 // Types
 import { ShiftDimensionT, ShiftT, ShiftPropertyT } from "../../types/shift";
 
@@ -79,56 +80,35 @@ export default function ShiftTable({
   };
 
   return (
-    <>
-      <TableContainer component={Paper} style={{ width: "100%" }}>
+    <div>
+      <div className="title-container">
+        <span className="title">
+          {" "}
+          {isRest ? t("rest_shifts") : t("shifts")}
+        </span>
+        <PopoverRHS
+          title={t("new_property")}
+          buttonContent={<TableAddButton text={t("property")} />}
+          content={
+            <NewShiftDimensionForm
+              lng={lng}
+              selectedTeamId={selectedTeamId}
+              isRest={isRest}
+              setOpenParent={setPopoverRhsOpen}
+              handleAddShiftDimension={handleAddShiftDimension}
+            />
+          }
+          open={popoverRhsOpen}
+          setOpen={setPopoverRhsOpen}
+        />
+      </div>
+      <TableContainer style={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead sx={{ backgroundColor: "grey.100" }}>
-            <TableRow>
-              <TableCell
-                colSpan={defaultShiftFields.length + shiftDimensions.length + 1}
-                sx={{ paddingY: 0 }}
-              >
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  width="100%"
-                  alignItems="center"
-                >
-                  <Box display="flex" alignItems="center" minHeight={45}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      {isRest ? t("rest_shifts") : t("shifts")}
-                    </Typography>
-                  </Box>
-                  <PopoverRHS
-                    title={t("new_property")}
-                    buttonContent={<TableAddButton text={t("property")} />}
-                    content={
-                      <NewShiftDimensionForm
-                        lng={lng}
-                        selectedTeamId={selectedTeamId}
-                        isRest={isRest}
-                        setOpenParent={setPopoverRhsOpen}
-                        handleAddShiftDimension={handleAddShiftDimension}
-                      />
-                    }
-                    open={popoverRhsOpen}
-                    setOpen={setPopoverRhsOpen}
-                  />
-                </Box>
-              </TableCell>
-            </TableRow>
+          <TableHead>
             <TableRow>
               {defaultShiftFields.map((field, index) => (
                 <TableCell key={index} sx={{ paddingY: 0, fontWeight: "bold" }}>
-                  <Box
-                    sx={{
-                      minHeight: 45,
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    {field.label}
-                  </Box>
+                  <span className="table-header-default">{field.label}</span>
                 </TableCell>
               ))}
               {shiftDimensions.map((sd, sdIndex) => (
@@ -196,24 +176,15 @@ export default function ShiftTable({
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow sx={{ backgroundColor: "grey.100" }}>
-              <TableCell
-                colSpan={defaultShiftFields.length + shiftDimensions.length + 1}
-                sx={{ paddingY: 0 }}
-              >
-                <Box
-                  sx={{ display: "flex", alignItems: "center", minHeight: 45 }}
-                >
-                  <TableAddButton
-                    text={isRest ? t("rest") : t("shift")}
-                    handleClick={() => handleAddShift(isRest)}
-                  />
-                </Box>
-              </TableCell>
-            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
-    </>
+      <div className="add-row-button-container">
+        <TableAddButton
+          text={isRest ? t("rest") : t("shift")}
+          handleClick={() => handleAddShift(isRest)}
+        />
+      </div>
+    </div>
   );
 }

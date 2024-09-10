@@ -31,3 +31,9 @@
     padding: 20px 5%; /* Padding: 15% on each side for wider screens */
   }
 }
+
+.divider {
+  height: 1px;
+  margin: 20px 0;
+  width: 100%;
+}

@@ -141,6 +141,7 @@ export default function CampaignTab({
             schedule={schedule}
             handleUpdateSchedule={handleUpdateSchedule}
           />
+          <div className="divider" />
           <CoverageSelector
             lng={lng}
             schedule={schedule}
@@ -150,6 +151,7 @@ export default function CampaignTab({
             handleUpdateCoverageSelector={handleUpdateCoverageSelector}
             handleDeleteCoverageSelector={handleDeleteCoverageSelector}
           />
+          <div className="divider" />
           <ConstraintSelector
             lng={lng}
             schedule={schedule}
