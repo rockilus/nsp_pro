@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "../../app/i18n/client";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-// MUI
-import Box from "@mui/material/Box";
 // Components
 import ShiftTable from "./shift-table";
 // Skeletons

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "../../app/i18n/client";
-// MUI
-import Box from "@mui/material/Box";
 // Components
-import CoverageOptions from "./coverage-options";
+import CoverageSelector from "./coverage-selector";
 import WeeklyCalendar from "./weekly-calendar";
+// Skeletons
+import CoveragesSkeleton from "../skeletons/coverages-skeleton";
 // Actions
 import {
   getCoveragesTabData,
@@ -15,6 +15,8 @@ import {
   updateShiftDemand,
   deleteShiftDemand,
 } from "../../app/lib/coverage";
+// Styles
+import "../../styles/tab-container-styles.css";
 // Types
 import { CoverageT, ShiftDemandT } from "../../types/coverage";
 import { ShiftT } from "../../types/shift";
@@ -28,6 +30,7 @@ export default function CoverageTab({
 }) {
   const { t } = useTranslation(lng, "coverage-page");
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [coverages, setCoverages] = useState<CoverageT[]>([]);
 
@@ -189,6 +192,7 @@ export default function CoverageTab({
 
   useEffect(() => {
     const fetchCoveragesTabData = async () => {
+      setIsLoading(true);
       if (selectedTeamId) {
         const {
           shifts: fetchedShifts,
@@ -197,41 +201,43 @@ export default function CoverageTab({
           await getCoveragesTabData(selectedTeamId);
         setShifts(fetchedShifts);
         setCoverages(fetchedCoverages);
+        if (fetchedCoverages.length > 0) {
+          setSelectedCoverage(fetchedCoverages[0]);
+        }
+        setIsLoading(false);
       }
     };
     fetchCoveragesTabData();
   }, [selectedTeamId]);
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        // height: "100%",
-        // overflow:""
-      }}
-    >
-      <Box sx={{ display: "flex", flexDirection: "row" }}>
-        <CoverageOptions
-          lng={lng}
-          coverages={coverages}
-          selectedCoverage={selectedCoverage}
-          editingName={editingName}
-          handleSelectCoverage={handleSelectCoverage}
-          setEditingName={setEditingName}
-          handleAddCoverage={handleAddCoverage}
-          handleUpdateCoverage={handleUpdateCoverage}
-          handleDeleteCoverage={handleDeleteCoverage}
-        />
-        <WeeklyCalendar
-          lng={lng}
-          coverage={selectedCoverage}
-          shifts={shifts}
-          handleAddShiftDemand={handleAddShiftDemand}
-          handleUpdateShiftDemand={handleUpdateShiftDemand}
-          handleDeleteShiftDemand={handleDeleteShiftDemand}
-        />
-      </Box>
-    </Box>
+    <div className="tab-container-ultrawide">
+      {isLoading ? (
+        <CoveragesSkeleton />
+      ) : (
+        <div className="tab-container-row">
+          <CoverageSelector
+            lng={lng}
+            coverages={coverages}
+            selectedCoverage={selectedCoverage}
+            editingName={editingName}
+            handleSelectCoverage={handleSelectCoverage}
+            setEditingName={setEditingName}
+            handleAddCoverage={handleAddCoverage}
+            handleUpdateCoverage={handleUpdateCoverage}
+            handleDeleteCoverage={handleDeleteCoverage}
+          />
+          <div className="divider-vertical" />
+          <WeeklyCalendar
+            lng={lng}
+            coverage={selectedCoverage}
+            shifts={shifts}
+            handleAddShiftDemand={handleAddShiftDemand}
+            handleUpdateShiftDemand={handleUpdateShiftDemand}
+            handleDeleteShiftDemand={handleDeleteShiftDemand}
+          />
+        </div>
+      )}
+    </div>
   );
 }
