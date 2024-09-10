@@ -18,8 +18,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Styles
-import "./campaign-tab.css";
 import "./coverage-selector.css";
+import "../../styles/text-styles.css";
 // Types
 import { CoverageSelectorT } from "../../types/campaign";
 import { CoverageT } from "../../types/coverage";

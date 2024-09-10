@@ -1,0 +1,41 @@
+.title-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.table-container {
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.table-header-default {
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.table-header-custom-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-header-custom {
+  margin: 0;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.43;
+  letter-spacing: 0.01071em;
+  text-align: left;
+  color: #3c4043;
+  font-weight: 700;
+}
+
+.add-row-button-container {
+  margin-top: 10px;
+}

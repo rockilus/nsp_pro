@@ -16,6 +16,8 @@ import {
   deleteCoverageSelector,
 } from "../../app/lib/campaign";
 import { addSchedule, updateSchedule } from "../../app/lib/schedule";
+// Styles
+import "../../styles/tab-container-styles.css";
 // Types
 import { CoverageSelectorT } from "../../types/campaign";
 import { CoverageT } from "../../types/coverage";
@@ -129,7 +131,7 @@ export default function CampaignTab({
   }, [selectedTeamId]);
 
   return (
-    <div className="campaign-tab-container">
+    <div className="tab-container">
       {isLoading ? (
         <TablesSkeleton numTables={3} numInternalRows={3} />
       ) : schedule ? (

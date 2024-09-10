@@ -3,29 +3,18 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
-import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
-import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
-// Components
-import TableAddButton from "../buttons/table-add-button";
 // Styles
-import "./campaign-tab.css";
 import "./constraint-selector.css";
+import "../../styles/text-styles.css";
 // Types
 import { ScheduleT } from "../../types/schedule";
 import { ConstraintT } from "../../types/constraint";
-// Constants
-import {
-  ConstraintColorActiveText,
-  ConstraintColorInactiveText,
-} from "../../constants/constants";
 
 dayjs.extend(utc);
 

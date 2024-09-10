@@ -4,14 +4,12 @@ import { useTranslation } from "../../app/i18n/client";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
 // Components
 import NewWorkerDimensionForm from "./new-worker-dimension-form";
 import PopoverRHS from "../inputs/popover-rhs";
@@ -19,6 +17,9 @@ import TableAddButton from "../buttons/table-add-button";
 import WorkerPropertyCell from "./worker-property-cell";
 import WorkerDimensionCell from "./worker-dimension-cell";
 import WorkerFieldCell from "./worker-field-cell";
+// Styles
+import "../../styles/text-styles.css";
+import "../../styles/table-styles.css";
 // Types
 import { WorkerDimensionT, WorkerT, WorkerPropertyT } from "../../types/worker";
 
@@ -73,65 +74,34 @@ export default function WorkerTable({
   };
 
   return (
-    <>
-      <TableContainer component={Paper} sx={{ width: "100%" }}>
+    <div>
+      <div className="title-container">
+        <span className="title">{t("workers")}</span>
+        <PopoverRHS
+          title={t("new_property")}
+          buttonContent={<TableAddButton text={t("property")} />}
+          content={
+            <NewWorkerDimensionForm
+              lng={lng}
+              selectedTeamId={selectedTeamId}
+              setOpenParent={setPopoverRhsOpen}
+              handleAddWorkerDimension={handleAddWorkerDimension}
+            />
+          }
+          open={popoverRhsOpen}
+          setOpen={setPopoverRhsOpen}
+        />
+      </div>
+      {/* <div className="table-container"> */}
+      <TableContainer sx={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead sx={{ backgroundColor: "grey.100" }}>
-            <TableRow>
-              <TableCell
-                colSpan={
-                  defaultWorkerFields.length + workerDimensions.length + 1
-                }
-                sx={{ paddingY: 0 }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      minHeight: 45,
-                    }}
-                  >
-                    <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                      {t("workers")}
-                    </Typography>
-                  </Box>
-                  <PopoverRHS
-                    title={t("new_property")}
-                    buttonContent={<TableAddButton text={t("property")} />}
-                    content={
-                      <NewWorkerDimensionForm
-                        lng={lng}
-                        selectedTeamId={selectedTeamId}
-                        setOpenParent={setPopoverRhsOpen}
-                        handleAddWorkerDimension={handleAddWorkerDimension}
-                      />
-                    }
-                    open={popoverRhsOpen}
-                    setOpen={setPopoverRhsOpen}
-                  />
-                </Box>
-              </TableCell>
-            </TableRow>
+          <TableHead
+          // sx={{ backgroundColor: "#E8F0FE" }}
+          >
             <TableRow>
               {defaultWorkerFields.map((field, index) => (
-                <TableCell key={index} sx={{ paddingY: 0, fontWeight: "bold" }}>
-                  <Box
-                    sx={{
-                      minHeight: 45,
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    {field.label}
-                  </Box>
+                <TableCell key={index} sx={{ paddingY: 0 }}>
+                  <span className="table-header-default">{field.label}</span>
                 </TableCell>
               ))}
               {workerDimensions.map((wd, wdIndex) => (
@@ -197,24 +167,13 @@ export default function WorkerTable({
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow sx={{ backgroundColor: "grey.100" }}>
-              <TableCell
-                colSpan={
-                  defaultWorkerFields.length + workerDimensions.length + 1
-                }
-                sx={{ paddingY: 0 }}
-              >
-                <Box display="flex" alignItems="center" minHeight={45}>
-                  <TableAddButton
-                    text={t("worker")}
-                    handleClick={handleAddWorker}
-                  />
-                </Box>
-              </TableCell>
-            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
-    </>
+      {/* </div> */}
+      <div className="add-row-button-container">
+        <TableAddButton text={t("worker")} handleClick={handleAddWorker} />
+      </div>
+    </div>
   );
 }
