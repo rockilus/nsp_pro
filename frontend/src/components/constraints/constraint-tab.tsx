@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-// MUI
-import Box from "@mui/material/Box";
 // Components
 import ConstraintList from "./constraint-list";
 import NewConstraint from "./new-constraint";

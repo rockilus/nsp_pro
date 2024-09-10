@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
-import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 // Components
 import ConstraintListItem from "./constraint-list-item";

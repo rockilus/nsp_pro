@@ -1,8 +1,6 @@
 import React from "react";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -11,6 +9,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Components
 import RequestTableRow from "./request-table-row";
+// Styles
+import "../../styles/table-styles.css";
 // Types
 import { WorkerT } from "../../types/worker";
 import { RequestT } from "../../types/request";
@@ -42,46 +42,33 @@ export default function RequestTable({
   ];
 
   return (
-    <>
-      <TableContainer
-        component={Paper}
-        sx={{ width: "100%", borderRadius: "0 0 8px 8px" }}
-      >
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead sx={{ backgroundColor: "grey.100" }}>
-            <TableRow>
-              {requestTableFields.map((field, index) => (
-                <TableCell key={index} sx={{ paddingY: 0, fontWeight: "bold" }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      minHeight: 45,
-                    }}
-                  >
-                    {field.label}
-                  </Box>
-                </TableCell>
-              ))}
-              <TableCell sx={{ padding: 0, width: 110 }}></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {requests.map((request, requestIndex) => (
-              <RequestTableRow
-                key={requestIndex}
-                lng={lng}
-                request={request}
-                workers={workers}
-                shifts={shifts}
-                requestTableFields={requestTableFields}
-                handleUpdateRequest={handleUpdateRequest}
-                handleDeleteRequest={handleDeleteRequest}
-              />
+    <TableContainer>
+      <Table aria-label="simple table">
+        <TableHead>
+          <TableRow>
+            {requestTableFields.map((field, index) => (
+              <TableCell key={index} sx={{ paddingY: 0 }}>
+                <span className="table-header-default">{field.label}</span>
+              </TableCell>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </>
+            <TableCell sx={{ padding: 0, width: 110 }}></TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {requests.map((request, requestIndex) => (
+            <RequestTableRow
+              key={requestIndex}
+              lng={lng}
+              request={request}
+              workers={workers}
+              shifts={shifts}
+              requestTableFields={requestTableFields}
+              handleUpdateRequest={handleUpdateRequest}
+              handleDeleteRequest={handleDeleteRequest}
+            />
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }

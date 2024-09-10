@@ -1,0 +1,8 @@
+.request-status-container {
+  display: flex;
+  align-items: center;
+}
+
+.request-status {
+  margin-left: 5px;
+}

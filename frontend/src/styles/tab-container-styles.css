@@ -55,3 +55,9 @@
   height: calc(100vh - 64px);
   margin: 0 5px;
 }
+
+.title-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}

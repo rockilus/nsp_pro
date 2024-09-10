@@ -20,6 +20,7 @@ import ShiftFieldCell from "./shift-field-cell";
 import ShiftPropertyCell from "./shift-property-cell";
 import TableAddButton from "../buttons/table-add-button";
 // Styles
+import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
 // Types
@@ -82,10 +83,7 @@ export default function ShiftTable({
   return (
     <div>
       <div className="title-container">
-        <span className="title">
-          {" "}
-          {isRest ? t("rest_shifts") : t("shifts")}
-        </span>
+        <span className="title">{isRest ? t("rest_shifts") : t("shifts")}</span>
         <PopoverRHS
           title={t("new_property")}
           buttonContent={<TableAddButton text={t("property")} />}
