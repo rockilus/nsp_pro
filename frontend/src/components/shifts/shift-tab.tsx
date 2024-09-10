@@ -6,6 +6,8 @@ import utc from "dayjs/plugin/utc";
 import Box from "@mui/material/Box";
 // Components
 import ShiftTable from "./shift-table";
+// Skeletons
+import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
 import {
   getShiftsTabData,
@@ -17,6 +19,8 @@ import {
   updateShift,
   deleteShiftDimension,
 } from "../../app/lib/shift";
+// Styles
+import "../../styles/tab-container-styles.css";
 // Types
 import { ShiftT, ShiftDimensionT, ShiftPropertyT } from "../../types/shift";
 
@@ -31,6 +35,7 @@ export default function ShiftTab({
 }) {
   const { t } = useTranslation(lng, "shift-page");
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [shiftDimensions, setShiftDimensions] = useState<ShiftDimensionT[]>([]);
 
@@ -188,6 +193,7 @@ export default function ShiftTab({
 
   useEffect(() => {
     const fetchShiftsTabData = async () => {
+      setIsLoading(true);
       if (selectedTeamId) {
         const {
           shifts: fetchedShifts,
@@ -196,65 +202,53 @@ export default function ShiftTab({
           await getShiftsTabData(selectedTeamId);
         setShifts(fetchedShifts);
         setShiftDimensions(fetchedShiftDimensions);
+        setIsLoading(false);
       }
     };
     fetchShiftsTabData();
   }, [selectedTeamId]);
 
   return (
-    selectedTeamId && (
-      <Box style={{ width: "100%" }}>
-        <Box
-          sx={{
-            border: "1px solid grey",
-            margin: 2,
-            overflowX: "auto",
-            borderRadius: 2,
-            backgroundColor: "none",
-          }}
-        >
-          <ShiftTable
-            lng={lng}
-            selectedTeamId={selectedTeamId}
-            isRest={false}
-            shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
-            shifts={shifts.filter((s) => !s.isTimeOff)}
-            defaultShiftFields={DefaultWorkShiftFields}
-            handleAddShift={handleAddShift}
-            handleDeleteShift={handleDeleteShift}
-            handleAddShiftDimension={handleAddShiftDimension}
-            handleUpdateShiftProperty={handleUpdateShiftProperty}
-            handleUpdateShiftDimension={handleUpdateShiftDimension}
-            handleUpdateShift={handleUpdateShift}
-            handleDeleteShiftDimension={handleDeleteShiftDimension}
-          />
-        </Box>
-        <Box
-          sx={{
-            border: "1px solid grey",
-            margin: 2,
-            overflowX: "auto",
-            borderRadius: 2,
-            backgroundColor: "none",
-          }}
-        >
-          <ShiftTable
-            lng={lng}
-            selectedTeamId={selectedTeamId}
-            isRest={true}
-            shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
-            shifts={shifts.filter((s) => s.isTimeOff)}
-            defaultShiftFields={DefaultWorkShiftFields}
-            handleAddShift={handleAddShift}
-            handleDeleteShift={handleDeleteShift}
-            handleAddShiftDimension={handleAddShiftDimension}
-            handleUpdateShiftProperty={handleUpdateShiftProperty}
-            handleUpdateShiftDimension={handleUpdateShiftDimension}
-            handleUpdateShift={handleUpdateShift}
-            handleDeleteShiftDimension={handleDeleteShiftDimension}
-          />
-        </Box>
-      </Box>
-    )
+    <div className="tab-container-wide">
+      {isLoading ? (
+        <TablesSkeleton numTables={2} numInternalRows={3} />
+      ) : (
+        selectedTeamId && (
+          <div>
+            <ShiftTable
+              lng={lng}
+              selectedTeamId={selectedTeamId}
+              isRest={false}
+              shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
+              shifts={shifts.filter((s) => !s.isTimeOff)}
+              defaultShiftFields={DefaultWorkShiftFields}
+              handleAddShift={handleAddShift}
+              handleDeleteShift={handleDeleteShift}
+              handleAddShiftDimension={handleAddShiftDimension}
+              handleUpdateShiftProperty={handleUpdateShiftProperty}
+              handleUpdateShiftDimension={handleUpdateShiftDimension}
+              handleUpdateShift={handleUpdateShift}
+              handleDeleteShiftDimension={handleDeleteShiftDimension}
+            />
+            <div className="divider" />
+            <ShiftTable
+              lng={lng}
+              selectedTeamId={selectedTeamId}
+              isRest={true}
+              shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
+              shifts={shifts.filter((s) => s.isTimeOff)}
+              defaultShiftFields={DefaultWorkShiftFields}
+              handleAddShift={handleAddShift}
+              handleDeleteShift={handleDeleteShift}
+              handleAddShiftDimension={handleAddShiftDimension}
+              handleUpdateShiftProperty={handleUpdateShiftProperty}
+              handleUpdateShiftDimension={handleUpdateShiftDimension}
+              handleUpdateShift={handleUpdateShift}
+              handleDeleteShiftDimension={handleDeleteShiftDimension}
+            />
+          </div>
+        )
+      )}
+    </div>
   );
 }
