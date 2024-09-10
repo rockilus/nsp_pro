@@ -3,14 +3,13 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
-import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import useStatusLabel from "../data-display/get-status-label";
 // Styles
-import "./campaign-tab.css";
 import "./schedule-selector.css";
+import "../../styles/text-styles.css";
 // Types
 import { ScheduleT } from "../../types/schedule";
 //Constants

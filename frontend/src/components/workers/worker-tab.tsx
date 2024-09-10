@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "../../app/i18n/client";
-// MUI
-import Box from "@mui/material/Box";
 // Components
 import WorkerTable from "./worker-table";
+// Skeletons
+import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
 import {
   getWorkersTabData,
@@ -17,6 +17,9 @@ import {
   updateWorker,
   deleteWorkerDimension,
 } from "../../app/lib/worker";
+// Styles
+import "../../styles/text-styles.css";
+import "../../styles/tab-container-styles.css";
 // Types
 import { WorkerT, WorkerDimensionT, WorkerPropertyT } from "../../types/worker";
 
@@ -29,6 +32,7 @@ export default function WorkerTab({
 }) {
   const { t } = useTranslation(lng, "worker-page");
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [workerDimensions, setWorkerDimensions] = useState<WorkerDimensionT[]>(
     []
@@ -171,6 +175,7 @@ export default function WorkerTab({
 
   useEffect(() => {
     const fetchWorkersTabData = async () => {
+      setIsLoading(true);
       if (selectedTeamId) {
         const {
           workers: fetchedWorkers,
@@ -179,37 +184,34 @@ export default function WorkerTab({
           await getWorkersTabData(selectedTeamId);
         setWorkers(fetchedWorkers);
         setWorkerDimensions(fetchedWorkerDimensions);
+        setIsLoading(false);
       }
     };
     fetchWorkersTabData();
   }, [selectedTeamId]);
 
   return (
-    selectedTeamId && (
-      <Box
-        sx={{
-          border: "1px solid grey",
-          margin: 2,
-          overflowX: "auto",
-          borderRadius: 2,
-          backgroundColor: "none",
-        }}
-      >
-        <WorkerTable
-          lng={lng}
-          selectedTeamId={selectedTeamId}
-          workerDimensions={workerDimensions}
-          workers={workers}
-          defaultWorkerFields={DefaultWorkerFields}
-          handleAddWorker={handleAddWorker}
-          handleDeleteWorker={handleDeleteWorker}
-          handleAddWorkerDimension={handleAddWorkerDimension}
-          handleUpdateWorkerProperty={handleUpdateWorkerProperty}
-          handleUpdateWorkerDimension={handleUpdateWorkerDimension}
-          handleUpdateWorker={handleUpdateWorker}
-          handleDeleteWorkerDimension={handleDeleteWorkerDimension}
-        />
-      </Box>
-    )
+    <div className="tab-container-wide">
+      {isLoading ? (
+        <TablesSkeleton numTables={1} numInternalRows={3} />
+      ) : (
+        selectedTeamId && (
+          <WorkerTable
+            lng={lng}
+            selectedTeamId={selectedTeamId}
+            workerDimensions={workerDimensions}
+            workers={workers}
+            defaultWorkerFields={DefaultWorkerFields}
+            handleAddWorker={handleAddWorker}
+            handleDeleteWorker={handleDeleteWorker}
+            handleAddWorkerDimension={handleAddWorkerDimension}
+            handleUpdateWorkerProperty={handleUpdateWorkerProperty}
+            handleUpdateWorkerDimension={handleUpdateWorkerDimension}
+            handleUpdateWorker={handleUpdateWorker}
+            handleDeleteWorkerDimension={handleDeleteWorkerDimension}
+          />
+        )
+      )}
+    </div>
   );
 }

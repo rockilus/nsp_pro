@@ -1,7 +1,8 @@
 import * as React from "react";
 // MUI
 import AddIcon from "@mui/icons-material/Add";
-import Button from "@mui/material/Button";
+// Styles
+import "./table-add-button.css";
 
 const TableAddButton = ({
   text,
@@ -13,22 +14,10 @@ const TableAddButton = ({
   showIcon?: boolean;
 }) => {
   return (
-    <Button
-      onClick={() => handleClick && handleClick()}
-      startIcon={showIcon ? <AddIcon sx={{ height: "17px" }} /> : null}
-      sx={{
-        borderRadius: 4,
-        textTransform: "none",
-        border: "1px solid",
-        height: "30px",
-        color: "grey.700",
-        "& .MuiButton-startIcon": {
-          marginRight: "0px",
-        },
-      }}
-    >
+    <button className="add-button" onClick={() => handleClick && handleClick()}>
+      {showIcon && <AddIcon sx={{ height: "17px" }} />}
       {text}
-    </Button>
+    </button>
   );
 };
 export default TableAddButton;

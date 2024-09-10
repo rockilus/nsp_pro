@@ -1,0 +1,33 @@
+.tab-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: calc(100vh - 64px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 30px 10%;
+}
+
+@media (min-width: 1024px) {
+  /* Adjust the min-width value as needed */
+  .tab-container {
+    padding: 30px 15%; /* Padding: 15% on each side for wider screens */
+  }
+}
+
+.tab-container-wide {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: calc(100vh - 64px);
+  overflow-x: auto;
+  overflow-y: auto;
+  padding: 20px 5%;
+}
+
+@media (min-width: 1024px) {
+  /* Adjust the min-width value as needed */
+  .worker-tab-container-wide {
+    padding: 20px 5%; /* Padding: 15% on each side for wider screens */
+  }
+}
