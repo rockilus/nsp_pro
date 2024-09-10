@@ -4,6 +4,8 @@ import Box from "@mui/material/Box";
 // Components
 import ConstraintList from "./constraint-list";
 import NewConstraint from "./new-constraint";
+// Skeletons
+import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
 import {
   getConstraintsTabData,
@@ -11,6 +13,8 @@ import {
   updateConstraint,
   deleteConstraint,
 } from "../../app/lib/constraint";
+// Styles
+import "../../styles/tab-container-styles.css";
 // Types
 import { ConstraintT, TemplateT } from "../../types/constraint";
 
@@ -21,6 +25,7 @@ export default function ConstraintTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [templates, setTemplates] = useState<TemplateT[]>([]);
   const [constraints, setConstraints] = useState<ConstraintT[]>([]);
   const [addingConstraint, setAddingConstraint] = useState<boolean>(false);
@@ -63,6 +68,7 @@ export default function ConstraintTab({
 
   useEffect(() => {
     const fetchConstraintsTabData = async () => {
+      setIsLoading(true);
       if (selectedTeamId) {
         const {
           templates: fetchedTemplates,
@@ -72,33 +78,43 @@ export default function ConstraintTab({
         setTemplates(fetchedTemplates);
         setConstraints(fetchedConstraints);
       }
+      setIsLoading(false);
     };
     fetchConstraintsTabData();
   }, [selectedTeamId]);
 
   return (
-    selectedTeamId && (
-      <Box style={{ width: "100%", backgroundColor: "white" }}>
-        {addingConstraint && (
-          <NewConstraint
-            lng={lng}
-            selectedTeamId={selectedTeamId}
-            templates={templates}
-            handleCloseAddConstraint={handleCloseAddConstraint}
-            handleAddConstraint={handleAddConstraint}
-            handleUpdateConstraint={handleUpdateConstraint}
-          />
-        )}
-        <ConstraintList
-          lng={lng}
-          constraints={constraints}
-          constraintTemplates={templates}
-          handleOpenAddConstraint={handleOpenAddConstraint}
-          handleAddConstraint={handleAddConstraint}
-          handleUpdateConstraint={handleUpdateConstraint}
-          handleDeleteConstraint={handleDeleteConstraint}
-        />
-      </Box>
-    )
+    <div className="tab-container">
+      {isLoading ? (
+        <TablesSkeleton numTables={1} numInternalRows={3} />
+      ) : (
+        selectedTeamId && (
+          <div>
+            {addingConstraint && (
+              <div>
+                <NewConstraint
+                  lng={lng}
+                  selectedTeamId={selectedTeamId}
+                  templates={templates}
+                  handleCloseAddConstraint={handleCloseAddConstraint}
+                  handleAddConstraint={handleAddConstraint}
+                  handleUpdateConstraint={handleUpdateConstraint}
+                />
+                <div className="divider" />
+              </div>
+            )}
+            <ConstraintList
+              lng={lng}
+              constraints={constraints}
+              constraintTemplates={templates}
+              handleOpenAddConstraint={handleOpenAddConstraint}
+              handleAddConstraint={handleAddConstraint}
+              handleUpdateConstraint={handleUpdateConstraint}
+              handleDeleteConstraint={handleDeleteConstraint}
+            />
+          </div>
+        )
+      )}
+    </div>
   );
 }

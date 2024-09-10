@@ -1,7 +1,7 @@
 import React from "react";
 // MUI
 import Box from "@mui/material/Box";
-import ClearIcon from "@mui/icons-material/Clear";
+import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
@@ -107,7 +107,7 @@ export default function ConstraintListItem({
               handleUpdateConstraint={handleUpdateConstraint}
             />
             <IconButton edge="end" aria-label="delete" onClick={handleDelete}>
-              <ClearIcon />
+              <DeleteIcon />
             </IconButton>
           </Box>
         </Grid>

@@ -3,10 +3,12 @@ import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
 // Components
 import ConstraintListItem from "./constraint-list-item";
 import TableAddButton from "../buttons/table-add-button";
+// Styles
+import "../../styles/text-styles.css";
+import "./constraint-tab.css";
 // Types
 import { ConstraintT, TemplateT } from "../../types/constraint";
 
@@ -35,48 +37,14 @@ export default function ConstraintList({
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignSelf: "flex-start",
-        backgroundColor: "grey.100",
-        minWidth: 200,
-        border: "1px solid grey",
-        borderRadius: 2,
-        margin: 2,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          minHeight: 45,
-          paddingX: 1,
-          borderBottom: "1px solid lightgrey",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            width: "100%",
-            alignItems: "center",
-          }}
-        >
-          <Typography
-            variant="subtitle1"
-            align="left"
-            sx={{ fontWeight: "bold" }}
-          >
-            {t("constraints")}
-          </Typography>
-          <TableAddButton
-            text={t("constraint")}
-            handleClick={handleOpenAddConstraint}
-          />
-        </Box>
-      </Box>
+    <div>
+      <div className="title-container">
+        <span className="title">{t("constraints")}</span>
+        <TableAddButton
+          text={t("constraint")}
+          handleClick={handleOpenAddConstraint}
+        />
+      </div>
       <Grid
         container
         spacing={0}
@@ -94,6 +62,6 @@ export default function ConstraintList({
           />
         ))}
       </Grid>
-    </Box>
+    </div>
   );
 }
