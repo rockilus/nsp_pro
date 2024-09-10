@@ -7,6 +7,9 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
+// Styles
+import "../../styles/text-styles.css";
+import "./template-list.css";
 // Types
 import { TemplateT } from "../../types/constraint";
 
@@ -24,39 +27,16 @@ export default function TemplateList({
   const { t } = useTranslation(lng, "constraint-page");
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignSelf: "flex-start",
-        width: "100%",
-      }}
-    >
+    <div>
+      <span className="subtitle">{t("templates")}</span>
       <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          minHeight: 35,
-          paddingX: 1,
-          borderTop: "1px solid lightgrey",
-          borderBottom: "1px solid lightgrey",
-          backgroundColor: "grey.100",
-        }}
-      >
-        <Typography
-          variant="subtitle2"
-          align="left"
-          sx={{ fontWeight: "bold" }}
-        >
-          {t("templates")}
-        </Typography>
-      </Box>
-      <Box
+        className="templates-container"
         sx={{
           maxHeight: "200px",
           overflowY: "auto",
           backgroundColor: "white",
           marginBottom: 1,
+          border: "1px solid #e0e0e0",
         }}
       >
         <List dense={true} sx={{ padding: "0 0 0 0" }}>
@@ -76,6 +56,6 @@ export default function TemplateList({
           ))}
         </List>
       </Box>
-    </Box>
+    </div>
   );
 }

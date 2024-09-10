@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
-import Box from "@mui/material/Box";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 // Components
 import ConstraintEdit from "./constraint-edit";
 import TemplateList from "./template-list";
+// Styles
+import "../../styles/text-styles.css";
+import "./constraint-tab.css";
+import "./new-constraint.css";
 // Types
 import { TemplateT, ConstraintT } from "../../types/constraint";
 
@@ -37,48 +40,14 @@ export default function NewConstraint({
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignSelf: "flex-start",
-        minWidth: 200,
-        border: "1px solid grey",
-        borderRadius: 2,
-        margin: 2,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          minHeight: 45,
-          paddingX: 1,
-          borderBottom: "1px solid lightgrey",
-          backgroundColor: "grey.100",
-          borderRadius: "8px 8px 0 0",
-        }}
-      >
-        <Typography
-          variant="subtitle1"
-          align="left"
-          sx={{ fontWeight: "bold" }}
-        >
-          {t("new_constraint")}
-        </Typography>
+    <div>
+      <div className="title-container">
+        <span className="title">{t("new_constraint")}</span>
         <IconButton onClick={handleCloseAddConstraint}>
           <CloseIcon />
         </IconButton>
-      </Box>
-      <Box
-        sx={{
-          padding: 1,
-          minHeight: 65,
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
+      </div>
+      <div className="constraint-edit-container">
         {selectedTemplate ? (
           <ConstraintEdit
             lng={lng}
@@ -100,20 +69,17 @@ export default function NewConstraint({
             handleUpdateConstraint={handleUpdateConstraint}
           />
         ) : (
-          <Typography
-            variant="body2"
-            sx={{ fontStyle: "italic", color: "grey" }}
-          >
+          <span className="select-template-placeholder">
             {t("select_template")}
-          </Typography>
+          </span>
         )}
-      </Box>
+      </div>
       <TemplateList
         lng={lng}
         templates={templates}
         selectedTemplate={selectedTemplate}
         handleSelectedTemplate={handleSelectedTemplate}
       />
-    </Box>
+    </div>
   );
 }
