@@ -6,6 +6,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import IconButton from "@mui/material/IconButton";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
@@ -13,6 +14,8 @@ import TableRow from "@mui/material/TableRow";
 import PopoverAnchorElBelow from "../inputs/popover-anchor-el-below";
 import RequestPanel from "./request-panel";
 import { HardSoftButton } from "../buttons/hard-soft-button";
+// Styles
+import ".//request-table-row.css";
 // Types
 import { RequestT } from "../../types/request";
 import { ShiftT } from "../../types/shift";
@@ -67,10 +70,29 @@ export default function RequestTableRow({
     return dayjs(date).format("dddd, MMM D");
   };
 
-  const getRequestStatus = (status: string): string => {
+  const getRequestStatus = (status: string): JSX.Element => {
     return (
-      requestStatus.find((requestStatus) => requestStatus.name === status)
-        ?.label || ""
+      <div className="request-status-container">
+        <FiberManualRecordIcon
+          sx={{
+            fontSize: "1.1rem",
+            color:
+              request.status === "approved"
+                ? "green"
+                : request.status === "rejected" && request.hard
+                ? "red"
+                : request.status === "rejected" && !request.hard
+                ? "orange"
+                : request.status === "pending"
+                ? "grey"
+                : "none",
+          }}
+        />
+        <span className="request-status">
+          {requestStatus.find((requestStatus) => requestStatus.name === status)
+            ?.label || ""}
+        </span>
+      </div>
     );
   };
 

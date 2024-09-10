@@ -3,7 +3,6 @@ import { useTranslation } from "../../app/i18n/client";
 // MUI
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
 // Components
 import ConstraintEdit from "./constraint-edit";
 import TemplateList from "./template-list";

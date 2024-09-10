@@ -2,14 +2,13 @@ import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
-// MUI
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 // Components
 import PopoverRHS from "../inputs/popover-rhs";
 import RequestPanel from "./request-panel";
 import RequestTable from "./request-table";
 import TableAddButton from "../buttons/table-add-button";
+// Skeletons
+import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
 import {
   getRequestsTabData,
@@ -17,6 +16,9 @@ import {
   updateRequest,
   deleteRequest,
 } from "@/app/lib/request";
+// Styles
+import "../../styles/tab-container-styles.css";
+import "../../styles/text-styles.css";
 // Types
 import { RequestT } from "../../types/request";
 import { ShiftT } from "../../types/shift";
@@ -33,6 +35,7 @@ export default function RequestTab({
 }) {
   const { t } = useTranslation(lng, "request-page");
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [requests, setRequests] = useState<RequestT[]>([]);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
@@ -74,6 +77,7 @@ export default function RequestTab({
 
   useEffect(() => {
     const fetchRequestsTabData = async () => {
+      setIsLoading(true);
       if (selectedTeamId) {
         const {
           workers: fetchedWorkers,
@@ -87,83 +91,56 @@ export default function RequestTab({
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
         setRequests(fetchedRequests);
+        setIsLoading(false);
       }
     };
     fetchRequestsTabData();
   }, [selectedTeamId]);
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignSelf: "flex-start",
-        backgroundColor: "grey.100",
-        minWidth: 200,
-        border: "1px solid grey",
-        borderRadius: 2,
-        margin: 2,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          minHeight: 45,
-          paddingX: 1,
-          borderBottom: "1px solid lightgrey",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            width: "100%",
-            alignItems: "center",
-          }}
-        >
-          <Typography
-            variant="subtitle1"
-            align="left"
-            sx={{ fontWeight: "bold" }}
-          >
-            {t("requests")}
-          </Typography>
-          <PopoverRHS
-            title={t("new_request")}
-            buttonContent={<TableAddButton text={t("request")} />}
-            content={
-              <RequestPanel
-                lng={lng}
-                request={{
-                  id: "",
-                  workerId: "",
-                  startDate: dayjs.utc().startOf("day"),
-                  endDate: dayjs.utc().startOf("day"),
-                  shiftId: "",
-                  hard: true,
-                  status: "pending",
-                }}
-                workers={workers}
-                shifts={shifts}
-                handleClose={handleClosePopoverRhs}
-                handleAddRequest={handleAddRequest}
-                handleUpdateRequest={handleUpdateRequest}
-              />
-            }
-            open={popoverRhsOpen}
-            setOpen={setPopoverRhsOpen}
+    <div className="tab-container">
+      {isLoading ? (
+        <TablesSkeleton numTables={1} numInternalRows={3} />
+      ) : (
+        <div>
+          <div className="title-container">
+            <span className="title">{t("requests")}</span>
+            <PopoverRHS
+              title={t("new_request")}
+              buttonContent={<TableAddButton text={t("request")} />}
+              content={
+                <RequestPanel
+                  lng={lng}
+                  request={{
+                    id: "",
+                    workerId: "",
+                    startDate: dayjs.utc().startOf("day"),
+                    endDate: dayjs.utc().startOf("day"),
+                    shiftId: "",
+                    hard: true,
+                    status: "pending",
+                  }}
+                  workers={workers}
+                  shifts={shifts}
+                  handleClose={handleClosePopoverRhs}
+                  handleAddRequest={handleAddRequest}
+                  handleUpdateRequest={handleUpdateRequest}
+                />
+              }
+              open={popoverRhsOpen}
+              setOpen={setPopoverRhsOpen}
+            />
+          </div>
+          <RequestTable
+            lng={lng}
+            requests={requests}
+            workers={workers}
+            shifts={shifts}
+            handleUpdateRequest={handleUpdateRequest}
+            handleDeleteRequest={handleDeleteRequest}
           />
-        </Box>
-      </Box>
-      <RequestTable
-        lng={lng}
-        requests={requests}
-        workers={workers}
-        shifts={shifts}
-        handleUpdateRequest={handleUpdateRequest}
-        handleDeleteRequest={handleDeleteRequest}
-      />
-    </Box>
+        </div>
+      )}
+    </div>
   );
 }
