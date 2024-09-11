@@ -20,6 +20,9 @@ from routes.api_model import WorkerMessage, WorkerPropertyMessage
 from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
 from services.worker_services import add_back_worker_property_to_constraint_build
 from services.worker_services import delete_worker as delete_worker_service
+from services.worker_services import (
+    update_worker_property as update_worker_property_service,
+)
 
 router = APIRouter()
 
@@ -124,6 +127,7 @@ async def update_worker_property(
         if wp_data.id == "":
             new_wp = worker_property_db.create_worker_property(wp_data)
         else:
+            update_worker_property_service(wp_data)
             new_wp = worker_property_db.update_worker_property(wp_data)
         if isinstance(new_wp.value, list):
             for value in new_wp.value:

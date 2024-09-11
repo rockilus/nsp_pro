@@ -20,6 +20,9 @@ from routes.api_model import ShiftMessage, ShiftPropertyMessage
 from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
 from services.shift_services import add_back_shift_property_to_constraint_build
 from services.shift_services import delete_shift as delete_shift_service
+from services.shift_services import (
+    update_shift_property as update_shift_property_service,
+)
 
 router = APIRouter()
 
@@ -120,6 +123,7 @@ async def update_shift_property(
         if sp_data.id == "":
             new_sp = shift_property_db.create_shift_property(sp_data)
         else:
+            update_shift_property_service(sp_data)
             new_sp = shift_property_db.update_shift_property(sp_data)
         if isinstance(new_sp.value, list):
             for value in new_sp.value:

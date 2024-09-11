@@ -155,6 +155,22 @@ class ShiftDemandDB:
             log_info("Failed to delete shift demands")
             handle_delete_document_error(e)
 
+    def delete_shift_demands_by_shift_id(self, shift_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            shift_demands = ShiftDemandDocument.objects.filter(  # type: ignore
+                shift=shift_id
+            )
+        except Exception as e:
+            log_info("Failed to get shift demands by shift id to delete")
+            handle_get_document_error(e)
+        try:
+            for shift_demand in shift_demands:
+                shift_demand.delete()
+        except Exception as e:
+            log_info("Failed to delete shift demands")
+            handle_delete_document_error(e)
+
 
 # Mappers
 # core to document
