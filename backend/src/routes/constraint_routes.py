@@ -22,10 +22,11 @@ from routes.api_model import (
     MissingPropertyMessage,
 )
 from scripts.setup_database import constraint_build_db
+from services.constraint_build_services import blocks_to_string
 from services.constraint_build_services import (
-    blocks_to_string,
-    delete_constraint_build_and_dependencies,
+    create_constraint_build as create_constraint_build_service,
 )
+from services.constraint_build_services import delete_constraint_build_and_dependencies
 
 router = APIRouter()
 
@@ -44,8 +45,7 @@ async def create_constraint(
                 "You do not have permission to create a constraint"
             )
         cb_data = msg_to_core_constraint_build(req)
-        cb_data.text = blocks_to_string(cb_data.blocks, cb_data.language)
-        constraint_build = constraint_build_db.create_constraint_build(cb_data)
+        constraint_build = create_constraint_build_service(cb_data)
         response = core_to_msg_constraint_build(constraint_build)
     except Exception as e:
         log_info("Failed to create constraint")
@@ -107,7 +107,7 @@ async def delete_constraint(
             raise NotAuthorizedError(
                 "You do not have permission to delete a constraint"
             )
-        delete_constraint_build_and_dependencies(constraint_build_id)
+        delete_constraint_build_and_dependencies(team_id, constraint_build_id)
     except Exception as e:
         log_info("Failed to delete constraint")
         handle_routes_errors(e)
