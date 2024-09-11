@@ -1,10 +1,11 @@
-from core import MissingProperty
+from core import MissingProperty, WorkerProperty
 from scripts.setup_database import (
     assignment_db,
     constraint_build_db,
     constraint_db,
     objective_breach_db,
     request_db,
+    schedule_db,
     worker_db,
     worker_dimension_db,
     worker_property_db,
@@ -19,6 +20,7 @@ def delete_worker(worker_id: str) -> None:
     delete_worker_property_from_constraint_build(worker_id)
     delete_worker_from_objective_breach(worker_id)
     delete_worker_from_constraint(worker_id)
+    delete_worker_from_schedule_quick_staffing(worker_id)
     worker_property_db.delete_worker_properties_by_worker_id(worker_id)
     assignment_db.delete_assignments_by_worker_id(worker_id)
     request_db.delete_requests_by_worker_id(worker_id)
@@ -138,3 +140,45 @@ def delete_worker_from_constraint(worker_id: str) -> None:
             continue
         constraint.worker_var.target_ids = new_targets
         constraint_db.update_constraint(constraint)
+
+
+def update_worker_property(new_wp: WorkerProperty) -> None:
+    old_wp = worker_property_db.get_worker_property_by_id(new_wp.id)
+    wd = worker_dimension_db.get_worker_dimension_by_id(old_wp.worker_dimension_id)
+    if wd.entry_type == "bool":
+        return
+    wps_dim = worker_property_db.get_worker_properties_by_worker_dimension_id(
+        old_wp.worker_dimension_id
+    )
+    if wd.entry_type == "list":
+        if isinstance(old_wp.value, list) and isinstance(new_wp.value, list):
+            for wp_v in set(old_wp.value) - set(new_wp.value):
+                wps_dim_same_value = [
+                    wpd
+                    for wpd in wps_dim
+                    if wp_v in wpd.value and wpd.id != old_wp.id  # type: ignore
+                ]
+                if not wps_dim_same_value:
+                    update_cbs_for_change_worker_property(
+                        old_wp.worker_dimension_id, wp_v
+                    )
+        else:
+            raise ValueError("Worker property value is not a list for list dimension")
+    else:
+        wps_dim_same_value = [
+            wpd for wpd in wps_dim if wpd.value == old_wp.value and wpd.id != old_wp.id
+        ]
+        if not wps_dim_same_value:
+            update_cbs_for_change_worker_property(
+                old_wp.worker_dimension_id, old_wp.value  # type: ignore
+            )
+
+
+def delete_worker_from_schedule_quick_staffing(worker_id: str) -> None:
+    schedules = schedule_db.get_schedule_quick_staffing_contain_worker_id(worker_id)
+    for schedule in schedules:
+        new_quick_staffings = [
+            qs for qs in schedule.quick_staffings if qs.worker_id != worker_id
+        ]
+        schedule.quick_staffings = new_quick_staffings
+        schedule_db.update_schedule(schedule)

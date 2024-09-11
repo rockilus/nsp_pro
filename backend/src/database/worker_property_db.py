@@ -84,7 +84,7 @@ class WorkerPropertyDB:
         try:
             # pylint: disable=no-member
             worker_property = WorkerPropertyDocument.objects.get(  # type: ignore
-                _id=worker_property_id
+                id=worker_property_id
             )
         except Exception as e:
             log_info("Failed to get worker property by id from database")
