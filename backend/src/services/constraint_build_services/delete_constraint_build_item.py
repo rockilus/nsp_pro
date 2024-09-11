@@ -30,7 +30,7 @@ def delete_item_with_id_from_constraint_build(
                         )
                     )
                 else:
-                    delete_constraint_build_and_dependencies(cb.id)
+                    delete_constraint_build_and_dependencies(cb.team_id, cb.id)
                     skip_to_next_cb = True
                     break
             else:

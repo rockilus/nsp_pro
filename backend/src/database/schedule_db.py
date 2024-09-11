@@ -53,6 +53,19 @@ class ScheduleDB:
             handle_get_document_error(e)
         return doc_to_core_schedule(schedule)
 
+    def get_schedule_wip_by_constraint_build_id(
+        self, team_id: str, cb_id: str
+    ) -> Schedule | None:
+        try:
+            # pylint: disable=no-member
+            schedule = ScheduleDocument.objects.get(  # type: ignore
+                constraint_builds=cb_id, status="wip", team=team_id
+            )
+        except Exception as e:
+            log_info("Failed to get WIP schedule by constraint build id from database")
+            handle_get_document_error(e)
+        return doc_to_core_schedule(schedule) if schedule else None
+
     def get_schedule_by_id(self, schedule_id: str) -> Schedule:
         try:
             # pylint: disable=no-member

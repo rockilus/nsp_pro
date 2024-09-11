@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from typing import List
 
 from core import Schedule
-from scripts.setup_database import schedule_db
+from scripts.setup_database import constraint_build_db, schedule_db
 
 
 def get_schedule_wip(schedules: List[Schedule], team_id: str) -> Schedule:
@@ -17,6 +17,7 @@ def get_schedule_wip(schedules: List[Schedule], team_id: str) -> Schedule:
         else last_date + timedelta(days=1)
     )
     end_date = start_date + timedelta(days=30)
+    cbs = constraint_build_db.get_constraint_builds(team_id)
     return schedule_db.create_schedule(
         Schedule(
             id="",
@@ -26,7 +27,7 @@ def get_schedule_wip(schedules: List[Schedule], team_id: str) -> Schedule:
             solve_status="Not solved",
             status="wip",
             missing_coverage_dates=[],
-            constraint_build_ids=[],
+            constraint_build_ids=[cb.id for cb in cbs],
             quick_staffings=[],
         )
     )
