@@ -2,7 +2,6 @@ import { useTranslation } from "../../app/i18n/client";
 
 const GetBlockNameLabel = (lng: string, name: string) => {
   const { t } = useTranslation(lng, "constraint-page");
-  console.log("name", name);
 
   const blockNameLabels: Record<string, string>[] = [
     { name: "worker", label: t("worker") },

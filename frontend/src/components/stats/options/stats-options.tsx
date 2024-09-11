@@ -8,14 +8,9 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
-import Paper from "@mui/material/Paper";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
-import TableRowScheduleWIP from "../../data-display/table-row-schedule-wip";
 import ShiftOptionsDisplay from "./shift-options-display";
 // Styles
 import "../../../styles/text-styles.css";

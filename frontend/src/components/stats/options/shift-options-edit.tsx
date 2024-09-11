@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  ChangeEvent,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { useState, ChangeEvent, useRef, useCallback } from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Chip from "@mui/material/Chip";
@@ -34,66 +28,6 @@ export default function ShiftOptionsEdit({
   handleClose: () => void;
 }) {
   const { t } = useTranslation(lng, "stats-page");
-
-  function isDictionary(obj: any): obj is Record<string, unknown> {
-    return (
-      obj !== null &&
-      typeof obj === "object" &&
-      !Array.isArray(obj) &&
-      !(obj instanceof Date) &&
-      !(obj instanceof RegExp) &&
-      !(obj instanceof Function)
-    );
-  }
-
-  const isTemplateOptionValueT = useCallback((dict: unknown): boolean => {
-    return (
-      isDictionary(dict) &&
-      "name" in dict &&
-      "id" in dict &&
-      "idType" in dict &&
-      typeof dict.name === "string" &&
-      typeof dict.id === "string" &&
-      typeof dict.idType === "string"
-    );
-  }, []);
-
-  const initialValue = useCallback((): TemplateOptionValueT[] => {
-    if (selectedShifts === null) {
-      return [];
-    }
-    if (
-      Array.isArray(selectedShifts) &&
-      (selectedShifts as any[]).every(isTemplateOptionValueT)
-    ) {
-      return selectedShifts as TemplateOptionValueT[];
-    }
-    throw new Error("block.value is not an array of TemplateOptionValueT");
-  }, [selectedShifts, isTemplateOptionValueT]);
-
-  const templateOptionsCast = useCallback((): Record<
-    string,
-    TemplateOptionValueT[]
-  > => {
-    if (statsShiftOptions === null) {
-      return {};
-    }
-    if (
-      isDictionary(statsShiftOptions) &&
-      Object.values(statsShiftOptions).every(
-        (v) =>
-          Array.isArray(v) &&
-          v.every((item: unknown) =>
-            isTemplateOptionValueT(item as Record<string, unknown>)
-          )
-      )
-    ) {
-      return statsShiftOptions as Record<string, TemplateOptionValueT[]>;
-    }
-    throw new Error(
-      "templateBlock.options is not a dictionary of string key and TemplateOptionValueT array values"
-    );
-  }, [statsShiftOptions, isTemplateOptionValueT]);
 
   const filterOptionsList = useCallback(
     (
@@ -135,39 +69,23 @@ export default function ShiftOptionsEdit({
     [filterOptionsList]
   );
 
-  const [valueState, setValueState] =
-    useState<TemplateOptionValueT[]>(initialValue);
-  const [templateOptions, setTemplateOptions] =
-    useState<Record<string, TemplateOptionValueT[]>>(templateOptionsCast);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<
     Record<string, TemplateOptionValueT[]>
-  >(filterOptions("", valueState, templateOptions));
+  >(filterOptions("", selectedShifts, statsShiftOptions));
   const [selectedOption, setSelectedOption] = useState<Record<
     string,
     TemplateOptionValueT
   > | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (selectedShifts !== null) {
-      setValueState(initialValue);
-    }
-  }, [selectedShifts, initialValue]);
-
-  useEffect(() => {
-    if (statsShiftOptions !== null) {
-      setTemplateOptions(templateOptionsCast);
-    }
-  }, [statsShiftOptions, templateOptionsCast]);
-
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.trim();
     setSearchQuery(query);
     const newFilteredOptions = filterOptions(
       query,
-      valueState,
-      templateOptions
+      selectedShifts,
+      statsShiftOptions
     );
     setFilteredOptions(newFilteredOptions);
     if (Object.keys(newFilteredOptions).length > 0) {
@@ -183,17 +101,21 @@ export default function ShiftOptionsEdit({
   };
 
   const handleDeleteFromSelected = (optionToDelete: TemplateOptionValueT) => {
-    if (valueState.includes(optionToDelete)) {
-      const newValue = valueState.filter((option) => option !== optionToDelete);
+    if (selectedShifts.includes(optionToDelete)) {
+      const newValue = selectedShifts.filter(
+        (option) => option !== optionToDelete
+      );
       handleEditSelectedShifts(newValue);
-      setFilteredOptions(filterOptions(searchQuery, newValue, templateOptions));
+      setFilteredOptions(
+        filterOptions(searchQuery, newValue, statsShiftOptions)
+      );
     }
     // Update the external state for "selected" here
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Backspace" && event.currentTarget.selectionStart === 0) {
-      const lastSelected = valueState[valueState.length - 1];
+      const lastSelected = selectedShifts[selectedShifts.length - 1];
       if (lastSelected) {
         handleDeleteFromSelected(lastSelected);
       }
@@ -274,9 +196,9 @@ export default function ShiftOptionsEdit({
       newOptionKey in filteredOptions &&
       filteredOptions[newOptionKey].includes(newOption)
     ) {
-      const newValue = [...valueState, newOption];
+      const newValue = [...selectedShifts, newOption];
       handleEditSelectedShifts(newValue);
-      setFilteredOptions(filterOptions("", newValue, templateOptions));
+      setFilteredOptions(filterOptions("", newValue, statsShiftOptions));
       setSearchQuery("");
     }
     // Update the external state for "selected" here
@@ -319,7 +241,7 @@ export default function ShiftOptionsEdit({
             // },
           }}
         >
-          {valueState.map((option, index) => (
+          {selectedShifts.map((option, index) => (
             <Chip
               key={index}
               label={option.name}
