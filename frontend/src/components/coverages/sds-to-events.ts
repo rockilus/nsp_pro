@@ -20,7 +20,6 @@ const shiftDemandsToEvents = (shiftDemands: ShiftDemandT[]): EventT[] => {
       overlappingDict,
       shiftDemandsCalendar
     );
-    console.log("convertedDict", convertedDict);
 
     const events = convertShiftDemandToEvent(group, overlappingDict);
     out.push(...events);

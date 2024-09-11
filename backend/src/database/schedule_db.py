@@ -77,6 +77,19 @@ class ScheduleDB:
             handle_get_document_error(e)
         return [doc_to_core_schedule(s) for s in list(schedules)]
 
+    def get_schedule_quick_staffing_contain_shift_id(
+        self, shift_id: str
+    ) -> List[Schedule]:
+        try:
+            # pylint: disable=no-member
+            schedules = ScheduleDocument.objects.filter(  # type: ignore
+                quick_staffings__shift=shift_id
+            )
+        except Exception as e:
+            log_info("Failed to get schedules from database")
+            handle_get_document_error(e)
+        return [doc_to_core_schedule(s) for s in list(schedules)]
+
     def update_schedule(self, schedule: Schedule) -> Schedule:
         s_doc = core_to_doc_schedule(schedule)
         try:

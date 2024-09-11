@@ -1,12 +1,14 @@
 # pylint: disable=R0801
-from core import MissingProperty
+from core import MissingProperty, ShiftProperty
 from scripts.setup_database import (
     assignment_db,
     constraint_build_db,
     constraint_db,
     objective_breach_db,
     request_db,
+    schedule_db,
     shift_db,
+    shift_demand_db,
     shift_dimension_db,
     shift_property_db,
 )
@@ -20,7 +22,9 @@ def delete_shift(shift_id: str) -> None:
     delete_shift_property_from_constraint_build(shift_id)
     delete_shift_from_objective_breach(shift_id)
     delete_shift_from_constraint(shift_id)
+    delete_shift_from_schedule_quick_staffing(shift_id)
     shift_property_db.delete_shift_properties_by_shift_id(shift_id)
+    shift_demand_db.delete_shift_demands_by_shift_id(shift_id)
     assignment_db.delete_assignments_by_shift_id(shift_id)
     request_db.delete_requests_by_shift_id(shift_id)
     shift_db.delete_shift(shift_id)
@@ -159,3 +163,49 @@ def delete_shift_from_constraint(shift_id: str) -> None:
             continue
         constraint.shift_var.relative_ids = new_relatives
         constraint_db.update_constraint(constraint)
+
+
+def update_shift_property(new_sp: ShiftProperty) -> None:
+    old_sp = shift_property_db.get_shift_property_by_id(new_sp.id)
+    if old_sp is None:
+        return
+    sd = shift_dimension_db.get_shift_dimension_by_id(old_sp.shift_dimension_id)
+    if sd.entry_type == "bool":
+        return
+    sps_dim = shift_property_db.get_shift_properties_by_shift_dimension_id(
+        old_sp.shift_dimension_id
+    )
+    if sd.entry_type == "list":
+        if isinstance(old_sp.value, list) and isinstance(new_sp.value, list):
+            for sp_v in set(old_sp.value) - set(
+                new_sp.value
+            ):  # iterate through the values that were in old_sp but not in new_sp
+                sps_dim_same_value = [
+                    spd
+                    for spd in sps_dim
+                    if sp_v in spd.value and spd.id != old_sp.id  # type: ignore
+                ]
+                if not sps_dim_same_value:
+                    update_cbs_for_change_shift_property(
+                        old_sp.shift_dimension_id, sp_v
+                    )
+        else:
+            raise ValueError("Shift property value is not a list for list dimension")
+    elif old_sp.value != new_sp.value:
+        sps_dim_same_value = [
+            spd for spd in sps_dim if spd.value == old_sp.value and spd.id != old_sp.id
+        ]
+        if not sps_dim_same_value:
+            update_cbs_for_change_shift_property(
+                old_sp.shift_dimension_id, old_sp.value  # type: ignore
+            )
+
+
+def delete_shift_from_schedule_quick_staffing(shift_id: str) -> None:
+    schedules = schedule_db.get_schedule_quick_staffing_contain_shift_id(shift_id)
+    for schedule in schedules:
+        new_quick_staffings = [
+            qs for qs in schedule.quick_staffings if qs.shift_id != shift_id
+        ]
+        schedule.quick_staffings = new_quick_staffings
+        schedule_db.update_schedule(schedule)
