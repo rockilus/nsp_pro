@@ -63,7 +63,7 @@ def solve_schedule(
     wip_fixed_assignments = assignment_db.get_assignments_wip_fixed(
         team_schedules
     )  # assignments wip and fixed
-    set_assignments = prev_assignments + wip_fixed_assignments
+    fixed_assignments = prev_assignments + wip_fixed_assignments
     wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
@@ -86,7 +86,7 @@ def solve_schedule(
         shift_demand_dates,
         requests,
         constraints,
-        set_assignments,
+        fixed_assignments,
         wip_assignments,
     )
     end_time_engine_inputs = time.time()

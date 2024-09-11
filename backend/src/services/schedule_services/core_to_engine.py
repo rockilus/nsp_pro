@@ -34,11 +34,12 @@ def core_to_engine_inputs(
     shift_demand_dates: List[ShiftDemandDate],
     requests: List[Request],
     constraints: List[Constraint],
-    prev_assignments: List[Assignment],
+    fixed_assignments: List[Assignment],
     wip_assignments: List[Assignment],
 ) -> Inputs:
-    start_date_hist = (
-        min(a.date for a in prev_assignments) if prev_assignments else start_date
+    start_date_hist = min(
+        (min(a.date for a in fixed_assignments) if fixed_assignments else start_date),
+        start_date,
     )
     end_date_hist = start_date - timedelta(days=1)
     variable_space = VariableSpace(
@@ -55,7 +56,7 @@ def core_to_engine_inputs(
         variable_space.workers,
         _build_day_coordinates(start_date_hist, end_date_hist),
         variable_space.shifts,
-        prev_assignments,
+        fixed_assignments,
     )
     sol_hint_engine = core_to_engine_sol_hint(
         variable_space.workers,
