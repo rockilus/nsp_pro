@@ -1,9 +1,7 @@
 import React from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -127,76 +125,55 @@ export default function StatsTable({
       <Table stickyHeader sx={{ minWidth: 650 }}>
         <TableHead>
           <TableRow>
-            <TableCell sx={{ padding: 0, border: "none" }}></TableCell>
+            <TableCell sx={{ padding: 0 }}></TableCell>
             {stats.statsHeaders.map((header, headerIndex) => (
-              <TableCell
-                key={headerIndex}
-                align="center"
-                sx={{ padding: 0, border: "none" }}
-              >
-                {showingCustom && (
-                  <Typography variant="body1" sx={{ fontSize: "0.8rem" }}>
-                    {statsUnitOptions.find((u) => u.name === header.statsUnit)
-                      ?.label || header.statsUnit}
-                  </Typography>
-                )}
-                <span className="column-header">
-                  {header.headerUnit === "shift"
-                    ? shifts.find((s) => s.id === header.value)?.name
-                    : translateHeaderValue(header.value)}
-                </span>
-                <Button
-                  onClick={() => handleAddDeleteHeaderToCustom(header)}
-                  sx={{
-                    cursor: "pointer",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    width: "100%",
-                    height: "100%",
-                    textTransform: "none",
-                    paddingY: "0px",
-                    fontSize: "0.8rem",
-                    fontWeight: "bold",
-                    color: "primary",
-                  }}
-                  onMouseOver={(e) => {
-                    (e.target as HTMLElement).style.backgroundColor =
-                      "lightgrey";
-                  }}
-                  onMouseOut={(e) => {
-                    (e.target as HTMLElement).style.backgroundColor =
-                      "transparent";
-                  }}
-                >
-                  {t("custom")}
-                </Button>
+              <TableCell key={headerIndex} align="center" sx={{ padding: 0 }}>
+                <div className="column-header-container">
+                  <span className="column-header">
+                    {header.headerUnit === "shift"
+                      ? shifts.find((s) => s.id === header.value)?.name
+                      : translateHeaderValue(header.value)}
+                  </span>
+                  {showingCustom && (
+                    <div className="column-header-custom-info">
+                      <Typography variant="body1" sx={{ fontSize: "0.8rem" }}>
+                        {statsUnitOptions.find(
+                          (u) => u.name === header.statsUnit
+                        )?.label || header.statsUnit}
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{ fontStyle: "italic", fontSize: "0.8rem" }}
+                      >
+                        {header.selectedShifts
+                          .map((ss) =>
+                            ss.name === "all shifts" ? t("all_shifts") : ss.name
+                          )
+                          .join(", ")}{" "}
+                      </Typography>
+                    </div>
+                  )}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <button
+                      className={`custom-button ${
+                        header.inCustom ? "in-custom" : ""
+                      }`}
+                      onClick={() => handleAddDeleteHeaderToCustom(header)}
+                    >
+                      {t("custom")}
+                    </button>
+                  </div>
+                </div>
               </TableCell>
             ))}
           </TableRow>
-          {showingCustom && (
-            <TableRow>
-              <TableCell sx={{ padding: 0 }}></TableCell>
-              {stats.statsHeaders.map((header, headerIndex) => (
-                <TableCell
-                  key={headerIndex}
-                  align="center"
-                  sx={{ padding: 0 }}
-                  // sx={{ borderLeft: headerIndex > 0 ? borderStyle : null }}
-                >
-                  <Typography
-                    variant="body1"
-                    sx={{ fontStyle: "italic", fontSize: "0.8rem" }}
-                  >
-                    {header.selectedShifts
-                      .map((ss) =>
-                        ss.name === "all shifts" ? t("all_shifts") : ss.name
-                      )
-                      .join(", ")}{" "}
-                  </Typography>
-                </TableCell>
-              ))}
-            </TableRow>
-          )}
         </TableHead>
         <TableBody>
           {workers.map((worker, wIndex) => (

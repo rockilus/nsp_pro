@@ -89,7 +89,7 @@ async def get_shift_options(
         shift_options = build_shift_options(
             shifts, shift_dimensions, shift_properties_sd
         )
-        response = shift_options
+        response = camelize_shift_options(shift_options)
     except Exception as e:
         log_info("Failed to get stats options")
         handle_routes_errors(e)
@@ -162,6 +162,13 @@ def core_to_msg_stats(stats: Stats) -> StatsMessage:
     as_dict = humps.camelize(data)
     validator = TypeAdapter(StatsMessage)
     return validator.validate_python(as_dict)
+
+
+def camelize_shift_options(shift_options: Dict) -> Dict:
+    out = {}
+    for key, value in shift_options.items():
+        out[key] = [humps.camelize(v) for v in value]
+    return out
 
 
 # message to core
