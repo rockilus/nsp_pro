@@ -13,11 +13,13 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
-import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import TableRowScheduleWIP from "../../data-display/table-row-schedule-wip";
 import ShiftOptionsDisplay from "./shift-options-display";
+// Styles
+import "../../../styles/text-styles.css";
+import "./stats-options.css";
 // Types
 import { StatsShiftOptionsT, StatsOptionsT } from "../../../types/stats";
 import { TemplateOptionValueT } from "../../../types/constraint";
@@ -109,68 +111,46 @@ export default function StatsOptions({
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignSelf: "flex-start",
-        width: "300px",
-        border: "1px solid grey",
-        borderRadius: 2,
-        margin: 2,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          minHeight: 45,
-          paddingLeft: 1,
-          borderBottom: "1px solid lightgrey",
-          backgroundColor: "grey.100",
-          borderRadius: "8px 8px 0 0",
-        }}
-      >
-        <Typography
-          variant="subtitle1"
-          align="left"
-          sx={{ fontWeight: "bold" }}
-        >
-          {t("stats")}
-        </Typography>
-      </Box>
-      <TableContainer component={Paper} style={{ width: "100%" }}>
-        <Table aria-label="simple table">
-          <TableBody>
-            <TableRowScheduleWIP
-              name={t("time_frame")}
-              content={
-                <FormControl>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={statsOptions.timeFrame}
-                    onChange={handleChangeSelectedTimeFrame}
-                    sx={{
-                      fontSize: "0.875rem",
-                      height: "40px",
-                      width: "160px",
-                      paddingY: 0,
-                    }}
-                  >
-                    {timeFrameOptions.map((option, index) => (
-                      <MenuItem key={index} value={option.name}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              }
-            />
-            {statsOptions.timeFrame === "custom" && (
-              <TableRowScheduleWIP
-                name={t("start")}
-                content={
+    <div className="stats-options-container">
+      <span className="title">{t("stats")}</span>
+      <div className="stats-options">
+        <div className="stats-options-row">
+          <div className="row-label-container">
+            <span className="row-label">{t("time_frame")}</span>
+          </div>
+          <div className="row-value-container">
+            {
+              <FormControl>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={statsOptions.timeFrame}
+                  onChange={handleChangeSelectedTimeFrame}
+                  sx={{
+                    fontSize: "0.875rem",
+                    height: "40px",
+                    width: "160px",
+                    paddingY: 0,
+                  }}
+                >
+                  {timeFrameOptions.map((option, index) => (
+                    <MenuItem key={index} value={option.name}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            }
+          </div>
+        </div>
+        {statsOptions.timeFrame === "custom" && (
+          <div>
+            <div className="stats-options-row">
+              <div className="row-label-container">
+                <span className="row-label-2">{t("start")}</span>
+              </div>
+              <div className="row-value-container">
+                {
                   <DatePicker
                     value={statsOptions.startDate}
                     onChange={(newValue) => {
@@ -191,12 +171,14 @@ export default function StatsOptions({
                     }}
                   />
                 }
-              />
-            )}
-            {statsOptions.timeFrame === "custom" && (
-              <TableRowScheduleWIP
-                name={t("end")}
-                content={
+              </div>
+            </div>
+            <div className="stats-options-row">
+              <div className="row-label-container">
+                <span className="row-label-2">{t("end")}</span>
+              </div>
+              <div className="row-value-container">
+                {
                   <DatePicker
                     value={statsOptions.endDate}
                     onChange={(newValue) => {
@@ -217,17 +199,52 @@ export default function StatsOptions({
                     }}
                   />
                 }
-              />
-            )}
-            <TableRowScheduleWIP
-              name={t("stats")}
-              content={
+              </div>
+            </div>
+          </div>
+        )}
+        <div className="stats-options-row">
+          <div className="row-label-container">
+            <span className="row-label">{t("stats")}</span>
+          </div>
+          <div className="row-value-container">
+            {
+              <FormControl>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={statsOptions.statsUnit}
+                  onChange={handleChangeSelectedStatsUnit}
+                  sx={{
+                    fontSize: "0.875rem",
+                    height: "40px",
+                    width: "160px",
+                    paddingY: 0,
+                  }}
+                >
+                  {statsUnitOptions.map((option, index) => (
+                    <MenuItem key={index} value={option.name}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            }
+          </div>
+        </div>
+        {statsUnitWithFrequency.includes(statsOptions.statsUnit) && (
+          <div className="stats-options-row">
+            <div className="row-label-container">
+              <span className="row-label-2">{t("view_by")}</span>
+            </div>
+            <div className="row-value-container">
+              {
                 <FormControl>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={statsOptions.statsUnit}
-                    onChange={handleChangeSelectedStatsUnit}
+                    value={statsOptions.headerUnit}
+                    onChange={handleChangeSelectedHeaderUnit}
                     sx={{
                       fontSize: "0.875rem",
                       height: "40px",
@@ -235,7 +252,7 @@ export default function StatsOptions({
                       paddingY: 0,
                     }}
                   >
-                    {statsUnitOptions.map((option, index) => (
+                    {headerUnitOptions.map((option, index) => (
                       <MenuItem key={index} value={option.name}>
                         {option.label}
                       </MenuItem>
@@ -243,79 +260,56 @@ export default function StatsOptions({
                   </Select>
                 </FormControl>
               }
-            />
-            {statsUnitWithFrequency.includes(statsOptions.statsUnit) && (
-              <TableRowScheduleWIP
-                name={t("view_by")}
-                content={
-                  <FormControl>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      value={statsOptions.headerUnit}
-                      onChange={handleChangeSelectedHeaderUnit}
-                      sx={{
-                        fontSize: "0.875rem",
-                        height: "40px",
-                        width: "160px",
-                        paddingY: 0,
-                      }}
-                    >
-                      {headerUnitOptions.map((option, index) => (
-                        <MenuItem key={index} value={option.name}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                }
-              />
-            )}
-            {statsOptions.statsUnit !== "custom" && (
-              <TableRowScheduleWIP
-                name={t("shifts")}
-                content={
-                  <ShiftOptionsDisplay
-                    lng={lng}
-                    selectedShifts={statsOptions.selectedShifts}
-                    statsShiftOptions={statsShiftOptions}
-                    handleEditSelectedShifts={handleEditSelectedShifts}
-                  />
-                }
-              />
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      {isLoading ? (
-        <Box
-          sx={{
-            backgroundColor: "#1976d2",
-            height: "35px",
-            borderRadius: "4px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            margin: 1,
-          }}
-        >
-          <CircularProgress size={20} sx={{ color: "white" }} />
-        </Box>
-      ) : (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleFetchStats}
-          sx={{
-            paddingLeft: 0.2,
-            paddingRight: 0.2,
-            margin: "8px",
-            height: "35px",
-          }}
-        >
-          {t("get_stats")}
-        </Button>
-      )}
-    </Box>
+            </div>
+          </div>
+        )}
+        {statsOptions.statsUnit !== "custom" && (
+          <div className="stats-options-row">
+            <div className="row-label-container">
+              <span className="row-label">{t("shifts")}</span>
+            </div>
+            <div className="row-value-container">
+              {
+                <ShiftOptionsDisplay
+                  lng={lng}
+                  selectedShifts={statsOptions.selectedShifts}
+                  statsShiftOptions={statsShiftOptions}
+                  handleEditSelectedShifts={handleEditSelectedShifts}
+                />
+              }
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="get-stats-button-container">
+        {isLoading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              width: "80%",
+              borderRadius: "4px",
+              backgroundColor: "#1976d2",
+            }}
+          >
+            <CircularProgress size={20} sx={{ color: "white" }} />
+          </Box>
+        ) : (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleFetchStats}
+            sx={{
+              width: "80%",
+              height: "100%",
+            }}
+          >
+            {t("get_stats")}
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }

@@ -2,12 +2,11 @@ import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
-// MUI
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 // Components
 import StatsTable from "./table/stats-table";
 import StatsOptions from "./options/stats-options";
+// Skeletons
+import CoveragesSkeleton from "../skeletons/coverages-skeleton";
 // Actions
 import {
   getStatsTabData,
@@ -15,6 +14,9 @@ import {
   addHeader,
   deleteHeader,
 } from "../../app/lib/stats";
+// Styles
+import "../../styles/tab-container-styles.css";
+import "./stats-tab.css";
 // Types
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
@@ -36,6 +38,7 @@ export default function StatsTab({
 }) {
   const { t } = useTranslation(lng, "stats-page");
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [stats, setStats] = useState<StatsT | null>(null);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
@@ -131,6 +134,7 @@ export default function StatsTab({
 
   useEffect(() => {
     const fetchStatsTabData = async () => {
+      setIsLoading(true);
       if (selectedTeamId) {
         const {
           shifts: fetchedShifts,
@@ -145,69 +149,47 @@ export default function StatsTab({
         setWorkers(fetchedWorkers);
         setShiftOptions(fetchedShiftOptions);
       }
+      setIsLoading(false);
     };
     fetchStatsTabData();
   }, [selectedTeamId]);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "row" }}>
-      <StatsOptions
-        lng={lng}
-        statsShiftOptions={shiftOptions}
-        statsUnitOptions={statsUnitOptions}
-        setShowingCustom={setShowingCustom}
-        handleGetStats={handleGetStats}
-      />
-      {stats ? (
-        showingCustom && stats.statsHeaders.length === 0 ? (
-          <Box
-            sx={{
-              margin: 2,
-              marginLeft: 0,
-              overflowX: "auto",
-              backgroundColor: "none",
-              width: "100%",
-            }}
-          >
-            <Typography
-              variant="body1"
-              color="textSecondary"
-              sx={{ fontStyle: "italic" }}
-            >
-              {t("no_custom_stats")}
-            </Typography>
-          </Box>
-        ) : (
-          <StatsTable
-            lng={lng}
-            stats={stats}
-            showingCustom={showingCustom}
-            workers={workers}
-            shifts={shifts}
-            statsUnitOptions={statsUnitOptions}
-            handleAddHeader={handleAddHeader}
-            handleDeleteHeader={handleDeleteHeader}
-          />
-        )
+    <div className="tab-container-ultrawide">
+      {isLoading ? (
+        <CoveragesSkeleton />
       ) : (
-        <Box
-          sx={{
-            margin: 2,
-            marginLeft: 0,
-            overflowX: "auto",
-            backgroundColor: "none",
-            width: "100%",
-          }}
-        >
-          <Typography
-            variant="body1"
-            color="textSecondary"
-            sx={{ fontStyle: "italic" }}
-          >
-            {t("no_stats_selected")}
-          </Typography>
-        </Box>
+        <div className="tab-container-row">
+          <StatsOptions
+            lng={lng}
+            statsShiftOptions={shiftOptions}
+            statsUnitOptions={statsUnitOptions}
+            setShowingCustom={setShowingCustom}
+            handleGetStats={handleGetStats}
+          />
+          <div className="divider-vertical" />
+          <div className="stats-table-container">
+            {stats ? (
+              showingCustom && stats.statsHeaders.length === 0 ? (
+                <span className="user-message">{t("no_custom_stats")}</span>
+              ) : (
+                <StatsTable
+                  lng={lng}
+                  stats={stats}
+                  showingCustom={showingCustom}
+                  workers={workers}
+                  shifts={shifts}
+                  statsUnitOptions={statsUnitOptions}
+                  handleAddHeader={handleAddHeader}
+                  handleDeleteHeader={handleDeleteHeader}
+                />
+              )
+            ) : (
+              <span className="user-message">{t("no_stats_selected")}</span>
+            )}
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
