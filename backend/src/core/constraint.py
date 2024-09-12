@@ -43,6 +43,16 @@ class Block:
     value: str | int | List[str] | List[Dict]
 
 
+# If the name of a Block is worker, shift, shift_reference or shift_relative,
+# the value is a list of dict with this format:
+# {
+#     "name": "Vannes", # value of the property
+#     "id": "66b633ffcad3bb739b082fae", # id of the id_type
+#     "id_type": "shift_dimension" # type of the id: worker, worker_dimension,
+#                                    shift, shift_dimension
+# }
+
+
 @dataclass
 class MissingProperty:
     dimension_id: str
