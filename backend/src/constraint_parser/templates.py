@@ -24,12 +24,8 @@ def build_templates(
     shift_properties: Dict[str, List[ShiftProperty]],
     lang_code: str,
 ) -> List[Template]:
-    worker_options = build_worker_options(
-        workers, worker_dimensions, worker_properties
-    )
-    shift_options = build_shift_options(
-        shifts, shift_dimensions, shift_properties
-    )
+    worker_options = build_worker_options(workers, worker_dimensions, worker_properties)
+    shift_options = build_shift_options(shifts, shift_dimensions, shift_properties)
     return build_templates_list(worker_options, shift_options, lang_code)
 
 
@@ -40,9 +36,7 @@ def build_worker_options(
 ) -> Dict:
     worker_options = {
         "all": [{"name": "all workers", "id": "", "id_type": ""}],
-        "workers": [
-            {"name": w.name, "id": w.id, "id_type": "worker"} for w in workers
-        ],
+        "workers": [{"name": w.name, "id": w.id, "id_type": "worker"} for w in workers],
     }
     for worker_dimension in worker_dimensions:
         worker_properties_wd = (
@@ -85,9 +79,7 @@ def build_worker_options(
                     "id": worker_dimension.id,
                     "id_type": "worker_dimension",
                 }
-                for wp_value in list(
-                    set(str(wp.value) for wp in worker_properties_wd)
-                )
+                for wp_value in list(set(str(wp.value) for wp in worker_properties_wd))
             ]
     return worker_options
 
@@ -99,9 +91,7 @@ def build_shift_options(
 ) -> Dict:
     shift_options = {
         "all": [{"name": "all shifts", "id": "", "id_type": ""}],
-        "shifts": [
-            {"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts
-        ],
+        "shifts": [{"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts],
     }
     for shift_dimension in shift_dimensions:
         shift_properties_sd = (
@@ -145,9 +135,7 @@ def build_shift_options(
                     "id": shift_dimension.id,
                     "id_type": "shift_dimension",
                 }
-                for sp_value in list(
-                    set(str(sp.value) for sp in shift_properties_sd)
-                )
+                for sp_value in list(set(str(sp.value) for sp in shift_properties_sd))
             ]
     return shift_options
 
