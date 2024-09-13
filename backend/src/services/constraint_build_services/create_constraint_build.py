@@ -39,7 +39,7 @@ def build_missing_properties_list_and_active(
     blocks: List[Block],
 ) -> Tuple[List[MissingProperty], bool]:
     mps: List[MissingProperty] = []
-    active_worker = True
+    active_worker = False
     active_shift = False
     for block in blocks:
         if block.name == "worker":
@@ -68,6 +68,8 @@ def build_missing_properties_list_and_active_worker(
         isinstance(b, dict) for b in block.value
     ):
         raise ValueError("Worker block value is not a list of dictionaries")
+    if any(b.get("id_type") in ["worker", ""] for b in block.value):  # type: ignore
+        active = True
     wd_ids = list(
         set(
             b.get("id")  # type: ignore
@@ -177,6 +179,8 @@ def build_missing_properties_list_and_active_shift(
         isinstance(b, dict) for b in block.value
     ):
         raise ValueError("Shift block value is not a list of dictionaries")
+    if any(b.get("id_type") in ["shift", ""] for b in block.value):  # type: ignore
+        active = True
     sd_ids = list(
         set(
             b.get("id")  # type: ignore
