@@ -382,6 +382,15 @@ def doc_to_core_constraint_build(
     doc_obj: ConstraintBuildDocument,
 ) -> ConstraintBuild:
     try:
+        if doc_obj.constraint_type not in [
+            'sum',
+            'seq',
+            'ord',
+            'fil',
+            'fai',
+            'eve',
+        ]:
+            raise ValueError(f'Invalid constraint_type: {doc_obj.constraint_type}')
         constraint_build = ConstraintBuild(
             id=doc_obj.id,
             team_id=doc_obj.team.id,

@@ -64,13 +64,14 @@ def build_worker_options(
                     "id": worker_dimension.id,
                     "id_type": "worker_dimension",
                 }
-                for wp_value in list(
-                    set(
-                        str(item)
-                        for wp in worker_properties_wd
-                        for item in wp.value  # type: ignore
-                    )
-                )
+                for wp_value in worker_dimension.entry_options  # showing all options
+                # for wp_value in list(
+                #     set(
+                #         str(item)
+                #         for wp in worker_properties_wd
+                #         for item in wp.value  # type: ignore
+                #     )
+                # ) # showing only options that are used
             ]
         else:
             worker_options[worker_dimension.name] = [
@@ -119,13 +120,14 @@ def build_shift_options(
                     "id": shift_dimension.id,
                     "id_type": "shift_dimension",
                 }
-                for sp_value in list(
-                    set(
-                        str(item)
-                        for sp in shift_properties_sd
-                        for item in sp.value  # type: ignore
-                    )
-                )
+                for sp_value in shift_dimension.entry_options  # showing all options
+                # for sp_value in list(
+                #     set(
+                #         str(item)
+                #         for sp in shift_properties_sd
+                #         for item in sp.value  # type: ignore
+                #     )
+                # ) # showing only options that are used
             ]
         else:
             shift_options[shift_dimension.name] = [
