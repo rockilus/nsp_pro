@@ -163,7 +163,8 @@ def build_missing_properties_list_and_active_worker_list_wd(
     not_missing_values = list(set(wp_values_constraint) - set(missing_values))
     if missing_values:
         mp = MissingProperty(
-            dimension_id=wd.id, property_values=missing_values  # type: ignore
+            dimension_id=wd.id,
+            property_values=missing_values,  # type: ignore
         )
     else:
         mp = None
@@ -272,7 +273,8 @@ def build_missing_properties_list_and_active_shift_list_sd(
     not_missing_values = list(set(sp_values_constraint) - set(missing_values))
     if missing_values:
         mp = MissingProperty(
-            dimension_id=sd.id, property_values=missing_values  # type: ignore
+            dimension_id=sd.id,
+            property_values=missing_values,  # type: ignore
         )
     else:
         mp = None
