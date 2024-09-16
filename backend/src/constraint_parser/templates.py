@@ -35,8 +35,23 @@ def build_worker_options(
     worker_properties: Dict[str, List[WorkerProperty]],
 ) -> Dict:
     worker_options = {
-        "all": [{"name": "all workers", "id": "", "id_type": ""}],
-        "workers": [{"name": w.name, "id": w.id, "id_type": "worker"} for w in workers],
+        "all": [
+            {
+                "name": "all workers",
+                "id": "",
+                "id_type": "",
+                "is_bool_dim": False,
+            }
+        ],
+        "workers": [
+            {
+                "name": w.name,
+                "id": w.id,
+                "id_type": "worker",
+                "is_bool_dim": False,
+            }
+            for w in workers
+        ],
     }
     for worker_dimension in worker_dimensions:
         worker_properties_wd = (
@@ -50,11 +65,13 @@ def build_worker_options(
                     "name": worker_dimension.name,
                     "id": worker_dimension.id,
                     "id_type": "worker_dimension",
+                    "is_bool_dim": True,
                 },
                 {
                     "name": f"not {worker_dimension.name}",
                     "id": worker_dimension.id,
                     "id_type": "worker_dimension",
+                    "is_bool_dim": True,
                 },
             ]
         elif worker_dimension.entry_type == "list":
@@ -63,6 +80,7 @@ def build_worker_options(
                     "name": str(wp_value),
                     "id": worker_dimension.id,
                     "id_type": "worker_dimension",
+                    "is_bool_dim": False,
                 }
                 for wp_value in worker_dimension.entry_options  # showing all options
                 # for wp_value in list(
@@ -79,6 +97,7 @@ def build_worker_options(
                     "name": str(wp_value),
                     "id": worker_dimension.id,
                     "id_type": "worker_dimension",
+                    "is_bool_dim": False,
                 }
                 for wp_value in list(set(str(wp.value) for wp in worker_properties_wd))
             ]
@@ -91,8 +110,23 @@ def build_shift_options(
     shift_properties: Dict[str, List[ShiftProperty]],
 ) -> Dict:
     shift_options = {
-        "all": [{"name": "all shifts", "id": "", "id_type": ""}],
-        "shifts": [{"name": s.name, "id": s.id, "id_type": "shift"} for s in shifts],
+        "all": [
+            {
+                "name": "all shifts",
+                "id": "",
+                "id_type": "",
+                "is_bool_dim": False,
+            }
+        ],
+        "shifts": [
+            {
+                "name": s.name,
+                "id": s.id,
+                "id_type": "shift",
+                "is_bool_dim": False,
+            }
+            for s in shifts
+        ],
     }
     for shift_dimension in shift_dimensions:
         shift_properties_sd = (
@@ -106,11 +140,13 @@ def build_shift_options(
                     "name": shift_dimension.name,
                     "id": shift_dimension.id,
                     "id_type": "shift_dimension",
+                    "is_bool_dim": True,
                 },
                 {
                     "name": f"not {shift_dimension.name}",
                     "id": shift_dimension.id,
                     "id_type": "shift_dimension",
+                    "is_bool_dim": True,
                 },
             ]
         elif shift_dimension.entry_type == "list":
@@ -119,6 +155,7 @@ def build_shift_options(
                     "name": str(sp_value),
                     "id": shift_dimension.id,
                     "id_type": "shift_dimension",
+                    "is_bool_dim": False,
                 }
                 for sp_value in shift_dimension.entry_options  # showing all options
                 # for sp_value in list(
@@ -135,6 +172,7 @@ def build_shift_options(
                     "name": str(sp_value),
                     "id": shift_dimension.id,
                     "id_type": "shift_dimension",
+                    "is_bool_dim": False,
                 }
                 for sp_value in list(set(str(sp.value) for sp in shift_properties_sd))
             ]
