@@ -94,10 +94,19 @@ class Constraint:
 
 
 @dataclass
+class ShiftWorkerOption:
+    name: str  # value shown in the dropdown in the ui
+    id: str  # id of the shift, worker or dimension
+    id_type: Literal["shift", "worker", "shift_dimension", "worker_dimension", ""]
+    is_bool_dim: bool
+    category_name: str  # workers, shifts, all, or the name of the dimension
+
+
+@dataclass
 class TemplateBlock:
     name: Constants.BLOCK_NAME_OPTIONS
     type: Literal["string", "number", "list", "dict"]
-    options: List[str] | Dict
+    options: List[str] | List[ShiftWorkerOption]
     placeholder: str | int
 
 

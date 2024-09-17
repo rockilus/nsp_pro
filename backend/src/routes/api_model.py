@@ -136,10 +136,18 @@ class ConstraintBuildMessage(BaseModel):
     missingProperties: List[MissingPropertyMessage]
 
 
+class ShiftWorkerOptionMessage(BaseModel):
+    name: str
+    id: str
+    idType: str
+    isBoolDim: bool
+    categoryName: str
+
+
 class TemplateBlockMessage(BaseModel):
     name: str
     type: str
-    options: List[str] | Dict
+    options: List[str] | List[ShiftWorkerOptionMessage]
     placeholder: str | int
 
 

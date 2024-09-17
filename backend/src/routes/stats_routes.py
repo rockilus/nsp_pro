@@ -9,6 +9,7 @@ from constraint_parser import build_shift_options
 from core import (
     DictBlockValue,
     ShiftProperty,
+    ShiftWorkerOption,
     Stats,
     StatsHeader,
     StatsOptions,
@@ -23,6 +24,7 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
+    ShiftWorkerOptionMessage,
     StatsHeaderMessage,
     StatsMessage,
     StatsOptionsMessage,
@@ -66,7 +68,7 @@ async def create_stats_header(
 async def get_shift_options(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-) -> Dict:
+) -> List[ShiftWorkerOptionMessage]:
     try:
         if not await authz_check(
             session.get_user_id(), "read-shift-options", "team", team_id
@@ -89,7 +91,7 @@ async def get_shift_options(
         shift_options = build_shift_options(
             shifts, shift_dimensions, shift_properties_sd
         )
-        response = camelize_shift_options(shift_options)
+        response = [core_to_msg_shift_worker_option(so) for so in shift_options]
     except Exception as e:
         log_info("Failed to get stats options")
         handle_routes_errors(e)
@@ -161,6 +163,15 @@ def core_to_msg_stats(stats: Stats) -> StatsMessage:
     data["stats_values"] = [core_to_msg_stats_value(sv) for sv in stats.stats_values]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(StatsMessage)
+    return validator.validate_python(as_dict)
+
+
+def core_to_msg_shift_worker_option(
+    shift_worker_option: ShiftWorkerOption,
+) -> ShiftWorkerOptionMessage:
+    data = asdict(shift_worker_option)
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(ShiftWorkerOptionMessage)
     return validator.validate_python(as_dict)
 
 

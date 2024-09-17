@@ -1,11 +1,12 @@
-from typing import Dict, List
+from typing import List
 
-from core import Template, TemplateBlock
+from core import ShiftWorkerOption, Template, TemplateBlock
 from utils.constants import Constants
 
 
 def build_templates_list_en(
-    worker_options: Dict, shift_options: Dict
+    worker_options: List[ShiftWorkerOption],
+    shift_options: List[ShiftWorkerOption],
 ) -> List[Template]:
     return [
         Template(
