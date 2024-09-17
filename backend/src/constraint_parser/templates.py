@@ -25,12 +25,8 @@ def build_templates(
     shift_properties: Dict[str, List[ShiftProperty]],
     lang_code: str,
 ) -> List[Template]:
-    worker_options = build_worker_options(
-        workers, worker_dimensions, worker_properties
-    )
-    shift_options = build_shift_options(
-        shifts, shift_dimensions, shift_properties
-    )
+    worker_options = build_worker_options(workers, worker_dimensions, worker_properties)
+    shift_options = build_shift_options(shifts, shift_dimensions, shift_properties)
     return build_templates_list(worker_options, shift_options, lang_code)
 
 
@@ -64,22 +60,15 @@ def build_worker_options(
             else []
         )
         if worker_dimension.entry_type == "bool":
-            worker_options += [
+            worker_options.append(
                 ShiftWorkerOption(
-                    name=worker_dimension.name,
+                    name="",
                     id=worker_dimension.id,
                     id_type="worker_dimension",
                     is_bool_dim=True,
                     category_name=worker_dimension.name,
-                ),
-                ShiftWorkerOption(
-                    name=f"not {worker_dimension.name}",
-                    id=worker_dimension.id,
-                    id_type="worker_dimension",
-                    is_bool_dim=True,
-                    category_name=worker_dimension.name,
-                ),
-            ]
+                )
+            )
         elif worker_dimension.entry_type == "list":
             worker_options += [
                 ShiftWorkerOption(
@@ -107,9 +96,7 @@ def build_worker_options(
                     is_bool_dim=False,
                     category_name=worker_dimension.name,
                 )
-                for wp_value in list(
-                    set(str(wp.value) for wp in worker_properties_wd)
-                )
+                for wp_value in list(set(str(wp.value) for wp in worker_properties_wd))
             ]
     return worker_options
 
@@ -144,22 +131,15 @@ def build_shift_options(
             else []
         )
         if shift_dimension.entry_type == "bool":
-            shift_options += [
+            shift_options.append(
                 ShiftWorkerOption(
-                    name=shift_dimension.name,
+                    name="",
                     id=shift_dimension.id,
                     id_type="shift_dimension",
                     is_bool_dim=True,
                     category_name=shift_dimension.name,
-                ),
-                ShiftWorkerOption(
-                    name=f"not {shift_dimension.name}",
-                    id=shift_dimension.id,
-                    id_type="shift_dimension",
-                    is_bool_dim=True,
-                    category_name=shift_dimension.name,
-                ),
-            ]
+                )
+            )
         elif shift_dimension.entry_type == "list":
             shift_options += [
                 ShiftWorkerOption(
@@ -187,9 +167,7 @@ def build_shift_options(
                     is_bool_dim=False,
                     category_name=shift_dimension.name,
                 )
-                for sp_value in list(
-                    set(str(sp.value) for sp in shift_properties_sd)
-                )
+                for sp_value in list(set(str(sp.value) for sp in shift_properties_sd))
             ]
     return shift_options
 

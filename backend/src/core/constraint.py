@@ -105,7 +105,7 @@ class ShiftWorkerOption:
 @dataclass
 class TemplateBlock:
     name: Constants.BLOCK_NAME_OPTIONS
-    type: Literal["string", "number", "list", "dict"]
+    type: Literal["string", "number", "list", "shift_worker_option"]
     options: List[str] | List[ShiftWorkerOption]
     placeholder: str | int
 

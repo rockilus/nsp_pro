@@ -18,14 +18,14 @@ def build_templates_list_fr(
             blocks=[
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Jean",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="doit faire",
                 ),
                 TemplateBlock(
@@ -37,12 +37,12 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="#",
                     type="number",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder=2,
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="consultations",
                 ),
@@ -62,14 +62,14 @@ def build_templates_list_fr(
             blocks=[
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Jean",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="doit faire",
                 ),
                 TemplateBlock(
@@ -81,12 +81,12 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="#",
                     type="number",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder=1,
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="garde",
                 ),
@@ -112,20 +112,20 @@ def build_templates_list_fr(
                 ),
                 TemplateBlock(
                     name="shift_reference",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="consultation",
                 ),
                 TemplateBlock(
                     name="#",
                     type="number",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder=1,
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="jour",
                 ),
                 TemplateBlock(
@@ -136,19 +136,19 @@ def build_templates_list_fr(
                 ),
                 TemplateBlock(
                     name="shift_relative",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="garde",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="pour",
                 ),
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Jean",
                 ),
@@ -163,37 +163,37 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="Si",
                 ),
                 TemplateBlock(
                     name="shift_reference",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="garde",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="alors",
                 ),
                 TemplateBlock(
                     name="shift_relative",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="repos",
                 ),
                 TemplateBlock(
                     name="#",
                     type="number",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder=1,
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="jour",
                 ),
                 TemplateBlock(
@@ -205,12 +205,12 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="pour",
                 ),
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Jean",
                 ),
@@ -226,19 +226,19 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="Si",
                 ),
                 TemplateBlock(
                     name="shift_reference",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="garde",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="le",
                 ),
                 TemplateBlock(
@@ -250,25 +250,25 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="alors",
                 ),
                 TemplateBlock(
                     name="shift_relative",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="repos",
                 ),
                 TemplateBlock(
                     name="#",
                     type="number",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder=2,
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="jour",
                 ),
                 TemplateBlock(
@@ -280,12 +280,12 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="pour",
                 ),
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Jean",
                 ),
@@ -300,7 +300,7 @@ def build_templates_list_fr(
             blocks=[
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Jean",
                 ),
@@ -313,12 +313,12 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="faire des",
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="consultations",
                 ),
@@ -335,19 +335,19 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="Les",
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="gardes",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="le",
                 ),
                 TemplateBlock(
@@ -359,13 +359,13 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="doivent être réparties de manière égale dans "
                     + "le temps pour",
                 ),
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="tous les travailleurs",
                 ),
@@ -382,19 +382,19 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="Les",
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="gardes",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="le",
                 ),
                 TemplateBlock(
@@ -406,12 +406,12 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="doivent être réparties de manière équitable entre",
                 ),
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="tous les travailleurs",
                 ),

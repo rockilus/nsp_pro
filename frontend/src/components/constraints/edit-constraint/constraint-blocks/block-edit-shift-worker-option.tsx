@@ -14,19 +14,22 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import ListSubheader from "@mui/material/ListSubheader";
+// Utils
+import { getShiftWorkerOptionDisplayName } from "../../shift-worker-option-utils/shift-worker-option-utils";
 // Types
 import {
   BlockT,
   TemplateBlockT,
-  TemplateOptionValueT,
+  ShiftWorkerOptionT,
 } from "../../../../types/constraint";
 // Constants
 import { ConstraintDefaultColors } from "../../../../constants/constants";
 
-export default function BlockEditDict({
+export default function BlockEditShiftWorkerOption({
   lng,
   block,
   templateBlock,
+  shiftWorkerOptionDict,
   handleEditBlock,
   handleClose,
   translateOptionName,
@@ -34,11 +37,14 @@ export default function BlockEditDict({
   lng: string;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
+  shiftWorkerOptionDict: { [key: string]: ShiftWorkerOptionT[] };
   handleEditBlock: (block: BlockT) => void;
   handleClose: () => void;
   translateOptionName: (name: string) => string;
 }) {
   const { t } = useTranslation(lng, "constraint-page");
+
+  console.log("shiftWorkerOptionDict", shiftWorkerOptionDict);
 
   const translateSectionLabel = (label: string) => {
     switch (label) {
@@ -64,68 +70,59 @@ export default function BlockEditDict({
     );
   }
 
-  const isTemplateOptionValueT = useCallback((dict: unknown): boolean => {
+  const isShiftWorkerOptionT = useCallback((dict: unknown): boolean => {
     return (
       isDictionary(dict) &&
       "name" in dict &&
       "id" in dict &&
       "idType" in dict &&
-      typeof dict.name === "string" &&
+      "isBoolDim" in dict &&
+      "categoryName" in dict &&
+      (typeof dict.name === "string" || typeof dict.name === "boolean") &&
       typeof dict.id === "string" &&
-      typeof dict.idType === "string"
+      typeof dict.idType === "string" &&
+      typeof dict.isBoolDim === "boolean" &&
+      typeof dict.categoryName === "string"
     );
   }, []);
 
-  const initialValue = useCallback((): TemplateOptionValueT[] => {
+  const initialValue = useCallback((): ShiftWorkerOptionT[] => {
+    console.log("block", block);
+
     if (block === null) {
       return [];
     }
     if (
       Array.isArray(block.value) &&
-      (block.value as any[]).every(isTemplateOptionValueT)
+      (block.value as any[]).every(isShiftWorkerOptionT)
     ) {
-      return block.value as TemplateOptionValueT[];
+      return block.value as ShiftWorkerOptionT[];
     }
-    throw new Error("block.value is not an array of TemplateOptionValueT");
-  }, [block, isTemplateOptionValueT]);
-
-  const templateOptionsCast = useCallback((): Record<
-    string,
-    TemplateOptionValueT[]
-  > => {
-    if (templateBlock === null) {
-      return {};
-    }
-    if (
-      isDictionary(templateBlock.options) &&
-      Object.values(templateBlock.options).every(
-        (v) =>
-          Array.isArray(v) &&
-          v.every((item: unknown) =>
-            isTemplateOptionValueT(item as Record<string, unknown>)
-          )
-      )
-    ) {
-      return templateBlock.options as Record<string, TemplateOptionValueT[]>;
-    }
-    throw new Error(
-      "templateBlock.options is not a dictionary of string key and TemplateOptionValueT array values"
-    );
-  }, [templateBlock, isTemplateOptionValueT]);
+    throw new Error("block.value is not an array of ShiftWorkerOptionT");
+  }, [block, isShiftWorkerOptionT]);
 
   const filterOptionsList = useCallback(
     (
       searchQuery: string,
-      selectedOptions: TemplateOptionValueT[],
-      options: TemplateOptionValueT[]
-    ): TemplateOptionValueT[] => {
-      const selectedArray: string[] = selectedOptions.map((item) => item.name);
+      selectedOptions: ShiftWorkerOptionT[],
+      options: ShiftWorkerOptionT[]
+    ): ShiftWorkerOptionT[] => {
+      const selectedArray: string[] = selectedOptions.map((item) =>
+        getShiftWorkerOptionDisplayName(item)
+      );
       return searchQuery === ""
-        ? options.filter((option) => !selectedArray.includes(option.name))
+        ? options.filter(
+            (option) =>
+              !selectedArray.includes(getShiftWorkerOptionDisplayName(option))
+          )
         : options.filter(
             (option) =>
-              !selectedArray.includes(option.name) &&
-              option.name.toLowerCase().includes(searchQuery.toLowerCase())
+              !selectedArray.includes(
+                getShiftWorkerOptionDisplayName(option)
+              ) &&
+              getShiftWorkerOptionDisplayName(option)
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase())
           );
     },
     []
@@ -134,10 +131,10 @@ export default function BlockEditDict({
   const filterOptions = useCallback(
     (
       searchQuery: string,
-      selectedOptions: TemplateOptionValueT[],
-      options: Record<string, TemplateOptionValueT[]>
-    ): Record<string, TemplateOptionValueT[]> => {
-      let out: Record<string, TemplateOptionValueT[]> = {};
+      selectedOptions: ShiftWorkerOptionT[],
+      options: { [key: string]: ShiftWorkerOptionT[] }
+    ): { [key: string]: ShiftWorkerOptionT[] } => {
+      let out: { [key: string]: ShiftWorkerOptionT[] } = {};
       for (let key of Object.keys(options)) {
         const filteredKeyOptions = filterOptionsList(
           searchQuery,
@@ -154,16 +151,17 @@ export default function BlockEditDict({
   );
 
   const [valueState, setValueState] =
-    useState<TemplateOptionValueT[]>(initialValue);
-  const [templateOptions, setTemplateOptions] =
-    useState<Record<string, TemplateOptionValueT[]>>(templateOptionsCast);
+    useState<ShiftWorkerOptionT[]>(initialValue);
+  const [templateOptions, setTemplateOptions] = useState<{
+    [key: string]: ShiftWorkerOptionT[];
+  }>(shiftWorkerOptionDict);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredOptions, setFilteredOptions] = useState<
-    Record<string, TemplateOptionValueT[]>
-  >(filterOptions("", valueState, templateOptions));
+  const [filteredOptions, setFilteredOptions] = useState<{
+    [key: string]: ShiftWorkerOptionT[];
+  }>(filterOptions("", valueState, templateOptions));
   const [selectedOption, setSelectedOption] = useState<Record<
     string,
-    TemplateOptionValueT
+    ShiftWorkerOptionT
   > | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -172,12 +170,6 @@ export default function BlockEditDict({
       setValueState(initialValue);
     }
   }, [block, initialValue]);
-
-  useEffect(() => {
-    if (templateBlock !== null) {
-      setTemplateOptions(templateOptionsCast);
-    }
-  }, [templateBlock, templateOptionsCast]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.trim();
@@ -200,7 +192,7 @@ export default function BlockEditDict({
     }
   };
 
-  const handleDeleteFromSelected = (optionToDelete: TemplateOptionValueT) => {
+  const handleDeleteFromSelected = (optionToDelete: ShiftWorkerOptionT) => {
     if (valueState.includes(optionToDelete)) {
       const newValue = valueState.filter((option) => option !== optionToDelete);
       handleEditBlock({
@@ -290,7 +282,7 @@ export default function BlockEditDict({
 
   const handleAddSelectedOption = (
     newOptionKey: string,
-    newOption: TemplateOptionValueT
+    newOption: ShiftWorkerOptionT
   ) => {
     if (
       newOptionKey in filteredOptions &&
@@ -348,7 +340,9 @@ export default function BlockEditDict({
           {valueState.map((option, index) => (
             <Chip
               key={index}
-              label={translateOptionName(option.name)}
+              label={translateOptionName(
+                getShiftWorkerOptionDisplayName(option)
+              )}
               onDelete={() => handleDeleteFromSelected(option)}
               deleteIcon={
                 <ClearIcon
@@ -416,7 +410,7 @@ export default function BlockEditDict({
                     {translateSectionLabel(sectionLabel)}
                   </ListSubheader>
                   {filteredOptions[sectionLabel].map(
-                    (option: TemplateOptionValueT, index: number) => (
+                    (option: ShiftWorkerOptionT, index: number) => (
                       <ListItemButton
                         key={`item-${sectionLabel}-${index}`}
                         onClick={() => {
@@ -431,7 +425,9 @@ export default function BlockEditDict({
                       >
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText
-                            primary={translateOptionName(option.name)}
+                            primary={translateOptionName(
+                              getShiftWorkerOptionDisplayName(option)
+                            )}
                             style={{ color: ConstraintDefaultColors.shade3 }}
                           />
                         </ListItem>

@@ -17,10 +17,19 @@ export type TemplateOptionValueT = {
   idType: string;
 };
 
+export type ShiftWorkerOptionT = {
+  name: string | boolean;
+  id: string;
+  idType: string;
+  isBoolDim: boolean;
+  categoryName: string;
+};
+
 export type BlockT = {
   name: string;
   type: string;
-  value: string | number | string[] | TemplateOptionValueT[];
+  // value: string | number | string[] | TemplateOptionValueT[];
+  value: string | number | string[] | ShiftWorkerOptionT[];
 };
 
 export type MissingProperty = {
@@ -28,19 +37,11 @@ export type MissingProperty = {
   propertyValues: string[];
 };
 
-export type ShiftWorkerOptionMessage = {
-  name: string;
-  id: string;
-  idType: string;
-  isBoolDim: boolean;
-  categoryName: string;
-};
-
 export type TemplateBlockT = {
   name: string;
   type: string;
   // options: string[] | Record<string, TemplateOptionValueT[]>;
-  options: string[] | ShiftWorkerOptionMessage[];
+  options: string[] | ShiftWorkerOptionT[];
   placeholder: string | number;
 };
 

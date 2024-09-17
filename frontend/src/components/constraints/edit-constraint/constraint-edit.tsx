@@ -11,7 +11,7 @@ import {
   TemplateT,
   BlockT,
   TemplateBlockT,
-  TemplateOptionValueT,
+  ShiftWorkerOptionT,
 } from "../../../types/constraint";
 
 export default function ConstraintEdit({
@@ -31,10 +31,10 @@ export default function ConstraintEdit({
 
   const initialBlockValue = (
     templateBlock: TemplateBlockT
-  ): string | number | string[] | TemplateOptionValueT[] => {
+  ): string | number | string[] | ShiftWorkerOptionT[] => {
     if (templateBlock.type === "text") {
       return templateBlock.placeholder;
-    } else if (templateBlock.type === "dict") {
+    } else if (templateBlock.type === "shift_worker_option") {
       return [];
     } else {
       if (

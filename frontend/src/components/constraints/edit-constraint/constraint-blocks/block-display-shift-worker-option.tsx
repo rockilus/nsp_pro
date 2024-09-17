@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "../../../../app/i18n/client";
 // Components
-import BlockEditDict from "./block-edit-dict";
+import BlockEditShiftWorkerOption from "./block-edit-shift-worker-option";
 import GetBlockNameLabel from "../../../data-display/get-block-name-label";
 import PopoverBoxAnchorElOver from "../../../inputs/popover-box-anchor-el-over";
 import {
@@ -9,10 +9,16 @@ import {
   blockDisplayPlaceholder,
   blockDislayValue,
 } from "../../../data-display/block-dislay";
+// Utils
+import { getShiftWorkerOptionDisplayName } from "../../shift-worker-option-utils/shift-worker-option-utils";
 // Types
-import { TemplateBlockT, BlockT } from "../../../../types/constraint";
+import {
+  TemplateBlockT,
+  BlockT,
+  ShiftWorkerOptionT,
+} from "../../../../types/constraint";
 
-export default function BlockDisplayDict({
+export default function BlockDisplayShiftWorkerOption({
   lng,
   block,
   templateBlock,
@@ -46,7 +52,7 @@ export default function BlockDisplayDict({
               block.value
                 .map((item) =>
                   typeof item === "object" && "name" in item
-                    ? translateOptionName(item.name)
+                    ? translateOptionName(getShiftWorkerOptionDisplayName(item))
                     : ""
                 )
                 .join(", ")
@@ -61,14 +67,44 @@ export default function BlockDisplayDict({
     setOpen(false);
   };
 
+  const expandBoolDimOptions = (
+    options: ShiftWorkerOptionT[]
+  ): ShiftWorkerOptionT[] => {
+    return options.flatMap((option) => {
+      if (option.isBoolDim) {
+        return [
+          { ...option, name: true },
+          { ...option, name: false },
+        ];
+      } else {
+        return [option];
+      }
+    });
+  };
+
+  const groupByCategoryName = (
+    options: ShiftWorkerOptionT[]
+  ): { [key: string]: ShiftWorkerOptionT[] } => {
+    return options.reduce((acc, option) => {
+      if (!acc[option.categoryName]) {
+        acc[option.categoryName] = [];
+      }
+      acc[option.categoryName].push(option);
+      return acc;
+    }, {} as { [key: string]: ShiftWorkerOptionT[] });
+  };
+
   return (
     <PopoverBoxAnchorElOver
       buttonContent={blockDisplay()}
       content={
-        <BlockEditDict
+        <BlockEditShiftWorkerOption
           lng={lng}
           block={block}
           templateBlock={templateBlock}
+          shiftWorkerOptionDict={groupByCategoryName(
+            expandBoolDimOptions(templateBlock.options as ShiftWorkerOptionT[])
+          )}
           handleEditBlock={handleEditBlock}
           handleClose={handleClose}
           translateOptionName={translateOptionName}
