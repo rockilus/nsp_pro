@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import Chip from "@mui/material/Chip";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -19,9 +19,9 @@ import {
   BlockT,
   TemplateBlockT,
   TemplateOptionValueT,
-} from "../../types/constraint";
+} from "../../../../types/constraint";
 // Constants
-import { ConstraintDefaultColors } from "../../constants/constants";
+import { ConstraintDefaultColors } from "../../../../constants/constants";
 
 export default function BlockEditDict({
   lng,

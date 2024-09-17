@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // Components
 import BlockEditDict from "./block-edit-dict";
-import GetBlockNameLabel from "../data-display/get-block-name-label";
-import PopoverBoxAnchorElOver from "../inputs/popover-box-anchor-el-over";
+import GetBlockNameLabel from "../../../data-display/get-block-name-label";
+import PopoverBoxAnchorElOver from "../../../inputs/popover-box-anchor-el-over";
 import {
   blockDisplayName,
   blockDisplayPlaceholder,
   blockDislayValue,
-} from "../data-display/block-dislay";
+} from "../../../data-display/block-dislay";
 // Types
-import { TemplateBlockT, BlockT } from "../../types/constraint";
+import { TemplateBlockT, BlockT } from "../../../../types/constraint";
 
 export default function BlockDisplayDict({
   lng,

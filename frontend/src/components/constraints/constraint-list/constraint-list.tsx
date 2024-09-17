@@ -1,15 +1,15 @@
 import * as React from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Grid from "@mui/material/Grid";
 // Components
 import ConstraintListItem from "./constraint-list-item";
-import TableAddButton from "../buttons/table-add-button";
+import TableAddButton from "../../buttons/table-add-button";
 // Styles
-import "../../styles/text-styles.css";
-import "./constraint-tab.css";
+import "../../../styles/text-styles.css";
+import "../constraint-tab.css";
 // Types
-import { ConstraintT, TemplateT } from "../../types/constraint";
+import { ConstraintT, TemplateT } from "../../../types/constraint";
 
 export default function ConstraintList({
   lng,

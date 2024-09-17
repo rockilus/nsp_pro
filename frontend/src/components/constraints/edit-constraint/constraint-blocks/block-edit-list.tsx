@@ -13,9 +13,9 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 // Types
-import { BlockT, TemplateBlockT } from "../../types/constraint";
+import { BlockT, TemplateBlockT } from "../../../../types/constraint";
 // Constants
-import { ConstraintDefaultColors } from "../../constants/constants";
+import { ConstraintDefaultColors } from "../../../../constants/constants";
 
 export default function BlockEditList({
   block,

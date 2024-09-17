@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
@@ -7,10 +7,10 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 // Styles
-import "../../styles/text-styles.css";
+import "../../../../styles/text-styles.css";
 import "./template-list.css";
 // Types
-import { TemplateT } from "../../types/constraint";
+import { TemplateT } from "../../../../types/constraint";
 
 export default function TemplateList({
   lng,

@@ -6,9 +6,9 @@ import BlockDisplayDict from "./block-display-dict";
 import BlockDisplayList from "./block-display-list";
 import BlockDisplayString from "./block-display-string";
 import BlockDisplayNumber from "./block-display-number";
-import { blockDisplayText } from "../data-display/block-dislay";
+import { blockDisplayText } from "../../../data-display/block-dislay";
 // Types
-import { TemplateBlockT, BlockT } from "../../types/constraint";
+import { TemplateBlockT, BlockT } from "../../../../types/constraint";
 
 export default function BlockDisplay({
   lng,

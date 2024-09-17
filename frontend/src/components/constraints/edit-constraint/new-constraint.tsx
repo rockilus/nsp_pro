@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 // Components
 import ConstraintEdit from "./constraint-edit";
-import TemplateList from "./template-list";
+import TemplateList from "./template-list/template-list";
 // Styles
-import "../../styles/text-styles.css";
-import "./constraint-tab.css";
+import "../../../styles/text-styles.css";
+import "../constraint-tab.css";
 import "./new-constraint.css";
 // Types
-import { TemplateT, ConstraintT } from "../../types/constraint";
+import { TemplateT, ConstraintT } from "../../../types/constraint";
 
 export default function NewConstraint({
   lng,

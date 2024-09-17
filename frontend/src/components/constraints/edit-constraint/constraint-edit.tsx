@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 // Components
-import BlockDisplay from "./block-display";
+import BlockDisplay from "./constraint-blocks/block-display";
 // Types
 import {
   ConstraintT,
@@ -12,7 +12,7 @@ import {
   BlockT,
   TemplateBlockT,
   TemplateOptionValueT,
-} from "../../types/constraint";
+} from "../../../types/constraint";
 
 export default function ConstraintEdit({
   lng,

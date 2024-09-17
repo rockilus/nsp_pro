@@ -8,16 +8,16 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 // Components
 import ConstraintButton from "./constraint-button";
-import { HardSoftButton } from "../buttons/hard-soft-button";
+import { HardSoftButton } from "../../buttons/hard-soft-button";
 // Types
-import { ConstraintT, TemplateT } from "../../types/constraint";
+import { ConstraintT, TemplateT } from "../../../types/constraint";
 // Constants
 import {
   ConstraintColorActiveBack,
   ConstraintColorInactiveBack,
   ConstraintColorActiveText,
   ConstraintColorInactiveText,
-} from "../../constants/constants";
+} from "../../../constants/constants";
 
 export default function ConstraintListItem({
   lng,

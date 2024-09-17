@@ -28,10 +28,19 @@ export type MissingProperty = {
   propertyValues: string[];
 };
 
+export type ShiftWorkerOptionMessage = {
+  name: string;
+  id: string;
+  idType: string;
+  isBoolDim: boolean;
+  categoryName: string;
+};
+
 export type TemplateBlockT = {
   name: string;
   type: string;
-  options: string[] | Record<string, TemplateOptionValueT[]>;
+  // options: string[] | Record<string, TemplateOptionValueT[]>;
+  options: string[] | ShiftWorkerOptionMessage[];
   placeholder: string | number;
 };
 

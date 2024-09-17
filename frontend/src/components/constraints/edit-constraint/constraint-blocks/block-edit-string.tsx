@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import Chip from "@mui/material/Chip";
 import List from "@mui/material/List";
@@ -13,9 +13,9 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 // Types
-import { BlockT, TemplateBlockT } from "../../types/constraint";
+import { BlockT, TemplateBlockT } from "../../../../types/constraint";
 // Constants
-import { ConstraintDefaultColors } from "../../constants/constants";
+import { ConstraintDefaultColors } from "../../../../constants/constants";
 
 export default function BlockEditString({
   lng,
