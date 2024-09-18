@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 from constraint_parser import parse_constraint
 from core import (
     Constraint,
-    ConstraintBuild,
+    ConstraintBuildAugmented,
     Schedule,
     Shift,
     VarDay,
@@ -21,7 +21,7 @@ def build_constraints(
     shifts: List[Shift],
     worker_dim_dict: Dict,
     shift_dim_dict: Dict,
-    cstr_builds: List[ConstraintBuild],
+    cstr_builds: List[ConstraintBuildAugmented],
 ) -> Tuple[List[Constraint], List[Constraint]]:
     user_constraints = [
         # pylint: disable=R0801

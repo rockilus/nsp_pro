@@ -18,11 +18,8 @@ from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import WorkerMessage, WorkerPropertyMessage
 from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
-from services.worker_services import add_back_worker_property_to_constraint_build
+from services.worker_services import create_or_update_worker_property
 from services.worker_services import delete_worker as delete_worker_service
-from services.worker_services import (
-    update_worker_property as update_worker_property_service,
-)
 
 router = APIRouter()
 
@@ -124,20 +121,7 @@ async def update_worker_property(
                 "You do not have permission to update a worker property"
             )
         wp_data = msg_to_core_worker_property(worker_property)
-        if wp_data.id == "":
-            new_wp = worker_property_db.create_worker_property(wp_data)
-        else:
-            update_worker_property_service(wp_data)
-            new_wp = worker_property_db.update_worker_property(wp_data)
-        if isinstance(new_wp.value, list):
-            for value in new_wp.value:
-                add_back_worker_property_to_constraint_build(
-                    new_wp.worker_dimension_id, value
-                )
-        else:
-            add_back_worker_property_to_constraint_build(
-                new_wp.worker_dimension_id, new_wp.value
-            )
+        new_wp = create_or_update_worker_property(wp_data)
         response = core_to_msg_worker_property(new_wp)
     except Exception as e:
         log_info("Failed to update worker property")

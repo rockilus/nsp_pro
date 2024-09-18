@@ -2,12 +2,12 @@ from datetime import date
 from typing import List
 
 from constraint_parser.mapping.utils import find_block_by_name
-from core import Block, ConstraintBuild, VarDay
+from core import Block, ConstraintBuildAugmented, VarDay
 from utils.constants import Constants
 
 
 class MapDay:
-    def __call__(self, cstr_build: ConstraintBuild) -> VarDay:
+    def __call__(self, cstr_build: ConstraintBuildAugmented) -> VarDay:
         return VarDay(
             selector=self.get_selector(cstr_build.blocks, cstr_build.constraint_type),
             target=self.get_target(cstr_build.blocks, cstr_build.constraint_type),

@@ -1,11 +1,12 @@
-# pylint: disable = too-many-lines
+# pylint: disable = too-many-lines, R0801
 from datetime import date, datetime
 
 from core import (
     Block,
     Constraint,
-    ConstraintBuild,
+    ConstraintBuildAugmented,
     Shift,
+    ShiftWorkerOption,
     VarDay,
     VarShift,
     VarWorker,
@@ -187,7 +188,7 @@ test_data = [
     # One worker, one shift
     {
         "text": "John should work at most 2 consecutive off.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="seq",
@@ -196,8 +197,16 @@ test_data = [
             blocks=[
                 Block(
                     name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="0",
+                            id_type="worker",
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
                 ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
@@ -205,8 +214,16 @@ test_data = [
                 Block(name="timing", type="string", value="consecutive"),
                 Block(
                     name="shift",
-                    type="dict",
-                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="off",
+                            id="0",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        )
+                    ],
                 ),
             ],
             text="",
@@ -247,7 +264,7 @@ test_data = [
     # All workers, all shifts
     {
         "text": "All workers should work at most 2 consecutive all shifts.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="seq",
@@ -256,8 +273,16 @@ test_data = [
             blocks=[
                 Block(
                     name="worker",
-                    type="dict",
-                    value=[{"name": "all workers", "id": "", "id_type": ""}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="all workers",
+                            id="",
+                            id_type="",
+                            is_bool_dim=False,
+                            category_name="All",
+                        ),
+                    ],
                 ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at most"),
@@ -265,8 +290,16 @@ test_data = [
                 Block(name="timing", type="string", value="consecutive"),
                 Block(
                     name="shift",
-                    type="dict",
-                    value=[{"name": "all shifts", "id": "", "id_type": ""}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="all shifts",
+                            id="",
+                            id_type="",
+                            is_bool_dim=False,
+                            category_name="All",
+                        ),
+                    ],
                 ),
             ],
             text="",
@@ -305,7 +338,7 @@ test_data = [
     # Boolean property workers, boolean property shifts
     {
         "text": "60+ should work at most 2 consecutive not duty.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="seq",
@@ -314,13 +347,15 @@ test_data = [
             blocks=[
                 Block(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     value=[
-                        {
-                            "name": "60+",
-                            "id": "60+_id",
-                            "id_type": "worker_dimension",
-                        }
+                        ShiftWorkerOption(
+                            name=True,
+                            id="60+_id",
+                            id_type="worker_dimension",
+                            is_bool_dim=True,
+                            category_name="60+",
+                        ),
                     ],
                 ),
                 Block(name="text", type="string", value="should work"),
@@ -329,13 +364,15 @@ test_data = [
                 Block(name="timing", type="string", value="consecutive"),
                 Block(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     value=[
-                        {
-                            "name": "not duty",
-                            "id": "duty_id",
-                            "id_type": "shift_dimension",
-                        }
+                        ShiftWorkerOption(
+                            name=False,
+                            id="duty_id",
+                            id_type="shift_dimension",
+                            is_bool_dim=True,
+                            category_name="Duty",
+                        ),
                     ],
                 ),
             ],
@@ -377,7 +414,7 @@ test_data = [
     # Non boolean property worker, non boolean property shift
     {
         "text": "Surgeon should work at most 2 consecutive unit 1.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="seq",
@@ -386,13 +423,15 @@ test_data = [
             blocks=[
                 Block(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     value=[
-                        {
-                            "name": "surgeon",
-                            "id": "specialty_id",
-                            "id_type": "worker_dimension",
-                        }
+                        ShiftWorkerOption(
+                            name="surgeon",
+                            id="specialty_id",
+                            id_type="worker_dimension",
+                            is_bool_dim=False,
+                            category_name="Specialty",
+                        ),
                     ],
                 ),
                 Block(name="text", type="string", value="should work"),
@@ -401,13 +440,15 @@ test_data = [
                 Block(name="timing", type="string", value="consecutive"),
                 Block(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     value=[
-                        {
-                            "name": "unit 1",
-                            "id": "unit_id",
-                            "id_type": "shift_dimension",
-                        }
+                        ShiftWorkerOption(
+                            name="unit 1",
+                            id="unit_id",
+                            id_type="shift_dimension",
+                            is_bool_dim=False,
+                            category_name="Units",
+                        )
                     ],
                 ),
             ],
@@ -449,7 +490,7 @@ test_data = [
     # Sum
     {
         "text": "John should work at least 1 off per week.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="sum",
@@ -458,16 +499,32 @@ test_data = [
             blocks=[
                 Block(
                     name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="0",
+                            id_type="worker",
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
                 ),
                 Block(name="text", type="string", value="should work"),
                 Block(name="operator", type="string", value="at least"),
                 Block(name="#", type="number", value=1),
                 Block(
                     name="shift",
-                    type="dict",
-                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="off",
+                            id="0",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        )
+                    ],
                 ),
                 Block(name="timing", type="string", value="per week"),
             ],
@@ -509,7 +566,7 @@ test_data = [
     # Order
     {
         "text": "No night 1 day after afternoon for john.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="ord",
@@ -519,22 +576,46 @@ test_data = [
                 Block(name="operator", type="string", value="no"),
                 Block(
                     name="shift_reference",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="night",
+                            id="3",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        ),
+                    ],
                 ),
                 Block(name="#", type="number", value=1),
                 Block(name="text", type="string", value="day"),
                 Block(name="timing", type="string", value="after"),
                 Block(
                     name="shift_relative",
-                    type="dict",
-                    value=[{"name": "afternoon", "id": "2", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="afternoon",
+                            id="2",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        ),
+                    ],
                 ),
                 Block(name="text", type="string", value="for"),
                 Block(
                     name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="0",
+                            id_type="worker",
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
                 ),
             ],
             text="",
@@ -574,7 +655,7 @@ test_data = [
     },
     {
         "text": "If night then off 1 day after for john.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="ord",
@@ -584,14 +665,30 @@ test_data = [
                 Block(name="text", type="string", value="if"),
                 Block(
                     name="shift_reference",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="night",
+                            id="3",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        ),
+                    ],
                 ),
                 Block(name="text", type="string", value="then"),
                 Block(
                     name="shift_relative",
-                    type="dict",
-                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="off",
+                            id="0",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        )
+                    ],
                 ),
                 Block(name="#", type="number", value=1),
                 Block(name="text", type="string", value="day"),
@@ -599,8 +696,16 @@ test_data = [
                 Block(name="text", type="string", value="for"),
                 Block(
                     name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="0",
+                            id_type="worker",
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
                 ),
             ],
             text="",
@@ -640,7 +745,7 @@ test_data = [
     },
     {
         "text": "If morning on saturday then off 2 day after for john.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="ord",
@@ -650,16 +755,32 @@ test_data = [
                 Block(name="text", type="string", value="if"),
                 Block(
                     name="shift_reference",
-                    type="dict",
-                    value=[{"name": "morning", "id": "1", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="morning",
+                            id="1",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        ),
+                    ],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="saturday"),
                 Block(name="text", type="string", value="then"),
                 Block(
                     name="shift_relative",
-                    type="dict",
-                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="off",
+                            id="0",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        )
+                    ],
                 ),
                 Block(name="#", type="number", value=2),
                 Block(name="text", type="string", value="day"),
@@ -667,8 +788,16 @@ test_data = [
                 Block(name="text", type="string", value="for"),
                 Block(
                     name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="0",
+                            id_type="worker",
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
                 ),
             ],
             text="",
@@ -708,7 +837,7 @@ test_data = [
     },
     {
         "text": "If morning on saturday then off 2 day before for john.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="ord",
@@ -718,16 +847,32 @@ test_data = [
                 Block(name="text", type="string", value="if"),
                 Block(
                     name="shift_reference",
-                    type="dict",
-                    value=[{"name": "morning", "id": "1", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="morning",
+                            id="1",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        ),
+                    ],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="saturday"),
                 Block(name="text", type="string", value="then"),
                 Block(
                     name="shift_relative",
-                    type="dict",
-                    value=[{"name": "off", "id": "0", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="off",
+                            id="0",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        )
+                    ],
                 ),
                 Block(name="#", type="number", value=2),
                 Block(name="text", type="string", value="day"),
@@ -735,8 +880,16 @@ test_data = [
                 Block(name="text", type="string", value="for"),
                 Block(
                     name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="0",
+                            id_type="worker",
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
                 ),
             ],
             text="",
@@ -777,7 +930,7 @@ test_data = [
     # Filter
     {
         "text": "John should only work night.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="fil",
@@ -786,15 +939,31 @@ test_data = [
             blocks=[
                 Block(
                     name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="0",
+                            id_type="worker",
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
                 ),
                 Block(name="operator", type="string", value="should only"),
                 Block(name="text", type="string", value="work"),
                 Block(
                     name="shift",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="night",
+                            id="3",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        ),
+                    ],
                 ),
             ],
             text="",
@@ -834,7 +1003,7 @@ test_data = [
     },
     {
         "text": "John should not work night.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="fil",
@@ -843,15 +1012,31 @@ test_data = [
             blocks=[
                 Block(
                     name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="0",
+                            id_type="worker",
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
                 ),
                 Block(name="operator", type="string", value="should not"),
                 Block(name="text", type="string", value="work"),
                 Block(
                     name="shift",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="night",
+                            id="3",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        ),
+                    ],
                 ),
             ],
             text="",
@@ -892,7 +1077,7 @@ test_data = [
     # Evenness
     {
         "text": "Night on sunday should be evenly spread in time for John.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="eve",
@@ -901,8 +1086,16 @@ test_data = [
             blocks=[
                 Block(
                     name="shift",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="night",
+                            id="3",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        ),
+                    ],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="sunday"),
@@ -913,8 +1106,16 @@ test_data = [
                 ),
                 Block(
                     name="worker",
-                    type="dict",
-                    value=[{"name": "John", "id": "0", "id_type": "worker"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="0",
+                            id_type="worker",
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
                 ),
             ],
             text="",
@@ -955,7 +1156,7 @@ test_data = [
     # Fairness
     {
         "text": "Night on sunday should be fairly spread across all workers.",
-        "in": ConstraintBuild(
+        "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
             constraint_type="fai",
@@ -964,8 +1165,16 @@ test_data = [
             blocks=[
                 Block(
                     name="shift",
-                    type="dict",
-                    value=[{"name": "night", "id": "3", "id_type": "shift"}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="night",
+                            id="3",
+                            id_type="shift",
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        ),
+                    ],
                 ),
                 Block(name="text", type="string", value="on"),
                 Block(name="weekday", type="string", value="sunday"),
@@ -976,8 +1185,16 @@ test_data = [
                 ),
                 Block(
                     name="worker",
-                    type="dict",
-                    value=[{"name": "all workers", "id": "", "id_type": ""}],
+                    type="shift_worker_option",
+                    value=[
+                        ShiftWorkerOption(
+                            name="all workers",
+                            id="",
+                            id_type="",
+                            is_bool_dim=False,
+                            category_name="All",
+                        ),
+                    ],
                 ),
             ],
             text="",

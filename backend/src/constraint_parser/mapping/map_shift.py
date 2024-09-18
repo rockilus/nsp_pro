@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from constraint_parser.mapping.utils import cast_to_dict_block_value, find_block_by_name
-from core import Block, ConstraintBuild, DictBlockValue, Shift, VarShift
+from core import Block, ConstraintBuildAugmented, DictBlockValue, Shift, VarShift
 from utils.constants import Constants
 
 
@@ -10,7 +10,9 @@ class MapShift:
         self.shifts = shifts
         self.shift_dim_dict = shift_dim_dict
 
-    def __call__(self, cstr_build: ConstraintBuild, cstr_operator: str) -> VarShift:
+    def __call__(
+        self, cstr_build: ConstraintBuildAugmented, cstr_operator: str
+    ) -> VarShift:
         shift_values = (
             self.get_shift_values(cstr_build.blocks, "shift")
             if cstr_build.constraint_type != "ord"

@@ -2,10 +2,10 @@ from typing import List
 
 from core import (
     Block,
-    ShiftWorkerOption,
     Shift,
-    Worker,
     ShiftDimension,
+    ShiftWorkerOption,
+    Worker,
     WorkerDimension,
 )
 
@@ -137,6 +137,7 @@ def translate_weekday_block_value(value: str, language: str) -> str:
     raise ValueError(f"Unsupported language: {language}")
 
 
+# pylint: disable=too-many-branches, too-many-arguments, too-many-return-statements
 def get_shift_worker_option_display_name(
     option: ShiftWorkerOption,
     workers: List[Worker],
@@ -160,30 +161,28 @@ def get_shift_worker_option_display_name(
             return option.name
         if option.name:
             if option.id_type == "worker_dimension":
-                dimension = next(
+                worker_dimension: WorkerDimension | None = next(
                     (wd for wd in worker_dimensions if wd.id == option.id),
                     None,
                 )
-            else:
-                dimension = next(
-                    (sd for sd in shift_dimensions if sd.id == option.id),
-                    None,
-                )
-            if dimension:
-                return dimension.name
-        elif not option.name:
+                return worker_dimension.name if worker_dimension else ''
+            shift_dimension: ShiftDimension | None = next(
+                (sd for sd in shift_dimensions if sd.id == option.id),
+                None,
+            )
+            return shift_dimension.name if shift_dimension else ''
+        if not option.name:
             if option.id_type == "worker_dimension":
-                dimension = next(
+                worker_dimension = next(
                     (wd for wd in worker_dimensions if wd.id == option.id),
                     None,
                 )
-            else:
-                dimension = next(
-                    (sd for sd in shift_dimensions if sd.id == option.id),
-                    None,
-                )
-            if dimension:
-                return f"not {dimension.name}"
+                return f"not {worker_dimension.name}" if worker_dimension else ''
+            shift_dimension = next(
+                (sd for sd in shift_dimensions if sd.id == option.id),
+                None,
+            )
+            return f"not {shift_dimension.name}" if shift_dimension else ''
     if option.name == "all workers":
         return translate_worker_block_value(option.name, lng)  # type: ignore
     if option.name == "all shifts":
@@ -191,6 +190,7 @@ def get_shift_worker_option_display_name(
     return ''
 
 
+# pylint: disable=too-many-arguments
 def blocks_to_string(
     blocks: List[Block],
     workers: List[Worker],
@@ -202,64 +202,56 @@ def blocks_to_string(
     values = []
     for block in blocks:
         if block.type == "shift_worker_option":
-            if not isinstance(block.value, list):
-                raise ValueError(
-                    "Invalid block value type for shift_worker_option"
-                )
-            if not all(isinstance(v, ShiftWorkerOption) for v in block.value):
-                raise ValueError(
-                    "Invalid block value item type for shift_worker_option"
-                )
-            block_values = [
-                get_shift_worker_option_display_name(
-                    v,  # type: ignore
+            values.append(
+                block_to_string_shift_worker_option(
+                    block,
                     workers,
                     shifts,
                     worker_dimensions,
                     shift_dimensions,
                     language,
                 )
-                for v in block.value
-            ]
-            # if isinstance(block.value, list):
-            #     block_values = block.value
-            #     if all(isinstance(v, dict) for v in block.value):
-            #         block_values = [v["name"] for v in block_values]  # type: ignore
-            #     if block.name == "shift":
-            #         block_values = [
-            #             translate_shift_block_value(str(v), language)
-            #             for v in block_values
-            #         ]
-            #     elif block.name == "worker":
-            #         block_values = [
-            #             translate_worker_block_value(str(v), language)
-            #             for v in block_values
-            #         ]
-            if len(block_values) > 1 and all(
-                isinstance(v, str) for v in block_values
-            ):
-                values.append(
-                    ', '.join(block_values[:-1])  # type: ignore
-                    + ' and '
-                    + block_values[-1]
-                )
-            elif isinstance(block_values[0], str):
-                values.append(block_values[0])
+            )
         else:
             block_value = block.value
             if block.name == "operator":
-                block_value = translate_operator_block_value(
-                    str(block_value), language
-                )
+                block_value = translate_operator_block_value(str(block_value), language)
             if block.name == "timing":
-                block_value = translate_timing_block_value(
-                    str(block_value), language
-                )
+                block_value = translate_timing_block_value(str(block_value), language)
             if block.name == "weekday":
-                block_value = translate_weekday_block_value(
-                    str(block_value), language
-                )
+                block_value = translate_weekday_block_value(str(block_value), language)
             values.append(str(block_value))
     joined_values = ' '.join(values)
     capitalized_values = joined_values.capitalize()
     return capitalized_values + '.'
+
+
+# pylint: disable=too-many-arguments
+def block_to_string_shift_worker_option(
+    block: Block,
+    workers: List[Worker],
+    shifts: List[Shift],
+    worker_dimensions: List[WorkerDimension],
+    shift_dimensions: List[ShiftDimension],
+    lng: str,
+) -> str:
+    if not isinstance(block.value, list):
+        raise ValueError("Invalid block value type for shift_worker_option")
+    if not all(isinstance(v, ShiftWorkerOption) for v in block.value):
+        raise ValueError("Invalid block value item type for shift_worker_option")
+    block_values = [
+        get_shift_worker_option_display_name(
+            v,  # type: ignore
+            workers,
+            shifts,
+            worker_dimensions,
+            shift_dimensions,
+            lng,
+        )
+        for v in block.value
+    ]
+    if len(block_values) > 1 and all(isinstance(v, str) for v in block_values):
+        return ', '.join(block_values[:-1]) + ' and ' + block_values[-1]
+    if isinstance(block_values[0], str):
+        return block_values[0]
+    return ''

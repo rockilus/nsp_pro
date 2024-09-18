@@ -4,7 +4,7 @@ from constraint_parser.mapping.map_day import MapDay
 from constraint_parser.mapping.map_shift import MapShift
 from constraint_parser.mapping.map_worker import MapWorker
 from constraint_parser.mapping.utils import find_block_by_name
-from core import Block, Constraint, ConstraintBuild, Shift, Worker
+from core import Block, Constraint, ConstraintBuildAugmented, Shift, Worker
 from utils.constants import Constants
 
 
@@ -22,7 +22,9 @@ class MapConstaint:
         self.map_day = MapDay()
         self.map_shift = MapShift(shifts, shift_dim_dict)
 
-    def __call__(self, cstr_build: ConstraintBuild, schedule_id: str) -> Constraint:
+    def __call__(
+        self, cstr_build: ConstraintBuildAugmented, schedule_id: str
+    ) -> Constraint:
         var_worker = self.map_worker(cstr_build)
         var_day = self.map_day(cstr_build)
         cstr_operator = self.get_operator(cstr_build.blocks, cstr_build.constraint_type)

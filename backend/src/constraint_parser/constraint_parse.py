@@ -1,12 +1,12 @@
 from typing import Dict, List
 
 from constraint_parser.mapping.map_constraint import MapConstaint
-from core import Constraint, ConstraintBuild, Shift, Worker
+from core import Constraint, ConstraintBuildAugmented, Shift, Worker
 
 
 # pylint: disable=too-many-arguments
 def parse_constraint(
-    cstr_build: ConstraintBuild,
+    cstr_build: ConstraintBuildAugmented,
     workers: List[Worker],
     shifts: List[Shift],
     worker_dim_dict: Dict,

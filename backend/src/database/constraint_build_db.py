@@ -1,6 +1,7 @@
 from typing import List
 
 from bson import ObjectId
+
 from core import Block, ConstraintBuild, ShiftWorkerOption
 from database.db import DB
 from errors import (
@@ -42,24 +43,18 @@ class ConstraintBuildDB:
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
-    def get_constraint_builds_active(
-        self, team_id: str
-    ) -> List[ConstraintBuild]:
+    def get_constraint_builds_active(self, team_id: str) -> List[ConstraintBuild]:
         try:
             # pylint: disable=no-member
             cb_docs = ConstraintBuildDocument.objects(  # type: ignore
                 active=True, team=team_id
             )
         except Exception as e:
-            log_info(
-                'Failed to get active constraint build documents from database'
-            )
+            log_info('Failed to get active constraint build documents from database')
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
-    def get_constraint_build_by_id(
-        self, constraint_build_id: str
-    ) -> ConstraintBuild:
+    def get_constraint_build_by_id(self, constraint_build_id: str) -> ConstraintBuild:
         try:
             # pylint: disable=no-member
             cb_doc = ConstraintBuildDocument.objects.get(  # type: ignore
@@ -70,18 +65,16 @@ class ConstraintBuildDB:
             handle_get_document_error(e)
         return doc_to_core_constraint_build(cb_doc)
 
-    def get_active_constraint_build_by_ids(
+    def get_constraint_builds_by_ids(
         self, constraint_build_ids: List[str]
     ) -> List[ConstraintBuild]:
         try:
             # pylint: disable=no-member
             cb_docs = ConstraintBuildDocument.objects(  # type: ignore
-                id__in=constraint_build_ids, active=True
+                id__in=constraint_build_ids
             )
         except Exception as e:
-            log_info(
-                'Failed to get active constraint build by ids from database'
-            )
+            log_info('Failed to get active constraint build by ids from database')
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
@@ -106,15 +99,11 @@ class ConstraintBuildDB:
                 }
             )
         except Exception as e:
-            log_info(
-                'Failed to get constraint build by worker id from database'
-            )
+            log_info('Failed to get constraint build by worker id from database')
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
-    def get_constraint_builds_by_shift_id(
-        self, shift_id: str
-    ) -> List[ConstraintBuild]:
+    def get_constraint_builds_by_shift_id(self, shift_id: str) -> List[ConstraintBuild]:
         try:
             # pylint: disable=no-member
             cb_docs = ConstraintBuildDocument.objects(  # type: ignore
@@ -139,9 +128,7 @@ class ConstraintBuildDB:
                 }
             )
         except Exception as e:
-            log_info(
-                'Failed to get constraint build by shift id from database'
-            )
+            log_info('Failed to get constraint build by shift id from database')
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
@@ -312,9 +299,7 @@ def core_to_doc_shift_worker_option(
             category_name=dataclass_obj.category_name,
         )
     except Exception as e:
-        log_info(
-            'Failed to convert ShiftWorkerOption to ShiftWorkerOptionDocument'
-        )
+        log_info('Failed to convert ShiftWorkerOption to ShiftWorkerOptionDocument')
         handle_create_document_error(e)
     return shift_worker_option_doc
 
@@ -360,9 +345,7 @@ def core_to_doc_constraint_build(
             priority=dataclass_obj.priority,
         )
     except Exception as e:
-        log_info(
-            'Failed to convert ConstraintBuild to ConstraintBuildDocument'
-        )
+        log_info('Failed to convert ConstraintBuild to ConstraintBuildDocument')
         handle_create_document_error(e)
     return cb_doc
 
@@ -415,9 +398,7 @@ def doc_to_core_constraint_build(
             'fai',
             'eve',
         ]:
-            raise ValueError(
-                f'Invalid constraint_type: {doc_obj.constraint_type}'
-            )
+            raise ValueError(f'Invalid constraint_type: {doc_obj.constraint_type}')
         constraint_build = ConstraintBuild(
             id=doc_obj.id,
             team_id=doc_obj.team.id,
@@ -429,8 +410,6 @@ def doc_to_core_constraint_build(
             priority=doc_obj.priority,
         )
     except Exception as e:
-        log_info(
-            'Failed to convert ConstraintBuildDocument to ConstraintBuild'
-        )
+        log_info('Failed to convert ConstraintBuildDocument to ConstraintBuild')
         handle_create_core_object_error(e)
     return constraint_build

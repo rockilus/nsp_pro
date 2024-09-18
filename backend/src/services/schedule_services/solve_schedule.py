@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 from core import (
     Assignment,
     Constraint,
-    ConstraintBuild,
+    ConstraintBuildAugmented,
     ObjectiveBreach,
     Request,
     Schedule,
@@ -14,7 +14,6 @@ from core import (
 from engine import Engine
 from scripts.setup_database import (
     assignment_db,
-    constraint_build_db,
     constraint_db,
     coverage_selector_db,
     objective_breach_db,
@@ -25,6 +24,9 @@ from scripts.setup_database import (
     shift_property_db,
     worker_db,
     worker_property_db,
+)
+from services.constraint_build_services.get_constraint_build import (
+    get_active_constraint_builds_by_ids,
 )
 from services.constraint_services import build_constraints
 from services.coverage_selector_services.build_shift_demand_date import (
@@ -46,8 +48,8 @@ def solve_schedule(
     shifts = shift_db.get_shifts(schedule.team_id)
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
-    cstr_builds = constraint_build_db.get_active_constraint_build_by_ids(
-        schedule.constraint_build_ids
+    cbs_augmented = get_active_constraint_builds_by_ids(
+        schedule.team_id, schedule.constraint_build_ids
     )
     coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule.id)
     shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
@@ -73,7 +75,7 @@ def solve_schedule(
         shifts,
         worker_dim_dict,
         shift_dim_dict,
-        cstr_builds,
+        cbs_augmented,
     )
     shift_demand_dates = build_shift_demand_dates(
         schedule, coverage_selectors, shift_demands, shifts
@@ -194,7 +196,7 @@ def setup_constraints(
     shifts: List[Shift],
     worker_dim_dict: Dict,
     shift_dim_dict: Dict,
-    cstr_builds: List[ConstraintBuild],
+    cstr_builds: List[ConstraintBuildAugmented],
 ) -> List[Constraint]:
     constraint_db.delete_constraints_by_schedule_id(schedule.id)
     constraints_user, constraints_qs = build_constraints(

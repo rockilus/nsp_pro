@@ -1,6 +1,4 @@
-from services.constraint_build_services.blocks_to_string import (
-    blocks_to_string,
-)
+from services.constraint_build_services.blocks_to_string import blocks_to_string
 from services.constraint_build_services.create_constraint_build import (
     create_constraint_build,
 )

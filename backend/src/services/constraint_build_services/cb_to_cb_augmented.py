@@ -11,13 +11,8 @@ from core import (
     Worker,
     WorkerDimension,
 )
-from scripts.setup_database import (
-    shift_property_db,
-    worker_property_db,
-)
-from services.constraint_build_services.blocks_to_string import (
-    blocks_to_string,
-)
+from scripts.setup_database import shift_property_db, worker_property_db
+from services.constraint_build_services.blocks_to_string import blocks_to_string
 
 
 def cb_to_cb_augmented(
@@ -72,10 +67,8 @@ def build_missing_properties_list_and_active(
             mps += new_mps
             active_worker = active_worker or new_active_worker
         if block.name in ["shift", "shift_reference", "shift_relative"]:
-            new_mps, new_active_shift = (
-                build_missing_properties_list_and_active_shift(
-                    block, shift_dimensions
-                )
+            new_mps, new_active_shift = build_missing_properties_list_and_active_shift(
+                block, shift_dimensions
             )
             mps += new_mps
             active_shift = active_shift or new_active_shift
@@ -91,9 +84,7 @@ def build_missing_properties_list_and_active_worker(
     if not isinstance(block.value, list):
         raise ValueError("Worker block value is not a list")
     if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError(
-            "Worker block value list does not contain ShiftWorkerOption"
-        )
+        raise ValueError("Worker block value list does not contain ShiftWorkerOption")
     if any(b.id_type in ["worker", ""] for b in block.value):  # type: ignore
         active = True
     wd_ids = list(
@@ -113,17 +104,13 @@ def build_missing_properties_list_and_active_worker(
             (
                 new_mp,
                 new_active,
-            ) = build_missing_properties_list_and_active_worker_bool_wd(
-                block, wd
-            )
+            ) = build_missing_properties_list_and_active_worker_bool_wd(block, wd)
 
         elif wd.entry_type == "list":
             (
                 new_mp,
                 new_active,
-            ) = build_missing_properties_list_and_active_worker_list_wd(
-                block, wd
-            )
+            ) = build_missing_properties_list_and_active_worker_list_wd(block, wd)
         else:
             new_mp = None
             new_active = True
@@ -139,17 +126,13 @@ def build_missing_properties_list_and_active_worker_bool_wd(
     if not isinstance(block.value, list):
         raise ValueError("Worker block value is not a list")
     if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError(
-            "Worker block value list does not contain ShiftWorkerOption"
-        )
+        raise ValueError("Worker block value list does not contain ShiftWorkerOption")
     wp_values_constraint: List[bool] = list(
         set(b.name for b in block.value if b.id == wd.id)  # type: ignore
     )
     if any(value is None for value in wp_values_constraint):
         raise ValueError("Worker property value from block is missing")
-    wp_all = worker_property_db.get_worker_properties_by_worker_dimension_id(
-        wd.id
-    )
+    wp_all = worker_property_db.get_worker_properties_by_worker_dimension_id(wd.id)
     wp_values_shifts = [wp.value for wp in wp_all]
     if not all(isinstance(v, bool) for v in wp_values_shifts):
         raise ValueError("Worker property value is not a boolean")
@@ -176,17 +159,13 @@ def build_missing_properties_list_and_active_worker_list_wd(
     if not isinstance(block.value, list):
         raise ValueError("Worker block value is not a list")
     if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError(
-            "Worker block value list does not contain ShiftWorkerOption"
-        )
+        raise ValueError("Worker block value list does not contain ShiftWorkerOption")
     wp_values_constraint = [
         b.name for b in block.value if b.id == wd.id  # type: ignore
     ]
     if any(value is None for value in wp_values_constraint):
         raise ValueError("Worker property value from block is missing")
-    wp_all = worker_property_db.get_worker_properties_by_worker_dimension_id(
-        wd.id
-    )
+    wp_all = worker_property_db.get_worker_properties_by_worker_dimension_id(wd.id)
     if not all(isinstance(wp.value, list) for wp in wp_all):
         raise ValueError("Worker property value is not a list")
     wp_values_shifts = [item for wp in wp_all for item in wp.value]  # type: ignore
@@ -213,9 +192,7 @@ def build_missing_properties_list_and_active_shift(
     if not isinstance(block.value, list):
         raise ValueError("Shift block value is not a list")
     if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError(
-            "Shift block value list does not contain ShiftWorkerOption"
-        )
+        raise ValueError("Shift block value list does not contain ShiftWorkerOption")
     if any(b.id_type in ["shift", ""] for b in block.value):  # type: ignore
         active = True
     sd_ids = list(
@@ -232,17 +209,13 @@ def build_missing_properties_list_and_active_shift(
         if sd is None:
             raise ValueError("Shift dimension not found")
         if sd.entry_type == "bool":
-            new_mp, new_active = (
-                build_missing_properties_list_and_active_shift_bool_sd(
-                    block, sd
-                )
+            new_mp, new_active = build_missing_properties_list_and_active_shift_bool_sd(
+                block, sd
             )
 
         elif sd.entry_type == "list":
-            new_mp, new_active = (
-                build_missing_properties_list_and_active_shift_list_sd(
-                    block, sd
-                )
+            new_mp, new_active = build_missing_properties_list_and_active_shift_list_sd(
+                block, sd
             )
         else:
             new_mp = None
@@ -259,17 +232,13 @@ def build_missing_properties_list_and_active_shift_bool_sd(
     if not isinstance(block.value, list):
         raise ValueError("Shift block value is not a list")
     if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError(
-            "Shift block value list does not contain ShiftWorkerOption"
-        )
+        raise ValueError("Shift block value list does not contain ShiftWorkerOption")
     sp_values_constraint: List[bool] = list(
         set(b.name for b in block.value if b.id == sd.id)  # type: ignore
     )
     if any(value is None for value in sp_values_constraint):
         raise ValueError("Shift property value from block is missing")
-    sp_all = shift_property_db.get_shift_properties_by_shift_dimension_id(
-        sd.id
-    )
+    sp_all = shift_property_db.get_shift_properties_by_shift_dimension_id(sd.id)
     sp_values_shifts = [sp.value for sp in sp_all]
     if not all(isinstance(v, bool) for v in sp_values_shifts):
         raise ValueError("Shift property value is not a boolean")
@@ -296,17 +265,13 @@ def build_missing_properties_list_and_active_shift_list_sd(
     if not isinstance(block.value, list):
         raise ValueError("Shift block value is not a list")
     if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError(
-            "Shift block value list does not contain ShiftWorkerOption"
-        )
+        raise ValueError("Shift block value list does not contain ShiftWorkerOption")
     sp_values_constraint = [
         b.name for b in block.value if b.id == sd.id  # type: ignore
     ]
     if any(value is None for value in sp_values_constraint):
         raise ValueError("Shift property value from block is missing")
-    sp_all = shift_property_db.get_shift_properties_by_shift_dimension_id(
-        sd.id
-    )
+    sp_all = shift_property_db.get_shift_properties_by_shift_dimension_id(sd.id)
     if not all(isinstance(sp.value, list) for sp in sp_all):
         raise ValueError("Shift property value is not a list")
     sp_values_shifts = [item for sp in sp_all for item in sp.value]  # type: ignore

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from core.constraint import ConstraintBuild, Template
+from core.constraint import ConstraintBuildAugmented, Template
 from core.coverage import Coverage, CoverageSelector, ShiftDemand
 from core.request import Request
 from core.schedule import Assignment, ObjectiveBreach, Schedule
@@ -26,7 +26,7 @@ class Bulk:
     coverages: List[Coverage] = field(default_factory=list)
     shift_demands: Dict[str, List[ShiftDemand]] = field(default_factory=dict)
     shift_demand_shifts: Dict[str, List[Shift]] = field(default_factory=dict)
-    constraint_builds: List[ConstraintBuild] = field(default_factory=list)
+    constraint_builds: List[ConstraintBuildAugmented] = field(default_factory=list)
     constraint_templates: List[Template] = field(default_factory=list)
     requests: List[Request] = field(default_factory=list)
     coverage_selectors: List[CoverageSelector] = field(default_factory=list)

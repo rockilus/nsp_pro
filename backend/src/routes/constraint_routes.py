@@ -2,6 +2,9 @@ from dataclasses import asdict
 from typing import List
 
 import humps
+from fastapi import APIRouter, Depends
+from pydantic import TypeAdapter
+
 from core import (
     Block,
     ConstraintBuild,
@@ -16,14 +19,9 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from fastapi import APIRouter, Depends
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
-from pydantic import TypeAdapter
 from routes.api_model import (
     BlockMessage,
     ConstraintBuildMessage,
@@ -77,13 +75,10 @@ async def get_constraints(
         if not await authz_check(
             session.get_user_id(), "read-constraints", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to get constraints"
-            )
+            raise NotAuthorizedError("You do not have permission to get constraints")
         constraint_builds = get_constraint_builds_service(team_id)
         response = [
-            core_to_msg_constraint_build_augmented(cb)
-            for cb in constraint_builds
+            core_to_msg_constraint_build_augmented(cb) for cb in constraint_builds
         ]
     except Exception as e:
         log_info("Failed to get constraints")
@@ -150,7 +145,9 @@ def core_to_msg_block(block: Block) -> BlockMessage:
         if block.type == "shift_worker_option":
             if not isinstance(block.value, list):
                 raise ValueError("Invalid value type for shift_worker_option")
-            value = [core_to_msg_shift_worker_option(v) for v in block.value]  # type: ignore
+            value = [
+                core_to_msg_shift_worker_option(v) for v in block.value  # type: ignore
+            ]
             data["value"] = value
     except Exception as e:
         log_info("Failed to convert core Block to dictionary")
@@ -178,9 +175,7 @@ def core_to_msg_missing_property(
     try:
         mp_msg = validator.validate_python(as_dict)
     except Exception as e:
-        log_info(
-            "Failed to convert core MissingProperty to MissingPropertyMessage"
-        )
+        log_info("Failed to convert core MissingProperty to MissingPropertyMessage")
         handle_message_errors(e)
     return mp_msg
 
@@ -192,8 +187,7 @@ def core_to_msg_constraint_build_augmented(
         data = asdict(cb_augmented)
         blocks = [core_to_msg_block(b) for b in cb_augmented.blocks]
         mps_message = [
-            core_to_msg_missing_property(mp)
-            for mp in cb_augmented.missing_properties
+            core_to_msg_missing_property(mp) for mp in cb_augmented.missing_properties
         ]
         data["blocks"] = blocks
         data["missing_properties"] = mps_message
@@ -205,9 +199,7 @@ def core_to_msg_constraint_build_augmented(
     try:
         cb_msg = validator.validate_python(as_dict)
     except Exception as e:
-        log_info(
-            "Failed to convert core ConstraintBuild to ConstraintBuildMessage"
-        )
+        log_info("Failed to convert core ConstraintBuild to ConstraintBuildMessage")
         handle_message_errors(e)
     return cb_msg
 
@@ -220,9 +212,7 @@ def msg_to_core_shift_worker_option(
     try:
         shift_worker_option = ShiftWorkerOption(**data_snake)
     except Exception as e:
-        log_info(
-            "Failed to convert ShiftWorkerOptionMessage to ShiftWorkerOption"
-        )
+        log_info("Failed to convert ShiftWorkerOptionMessage to ShiftWorkerOption")
         handle_create_core_object_error(e)
     return shift_worker_option
 

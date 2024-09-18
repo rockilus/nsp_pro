@@ -6,10 +6,7 @@ from pydantic import TypeAdapter
 
 from core import Bulk
 from errors import NotAuthorizedError, handle_routes_errors
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import BulkMessage
@@ -74,11 +71,7 @@ def core_to_msg_bulk(bulk: Bulk) -> BulkMessage:
     data["shifts"] = [
         core_to_msg_shift_and_properties(
             s,
-            (
-                bulk.shift_properties_s[s.id]
-                if s.id in bulk.shift_properties_s
-                else []
-            ),
+            (bulk.shift_properties_s[s.id] if s.id in bulk.shift_properties_s else []),
         )
         for s in bulk.shifts
     ]
@@ -92,8 +85,7 @@ def core_to_msg_bulk(bulk: Bulk) -> BulkMessage:
         for c in bulk.coverages
     ]
     data["constraints"] = [
-        core_to_msg_constraint_build_augmented(c)
-        for c in bulk.constraint_builds
+        core_to_msg_constraint_build_augmented(c) for c in bulk.constraint_builds
     ]
     data["constraint_templates"] = [
         core_to_msg_constraint_template(ct) for ct in bulk.constraint_templates
@@ -103,9 +95,7 @@ def core_to_msg_bulk(bulk: Bulk) -> BulkMessage:
         core_to_msg_coverage_selector(cs) for cs in bulk.coverage_selectors
     ]
     data["assignments"] = [core_to_msg_assignment(a) for a in bulk.assignments]
-    data["schedule"] = (
-        core_to_msg_schedule(bulk.schedule) if bulk.schedule else None
-    )
+    data["schedule"] = core_to_msg_schedule(bulk.schedule) if bulk.schedule else None
     data["objective_breaches"] = [
         core_to_msg_objective_breach(ob) for ob in bulk.objective_breaches
     ]

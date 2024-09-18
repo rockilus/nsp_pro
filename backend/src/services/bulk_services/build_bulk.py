@@ -4,7 +4,6 @@ from constraint_parser import build_templates
 from core import Bulk, Shift, ShiftProperty, Team, WorkerProperty
 from scripts.setup_database import (
     assignment_db,
-    constraint_build_db,
     coverage_db,
     coverage_selector_db,
     objective_breach_db,
@@ -19,6 +18,7 @@ from scripts.setup_database import (
     worker_dimension_db,
     worker_property_db,
 )
+from services.constraint_build_services import get_constraint_builds
 from services.schedule_services import get_schedule_wip
 
 
@@ -73,7 +73,7 @@ def build_bulk(user_id: str, teams: List[Team], selected_team_id: str) -> Bulk:
             if s.id == sd.shift_id
         ]
     bulk.shift_demand_shifts = shift_demand_shifts
-    bulk.constraint_builds = constraint_build_db.get_constraint_builds(selected_team_id)
+    bulk.constraint_builds = get_constraint_builds(selected_team_id)
     bulk.constraint_templates = build_templates(
         bulk.workers,
         bulk.worker_dimensions,

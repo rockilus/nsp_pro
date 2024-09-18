@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from constraint_parser.mapping.utils import cast_to_dict_block_value, find_block_by_name
-from core import Block, ConstraintBuild, DictBlockValue, VarWorker, Worker
+from core import Block, ConstraintBuildAugmented, DictBlockValue, VarWorker, Worker
 from utils.constants import Constants
 
 
@@ -10,7 +10,7 @@ class MapWorker:
         self.workers = workers
         self.worker_dim_dict = worker_dim_dict
 
-    def __call__(self, cstr_build: ConstraintBuild) -> VarWorker:
+    def __call__(self, cstr_build: ConstraintBuildAugmented) -> VarWorker:
         values = self.get_worker_values(cstr_build.blocks)
         return VarWorker(
             selector=self.get_selector(values),
