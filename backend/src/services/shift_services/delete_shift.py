@@ -8,20 +8,15 @@ from scripts.setup_database import (
     schedule_db,
     shift_db,
     shift_demand_db,
-    shift_dimension_db,
     shift_property_db,
 )
 from services.constraint_build_services.delete_constraint_build_item import (
     delete_item_with_id_from_constraint_build,
 )
-from services.constraint_build_services.update_constraint_build import (
-    update_cbs_change_shift_property_remove_old_value,
-)
 
 
 def delete_shift(shift_id: str) -> None:
     delete_shift_from_constraint_build(shift_id)
-    delete_shift_property_from_constraint_build(shift_id)
     delete_shift_from_objective_breach(shift_id)
     delete_shift_from_constraint(shift_id)
     delete_shift_from_schedule_quick_staffing(shift_id)
@@ -39,41 +34,6 @@ def delete_shift_from_constraint_build(shift_id: str) -> None:
     )
 
 
-def delete_shift_property_from_constraint_build(shift_id: str) -> None:
-    sps = shift_property_db.get_shift_properties_by_shift_id(shift_id)
-    for sp in sps:
-        sd = shift_dimension_db.get_shift_dimension_by_id(sp.shift_dimension_id)
-        if sd.entry_type == "bool":
-            continue
-        sps_dim = shift_property_db.get_shift_properties_by_shift_dimension_id(
-            sp.shift_dimension_id
-        )
-        if sd.entry_type == "list":
-            if isinstance(sp.value, list):
-                for sp_v in sp.value:
-                    sps_dim_same_value = [
-                        spd
-                        for spd in sps_dim
-                        if sp_v in spd.value and spd.id != sp.id  # type: ignore
-                    ]
-                    if not sps_dim_same_value:
-                        update_cbs_change_shift_property_remove_old_value(
-                            sp.shift_dimension_id, sp_v
-                        )
-            else:
-                raise ValueError(
-                    "Shift property value is not a list for list dimension"
-                )
-        else:
-            sps_dim_same_value = [
-                spd for spd in sps_dim if spd.value == sp.value and spd.id != sp.id
-            ]
-            if not sps_dim_same_value:
-                update_cbs_change_shift_property_remove_old_value(
-                    sp.shift_dimension_id, sp.value  # type: ignore
-                )
-
-
 def delete_shift_from_objective_breach(shift_id: str) -> None:
     obs = objective_breach_db.get_objective_breaches_by_shift_id(shift_id)
     for ob in obs:
@@ -88,13 +48,17 @@ def delete_shift_from_objective_breach(shift_id: str) -> None:
 def delete_shift_from_constraint(shift_id: str) -> None:
     constraints = constraint_db.get_constraints_by_shift_id_in_target(shift_id)
     for constraint in constraints:
-        new_targets = [s for s in constraint.shift_var.target_ids if s != shift_id]
+        new_targets = [
+            s for s in constraint.shift_var.target_ids if s != shift_id
+        ]
         if not new_targets:
             constraint_db.delete_constraint(constraint.id)
             continue
         constraint.shift_var.target_ids = new_targets
         constraint_db.update_constraint(constraint)
-    constraints = constraint_db.get_constraints_by_shift_id_in_reference(shift_id)
+    constraints = constraint_db.get_constraints_by_shift_id_in_reference(
+        shift_id
+    )
     for constraint in constraints:
         new_references = [
             s for s in constraint.shift_var.reference_ids if s != shift_id
@@ -104,9 +68,13 @@ def delete_shift_from_constraint(shift_id: str) -> None:
             continue
         constraint.shift_var.reference_ids = new_references
         constraint_db.update_constraint(constraint)
-    constraints = constraint_db.get_constraints_by_shift_id_in_relative(shift_id)
+    constraints = constraint_db.get_constraints_by_shift_id_in_relative(
+        shift_id
+    )
     for constraint in constraints:
-        new_relatives = [s for s in constraint.shift_var.relative_ids if s != shift_id]
+        new_relatives = [
+            s for s in constraint.shift_var.relative_ids if s != shift_id
+        ]
         if not new_relatives:
             constraint_db.delete_constraint(constraint.id)
             continue
@@ -115,7 +83,9 @@ def delete_shift_from_constraint(shift_id: str) -> None:
 
 
 def delete_shift_from_schedule_quick_staffing(shift_id: str) -> None:
-    schedules = schedule_db.get_schedule_quick_staffing_contain_shift_id(shift_id)
+    schedules = schedule_db.get_schedule_quick_staffing_contain_shift_id(
+        shift_id
+    )
     for schedule in schedules:
         new_quick_staffings = [
             qs for qs in schedule.quick_staffings if qs.shift_id != shift_id

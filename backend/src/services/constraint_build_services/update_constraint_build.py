@@ -1,53 +1,27 @@
 # pylint: disable=R0801
-from core import MissingProperty
-from scripts.setup_database import constraint_build_db
+from core import ConstraintBuild, ConstraintBuildAugmented
+from scripts.setup_database import (
+    constraint_build_db,
+    shift_db,
+    shift_dimension_db,
+    worker_db,
+    worker_dimension_db,
+)
+from services.constraint_build_services.cb_to_cb_augmented import (
+    cb_to_cb_augmented,
+)
 
 
-def update_cbs_change_shift_property(
-    shift_dimension_id: str,
-    old_value: str | int | float | bool,
-) -> None:
-    # Get constraint builds that have old value, add the old value to missing
-    # properties, a deactivate them if needed
-    update_cbs_change_shift_property_remove_old_value(shift_dimension_id, old_value)
-
-    # Get the constraint builds that have new value, remove the new value from
-    # missing properties, and activate them if needed
-
-
-def update_cbs_change_shift_property_remove_old_value(
-    shift_dimension_id: str, value: str | int | float | bool
-) -> None:
-    # Get constraint builds with old value
-    cbs = constraint_build_db.get_constraint_builds_by_sd_id_and_sp_value(
-        shift_dimension_id, value
+def update_constraint_build(
+    new_cb: ConstraintBuild,
+) -> ConstraintBuildAugmented:
+    workers = worker_db.get_workers(new_cb.team_id)
+    shifts = shift_db.get_shifts(new_cb.team_id)
+    worker_dimensions = worker_dimension_db.get_worker_dimensions(
+        new_cb.team_id
     )
-    for cb in cbs:
-        # Add old value to missing properties
-        if any(mp.dimension_id == shift_dimension_id for mp in cb.missing_properties):
-            for mp in cb.missing_properties:
-                if mp.dimension_id == shift_dimension_id:
-                    mp.property_values.append(value)  # type: ignore
-        else:
-            cb.missing_properties.append(
-                MissingProperty(
-                    dimension_id=shift_dimension_id,
-                    property_values=[value],  # type: ignore
-                )
-            )
-        for block in cb.blocks:
-            if block.name in ["shift", "shift_refence", "shift_relative"]:
-                if not isinstance(block.value, list):
-                    raise ValueError("Shift block value should be a list")
-                other_values = [
-                    v
-                    for v in block.value  # type: ignore
-                    if not any(
-                        v["id"] == mp.dimension_id  # type: ignore
-                        and v["name"] in mp.property_values  # type: ignore
-                        for mp in cb.missing_properties
-                    )
-                ]
-                if not other_values:
-                    cb.active = False
-        constraint_build_db.update_constraint_build(cb)
+    shift_dimensions = shift_dimension_db.get_shift_dimensions(new_cb.team_id)
+    constraint_build = constraint_build_db.update_constraint_build(new_cb)
+    return cb_to_cb_augmented(
+        constraint_build, workers, shifts, worker_dimensions, shift_dimensions
+    )

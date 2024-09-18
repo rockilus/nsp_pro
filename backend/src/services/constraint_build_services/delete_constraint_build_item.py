@@ -2,9 +2,11 @@ from typing import List
 
 from core import Block, ConstraintBuild
 from scripts.setup_database import constraint_build_db
-from services.constraint_build_services.blocks_to_string import blocks_to_string
+from services.constraint_build_services.blocks_to_string import (
+    blocks_to_string,
+)
 from services.constraint_build_services.delete_constraint_build import (
-    delete_constraint_build_and_dependencies,
+    delete_constraint_build,
 )
 
 
@@ -30,7 +32,7 @@ def delete_item_with_id_from_constraint_build(
                         )
                     )
                 else:
-                    delete_constraint_build_and_dependencies(cb.team_id, cb.id)
+                    delete_constraint_build(cb.team_id, cb.id)
                     skip_to_next_cb = True
                     break
             else:

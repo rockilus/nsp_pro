@@ -371,6 +371,13 @@ def core_to_doc_constraint_build(
 def doc_to_core_shift_worker_option(
     doc_obj: ShiftWorkerOptionDocument,
 ) -> ShiftWorkerOption:
+    if not isinstance(doc_obj, ShiftWorkerOptionDocument):
+        if doc_obj.get("_cls") == "ShiftWorkerOption":
+            doc_obj = ShiftWorkerOptionDocument(**doc_obj)
+        else:
+            raise ValueError(
+                f'Invalid document type: {type(doc_obj)} for ShiftWorkerOption'
+            )
     doc_dict = doc_obj.to_mongo().to_dict()
     return ShiftWorkerOption(**doc_dict)
 

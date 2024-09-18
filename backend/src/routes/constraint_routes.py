@@ -30,13 +30,17 @@ from routes.api_model import (
     MissingPropertyMessage,
     ShiftWorkerOptionMessage,
 )
-from scripts.setup_database import constraint_build_db
-from services.constraint_build_services import blocks_to_string
 from services.constraint_build_services import (
     create_constraint_build as create_constraint_build_service,
 )
 from services.constraint_build_services import (
-    delete_constraint_build_and_dependencies,
+    delete_constraint_build as delete_constraint_build_service,
+)
+from services.constraint_build_services import (
+    get_constraint_builds as get_constraint_builds_service,
+)
+from services.constraint_build_services import (
+    update_constraint_build as update_constraint_build_service,
 )
 
 router = APIRouter()
@@ -57,7 +61,7 @@ async def create_constraint(
             )
         cb_data = msg_to_core_constraint_build(req)
         cb_augmented = create_constraint_build_service(cb_data)
-        response = core_to_msg_constraint_build(cb_augmented)
+        response = core_to_msg_constraint_build_augmented(cb_augmented)
     except Exception as e:
         log_info("Failed to create constraint")
         handle_routes_errors(e)
@@ -76,9 +80,10 @@ async def get_constraints(
             raise NotAuthorizedError(
                 "You do not have permission to get constraints"
             )
-        constraint_builds = constraint_build_db.get_constraint_builds(team_id)
+        constraint_builds = get_constraint_builds_service(team_id)
         response = [
-            core_to_msg_constraint_build(cb) for cb in constraint_builds
+            core_to_msg_constraint_build_augmented(cb)
+            for cb in constraint_builds
         ]
     except Exception as e:
         log_info("Failed to get constraints")
@@ -100,9 +105,8 @@ async def update_constraint(
                 "You do not have permission to update a constraint"
             )
         cb_data = msg_to_core_constraint_build(updated_constraint_build)
-        cb_data.text = blocks_to_string(cb_data.blocks, cb_data.language)
-        cb_updated = constraint_build_db.update_constraint_build(cb_data)
-        response = core_to_msg_constraint_build(cb_updated)
+        cb_updated = update_constraint_build_service(cb_data)
+        response = core_to_msg_constraint_build_augmented(cb_updated)
     except Exception as e:
         log_info("Failed to update constraint")
         handle_routes_errors(e)
@@ -122,7 +126,7 @@ async def delete_constraint(
             raise NotAuthorizedError(
                 "You do not have permission to delete a constraint"
             )
-        delete_constraint_build_and_dependencies(team_id, constraint_build_id)
+        delete_constraint_build_service(team_id, constraint_build_id)
     except Exception as e:
         log_info("Failed to delete constraint")
         handle_routes_errors(e)
@@ -181,7 +185,7 @@ def core_to_msg_missing_property(
     return mp_msg
 
 
-def core_to_msg_constraint_build(
+def core_to_msg_constraint_build_augmented(
     cb_augmented: ConstraintBuildAugmented,
 ) -> ConstraintBuildMessage:
     try:
