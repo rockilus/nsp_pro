@@ -1,7 +1,7 @@
 from models.assignment import Assignment
 from models.config import Config
 from models.constraint import Constraint, VarDay, VarShift, VarWorker
-from models.constraint_build import Block, ConstraintBuild, MissingProperty
+from models.constraint_build import Block, ConstraintBuild, ShiftWorkerOption
 from models.coverage import Coverage
 from models.coverage_selector import CoverageSelector
 from models.objective_breach import ObjectiveBreach
@@ -27,7 +27,7 @@ __all__ = [
     "VarWorker",
     "Block",
     "ConstraintBuild",
-    "MissingProperty",
+    "ShiftWorkerOption",
     "Coverage",
     "CoverageSelector",
     "ObjectiveBreach",

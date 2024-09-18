@@ -9,6 +9,25 @@ from mongoengine.fields import (
 )
 
 
+# class ShiftWorkerOption(EmbeddedDocument):
+#     name: str | bool
+#     id: str
+#     id_type: Constants.SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS
+#     is_bool_dim: bool
+#     category_name: str
+
+
+class ShiftWorkerOption(EmbeddedDocument):
+    name = DynamicField(required=True)
+    id = StringField(required=True)
+    id_type = StringField(
+        required=True,
+        choices=["shift", "worker", "shift_dimension", "worker_dimension", ""],
+    )
+    is_bool_dim = BooleanField(required=True)
+    category_name = StringField(required=True)
+
+
 class Block(EmbeddedDocument):
     name = StringField(
         required=True,
@@ -25,13 +44,11 @@ class Block(EmbeddedDocument):
             "weekday",
         ],
     )
-    type = StringField(required=True, choices=["string", "number", "list", "dict"])
+    type = StringField(
+        required=True,
+        choices=["string", "number", "list", "shift_worker_option"],
+    )
     value = DynamicField(required=True)
-
-
-class MissingProperty(EmbeddedDocument):
-    dimension_id = StringField(required=True)
-    property_values = ListField(DynamicField(), required=True)
 
 
 # replace constraint/aggregator with type string
@@ -47,8 +64,5 @@ class ConstraintBuild(Document):
     template_id = StringField(required=True)
     language = StringField(required=True, choices=["en", "es", "fr"])
     blocks = ListField(EmbeddedDocumentField(Block))
-    text = StringField(required=True)
     hard = BooleanField(required=True)
     priority = StringField(choices=["", "low", "medium", "high"], default="")
-    active = BooleanField(default=True)
-    missing_properties = ListField(EmbeddedDocumentField(MissingProperty))

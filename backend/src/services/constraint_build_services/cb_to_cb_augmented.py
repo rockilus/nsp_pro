@@ -3,64 +3,50 @@ from typing import List, Tuple
 from core import (
     Block,
     ConstraintBuild,
-    MissingProperty,
-    ShiftDimension,
-    WorkerDimension,
-    ShiftWorkerOption,
     ConstraintBuildAugmented,
+    MissingProperty,
+    Shift,
+    ShiftDimension,
+    ShiftWorkerOption,
+    Worker,
+    WorkerDimension,
 )
 from scripts.setup_database import (
-    constraint_build_db,
-    schedule_db,
-    shift_db,
-    shift_dimension_db,
     shift_property_db,
-    worker_db,
-    worker_dimension_db,
     worker_property_db,
 )
 from services.constraint_build_services.blocks_to_string import (
     blocks_to_string,
 )
-from services.constraint_build_services.cb_to_cb_augmented import (
-    cb_to_cb_augmented,
-)
 
 
-def create_constraint_build(
-    cb_data: ConstraintBuild,
+def cb_to_cb_augmented(
+    cb: ConstraintBuild,
+    workers: List[Worker],
+    shifts: List[Shift],
+    worker_dimensions: List[WorkerDimension],
+    shift_dimensions: List[ShiftDimension],
 ) -> ConstraintBuildAugmented:
-    workers = worker_db.get_workers(cb_data.team_id)
-    shifts = shift_db.get_shifts(cb_data.team_id)
-    worker_dimensions = worker_dimension_db.get_worker_dimensions(
-        cb_data.team_id
-    )
-    shift_dimensions = shift_dimension_db.get_shift_dimensions(cb_data.team_id)
     text = blocks_to_string(
-        cb_data.blocks,
+        cb.blocks,
         workers,
         shifts,
         worker_dimensions,
         shift_dimensions,
-        cb_data.language,
+        cb.language,
     )
     missing_properties, active = build_missing_properties_list_and_active(
-        cb_data.blocks, worker_dimensions, shift_dimensions
+        cb.blocks, worker_dimensions, shift_dimensions
     )
-    constraint_build = constraint_build_db.create_constraint_build(cb_data)
-    schedule_wip = schedule_db.get_schedule_wip(cb_data.team_id)
-    if schedule_wip:
-        schedule_wip.constraint_build_ids.append(constraint_build.id)
-        schedule_db.update_schedule(schedule_wip)
     return ConstraintBuildAugmented(
-        id=constraint_build.id,
-        team_id=constraint_build.team_id,
-        constraint_type=constraint_build.constraint_type,
-        template_id=constraint_build.template_id,
-        language=constraint_build.language,
-        blocks=constraint_build.blocks,
-        hard=constraint_build.hard,
-        priority=constraint_build.priority,
+        id=cb.id,
+        team_id=cb.team_id,
+        constraint_type=cb.constraint_type,
+        template_id=cb.template_id,
+        language=cb.language,
+        blocks=cb.blocks,
+        hard=cb.hard,
+        priority=cb.priority,
         text=text,
         missing_properties=missing_properties,
         active=active,

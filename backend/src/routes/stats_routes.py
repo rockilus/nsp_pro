@@ -2,14 +2,10 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
-from fastapi import APIRouter, Depends
-from pydantic import TypeAdapter
-
 from constraint_parser import build_shift_options
 from core import (
     DictBlockValue,
     ShiftProperty,
-    ShiftWorkerOption,
     Stats,
     StatsHeader,
     StatsOptions,
@@ -20,9 +16,14 @@ from errors import (
     handle_create_core_object_error,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from fastapi import APIRouter, Depends
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
+from pydantic import TypeAdapter
 from routes.api_model import (
     ShiftWorkerOptionMessage,
     StatsHeaderMessage,
@@ -30,6 +31,7 @@ from routes.api_model import (
     StatsOptionsMessage,
     StatsValueMessage,
 )
+from routes.constraint_routes import core_to_msg_shift_worker_option
 from scripts.setup_database import (
     shift_db,
     shift_dimension_db,
@@ -91,7 +93,9 @@ async def get_shift_options(
         shift_options = build_shift_options(
             shifts, shift_dimensions, shift_properties_sd
         )
-        response = [core_to_msg_shift_worker_option(so) for so in shift_options]
+        response = [
+            core_to_msg_shift_worker_option(so) for so in shift_options
+        ]
     except Exception as e:
         log_info("Failed to get stats options")
         handle_routes_errors(e)
@@ -105,7 +109,9 @@ async def calculate_stats(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> StatsMessage:
     try:
-        if not await authz_check(session.get_user_id(), "read-stats", "team", team_id):
+        if not await authz_check(
+            session.get_user_id(), "read-stats", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )
@@ -159,19 +165,14 @@ def core_to_msg_stats(stats: Stats) -> StatsMessage:
         str,
         List[StatsHeaderMessage] | List[StatsValueMessage],
     ] = {}
-    data["stats_headers"] = [core_to_msg_stats_header(sh) for sh in stats.stats_headers]
-    data["stats_values"] = [core_to_msg_stats_value(sv) for sv in stats.stats_values]
+    data["stats_headers"] = [
+        core_to_msg_stats_header(sh) for sh in stats.stats_headers
+    ]
+    data["stats_values"] = [
+        core_to_msg_stats_value(sv) for sv in stats.stats_values
+    ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(StatsMessage)
-    return validator.validate_python(as_dict)
-
-
-def core_to_msg_shift_worker_option(
-    shift_worker_option: ShiftWorkerOption,
-) -> ShiftWorkerOptionMessage:
-    data = asdict(shift_worker_option)
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(ShiftWorkerOptionMessage)
     return validator.validate_python(as_dict)
 
 

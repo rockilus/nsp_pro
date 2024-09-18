@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Dict, List
+from typing import List
 
 from pydantic import BaseModel
 
@@ -111,15 +111,26 @@ class RequestMessage(BaseModel):
 
 
 # Constraint
+class ShiftWorkerOptionMessage(BaseModel):
+    name: str | bool
+    id: str
+    idType: str
+    isBoolDim: bool
+    categoryName: str
+
+
 class BlockMessage(BaseModel):
     name: str
     type: str
-    value: str | int | List[str] | List[Dict]
+    value: str | int | List[str] | List[ShiftWorkerOptionMessage]
 
 
 class MissingPropertyMessage(BaseModel):
     dimensionId: str
-    propertyValues: List[str]
+    isBool: bool
+    dimName: str
+    category: str
+    propertyValues: List[str | int | float | bool]
 
 
 class ConstraintBuildMessage(BaseModel):
@@ -134,14 +145,6 @@ class ConstraintBuildMessage(BaseModel):
     priority: str
     active: bool
     missingProperties: List[MissingPropertyMessage]
-
-
-class ShiftWorkerOptionMessage(BaseModel):
-    name: str
-    id: str
-    idType: str
-    isBoolDim: bool
-    categoryName: str
 
 
 class TemplateBlockMessage(BaseModel):
