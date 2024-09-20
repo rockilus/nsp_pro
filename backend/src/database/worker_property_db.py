@@ -280,18 +280,14 @@ class WorkerPropertyDB:
             handle_get_document_error(e)
         out: Dict = {}
         for r in result:
-            dim, dim_name, prop_value, workers = (
+            dim, _, prop_value, workers = (
                 r["_id"],
                 r["dim_name"].lower(),
                 r["prop_value"],
                 r["workers"],
             )
             prop_value_mod = (
-                prop_value.lower()
-                if not isinstance(prop_value, bool)
-                else dim_name
-                if prop_value
-                else "not " + dim_name
+                prop_value.lower() if not isinstance(prop_value, bool) else prop_value
             )
             if dim not in out:
                 out[dim] = {}
