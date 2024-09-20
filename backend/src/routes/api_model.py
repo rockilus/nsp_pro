@@ -220,19 +220,13 @@ class ValidateMessage(BaseModel):
 
 
 # Stats
-class DictBlockValueMessage(BaseModel):
-    name: str
-    id: str
-    idType: str
-
-
 class StatsHeaderMessage(BaseModel):
     id: str
     teamId: str
     statsUnit: str
     headerUnit: str
     value: str
-    selectedShifts: List[DictBlockValueMessage]
+    selectedShifts: List[ShiftWorkerOptionMessage]
     inCustom: bool
 
 
@@ -253,7 +247,7 @@ class StatsOptionsMessage(BaseModel):
     endDate: date
     statsUnit: str
     headerUnit: str
-    selectedShifts: List[DictBlockValueMessage]
+    selectedShifts: List[ShiftWorkerOptionMessage]
 
 
 # User

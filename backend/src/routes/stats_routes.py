@@ -5,15 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from constraint_parser import build_shift_options
-from core import (
-    DictBlockValue,
-    ShiftProperty,
-    Stats,
-    StatsHeader,
-    StatsOptions,
-    StatsValue,
-)
+from core import Stats, StatsHeader, StatsOptions, StatsValue
 from errors import (
     NotAuthorizedError,
     handle_create_core_object_error,
@@ -29,14 +21,13 @@ from routes.api_model import (
     StatsOptionsMessage,
     StatsValueMessage,
 )
-from routes.constraint_routes import core_to_msg_shift_worker_option
-from scripts.setup_database import (
-    shift_db,
-    shift_dimension_db,
-    shift_property_db,
-    stats_header_db,
+from routes.constraint_routes import (
+    core_to_msg_shift_worker_option,
+    msg_to_core_shift_worker_option,
 )
+from scripts.setup_database import stats_header_db
 from services.stats_services import build_stats
+from services.stats_services import get_shift_options as get_shift_options_service
 
 router = APIRouter()
 
@@ -76,21 +67,7 @@ async def get_shift_options(
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )
-        shifts = shift_db.get_shifts(team_id)
-        shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
-        # pylint: disable=R0801
-        shift_properties = shift_property_db.get_shift_properties_by_shift_ids(
-            [s.id for s in shifts]
-        )
-        shift_properties_sd: Dict[str, List[ShiftProperty]] = {}
-        for sp in shift_properties:
-            sd_id = sp.shift_dimension_id
-            if sd_id not in shift_properties_sd:
-                shift_properties_sd[sd_id] = []
-            shift_properties_sd[sd_id].append(sp)
-        shift_options = build_shift_options(
-            shifts, shift_dimensions, shift_properties_sd
-        )
+        shift_options = get_shift_options_service(team_id)
         response = [core_to_msg_shift_worker_option(so) for so in shift_options]
     except Exception as e:
         log_info("Failed to get stats options")
@@ -149,6 +126,9 @@ def core_to_msg_stats_value(stats_value: StatsValue) -> StatsValueMessage:
 
 def core_to_msg_stats_header(stats_header: StatsHeader) -> StatsHeaderMessage:
     data = asdict(stats_header)
+    data["selected_shifts"] = [
+        core_to_msg_shift_worker_option(v) for v in stats_header.selected_shifts
+    ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(StatsHeaderMessage)
     return validator.validate_python(as_dict)
@@ -166,20 +146,13 @@ def core_to_msg_stats(stats: Stats) -> StatsMessage:
     return validator.validate_python(as_dict)
 
 
-def camelize_shift_options(shift_options: Dict) -> Dict:
-    out = {}
-    for key, value in shift_options.items():
-        out[key] = [humps.camelize(v) for v in value]
-    return out
-
-
 # message to core
 def msg_to_core_stats_options(
     msg: StatsOptionsMessage,
 ) -> StatsOptions:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake["selected_shifts"] = [
-        DictBlockValue(**ss) for ss in data_snake["selected_shifts"]
+        msg_to_core_shift_worker_option(v) for v in msg.selectedShifts
     ]
     try:
         out = StatsOptions(**data_snake)
@@ -192,7 +165,7 @@ def msg_to_core_stats_options(
 def msg_to_core_stats_header(msg: StatsHeaderMessage) -> StatsHeader:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake["selected_shifts"] = [
-        DictBlockValue(**ss) for ss in data_snake["selected_shifts"]
+        msg_to_core_shift_worker_option(v) for v in msg.selectedShifts
     ]
     try:
         stats_header = StatsHeader(**data_snake)

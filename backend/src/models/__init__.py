@@ -11,7 +11,7 @@ from models.shift import Shift
 from models.shift_demand import ShiftDemand
 from models.shift_dimension import ShiftDimension
 from models.shift_property import ShiftProperty
-from models.stats_header import DictBlockValue, StatsHeader
+from models.stats_header import StatsHeader
 from models.team import Team
 from models.user import User
 from models.worker import Worker
@@ -38,7 +38,6 @@ __all__ = [
     "ShiftDemand",
     "ShiftDimension",
     "ShiftProperty",
-    "DictBlockValue",
     "StatsHeader",
     "Team",
     "User",

@@ -30,13 +30,6 @@ class VarShift:
 
 
 @dataclass
-class DictBlockValue:
-    name: str
-    id: str
-    id_type: str
-
-
-@dataclass
 class ShiftWorkerOption:
     name: str | bool  # value shown in the dropdown in the ui
     id: str  # id of the shift, worker or dimension

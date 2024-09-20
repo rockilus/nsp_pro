@@ -49,39 +49,44 @@ class MapWorker:
                     )
                 out.append(value.id)
             elif value.id_type == "worker_dimension":
-                mp = next(
-                    (mp for mp in missing_properties if mp.dimension_id == value.id),
-                    None,
+                target_ids = self.get_target_ids_worker_dimension(
+                    value, missing_properties
                 )
-                if mp and value.name in mp.property_values:
-                    continue
-                if value.id not in self.worker_dim_dict:
-                    raise ValueError(f"Worker dimension {value.id} not found")
-                if value.is_bool_dim:
-                    if not isinstance(value.name, bool):
-                        raise ValueError(
-                            "Value name is not a boolean for bool dimension"
-                        )
-                    if value.name not in self.worker_dim_dict[value.id]:
-                        raise ValueError(
-                            f"Worker property {value.name} "
-                            + f"for dimension {value.id} not found"
-                        )
-                    out += self.worker_dim_dict[value.id][value.name]
-                else:
-                    if not isinstance(value.name, str):
-                        raise ValueError(
-                            "Value name is not a string for non-bool dimension"
-                        )
-                    if value.name.lower() not in self.worker_dim_dict[value.id]:
-                        raise ValueError(
-                            f"Worker property {value.name} for dimension "
-                            + f"{value.id} not found"
-                        )
-                    out += self.worker_dim_dict[value.id][value.name.lower()]
+                if target_ids:
+                    out += target_ids
         if not out:
             raise ValueError("No workers found")
         return sorted(list(set(out)))
+
+    def get_target_ids_worker_dimension(
+        self,
+        value: ShiftWorkerOption,
+        missing_properties: List[MissingProperty],
+    ) -> List[str] | None:
+        mp = next(
+            (mp for mp in missing_properties if mp.dimension_id == value.id),
+            None,
+        )
+        if mp and value.name in mp.property_values:
+            return None
+        if value.id not in self.worker_dim_dict:
+            raise ValueError(f"Worker dimension {value.id} not found")
+        if value.is_bool_dim:
+            if not isinstance(value.name, bool):
+                raise ValueError("Value name is not a boolean for bool dimension")
+            if value.name not in self.worker_dim_dict[value.id]:
+                raise ValueError(
+                    f"Worker property {value.name} "
+                    + f"for dimension {value.id} not found"
+                )
+            return self.worker_dim_dict[value.id][value.name]
+        if not isinstance(value.name, str):
+            raise ValueError("Value name is not a string for non-bool dimension")
+        if value.name.lower() not in self.worker_dim_dict[value.id]:
+            raise ValueError(
+                f"Worker property {value.name} for dimension " + f"{value.id} not found"
+            )
+        return self.worker_dim_dict[value.id][value.name.lower()]
 
     def check_worker_id(self, worker_id: str) -> bool:
         return any(w.id == worker_id for w in self.workers)

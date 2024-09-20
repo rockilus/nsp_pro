@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 
-from core import DictBlockValue, Stats, StatsHeader, StatsValue
+from core import ShiftWorkerOption, Stats, StatsHeader, StatsValue
 from utils.constants import Constants
 
 
@@ -15,7 +15,7 @@ def np_to_core_days_worked_per_weekday(
     i_to_worker: Dict[int, str],
     team_id: str,
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
     stats_headers = []
@@ -91,7 +91,7 @@ def np_to_core_days_worked_per_week(
     year_week_nb_to_i: Dict[Tuple[int, int], int],
     team_id: str,
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
     stats_headers = []
@@ -172,7 +172,7 @@ def np_to_core_days_worked_per_month(
     year_month_to_i: Dict[Tuple[int, int], int],
     team_id: str,
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
     stats_headers = []
@@ -253,7 +253,7 @@ def np_to_core_days_worked_per_year(
     year_to_i: Dict[int, int],
     team_id: str,
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
     stats_headers = []
@@ -329,7 +329,7 @@ def np_to_core_days_worked_all(
     i_to_worker: Dict[int, str],
     team_id: str,
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
     existing_sh = next(
@@ -398,7 +398,7 @@ def np_to_core_nb_times_shift(
     i_to_shift: Dict[int, str],
     team_id: str,
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
     stats_headers = []

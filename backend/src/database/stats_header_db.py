@@ -2,7 +2,11 @@ from typing import List
 
 from bson import ObjectId
 
-from core import DictBlockValue, StatsHeader
+from core import StatsHeader
+from database.constraint_build_db import (
+    core_to_doc_shift_worker_option,
+    doc_to_core_shift_worker_option,
+)
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -12,7 +16,6 @@ from errors import (
     handle_save_document_error,
 )
 from logger import log_info
-from models import DictBlockValue as DictBlockValueDocument
 from models import StatsHeader as StatsHeaderDocument
 from models import Team as TeamDocument
 
@@ -119,16 +122,6 @@ class StatsHeaderDB:
 
 # Mappers
 # core to document
-def core_to_doc_dict_block_value(
-    dataclass_obj: DictBlockValue,
-) -> DictBlockValueDocument:
-    return DictBlockValueDocument(
-        name=dataclass_obj.name,
-        id=dataclass_obj.id,
-        id_type=dataclass_obj.id_type,
-    )
-
-
 def core_to_doc_stats_header(
     dataclass_obj: StatsHeader,
 ) -> StatsHeaderDocument:
@@ -141,25 +134,18 @@ def core_to_doc_stats_header(
         header_unit=dataclass_obj.header_unit,
         value=dataclass_obj.value,
         selected_shifts=[
-            core_to_doc_dict_block_value(ss) for ss in dataclass_obj.selected_shifts
+            core_to_doc_shift_worker_option(ss) for ss in dataclass_obj.selected_shifts
         ],
     )
 
 
 # document to core
-def doc_to_core_dict_block_value(
-    doc_obj: DictBlockValueDocument,
-) -> DictBlockValue:
-    doc_dict = doc_obj.to_mongo().to_dict()
-    return DictBlockValue(**doc_dict)
-
-
 def doc_to_core_stats_header(doc_obj: StatsHeaderDocument) -> StatsHeader:
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["team_id"] = doc_dict["team"]
     doc_dict["selected_shifts"] = [
-        doc_to_core_dict_block_value(ss) for ss in doc_obj.selected_shifts
+        doc_to_core_shift_worker_option(ss) for ss in doc_obj.selected_shifts
     ]
     doc_dict["in_custom"] = True
     doc_dict.pop("_id")

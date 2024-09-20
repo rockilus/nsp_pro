@@ -4,8 +4,10 @@ from typing import Dict, List, Tuple
 from constraint_parser import parse_selected_shifts
 from core import (
     Assignment,
-    DictBlockValue,
+    Block,
     Shift,
+    ShiftDimension,
+    ShiftWorkerOption,
     Stats,
     StatsHeader,
     StatsOptions,
@@ -15,9 +17,13 @@ from scripts.setup_database import (
     assignment_db,
     schedule_db,
     shift_db,
+    shift_dimension_db,
     shift_property_db,
     stats_header_db,
     worker_db,
+)
+from services.constraint_build_services.cb_to_cb_augmented import (
+    build_missing_properties_list_and_active_shift,
 )
 from services.stats_services.buid_dates import build_dates
 from services.stats_services.calc_per_week_day import (
@@ -56,6 +62,7 @@ def build_stats(
         schedules,
     )
     shifts = shift_db.get_shifts(team_id)
+    shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
     assignments = assignment_db.get_assignments_by_dates(
         start_date, end_date, schedules
@@ -67,6 +74,7 @@ def build_stats(
             workers,
             date_to_i,
             shifts,
+            shift_dimensions,
             shift_dim_dict,
             assignments,
             stats_headers,
@@ -83,7 +91,11 @@ def build_stats(
         i_to_work_shift,
         i_to_rest_shift,
     ) = build_work_shift_indexes(
-        workers, shifts, shift_dim_dict, stats_options.selected_shifts
+        workers,
+        shifts,
+        shift_dimensions,
+        shift_dim_dict,
+        stats_options.selected_shifts,
     )
     return build_stats_for_stats_unit(
         team_id,
@@ -106,8 +118,9 @@ def build_stats(
 def build_work_shift_indexes(
     workers: List[Worker],
     shifts: List[Shift],
+    shift_dimensions: List[ShiftDimension],
     shift_dim_dict: Dict,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
 ) -> Tuple[
     Dict[str, int],
     Dict[str, int],
@@ -117,7 +130,17 @@ def build_work_shift_indexes(
     Dict[int, str],
     Dict[int, str],
 ]:
-    selected_shifts_ids = parse_selected_shifts(selected_shifts, shifts, shift_dim_dict)
+    block = Block(
+        name="shift",
+        type="shift_worker_option",
+        value=selected_shifts,
+    )
+    missing_properties, _ = build_missing_properties_list_and_active_shift(
+        block, shift_dimensions
+    )
+    selected_shifts_ids = parse_selected_shifts(
+        selected_shifts, missing_properties, shifts, shift_dim_dict
+    )
     worker_to_i = {worker.id: i for i, worker in enumerate(workers)}
     # shift_to_i = {shift.id: i for i, shift in enumerate(shifts)}
     work_shift_to_i = {
@@ -157,6 +180,7 @@ def build_stats_custom(
     workers: List[Worker],
     date_to_i: Dict[date, int],
     shifts: List[Shift],
+    shift_dimensions: List[ShiftDimension],
     shift_dim_dict: Dict,
     assignments: List[Assignment],
     stats_headers: List[StatsHeader],
@@ -186,7 +210,9 @@ def build_stats_custom(
             i_to_worker,
             i_to_work_shift,
             i_to_rest_shift,
-        ) = build_work_shift_indexes(workers, shifts, shift_dim_dict, selected_shifts)
+        ) = build_work_shift_indexes(
+            workers, shifts, shift_dimensions, shift_dim_dict, selected_shifts
+        )
         su_stats = build_stats_for_stats_unit(
             team_id,
             hu,
@@ -225,7 +251,7 @@ def build_stats_for_stats_unit(
     i_to_rest_shift: Dict[int, str],
     assignments: List[Assignment],
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers: List[StatsHeader],
 ) -> Stats:
     if stats_unit == "nb_days_worked":
@@ -333,7 +359,7 @@ def build_stats_nb_days_worked(
     i_to_worker: Dict[int, str],
     assignments: List[Assignment],
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers: List[StatsHeader],
 ) -> Stats:
     a_array = core_to_np_assignments_binary(
@@ -405,7 +431,7 @@ def build_stats_nb_shifts_worked(
     i_to_worker: Dict[int, str],
     assignments: List[Assignment],
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers: List[StatsHeader],
 ) -> Stats:
     a_array = core_to_np_assignments_binary(
@@ -478,7 +504,7 @@ def build_stats_time_worked(
     i_to_worker: Dict[int, str],
     assignments: List[Assignment],
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers: List[StatsHeader],
 ) -> Stats:
     a_array = core_to_np_assignments_worked_time(
@@ -550,7 +576,7 @@ def build_stats_nb_days_rest(
     i_to_worker: Dict[int, str],
     assignments: List[Assignment],
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers: List[StatsHeader],
 ) -> Stats:
     a_array = core_to_np_assignments_binary(
@@ -627,7 +653,7 @@ def build_stats_nb_times_shifts(
     i_to_shift: Dict[int, str],
     assignments: List[Assignment],
     stats_unit: Constants.STATS_UNIT_OPTIONS,
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
     stats_headers: List[StatsHeader],
 ) -> Stats:
     a_array = core_to_np_assignments_binary(
