@@ -81,6 +81,9 @@ export default function ConstraintSelector({
             {constraints.map((constraint) => (
               <TableRow
                 key={constraint.id}
+                className={`constraint-row ${
+                  constraint.active ? "active" : "inactive"
+                }`}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row" sx={{ padding: 0 }}>

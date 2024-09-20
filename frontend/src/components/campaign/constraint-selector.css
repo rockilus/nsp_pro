@@ -36,6 +36,14 @@
   flex-direction: column;
 }
 
+.constraint-row.active {
+  background-color: #ffffff;
+}
+
+.constraint-row.inactive {
+  background-color: #f0efed;
+}
+
 .constraint-active {
   color: #000000;
 }
