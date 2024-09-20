@@ -16,8 +16,8 @@ import ShiftOptionsDisplay from "./shift-options-display";
 import "../../../styles/text-styles.css";
 import "./stats-options.css";
 // Types
-import { StatsShiftOptionsT, StatsOptionsT } from "../../../types/stats";
-import { TemplateOptionValueT } from "../../../types/constraint";
+import { StatsOptionsT } from "../../../types/stats";
+import { ShiftWorkerOptionT } from "../../../types/constraint";
 
 dayjs.extend(utc);
 
@@ -29,7 +29,7 @@ export default function StatsOptions({
   handleGetStats,
 }: {
   lng: string;
-  statsShiftOptions: StatsShiftOptionsT;
+  statsShiftOptions: ShiftWorkerOptionT[];
   statsUnitOptions: Record<string, string>[];
   setShowingCustom: (showingCustom: boolean) => void;
   handleGetStats: (statsOptions: StatsOptionsT) => void;
@@ -42,7 +42,15 @@ export default function StatsOptions({
     endDate: dayjs.utc().startOf("day"),
     statsUnit: "custom",
     headerUnit: "weekday",
-    selectedShifts: [{ name: "all shifts", id: "", idType: "" }],
+    selectedShifts: [
+      {
+        name: "all shifts",
+        id: "",
+        idType: "",
+        isBoolDim: false,
+        categoryName: "All",
+      },
+    ],
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -90,7 +98,7 @@ export default function StatsOptions({
   };
 
   const handleEditSelectedShifts = (
-    newSelectedShifts: TemplateOptionValueT[]
+    newSelectedShifts: ShiftWorkerOptionT[]
   ) => {
     setStatsOptions((prevState) => ({
       ...prevState,

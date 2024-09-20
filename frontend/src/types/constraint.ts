@@ -1,3 +1,25 @@
+export type ShiftWorkerOptionT = {
+  name: string | boolean;
+  id: string;
+  idType: string;
+  isBoolDim: boolean;
+  categoryName: string;
+};
+
+export type BlockT = {
+  name: string;
+  type: string;
+  value: string | number | string[] | ShiftWorkerOptionT[];
+};
+
+export type MissingProperty = {
+  dimension_id: string;
+  isBool: boolean;
+  dimName: string;
+  category: string;
+  propertyValues: string[] | number[] | boolean[];
+};
+
 export type ConstraintT = {
   id: string;
   teamId: string;
@@ -11,36 +33,10 @@ export type ConstraintT = {
   active: boolean;
   missingProperties: MissingProperty[];
 };
-export type TemplateOptionValueT = {
-  name: string;
-  id: string;
-  idType: string;
-};
-
-export type ShiftWorkerOptionT = {
-  name: string | boolean;
-  id: string;
-  idType: string;
-  isBoolDim: boolean;
-  categoryName: string;
-};
-
-export type BlockT = {
-  name: string;
-  type: string;
-  // value: string | number | string[] | TemplateOptionValueT[];
-  value: string | number | string[] | ShiftWorkerOptionT[];
-};
-
-export type MissingProperty = {
-  dimension_id: string;
-  propertyValues: string[];
-};
 
 export type TemplateBlockT = {
   name: string;
   type: string;
-  // options: string[] | Record<string, TemplateOptionValueT[]>;
   options: string[] | ShiftWorkerOptionT[];
   placeholder: string | number;
 };

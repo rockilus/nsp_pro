@@ -3,12 +3,8 @@ import { unstable_noStore as noStore } from "next/cache";
 import { getWorkers } from "./worker";
 import { getShifts } from "./shift";
 // Types
-import {
-  StatsT,
-  StatsHeaderT,
-  StatsOptionsT,
-  StatsShiftOptionsT,
-} from "../../types/stats";
+import { StatsT, StatsHeaderT, StatsOptionsT } from "../../types/stats";
+import { ShiftWorkerOptionT } from "../../types/constraint";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -113,7 +109,7 @@ export async function getShiftOptions(teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to fetch shift options: " + responseData.detail);
     }
-    return responseData as StatsShiftOptionsT;
+    return responseData as ShiftWorkerOptionT[];
   } catch (error) {
     console.error("Failed to fetch shift options:", error);
     throw new Error("Failed to fetch shift options, please try again later");

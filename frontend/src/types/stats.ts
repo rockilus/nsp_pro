@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { TemplateOptionValueT } from "./constraint";
+import { ShiftWorkerOptionT } from "./constraint";
 
 export type StatsHeaderT = {
   id: string;
@@ -7,7 +7,7 @@ export type StatsHeaderT = {
   statsUnit: string;
   headerUnit: string;
   value: string;
-  selectedShifts: TemplateOptionValueT[];
+  selectedShifts: ShiftWorkerOptionT[];
   inCustom: boolean;
 };
 
@@ -22,13 +22,11 @@ export type StatsT = {
   statsValues: StatsValueT[];
 };
 
-export type StatsShiftOptionsT = Record<string, TemplateOptionValueT[]>;
-
 export type StatsOptionsT = {
   timeFrame: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
   statsUnit: string;
   headerUnit: string;
-  selectedShifts: TemplateOptionValueT[];
+  selectedShifts: ShiftWorkerOptionT[];
 };

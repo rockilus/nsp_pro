@@ -6,9 +6,14 @@ import Box from "@mui/material/Box";
 import PopoverBoxAnchorElOver from "../../inputs/popover-box-anchor-el-over";
 import { blockDislayValue } from "../../data-display/block-dislay";
 import ShiftOptionsEdit from "./shift-options-edit";
+// Utils
+import {
+  getShiftWorkerOptionDisplayName,
+  expandBoolDimOptions,
+  groupByCategoryName,
+} from "../../constraints/shift-worker-option-utils/shift-worker-option-utils";
 // Types
-import { TemplateOptionValueT } from "../../../types/constraint";
-import { StatsShiftOptionsT } from "../../../types/stats";
+import { ShiftWorkerOptionT } from "../../../types/constraint";
 
 export default function ShiftOptionsDisplay({
   lng,
@@ -17,9 +22,9 @@ export default function ShiftOptionsDisplay({
   handleEditSelectedShifts,
 }: {
   lng: string;
-  selectedShifts: TemplateOptionValueT[];
-  statsShiftOptions: StatsShiftOptionsT;
-  handleEditSelectedShifts: (selectedShifts: TemplateOptionValueT[]) => void;
+  selectedShifts: ShiftWorkerOptionT[];
+  statsShiftOptions: ShiftWorkerOptionT[];
+  handleEditSelectedShifts: (selectedShifts: ShiftWorkerOptionT[]) => void;
 }) {
   const { t } = useTranslation(lng, "stats-page");
 
@@ -32,7 +37,9 @@ export default function ShiftOptionsDisplay({
           ? blockDislayValue(
               selectedShifts
                 .map((item) =>
-                  typeof item === "object" && "name" in item ? item.name : ""
+                  typeof item === "object" && "name" in item
+                    ? getShiftWorkerOptionDisplayName(item)
+                    : ""
                 )
                 .join(", ")
             )
@@ -53,7 +60,9 @@ export default function ShiftOptionsDisplay({
           <ShiftOptionsEdit
             lng={lng}
             selectedShifts={selectedShifts}
-            statsShiftOptions={statsShiftOptions}
+            statsShiftOptions={groupByCategoryName(
+              expandBoolDimOptions(statsShiftOptions)
+            )}
             handleEditSelectedShifts={handleEditSelectedShifts}
             handleClose={handleClose}
           />

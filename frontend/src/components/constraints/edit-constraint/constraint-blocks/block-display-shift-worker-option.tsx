@@ -10,7 +10,11 @@ import {
   blockDislayValue,
 } from "../../../data-display/block-dislay";
 // Utils
-import { getShiftWorkerOptionDisplayName } from "../../shift-worker-option-utils/shift-worker-option-utils";
+import {
+  getShiftWorkerOptionDisplayName,
+  expandBoolDimOptions,
+  groupByCategoryName,
+} from "../../shift-worker-option-utils/shift-worker-option-utils";
 // Types
 import {
   TemplateBlockT,
@@ -65,33 +69,6 @@ export default function BlockDisplayShiftWorkerOption({
 
   const handleClose = () => {
     setOpen(false);
-  };
-
-  const expandBoolDimOptions = (
-    options: ShiftWorkerOptionT[]
-  ): ShiftWorkerOptionT[] => {
-    return options.flatMap((option) => {
-      if (option.isBoolDim) {
-        return [
-          { ...option, name: true },
-          { ...option, name: false },
-        ];
-      } else {
-        return [option];
-      }
-    });
-  };
-
-  const groupByCategoryName = (
-    options: ShiftWorkerOptionT[]
-  ): { [key: string]: ShiftWorkerOptionT[] } => {
-    return options.reduce((acc, option) => {
-      if (!acc[option.categoryName]) {
-        acc[option.categoryName] = [];
-      }
-      acc[option.categoryName].push(option);
-      return acc;
-    }, {} as { [key: string]: ShiftWorkerOptionT[] });
   };
 
   return (

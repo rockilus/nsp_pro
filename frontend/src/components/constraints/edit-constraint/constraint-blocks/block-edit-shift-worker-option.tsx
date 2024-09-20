@@ -44,8 +44,6 @@ export default function BlockEditShiftWorkerOption({
 }) {
   const { t } = useTranslation(lng, "constraint-page");
 
-  console.log("shiftWorkerOptionDict", shiftWorkerOptionDict);
-
   const translateSectionLabel = (label: string) => {
     switch (label) {
       case "workers":
@@ -87,8 +85,6 @@ export default function BlockEditShiftWorkerOption({
   }, []);
 
   const initialValue = useCallback((): ShiftWorkerOptionT[] => {
-    console.log("block", block);
-
     if (block === null) {
       return [];
     }
@@ -159,10 +155,9 @@ export default function BlockEditShiftWorkerOption({
   const [filteredOptions, setFilteredOptions] = useState<{
     [key: string]: ShiftWorkerOptionT[];
   }>(filterOptions("", valueState, templateOptions));
-  const [selectedOption, setSelectedOption] = useState<Record<
-    string,
-    ShiftWorkerOptionT
-  > | null>(null);
+  const [selectedOption, setSelectedOption] = useState<{
+    [key: string]: ShiftWorkerOptionT[];
+  } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
