@@ -84,7 +84,7 @@ export default function ShiftOptionsEdit({
     [key: string]: ShiftWorkerOptionT[];
   }>(filterOptions("", selectedShifts, statsShiftOptions));
   const [selectedOption, setSelectedOption] = useState<{
-    [key: string]: ShiftWorkerOptionT[];
+    [key: string]: ShiftWorkerOptionT;
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 

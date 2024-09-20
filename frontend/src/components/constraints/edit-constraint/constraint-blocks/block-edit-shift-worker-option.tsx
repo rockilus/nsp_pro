@@ -156,7 +156,7 @@ export default function BlockEditShiftWorkerOption({
     [key: string]: ShiftWorkerOptionT[];
   }>(filterOptions("", valueState, templateOptions));
   const [selectedOption, setSelectedOption] = useState<{
-    [key: string]: ShiftWorkerOptionT[];
+    [key: string]: ShiftWorkerOptionT;
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
