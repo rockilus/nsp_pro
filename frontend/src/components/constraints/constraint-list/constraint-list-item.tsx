@@ -8,6 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 // Components
 import ConstraintButton from "./constraint-button";
+import MissingProperties from "./missing-properties";
 import { HardSoftButton } from "../../buttons/hard-soft-button";
 // Types
 import { ConstraintT, TemplateT } from "../../../types/constraint";
@@ -76,22 +77,10 @@ export default function ConstraintListItem({
           >
             {constraint.text}
           </Typography>
-          {constraint.missingProperties.length > 0 && (
-            <div
-              className="field-name"
-              style={{
-                fontSize: "10px",
-                fontStyle: "italic",
-                color: ConstraintColorInactiveText,
-              }}
-            >
-              {"No " +
-                constraint.missingProperties
-                  .flatMap((mp) => mp.propertyValues)
-                  .join(", ") +
-                " property"}
-            </div>
-          )}
+          <MissingProperties
+            lng={lng}
+            missingProperties={constraint.missingProperties}
+          />
         </Grid>
         <Grid item xs={3}>
           {HardSoftButton(lng, constraint.hard, handleToggleHard)}

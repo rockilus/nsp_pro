@@ -177,7 +177,9 @@ def get_shift_worker_option_display_name(
                     (wd for wd in worker_dimensions if wd.id == option.id),
                     None,
                 )
-                return f"not {worker_dimension.name}" if worker_dimension else ''
+                return (
+                    f"not {worker_dimension.name}" if worker_dimension else ''
+                )
             shift_dimension = next(
                 (sd for sd in shift_dimensions if sd.id == option.id),
                 None,
@@ -215,11 +217,17 @@ def blocks_to_string(
         else:
             block_value = block.value
             if block.name == "operator":
-                block_value = translate_operator_block_value(str(block_value), language)
+                block_value = translate_operator_block_value(
+                    str(block_value), language
+                )
             if block.name == "timing":
-                block_value = translate_timing_block_value(str(block_value), language)
+                block_value = translate_timing_block_value(
+                    str(block_value), language
+                )
             if block.name == "weekday":
-                block_value = translate_weekday_block_value(str(block_value), language)
+                block_value = translate_weekday_block_value(
+                    str(block_value), language
+                )
             values.append(str(block_value))
     joined_values = ' '.join(values)
     capitalized_values = joined_values.capitalize()
@@ -238,7 +246,9 @@ def block_to_string_shift_worker_option(
     if not isinstance(block.value, list):
         raise ValueError("Invalid block value type for shift_worker_option")
     if not all(isinstance(v, ShiftWorkerOption) for v in block.value):
-        raise ValueError("Invalid block value item type for shift_worker_option")
+        raise ValueError(
+            "Invalid block value item type for shift_worker_option"
+        )
     block_values = [
         get_shift_worker_option_display_name(
             v,  # type: ignore

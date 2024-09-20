@@ -9,6 +9,8 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableRow from "@mui/material/TableRow";
+// Components
+import MissingProperties from "../constraints/constraint-list/missing-properties";
 // Styles
 import "./constraint-selector.css";
 import "../../styles/text-styles.css";
@@ -94,24 +96,21 @@ export default function ConstraintSelector({
                   </div>
                 </TableCell>
                 <TableCell component="th" scope="row" sx={{ padding: 0 }}>
-                  <span
-                    className={
-                      constraint.active
-                        ? "constraint-active"
-                        : "constraint-inactive"
-                    }
-                  >
-                    {constraint.text}
-                  </span>
-                  {constraint.missingProperties.length > 0 && (
-                    <span className="constraint-missing-properties">
-                      {"No " +
-                        constraint.missingProperties
-                          .flatMap((mp) => mp.propertyValues)
-                          .join(", ") +
-                        " property"}
+                  <div className="constraint-name-cell">
+                    <span
+                      className={
+                        constraint.active
+                          ? "constraint-active"
+                          : "constraint-inactive"
+                      }
+                    >
+                      {constraint.text}
                     </span>
-                  )}
+                    <MissingProperties
+                      lng={lng}
+                      missingProperties={constraint.missingProperties}
+                    />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

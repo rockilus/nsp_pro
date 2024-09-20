@@ -7,6 +7,7 @@
     "constraints": "Restricciones",
     "hard": "Obligatorio",
     "new_constraint": "Nueva restricción",
+    "no": "No",
     "operator": "Operador",
     "operator_at_least": "al menos",
     "operator_at_most": "como máximo",
@@ -20,6 +21,7 @@
     "select_template": "Selecciona una plantilla de restricción en la lista de abajo.",
     "shift": "Turno",
     "shifts": "Turnos",
+    "shift_property": "En las propiedades de los turnos",
     "soft": "Opcional",
     "templates": "Plantilla",
     "timing": "Temporalidad",
@@ -39,5 +41,6 @@
         "sunday": "Domingo"
     },
     "worker": "Trabajador",
-    "workers": "Trabajadores"
+    "workers": "Trabajadores",
+    "worker_property": "En las propiedades de los trabajadores"
 }
