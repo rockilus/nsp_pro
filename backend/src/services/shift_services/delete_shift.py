@@ -13,7 +13,7 @@ from scripts.setup_database import (
 
 def delete_shift(shift_id: str) -> None:
     delete_shift_from_objective_breach(shift_id)
-    delete_shift_from_constraint(shift_id)
+    # delete_shift_from_constraint(shift_id)
     delete_shift_from_schedule_quick_staffing(shift_id)
     shift_property_db.delete_shift_properties_by_shift_id(shift_id)
     shift_demand_db.delete_shift_demands_by_shift_id(shift_id)
