@@ -56,6 +56,8 @@ def build_missing_properties_list_and_active(
     mps: List[MissingProperty] = []
     active_worker = False
     active_shift = False
+    active_shift_reference = False
+    active_shift_relative = False
     for block in blocks:
         if block.name == "worker":
             (
@@ -71,8 +73,15 @@ def build_missing_properties_list_and_active(
                 block, shift_dimensions
             )
             mps += new_mps
-            active_shift = active_shift or new_active_shift
-    active = active_worker and active_shift
+            if block.name == "shift":
+                active_shift = active_shift or new_active_shift
+            if block.name == "shift_reference":
+                active_shift_reference = active_shift_reference or new_active_shift
+            if block.name == "shift_relative":
+                active_shift_relative = active_shift_relative or new_active_shift
+    active = active_worker and (
+        active_shift or (active_shift_reference and active_shift_relative)
+    )
     return mps, active
 
 
