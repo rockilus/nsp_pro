@@ -3,9 +3,9 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Menu from "@mui/material/Menu";
 // Components
-import ConstraintEdit from "./constraint-edit";
+import ConstraintEdit from "../edit-constraint/constraint-edit";
 // Types
-import { ConstraintT, TemplateT } from "../../types/constraint";
+import { ConstraintT, TemplateT } from "../../../types/constraint";
 
 export default function ConstraintButton({
   lng,

@@ -140,18 +140,14 @@ class ShiftPropertyDB:
         # pylint: disable=R0801
         out: Dict = {}
         for r in result:
-            dim, dim_name, prop_value, shifts = (
+            dim, _, prop_value, shifts = (
                 r["_id"],
                 r["dim_name"].lower(),
                 r["prop_value"],
                 r["shifts"],
             )
             prop_value_mod = (
-                prop_value.lower()
-                if not isinstance(prop_value, bool)
-                else dim_name
-                if prop_value
-                else "not " + dim_name
+                prop_value.lower() if not isinstance(prop_value, bool) else prop_value
             )
             if dim not in out:
                 out[dim] = {}

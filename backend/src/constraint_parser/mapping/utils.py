@@ -1,6 +1,6 @@
-from typing import Dict, List
+from typing import List
 
-from core import Block, DictBlockValue
+from core import Block
 
 
 def find_block_by_name(blocks: List[Block], name: str) -> Block | None:
@@ -8,10 +8,3 @@ def find_block_by_name(blocks: List[Block], name: str) -> Block | None:
         if block.name == name:
             return block
     return None
-
-
-def cast_to_dict_block_value(dict_obj: Dict) -> DictBlockValue:
-    required_keys = {"name", "id", "id_type"}
-    if set(dict_obj.keys()) == required_keys:
-        return DictBlockValue(**dict_obj)
-    raise ValueError("Invalid keys for DictBlockValue")

@@ -1,15 +1,17 @@
 from typing import Dict, List
 
 from constraint_parser.mapping.map_shift import MapShift
-from core import DictBlockValue, Shift
+from core import MissingProperty, Shift, ShiftWorkerOption
 
 
 def parse_selected_shifts(
-    selected_shifts: List[DictBlockValue],
+    selected_shifts: List[ShiftWorkerOption],
+    missing_properties: List[MissingProperty],
     shifts: List[Shift],
     shift_dim_dict: Dict,
 ) -> List[str]:
-    if any("all shifts" in ss.name for ss in selected_shifts):
+    string_values = [ss.name for ss in selected_shifts if isinstance(ss.name, str)]
+    if any("all shifts" in v for v in string_values):
         return [s.id for s in shifts]
     map_shift = MapShift(shifts, shift_dim_dict)
-    return map_shift.get_target_ids(selected_shifts, "stats")
+    return map_shift.get_target_ids(selected_shifts, "stats", missing_properties)

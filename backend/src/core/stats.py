@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import List
 
-from core.constraint import DictBlockValue
+from core.constraint import ShiftWorkerOption
 from utils.constants import Constants
 
 
@@ -13,7 +13,7 @@ class StatsHeader:
     stats_unit: Constants.STATS_UNIT_OPTIONS
     header_unit: Constants.HEADER_UNIT_OPTIONS
     value: (str)  # weekday index, week number, month number, year number, shift_id
-    selected_shifts: List[DictBlockValue]
+    selected_shifts: List[ShiftWorkerOption]
     in_custom: bool
 
 
@@ -37,4 +37,4 @@ class StatsOptions:
     end_date: date
     stats_unit: Constants.STATS_UNIT_OPTIONS
     header_unit: Constants.HEADER_UNIT_OPTIONS
-    selected_shifts: List[DictBlockValue]
+    selected_shifts: List[ShiftWorkerOption]

@@ -1,12 +1,13 @@
-from typing import Dict, List
+from typing import List
 
-from core import Template, TemplateBlock
+from core import ShiftWorkerOption, Template, TemplateBlock
 from utils.constants import Constants
 
 
 # pylint: disable=R0801
 def build_templates_list_es(
-    worker_options: Dict, shift_options: Dict
+    worker_options: List[ShiftWorkerOption],
+    shift_options: List[ShiftWorkerOption],
 ) -> List[Template]:
     return [
         Template(
@@ -17,14 +18,14 @@ def build_templates_list_es(
             blocks=[
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Juan",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="debe hacer",
                 ),
                 TemplateBlock(
@@ -36,12 +37,12 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="#",
                     type="number",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder=2,
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="consultas",
                 ),
@@ -61,14 +62,14 @@ def build_templates_list_es(
             blocks=[
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Juan",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="debe hacer",
                 ),
                 TemplateBlock(
@@ -80,12 +81,12 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="#",
                     type="number",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder=1,
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="guardia",
                 ),
@@ -111,20 +112,20 @@ def build_templates_list_es(
                 ),
                 TemplateBlock(
                     name="shift_reference",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="consulta",
                 ),
                 TemplateBlock(
                     name="#",
                     type="number",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder=1,
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="día",
                 ),
                 TemplateBlock(
@@ -135,19 +136,19 @@ def build_templates_list_es(
                 ),
                 TemplateBlock(
                     name="shift_relative",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="guardia",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="para",
                 ),
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Juan",
                 ),
@@ -162,37 +163,37 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="Si",
                 ),
                 TemplateBlock(
                     name="shift_reference",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="guardia",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="entonces",
                 ),
                 TemplateBlock(
                     name="shift_relative",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="descanso",
                 ),
                 TemplateBlock(
                     name="#",
                     type="number",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder=1,
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="día",
                 ),
                 TemplateBlock(
@@ -204,12 +205,12 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="para",
                 ),
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Juan",
                 ),
@@ -224,19 +225,19 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="Si",
                 ),
                 TemplateBlock(
                     name="shift_reference",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="guardia",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="el",
                 ),
                 TemplateBlock(
@@ -248,25 +249,25 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="entonces",
                 ),
                 TemplateBlock(
                     name="shift_relative",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="descanso",
                 ),
                 TemplateBlock(
                     name="#",
                     type="number",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder=2,
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="días",
                 ),
                 TemplateBlock(
@@ -278,12 +279,12 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="para",
                 ),
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Juan",
                 ),
@@ -298,7 +299,7 @@ def build_templates_list_es(
             blocks=[
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="Juan",
                 ),
@@ -311,12 +312,12 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="hacer",
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="consultas",
                 ),
@@ -333,19 +334,19 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="Las",
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="guardias",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="el",
                 ),
                 TemplateBlock(
@@ -357,13 +358,13 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="deben ser repartidas de manera igual en el "
                     + "tiempo para",
                 ),
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="todos los trabajadores",
                 ),
@@ -380,19 +381,19 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="Las",
                 ),
                 TemplateBlock(
                     name="shift",
-                    type="dict",
+                    type="shift_worker_option",
                     options=shift_options,
                     placeholder="guardias",
                 ),
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="el",
                 ),
                 TemplateBlock(
@@ -404,12 +405,12 @@ def build_templates_list_es(
                 TemplateBlock(
                     name="text",
                     type="string",
-                    options=[],
+                    options=[],  # type: ignore
                     placeholder="deben ser repartidas de manera equitativa entre",
                 ),
                 TemplateBlock(
                     name="worker",
-                    type="dict",
+                    type="shift_worker_option",
                     options=worker_options,
                     placeholder="todos los trabajadores",
                 ),

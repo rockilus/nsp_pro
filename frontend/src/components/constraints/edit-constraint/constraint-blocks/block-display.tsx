@@ -2,13 +2,13 @@ import React from "react";
 // MUI
 import Box from "@mui/material/Box";
 // Components
-import BlockDisplayDict from "./block-display-dict";
+import BlockDisplayShiftWorkerOption from "./block-display-shift-worker-option";
 import BlockDisplayList from "./block-display-list";
 import BlockDisplayString from "./block-display-string";
 import BlockDisplayNumber from "./block-display-number";
-import { blockDisplayText } from "../data-display/block-dislay";
+import { blockDisplayText } from "../../../data-display/block-dislay";
 // Types
-import { TemplateBlockT, BlockT } from "../../types/constraint";
+import { TemplateBlockT, BlockT } from "../../../../types/constraint";
 
 export default function BlockDisplay({
   lng,
@@ -25,8 +25,8 @@ export default function BlockDisplay({
     <Box sx={{ height: "100%" }}>
       {templateBlock.name === "text" ? (
         blockDisplayText(templateBlock.placeholder as string)
-      ) : templateBlock.type === "dict" ? (
-        <BlockDisplayDict
+      ) : templateBlock.type === "shift_worker_option" ? (
+        <BlockDisplayShiftWorkerOption
           lng={lng}
           block={block}
           templateBlock={templateBlock}

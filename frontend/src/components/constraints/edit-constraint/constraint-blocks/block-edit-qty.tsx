@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 // Types
-import { BlockT, TemplateBlockT } from "../../types/constraint";
+import { BlockT, TemplateBlockT } from "../../../../types/constraint";
 // Constants
-import { ConstraintDefaultColors } from "../../constants/constants";
+import { ConstraintDefaultColors } from "../../../../constants/constants";
 
 export default function BlockEditQty({
   block,

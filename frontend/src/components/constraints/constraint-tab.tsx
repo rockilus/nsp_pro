@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 // Components
-import ConstraintList from "./constraint-list";
-import NewConstraint from "./new-constraint";
+import ConstraintList from "./constraint-list/constraint-list";
+import NewConstraint from "./edit-constraint/new-constraint";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions

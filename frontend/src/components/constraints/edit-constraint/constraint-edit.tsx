@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 // Components
-import BlockDisplay from "./block-display";
+import BlockDisplay from "./constraint-blocks/block-display";
 // Types
 import {
   ConstraintT,
   TemplateT,
   BlockT,
   TemplateBlockT,
-  TemplateOptionValueT,
-} from "../../types/constraint";
+  ShiftWorkerOptionT,
+} from "../../../types/constraint";
 
 export default function ConstraintEdit({
   lng,
@@ -31,10 +31,10 @@ export default function ConstraintEdit({
 
   const initialBlockValue = (
     templateBlock: TemplateBlockT
-  ): string | number | string[] | TemplateOptionValueT[] => {
+  ): string | number | string[] | ShiftWorkerOptionT[] => {
     if (templateBlock.type === "text") {
       return templateBlock.placeholder;
-    } else if (templateBlock.type === "dict") {
+    } else if (templateBlock.type === "shift_worker_option") {
       return [];
     } else {
       if (

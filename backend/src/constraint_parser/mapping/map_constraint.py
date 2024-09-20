@@ -4,7 +4,7 @@ from constraint_parser.mapping.map_day import MapDay
 from constraint_parser.mapping.map_shift import MapShift
 from constraint_parser.mapping.map_worker import MapWorker
 from constraint_parser.mapping.utils import find_block_by_name
-from core import Block, Constraint, ConstraintBuild, Shift, Worker
+from core import Block, Constraint, ConstraintBuildAugmented, Shift, Worker
 from utils.constants import Constants
 
 
@@ -22,7 +22,9 @@ class MapConstaint:
         self.map_day = MapDay()
         self.map_shift = MapShift(shifts, shift_dim_dict)
 
-    def __call__(self, cstr_build: ConstraintBuild, schedule_id: str) -> Constraint:
+    def __call__(
+        self, cstr_build: ConstraintBuildAugmented, schedule_id: str
+    ) -> Constraint:
         var_worker = self.map_worker(cstr_build)
         var_day = self.map_day(cstr_build)
         cstr_operator = self.get_operator(cstr_build.blocks, cstr_build.constraint_type)
@@ -96,27 +98,27 @@ class MapConstaint:
             return "no"
         raise ValueError(f"Operator {operator} not recognized")
 
-    @staticmethod
-    # pylint: disable=R0801
-    def blocks_to_string_constraint(blocks: List[Block]) -> str:
-        values = []
-        for block in blocks:
-            if isinstance(block.value, list):
-                block_values = block.value
-                if all(isinstance(v, dict) for v in block.value):
-                    block_values = [v["name"] for v in block_values]  # type: ignore
-                if len(block_values) > 1 and all(
-                    isinstance(v, str) for v in block_values
-                ):
-                    values.append(
-                        ', '.join(block_values[:-1])  # type: ignore
-                        + ' and '
-                        + block_values[-1]
-                    )
-                elif isinstance(block_values[0], str):
-                    values.append(block_values[0])
-            else:
-                values.append(str(block.value))
-        joined_values = ' '.join(values)
-        capitalized_values = joined_values.capitalize()
-        return capitalized_values + '.'
+    # @staticmethod
+    # # pylint: disable=R0801
+    # def blocks_to_string_constraint(blocks: List[Block]) -> str:
+    #     values = []
+    #     for block in blocks:
+    #         if isinstance(block.value, list):
+    #             block_values = block.value
+    #             if all(isinstance(v, dict) for v in block.value):
+    #                 block_values = [v["name"] for v in block_values]  # type: ignore
+    #             if len(block_values) > 1 and all(
+    #                 isinstance(v, str) for v in block_values
+    #             ):
+    #                 values.append(
+    #                     ', '.join(block_values[:-1])  # type: ignore
+    #                     + ' and '
+    #                     + block_values[-1]
+    #                 )
+    #             elif isinstance(block_values[0], str):
+    #                 values.append(block_values[0])
+    #         else:
+    #             values.append(str(block.value))
+    #     joined_values = ' '.join(values)
+    #     capitalized_values = joined_values.capitalize()
+    #     return capitalized_values + '.'

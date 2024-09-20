@@ -7,6 +7,7 @@
     "constraints": "Contraintes",
     "hard": "Strict",
     "new_constraint": "Nouvelle contrainte",
+    "no": "Pas de",
     "operator": "Opérateur",
     "operator_at_least": "au moins",
     "operator_at_most": "au plus",
@@ -20,6 +21,7 @@
     "select_template": "Sélectionnez un modèle de contrainte dans la liste ci-dessous.",
     "shift": "Tache",
     "shifts": "Tâches",
+    "shift_property": "Dans les propiétés de tâches",
     "soft": "Flexible",
     "templates": "Modèles",
     "timing": "Temporalité",
@@ -39,5 +41,6 @@
         "sunday": "Dimanche"
     },
     "worker": "Travailleur",
-    "workers": "Travailleurs"
+    "workers": "Travailleurs",
+    "worker_property": "Dans les propiétés de travailleurs"
 }

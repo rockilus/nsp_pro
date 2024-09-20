@@ -2,7 +2,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core import Block, ConstraintBuild, MissingProperty
+from core import Block, ConstraintBuild, ShiftWorkerOption
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -14,7 +14,7 @@ from errors import (
 from logger import log_info
 from models import Block as BlockDocument
 from models import ConstraintBuild as ConstraintBuildDocument
-from models import MissingProperty as MissingPropertyDocument
+from models import ShiftWorkerOption as ShiftWorkerOptionDocument
 from models import Team as TeamDocument
 
 
@@ -65,13 +65,13 @@ class ConstraintBuildDB:
             handle_get_document_error(e)
         return doc_to_core_constraint_build(cb_doc)
 
-    def get_active_constraint_build_by_ids(
+    def get_constraint_builds_by_ids(
         self, constraint_build_ids: List[str]
     ) -> List[ConstraintBuild]:
         try:
             # pylint: disable=no-member
             cb_docs = ConstraintBuildDocument.objects(  # type: ignore
-                id__in=constraint_build_ids, active=True
+                id__in=constraint_build_ids
             )
         except Exception as e:
             log_info('Failed to get active constraint build by ids from database')
@@ -287,31 +287,41 @@ class ConstraintBuildDB:
 
 # Mappers
 # core to document
+def core_to_doc_shift_worker_option(
+    dataclass_obj: ShiftWorkerOption,
+) -> ShiftWorkerOptionDocument:
+    try:
+        shift_worker_option_doc = ShiftWorkerOptionDocument(
+            name=dataclass_obj.name,
+            id=dataclass_obj.id,
+            id_type=dataclass_obj.id_type,
+            is_bool_dim=dataclass_obj.is_bool_dim,
+            category_name=dataclass_obj.category_name,
+        )
+    except Exception as e:
+        log_info('Failed to convert ShiftWorkerOption to ShiftWorkerOptionDocument')
+        handle_create_document_error(e)
+    return shift_worker_option_doc
+
+
 def core_to_doc_block(dataclass_obj: Block) -> BlockDocument:
     try:
         block_doc = BlockDocument(
             name=dataclass_obj.name,
             type=dataclass_obj.type,
-            value=dataclass_obj.value,
+            value=(
+                [
+                    core_to_doc_shift_worker_option(v)  # type: ignore
+                    for v in dataclass_obj.value  # type: ignore
+                ]
+                if dataclass_obj.type == "shift_worker_option"
+                else dataclass_obj.value
+            ),
         )
     except Exception as e:
         log_info('Failed to convert Block to BlockDocument')
         handle_create_document_error(e)
     return block_doc
-
-
-def core_to_doc_missing_property(
-    dataclass_obj: MissingProperty,
-) -> MissingPropertyDocument:
-    try:
-        mp_doc = MissingPropertyDocument(
-            dimension_id=dataclass_obj.dimension_id,
-            property_values=dataclass_obj.property_values,
-        )
-    except Exception as e:
-        log_info('Failed to convert MissingProperty to MissingPropertyDocument')
-        handle_create_document_error(e)
-    return mp_doc
 
 
 def core_to_doc_constraint_build(
@@ -331,14 +341,8 @@ def core_to_doc_constraint_build(
             template_id=dataclass_obj.template_id,
             language=dataclass_obj.language,
             blocks=[core_to_doc_block(b) for b in dataclass_obj.blocks],
-            text=dataclass_obj.text,
             hard=dataclass_obj.hard,
             priority=dataclass_obj.priority,
-            active=dataclass_obj.active,
-            missing_properties=[
-                core_to_doc_missing_property(mp)
-                for mp in dataclass_obj.missing_properties
-            ],
         )
     except Exception as e:
         log_info('Failed to convert ConstraintBuild to ConstraintBuildDocument')
@@ -347,35 +351,39 @@ def core_to_doc_constraint_build(
 
 
 # document to core
+def doc_to_core_shift_worker_option(
+    doc_obj: ShiftWorkerOptionDocument,
+) -> ShiftWorkerOption:
+    if not isinstance(doc_obj, ShiftWorkerOptionDocument):
+        if doc_obj.get("_cls") == "ShiftWorkerOption":
+            doc_obj = ShiftWorkerOptionDocument(**doc_obj)
+        else:
+            raise ValueError(
+                f'Invalid document type: {type(doc_obj)} for ShiftWorkerOption'
+            )
+    doc_dict = doc_obj.to_mongo().to_dict()
+    return ShiftWorkerOption(**doc_dict)
+
+
 def doc_to_core_block(doc_obj: BlockDocument) -> Block:
     try:
         block = Block(
             name=doc_obj.name,  # type: ignore
             type=doc_obj.type,  # type: ignore
             value=(
-                doc_obj.value
-                if isinstance(doc_obj.value, (str, int))
-                else list(doc_obj.value)
+                [doc_to_core_shift_worker_option(v) for v in doc_obj.value]
+                if doc_obj.type == "shift_worker_option"
+                else (
+                    doc_obj.value
+                    if isinstance(doc_obj.value, (str, int))
+                    else list(doc_obj.value)
+                )
             ),
         )
     except Exception as e:
         log_info('Failed to convert BlockDocument to Block')
         handle_create_core_object_error(e)
     return block
-
-
-def doc_to_core_missing_property(
-    doc_obj: MissingPropertyDocument,
-) -> MissingProperty:
-    try:
-        missing_property = MissingProperty(
-            dimension_id=doc_obj.dimension_id,
-            property_values=list(doc_obj.property_values),
-        )
-    except Exception as e:
-        log_info('Failed to convert MissingPropertyDocument to MissingProperty')
-        handle_create_core_object_error(e)
-    return missing_property
 
 
 def doc_to_core_constraint_build(
@@ -398,13 +406,8 @@ def doc_to_core_constraint_build(
             template_id=doc_obj.template_id,
             language=doc_obj.language,
             blocks=[doc_to_core_block(b) for b in doc_obj.blocks],
-            text=doc_obj.text,
             hard=doc_obj.hard,
             priority=doc_obj.priority,
-            active=doc_obj.active,
-            missing_properties=[
-                doc_to_core_missing_property(mp) for mp in doc_obj.missing_properties
-            ],
         )
     except Exception as e:
         log_info('Failed to convert ConstraintBuildDocument to ConstraintBuild')

@@ -7,6 +7,7 @@
     "constraints": "Constraints",
     "hard": "Hard",
     "new_constraint": "New constraint",
+    "no": "No",
     "operator": "Operator",
     "operator_at_least": "at least",
     "operator_at_most": "at most",
@@ -20,6 +21,7 @@
     "select_template": "Select constraint template in list below.",
     "shift": "Shift",
     "shifts": "Shifts",
+    "shift_property": "Shift property",
     "soft": "Soft",
     "templates": "Templates",
     "timing": "Timing",
@@ -39,5 +41,6 @@
         "sunday": "Sunday"
     },
     "worker": "Worker",
-    "workers": "Workers"
+    "workers": "Workers",
+    "worker_property": "Worker property"
 }

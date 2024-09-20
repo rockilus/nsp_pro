@@ -20,12 +20,8 @@ import "./stats-tab.css";
 // Types
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
-import {
-  StatsShiftOptionsT,
-  StatsHeaderT,
-  StatsT,
-  StatsOptionsT,
-} from "../../types/stats";
+import { StatsHeaderT, StatsT, StatsOptionsT } from "../../types/stats";
+import { ShiftWorkerOptionT } from "../../types/constraint";
 
 dayjs.extend(utc);
 
@@ -42,7 +38,7 @@ export default function StatsTab({
   const [stats, setStats] = useState<StatsT | null>(null);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
-  const [shiftOptions, setShiftOptions] = useState<StatsShiftOptionsT>({});
+  const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
 
   const [showingCustom, setShowingCustom] = useState<boolean>(true);
 
@@ -143,7 +139,7 @@ export default function StatsTab({
         }: {
           shifts: ShiftT[];
           workers: WorkerT[];
-          shiftOptions: StatsShiftOptionsT;
+          shiftOptions: ShiftWorkerOptionT[];
         } = await getStatsTabData(selectedTeamId);
         setShifts(fetchedShifts);
         setWorkers(fetchedWorkers);

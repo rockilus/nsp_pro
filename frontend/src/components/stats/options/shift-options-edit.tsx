@@ -8,9 +8,10 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import ListSubheader from "@mui/material/ListSubheader";
+// Utils
+import { getShiftWorkerOptionDisplayName } from "../../constraints/shift-worker-option-utils/shift-worker-option-utils";
 // Types
-import { TemplateOptionValueT } from "../../../types/constraint";
-import { StatsShiftOptionsT } from "../../../types/stats";
+import { ShiftWorkerOptionT } from "../../../types/constraint";
 // Constants
 import { ConstraintDefaultColors } from "../../../constants/constants";
 
@@ -22,9 +23,9 @@ export default function ShiftOptionsEdit({
   handleClose,
 }: {
   lng: string;
-  selectedShifts: TemplateOptionValueT[];
-  statsShiftOptions: StatsShiftOptionsT;
-  handleEditSelectedShifts: (selectedShifts: TemplateOptionValueT[]) => void;
+  selectedShifts: ShiftWorkerOptionT[];
+  statsShiftOptions: { [key: string]: ShiftWorkerOptionT[] };
+  handleEditSelectedShifts: (selectedShifts: ShiftWorkerOptionT[]) => void;
   handleClose: () => void;
 }) {
   const { t } = useTranslation(lng, "stats-page");
@@ -32,16 +33,25 @@ export default function ShiftOptionsEdit({
   const filterOptionsList = useCallback(
     (
       searchQuery: string,
-      selectedOptions: TemplateOptionValueT[],
-      options: TemplateOptionValueT[]
-    ): TemplateOptionValueT[] => {
-      const selectedArray: string[] = selectedOptions.map((item) => item.name);
+      selectedOptions: ShiftWorkerOptionT[],
+      options: ShiftWorkerOptionT[]
+    ): ShiftWorkerOptionT[] => {
+      const selectedArray: string[] = selectedOptions.map((item) =>
+        getShiftWorkerOptionDisplayName(item)
+      );
       return searchQuery === ""
-        ? options.filter((option) => !selectedArray.includes(option.name))
+        ? options.filter(
+            (option) =>
+              !selectedArray.includes(getShiftWorkerOptionDisplayName(option))
+          )
         : options.filter(
             (option) =>
-              !selectedArray.includes(option.name) &&
-              option.name.toLowerCase().includes(searchQuery.toLowerCase())
+              !selectedArray.includes(
+                getShiftWorkerOptionDisplayName(option)
+              ) &&
+              getShiftWorkerOptionDisplayName(option)
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase())
           );
     },
     []
@@ -50,10 +60,10 @@ export default function ShiftOptionsEdit({
   const filterOptions = useCallback(
     (
       searchQuery: string,
-      selectedOptions: TemplateOptionValueT[],
-      options: Record<string, TemplateOptionValueT[]>
-    ): Record<string, TemplateOptionValueT[]> => {
-      let out: Record<string, TemplateOptionValueT[]> = {};
+      selectedOptions: ShiftWorkerOptionT[],
+      options: { [key: string]: ShiftWorkerOptionT[] }
+    ): { [key: string]: ShiftWorkerOptionT[] } => {
+      let out: { [key: string]: ShiftWorkerOptionT[] } = {};
       for (let key of Object.keys(options)) {
         const filteredKeyOptions = filterOptionsList(
           searchQuery,
@@ -70,13 +80,12 @@ export default function ShiftOptionsEdit({
   );
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredOptions, setFilteredOptions] = useState<
-    Record<string, TemplateOptionValueT[]>
-  >(filterOptions("", selectedShifts, statsShiftOptions));
-  const [selectedOption, setSelectedOption] = useState<Record<
-    string,
-    TemplateOptionValueT
-  > | null>(null);
+  const [filteredOptions, setFilteredOptions] = useState<{
+    [key: string]: ShiftWorkerOptionT[];
+  }>(filterOptions("", selectedShifts, statsShiftOptions));
+  const [selectedOption, setSelectedOption] = useState<{
+    [key: string]: ShiftWorkerOptionT;
+  } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +109,7 @@ export default function ShiftOptionsEdit({
     }
   };
 
-  const handleDeleteFromSelected = (optionToDelete: TemplateOptionValueT) => {
+  const handleDeleteFromSelected = (optionToDelete: ShiftWorkerOptionT) => {
     if (selectedShifts.includes(optionToDelete)) {
       const newValue = selectedShifts.filter(
         (option) => option !== optionToDelete
@@ -190,7 +199,7 @@ export default function ShiftOptionsEdit({
 
   const handleAddSelectedOption = (
     newOptionKey: string,
-    newOption: TemplateOptionValueT
+    newOption: ShiftWorkerOptionT
   ) => {
     if (
       newOptionKey in filteredOptions &&
@@ -310,7 +319,7 @@ export default function ShiftOptionsEdit({
                 <ul>
                   <ListSubheader>{sectionLabel}</ListSubheader>
                   {filteredOptions[sectionLabel].map(
-                    (option: TemplateOptionValueT, index: number) => (
+                    (option: ShiftWorkerOptionT, index: number) => (
                       <ListItemButton
                         key={`item-${sectionLabel}-${index}`}
                         onClick={() => {

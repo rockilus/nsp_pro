@@ -31,16 +31,23 @@
   margin-left: 5px;
 }
 
+.constraint-name-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.constraint-row.active {
+  background-color: #ffffff;
+}
+
+.constraint-row.inactive {
+  background-color: #f0efed;
+}
+
 .constraint-active {
   color: #000000;
 }
 
 .constraint-inactive {
-  color: #808080;
-}
-
-.constraint-missing-properties {
-  font-size: "10px";
-  font-style: "italic";
   color: #808080;
 }

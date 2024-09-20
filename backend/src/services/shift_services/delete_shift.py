@@ -1,77 +1,25 @@
 # pylint: disable=R0801
 from scripts.setup_database import (
     assignment_db,
-    constraint_build_db,
     constraint_db,
     objective_breach_db,
     request_db,
     schedule_db,
     shift_db,
     shift_demand_db,
-    shift_dimension_db,
     shift_property_db,
-)
-from services.constraint_build_services.delete_constraint_build_item import (
-    delete_item_with_id_from_constraint_build,
-)
-from services.constraint_build_services.update_constraint_build import (
-    update_cbs_change_shift_property_remove_old_value,
 )
 
 
 def delete_shift(shift_id: str) -> None:
-    delete_shift_from_constraint_build(shift_id)
-    delete_shift_property_from_constraint_build(shift_id)
     delete_shift_from_objective_breach(shift_id)
-    delete_shift_from_constraint(shift_id)
+    # delete_shift_from_constraint(shift_id)
     delete_shift_from_schedule_quick_staffing(shift_id)
     shift_property_db.delete_shift_properties_by_shift_id(shift_id)
     shift_demand_db.delete_shift_demands_by_shift_id(shift_id)
     assignment_db.delete_assignments_by_shift_id(shift_id)
     request_db.delete_requests_by_shift_id(shift_id)
     shift_db.delete_shift(shift_id)
-
-
-def delete_shift_from_constraint_build(shift_id: str) -> None:
-    cbs = constraint_build_db.get_constraint_builds_by_shift_id(shift_id)
-    delete_item_with_id_from_constraint_build(
-        shift_id, cbs, ["shift", "shift_reference", "shift_relative"]
-    )
-
-
-def delete_shift_property_from_constraint_build(shift_id: str) -> None:
-    sps = shift_property_db.get_shift_properties_by_shift_id(shift_id)
-    for sp in sps:
-        sd = shift_dimension_db.get_shift_dimension_by_id(sp.shift_dimension_id)
-        if sd.entry_type == "bool":
-            continue
-        sps_dim = shift_property_db.get_shift_properties_by_shift_dimension_id(
-            sp.shift_dimension_id
-        )
-        if sd.entry_type == "list":
-            if isinstance(sp.value, list):
-                for sp_v in sp.value:
-                    sps_dim_same_value = [
-                        spd
-                        for spd in sps_dim
-                        if sp_v in spd.value and spd.id != sp.id  # type: ignore
-                    ]
-                    if not sps_dim_same_value:
-                        update_cbs_change_shift_property_remove_old_value(
-                            sp.shift_dimension_id, sp_v
-                        )
-            else:
-                raise ValueError(
-                    "Shift property value is not a list for list dimension"
-                )
-        else:
-            sps_dim_same_value = [
-                spd for spd in sps_dim if spd.value == sp.value and spd.id != sp.id
-            ]
-            if not sps_dim_same_value:
-                update_cbs_change_shift_property_remove_old_value(
-                    sp.shift_dimension_id, sp.value  # type: ignore
-                )
 
 
 def delete_shift_from_objective_breach(shift_id: str) -> None:

@@ -1,4 +1,4 @@
-from mongoengine import Document, EmbeddedDocument
+from mongoengine import Document
 from mongoengine.fields import (
     EmbeddedDocumentField,
     ListField,
@@ -6,11 +6,7 @@ from mongoengine.fields import (
     StringField,
 )
 
-
-class DictBlockValue(EmbeddedDocument):
-    name = StringField(required=True)
-    id = StringField(required=True)
-    id_type = StringField(required=True)
+from models.constraint_build import ShiftWorkerOption
 
 
 class StatsHeader(Document):
@@ -36,4 +32,4 @@ class StatsHeader(Document):
         choices=["weekday", "week", "month", "year", "all", "shift"],
     )
     value = StringField(required=True)
-    selected_shifts = ListField(EmbeddedDocumentField(DictBlockValue), required=True)
+    selected_shifts = ListField(EmbeddedDocumentField(ShiftWorkerOption), required=True)

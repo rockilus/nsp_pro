@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Dict, List
+from typing import List
 
 from pydantic import BaseModel
 
@@ -111,15 +111,26 @@ class RequestMessage(BaseModel):
 
 
 # Constraint
+class ShiftWorkerOptionMessage(BaseModel):
+    name: str | bool
+    id: str
+    idType: str
+    isBoolDim: bool
+    categoryName: str
+
+
 class BlockMessage(BaseModel):
     name: str
     type: str
-    value: str | int | List[str] | List[Dict]
+    value: str | int | List[str] | List[ShiftWorkerOptionMessage]
 
 
 class MissingPropertyMessage(BaseModel):
     dimensionId: str
-    propertyValues: List[str]
+    isBool: bool
+    dimName: str
+    category: str
+    propertyValues: List[str | int | float | bool]
 
 
 class ConstraintBuildMessage(BaseModel):
@@ -139,7 +150,7 @@ class ConstraintBuildMessage(BaseModel):
 class TemplateBlockMessage(BaseModel):
     name: str
     type: str
-    options: List[str] | Dict
+    options: List[str] | List[ShiftWorkerOptionMessage]
     placeholder: str | int
 
 
@@ -209,19 +220,13 @@ class ValidateMessage(BaseModel):
 
 
 # Stats
-class DictBlockValueMessage(BaseModel):
-    name: str
-    id: str
-    idType: str
-
-
 class StatsHeaderMessage(BaseModel):
     id: str
     teamId: str
     statsUnit: str
     headerUnit: str
     value: str
-    selectedShifts: List[DictBlockValueMessage]
+    selectedShifts: List[ShiftWorkerOptionMessage]
     inCustom: bool
 
 
@@ -242,7 +247,7 @@ class StatsOptionsMessage(BaseModel):
     endDate: date
     statsUnit: str
     headerUnit: str
-    selectedShifts: List[DictBlockValueMessage]
+    selectedShifts: List[ShiftWorkerOptionMessage]
 
 
 # User

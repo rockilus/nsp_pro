@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Dict, List, Literal
+from typing import List, Literal
 
 from utils.constants import Constants
 
@@ -30,17 +30,19 @@ class VarShift:
 
 
 @dataclass
-class DictBlockValue:
-    name: str
-    id: str
-    id_type: str
+class ShiftWorkerOption:
+    name: str | bool  # value shown in the dropdown in the ui
+    id: str  # id of the shift, worker or dimension
+    id_type: Constants.SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS
+    is_bool_dim: bool
+    category_name: str  # workers, shifts, all, or the name of the dimension
 
 
 @dataclass
 class Block:
-    name: Literal[Constants.BLOCK_NAME_OPTIONS]
-    type: Literal["string", "number", "list", "dict"]
-    value: str | int | List[str] | List[Dict]
+    name: Constants.BLOCK_NAME_OPTIONS
+    type: Constants.BLOCK_TYPE_OPTIONS
+    value: str | int | List[str] | List[ShiftWorkerOption]
 
 
 # If the name of a Block is worker, shift, shift_reference or shift_relative,
@@ -56,6 +58,9 @@ class Block:
 @dataclass
 class MissingProperty:
     dimension_id: str
+    is_bool: bool
+    dim_name: str
+    category: str  # worker or shift
     property_values: List[str | int | float | bool]
 
 
@@ -68,11 +73,24 @@ class ConstraintBuild:
     template_id: str
     language: str
     blocks: List[Block]
-    text: str
+    hard: bool
+    priority: str
+
+
+@dataclass
+# pylint: disable=too-many-instance-attributes
+class ConstraintBuildAugmented:
+    id: str
+    team_id: str
+    constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
+    template_id: str
+    language: str
+    blocks: List[Block]
     hard: bool
     priority: str
     active: bool
     missing_properties: List[MissingProperty]
+    text: str
 
 
 @dataclass
@@ -96,8 +114,8 @@ class Constraint:
 @dataclass
 class TemplateBlock:
     name: Constants.BLOCK_NAME_OPTIONS
-    type: Literal["string", "number", "list", "dict"]
-    options: List[str] | Dict
+    type: Constants.BLOCK_TYPE_OPTIONS
+    options: List[str] | List[ShiftWorkerOption]
     placeholder: str | int
 
 

@@ -11,7 +11,7 @@ from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import BulkMessage
 from routes.assignment_routes import core_to_msg_assignment
-from routes.constraint_routes import core_to_msg_constraint_build
+from routes.constraint_routes import core_to_msg_constraint_build_augmented
 from routes.constraint_template_routes import core_to_msg_constraint_template
 from routes.coverage_routes import core_to_msg_coverage_and_shift_demands
 from routes.coverage_selector_routes import core_to_msg_coverage_selector
@@ -85,7 +85,7 @@ def core_to_msg_bulk(bulk: Bulk) -> BulkMessage:
         for c in bulk.coverages
     ]
     data["constraints"] = [
-        core_to_msg_constraint_build(c) for c in bulk.constraint_builds
+        core_to_msg_constraint_build_augmented(c) for c in bulk.constraint_builds
     ]
     data["constraint_templates"] = [
         core_to_msg_constraint_template(ct) for ct in bulk.constraint_templates
