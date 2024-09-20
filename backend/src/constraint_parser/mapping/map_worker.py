@@ -1,7 +1,14 @@
 from typing import Dict, List
 
-from constraint_parser.mapping.utils import cast_to_dict_block_value, find_block_by_name
-from core import Block, ConstraintBuildAugmented, DictBlockValue, VarWorker, Worker
+from constraint_parser.mapping.utils import find_block_by_name
+from core import (
+    Block,
+    ConstraintBuildAugmented,
+    MissingProperty,
+    ShiftWorkerOption,
+    VarWorker,
+    Worker,
+)
 from utils.constants import Constants
 
 
@@ -14,18 +21,23 @@ class MapWorker:
         values = self.get_worker_values(cstr_build.blocks)
         return VarWorker(
             selector=self.get_selector(values),
-            target_ids=self.get_target_ids(values),
+            target_ids=self.get_target_ids(values, cstr_build.missing_properties),
             num_eligible_workers=0,
         )
 
     def get_selector(
-        self, values: List[DictBlockValue]
+        self, values: List[ShiftWorkerOption]
     ) -> Constants.VAR_WORKER_SELECTOR_OPTIONS:
-        if any("all workers" in v.name for v in values):
+        string_values = [v.name for v in values if isinstance(v.name, str)]
+        if any("all workers" in v for v in string_values):
             return "all"
         return "equal"
 
-    def get_target_ids(self, values: List[DictBlockValue]) -> List[str]:
+    def get_target_ids(
+        self,
+        values: List[ShiftWorkerOption],
+        missing_properties: List[MissingProperty],
+    ) -> List[str]:
         if self.get_selector(values) == "all":
             return []
         out = []
@@ -36,16 +48,37 @@ class MapWorker:
                         f"Worker {value.name} with id {value.id} not found"
                     )
                 out.append(value.id)
-            else:
+            elif value.id_type == "worker_dimension":
+                mp = next(
+                    (mp for mp in missing_properties if mp.dimension_id == value.id),
+                    None,
+                )
+                if mp and value.name in mp.property_values:
+                    continue
                 if value.id not in self.worker_dim_dict:
                     raise ValueError(f"Worker dimension {value.id} not found")
-                if value.name.lower() not in self.worker_dim_dict[value.id]:
-                    # raise ValueError(
-                    #     f"Worker property {value.name} for dimension "
-                    #     + f"{value.id} not found"
-                    # )
-                    continue
-                out += self.worker_dim_dict[value.id][value.name.lower()]
+                if value.is_bool_dim:
+                    if not isinstance(value.name, bool):
+                        raise ValueError(
+                            "Value name is not a boolean for bool dimension"
+                        )
+                    if value.name not in self.worker_dim_dict[value.id]:
+                        raise ValueError(
+                            f"Worker property {value.name} "
+                            + f"for dimension {value.id} not found"
+                        )
+                    out += self.worker_dim_dict[value.id][value.name]
+                else:
+                    if not isinstance(value.name, str):
+                        raise ValueError(
+                            "Value name is not a string for non-bool dimension"
+                        )
+                    if value.name.lower() not in self.worker_dim_dict[value.id]:
+                        raise ValueError(
+                            f"Worker property {value.name} for dimension "
+                            + f"{value.id} not found"
+                        )
+                    out += self.worker_dim_dict[value.id][value.name.lower()]
         if not out:
             raise ValueError("No workers found")
         return sorted(list(set(out)))
@@ -54,15 +87,15 @@ class MapWorker:
         return any(w.id == worker_id for w in self.workers)
 
     @staticmethod
-    def get_worker_values(blocks: List[Block]) -> List[DictBlockValue]:
+    def get_worker_values(blocks: List[Block]) -> List[ShiftWorkerOption]:
         worker_block = find_block_by_name(blocks, "worker")
         if worker_block:
-            if isinstance(worker_block.value, list) and all(
-                isinstance(v, dict) for v in worker_block.value
-            ):
-                return [
-                    cast_to_dict_block_value(v)  # type: ignore
-                    for v in worker_block.value
-                ]
-            raise ValueError("Worker block value is not a list of dicts")
+            if not isinstance(worker_block.value, list):
+                raise ValueError("Worker block value is not a list")
+
+            if not all(isinstance(v, ShiftWorkerOption) for v in worker_block.value):
+                raise ValueError(
+                    "Worker block value is not a list of ShiftWorkerOption"
+                )
+            return worker_block.value  # type: ignore
         raise ValueError("Worker block not found")
