@@ -132,9 +132,14 @@ def build_missing_properties_list_and_active_worker(
                 new_mp,
                 new_active,
             ) = build_missing_properties_list_and_active_worker_list_wd(block, wd)
+        elif wd.entry_type in ["str", "int"]:
+            (
+                new_mp,
+                new_active,
+            ) = build_missing_properties_list_and_active_worker_str_int_wd(block, wd)
         else:
             new_mp = None
-            new_active = True
+            new_active = False
         if new_mp is not None:
             mps.append(new_mp)
         active = active or new_active
@@ -187,7 +192,7 @@ def build_missing_properties_list_and_active_worker_bool_wd(
     )
     if any(value is None for value in wp_values_constraint):
         raise ValueError("Worker property value from block is missing")
-    wp_all = worker_property_db.get_worker_properties_by_worker_dimension_id(wd.id)
+    wp_all = worker_property_db.get_worker_properties_by_wd_id_for_not_deleted_ws(wd.id)
     wp_values_shifts = [wp.value for wp in wp_all]
     if not all(isinstance(v, bool) for v in wp_values_shifts):
         raise ValueError("Worker property value is not a boolean")
@@ -220,10 +225,43 @@ def build_missing_properties_list_and_active_worker_list_wd(
     ]
     if any(value is None for value in wp_values_constraint):
         raise ValueError("Worker property value from block is missing")
-    wp_all = worker_property_db.get_worker_properties_by_worker_dimension_id(wd.id)
+    wp_all = worker_property_db.get_worker_properties_by_wd_id_for_not_deleted_ws(wd.id)
     if not all(isinstance(wp.value, list) for wp in wp_all):
         raise ValueError("Worker property value is not a list")
     wp_values_shifts = [item for wp in wp_all for item in wp.value]  # type: ignore
+    missing_values = list(set(wp_values_constraint) - set(wp_values_shifts))
+    not_missing_values = list(set(wp_values_constraint) - set(missing_values))
+    if missing_values:
+        mp = MissingProperty(
+            dimension_id=wd.id,
+            is_bool=False,
+            dim_name=wd.name,
+            category="worker",
+            property_values=missing_values,  # type: ignore
+        )
+    else:
+        mp = None
+    return mp, len(not_missing_values) > 0
+
+
+def build_missing_properties_list_and_active_worker_str_int_wd(
+    block: Block, wd: WorkerDimension
+) -> Tuple[MissingProperty | None, bool]:
+    if not isinstance(block.value, list):
+        raise ValueError("Worker block value is not a list")
+    if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
+        raise ValueError("Worker block value list does not contain ShiftWorkerOption")
+    wp_values_constraint = [
+        b.name for b in block.value if b.id == wd.id  # type: ignore
+    ]
+    if any(value is None for value in wp_values_constraint):
+        raise ValueError("Worker property value from block is missing")
+    wp_all = worker_property_db.get_worker_properties_by_wd_id_for_not_deleted_ws(wd.id)
+    if not all(isinstance(wp.value, str) for wp in wp_all) or not all(
+        isinstance(wp.value, int) for wp in wp_all
+    ):
+        raise ValueError("Worker property value is not a str or int")
+    wp_values_shifts = [wp.value for wp in wp_all]
     missing_values = list(set(wp_values_constraint) - set(wp_values_shifts))
     not_missing_values = list(set(wp_values_constraint) - set(missing_values))
     if missing_values:
