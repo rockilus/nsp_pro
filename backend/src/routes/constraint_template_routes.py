@@ -44,7 +44,7 @@ async def get_constraint_templates(
                 "You do not have permission to get constraint templates"
             )
         user = user_db.get_user_by_id(session.get_user_id())
-        workers = worker_db.get_workers(team_id)
+        workers = worker_db.get_workers_not_deleted(team_id)
         worker_properties = worker_property_db.get_worker_properties_by_worker_ids(
             [w.id for w in workers]
         )
