@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import React, { useState } from "react";
+import React, { ReactElement, useState } from "react";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
@@ -56,9 +56,19 @@ export default function RequestTableRow({
     handleUpdateRequest(updatedRequest);
   };
 
-  const getWorkerName = (workerId: string): string | undefined => {
+  const getWorkerName = (workerId: string): ReactElement => {
     const worker = workers.find((worker) => worker.id === workerId);
-    return worker?.name;
+    return (
+      <div className="name-cell">
+        <span>{worker?.name}</span>
+        {worker?.deleted && (
+          <span className="missing">
+            {t("no")} <strong>{worker?.name}</strong>{" "}
+            {t("worker").toLowerCase()}
+          </span>
+        )}
+      </div>
+    );
   };
 
   const getShiftName = (shiftId: string): string | undefined => {
@@ -135,7 +145,7 @@ export default function RequestTableRow({
               <RequestPanel
                 lng={lng}
                 request={request}
-                workers={workers}
+                workers={workers.filter((worker) => !worker.deleted)}
                 shifts={shifts}
                 handleClose={() => {
                   setOpen(false);

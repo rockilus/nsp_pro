@@ -57,6 +57,31 @@ export async function getWorkers(teamId: string) {
   }
 }
 
+export async function getAllWorkers(teamId: string) {
+  noStore();
+  const options: RequestInit = {
+    method: "GET",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const response = await fetch(
+      `${apiUrlWorkers}/all/teams/${teamId}`,
+      options
+    );
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error("Failed to fetch workers: " + responseData.detail);
+    }
+    return responseData as WorkerT[];
+  } catch (error) {
+    console.error("Failed to fetch workers:", error);
+    throw new Error("Failed to fetch workers, please try again later");
+  }
+}
+
 export async function updateWorker(updatedWorker: WorkerT) {
   const options: RequestInit = {
     method: "PUT",

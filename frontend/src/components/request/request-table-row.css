@@ -6,3 +6,14 @@
 .request-status {
   margin-left: 5px;
 }
+
+.name-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.missing {
+  font-size: 10px;
+  font-style: italic;
+  color: #808080;
+}

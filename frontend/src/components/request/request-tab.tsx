@@ -120,7 +120,7 @@ export default function RequestTab({
                     hard: true,
                     status: "pending",
                   }}
-                  workers={workers}
+                  workers={workers.filter((w) => !w.deleted)}
                   shifts={shifts}
                   handleClose={handleClosePopoverRhs}
                   handleAddRequest={handleAddRequest}
