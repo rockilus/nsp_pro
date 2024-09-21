@@ -39,6 +39,17 @@ class WorkerDB:
             handle_get_document_error(e)
         return [doc_to_core_worker(w) for w in list(workers)]
 
+    def get_workers_not_deleted(self, team_id: str) -> List[Worker]:
+        try:
+            # pylint: disable=no-member
+            workers = WorkerDocument.objects.filter(  # type: ignore
+                team=team_id, deleted=False
+            )
+        except Exception as e:
+            log_info("Failed to get workers from database")
+            handle_get_document_error(e)
+        return [doc_to_core_worker(w) for w in list(workers)]
+
     def get_worker_by_id(self, worker_id: str) -> Worker:
         try:
             # pylint: disable=no-member

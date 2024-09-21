@@ -69,7 +69,7 @@ async def get_workers(
             session.get_user_id(), "read-workers", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get workers")
-        workers = worker_db.get_workers(team_id)
+        workers = worker_db.get_workers_not_deleted(team_id)
         workers_properties = [
             worker_property_db.get_worker_properties_by_worker_id(worker.id)
             for worker in workers
