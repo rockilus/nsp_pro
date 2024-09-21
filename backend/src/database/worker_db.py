@@ -91,6 +91,7 @@ def core_to_doc_worker(dataclass_obj: Worker) -> WorkerDocument:
             id=dataclass_obj.id,
             team=team,
             name=dataclass_obj.name,
+            deleted=dataclass_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert Worker to WorkerDocument")
@@ -105,6 +106,7 @@ def doc_to_core_worker(doc_obj: WorkerDocument) -> Worker:
             id=doc_obj.id,
             team_id=str(doc_obj.team.id),
             name=str(doc_obj.name) if doc_obj.name is not None else "",
+            deleted=doc_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert WorkerDocument to Worker")

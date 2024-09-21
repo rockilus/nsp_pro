@@ -9,6 +9,7 @@ class Worker:
     id: str
     team_id: str
     name: str
+    deleted: bool
 
 
 @dataclass

@@ -16,6 +16,7 @@ class WorkerMessage(BaseModel):
     id: str
     teamId: str
     name: str
+    deleted: bool
     workerProperties: List[WorkerPropertyMessage]
 
 
