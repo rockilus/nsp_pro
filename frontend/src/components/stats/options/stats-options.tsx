@@ -48,6 +48,7 @@ export default function StatsOptions({
         id: "",
         idType: "",
         isBoolDim: false,
+        dimName: "",
         categoryName: "All",
       },
     ],

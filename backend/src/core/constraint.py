@@ -35,6 +35,7 @@ class ShiftWorkerOption:
     id: str  # id of the shift, worker or dimension
     id_type: Constants.SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS
     is_bool_dim: bool
+    dim_name: (str)  # dimension name if dimension, to populate when deleting dimension
     category_name: str  # workers, shifts, all, or the name of the dimension
 
 
@@ -62,6 +63,26 @@ class MissingProperty:
     dim_name: str
     category: str  # worker or shift
     property_values: List[str | int | float | bool]
+
+
+# @dataclass
+# class MissingProperty:
+#     dimension_id: str  # id
+#     is_bool: bool  # is_bool_dim
+#     dim_name: str
+#     category: str
+#     property_values: List[str | int | float | bool]  # name
+#     is_deleted: bool
+
+
+# @dataclass
+# class ShiftWorkerOption:
+#     name: str | bool  # value shown in the dropdown in the ui
+#     id: str  # id of the shift, worker or dimension
+#     id_type: Constants.SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS
+#     dim_name: str  # dimension name if dimension
+#     is_bool_dim: bool
+#     category_name: str  # workers, shifts, all, or the name of the dimension
 
 
 @dataclass

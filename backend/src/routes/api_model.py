@@ -116,6 +116,7 @@ class ShiftWorkerOptionMessage(BaseModel):
     id: str
     idType: str
     isBoolDim: bool
+    dimName: str
     categoryName: str
 
 

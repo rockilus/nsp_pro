@@ -41,6 +41,7 @@ def build_worker_options(
             id="",
             id_type="",
             is_bool_dim=False,
+            dim_name="",
             category_name="All",
         )
     ] + [
@@ -49,6 +50,7 @@ def build_worker_options(
             id=w.id,
             id_type="worker",
             is_bool_dim=False,
+            dim_name="",
             category_name="Workers",
         )
         for w in workers
@@ -66,6 +68,7 @@ def build_worker_options(
                     id=worker_dimension.id,
                     id_type="worker_dimension",
                     is_bool_dim=True,
+                    dim_name="",
                     category_name=worker_dimension.name,
                 )
             )
@@ -76,6 +79,7 @@ def build_worker_options(
                     id=worker_dimension.id,
                     id_type="worker_dimension",
                     is_bool_dim=False,
+                    dim_name="",
                     category_name=worker_dimension.name,
                 )
                 for wp_value in worker_dimension.entry_options  # showing all options
@@ -94,6 +98,7 @@ def build_worker_options(
                     id=worker_dimension.id,
                     id_type="worker_dimension",
                     is_bool_dim=False,
+                    dim_name="",
                     category_name=worker_dimension.name,
                 )
                 for wp_value in list(set(str(wp.value) for wp in worker_properties_wd))
@@ -112,6 +117,7 @@ def build_shift_options(
             id="",
             id_type="",
             is_bool_dim=False,
+            dim_name="",
             category_name="All",
         )
     ] + [
@@ -120,6 +126,7 @@ def build_shift_options(
             id=s.id,
             id_type="shift",
             is_bool_dim=False,
+            dim_name="",
             category_name="Shifts",
         )
         for s in shifts
@@ -137,6 +144,7 @@ def build_shift_options(
                     id=shift_dimension.id,
                     id_type="shift_dimension",
                     is_bool_dim=True,
+                    dim_name="",
                     category_name=shift_dimension.name,
                 )
             )
@@ -147,6 +155,7 @@ def build_shift_options(
                     id=shift_dimension.id,
                     id_type="shift_dimension",
                     is_bool_dim=False,
+                    dim_name="",
                     category_name=shift_dimension.name,
                 )
                 for sp_value in shift_dimension.entry_options  # showing all options
@@ -165,6 +174,7 @@ def build_shift_options(
                     id=shift_dimension.id,
                     id_type="shift_dimension",
                     is_bool_dim=False,
+                    dim_name="",
                     category_name=shift_dimension.name,
                 )
                 for sp_value in list(set(str(sp.value) for sp in shift_properties_sd))

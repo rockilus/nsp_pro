@@ -296,6 +296,7 @@ def core_to_doc_shift_worker_option(
             id=dataclass_obj.id,
             id_type=dataclass_obj.id_type,
             is_bool_dim=dataclass_obj.is_bool_dim,
+            dim_name=dataclass_obj.dim_name,
             category_name=dataclass_obj.category_name,
         )
     except Exception as e:

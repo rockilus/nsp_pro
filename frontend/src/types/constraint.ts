@@ -3,6 +3,7 @@ export type ShiftWorkerOptionT = {
   id: string;
   idType: string;
   isBoolDim: boolean;
+  dimName: string;
   categoryName: string;
 };
 
