@@ -54,6 +54,7 @@ export default function WorkerTab({
       id: "",
       teamId: selectedTeamId,
       name: "",
+      deleted: false,
       workerProperties: [],
     });
     setWorkers([...workers, addedWorker]);

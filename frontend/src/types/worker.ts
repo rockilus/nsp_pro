@@ -17,6 +17,7 @@ export type WorkerT = {
   id: string;
   teamId: string;
   name: string;
+  deleted: boolean;
   workerProperties: WorkerPropertyT[];
 };
 
