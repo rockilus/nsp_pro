@@ -76,6 +76,21 @@ class WorkerDB:
             log_info("Failed to delete worker from database")
             handle_delete_document_error(e)
 
+    def logical_delete_worker(self, worker_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            worker = WorkerDocument.objects.get(id=worker_id)  # type: ignore
+        except Exception as e:
+            log_info("Failed to get worker by id to delete from database")
+            handle_get_document_error(e)
+            return  # Exit the method if the worker is not found
+
+        try:
+            worker.update(set__deleted=True)
+        except Exception as e:
+            log_info("Failed to set deleted field to true for worker in database")
+            handle_save_document_error(e)
+
 
 # Mappers
 # core to document
