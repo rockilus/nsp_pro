@@ -8,4 +8,5 @@ export type RequestT = {
   shiftId: string;
   hard: boolean;
   status: string;
+  active: boolean;
 };

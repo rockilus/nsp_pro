@@ -109,6 +109,7 @@ class RequestMessage(BaseModel):
     shiftId: str
     hard: bool
     status: str
+    active: bool
 
 
 # Constraint

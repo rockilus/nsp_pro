@@ -45,6 +45,7 @@ export default function RequestPanel({
     shiftId: request.shiftId,
     hard: request.hard,
     status: request.status,
+    active: request.active,
   });
   const [dateRange, setDateRange] = useState<boolean>(
     !request.startDate.isSame(request.endDate, "day")

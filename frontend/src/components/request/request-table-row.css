@@ -1,3 +1,11 @@
+.request-row.active {
+  background-color: #ffffff;
+}
+
+.request-row.inactive {
+  background-color: #f0efed;
+}
+
 .request-status-container {
   display: flex;
   align-items: center;

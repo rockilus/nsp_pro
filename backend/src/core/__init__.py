@@ -14,7 +14,7 @@ from core.constraint import (
     VarWorker,
 )
 from core.coverage import Coverage, CoverageSelector, ShiftDemand, ShiftDemandDate
-from core.request import Request
+from core.request import Request, RequestAugmented
 from core.schedule import Assignment, ObjectiveBreach, QuickStaffing, Schedule, Variable
 from core.shift import Shift, ShiftDimension, ShiftProperty
 from core.stats import Stats, StatsHeader, StatsOptions, StatsValue
@@ -43,6 +43,7 @@ __all__ = [
     "ShiftDemand",
     "ShiftDemandDate",
     "Request",
+    "RequestAugmented",
     "ObjectiveBreach",
     "QuickStaffing",
     "Schedule",

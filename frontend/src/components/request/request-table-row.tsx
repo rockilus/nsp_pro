@@ -15,7 +15,7 @@ import PopoverAnchorElBelow from "../inputs/popover-anchor-el-below";
 import RequestPanel from "./request-panel";
 import { HardSoftButton } from "../buttons/hard-soft-button";
 // Styles
-import ".//request-table-row.css";
+import "./request-table-row.css";
 // Types
 import { RequestT } from "../../types/request";
 import { ShiftT } from "../../types/shift";
@@ -107,7 +107,10 @@ export default function RequestTableRow({
   };
 
   return (
-    <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+    <TableRow
+      className={`request-row ${request.active ? "active" : "inactive"}`}
+      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+    >
       {requestTableFields.map((field, index) => (
         <TableCell key={index} sx={{ paddingY: 0 }}>
           {(() => {

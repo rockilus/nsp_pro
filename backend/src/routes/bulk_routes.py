@@ -16,7 +16,7 @@ from routes.constraint_template_routes import core_to_msg_constraint_template
 from routes.coverage_routes import core_to_msg_coverage_and_shift_demands
 from routes.coverage_selector_routes import core_to_msg_coverage_selector
 from routes.objective_breach_routes import core_to_msg_objective_breach
-from routes.request_routes import core_to_msg_request
+from routes.request_routes import core_to_msg_request_augmented
 from routes.schedule_routes import core_to_msg_schedule
 from routes.shift_dimension_routes import core_to_msg_shift_dimension
 from routes.shift_routes import core_to_msg_shift_and_properties
@@ -90,7 +90,7 @@ def core_to_msg_bulk(bulk: Bulk) -> BulkMessage:
     data["constraint_templates"] = [
         core_to_msg_constraint_template(ct) for ct in bulk.constraint_templates
     ]
-    data["requests"] = [core_to_msg_request(r) for r in bulk.requests]
+    data["requests"] = [core_to_msg_request_augmented(r) for r in bulk.requests]
     data["coverage_selectors"] = [
         core_to_msg_coverage_selector(cs) for cs in bulk.coverage_selectors
     ]
