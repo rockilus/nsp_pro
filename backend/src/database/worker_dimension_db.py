@@ -112,6 +112,21 @@ class WorkerDimensionDB:
             log_info("Failed to delete worker dimension from database")
             handle_delete_document_error(e)
 
+    def logical_delete_worker_dimension(self, worker_dimension_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            worker_dimension = WorkerDimensionDocument.objects.get(  # type: ignore
+                id=worker_dimension_id
+            )
+        except Exception as e:
+            log_info("Failed to get worker dimension by id to logical delete")
+            handle_get_document_error(e)
+        try:
+            worker_dimension.update(set__deleted=True)
+        except Exception as e:
+            log_info("Failed to logical delete worker dimension from database")
+            handle_save_document_error(e)
+
 
 # Mappers
 # core to document
