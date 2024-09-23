@@ -121,6 +121,9 @@ def build_missing_properties_list_and_active_worker(
         wd = next((wd for wd in worker_dimensions if wd.id == wd_id), None)
         if wd is None:
             raise ValueError("Worker dimension not found")
+        if wd.deleted:
+            mps.append(build_missing_properties_list_deleted_wd(block, wd))
+            continue
         if wd.entry_type == "bool":
             (
                 new_mp,
@@ -178,6 +181,30 @@ def build_missing_properties_list_and_active_worker_deleted(
             )
         )
     return mps, active
+
+
+def build_missing_properties_list_deleted_wd(
+    block: Block, wd: WorkerDimension
+) -> MissingProperty:
+    if wd.entry_type == "list":
+        wp_values_constraint = [
+            b.name for b in block.value if b.id == wd.id  # type: ignore
+        ]
+    elif wd.entry_type == "bool":
+        wp_values_constraint = list(
+            set(b.name for b in block.value if b.id == wd.id)  # type: ignore
+        )
+    else:
+        wp_values_constraint = [
+            b.name for b in block.value if b.id == wd.id  # type: ignore
+        ]
+    return MissingProperty(
+        dimension_id=wd.id,
+        is_bool=wd.entry_type == "bool",
+        dim_name=wd.name,
+        category="worker",
+        property_values=wp_values_constraint,  # type: ignore
+    )
 
 
 def build_missing_properties_list_and_active_worker_bool_wd(
@@ -257,8 +284,9 @@ def build_missing_properties_list_and_active_worker_str_int_wd(
     if any(value is None for value in wp_values_constraint):
         raise ValueError("Worker property value from block is missing")
     wp_all = worker_property_db.get_worker_properties_by_wd_id_for_not_deleted_ws(wd.id)
-    if not all(isinstance(wp.value, str) for wp in wp_all) or not all(
-        isinstance(wp.value, int) for wp in wp_all
+    if not (
+        all(isinstance(wp.value, str) for wp in wp_all)
+        or all(isinstance(wp.value, int) for wp in wp_all)
     ):
         raise ValueError("Worker property value is not a str or int")
     wp_values_shifts = [wp.value for wp in wp_all]
