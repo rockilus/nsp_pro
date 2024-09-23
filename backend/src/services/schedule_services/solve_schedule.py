@@ -59,7 +59,9 @@ def solve_schedule(
     shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
         coverage_selectors
     )
-    requests = get_requests_by_dates(schedule.start_date, schedule.end_date, workers)
+    requests = get_requests_by_dates(
+        schedule.start_date, schedule.end_date, workers, shifts
+    )
     team_schedules = schedule_db.get_schedules(schedule.team_id)
     fixed_assignments, wip_fixed_assignments = get_fixed_assignments(schedule)
     wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
@@ -103,7 +105,7 @@ def solve_schedule(
     )
     end_time_process_outputs = time.time()
     start_time_update_db = time.time()
-    updated_requests = update_request_status(assignments, requests, workers)
+    updated_requests = update_request_status(assignments, requests, workers, shifts)
     updated_schedule = schedule_db.update_schedule(schedule)
     updated_assignments = save_assignments(
         assignments, updated_schedule, wip_fixed_assignments

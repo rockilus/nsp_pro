@@ -136,7 +136,7 @@ def build_work_shift_indexes(
         value=selected_shifts,
     )
     missing_properties, _ = build_missing_properties_list_and_active_shift(
-        block, shift_dimensions
+        block, shifts, shift_dimensions
     )
     selected_shifts_ids = parse_selected_shifts(
         selected_shifts, missing_properties, shifts, shift_dim_dict

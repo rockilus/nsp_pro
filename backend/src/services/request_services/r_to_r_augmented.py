@@ -1,8 +1,12 @@
-from core import Request, RequestAugmented, Worker
+from core import Request, RequestAugmented, Shift, Worker
 
 
-def r_to_r_augmented(request: Request, worker: Worker | None) -> RequestAugmented:
-    active = not worker.deleted if worker else False
+def r_to_r_augmented(
+    request: Request, worker: Worker | None, shift: Shift | None
+) -> RequestAugmented:
+    active = (not worker.deleted if worker else False) and (
+        not shift.deleted if shift else False
+    )
     return RequestAugmented(
         id=request.id,
         worker_id=request.worker_id,
