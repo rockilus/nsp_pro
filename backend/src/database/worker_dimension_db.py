@@ -43,6 +43,17 @@ class WorkerDimensionDB:
             handle_get_document_error(e)
         return [doc_to_core_worker_dimension(wd) for wd in list(worker_dimensions)]
 
+    def get_worker_dimensions_not_deleted(self, team_id: str) -> List[WorkerDimension]:
+        try:
+            # pylint: disable=no-member
+            worker_dimensions = WorkerDimensionDocument.objects.filter(  # type: ignore
+                team=team_id, deleted=False
+            )
+        except Exception as e:
+            log_info("Failed to get worker dimensions from database")
+            handle_get_document_error(e)
+        return [doc_to_core_worker_dimension(wd) for wd in list(worker_dimensions)]
+
     def get_worker_dimension_by_id(self, worker_dimension_id: str) -> WorkerDimension:
         try:
             # pylint: disable=no-member
