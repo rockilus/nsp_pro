@@ -80,7 +80,7 @@ class WorkerPropertyDB:
             handle_get_document_error(e)
         return [doc_to_core_worker_property(wp) for wp in list(worker_properties)]
 
-    def get_worker_properties_by_wd_id_for_not_deleted_ws(
+    def get_worker_properties_by_wd_id_for_not_deleted_w(
         self, wd_id: str
     ) -> List[WorkerProperty]:
         try:

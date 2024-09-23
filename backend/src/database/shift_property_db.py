@@ -73,6 +73,47 @@ class ShiftPropertyDB:
             handle_get_document_error(e)
         return [doc_to_core_shift_property(sp) for sp in list(shift_properties)]
 
+    def get_shift_properties_by_sd_id_for_not_deleted_s(
+        self, sd_id: str
+    ) -> List[ShiftProperty]:
+        try:
+            pipeline = [
+                {"$match": {"shift_dimension": sd_id}},
+                {
+                    "$lookup": {
+                        "from": "shifts",
+                        "localField": "shift",
+                        "foreignField": "_id",
+                        "as": "shift",
+                    }
+                },
+                {"$unwind": "$shift"},
+                {"$match": {"shift.deleted": False}},
+                {
+                    "$project": {
+                        "id": "$_id",
+                        "_id": 0,
+                        "value": 1,
+                        "shift": "$shift._id",
+                        "shift_dimension": 1,
+                    }
+                },
+            ]
+            # pylint: disable=no-member
+            result = ShiftPropertyDocument.objects.aggregate(pipeline)  # type: ignore
+            # for doc in result:
+            #     print(doc)
+            shift_properties = [ShiftPropertyDocument(**doc) for doc in result]
+        except Exception as e:
+            log_info(
+                "Failed to get shift properties by shift dimension id for not "
+                + "deleted shift from database"
+            )
+            handle_get_document_error(e)
+            return []
+
+        return [doc_to_core_shift_property(sp) for sp in shift_properties]
+
     def get_shift_property_by_id(self, shift_property_id: str) -> ShiftProperty:
         try:
             # pylint: disable=no-member
