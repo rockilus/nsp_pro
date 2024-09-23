@@ -1,25 +1,22 @@
 # pylint: disable=R0801
 from scripts.setup_database import (
-    assignment_db,
     constraint_db,
     objective_breach_db,
-    request_db,
     schedule_db,
     shift_db,
     shift_demand_db,
-    shift_property_db,
 )
 
 
 def delete_shift(shift_id: str) -> None:
-    delete_shift_from_objective_breach(shift_id)
-    # delete_shift_from_constraint(shift_id)
     delete_shift_from_schedule_quick_staffing(shift_id)
-    shift_property_db.delete_shift_properties_by_shift_id(shift_id)
     shift_demand_db.delete_shift_demands_by_shift_id(shift_id)
-    assignment_db.delete_assignments_by_shift_id(shift_id)
-    request_db.delete_requests_by_shift_id(shift_id)
-    shift_db.delete_shift(shift_id)
+    shift_db.logical_delete_shift(shift_id)
+    # delete_shift_from_objective_breach(shift_id)
+    # delete_shift_from_constraint(shift_id)
+    # shift_property_db.delete_shift_properties_by_shift_id(shift_id)
+    # assignment_db.delete_assignments_by_shift_id(shift_id)
+    # request_db.delete_requests_by_shift_id(shift_id)
 
 
 def delete_shift_from_objective_breach(shift_id: str) -> None:
