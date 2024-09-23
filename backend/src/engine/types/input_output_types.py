@@ -10,8 +10,10 @@ from utils.constants import Constants
 
 @dataclass
 class VariableSpace:
-    workers: List[str]
-    days: List[str]
+    all_workers: List[str]
+    workers_not_deleted: List[str]
+    all_days: List[str]
+    days_solving: List[str]
     shifts: List[str]
 
 

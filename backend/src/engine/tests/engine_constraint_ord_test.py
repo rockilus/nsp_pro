@@ -282,7 +282,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.date + timedelta(days=constraint_ord_hard.day_var.interval)
             in [
                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-                for d in inputs.variable_space.days
+                for d in inputs.variable_space.all_days
             ]
         ]
 
@@ -336,7 +336,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.date + timedelta(days=constraint_ord_hard.day_var.interval)
             in [
                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-                for d in inputs.variable_space.days
+                for d in inputs.variable_space.all_days
             ]
         ]
 
@@ -389,7 +389,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.date + timedelta(days=constraint_ord_hard.day_var.interval)
             in [
                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-                for d in inputs.variable_space.days
+                for d in inputs.variable_space.all_days
             ]
         ]
 
@@ -443,7 +443,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             if a.date + timedelta(days=constraint_ord_hard.day_var.interval)
             in [
                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-                for d in inputs.variable_space.days
+                for d in inputs.variable_space.all_days
             ]
         ]
 
@@ -528,7 +528,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             and a.date + timedelta(days=constraint_ord.day_var.interval)
             in [
                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-                for d in inputs.variable_space.days
+                for d in inputs.variable_space.all_days
             ]
         ]
 
@@ -612,7 +612,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
             in [
                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-                for d in inputs.variable_space.days
+                for d in inputs.variable_space.all_days
             ]
         ]
 
@@ -695,7 +695,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
             in [
                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-                for d in inputs.variable_space.days
+                for d in inputs.variable_space.all_days
             ]
         ]
 
@@ -779,7 +779,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             and a.date + timedelta(days=constraint_ord_hard.day_var.interval)
             in [
                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-                for d in inputs.variable_space.days
+                for d in inputs.variable_space.all_days
             ]
         ]
 

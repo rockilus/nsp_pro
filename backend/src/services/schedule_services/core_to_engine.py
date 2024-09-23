@@ -43,8 +43,10 @@ def core_to_engine_inputs(
     )
     end_date_hist = start_date - timedelta(days=1)
     variable_space = VariableSpace(
-        workers=[worker.id for worker in workers],
-        days=_build_day_coordinates(start_date_hist, end_date),
+        all_workers=[w.id for w in workers],
+        workers_not_deleted=[w.id for w in workers if not w.deleted],
+        all_days=_build_day_coordinates(start_date_hist, end_date),
+        days_solving=_build_day_coordinates(start_date, end_date),
         shifts=[shift.id for shift in shifts],
     )
     coverage_engine = CoverageEngine(
@@ -52,14 +54,15 @@ def core_to_engine_inputs(
     )
     requests_engine = _core_to_engine_requests(requests)
     constraints_engine = [_core_to_engine_constraint(c) for c in constraints]
-    fixed_values_engine = core_to_engine_sol_hint(
-        variable_space.workers,
+    fixed_values_engine = core_to_engine_fixed_values(
+        workers,
         _build_day_coordinates(start_date_hist, end_date_hist),
+        _build_day_coordinates(start_date, end_date),
         variable_space.shifts,
         fixed_assignments,
     )
     sol_hint_engine = core_to_engine_sol_hint(
-        variable_space.workers,
+        variable_space.all_workers,
         _build_day_coordinates(start_date, end_date),
         variable_space.shifts,
         wip_assignments,
@@ -109,6 +112,27 @@ def _core_to_engine_requests(requests: List[Request]) -> List[RequestEngine]:
                     ),
                 )
             )
+    return out
+
+
+def core_to_engine_fixed_values(
+    workers: List[Worker],
+    days_not_solving: List[str],
+    days_solving: List[str],
+    shifts: List[str],
+    assignments: List[Assignment],
+) -> Dict[Tuple[str, str, str], int]:
+    out = {(w.id, d, s): 0 for w in workers for d in days_not_solving for s in shifts}
+    for a in assignments:
+        out[
+            a.worker_id,
+            a.date.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
+            a.shift_id,
+        ] = 1
+    for w in [w for w in workers if w.deleted]:
+        for d in days_solving:
+            for s in shifts:
+                out[w.id, d, s] = 0
     return out
 
 

@@ -483,7 +483,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         assert outputs.objective_value == penalty * len(
             constraint_fil_soft.worker_var.target
-        ) * len(inputs.variable_space.days)
+        ) * len(inputs.variable_space.all_days)
 
     def test_expected_constraint_breaches_variables_for_hard_soft_conflict(
         self,
@@ -508,7 +508,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             for w in constraint_fil_soft.worker_var.target
             for d in [
                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
-                for d in inputs.variable_space.days
+                for d in inputs.variable_space.all_days
             ]
             if a.worker_id == w and a.date == d
         ]

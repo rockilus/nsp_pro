@@ -7,13 +7,9 @@ import { getBreachType } from "../../data-display/schedule-utils";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
-import {
-  AssignmentT,
-  ScheduleT,
-  BreachT,
-  SelectedCellT,
-} from "../../../types/schedule";
+import { AssignmentT, BreachT, SelectedCellT } from "../../../types/schedule";
 import { RequestT } from "../../../types/request";
+import dayjs from "dayjs";
 
 export default function ScheduleTableCellContent({
   worker,
@@ -29,7 +25,6 @@ export default function ScheduleTableCellContent({
   shift: ShiftT;
   requests: RequestT[];
   assignment: AssignmentT;
-  schedule: ScheduleT;
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
@@ -63,6 +58,13 @@ export default function ScheduleTableCellContent({
             ? "3px solid #bdbdbd"
             : "none",
         cursor: "pointer",
+        color: assignment.date.isBefore(dayjs(), "day")
+          ? "black"
+          : selectedDisplay === "shift"
+          ? worker.deleted
+            ? "red"
+            : "black"
+          : "black",
       }}
     >
       {selectedDisplay === "worker" && assignment && shift && shift.name}

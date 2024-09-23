@@ -32,6 +32,10 @@ from services.coverage_selector_services.build_shift_demand_date import (
     build_shift_demand_dates,
 )
 from services.request_services import get_requests_by_dates
+from services.schedule_services.assignment_services import (
+    get_fixed_assignments,
+    save_assignments,
+)
 from services.schedule_services.core_to_engine import core_to_engine_inputs
 from services.schedule_services.engine_to_core import engine_to_core_outputs
 from services.schedule_services.inputs_processing import build_no_coverage_date
@@ -57,13 +61,7 @@ def solve_schedule(
     )
     requests = get_requests_by_dates(schedule.start_date, schedule.end_date, workers)
     team_schedules = schedule_db.get_schedules(schedule.team_id)
-    prev_assignments = assignment_db.get_assignments_by_status(
-        ["past", "validated"], team_schedules
-    )  # validated assignments
-    wip_fixed_assignments = assignment_db.get_assignments_wip_fixed(
-        team_schedules
-    )  # assignments wip and fixed
-    fixed_assignments = prev_assignments + wip_fixed_assignments
+    fixed_assignments, wip_fixed_assignments = get_fixed_assignments(schedule)
     wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
@@ -154,27 +152,6 @@ def solve_schedule(
         new_objective_breaches,
         updated_requests,
     )
-
-
-def save_assignments(
-    assignments: List[Assignment],
-    schedule: Schedule,
-    fixed_assignments: List[Assignment],
-) -> List[Assignment]:
-    assignment_db.delete_assignments_by_schedule_id(schedule.id)
-    if not assignments:
-        return []
-    for assignment in assignments:
-        for fixed_assignment in fixed_assignments:
-            if (
-                assignment.date == fixed_assignment.date
-                and assignment.shift_id == fixed_assignment.shift_id
-                and assignment.worker_id == fixed_assignment.worker_id
-            ):
-                assignment.fixed = True
-                break
-    out = assignment_db.create_assignments(assignments)
-    return out
 
 
 def save_objective_breaches(

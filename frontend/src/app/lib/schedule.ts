@@ -5,7 +5,7 @@ import utc from "dayjs/plugin/utc";
 import { toAssignmentT, getAssignments } from "./assignment";
 import { toBreachT, getBreaches } from "./breach";
 import { toRequestT, getRequests } from "./request";
-import { getWorkers } from "./worker";
+import { getAllWorkers } from "./worker";
 import { getShifts } from "./shift";
 // Types
 import { ScheduleT, AssignmentT, BreachT } from "../../types/schedule";
@@ -195,7 +195,7 @@ export async function getScheduleTabData(
       getRequests(teamId),
       getSchedule(teamId),
       getShifts(teamId),
-      getWorkers(teamId),
+      getAllWorkers(teamId),
     ]);
     return {
       assignments: campaignTabData[0],
