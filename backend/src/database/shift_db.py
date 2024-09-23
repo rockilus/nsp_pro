@@ -118,6 +118,7 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
             staffing=dataclass_obj.staffing,
             is_time_off=dataclass_obj.is_time_off,
             color=dataclass_obj.color,
+            deleted=dataclass_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert Shift to ShiftDocument")
@@ -137,6 +138,7 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             staffing=doc_obj.staffing,
             is_time_off=doc_obj.is_time_off,
             color=doc_obj.color,
+            deleted=doc_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert ShiftDocument to Shift")

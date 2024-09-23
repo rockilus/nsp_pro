@@ -45,6 +45,7 @@ export default function ShiftDemandPanel({
     staffing: 0,
     color: "",
     isTimeOff: false,
+    deleted: false,
     shiftProperties: [],
   };
 

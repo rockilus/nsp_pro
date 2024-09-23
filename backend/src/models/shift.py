@@ -19,3 +19,4 @@ class Shift(Document):
     staffing = IntField(required=True)
     is_time_off = BooleanField(required=True)
     color = StringField(required=True)
+    deleted = BooleanField(required=True)
