@@ -53,7 +53,7 @@ def build_worker_options(
         )
         for w in workers
     ]
-    for worker_dimension in worker_dimensions:
+    for worker_dimension in [wd for wd in worker_dimensions if not wd.deleted]:
         worker_properties_wd = (
             worker_properties[worker_dimension.id]
             if worker_dimension.id in worker_properties

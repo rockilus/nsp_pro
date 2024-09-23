@@ -4,6 +4,7 @@ export type WorkerDimensionT = {
   name: string;
   entryType: string;
   entryOptions: string[];
+  deleted: boolean;
 };
 
 export type WorkerPropertyT = {

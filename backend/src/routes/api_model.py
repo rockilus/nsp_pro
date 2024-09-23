@@ -26,6 +26,7 @@ class WorkerDimensionMessage(BaseModel):
     name: str
     entryType: str
     entryOptions: List[str]
+    deleted: bool
 
 
 class NewWorkerDimensionMessage(BaseModel):

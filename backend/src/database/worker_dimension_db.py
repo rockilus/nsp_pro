@@ -43,6 +43,17 @@ class WorkerDimensionDB:
             handle_get_document_error(e)
         return [doc_to_core_worker_dimension(wd) for wd in list(worker_dimensions)]
 
+    def get_worker_dimensions_not_deleted(self, team_id: str) -> List[WorkerDimension]:
+        try:
+            # pylint: disable=no-member
+            worker_dimensions = WorkerDimensionDocument.objects.filter(  # type: ignore
+                team=team_id, deleted=False
+            )
+        except Exception as e:
+            log_info("Failed to get worker dimensions from database")
+            handle_get_document_error(e)
+        return [doc_to_core_worker_dimension(wd) for wd in list(worker_dimensions)]
+
     def get_worker_dimension_by_id(self, worker_dimension_id: str) -> WorkerDimension:
         try:
             # pylint: disable=no-member
@@ -112,6 +123,21 @@ class WorkerDimensionDB:
             log_info("Failed to delete worker dimension from database")
             handle_delete_document_error(e)
 
+    def logical_delete_worker_dimension(self, worker_dimension_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            worker_dimension = WorkerDimensionDocument.objects.get(  # type: ignore
+                id=worker_dimension_id
+            )
+        except Exception as e:
+            log_info("Failed to get worker dimension by id to logical delete")
+            handle_get_document_error(e)
+        try:
+            worker_dimension.update(set__deleted=True)
+        except Exception as e:
+            log_info("Failed to logical delete worker dimension from database")
+            handle_save_document_error(e)
+
 
 # Mappers
 # core to document
@@ -131,6 +157,7 @@ def core_to_doc_worker_dimension(
             name=dataclass_obj.name,
             entry_type=dataclass_obj.entry_type,
             entry_options=dataclass_obj.entry_options,
+            deleted=dataclass_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert WorkerDimension to WorkerDimensionDocument")
@@ -149,6 +176,7 @@ def doc_to_core_worker_dimension(
             name=doc_obj.name,
             entry_type=doc_obj.entry_type,  # type: ignore
             entry_options=[*doc_obj.entry_options],
+            deleted=doc_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert WorkerDimensionDocument to WorkerDimension")

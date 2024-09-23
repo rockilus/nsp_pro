@@ -84,6 +84,7 @@ export default function UpdateWorkerDimensionForm({
           name: name,
           entryType: workerDimension.entryType,
           entryOptions: updatedOptions ? updatedOptions : listOptions,
+          deleted: false,
         };
         // const addedOK = await handleUpdateWorkerDimension(newWorkerDimension);
         // if (addedOK && !updatedOptions) {

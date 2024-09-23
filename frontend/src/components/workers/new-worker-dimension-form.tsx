@@ -96,6 +96,7 @@ export default function NewWorkerDimensionForm({
         name: name,
         entryType: type,
         entryOptions: listOptions,
+        deleted: false,
       };
       const addedOK = await handleAddWorkerDimension(newWorkerDimension);
       if (addedOK) {

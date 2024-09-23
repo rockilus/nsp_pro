@@ -1,5 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import ListField, ReferenceField, StringField
+from mongoengine.fields import BooleanField, ListField, ReferenceField, StringField
 
 
 class WorkerDimension(Document):
@@ -10,3 +10,4 @@ class WorkerDimension(Document):
     name = StringField(required=True)
     entry_type = StringField(required=True, choices=["str", "int", "bool", "list"])
     entry_options = ListField(StringField())
+    deleted = BooleanField(required=True)

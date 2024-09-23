@@ -98,7 +98,8 @@ class WorkerPropertyDB:
                 {"$match": {"worker.deleted": False}},
                 {
                     "$project": {
-                        "_id": 1,
+                        "id": "$_id",
+                        "_id": 0,
                         "value": 1,
                         "worker": "$worker._id",
                         "worker_dimension": 1,
@@ -107,8 +108,8 @@ class WorkerPropertyDB:
             ]
             # pylint: disable=no-member
             result = WorkerPropertyDocument.objects.aggregate(pipeline)  # type: ignore
-            for doc in result:
-                print(doc)
+            # for doc in result:
+            #     print(doc)
             worker_properties = [WorkerPropertyDocument(**doc) for doc in result]
         except Exception as e:
             log_info(

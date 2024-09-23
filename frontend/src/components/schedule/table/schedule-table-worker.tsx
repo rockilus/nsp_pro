@@ -52,6 +52,14 @@ export default function ScheduleTableWorker({
   selectedDisplay: string;
   handleCellSelection: (selectedCell: SelectedCellT) => void;
 }) {
+  const workerIdsInAssignments = new Set(
+    assignments.map((assignment) => assignment.workerId)
+  );
+
+  const filteredWorkers = workers.filter((worker) =>
+    workerIdsInAssignments.has(worker.id)
+  );
+
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -110,7 +118,7 @@ export default function ScheduleTableWorker({
           </TableRow>
         </TableHead>
         <TableBody>
-          {workers.map((worker, workerIndex) => (
+          {filteredWorkers.map((worker, workerIndex) => (
             <TableRow key={workerIndex}>
               <TableCell
                 sx={{
