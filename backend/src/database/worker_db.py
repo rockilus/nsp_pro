@@ -39,6 +39,17 @@ class WorkerDB:
             handle_get_document_error(e)
         return [doc_to_core_worker(w) for w in list(workers)]
 
+    def get_workers_not_deleted(self, team_id: str) -> List[Worker]:
+        try:
+            # pylint: disable=no-member
+            workers = WorkerDocument.objects.filter(  # type: ignore
+                team=team_id, deleted=False
+            )
+        except Exception as e:
+            log_info("Failed to get workers from database")
+            handle_get_document_error(e)
+        return [doc_to_core_worker(w) for w in list(workers)]
+
     def get_worker_by_id(self, worker_id: str) -> Worker:
         try:
             # pylint: disable=no-member
@@ -76,6 +87,21 @@ class WorkerDB:
             log_info("Failed to delete worker from database")
             handle_delete_document_error(e)
 
+    def logical_delete_worker(self, worker_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            worker = WorkerDocument.objects.get(id=worker_id)  # type: ignore
+        except Exception as e:
+            log_info("Failed to get worker by id to delete from database")
+            handle_get_document_error(e)
+            return  # Exit the method if the worker is not found
+
+        try:
+            worker.update(set__deleted=True)
+        except Exception as e:
+            log_info("Failed to set deleted field to true for worker in database")
+            handle_save_document_error(e)
+
 
 # Mappers
 # core to document
@@ -91,6 +117,7 @@ def core_to_doc_worker(dataclass_obj: Worker) -> WorkerDocument:
             id=dataclass_obj.id,
             team=team,
             name=dataclass_obj.name,
+            deleted=dataclass_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert Worker to WorkerDocument")
@@ -105,6 +132,7 @@ def doc_to_core_worker(doc_obj: WorkerDocument) -> Worker:
             id=doc_obj.id,
             team_id=str(doc_obj.team.id),
             name=str(doc_obj.name) if doc_obj.name is not None else "",
+            deleted=doc_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert WorkerDocument to Worker")

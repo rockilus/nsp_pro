@@ -1,22 +1,19 @@
 from scripts.setup_database import (
-    assignment_db,
     constraint_db,
     objective_breach_db,
-    request_db,
     schedule_db,
     worker_db,
-    worker_property_db,
 )
 
 
 def delete_worker(worker_id: str) -> None:
-    delete_worker_from_objective_breach(worker_id)
+    # delete_worker_from_objective_breach(worker_id)
     # delete_worker_from_constraint(worker_id)
     delete_worker_from_schedule_quick_staffing(worker_id)
-    worker_property_db.delete_worker_properties_by_worker_id(worker_id)
-    assignment_db.delete_assignments_by_worker_id(worker_id)
-    request_db.delete_requests_by_worker_id(worker_id)
-    worker_db.delete_worker(worker_id)
+    # worker_property_db.delete_worker_properties_by_worker_id(worker_id)
+    # assignment_db.delete_assignments_by_worker_id(worker_id)
+    # request_db.delete_requests_by_worker_id(worker_id)
+    worker_db.logical_delete_worker(worker_id)
 
 
 def delete_worker_from_objective_breach(worker_id: str) -> None:

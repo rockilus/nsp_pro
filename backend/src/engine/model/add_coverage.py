@@ -12,6 +12,9 @@ from utils.constants import Constants
 class AddCoverage(AddConstraint):
     def add_coverage(self, coverage: List[ShiftDemand], hard_to_soft: bool) -> None:
         for shift_demand in coverage:
+            # if shift_demand.date == date(2024, 10, 27):
+            #     print("Shift demand: ", shift_demand)
+            #     continue
             date_string = shift_demand.date.strftime(
                 Constants.ENGINE_STRING_DATE_FORMAT
             )

@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 
 from core.constraint import ConstraintBuildAugmented, Template
 from core.coverage import Coverage, CoverageSelector, ShiftDemand
-from core.request import Request
+from core.request import RequestAugmented
 from core.schedule import Assignment, ObjectiveBreach, Schedule
 from core.shift import Shift, ShiftDimension, ShiftProperty
 from core.team import Team
@@ -28,7 +28,7 @@ class Bulk:
     shift_demand_shifts: Dict[str, List[Shift]] = field(default_factory=dict)
     constraint_builds: List[ConstraintBuildAugmented] = field(default_factory=list)
     constraint_templates: List[Template] = field(default_factory=list)
-    requests: List[Request] = field(default_factory=list)
+    requests: List[RequestAugmented] = field(default_factory=list)
     coverage_selectors: List[CoverageSelector] = field(default_factory=list)
     assignments: List[Assignment] = field(default_factory=list)
     schedule: Optional[Schedule] = None

@@ -35,7 +35,6 @@ import {
   SelectedCellT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
-import { set } from "zod";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -288,7 +287,7 @@ export default function ScheduleTab({
       <QuickStaffingTable
         lng={lng}
         shifts={shifts}
-        workers={workers}
+        workers={workers.filter((w) => !w.deleted)}
         assignments={assignments}
         schedule={schedule as ScheduleT}
         handleUpdateSchedule={handleUpdateSchedule}
@@ -297,7 +296,7 @@ export default function ScheduleTab({
     "Selected assignment": selectedCell ? (
       <AssignmentOptions
         lng={lng}
-        workers={workers}
+        workers={workers.filter((w) => !w.deleted)}
         shifts={shifts}
         assignments={assignments}
         selectedCell={selectedCell}

@@ -7,7 +7,6 @@ from scripts.setup_database import (
     coverage_db,
     coverage_selector_db,
     objective_breach_db,
-    request_db,
     schedule_db,
     shift_db,
     shift_demand_db,
@@ -19,6 +18,7 @@ from scripts.setup_database import (
     worker_property_db,
 )
 from services.constraint_build_services import get_constraint_builds
+from services.request_services import get_requests_by_workers
 from services.schedule_services import get_schedule_wip
 
 
@@ -83,7 +83,7 @@ def build_bulk(user_id: str, teams: List[Team], selected_team_id: str) -> Bulk:
         shift_properties_sd,
         bulk.user.language,
     )
-    bulk.requests = request_db.get_requests(bulk.workers)
+    bulk.requests = get_requests_by_workers(bulk.workers)
     schedules = schedule_db.get_schedules(selected_team_id)
     bulk.schedule = get_schedule_wip(schedules, selected_team_id)
     bulk.coverage_selectors = coverage_selector_db.get_coverage_selectors(

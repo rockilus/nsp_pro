@@ -165,7 +165,6 @@ export default function ScheduleTableWorker({
                             shift={shift}
                             requests={targetRequests}
                             assignment={a}
-                            schedule={schedule}
                             breaches={targetBs}
                             showBreaches={showBreaches}
                             selectedDisplay={selectedDisplay}

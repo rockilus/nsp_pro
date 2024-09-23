@@ -80,6 +80,46 @@ class WorkerPropertyDB:
             handle_get_document_error(e)
         return [doc_to_core_worker_property(wp) for wp in list(worker_properties)]
 
+    def get_worker_properties_by_wd_id_for_not_deleted_ws(
+        self, wd_id: str
+    ) -> List[WorkerProperty]:
+        try:
+            pipeline = [
+                {"$match": {"worker_dimension": wd_id}},
+                {
+                    "$lookup": {
+                        "from": "workers",
+                        "localField": "worker",
+                        "foreignField": "_id",
+                        "as": "worker",
+                    }
+                },
+                {"$unwind": "$worker"},
+                {"$match": {"worker.deleted": False}},
+                {
+                    "$project": {
+                        "_id": 1,
+                        "value": 1,
+                        "worker": "$worker._id",
+                        "worker_dimension": 1,
+                    }
+                },
+            ]
+            # pylint: disable=no-member
+            result = WorkerPropertyDocument.objects.aggregate(pipeline)  # type: ignore
+            for doc in result:
+                print(doc)
+            worker_properties = [WorkerPropertyDocument(**doc) for doc in result]
+        except Exception as e:
+            log_info(
+                "Failed to get worker properties by worker dimension id for not "
+                + "deleted workers from database"
+            )
+            handle_get_document_error(e)
+            return []
+
+        return [doc_to_core_worker_property(wp) for wp in worker_properties]
+
     def get_worker_property_by_id(self, worker_property_id: str) -> WorkerProperty:
         try:
             # pylint: disable=no-member

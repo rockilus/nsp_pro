@@ -16,6 +16,7 @@ class WorkerMessage(BaseModel):
     id: str
     teamId: str
     name: str
+    deleted: bool
     workerProperties: List[WorkerPropertyMessage]
 
 
@@ -108,6 +109,7 @@ class RequestMessage(BaseModel):
     shiftId: str
     hard: bool
     status: str
+    active: bool
 
 
 # Constraint

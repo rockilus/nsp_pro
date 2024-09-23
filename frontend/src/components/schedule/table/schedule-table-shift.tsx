@@ -180,7 +180,6 @@ export default function ScheduleTableShift({
                               shift={shift}
                               requests={targetRequests}
                               assignment={a}
-                              schedule={schedule}
                               breaches={targetBs}
                               showBreaches={showBreaches}
                               selectedDisplay={selectedDisplay}

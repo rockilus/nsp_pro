@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 // Actions
 import { getShifts } from "./shift";
-import { getWorkers } from "./worker";
+import { getAllWorkers } from "./worker";
 // Types
 import { RequestT } from "../../types/request";
 // Env Vars
@@ -119,7 +119,7 @@ export async function deleteRequest(requestId: string, teamId: string) {
 export async function getRequestsTabData(teamId: string) {
   try {
     const requestsTabData = await Promise.all([
-      getWorkers(teamId),
+      getAllWorkers(teamId),
       getShifts(teamId),
       getRequests(teamId),
     ]);

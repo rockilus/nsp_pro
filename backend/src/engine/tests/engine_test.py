@@ -39,8 +39,25 @@ class TestEngine:
             datetime.fromisoformat("2023-10-02 17:00:00"),  # 1 hours, conflict with s3
         ]
         variable_space = VariableSpace(
-            workers=["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"],
-            days=[
+            all_workers=["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"],
+            workers_not_deleted=[
+                "w0",
+                "w1",
+                "w2",
+                "w3",
+                "w4",
+                "w5",
+                "w6",
+                "w7",
+            ],
+            all_days=[
+                d.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
+                for d in [
+                    start_date + timedelta(days=i)
+                    for i in range((end_date - start_date).days + 1)
+                ]
+            ],
+            days_solving=[
                 d.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
                 for d in [
                     start_date + timedelta(days=i)

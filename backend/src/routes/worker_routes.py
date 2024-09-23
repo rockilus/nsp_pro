@@ -69,6 +69,31 @@ async def get_workers(
             session.get_user_id(), "read-workers", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get workers")
+        workers = worker_db.get_workers_not_deleted(team_id)
+        workers_properties = [
+            worker_property_db.get_worker_properties_by_worker_id(worker.id)
+            for worker in workers
+        ]
+        response = [
+            core_to_msg_worker_and_properties(w, wp)
+            for w, wp in zip(workers, workers_properties)
+        ]
+    except Exception as e:
+        log_info("Failed to get workers")
+        handle_routes_errors(e)
+    return response
+
+
+@router.get("/workers/all/teams/{team_id}")
+async def get_all_workers(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> List[WorkerMessage]:
+    try:
+        if not await authz_check(
+            session.get_user_id(), "read-workers", "team", team_id
+        ):
+            raise NotAuthorizedError("You do not have permission to get workers")
         workers = worker_db.get_workers(team_id)
         workers_properties = [
             worker_property_db.get_worker_properties_by_worker_id(worker.id)

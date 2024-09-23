@@ -119,8 +119,9 @@ export default function RequestTab({
                     shiftId: "",
                     hard: true,
                     status: "pending",
+                    active: true,
                   }}
-                  workers={workers}
+                  workers={workers.filter((w) => !w.deleted)}
                   shifts={shifts}
                   handleClose={handleClosePopoverRhs}
                   handleAddRequest={handleAddRequest}

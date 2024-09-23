@@ -101,7 +101,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(inputs.variable_space.days)
+        dates_weeks = get_dates_weeks(inputs.variable_space.all_days)
 
         worked_durations = [
             sum(
@@ -130,7 +130,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(inputs.variable_space.days)
+        dates_weeks = get_dates_weeks(inputs.variable_space.all_days)
 
         worked_durations = [
             sum(
@@ -159,7 +159,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(inputs.variable_space.days)
+        dates_weeks = get_dates_weeks(inputs.variable_space.all_days)
 
         worked_durations = [
             sum(
@@ -245,7 +245,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(inputs.variable_space.days)
+        dates_weeks = get_dates_weeks(inputs.variable_space.all_days)
 
         worked_durations = [
             sum(
@@ -274,7 +274,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(inputs.variable_space.days)
+        dates_weeks = get_dates_weeks(inputs.variable_space.all_days)
 
         worked_durations = [
             sum(
@@ -302,7 +302,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(inputs.variable_space.days)
+        dates_weeks = get_dates_weeks(inputs.variable_space.all_days)
 
         worked_durations = [
             sum(
@@ -336,7 +336,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        dates_weeks = get_dates_weeks(inputs.variable_space.days)
+        dates_weeks = get_dates_weeks(inputs.variable_space.all_days)
         constraint_sum_hard = inputs.constraints[0]
 
         worked_durations = [
@@ -372,7 +372,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         ]
         outputs = engine_solve(inputs)
 
-        dates_weeks = get_dates_weeks(inputs.variable_space.days)
+        dates_weeks = get_dates_weeks(inputs.variable_space.all_days)
 
         assert (
             outputs.objective_value
@@ -399,7 +399,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         ]
         outputs = engine_solve(inputs)
 
-        dates_weeks = get_dates_weeks(inputs.variable_space.days)
+        dates_weeks = get_dates_weeks(inputs.variable_space.all_days)
 
         expected_variables = [
             [(w, d, s) for d in week]

@@ -14,16 +14,20 @@ class Model:
     # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(
         self,
-        workers: List[str],
-        days: List[str],
+        all_workers: List[str],
+        workers_not_deleted: List[str],
+        all_days: List[str],
+        days_solving: List[str],
         shifts: List[str],
         shift_durations: Dict[str, int],
         shift_start_times: Dict[Tuple, int],
         shift_end_times: Dict[Tuple, int],
         model_config: Dict,
     ) -> None:
-        self.workers = workers
-        self.days = days
+        self.all_workers = all_workers
+        self.workers_not_deleted = workers_not_deleted
+        self.all_days = all_days
+        self.days_solving = days_solving
         self.shifts = shifts
 
         self.model = cp_model.CpModel()
@@ -44,8 +48,8 @@ class Model:
             self.model,
             self.variables,
             self.durations,
-            self.workers,
-            self.days,
+            self.all_workers,
+            self.all_days,
             self.shifts,
             self.obj,
             self.model_config,
@@ -144,6 +148,7 @@ class Model:
     #     temp_model = self.model
 
     def sequential_solve(self, inputs: Inputs) -> None:
+        # hts stand for high to soft
         self.solve_model_hts_custom(
             inputs, coverage_hts=False, request_hts=False, constraint_hts=False
         )
@@ -177,7 +182,7 @@ class Model:
         self.set_fixed_variables(inputs.fixed_values)
         self.add_solution_hint(inputs.sol_hint)
         self.no_interval_overlap()
-        self.add_at_least_one_shift_per_day_constraint()
+        self.add_at_least_one_shift_per_day_solving_constraint()
         # self.status = self.solver.Solve(  # type: ignore
         #     self.model, self.solution_printer
         # )
@@ -211,8 +216,8 @@ class Model:
             self.model,
             self.variables,
             self.durations,
-            self.workers,
-            self.days,
+            self.all_workers,
+            self.all_days,
             self.shifts,
             self.obj,
             self.model_config,
@@ -256,25 +261,9 @@ class Model:
     #     self.bt.full_setup_end = time.time()
 
     def build_variables(self) -> None:
-        for worker in self.workers:
-            for day in self.days:
+        for worker in self.all_workers:
+            for day in self.all_days:
                 for shift in self.shifts:
-                    # print(
-                    #     "start time: ",
-                    #     datetime.fromtimestamp(
-                    #       self.shift_start_times[day, shift] * 60),
-                    # )
-                    # print(
-                    #     "end time: ",
-                    #     datetime.fromtimestamp(self.shift_end_times[day, shift] * 60),
-                    # )
-                    # print("duration: ", self.durations[shift])
-                    # print(
-                    #     "check: ",
-                    #     self.shift_end_times[day, shift]
-                    #     - self.shift_start_times[day, shift]
-                    #     - self.durations[shift],
-                    # )
                     self.variables[(worker, day, shift)] = self.model.NewBoolVar(
                         f"{worker}_{day}_{shift}"
                     )
@@ -287,36 +276,87 @@ class Model:
                         self.variables[worker, day, shift],
                         f"inter_{worker}_{day}_{shift}",
                     )
+                    # if (
+                    #     day == "2024-10-27"
+                    #     and worker == "66b62b88cad3bb739b082f97"
+                    #     and shift == "66b63332cad3bb739b082fa4"
+                    # ):
+                    #     print(
+                    #         "start time: ",
+                    #         datetime.fromtimestamp(
+                    #             self.shift_start_times[day, shift] * 60
+                    #         ),
+                    #     )
+                    #     print(
+                    #         "end time: ",
+                    #         datetime.fromtimestamp(
+                    #             self.shift_end_times[day, shift] * 60
+                    #         ),
+                    #     )
+                    #     print(
+                    #         "start time timestamp: ",
+                    #         self.shift_start_times[day, shift],
+                    #     )
+                    #     print(
+                    #         "end time timestamp: ",
+                    #         self.shift_end_times[day, shift],
+                    #     )
+                    #     print("duration: ", self.durations[shift])
+                    #     print(
+                    #         "check: ",
+                    #         self.shift_end_times[day, shift]
+                    #         - self.shift_start_times[day, shift]
+                    #         - self.durations[shift],
+                    #     )
 
     def set_fixed_variables(
         self, fixed_values: Dict[Tuple[str, str, str], int]
     ) -> None:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
+        # for w in self.workers_not_deleted:
+        # self.model.Add(
+        #     self.variables[
+        #         w, "2024-10-27", "66b63360cad3bb739b082fa7" # repos
+        #     ]
+        #     == 1
+        # )
+        # self.model.Add(
+        #     self.variables[
+        #         w, "2024-10-27", "66b63334cad3bb739b082fa5"  # consult van
+        #     ]
+        #     == 1
+        # )
+        # self.model.Add(
+        #     self.variables[
+        #         w, "2024-10-27", "66b63332cad3bb739b082fa4"  # garde plo
+        #     ]
+        #     == 1
+        # )
 
     def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
         for k, v in solution_hint.items():
             self.model.AddHint(self.variables[k], v)
 
-    def add_at_least_one_shift_per_day_constraint(self) -> None:
-        for w in self.workers:
-            for d in self.days:
+    def add_at_least_one_shift_per_day_solving_constraint(self) -> None:
+        for w in self.workers_not_deleted:
+            for d in self.days_solving:
                 self.model.Add(
                     sum(self.variables[w, d, s] for s in self.shifts)  # type: ignore
                     >= 1
                 )
 
     def no_interval_overlap(self) -> None:
-        for w in self.workers:
+        for w in self.all_workers:
             self.model.AddNoOverlap(
-                [self.intervals[w, d, s] for d in self.days for s in self.shifts]
+                [self.intervals[w, d, s] for d in self.all_days for s in self.shifts]
             )
 
     def spread_through_time(
         self, solving_dates: List[str], cov_shifts: List[str]
     ) -> None:
         interval = 7
-        for w in self.workers:
+        for w in self.all_workers:
             for s in cov_shifts:
                 weekly_staffings = []
                 # per week, with final week potentially shorter
@@ -416,7 +456,7 @@ class Model:
         self, solving_dates: List[str], cov_shifts: List[str]
     ) -> None:
         staffings = []
-        for w in self.workers:
+        for w in self.all_workers:
             worker_staffing_vars = [
                 self.variables[w, d, s] for d in solving_dates for s in cov_shifts
             ]

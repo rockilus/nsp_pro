@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Assignment, ObjectiveBreach, QuickStaffing, Request, Schedule
+from core import Assignment, ObjectiveBreach, QuickStaffing, RequestAugmented, Schedule
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -27,7 +27,7 @@ from routes.api_model import (
 )
 from routes.assignment_routes import core_to_msg_assignment
 from routes.objective_breach_routes import core_to_msg_objective_breach
-from routes.request_routes import core_to_msg_request
+from routes.request_routes import core_to_msg_request_augmented
 from scripts.setup_database import (
     assignment_db,
     constraint_db,
@@ -218,7 +218,7 @@ def core_to_msg_solution(
     schedule: Schedule,
     assignments: List[Assignment],
     objective_breaches: List[ObjectiveBreach],
-    requests: List[Request],
+    requests: List[RequestAugmented],
 ) -> SolutionMessage:
     data: Dict[
         str,
@@ -232,7 +232,7 @@ def core_to_msg_solution(
     data["objective_breaches"] = [
         core_to_msg_objective_breach(ob) for ob in objective_breaches
     ]
-    data["requests"] = [core_to_msg_request(r) for r in requests]
+    data["requests"] = [core_to_msg_request_augmented(r) for r in requests]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(SolutionMessage)
     try:

@@ -2,8 +2,8 @@ import React, { ReactElement } from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // Types
 import { MissingProperty } from "../../../types/constraint";
-// Constants
-import { ConstraintColorInactiveText } from "../../../constants/constants";
+// Styles
+import "./missing-properties.css";
 
 export default function MissingProperties({
   lng,
@@ -70,14 +70,7 @@ export default function MissingProperties({
   };
 
   return (
-    <span
-      className="constraint-missing-properties"
-      style={{
-        fontSize: "10px",
-        fontStyle: "italic",
-        color: "#808080",
-      }}
-    >
+    <span className="constraint-missing-properties">
       {buildString(missingProperties)}
     </span>
   );

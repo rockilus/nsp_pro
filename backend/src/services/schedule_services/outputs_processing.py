@@ -1,13 +1,15 @@
 from datetime import timedelta
 from typing import List
 
-from core import Assignment, Request
-from scripts.setup_database import request_db
+from core import Assignment, Request, RequestAugmented, Worker
+from services.request_services import update_requests
 
 
 def update_request_status(
-    assignments: List[Assignment], requests: List[Request]
-) -> List[Request]:
+    assignments: List[Assignment],
+    requests: List[Request],
+    workers: List[Worker],
+) -> List[RequestAugmented]:
     updated_requests = []
     for r in requests:
         dates = [
@@ -26,4 +28,4 @@ def update_request_status(
         else:
             r.status = "approved"
         updated_requests.append(r)
-    return request_db.update_requests(updated_requests)
+    return update_requests(updated_requests, workers)
