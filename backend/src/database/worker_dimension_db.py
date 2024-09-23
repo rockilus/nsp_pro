@@ -131,6 +131,7 @@ def core_to_doc_worker_dimension(
             name=dataclass_obj.name,
             entry_type=dataclass_obj.entry_type,
             entry_options=dataclass_obj.entry_options,
+            deleted=dataclass_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert WorkerDimension to WorkerDimensionDocument")
@@ -149,6 +150,7 @@ def doc_to_core_worker_dimension(
             name=doc_obj.name,
             entry_type=doc_obj.entry_type,  # type: ignore
             entry_options=[*doc_obj.entry_options],
+            deleted=doc_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert WorkerDimensionDocument to WorkerDimension")

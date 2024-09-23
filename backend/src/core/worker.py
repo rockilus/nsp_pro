@@ -19,6 +19,7 @@ class WorkerDimension:
     name: str
     entry_type: Constants.DIMENSION_ENTRY_TYPES
     entry_options: List[str]
+    deleted: bool
 
 
 @dataclass
