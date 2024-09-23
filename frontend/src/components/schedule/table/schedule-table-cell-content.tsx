@@ -64,6 +64,10 @@ export default function ScheduleTableCellContent({
           ? worker.deleted
             ? "red"
             : "black"
+          : selectedDisplay === "worker"
+          ? shift.deleted
+            ? "red"
+            : "black"
           : "black",
       }}
     >

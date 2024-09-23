@@ -286,7 +286,7 @@ export default function ScheduleTab({
     "Quick staffing": schedule ? (
       <QuickStaffingTable
         lng={lng}
-        shifts={shifts}
+        shifts={shifts.filter((s) => !s.deleted)}
         workers={workers.filter((w) => !w.deleted)}
         assignments={assignments}
         schedule={schedule as ScheduleT}
@@ -297,7 +297,7 @@ export default function ScheduleTab({
       <AssignmentOptions
         lng={lng}
         workers={workers.filter((w) => !w.deleted)}
-        shifts={shifts}
+        shifts={shifts.filter((s) => !s.deleted)}
         assignments={assignments}
         selectedCell={selectedCell}
         selectedDisplay={selectedDisplay}

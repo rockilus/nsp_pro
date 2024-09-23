@@ -6,7 +6,7 @@ import { toAssignmentT, getAssignments } from "./assignment";
 import { toBreachT, getBreaches } from "./breach";
 import { toRequestT, getRequests } from "./request";
 import { getAllWorkers } from "./worker";
-import { getShifts } from "./shift";
+import { getAllShifts } from "./shift";
 // Types
 import { ScheduleT, AssignmentT, BreachT } from "../../types/schedule";
 import { RequestT } from "../../types/request";
@@ -194,7 +194,7 @@ export async function getScheduleTabData(
       getBreaches(teamId),
       getRequests(teamId),
       getSchedule(teamId),
-      getShifts(teamId),
+      getAllShifts(teamId),
       getAllWorkers(teamId),
     ]);
     return {
