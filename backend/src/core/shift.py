@@ -27,6 +27,7 @@ class ShiftDimension:
     name: str
     entry_type: Constants.DIMENSION_ENTRY_TYPES  # str, int, bool, list
     entry_options: List[str]
+    deleted: bool
 
 
 @dataclass

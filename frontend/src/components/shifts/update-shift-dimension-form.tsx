@@ -85,6 +85,7 @@ export default function UpdateShiftDimensionForm({
           name: name,
           entryType: shiftDimension.entryType,
           entryOptions: updatedOptions ? updatedOptions : listOptions,
+          deleted: false,
         };
         // const addedOK = await handleUpdateShiftDimension(newShiftDimension);
         // if (addedOK && !updatedOptions) {

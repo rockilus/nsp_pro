@@ -117,6 +117,7 @@ def core_to_doc_shift_dimension(
             name=dataclass_obj.name,
             entry_type=dataclass_obj.entry_type,
             entry_options=dataclass_obj.entry_options,
+            deleted=dataclass_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert ShiftDimension to ShiftDimensionDocument")
@@ -137,6 +138,7 @@ def doc_to_core_shift_dimension(
             name=doc_obj.name,
             entry_type=doc_obj.entry_type,  # type: ignore
             entry_options=[*doc_obj.entry_options],
+            deleted=doc_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert ShiftDimensionDocument to ShiftDimension")

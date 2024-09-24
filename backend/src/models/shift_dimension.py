@@ -12,3 +12,4 @@ class ShiftDimension(Document):
     name = StringField(required=True)
     entry_type = StringField(required=True, choices=["str", "int", "bool", "list"])
     entry_options = ListField(StringField())
+    deleted = BooleanField(required=True)
