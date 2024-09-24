@@ -32,7 +32,7 @@ const NavAppBar = ({ lng }: { lng: string }) => {
           alignItems="center"
         >
           <Image
-            src="/logo.png"
+            src="/rockilus_logo_blue.jpg"
             alt="logo"
             width={logoWidth}
             height={logoHeight}
