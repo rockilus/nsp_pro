@@ -1,0 +1,31 @@
+.user-profile-row {
+  display: flex;
+  flex-direction: row;
+  padding: 2px 0;
+  height: 45px;
+}
+
+.row-label-container {
+  display: flex;
+  align-items: center;
+  width: 150px;
+}
+
+.row-label {
+  color: #3c4043;
+  font-size: 0.9rem;
+}
+
+.row-value-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.row-value {
+  width: 100%;
+}
+
+.edit-buttons-container {
+  width: 115px;
+}
