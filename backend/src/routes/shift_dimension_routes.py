@@ -77,6 +77,26 @@ async def get_shift_dimensions(
             raise NotAuthorizedError(
                 "You do not have permission to read shift dimensions"
             )
+        shift_dimensions = shift_dimension_db.get_shift_dimensions_not_deleted(team_id)
+        response = [core_to_msg_shift_dimension(sd) for sd in shift_dimensions]
+    except Exception as e:
+        log_info("Failed to get shift dimensions")
+        handle_routes_errors(e)
+    return response
+
+
+@router.get("/shift-dimensions/all/teams/{team_id}")
+async def get_all_shift_dimensions(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> List[ShiftDimensionMessage]:
+    try:
+        if not await authz_check(
+            session.get_user_id(), "read-shift-dimensions", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to read shift dimensions"
+            )
         shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
         response = [core_to_msg_shift_dimension(sd) for sd in shift_dimensions]
     except Exception as e:

@@ -41,6 +41,17 @@ class ShiftDimensionDB:
             handle_get_document_error(e)
         return [doc_to_core_shift_dimension(sd) for sd in list(shift_dimensions)]
 
+    def get_shift_dimensions_not_deleted(self, team_id: str) -> List[ShiftDimension]:
+        try:
+            # pylint: disable=no-member
+            shift_dimensions = ShiftDimensionDocument.objects.filter(  # type: ignore
+                team=team_id, deleted=False
+            )
+        except Exception as e:
+            log_info("Failed to get shift dimensions not deleted from database")
+            handle_get_document_error(e)
+        return [doc_to_core_shift_dimension(sd) for sd in list(shift_dimensions)]
+
     def get_shift_dimension_by_id(self, shift_dimension_id: str) -> ShiftDimension:
         try:
             # pylint: disable=no-member
@@ -94,6 +105,21 @@ class ShiftDimensionDB:
         except Exception as e:
             log_info("Failed to delete shift dimension")
             handle_delete_document_error(e)
+
+    def logical_delete_shift_dimension(self, shift_dimension_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            shift_dimension = ShiftDimensionDocument.objects.get(  # type: ignore
+                id=shift_dimension_id
+            )
+        except Exception as e:
+            log_info("Failed to get shift dimension by id to logical delete")
+            handle_get_document_error(e)
+        try:
+            shift_dimension.update(set__deleted=True)
+        except Exception as e:
+            log_info("Failed to logical delete shift dimension")
+            handle_save_document_error(e)
 
 
 # Mappers
