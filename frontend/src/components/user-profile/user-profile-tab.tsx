@@ -1,28 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
-import CheckIcon from "@mui/icons-material/Check";
-import Chip from "@mui/material/Chip";
-import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import FormControl from "@mui/material/FormControl";
 import IconButton from "@mui/material/IconButton";
-import Link from "@mui/material/Link";
 import MenuItem from "@mui/material/MenuItem";
-import Paper from "@mui/material/Paper";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
 // Components
 import ChangePasswordDialog from "./change-password-dialog";
+import UserProfileRow from "./user-profile-row";
+// Skeletons
+import TablesSkeleton from "../skeletons/tables-skeleton";
 // Actions
 import { getUser, updateUser, updatePassword } from "../../app/lib/user";
+// Styles
+import "./user-profile-tab.css";
+import "../../styles/text-styles.css";
+import "../../styles/tab-container-styles.css";
 // Types
 import { UserT } from "../../types/user";
 // Constants
@@ -31,15 +27,16 @@ import { languages } from "../../constants/constants";
 export default function UserProfileTab({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "profile-page");
 
+  const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserT | null>(null);
   const [fieldEditing, setFieldEditing] = useState<string | null>(null);
   const [userState, setUserState] = useState<UserT | null>(user);
 
-  const tableFields: Record<string, string>[] = [
-    { name: "firstName", label: t("first_name") },
-    { name: "lastName", label: t("last_name") },
-    // { name: "email", label: t("email") },
-  ];
+  const editButton = (handleSetEditing: () => void): ReactElement => (
+    <IconButton onClick={handleSetEditing}>
+      <EditIcon />
+    </IconButton>
+  );
 
   //////////////////////////
   // User Actions
@@ -82,6 +79,8 @@ export default function UserProfileTab({ lng }: { lng: string }) {
   };
 
   const handleEditCancel = () => {
+    console.log("handleEditCancel");
+
     setUserState(user);
     setFieldEditing(null);
   };
@@ -93,8 +92,10 @@ export default function UserProfileTab({ lng }: { lng: string }) {
 
   useEffect(() => {
     const fetchUserTabData = async () => {
+      setIsLoading(true);
       const fetchedUser = await getUser();
       setUser(fetchedUser);
+      setIsLoading(false);
     };
     fetchUserTabData();
   }, []);
@@ -106,223 +107,156 @@ export default function UserProfileTab({ lng }: { lng: string }) {
   }, [user]);
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignSelf: "flex-start",
-        backgroundColor: "grey.100",
-        minWidth: 200,
-        border: "1px solid grey",
-        borderRadius: 2,
-        margin: 2,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          minHeight: 45,
-          paddingX: 1,
-          borderBottom: "1px solid lightgrey",
-        }}
-      >
-        <Typography
-          variant="subtitle1"
-          align="left"
-          sx={{ fontWeight: "bold" }}
-        >
-          {t("user_profile")}
-        </Typography>
-      </Box>
-      {user && userState ? (
-        <TableContainer
-          component={Paper}
-          sx={{ width: "100%", borderRadius: "0 0 8px 8px" }}
-        >
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableBody>
-              {tableFields.map((field, index) =>
-                fieldEditing === field.name ? (
-                  <TableRow
-                    key={index}
-                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                  >
-                    <TableCell sx={{ paddingY: 0 }}>{field.label}</TableCell>
-                    <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-                      <TextField
-                        fullWidth
-                        type="text"
-                        name={field.name}
-                        value={userState[field.name as keyof typeof userState]}
-                        onChange={(e) => {
-                          setUserState({
-                            ...userState,
-                            [field.name]: e.target.value,
-                          });
-                        }}
-                        onBlur={handleEditConfirm}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleEditConfirm();
-                          } else if (e.key === "Escape") {
-                            handleEditCancel();
-                          }
-                        }}
-                        autoFocus
-                      />
-                    </TableCell>
-                    <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-                      <IconButton onClick={handleEditConfirm}>
-                        <CheckIcon />
-                      </IconButton>
-                      <IconButton onClick={handleEditCancel}>
-                        <CloseIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  <TableRow
-                    key={index}
-                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                  >
-                    <TableCell sx={{ paddingY: 0 }}>{field.label}</TableCell>
-                    <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-                      {user[field.name as keyof typeof user] as string}
-                    </TableCell>
-                    <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-                      <IconButton onClick={() => setFieldEditing(field.name)}>
-                        <EditIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                )
-              )}
-              <TableRow
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell sx={{ paddingY: 0 }}>{t("email")}</TableCell>
-                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-                  {fieldEditing === "email" ? (
-                    <TextField
-                      fullWidth
-                      type="text"
-                      name="email"
-                      value={userState.email}
-                      onChange={(e) => {
-                        setUserState({
-                          ...userState,
-                          email: e.target.value,
-                        });
-                      }}
-                      onBlur={handleEditConfirm}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleEditConfirm();
-                        } else if (e.key === "Escape") {
-                          handleEditCancel();
-                        }
-                      }}
-                      autoFocus
-                    />
-                  ) : (
-                    <Box sx={{ display: "flex", flexDirection: "column" }}>
-                      <Box sx={{ display: "flex", flexDirection: "row" }}>
-                        <Typography>{user.email}</Typography>
-                        {/* <Chip
-                          label={t("verified")}
-                          color="success"
-                          variant="outlined"
-                          sx={{ height: "20px" }}
-                        /> */}
-                        <Chip
-                          label={t("not_verified")}
-                          color="default"
-                          variant="outlined"
-                          sx={{ height: "20px" }}
-                        />
-                      </Box>
-                    </Box>
-                  )}
-                </TableCell>
-                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-                  {fieldEditing === "email" ? (
-                    <>
-                      <IconButton onClick={handleEditConfirm}>
-                        <CheckIcon />
-                      </IconButton>
-                      <IconButton onClick={handleEditCancel}>
-                        <CloseIcon />
-                      </IconButton>
-                    </>
-                  ) : (
-                    <IconButton onClick={() => setFieldEditing("email")}>
-                      <EditIcon />
-                    </IconButton>
-                  )}
-                </TableCell>
-              </TableRow>
-              <TableRow
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell sx={{ paddingY: 0 }}>{t("password")}</TableCell>
-                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-                  <Typography>●●●●●●●●●</Typography>
-                </TableCell>
-                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
+    <div className="tab-container">
+      {isLoading ? (
+        <TablesSkeleton numTables={1} numInternalRows={5} />
+      ) : (
+        <div className="user-profile-container">
+          <span className="title">{t("user_profile")}</span>
+          {user && userState ? (
+            <div className="user-profile">
+              <UserProfileRow
+                label={t("first_name")}
+                value={<span>{user.firstName}</span>}
+                valueEditing={
+                  <TextField
+                    fullWidth
+                    type="text"
+                    name="firstName"
+                    value={userState.firstName}
+                    onChange={(e) => {
+                      setUserState({
+                        ...userState,
+                        firstName: e.target.value,
+                      });
+                    }}
+                    onBlur={handleEditConfirm}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleEditConfirm();
+                      } else if (e.key === "Escape") {
+                        handleEditCancel();
+                      }
+                    }}
+                    autoFocus
+                  />
+                }
+                editing={fieldEditing === "firstName"}
+                editButton={editButton(() => setFieldEditing("firstName"))}
+                handleEditConfirm={handleEditConfirm}
+                handleEditCancel={handleEditCancel}
+              />
+              <UserProfileRow
+                label={t("last_name")}
+                value={<span>{user.lastName}</span>}
+                valueEditing={
+                  <TextField
+                    fullWidth
+                    type="text"
+                    name="lastName"
+                    value={userState.lastName}
+                    onChange={(e) => {
+                      setUserState({
+                        ...userState,
+                        lastName: e.target.value,
+                      });
+                    }}
+                    onBlur={handleEditConfirm}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleEditConfirm();
+                      } else if (e.key === "Escape") {
+                        handleEditCancel();
+                      }
+                    }}
+                    autoFocus
+                  />
+                }
+                editing={fieldEditing === "lastName"}
+                editButton={editButton(() => setFieldEditing("lastName"))}
+                handleEditConfirm={handleEditConfirm}
+                handleEditCancel={handleEditCancel}
+              />
+              <UserProfileRow
+                label={t("email")}
+                value={
+                  <span>{user.email}</span>
+                  // <div>
+                  //   <span>{t("not_verified")}</span>
+                  // </div>
+                }
+                valueEditing={
+                  <TextField
+                    fullWidth
+                    type="email"
+                    name="email"
+                    value={userState.email}
+                    onChange={(e) => {
+                      setUserState({
+                        ...userState,
+                        email: e.target.value,
+                      });
+                    }}
+                    onBlur={handleEditConfirm}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleEditConfirm();
+                      } else if (e.key === "Escape") {
+                        handleEditCancel();
+                      }
+                    }}
+                    autoFocus
+                  />
+                }
+                editing={fieldEditing === "email"}
+                editButton={editButton(() => setFieldEditing("email"))}
+                handleEditConfirm={handleEditConfirm}
+                handleEditCancel={handleEditCancel}
+              />
+              <UserProfileRow
+                label={t("password")}
+                value={<span>●●●●●●●●●</span>}
+                valueEditing={<></>}
+                editing={false}
+                editButton={
                   <ChangePasswordDialog
                     lng={lng}
                     handleUpdatePassword={handleUpdatePassword}
                   />
-                </TableCell>
-              </TableRow>
-              <TableRow
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell sx={{ paddingY: 0 }}>{t("language")}</TableCell>
-                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-                  {fieldEditing === "language" ? (
-                    <FormControl fullWidth>
-                      <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        value={userState.language}
-                        onChange={handleChange}
-                      >
-                        {Object.keys(languages).map((lang) => (
-                          <MenuItem key={lang} value={lang}>
-                            {languages[lang]}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  ) : (
-                    <Typography>{languages[user.language]}</Typography>
-                  )}
-                </TableCell>
-                <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
-                  {fieldEditing === "language" ? (
-                    <>
-                      <IconButton onClick={handleEditConfirm}>
-                        <CheckIcon />
-                      </IconButton>
-                      <IconButton onClick={handleEditCancel}>
-                        <CloseIcon />
-                      </IconButton>
-                    </>
-                  ) : (
-                    <IconButton onClick={() => setFieldEditing("language")}>
-                      <EditIcon />
-                    </IconButton>
-                  )}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : (
-        <Box sx={{ padding: 2 }}>{t("no_user_found")}</Box>
+                }
+                handleEditConfirm={handleEditConfirm}
+                handleEditCancel={handleEditCancel}
+              />
+              <UserProfileRow
+                label={t("language")}
+                value={<span>{languages[user.language]}</span>}
+                valueEditing={
+                  <FormControl fullWidth>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={userState.language}
+                      onChange={handleChange}
+                    >
+                      {Object.keys(languages).map((lang) => (
+                        <MenuItem key={lang} value={lang}>
+                          {languages[lang]}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                }
+                editing={fieldEditing === "language"}
+                editButton={editButton(() => setFieldEditing("language"))}
+                handleEditConfirm={handleEditConfirm}
+                handleEditCancel={handleEditCancel}
+              />
+            </div>
+          ) : (
+            <Box sx={{ padding: 2 }}>{t("no_user_found")}</Box>
+          )}
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
