@@ -6,7 +6,7 @@ authors = ["FelipeKha <felipe.kharaba@icloud.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.10,<3.13"
 flask = "^2.3.2"
 mongo-types = "^0.15.1"
 flask-jwt-extended = "^4.4.4"
