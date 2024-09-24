@@ -7,6 +7,7 @@ export type ShiftDimensionT = {
   name: string;
   entryType: string;
   entryOptions: string[];
+  deleted: boolean;
 };
 
 export type ShiftPropertyT = {

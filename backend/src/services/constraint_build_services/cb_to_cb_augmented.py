@@ -339,6 +339,9 @@ def build_missing_properties_list_and_active_shift(
         sd = next((sd for sd in shift_dimensions if sd.id == sd_id), None)
         if sd is None:
             raise ValueError("Shift dimension not found")
+        if sd.deleted:
+            mps.append(build_missing_properties_list_deleted_sd(block, sd))
+            continue
         if sd.entry_type == "bool":
             new_mp, new_active = build_missing_properties_list_and_active_shift_bool_sd(
                 block, sd
@@ -394,6 +397,30 @@ def build_missing_properties_list_and_active_shift_deleted(
             )
         )
     return mps, active
+
+
+def build_missing_properties_list_deleted_sd(
+    block: Block, sd: ShiftDimension
+) -> MissingProperty:
+    if sd.entry_type == "list":
+        sp_values_constraint = [
+            b.name for b in block.value if b.id == sd.id  # type: ignore
+        ]
+    elif sd.entry_type == "bool":
+        sp_values_constraint = list(
+            set(b.name for b in block.value if b.id == sd.id)  # type: ignore
+        )
+    else:
+        sp_values_constraint = [
+            b.name for b in block.value if b.id == sd.id  # type: ignore
+        ]
+    return MissingProperty(
+        dimension_id=sd.id,
+        is_bool=sd.entry_type == "bool",
+        dim_name=sd.name,
+        category="shift",
+        property_values=sp_values_constraint,  # type: ignore
+    )
 
 
 def build_missing_properties_list_and_active_shift_bool_sd(

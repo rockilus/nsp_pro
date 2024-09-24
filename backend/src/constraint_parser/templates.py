@@ -124,7 +124,7 @@ def build_shift_options(
         )
         for s in shifts
     ]
-    for shift_dimension in shift_dimensions:
+    for shift_dimension in [sd for sd in shift_dimensions if not sd.deleted]:
         shift_properties_sd = (
             shift_properties[shift_dimension.id]
             if shift_dimension.id in shift_properties

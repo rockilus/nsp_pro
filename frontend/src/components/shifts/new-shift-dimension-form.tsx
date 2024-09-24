@@ -99,6 +99,7 @@ export default function NewShiftDimensionForm({
         name: name,
         entryType: type,
         entryOptions: listOptions,
+        deleted: false,
       };
       const addedOK = await handleAddShiftDimension(newShiftDimension);
       if (addedOK) {
