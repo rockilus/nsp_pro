@@ -64,7 +64,8 @@ class TestEngine:
                     for i in range((end_date - start_date).days + 1)
                 ]
             ],
-            shifts=shift_names,
+            all_shifts=shift_names,
+            shifts_not_deleted=shift_names,
         )
         coverage = Coverage([])
         requests: List[Request] = []

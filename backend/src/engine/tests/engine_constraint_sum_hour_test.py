@@ -405,7 +405,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             [(w, d, s) for d in week]
             for w in constraint_sum_hard.worker_var.target
             for week in dates_weeks
-            for s in inputs.variable_space.shifts
+            for s in inputs.variable_space.all_shifts
         ]
 
         # all constraint_breaches' variables are in expected_variables

@@ -23,6 +23,7 @@ shifts = [
         staffing=2,
         is_time_off=True,
         color="#000000",
+        deleted=False,
     ),
     Shift(
         id="1",
@@ -33,6 +34,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        deleted=False,
     ),
     Shift(
         id="2",
@@ -43,6 +45,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        deleted=False,
     ),
     Shift(
         id="3",
@@ -53,6 +56,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        deleted=False,
     ),
     Shift(
         id="4",
@@ -63,6 +67,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        deleted=False,
     ),
     Shift(
         id="5",
@@ -73,6 +78,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        deleted=False,
     ),
     Shift(
         id="6",
@@ -83,6 +89,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        deleted=False,
     ),
     Shift(
         id="7",
@@ -93,6 +100,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        deleted=False,
     ),
 ]
 

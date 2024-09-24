@@ -18,7 +18,8 @@ class Model:
         workers_not_deleted: List[str],
         all_days: List[str],
         days_solving: List[str],
-        shifts: List[str],
+        all_shifts: List[str],
+        shifts_not_deleted: List[str],
         shift_durations: Dict[str, int],
         shift_start_times: Dict[Tuple, int],
         shift_end_times: Dict[Tuple, int],
@@ -28,7 +29,8 @@ class Model:
         self.workers_not_deleted = workers_not_deleted
         self.all_days = all_days
         self.days_solving = days_solving
-        self.shifts = shifts
+        self.shifts = all_shifts
+        self.shifts_not_deleted = shifts_not_deleted
 
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple, cp_model.IntVar] = {}
@@ -342,8 +344,7 @@ class Model:
         for w in self.workers_not_deleted:
             for d in self.days_solving:
                 self.model.Add(
-                    sum(self.variables[w, d, s] for s in self.shifts)  # type: ignore
-                    >= 1
+                    sum(self.variables[w, d, s] for s in self.shifts_not_deleted) >= 1
                 )
 
     def no_interval_overlap(self) -> None:

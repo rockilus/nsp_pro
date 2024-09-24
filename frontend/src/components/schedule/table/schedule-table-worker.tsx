@@ -52,12 +52,10 @@ export default function ScheduleTableWorker({
   selectedDisplay: string;
   handleCellSelection: (selectedCell: SelectedCellT) => void;
 }) {
-  const workerIdsInAssignments = new Set(
-    assignments.map((assignment) => assignment.workerId)
-  );
+  const workerIdsInAssignments = new Set(assignments.map((a) => a.workerId));
 
-  const filteredWorkers = workers.filter((worker) =>
-    workerIdsInAssignments.has(worker.id)
+  const filteredWorkers = workers.filter((w) =>
+    workerIdsInAssignments.has(w.id)
   );
 
   return (

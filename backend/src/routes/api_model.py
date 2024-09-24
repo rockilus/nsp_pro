@@ -51,6 +51,7 @@ class ShiftMessage(BaseModel):
     isTimeOff: bool
     staffing: int
     color: str
+    deleted: bool
     shiftProperties: List[ShiftPropertyMessage]
 
 

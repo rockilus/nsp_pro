@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import List
 
-from core import Assignment, Request, RequestAugmented, Worker
+from core import Assignment, Request, RequestAugmented, Shift, Worker
 from services.request_services import update_requests
 
 
@@ -9,6 +9,7 @@ def update_request_status(
     assignments: List[Assignment],
     requests: List[Request],
     workers: List[Worker],
+    shifts: List[Shift],
 ) -> List[RequestAugmented]:
     updated_requests = []
     for r in requests:
@@ -28,4 +29,4 @@ def update_request_status(
         else:
             r.status = "approved"
         updated_requests.append(r)
-    return update_requests(updated_requests, workers)
+    return update_requests(updated_requests, workers, shifts)

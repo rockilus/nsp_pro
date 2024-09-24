@@ -53,6 +53,10 @@ export default function ScheduleTableShift({
   selectedDisplay: string;
   handleCellSelection: (selectedCell: SelectedCellT) => void;
 }) {
+  const shiftIdsInAssignments = new Set(assignments.map((a) => a.shiftId));
+
+  const filteredShifts = shifts.filter((s) => shiftIdsInAssignments.has(s.id));
+
   return (
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -107,7 +111,7 @@ export default function ScheduleTableShift({
           </TableRow>
         </TableHead>
         <TableBody>
-          {shifts
+          {filteredShifts
             .filter((s) => !s.isTimeOff)
             .map((shift, shiftIndex) => (
               <TableRow key={shiftIndex}>

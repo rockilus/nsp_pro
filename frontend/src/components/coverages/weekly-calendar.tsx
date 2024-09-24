@@ -48,6 +48,7 @@ export default function WeeklyCalendar({
     staffing: 0,
     color: "",
     isTimeOff: false,
+    deleted: false,
     shiftProperties: [],
   };
 

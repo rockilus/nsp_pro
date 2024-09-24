@@ -14,7 +14,8 @@ class VariableSpace:
     workers_not_deleted: List[str]
     all_days: List[str]
     days_solving: List[str]
-    shifts: List[str]
+    all_shifts: List[str]
+    shifts_not_deleted: List[str]
 
 
 # pylint: disable=R0801

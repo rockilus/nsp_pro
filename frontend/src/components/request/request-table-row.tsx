@@ -71,9 +71,18 @@ export default function RequestTableRow({
     );
   };
 
-  const getShiftName = (shiftId: string): string | undefined => {
+  const getShiftName = (shiftId: string): ReactElement => {
     const shift = shifts.find((shift) => shift.id === shiftId);
-    return shift?.name;
+    return (
+      <div className="name-cell">
+        <span>{shift?.name}</span>
+        {shift?.deleted && (
+          <span className="missing">
+            {t("no")} <strong>{shift?.name}</strong> {t("shift").toLowerCase()}
+          </span>
+        )}
+      </div>
+    );
   };
 
   const formatDate = (date: dayjs.Dayjs): string => {
@@ -149,7 +158,7 @@ export default function RequestTableRow({
                 lng={lng}
                 request={request}
                 workers={workers.filter((worker) => !worker.deleted)}
-                shifts={shifts}
+                shifts={shifts.filter((shift) => !shift.deleted)}
                 handleClose={() => {
                   setOpen(false);
                 }}

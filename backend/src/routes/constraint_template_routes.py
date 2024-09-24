@@ -55,7 +55,7 @@ async def get_constraint_templates(
                 worker_properties_wd[wd_id] = []
             worker_properties_wd[wd_id].append(wp)
         worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id)
-        shifts = shift_db.get_shifts(team_id)
+        shifts = shift_db.get_shifts_not_deleted(team_id)
         shift_properties = shift_property_db.get_shift_properties_by_shift_ids(
             [s.id for s in shifts]
         )

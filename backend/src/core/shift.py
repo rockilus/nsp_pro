@@ -15,6 +15,7 @@ class Shift:
     staffing: int
     is_time_off: bool
     color: str
+    deleted: bool
 
 
 @dataclass

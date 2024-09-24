@@ -25,6 +25,7 @@ export type ShiftT = {
   isTimeOff: boolean;
   staffing: number;
   color: string;
+  deleted: boolean;
   shiftProperties: ShiftPropertyT[];
 };
 

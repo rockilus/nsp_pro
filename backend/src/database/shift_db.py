@@ -39,6 +39,15 @@ class ShiftDB:
             handle_get_document_error(e)
         return [doc_to_core_shift(s) for s in list(shifts)]
 
+    def get_shifts_not_deleted(self, team_id: str) -> List[Shift]:
+        try:
+            # pylint: disable=no-member
+            shifts = ShiftDocument.objects(team=team_id, deleted=False)  # type: ignore
+        except Exception as e:
+            log_info("Failed to get all shifts from database")
+            handle_get_document_error(e)
+        return [doc_to_core_shift(s) for s in list(shifts)]
+
     def get_work_shifts(self, team_id: str) -> List[Shift]:
         try:
             # pylint: disable=no-member
@@ -98,6 +107,19 @@ class ShiftDB:
             log_info("Failed to delete shift from database")
             handle_delete_document_error(e)
 
+    def logical_delete_shift(self, shift_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            shift = ShiftDocument.objects.get(id=shift_id)  # type: ignore
+        except Exception as e:
+            log_info("Failed to get shift by id to logical delete from database")
+            handle_get_document_error(e)
+        try:
+            shift.update(set__deleted=True)
+        except Exception as e:
+            log_info("Failed to logical delete shift from database")
+            handle_save_document_error(e)
+
 
 # Mappers
 # core to document
@@ -118,6 +140,7 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
             staffing=dataclass_obj.staffing,
             is_time_off=dataclass_obj.is_time_off,
             color=dataclass_obj.color,
+            deleted=dataclass_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert Shift to ShiftDocument")
@@ -137,6 +160,7 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             staffing=doc_obj.staffing,
             is_time_off=doc_obj.is_time_off,
             color=doc_obj.color,
+            deleted=doc_obj.deleted,
         )
     except Exception as e:
         log_info("Failed to convert ShiftDocument to Shift")

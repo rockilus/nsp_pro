@@ -47,7 +47,8 @@ def core_to_engine_inputs(
         workers_not_deleted=[w.id for w in workers if not w.deleted],
         all_days=_build_day_coordinates(start_date_hist, end_date),
         days_solving=_build_day_coordinates(start_date, end_date),
-        shifts=[shift.id for shift in shifts],
+        all_shifts=[shift.id for shift in shifts],
+        shifts_not_deleted=[s.id for s in shifts if not s.deleted],
     )
     coverage_engine = CoverageEngine(
         [ShiftDemandEngine(**sd.__dict__) for sd in shift_demand_dates]
@@ -58,13 +59,13 @@ def core_to_engine_inputs(
         workers,
         _build_day_coordinates(start_date_hist, end_date_hist),
         _build_day_coordinates(start_date, end_date),
-        variable_space.shifts,
+        shifts,
         fixed_assignments,
     )
     sol_hint_engine = core_to_engine_sol_hint(
         variable_space.all_workers,
         _build_day_coordinates(start_date, end_date),
-        variable_space.shifts,
+        variable_space.all_shifts,
         wip_assignments,
     )
     dates = _build_dates(start_date_hist, end_date)
@@ -119,10 +120,12 @@ def core_to_engine_fixed_values(
     workers: List[Worker],
     days_not_solving: List[str],
     days_solving: List[str],
-    shifts: List[str],
+    shifts: List[Shift],
     assignments: List[Assignment],
 ) -> Dict[Tuple[str, str, str], int]:
-    out = {(w.id, d, s): 0 for w in workers for d in days_not_solving for s in shifts}
+    out = {
+        (w.id, d, s.id): 0 for w in workers for d in days_not_solving for s in shifts
+    }
     for a in assignments:
         out[
             a.worker_id,
@@ -132,7 +135,11 @@ def core_to_engine_fixed_values(
     for w in [w for w in workers if w.deleted]:
         for d in days_solving:
             for s in shifts:
-                out[w.id, d, s] = 0
+                out[w.id, d, s.id] = 0
+    for w in workers:
+        for d in days_solving:
+            for s in [s for s in shifts if s.deleted]:
+                out[w.id, d, s.id] = 0
     return out
 
 

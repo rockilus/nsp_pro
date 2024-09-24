@@ -65,6 +65,29 @@ async def get_shifts(
     try:
         if not await authz_check(session.get_user_id(), "read-shifts", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read shifts")
+        shifts = shift_db.get_shifts_not_deleted(team_id)
+        shifts_properties = [
+            shift_property_db.get_shift_properties_by_shift_id(shift.id)
+            for shift in shifts
+        ]
+        response = [
+            core_to_msg_shift_and_properties(s, sp)
+            for s, sp in zip(shifts, shifts_properties)
+        ]
+    except Exception as e:
+        log_info("Failed to get shifts")
+        handle_routes_errors(e)
+    return response
+
+
+@router.get("/shifts/all/teams/{team_id}")
+async def get_all_shifts(
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> List[ShiftMessage]:
+    try:
+        if not await authz_check(session.get_user_id(), "read-shifts", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = shift_db.get_shifts(team_id)
         shifts_properties = [
             shift_property_db.get_shift_properties_by_shift_id(shift.id)

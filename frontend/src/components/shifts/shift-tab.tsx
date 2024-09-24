@@ -73,6 +73,7 @@ export default function ShiftTab({
       isTimeOff: isRest,
       staffing: 1,
       color: "grey",
+      deleted: false,
       shiftProperties: [],
     });
     setShifts([...shifts, addedShift]);

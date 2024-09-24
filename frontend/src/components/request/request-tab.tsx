@@ -122,7 +122,7 @@ export default function RequestTab({
                     active: true,
                   }}
                   workers={workers.filter((w) => !w.deleted)}
-                  shifts={shifts}
+                  shifts={shifts.filter((s) => !s.deleted)}
                   handleClose={handleClosePopoverRhs}
                   handleAddRequest={handleAddRequest}
                   handleUpdateRequest={handleUpdateRequest}

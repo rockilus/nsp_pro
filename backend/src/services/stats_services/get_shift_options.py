@@ -6,7 +6,7 @@ from scripts.setup_database import shift_db, shift_dimension_db, shift_property_
 
 
 def get_shift_options(team_id: str) -> List[ShiftWorkerOption]:
-    shifts = shift_db.get_shifts(team_id)
+    shifts = shift_db.get_shifts_not_deleted(team_id)
     shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
     # pylint: disable=R0801
     shift_properties = shift_property_db.get_shift_properties_by_shift_ids(
