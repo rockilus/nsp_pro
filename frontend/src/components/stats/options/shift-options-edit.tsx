@@ -334,7 +334,7 @@ export default function ShiftOptionsEdit({
                       >
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText
-                            primary={option.name}
+                            primary={getShiftWorkerOptionDisplayName(option)}
                             style={{ color: ConstraintDefaultColors.shade3 }}
                           />
                         </ListItem>

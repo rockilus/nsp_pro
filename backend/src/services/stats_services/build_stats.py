@@ -54,14 +54,14 @@ def build_stats(
     stats_options: StatsOptions,
 ) -> Stats:
     schedules = schedule_db.get_schedules(team_id)
-    workers = worker_db.get_workers(team_id)
+    workers = worker_db.get_workers_not_deleted(team_id)
     start_date, end_date, date_to_i = build_dates(
         stats_options.time_frame,
         stats_options.start_date,
         stats_options.end_date,
         schedules,
     )
-    shifts = shift_db.get_shifts(team_id)
+    shifts = shift_db.get_shifts_not_deleted(team_id)
     shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
     assignments = assignment_db.get_assignments_by_dates(
