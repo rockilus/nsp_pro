@@ -1,5 +1,6 @@
 {
     "add": "Ajouter",
+    "annual_leave": "Congés (jours)",
     "cancel": "Annuler",
     "name": "Nom",
     "delete": "Supprimer",
@@ -16,6 +17,7 @@
     "type_int": "Nombre",
     "type_bool": "Vrai/Faux",
     "type_list": "Tags",
+    "weekly_hours": "Heures hebdomadaires",
     "worker": "Travailleur",
     "workers": "Travailleurs"
 }
