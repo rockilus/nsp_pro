@@ -9,6 +9,8 @@ class Worker:
     id: str
     team_id: str
     name: str
+    weekly_hours: int  # in hours
+    annual_leave: int  # in days
     deleted: bool
 
 

@@ -1,5 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import BooleanField, ReferenceField, StringField
+from mongoengine.fields import BooleanField, IntField, ReferenceField, StringField
 
 
 class Worker(Document):
@@ -8,4 +8,6 @@ class Worker(Document):
     id = StringField(primary_key=True, required=True)
     team = ReferenceField("Team", required=True)
     name = StringField(required=True)
+    weekly_hours = IntField(required=True)
+    annual_leave = IntField(required=True)
     deleted = BooleanField(required=True)

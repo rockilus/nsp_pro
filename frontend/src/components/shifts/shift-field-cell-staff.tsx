@@ -16,11 +16,13 @@ export default function ShiftFieldCellStaff({
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateShift: (updatedShift: ShiftT) => void;
 }) {
-  const [valueState, setValueState] = useState<number>(shift.staffing);
+  const [valueState, setValueState] = useState<number | "">(shift.staffing);
 
   const handleEditConfirm = () => {
-    if (valueState !== shift.staffing) {
+    if (valueState !== shift.staffing && valueState !== "") {
       handleUpdateShift({ ...shift, staffing: valueState });
+    } else if (valueState === "") {
+      setValueState(shift.staffing);
     }
     setEditing({});
   };
@@ -43,7 +45,9 @@ export default function ShiftFieldCellStaff({
           type="number"
           name="Staffing"
           value={valueState}
-          onChange={(e) => setValueState(Number(e.target.value))}
+          onChange={(e) =>
+            setValueState(e.target.value === "" ? "" : Number(e.target.value))
+          }
           onBlur={handleEditConfirm}
           onKeyDown={(e) => {
             if (e.key === "Enter") {

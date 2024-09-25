@@ -1,5 +1,6 @@
 {
     "add": "Añadir",
+    "annual_leave": "Vacaciones (días)",
     "cancel": "Cancelar",
     "delete": "Eliminar",
     "delete_confirm": "Eliminar para todos",
@@ -16,6 +17,7 @@
     "type_int": "Número",
     "type_bool": "Si/No",
     "type_list": "Tags",
+    "weekly_hours": "Horas semanales",
     "workers": "Trabajadores",
     "worker": "Trabajador"
 }

@@ -18,6 +18,8 @@ export type WorkerT = {
   id: string;
   teamId: string;
   name: string;
+  weeklyHours: number;
+  annualLeave: number;
   deleted: boolean;
   workerProperties: WorkerPropertyT[];
 };
