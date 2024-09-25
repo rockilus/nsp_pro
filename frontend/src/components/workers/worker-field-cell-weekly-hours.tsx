@@ -6,7 +6,7 @@ import TextField from "@mui/material/TextField";
 // Types
 import { WorkerT } from "../../types/worker";
 
-export default function WorkerFieldCellName({
+export default function WorkerFieldCellWeeklyHours({
   worker,
   editing,
   setEditing,
@@ -17,37 +17,41 @@ export default function WorkerFieldCellName({
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }) {
-  const [valueState, setValueState] = useState<string>(worker.name);
+  const [valueState, setValueState] = useState<number | "">(worker.weeklyHours);
 
   const handleEditConfirm = async () => {
-    if (valueState !== worker.name) {
+    if (valueState !== worker.weeklyHours && valueState !== "") {
       handleUpdateWorker({
         ...worker,
-        name: valueState,
+        weeklyHours: valueState,
       });
+    } else if (valueState === "") {
+      setValueState(worker.weeklyHours);
     }
     setEditing({});
   };
 
   const handleEditCancel = () => {
     setEditing({});
-    setValueState(worker.name);
+    setValueState(worker.weeklyHours);
   };
 
   return (
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [worker.id]: "name" })}
+      onClick={() => setEditing({ [worker.id]: "weeklyHours" })}
       sx={{ paddingY: 0 }}
     >
       {editing ? (
         <TextField
           fullWidth
-          type="text"
-          name="Name"
+          type="number"
+          name="Weekly Hours"
           value={valueState}
-          onChange={(e) => setValueState(e.target.value)}
+          onChange={(e) =>
+            setValueState(e.target.value === "" ? "" : Number(e.target.value))
+          }
           onBlur={handleEditConfirm}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -60,7 +64,7 @@ export default function WorkerFieldCellName({
         />
       ) : (
         <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
-          {worker.name}
+          {worker.weeklyHours}
         </Box>
       )}
     </TableCell>

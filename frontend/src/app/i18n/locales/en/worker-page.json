@@ -1,5 +1,6 @@
 {
     "add": "Add",
+    "annual_leave": "Annual leave (days)",
     "cancel": "Cancel",
     "delete": "Delete",
     "delete_confirm": "Delete all",
@@ -16,6 +17,7 @@
     "type_int": "Number",
     "type_list": "Tags",
     "type_str": "Text",
+    "weekly_hours": "Weekly hours",
     "worker": "Worker",
     "workers": "Workers"
 }
