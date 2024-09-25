@@ -54,6 +54,8 @@ export default function WorkerTab({
       id: "",
       teamId: selectedTeamId,
       name: "",
+      weeklyHours: 39,
+      annualLeave: 25,
       deleted: false,
       workerProperties: [],
     });

@@ -18,7 +18,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Styles
-import "./coverage-selector.css";
+import "./coverage-campaign-config.css";
 import "../../styles/text-styles.css";
 // Types
 import { CoverageSelectorT } from "../../types/campaign";
@@ -27,7 +27,7 @@ import { ScheduleT } from "../../types/schedule";
 
 dayjs.extend(utc);
 
-export default function CoverageSelector({
+export default function CoverageCampaignConfig({
   lng,
   schedule,
   coverageSelectors,
@@ -102,7 +102,7 @@ export default function CoverageSelector({
   };
 
   return (
-    <div className="coverage-selector-container">
+    <div className="coverage-campaign-config-container">
       <span className="title">{t("planners")}</span>
       <div className="coverage-selector-table-container">
         <TableContainer sx={{ overflow: "hidden" }}>

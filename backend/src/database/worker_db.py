@@ -117,6 +117,8 @@ def core_to_doc_worker(dataclass_obj: Worker) -> WorkerDocument:
             id=dataclass_obj.id,
             team=team,
             name=dataclass_obj.name,
+            weekly_hours=dataclass_obj.weekly_hours,
+            annual_leave=dataclass_obj.annual_leave,
             deleted=dataclass_obj.deleted,
         )
     except Exception as e:
@@ -132,6 +134,8 @@ def doc_to_core_worker(doc_obj: WorkerDocument) -> Worker:
             id=doc_obj.id,
             team_id=str(doc_obj.team.id),
             name=str(doc_obj.name) if doc_obj.name is not None else "",
+            weekly_hours=doc_obj.weekly_hours,
+            annual_leave=doc_obj.annual_leave,
             deleted=doc_obj.deleted,
         )
     except Exception as e:

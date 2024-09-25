@@ -3,7 +3,7 @@ import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
 // Components
-import CoverageSelector from "./coverage-selector";
+import CoverageCampaignConfig from "./coverage-campaign-config";
 import ScheduleSelector from "./schedule-selector";
 import ConstraintSelector from "./constraint-selector";
 // Skeletons
@@ -142,7 +142,7 @@ export default function CampaignTab({
             handleUpdateSchedule={handleUpdateSchedule}
           />
           <div className="divider" />
-          <CoverageSelector
+          <CoverageCampaignConfig
             lng={lng}
             schedule={schedule}
             coverageSelectors={coverageSelectors}
