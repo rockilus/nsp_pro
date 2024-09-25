@@ -7,9 +7,11 @@ import { toBreachT, getBreaches } from "./breach";
 import { toRequestT, getRequests } from "./request";
 import { getAllWorkers } from "./worker";
 import { getAllShifts } from "./shift";
+import { getStats } from "./stats";
 // Types
 import { ScheduleT, AssignmentT, BreachT } from "../../types/schedule";
 import { RequestT } from "../../types/request";
+import { StatsOptionsT } from "../../types/stats";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -189,6 +191,14 @@ export async function getScheduleTabData(
   teamId: string
 ) {
   try {
+    const statsOptions: StatsOptionsT = {
+      timeFrame: "last_12_months",
+      startDate: dayjs.utc().startOf("day").subtract(1, "year"),
+      endDate: dayjs.utc().startOf("day"),
+      statsUnit: "custom",
+      headerUnit: "week",
+      selectedShifts: [],
+    };
     const campaignTabData = await Promise.all([
       getAssignments(startDate, endDate, teamId),
       getBreaches(teamId),
@@ -196,6 +206,7 @@ export async function getScheduleTabData(
       getSchedule(teamId),
       getAllShifts(teamId),
       getAllWorkers(teamId),
+      getStats(statsOptions, teamId),
     ]);
     return {
       assignments: campaignTabData[0],
@@ -204,6 +215,7 @@ export async function getScheduleTabData(
       schedule: campaignTabData[3],
       shifts: campaignTabData[4],
       workers: campaignTabData[5],
+      stats: campaignTabData[6],
     };
   } catch (error) {
     console.error("Failed to fetch schedule tab data:", error);
