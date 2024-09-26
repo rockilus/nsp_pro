@@ -12,6 +12,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import ToggleButton from "@mui/material/ToggleButton";
 // Components
 import NewShiftDimensionForm from "./new-shift-dimension-form";
 import PopoverRHS from "../inputs/popover-rhs";
@@ -69,6 +70,7 @@ export default function ShiftTable({
 }) {
   const { t } = useTranslation(lng, "shift-page");
 
+  const [showLeaves, setShowLeaves] = useState(false);
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
@@ -85,10 +87,36 @@ export default function ShiftTable({
     list: [],
   };
 
+  const displayedShifts: ShiftT[] = isRest
+    ? showLeaves
+      ? shifts
+      : shifts.filter((s) => s.leaveType === ShiftLeaveType.NONE)
+    : shifts;
+
   return (
     <div>
       <div className="title-container">
-        <span className="title">{isRest ? t("rest_shifts") : t("shifts")}</span>
+        <div>
+          <span className="title">
+            {isRest ? t("rest_shifts") : t("shifts")}
+          </span>
+          {isRest && (
+            <ToggleButton
+              value="breaches"
+              sx={{
+                textTransform: "none",
+                height: "35px",
+                fontSize: "0.9rem",
+                marginLeft: "20px",
+              }}
+              selected={showLeaves}
+              onClick={() => setShowLeaves(!showLeaves)}
+            >
+              {/* {t("breaches")} */}
+              Show leaves
+            </ToggleButton>
+          )}
+        </div>
         <PopoverRHS
           title={t("new_property")}
           buttonContent={<TableAddButton text={t("property")} />}
@@ -128,7 +156,7 @@ export default function ShiftTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {shifts.map((shift, shiftIndex) => (
+            {displayedShifts.map((shift, shiftIndex) => (
               <TableRow
                 key={shiftIndex}
                 sx={{
