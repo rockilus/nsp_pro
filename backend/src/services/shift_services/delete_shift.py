@@ -1,4 +1,5 @@
 # pylint: disable=R0801
+from core import ShiftLeaveType
 from scripts.setup_database import (
     constraint_db,
     objective_breach_db,
@@ -9,6 +10,11 @@ from scripts.setup_database import (
 
 
 def delete_shift(shift_id: str) -> None:
+    shift = shift_db.get_shift_by_id(shift_id)
+    if shift is None:
+        raise ValueError("Shift does not exist")
+    if shift.leave_type != ShiftLeaveType.NONE:
+        raise ValueError("Cannot delete a leave shift")
     delete_shift_from_schedule_quick_staffing(shift_id)
     shift_demand_db.delete_shift_demands_by_shift_id(shift_id)
     shift_db.logical_delete_shift(shift_id)

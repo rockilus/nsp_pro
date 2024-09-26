@@ -20,6 +20,7 @@ from routes.api_model import ShiftMessage, ShiftPropertyMessage
 from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
 from services.shift_services import create_or_update_shift_property
 from services.shift_services import delete_shift as delete_shift_service
+from services.shift_services import update_shift as update_shift_service
 
 router = APIRouter()
 
@@ -115,7 +116,7 @@ async def update_shift(
         ):
             raise NotAuthorizedError("You do not have permission to update shifts")
         shift_data = msg_to_core_to_shift(shift)
-        updated_shift = shift_db.update_shift(shift_data)
+        updated_shift = update_shift_service(shift_data)
         shift_properties = shift_property_db.get_shift_properties_by_shift_id(
             updated_shift.id
         )
