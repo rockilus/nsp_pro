@@ -9,6 +9,12 @@
   font-size: 1.1rem;
   color: #3c4043;
   font-weight: 550;
+  height: 25px;
+}
+
+.column-header.quick-stats {
+  font-size: 0.8rem;
+  height: 20px;
 }
 
 .column-header-custom-info {
@@ -17,12 +23,37 @@
   justify-content: center;
 }
 
+.column-header-stats-unit {
+  font-size: 0.8rem;
+  color: #3c4043;
+  font-weight: 400;
+  height: 19px;
+}
+
+.column-header-stats-unit.quick-stats {
+  font-size: 0.7rem;
+  height: 15px;
+}
+
+.column-header-shift-name {
+  font-size: 0.8rem;
+  color: #3c4043;
+  font-weight: 400;
+  font-style: italic;
+  height: 19px;
+}
+
+.column-header-shift-name.quick-stats {
+  font-size: 0.7rem;
+  height: 15px;
+}
+
 .custom-button {
   width: 70px;
   height: 100%;
   border-radius: 4px;
   padding: 0;
-  margin: 0 10px;
+  margin: 5px 10px 0 10px;
   font-size: 0.8rem;
   font-weight: bold;
   color: #1976d2;
@@ -35,4 +66,25 @@
 
 .custom-button:hover {
   background-color: #f1f3f4;
+}
+
+.row-worker-name {
+  font-size: 0.875rem;
+  color: #3c4043;
+  font-weight: 400;
+}
+
+.row-worker-name.quick-stats {
+  font-size: 0.7rem;
+  font-weight: 550;
+}
+
+.row-value {
+  font-size: 0.875rem;
+  color: #3c4043;
+  font-weight: 400;
+}
+
+.row-value.quick-stats {
+  font-size: 0.8rem;
 }

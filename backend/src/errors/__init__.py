@@ -25,6 +25,7 @@ from errors.routes_errors.routes_errors import (
     NotAuthorizedError,
     PasswordsDoNotMatchError,
 )
+from errors.stats_errors.stats_errors import NoCampaignError
 
 __all__ = [
     "handle_supertokens_errors",
@@ -48,4 +49,5 @@ __all__ = [
     "handle_routes_errors",
     "NotAuthorizedError",
     "PasswordsDoNotMatchError",
+    "NoCampaignError",
 ]

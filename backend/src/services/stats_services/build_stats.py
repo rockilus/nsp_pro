@@ -13,6 +13,7 @@ from core import (
     StatsOptions,
     Worker,
 )
+from errors import NoCampaignError
 from scripts.setup_database import (
     assignment_db,
     schedule_db,
@@ -55,12 +56,15 @@ def build_stats(
 ) -> Stats:
     schedules = schedule_db.get_schedules(team_id)
     workers = worker_db.get_workers_not_deleted(team_id)
-    start_date, end_date, date_to_i = build_dates(
-        stats_options.time_frame,
-        stats_options.start_date,
-        stats_options.end_date,
-        schedules,
-    )
+    try:
+        start_date, end_date, date_to_i = build_dates(
+            stats_options.time_frame,
+            stats_options.start_date,
+            stats_options.end_date,
+            schedules,
+        )
+    except NoCampaignError as e:
+        raise e
     shifts = shift_db.get_shifts_not_deleted(team_id)
     shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
     shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()

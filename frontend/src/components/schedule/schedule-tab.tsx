@@ -10,6 +10,7 @@ import Typography from "@mui/material/Typography";
 import AssignmentOptions from "./lhs-tabs/assignment-options";
 import BreachList from "./lhs-tabs/breach-list";
 import QuickStaffingTable from "./lhs-tabs/quick-staffing";
+import QuickStatsTable from "./lhs-tabs/quick-stats";
 import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
@@ -23,6 +24,7 @@ import {
   updateSchedule,
 } from "../../app/lib/schedule";
 import { getAssignments, updateAssignment } from "../../app/lib/assignment";
+import { getStats } from "../../app/lib/stats";
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
@@ -35,6 +37,7 @@ import {
   SelectedCellT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
+import { StatsT } from "../../types/stats";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -55,6 +58,7 @@ export default function ScheduleTab({
   const [schedule, setSchedule] = useState<ScheduleT | null>(null);
   const [assignments, setAssignments] = useState<AssignmentT[]>([]);
   const [breaches, setBreaches] = useState<BreachT[]>([]);
+  const [stats, setStats] = useState<StatsT | null>(null);
 
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
@@ -70,6 +74,9 @@ export default function ScheduleTab({
   );
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
+
+  const [selectedQuickStatsTimeFrame, setSelectedQuickStatsTimeFrame] =
+    useState<string>("campaign");
 
   const toggleTab = (tabName: string) => {
     if (selectedTab === tabName) {
@@ -243,6 +250,27 @@ export default function ScheduleTab({
     setAssignments(assigmentsNewPeriod);
   };
 
+  //////////////////////////
+  // Assignment Actions
+  //////////////////////////
+
+  const handleChangeStatsTimeFrame = async (timeFrame: string) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    const newStatsOptions = {
+      timeFrame,
+      startDate: dayjs.utc().startOf("day").subtract(1, "year"),
+      endDate: dayjs.utc().startOf("day"),
+      statsUnit: "custom",
+      headerUnit: "week",
+      selectedShifts: [],
+    };
+    const newStats = await getStats(newStatsOptions, selectedTeamId);
+    setStats(newStats);
+    setSelectedQuickStatsTimeFrame(timeFrame);
+  };
+
   useEffect(() => {
     const fetchScheduleTabData = async () => {
       setIsLoading(true);
@@ -254,6 +282,7 @@ export default function ScheduleTab({
           schedule: fetchedSchedule,
           workers: fetchedWorkers,
           shifts: fetchedShifts,
+          stats: fetchedStats,
         } = await getScheduleTabData(
           currentPeriodStart,
           currentPeriodEnd,
@@ -265,6 +294,7 @@ export default function ScheduleTab({
         setSchedule(fetchedSchedule);
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
+        setStats(fetchedStats);
         setIsLoading(false);
       }
     };
@@ -291,6 +321,16 @@ export default function ScheduleTab({
         assignments={assignments}
         schedule={schedule as ScheduleT}
         handleUpdateSchedule={handleUpdateSchedule}
+      />
+    ) : null,
+    "Quick stats": stats ? (
+      <QuickStatsTable
+        lng={lng}
+        shifts={shifts.filter((s) => !s.deleted)}
+        workers={workers.filter((w) => !w.deleted)}
+        stats={stats}
+        selectedQuickStatsTimeFrame={selectedQuickStatsTimeFrame}
+        handleChangeStatsTimeFrame={handleChangeStatsTimeFrame}
       />
     ) : null,
     "Selected assignment": selectedCell ? (

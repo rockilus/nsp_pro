@@ -176,6 +176,7 @@ export default function StatsTab({
                   workers={workers}
                   shifts={shifts}
                   statsUnitOptions={statsUnitOptions}
+                  quickStats={false}
                   handleAddHeader={handleAddHeader}
                   handleDeleteHeader={handleDeleteHeader}
                 />

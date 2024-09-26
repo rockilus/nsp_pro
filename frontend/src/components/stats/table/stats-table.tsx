@@ -23,6 +23,7 @@ export default function StatsTable({
   workers,
   shifts,
   statsUnitOptions,
+  quickStats,
   handleAddHeader,
   handleDeleteHeader,
 }: {
@@ -32,6 +33,7 @@ export default function StatsTable({
   workers: WorkerT[];
   shifts: ShiftT[];
   statsUnitOptions: Record<string, string>[];
+  quickStats: boolean;
   handleAddHeader: (header: StatsHeaderT) => void;
   handleDeleteHeader: (headerId: string) => void;
 }) {
@@ -129,47 +131,58 @@ export default function StatsTable({
             {stats.statsHeaders.map((header, headerIndex) => (
               <TableCell key={headerIndex} align="center" sx={{ padding: 0 }}>
                 <div className="column-header-container">
-                  <span className="column-header">
+                  <span
+                    className={`column-header ${
+                      quickStats ? "quick-stats" : ""
+                    }`}
+                  >
                     {header.headerUnit === "shift"
                       ? shifts.find((s) => s.id === header.value)?.name
                       : translateHeaderValue(header.value)}
                   </span>
                   {showingCustom && (
                     <div className="column-header-custom-info">
-                      <Typography variant="body1" sx={{ fontSize: "0.8rem" }}>
+                      <span
+                        className={`column-header-stats-unit ${
+                          quickStats ? "quick-stats" : ""
+                        }`}
+                      >
                         {statsUnitOptions.find(
                           (u) => u.name === header.statsUnit
                         )?.label || header.statsUnit}
-                      </Typography>
-                      <Typography
-                        variant="body1"
-                        sx={{ fontStyle: "italic", fontSize: "0.8rem" }}
+                      </span>
+                      <span
+                        className={`column-header-shift-name ${
+                          quickStats ? "quick-stats" : ""
+                        }`}
                       >
                         {header.selectedShifts
                           .map((ss) =>
                             ss.name === "all shifts" ? t("all_shifts") : ss.name
                           )
-                          .join(", ")}{" "}
-                      </Typography>
+                          .join(", ")}
+                      </span>
                     </div>
                   )}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <button
-                      className={`custom-button ${
-                        header.inCustom ? "in-custom" : ""
-                      }`}
-                      onClick={() => handleAddDeleteHeaderToCustom(header)}
+                  {!quickStats && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
                     >
-                      {t("custom")}
-                    </button>
-                  </div>
+                      <button
+                        className={`custom-button ${
+                          header.inCustom ? "in-custom" : ""
+                        }`}
+                        onClick={() => handleAddDeleteHeaderToCustom(header)}
+                      >
+                        {t("custom")}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </TableCell>
             ))}
@@ -178,8 +191,17 @@ export default function StatsTable({
         <TableBody>
           {workers.map((worker, wIndex) => (
             <TableRow key={wIndex}>
-              <TableCell align="left" sx={{ padding: 0 }}>
-                {worker.name}
+              <TableCell
+                align="left"
+                sx={{ padding: 0, height: quickStats ? "25px" : "30px" }}
+              >
+                <span
+                  className={`row-worker-name ${
+                    quickStats ? "quick-stats" : ""
+                  }`}
+                >
+                  {worker.name}
+                </span>
               </TableCell>
               {stats.statsHeaders.map((header, headerIndex) => {
                 const statsValue: StatsValueT | null =
@@ -191,9 +213,15 @@ export default function StatsTable({
                     <TableCell
                       key={wIndex + headerIndex}
                       align="center"
-                      sx={{ height: "30px", padding: 0 }}
+                      sx={{ padding: 0 }}
                     >
-                      {statsValue.value}
+                      <span
+                        className={`row-value ${
+                          quickStats ? "quick-stats" : ""
+                        }`}
+                      >
+                        {statsValue.value}
+                      </span>
                     </TableCell>
                   )
                 );
