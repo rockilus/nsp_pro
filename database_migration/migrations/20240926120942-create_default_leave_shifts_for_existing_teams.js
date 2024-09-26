@@ -4,9 +4,17 @@ module.exports = {
   async up(db, client) {
     const teams = await db.collection('teams').find({}).toArray();
     const referenceTime = new Date();
-    const referenceTimeStart = new Date(referenceTime).setUTCHours(0, 0, 0, 0);
-    const referenceTimeEnd = new Date(new Date(referenceTime).setUTCDate(referenceTime.getUTCDate() + 1)).setUTCHours(0, 0, 0, 0);
-    const referenceTimeMidday = new Date(referenceTime).setUTCHours(12, 0, 0, 0);
+
+    const referenceTimeStart = new Date(referenceTime)
+    referenceTimeStart.setUTCHours(0, 0, 0, 0);
+
+    const referenceTimeEnd = new Date(referenceTime);
+    referenceTimeEnd.setUTCDate(referenceTime.getUTCDate() + 1);
+    referenceTimeEnd.setUTCHours(0, 0, 0, 0);
+
+
+    const referenceTimeMidday = new Date(referenceTime);
+    referenceTimeMidday.setUTCHours(12, 0, 0, 0);
 
     const leaveShifts = [
       {
@@ -202,6 +210,8 @@ module.exports = {
           const shiftCopy = JSON.parse(JSON.stringify(shift)); // Create a deep copy
           shiftCopy._id = String(new ObjectId()); // Manually set the id
           shiftCopy.team = team._id;
+          shiftCopy.start_time = new Date(shiftCopy.start_time);
+          shiftCopy.end_time = new Date(shiftCopy.end_time);
           await db.collection('shifts').insertOne(shiftCopy);
           // const result = await db.collection('shifts').insertOne(shiftCopy);
           // if (result.insertedId) {
