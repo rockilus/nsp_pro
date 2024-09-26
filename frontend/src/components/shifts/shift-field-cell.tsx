@@ -11,12 +11,14 @@ import ShiftFieldCellStaff from "./shift-field-cell-staff";
 import { ShiftT } from "../../types/shift";
 
 export default function ShiftFieldCell({
+  lng,
   shift,
   shiftField,
   editing,
   setEditing,
   handleUpdateShift,
 }: {
+  lng: string;
   shift: ShiftT;
   shiftField: string;
   editing: { [key: string]: string };
@@ -27,6 +29,7 @@ export default function ShiftFieldCell({
     <ShiftFieldCellColor shift={shift} handleUpdateShift={handleUpdateShift} />
   ) : shiftField === "name" ? (
     <ShiftFieldCellName
+      lng={lng}
       shift={shift}
       editing={editing[shift.id] === "name"}
       setEditing={setEditing}

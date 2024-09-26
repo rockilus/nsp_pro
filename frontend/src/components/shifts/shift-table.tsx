@@ -112,8 +112,7 @@ export default function ShiftTable({
               selected={showLeaves}
               onClick={() => setShowLeaves(!showLeaves)}
             >
-              {/* {t("breaches")} */}
-              Show leaves
+              {t("show_leave")}
             </ToggleButton>
           )}
         </div>
@@ -170,6 +169,7 @@ export default function ShiftTable({
                 {defaultShiftFields.map((field, index) => (
                   <ShiftFieldCell
                     key={index}
+                    lng={lng}
                     shift={shift}
                     shiftField={field.name}
                     editing={bodyEditing}

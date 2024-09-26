@@ -2,11 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
 
 from core import Shift, ShiftLeaveType, ShiftProperty
-from scripts.setup_database import (
-    shift_db,
-    shift_dimension_db,
-    shift_property_db,
-)
+from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
 
 
 def create_shift(shift: Shift) -> Tuple[Shift, List[ShiftProperty]]:
