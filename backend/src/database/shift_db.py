@@ -2,7 +2,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core import Shift
+from core import Shift, ShiftLeaveType
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -140,6 +140,7 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
             staffing=dataclass_obj.staffing,
             is_time_off=dataclass_obj.is_time_off,
             color=dataclass_obj.color,
+            leave_type=dataclass_obj.leave_type.value,
             deleted=dataclass_obj.deleted,
         )
     except Exception as e:
@@ -160,6 +161,7 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             staffing=doc_obj.staffing,
             is_time_off=doc_obj.is_time_off,
             color=doc_obj.color,
+            leave_type=ShiftLeaveType(doc_obj.leave_type),
             deleted=doc_obj.deleted,
         )
     except Exception as e:

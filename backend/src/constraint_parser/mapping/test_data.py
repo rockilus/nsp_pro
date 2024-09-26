@@ -6,6 +6,7 @@ from core import (
     Constraint,
     ConstraintBuildAugmented,
     Shift,
+    ShiftLeaveType,
     ShiftWorkerOption,
     VarDay,
     VarShift,
@@ -23,6 +24,7 @@ shifts = [
         staffing=2,
         is_time_off=True,
         color="#000000",
+        leave_type=ShiftLeaveType.NONE,
         deleted=False,
     ),
     Shift(
@@ -34,6 +36,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        leave_type=ShiftLeaveType.NONE,
         deleted=False,
     ),
     Shift(
@@ -45,6 +48,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        leave_type=ShiftLeaveType.NONE,
         deleted=False,
     ),
     Shift(
@@ -56,6 +60,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        leave_type=ShiftLeaveType.NONE,
         deleted=False,
     ),
     Shift(
@@ -67,6 +72,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        leave_type=ShiftLeaveType.NONE,
         deleted=False,
     ),
     Shift(
@@ -78,6 +84,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        leave_type=ShiftLeaveType.NONE,
         deleted=False,
     ),
     Shift(
@@ -89,6 +96,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        leave_type=ShiftLeaveType.NONE,
         deleted=False,
     ),
     Shift(
@@ -100,6 +108,7 @@ shifts = [
         staffing=2,
         is_time_off=False,
         color="#000000",
+        leave_type=ShiftLeaveType.NONE,
         deleted=False,
     ),
 ]

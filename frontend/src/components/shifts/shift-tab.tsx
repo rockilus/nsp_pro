@@ -20,7 +20,12 @@ import {
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
-import { ShiftT, ShiftDimensionT, ShiftPropertyT } from "../../types/shift";
+import {
+  ShiftT,
+  ShiftDimensionT,
+  ShiftPropertyT,
+  ShiftLeaveType,
+} from "../../types/shift";
 
 dayjs.extend(utc);
 
@@ -73,6 +78,7 @@ export default function ShiftTab({
       isTimeOff: isRest,
       staffing: 1,
       color: "grey",
+      leaveType: ShiftLeaveType.NONE,
       deleted: false,
       shiftProperties: [],
     });
