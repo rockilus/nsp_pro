@@ -88,6 +88,7 @@ export default function QuickStatsTable({
         workers={workers}
         shifts={shifts}
         statsUnitOptions={[]}
+        quickStats={true}
         handleAddHeader={() => {}}
         handleDeleteHeader={() => {}}
       />
