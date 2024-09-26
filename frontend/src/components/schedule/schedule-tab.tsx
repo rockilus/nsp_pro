@@ -24,6 +24,7 @@ import {
   updateSchedule,
 } from "../../app/lib/schedule";
 import { getAssignments, updateAssignment } from "../../app/lib/assignment";
+import { getStats } from "../../app/lib/stats";
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
@@ -73,6 +74,9 @@ export default function ScheduleTab({
   );
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
+
+  const [selectedQuickStatsTimeFrame, setSelectedQuickStatsTimeFrame] =
+    useState<string>("campaign");
 
   const toggleTab = (tabName: string) => {
     if (selectedTab === tabName) {
@@ -246,6 +250,27 @@ export default function ScheduleTab({
     setAssignments(assigmentsNewPeriod);
   };
 
+  //////////////////////////
+  // Assignment Actions
+  //////////////////////////
+
+  const handleChangeStatsTimeFrame = async (timeFrame: string) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    const newStatsOptions = {
+      timeFrame,
+      startDate: dayjs.utc().startOf("day").subtract(1, "year"),
+      endDate: dayjs.utc().startOf("day"),
+      statsUnit: "custom",
+      headerUnit: "week",
+      selectedShifts: [],
+    };
+    const newStats = await getStats(newStatsOptions, selectedTeamId);
+    setStats(newStats);
+    setSelectedQuickStatsTimeFrame(timeFrame);
+  };
+
   useEffect(() => {
     const fetchScheduleTabData = async () => {
       setIsLoading(true);
@@ -304,6 +329,8 @@ export default function ScheduleTab({
         shifts={shifts.filter((s) => !s.deleted)}
         workers={workers.filter((w) => !w.deleted)}
         stats={stats}
+        selectedQuickStatsTimeFrame={selectedQuickStatsTimeFrame}
+        handleChangeStatsTimeFrame={handleChangeStatsTimeFrame}
       />
     ) : null,
     "Selected assignment": selectedCell ? (

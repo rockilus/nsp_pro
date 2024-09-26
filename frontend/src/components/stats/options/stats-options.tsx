@@ -62,6 +62,7 @@ export default function StatsOptions({
     { name: "all", label: t("frequency_all") },
   ];
   const timeFrameOptions: Record<string, string>[] = [
+    { name: "campaign", label: t("campaign") },
     { name: "last_12_months", label: t("time_frame_ltm") },
     { name: "last_24_months", label: t("time_frame_24_months") },
     { name: "last_36_months", label: t("time_frame_36_months") },

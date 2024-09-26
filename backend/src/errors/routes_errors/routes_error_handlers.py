@@ -24,6 +24,7 @@ from errors.message_errors.message_errors import (
     MessageValueError,
 )
 from errors.routes_errors.routes_errors import NotAuthorizedError
+from errors.stats_errors.stats_errors import NoCampaignError
 from utils.constants import Constants
 
 
@@ -61,6 +62,8 @@ def handle_routes_errors(error: Exception):
             status_code=400,
             detail=error.message,
         )
+    if isinstance(error, NoCampaignError):
+        raise HTTPException(status_code=404, detail="No campaign schedule found")
     if isinstance(
         error,
         (

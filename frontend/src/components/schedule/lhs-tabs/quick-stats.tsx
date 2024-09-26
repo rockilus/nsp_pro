@@ -3,30 +3,15 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
-import AdjustIcon from "@mui/icons-material/Adjust";
-import AddIcon from "@mui/icons-material/Add";
-import Box from "@mui/material/Box";
-import ClearIcon from "@mui/icons-material/Clear";
-import IconButton from "@mui/material/IconButton";
-import Paper from "@mui/material/Paper";
-import RemoveIcon from "@mui/icons-material/Remove";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 // Components
 import StatsTable from "../../stats/table/stats-table";
+// Styles
+import "./quick-stats.css";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
-import {
-  AssignmentT,
-  ScheduleT,
-  QuickStaffingT,
-} from "../../../types/schedule";
 import { StatsT } from "../../../types/stats";
 
 dayjs.extend(isSameOrAfter);
@@ -37,11 +22,15 @@ export default function QuickStatsTable({
   shifts,
   workers,
   stats,
+  selectedQuickStatsTimeFrame,
+  handleChangeStatsTimeFrame,
 }: {
   lng: string;
   shifts: ShiftT[];
   workers: WorkerT[];
   stats: StatsT;
+  selectedQuickStatsTimeFrame: string;
+  handleChangeStatsTimeFrame: (timeFrame: string) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -62,8 +51,36 @@ export default function QuickStatsTable({
           color: "#3C4043",
         }}
       >
-        {t("quick_staffing")}
+        {t("quick_stats")}
       </span>
+      <ToggleButtonGroup
+        color="primary"
+        value={selectedQuickStatsTimeFrame}
+        exclusive
+        onChange={(event, value) => handleChangeStatsTimeFrame(value)}
+        aria-label="Platform"
+      >
+        <ToggleButton
+          value="campaign"
+          sx={{
+            textTransform: "none",
+            height: "30px",
+            fontSize: "0.8rem",
+          }}
+        >
+          {t("campaign")}
+        </ToggleButton>
+        <ToggleButton
+          value="last_12_months"
+          sx={{
+            textTransform: "none",
+            height: "30px",
+            fontSize: "0.8rem",
+          }}
+        >
+          {t("last_12_months")}
+        </ToggleButton>
+      </ToggleButtonGroup>
       <StatsTable
         lng={lng}
         stats={stats}

@@ -192,7 +192,7 @@ export async function getScheduleTabData(
 ) {
   try {
     const statsOptions: StatsOptionsT = {
-      timeFrame: "last_12_months",
+      timeFrame: "campaign",
       startDate: dayjs.utc().startOf("day").subtract(1, "year"),
       endDate: dayjs.utc().startOf("day"),
       statsUnit: "custom",
