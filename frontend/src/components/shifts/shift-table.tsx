@@ -104,11 +104,16 @@ export default function ShiftTable({
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              {defaultShiftFields.map((field, index) => (
-                <TableCell key={index} sx={{ paddingY: 0, fontWeight: "bold" }}>
-                  <span className="table-header-default">{field.label}</span>
-                </TableCell>
-              ))}
+              {defaultShiftFields
+                .filter((field) => !(isRest && field.name === "staffing"))
+                .map((field, index) => (
+                  <TableCell
+                    key={index}
+                    sx={{ paddingY: 0, fontWeight: "bold" }}
+                  >
+                    <span className="table-header-default">{field.label}</span>
+                  </TableCell>
+                ))}
               {shiftDimensions.map((sd, sdIndex) => (
                 <ShiftDimensionCell
                   key={sdIndex}
@@ -130,16 +135,18 @@ export default function ShiftTable({
                   "&:last-child td, &:last-child th": { border: 0 },
                 }}
               >
-                {defaultShiftFields.map((field, index) => (
-                  <ShiftFieldCell
-                    key={index}
-                    shift={shift}
-                    shiftField={field.name}
-                    editing={bodyEditing}
-                    setEditing={setBodyEditing}
-                    handleUpdateShift={handleUpdateShift}
-                  />
-                ))}
+                {defaultShiftFields
+                  .filter((field) => !(isRest && field.name === "staffing"))
+                  .map((field, index) => (
+                    <ShiftFieldCell
+                      key={index}
+                      shift={shift}
+                      shiftField={field.name}
+                      editing={bodyEditing}
+                      setEditing={setBodyEditing}
+                      handleUpdateShift={handleUpdateShift}
+                    />
+                  ))}
                 {shiftDimensions.map((sd, sdIndex) => {
                   const shiftProperty = shift.shiftProperties.find(
                     (sp) => sp.shiftDimensionId === sd.id
