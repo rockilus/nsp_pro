@@ -8,7 +8,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import TableCell from "@mui/material/TableCell";
 // Types
-import { ShiftT } from "../../types/shift";
+import { ShiftT, ShiftLeaveType } from "../../types/shift";
 
 dayjs.extend(utc);
 
@@ -80,8 +80,14 @@ export default function ShiftFieldCellEndTime({
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [shift.id]: "end_time" })}
-      sx={{ paddingY: 0, cursor: "pointer" }}
+      onClick={() =>
+        shift.leaveType === ShiftLeaveType.NONE &&
+        setEditing({ [shift.id]: "end_time" })
+      }
+      sx={{
+        paddingY: 0,
+        cursor: shift.leaveType === ShiftLeaveType.NONE ? "pointer" : "default",
+      }}
     >
       {editing ? (
         selectEndTime()

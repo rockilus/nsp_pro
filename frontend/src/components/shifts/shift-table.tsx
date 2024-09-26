@@ -24,7 +24,12 @@ import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
 // Types
-import { ShiftDimensionT, ShiftT, ShiftPropertyT } from "../../types/shift";
+import {
+  ShiftDimensionT,
+  ShiftT,
+  ShiftPropertyT,
+  ShiftLeaveType,
+} from "../../types/shift";
 
 dayjs.extend(utc);
 
@@ -104,16 +109,11 @@ export default function ShiftTable({
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              {defaultShiftFields
-                .filter((field) => !(isRest && field.name === "staffing"))
-                .map((field, index) => (
-                  <TableCell
-                    key={index}
-                    sx={{ paddingY: 0, fontWeight: "bold" }}
-                  >
-                    <span className="table-header-default">{field.label}</span>
-                  </TableCell>
-                ))}
+              {defaultShiftFields.map((field, index) => (
+                <TableCell key={index} sx={{ paddingY: 0, fontWeight: "bold" }}>
+                  <span className="table-header-default">{field.label}</span>
+                </TableCell>
+              ))}
               {shiftDimensions.map((sd, sdIndex) => (
                 <ShiftDimensionCell
                   key={sdIndex}
@@ -133,20 +133,22 @@ export default function ShiftTable({
                 key={shiftIndex}
                 sx={{
                   "&:last-child td, &:last-child th": { border: 0 },
+                  backgroundColor:
+                    shift.leaveType === ShiftLeaveType.NONE
+                      ? "None"
+                      : "#1a0dab0a",
                 }}
               >
-                {defaultShiftFields
-                  .filter((field) => !(isRest && field.name === "staffing"))
-                  .map((field, index) => (
-                    <ShiftFieldCell
-                      key={index}
-                      shift={shift}
-                      shiftField={field.name}
-                      editing={bodyEditing}
-                      setEditing={setBodyEditing}
-                      handleUpdateShift={handleUpdateShift}
-                    />
-                  ))}
+                {defaultShiftFields.map((field, index) => (
+                  <ShiftFieldCell
+                    key={index}
+                    shift={shift}
+                    shiftField={field.name}
+                    editing={bodyEditing}
+                    setEditing={setBodyEditing}
+                    handleUpdateShift={handleUpdateShift}
+                  />
+                ))}
                 {shiftDimensions.map((sd, sdIndex) => {
                   const shiftProperty = shift.shiftProperties.find(
                     (sp) => sp.shiftDimensionId === sd.id
@@ -174,7 +176,10 @@ export default function ShiftTable({
                 })}
                 <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
                   <Box sx={{ display: "flex" }}>
-                    <Button onClick={() => handleDeleteShift(shift.id)}>
+                    <Button
+                      disabled={shift.leaveType !== ShiftLeaveType.NONE}
+                      onClick={() => handleDeleteShift(shift.id)}
+                    >
                       <DeleteIcon />
                     </Button>
                   </Box>

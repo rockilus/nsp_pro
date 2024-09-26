@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
 // Types
-import { ShiftT } from "../../types/shift";
+import { ShiftT, ShiftLeaveType } from "../../types/shift";
 
 export default function ShiftFieldCellName({
   shift,
@@ -35,8 +35,14 @@ export default function ShiftFieldCellName({
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [shift.id]: "name" })}
-      sx={{ paddingY: 0, cursor: "pointer" }}
+      onClick={() =>
+        shift.leaveType === ShiftLeaveType.NONE &&
+        setEditing({ [shift.id]: "name" })
+      }
+      sx={{
+        paddingY: 0,
+        cursor: shift.leaveType === ShiftLeaveType.NONE ? "pointer" : "default",
+      }}
     >
       {editing ? (
         <TextField
