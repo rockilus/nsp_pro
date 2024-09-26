@@ -6,6 +6,7 @@ from constraint_parser.build_templates_list_fr import build_templates_list_fr
 from core import (
     Shift,
     ShiftDimension,
+    ShiftLeaveType,
     ShiftProperty,
     ShiftWorkerOption,
     Template,
@@ -123,6 +124,7 @@ def build_shift_options(
             category_name="Shifts",
         )
         for s in shifts
+        if s.leave_type == ShiftLeaveType.NONE
     ]
     for shift_dimension in [sd for sd in shift_dimensions if not sd.deleted]:
         shift_properties_sd = (
