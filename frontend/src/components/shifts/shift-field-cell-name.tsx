@@ -3,21 +3,29 @@ import React, { Dispatch, SetStateAction, useState } from "react";
 import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
+// Components
+import useLeaveNameDisplayed from "./shift-utils/shift-utils";
 // Types
-import { ShiftT } from "../../types/shift";
+import { ShiftT, ShiftLeaveType } from "../../types/shift";
 
 export default function ShiftFieldCellName({
+  lng,
   shift,
   editing,
   setEditing,
   handleUpdateShift,
 }: {
+  lng: string;
   shift: ShiftT;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateShift: (updatedShift: ShiftT) => void;
 }) {
   const [valueState, setValueState] = useState(shift.name);
+
+  const getLeaveNameDisplayed = useLeaveNameDisplayed({
+    lng,
+  });
 
   const handleEditConfirm = () => {
     if (valueState !== shift.name) {
@@ -35,8 +43,14 @@ export default function ShiftFieldCellName({
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [shift.id]: "name" })}
-      sx={{ paddingY: 0, cursor: "pointer" }}
+      onClick={() =>
+        shift.leaveType === ShiftLeaveType.NONE &&
+        setEditing({ [shift.id]: "name" })
+      }
+      sx={{
+        paddingY: 0,
+        cursor: shift.leaveType === ShiftLeaveType.NONE ? "pointer" : "default",
+      }}
     >
       {editing ? (
         <TextField
@@ -57,7 +71,9 @@ export default function ShiftFieldCellName({
         />
       ) : (
         <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
-          {shift.name}
+          {shift.leaveType !== ShiftLeaveType.NONE
+            ? getLeaveNameDisplayed(shift.leaveType)
+            : shift.name}
         </Box>
       )}
     </TableCell>

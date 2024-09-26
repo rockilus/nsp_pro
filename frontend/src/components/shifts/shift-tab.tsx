@@ -20,7 +20,12 @@ import {
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
-import { ShiftT, ShiftDimensionT, ShiftPropertyT } from "../../types/shift";
+import {
+  ShiftT,
+  ShiftDimensionT,
+  ShiftPropertyT,
+  ShiftLeaveType,
+} from "../../types/shift";
 
 dayjs.extend(utc);
 
@@ -51,6 +56,20 @@ export default function ShiftTab({
     { name: "end_time", label: t("end_time") },
   ];
 
+  const orderedRestShifts: ShiftT[] = shifts
+    .filter((s) => s.isTimeOff)
+    .sort((a, b) => {
+      if (a.leaveType > 0 && b.leaveType > 0) {
+        return a.leaveType - b.leaveType; // Order by increasing leaveType value
+      } else if (a.leaveType > 0) {
+        return -1; // a comes before b
+      } else if (b.leaveType > 0) {
+        return 1; // b comes before a
+      } else {
+        return 0; // No particular order for leaveType 0
+      }
+    });
+
   const roundTime = (dt: dayjs.Dayjs): dayjs.Dayjs => {
     let minutes = Math.floor(dt.minute() / 15) * 15;
     return dt.minute(minutes).second(0).millisecond(0);
@@ -73,6 +92,7 @@ export default function ShiftTab({
       isTimeOff: isRest,
       staffing: 1,
       color: "grey",
+      leaveType: ShiftLeaveType.NONE,
       deleted: false,
       shiftProperties: [],
     });
@@ -235,8 +255,8 @@ export default function ShiftTab({
               selectedTeamId={selectedTeamId}
               isRest={true}
               shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
-              shifts={shifts.filter((s) => s.isTimeOff)}
-              defaultShiftFields={DefaultWorkShiftFields}
+              shifts={orderedRestShifts}
+              defaultShiftFields={DefaultRestShiftFields}
               handleAddShift={handleAddShift}
               handleDeleteShift={handleDeleteShift}
               handleAddShiftDimension={handleAddShiftDimension}

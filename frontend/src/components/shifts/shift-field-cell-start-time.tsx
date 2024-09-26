@@ -8,7 +8,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import TableCell from "@mui/material/TableCell";
 // Types
-import { ShiftT } from "../../types/shift";
+import { ShiftT, ShiftLeaveType } from "../../types/shift";
 
 dayjs.extend(utc);
 
@@ -24,7 +24,7 @@ export default function ShiftFieldCellStartTime({
   handleUpdateShift: (updatedShift: ShiftT) => void;
 }) {
   const timeSlots: dayjs.Dayjs[] = [];
-  let firstSlot = dayjs.utc().startOf("day");
+  let firstSlot = dayjs.utc(shift.startTime).startOf("day");
   const lastSlot = dayjs.utc(firstSlot).endOf("day");
   while (firstSlot.isBefore(lastSlot) || firstSlot.isSame(lastSlot)) {
     timeSlots.push(firstSlot);
@@ -77,8 +77,14 @@ export default function ShiftFieldCellStartTime({
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [shift.id]: "start_time" })}
-      sx={{ paddingY: 0, cursor: "pointer" }}
+      onClick={() =>
+        shift.leaveType === ShiftLeaveType.NONE &&
+        setEditing({ [shift.id]: "start_time" })
+      }
+      sx={{
+        paddingY: 0,
+        cursor: shift.leaveType === ShiftLeaveType.NONE ? "pointer" : "default",
+      }}
     >
       {editing ? selectStartTime() : shift.startTime.format("HH:mm")}
     </TableCell>

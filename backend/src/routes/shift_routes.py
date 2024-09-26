@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Shift, ShiftProperty
+from core import Shift, ShiftLeaveType, ShiftProperty
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -17,9 +17,11 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import ShiftMessage, ShiftPropertyMessage
-from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
+from scripts.setup_database import shift_db, shift_property_db
 from services.shift_services import create_or_update_shift_property
+from services.shift_services import create_shift as create_shift_service
 from services.shift_services import delete_shift as delete_shift_service
+from services.shift_services import update_shift as update_shift_service
 
 router = APIRouter()
 
@@ -36,20 +38,7 @@ async def create_shift(
         ):
             raise NotAuthorizedError("You do not have permission to create a shift")
         s_data = msg_to_core_to_shift(shift)
-        shift_created = shift_db.create_shift(s_data)
-        sd_bool = shift_dimension_db.get_shift_dimensions_by_entry_type("bool", team_id)
-        sp_bool = []
-        for wd in sd_bool:
-            sp_bool.append(
-                shift_property_db.create_shift_property(
-                    ShiftProperty(
-                        id="",
-                        value=False,
-                        shift_id=shift_created.id,
-                        shift_dimension_id=wd.id,
-                    )
-                )
-            )
+        shift_created, sp_bool = create_shift_service(s_data)
         response = core_to_msg_shift_and_properties(shift_created, sp_bool)
     except Exception as e:
         log_info("Failed to create shift")
@@ -115,7 +104,7 @@ async def update_shift(
         ):
             raise NotAuthorizedError("You do not have permission to update shifts")
         shift_data = msg_to_core_to_shift(shift)
-        updated_shift = shift_db.update_shift(shift_data)
+        updated_shift = update_shift_service(shift_data)
         shift_properties = shift_property_db.get_shift_properties_by_shift_id(
             updated_shift.id
         )
@@ -212,6 +201,7 @@ def core_to_msg_shift_and_properties(
 def msg_to_core_to_shift(msg: ShiftMessage) -> Shift:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake = {k: v for k, v in data_snake.items() if k != "shift_properties"}
+    data_snake["leave_type"] = ShiftLeaveType(data_snake["leave_type"])
     try:
         shift = Shift(**data_snake)
     except Exception as e:

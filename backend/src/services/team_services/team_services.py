@@ -7,10 +7,12 @@ from integrations.authorization import (
     authz_team_resource_instance_create,
 )
 from scripts.setup_database import team_db
+from services.shift_services import create_default_leave_shifts
 
 
 async def create_team(team: Team) -> Team:
     new_team = team_db.create_team(team)
+    create_default_leave_shifts(new_team.id)
     await authz_team_resource_instance_create(new_team)
     return new_team
 
