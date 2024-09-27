@@ -65,9 +65,10 @@ def core_to_engine_inputs(
         requests,
     )
     sol_hint_engine = core_to_engine_sol_hint(
-        variable_space.all_workers,
-        _build_day_coordinates(start_date, end_date),
-        variable_space.all_shifts,
+        variable_space.workers_not_deleted,
+        start_date,
+        end_date,
+        variable_space.shifts_not_deleted,
         wip_assignments,
     )
     dates = _build_dates(start_date_hist, end_date)
@@ -165,18 +166,31 @@ def core_to_engine_fixed_values(
 
 
 def core_to_engine_sol_hint(
-    workers: List[str],
-    days: List[str],
-    shifts: List[str],
+    workers_not_deleted: List[str],
+    start_date: date,
+    end_date: date,
+    shifts_not_deleted: List[str],
     assignments: List[Assignment],
 ) -> Dict[Tuple[str, str, str], int]:
-    out = {(w, d, s): 0 for w in workers for d in days for s in shifts}
+    days = _build_day_coordinates(start_date, end_date)
+    out = {
+        (w, d, s): 0
+        for w in workers_not_deleted
+        for d in days
+        for s in shifts_not_deleted
+    }
     for a in assignments:
-        out[
-            a.worker_id,
-            a.date.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
-            a.shift_id,
-        ] = 1
+        a_in_domain = (
+            a.worker_id in workers_not_deleted
+            and start_date <= a.date <= end_date
+            and a.shift_id in shifts_not_deleted
+        )
+        if a_in_domain:
+            out[
+                a.worker_id,
+                a.date.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
+                a.shift_id,
+            ] = 1
     return out
 
 
