@@ -6,6 +6,13 @@ from typing import List
 from utils.constants import Constants
 
 
+class ShiftType(Enum):
+    NORMAL = 0
+    DUTY = 1
+    REST = 2  # non-working time (e.g. weekend) or recuperation time
+    LEAVE = 3  # time off (e.g. vacation, sick leave, parental leave, training)
+
+
 class ShiftLeaveType(Enum):
     NONE = 0
     VACATION = 1
@@ -28,6 +35,7 @@ class ShiftLeaveType(Enum):
     OTHER_AFTERNOON = 18
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class Shift:
     id: str
@@ -38,6 +46,7 @@ class Shift:
     staffing: int
     is_time_off: bool
     color: str
+    shift_type: ShiftType
     leave_type: ShiftLeaveType
     deleted: bool
 

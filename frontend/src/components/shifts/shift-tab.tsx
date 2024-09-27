@@ -25,6 +25,7 @@ import {
   ShiftDimensionT,
   ShiftPropertyT,
   ShiftLeaveType,
+  ShiftType,
 } from "../../types/shift";
 
 dayjs.extend(utc);
@@ -92,6 +93,7 @@ export default function ShiftTab({
       isTimeOff: isRest,
       staffing: 1,
       color: "grey",
+      shiftType: isRest ? ShiftType.REST : ShiftType.NORMAL,
       leaveType: ShiftLeaveType.NONE,
       deleted: false,
       shiftProperties: [],

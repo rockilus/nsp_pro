@@ -7,7 +7,7 @@ from mongoengine.fields import (
     StringField,
 )
 
-from core import ShiftLeaveType
+from core import ShiftLeaveType, ShiftType
 
 
 class Shift(Document):
@@ -21,5 +21,6 @@ class Shift(Document):
     staffing = IntField(required=True)
     is_time_off = BooleanField(required=True)
     color = StringField(required=True)
+    shift_type = IntField(required=True, choices=[e.value for e in ShiftType])
     leave_type = IntField(required=True, choices=[e.value for e in ShiftLeaveType])
     deleted = BooleanField(required=True)
