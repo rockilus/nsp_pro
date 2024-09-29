@@ -30,6 +30,7 @@ import {
   ShiftT,
   ShiftPropertyT,
   ShiftLeaveType,
+  ShiftRestType,
 } from "../../types/shift";
 
 dayjs.extend(utc);
@@ -70,7 +71,7 @@ export default function ShiftTable({
 }) {
   const { t } = useTranslation(lng, "shift-page");
 
-  const [showLeaves, setShowLeaves] = useState(false);
+  const [showDefaults, setShowDefaults] = useState(false);
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
@@ -88,9 +89,13 @@ export default function ShiftTable({
   };
 
   const displayedShifts: ShiftT[] = isRest
-    ? showLeaves
+    ? showDefaults
       ? shifts
-      : shifts.filter((s) => s.leaveType === ShiftLeaveType.NONE)
+      : shifts.filter(
+          (s) =>
+            s.leaveType === ShiftLeaveType.NONE &&
+            s.restType !== ShiftRestType.OFF
+        )
     : shifts;
 
   return (
@@ -109,10 +114,10 @@ export default function ShiftTable({
                 fontSize: "0.9rem",
                 marginLeft: "20px",
               }}
-              selected={showLeaves}
-              onClick={() => setShowLeaves(!showLeaves)}
+              selected={showDefaults}
+              onClick={() => setShowDefaults(!showDefaults)}
             >
-              {t("show_leave")}
+              {t("show_default_shifts")}
             </ToggleButton>
           )}
         </div>
@@ -161,9 +166,10 @@ export default function ShiftTable({
                 sx={{
                   "&:last-child td, &:last-child th": { border: 0 },
                   backgroundColor:
-                    shift.leaveType === ShiftLeaveType.NONE
-                      ? "None"
-                      : "#1a0dab0a",
+                    shift.leaveType !== ShiftLeaveType.NONE ||
+                    shift.restType === ShiftRestType.OFF
+                      ? "#1a0dab0a"
+                      : "None",
                 }}
               >
                 {defaultShiftFields.map((field, index) => (
@@ -205,7 +211,10 @@ export default function ShiftTable({
                 <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
                   <Box sx={{ display: "flex" }}>
                     <Button
-                      disabled={shift.leaveType !== ShiftLeaveType.NONE}
+                      disabled={
+                        shift.leaveType !== ShiftLeaveType.NONE ||
+                        shift.restType === ShiftRestType.OFF
+                      }
                       onClick={() => handleDeleteShift(shift.id)}
                     >
                       <DeleteIcon />

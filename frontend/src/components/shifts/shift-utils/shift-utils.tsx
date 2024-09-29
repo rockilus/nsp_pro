@@ -1,8 +1,8 @@
 import { useTranslation } from "../../../app/i18n/client";
 // Types
-import { ShiftLeaveType } from "../../../types/shift";
+import { ShiftLeaveType, ShiftRestType } from "../../../types/shift";
 
-const useLeaveNameDisplayed = ({ lng }: { lng: string }) => {
+export const useLeaveNameDisplayed = ({ lng }: { lng: string }) => {
   const { t } = useTranslation(lng, "shift-page");
 
   const leaveShiftDisplayNames: {
@@ -37,4 +37,26 @@ const useLeaveNameDisplayed = ({ lng }: { lng: string }) => {
   return getLeaveNameDisplayed;
 };
 
-export default useLeaveNameDisplayed;
+export const useRestNameDisplayed = ({ lng }: { lng: string }) => {
+  const { t } = useTranslation(lng, "shift-page");
+
+  const restShiftDisplayNames: {
+    [key in Exclude<
+      ShiftRestType,
+      ShiftRestType.NONE | ShiftRestType.RECUPERATION
+    >]: string;
+  } = {
+    [ShiftRestType.OFF]: t("off"),
+  };
+
+  const getRestNameDisplayed = (
+    restType: Exclude<
+      ShiftRestType,
+      ShiftRestType.NONE | ShiftRestType.RECUPERATION
+    >
+  ) => {
+    return restShiftDisplayNames[restType] || t("unknown_rest_type");
+  };
+
+  return getRestNameDisplayed;
+};
