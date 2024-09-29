@@ -17,6 +17,17 @@ export type ShiftPropertyT = {
   shiftDimensionId: string;
 };
 
+// class ShiftRestType(Enum):
+//     NONE = 0
+//     OFF = 1
+//     RECUPERATION = 2
+
+export enum ShiftRestType {
+  NONE = 0,
+  OFF = 1,
+  RECUPERATION = 2,
+}
+
 export enum ShiftType {
   NORMAL = 0,
   DUTY = 1,
@@ -55,7 +66,9 @@ export type ShiftT = {
   staffing: number;
   color: string;
   shiftType: ShiftType;
+  restType: ShiftRestType;
   leaveType: ShiftLeaveType;
+  recuperationDutyIds: string[];
   deleted: boolean;
   shiftProperties: ShiftPropertyT[];
 };
