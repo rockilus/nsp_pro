@@ -18,7 +18,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 // Types
-import { ShiftT } from "../../../types/shift";
+import { ShiftT, ShiftType } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 import {
   AssignmentT,
@@ -57,14 +57,17 @@ export default function QuickStaffingTable({
     workerId?: string;
     shiftId?: string;
   }) => {
-    return assignments.filter(
-      (a) =>
+    return assignments.filter((a) => {
+      const shift = shifts.find((s) => s.id === a.shiftId);
+      return (
         (!workerId || a.workerId === workerId) &&
         (!shiftId || a.shiftId === shiftId) &&
         a.date.isSameOrAfter(startDate) &&
         a.date.isSameOrBefore(endDate) &&
-        !shifts.find((s) => s.id === a.shiftId)?.isTimeOff
-    ).length;
+        (shift?.shiftType === ShiftType.NORMAL ||
+          shift?.shiftType === ShiftType.DUTY)
+      );
+    }).length;
   };
 
   const handleCreateQuickStaffing = (
@@ -156,7 +159,11 @@ export default function QuickStaffingTable({
                 ></div>
               </TableCell>
               {shifts
-                .filter((s) => !s.isTimeOff)
+                .filter(
+                  (s) =>
+                    s.shiftType === ShiftType.NORMAL ||
+                    s.shiftType === ShiftType.DUTY
+                )
                 .map((shift, shiftIndex) => (
                   <TableCell key={shiftIndex} sx={{ padding: 0 }}>
                     <div style={{ display: "flex", justifyContent: "center" }}>
@@ -215,7 +222,11 @@ export default function QuickStaffingTable({
                   </div>
                 </TableCell>
                 {shifts
-                  .filter((s) => !s.isTimeOff)
+                  .filter(
+                    (s) =>
+                      s.shiftType === ShiftType.NORMAL ||
+                      s.shiftType === ShiftType.DUTY
+                  )
                   .map((shift, shiftIndex) => {
                     const staffing = countAssignments({
                       startDate: schedule.startDate,
@@ -424,7 +435,11 @@ export default function QuickStaffingTable({
                 </div>
               </TableCell>
               {shifts
-                .filter((s) => !s.isTimeOff)
+                .filter(
+                  (s) =>
+                    s.shiftType === ShiftType.NORMAL ||
+                    s.shiftType === ShiftType.DUTY
+                )
                 .map((shift, shiftIndex) => {
                   const staffing = countAssignments({
                     startDate: schedule.startDate,

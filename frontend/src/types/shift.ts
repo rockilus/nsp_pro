@@ -52,7 +52,6 @@ export type ShiftT = {
   name: string;
   startTime: dayjs.Dayjs;
   endTime: dayjs.Dayjs;
-  isTimeOff: boolean;
   staffing: number;
   color: string;
   shiftType: ShiftType;

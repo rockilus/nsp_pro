@@ -44,7 +44,6 @@ class Shift:
     start_time: datetime
     end_time: datetime
     staffing: int
-    is_time_off: bool
     color: str
     shift_type: ShiftType
     leave_type: ShiftLeaveType

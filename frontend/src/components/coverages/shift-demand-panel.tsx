@@ -44,7 +44,6 @@ export default function ShiftDemandPanel({
     endTime: dayjs(),
     staffing: 0,
     color: "",
-    isTimeOff: false,
     deleted: false,
     shiftType: ShiftType.NORMAL,
     leaveType: ShiftLeaveType.NONE,

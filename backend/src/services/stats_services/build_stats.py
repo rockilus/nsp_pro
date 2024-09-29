@@ -7,6 +7,7 @@ from core import (
     Block,
     Shift,
     ShiftDimension,
+    ShiftType,
     ShiftWorkerOption,
     Stats,
     StatsHeader,
@@ -150,18 +151,28 @@ def build_work_shift_indexes(
     work_shift_to_i = {
         shift.id: i
         for i, shift in enumerate(
-            [s for s in shifts if not s.is_time_off and s.id in selected_shifts_ids]
+            [
+                s
+                for s in shifts
+                if s in [ShiftType.NORMAL, ShiftType.DUTY]
+                and s.id in selected_shifts_ids
+            ]
         )
     }
     work_shift_to_duration = {
-        shift.id: (shift.end_time - shift.start_time).total_seconds() / 3600
-        for shift in shifts
-        if not shift.is_time_off and shift.id in selected_shifts_ids
+        s.id: (s.end_time - s.start_time).total_seconds() / 3600
+        for s in shifts
+        if s in [ShiftType.NORMAL, ShiftType.DUTY] and s.id in selected_shifts_ids
     }
     rest_shift_to_i = {
         shift.id: i
         for i, shift in enumerate(
-            [s for s in shifts if s.is_time_off and s.id in selected_shifts_ids]
+            [
+                s
+                for s in shifts
+                if s in [ShiftType.REST, ShiftType.LEAVE]
+                and s.id in selected_shifts_ids
+            ]
         )
     }
     i_to_worker = {i: worker for worker, i in worker_to_i.items()}

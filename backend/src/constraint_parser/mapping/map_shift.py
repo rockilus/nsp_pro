@@ -6,6 +6,7 @@ from core import (
     ConstraintBuildAugmented,
     MissingProperty,
     Shift,
+    ShiftType,
     ShiftWorkerOption,
     VarShift,
 )
@@ -103,7 +104,11 @@ class MapShift:
                 if target_ids:
                     out += target_ids
         if cstr_type == "fil" and cstr_operator == "yes":
-            out += [s.id for s in self.shifts if s.is_time_off]
+            out += [
+                s.id
+                for s in self.shifts
+                if s.shift_type in [ShiftType.REST, ShiftType.LEAVE]
+            ]
         return sorted(list(set(out)))
 
     # pylint: disable=R0801

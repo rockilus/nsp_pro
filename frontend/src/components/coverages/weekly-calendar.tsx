@@ -47,7 +47,6 @@ export default function WeeklyCalendar({
     endTime: dayjs(),
     staffing: 0,
     color: "",
-    isTimeOff: false,
     shiftType: ShiftType.NORMAL,
     leaveType: ShiftLeaveType.NONE,
     deleted: false,

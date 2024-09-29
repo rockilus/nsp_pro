@@ -52,7 +52,7 @@ class ShiftDB:
         try:
             # pylint: disable=no-member
             shifts = ShiftDocument.objects(  # type: ignore
-                team=team_id, is_time_off=False
+                team=team_id, shift_type__in=[ShiftType.NORMAL, ShiftType.DUTY]
             )
         except Exception as e:
             log_info("Failed to get shifts from database")
@@ -63,7 +63,7 @@ class ShiftDB:
         try:
             # pylint: disable=no-member
             shifts = ShiftDocument.objects(  # type: ignore
-                team=team_id, is_time_off=True
+                team=team_id, shift_type__in=[ShiftType.REST, ShiftType.LEAVE]
             )
         except Exception as e:
             log_info("Failed to get rest shifts from database")
@@ -138,7 +138,6 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
             start_time=dataclass_obj.start_time,
             end_time=dataclass_obj.end_time,
             staffing=dataclass_obj.staffing,
-            is_time_off=dataclass_obj.is_time_off,
             color=dataclass_obj.color,
             shift_type=dataclass_obj.shift_type.value,
             leave_type=dataclass_obj.leave_type.value,
@@ -160,7 +159,6 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             start_time=doc_obj.start_time,
             end_time=doc_obj.end_time,
             staffing=doc_obj.staffing,
-            is_time_off=doc_obj.is_time_off,
             color=doc_obj.color,
             shift_type=ShiftType(doc_obj.shift_type),
             leave_type=ShiftLeaveType(doc_obj.leave_type),

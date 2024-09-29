@@ -1,7 +1,14 @@
 from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
-from core import CoverageSelector, Schedule, Shift, ShiftDemand, ShiftDemandDate
+from core import (
+    CoverageSelector,
+    Schedule,
+    Shift,
+    ShiftDemand,
+    ShiftDemandDate,
+    ShiftType,
+)
 
 
 # pylint: disable=too-many-locals
@@ -11,7 +18,9 @@ def build_shift_demand_dates(
     shift_demands: List[ShiftDemand],
     shifts: List[Shift],
 ) -> List[ShiftDemandDate]:
-    work_shifts = [s for s in shifts if not s.is_time_off]
+    work_shifts = [
+        s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+    ]
     dates = [
         schedule.start_date + timedelta(days=i)
         for i in range((schedule.end_date - schedule.start_date).days + 1)

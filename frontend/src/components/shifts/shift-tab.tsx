@@ -58,7 +58,9 @@ export default function ShiftTab({
   ];
 
   const orderedRestShifts: ShiftT[] = shifts
-    .filter((s) => s.isTimeOff)
+    .filter(
+      (s) => s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE
+    )
     .sort((a, b) => {
       if (a.leaveType > 0 && b.leaveType > 0) {
         return a.leaveType - b.leaveType; // Order by increasing leaveType value
@@ -90,7 +92,6 @@ export default function ShiftTab({
       name: "",
       startTime: roundTime(dayjs.utc()),
       endTime: roundTime(dayjs.utc()),
-      isTimeOff: isRest,
       staffing: 1,
       color: "grey",
       shiftType: isRest ? ShiftType.REST : ShiftType.NORMAL,
@@ -241,7 +242,11 @@ export default function ShiftTab({
               selectedTeamId={selectedTeamId}
               isRest={false}
               shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
-              shifts={shifts.filter((s) => !s.isTimeOff)}
+              shifts={shifts.filter(
+                (s) =>
+                  s.shiftType === ShiftType.NORMAL ||
+                  s.shiftType === ShiftType.DUTY
+              )}
               defaultShiftFields={DefaultWorkShiftFields}
               handleAddShift={handleAddShift}
               handleDeleteShift={handleDeleteShift}
