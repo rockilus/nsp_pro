@@ -1,6 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 // Actions
-import { toShiftT, getShifts } from "./shift";
+import { toShiftT, getWorkShifts } from "./shift";
 // Types
 import { CoverageT, ShiftDemandT } from "../../types/coverage";
 // Env Vars
@@ -205,7 +205,7 @@ export async function deleteShiftDemand(
 export async function getCoveragesTabData(teamId: string) {
   try {
     const coveragesTabData = await Promise.all([
-      getShifts(teamId),
+      getWorkShifts(teamId),
       getCoverages(teamId),
     ]);
     return { shifts: coveragesTabData[0], coverages: coveragesTabData[1] };
