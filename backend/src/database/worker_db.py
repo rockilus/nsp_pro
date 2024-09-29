@@ -118,6 +118,8 @@ def core_to_doc_worker(dataclass_obj: Worker) -> WorkerDocument:
             team=team,
             name=dataclass_obj.name,
             weekly_hours=dataclass_obj.weekly_hours,
+            weekly_hours_desired=dataclass_obj.weekly_hours_desired,
+            duties_per_month=dataclass_obj.duties_per_month,
             annual_leave=dataclass_obj.annual_leave,
             deleted=dataclass_obj.deleted,
         )
@@ -135,6 +137,8 @@ def doc_to_core_worker(doc_obj: WorkerDocument) -> Worker:
             team_id=str(doc_obj.team.id),
             name=str(doc_obj.name) if doc_obj.name is not None else "",
             weekly_hours=doc_obj.weekly_hours,
+            weekly_hours_desired=doc_obj.weekly_hours_desired,
+            duties_per_month=doc_obj.duties_per_month,
             annual_leave=doc_obj.annual_leave,
             deleted=doc_obj.deleted,
         )

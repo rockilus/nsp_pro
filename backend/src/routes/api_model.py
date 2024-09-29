@@ -17,6 +17,8 @@ class WorkerMessage(BaseModel):
     teamId: str
     name: str
     weeklyHours: int
+    weeklyHoursDesired: int
+    dutiesPerMonth: int
     annualLeave: int
     deleted: bool
     workerProperties: List[WorkerPropertyMessage]
