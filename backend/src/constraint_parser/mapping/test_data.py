@@ -23,9 +23,8 @@ shifts = [
         start_time=datetime.strptime("00:00", "%H:%M"),
         end_time=datetime.strptime("00:00", "%H:%M"),
         staffing=2,
-        is_time_off=True,
         color="#000000",
-        shift_type=ShiftType.NORMAL,
+        shift_type=ShiftType.REST,
         leave_type=ShiftLeaveType.NONE,
         deleted=False,
     ),
@@ -370,7 +369,9 @@ test_data = [
             operator="less_than_or_equal",
             target_value=2,
             target_unit="",
-            worker_var=VarWorker(selector="all", target_ids=[], num_eligible_workers=0),
+            worker_var=VarWorker(
+                selector="all", target_ids=[], num_eligible_workers=0
+            ),
             day_var=VarDay(
                 selector="all",
                 target=0,
@@ -1265,7 +1266,9 @@ test_data = [
             operator="",
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(selector="all", target_ids=[], num_eligible_workers=0),
+            worker_var=VarWorker(
+                selector="all", target_ids=[], num_eligible_workers=0
+            ),
             day_var=VarDay(
                 selector="week_day_index",
                 target=6,
