@@ -6,6 +6,8 @@ from scripts.setup_database import shift_db, shift_dimension_db, shift_property_
 
 
 def create_shift(shift: Shift) -> Tuple[Shift, List[ShiftProperty]]:
+    if shift.rest_type == ShiftRestType.OFF:
+        raise ValueError("Cannot create the default rest shift")
     if shift.leave_type != ShiftLeaveType.NONE:
         raise ValueError("Cannot create a leave shift")
     shift_created = shift_db.create_shift(shift)
@@ -27,7 +29,7 @@ def create_shift(shift: Shift) -> Tuple[Shift, List[ShiftProperty]]:
     return shift_created, sp_bool
 
 
-def create_default_leave_shifts(team_id: str) -> None:
+def create_default_shifts(team_id: str) -> None:
     reference_date = datetime.now(timezone.utc)
     reference_date_start = reference_date.replace(
         hour=0, minute=0, second=0, microsecond=0
@@ -38,6 +40,22 @@ def create_default_leave_shifts(team_id: str) -> None:
     reference_date_midday = reference_date.replace(
         hour=12, minute=0, second=0, microsecond=0
     )
+    rest_shifts = [
+        Shift(
+            id="",
+            team_id=team_id,
+            name="Off",
+            start_time=reference_date_start,
+            end_time=reference_date_end,
+            staffing=0,
+            color="grey",
+            shift_type=ShiftType.REST,
+            rest_type=ShiftRestType.OFF,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_duty_ids=[],
+            deleted=False,
+        ),
+    ]
     leave_shifts = [
         Shift(
             id="",
@@ -292,5 +310,5 @@ def create_default_leave_shifts(team_id: str) -> None:
             deleted=False,
         ),
     ]
-    for leave_shift in leave_shifts:
-        shift_db.create_shift(leave_shift)
+    for shift in rest_shifts + leave_shifts:
+        shift_db.create_shift(shift)

@@ -1,7 +1,4 @@
-from services.shift_services.create_shift import (
-    create_default_leave_shifts,
-    create_shift,
-)
+from services.shift_services.create_shift import create_default_shifts, create_shift
 from services.shift_services.delete_shift import delete_shift
 from services.shift_services.delete_shift_dimension import delete_shift_dimension
 from services.shift_services.update_shift import update_shift
@@ -10,7 +7,7 @@ from services.shift_services.update_shift_property import (
 )
 
 __all__ = [
-    "create_default_leave_shifts",
+    "create_default_shifts",
     "create_shift",
     "delete_shift",
     "delete_shift_dimension",
