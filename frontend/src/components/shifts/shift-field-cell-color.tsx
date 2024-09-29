@@ -6,7 +6,7 @@ import Chip from "@mui/material/Chip";
 import Menu from "@mui/material/Menu";
 import TableCell from "@mui/material/TableCell";
 // Types
-import { ShiftT, ShiftLeaveType } from "../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../types/shift";
 // Constants
 import { ShiftColors } from "../../constants/constants";
 
@@ -21,7 +21,10 @@ export default function ShiftFieldCellColor({
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (shift.leaveType === ShiftLeaveType.NONE) {
+    if (
+      shift.leaveType === ShiftLeaveType.NONE &&
+      shift.restType !== ShiftRestType.OFF
+    ) {
       setAnchorEl(event.currentTarget);
     }
   };
@@ -44,7 +47,10 @@ export default function ShiftFieldCellColor({
             display: "inline-flex",
             minWidth: 0,
             cursor:
-              shift.leaveType === ShiftLeaveType.NONE ? "pointer" : "default",
+              shift.leaveType === ShiftLeaveType.NONE &&
+              shift.restType !== ShiftRestType.OFF
+                ? "pointer"
+                : "default",
           }}
         >
           <Chip

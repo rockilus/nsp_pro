@@ -69,6 +69,31 @@ export async function getShifts(teamId: string) {
   }
 }
 
+export async function getWorkShifts(teamId: string) {
+  noStore();
+  const options: RequestInit = {
+    method: "GET",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const response = await fetch(
+      `${apiUrlShifts}/work/teams/${teamId}`,
+      options
+    );
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error("Failed to fetch shifts: " + responseData.detail);
+    }
+    return responseData.map(toShiftT) as ShiftT[];
+  } catch (error) {
+    console.error("Failed to fetch shifts:", error);
+    throw new Error("Failed to fetch shifts, please try again later");
+  }
+}
+
 export async function getAllShifts(teamId: string) {
   noStore();
   const options: RequestInit = {

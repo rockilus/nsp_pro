@@ -63,7 +63,11 @@ export default function ShiftTab({
       (s) => s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE
     )
     .sort((a, b) => {
-      if (a.leaveType > 0 && b.leaveType > 0) {
+      if (a.restType === 1 && b.restType !== 1) {
+        return -1; // a comes before b if a.restType is 1
+      } else if (a.restType !== 1 && b.restType === 1) {
+        return 1; // b comes before a if b.restType is 1
+      } else if (a.leaveType > 0 && b.leaveType > 0) {
         return a.leaveType - b.leaveType; // Order by increasing leaveType value
       } else if (a.leaveType > 0) {
         return -1; // a comes before b

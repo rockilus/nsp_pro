@@ -4,9 +4,12 @@ import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
 // Components
-import useLeaveNameDisplayed from "./shift-utils/shift-utils";
+import {
+  useLeaveNameDisplayed,
+  useRestNameDisplayed,
+} from "./shift-utils/shift-utils";
 // Types
-import { ShiftT, ShiftLeaveType } from "../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../types/shift";
 
 export default function ShiftFieldCellName({
   lng,
@@ -24,6 +27,9 @@ export default function ShiftFieldCellName({
   const [valueState, setValueState] = useState(shift.name);
 
   const getLeaveNameDisplayed = useLeaveNameDisplayed({
+    lng,
+  });
+  const getRestNameDisplayed = useRestNameDisplayed({
     lng,
   });
 
@@ -45,11 +51,16 @@ export default function ShiftFieldCellName({
       scope="row"
       onClick={() =>
         shift.leaveType === ShiftLeaveType.NONE &&
+        shift.restType !== ShiftRestType.OFF &&
         setEditing({ [shift.id]: "name" })
       }
       sx={{
         paddingY: 0,
-        cursor: shift.leaveType === ShiftLeaveType.NONE ? "pointer" : "default",
+        cursor:
+          shift.leaveType === ShiftLeaveType.NONE &&
+          shift.restType !== ShiftRestType.OFF
+            ? "pointer"
+            : "default",
       }}
     >
       {editing ? (
@@ -71,7 +82,9 @@ export default function ShiftFieldCellName({
         />
       ) : (
         <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
-          {shift.leaveType !== ShiftLeaveType.NONE
+          {shift.restType === ShiftRestType.OFF
+            ? getRestNameDisplayed(shift.restType)
+            : shift.leaveType !== ShiftLeaveType.NONE
             ? getLeaveNameDisplayed(shift.leaveType)
             : shift.name}
         </Box>
