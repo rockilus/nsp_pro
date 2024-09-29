@@ -2,7 +2,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core import Shift, ShiftLeaveType, ShiftType
+from core import Shift, ShiftLeaveType, ShiftRestType, ShiftType
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -127,6 +127,9 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
     try:
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
+        recuperation_duties = ShiftDocument.get(  # type: ignore
+            id__in=dataclass_obj.recuperation_duty_ids
+        )
     except Exception as e:
         log_info("Failed to get team by id")
         handle_get_document_error(e)
@@ -140,7 +143,9 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
             staffing=dataclass_obj.staffing,
             color=dataclass_obj.color,
             shift_type=dataclass_obj.shift_type.value,
+            rest_type=dataclass_obj.rest_type.value,
             leave_type=dataclass_obj.leave_type.value,
+            recuperation_duty_ids=recuperation_duties,
             deleted=dataclass_obj.deleted,
         )
     except Exception as e:
@@ -161,7 +166,9 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             staffing=doc_obj.staffing,
             color=doc_obj.color,
             shift_type=ShiftType(doc_obj.shift_type),
+            rest_type=ShiftRestType(doc_obj.rest_type),
             leave_type=ShiftLeaveType(doc_obj.leave_type),
+            recuperation_duty_ids=[str(s.id) for s in doc_obj.recuperation_duty_ids],
             deleted=doc_obj.deleted,
         )
     except Exception as e:

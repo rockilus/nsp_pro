@@ -13,6 +13,12 @@ class ShiftType(Enum):
     LEAVE = 3  # time off (e.g. vacation, sick leave, parental leave, training)
 
 
+class ShiftRestType(Enum):
+    NONE = 0
+    OFF = 1
+    RECUPERATION = 2
+
+
 class ShiftLeaveType(Enum):
     NONE = 0
     VACATION = 1
@@ -46,7 +52,9 @@ class Shift:
     staffing: int
     color: str
     shift_type: ShiftType
+    rest_type: ShiftRestType
     leave_type: ShiftLeaveType
+    recuperation_duty_ids: List[str]
     deleted: bool
 
 

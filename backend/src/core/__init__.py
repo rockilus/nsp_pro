@@ -16,7 +16,14 @@ from core.constraint import (
 from core.coverage import Coverage, CoverageSelector, ShiftDemand, ShiftDemandDate
 from core.request import Request, RequestAugmented
 from core.schedule import Assignment, ObjectiveBreach, QuickStaffing, Schedule, Variable
-from core.shift import Shift, ShiftDimension, ShiftLeaveType, ShiftProperty, ShiftType
+from core.shift import (
+    Shift,
+    ShiftDimension,
+    ShiftLeaveType,
+    ShiftProperty,
+    ShiftRestType,
+    ShiftType,
+)
 from core.stats import Stats, StatsHeader, StatsOptions, StatsValue
 from core.team import Team
 from core.user import PasswordData, User
@@ -52,6 +59,7 @@ __all__ = [
     "ShiftDimension",
     "ShiftLeaveType",
     "ShiftProperty",
+    "ShiftRestType",
     "ShiftType",
     "StatsOptions",
     "Stats",
