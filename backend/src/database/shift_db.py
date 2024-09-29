@@ -168,7 +168,7 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             shift_type=ShiftType(doc_obj.shift_type),
             rest_type=ShiftRestType(doc_obj.rest_type),
             leave_type=ShiftLeaveType(doc_obj.leave_type),
-            recuperation_duty_ids=[str(s.id) for s in doc_obj.recuperation_duty_ids],
+            recuperation_duty_ids=[str(s.id) for s in doc_obj.recuperation_duties],
             deleted=doc_obj.deleted,
         )
     except Exception as e:
