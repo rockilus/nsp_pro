@@ -9,5 +9,7 @@ class Worker(Document):
     team = ReferenceField("Team", required=True)
     name = StringField(required=True)
     weekly_hours = IntField(required=True)
+    weekly_hours_desired = IntField(required=True)
+    duties_per_month = IntField(required=True)
     annual_leave = IntField(required=True)
     deleted = BooleanField(required=True)
