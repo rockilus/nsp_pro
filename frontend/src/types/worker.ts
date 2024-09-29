@@ -19,6 +19,8 @@ export type WorkerT = {
   teamId: string;
   name: string;
   weeklyHours: number;
+  weeklyHoursDesired: number;
+  dutiesPerMonth: number;
   annualLeave: number;
   deleted: boolean;
   workerProperties: WorkerPropertyT[];
