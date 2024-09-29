@@ -13,7 +13,12 @@ import shiftDemandsToEvents from "./sds-to-events";
 import "./weekly-calendar.css";
 // Types
 import { CoverageT, EventT, ShiftDemandT } from "../../types/coverage";
-import { ShiftT, ShiftLeaveType, ShiftType } from "../../types/shift";
+import {
+  ShiftT,
+  ShiftLeaveType,
+  ShiftType,
+  ShiftRestType,
+} from "../../types/shift";
 
 dayjs.extend(utc);
 
@@ -48,7 +53,9 @@ export default function WeeklyCalendar({
     staffing: 0,
     color: "",
     shiftType: ShiftType.NORMAL,
+    restType: ShiftRestType.NONE,
     leaveType: ShiftLeaveType.NONE,
+    recuperationDutyIds: [],
     deleted: false,
     shiftProperties: [],
   };

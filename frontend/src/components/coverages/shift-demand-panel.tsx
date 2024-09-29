@@ -13,7 +13,12 @@ import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
 // Types
 import { ShiftDemandT } from "../../types/coverage";
-import { ShiftT, ShiftLeaveType, ShiftType } from "../../types/shift";
+import {
+  ShiftT,
+  ShiftLeaveType,
+  ShiftType,
+  ShiftRestType,
+} from "../../types/shift";
 
 export default function ShiftDemandPanel({
   lng,
@@ -46,7 +51,9 @@ export default function ShiftDemandPanel({
     color: "",
     deleted: false,
     shiftType: ShiftType.NORMAL,
+    restType: ShiftRestType.NONE,
     leaveType: ShiftLeaveType.NONE,
+    recuperationDutyIds: [],
     shiftProperties: [],
   };
 

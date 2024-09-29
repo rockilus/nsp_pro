@@ -7,6 +7,7 @@ from core import (
     ConstraintBuildAugmented,
     Shift,
     ShiftLeaveType,
+    ShiftRestType,
     ShiftType,
     ShiftWorkerOption,
     VarDay,
@@ -25,7 +26,9 @@ shifts = [
         staffing=2,
         color="#000000",
         shift_type=ShiftType.REST,
+        rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
+        recuperation_duty_ids=[],
         deleted=False,
     ),
     Shift(
@@ -37,7 +40,9 @@ shifts = [
         staffing=2,
         color="#000000",
         shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
+        recuperation_duty_ids=[],
         deleted=False,
     ),
     Shift(
@@ -49,7 +54,9 @@ shifts = [
         staffing=2,
         color="#000000",
         shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
+        recuperation_duty_ids=[],
         deleted=False,
     ),
     Shift(
@@ -61,7 +68,9 @@ shifts = [
         staffing=2,
         color="#000000",
         shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
+        recuperation_duty_ids=[],
         deleted=False,
     ),
     Shift(
@@ -73,7 +82,9 @@ shifts = [
         staffing=2,
         color="#000000",
         shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
+        recuperation_duty_ids=[],
         deleted=False,
     ),
     Shift(
@@ -85,7 +96,9 @@ shifts = [
         staffing=2,
         color="#000000",
         shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
+        recuperation_duty_ids=[],
         deleted=False,
     ),
     Shift(
@@ -97,7 +110,9 @@ shifts = [
         staffing=2,
         color="#000000",
         shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
+        recuperation_duty_ids=[],
         deleted=False,
     ),
     Shift(
@@ -109,7 +124,9 @@ shifts = [
         staffing=2,
         color="#000000",
         shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
+        recuperation_duty_ids=[],
         deleted=False,
     ),
 ]

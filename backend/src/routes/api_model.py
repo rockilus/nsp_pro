@@ -53,7 +53,9 @@ class ShiftMessage(BaseModel):
     staffing: int
     color: str
     shiftType: int
+    restType: int
     leaveType: int
+    recuperationDutyIds: List[str]
     deleted: bool
     shiftProperties: List[ShiftPropertyMessage]
 
