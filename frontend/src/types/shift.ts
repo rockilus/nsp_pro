@@ -17,6 +17,13 @@ export type ShiftPropertyT = {
   shiftDimensionId: string;
 };
 
+export enum ShiftType {
+  NORMAL = 0,
+  DUTY = 1,
+  REST = 2,
+  LEAVE = 3,
+}
+
 export enum ShiftLeaveType {
   NONE = 0,
   VACATION = 1,
@@ -45,9 +52,9 @@ export type ShiftT = {
   name: string;
   startTime: dayjs.Dayjs;
   endTime: dayjs.Dayjs;
-  isTimeOff: boolean;
   staffing: number;
   color: string;
+  shiftType: ShiftType;
   leaveType: ShiftLeaveType;
   deleted: boolean;
   shiftProperties: ShiftPropertyT[];

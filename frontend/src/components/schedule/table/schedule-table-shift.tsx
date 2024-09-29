@@ -17,7 +17,7 @@ import ScheduleTableCellContent from "./schedule-table-cell-content";
 // Utils
 import { getCellBackgroundColor } from "../../data-display/schedule-utils";
 // Types
-import { ShiftT } from "../../../types/shift";
+import { ShiftT, ShiftType } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 import {
   AssignmentT,
@@ -112,7 +112,11 @@ export default function ScheduleTableShift({
         </TableHead>
         <TableBody>
           {filteredShifts
-            .filter((s) => !s.isTimeOff)
+            .filter(
+              (s) =>
+                s.shiftType === ShiftType.NORMAL ||
+                s.shiftType === ShiftType.DUTY
+            )
             .map((shift, shiftIndex) => (
               <TableRow key={shiftIndex}>
                 <TableCell

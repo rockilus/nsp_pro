@@ -13,7 +13,7 @@ import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
 // Types
 import { ShiftDemandT } from "../../types/coverage";
-import { ShiftT, ShiftLeaveType } from "../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftType } from "../../types/shift";
 
 export default function ShiftDemandPanel({
   lng,
@@ -44,13 +44,16 @@ export default function ShiftDemandPanel({
     endTime: dayjs(),
     staffing: 0,
     color: "",
-    isTimeOff: false,
     deleted: false,
+    shiftType: ShiftType.NORMAL,
     leaveType: ShiftLeaveType.NONE,
     shiftProperties: [],
   };
 
   const handleSaveSD = async () => {
+    if (SDState.shift.id === "") {
+      return;
+    }
     if (SDState.id === "") {
       await handleAddShiftDemand(SDState);
     } else {

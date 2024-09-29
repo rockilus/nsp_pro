@@ -92,6 +92,9 @@ export default function CoverageTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
+    if (shiftDemand.shift.id === "") {
+      return;
+    }
     const newShiftDemand = await addShiftDemand(shiftDemand, selectedTeamId);
     setCoverages((prevCoverages) =>
       prevCoverages.map((coverage) =>
