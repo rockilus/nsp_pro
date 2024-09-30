@@ -4,9 +4,10 @@ from core import (
     Block,
     ConstraintBuild,
     ConstraintBuildAugmented,
+    Dimension,
+    DimensionEntryType,
     MissingProperty,
     Shift,
-    ShiftDimension,
     ShiftWorkerOption,
     Worker,
     WorkerDimension,
@@ -20,7 +21,7 @@ def cb_to_cb_augmented(
     workers: List[Worker],
     shifts: List[Shift],
     worker_dimensions: List[WorkerDimension],
-    shift_dimensions: List[ShiftDimension],
+    shift_dimensions: List[Dimension],
 ) -> ConstraintBuildAugmented:
     text = blocks_to_string(
         cb.blocks,
@@ -53,7 +54,7 @@ def build_missing_properties_list_and_active(
     workers: List[Worker],
     worker_dimensions: List[WorkerDimension],
     shifts: List[Shift],
-    shift_dimensions: List[ShiftDimension],
+    shift_dimensions: List[Dimension],
 ) -> Tuple[List[MissingProperty], bool]:
     mps: List[MissingProperty] = []
     active_worker = False
@@ -307,7 +308,7 @@ def build_missing_properties_list_and_active_worker_str_int_wd(
 
 
 def build_missing_properties_list_and_active_shift(
-    block: Block, shifts: List[Shift], shift_dimensions: List[ShiftDimension]
+    block: Block, shifts: List[Shift], shift_dimensions: List[Dimension]
 ) -> Tuple[List[MissingProperty], bool]:
     mps: List[MissingProperty] = []
     active = False
@@ -342,16 +343,16 @@ def build_missing_properties_list_and_active_shift(
         if sd.deleted:
             mps.append(build_missing_properties_list_deleted_sd(block, sd))
             continue
-        if sd.entry_type == "bool":
+        if sd.entry_type == DimensionEntryType.BOOL:
             new_mp, new_active = build_missing_properties_list_and_active_shift_bool_sd(
                 block, sd
             )
 
-        elif sd.entry_type == "list":
+        elif sd.entry_type == DimensionEntryType.DIM_ENTRIES:
             new_mp, new_active = build_missing_properties_list_and_active_shift_list_sd(
                 block, sd
             )
-        elif sd.entry_type in ["str", "int"]:
+        elif sd.entry_type in [DimensionEntryType.STR, DimensionEntryType.INT]:
             (
                 new_mp,
                 new_active,
@@ -400,7 +401,7 @@ def build_missing_properties_list_and_active_shift_deleted(
 
 
 def build_missing_properties_list_deleted_sd(
-    block: Block, sd: ShiftDimension
+    block: Block, sd: Dimension
 ) -> MissingProperty:
     if sd.entry_type == "list":
         sp_values_constraint = [
@@ -424,7 +425,7 @@ def build_missing_properties_list_deleted_sd(
 
 
 def build_missing_properties_list_and_active_shift_bool_sd(
-    block: Block, sd: ShiftDimension
+    block: Block, sd: Dimension
 ) -> Tuple[MissingProperty | None, bool]:
     if not isinstance(block.value, list):
         raise ValueError("Shift block value is not a list")
@@ -457,7 +458,7 @@ def build_missing_properties_list_and_active_shift_bool_sd(
 
 
 def build_missing_properties_list_and_active_shift_list_sd(
-    block: Block, sd: ShiftDimension
+    block: Block, sd: Dimension
 ) -> Tuple[MissingProperty | None, bool]:
     if not isinstance(block.value, list):
         raise ValueError("Shift block value is not a list")
@@ -488,7 +489,7 @@ def build_missing_properties_list_and_active_shift_list_sd(
 
 
 def build_missing_properties_list_and_active_shift_str_int_sd(
-    block: Block, sd: ShiftDimension
+    block: Block, sd: Dimension
 ) -> Tuple[MissingProperty | None, bool]:
     if not isinstance(block.value, list):
         raise ValueError("Shift block value is not a list")

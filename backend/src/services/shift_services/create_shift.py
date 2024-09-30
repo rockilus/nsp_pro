@@ -1,8 +1,15 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
 
-from core import Shift, ShiftLeaveType, ShiftProperty, ShiftRestType, ShiftType
-from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
+from core import (
+    DimensionEntryType,
+    Shift,
+    ShiftLeaveType,
+    ShiftProperty,
+    ShiftRestType,
+    ShiftType,
+)
+from scripts.setup_database import dimension_db, shift_db, shift_property_db
 
 
 def create_shift(shift: Shift) -> Tuple[Shift, List[ShiftProperty]]:
@@ -11,8 +18,8 @@ def create_shift(shift: Shift) -> Tuple[Shift, List[ShiftProperty]]:
     if shift.leave_type != ShiftLeaveType.NONE:
         raise ValueError("Cannot create a leave shift")
     shift_created = shift_db.create_shift(shift)
-    sd_bool = shift_dimension_db.get_shift_dimensions_by_entry_type(
-        "bool", shift_created.team_id
+    sd_bool = dimension_db.get_shift_dimensions_by_entry_type(
+        DimensionEntryType.BOOL, shift_created.team_id
     )
     sp_bool = []
     for wd in sd_bool:
@@ -22,7 +29,8 @@ def create_shift(shift: Shift) -> Tuple[Shift, List[ShiftProperty]]:
                     id="",
                     value=False,
                     shift_id=shift_created.id,
-                    shift_dimension_id=wd.id,
+                    dimension_id=wd.id,
+                    dim_entry_ids=[],
                 )
             )
         )

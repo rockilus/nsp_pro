@@ -4,12 +4,12 @@ from models.constraint import Constraint, VarDay, VarShift, VarWorker
 from models.constraint_build import Block, ConstraintBuild, ShiftWorkerOption
 from models.coverage import Coverage
 from models.coverage_selector import CoverageSelector
+from models.dimension import Dimension, DimEntry
 from models.objective_breach import ObjectiveBreach
 from models.request import Request
 from models.schedule import QuickStaffing, Schedule
 from models.shift import Shift
 from models.shift_demand import ShiftDemand
-from models.shift_dimension import ShiftDimension
 from models.shift_property import ShiftProperty
 from models.stats_header import StatsHeader
 from models.team import Team
@@ -30,13 +30,14 @@ __all__ = [
     "ShiftWorkerOption",
     "Coverage",
     "CoverageSelector",
+    "Dimension",
+    "DimEntry",
     "ObjectiveBreach",
     "Request",
     "QuickStaffing",
     "Schedule",
     "Shift",
     "ShiftDemand",
-    "ShiftDimension",
     "ShiftProperty",
     "StatsHeader",
     "Team",

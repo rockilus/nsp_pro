@@ -2,7 +2,7 @@ from typing import Dict, List, Union
 
 from bson import ObjectId
 
-from core import Shift, ShiftDimension, ShiftProperty
+from core import Dimension, Shift, ShiftProperty
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -12,8 +12,8 @@ from errors import (
     handle_save_document_error,
 )
 from logger import log_info
+from models import Dimension as DimensionDocument
 from models import Shift as ShiftDocument
-from models import ShiftDimension as ShiftDimensionDocument
 from models import ShiftProperty as ShiftPropertyDocument
 
 
@@ -126,7 +126,7 @@ class ShiftPropertyDB:
         return doc_to_core_shift_property(shift_property)
 
     def get_shift_property_by_shift_and_dimension(
-        self, shift: Shift, shift_dimension: ShiftDimension
+        self, shift: Shift, shift_dimension: Dimension
     ) -> Union[ShiftProperty, None]:
         try:
             # pylint: disable=no-member
@@ -265,8 +265,8 @@ def core_to_doc_shift_property(
         handle_get_document_error(e)
     try:
         # pylint: disable=no-member
-        shift_dimension = ShiftDimensionDocument.objects.get(  # type: ignore
-            id=dataclass_obj.shift_dimension_id
+        shift_dimension = DimensionDocument.objects.get(  # type: ignore
+            id=dataclass_obj.dimension_id
         )
     except Exception as e:
         log_info("Failed to get shift dimension by id")

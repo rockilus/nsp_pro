@@ -63,19 +63,25 @@ class ShiftMessage(BaseModel):
     shiftProperties: List[ShiftPropertyMessage]
 
 
-class ShiftDimensionMessage(BaseModel):
+class DimEntryMessage(BaseModel):
     id: str
-    isRest: bool
-    teamId: str
+    dimensionId: str
     name: str
-    entryType: str
-    entryOptions: List[str]
+
+
+class DimensionMessage(BaseModel):
+    id: str
+    teamId: str
+    type: int
+    name: str
+    entryType: int
+    restShift: bool
     deleted: bool
 
 
-class NewShiftDimensionMessage(BaseModel):
-    newDimension: ShiftDimensionMessage
-    newProperties: List[ShiftPropertyMessage]
+class NewDimensionMessage(BaseModel):
+    newDimension: DimensionMessage
+    newProperties: List[WorkerPropertyMessage] | List[ShiftPropertyMessage]
 
 
 # Coverage
@@ -290,22 +296,3 @@ class TeamMessage(BaseModel):
 # Health
 class HealthCheck(BaseModel):
     status: str
-
-
-# Bulk
-class BulkMessage(BaseModel):
-    selectedTeamId: str | None
-    user: UserMessage
-    teams: List[TeamMessage]
-    workers: List[WorkerMessage]
-    workerDimensions: List[WorkerDimensionMessage]
-    shifts: List[ShiftMessage]
-    shiftDimensions: List[ShiftDimensionMessage]
-    coverages: List[CoverageMessage]
-    constraints: List[ConstraintBuildMessage]
-    constraintTemplates: List[TemplateMessage]
-    requests: List[RequestMessage]
-    coverageSelectors: List[CoverageSelectorMessage]
-    assignments: List[AssignmentMessage]
-    schedule: ScheduleMessage
-    objectiveBreaches: List[ObjectiveBreachMessage]

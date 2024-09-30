@@ -44,6 +44,7 @@ async def create_worker_dimension(
         properties = []
         if wd_created.entry_type == "bool":
             workers = worker_db.get_workers(team_id)
+            # pylint: disable=R0801
             for worker in workers:
                 properties.append(
                     worker_property_db.create_worker_property(

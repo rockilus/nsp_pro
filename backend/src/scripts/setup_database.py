@@ -7,12 +7,13 @@ from database import (
     ConstraintDB,
     CoverageDB,
     CoverageSelectorDB,
+    DimensionDB,
+    DimEntryDB,
     ObjectiveBreachDB,
     RequestDB,
     ScheduleDB,
     ShiftDB,
     ShiftDemandDB,
-    ShiftDimensionDB,
     ShiftPropertyDB,
     StatsHeaderDB,
     TeamDB,
@@ -53,12 +54,13 @@ constraint_build_db = ConstraintBuildDB(db)
 constraint_db = ConstraintDB(db)
 coverage_db = CoverageDB(db)
 coverage_selector_db = CoverageSelectorDB(db)
+dimension_db = DimensionDB(db)
+dim_entry_db = DimEntryDB(db)
 objective_breach_db = ObjectiveBreachDB(db)
 request_db = RequestDB(db)
 schedule_db = ScheduleDB(db)
 shift_db = ShiftDB(db)
 shift_demand_db = ShiftDemandDB(db)
-shift_dimension_db = ShiftDimensionDB(db)
 shift_property_db = ShiftPropertyDB(db)
 stats_header_db = StatsHeaderDB(db)
 team_db = TeamDB(db)

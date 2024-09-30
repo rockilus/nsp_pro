@@ -3,8 +3,6 @@ from datetime import datetime
 from enum import Enum
 from typing import List
 
-from utils.constants import Constants
-
 
 class ShiftType(Enum):
     NORMAL = 0
@@ -63,21 +61,43 @@ class Shift:
 # know if this is a full day, morning, or afternoon leave shift
 
 
+class DimensionType(Enum):
+    WORKER = 0
+    SHIFT = 1
+    BOTH = 2
+
+
+class DimensionEntryType(Enum):
+    STR = 0
+    INT = 1
+    BOOL = 2
+    DIM_ENTRIES = 3
+
+
 @dataclass
 # pylint: disable=R0801
-class ShiftDimension:
+class DimEntry:
     id: str
-    is_rest: bool
-    team_id: str
+    dimension_id: str
     name: str
-    entry_type: Constants.DIMENSION_ENTRY_TYPES  # str, int, bool, list
-    entry_options: List[str]
+
+
+@dataclass
+# pylint: disable=R0801
+class Dimension:
+    id: str
+    team_id: str
+    type: DimensionType
+    name: str
+    entry_type: DimensionEntryType
+    rest_shift: bool
     deleted: bool
 
 
 @dataclass
 class ShiftProperty:
     id: str
-    value: str | int | float | bool | List[str]
+    value: str | int | float | bool
     shift_id: str
-    shift_dimension_id: str
+    dimension_id: str
+    dim_entry_ids: List[str]

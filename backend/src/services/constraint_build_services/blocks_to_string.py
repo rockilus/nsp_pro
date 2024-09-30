@@ -1,13 +1,6 @@
 from typing import List
 
-from core import (
-    Block,
-    Shift,
-    ShiftDimension,
-    ShiftWorkerOption,
-    Worker,
-    WorkerDimension,
-)
+from core import Block, Dimension, Shift, ShiftWorkerOption, Worker, WorkerDimension
 
 
 def translate_worker_block_value(value: str, language: str) -> str:
@@ -143,7 +136,7 @@ def get_shift_worker_option_display_name(
     workers: List[Worker],
     shifts: List[Shift],
     worker_dimensions: List[WorkerDimension],
-    shift_dimensions: List[ShiftDimension],
+    shift_dimensions: List[Dimension],
     lng: str,
 ) -> str:
     if option.id_type == "worker":
@@ -166,7 +159,7 @@ def get_shift_worker_option_display_name(
                     None,
                 )
                 return worker_dimension.name if worker_dimension else ''
-            shift_dimension: ShiftDimension | None = next(
+            shift_dimension: Dimension | None = next(
                 (sd for sd in shift_dimensions if sd.id == option.id),
                 None,
             )
@@ -196,7 +189,7 @@ def blocks_to_string(
     workers: List[Worker],
     shifts: List[Shift],
     worker_dimensions: List[WorkerDimension],
-    shift_dimensions: List[ShiftDimension],
+    shift_dimensions: List[Dimension],
     language: str,
 ) -> str:
     values = []
@@ -232,7 +225,7 @@ def block_to_string_shift_worker_option(
     workers: List[Worker],
     shifts: List[Shift],
     worker_dimensions: List[WorkerDimension],
-    shift_dimensions: List[ShiftDimension],
+    shift_dimensions: List[Dimension],
     lng: str,
 ) -> str:
     if not isinstance(block.value, list):

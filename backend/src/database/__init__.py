@@ -5,12 +5,13 @@ from database.constraint_db import ConstraintDB
 from database.coverage_db import CoverageDB
 from database.coverage_selector_db import CoverageSelectorDB
 from database.db import DB
+from database.dim_entry_db import DimEntryDB
+from database.dimension_db import DimensionDB
 from database.objective_breach_db import ObjectiveBreachDB
 from database.request_db import RequestDB
 from database.schedule_db import ScheduleDB
 from database.shift_db import ShiftDB
 from database.shift_demand_db import ShiftDemandDB
-from database.shift_dimension_db import ShiftDimensionDB
 from database.shift_property_db import ShiftPropertyDB
 from database.stats_header_db import StatsHeaderDB
 from database.team_db import TeamDB
@@ -29,12 +30,13 @@ __all__ = [
     "CoverageDB",
     "CoverageSelectorDB",
     "DB",
+    "DimEntryDB",
+    "DimensionDB",
     "ObjectiveBreachDB",
     "RequestDB",
     "ScheduleDB",
     "ShiftDB",
     "ShiftDemandDB",
-    "ShiftDimensionDB",
     "ShiftPropertyDB",
     "StatsHeaderDB",
     "TeamDB",

@@ -1,4 +1,3 @@
-from core.bulk import Bulk
 from core.config import Config
 from core.constraint import (
     Block,
@@ -17,8 +16,11 @@ from core.coverage import Coverage, CoverageSelector, ShiftDemand, ShiftDemandDa
 from core.request import Request, RequestAugmented
 from core.schedule import Assignment, ObjectiveBreach, QuickStaffing, Schedule, Variable
 from core.shift import (
+    Dimension,
+    DimensionEntryType,
+    DimensionType,
+    DimEntry,
     Shift,
-    ShiftDimension,
     ShiftLeaveType,
     ShiftProperty,
     ShiftRestType,
@@ -31,7 +33,6 @@ from core.worker import Worker, WorkerDimension, WorkerProperty
 
 # pylint: disable=R0801
 __all__ = [
-    "Bulk",
     "Config",
     "Assignment",
     "Block",
@@ -56,7 +57,10 @@ __all__ = [
     "Schedule",
     "Variable",
     "Shift",
-    "ShiftDimension",
+    "Dimension",
+    "DimEntry",
+    "DimensionType",
+    "DimensionEntryType",
     "ShiftLeaveType",
     "ShiftProperty",
     "ShiftRestType",

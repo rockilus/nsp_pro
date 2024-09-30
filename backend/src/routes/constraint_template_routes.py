@@ -18,8 +18,9 @@ from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import TemplateMessage
 from scripts.setup_database import (
+    dim_entry_db,
+    dimension_db,
     shift_db,
-    shift_dimension_db,
     shift_property_db,
     user_db,
     worker_db,
@@ -61,17 +62,21 @@ async def get_constraint_templates(
         )
         shift_properties_sd: Dict[str, List[ShiftProperty]] = {}
         for sp in shift_properties:
-            sd_id = sp.shift_dimension_id
+            sd_id = sp.dimension_id
             if sd_id not in shift_properties_sd:
                 shift_properties_sd[sd_id] = []
             shift_properties_sd[sd_id].append(sp)
-        shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
+        shift_dimensions = dimension_db.get_shift_dimensions(team_id)
+        shift_dim_entries = dim_entry_db.get_dim_entries_by_dim_ids(
+            [sd.id for sd in shift_dimensions]
+        )
         templates = build_templates(
             workers,
             worker_dimensions,
             worker_properties_wd,
             shifts,
             shift_dimensions,
+            shift_dim_entries,
             shift_properties_sd,
             user.language,
         )
