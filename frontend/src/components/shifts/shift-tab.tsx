@@ -47,6 +47,7 @@ export default function ShiftTab({
   const DefaultWorkShiftFields: Record<string, string>[] = [
     { name: "color", label: t("color") },
     { name: "name", label: t("name") },
+    { name: "duty", label: t("duty") },
     { name: "start_time", label: t("start_time") },
     { name: "end_time", label: t("end_time") },
     { name: "staffing", label: t("staffing") },

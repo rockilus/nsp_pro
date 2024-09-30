@@ -142,7 +142,7 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
     try:
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
-        recuperation_duties = ShiftDocument.get(  # type: ignore
+        recuperation_duties = ShiftDocument.objects.filter(  # type: ignore
             id__in=dataclass_obj.recuperation_duty_ids
         )
     except Exception as e:
@@ -160,7 +160,7 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
             shift_type=dataclass_obj.shift_type.value,
             rest_type=dataclass_obj.rest_type.value,
             leave_type=dataclass_obj.leave_type.value,
-            recuperation_duty_ids=recuperation_duties,
+            recuperation_duties=recuperation_duties,
             deleted=dataclass_obj.deleted,
         )
     except Exception as e:
