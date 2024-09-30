@@ -2,19 +2,26 @@ import React, { useState } from "react";
 // MUI
 import Chip from "@mui/material/Chip";
 // Components
-import ListTypeCellEdit from "../inputs/list-type-cell-edit";
+import DimEntryTypeCellEdit from "../inputs/dim-entry-type-cell-edit";
 import PopoverAnchorElOver from "../inputs/popover-anchor-el-over";
 // Types
-import { ShiftDimensionT, ShiftPropertyT } from "../../types/shift";
+import {
+  DimensionT,
+  ShiftPropertyT,
+  DimensionEntryType,
+  DimEntryT,
+} from "../../types/shift";
 
 export default function ShiftPropertyCellList({
   selectedTeamId,
   shiftDimension,
+  dimEntries,
   shiftProperty,
   handleUpdateShiftProperty,
 }: {
   selectedTeamId: string;
-  shiftDimension: ShiftDimensionT;
+  shiftDimension: DimensionT;
+  dimEntries: DimEntryT[];
   shiftProperty: ShiftPropertyT;
   handleUpdateShiftProperty: (
     shiftProperty: ShiftPropertyT,
@@ -22,17 +29,20 @@ export default function ShiftPropertyCellList({
   ) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [valueState, setValueState] = useState<string[]>(
-    shiftProperty.value as string[]
+  const [valueState, setValueState] = useState<DimEntryT[]>(
+    dimEntries.filter((de) => shiftProperty.dimEntryIds.includes(de.id))
   );
 
   const handleClose = () => {
     setOpen(false);
   };
 
-  const handleAddListValue = (value: string) => {
-    if (shiftDimension.entryType === "list" && Array.isArray(valueState)) {
-      const updatedValue = [...valueState, value];
+  const handleAddDimEntry = (dimEntry: DimEntryT) => {
+    if (
+      shiftDimension.entryType === DimensionEntryType.DIM_ENTRIES &&
+      Array.isArray(valueState)
+    ) {
+      const updatedValue = [...valueState, dimEntry];
       setValueState(updatedValue);
       if (!selectedTeamId) {
         console.error("No team selected");
@@ -41,7 +51,7 @@ export default function ShiftPropertyCellList({
       handleUpdateShiftProperty(
         {
           ...shiftProperty,
-          value: updatedValue,
+          dimEntryIds: updatedValue.map((v) => v.id),
         },
         selectedTeamId
       );
@@ -50,9 +60,9 @@ export default function ShiftPropertyCellList({
     }
   };
 
-  const handleDeleteListValue = (value: string) => {
-    if (shiftDimension.entryType === "list" && Array.isArray(valueState)) {
-      const updatedValue = valueState.filter((v) => v !== value);
+  const handleRemoveDimEntry = (dimEntry: DimEntryT) => {
+    if (shiftDimension.entryType === DimensionEntryType.DIM_ENTRIES) {
+      const updatedValue = valueState.filter((v) => v.id !== dimEntry.id);
       setValueState(updatedValue);
       if (!selectedTeamId) {
         console.error("No team selected");
@@ -61,7 +71,7 @@ export default function ShiftPropertyCellList({
       handleUpdateShiftProperty(
         {
           ...shiftProperty,
-          value: updatedValue,
+          dimEntryIds: updatedValue.map((v) => v.id),
         },
         selectedTeamId
       );
@@ -80,11 +90,11 @@ export default function ShiftPropertyCellList({
           : shiftProperty.value
       }
       content={
-        <ListTypeCellEdit
-          selectedOptions={valueState}
-          options={shiftDimension.entryOptions}
-          handleAddListValue={handleAddListValue}
-          handleDeleteListValue={handleDeleteListValue}
+        <DimEntryTypeCellEdit
+          selectedDimEntries={valueState}
+          dimEntries={dimEntries}
+          handleAddDimEntry={handleAddDimEntry}
+          handleRemoveDimEntry={handleRemoveDimEntry}
           handleClose={handleClose}
         />
       }

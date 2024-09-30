@@ -31,11 +31,12 @@ import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
 // Types
 import {
-  ShiftDimensionT,
+  DimensionT,
   ShiftT,
   ShiftPropertyT,
   ShiftLeaveType,
   ShiftRestType,
+  DimEntryT,
 } from "../../types/shift";
 
 dayjs.extend(utc);
@@ -45,6 +46,7 @@ export default function ShiftTable({
   selectedTeamId,
   isRest,
   shiftDimensions,
+  dimEntries,
   shifts,
   defaultShiftFields,
   handleAddShift,
@@ -58,19 +60,18 @@ export default function ShiftTable({
   lng: string;
   selectedTeamId: string;
   isRest: boolean;
-  shiftDimensions: ShiftDimensionT[];
+  shiftDimensions: DimensionT[];
+  dimEntries: DimEntryT[];
   shifts: ShiftT[];
   defaultShiftFields: Record<string, string>[];
   handleAddShift: (isRest: boolean) => void;
   handleDeleteShift: (shiftId: string) => void;
-  handleAddShiftDimension: (
-    newShiftDimension: ShiftDimensionT
-  ) => Promise<boolean>;
+  handleAddShiftDimension: (newShiftDimension: DimensionT) => Promise<boolean>;
   handleUpdateShiftProperty: (
     shiftProperty: ShiftPropertyT,
     teamId: string
   ) => void;
-  handleUpdateShiftDimension: (shiftDimension: ShiftDimensionT) => void;
+  handleUpdateShiftDimension: (shiftDimension: DimensionT) => void;
   handleUpdateShift: (updatedShift: ShiftT) => void;
   handleDeleteShiftDimension: (shiftDimensionId: string) => void;
 }) {
@@ -201,9 +202,13 @@ export default function ShiftTable({
                               shiftId: shift.id,
                               shiftDimensionId: sd.id,
                               value: defaultProperties[sd.entryType],
+                              dimEntryIds: [],
                             }
                       }
                       shiftDimension={sd}
+                      dimEntries={dimEntries.filter(
+                        (de) => de.dimensionId === sd.id
+                      )}
                       editing={bodyEditing[shift.id] === sd.id}
                       setEditing={setBodyEditing}
                       handleUpdateShiftProperty={handleUpdateShiftProperty}

@@ -10,7 +10,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 // Component
-import DimensionListInput from "../inputs/dimension-list-input";
+import DimensionEntriesInput from "../inputs/dimension-entries-input";
 // Types
 import { WorkerDimensionT } from "../../types/worker";
 
@@ -152,12 +152,12 @@ export default function NewWorkerDimensionForm({
       </Box>
       {type === "list" && (
         <Box mt={2}>
-          <DimensionListInput
+          <DimensionEntriesInput
             lng={lng}
-            options={listOptions}
+            dimEntries={listOptions}
             listError={listError}
-            addOption={handleAddOption}
-            removeOption={handleRemoveOption}
+            addDimEntry={handleAddOption}
+            removeDimEntry={handleRemoveOption}
           />
         </Box>
       )}

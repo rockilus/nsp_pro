@@ -11,7 +11,7 @@ import UpdateShiftDimensionForm from "./update-shift-dimension-form";
 // Styles
 import "../../styles/table-styles.css";
 //Types
-import { ShiftDimensionT } from "../../types/shift";
+import { DimensionT } from "../../types/shift";
 
 export default function ShiftDimensionCell({
   lng,
@@ -22,8 +22,8 @@ export default function ShiftDimensionCell({
 }: {
   lng: string;
   selectedTeamId: string;
-  shiftDimension: ShiftDimensionT;
-  handleUpdateShiftDimension: (shiftDimension: ShiftDimensionT) => void;
+  shiftDimension: DimensionT;
+  handleUpdateShiftDimension: (shiftDimension: DimensionT) => void;
   handleDeleteShiftDimension: (shiftDimensionId: string) => void;
 }) {
   const [popoverAnchorOpen, setPopoverAnchorOpen] = useState(false);

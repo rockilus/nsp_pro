@@ -5,40 +5,39 @@ import Box from "@mui/material/Box";
 import CancelIcon from "@mui/icons-material/Cancel";
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
+// Types
+import { DimEntryT } from "../../types/shift";
 
-interface Props {
-  options: string[];
-  listError: boolean;
-  addOption: (newOption: string) => void;
-  removeOption: (index: number) => void;
-}
-
-export default function DimensionListInput({
+export default function DimensionEntriesInput({
   lng,
-  options,
+  dimEntries,
   listError,
-  addOption,
-  removeOption,
+  addDimEntry,
+  removeDimEntry,
 }: {
   lng: string;
-  options: string[];
+  dimEntries: DimEntryT[];
   listError: boolean;
-  addOption: (newOption: string) => void;
-  removeOption: (index: number) => void;
+  addDimEntry: (newDimEntry: DimEntryT) => void;
+  removeDimEntry: (index: number) => void;
 }) {
   const { t } = useTranslation(lng, "inputs-components");
 
-  const [newOption, setNewOption] = useState<string>("");
+  const [newDimEntry, setNewDimEntry] = useState<DimEntryT>({
+    id: "",
+    dimensionId: "",
+    name: "",
+  });
   const [error, setError] = useState<boolean>(false);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewOption(event.target.value);
+    setNewDimEntry({ ...newDimEntry, name: event.target.value });
   };
 
   const handleAddOption = () => {
-    if (newOption.trim() !== "") {
-      addOption(newOption);
-      setNewOption("");
+    if (newDimEntry.name.trim() !== "") {
+      addDimEntry(newDimEntry);
+      setNewDimEntry({ id: "", dimensionId: "", name: "" });
       setError(false);
     } else {
       setError(true);
@@ -52,7 +51,7 @@ export default function DimensionListInput({
   };
 
   const handleDeleteOption = (index: number) => {
-    removeOption(index);
+    removeDimEntry(index);
   };
 
   return (
@@ -60,7 +59,7 @@ export default function DimensionListInput({
       <TextField
         label={t("property_new_option")}
         variant="outlined"
-        value={newOption}
+        value={newDimEntry.name}
         onChange={handleInputChange}
         onKeyDown={handleKeyPress}
         error={error || listError}
@@ -70,14 +69,14 @@ export default function DimensionListInput({
         sx={{ width: "100%" }}
       />
       <Box mt={2}>
-        {options.map((option, index) => (
+        {dimEntries.map((de, index) => (
           <Box
             key={index}
             display="flex"
             alignItems="center"
             sx={{ paddingLeft: 0.5 }}
           >
-            <Box flexGrow={1}>{option}</Box>
+            <Box flexGrow={1}>{de.name}</Box>
             <IconButton onClick={() => handleDeleteOption(index)}>
               <CancelIcon />
             </IconButton>

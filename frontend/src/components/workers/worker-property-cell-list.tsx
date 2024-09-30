@@ -2,7 +2,7 @@ import React, { useState } from "react";
 // MUI
 import Chip from "@mui/material/Chip";
 // Components
-import ListTypeCellEdit from "../inputs/list-type-cell-edit";
+import DimEntryTypeCellEdit from "../inputs/dim-entry-type-cell-edit";
 import PopoverAnchorElOver from "../inputs/popover-anchor-el-over";
 // Types
 import { WorkerDimensionT, WorkerPropertyT } from "../../types/worker";
@@ -80,11 +80,11 @@ export default function WorkerPropertyCellList({
           : workerProperty.value
       }
       content={
-        <ListTypeCellEdit
-          selectedOptions={valueState}
-          options={workerDimension.entryOptions}
-          handleAddListValue={handleAddListValue}
-          handleDeleteListValue={handleDeleteListValue}
+        <DimEntryTypeCellEdit
+          selectedDimEntries={valueState}
+          dimEntries={workerDimension.entryOptions}
+          handleAddDimEntry={handleAddListValue}
+          handleRemoveDimEntry={handleDeleteListValue}
           handleClose={handleClose}
         />
       }

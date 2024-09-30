@@ -5,10 +5,10 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 // Component
-import DimensionListInput from "../inputs/dimension-list-input";
+import DimensionEntriesInput from "../inputs/dimension-entries-input";
 import DialogShiftDimensionDel from "./dialog-shift-dimension-del";
 // Types
-import { ShiftDimensionT } from "../../types/shift";
+import { DimensionT } from "../../types/shift";
 
 export default function UpdateShiftDimensionForm({
   lng,
@@ -20,9 +20,9 @@ export default function UpdateShiftDimensionForm({
 }: {
   lng: string;
   selectedTeamId: string;
-  shiftDimension: ShiftDimensionT;
+  shiftDimension: DimensionT;
   setOpenParent: (open: boolean) => void | null;
-  handleUpdateShiftDimension: (shiftDimension: ShiftDimensionT) => void;
+  handleUpdateShiftDimension: (shiftDimension: DimensionT) => void;
   handleDeleteShiftDimension: (shiftDimensionId: string) => void;
 }) {
   const { t } = useTranslation(lng, "shift-page");
@@ -78,9 +78,9 @@ export default function UpdateShiftDimensionForm({
         listOptions !== shiftDimension.entryOptions ||
         updatedOptions
       ) {
-        const newShiftDimension: ShiftDimensionT = {
+        const newShiftDimension: DimensionT = {
           id: shiftDimension.id,
-          isRest: shiftDimension.isRest,
+          restShift: shiftDimension.restShift,
           teamId: selectedTeamId,
           name: name,
           entryType: shiftDimension.entryType,
@@ -125,12 +125,12 @@ export default function UpdateShiftDimensionForm({
       />
       {shiftDimension.entryType === "list" && (
         <Box mt={2}>
-          <DimensionListInput
+          <DimensionEntriesInput
             lng={lng}
-            options={listOptions}
+            dimEntries={listOptions}
             listError={listError}
-            addOption={handleAddOption}
-            removeOption={handleRemoveOption}
+            addDimEntry={handleAddOption}
+            removeDimEntry={handleRemoveOption}
           />
         </Box>
       )}

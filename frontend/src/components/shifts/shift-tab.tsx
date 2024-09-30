@@ -11,18 +11,18 @@ import {
   getShiftsTabData,
   addShift,
   deleteShift,
-  addShiftDimension,
+  addDimension,
   updateShiftProperty,
-  updateShiftDimension,
+  updateDimension,
   updateShift,
-  deleteShiftDimension,
+  deleteDimension,
 } from "../../app/lib/shift";
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
 import {
   ShiftT,
-  ShiftDimensionT,
+  DimensionT,
   ShiftPropertyT,
   ShiftLeaveType,
   ShiftType,
@@ -42,7 +42,7 @@ export default function ShiftTab({
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
-  const [shiftDimensions, setShiftDimensions] = useState<ShiftDimensionT[]>([]);
+  const [shiftDimensions, setShiftDimensions] = useState<DimensionT[]>([]);
 
   const DefaultWorkShiftFields: Record<string, string>[] = [
     { name: "color", label: t("color") },
@@ -114,13 +114,11 @@ export default function ShiftTab({
   // Shift Dimension Actions
   //////////////////////////
 
-  const handleAddShiftDimension = async (
-    newShiftDimension: ShiftDimensionT
-  ) => {
+  const handleAddShiftDimension = async (newShiftDimension: DimensionT) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const { newDimension, newProperties } = await addShiftDimension(
+    const { newDimension, newProperties } = await addDimension(
       newShiftDimension
     );
     setShiftDimensions([...shiftDimensions, newDimension]);
@@ -144,13 +142,11 @@ export default function ShiftTab({
     return true;
   };
 
-  const handleUpdateShiftDimension = async (
-    shiftDimension: ShiftDimensionT
-  ) => {
+  const handleUpdateShiftDimension = async (shiftDimension: DimensionT) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedShiftDimension = await updateShiftDimension(shiftDimension);
+    const updatedShiftDimension = await updateDimension(shiftDimension);
     setShiftDimensions((prevShiftDimensions) =>
       prevShiftDimensions.map((shiftDimension) =>
         shiftDimension.id === updatedShiftDimension.id
@@ -164,7 +160,7 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await deleteShiftDimension(shiftDimensionId, selectedTeamId);
+    await deleteDimension(shiftDimensionId, selectedTeamId);
     setShiftDimensions(
       shiftDimensions.filter(
         (shiftDimension) => shiftDimension.id !== shiftDimensionId
@@ -210,7 +206,7 @@ export default function ShiftTab({
         const {
           shifts: fetchedShifts,
           shiftDimensions: fetchedShiftDimensions,
-        }: { shifts: ShiftT[]; shiftDimensions: ShiftDimensionT[] } =
+        }: { shifts: ShiftT[]; shiftDimensions: DimensionT[] } =
           await getShiftsTabData(selectedTeamId);
         setShifts(fetchedShifts);
         setShiftDimensions(fetchedShiftDimensions);
@@ -231,7 +227,7 @@ export default function ShiftTab({
               lng={lng}
               selectedTeamId={selectedTeamId}
               isRest={false}
-              shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
+              shiftDimensions={shiftDimensions.filter((sd) => !sd.restShift)}
               shifts={shifts}
               defaultShiftFields={DefaultWorkShiftFields}
               handleAddShift={handleAddShift}
@@ -247,7 +243,7 @@ export default function ShiftTab({
               lng={lng}
               selectedTeamId={selectedTeamId}
               isRest={true}
-              shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
+              shiftDimensions={shiftDimensions.filter((sd) => sd.restShift)}
               shifts={shifts}
               defaultShiftFields={DefaultRestShiftFields}
               handleAddShift={handleAddShift}

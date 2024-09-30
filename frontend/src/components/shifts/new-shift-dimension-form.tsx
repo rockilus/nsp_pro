@@ -10,9 +10,14 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 // Component
-import DimensionListInput from "../inputs/dimension-list-input";
+import DimensionEntriesInput from "../inputs/dimension-entries-input";
 // Types
-import { ShiftDimensionT } from "../../types/shift";
+import {
+  DimensionT,
+  DimensionEntryType,
+  DimensionType,
+  DimEntryT,
+} from "../../types/shift";
 
 export default function NewShiftDimensionForm({
   lng,
@@ -25,48 +30,49 @@ export default function NewShiftDimensionForm({
   selectedTeamId: string;
   isRest: boolean;
   setOpenParent: (open: boolean) => void | null;
-  handleAddShiftDimension: (
-    newShiftDimension: ShiftDimensionT
-  ) => Promise<boolean>;
+  handleAddShiftDimension: (newShiftDimension: DimensionT) => Promise<boolean>;
 }) {
   const { t } = useTranslation(lng, "shift-page");
 
   const [name, setName] = useState<string>("");
-  const [type, setType] = useState<string>("");
-  const [listOptions, setListOptions] = useState<string[]>([]);
+  const [entryType, setEntryType] = useState<DimensionEntryType | null>(null);
+  const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
   const [nameError, setNameError] = useState<boolean>(false);
-  const [typeError, setTypeError] = useState<boolean>(false);
+  const [entryTypeError, setEntryTypeError] = useState<boolean>(false);
   const [listError, setListError] = useState<boolean>(false);
 
-  const PropertyTypes: Record<string, string> = {
-    str: t("type_str"),
-    int: t("type_int"),
-    bool: t("type_bool"),
-    list: t("type_list"),
-  };
+  const dimensionEntryTypeOptions: {
+    value: DimensionEntryType;
+    label: string;
+  }[] = [
+    { value: DimensionEntryType.STR, label: t("type_str") },
+    { value: DimensionEntryType.INT, label: t("type_int") },
+    { value: DimensionEntryType.BOOL, label: t("type_bool") },
+    { value: DimensionEntryType.DIM_ENTRIES, label: t("type_list") },
+  ];
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setName(event.target.value);
   };
 
-  const handleTypeChange = (event: SelectChangeEvent<string>) => {
-    setListOptions([]);
-    setType(event.target.value as string);
+  const handleTypeChange = (event: SelectChangeEvent<DimensionEntryType>) => {
+    setDimEntries([]);
+    setEntryType(event.target.value);
   };
 
-  const handleAddOption = (newOption: string) => {
-    if (newOption.trim() !== "") {
-      setListOptions([...listOptions, newOption]);
+  const handleAddDimEntry = (newDimEntry: DimEntryT) => {
+    if (newDimEntry.name.trim() !== "") {
+      setDimEntries([...dimEntries, newDimEntry]);
       setListError(false);
     } else {
       setListError(true);
     }
   };
 
-  const handleRemoveOption = (index: number) => {
-    const updatedOptions = [...listOptions];
+  const handleRemoveDimEntry = (index: number) => {
+    const updatedOptions = [...dimEntries];
     updatedOptions.splice(index, 1);
-    setListOptions(updatedOptions);
+    setDimEntries(updatedOptions);
   };
 
   const handleAddElement = async () => {
@@ -75,12 +81,15 @@ export default function NewShiftDimensionForm({
     } else {
       setNameError(false);
     }
-    if (type === "") {
-      setTypeError(true);
+    if (entryType === null) {
+      setEntryTypeError(true);
     } else {
-      setTypeError(false);
+      setEntryTypeError(false);
     }
-    if (type === "list" && listOptions.length === 0) {
+    if (
+      entryType === DimensionEntryType.DIM_ENTRIES &&
+      dimEntries.length === 0
+    ) {
       setListError(true);
     } else {
       setListError(false);
@@ -88,24 +97,24 @@ export default function NewShiftDimensionForm({
 
     if (
       name.trim() !== "" &&
-      type !== "" &&
-      (type !== "list" || listOptions.length > 0) &&
+      entryType !== null &&
+      (entryType !== DimensionEntryType.DIM_ENTRIES || dimEntries.length > 0) &&
       selectedTeamId
     ) {
-      const newShiftDimension: ShiftDimensionT = {
+      const newDimension: DimensionT = {
         id: "",
-        isRest: isRest,
         teamId: selectedTeamId,
+        type: DimensionType.SHIFT,
         name: name,
-        entryType: type,
-        entryOptions: listOptions,
+        entryType: entryType,
+        restShift: isRest,
         deleted: false,
       };
-      const addedOK = await handleAddShiftDimension(newShiftDimension);
+      const addedOK = await handleAddShiftDimension(newDimension);
       if (addedOK) {
         setName("");
-        setType("");
-        setListOptions([]);
+        setEntryType(null);
+        setDimEntries([]);
         if (setOpenParent) {
           setOpenParent(false);
         }
@@ -131,34 +140,34 @@ export default function NewShiftDimensionForm({
         >
           <InputLabel id="demo-simple-select-label">Type</InputLabel>
           <Select
-            value={t("property_type")}
+            value={entryType}
             onChange={handleTypeChange}
             variant="outlined"
-            error={typeError}
+            error={entryTypeError}
             style={{ minWidth: 120, width: "100%" }}
             label={t("property_type")}
           >
-            {Object.keys(PropertyTypes).map((key) => (
-              <MenuItem value={key} key={key}>
-                {PropertyTypes[key as keyof typeof PropertyTypes]}
+            {dimensionEntryTypeOptions.map((option, index) => (
+              <MenuItem key={index} value={option.value}>
+                {option.label}
               </MenuItem>
             ))}
           </Select>
-          {typeError && (
+          {entryTypeError && (
             <FormHelperText error>
               {t("property_type_helper_text")}
             </FormHelperText>
           )}
         </FormControl>
       </Box>
-      {type === "list" && (
+      {entryType === DimensionEntryType.DIM_ENTRIES && (
         <Box mt={2}>
-          <DimensionListInput
+          <DimensionEntriesInput
             lng={lng}
-            options={listOptions}
+            dimEntries={dimEntries}
             listError={listError}
-            addOption={handleAddOption}
-            removeOption={handleRemoveOption}
+            addDimEntry={handleAddDimEntry}
+            removeDimEntry={handleRemoveDimEntry}
           />
         </Box>
       )}

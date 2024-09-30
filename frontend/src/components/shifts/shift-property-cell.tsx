@@ -6,19 +6,26 @@ import TextField from "@mui/material/TextField";
 // Components
 import ShiftPropertyCellList from "./shift-property-cell-list";
 // Types
-import { ShiftPropertyT, ShiftDimensionT } from "../../types/shift";
+import {
+  ShiftPropertyT,
+  DimensionT,
+  DimensionEntryType,
+  DimEntryT,
+} from "../../types/shift";
 
 export default function ShiftPropertyCell({
   selectedTeamId,
   shiftProperty,
   shiftDimension,
+  dimEntries,
   editing,
   setEditing,
   handleUpdateShiftProperty,
 }: {
   selectedTeamId: string;
   shiftProperty: ShiftPropertyT;
-  shiftDimension: ShiftDimensionT;
+  shiftDimension: DimensionT;
+  dimEntries: DimEntryT[];
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateShiftProperty: (
@@ -66,18 +73,22 @@ export default function ShiftPropertyCell({
         }
         sx={{
           paddingY: 0,
-          cursor: shiftDimension.entryType === "list" ? "default" : "pointer",
+          cursor:
+            shiftDimension.entryType === DimensionEntryType.DIM_ENTRIES
+              ? "default"
+              : "pointer",
         }}
       >
-        {shiftDimension.entryType === "list" ? (
+        {shiftDimension.entryType === DimensionEntryType.DIM_ENTRIES ? (
           <ShiftPropertyCellList
             selectedTeamId={selectedTeamId}
             shiftDimension={shiftDimension}
+            dimEntries={dimEntries}
             shiftProperty={shiftProperty}
             handleUpdateShiftProperty={handleUpdateShiftProperty}
           />
-        ) : editing && shiftDimension.entryType !== "bool" ? (
-          shiftDimension.entryType === "int" ? (
+        ) : editing && shiftDimension.entryType !== DimensionEntryType.BOOL ? (
+          shiftDimension.entryType === DimensionEntryType.INT ? (
             <TextField
               fullWidth
               type="number"
@@ -112,7 +123,7 @@ export default function ShiftPropertyCell({
               autoFocus
             />
           )
-        ) : shiftDimension.entryType === "bool" ? (
+        ) : shiftDimension.entryType === DimensionEntryType.BOOL ? (
           <Checkbox
             checked={
               typeof shiftProperty.value === "boolean"

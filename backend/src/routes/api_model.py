@@ -44,6 +44,7 @@ class ShiftPropertyMessage(BaseModel):
     value: str | int | bool | List[str]
     shiftDimensionId: str
     shiftId: str
+    dimEntryIds: List[str]
 
 
 class ShiftMessage(BaseModel):

@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 // Component
-import DimensionListInput from "../inputs/dimension-list-input";
+import DimensionEntriesInput from "../inputs/dimension-entries-input";
 import DialogWorkerDimensionDel from "./dialog-worker-dimension-del";
 // Types
 import { WorkerDimensionT } from "../../types/worker";
@@ -124,12 +124,12 @@ export default function UpdateWorkerDimensionForm({
       />
       {workerDimension.entryType === "list" && (
         <Box mt={2}>
-          <DimensionListInput
+          <DimensionEntriesInput
             lng={lng}
-            options={listOptions}
+            dimEntries={listOptions}
             listError={listError}
-            addOption={handleAddOption}
-            removeOption={handleRemoveOption}
+            addDimEntry={handleAddOption}
+            removeDimEntry={handleRemoveOption}
           />
         </Box>
       )}
