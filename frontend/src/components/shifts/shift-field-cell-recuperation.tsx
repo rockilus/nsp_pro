@@ -51,39 +51,43 @@ export default function ShiftFieldCellRecuperation({
       scope="row"
       onClick={() =>
         shift.shiftType === ShiftType.DUTY &&
-        setEditing({ [shift.id]: "reference_duty" })
+        setEditing({ [shift.id]: "recuperation" })
       }
       sx={{
         paddingY: 0,
         cursor: shift.shiftType === ShiftType.DUTY ? "pointer" : "default",
       }}
     >
-      {shift.shiftType === ShiftType.DUTY ? (
-        editing ? (
-          <TextField
-            fullWidth
-            type="number"
-            name="Staffing"
-            value={valueState}
-            onChange={(e) =>
-              setValueState(e.target.value === "" ? "" : Number(e.target.value))
-            }
-            onBlur={handleEditConfirm}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleEditConfirm();
-              } else if (e.key === "Escape") {
-                handleEditCancel();
+      <div className="cell-content-container">
+        {shift.shiftType === ShiftType.DUTY ? (
+          editing ? (
+            <TextField
+              fullWidth
+              type="number"
+              name="Staffing"
+              value={valueState}
+              onChange={(e) =>
+                setValueState(
+                  e.target.value === "" ? "" : Number(e.target.value)
+                )
               }
-            }}
-            autoFocus
-          />
+              onBlur={handleEditConfirm}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleEditConfirm();
+                } else if (e.key === "Escape") {
+                  handleEditCancel();
+                }
+              }}
+              autoFocus
+            />
+          ) : (
+            shift.recuperationTime
+          )
         ) : (
-          shift.recuperationTime
-        )
-      ) : (
-        <span className="not-applicable-label">{t("not_applicable")}</span>
-      )}
+          <span className="not-applicable-label">{t("not_applicable")}</span>
+        )}
+      </div>
     </TableCell>
   );
 }
