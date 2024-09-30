@@ -48,6 +48,7 @@ export default function ShiftTab({
     { name: "color", label: t("color") },
     { name: "name", label: t("name") },
     { name: "duty", label: t("duty") },
+    { name: "recuperation", label: t("recuperation") },
     { name: "start_time", label: t("start_time") },
     { name: "end_time", label: t("end_time") },
     { name: "staffing", label: t("staffing") },
@@ -58,26 +59,6 @@ export default function ShiftTab({
     { name: "start_time", label: t("start_time") },
     { name: "end_time", label: t("end_time") },
   ];
-
-  const orderedRestShifts: ShiftT[] = shifts
-    .filter(
-      (s) => s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE
-    )
-    .sort((a, b) => {
-      if (a.restType === 1 && b.restType !== 1) {
-        return -1; // a comes before b if a.restType is 1
-      } else if (a.restType !== 1 && b.restType === 1) {
-        return 1; // b comes before a if b.restType is 1
-      } else if (a.leaveType > 0 && b.leaveType > 0) {
-        return a.leaveType - b.leaveType; // Order by increasing leaveType value
-      } else if (a.leaveType > 0) {
-        return -1; // a comes before b
-      } else if (b.leaveType > 0) {
-        return 1; // b comes before a
-      } else {
-        return 0; // No particular order for leaveType 0
-      }
-    });
 
   const roundTime = (dt: dayjs.Dayjs): dayjs.Dayjs => {
     let minutes = Math.floor(dt.minute() / 15) * 15;
@@ -103,7 +84,8 @@ export default function ShiftTab({
       shiftType: isRest ? ShiftType.REST : ShiftType.NORMAL,
       restType: ShiftRestType.NONE,
       leaveType: ShiftLeaveType.NONE,
-      recuperationDutyIds: [],
+      recuperationTime: 0,
+      recuperationDutyId: null,
       deleted: false,
       shiftProperties: [],
     });
@@ -250,11 +232,7 @@ export default function ShiftTab({
               selectedTeamId={selectedTeamId}
               isRest={false}
               shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
-              shifts={shifts.filter(
-                (s) =>
-                  s.shiftType === ShiftType.NORMAL ||
-                  s.shiftType === ShiftType.DUTY
-              )}
+              shifts={shifts}
               defaultShiftFields={DefaultWorkShiftFields}
               handleAddShift={handleAddShift}
               handleDeleteShift={handleDeleteShift}
@@ -270,7 +248,7 @@ export default function ShiftTab({
               selectedTeamId={selectedTeamId}
               isRest={true}
               shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
-              shifts={orderedRestShifts}
+              shifts={shifts}
               defaultShiftFields={DefaultRestShiftFields}
               handleAddShift={handleAddShift}
               handleDeleteShift={handleDeleteShift}

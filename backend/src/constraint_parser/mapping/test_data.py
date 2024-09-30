@@ -28,7 +28,8 @@ shifts = [
         shift_type=ShiftType.REST,
         rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
-        recuperation_duty_ids=[],
+        recuperation_time=0,
+        recuperation_duty_id=None,
         deleted=False,
     ),
     Shift(
@@ -42,7 +43,8 @@ shifts = [
         shift_type=ShiftType.NORMAL,
         rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
-        recuperation_duty_ids=[],
+        recuperation_time=0,
+        recuperation_duty_id=None,
         deleted=False,
     ),
     Shift(
@@ -56,7 +58,8 @@ shifts = [
         shift_type=ShiftType.NORMAL,
         rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
-        recuperation_duty_ids=[],
+        recuperation_time=0,
+        recuperation_duty_id=None,
         deleted=False,
     ),
     Shift(
@@ -70,7 +73,8 @@ shifts = [
         shift_type=ShiftType.NORMAL,
         rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
-        recuperation_duty_ids=[],
+        recuperation_time=0,
+        recuperation_duty_id=None,
         deleted=False,
     ),
     Shift(
@@ -84,7 +88,8 @@ shifts = [
         shift_type=ShiftType.NORMAL,
         rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
-        recuperation_duty_ids=[],
+        recuperation_time=0,
+        recuperation_duty_id=None,
         deleted=False,
     ),
     Shift(
@@ -98,7 +103,8 @@ shifts = [
         shift_type=ShiftType.NORMAL,
         rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
-        recuperation_duty_ids=[],
+        recuperation_time=0,
+        recuperation_duty_id=None,
         deleted=False,
     ),
     Shift(
@@ -112,7 +118,8 @@ shifts = [
         shift_type=ShiftType.NORMAL,
         rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
-        recuperation_duty_ids=[],
+        recuperation_time=0,
+        recuperation_duty_id=None,
         deleted=False,
     ),
     Shift(
@@ -126,7 +133,8 @@ shifts = [
         shift_type=ShiftType.NORMAL,
         rest_type=ShiftRestType.NONE,
         leave_type=ShiftLeaveType.NONE,
-        recuperation_duty_ids=[],
+        recuperation_time=0,
+        recuperation_duty_id=None,
         deleted=False,
     ),
 ]

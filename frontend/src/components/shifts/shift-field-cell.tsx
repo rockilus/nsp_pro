@@ -5,6 +5,7 @@ import TableCell from "@mui/material/TableCell";
 import ShiftFieldCellColor from "./shift-field-cell-color";
 import ShiftFieldCellName from "./shift-field-cell-name";
 import ShiftFieldCellDuty from "./shift-field-cell-duty";
+import ShiftFieldCellRecuperation from "./shift-field-cell-recuperation";
 import ShiftFieldCellStartTime from "./shift-field-cell-start-time";
 import ShiftFieldCellEndTime from "./shift-field-cell-end-time";
 import ShiftFieldCellStaff from "./shift-field-cell-staff";
@@ -14,6 +15,7 @@ import { ShiftT } from "../../types/shift";
 export default function ShiftFieldCell({
   lng,
   shift,
+  shifts,
   shiftField,
   editing,
   setEditing,
@@ -21,6 +23,7 @@ export default function ShiftFieldCell({
 }: {
   lng: string;
   shift: ShiftT;
+  shifts: ShiftT[];
   shiftField: string;
   editing: { [key: string]: string };
   setEditing: Dispatch<SetStateAction<{}>>;
@@ -38,6 +41,14 @@ export default function ShiftFieldCell({
     />
   ) : shiftField === "duty" ? (
     <ShiftFieldCellDuty shift={shift} handleUpdateShift={handleUpdateShift} />
+  ) : shiftField === "recuperation" ? (
+    <ShiftFieldCellRecuperation
+      lng={lng}
+      shift={shift}
+      editing={editing[shift.id] === "recuperation"}
+      setEditing={setEditing}
+      handleUpdateShift={handleUpdateShift}
+    />
   ) : shiftField === "start_time" ? (
     <ShiftFieldCellStartTime
       shift={shift}

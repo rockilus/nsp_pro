@@ -20,6 +20,11 @@ import ShiftDimensionCell from "./shift-dimension-cell";
 import ShiftFieldCell from "./shift-field-cell";
 import ShiftPropertyCell from "./shift-property-cell";
 import TableAddButton from "../buttons/table-add-button";
+import {
+  filterWorkShifts,
+  filterRestShifts,
+  filterRestShiftsNonDefault,
+} from "./shift-utils/shift-utils";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
@@ -90,13 +95,9 @@ export default function ShiftTable({
 
   const displayedShifts: ShiftT[] = isRest
     ? showDefaults
-      ? shifts
-      : shifts.filter(
-          (s) =>
-            s.leaveType === ShiftLeaveType.NONE &&
-            s.restType !== ShiftRestType.OFF
-        )
-    : shifts;
+      ? filterRestShifts(shifts)
+      : filterRestShiftsNonDefault(shifts)
+    : filterWorkShifts(shifts);
 
   return (
     <div>
@@ -177,6 +178,7 @@ export default function ShiftTable({
                     key={index}
                     lng={lng}
                     shift={shift}
+                    shifts={shifts}
                     shiftField={field.name}
                     editing={bodyEditing}
                     setEditing={setBodyEditing}

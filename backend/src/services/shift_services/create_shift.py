@@ -52,7 +52,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.REST,
             rest_type=ShiftRestType.OFF,
             leave_type=ShiftLeaveType.NONE,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
     ]
@@ -68,7 +69,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.VACATION,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -82,7 +84,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.VACATION_MORNING,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -96,7 +99,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.VACATION_AFTERNOON,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -110,7 +114,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.SICK,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -124,7 +129,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.SICK_MORNING,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -138,7 +144,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.SICK_AFTERNOON,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -152,7 +159,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.UNPAID,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -166,7 +174,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.UNPAID_MORNING,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -180,7 +189,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.UNPAID_AFTERNOON,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -194,7 +204,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.PARENTAL_LEAVE,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -208,7 +219,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.PARENTAL_LEAVE_MORNING,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -222,7 +234,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.PARENTAL_LEAVE_AFTERNOON,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -236,7 +249,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.TRAINING,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -250,7 +264,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.TRAINING_MORNING,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -264,7 +279,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.TRAINING_AFTERNOON,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -278,7 +294,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.OTHER,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -292,7 +309,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.OTHER_MORNING,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
         Shift(
@@ -306,7 +324,8 @@ def create_default_shifts(team_id: str) -> None:
             shift_type=ShiftType.LEAVE,
             rest_type=ShiftRestType.NONE,
             leave_type=ShiftLeaveType.OTHER_AFTERNOON,
-            recuperation_duty_ids=[],
+            recuperation_time=0,
+            recuperation_duty_id=None,
             deleted=False,
         ),
     ]

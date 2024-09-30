@@ -142,9 +142,11 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
     try:
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
-        recuperation_duties = ShiftDocument.objects.filter(  # type: ignore
-            id__in=dataclass_obj.recuperation_duty_ids
-        )
+        recuperation_duty = None
+        if dataclass_obj.recuperation_duty_id is not None:
+            recuperation_duty = ShiftDocument.objects(  # type: ignore
+                id=dataclass_obj.recuperation_duty_id
+            )
     except Exception as e:
         log_info("Failed to get team by id")
         handle_get_document_error(e)
@@ -160,7 +162,8 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
             shift_type=dataclass_obj.shift_type.value,
             rest_type=dataclass_obj.rest_type.value,
             leave_type=dataclass_obj.leave_type.value,
-            recuperation_duties=recuperation_duties,
+            recuperation_time=dataclass_obj.recuperation_time,
+            recuperation_duty=recuperation_duty,
             deleted=dataclass_obj.deleted,
         )
     except Exception as e:
@@ -183,7 +186,12 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             shift_type=ShiftType(doc_obj.shift_type),
             rest_type=ShiftRestType(doc_obj.rest_type),
             leave_type=ShiftLeaveType(doc_obj.leave_type),
-            recuperation_duty_ids=[str(s.id) for s in doc_obj.recuperation_duties],
+            recuperation_time=doc_obj.recuperation_time,
+            recuperation_duty_id=(
+                str(doc_obj.recuperation_duty.id)
+                if doc_obj.recuperation_duty is not None
+                else None
+            ),
             deleted=doc_obj.deleted,
         )
     except Exception as e:

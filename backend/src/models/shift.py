@@ -3,7 +3,6 @@ from mongoengine.fields import (
     BooleanField,
     DateTimeField,
     IntField,
-    ListField,
     ReferenceField,
     StringField,
 )
@@ -24,5 +23,6 @@ class Shift(Document):
     shift_type = IntField(required=True, choices=[e.value for e in ShiftType])
     rest_type = IntField(required=True, choices=[e.value for e in ShiftRestType])
     leave_type = IntField(required=True, choices=[e.value for e in ShiftLeaveType])
-    recuperation_duties = ListField(ReferenceField("Shift"))
+    recuperation_time = IntField(required=True)
+    recuperation_duty = ReferenceField("Shift")
     deleted = BooleanField(required=True)
