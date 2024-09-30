@@ -1,14 +1,9 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React from "react";
 // MUI
 import Checkbox from "@mui/material/Checkbox";
 import TableCell from "@mui/material/TableCell";
 // Types
-import {
-  ShiftT,
-  ShiftLeaveType,
-  ShiftRestType,
-  ShiftType,
-} from "../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../types/shift";
 
 export default function ShiftFieldCellRecuperation({
   shift,
@@ -25,7 +20,11 @@ export default function ShiftFieldCellRecuperation({
       return;
     }
     if (shift.restType === ShiftRestType.RECUPERATION) {
-      handleUpdateShift({ ...shift, restType: ShiftRestType.NONE });
+      handleUpdateShift({
+        ...shift,
+        restType: ShiftRestType.NONE,
+        recuperationDutyIds: [],
+      });
     } else {
       handleUpdateShift({ ...shift, restType: ShiftRestType.RECUPERATION });
     }

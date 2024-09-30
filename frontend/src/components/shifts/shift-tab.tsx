@@ -252,11 +252,7 @@ export default function ShiftTab({
               selectedTeamId={selectedTeamId}
               isRest={false}
               shiftDimensions={shiftDimensions.filter((sd) => !sd.isRest)}
-              shifts={shifts.filter(
-                (s) =>
-                  s.shiftType === ShiftType.NORMAL ||
-                  s.shiftType === ShiftType.DUTY
-              )}
+              shifts={shifts}
               defaultShiftFields={DefaultWorkShiftFields}
               handleAddShift={handleAddShift}
               handleDeleteShift={handleDeleteShift}
@@ -272,7 +268,7 @@ export default function ShiftTab({
               selectedTeamId={selectedTeamId}
               isRest={true}
               shiftDimensions={shiftDimensions.filter((sd) => sd.isRest)}
-              shifts={orderedRestShifts}
+              shifts={shifts}
               defaultShiftFields={DefaultRestShiftFields}
               handleAddShift={handleAddShift}
               handleDeleteShift={handleDeleteShift}

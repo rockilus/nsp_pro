@@ -1,0 +1,11 @@
+.not-applicable-label {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+}
+
+.select-duty-message {
+  color: #999;
+  font-size: 0.9em;
+  font-weight: 700;
+}
