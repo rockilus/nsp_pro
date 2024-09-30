@@ -6,6 +6,7 @@
     "delete_confirm": "Delete all",
     "delete_text": "Deleting this property will remove it from all shifts. This action cannot be undone.",
     "delete_title": "Delete this property for all?",
+    "duty": "Duty",
     "end_time": "End time",
     "name": "Name",
     "name_helper_text": "Please enter a name",

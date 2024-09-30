@@ -24,5 +24,5 @@ class Shift(Document):
     shift_type = IntField(required=True, choices=[e.value for e in ShiftType])
     rest_type = IntField(required=True, choices=[e.value for e in ShiftRestType])
     leave_type = IntField(required=True, choices=[e.value for e in ShiftLeaveType])
-    recuperation_duties = ListField(ReferenceField("Shift"), required=True)
+    recuperation_duties = ListField(ReferenceField("Shift"))
     deleted = BooleanField(required=True)

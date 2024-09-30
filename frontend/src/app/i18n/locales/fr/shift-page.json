@@ -6,6 +6,7 @@
     "delete_confirm": "Supprimer pour tous",
     "delete_text": "Supprimer cette propriété la retirera de toutes les tâches. Cette action ne peut pas être annulée.",
     "delete_title": "Supprimer cette propriété pour toutes les tâches?",
+    "duty": "Garde",
     "end_time": "Fin",
     "name": "Nom",
     "name_helper_text": "Entrez le nom de la tâche",

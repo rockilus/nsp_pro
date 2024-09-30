@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Shift, ShiftLeaveType, ShiftProperty, ShiftType
+from core import Shift, ShiftLeaveType, ShiftProperty, ShiftRestType, ShiftType
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -225,6 +225,7 @@ def msg_to_core_to_shift(msg: ShiftMessage) -> Shift:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake = {k: v for k, v in data_snake.items() if k != "shift_properties"}
     data_snake["shift_type"] = ShiftType(data_snake["shift_type"])
+    data_snake["rest_type"] = ShiftRestType(data_snake["rest_type"])
     data_snake["leave_type"] = ShiftLeaveType(data_snake["leave_type"])
     try:
         shift = Shift(**data_snake)
