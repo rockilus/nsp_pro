@@ -55,7 +55,8 @@ export default function WeeklyCalendar({
     shiftType: ShiftType.NORMAL,
     restType: ShiftRestType.NONE,
     leaveType: ShiftLeaveType.NONE,
-    recuperationDutyIds: [],
+    recuperationTime: 0,
+    recuperationDutyId: null,
     deleted: false,
     shiftProperties: [],
   };

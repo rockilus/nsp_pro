@@ -57,7 +57,8 @@ class ShiftMessage(BaseModel):
     shiftType: int
     restType: int
     leaveType: int
-    recuperationDutyIds: List[str]
+    recuperationTime: int
+    recuperationDutyId: str | None
     deleted: bool
     shiftProperties: List[ShiftPropertyMessage]
 

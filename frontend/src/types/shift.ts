@@ -63,7 +63,8 @@ export type ShiftT = {
   shiftType: ShiftType;
   restType: ShiftRestType;
   leaveType: ShiftLeaveType;
-  recuperationDutyIds: string[];
+  recuperationTime: number;
+  recuperationDutyId: string | null;
   deleted: boolean;
   shiftProperties: ShiftPropertyT[];
 };

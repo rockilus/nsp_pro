@@ -23,15 +23,20 @@ export default function ShiftFieldCellEndTime({
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateShift: (updatedShift: ShiftT) => void;
 }) {
-  const timeSlots: dayjs.Dayjs[] = [];
-  let firstSlot = shift.startTime;
-  const lastSlot = dayjs.utc(firstSlot).add(24, "hour");
-  while (firstSlot.isBefore(lastSlot) || firstSlot.isSame(lastSlot)) {
-    timeSlots.push(firstSlot);
-    firstSlot = firstSlot.add(15, "minute");
-  }
-
   const [valueState, setValueState] = useState(shift.endTime);
+
+  const buildTimeSlots = (): dayjs.Dayjs[] => {
+    const timeSlots: dayjs.Dayjs[] = [];
+    let firstSlot = shift.startTime;
+    const lastSlot = dayjs.utc(firstSlot).add(24, "hour");
+    while (firstSlot.isBefore(lastSlot) || firstSlot.isSame(lastSlot)) {
+      timeSlots.push(firstSlot);
+      firstSlot = firstSlot.add(15, "minute");
+    }
+    return timeSlots;
+  };
+
+  const timeSlots = buildTimeSlots();
 
   const handleEditConfirm = () => {
     if (valueState !== shift.endTime) {

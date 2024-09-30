@@ -54,7 +54,8 @@ class Shift:
     shift_type: ShiftType
     rest_type: ShiftRestType
     leave_type: ShiftLeaveType
-    recuperation_duty_ids: List[str]
+    recuperation_time: int  # in hours
+    recuperation_duty_id: str | None
     deleted: bool
 
 

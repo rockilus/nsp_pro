@@ -6,7 +6,6 @@ import ShiftFieldCellColor from "./shift-field-cell-color";
 import ShiftFieldCellName from "./shift-field-cell-name";
 import ShiftFieldCellDuty from "./shift-field-cell-duty";
 import ShiftFieldCellRecuperation from "./shift-field-cell-recuperation";
-import ShiftFieldCellReferenceDuty from "./shift-field-cell-reference-duty";
 import ShiftFieldCellStartTime from "./shift-field-cell-start-time";
 import ShiftFieldCellEndTime from "./shift-field-cell-end-time";
 import ShiftFieldCellStaff from "./shift-field-cell-staff";
@@ -44,15 +43,9 @@ export default function ShiftFieldCell({
     <ShiftFieldCellDuty shift={shift} handleUpdateShift={handleUpdateShift} />
   ) : shiftField === "recuperation" ? (
     <ShiftFieldCellRecuperation
-      shift={shift}
-      handleUpdateShift={handleUpdateShift}
-    />
-  ) : shiftField === "reference_duty" ? (
-    <ShiftFieldCellReferenceDuty
       lng={lng}
       shift={shift}
-      shifts={shifts}
-      editing={editing[shift.id] === "reference_duty"}
+      editing={editing[shift.id] === "recuperation"}
       setEditing={setEditing}
       handleUpdateShift={handleUpdateShift}
     />

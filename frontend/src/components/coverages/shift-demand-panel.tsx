@@ -53,7 +53,8 @@ export default function ShiftDemandPanel({
     shiftType: ShiftType.NORMAL,
     restType: ShiftRestType.NONE,
     leaveType: ShiftLeaveType.NONE,
-    recuperationDutyIds: [],
+    recuperationTime: 0,
+    recuperationDutyId: null,
     shiftProperties: [],
   };
 
