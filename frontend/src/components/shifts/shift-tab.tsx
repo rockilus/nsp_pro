@@ -55,6 +55,8 @@ export default function ShiftTab({
   const DefaultRestShiftFields: Record<string, string>[] = [
     { name: "color", label: t("color") },
     { name: "name", label: t("name") },
+    { name: "recuperation", label: t("recuperation") },
+    { name: "reference_duty", label: t("duty") },
     { name: "start_time", label: t("start_time") },
     { name: "end_time", label: t("end_time") },
   ];
