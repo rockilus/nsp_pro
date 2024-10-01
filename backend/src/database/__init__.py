@@ -1,4 +1,5 @@
 from database.assignment_db import AssignmentDB
+from database.attribute_db import AttributeDB
 from database.config_db import ConfigDB
 from database.constraint_build_db import ConstraintBuildDB
 from database.constraint_db import ConstraintDB
@@ -12,7 +13,6 @@ from database.request_db import RequestDB
 from database.schedule_db import ScheduleDB
 from database.shift_db import ShiftDB
 from database.shift_demand_db import ShiftDemandDB
-from database.shift_property_db import ShiftPropertyDB
 from database.stats_header_db import StatsHeaderDB
 from database.team_db import TeamDB
 from database.user_db import UserDB
@@ -24,6 +24,7 @@ from database.worker_property_db import WorkerPropertyDB
 
 __all__ = [
     "AssignmentDB",
+    "AttributeDB",
     "ConfigDB",
     "ConstraintBuildDB",
     "ConstraintDB",
@@ -37,7 +38,6 @@ __all__ = [
     "ScheduleDB",
     "ShiftDB",
     "ShiftDemandDB",
-    "ShiftPropertyDB",
     "StatsHeaderDB",
     "TeamDB",
     "UserDB",

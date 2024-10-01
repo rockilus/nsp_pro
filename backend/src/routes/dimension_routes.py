@@ -5,14 +5,7 @@ import humps
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
-from core import (
-    Attribute,
-    Dimension,
-    DimensionEntryType,
-    DimensionType,
-    DimEntry,
-    WorkerProperty,
-)
+from core import Attribute, Dimension, DimensionEntryType, DimensionType, DimEntry
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -30,8 +23,7 @@ from routes.api_model import (
     NewDimensionMessage,
 )
 from routes.dim_entry_routes import core_to_msg_dim_entry, msg_to_core_dim_entry
-from routes.shift_routes import core_to_msg_shift_property
-from routes.worker_routes import core_to_msg_worker_property
+from routes.shift_routes import core_to_msg_attribute
 from scripts.setup_database import dim_entry_db, dimension_db
 from services.dimension_services import create_dimension as create_dimension_service
 from services.dimension_services import delete_dimension as delete_dimension_service
@@ -53,8 +45,8 @@ async def create_dimension(
             raise NotAuthorizedError("You do not have permission to create a dimension")
         d_data = msg_to_core_dimension(dimension)
         des_data = [msg_to_core_dim_entry(de) for de in dim_entries]
-        d_created, des_created, properties = create_dimension_service(d_data, des_data)
-        response = core_to_msg_new_dimension(d_created, des_created, properties)
+        d_created, des_created, attributes = create_dimension_service(d_data, des_data)
+        response = core_to_msg_new_dimension(d_created, des_created, attributes)
     except Exception as e:
         log_info("Failed to create dimension")
         handle_routes_errors(e)
@@ -168,34 +160,19 @@ def core_to_msg_dimension(dimension: Dimension) -> DimensionMessage:
 def core_to_msg_new_dimension(
     dimension: Dimension,
     dim_entries: List[DimEntry],
-    properties: List[WorkerProperty | Attribute],
+    attributes: List[Attribute],
 ) -> NewDimensionMessage:
     try:
-        if all(isinstance(prop, WorkerProperty) for prop in properties):
-            as_dict = {
-                "newDimension": core_to_msg_dimension(dimension),
-                "newDimEntries": [core_to_msg_dim_entry(de) for de in dim_entries],
-                "newProperties": [
-                    core_to_msg_worker_property(wp) for wp in properties  # type: ignore
-                ],
-            }
-        elif all(isinstance(prop, Attribute) for prop in properties):
-            as_dict = {
-                "newDimension": core_to_msg_dimension(dimension),
-                "newDimEntries": [core_to_msg_dim_entry(de) for de in dim_entries],
-                "newProperties": [
-                    core_to_msg_shift_property(sp) for sp in properties  # type: ignore
-                ],
-            }
-        else:
-            raise MessageTypeError(
-                "Properties must be either a list of WorkerProperty or a list "
-                + "of ShiftProperty"
-            )
+        as_dict = {
+            "newDimension": core_to_msg_dimension(dimension),
+            "newDimEntries": [core_to_msg_dim_entry(de) for de in dim_entries],
+            "newAttributes": [
+                core_to_msg_attribute(sp) for sp in attributes  # type: ignore
+            ],
+        }
     except Exception as e:
         log_info(
-            "Failed to convert Dimension, DimEntries, and WorkerProperty list or "
-            + "ShiftProperty list to dictionary"
+            "Failed to convert Dimension, DimEntries, and Attributes to dictionary"
         )
         raise MessageTypeError(str(e)) from e
     validator = TypeAdapter(NewDimensionMessage)
@@ -203,8 +180,8 @@ def core_to_msg_new_dimension(
         nd_msg = validator.validate_python(as_dict)
     except Exception as e:
         log_info(
-            "Failed to convert Dimension, DimEntries, and WorkerProperty list or "
-            + "ShiftProperty list to NewDimensionMessage"
+            "Failed to convert Dimension, DimEntries, and Attributes to "
+            + "NewDimensionMessage"
         )
         handle_message_errors(e)
     return nd_msg

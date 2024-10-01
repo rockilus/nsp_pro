@@ -9,10 +9,10 @@ from core import (
     DimEntry,
 )
 from scripts.setup_database import (
+    attribute_db,
     dim_entry_db,
     dimension_db,
     shift_db,
-    shift_property_db,
     worker_db,
 )
 
@@ -34,6 +34,7 @@ def create_dimension(
             else:
                 shifts = shift_db.get_work_shifts(d_created.team_id)
             for shift in shifts:
+                # pylint: disable=R0801
                 attributes.append(
                     Attribute(
                         id="",
@@ -57,5 +58,5 @@ def create_dimension(
                         dim_entry_ids=[],
                     )
                 )
-        attributes_saved = shift_property_db.create_attributes(attributes)
+        attributes_saved = attribute_db.create_attributes(attributes)
     return d_created, des_created, attributes_saved

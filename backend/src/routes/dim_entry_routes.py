@@ -17,7 +17,7 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import AttributeMessage, DimEntryMessage
-from routes.shift_routes import core_to_msg_shift_property
+from routes.shift_routes import core_to_msg_attribute
 from scripts.setup_database import dim_entry_db
 from services.dimension_services import create_dim_entry as create_dim_entry_service
 from services.dimension_services import delete_dim_entry as delete_dim_entry_service
@@ -85,7 +85,7 @@ async def delete_dim_entry(
     except Exception as e:
         log_info("Failed to delete dim entry")
         handle_routes_errors(e)
-    return [core_to_msg_shift_property(sp) for sp in sp_updated]
+    return [core_to_msg_attribute(sp) for sp in sp_updated]
 
 
 # Mappers

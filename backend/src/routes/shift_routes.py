@@ -5,14 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import (
-    Attribute,
-    Shift,
-    ShiftLeaveType,
-    ShiftRestType,
-    ShiftType,
-    AttributeOwnerType,
-)
+from core import Attribute, Shift, ShiftLeaveType, ShiftRestType, ShiftType
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -20,15 +13,12 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
-from routes.api_model import AttributeMessage, ShiftMessage
-from scripts.setup_database import shift_db, shift_property_db
-from services.shift_services import create_or_update_shift_property
+from routes.api_model import ShiftMessage
+from routes.attribute_routes import core_to_msg_attribute
+from scripts.setup_database import attribute_db, shift_db
 from services.shift_services import create_shift as create_shift_service
 from services.shift_services import delete_shift as delete_shift_service
 from services.shift_services import update_shift as update_shift_service
@@ -46,12 +36,10 @@ async def create_shift(
         if not await authz_check(
             session.get_user_id(), "create-shift", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to create a shift"
-            )
+            raise NotAuthorizedError("You do not have permission to create a shift")
         s_data = msg_to_core_to_shift(shift)
         shift_created, sp_bool = create_shift_service(s_data)
-        response = core_to_msg_shift_and_properties(shift_created, sp_bool)
+        response = core_to_msg_shift_and_attributes(shift_created, sp_bool)
     except Exception as e:
         log_info("Failed to create shift")
         handle_routes_errors(e)
@@ -64,20 +52,14 @@ async def get_shifts(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ShiftMessage]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shifts", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shifts"
-            )
+        if not await authz_check(session.get_user_id(), "read-shifts", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = shift_db.get_shifts_not_deleted(team_id)
-        shifts_properties = [
-            shift_property_db.get_attributes_by_owner_id(shift.id)
-            for shift in shifts
+        attributes = [
+            attribute_db.get_attributes_by_owner_id(shift.id) for shift in shifts
         ]
         response = [
-            core_to_msg_shift_and_properties(s, sp)
-            for s, sp in zip(shifts, shifts_properties)
+            core_to_msg_shift_and_attributes(s, sp) for s, sp in zip(shifts, attributes)
         ]
     except Exception as e:
         log_info("Failed to get shifts")
@@ -91,20 +73,14 @@ async def get_work_shifts(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ShiftMessage]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shifts", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shifts"
-            )
+        if not await authz_check(session.get_user_id(), "read-shifts", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = shift_db.get_work_shifts_not_deleted(team_id)
-        shifts_properties = [
-            shift_property_db.get_attributes_by_owner_id(shift.id)
-            for shift in shifts
+        attributes = [
+            attribute_db.get_attributes_by_owner_id(shift.id) for shift in shifts
         ]
         response = [
-            core_to_msg_shift_and_properties(s, sp)
-            for s, sp in zip(shifts, shifts_properties)
+            core_to_msg_shift_and_attributes(s, sp) for s, sp in zip(shifts, attributes)
         ]
     except Exception as e:
         log_info("Failed to get shifts")
@@ -118,20 +94,14 @@ async def get_all_shifts(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ShiftMessage]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shifts", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shifts"
-            )
+        if not await authz_check(session.get_user_id(), "read-shifts", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = shift_db.get_shifts(team_id)
-        shifts_properties = [
-            shift_property_db.get_attributes_by_owner_id(shift.id)
-            for shift in shifts
+        attributes = [
+            attribute_db.get_attributes_by_owner_id(shift.id) for shift in shifts
         ]
         response = [
-            core_to_msg_shift_and_properties(s, sp)
-            for s, sp in zip(shifts, shifts_properties)
+            core_to_msg_shift_and_attributes(s, sp) for s, sp in zip(shifts, attributes)
         ]
     except Exception as e:
         log_info("Failed to get shifts")
@@ -149,43 +119,13 @@ async def update_shift(
         if not await authz_check(
             session.get_user_id(), "update-shift", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update shifts"
-            )
+            raise NotAuthorizedError("You do not have permission to update shifts")
         shift_data = msg_to_core_to_shift(shift)
         updated_shift = update_shift_service(shift_data)
-        shift_properties = shift_property_db.get_attributes_by_owner_id(
-            updated_shift.id
-        )
-        response = core_to_msg_shift_and_properties(
-            updated_shift, shift_properties
-        )
+        attributes = attribute_db.get_attributes_by_owner_id(updated_shift.id)
+        response = core_to_msg_shift_and_attributes(updated_shift, attributes)
     except Exception as e:
         log_info("Failed to update shift")
-        handle_routes_errors(e)
-    return response
-
-
-@router.put(
-    "/shifts/{shift_id}/properties/{shift_dimension_id}/teams/{team_id}"
-)
-async def update_shift_property(
-    team_id: str,
-    shift_property: AttributeMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> AttributeMessage:
-    try:
-        if not await authz_check(
-            session.get_user_id(), "update-shift-property", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to update shift properties"
-            )
-        sp_data = msg_to_core_shift_property(shift_property)
-        new_sp = create_or_update_shift_property(sp_data)
-        response = core_to_msg_shift_property(new_sp)
-    except Exception as e:
-        log_info("Failed to update shift property")
         handle_routes_errors(e)
     return response
 
@@ -200,9 +140,7 @@ async def delete_shift(
         if not await authz_check(
             session.get_user_id(), "delete-shift", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to delete shifts"
-            )
+            raise NotAuthorizedError("You do not have permission to delete shifts")
         delete_shift_service(shift_id)
     except Exception as e:
         log_info("Failed to delete shift")
@@ -212,36 +150,16 @@ async def delete_shift(
 
 # Mappers
 # core to message
-def core_to_msg_shift_property(
-    shift_property: Attribute,
-) -> AttributeMessage:
-    try:
-        data = asdict(shift_property)
-    except Exception as e:
-        log_info("Failed to convert ShiftProperty to dictionary")
-        raise MessageTypeError(str(e)) from e
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(AttributeMessage)
-    try:
-        sp_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert ShiftProperty to ShiftPropertyMessage")
-        handle_message_errors(e)
-    return sp_msg
-
-
-def core_to_msg_shift_and_properties(
-    shift: Shift, shift_properties: List[Attribute]
+def core_to_msg_shift_and_attributes(
+    shift: Shift, attributes: List[Attribute]
 ) -> ShiftMessage:
-    shift_properties_message = [
-        core_to_msg_shift_property(wp) for wp in shift_properties
-    ]
+    attributes_message = [core_to_msg_attribute(a) for a in attributes]
     try:
         data = asdict(shift)
     except Exception as e:
         log_info("Failed to convert Shift to dictionary")
         raise MessageTypeError(str(e)) from e
-    data["shift_properties"] = shift_properties_message
+    data["attributes"] = attributes_message
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ShiftMessage)
     try:
@@ -255,9 +173,7 @@ def core_to_msg_shift_and_properties(
 # message to core
 def msg_to_core_to_shift(msg: ShiftMessage) -> Shift:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake = {
-        k: v for k, v in data_snake.items() if k != "shift_properties"
-    }
+    data_snake = {k: v for k, v in data_snake.items() if k != "attributes"}
     data_snake["shift_type"] = ShiftType(data_snake["shift_type"])
     data_snake["rest_type"] = ShiftRestType(data_snake["rest_type"])
     data_snake["leave_type"] = ShiftLeaveType(data_snake["leave_type"])
@@ -267,14 +183,3 @@ def msg_to_core_to_shift(msg: ShiftMessage) -> Shift:
         log_info("Failed to convert ShiftMessage to Shift")
         handle_create_core_object_error(e)
     return shift
-
-
-def msg_to_core_shift_property(msg: AttributeMessage) -> Attribute:
-    data_snake = humps.decamelize(msg.model_dump())
-    data_snake["owner_type"] = AttributeOwnerType(data_snake["owner_type"])
-    try:
-        shift_property = Attribute(**data_snake)
-    except Exception as e:
-        log_info("Failed to convert ShiftPropertyMessage to ShiftProperty")
-        handle_create_core_object_error(e)
-    return shift_property

@@ -2,6 +2,7 @@ from core import Config
 from database import (
     DB,
     AssignmentDB,
+    AttributeDB,
     ConfigDB,
     ConstraintBuildDB,
     ConstraintDB,
@@ -14,7 +15,6 @@ from database import (
     ScheduleDB,
     ShiftDB,
     ShiftDemandDB,
-    ShiftPropertyDB,
     StatsHeaderDB,
     TeamDB,
     UserDB,
@@ -49,6 +49,7 @@ except DBConnectionError as e:
 
 
 assignment_db = AssignmentDB(db)
+attribute_db = AttributeDB(db)
 config_db = ConfigDB(db)
 constraint_build_db = ConstraintBuildDB(db)
 constraint_db = ConstraintDB(db)
@@ -61,7 +62,6 @@ request_db = RequestDB(db)
 schedule_db = ScheduleDB(db)
 shift_db = ShiftDB(db)
 shift_demand_db = ShiftDemandDB(db)
-shift_property_db = ShiftPropertyDB(db)
 stats_header_db = StatsHeaderDB(db)
 team_db = TeamDB(db)
 user_db = UserDB(db)

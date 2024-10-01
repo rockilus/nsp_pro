@@ -1,6 +1,7 @@
 from scripts.run_app import run_app
 from scripts.setup_database import (
     assignment_db,
+    attribute_db,
     constraint_build_db,
     constraint_db,
     coverage_db,
@@ -12,7 +13,6 @@ from scripts.setup_database import (
     schedule_db,
     shift_db,
     shift_demand_db,
-    shift_property_db,
     stats_header_db,
     user_db,
     worker_db,
@@ -22,6 +22,7 @@ from scripts.setup_database import (
 
 __all__ = [
     "assignment_db",
+    "attribute_db",
     "constraint_build_db",
     "run_app",
     "constraint_db",
@@ -34,7 +35,6 @@ __all__ = [
     "schedule_db",
     "shift_db",
     "shift_demand_db",
-    "shift_property_db",
     "stats_header_db",
     "user_db",
     "worker_db",

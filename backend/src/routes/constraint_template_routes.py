@@ -13,18 +13,15 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import TemplateMessage
 from scripts.setup_database import (
+    attribute_db,
     dim_entry_db,
     dimension_db,
     shift_db,
-    shift_property_db,
     user_db,
     worker_db,
     worker_dimension_db,
@@ -49,10 +46,8 @@ async def get_constraint_templates(
             )
         user = user_db.get_user_by_id(session.get_user_id())
         workers = worker_db.get_workers_not_deleted(team_id)
-        worker_properties = (
-            worker_property_db.get_worker_properties_by_worker_ids(
-                [w.id for w in workers]
-            )
+        worker_properties = worker_property_db.get_worker_properties_by_worker_ids(
+            [w.id for w in workers]
         )
         worker_properties_wd: Dict[str, List[WorkerProperty]] = {}
         for wp in worker_properties:
@@ -62,7 +57,7 @@ async def get_constraint_templates(
             worker_properties_wd[wd_id].append(wp)
         worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id)
         shifts = shift_db.get_shifts_not_deleted(team_id)
-        shift_properties = shift_property_db.get_attributes_by_owner_ids(
+        shift_properties = attribute_db.get_attributes_by_owner_ids(
             [s.id for s in shifts]
         )
         shift_properties_sd: Dict[str, List[Attribute]] = {}

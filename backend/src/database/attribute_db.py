@@ -1,6 +1,7 @@
 from typing import Dict, List, Union
 
 from bson import ObjectId
+
 from core import Attribute, AttributeOwnerType, Dimension, Shift
 from database.db import DB
 from errors import (
@@ -17,7 +18,7 @@ from models import Shift as ShiftDocument
 from models import Worker as WorkerDocument
 
 
-class ShiftPropertyDB:
+class AttributeDB:
     def __init__(self, db: DB):
         self.db = db
 
@@ -31,9 +32,7 @@ class ShiftPropertyDB:
             handle_save_document_error(e)
         return doc_to_core_attribute(p_saved)
 
-    def create_attributes(
-        self, attributes: List[Attribute]
-    ) -> List[Attribute]:
+    def create_attributes(self, attributes: List[Attribute]) -> List[Attribute]:
         a_docs = core_to_doc_attributes(attributes, creating=True)
         try:
             # pylint: disable=no-member
@@ -46,17 +45,13 @@ class ShiftPropertyDB:
     def get_attributes_by_owner_id(self, owner_id: str) -> List[Attribute]:
         try:
             # pylint: disable=no-member
-            a_docs = AttributeDocument.objects.filter(  # type: ignore
-                owner=owner_id
-            )
+            a_docs = AttributeDocument.objects.filter(owner=owner_id)  # type: ignore
         except Exception as e:
             log_info("Failed to get attributes by owner from database")
             handle_get_document_error(e)
         return [doc_to_core_attribute(a) for a in list(a_docs)]
 
-    def get_attributes_by_owner_ids(
-        self, owner_ids: List[str]
-    ) -> List[Attribute]:
+    def get_attributes_by_owner_ids(self, owner_ids: List[str]) -> List[Attribute]:
         try:
             # pylint: disable=no-member
             a_docs = AttributeDocument.objects.filter(  # type: ignore
@@ -67,9 +62,7 @@ class ShiftPropertyDB:
             handle_get_document_error(e)
         return [doc_to_core_attribute(a) for a in list(a_docs)]
 
-    def get_attributes_by_dimension_id(
-        self, dimension_id: str
-    ) -> List[Attribute]:
+    def get_attributes_by_dimension_id(self, dimension_id: str) -> List[Attribute]:
         try:
             # pylint: disable=no-member
             a_docs = AttributeDocument.objects.filter(  # type: ignore
@@ -122,9 +115,7 @@ class ShiftPropertyDB:
     def get_attribute_by_id(self, attribute_id: str) -> Attribute:
         try:
             # pylint: disable=no-member
-            a_doc = AttributeDocument.objects.get(  # type: ignore
-                id=attribute_id
-            )
+            a_doc = AttributeDocument.objects.get(id=attribute_id)  # type: ignore
         except Exception as e:
             log_info("Failed to get attribute by id from database")
             handle_get_document_error(e)
@@ -141,9 +132,7 @@ class ShiftPropertyDB:
                 .first()
             )
         except Exception as e:
-            log_info(
-                "Failed to get attribute by shift and dimension from database"
-            )
+            log_info("Failed to get attribute by shift and dimension from database")
             handle_get_document_error(e)
         return doc_to_core_attribute(a_doc) if a_doc else None
 
@@ -193,9 +182,7 @@ class ShiftPropertyDB:
                 r["shifts"],
             )
             attr_value_mod = (
-                attr_value.lower()
-                if not isinstance(attr_value, bool)
-                else attr_value
+                attr_value.lower() if not isinstance(attr_value, bool) else attr_value
             )
             if dim not in out:
                 out[dim] = {}
@@ -205,9 +192,7 @@ class ShiftPropertyDB:
                 out[dim][attr_value_mod] += shifts
         return out
 
-    def get_attributes_by_dim_entry_id(
-        self, dim_entry_id: str
-    ) -> List[Attribute]:
+    def get_attributes_by_dim_entry_id(self, dim_entry_id: str) -> List[Attribute]:
         try:
             # pylint: disable=no-member
             a_docs = AttributeDocument.objects.filter(  # type: ignore
@@ -233,9 +218,7 @@ class ShiftPropertyDB:
             handle_save_document_error(e)
         return doc_to_core_attribute(a_saved)
 
-    def update_attributes(
-        self, attributes: List[Attribute]
-    ) -> List[Attribute]:
+    def update_attributes(self, attributes: List[Attribute]) -> List[Attribute]:
         a_docs = core_to_doc_attributes(attributes)
         try:
             for a_doc in a_docs:
@@ -248,9 +231,7 @@ class ShiftPropertyDB:
     def delete_attributes_by_owner_id(self, owner_id: str) -> None:
         try:
             # pylint: disable=no-member
-            a_docs = AttributeDocument.objects.filter(  # type: ignore
-                owner=owner_id
-            )
+            a_docs = AttributeDocument.objects.filter(owner=owner_id)  # type: ignore
         except Exception as e:
             log_info("Failed to get attributes by shift id to delete")
             handle_get_document_error(e)
@@ -286,11 +267,15 @@ def core_to_doc_attribute(dataclass_obj: Attribute) -> AttributeDocument:
         if dataclass_obj.owner_type == AttributeOwnerType.SHIFT:
             # pylint: disable=no-member
             shift = ShiftDocument.objects.get(id=dataclass_obj.owner_id)  # type: ignore
+            if not shift:
+                raise ValueError("Shift does not exist")
         elif dataclass_obj.owner_type == AttributeOwnerType.WORKER:
             # pylint: disable=no-member
             worker = WorkerDocument.objects.get(  # type: ignore
                 id=dataclass_obj.owner_id
             )
+            if not worker:
+                raise ValueError("Worker does not exist")
         else:
             raise ValueError("Invalid owner type in attribute")
         # pylint: disable=no-member
@@ -356,9 +341,7 @@ def core_to_doc_attributes(
     }
     dim_entry_ids = list(
         set(
-            dim_entry_id
-            for doc in dataclass_objs
-            for dim_entry_id in doc.dim_entry_ids
+            dim_entry_id for doc in dataclass_objs for dim_entry_id in doc.dim_entry_ids
         )
     )
     dim_entries = {

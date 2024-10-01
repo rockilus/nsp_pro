@@ -10,7 +10,7 @@ from core import (
     ShiftRestType,
     ShiftType,
 )
-from scripts.setup_database import dimension_db, shift_db, shift_property_db
+from scripts.setup_database import attribute_db, dimension_db, shift_db
 
 
 def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:
@@ -35,7 +35,7 @@ def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:
                 dim_entry_ids=[],
             )
         )
-    attributes_saved = shift_property_db.create_attributes(attributes)
+    attributes_saved = attribute_db.create_attributes(attributes)
     return shift_created, attributes_saved
 
 

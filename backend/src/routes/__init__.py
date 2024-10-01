@@ -1,4 +1,5 @@
 from routes.assignment_routes import router as router_assignment
+from routes.attribute_routes import router as router_attribute
 from routes.constraint_routes import router as router_constraint
 from routes.constraint_template_routes import router as router_constraint_template
 from routes.coverage_routes import router as router_coverage
@@ -18,6 +19,7 @@ from routes.worker_routes import router as router_worker
 
 __all__ = [
     "router_assignment",
+    "router_attribute",
     "router_constraint",
     "router_constraint_template",
     "router_coverage",

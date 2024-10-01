@@ -1,4 +1,5 @@
 from services import (
+    attribute_services,
     constraint_build_services,
     constraint_services,
     dimension_services,
@@ -11,6 +12,7 @@ from services import (
 )
 
 __all__ = [
+    "attribute_services",
     "constraint_build_services",
     "constraint_services",
     "dimension_services",
