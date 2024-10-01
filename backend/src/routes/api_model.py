@@ -44,13 +44,6 @@ class NewDimensionMessage(BaseModel):
 
 
 # Worker
-class WorkerPropertyMessage(BaseModel):
-    id: str
-    value: str | int | bool | List[str]
-    workerDimensionId: str
-    workerId: str
-
-
 class WorkerMessage(BaseModel):
     id: str
     teamId: str
@@ -61,20 +54,6 @@ class WorkerMessage(BaseModel):
     annualLeave: int
     deleted: bool
     attributes: List[AttributeMessage]
-
-
-class WorkerDimensionMessage(BaseModel):
-    id: str
-    teamId: str
-    name: str
-    entryType: str
-    entryOptions: List[str]
-    deleted: bool
-
-
-class NewWorkerDimensionMessage(BaseModel):
-    newDimension: WorkerDimensionMessage
-    newProperties: List[WorkerPropertyMessage]
 
 
 # Shift

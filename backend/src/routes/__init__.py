@@ -14,7 +14,6 @@ from routes.shift_routes import router as router_shift
 from routes.stats_routes import router as router_stats
 from routes.team_routes import router as router_team
 from routes.user_routes import router as router_user
-from routes.worker_dimension_routes import router as router_worker_dimension
 from routes.worker_routes import router as router_worker
 
 __all__ = [
@@ -34,6 +33,5 @@ __all__ = [
     "router_stats",
     "router_team",
     "router_user",
-    "router_worker_dimension",
     "router_worker",
 ]

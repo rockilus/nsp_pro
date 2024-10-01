@@ -26,7 +26,6 @@ from routes import (
     router_team,
     router_user,
     router_worker,
-    router_worker_dimension,
 )
 from utils.env_config import API_DOMAIN, API_PORT, ORIGINS, UVICORN_RELOAD
 
@@ -64,7 +63,6 @@ app.include_router(router_stats)
 app.include_router(router_team)
 app.include_router(router_user)
 app.include_router(router_worker)
-app.include_router(router_worker_dimension)
 
 
 def run_router():

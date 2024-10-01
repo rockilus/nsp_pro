@@ -20,6 +20,7 @@ def create_worker(worker: Worker) -> Tuple[Worker, List[Attribute]]:
     attributes: List[Attribute] = []
     attributes_saved: List[Attribute] = []
     for d in d_bool:
+        # pylint: disable=R0801
         attributes.append(
             Attribute(
                 id="",
