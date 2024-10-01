@@ -80,6 +80,7 @@ class DimEntry:
     id: str
     dimension_id: str
     name: str
+    deleted: bool
 
 
 @dataclass

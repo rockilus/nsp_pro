@@ -4,10 +4,12 @@ from core import (
     Dimension,
     DimensionEntryType,
     DimensionType,
+    DimEntry,
     ShiftProperty,
     WorkerProperty,
 )
 from scripts.setup_database import (
+    dim_entry_db,
     dimension_db,
     shift_db,
     shift_property_db,
@@ -16,9 +18,13 @@ from scripts.setup_database import (
 
 
 def create_dimension(
-    dimension: Dimension,
-) -> Tuple[Dimension, List[WorkerProperty | ShiftProperty]]:
+    dimension: Dimension, dim_entries: List[DimEntry]
+) -> Tuple[Dimension, List[DimEntry], List[WorkerProperty | ShiftProperty]]:
     d_created = dimension_db.create_dimension(dimension)
+    des_created: List[DimEntry] = []
+    for dim_entry in dim_entries:
+        dim_entry.dimension_id = d_created.id
+        des_created.append(dim_entry_db.create_dim_entry(dim_entry))
     properties: List[WorkerProperty | ShiftProperty] = []
     if d_created.type == DimensionType.SHIFT:
         if d_created.entry_type == DimensionEntryType.BOOL:
@@ -52,4 +58,4 @@ def create_dimension(
                 )
             )
 
-    return d_created, properties
+    return d_created, des_created, properties

@@ -10,6 +10,7 @@ class DimEntry(Document):
     id = StringField(primary_key=True, required=True)
     dimension = ReferenceField("Dimension", required=True)
     name = StringField(required=True)
+    deleted = BooleanField(required=True)
 
 
 # pylint: disable=R0801

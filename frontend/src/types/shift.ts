@@ -17,6 +17,7 @@ export type DimEntryT = {
   id: string;
   dimensionId: string;
   name: string;
+  deleted: boolean;
 };
 
 export type DimensionT = {
@@ -91,5 +92,6 @@ export type ShiftT = {
 
 export type NewShiftDimensionT = {
   newDimension: DimensionT;
+  newDimEntries: DimEntryT[];
   newProperties: ShiftPropertyT[];
 };

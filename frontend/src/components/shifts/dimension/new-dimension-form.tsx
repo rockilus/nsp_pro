@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -10,27 +10,32 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 // Component
-import DimensionEntriesInput from "../inputs/dimension-entries-input";
+import NewDimensionDimEntriesInput from "./new-dimension-dim-entries-input";
 // Types
 import {
   DimensionT,
   DimensionEntryType,
   DimensionType,
   DimEntryT,
-} from "../../types/shift";
+} from "../../../types/shift";
 
-export default function NewShiftDimensionForm({
+export default function NewDimensionForm({
   lng,
   selectedTeamId,
+  dimensionType,
   isRest,
   setOpenParent,
   handleAddShiftDimension,
 }: {
   lng: string;
   selectedTeamId: string;
+  dimensionType: DimensionType;
   isRest: boolean;
   setOpenParent: (open: boolean) => void | null;
-  handleAddShiftDimension: (newShiftDimension: DimensionT) => Promise<boolean>;
+  handleAddShiftDimension: (
+    newDimension: DimensionT,
+    newDimEntries: DimEntryT[]
+  ) => Promise<boolean>;
 }) {
   const { t } = useTranslation(lng, "shift-page");
 
@@ -57,7 +62,7 @@ export default function NewShiftDimensionForm({
 
   const handleTypeChange = (event: SelectChangeEvent<DimensionEntryType>) => {
     setDimEntries([]);
-    setEntryType(event.target.value);
+    setEntryType(event.target.value as DimensionEntryType);
   };
 
   const handleAddDimEntry = (newDimEntry: DimEntryT) => {
@@ -104,13 +109,13 @@ export default function NewShiftDimensionForm({
       const newDimension: DimensionT = {
         id: "",
         teamId: selectedTeamId,
-        type: DimensionType.SHIFT,
+        type: dimensionType,
         name: name,
         entryType: entryType,
         restShift: isRest,
         deleted: false,
       };
-      const addedOK = await handleAddShiftDimension(newDimension);
+      const addedOK = await handleAddShiftDimension(newDimension, dimEntries);
       if (addedOK) {
         setName("");
         setEntryType(null);
@@ -140,7 +145,7 @@ export default function NewShiftDimensionForm({
         >
           <InputLabel id="demo-simple-select-label">Type</InputLabel>
           <Select
-            value={entryType}
+            value={entryType ? entryType : ""}
             onChange={handleTypeChange}
             variant="outlined"
             error={entryTypeError}
@@ -162,7 +167,7 @@ export default function NewShiftDimensionForm({
       </Box>
       {entryType === DimensionEntryType.DIM_ENTRIES && (
         <Box mt={2}>
-          <DimensionEntriesInput
+          <NewDimensionDimEntriesInput
             lng={lng}
             dimEntries={dimEntries}
             listError={listError}

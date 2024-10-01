@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  ChangeEvent,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { useState, ChangeEvent, useRef } from "react";
 // MUI
 import Chip from "@mui/material/Chip";
 import ClearIcon from "@mui/icons-material/Clear";

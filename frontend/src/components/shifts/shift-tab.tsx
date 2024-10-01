@@ -11,12 +11,19 @@ import {
   getShiftsTabData,
   addShift,
   deleteShift,
-  addDimension,
   updateShiftProperty,
-  updateDimension,
   updateShift,
-  deleteDimension,
 } from "../../app/lib/shift";
+import {
+  addDimension,
+  updateDimension,
+  deleteDimension,
+} from "../../app/lib/dimension";
+import {
+  addDimEntry,
+  updateDimEntry,
+  deleteDimEntry,
+} from "../../app/lib/dim-entry";
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
@@ -27,6 +34,7 @@ import {
   ShiftLeaveType,
   ShiftType,
   ShiftRestType,
+  DimEntryT,
 } from "../../types/shift";
 
 dayjs.extend(utc);
@@ -43,6 +51,7 @@ export default function ShiftTab({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [shiftDimensions, setShiftDimensions] = useState<DimensionT[]>([]);
+  const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
 
   const DefaultWorkShiftFields: Record<string, string>[] = [
     { name: "color", label: t("color") },
@@ -111,20 +120,26 @@ export default function ShiftTab({
   };
 
   //////////////////////////
-  // Shift Dimension Actions
+  // Dimension Actions
   //////////////////////////
 
-  const handleAddShiftDimension = async (newShiftDimension: DimensionT) => {
+  const handleAddDimension = async (
+    newDimension: DimensionT,
+    newDimEntries: DimEntryT[]
+  ) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const { newDimension, newProperties } = await addDimension(
-      newShiftDimension
-    );
-    setShiftDimensions([...shiftDimensions, newDimension]);
+    const {
+      newDimension: newDimensionResponse,
+      newDimEntries: newDimEntriesResponse,
+      newProperties: newPropertiesResponse,
+    } = await addDimension(newDimension, newDimEntries);
+    setShiftDimensions([...shiftDimensions, newDimensionResponse]);
+    setDimEntries([...dimEntries, ...newDimEntriesResponse]);
     setShifts((prevShifts) =>
       prevShifts.map((shift) => {
-        const newShiftProperties = newProperties.filter(
+        const newShiftProperties = newPropertiesResponse.filter(
           (property) => property.shiftId === shift.id
         );
 
@@ -142,11 +157,11 @@ export default function ShiftTab({
     return true;
   };
 
-  const handleUpdateShiftDimension = async (shiftDimension: DimensionT) => {
+  const handleUpdateDimension = async (dimension: DimensionT) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedShiftDimension = await updateDimension(shiftDimension);
+    const updatedShiftDimension = await updateDimension(dimension);
     setShiftDimensions((prevShiftDimensions) =>
       prevShiftDimensions.map((shiftDimension) =>
         shiftDimension.id === updatedShiftDimension.id
@@ -156,17 +171,74 @@ export default function ShiftTab({
     );
   };
 
-  const handleDeleteShiftDimension = async (shiftDimensionId: string) => {
+  const handleDeleteDimension = async (dimensionId: string) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await deleteDimension(shiftDimensionId, selectedTeamId);
+    await deleteDimension(dimensionId, selectedTeamId);
     setShiftDimensions(
       shiftDimensions.filter(
-        (shiftDimension) => shiftDimension.id !== shiftDimensionId
+        (shiftDimension) => shiftDimension.id !== dimensionId
       )
     );
   };
+
+  //////////////////////////
+  // DimEntry Actions
+  //////////////////////////
+
+  const handleAddDimEntry = async (dimEntry: DimEntryT) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const newDimEntry = await addDimEntry(dimEntry, selectedTeamId);
+    setDimEntries([...dimEntries, newDimEntry]);
+  };
+
+  const handleUpdateDimEntry = async (dimEntry: DimEntryT) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const updatedDimEntry = await updateDimEntry(dimEntry, selectedTeamId);
+    setDimEntries((prevDimEntries) =>
+      prevDimEntries.map((de) =>
+        de.id === updatedDimEntry.id ? updatedDimEntry : de
+      )
+    );
+  };
+
+  const handleDeleteDimEntry = async (dimEntryId: string) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const updatedShiftProperties = await deleteDimEntry(
+      dimEntryId,
+      selectedTeamId
+    );
+    setDimEntries(dimEntries.filter((dimEntry) => dimEntry.id !== dimEntryId));
+    for (const updatedShiftProperty of updatedShiftProperties) {
+      setShifts((prevShifts) =>
+        prevShifts.map((shift) =>
+          shift.id === updatedShiftProperty.shiftId
+            ? {
+                ...shift,
+                shiftProperties: shift.shiftProperties.some(
+                  (shiftProperty) =>
+                    shiftProperty.id === updatedShiftProperty.id
+                )
+                  ? shift.shiftProperties.map((shiftProperty) =>
+                      shiftProperty.id === updatedShiftProperty.id
+                        ? { ...shiftProperty, ...updatedShiftProperty }
+                        : shiftProperty
+                    )
+                  : [...shift.shiftProperties, updatedShiftProperty],
+              }
+            : shift
+        )
+      );
+    }
+  };
+
   //////////////////////////
   // Shift Property Actions
   //////////////////////////
@@ -206,10 +278,15 @@ export default function ShiftTab({
         const {
           shifts: fetchedShifts,
           shiftDimensions: fetchedShiftDimensions,
-        }: { shifts: ShiftT[]; shiftDimensions: DimensionT[] } =
-          await getShiftsTabData(selectedTeamId);
+          dimEntries: fetchedDimEntries,
+        }: {
+          shifts: ShiftT[];
+          shiftDimensions: DimensionT[];
+          dimEntries: DimEntryT[];
+        } = await getShiftsTabData(selectedTeamId);
         setShifts(fetchedShifts);
         setShiftDimensions(fetchedShiftDimensions);
+        setDimEntries(fetchedDimEntries);
         setIsLoading(false);
       }
     };
@@ -228,15 +305,19 @@ export default function ShiftTab({
               selectedTeamId={selectedTeamId}
               isRest={false}
               shiftDimensions={shiftDimensions.filter((sd) => !sd.restShift)}
+              dimEntries={dimEntries}
               shifts={shifts}
               defaultShiftFields={DefaultWorkShiftFields}
               handleAddShift={handleAddShift}
-              handleDeleteShift={handleDeleteShift}
-              handleAddShiftDimension={handleAddShiftDimension}
-              handleUpdateShiftProperty={handleUpdateShiftProperty}
-              handleUpdateShiftDimension={handleUpdateShiftDimension}
               handleUpdateShift={handleUpdateShift}
-              handleDeleteShiftDimension={handleDeleteShiftDimension}
+              handleDeleteShift={handleDeleteShift}
+              handleAddDimension={handleAddDimension}
+              handleUpdateDimension={handleUpdateDimension}
+              handleDeleteDimension={handleDeleteDimension}
+              handleAddDimEntry={handleAddDimEntry}
+              handleUpdateDimEntry={handleUpdateDimEntry}
+              handleDeleteDimEntry={handleDeleteDimEntry}
+              handleUpdateShiftProperty={handleUpdateShiftProperty}
             />
             <div className="divider" />
             <ShiftTable
@@ -244,15 +325,19 @@ export default function ShiftTab({
               selectedTeamId={selectedTeamId}
               isRest={true}
               shiftDimensions={shiftDimensions.filter((sd) => sd.restShift)}
+              dimEntries={dimEntries}
               shifts={shifts}
               defaultShiftFields={DefaultRestShiftFields}
               handleAddShift={handleAddShift}
-              handleDeleteShift={handleDeleteShift}
-              handleAddShiftDimension={handleAddShiftDimension}
-              handleUpdateShiftProperty={handleUpdateShiftProperty}
-              handleUpdateShiftDimension={handleUpdateShiftDimension}
               handleUpdateShift={handleUpdateShift}
-              handleDeleteShiftDimension={handleDeleteShiftDimension}
+              handleDeleteShift={handleDeleteShift}
+              handleAddDimension={handleAddDimension}
+              handleUpdateDimension={handleUpdateDimension}
+              handleDeleteDimension={handleDeleteDimension}
+              handleAddDimEntry={handleAddDimEntry}
+              handleUpdateDimEntry={handleUpdateDimEntry}
+              handleDeleteDimEntry={handleDeleteDimEntry}
+              handleUpdateShiftProperty={handleUpdateShiftProperty}
             />
           </div>
         )

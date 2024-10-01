@@ -14,9 +14,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import ToggleButton from "@mui/material/ToggleButton";
 // Components
-import NewShiftDimensionForm from "./new-shift-dimension-form";
+import NewDimensionForm from "./dimension/new-dimension-form";
 import PopoverRHS from "../inputs/popover-rhs";
-import ShiftDimensionCell from "./shift-dimension-cell";
+import DimensionCell from "./dimension/dimension-cell";
 import ShiftFieldCell from "./shift-field-cell";
 import ShiftPropertyCell from "./shift-property-cell";
 import TableAddButton from "../buttons/table-add-button";
@@ -37,6 +37,7 @@ import {
   ShiftLeaveType,
   ShiftRestType,
   DimEntryT,
+  DimensionType,
 } from "../../types/shift";
 
 dayjs.extend(utc);
@@ -50,12 +51,15 @@ export default function ShiftTable({
   shifts,
   defaultShiftFields,
   handleAddShift,
-  handleDeleteShift,
-  handleAddShiftDimension,
-  handleUpdateShiftProperty,
-  handleUpdateShiftDimension,
   handleUpdateShift,
-  handleDeleteShiftDimension,
+  handleDeleteShift,
+  handleAddDimension,
+  handleUpdateDimension,
+  handleDeleteDimension,
+  handleAddDimEntry,
+  handleUpdateDimEntry,
+  handleDeleteDimEntry,
+  handleUpdateShiftProperty,
 }: {
   lng: string;
   selectedTeamId: string;
@@ -65,15 +69,21 @@ export default function ShiftTable({
   shifts: ShiftT[];
   defaultShiftFields: Record<string, string>[];
   handleAddShift: (isRest: boolean) => void;
+  handleUpdateShift: (updatedShift: ShiftT) => void;
   handleDeleteShift: (shiftId: string) => void;
-  handleAddShiftDimension: (newShiftDimension: DimensionT) => Promise<boolean>;
+  handleAddDimension: (
+    newDimension: DimensionT,
+    newDimEntries: DimEntryT[]
+  ) => Promise<boolean>;
+  handleUpdateDimension: (dimension: DimensionT) => void;
+  handleDeleteDimension: (dimensionId: string) => void;
+  handleAddDimEntry: (dimEntry: DimEntryT) => void;
+  handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
+  handleDeleteDimEntry: (dimEntryId: string) => void;
   handleUpdateShiftProperty: (
     shiftProperty: ShiftPropertyT,
     teamId: string
   ) => void;
-  handleUpdateShiftDimension: (shiftDimension: DimensionT) => void;
-  handleUpdateShift: (updatedShift: ShiftT) => void;
-  handleDeleteShiftDimension: (shiftDimensionId: string) => void;
 }) {
   const { t } = useTranslation(lng, "shift-page");
 
@@ -127,12 +137,13 @@ export default function ShiftTable({
           title={t("new_property")}
           buttonContent={<TableAddButton text={t("property")} />}
           content={
-            <NewShiftDimensionForm
+            <NewDimensionForm
               lng={lng}
               selectedTeamId={selectedTeamId}
+              dimensionType={DimensionType.SHIFT}
               isRest={isRest}
               setOpenParent={setPopoverRhsOpen}
-              handleAddShiftDimension={handleAddShiftDimension}
+              handleAddShiftDimension={handleAddDimension}
             />
           }
           open={popoverRhsOpen}
@@ -149,13 +160,19 @@ export default function ShiftTable({
                 </TableCell>
               ))}
               {shiftDimensions.map((sd, sdIndex) => (
-                <ShiftDimensionCell
+                <DimensionCell
                   key={sdIndex}
                   lng={lng}
                   selectedTeamId={selectedTeamId}
-                  shiftDimension={sd}
-                  handleUpdateShiftDimension={handleUpdateShiftDimension}
-                  handleDeleteShiftDimension={handleDeleteShiftDimension}
+                  dimension={sd}
+                  dimEntries={dimEntries.filter(
+                    (de) => de.dimensionId === sd.id
+                  )}
+                  handleUpdateDimension={handleUpdateDimension}
+                  handleDeleteDimension={handleDeleteDimension}
+                  handleAddDimEntry={handleAddDimEntry}
+                  handleUpdateDimEntry={handleUpdateDimEntry}
+                  handleDeleteDimEntry={handleDeleteDimEntry}
                 />
               ))}
               <TableCell sx={{ padding: 0, width: 110 }}></TableCell>

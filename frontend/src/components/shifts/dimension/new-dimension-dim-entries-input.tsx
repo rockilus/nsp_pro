@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import CancelIcon from "@mui/icons-material/Cancel";
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
 // Types
-import { DimEntryT } from "../../types/shift";
+import { DimEntryT } from "../../../types/shift";
 
-export default function DimensionEntriesInput({
+export default function NewDimensionDimEntriesInput({
   lng,
   dimEntries,
   listError,
@@ -27,6 +27,7 @@ export default function DimensionEntriesInput({
     id: "",
     dimensionId: "",
     name: "",
+    deleted: false,
   });
   const [error, setError] = useState<boolean>(false);
 
@@ -37,7 +38,7 @@ export default function DimensionEntriesInput({
   const handleAddOption = () => {
     if (newDimEntry.name.trim() !== "") {
       addDimEntry(newDimEntry);
-      setNewDimEntry({ id: "", dimensionId: "", name: "" });
+      setNewDimEntry({ id: "", dimensionId: "", name: "", deleted: false });
       setError(false);
     } else {
       setError(true);

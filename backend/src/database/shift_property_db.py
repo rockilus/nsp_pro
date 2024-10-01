@@ -13,6 +13,7 @@ from errors import (
 )
 from logger import log_info
 from models import Dimension as DimensionDocument
+from models import DimEntry as DimEntryDocument
 from models import Shift as ShiftDocument
 from models import ShiftProperty as ShiftPropertyDocument
 
@@ -30,6 +31,18 @@ class ShiftPropertyDB:
             log_info("Failed to save shift property to database")
             handle_save_document_error(e)
         return doc_to_core_shift_property(sp_saved)
+
+    def create_shift_properties(
+        self, shift_properties: List[ShiftProperty]
+    ) -> List[ShiftProperty]:
+        sp_docs = core_to_doc_shift_properties(shift_properties, creating=True)
+        try:
+            # pylint: disable=no-member
+            sp_saved = ShiftPropertyDocument.objects.insert(sp_docs)  # type: ignore
+        except Exception as e:
+            log_info("Failed to save shift properties to database")
+            handle_save_document_error(e)
+        return [doc_to_core_shift_property(sp) for sp in sp_saved]
 
     def get_shift_properties_by_shift_id(self, shift_id: str) -> List[ShiftProperty]:
         try:
@@ -198,6 +211,19 @@ class ShiftPropertyDB:
                 out[dim][prop_value_mod] += shifts
         return out
 
+    def get_shift_properties_by_dim_entry_id(
+        self, dim_entry_id: str
+    ) -> List[ShiftProperty]:
+        try:
+            # pylint: disable=no-member
+            shift_properties = ShiftPropertyDocument.objects.filter(  # type: ignore
+                dim_entry_ids__contains=dim_entry_id
+            )
+        except Exception as e:
+            log_info("Failed to get shift properties by dim entry id from database")
+            handle_get_document_error(e)
+        return [doc_to_core_shift_property(sp) for sp in list(shift_properties)]
+
     def update_shift_property(self, shift_property: ShiftProperty) -> ShiftProperty:
         sp_doc = core_to_doc_shift_property(shift_property)
         try:
@@ -212,6 +238,18 @@ class ShiftPropertyDB:
             log_info("Failed to update shift property")
             handle_save_document_error(e)
         return doc_to_core_shift_property(sp_saved)
+
+    def update_shift_properties(
+        self, shift_properties: List[ShiftProperty]
+    ) -> List[ShiftProperty]:
+        sp_docs = core_to_doc_shift_properties(shift_properties)
+        try:
+            for sp_doc in sp_docs:
+                sp_doc.save()
+        except Exception as e:
+            log_info("Failed to update shift properties")
+            handle_save_document_error(e)
+        return [doc_to_core_shift_property(sp) for sp in sp_docs]
 
     def delete_shift_properties_by_shift_id(self, shift_id: str) -> None:
         try:
@@ -284,6 +322,51 @@ def core_to_doc_shift_property(
     return sp_doc
 
 
+def core_to_doc_shift_properties(
+    dataclass_objs: List[ShiftProperty], creating: bool = False
+) -> List[ShiftPropertyDocument]:
+    shift_ids = list(set(doc.shift_id for doc in dataclass_objs))
+    shifts = {
+        shift.id: shift
+        # pylint: disable=no-member
+        for shift in ShiftDocument.objects.filter(id__in=shift_ids)  # type: ignore
+    }
+    dimension_ids = list(set(doc.dimension_id for doc in dataclass_objs))
+    dimensions = {
+        dimension.id: dimension
+        # pylint: disable=no-member
+        for dimension in DimensionDocument.objects.filter(  # type: ignore
+            id__in=dimension_ids
+        )
+    }
+    dim_entry_ids = list(
+        set(
+            dim_entry_id for doc in dataclass_objs for dim_entry_id in doc.dim_entry_ids
+        )
+    )
+    dim_entries = {
+        dim_entry.id: dim_entry
+        # pylint: disable=no-member
+        for dim_entry in DimEntryDocument.objects.filter(  # type: ignore
+            id__in=dim_entry_ids
+        )
+    }
+    out = []
+    for dataclass_obj in dataclass_objs:
+        sp_doc = ShiftPropertyDocument(
+            id=str(ObjectId()) if creating else dataclass_obj.id,
+            value=dataclass_obj.value,
+            shift=shifts.get(dataclass_obj.shift_id),
+            shift_dimension=dimensions.get(dataclass_obj.dimension_id),
+            dim_entries=[
+                dim_entries.get(dim_entry_id)
+                for dim_entry_id in dataclass_obj.dim_entry_ids
+            ],
+        )
+        out.append(sp_doc)
+    return out
+
+
 # document to core
 def doc_to_core_shift_property(
     doc_obj: ShiftPropertyDocument,
@@ -292,7 +375,11 @@ def doc_to_core_shift_property(
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["shift_id"] = doc_dict["shift"]
     doc_dict["shift_dimension_id"] = doc_dict["shift_dimension"]
+    doc_dict["dim_entry_ids"] = [
+        str(dim_entry.id) for dim_entry in doc_dict["dim_entries"]
+    ]
     doc_dict.pop("_id")
     doc_dict.pop("shift")
     doc_dict.pop("shift_dimension")
+    doc_dict.pop("dim_entries")
     return ShiftProperty(**doc_dict)

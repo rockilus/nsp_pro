@@ -68,6 +68,7 @@ class DimEntryMessage(BaseModel):
     id: str
     dimensionId: str
     name: str
+    deleted: bool
 
 
 class DimensionMessage(BaseModel):
@@ -82,7 +83,13 @@ class DimensionMessage(BaseModel):
 
 class NewDimensionMessage(BaseModel):
     newDimension: DimensionMessage
+    newDimEntries: List[DimEntryMessage]
     newProperties: List[WorkerPropertyMessage] | List[ShiftPropertyMessage]
+
+
+class DimensionsAndDimEntriesMessage(BaseModel):
+    dimensions: List[DimensionMessage]
+    dimEntries: List[DimEntryMessage]
 
 
 # Coverage

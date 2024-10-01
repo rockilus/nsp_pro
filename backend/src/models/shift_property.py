@@ -9,3 +9,4 @@ class ShiftProperty(Document):
     value = DynamicField()
     shift = ReferenceField("Shift")
     shift_dimension = ReferenceField("ShiftDimension")
+    dim_entries = ReferenceField("DimEntry")

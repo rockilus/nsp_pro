@@ -1,21 +1,16 @@
 import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+// Actions
+import { getShiftDimensions } from "./dimension";
 // Types
-import {
-  ShiftT,
-  DimensionT,
-  ShiftPropertyT,
-  DimEntryT,
-} from "../../types/shift";
+import { ShiftT, ShiftPropertyT } from "../../types/shift";
 // Env Vars
 import { API_URL } from "./env";
 
 dayjs.extend(utc);
 
 const apiUrlShifts = API_URL + "/shifts";
-const apiUrlDimensions = API_URL + "/dimensions";
-const apiUrlDimEntries = API_URL + "/dim-entries";
 
 export const toShiftT = (data: any): ShiftT => {
   return {
@@ -172,110 +167,6 @@ export async function deleteShift(shiftId: string, teamId: string) {
 }
 
 //////////////////////////
-// Dimensions //
-//////////////////////////
-
-export async function addDimension(dimension: DimensionT) {
-  const options: RequestInit = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(dimension),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlDimensions}/teams/${dimension.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to add dimension: " + responseData.detail);
-    }
-    return responseData as {
-      newDimension: DimensionT;
-      newProperties: ShiftPropertyT[];
-    };
-  } catch (error) {
-    console.error("Failed to add dimension:", error);
-    throw new Error("Failed to add dimension, please try again later");
-  }
-}
-
-export async function getShiftDimensions(teamId: string) {
-  noStore();
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlDimensions}/shift/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        "Failed to fetch shift dimensions: " + responseData.detail
-      );
-    }
-    return responseData as DimensionT[];
-  } catch (error) {
-    console.error("Failed to fetch shift dimensions:", error);
-    throw new Error("Failed to fetch shift dimensions, please try again later");
-  }
-}
-
-export async function updateDimension(updatedDimension: DimensionT) {
-  const options: RequestInit = {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updatedDimension),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlDimensions}/${updatedDimension.id}/teams/${updatedDimension.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to update dimension: " + responseData.detail);
-    }
-    return responseData as DimensionT;
-  } catch (error) {
-    console.error("Failed to update dimension:", error);
-    throw new Error("Failed to update dimension, please try again later");
-  }
-}
-
-export async function deleteDimension(dimensionId: string, teamId: string) {
-  const options: RequestInit = {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlDimensions}/${dimensionId}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to delete dimension: " + responseData.detail);
-    }
-  } catch (error) {
-    console.error("Failed to delete dimension:", error);
-    throw new Error("Failed to delete dimension, please try again later");
-  }
-}
-
-//////////////////////////
 // Shift Properties //
 //////////////////////////
 
@@ -318,7 +209,11 @@ export async function getShiftsTabData(teamId: string) {
       getShifts(teamId),
       getShiftDimensions(teamId),
     ]);
-    return { shifts: shiftsTabData[0], shiftDimensions: shiftsTabData[1] };
+    return {
+      shifts: shiftsTabData[0],
+      shiftDimensions: shiftsTabData[1].dimensions,
+      dimEntries: shiftsTabData[1].dimEntries,
+    };
   } catch (error) {
     console.error("Failed to fetch shifts tab data:", error);
     throw new Error("Failed to fetch shifts tab data, please try again later");

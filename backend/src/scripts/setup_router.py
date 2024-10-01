@@ -14,6 +14,7 @@ from routes import (
     router_constraint_template,
     router_coverage,
     router_coverage_selector,
+    router_dim_entry,
     router_dimension,
     router_health,
     router_objective_breach,
@@ -50,12 +51,13 @@ app.include_router(router_constraint)
 app.include_router(router_constraint_template)
 app.include_router(router_coverage)
 app.include_router(router_coverage_selector)
+app.include_router(router_dim_entry)
+app.include_router(router_dimension)
 app.include_router(router_health)
 app.include_router(router_objective_breach)
 app.include_router(router_request)
 app.include_router(router_schedule)
 app.include_router(router_shift)
-app.include_router(router_dimension)
 app.include_router(router_stats)
 app.include_router(router_team)
 app.include_router(router_user)

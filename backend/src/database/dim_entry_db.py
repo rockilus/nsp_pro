@@ -89,6 +89,19 @@ class DimEntryDB:
             log_info("Failed to delete dim_entry")
             handle_delete_document_error(e)
 
+    def logical_delete_dim_entry(self, dim_entry_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            de_doc = DimEntryDocument.objects.get(id=dim_entry_id)  # type: ignore
+        except Exception as e:
+            log_info("Failed to get dim entry by id to delete")
+            handle_get_document_error(e)
+        try:
+            de_doc.update(set__deleted=True)
+        except Exception as e:
+            log_info("Failed to delete dim_entry")
+            handle_delete_document_error(e)
+
 
 # Mappers
 # core to document
@@ -106,6 +119,7 @@ def core_to_doc_dim_entry(dataclass_obj: DimEntry) -> DimEntryDocument:
             id=dataclass_obj.id,
             dimension=dimension,
             name=dataclass_obj.name,
+            deleted=dataclass_obj.deleted,
         )
     # pylint: disable=broad-except
     except Exception as e:

@@ -6,25 +6,33 @@ import ListIcon from "@mui/icons-material/List";
 import NumbersIcon from "@mui/icons-material/Numbers";
 import TableCell from "@mui/material/TableCell";
 // Components
-import PopoverAnchorElBelow from "../inputs/popover-anchor-el-below";
-import UpdateShiftDimensionForm from "./update-shift-dimension-form";
+import PopoverAnchorElBelow from "../../inputs/popover-anchor-el-below";
+import UpdateDimensionForm from "./update-dimension-form";
 // Styles
 import "../../styles/table-styles.css";
 //Types
-import { DimensionT } from "../../types/shift";
+import { DimensionT, DimEntryT } from "../../../types/shift";
 
-export default function ShiftDimensionCell({
+export default function DimensionCell({
   lng,
   selectedTeamId,
-  shiftDimension,
-  handleUpdateShiftDimension,
-  handleDeleteShiftDimension,
+  dimension: dimension,
+  dimEntries,
+  handleUpdateDimension,
+  handleDeleteDimension,
+  handleAddDimEntry,
+  handleUpdateDimEntry,
+  handleDeleteDimEntry,
 }: {
   lng: string;
   selectedTeamId: string;
-  shiftDimension: DimensionT;
-  handleUpdateShiftDimension: (shiftDimension: DimensionT) => void;
-  handleDeleteShiftDimension: (shiftDimensionId: string) => void;
+  dimension: DimensionT;
+  dimEntries: DimEntryT[];
+  handleUpdateDimension: (dimension: DimensionT) => void;
+  handleDeleteDimension: (dimensionId: string) => void;
+  handleAddDimEntry: (dimEntry: DimEntryT) => void;
+  handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
+  handleDeleteDimEntry: (dimEntryId: string) => void;
 }) {
   const [popoverAnchorOpen, setPopoverAnchorOpen] = useState(false);
 
@@ -37,14 +45,14 @@ export default function ShiftDimensionCell({
 
   const cellContent = () => (
     <div className="table-header-custom-container">
-      <span className="table-header-custom">{shiftDimension.name}</span>
-      {iconsPrefix[shiftDimension.entryType]}
+      <span className="table-header-custom">{dimension.name}</span>
+      {iconsPrefix[dimension.entryType]}
     </div>
   );
 
   return (
     <TableCell
-      key={shiftDimension.id}
+      key={dimension.id}
       component="th"
       scope="row"
       sx={{ paddingY: 0 }}
@@ -52,13 +60,17 @@ export default function ShiftDimensionCell({
       <PopoverAnchorElBelow
         buttonContent={cellContent()}
         content={
-          <UpdateShiftDimensionForm
+          <UpdateDimensionForm
             lng={lng}
             selectedTeamId={selectedTeamId}
-            shiftDimension={shiftDimension}
+            dimension={dimension}
+            dimEntries={dimEntries}
             setOpenParent={setPopoverAnchorOpen}
-            handleUpdateShiftDimension={handleUpdateShiftDimension}
-            handleDeleteShiftDimension={handleDeleteShiftDimension}
+            handleUpdateDimension={handleUpdateDimension}
+            handleDeleteDimension={handleDeleteDimension}
+            handleAddDimEntry={handleAddDimEntry}
+            handleUpdateDimEntry={handleUpdateDimEntry}
+            handleDeleteDimEntry={handleDeleteDimEntry}
           />
         }
         open={popoverAnchorOpen}
