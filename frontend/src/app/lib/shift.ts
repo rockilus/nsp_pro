@@ -4,7 +4,7 @@ import utc from "dayjs/plugin/utc";
 // Actions
 import { getShiftDimensions } from "./dimension";
 // Types
-import { ShiftT, ShiftPropertyT } from "../../types/shift";
+import { ShiftT, AttributeT } from "../../types/shift";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -171,7 +171,7 @@ export async function deleteShift(shiftId: string, teamId: string) {
 //////////////////////////
 
 export async function updateShiftProperty(
-  shiftProperty: ShiftPropertyT,
+  shiftProperty: AttributeT,
   teamId: string
 ) {
   const options: RequestInit = {
@@ -183,7 +183,7 @@ export async function updateShiftProperty(
   };
   try {
     const response = await fetch(
-      `${apiUrlShifts}/${shiftProperty.shiftId}/properties/${shiftProperty.dimensionId}/teams/${teamId}`,
+      `${apiUrlShifts}/${shiftProperty.ownerId}/properties/${shiftProperty.dimensionId}/teams/${teamId}`,
       options
     );
     const responseData = await response.json();
@@ -192,7 +192,7 @@ export async function updateShiftProperty(
         "Failed to update shift property: " + responseData.detail
       );
     }
-    return responseData as ShiftPropertyT;
+    return responseData as AttributeT;
   } catch (error) {
     console.error("Failed to update shift property:", error);
     throw new Error("Failed to update shift property, please try again later");

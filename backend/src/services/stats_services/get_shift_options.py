@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from constraint_parser import build_shift_options
-from core import ShiftProperty, ShiftWorkerOption
+from core import Attribute, ShiftWorkerOption
 from scripts.setup_database import (
     dim_entry_db,
     dimension_db,
@@ -20,7 +20,7 @@ def get_shift_options(team_id: str) -> List[ShiftWorkerOption]:
     shift_properties = shift_property_db.get_shift_properties_by_shift_ids(
         [s.id for s in shifts]
     )
-    shift_properties_sd: Dict[str, List[ShiftProperty]] = {}
+    shift_properties_sd: Dict[str, List[Attribute]] = {}
     for sp in shift_properties:
         sd_id = sp.dimension_id
         if sd_id not in shift_properties_sd:

@@ -6,11 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core import (
+    Attribute,
     Dimension,
     DimensionEntryType,
     DimensionType,
     DimEntry,
-    ShiftProperty,
     WorkerProperty,
 )
 from errors import (
@@ -168,7 +168,7 @@ def core_to_msg_dimension(dimension: Dimension) -> DimensionMessage:
 def core_to_msg_new_dimension(
     dimension: Dimension,
     dim_entries: List[DimEntry],
-    properties: List[WorkerProperty | ShiftProperty],
+    properties: List[WorkerProperty | Attribute],
 ) -> NewDimensionMessage:
     try:
         if all(isinstance(prop, WorkerProperty) for prop in properties):
@@ -179,7 +179,7 @@ def core_to_msg_new_dimension(
                     core_to_msg_worker_property(wp) for wp in properties  # type: ignore
                 ],
             }
-        elif all(isinstance(prop, ShiftProperty) for prop in properties):
+        elif all(isinstance(prop, Attribute) for prop in properties):
             as_dict = {
                 "newDimension": core_to_msg_dimension(dimension),
                 "newDimEntries": [core_to_msg_dim_entry(de) for de in dim_entries],

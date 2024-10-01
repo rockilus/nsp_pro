@@ -95,10 +95,16 @@ class Dimension:
     deleted: bool
 
 
+class AttributeOwnerType(Enum):
+    SHIFT = 0
+    WORKER = 1
+
+
 @dataclass
-class ShiftProperty:
+class Attribute:
     id: str
     value: str | int | float | bool
-    shift_id: str
+    owner_type: AttributeOwnerType
+    owner_id: str
     dimension_id: str
     dim_entry_ids: List[str]

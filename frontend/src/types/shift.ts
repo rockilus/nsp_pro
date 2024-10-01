@@ -30,10 +30,16 @@ export type DimensionT = {
   deleted: boolean;
 };
 
-export type ShiftPropertyT = {
+export enum AttributeOwnerType {
+  SHIFT = 0,
+  WORKER = 1,
+}
+
+export type AttributeT = {
   id: string;
   value: string | number | boolean;
-  shiftId: string;
+  ownerType: AttributeOwnerType;
+  ownerId: string;
   dimensionId: string;
   dimEntryIds: string[];
 };
@@ -87,11 +93,11 @@ export type ShiftT = {
   recuperationTime: number;
   recuperationDutyId: string | null;
   deleted: boolean;
-  shiftProperties: ShiftPropertyT[];
+  shiftProperties: AttributeT[];
 };
 
 export type NewShiftDimensionT = {
   newDimension: DimensionT;
   newDimEntries: DimEntryT[];
-  newProperties: ShiftPropertyT[];
+  newProperties: AttributeT[];
 };

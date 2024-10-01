@@ -4,12 +4,12 @@ from constraint_parser.build_templates_list_en import build_templates_list_en
 from constraint_parser.build_templates_list_es import build_templates_list_es
 from constraint_parser.build_templates_list_fr import build_templates_list_fr
 from core import (
+    Attribute,
     Dimension,
     DimensionEntryType,
     DimEntry,
     Shift,
     ShiftLeaveType,
-    ShiftProperty,
     ShiftWorkerOption,
     Template,
     Worker,
@@ -26,7 +26,7 @@ def build_templates(
     shifts: List[Shift],
     shift_dimensions: List[Dimension],
     shift_dim_entries: List[DimEntry],
-    shift_properties: Dict[str, List[ShiftProperty]],
+    shift_properties: Dict[str, List[Attribute]],
     lang_code: str,
 ) -> List[Template]:
     worker_options = build_worker_options(workers, worker_dimensions, worker_properties)
@@ -111,7 +111,7 @@ def build_shift_options(
     shifts: List[Shift],
     shift_dimensions: List[Dimension],
     shift_dim_entries: List[DimEntry],
-    shift_properties: Dict[str, List[ShiftProperty]],
+    shift_properties: Dict[str, List[Attribute]],
 ) -> List[ShiftWorkerOption]:
     shift_options: List[ShiftWorkerOption] = [
         ShiftWorkerOption(

@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { DimensionT, ShiftPropertyT, DimEntryT } from "../../types/shift";
+import { DimensionT, AttributeT, DimEntryT } from "../../types/shift";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -37,7 +37,7 @@ export async function addDimension(
     return responseData as {
       newDimension: DimensionT;
       newDimEntries: DimEntryT[];
-      newProperties: ShiftPropertyT[];
+      newProperties: AttributeT[];
     };
   } catch (error) {
     console.error("Failed to add dimension:", error);

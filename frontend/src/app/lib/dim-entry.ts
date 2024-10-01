@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { ShiftPropertyT, DimEntryT } from "../../types/shift";
+import { AttributeT, DimEntryT } from "../../types/shift";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -80,7 +80,7 @@ export async function deleteDimEntry(dimEntryId: string, teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to delete dim entry: " + responseData.detail);
     }
-    return responseData as ShiftPropertyT[];
+    return responseData as AttributeT[];
   } catch (error) {
     console.error("Failed to delete dim entry:", error);
     throw new Error("Failed to delete dim entry, please try again later");

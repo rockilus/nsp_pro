@@ -16,13 +16,14 @@ from core.coverage import Coverage, CoverageSelector, ShiftDemand, ShiftDemandDa
 from core.request import Request, RequestAugmented
 from core.schedule import Assignment, ObjectiveBreach, QuickStaffing, Schedule, Variable
 from core.shift import (
+    Attribute,
+    AttributeOwnerType,
     Dimension,
     DimensionEntryType,
     DimensionType,
     DimEntry,
     Shift,
     ShiftLeaveType,
-    ShiftProperty,
     ShiftRestType,
     ShiftType,
 )
@@ -61,8 +62,9 @@ __all__ = [
     "DimEntry",
     "DimensionType",
     "DimensionEntryType",
+    "Attribute",
+    "AttributeOwnerType",
     "ShiftLeaveType",
-    "ShiftProperty",
     "ShiftRestType",
     "ShiftType",
     "StatsOptions",

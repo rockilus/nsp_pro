@@ -7,7 +7,7 @@ import PopoverAnchorElOver from "../inputs/popover-anchor-el-over";
 // Types
 import {
   DimensionT,
-  ShiftPropertyT,
+  AttributeT,
   DimensionEntryType,
   DimEntryT,
 } from "../../types/shift";
@@ -22,9 +22,9 @@ export default function ShiftPropertyCellDimEntries({
   selectedTeamId: string;
   shiftDimension: DimensionT;
   dimEntries: DimEntryT[];
-  shiftProperty: ShiftPropertyT;
+  shiftProperty: AttributeT;
   handleUpdateShiftProperty: (
-    shiftProperty: ShiftPropertyT,
+    shiftProperty: AttributeT,
     teamId: string
   ) => void;
 }) {

@@ -7,7 +7,7 @@ import TextField from "@mui/material/TextField";
 import ShiftPropertyCellDimEntries from "./shift-property-cell-dim-entries";
 // Types
 import {
-  ShiftPropertyT,
+  AttributeT,
   DimensionT,
   DimensionEntryType,
   DimEntryT,
@@ -23,13 +23,13 @@ export default function ShiftPropertyCell({
   handleUpdateShiftProperty,
 }: {
   selectedTeamId: string;
-  shiftProperty: ShiftPropertyT;
+  shiftProperty: AttributeT;
   shiftDimension: DimensionT;
   dimEntries: DimEntryT[];
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateShiftProperty: (
-    shiftProperty: ShiftPropertyT,
+    shiftProperty: AttributeT,
     teamId: string
   ) => void;
 }) {
@@ -69,7 +69,7 @@ export default function ShiftPropertyCell({
         component="th"
         scope="row"
         onClick={() =>
-          setEditing({ [shiftProperty.shiftId]: shiftDimension.id })
+          setEditing({ [shiftProperty.ownerId]: shiftDimension.id })
         }
         sx={{
           paddingY: 0,

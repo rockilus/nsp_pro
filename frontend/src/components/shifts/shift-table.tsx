@@ -33,12 +33,13 @@ import "../../styles/table-styles.css";
 import {
   DimensionT,
   ShiftT,
-  ShiftPropertyT,
+  AttributeT,
   ShiftLeaveType,
   ShiftRestType,
   DimEntryT,
   DimensionType,
   DimensionEntryType,
+  AttributeOwnerType,
 } from "../../types/shift";
 
 dayjs.extend(utc);
@@ -82,7 +83,7 @@ export default function ShiftTable({
   handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
   handleDeleteDimEntry: (dimEntryId: string) => void;
   handleUpdateShiftProperty: (
-    shiftProperty: ShiftPropertyT,
+    shiftProperty: AttributeT,
     teamId: string
   ) => void;
 }) {
@@ -204,7 +205,8 @@ export default function ShiftTable({
                           ? shiftProperty
                           : {
                               id: "",
-                              shiftId: shift.id,
+                              ownerType: AttributeOwnerType.SHIFT,
+                              ownerId: shift.id,
                               dimensionId: sd.id,
                               value:
                                 sd.entryType === DimensionEntryType.BOOL

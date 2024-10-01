@@ -30,7 +30,7 @@ import "../../styles/tab-container-styles.css";
 import {
   ShiftT,
   DimensionT,
-  ShiftPropertyT,
+  AttributeT,
   ShiftLeaveType,
   ShiftType,
   ShiftRestType,
@@ -140,7 +140,7 @@ export default function ShiftTab({
     setShifts((prevShifts) =>
       prevShifts.map((shift) => {
         const newShiftProperties = newPropertiesResponse.filter(
-          (property) => property.shiftId === shift.id
+          (property) => property.ownerId === shift.id
         );
 
         return newShiftProperties
@@ -219,7 +219,7 @@ export default function ShiftTab({
     for (const updatedShiftProperty of updatedShiftProperties) {
       setShifts((prevShifts) =>
         prevShifts.map((shift) =>
-          shift.id === updatedShiftProperty.shiftId
+          shift.id === updatedShiftProperty.ownerId
             ? {
                 ...shift,
                 shiftProperties: shift.shiftProperties.some(
@@ -243,7 +243,7 @@ export default function ShiftTab({
   // Shift Property Actions
   //////////////////////////
 
-  const handleUpdateShiftProperty = async (shiftProperty: ShiftPropertyT) => {
+  const handleUpdateShiftProperty = async (shiftProperty: AttributeT) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
@@ -253,7 +253,7 @@ export default function ShiftTab({
     );
     setShifts((prevShifts) =>
       prevShifts.map((shift) =>
-        shift.id === updatedShiftProperty.shiftId
+        shift.id === updatedShiftProperty.ownerId
           ? {
               ...shift,
               shiftProperties: shift.shiftProperties.some(

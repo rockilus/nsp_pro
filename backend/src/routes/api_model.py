@@ -39,11 +39,12 @@ class NewWorkerDimensionMessage(BaseModel):
 
 
 # Shift
-class ShiftPropertyMessage(BaseModel):
+class AttributeMessage(BaseModel):
     id: str
     value: str | int | bool
+    ownerType: int
+    ownerId: str
     dimensionId: str
-    shiftId: str
     dimEntryIds: List[str]
 
 
@@ -61,7 +62,7 @@ class ShiftMessage(BaseModel):
     recuperationTime: int
     recuperationDutyId: str | None
     deleted: bool
-    shiftProperties: List[ShiftPropertyMessage]
+    shiftProperties: List[AttributeMessage]
 
 
 class DimEntryMessage(BaseModel):
@@ -84,7 +85,7 @@ class DimensionMessage(BaseModel):
 class NewDimensionMessage(BaseModel):
     newDimension: DimensionMessage
     newDimEntries: List[DimEntryMessage]
-    newProperties: List[WorkerPropertyMessage] | List[ShiftPropertyMessage]
+    newProperties: List[WorkerPropertyMessage] | List[AttributeMessage]
 
 
 class DimensionsAndDimEntriesMessage(BaseModel):

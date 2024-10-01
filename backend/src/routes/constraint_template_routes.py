@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
 from constraint_parser.templates import build_templates
-from core import ShiftProperty, Template, WorkerProperty
+from core import Attribute, Template, WorkerProperty
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -60,7 +60,7 @@ async def get_constraint_templates(
         shift_properties = shift_property_db.get_shift_properties_by_shift_ids(
             [s.id for s in shifts]
         )
-        shift_properties_sd: Dict[str, List[ShiftProperty]] = {}
+        shift_properties_sd: Dict[str, List[Attribute]] = {}
         for sp in shift_properties:
             sd_id = sp.dimension_id
             if sd_id not in shift_properties_sd:
