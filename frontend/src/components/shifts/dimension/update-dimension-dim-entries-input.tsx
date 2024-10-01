@@ -8,6 +8,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
+// Styles
+import "./update-dimension-dim-entries-input.css";
 // Types
 import { DimEntryT } from "../../../types/shift";
 
@@ -102,7 +104,7 @@ export default function UpdateDimensionDimEntriesInput({
             sx={{ paddingLeft: 0.5 }}
           >
             {DimEntryEditing?.id === de.id ? (
-              <div>
+              <div className="edit-dim-entry">
                 <TextField
                   value={DimEntryEditing.name}
                   onChange={(e) =>
@@ -110,7 +112,7 @@ export default function UpdateDimensionDimEntriesInput({
                   }
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      setDimEntryEditing(null);
+                      handleEditDimEntry();
                     } else if (e.key === "Escape") {
                       setDimEntryEditing(null);
                     }
@@ -129,7 +131,7 @@ export default function UpdateDimensionDimEntriesInput({
                 </IconButton>
               </div>
             ) : (
-              <div>
+              <div className="edit-dim-entry">
                 <Box flexGrow={1}>{de.name}</Box>
                 <IconButton onClick={() => setDimEntryEditing(de)}>
                   <EditIcon />

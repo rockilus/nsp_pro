@@ -4,7 +4,7 @@ import Checkbox from "@mui/material/Checkbox";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
 // Components
-import ShiftPropertyCellList from "./shift-property-cell-list";
+import ShiftPropertyCellDimEntries from "./shift-property-cell-dim-entries";
 // Types
 import {
   ShiftPropertyT,
@@ -33,9 +33,9 @@ export default function ShiftPropertyCell({
     teamId: string
   ) => void;
 }) {
-  const [valueState, setValueState] = useState<
-    string | number | boolean | string[]
-  >(shiftProperty.value);
+  const [valueState, setValueState] = useState<string | number | boolean>(
+    shiftProperty.value
+  );
 
   const handleEditConfirm = async () => {
     if (valueState !== shiftProperty.value) {
@@ -80,7 +80,7 @@ export default function ShiftPropertyCell({
         }}
       >
         {shiftDimension.entryType === DimensionEntryType.DIM_ENTRIES ? (
-          <ShiftPropertyCellList
+          <ShiftPropertyCellDimEntries
             selectedTeamId={selectedTeamId}
             shiftDimension={shiftDimension}
             dimEntries={dimEntries}

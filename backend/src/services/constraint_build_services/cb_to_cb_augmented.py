@@ -436,7 +436,9 @@ def build_missing_properties_list_and_active_shift_bool_sd(
     )
     if any(value is None for value in sp_values_constraint):
         raise ValueError("Shift property value from block is missing")
-    sp_all = shift_property_db.get_shift_properties_by_sd_id_for_not_deleted_s(sd.id)
+    sp_all = shift_property_db.get_shift_properties_by_dimension_id_for_not_deleted_s(
+        sd.id
+    )
     sp_values_shifts = [sp.value for sp in sp_all]
     if not all(isinstance(v, bool) for v in sp_values_shifts):
         raise ValueError("Shift property value is not a boolean")
@@ -469,7 +471,9 @@ def build_missing_properties_list_and_active_shift_list_sd(
     ]
     if any(value is None for value in sp_values_constraint):
         raise ValueError("Shift property value from block is missing")
-    sp_all = shift_property_db.get_shift_properties_by_sd_id_for_not_deleted_s(sd.id)
+    sp_all = shift_property_db.get_shift_properties_by_dimension_id_for_not_deleted_s(
+        sd.id
+    )
     if not all(isinstance(sp.value, list) for sp in sp_all):
         raise ValueError("Shift property value is not a list")
     sp_values_shifts = [item for sp in sp_all for item in sp.value]  # type: ignore
@@ -500,7 +504,9 @@ def build_missing_properties_list_and_active_shift_str_int_sd(
     ]
     if any(value is None for value in sp_values_constraint):
         raise ValueError("Shift property value from block is missing")
-    sp_all = shift_property_db.get_shift_properties_by_sd_id_for_not_deleted_s(sd.id)
+    sp_all = shift_property_db.get_shift_properties_by_dimension_id_for_not_deleted_s(
+        sd.id
+    )
     if not (
         all(isinstance(sp.value, str) for sp in sp_all)
         or all(isinstance(sp.value, int) for sp in sp_all)

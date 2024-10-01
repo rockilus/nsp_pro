@@ -183,7 +183,7 @@ export async function updateShiftProperty(
   };
   try {
     const response = await fetch(
-      `${apiUrlShifts}/${shiftProperty.shiftId}/properties/${shiftProperty.shiftDimensionId}/teams/${teamId}`,
+      `${apiUrlShifts}/${shiftProperty.shiftId}/properties/${shiftProperty.dimensionId}/teams/${teamId}`,
       options
     );
     const responseData = await response.json();

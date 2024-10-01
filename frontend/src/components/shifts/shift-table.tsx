@@ -38,6 +38,7 @@ import {
   ShiftRestType,
   DimEntryT,
   DimensionType,
+  DimensionEntryType,
 } from "../../types/shift";
 
 dayjs.extend(utc);
@@ -90,19 +91,6 @@ export default function ShiftTable({
   const [showDefaults, setShowDefaults] = useState(false);
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
-
-  const defaultProperties: {
-    str: string;
-    int: string;
-    bool: boolean;
-    list: string[];
-    [key: string]: string | boolean | string[];
-  } = {
-    str: "",
-    int: "",
-    bool: false,
-    list: [],
-  };
 
   const displayedShifts: ShiftT[] = isRest
     ? showDefaults
@@ -205,7 +193,7 @@ export default function ShiftTable({
                 ))}
                 {shiftDimensions.map((sd, sdIndex) => {
                   const shiftProperty = shift.shiftProperties.find(
-                    (sp) => sp.shiftDimensionId === sd.id
+                    (sp) => sp.dimensionId === sd.id
                   );
                   return (
                     <ShiftPropertyCell
@@ -217,8 +205,11 @@ export default function ShiftTable({
                           : {
                               id: "",
                               shiftId: shift.id,
-                              shiftDimensionId: sd.id,
-                              value: defaultProperties[sd.entryType],
+                              dimensionId: sd.id,
+                              value:
+                                sd.entryType === DimensionEntryType.BOOL
+                                  ? false
+                                  : "",
                               dimEntryIds: [],
                             }
                       }

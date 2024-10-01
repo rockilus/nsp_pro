@@ -41,8 +41,8 @@ class NewWorkerDimensionMessage(BaseModel):
 # Shift
 class ShiftPropertyMessage(BaseModel):
     id: str
-    value: str | int | bool | List[str]
-    shiftDimensionId: str
+    value: str | int | bool
+    dimensionId: str
     shiftId: str
     dimEntryIds: List[str]
 

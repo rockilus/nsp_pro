@@ -32,9 +32,9 @@ export type DimensionT = {
 
 export type ShiftPropertyT = {
   id: string;
-  value: string | number | boolean | string[];
+  value: string | number | boolean;
   shiftId: string;
-  shiftDimensionId: string;
+  dimensionId: string;
   dimEntryIds: string[];
 };
 

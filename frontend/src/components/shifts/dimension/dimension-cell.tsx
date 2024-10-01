@@ -9,7 +9,7 @@ import TableCell from "@mui/material/TableCell";
 import PopoverAnchorElBelow from "../../inputs/popover-anchor-el-below";
 import UpdateDimensionForm from "./update-dimension-form";
 // Styles
-import "../../styles/table-styles.css";
+import "../../../styles/table-styles.css";
 //Types
 import { DimensionT, DimEntryT } from "../../../types/shift";
 

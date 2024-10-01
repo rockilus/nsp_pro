@@ -23,7 +23,7 @@ export async function addDimension(
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ dimension, dimEntries }),
+    body: JSON.stringify({ dimension, dim_entries: dimEntries }),
   };
   try {
     const response = await fetch(

@@ -1,5 +1,5 @@
 from mongoengine import Document
-from mongoengine.fields import DynamicField, ReferenceField, StringField
+from mongoengine.fields import DynamicField, ListField, ReferenceField, StringField
 
 
 class ShiftProperty(Document):
@@ -8,5 +8,5 @@ class ShiftProperty(Document):
     id = StringField(primary_key=True, required=True)
     value = DynamicField()
     shift = ReferenceField("Shift")
-    shift_dimension = ReferenceField("ShiftDimension")
-    dim_entries = ReferenceField("DimEntry")
+    dimension = ReferenceField("Dimension")
+    dim_entries = ListField(ReferenceField("DimEntry"))

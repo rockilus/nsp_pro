@@ -12,7 +12,7 @@ import {
   DimEntryT,
 } from "../../types/shift";
 
-export default function ShiftPropertyCellList({
+export default function ShiftPropertyCellDimEntries({
   selectedTeamId,
   shiftDimension,
   dimEntries,
@@ -82,13 +82,13 @@ export default function ShiftPropertyCellList({
 
   return (
     <PopoverAnchorElOver
-      buttonContent={
-        Array.isArray(shiftProperty.value)
-          ? shiftProperty.value.map((value, index) => (
-              <Chip key={index} label={value} sx={{ cursor: "pointer" }} />
-            ))
-          : shiftProperty.value
-      }
+      buttonContent={shiftProperty.dimEntryIds.map((deId, index) => (
+        <Chip
+          key={deId}
+          label={dimEntries.find((de) => de.id === deId)?.name || ""}
+          sx={{ cursor: "pointer" }}
+        />
+      ))}
       content={
         <DimEntryTypeCellEdit
           selectedDimEntries={valueState}
