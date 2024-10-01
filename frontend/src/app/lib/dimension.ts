@@ -37,7 +37,7 @@ export async function addDimension(
     return responseData as {
       newDimension: DimensionT;
       newDimEntries: DimEntryT[];
-      newProperties: AttributeT[];
+      newAttributes: AttributeT[];
     };
   } catch (error) {
     console.error("Failed to add dimension:", error);

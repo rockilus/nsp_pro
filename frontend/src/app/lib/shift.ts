@@ -167,39 +167,6 @@ export async function deleteShift(shiftId: string, teamId: string) {
 }
 
 //////////////////////////
-// Shift Properties //
-//////////////////////////
-
-export async function updateShiftProperty(
-  shiftProperty: AttributeT,
-  teamId: string
-) {
-  const options: RequestInit = {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(shiftProperty),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlShifts}/${shiftProperty.ownerId}/properties/${shiftProperty.dimensionId}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        "Failed to update shift property: " + responseData.detail
-      );
-    }
-    return responseData as AttributeT;
-  } catch (error) {
-    console.error("Failed to update shift property:", error);
-    throw new Error("Failed to update shift property, please try again later");
-  }
-}
-
-//////////////////////////
 // Shifts Tab Data //
 //////////////////////////
 

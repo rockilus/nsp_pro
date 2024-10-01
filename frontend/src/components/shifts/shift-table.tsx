@@ -18,7 +18,7 @@ import NewDimensionForm from "./dimension/new-dimension-form";
 import PopoverRHS from "../inputs/popover-rhs";
 import DimensionCell from "./dimension/dimension-cell";
 import ShiftFieldCell from "./shift-field-cell";
-import ShiftPropertyCell from "./shift-property-cell";
+import AttributeCell from "./attribute/attribute-cell";
 import TableAddButton from "../buttons/table-add-button";
 import {
   filterWorkShifts,
@@ -61,7 +61,7 @@ export default function ShiftTable({
   handleAddDimEntry,
   handleUpdateDimEntry,
   handleDeleteDimEntry,
-  handleUpdateShiftProperty,
+  handleUpdateAttribute,
 }: {
   lng: string;
   selectedTeamId: string;
@@ -82,10 +82,7 @@ export default function ShiftTable({
   handleAddDimEntry: (dimEntry: DimEntryT) => void;
   handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
   handleDeleteDimEntry: (dimEntryId: string) => void;
-  handleUpdateShiftProperty: (
-    shiftProperty: AttributeT,
-    teamId: string
-  ) => void;
+  handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
 }) {
   const { t } = useTranslation(lng, "shift-page");
 
@@ -193,16 +190,16 @@ export default function ShiftTable({
                   />
                 ))}
                 {shiftDimensions.map((sd, sdIndex) => {
-                  const shiftProperty = shift.shiftProperties.find(
+                  const attribute = shift.attributes.find(
                     (sp) => sp.dimensionId === sd.id
                   );
                   return (
-                    <ShiftPropertyCell
+                    <AttributeCell
                       key={sdIndex}
                       selectedTeamId={selectedTeamId}
-                      shiftProperty={
-                        shiftProperty
-                          ? shiftProperty
+                      attribute={
+                        attribute
+                          ? attribute
                           : {
                               id: "",
                               ownerType: AttributeOwnerType.SHIFT,
@@ -221,7 +218,7 @@ export default function ShiftTable({
                       )}
                       editing={bodyEditing[shift.id] === sd.id}
                       setEditing={setBodyEditing}
-                      handleUpdateShiftProperty={handleUpdateShiftProperty}
+                      handleUpdateAttribute={handleUpdateAttribute}
                     />
                   );
                 })}

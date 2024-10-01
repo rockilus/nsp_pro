@@ -2,7 +2,7 @@ import React, { useState } from "react";
 // MUI
 import Chip from "@mui/material/Chip";
 // Components
-import DimEntryTypeCellEdit from "../inputs/dim-entry-type-cell-edit";
+import DimEntryTypeCellEdit from "../shifts/attribute/dim-entry-type-cell-edit";
 import PopoverAnchorElOver from "../inputs/popover-anchor-el-over";
 // Types
 import { WorkerDimensionT, WorkerPropertyT } from "../../types/worker";

@@ -55,7 +55,7 @@ export default function ShiftDemandPanel({
     leaveType: ShiftLeaveType.NONE,
     recuperationTime: 0,
     recuperationDutyId: null,
-    shiftProperties: [],
+    attributes: [],
   };
 
   const handleSaveSD = async () => {

@@ -93,11 +93,11 @@ export type ShiftT = {
   recuperationTime: number;
   recuperationDutyId: string | null;
   deleted: boolean;
-  shiftProperties: AttributeT[];
+  attributes: AttributeT[];
 };
 
 export type NewShiftDimensionT = {
   newDimension: DimensionT;
   newDimEntries: DimEntryT[];
-  newProperties: AttributeT[];
+  newAttributes: AttributeT[];
 };

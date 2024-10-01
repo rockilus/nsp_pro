@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef, use } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
@@ -58,7 +58,7 @@ export default function WeeklyCalendar({
     recuperationTime: 0,
     recuperationDutyId: null,
     deleted: false,
-    shiftProperties: [],
+    attributes: [],
   };
 
   const timeHours: dayjs.Dayjs[] = [];

@@ -4,43 +4,40 @@ import Checkbox from "@mui/material/Checkbox";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
 // Components
-import ShiftPropertyCellDimEntries from "./shift-property-cell-dim-entries";
+import AttributeCellDimEntries from "./attribute-cell-dim-entries";
 // Types
 import {
   AttributeT,
   DimensionT,
   DimensionEntryType,
   DimEntryT,
-} from "../../types/shift";
+} from "../../../types/shift";
 
-export default function ShiftPropertyCell({
+export default function AttributeCell({
   selectedTeamId,
-  shiftProperty,
+  attribute,
   shiftDimension,
   dimEntries,
   editing,
   setEditing,
-  handleUpdateShiftProperty,
+  handleUpdateAttribute,
 }: {
   selectedTeamId: string;
-  shiftProperty: AttributeT;
+  attribute: AttributeT;
   shiftDimension: DimensionT;
   dimEntries: DimEntryT[];
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
-  handleUpdateShiftProperty: (
-    shiftProperty: AttributeT,
-    teamId: string
-  ) => void;
+  handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
 }) {
   const [valueState, setValueState] = useState<string | number | boolean>(
-    shiftProperty.value
+    attribute.value
   );
 
   const handleEditConfirm = async () => {
-    if (valueState !== shiftProperty.value) {
-      handleUpdateShiftProperty(
-        { ...shiftProperty, value: valueState },
+    if (valueState !== attribute.value) {
+      handleUpdateAttribute(
+        { ...attribute, value: valueState },
         selectedTeamId
       );
     }
@@ -48,10 +45,10 @@ export default function ShiftPropertyCell({
   };
 
   const handleToggle = () => {
-    handleUpdateShiftProperty(
+    handleUpdateAttribute(
       {
-        ...shiftProperty,
-        value: !shiftProperty.value,
+        ...attribute,
+        value: !attribute.value,
       },
       selectedTeamId
     );
@@ -59,7 +56,7 @@ export default function ShiftPropertyCell({
 
   const handleEditCancel = () => {
     setEditing({});
-    setValueState(shiftProperty.value);
+    setValueState(attribute.value);
   };
 
   return (
@@ -68,9 +65,7 @@ export default function ShiftPropertyCell({
         key={shiftDimension.id}
         component="th"
         scope="row"
-        onClick={() =>
-          setEditing({ [shiftProperty.ownerId]: shiftDimension.id })
-        }
+        onClick={() => setEditing({ [attribute.ownerId]: shiftDimension.id })}
         sx={{
           paddingY: 0,
           cursor:
@@ -80,12 +75,12 @@ export default function ShiftPropertyCell({
         }}
       >
         {shiftDimension.entryType === DimensionEntryType.DIM_ENTRIES ? (
-          <ShiftPropertyCellDimEntries
+          <AttributeCellDimEntries
             selectedTeamId={selectedTeamId}
             shiftDimension={shiftDimension}
             dimEntries={dimEntries}
-            shiftProperty={shiftProperty}
-            handleUpdateShiftProperty={handleUpdateShiftProperty}
+            attribute={attribute}
+            handleUpdateAttribute={handleUpdateAttribute}
           />
         ) : editing && shiftDimension.entryType !== DimensionEntryType.BOOL ? (
           shiftDimension.entryType === DimensionEntryType.INT ? (
@@ -126,14 +121,14 @@ export default function ShiftPropertyCell({
         ) : shiftDimension.entryType === DimensionEntryType.BOOL ? (
           <Checkbox
             checked={
-              typeof shiftProperty.value === "boolean"
-                ? shiftProperty.value
-                : shiftProperty.value === 1
+              typeof attribute.value === "boolean"
+                ? attribute.value
+                : attribute.value === 1
             }
             onClick={handleToggle}
           />
         ) : (
-          shiftProperty.value
+          attribute.value
         )}
       </TableCell>
     </>

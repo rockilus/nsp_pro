@@ -11,7 +11,6 @@ import {
   getShiftsTabData,
   addShift,
   deleteShift,
-  updateShiftProperty,
   updateShift,
 } from "../../app/lib/shift";
 import {
@@ -24,6 +23,7 @@ import {
   updateDimEntry,
   deleteDimEntry,
 } from "../../app/lib/dim-entry";
+import { updateAttribute } from "../../app/lib/attribute";
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
@@ -96,7 +96,7 @@ export default function ShiftTab({
       recuperationTime: 0,
       recuperationDutyId: null,
       deleted: false,
-      shiftProperties: [],
+      attributes: [],
     });
     setShifts([...shifts, addedShift]);
   };
@@ -133,23 +133,19 @@ export default function ShiftTab({
     const {
       newDimension: newDimensionResponse,
       newDimEntries: newDimEntriesResponse,
-      newProperties: newPropertiesResponse,
+      newAttributes: newAttributesResponse,
     } = await addDimension(newDimension, newDimEntries);
     setShiftDimensions([...shiftDimensions, newDimensionResponse]);
     setDimEntries([...dimEntries, ...newDimEntriesResponse]);
     setShifts((prevShifts) =>
       prevShifts.map((shift) => {
-        const newShiftProperties = newPropertiesResponse.filter(
-          (property) => property.ownerId === shift.id
+        const newAttributes = newAttributesResponse.filter(
+          (attribute) => attribute.ownerId === shift.id
         );
-
-        return newShiftProperties
+        return newAttributes
           ? {
               ...shift,
-              shiftProperties: [
-                ...shift.shiftProperties,
-                ...newShiftProperties,
-              ],
+              attributes: [...shift.attributes, ...newAttributes],
             }
           : shift;
       })
@@ -211,27 +207,23 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedShiftProperties = await deleteDimEntry(
-      dimEntryId,
-      selectedTeamId
-    );
+    const updatedAttributes = await deleteDimEntry(dimEntryId, selectedTeamId);
     setDimEntries(dimEntries.filter((dimEntry) => dimEntry.id !== dimEntryId));
-    for (const updatedShiftProperty of updatedShiftProperties) {
+    for (const updatedAttribute of updatedAttributes) {
       setShifts((prevShifts) =>
         prevShifts.map((shift) =>
-          shift.id === updatedShiftProperty.ownerId
+          shift.id === updatedAttribute.ownerId
             ? {
                 ...shift,
-                shiftProperties: shift.shiftProperties.some(
-                  (shiftProperty) =>
-                    shiftProperty.id === updatedShiftProperty.id
+                attributes: shift.attributes.some(
+                  (attribute) => attribute.id === updatedAttribute.id
                 )
-                  ? shift.shiftProperties.map((shiftProperty) =>
-                      shiftProperty.id === updatedShiftProperty.id
-                        ? { ...shiftProperty, ...updatedShiftProperty }
-                        : shiftProperty
+                  ? shift.attributes.map((attribute) =>
+                      attribute.id === updatedAttribute.id
+                        ? { ...attribute, ...updatedAttribute }
+                        : attribute
                     )
-                  : [...shift.shiftProperties, updatedShiftProperty],
+                  : [...shift.attributes, updatedAttribute],
               }
             : shift
         )
@@ -240,31 +232,28 @@ export default function ShiftTab({
   };
 
   //////////////////////////
-  // Shift Property Actions
+  // Attribute Actions
   //////////////////////////
 
-  const handleUpdateShiftProperty = async (shiftProperty: AttributeT) => {
+  const handleUpdateAttribute = async (attribute: AttributeT) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedShiftProperty = await updateShiftProperty(
-      shiftProperty,
-      selectedTeamId
-    );
+    const updatedAttribute = await updateAttribute(attribute, selectedTeamId);
     setShifts((prevShifts) =>
       prevShifts.map((shift) =>
-        shift.id === updatedShiftProperty.ownerId
+        shift.id === updatedAttribute.ownerId
           ? {
               ...shift,
-              shiftProperties: shift.shiftProperties.some(
-                (shiftProperty) => shiftProperty.id === updatedShiftProperty.id
+              attributes: shift.attributes.some(
+                (attribute) => attribute.id === updatedAttribute.id
               )
-                ? shift.shiftProperties.map((shiftProperty) =>
-                    shiftProperty.id === updatedShiftProperty.id
-                      ? { ...shiftProperty, ...updatedShiftProperty }
-                      : shiftProperty
+                ? shift.attributes.map((attribute) =>
+                    attribute.id === updatedAttribute.id
+                      ? { ...attribute, ...updatedAttribute }
+                      : attribute
                   )
-                : [...shift.shiftProperties, updatedShiftProperty],
+                : [...shift.attributes, updatedAttribute],
             }
           : shift
       )
@@ -317,7 +306,7 @@ export default function ShiftTab({
               handleAddDimEntry={handleAddDimEntry}
               handleUpdateDimEntry={handleUpdateDimEntry}
               handleDeleteDimEntry={handleDeleteDimEntry}
-              handleUpdateShiftProperty={handleUpdateShiftProperty}
+              handleUpdateAttribute={handleUpdateAttribute}
             />
             <div className="divider" />
             <ShiftTable
@@ -337,7 +326,7 @@ export default function ShiftTab({
               handleAddDimEntry={handleAddDimEntry}
               handleUpdateDimEntry={handleUpdateDimEntry}
               handleDeleteDimEntry={handleDeleteDimEntry}
-              handleUpdateShiftProperty={handleUpdateShiftProperty}
+              handleUpdateAttribute={handleUpdateAttribute}
             />
           </div>
         )

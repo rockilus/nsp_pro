@@ -7,8 +7,8 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 // Types
-import { DimEntryT } from "../../types/shift";
-import { ConstraintDefaultColors } from "../../constants/constants";
+import { DimEntryT } from "../../../types/shift";
+import { ConstraintDefaultColors } from "../../../constants/constants";
 
 export default function DimEntryTypeCellEdit({
   selectedDimEntries,

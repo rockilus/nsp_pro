@@ -5,7 +5,13 @@ import humps
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
-from core import Attribute, Dimension, DimensionEntryType, DimensionType, DimEntry
+from core import (
+    Attribute,
+    Dimension,
+    DimensionEntryType,
+    DimensionType,
+    DimEntry,
+)
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -13,7 +19,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
@@ -22,11 +31,18 @@ from routes.api_model import (
     DimEntryMessage,
     NewDimensionMessage,
 )
-from routes.dim_entry_routes import core_to_msg_dim_entry, msg_to_core_dim_entry
+from routes.dim_entry_routes import (
+    core_to_msg_dim_entry,
+    msg_to_core_dim_entry,
+)
 from routes.shift_routes import core_to_msg_attribute
 from scripts.setup_database import dim_entry_db, dimension_db
-from services.dimension_services import create_dimension as create_dimension_service
-from services.dimension_services import delete_dimension as delete_dimension_service
+from services.dimension_services import (
+    create_dimension as create_dimension_service,
+)
+from services.dimension_services import (
+    delete_dimension as delete_dimension_service,
+)
 
 router = APIRouter()
 
@@ -42,11 +58,17 @@ async def create_dimension(
         if not await authz_check(
             session.get_user_id(), "create-shift-dimension", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to create a dimension")
+            raise NotAuthorizedError(
+                "You do not have permission to create a dimension"
+            )
         d_data = msg_to_core_dimension(dimension)
         des_data = [msg_to_core_dim_entry(de) for de in dim_entries]
-        d_created, des_created, attributes = create_dimension_service(d_data, des_data)
-        response = core_to_msg_new_dimension(d_created, des_created, attributes)
+        d_created, des_created, attributes = create_dimension_service(
+            d_data, des_data
+        )
+        response = core_to_msg_new_dimension(
+            d_created, des_created, attributes
+        )
     except Exception as e:
         log_info("Failed to create dimension")
         handle_routes_errors(e)
@@ -65,11 +87,15 @@ async def get_shift_dimensions(
             raise NotAuthorizedError(
                 "You do not have permission to read shift dimensions"
             )
-        shift_dimensions = dimension_db.get_shift_dimensions_not_deleted(team_id)
+        shift_dimensions = dimension_db.get_shift_dimensions_not_deleted(
+            team_id
+        )
         dim_entries = dim_entry_db.get_dim_entries_by_dim_ids(
             [sd.id for sd in shift_dimensions]
         )
-        response = core_to_msg_dimensions_and_dim_entries(shift_dimensions, dim_entries)
+        response = core_to_msg_dimensions_and_dim_entries(
+            shift_dimensions, dim_entries
+        )
     except Exception as e:
         log_info("Failed to get shift dimensions")
         handle_routes_errors(e)
@@ -106,7 +132,9 @@ async def update_dimension(
         if not await authz_check(
             session.get_user_id(), "update-shift-dimension", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to update a dimension")
+            raise NotAuthorizedError(
+                "You do not have permission to update a dimension"
+            )
         d_data = msg_to_core_dimension(dimension)
         updated_dimension = dimension_db.update_dimension(d_data)
         response = core_to_msg_dimension(updated_dimension)
@@ -139,8 +167,6 @@ async def delete_dimension(
 
 # Mappers
 # core to message
-
-
 def core_to_msg_dimension(dimension: Dimension) -> DimensionMessage:
     try:
         data = asdict(dimension)
@@ -211,8 +237,6 @@ def core_to_msg_dimensions_and_dim_entries(
 
 
 # message to core
-
-
 def msg_to_core_dimension(msg: DimensionMessage) -> Dimension:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake["type"] = DimensionType(data_snake["type"])
