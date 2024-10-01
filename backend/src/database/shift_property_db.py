@@ -1,11 +1,9 @@
 from typing import Dict, List, Union
 
 from bson import ObjectId
-
 from core import Attribute, AttributeOwnerType, Dimension, Shift
 from database.db import DB
 from errors import (
-    handle_create_core_object_error,
     handle_create_document_error,
     handle_delete_document_error,
     handle_get_document_error,
@@ -29,7 +27,7 @@ class ShiftPropertyDB:
         try:
             p_saved = p_doc.save()
         except Exception as e:
-            log_info("Failed to save property to database")
+            log_info("Failed to save attribute to database")
             handle_save_document_error(e)
         return doc_to_core_attribute(p_saved)
 
@@ -43,7 +41,7 @@ class ShiftPropertyDB:
         except Exception as e:
             log_info("Failed to save attributes to database")
             handle_save_document_error(e)
-        return [doc_to_core_attribute(sp) for sp in a_saved]
+        return [doc_to_core_attribute(a) for a in a_saved]
 
     def get_attributes_by_owner_id(self, owner_id: str) -> List[Attribute]:
         try:
@@ -56,46 +54,33 @@ class ShiftPropertyDB:
             handle_get_document_error(e)
         return [doc_to_core_attribute(a) for a in list(a_docs)]
 
-    def get_shift_properties_by_shift_ids(
-        self, shift_ids: List[str]
+    def get_attributes_by_owner_ids(
+        self, owner_ids: List[str]
     ) -> List[Attribute]:
         try:
             # pylint: disable=no-member
-            sp_docs = AttributeDocument.objects.filter(  # type: ignore
-                shift__in=shift_ids
+            a_docs = AttributeDocument.objects.filter(  # type: ignore
+                owner__in=owner_ids
             )
         except Exception as e:
-            log_info(
-                "Failed to get shift properties by shift ids from database"
-            )
+            log_info("Failed to get attributes by owner ids from database")
             handle_get_document_error(e)
-        try:
-            shift_properties = [
-                doc_to_core_attribute(sp) for sp in list(sp_docs)
-            ]
-        except Exception as e:
-            log_info(
-                "Failed to convert WorkerPropertyDocument to WorkerProperty"
-            )
-            handle_create_core_object_error(e)
-        return shift_properties
+        return [doc_to_core_attribute(a) for a in list(a_docs)]
 
-    def get_shift_properties_by_dimension_id(
+    def get_attributes_by_dimension_id(
         self, dimension_id: str
     ) -> List[Attribute]:
         try:
             # pylint: disable=no-member
-            shift_properties = AttributeDocument.objects.filter(  # type: ignore
+            a_docs = AttributeDocument.objects.filter(  # type: ignore
                 dimension=dimension_id
             )
         except Exception as e:
-            log_info(
-                "Failed to get shift properties by dimension from database"
-            )
+            log_info("Failed to get attributes by dimension from database")
             handle_get_document_error(e)
-        return [doc_to_core_attribute(sp) for sp in list(shift_properties)]
+        return [doc_to_core_attribute(a) for a in list(a_docs)]
 
-    def get_shift_properties_by_dimension_id_for_not_deleted_s(
+    def get_attributes_by_dimension_id_for_not_deleted_shitfs(
         self, dimension_id: str
     ) -> List[Attribute]:
         try:
@@ -125,49 +110,44 @@ class ShiftPropertyDB:
             result = AttributeDocument.objects.aggregate(pipeline)  # type: ignore
             # for doc in result:
             #     print(doc)
-            shift_properties = [AttributeDocument(**doc) for doc in result]
+            a_docs = [AttributeDocument(**doc) for doc in result]
         except Exception as e:
             log_info(
-                "Failed to get shift properties by dimension id for not "
+                "Failed to get attributes by dimension id for not "
                 + "deleted shift from database"
             )
             handle_get_document_error(e)
-            return []
+        return [doc_to_core_attribute(a) for a in a_docs]
 
-        return [doc_to_core_attribute(sp) for sp in shift_properties]
-
-    def get_shift_property_by_id(self, shift_property_id: str) -> Attribute:
+    def get_attribute_by_id(self, attribute_id: str) -> Attribute:
         try:
             # pylint: disable=no-member
-            shift_property = AttributeDocument.objects.get(  # type: ignore
-                id=shift_property_id
+            a_doc = AttributeDocument.objects.get(  # type: ignore
+                id=attribute_id
             )
         except Exception as e:
-            log_info("Failed to get shift property by id from database")
+            log_info("Failed to get attribute by id from database")
             handle_get_document_error(e)
-        return doc_to_core_attribute(shift_property)
+        return doc_to_core_attribute(a_doc)
 
-    def get_shift_property_by_shift_and_dimension(
+    def get_attribute_by_shift_and_dimension(
         self, shift: Shift, dimension: Dimension
     ) -> Union[Attribute, None]:
         try:
             # pylint: disable=no-member
-            shift_property = (
-                AttributeDocument.objects.filter(shift=shift.id)  # type: ignore
+            a_doc = (
+                AttributeDocument.objects.filter(owner=shift.id)  # type: ignore
                 .filter(dimension=dimension.id)
                 .first()
             )
         except Exception as e:
             log_info(
-                "Failed to get shift property by shift and dimension from "
-                + "database"
+                "Failed to get attribute by shift and dimension from database"
             )
             handle_get_document_error(e)
-        return (
-            doc_to_core_attribute(shift_property) if shift_property else None
-        )
+        return doc_to_core_attribute(a_doc) if a_doc else None
 
-    def get_shifts_id_by_dim_and_prop(self) -> Dict:
+    def get_shifts_id_by_dim_and_attr(self) -> Dict:
         pipeline = [
             {"$unwind": "$value"},
             {
@@ -201,106 +181,100 @@ class ShiftPropertyDB:
             # pylint: disable=no-member
             result = AttributeDocument.objects.aggregate(*pipeline)  # type: ignore
         except Exception as e:
-            log_info("Failed to get shifts by dimension and property")
+            log_info("Failed to get shifts by dimension and attribute")
             handle_get_document_error(e)
         # pylint: disable=R0801
         out: Dict = {}
         for r in result:
-            dim, _, prop_value, shifts = (
+            dim, _, attr_value, shifts = (
                 r["_id"],
                 r["dim_name"].lower(),
                 r["prop_value"],
                 r["shifts"],
             )
-            prop_value_mod = (
-                prop_value.lower()
-                if not isinstance(prop_value, bool)
-                else prop_value
+            attr_value_mod = (
+                attr_value.lower()
+                if not isinstance(attr_value, bool)
+                else attr_value
             )
             if dim not in out:
                 out[dim] = {}
-            if prop_value_mod not in out[dim]:
-                out[dim][prop_value_mod] = shifts
+            if attr_value_mod not in out[dim]:
+                out[dim][attr_value_mod] = shifts
             else:
-                out[dim][prop_value_mod] += shifts
+                out[dim][attr_value_mod] += shifts
         return out
 
-    def get_shift_properties_by_dim_entry_id(
+    def get_attributes_by_dim_entry_id(
         self, dim_entry_id: str
     ) -> List[Attribute]:
         try:
             # pylint: disable=no-member
-            shift_properties = AttributeDocument.objects.filter(  # type: ignore
+            a_docs = AttributeDocument.objects.filter(  # type: ignore
                 dim_entries__contains=dim_entry_id
             )
         except Exception as e:
-            log_info(
-                "Failed to get shift properties by dim entry id from database"
-            )
+            log_info("Failed to get attributes by dim entry id from database")
             handle_get_document_error(e)
-        return [doc_to_core_attribute(sp) for sp in shift_properties]
+        return [doc_to_core_attribute(a) for a in a_docs]
 
-    def update_shift_property(self, shift_property: Attribute) -> Attribute:
-        sp_doc = core_to_doc_attribute(shift_property)
+    def update_attribute(self, attribute: Attribute) -> Attribute:
+        a_doc = core_to_doc_attribute(attribute)
         try:
             # pylint: disable=no-member
-            AttributeDocument.objects.get(id=sp_doc.id)  # type: ignore
+            AttributeDocument.objects.get(id=a_doc.id)  # type: ignore
         except Exception as e:
-            log_info(f"Shift property with id {sp_doc.id} does not exist")
+            log_info(f"Attribute with id {a_doc.id} does not exist")
             handle_get_document_error(e)
         try:
-            sp_saved = sp_doc.save()
+            a_saved = a_doc.save()
         except Exception as e:
-            log_info("Failed to update shift property")
+            log_info("Failed to update attribute")
             handle_save_document_error(e)
-        return doc_to_core_attribute(sp_saved)
+        return doc_to_core_attribute(a_saved)
 
-    def update_shift_properties(
-        self, shift_properties: List[Attribute]
+    def update_attributes(
+        self, attributes: List[Attribute]
     ) -> List[Attribute]:
-        sp_docs = core_to_doc_attributes(shift_properties)
+        a_docs = core_to_doc_attributes(attributes)
         try:
-            for sp_doc in sp_docs:
-                sp_doc.save()
+            for a_doc in a_docs:
+                a_doc.save()
         except Exception as e:
-            log_info("Failed to update shift properties")
+            log_info("Failed to update attributes")
             handle_save_document_error(e)
-        return [doc_to_core_attribute(sp) for sp in sp_docs]
+        return [doc_to_core_attribute(a) for a in a_docs]
 
-    def delete_shift_properties_by_shift_id(self, shift_id: str) -> None:
+    def delete_attributes_by_owner_id(self, owner_id: str) -> None:
         try:
             # pylint: disable=no-member
-            shift_properties = AttributeDocument.objects.filter(  # type: ignore
-                shift=shift_id
+            a_docs = AttributeDocument.objects.filter(  # type: ignore
+                owner=owner_id
             )
         except Exception as e:
-            log_info("Failed to get shift properties by shift id to delete")
+            log_info("Failed to get attributes by shift id to delete")
             handle_get_document_error(e)
         try:
-            for shift_property in shift_properties:
-                shift_property.delete()
+            for a_doc in a_docs:
+                a_doc.delete()
         except Exception as e:
-            log_info("Failed to delete shift properties")
+            log_info("Failed to delete attributes")
             handle_delete_document_error(e)
 
-    def delete_shift_properties_by_dimension_id(
-        self, dimension_id: str
-    ) -> None:
+    def delete_attributes_by_dimension_id(self, dimension_id: str) -> None:
         try:
             # pylint: disable=no-member
-            shift_properties = AttributeDocument.objects.filter(  # type: ignore
+            a_docs = AttributeDocument.objects.filter(  # type: ignore
                 dimension=dimension_id
             )
         except Exception as e:
-            log_info(
-                "Failed to get shift properties by dimension id to delete: {e}"
-            )
+            log_info("Failed to get attributes by dimension id to delete: {e}")
             handle_get_document_error(e)
         try:
-            for shift_property in shift_properties:
-                shift_property.delete()
+            for a_doc in a_docs:
+                a_doc.delete()
         except Exception as e:
-            log_info("Failed to delete shift properties")
+            log_info("Failed to delete attributes")
             handle_delete_document_error(e)
 
 
@@ -331,7 +305,7 @@ def core_to_doc_attribute(dataclass_obj: Attribute) -> AttributeDocument:
         log_info("Failed to get shift, worker, dimension or dim entries by id")
         handle_get_document_error(e)
     try:
-        sp_doc = AttributeDocument(
+        a_doc = AttributeDocument(
             id=dataclass_obj.id,
             value=dataclass_obj.value,
             owner_type=dataclass_obj.owner_type.value,
@@ -342,7 +316,7 @@ def core_to_doc_attribute(dataclass_obj: Attribute) -> AttributeDocument:
     except Exception as e:
         log_info("Failed to convert Attribute to AttributeDocument")
         handle_create_document_error(e)
-    return sp_doc
+    return a_doc
 
 
 def core_to_doc_attributes(
@@ -396,7 +370,7 @@ def core_to_doc_attributes(
     }
     out = []
     for dataclass_obj in dataclass_objs:
-        sp_doc = AttributeDocument(
+        a_doc = AttributeDocument(
             id=str(ObjectId()) if creating else dataclass_obj.id,
             value=dataclass_obj.value,
             owner_type=dataclass_obj.owner_type.value,
@@ -411,7 +385,7 @@ def core_to_doc_attributes(
                 for dim_entry_id in dataclass_obj.dim_entry_ids
             ],
         )
-        out.append(sp_doc)
+        out.append(a_doc)
     return out
 
 

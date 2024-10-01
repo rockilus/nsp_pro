@@ -16,5 +16,5 @@ def create_or_update_shift_property(
     if shift_property.id == "":
         new_sp = shift_property_db.create_attribute(shift_property)
     else:
-        new_sp = shift_property_db.update_shift_property(shift_property)
+        new_sp = shift_property_db.update_attribute(shift_property)
     return new_sp

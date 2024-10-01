@@ -17,7 +17,7 @@ def get_shift_options(team_id: str) -> List[ShiftWorkerOption]:
         [sd.id for sd in shift_dimensions]
     )
     # pylint: disable=R0801
-    shift_properties = shift_property_db.get_shift_properties_by_shift_ids(
+    shift_properties = shift_property_db.get_attributes_by_owner_ids(
         [s.id for s in shifts]
     )
     shift_properties_sd: Dict[str, List[Attribute]] = {}

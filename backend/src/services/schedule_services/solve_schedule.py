@@ -45,17 +45,21 @@ from services.schedule_services.outputs_processing import update_request_status
 # pylint: disable=too-many-locals, too-many-statements
 def solve_schedule(
     schedule: Schedule,
-) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach], List[RequestAugmented]]:
+) -> Tuple[
+    Schedule, List[Assignment], List[ObjectiveBreach], List[RequestAugmented]
+]:
     start_time = time.time()
     start_time_db = time.time()
     workers = worker_db.get_workers(schedule.team_id)
     shifts = shift_db.get_shifts(schedule.team_id)
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
-    shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
+    shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_attr()
     cbs_augmented = get_active_constraint_builds_by_ids(
         schedule.team_id, schedule.constraint_build_ids
     )
-    coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule.id)
+    coverage_selectors = coverage_selector_db.get_coverage_selectors(
+        schedule.id
+    )
     shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
         coverage_selectors
     )
@@ -64,7 +68,9 @@ def solve_schedule(
     )
     team_schedules = schedule_db.get_schedules(schedule.team_id)
     fixed_assignments, wip_fixed_assignments = get_fixed_assignments(schedule)
-    wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
+    wip_assignments = assignment_db.get_assignments_by_status(
+        ["wip"], team_schedules
+    )
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
     constraints = setup_constraints(
@@ -105,7 +111,9 @@ def solve_schedule(
     )
     end_time_process_outputs = time.time()
     start_time_update_db = time.time()
-    updated_requests = update_request_status(assignments, requests, workers, shifts)
+    updated_requests = update_request_status(
+        assignments, requests, workers, shifts
+    )
     updated_schedule = schedule_db.update_schedule(schedule)
     updated_assignments = save_assignments(
         assignments, updated_schedule, wip_fixed_assignments
@@ -118,9 +126,13 @@ def solve_schedule(
     # time stats
     total_time = end_time - start_time
     total_time_db = end_time_db - start_time_db
-    total_time_engine_inputs = end_time_engine_inputs - start_time_engine_inputs
+    total_time_engine_inputs = (
+        end_time_engine_inputs - start_time_engine_inputs
+    )
     total_time_engine = end_time_engine - start_time_engine
-    total_time_process_outputs = end_time_process_outputs - start_time_process_outputs
+    total_time_process_outputs = (
+        end_time_process_outputs - start_time_process_outputs
+    )
     total_time_update_db = end_time_update_db - start_time_update_db
     print(f"total time:           {total_time:.2f}s")
     print(

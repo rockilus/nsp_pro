@@ -68,7 +68,7 @@ def build_stats(
         raise e
     shifts = shift_db.get_shifts_not_deleted(team_id)
     shift_dimensions = dimension_db.get_shift_dimensions(team_id)
-    shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
+    shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_attr()
     assignments = assignment_db.get_assignments_by_dates(
         start_date, end_date, schedules
     )
@@ -162,7 +162,8 @@ def build_work_shift_indexes(
     work_shift_to_duration = {
         s.id: (s.end_time - s.start_time).total_seconds() / 3600
         for s in shifts
-        if s in [ShiftType.NORMAL, ShiftType.DUTY] and s.id in selected_shifts_ids
+        if s in [ShiftType.NORMAL, ShiftType.DUTY]
+        and s.id in selected_shifts_ids
     }
     rest_shift_to_i = {
         shift.id: i
@@ -245,7 +246,9 @@ def build_stats_custom(
             shs,
         )
         sh_ids = [sh.id for sh in shs]
-        stats.stats_headers.extend(sh for sh in su_stats.stats_headers if sh.in_custom)
+        stats.stats_headers.extend(
+            sh for sh in su_stats.stats_headers if sh.in_custom
+        )
         stats.stats_values.extend(
             sv for sv in su_stats.stats_values if sv.header_id in sh_ids
         )
@@ -391,7 +394,9 @@ def build_stats_nb_days_worked(
             stats_headers,
         )
     if header_unit == "week":
-        stats_array, year_week_nb_to_i = calc_stats_per_week(a_array, date_to_i, True)
+        stats_array, year_week_nb_to_i = calc_stats_per_week(
+            a_array, date_to_i, True
+        )
         return np_to_core_days_worked_per_week(
             stats_array,
             i_to_worker,
@@ -402,7 +407,9 @@ def build_stats_nb_days_worked(
             stats_headers,
         )
     if header_unit == "month":
-        stats_array, year_month_to_i = calc_stats_per_month(a_array, date_to_i, True)
+        stats_array, year_month_to_i = calc_stats_per_month(
+            a_array, date_to_i, True
+        )
         return np_to_core_days_worked_per_month(
             stats_array,
             i_to_worker,
@@ -463,7 +470,9 @@ def build_stats_nb_shifts_worked(
             stats_headers,
         )
     if header_unit == "week":
-        stats_array, year_week_nb_to_i = calc_stats_per_week(a_array, date_to_i)
+        stats_array, year_week_nb_to_i = calc_stats_per_week(
+            a_array, date_to_i
+        )
         return np_to_core_days_worked_per_week(
             stats_array,
             i_to_worker,
@@ -536,7 +545,9 @@ def build_stats_time_worked(
             stats_headers,
         )
     if header_unit == "week":
-        stats_array, year_week_nb_to_i = calc_stats_per_week(a_array, date_to_i)
+        stats_array, year_week_nb_to_i = calc_stats_per_week(
+            a_array, date_to_i
+        )
         return np_to_core_days_worked_per_week(
             stats_array,
             i_to_worker,
@@ -634,7 +645,9 @@ def build_stats_nb_days_rest(
             stats_headers,
         )
     if header_unit == "year":
-        stats_array, year_to_i = calc_stats_per_year(a_array, date_to_i, True, True)
+        stats_array, year_to_i = calc_stats_per_year(
+            a_array, date_to_i, True, True
+        )
         return np_to_core_days_worked_per_year(
             stats_array,
             i_to_worker,
