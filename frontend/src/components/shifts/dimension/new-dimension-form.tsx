@@ -12,12 +12,10 @@ import TextField from "@mui/material/TextField";
 // Component
 import NewDimensionDimEntriesInput from "./new-dimension-dim-entries-input";
 // Types
-import {
-  DimensionT,
-  DimensionEntryType,
-  DimensionType,
-  DimEntryT,
-} from "../../../types/shift";
+import { DimensionType } from "@/types/dimension";
+import { DimensionEntryType } from "@/types/dimension";
+import { DimEntryT } from "@/types/dimension";
+import { DimensionT } from "@/types/dimension";
 
 export default function NewDimensionForm({
   lng,
@@ -25,14 +23,14 @@ export default function NewDimensionForm({
   dimensionType,
   isRest,
   setOpenParent,
-  handleAddShiftDimension,
+  handleAddDimension,
 }: {
   lng: string;
   selectedTeamId: string;
   dimensionType: DimensionType;
   isRest: boolean;
   setOpenParent: (open: boolean) => void | null;
-  handleAddShiftDimension: (
+  handleAddDimension: (
     newDimension: DimensionT,
     newDimEntries: DimEntryT[]
   ) => Promise<boolean>;
@@ -115,7 +113,7 @@ export default function NewDimensionForm({
         restShift: isRest,
         deleted: false,
       };
-      const addedOK = await handleAddShiftDimension(newDimension, dimEntries);
+      const addedOK = await handleAddDimension(newDimension, dimEntries);
       if (addedOK) {
         setName("");
         setEntryType(null);

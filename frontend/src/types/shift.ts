@@ -1,48 +1,6 @@
 import dayjs from "dayjs";
-
-export enum DimensionType {
-  WORKER = 0,
-  SHIFT = 1,
-  BOTH = 2,
-}
-
-export enum DimensionEntryType {
-  STR = 0,
-  INT = 1,
-  BOOL = 2,
-  DIM_ENTRIES = 3,
-}
-
-export type DimEntryT = {
-  id: string;
-  dimensionId: string;
-  name: string;
-  deleted: boolean;
-};
-
-export type DimensionT = {
-  id: string;
-  teamId: string;
-  type: DimensionType;
-  name: string;
-  entryType: DimensionEntryType;
-  restShift: boolean;
-  deleted: boolean;
-};
-
-export enum AttributeOwnerType {
-  SHIFT = 0,
-  WORKER = 1,
-}
-
-export type AttributeT = {
-  id: string;
-  value: string | number | boolean;
-  ownerType: AttributeOwnerType;
-  ownerId: string;
-  dimensionId: string;
-  dimEntryIds: string[];
-};
+// Types
+import { AttributeT } from "./attribute";
 
 export enum ShiftType {
   NORMAL = 0,
@@ -94,10 +52,4 @@ export type ShiftT = {
   recuperationDutyId: string | null;
   deleted: boolean;
   attributes: AttributeT[];
-};
-
-export type NewShiftDimensionT = {
-  newDimension: DimensionT;
-  newDimEntries: DimEntryT[];
-  newAttributes: AttributeT[];
 };

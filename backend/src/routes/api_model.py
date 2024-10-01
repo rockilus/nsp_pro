@@ -4,41 +4,7 @@ from typing import List
 from pydantic import BaseModel
 
 
-# Worker
-class WorkerPropertyMessage(BaseModel):
-    id: str
-    value: str | int | bool | List[str]
-    workerDimensionId: str
-    workerId: str
-
-
-class WorkerMessage(BaseModel):
-    id: str
-    teamId: str
-    name: str
-    weeklyHours: int
-    weeklyHoursDesired: int
-    dutiesPerMonth: int
-    annualLeave: int
-    deleted: bool
-    workerProperties: List[WorkerPropertyMessage]
-
-
-class WorkerDimensionMessage(BaseModel):
-    id: str
-    teamId: str
-    name: str
-    entryType: str
-    entryOptions: List[str]
-    deleted: bool
-
-
-class NewWorkerDimensionMessage(BaseModel):
-    newDimension: WorkerDimensionMessage
-    newProperties: List[WorkerPropertyMessage]
-
-
-# Shift
+# Attribute
 class AttributeMessage(BaseModel):
     id: str
     value: str | int | bool
@@ -48,23 +14,7 @@ class AttributeMessage(BaseModel):
     dimEntryIds: List[str]
 
 
-class ShiftMessage(BaseModel):
-    id: str
-    teamId: str
-    name: str
-    startTime: datetime
-    endTime: datetime
-    staffing: int
-    color: str
-    shiftType: int
-    restType: int
-    leaveType: int
-    recuperationTime: int
-    recuperationDutyId: str | None
-    deleted: bool
-    attributes: List[AttributeMessage]
-
-
+# Dimension
 class DimEntryMessage(BaseModel):
     id: str
     dimensionId: str
@@ -82,15 +32,67 @@ class DimensionMessage(BaseModel):
     deleted: bool
 
 
+class DimensionsAndDimEntriesMessage(BaseModel):
+    dimensions: List[DimensionMessage]
+    dimEntries: List[DimEntryMessage]
+
+
 class NewDimensionMessage(BaseModel):
     newDimension: DimensionMessage
     newDimEntries: List[DimEntryMessage]
     newAttributes: List[AttributeMessage]
 
 
-class DimensionsAndDimEntriesMessage(BaseModel):
-    dimensions: List[DimensionMessage]
-    dimEntries: List[DimEntryMessage]
+# Worker
+class WorkerPropertyMessage(BaseModel):
+    id: str
+    value: str | int | bool | List[str]
+    workerDimensionId: str
+    workerId: str
+
+
+class WorkerMessage(BaseModel):
+    id: str
+    teamId: str
+    name: str
+    weeklyHours: int
+    weeklyHoursDesired: int
+    dutiesPerMonth: int
+    annualLeave: int
+    deleted: bool
+    attributes: List[AttributeMessage]
+
+
+class WorkerDimensionMessage(BaseModel):
+    id: str
+    teamId: str
+    name: str
+    entryType: str
+    entryOptions: List[str]
+    deleted: bool
+
+
+class NewWorkerDimensionMessage(BaseModel):
+    newDimension: WorkerDimensionMessage
+    newProperties: List[WorkerPropertyMessage]
+
+
+# Shift
+class ShiftMessage(BaseModel):
+    id: str
+    teamId: str
+    name: str
+    startTime: datetime
+    endTime: datetime
+    staffing: int
+    color: str
+    shiftType: int
+    restType: int
+    leaveType: int
+    recuperationTime: int
+    recuperationDutyId: str | None
+    deleted: bool
+    attributes: List[AttributeMessage]
 
 
 # Coverage

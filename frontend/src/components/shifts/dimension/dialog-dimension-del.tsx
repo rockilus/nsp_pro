@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -9,16 +9,16 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
-export default function DialogWorkerDimensionDel({
+export default function DialogDimensionDel({
   lng,
-  workerDimensionId,
-  handleDeleteWorkerDimension,
+  dimensionId,
+  handleDeleteDimension,
 }: {
   lng: string;
-  workerDimensionId: string;
-  handleDeleteWorkerDimension: (workerDimensionId: string) => void;
+  dimensionId: string;
+  handleDeleteDimension: (dimensionId: string) => void;
 }) {
-  const { t } = useTranslation(lng, "worker-page");
+  const { t } = useTranslation(lng, "shift-page");
 
   const [open, setOpen] = useState(false);
 
@@ -31,8 +31,8 @@ export default function DialogWorkerDimensionDel({
   };
 
   return (
-    <Box>
-      <Button variant="outlined" onClick={handleClickOpen}>
+    <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
+      <Button variant="outlined" onClick={handleClickOpen} fullWidth>
         {t("delete")}
       </Button>
       <Dialog
@@ -50,7 +50,7 @@ export default function DialogWorkerDimensionDel({
         <DialogActions>
           <Button
             onClick={() => {
-              handleDeleteWorkerDimension(workerDimensionId);
+              handleDeleteDimension(dimensionId);
               handleClose();
             }}
             color="error"

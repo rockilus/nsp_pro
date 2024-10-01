@@ -7,16 +7,16 @@ import TextField from "@mui/material/TextField";
 import AttributeCellDimEntries from "./attribute-cell-dim-entries";
 // Types
 import {
-  AttributeT,
-  DimensionT,
   DimensionEntryType,
   DimEntryT,
-} from "../../../types/shift";
+  DimensionT,
+} from "../../../types/dimension";
+import { AttributeT } from "@/types/attribute";
 
 export default function AttributeCell({
   selectedTeamId,
   attribute,
-  shiftDimension,
+  dimension,
   dimEntries,
   editing,
   setEditing,
@@ -24,7 +24,7 @@ export default function AttributeCell({
 }: {
   selectedTeamId: string;
   attribute: AttributeT;
-  shiftDimension: DimensionT;
+  dimension: DimensionT;
   dimEntries: DimEntryT[];
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
@@ -62,32 +62,32 @@ export default function AttributeCell({
   return (
     <>
       <TableCell
-        key={shiftDimension.id}
+        key={dimension.id}
         component="th"
         scope="row"
-        onClick={() => setEditing({ [attribute.ownerId]: shiftDimension.id })}
+        onClick={() => setEditing({ [attribute.ownerId]: dimension.id })}
         sx={{
           paddingY: 0,
           cursor:
-            shiftDimension.entryType === DimensionEntryType.DIM_ENTRIES
+            dimension.entryType === DimensionEntryType.DIM_ENTRIES
               ? "default"
               : "pointer",
         }}
       >
-        {shiftDimension.entryType === DimensionEntryType.DIM_ENTRIES ? (
+        {dimension.entryType === DimensionEntryType.DIM_ENTRIES ? (
           <AttributeCellDimEntries
             selectedTeamId={selectedTeamId}
-            shiftDimension={shiftDimension}
+            dimension={dimension}
             dimEntries={dimEntries}
             attribute={attribute}
             handleUpdateAttribute={handleUpdateAttribute}
           />
-        ) : editing && shiftDimension.entryType !== DimensionEntryType.BOOL ? (
-          shiftDimension.entryType === DimensionEntryType.INT ? (
+        ) : editing && dimension.entryType !== DimensionEntryType.BOOL ? (
+          dimension.entryType === DimensionEntryType.INT ? (
             <TextField
               fullWidth
               type="number"
-              name={shiftDimension.name}
+              name={dimension.name}
               value={valueState}
               onChange={(e) => setValueState(e.target.value)}
               onBlur={handleEditConfirm}
@@ -104,7 +104,7 @@ export default function AttributeCell({
             <TextField
               fullWidth
               type="text"
-              name={shiftDimension.name}
+              name={dimension.name}
               value={valueState}
               onChange={(e) => setValueState(e.target.value)}
               onBlur={handleEditConfirm}
@@ -118,7 +118,7 @@ export default function AttributeCell({
               autoFocus
             />
           )
-        ) : shiftDimension.entryType === DimensionEntryType.BOOL ? (
+        ) : dimension.entryType === DimensionEntryType.BOOL ? (
           <Checkbox
             checked={
               typeof attribute.value === "boolean"

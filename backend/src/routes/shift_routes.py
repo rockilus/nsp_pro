@@ -38,8 +38,8 @@ async def create_shift(
         ):
             raise NotAuthorizedError("You do not have permission to create a shift")
         s_data = msg_to_core_to_shift(shift)
-        shift_created, sp_bool = create_shift_service(s_data)
-        response = core_to_msg_shift_and_attributes(shift_created, sp_bool)
+        shift_created, a_bool = create_shift_service(s_data)
+        response = core_to_msg_shift_and_attributes(shift_created, a_bool)
     except Exception as e:
         log_info("Failed to create shift")
         handle_routes_errors(e)
@@ -153,13 +153,12 @@ async def delete_shift(
 def core_to_msg_shift_and_attributes(
     shift: Shift, attributes: List[Attribute]
 ) -> ShiftMessage:
-    attributes_message = [core_to_msg_attribute(a) for a in attributes]
     try:
         data = asdict(shift)
     except Exception as e:
         log_info("Failed to convert Shift to dictionary")
         raise MessageTypeError(str(e)) from e
-    data["attributes"] = attributes_message
+    data["attributes"] = [core_to_msg_attribute(a) for a in attributes]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ShiftMessage)
     try:

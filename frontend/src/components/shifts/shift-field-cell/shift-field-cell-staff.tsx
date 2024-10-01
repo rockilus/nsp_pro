@@ -1,53 +1,49 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 // MUI
-import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
 // Types
-import { WorkerT } from "../../types/worker";
+import { ShiftT } from "../../../types/shift";
 
-export default function WorkerFieldCellWeeklyHours({
-  worker,
+export default function ShiftFieldCellStaff({
+  shift,
   editing,
   setEditing,
-  handleUpdateWorker,
+  handleUpdateShift,
 }: {
-  worker: WorkerT;
+  shift: ShiftT;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
-  handleUpdateWorker: (updatedWorker: WorkerT) => void;
+  handleUpdateShift: (updatedShift: ShiftT) => void;
 }) {
-  const [valueState, setValueState] = useState<number | "">(worker.weeklyHours);
+  const [valueState, setValueState] = useState<number | "">(shift.staffing);
 
-  const handleEditConfirm = async () => {
-    if (valueState !== worker.weeklyHours && valueState !== "") {
-      handleUpdateWorker({
-        ...worker,
-        weeklyHours: valueState,
-      });
+  const handleEditConfirm = () => {
+    if (valueState !== shift.staffing && valueState !== "") {
+      handleUpdateShift({ ...shift, staffing: valueState });
     } else if (valueState === "") {
-      setValueState(worker.weeklyHours);
+      setValueState(shift.staffing);
     }
     setEditing({});
   };
 
   const handleEditCancel = () => {
     setEditing({});
-    setValueState(worker.weeklyHours);
+    setValueState(shift.staffing);
   };
 
   return (
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [worker.id]: "weeklyHours" })}
-      sx={{ paddingY: 0 }}
+      onClick={() => setEditing({ [shift.id]: "staffing" })}
+      sx={{ paddingY: 0, cursor: "pointer" }}
     >
       {editing ? (
         <TextField
           fullWidth
           type="number"
-          name="Weekly Hours"
+          name="Staffing"
           value={valueState}
           onChange={(e) =>
             setValueState(e.target.value === "" ? "" : Number(e.target.value))
@@ -63,9 +59,7 @@ export default function WorkerFieldCellWeeklyHours({
           autoFocus
         />
       ) : (
-        <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
-          {worker.weeklyHours}
-        </Box>
+        shift.staffing
       )}
     </TableCell>
   );

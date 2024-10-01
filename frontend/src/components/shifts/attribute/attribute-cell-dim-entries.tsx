@@ -6,21 +6,21 @@ import DimEntryTypeCellEdit from "./dim-entry-type-cell-edit";
 import PopoverAnchorElOver from "../../inputs/popover-anchor-el-over";
 // Types
 import {
-  DimensionT,
-  AttributeT,
   DimensionEntryType,
   DimEntryT,
-} from "../../../types/shift";
+  DimensionT,
+} from "../../../types/dimension";
+import { AttributeT } from "@/types/attribute";
 
 export default function AttributeCellDimEntries({
   selectedTeamId,
-  shiftDimension,
+  dimension,
   dimEntries,
   attribute,
   handleUpdateAttribute,
 }: {
   selectedTeamId: string;
-  shiftDimension: DimensionT;
+  dimension: DimensionT;
   dimEntries: DimEntryT[];
   attribute: AttributeT;
   handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
@@ -36,7 +36,7 @@ export default function AttributeCellDimEntries({
 
   const handleAddDimEntry = (dimEntry: DimEntryT) => {
     if (
-      shiftDimension.entryType === DimensionEntryType.DIM_ENTRIES &&
+      dimension.entryType === DimensionEntryType.DIM_ENTRIES &&
       Array.isArray(valueState)
     ) {
       const updatedValue = [...valueState, dimEntry];
@@ -58,7 +58,7 @@ export default function AttributeCellDimEntries({
   };
 
   const handleRemoveDimEntry = (dimEntry: DimEntryT) => {
-    if (shiftDimension.entryType === DimensionEntryType.DIM_ENTRIES) {
+    if (dimension.entryType === DimensionEntryType.DIM_ENTRIES) {
       const updatedValue = valueState.filter((v) => v.id !== dimEntry.id);
       setValueState(updatedValue);
       if (!selectedTeamId) {

@@ -6,9 +6,9 @@ import Chip from "@mui/material/Chip";
 import Menu from "@mui/material/Menu";
 import TableCell from "@mui/material/TableCell";
 // Types
-import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../../types/shift";
 // Constants
-import { ShiftColors } from "../../constants/constants";
+import { ShiftColors } from "../../../constants/constants";
 
 export default function ShiftFieldCellColor({
   shift,

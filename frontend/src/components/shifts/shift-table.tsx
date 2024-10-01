@@ -17,7 +17,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import NewDimensionForm from "./dimension/new-dimension-form";
 import PopoverRHS from "../inputs/popover-rhs";
 import DimensionCell from "./dimension/dimension-cell";
-import ShiftFieldCell from "./shift-field-cell";
+import ShiftFieldCell from "./shift-field-cell/shift-field-cell";
 import AttributeCell from "./attribute/attribute-cell";
 import TableAddButton from "../buttons/table-add-button";
 import {
@@ -30,17 +30,13 @@ import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
 // Types
-import {
-  DimensionT,
-  ShiftT,
-  AttributeT,
-  ShiftLeaveType,
-  ShiftRestType,
-  DimEntryT,
-  DimensionType,
-  DimensionEntryType,
-  AttributeOwnerType,
-} from "../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../types/shift";
+import { DimensionType } from "@/types/dimension";
+import { DimensionEntryType } from "@/types/dimension";
+import { DimEntryT } from "@/types/dimension";
+import { DimensionT } from "@/types/dimension";
+import { AttributeOwnerType } from "@/types/attribute";
+import { AttributeT } from "@/types/attribute";
 
 dayjs.extend(utc);
 
@@ -48,7 +44,7 @@ export default function ShiftTable({
   lng,
   selectedTeamId,
   isRest,
-  shiftDimensions,
+  dimensions,
   dimEntries,
   shifts,
   defaultShiftFields,
@@ -66,7 +62,7 @@ export default function ShiftTable({
   lng: string;
   selectedTeamId: string;
   isRest: boolean;
-  shiftDimensions: DimensionT[];
+  dimensions: DimensionT[];
   dimEntries: DimEntryT[];
   shifts: ShiftT[];
   defaultShiftFields: Record<string, string>[];
@@ -129,7 +125,7 @@ export default function ShiftTable({
               dimensionType={DimensionType.SHIFT}
               isRest={isRest}
               setOpenParent={setPopoverRhsOpen}
-              handleAddShiftDimension={handleAddDimension}
+              handleAddDimension={handleAddDimension}
             />
           }
           open={popoverRhsOpen}
@@ -145,14 +141,14 @@ export default function ShiftTable({
                   <span className="table-header-default">{field.label}</span>
                 </TableCell>
               ))}
-              {shiftDimensions.map((sd, sdIndex) => (
+              {dimensions.map((dim, dIndex) => (
                 <DimensionCell
-                  key={sdIndex}
+                  key={dIndex}
                   lng={lng}
                   selectedTeamId={selectedTeamId}
-                  dimension={sd}
+                  dimension={dim}
                   dimEntries={dimEntries.filter(
-                    (de) => de.dimensionId === sd.id
+                    (de) => de.dimensionId === dim.id
                   )}
                   handleUpdateDimension={handleUpdateDimension}
                   handleDeleteDimension={handleDeleteDimension}
@@ -189,13 +185,13 @@ export default function ShiftTable({
                     handleUpdateShift={handleUpdateShift}
                   />
                 ))}
-                {shiftDimensions.map((sd, sdIndex) => {
+                {dimensions.map((dim, dIndex) => {
                   const attribute = shift.attributes.find(
-                    (sp) => sp.dimensionId === sd.id
+                    (a) => a.dimensionId === dim.id
                   );
                   return (
                     <AttributeCell
-                      key={sdIndex}
+                      key={dIndex}
                       selectedTeamId={selectedTeamId}
                       attribute={
                         attribute
@@ -204,19 +200,19 @@ export default function ShiftTable({
                               id: "",
                               ownerType: AttributeOwnerType.SHIFT,
                               ownerId: shift.id,
-                              dimensionId: sd.id,
+                              dimensionId: dim.id,
                               value:
-                                sd.entryType === DimensionEntryType.BOOL
+                                dim.entryType === DimensionEntryType.BOOL
                                   ? false
                                   : "",
                               dimEntryIds: [],
                             }
                       }
-                      shiftDimension={sd}
+                      dimension={dim}
                       dimEntries={dimEntries.filter(
-                        (de) => de.dimensionId === sd.id
+                        (de) => de.dimensionId === dim.id
                       )}
-                      editing={bodyEditing[shift.id] === sd.id}
+                      editing={bodyEditing[shift.id] === dim.id}
                       setEditing={setBodyEditing}
                       handleUpdateAttribute={handleUpdateAttribute}
                     />

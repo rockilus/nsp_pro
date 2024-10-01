@@ -5,6 +5,7 @@ from core import (
     Attribute,
     AttributeOwnerType,
     DimensionEntryType,
+    DimensionType,
     Shift,
     ShiftLeaveType,
     ShiftRestType,
@@ -19,19 +20,21 @@ def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:
     if shift.leave_type != ShiftLeaveType.NONE:
         raise ValueError("Cannot create a leave shift")
     shift_created = shift_db.create_shift(shift)
-    sd_bool = dimension_db.get_shift_dimensions_by_entry_type(
-        DimensionEntryType.BOOL, shift_created.team_id
+    d_bool = dimension_db.get_dimensions_by_types_and_entry_type(
+        [DimensionType.SHIFT, DimensionType.BOTH],
+        DimensionEntryType.BOOL,
+        shift_created.team_id,
     )
     attributes: List[Attribute] = []
     attributes_saved: List[Attribute] = []
-    for wd in sd_bool:
+    for d in d_bool:
         attributes.append(
             Attribute(
                 id="",
                 value=False,
                 owner_type=AttributeOwnerType.SHIFT,
                 owner_id=shift_created.id,
-                dimension_id=wd.id,
+                dimension_id=d.id,
                 dim_entry_ids=[],
             )
         )

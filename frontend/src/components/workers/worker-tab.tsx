@@ -11,17 +11,26 @@ import {
   getWorkersTabData,
   addWorker,
   deleteWorker,
-  addWorkerDimension,
-  updateWorkerProperty,
-  updateWorkerDimension,
   updateWorker,
-  deleteWorkerDimension,
 } from "../../app/lib/worker";
+import {
+  addDimension,
+  updateDimension,
+  deleteDimension,
+} from "../../app/lib/dimension";
+import {
+  addDimEntry,
+  updateDimEntry,
+  deleteDimEntry,
+} from "../../app/lib/dim-entry";
+import { updateAttribute } from "../../app/lib/attribute";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/tab-container-styles.css";
 // Types
-import { WorkerT, WorkerDimensionT, WorkerPropertyT } from "../../types/worker";
+import { WorkerT } from "../../types/worker";
+import { DimensionT, DimEntryT } from "../../types/dimension";
+import { AttributeT } from "../../types/attribute";
 
 export default function WorkerTab({
   lng,
@@ -34,9 +43,8 @@ export default function WorkerTab({
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
-  const [workerDimensions, setWorkerDimensions] = useState<WorkerDimensionT[]>(
-    []
-  );
+  const [dimensions, setDimensions] = useState<DimensionT[]>([]);
+  const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
 
   const DefaultWorkerFields: Record<string, string>[] = [
     { name: "name", label: t("name") },
@@ -61,7 +69,7 @@ export default function WorkerTab({
       dutiesPerMonth: 4,
       annualLeave: 25,
       deleted: false,
-      workerProperties: [],
+      attributes: [],
     });
     setWorkers([...workers, addedWorker]);
   };
@@ -85,32 +93,31 @@ export default function WorkerTab({
   };
 
   //////////////////////////
-  // Worker Dimension Actions
+  // Dimension Actions
   //////////////////////////
 
-  const handleAddWorkerDimension = async (
-    newWorkerDimension: WorkerDimensionT
+  const handleAddDimension = async (
+    newDimension: DimensionT,
+    newDimEntries: DimEntryT[]
   ) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const { newDimension, newProperties } = await addWorkerDimension(
-      newWorkerDimension
-    );
-    setWorkerDimensions([...workerDimensions, newDimension]);
+    const {
+      newDimension: newDimensionResponse,
+      newDimEntries: newDimEntriesResponse,
+      newAttributes: newAttributesResponse,
+    } = await addDimension(newDimension, newDimEntries);
+    setDimensions([...dimensions, newDimensionResponse]);
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) => {
-        const newWorkerProperties = newProperties.filter(
-          (property) => property.workerId === worker.id
+        const newAttributes = newAttributesResponse.filter(
+          (attribute) => attribute.ownerId === worker.id
         );
-
-        return newWorkerProperties
+        return newAttributes
           ? {
               ...worker,
-              workerProperties: [
-                ...worker.workerProperties,
-                ...newWorkerProperties,
-              ],
+              attributes: [...worker.attributes, ...newAttributes],
             }
           : worker;
       })
@@ -118,62 +125,101 @@ export default function WorkerTab({
     return true;
   };
 
-  const handleUpdateWorkerDimension = async (
-    workerDimension: WorkerDimensionT
-  ) => {
+  const handleUpdateDimension = async (dimension: DimensionT) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedWorkerDimension = await updateWorkerDimension(workerDimension);
-    setWorkerDimensions((prevWorkerDimensions) =>
-      prevWorkerDimensions.map((workerDimension) =>
-        workerDimension.id === updatedWorkerDimension.id
-          ? updatedWorkerDimension
-          : workerDimension
+    const updatedDimension = await updateDimension(dimension);
+    setDimensions((prevDimensions) =>
+      prevDimensions.map((prevDim) =>
+        prevDim.id === updatedDimension.id ? updatedDimension : prevDim
       )
     );
   };
 
-  const handleDeleteWorkerDimension = async (workerDimensionId: string) => {
+  const handleDeleteDimension = async (dimensionId: string) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await deleteWorkerDimension(workerDimensionId, selectedTeamId);
-    setWorkerDimensions(
-      workerDimensions.filter(
-        (workerDimension) => workerDimension.id !== workerDimensionId
+    await deleteDimension(dimensionId, selectedTeamId);
+    setDimensions(dimensions.filter((d) => d.id !== dimensionId));
+  };
+
+  //////////////////////////
+  // DimEntry Actions
+  //////////////////////////
+
+  const handleAddDimEntry = async (dimEntry: DimEntryT) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const newDimEntry = await addDimEntry(dimEntry, selectedTeamId);
+    setDimEntries([...dimEntries, newDimEntry]);
+  };
+
+  const handleUpdateDimEntry = async (dimEntry: DimEntryT) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const updatedDimEntry = await updateDimEntry(dimEntry, selectedTeamId);
+    setDimEntries((prevDimEntries) =>
+      prevDimEntries.map((de) =>
+        de.id === updatedDimEntry.id ? updatedDimEntry : de
       )
     );
   };
-  //////////////////////////
-  // Worker Property Actions
-  //////////////////////////
 
-  const handleUpdateWorkerProperty = async (
-    workerProperty: WorkerPropertyT
-  ) => {
+  const handleDeleteDimEntry = async (dimEntryId: string) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedWorkerProperty = await updateWorkerProperty(
-      workerProperty,
-      selectedTeamId
-    );
+    const updatedAttributes = await deleteDimEntry(dimEntryId, selectedTeamId);
+    setDimEntries(dimEntries.filter((dimEntry) => dimEntry.id !== dimEntryId));
+    for (const updatedAttribute of updatedAttributes) {
+      setWorkers((prevWorker) =>
+        prevWorker.map((worker) =>
+          worker.id === updatedAttribute.ownerId
+            ? {
+                ...worker,
+                attributes: worker.attributes.some(
+                  (attribute) => attribute.id === updatedAttribute.id
+                )
+                  ? worker.attributes.map((attribute) =>
+                      attribute.id === updatedAttribute.id
+                        ? { ...attribute, ...updatedAttribute }
+                        : attribute
+                    )
+                  : [...worker.attributes, updatedAttribute],
+              }
+            : worker
+        )
+      );
+    }
+  };
+
+  //////////////////////////
+  // Attribute Actions
+  //////////////////////////
+
+  const handleUpdateAttribute = async (attribute: AttributeT) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const updatedAttribute = await updateAttribute(attribute, selectedTeamId);
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) =>
-        worker.id === updatedWorkerProperty.workerId
+        worker.id === updatedAttribute.ownerId
           ? {
               ...worker,
-              workerProperties: worker.workerProperties.some(
-                (workerProperty) =>
-                  workerProperty.id === updatedWorkerProperty.id
+              attributes: worker.attributes.some(
+                (attribute) => attribute.id === updatedAttribute.id
               )
-                ? worker.workerProperties.map((workerProperty) =>
-                    workerProperty.id === updatedWorkerProperty.id
-                      ? { ...workerProperty, ...updatedWorkerProperty }
-                      : workerProperty
+                ? worker.attributes.map((attribute) =>
+                    attribute.id === updatedAttribute.id
+                      ? { ...attribute, ...updatedAttribute }
+                      : attribute
                   )
-                : [...worker.workerProperties, updatedWorkerProperty],
+                : [...worker.attributes, updatedAttribute],
             }
           : worker
       )
@@ -186,11 +232,12 @@ export default function WorkerTab({
       if (selectedTeamId) {
         const {
           workers: fetchedWorkers,
-          workerDimensions: fetchedWorkerDimensions,
-        }: { workers: WorkerT[]; workerDimensions: WorkerDimensionT[] } =
-          await getWorkersTabData(selectedTeamId);
+          dimensions: fetchedWorkerDimensions,
+          dimEntries: fetchedDimEntries,
+        } = await getWorkersTabData(selectedTeamId);
         setWorkers(fetchedWorkers);
-        setWorkerDimensions(fetchedWorkerDimensions);
+        setDimensions(fetchedWorkerDimensions);
+        setDimEntries(fetchedDimEntries);
         setIsLoading(false);
       }
     };
@@ -206,16 +253,20 @@ export default function WorkerTab({
           <WorkerTable
             lng={lng}
             selectedTeamId={selectedTeamId}
-            workerDimensions={workerDimensions}
+            dimensions={dimensions}
+            dimEntries={dimEntries}
             workers={workers}
             defaultWorkerFields={DefaultWorkerFields}
             handleAddWorker={handleAddWorker}
-            handleDeleteWorker={handleDeleteWorker}
-            handleAddWorkerDimension={handleAddWorkerDimension}
-            handleUpdateWorkerProperty={handleUpdateWorkerProperty}
-            handleUpdateWorkerDimension={handleUpdateWorkerDimension}
             handleUpdateWorker={handleUpdateWorker}
-            handleDeleteWorkerDimension={handleDeleteWorkerDimension}
+            handleDeleteWorker={handleDeleteWorker}
+            handleAddDimension={handleAddDimension}
+            handleUpdateDimension={handleUpdateDimension}
+            handleDeleteDimension={handleDeleteDimension}
+            handleAddDimEntry={handleAddDimEntry}
+            handleUpdateDimEntry={handleUpdateDimEntry}
+            handleDeleteDimEntry={handleDeleteDimEntry}
+            handleUpdateAttribute={handleUpdateAttribute}
           />
         )
       )}

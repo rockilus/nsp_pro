@@ -8,7 +8,7 @@ import {
   ShiftLeaveType,
   ShiftRestType,
   ShiftType,
-} from "../../types/shift";
+} from "../../../types/shift";
 
 export default function ShiftFieldCellDuty({
   shift,

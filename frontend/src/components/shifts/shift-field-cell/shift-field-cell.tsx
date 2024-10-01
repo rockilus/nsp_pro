@@ -10,7 +10,7 @@ import ShiftFieldCellStartTime from "./shift-field-cell-start-time";
 import ShiftFieldCellEndTime from "./shift-field-cell-end-time";
 import ShiftFieldCellStaff from "./shift-field-cell-staff";
 // Types
-import { ShiftT } from "../../types/shift";
+import { ShiftT } from "../../../types/shift";
 
 export default function ShiftFieldCell({
   lng,

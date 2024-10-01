@@ -11,49 +11,62 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Components
-import NewWorkerDimensionForm from "./new-worker-dimension-form";
+import NewDimensionForm from "../shifts/dimension/new-dimension-form";
+import DimensionCell from "../shifts/dimension/dimension-cell";
+import AttributeCell from "../shifts/attribute/attribute-cell";
 import PopoverRHS from "../inputs/popover-rhs";
 import TableAddButton from "../buttons/table-add-button";
-import WorkerPropertyCell from "./worker-property-cell";
-import WorkerDimensionCell from "./worker-dimension-cell";
-import WorkerFieldCell from "./worker-field-cell";
+import WorkerFieldCell from "./worker-field-cell/worker-field-cell";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
 // Types
-import { WorkerDimensionT, WorkerT, WorkerPropertyT } from "../../types/worker";
+import { WorkerT } from "../../types/worker";
+import {
+  DimensionT,
+  DimEntryT,
+  DimensionType,
+  DimensionEntryType,
+} from "../../types/dimension";
+import { AttributeT, AttributeOwnerType } from "../../types/attribute";
 
 export default function WorkerTable({
   lng,
   selectedTeamId,
-  workerDimensions,
+  dimensions,
+  dimEntries,
   workers,
   defaultWorkerFields,
   handleAddWorker,
-  handleDeleteWorker,
-  handleAddWorkerDimension,
-  handleUpdateWorkerProperty,
-  handleUpdateWorkerDimension,
   handleUpdateWorker,
-  handleDeleteWorkerDimension,
+  handleDeleteWorker,
+  handleAddDimension,
+  handleUpdateDimension,
+  handleDeleteDimension,
+  handleAddDimEntry,
+  handleUpdateDimEntry,
+  handleDeleteDimEntry,
+  handleUpdateAttribute,
 }: {
   lng: string;
   selectedTeamId: string;
-  workerDimensions: WorkerDimensionT[];
+  dimensions: DimensionT[];
+  dimEntries: DimEntryT[];
   workers: WorkerT[];
   defaultWorkerFields: Record<string, string>[];
   handleAddWorker: () => void;
-  handleDeleteWorker: (workerId: string) => void;
-  handleAddWorkerDimension: (
-    newWorkerDimension: WorkerDimensionT
-  ) => Promise<boolean>;
-  handleUpdateWorkerProperty: (
-    workerProperty: WorkerPropertyT,
-    teamId: string
-  ) => void;
-  handleUpdateWorkerDimension: (workerDimension: WorkerDimensionT) => void;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
-  handleDeleteWorkerDimension: (workerDimensionId: string) => void;
+  handleDeleteWorker: (workerId: string) => void;
+  handleAddDimension: (
+    newDimension: DimensionT,
+    dimEntries: DimEntryT[]
+  ) => Promise<boolean>;
+  handleUpdateDimension: (dimension: DimensionT) => void;
+  handleDeleteDimension: (dimensionId: string) => void;
+  handleAddDimEntry: (dimEntry: DimEntryT) => void;
+  handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
+  handleDeleteDimEntry: (dimEntryId: string) => void;
+  handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
 }) {
   const { t } = useTranslation(lng, "worker-page");
 
@@ -81,37 +94,42 @@ export default function WorkerTable({
           title={t("new_property")}
           buttonContent={<TableAddButton text={t("property")} />}
           content={
-            <NewWorkerDimensionForm
+            <NewDimensionForm
               lng={lng}
               selectedTeamId={selectedTeamId}
+              dimensionType={DimensionType.WORKER}
+              isRest={false}
               setOpenParent={setPopoverRhsOpen}
-              handleAddWorkerDimension={handleAddWorkerDimension}
+              handleAddDimension={handleAddDimension}
             />
           }
           open={popoverRhsOpen}
           setOpen={setPopoverRhsOpen}
         />
       </div>
-      {/* <div className="table-container"> */}
       <TableContainer sx={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead
-          // sx={{ backgroundColor: "#E8F0FE" }}
-          >
+          <TableHead>
             <TableRow>
               {defaultWorkerFields.map((field, index) => (
                 <TableCell key={index} sx={{ paddingY: 0 }}>
                   <span className="table-header-default">{field.label}</span>
                 </TableCell>
               ))}
-              {workerDimensions.map((wd, wdIndex) => (
-                <WorkerDimensionCell
-                  key={wdIndex}
+              {dimensions.map((dim, dIndex) => (
+                <DimensionCell
+                  key={dIndex}
                   lng={lng}
                   selectedTeamId={selectedTeamId}
-                  workerDimension={wd}
-                  handleUpdateWorkerDimension={handleUpdateWorkerDimension}
-                  handleDeleteWorkerDimension={handleDeleteWorkerDimension}
+                  dimension={dim}
+                  dimEntries={dimEntries.filter(
+                    (de) => de.dimensionId === dim.id
+                  )}
+                  handleUpdateDimension={handleUpdateDimension}
+                  handleDeleteDimension={handleDeleteDimension}
+                  handleAddDimEntry={handleAddDimEntry}
+                  handleUpdateDimEntry={handleUpdateDimEntry}
+                  handleDeleteDimEntry={handleDeleteDimEntry}
                 />
               ))}
               <TableCell sx={{ padding: 0, width: 110 }}></TableCell>
@@ -133,28 +151,36 @@ export default function WorkerTable({
                     handleUpdateWorker={handleUpdateWorker}
                   />
                 ))}
-                {workerDimensions.map((wd, wdIndex) => {
-                  const workerProperty = worker.workerProperties.find(
-                    (wp) => wp.workerDimensionId === wd.id
+                {dimensions.map((dim, dIndex) => {
+                  const attribute = worker.attributes.find(
+                    (a) => a.dimensionId === dim.id
                   );
                   return (
-                    <WorkerPropertyCell
-                      key={wdIndex}
+                    <AttributeCell
+                      key={dIndex}
                       selectedTeamId={selectedTeamId}
-                      workerProperty={
-                        workerProperty
-                          ? workerProperty
+                      attribute={
+                        attribute
+                          ? attribute
                           : {
                               id: "",
-                              workerId: worker.id,
-                              workerDimensionId: wd.id,
-                              value: defaultProperties[wd.entryType],
+                              ownerType: AttributeOwnerType.WORKER,
+                              ownerId: worker.id,
+                              dimensionId: dim.id,
+                              value:
+                                dim.entryType === DimensionEntryType.BOOL
+                                  ? false
+                                  : "",
+                              dimEntryIds: [],
                             }
                       }
-                      workerDimension={wd}
-                      editing={bodyEditing[worker.id] === wd.id}
+                      dimension={dim}
+                      dimEntries={dimEntries.filter(
+                        (de) => de.dimensionId === dim.id
+                      )}
+                      editing={bodyEditing[worker.id] === dim.id}
                       setEditing={setBodyEditing}
-                      handleUpdateWorkerProperty={handleUpdateWorkerProperty}
+                      handleUpdateAttribute={handleUpdateAttribute}
                     />
                   );
                 })}

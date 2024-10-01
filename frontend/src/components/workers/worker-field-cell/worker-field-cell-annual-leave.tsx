@@ -1,49 +1,53 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 // MUI
+import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
 // Types
-import { ShiftT } from "../../types/shift";
+import { WorkerT } from "../../../types/worker";
 
-export default function ShiftFieldCellStaff({
-  shift,
+export default function WorkerFieldCellAnnualLeave({
+  worker,
   editing,
   setEditing,
-  handleUpdateShift,
+  handleUpdateWorker,
 }: {
-  shift: ShiftT;
+  worker: WorkerT;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
-  handleUpdateShift: (updatedShift: ShiftT) => void;
+  handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }) {
-  const [valueState, setValueState] = useState<number | "">(shift.staffing);
+  const [valueState, setValueState] = useState<number | "">(worker.annualLeave);
 
-  const handleEditConfirm = () => {
-    if (valueState !== shift.staffing && valueState !== "") {
-      handleUpdateShift({ ...shift, staffing: valueState });
+  const handleEditConfirm = async () => {
+    if (valueState !== worker.annualLeave && valueState !== "") {
+      handleUpdateWorker({
+        ...worker,
+        annualLeave: valueState,
+      });
     } else if (valueState === "") {
-      setValueState(shift.staffing);
+      setValueState(worker.weeklyHours);
     }
     setEditing({});
   };
 
   const handleEditCancel = () => {
     setEditing({});
-    setValueState(shift.staffing);
+    setValueState(worker.annualLeave);
   };
 
   return (
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [shift.id]: "staffing" })}
-      sx={{ paddingY: 0, cursor: "pointer" }}
+      onClick={() => setEditing({ [worker.id]: "annualLeave" })}
+      sx={{ paddingY: 0 }}
     >
       {editing ? (
         <TextField
           fullWidth
           type="number"
-          name="Staffing"
+          name="Annual Leave"
           value={valueState}
           onChange={(e) =>
             setValueState(e.target.value === "" ? "" : Number(e.target.value))
@@ -59,7 +63,9 @@ export default function ShiftFieldCellStaff({
           autoFocus
         />
       ) : (
-        shift.staffing
+        <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
+          {worker.annualLeave}
+        </Box>
       )}
     </TableCell>
   );

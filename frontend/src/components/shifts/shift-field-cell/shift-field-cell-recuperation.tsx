@@ -1,14 +1,14 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
 // Styles
 import "./shift-field-cell-recuperation.css";
 // Types
-import { ShiftT, ShiftType } from "../../types/shift";
+import { ShiftT, ShiftType } from "../../../types/shift";
 
 dayjs.extend(utc);
 

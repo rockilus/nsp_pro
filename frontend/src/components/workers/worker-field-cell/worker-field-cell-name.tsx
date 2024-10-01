@@ -4,9 +4,9 @@ import Box from "@mui/material/Box";
 import TableCell from "@mui/material/TableCell";
 import TextField from "@mui/material/TextField";
 // Types
-import { WorkerT } from "../../types/worker";
+import { WorkerT } from "../../../types/worker";
 
-export default function WorkerFieldCellAnnualLeave({
+export default function WorkerFieldCellName({
   worker,
   editing,
   setEditing,
@@ -17,41 +17,37 @@ export default function WorkerFieldCellAnnualLeave({
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }) {
-  const [valueState, setValueState] = useState<number | "">(worker.annualLeave);
+  const [valueState, setValueState] = useState<string>(worker.name);
 
   const handleEditConfirm = async () => {
-    if (valueState !== worker.annualLeave && valueState !== "") {
+    if (valueState !== worker.name) {
       handleUpdateWorker({
         ...worker,
-        annualLeave: valueState,
+        name: valueState,
       });
-    } else if (valueState === "") {
-      setValueState(worker.weeklyHours);
     }
     setEditing({});
   };
 
   const handleEditCancel = () => {
     setEditing({});
-    setValueState(worker.annualLeave);
+    setValueState(worker.name);
   };
 
   return (
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [worker.id]: "annualLeave" })}
+      onClick={() => setEditing({ [worker.id]: "name" })}
       sx={{ paddingY: 0 }}
     >
       {editing ? (
         <TextField
           fullWidth
-          type="number"
-          name="Annual Leave"
+          type="text"
+          name="Name"
           value={valueState}
-          onChange={(e) =>
-            setValueState(e.target.value === "" ? "" : Number(e.target.value))
-          }
+          onChange={(e) => setValueState(e.target.value)}
           onBlur={handleEditConfirm}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -64,7 +60,7 @@ export default function WorkerFieldCellAnnualLeave({
         />
       ) : (
         <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
-          {worker.annualLeave}
+          {worker.name}
         </Box>
       )}
     </TableCell>

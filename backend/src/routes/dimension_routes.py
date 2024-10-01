@@ -2,16 +2,10 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import TypeAdapter
 
-from core import (
-    Attribute,
-    Dimension,
-    DimensionEntryType,
-    DimensionType,
-    DimEntry,
-)
+from core import Attribute, Dimension, DimensionEntryType, DimensionType, DimEntry
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -19,10 +13,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
@@ -31,18 +22,11 @@ from routes.api_model import (
     DimEntryMessage,
     NewDimensionMessage,
 )
-from routes.dim_entry_routes import (
-    core_to_msg_dim_entry,
-    msg_to_core_dim_entry,
-)
+from routes.dim_entry_routes import core_to_msg_dim_entry, msg_to_core_dim_entry
 from routes.shift_routes import core_to_msg_attribute
 from scripts.setup_database import dim_entry_db, dimension_db
-from services.dimension_services import (
-    create_dimension as create_dimension_service,
-)
-from services.dimension_services import (
-    delete_dimension as delete_dimension_service,
-)
+from services.dimension_services import create_dimension as create_dimension_service
+from services.dimension_services import delete_dimension as delete_dimension_service
 
 router = APIRouter()
 
@@ -58,26 +42,21 @@ async def create_dimension(
         if not await authz_check(
             session.get_user_id(), "create-shift-dimension", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to create a dimension"
-            )
+            raise NotAuthorizedError("You do not have permission to create a dimension")
         d_data = msg_to_core_dimension(dimension)
         des_data = [msg_to_core_dim_entry(de) for de in dim_entries]
-        d_created, des_created, attributes = create_dimension_service(
-            d_data, des_data
-        )
-        response = core_to_msg_new_dimension(
-            d_created, des_created, attributes
-        )
+        d_created, des_created, attributes = create_dimension_service(d_data, des_data)
+        response = core_to_msg_new_dimension(d_created, des_created, attributes)
     except Exception as e:
         log_info("Failed to create dimension")
         handle_routes_errors(e)
     return response
 
 
-@router.get("/dimensions/shift/teams/{team_id}")
-async def get_shift_dimensions(
+@router.get("/dimensions/teams/{team_id}")
+async def get_dimensions(
     team_id: str,
+    dim_types: List[str] = Query(None, alias="dim_types"),
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> DimensionsAndDimEntriesMessage:
     try:
@@ -87,17 +66,16 @@ async def get_shift_dimensions(
             raise NotAuthorizedError(
                 "You do not have permission to read shift dimensions"
             )
-        shift_dimensions = dimension_db.get_shift_dimensions_not_deleted(
-            team_id
-        )
+        if dim_types is None:
+            return core_to_msg_dimensions_and_dim_entries([], [])
+        dt_data = [DimensionType(dt) for dt in dim_types]
+        dimensions = dimension_db.get_dimensions_by_types_not_deleted(dt_data, team_id)
         dim_entries = dim_entry_db.get_dim_entries_by_dim_ids(
-            [sd.id for sd in shift_dimensions]
+            [d.id for d in dimensions]
         )
-        response = core_to_msg_dimensions_and_dim_entries(
-            shift_dimensions, dim_entries
-        )
+        response = core_to_msg_dimensions_and_dim_entries(dimensions, dim_entries)
     except Exception as e:
-        log_info("Failed to get shift dimensions")
+        log_info("Failed to get dimensions")
         handle_routes_errors(e)
     return response
 
@@ -132,9 +110,7 @@ async def update_dimension(
         if not await authz_check(
             session.get_user_id(), "update-shift-dimension", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update a dimension"
-            )
+            raise NotAuthorizedError("You do not have permission to update a dimension")
         d_data = msg_to_core_dimension(dimension)
         updated_dimension = dimension_db.update_dimension(d_data)
         response = core_to_msg_dimension(updated_dimension)

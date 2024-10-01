@@ -1,5 +1,5 @@
 // Types
-import { AttributeT } from "../../types/shift";
+import { AttributeT } from "@/types/attribute";
 // Env Vars
 import { API_URL } from "./env";
 

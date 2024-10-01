@@ -6,7 +6,7 @@ import WorkerFieldCellName from "./worker-field-cell-name";
 import WorkerFieldCellWeeklyHours from "./worker-field-cell-weekly-hours";
 import WorkerFieldCellAnnualLeave from "./worker-field-cell-annual-leave";
 // Types
-import { WorkerT } from "../../types/worker";
+import { WorkerT } from "../../../types/worker";
 
 export default function WorkerFieldCell({
   worker,

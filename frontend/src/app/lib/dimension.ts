@@ -2,7 +2,8 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { DimensionT, AttributeT, DimEntryT } from "../../types/shift";
+import { DimEntryT, DimensionT, DimensionType } from "../../types/dimension";
+import { AttributeT } from "@/types/attribute";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -45,7 +46,7 @@ export async function addDimension(
   }
 }
 
-export async function getShiftDimensions(teamId: string) {
+export async function getDimensions(dimType: DimensionType[], teamId: string) {
   noStore();
   const options: RequestInit = {
     method: "GET",
@@ -56,7 +57,7 @@ export async function getShiftDimensions(teamId: string) {
   };
   try {
     const response = await fetch(
-      `${apiUrlDimensions}/shift/teams/${teamId}`,
+      `${apiUrlDimensions}/teams/${teamId}?dim_type=${dimType.join(",")}`,
       options
     );
     const responseData = await response.json();

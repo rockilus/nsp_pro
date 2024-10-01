@@ -6,13 +6,11 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 // Component
 import UpdateDimensionDimEntriesInput from "./update-dimension-dim-entries-input";
-import DialogShiftDimensionDel from "../dialog-shift-dimension-del";
+import DialogDimensionDel from "./dialog-dimension-del";
 // Types
-import {
-  DimensionT,
-  DimEntryT,
-  DimensionEntryType,
-} from "../../../types/shift";
+import { DimensionEntryType } from "@/types/dimension";
+import { DimEntryT } from "@/types/dimension";
+import { DimensionT } from "@/types/dimension";
 
 export default function UpdateDimensionForm({
   lng,
@@ -118,10 +116,10 @@ export default function UpdateDimensionForm({
         >
           {t("save")}
         </Button>
-        <DialogShiftDimensionDel
+        <DialogDimensionDel
           lng={lng}
-          shiftDimensionId={dimension.id}
-          handleDeleteShiftDimension={handleDeleteDimension}
+          dimensionId={dimension.id}
+          handleDeleteDimension={handleDeleteDimension}
         />
       </div>
     </Box>

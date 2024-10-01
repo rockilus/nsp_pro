@@ -2,9 +2,10 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Actions
-import { getShiftDimensions } from "./dimension";
+import { getDimensions } from "./dimension";
 // Types
-import { ShiftT, AttributeT } from "../../types/shift";
+import { DimensionType } from "../../types/dimension";
+import { ShiftT } from "../../types/shift";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -174,11 +175,11 @@ export async function getShiftsTabData(teamId: string) {
   try {
     const shiftsTabData = await Promise.all([
       getShifts(teamId),
-      getShiftDimensions(teamId),
+      getDimensions([DimensionType.SHIFT, DimensionType.BOTH], teamId),
     ]);
     return {
       shifts: shiftsTabData[0],
-      shiftDimensions: shiftsTabData[1].dimensions,
+      dimensions: shiftsTabData[1].dimensions,
       dimEntries: shiftsTabData[1].dimEntries,
     };
   } catch (error) {

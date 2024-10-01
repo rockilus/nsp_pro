@@ -11,7 +11,7 @@ import TextField from "@mui/material/TextField";
 // Styles
 import "./update-dimension-dim-entries-input.css";
 // Types
-import { DimEntryT } from "../../../types/shift";
+import { DimEntryT } from "@/types/dimension";
 
 export default function UpdateDimensionDimEntriesInput({
   lng,

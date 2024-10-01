@@ -8,11 +8,11 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import TableCell from "@mui/material/TableCell";
 // Types
-import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../../types/shift";
 
 dayjs.extend(utc);
 
-export default function ShiftFieldCellEndTime({
+export default function ShiftFieldCellStartTime({
   shift,
   editing,
   setEditing,
@@ -23,35 +23,30 @@ export default function ShiftFieldCellEndTime({
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateShift: (updatedShift: ShiftT) => void;
 }) {
-  const [valueState, setValueState] = useState(shift.endTime);
+  const timeSlots: dayjs.Dayjs[] = [];
+  let firstSlot = dayjs.utc(shift.startTime).startOf("day");
+  const lastSlot = dayjs.utc(firstSlot).endOf("day");
+  while (firstSlot.isBefore(lastSlot) || firstSlot.isSame(lastSlot)) {
+    timeSlots.push(firstSlot);
+    firstSlot = firstSlot.add(15, "minute");
+  }
 
-  const buildTimeSlots = (): dayjs.Dayjs[] => {
-    const timeSlots: dayjs.Dayjs[] = [];
-    let firstSlot = shift.startTime;
-    const lastSlot = dayjs.utc(firstSlot).add(24, "hour");
-    while (firstSlot.isBefore(lastSlot) || firstSlot.isSame(lastSlot)) {
-      timeSlots.push(firstSlot);
-      firstSlot = firstSlot.add(15, "minute");
-    }
-    return timeSlots;
-  };
-
-  const timeSlots = buildTimeSlots();
+  const [valueState, setValueState] = useState(shift.startTime);
 
   const handleEditConfirm = () => {
-    if (valueState !== shift.endTime) {
-      handleUpdateShift({ ...shift, endTime: valueState });
+    if (valueState !== shift.startTime) {
+      handleUpdateShift({ ...shift, startTime: valueState });
     }
     setEditing({});
   };
 
-  const selectEndTime = () => {
+  const selectStartTime = () => {
     return (
       <Box sx={{ marginLeft: 1, marginRight: 0.5, width: 100 }}>
         <FormControl fullWidth>
           <Select
             value={valueState.valueOf()}
-            label="End time"
+            label="Start time"
             onChange={(e) => setValueState(dayjs.utc(e.target.value))}
             onBlur={handleEditConfirm}
             onKeyDown={(e) => {
@@ -65,9 +60,6 @@ export default function ShiftFieldCellEndTime({
             {timeSlots.map((time) => (
               <MenuItem key={time.valueOf()} value={time.valueOf()}>
                 {time.format("HH:mm")}
-                {" ("}
-                {time.diff(shift.startTime, "minute") / 60}
-                {"h)"}
               </MenuItem>
             ))}
           </Select>
@@ -78,7 +70,7 @@ export default function ShiftFieldCellEndTime({
 
   const handleEditCancel = () => {
     setEditing({});
-    setValueState(shift.endTime);
+    setValueState(shift.startTime);
   };
 
   return (
@@ -88,7 +80,7 @@ export default function ShiftFieldCellEndTime({
       onClick={() =>
         shift.leaveType === ShiftLeaveType.NONE &&
         shift.restType !== ShiftRestType.OFF &&
-        setEditing({ [shift.id]: "end_time" })
+        setEditing({ [shift.id]: "start_time" })
       }
       sx={{
         paddingY: 0,
@@ -99,14 +91,7 @@ export default function ShiftFieldCellEndTime({
             : "default",
       }}
     >
-      {editing ? (
-        selectEndTime()
-      ) : (
-        <>
-          {shift.endTime.format("HH:mm")}
-          {!shift.endTime.isSame(shift.startTime, "day") && <sup>+1</sup>}
-        </>
-      )}
+      {editing ? selectStartTime() : shift.startTime.format("HH:mm")}
     </TableCell>
   );
 }

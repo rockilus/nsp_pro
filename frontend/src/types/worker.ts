@@ -1,3 +1,5 @@
+import { AttributeT } from "./attribute";
+
 export type WorkerDimensionT = {
   id: string;
   teamId: string;
@@ -23,7 +25,7 @@ export type WorkerT = {
   dutiesPerMonth: number;
   annualLeave: number;
   deleted: boolean;
-  workerProperties: WorkerPropertyT[];
+  attributes: AttributeT[];
 };
 
 export type NewWorkerDimensionT = {

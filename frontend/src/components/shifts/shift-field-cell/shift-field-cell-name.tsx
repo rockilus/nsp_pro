@@ -7,9 +7,9 @@ import TextField from "@mui/material/TextField";
 import {
   useLeaveNameDisplayed,
   useRestNameDisplayed,
-} from "./shift-utils/shift-utils";
+} from "../shift-utils/shift-utils";
 // Types
-import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../../types/shift";
 
 export default function ShiftFieldCellName({
   lng,
