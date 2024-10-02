@@ -1,5 +1,11 @@
 from mongoengine import Document
-from mongoengine.fields import BooleanField, IntField, ReferenceField, StringField
+from mongoengine.fields import (
+    BooleanField,
+    IntField,
+    ListField,
+    ReferenceField,
+    StringField,
+)
 
 from core import DimensionEntryType, DimensionType
 
@@ -19,8 +25,9 @@ class Dimension(Document):
 
     id = StringField(primary_key=True, required=True)
     team = ReferenceField("Team", required=True)
-    type = IntField(required=True, choices=[e.value for e in DimensionType])
+    dim_types = ListField(
+        IntField(required=True, choices=[e.value for e in DimensionType])
+    )
     name = StringField(required=True)
     entry_type = IntField(required=True, choices=[e.value for e in DimensionEntryType])
-    rest_shift = BooleanField(required=True)
     deleted = BooleanField(required=True)

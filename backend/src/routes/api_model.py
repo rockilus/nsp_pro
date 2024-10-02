@@ -25,10 +25,9 @@ class DimEntryMessage(BaseModel):
 class DimensionMessage(BaseModel):
     id: str
     teamId: str
-    type: int
+    dimTypes: List[int]
     name: str
     entryType: int
-    restShift: bool
     deleted: bool
 
 

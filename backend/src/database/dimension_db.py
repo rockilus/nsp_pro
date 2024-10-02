@@ -35,21 +35,24 @@ class DimensionDB:
             # pylint: disable=no-member
             shift_dimensions = DimensionDocument.objects.filter(  # type: ignore
                 team=team_id,
-                type__in=[DimensionType.SHIFT.value, DimensionType.BOTH.value],
+                dim_types__in=[
+                    DimensionType.SHIFT.value,
+                    DimensionType.REST_SHIFT.value,
+                ],
             )
         except Exception as e:
             log_info("Failed to get shift dimensions from database")
             handle_get_document_error(e)
         return [doc_to_core_dimension(sd) for sd in list(shift_dimensions)]
 
-    def get_dimensions_by_types_not_deleted(
+    def get_dimensions_by_dim_types_not_deleted(
         self, dim_type: List[DimensionType], team_id: str
     ) -> List[Dimension]:
         try:
             # pylint: disable=no-member
             shift_dimensions = DimensionDocument.objects.filter(  # type: ignore
                 team=team_id,
-                type__in=[dt.value for dt in dim_type],
+                dim_types__in=[dt.value for dt in dim_type],
                 deleted=False,
             )
         except Exception as e:
@@ -66,7 +69,7 @@ class DimensionDB:
             handle_get_document_error(e)
         return doc_to_core_dimension(dimension)
 
-    def get_dimensions_by_types_and_entry_type(
+    def get_dimensions_by_dim_types_and_entry_type(
         self,
         dim_types: List[DimensionType],
         entry_type: DimensionEntryType,
@@ -77,7 +80,7 @@ class DimensionDB:
             shift_dimensions = DimensionDocument.objects.filter(  # type: ignore
                 entry_type=entry_type.value,
                 team=team_id,
-                type__in=[dt.value for dt in dim_types],
+                dim_types__in=[dt.value for dt in dim_types],
             )
         except Exception as e:
             log_info("Failed to get shift dimensions by entry type from database")
@@ -143,9 +146,8 @@ def core_to_doc_dimension(
             # pylint: disable=R0801
             id=dataclass_obj.id,
             team=team,
-            type=dataclass_obj.type.value,
+            dim_types=[dt.value for dt in dataclass_obj.dim_types],
             name=dataclass_obj.name,
-            rest_shift=dataclass_obj.rest_shift,
             entry_type=dataclass_obj.entry_type.value,
             deleted=dataclass_obj.deleted,
         )
@@ -164,10 +166,9 @@ def doc_to_core_dimension(
             # pylint: disable=R0801
             id=doc_obj.id,
             team_id=doc_obj.team.id,
-            type=DimensionType(doc_obj.type),  # type: ignore
+            dim_types=[DimensionType(dt) for dt in doc_obj.dim_types],
             name=doc_obj.name,
-            entry_type=DimensionEntryType(doc_obj.entry_type),  # type: ignore
-            rest_shift=doc_obj.rest_shift,
+            entry_type=DimensionEntryType(doc_obj.entry_type),
             deleted=doc_obj.deleted,
         )
     except Exception as e:

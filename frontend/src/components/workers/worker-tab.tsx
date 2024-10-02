@@ -109,6 +109,10 @@ export default function WorkerTab({
       newAttributes: newAttributesResponse,
     } = await addDimension(newDimension, newDimEntries);
     setDimensions([...dimensions, newDimensionResponse]);
+    setDimEntries((prevDimEntries) => [
+      ...prevDimEntries,
+      ...newDimEntriesResponse,
+    ]);
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) => {
         const newAttributes = newAttributesResponse.filter(

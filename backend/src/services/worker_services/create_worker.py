@@ -12,8 +12,8 @@ from scripts.setup_database import attribute_db, dimension_db, worker_db
 
 def create_worker(worker: Worker) -> Tuple[Worker, List[Attribute]]:
     worker_created = worker_db.create_worker(worker)
-    d_bool = dimension_db.get_dimensions_by_types_and_entry_type(
-        [DimensionType.WORKER, DimensionType.BOTH],
+    d_bool = dimension_db.get_dimensions_by_dim_types_and_entry_type(
+        [DimensionType.WORKER],
         DimensionEntryType.BOOL,
         worker_created.team_id,
     )

@@ -4,7 +4,7 @@ import { AttributeT } from "./attribute";
 export enum DimensionType {
   WORKER = 0,
   SHIFT = 1,
-  BOTH = 2,
+  REST_SHIFT = 2,
 }
 
 export enum DimensionEntryType {
@@ -17,10 +17,9 @@ export enum DimensionEntryType {
 export type DimensionT = {
   id: string;
   teamId: string;
-  type: DimensionType;
+  dimTypes: DimensionType[];
   name: string;
   entryType: DimensionEntryType;
-  restShift: boolean;
   deleted: boolean;
 };
 

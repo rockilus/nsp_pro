@@ -98,7 +98,6 @@ export default function WorkerTable({
               lng={lng}
               selectedTeamId={selectedTeamId}
               dimensionType={DimensionType.WORKER}
-              isRest={false}
               setOpenParent={setPopoverRhsOpen}
               handleAddDimension={handleAddDimension}
             />

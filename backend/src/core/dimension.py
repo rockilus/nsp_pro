@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import List
 
 
 class DimensionType(Enum):
     WORKER = 0
     SHIFT = 1
-    BOTH = 2
+    REST_SHIFT = 2
 
 
 class DimensionEntryType(Enum):
@@ -29,8 +30,7 @@ class DimEntry:
 class Dimension:
     id: str
     team_id: str
-    type: DimensionType
+    dim_types: List[DimensionType]
     name: str
     entry_type: DimensionEntryType
-    rest_shift: bool
     deleted: bool

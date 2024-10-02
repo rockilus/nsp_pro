@@ -50,7 +50,9 @@ class DimEntryDB:
             handle_get_document_error(e)
         return [doc_to_core_dim_entry(a) for a in list(dim_entries)]
 
-    def get_dim_entries_by_dim_ids(self, dimension_ids: List[str]) -> List[DimEntry]:
+    def get_dim_entries_by_dim_ids(
+        self, dimension_ids: List[str]
+    ) -> List[DimEntry]:
         try:
             # pylint: disable=no-member
             dim_entries = DimEntryDocument.objects.filter(  # type: ignore

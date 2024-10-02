@@ -28,8 +28,11 @@ def create_dimension(
     attributes: List[Attribute] = []
     attributes_saved: List[Attribute] = []
     if d_created.entry_type == DimensionEntryType.BOOL:
-        if d_created.type == DimensionType.SHIFT:
-            if d_created.rest_shift:
+        if d_created.dim_types in [
+            DimensionType.SHIFT,
+            DimensionType.REST_SHIFT,
+        ]:
+            if d_created.dim_types == DimensionType.REST_SHIFT:
                 shifts = shift_db.get_rest_shifts(d_created.team_id)
             else:
                 shifts = shift_db.get_work_shifts(d_created.team_id)
@@ -45,7 +48,7 @@ def create_dimension(
                         dim_entry_ids=[],
                     )
                 )
-        elif d_created.type == DimensionType.WORKER:
+        elif d_created.dim_types == DimensionType.WORKER:
             workers = worker_db.get_workers(d_created.team_id)
             for worker in workers:
                 attributes.append(

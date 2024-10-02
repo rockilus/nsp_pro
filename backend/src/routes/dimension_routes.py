@@ -70,7 +70,9 @@ async def get_dimensions(
             return core_to_msg_dimensions_and_dim_entries([], [])
         dim_types_int = [int(dt) for dtq in dim_types_query for dt in dtq.split(",")]
         dt_data = [DimensionType(dt) for dt in dim_types_int]
-        dimensions = dimension_db.get_dimensions_by_types_not_deleted(dt_data, team_id)
+        dimensions = dimension_db.get_dimensions_by_dim_types_not_deleted(
+            dt_data, team_id
+        )
         dim_entries = dim_entry_db.get_dim_entries_by_dim_ids(
             [d.id for d in dimensions]
         )
@@ -216,7 +218,7 @@ def core_to_msg_dimensions_and_dim_entries(
 # message to core
 def msg_to_core_dimension(msg: DimensionMessage) -> Dimension:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["type"] = DimensionType(data_snake["type"])
+    data_snake["dim_types"] = [DimensionType(dt) for dt in data_snake["dim_types"]]
     data_snake["entry_type"] = DimensionEntryType(data_snake["entry_type"])
     try:
         dimension = Dimension(**data_snake)

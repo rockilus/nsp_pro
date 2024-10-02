@@ -122,8 +122,9 @@ export default function ShiftTable({
             <NewDimensionForm
               lng={lng}
               selectedTeamId={selectedTeamId}
-              dimensionType={DimensionType.SHIFT}
-              isRest={isRest}
+              dimensionType={
+                isRest ? DimensionType.REST_SHIFT : DimensionType.SHIFT
+              }
               setOpenParent={setPopoverRhsOpen}
               handleAddDimension={handleAddDimension}
             />

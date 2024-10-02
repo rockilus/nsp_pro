@@ -20,8 +20,8 @@ def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:
     if shift.leave_type != ShiftLeaveType.NONE:
         raise ValueError("Cannot create a leave shift")
     shift_created = shift_db.create_shift(shift)
-    d_bool = dimension_db.get_dimensions_by_types_and_entry_type(
-        [DimensionType.SHIFT, DimensionType.BOTH],
+    d_bool = dimension_db.get_dimensions_by_dim_types_and_entry_type(
+        [DimensionType.SHIFT, DimensionType.REST_SHIFT],
         DimensionEntryType.BOOL,
         shift_created.team_id,
     )

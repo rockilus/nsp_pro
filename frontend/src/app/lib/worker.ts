@@ -138,7 +138,7 @@ export async function getWorkersTabData(teamId: string) {
   try {
     const workersTabData = await Promise.all([
       getWorkers(teamId),
-      getDimensions([DimensionType.WORKER, DimensionType.BOTH], teamId),
+      getDimensions([DimensionType.WORKER], teamId),
     ]);
     return {
       workers: workersTabData[0],

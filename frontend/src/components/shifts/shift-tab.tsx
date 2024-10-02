@@ -33,7 +33,7 @@ import {
   ShiftType,
   ShiftRestType,
 } from "../../types/shift";
-import { DimEntryT, DimensionT } from "../../types/dimension";
+import { DimEntryT, DimensionT, DimensionType } from "../../types/dimension";
 import { AttributeT } from "../../types/attribute";
 
 dayjs.extend(utc);
@@ -282,7 +282,9 @@ export default function ShiftTab({
               lng={lng}
               selectedTeamId={selectedTeamId}
               isRest={false}
-              dimensions={dimensions.filter((sd) => !sd.restShift)}
+              dimensions={dimensions.filter((d) =>
+                d.dimTypes.includes(DimensionType.SHIFT)
+              )}
               dimEntries={dimEntries}
               shifts={shifts}
               defaultShiftFields={DefaultWorkShiftFields}
@@ -302,7 +304,9 @@ export default function ShiftTab({
               lng={lng}
               selectedTeamId={selectedTeamId}
               isRest={true}
-              dimensions={dimensions.filter((sd) => sd.restShift)}
+              dimensions={dimensions.filter((d) =>
+                d.dimTypes.includes(DimensionType.REST_SHIFT)
+              )}
               dimEntries={dimEntries}
               shifts={shifts}
               defaultShiftFields={DefaultRestShiftFields}

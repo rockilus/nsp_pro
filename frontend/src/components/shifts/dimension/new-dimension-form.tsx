@@ -21,14 +21,12 @@ export default function NewDimensionForm({
   lng,
   selectedTeamId,
   dimensionType,
-  isRest,
   setOpenParent,
   handleAddDimension,
 }: {
   lng: string;
   selectedTeamId: string;
   dimensionType: DimensionType;
-  isRest: boolean;
   setOpenParent: (open: boolean) => void | null;
   handleAddDimension: (
     newDimension: DimensionT,
@@ -107,10 +105,9 @@ export default function NewDimensionForm({
       const newDimension: DimensionT = {
         id: "",
         teamId: selectedTeamId,
-        type: dimensionType,
+        dimTypes: [dimensionType],
         name: name,
         entryType: entryType,
-        restShift: isRest,
         deleted: false,
       };
       const addedOK = await handleAddDimension(newDimension, dimEntries);
