@@ -22,7 +22,6 @@ def delete_shift(shift_id: str) -> None:
     shift_db.logical_delete_shift(shift_id)
     # delete_shift_from_objective_breach(shift_id)
     # delete_shift_from_constraint(shift_id)
-    # shift_property_db.delete_shift_properties_by_shift_id(shift_id)
     # assignment_db.delete_assignments_by_shift_id(shift_id)
     # request_db.delete_requests_by_shift_id(shift_id)
 

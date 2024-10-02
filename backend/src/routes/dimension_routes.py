@@ -56,7 +56,7 @@ async def create_dimension(
 @router.get("/dimensions/teams/{team_id}")
 async def get_dimensions(
     team_id: str,
-    dim_types: List[str] = Query(None, alias="dim_types"),
+    dim_types_query: List[str] = Query(None, alias="dim_types"),
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> DimensionsAndDimEntriesMessage:
     try:
@@ -66,9 +66,10 @@ async def get_dimensions(
             raise NotAuthorizedError(
                 "You do not have permission to read shift dimensions"
             )
-        if dim_types is None:
+        if dim_types_query is None:
             return core_to_msg_dimensions_and_dim_entries([], [])
-        dt_data = [DimensionType(dt) for dt in dim_types]
+        dim_types_int = [int(dt) for dtq in dim_types_query for dt in dtq.split(",")]
+        dt_data = [DimensionType(dt) for dt in dim_types_int]
         dimensions = dimension_db.get_dimensions_by_types_not_deleted(dt_data, team_id)
         dim_entries = dim_entry_db.get_dim_entries_by_dim_ids(
             [d.id for d in dimensions]

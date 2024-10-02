@@ -57,7 +57,7 @@ export async function getDimensions(dimType: DimensionType[], teamId: string) {
   };
   try {
     const response = await fetch(
-      `${apiUrlDimensions}/teams/${teamId}?dim_type=${dimType.join(",")}`,
+      `${apiUrlDimensions}/teams/${teamId}?dim_types=${dimType.join(",")}`,
       options
     );
     const responseData = await response.json();
