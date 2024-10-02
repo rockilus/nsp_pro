@@ -135,11 +135,13 @@ class MapShift:
             return self.shift_dim_dict[value.id][value.name]
         if not isinstance(value.name, str):
             raise ValueError("Value name is not a string for non-bool dimension")
-        if value.name.lower() not in self.shift_dim_dict[value.id]:
+        # if value.name.lower() not in self.shift_dim_dict[value.id]:
+        if value.name not in self.shift_dim_dict[value.id]:
             raise ValueError(
                 f"Shift property {value.name} " + f"for dimension {value.id} not found"
             )
-        return self.shift_dim_dict[value.id][value.name.lower()]
+        # return self.shift_dim_dict[value.id][value.name.lower()]
+        return self.shift_dim_dict[value.id][value.name]
 
     def check_shift_id(self, shift_id: str) -> bool:
         return any(s.id == shift_id for s in self.shifts)

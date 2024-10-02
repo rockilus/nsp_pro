@@ -80,11 +80,13 @@ class MapWorker:
             return self.worker_dim_dict[value.id][value.name]
         if not isinstance(value.name, str):
             raise ValueError("Value name is not a string for non-bool dimension")
-        if value.name.lower() not in self.worker_dim_dict[value.id]:
+        # if value.name.lower() not in self.worker_dim_dict[value.id]:
+        if value.name not in self.worker_dim_dict[value.id]:
             raise ValueError(
                 f"Worker property {value.name} for dimension " + f"{value.id} not found"
             )
-        return self.worker_dim_dict[value.id][value.name.lower()]
+        # return self.worker_dim_dict[value.id][value.name.lower()]
+        return self.worker_dim_dict[value.id][value.name]
 
     def check_worker_id(self, worker_id: str) -> bool:
         return any(w.id == worker_id for w in self.workers)
