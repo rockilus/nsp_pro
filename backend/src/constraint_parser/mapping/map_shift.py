@@ -4,7 +4,7 @@ from constraint_parser.mapping.utils import find_block_by_name
 from core import (
     Block,
     ConstraintBuildAugmented,
-    MissingProperty,
+    MissingAttribute,
     Shift,
     ShiftType,
     ShiftWorkerOption,
@@ -41,18 +41,18 @@ class MapShift:
             target_ids=self.get_target_ids(
                 shift_values,
                 cstr_build.constraint_type,
-                cstr_build.missing_properties,
+                cstr_build.missing_attributes,
                 cstr_operator,
             ),
             reference_ids=self.get_target_ids(
                 shift_reference_values,
                 cstr_build.constraint_type,
-                cstr_build.missing_properties,
+                cstr_build.missing_attributes,
             ),
             relative_ids=self.get_target_ids(
                 shift_relative_values,
                 cstr_build.constraint_type,
-                cstr_build.missing_properties,
+                cstr_build.missing_attributes,
             ),
         )
 
@@ -86,7 +86,7 @@ class MapShift:
         self,
         values: List[ShiftWorkerOption],
         cstr_type: str,
-        missing_properties: List[MissingProperty],
+        missing_properties: List[MissingAttribute],
         cstr_operator: str = "",
     ) -> List[str]:
         if self.get_selector(values, cstr_type) == "all" and cstr_type != "ord":
@@ -115,13 +115,13 @@ class MapShift:
     def get_target_ids_shift_dimension(
         self,
         value: ShiftWorkerOption,
-        missing_properties: List[MissingProperty],
+        missing_properties: List[MissingAttribute],
     ) -> List[str] | None:
         mp = next(
             (mp for mp in missing_properties if mp.dimension_id == value.id),
             None,
         )
-        if mp and value.name in mp.property_values:
+        if mp and value.name in mp.attribute_values:
             return None
         if value.id not in self.shift_dim_dict:
             raise ValueError(f"Shift dimension {value.id} not found")

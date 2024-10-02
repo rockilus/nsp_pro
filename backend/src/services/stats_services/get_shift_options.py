@@ -1,24 +1,29 @@
 from typing import Dict, List
 
-from constraint_parser import build_shift_options
-from core import Attribute, ShiftWorkerOption
+from constraint_parser import build_options
+from core import Attribute, AttributeOwnerType, DimensionType, ShiftWorkerOption
 from scripts.setup_database import attribute_db, dim_entry_db, dimension_db, shift_db
 
 
 def get_shift_options(team_id: str) -> List[ShiftWorkerOption]:
     shifts = shift_db.get_shifts_not_deleted(team_id)
-    shift_dimensions = dimension_db.get_shift_dimensions(team_id)
-    shift_dim_entries = dim_entry_db.get_dim_entries_by_dim_ids(
-        [sd.id for sd in shift_dimensions]
+    s_ids = [s.id for s in shifts]
+    dimensions = dimension_db.get_dimensions_by_dim_types_not_deleted(
+        [DimensionType.SHIFT, DimensionType.REST_SHIFT], team_id
     )
+    dim_entries = dim_entry_db.get_dim_entries_by_dim_ids([d.id for d in dimensions])
+    attributes = attribute_db.get_attributes_by_owner_ids(s_ids)
     # pylint: disable=R0801
-    shift_properties = attribute_db.get_attributes_by_owner_ids([s.id for s in shifts])
-    shift_properties_sd: Dict[str, List[Attribute]] = {}
-    for sp in shift_properties:
-        sd_id = sp.dimension_id
-        if sd_id not in shift_properties_sd:
-            shift_properties_sd[sd_id] = []
-        shift_properties_sd[sd_id].append(sp)
-    return build_shift_options(
-        shifts, shift_dimensions, shift_dim_entries, shift_properties_sd
+    dim_to_attributes: Dict[str, List[Attribute]] = {}
+    for a in attributes:
+        d_id = a.dimension_id
+        if d_id not in dim_to_attributes:
+            dim_to_attributes[d_id] = []
+        dim_to_attributes[d_id].append(a)
+    return build_options(
+        AttributeOwnerType.SHIFT,
+        shifts,
+        dimensions,
+        dim_entries,
+        dim_to_attributes,
     )

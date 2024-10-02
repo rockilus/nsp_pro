@@ -4,8 +4,11 @@ from typing import Dict, List, Tuple
 from constraint_parser import parse_selected_shifts
 from core import (
     Assignment,
+    Attribute,
+    AttributeOwnerType,
     Block,
     Dimension,
+    DimEntry,
     Shift,
     ShiftType,
     ShiftWorkerOption,
@@ -18,6 +21,7 @@ from errors import NoCampaignError
 from scripts.setup_database import (
     assignment_db,
     attribute_db,
+    dim_entry_db,
     dimension_db,
     schedule_db,
     shift_db,
@@ -25,7 +29,7 @@ from scripts.setup_database import (
     worker_db,
 )
 from services.constraint_build_services.cb_to_cb_augmented import (
-    build_missing_properties_list_and_active_shift,
+    build_missing_attributes_and_active_owner,
 )
 from services.stats_services.buid_dates import build_dates
 from services.stats_services.calc_per_week_day import (
@@ -56,7 +60,6 @@ def build_stats(
     stats_options: StatsOptions,
 ) -> Stats:
     schedules = schedule_db.get_schedules(team_id)
-    workers = worker_db.get_workers_not_deleted(team_id)
     try:
         start_date, end_date, date_to_i = build_dates(
             stats_options.time_frame,
@@ -66,8 +69,11 @@ def build_stats(
         )
     except NoCampaignError as e:
         raise e
+    workers = worker_db.get_workers_not_deleted(team_id)
     shifts = shift_db.get_shifts_not_deleted(team_id)
-    shift_dimensions = dimension_db.get_shift_dimensions(team_id)
+    dimensions = dimension_db.get_dimensions(team_id)
+    dim_entries = dim_entry_db.get_dim_entries_by_dim_ids([d.id for d in dimensions])
+    attributes = attribute_db.get_attributes_by_owner_ids([s.id for s in shifts])
     shift_dim_dict = attribute_db.get_shifts_id_by_dim_and_attr()
     assignments = assignment_db.get_assignments_by_dates(
         start_date, end_date, schedules
@@ -79,7 +85,9 @@ def build_stats(
             workers,
             date_to_i,
             shifts,
-            shift_dimensions,
+            dimensions,
+            dim_entries,
+            attributes,
             shift_dim_dict,
             assignments,
             stats_headers,
@@ -98,7 +106,9 @@ def build_stats(
     ) = build_work_shift_indexes(
         workers,
         shifts,
-        shift_dimensions,
+        dimensions,
+        dim_entries,
+        attributes,
         shift_dim_dict,
         stats_options.selected_shifts,
     )
@@ -120,10 +130,13 @@ def build_stats(
     )
 
 
+# pylint: disable=too-many-arguments
 def build_work_shift_indexes(
     workers: List[Worker],
     shifts: List[Shift],
-    shift_dimensions: List[Dimension],
+    dimensions: List[Dimension],
+    dim_entries: List[DimEntry],
+    attributes: List[Attribute],
     shift_dim_dict: Dict,
     selected_shifts: List[ShiftWorkerOption],
 ) -> Tuple[
@@ -140,8 +153,14 @@ def build_work_shift_indexes(
         type="shift_worker_option",
         value=selected_shifts,
     )
-    missing_properties, _ = build_missing_properties_list_and_active_shift(
-        block, shifts, shift_dimensions
+    # pylint: disable=R0801
+    missing_properties, _ = build_missing_attributes_and_active_owner(
+        AttributeOwnerType.SHIFT,
+        block,
+        shifts,
+        dimensions,
+        dim_entries,
+        attributes,
     )
     selected_shifts_ids = parse_selected_shifts(
         selected_shifts, missing_properties, shifts, shift_dim_dict
@@ -195,7 +214,9 @@ def build_stats_custom(
     workers: List[Worker],
     date_to_i: Dict[date, int],
     shifts: List[Shift],
-    shift_dimensions: List[Dimension],
+    dimensions: List[Dimension],
+    dim_entries: List[DimEntry],
+    attributes: List[Attribute],
     shift_dim_dict: Dict,
     assignments: List[Assignment],
     stats_headers: List[StatsHeader],
@@ -226,7 +247,13 @@ def build_stats_custom(
             i_to_work_shift,
             i_to_rest_shift,
         ) = build_work_shift_indexes(
-            workers, shifts, shift_dimensions, shift_dim_dict, selected_shifts
+            workers,
+            shifts,
+            dimensions,
+            dim_entries,
+            attributes,
+            shift_dim_dict,
+            selected_shifts,
         )
         su_stats = build_stats_for_stats_unit(
             team_id,

@@ -56,12 +56,12 @@ class Block:
 
 
 @dataclass
-class MissingProperty:
+class MissingAttribute:
     dimension_id: str
     is_bool: bool
     dim_name: str
     category: str  # worker or shift
-    property_values: List[str | int | float | bool]
+    attribute_values: List[str | int | float | bool]
 
 
 @dataclass
@@ -89,7 +89,7 @@ class ConstraintBuildAugmented:
     hard: bool
     priority: str
     active: bool
-    missing_properties: List[MissingProperty]
+    missing_attributes: List[MissingAttribute]
     text: str
 
 

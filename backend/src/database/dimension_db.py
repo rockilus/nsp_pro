@@ -87,6 +87,26 @@ class DimensionDB:
             handle_get_document_error(e)
         return [doc_to_core_dimension(sd) for sd in list(shift_dimensions)]
 
+    def get_dimensions(self, team_id: str) -> List[Dimension]:
+        try:
+            # pylint: disable=no-member
+            d_docs = DimensionDocument.objects.filter(team=team_id)  # type: ignore
+        except Exception as e:
+            log_info("Failed to get dimensions from database")
+            handle_get_document_error(e)
+        return [doc_to_core_dimension(d) for d in d_docs]
+
+    def get_dimensions_not_deleted(self, team_id: str) -> List[Dimension]:
+        try:
+            # pylint: disable=no-member
+            d_docs = DimensionDocument.objects.filter(  # type: ignore
+                team=team_id, deleted=False
+            )
+        except Exception as e:
+            log_info("Failed to get dimensions not deleted from database")
+            handle_get_document_error(e)
+        return [doc_to_core_dimension(d) for d in d_docs]
+
     def update_dimension(self, dimension: Dimension) -> Dimension:
         d_doc = core_to_doc_dimension(dimension)
         try:

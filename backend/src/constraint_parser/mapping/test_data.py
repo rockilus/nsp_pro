@@ -323,7 +323,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -399,7 +399,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -473,7 +473,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -549,7 +549,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -625,7 +625,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -715,7 +715,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -805,7 +805,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -897,7 +897,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -989,7 +989,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -1063,7 +1063,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -1136,7 +1136,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -1215,7 +1215,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -1294,7 +1294,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",

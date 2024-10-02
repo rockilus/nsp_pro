@@ -1,6 +1,6 @@
 from typing import List
 
-from core import Block, Dimension, Shift, ShiftWorkerOption, Worker, WorkerDimension
+from core import Block, Dimension, Shift, ShiftWorkerOption, Worker
 
 
 def translate_worker_block_value(value: str, language: str) -> str:
@@ -135,8 +135,7 @@ def get_shift_worker_option_display_name(
     option: ShiftWorkerOption,
     workers: List[Worker],
     shifts: List[Shift],
-    worker_dimensions: List[WorkerDimension],
-    shift_dimensions: List[Dimension],
+    dimensions: List[Dimension],
     lng: str,
 ) -> str:
     if option.id_type == "worker":
@@ -147,35 +146,23 @@ def get_shift_worker_option_display_name(
         shift = next((s for s in shifts if s.id == option.id), None)
         if shift:
             return shift.name
-    elif option.id_type in ["worker_dimension", "shift_dimension"]:
+    elif option.id_type == "dimension":
         if not option.is_bool_dim:
             if not isinstance(option.name, str):
                 raise ValueError("Invalid option name type for non-bool dim")
             return option.name
         if option.name:
-            if option.id_type == "worker_dimension":
-                worker_dimension: WorkerDimension | None = next(
-                    (wd for wd in worker_dimensions if wd.id == option.id),
-                    None,
-                )
-                return worker_dimension.name if worker_dimension else ''
-            shift_dimension: Dimension | None = next(
-                (sd for sd in shift_dimensions if sd.id == option.id),
+            dimension: Dimension | None = next(
+                (d for d in dimensions if d.id == option.id),
                 None,
             )
-            return shift_dimension.name if shift_dimension else ''
+            return dimension.name if dimension else ''
         if not option.name:
-            if option.id_type == "worker_dimension":
-                worker_dimension = next(
-                    (wd for wd in worker_dimensions if wd.id == option.id),
-                    None,
-                )
-                return f"not {worker_dimension.name}" if worker_dimension else ''
-            shift_dimension = next(
-                (sd for sd in shift_dimensions if sd.id == option.id),
+            dimension = next(
+                (sd for sd in dimensions if sd.id == option.id),
                 None,
             )
-            return f"not {shift_dimension.name}" if shift_dimension else ''
+            return f"not {dimension.name}" if dimension else ''
     if option.name == "all workers":
         return translate_worker_block_value(option.name, lng)  # type: ignore
     if option.name == "all shifts":
@@ -188,8 +175,7 @@ def blocks_to_string(
     blocks: List[Block],
     workers: List[Worker],
     shifts: List[Shift],
-    worker_dimensions: List[WorkerDimension],
-    shift_dimensions: List[Dimension],
+    dimensions: List[Dimension],
     language: str,
 ) -> str:
     values = []
@@ -200,8 +186,7 @@ def blocks_to_string(
                     block,
                     workers,
                     shifts,
-                    worker_dimensions,
-                    shift_dimensions,
+                    dimensions,
                     language,
                 )
             )
@@ -224,8 +209,7 @@ def block_to_string_shift_worker_option(
     block: Block,
     workers: List[Worker],
     shifts: List[Shift],
-    worker_dimensions: List[WorkerDimension],
-    shift_dimensions: List[Dimension],
+    dimensions: List[Dimension],
     lng: str,
 ) -> str:
     if not isinstance(block.value, list):
@@ -237,8 +221,7 @@ def block_to_string_shift_worker_option(
             v,  # type: ignore
             workers,
             shifts,
-            worker_dimensions,
-            shift_dimensions,
+            dimensions,
             lng,
         )
         for v in block.value

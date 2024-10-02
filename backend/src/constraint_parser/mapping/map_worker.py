@@ -4,7 +4,7 @@ from constraint_parser.mapping.utils import find_block_by_name
 from core import (
     Block,
     ConstraintBuildAugmented,
-    MissingProperty,
+    MissingAttribute,
     ShiftWorkerOption,
     VarWorker,
     Worker,
@@ -21,7 +21,7 @@ class MapWorker:
         values = self.get_worker_values(cstr_build.blocks)
         return VarWorker(
             selector=self.get_selector(values),
-            target_ids=self.get_target_ids(values, cstr_build.missing_properties),
+            target_ids=self.get_target_ids(values, cstr_build.missing_attributes),
             num_eligible_workers=0,
         )
 
@@ -36,7 +36,7 @@ class MapWorker:
     def get_target_ids(
         self,
         values: List[ShiftWorkerOption],
-        missing_properties: List[MissingProperty],
+        missing_properties: List[MissingAttribute],
     ) -> List[str]:
         if self.get_selector(values) == "all":
             return []
@@ -61,13 +61,13 @@ class MapWorker:
     def get_target_ids_worker_dimension(
         self,
         value: ShiftWorkerOption,
-        missing_properties: List[MissingProperty],
+        missing_properties: List[MissingAttribute],
     ) -> List[str] | None:
         mp = next(
             (mp for mp in missing_properties if mp.dimension_id == value.id),
             None,
         )
-        if mp and value.name in mp.property_values:
+        if mp and value.name in mp.attribute_values:
             return None
         if value.id not in self.worker_dim_dict:
             raise ValueError(f"Worker dimension {value.id} not found")
