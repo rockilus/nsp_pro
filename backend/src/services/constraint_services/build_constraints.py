@@ -1,10 +1,14 @@
 from datetime import date
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 from constraint_parser import parse_constraint
 from core import (
+    Attribute,
     Constraint,
     ConstraintBuildAugmented,
+    Dimension,
+    DimensionEntryType,
+    DimEntry,
     Schedule,
     Shift,
     VarDay,
@@ -12,6 +16,7 @@ from core import (
     VarWorker,
     Worker,
 )
+from scripts.setup_database import constraint_db
 
 
 # pylint: disable=too-many-arguments
@@ -19,24 +24,33 @@ def build_constraints(
     schedule: Schedule,
     workers: List[Worker],
     shifts: List[Shift],
-    worker_dim_dict: Dict,
-    shift_dim_dict: Dict,
+    dimensions: List[Dimension],
+    dim_entries: List[DimEntry],
+    attributes: List[Attribute],
     cstr_builds: List[ConstraintBuildAugmented],
-) -> Tuple[List[Constraint], List[Constraint]]:
-    user_constraints = [
+) -> List[Constraint]:
+    constraint_db.delete_constraints_by_schedule_id(schedule.id)
+    dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
+        workers, dimensions, dim_entries, attributes
+    )
+    dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
+        shifts, dimensions, dim_entries, attributes
+    )
+    constraints_user = [
         # pylint: disable=R0801
         parse_constraint(
             cstr_build,
             workers,
             shifts,
-            worker_dim_dict,
-            shift_dim_dict,
+            dim_to_attr_value_to_worker,
+            dim_to_attr_value_to_shift,
             schedule.id,
         )
         for cstr_build in cstr_builds
     ]
-    quick_staffing_constraints = build_quick_staffing_constraints(schedule)
-    return user_constraints, quick_staffing_constraints
+    constraints_user_saved = constraint_db.create_constraints(constraints_user)
+    constraints_quick_staffing = build_quick_staffing_constraints(schedule)
+    return constraints_user_saved + constraints_quick_staffing
 
 
 def build_default_constraints(
@@ -118,3 +132,36 @@ def build_quick_staffing_constraints(schedule: Schedule) -> List[Constraint]:
         )
         for qs in schedule.quick_staffings
     ]
+
+
+def build_dim_to_attr_value_to_owner(
+    owners: List[Worker] | List[Shift],
+    dimensions: List[Dimension],
+    dim_entries: List[DimEntry],
+    attributes: List[Attribute],
+) -> Dict[str, Dict[str | int | float | bool, List[str]]]:
+    out = {}
+    owner_not_deleted_ids = [o.id for o in owners if not o.deleted]
+    for dim in dimensions:
+        attr_value_to_owner: Dict[str | int | float | bool, List[str]] = {}
+        a_dim = [
+            a
+            for a in attributes
+            if a.dimension_id == dim.id and a.owner_id in owner_not_deleted_ids
+        ]
+        if not a_dim:
+            continue
+        if dim.entry_type == DimensionEntryType.DIM_ENTRIES:
+            for a in a_dim:
+                de_names = [de.name for de in dim_entries if de.id in a.dim_entry_ids]
+                for de_name in de_names:
+                    if de_name not in attr_value_to_owner:
+                        attr_value_to_owner[de_name] = []
+                    attr_value_to_owner[de_name].append(a.owner_id)
+        else:
+            for a in a_dim:
+                if a.value not in attr_value_to_owner:
+                    attr_value_to_owner[a.value] = []
+                attr_value_to_owner[a.value].append(a.owner_id)
+        out[dim.id] = attr_value_to_owner
+    return out

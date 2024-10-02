@@ -66,9 +66,9 @@ class MapShift:
             return "all"
         return "equal"
 
-    # "shift", "worker", "shift_dimension", "worker_dimension", ""
+    # "shift", "worker", "dimension", ""
     # if id_type is shift, check if the shift exists, and return the id
-    # if id_type is shift_dimension, check if the dimension exists.
+    # if id_type is dimension, check if the dimension exists.
     # if it does, check if the property is in missing properties.
     # if it is not in the missing property, return the list of shift ids that
     # have this property. This might be done differently if for bool dimensions
@@ -97,10 +97,9 @@ class MapShift:
                 if not self.check_shift_id(value.id):
                     raise ValueError(f"Shift {value.name} with id {value.id} not found")
                 out.append(value.id)
-            elif value.id_type == "shift_dimension":
-                target_ids = self.get_target_ids_shift_dimension(
-                    value, missing_properties
-                )
+            # pylint: disable=R0801
+            elif value.id_type == "dimension":
+                target_ids = self.get_target_ids_dimension(value, missing_properties)
                 if target_ids:
                     out += target_ids
         if cstr_type == "fil" and cstr_operator == "yes":
@@ -112,7 +111,7 @@ class MapShift:
         return sorted(list(set(out)))
 
     # pylint: disable=R0801
-    def get_target_ids_shift_dimension(
+    def get_target_ids_dimension(
         self,
         value: ShiftWorkerOption,
         missing_properties: List[MissingAttribute],

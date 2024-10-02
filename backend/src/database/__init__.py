@@ -17,8 +17,6 @@ from database.stats_header_db import StatsHeaderDB
 from database.team_db import TeamDB
 from database.user_db import UserDB
 from database.worker_db import WorkerDB
-from database.worker_dimension_db import WorkerDimensionDB
-from database.worker_property_db import WorkerPropertyDB
 
 # from database.parameters_db import ParametersDB
 
@@ -42,6 +40,4 @@ __all__ = [
     "TeamDB",
     "UserDB",
     "WorkerDB",
-    "WorkerDimensionDB",
-    "WorkerPropertyDB",
 ]

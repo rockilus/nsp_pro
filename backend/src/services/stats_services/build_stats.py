@@ -95,6 +95,7 @@ def build_stats(
     stats_headers = stats_header_db.get_stats_headers_by_team_unit_shifts(
         team_id, stats_options.stats_unit, stats_options.header_unit
     )
+    # pylint: disable=R0801
     (
         worker_to_i,
         work_shift_to_i,
@@ -238,6 +239,7 @@ def build_stats_custom(
     stats = Stats([], [])
     for (su, hu, _), shs in sh_by_su_hu_ss.items():
         selected_shifts = shs[0].selected_shifts
+        # pylint: disable=R0801
         (
             worker_to_i,
             work_shift_to_i,

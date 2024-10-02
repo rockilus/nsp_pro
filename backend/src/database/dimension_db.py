@@ -30,27 +30,12 @@ class DimensionDB:
             handle_save_document_error(e)
         return doc_to_core_dimension(d_saved)
 
-    def get_shift_dimensions(self, team_id: str) -> List[Dimension]:
-        try:
-            # pylint: disable=no-member
-            shift_dimensions = DimensionDocument.objects.filter(  # type: ignore
-                team=team_id,
-                dim_types__in=[
-                    DimensionType.SHIFT.value,
-                    DimensionType.REST_SHIFT.value,
-                ],
-            )
-        except Exception as e:
-            log_info("Failed to get shift dimensions from database")
-            handle_get_document_error(e)
-        return [doc_to_core_dimension(sd) for sd in list(shift_dimensions)]
-
     def get_dimensions_by_dim_types_not_deleted(
         self, dim_type: List[DimensionType], team_id: str
     ) -> List[Dimension]:
         try:
             # pylint: disable=no-member
-            shift_dimensions = DimensionDocument.objects.filter(  # type: ignore
+            d_docs = DimensionDocument.objects.filter(  # type: ignore
                 team=team_id,
                 dim_types__in=[dt.value for dt in dim_type],
                 deleted=False,
@@ -58,7 +43,7 @@ class DimensionDB:
         except Exception as e:
             log_info("Failed to get dimensions by type not deleted from database")
             handle_get_document_error(e)
-        return [doc_to_core_dimension(sd) for sd in list(shift_dimensions)]
+        return [doc_to_core_dimension(sd) for sd in list(d_docs)]
 
     def get_dimension_by_id(self, dimension_id: str) -> Dimension:
         try:
@@ -77,7 +62,7 @@ class DimensionDB:
     ) -> List[Dimension]:
         try:
             # pylint: disable=no-member
-            shift_dimensions = DimensionDocument.objects.filter(  # type: ignore
+            d_docs = DimensionDocument.objects.filter(  # type: ignore
                 entry_type=entry_type.value,
                 team=team_id,
                 dim_types__in=[dt.value for dt in dim_types],
@@ -85,7 +70,7 @@ class DimensionDB:
         except Exception as e:
             log_info("Failed to get shift dimensions by entry type from database")
             handle_get_document_error(e)
-        return [doc_to_core_dimension(sd) for sd in list(shift_dimensions)]
+        return [doc_to_core_dimension(sd) for sd in list(d_docs)]
 
     def get_dimensions(self, team_id: str) -> List[Dimension]:
         try:

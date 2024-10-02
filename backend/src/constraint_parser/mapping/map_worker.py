@@ -48,26 +48,24 @@ class MapWorker:
                         f"Worker {value.name} with id {value.id} not found"
                     )
                 out.append(value.id)
-            elif value.id_type == "worker_dimension":
-                target_ids = self.get_target_ids_worker_dimension(
-                    value, missing_properties
-                )
+            elif value.id_type == "dimension":
+                target_ids = self.get_target_ids_dimension(value, missing_properties)
                 if target_ids:
                     out += target_ids
         if not out:
             raise ValueError("No workers found")
         return sorted(list(set(out)))
 
-    def get_target_ids_worker_dimension(
+    def get_target_ids_dimension(
         self,
         value: ShiftWorkerOption,
-        missing_properties: List[MissingAttribute],
+        missing_attributes: List[MissingAttribute],
     ) -> List[str] | None:
-        mp = next(
-            (mp for mp in missing_properties if mp.dimension_id == value.id),
+        ma = next(
+            (ma for ma in missing_attributes if ma.dimension_id == value.id),
             None,
         )
-        if mp and value.name in mp.attribute_values:
+        if ma and value.name in ma.attribute_values:
             return None
         if value.id not in self.worker_dim_dict:
             raise ValueError(f"Worker dimension {value.id} not found")

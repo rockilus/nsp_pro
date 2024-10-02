@@ -11,7 +11,6 @@ def delete_worker(worker_id: str) -> None:
     worker_db.logical_delete_worker(worker_id)
     # delete_worker_from_objective_breach(worker_id)
     # delete_worker_from_constraint(worker_id)
-    # worker_property_db.delete_worker_properties_by_worker_id(worker_id)
     # assignment_db.delete_assignments_by_worker_id(worker_id)
     # request_db.delete_requests_by_worker_id(worker_id)
 

@@ -19,8 +19,6 @@ from database import (
     TeamDB,
     UserDB,
     WorkerDB,
-    WorkerDimensionDB,
-    WorkerPropertyDB,
 )
 from errors import DBConnectionError
 from logger import log_critical, log_info
@@ -66,8 +64,6 @@ stats_header_db = StatsHeaderDB(db)
 team_db = TeamDB(db)
 user_db = UserDB(db)
 worker_db = WorkerDB(db)
-worker_dimension_db = WorkerDimensionDB(db)
-worker_property_db = WorkerPropertyDB(db)
 
 
 ensure_config_exists()

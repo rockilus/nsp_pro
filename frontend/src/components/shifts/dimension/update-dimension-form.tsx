@@ -67,8 +67,8 @@ export default function UpdateDimensionForm({
       selectedTeamId
     ) {
       if (name !== dimension.name) {
-        const newShiftDimension: DimensionT = { ...dimension, name: name };
-        await handleUpdateDimension(newShiftDimension);
+        const newDimension: DimensionT = { ...dimension, name: name };
+        await handleUpdateDimension(newDimension);
       } else {
         if (setOpenParent) {
           setOpenParent(false);

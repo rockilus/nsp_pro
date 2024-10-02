@@ -202,7 +202,7 @@ def core_to_msg_shift_demand_and_shift(
     try:
         data = asdict(shift_demand)
         data["shift"] = asdict(shift)
-        data["shift"]["shift_properties"] = []
+        data["shift"]["attributes"] = []
     except Exception as e:
         log_info("Failed to convert ShiftDemand and Shift to dictionary")
         raise MessageTypeError(str(e)) from e

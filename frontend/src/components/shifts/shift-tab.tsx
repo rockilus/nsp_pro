@@ -259,11 +259,11 @@ export default function ShiftTab({
       if (selectedTeamId) {
         const {
           shifts: fetchedShifts,
-          dimensions: fetchedShiftDimensions,
+          dimensions: fetchedDimensions,
           dimEntries: fetchedDimEntries,
         } = await getShiftsTabData(selectedTeamId);
         setShifts(fetchedShifts);
-        setDimensions(fetchedShiftDimensions);
+        setDimensions(fetchedDimensions);
         setDimEntries(fetchedDimEntries);
         setIsLoading(false);
       }
