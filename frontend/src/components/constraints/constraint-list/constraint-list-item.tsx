@@ -79,7 +79,7 @@ export default function ConstraintListItem({
           </Typography>
           <MissingProperties
             lng={lng}
-            missingProperties={constraint.missingProperties}
+            missingProperties={constraint.missingAttributes}
           />
         </Grid>
         <Grid item xs={3}>

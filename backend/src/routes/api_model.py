@@ -133,12 +133,12 @@ class BlockMessage(BaseModel):
     value: str | int | List[str] | List[ShiftWorkerOptionMessage]
 
 
-class MissingPropertyMessage(BaseModel):
+class MissingAttributeMessage(BaseModel):
     dimensionId: str
     isBool: bool
     dimName: str
     category: str
-    propertyValues: List[str | int | float | bool]
+    attributeValues: List[str | int | float | bool]
 
 
 class ConstraintBuildMessage(BaseModel):
@@ -152,7 +152,7 @@ class ConstraintBuildMessage(BaseModel):
     hard: bool
     priority: str
     active: bool
-    missingProperties: List[MissingPropertyMessage]
+    missingAttributes: List[MissingAttributeMessage]
 
 
 class TemplateBlockMessage(BaseModel):

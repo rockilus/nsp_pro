@@ -1,7 +1,7 @@
 import React, { ReactElement } from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // Types
-import { MissingProperty } from "../../../types/constraint";
+import { MissingAttribute } from "../../../types/constraint";
 // Styles
 import "./missing-properties.css";
 
@@ -10,18 +10,18 @@ export default function MissingProperties({
   missingProperties,
 }: {
   lng: string;
-  missingProperties: MissingProperty[];
+  missingProperties: MissingAttribute[];
 }) {
   const { t } = useTranslation(lng, "constraint-page");
 
   const buildString = (
-    missingProperties: MissingProperty[]
+    missingProperties: MissingAttribute[]
   ): ReactElement<any, any> => {
     const mpValuesStringWorkers: string[] = [];
     const mpValuesStringShifts: string[] = [];
     for (const mp of missingProperties) {
       if (mp.isBool) {
-        const newString = mp.propertyValues.map((pv) =>
+        const newString = mp.attributeValues.map((pv) =>
           pv ? mp.dimName.toLowerCase() : "no " + mp.dimName.toLowerCase()
         );
         if (mp.category === "worker") {
@@ -30,7 +30,7 @@ export default function MissingProperties({
           mpValuesStringShifts.push(...newString);
         }
       } else {
-        const newString = mp.propertyValues.map((pv) =>
+        const newString = mp.attributeValues.map((pv) =>
           String(pv).toLowerCase()
         );
         if (mp.category === "worker") {
