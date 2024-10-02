@@ -1,21 +1,6 @@
 import dayjs from "dayjs";
-
-export type ShiftDimensionT = {
-  id: string;
-  isRest: boolean;
-  teamId: string;
-  name: string;
-  entryType: string;
-  entryOptions: string[];
-  deleted: boolean;
-};
-
-export type ShiftPropertyT = {
-  id: string;
-  value: string | number | boolean | string[];
-  shiftId: string;
-  shiftDimensionId: string;
-};
+// Types
+import { AttributeT } from "./attribute";
 
 export enum ShiftType {
   NORMAL = 0,
@@ -66,10 +51,5 @@ export type ShiftT = {
   recuperationTime: number;
   recuperationDutyId: string | null;
   deleted: boolean;
-  shiftProperties: ShiftPropertyT[];
-};
-
-export type NewShiftDimensionT = {
-  newDimension: ShiftDimensionT;
-  newProperties: ShiftPropertyT[];
+  attributes: AttributeT[];
 };

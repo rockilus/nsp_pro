@@ -1,32 +1,45 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
 
-from core import Shift, ShiftLeaveType, ShiftProperty, ShiftRestType, ShiftType
-from scripts.setup_database import shift_db, shift_dimension_db, shift_property_db
+from core import (
+    Attribute,
+    AttributeOwnerType,
+    DimensionEntryType,
+    DimensionType,
+    Shift,
+    ShiftLeaveType,
+    ShiftRestType,
+    ShiftType,
+)
+from scripts.setup_database import attribute_db, dimension_db, shift_db
 
 
-def create_shift(shift: Shift) -> Tuple[Shift, List[ShiftProperty]]:
+def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:
     if shift.rest_type == ShiftRestType.OFF:
         raise ValueError("Cannot create the default rest shift")
     if shift.leave_type != ShiftLeaveType.NONE:
         raise ValueError("Cannot create a leave shift")
     shift_created = shift_db.create_shift(shift)
-    sd_bool = shift_dimension_db.get_shift_dimensions_by_entry_type(
-        "bool", shift_created.team_id
+    d_bool = dimension_db.get_dimensions_by_dim_types_and_entry_type(
+        [DimensionType.SHIFT, DimensionType.REST_SHIFT],
+        DimensionEntryType.BOOL,
+        shift_created.team_id,
     )
-    sp_bool = []
-    for wd in sd_bool:
-        sp_bool.append(
-            shift_property_db.create_shift_property(
-                ShiftProperty(
-                    id="",
-                    value=False,
-                    shift_id=shift_created.id,
-                    shift_dimension_id=wd.id,
-                )
+    attributes: List[Attribute] = []
+    attributes_saved: List[Attribute] = []
+    for d in d_bool:
+        attributes.append(
+            Attribute(
+                id="",
+                value=False,
+                owner_type=AttributeOwnerType.SHIFT,
+                owner_id=shift_created.id,
+                dimension_id=d.id,
+                dim_entry_ids=[],
             )
         )
-    return shift_created, sp_bool
+    attributes_saved = attribute_db.create_attributes(attributes)
+    return shift_created, attributes_saved
 
 
 def create_default_shifts(team_id: str) -> None:

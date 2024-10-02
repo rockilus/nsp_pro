@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
 from constraint_parser.templates import build_templates
-from core import ShiftProperty, Template, WorkerProperty
+from core import Attribute, Template, WorkerProperty
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -18,9 +18,10 @@ from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import TemplateMessage
 from scripts.setup_database import (
+    attribute_db,
+    dim_entry_db,
+    dimension_db,
     shift_db,
-    shift_dimension_db,
-    shift_property_db,
     user_db,
     worker_db,
     worker_dimension_db,
@@ -56,22 +57,26 @@ async def get_constraint_templates(
             worker_properties_wd[wd_id].append(wp)
         worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id)
         shifts = shift_db.get_shifts_not_deleted(team_id)
-        shift_properties = shift_property_db.get_shift_properties_by_shift_ids(
+        shift_properties = attribute_db.get_attributes_by_owner_ids(
             [s.id for s in shifts]
         )
-        shift_properties_sd: Dict[str, List[ShiftProperty]] = {}
+        shift_properties_sd: Dict[str, List[Attribute]] = {}
         for sp in shift_properties:
-            sd_id = sp.shift_dimension_id
+            sd_id = sp.dimension_id
             if sd_id not in shift_properties_sd:
                 shift_properties_sd[sd_id] = []
             shift_properties_sd[sd_id].append(sp)
-        shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
+        shift_dimensions = dimension_db.get_shift_dimensions(team_id)
+        shift_dim_entries = dim_entry_db.get_dim_entries_by_dim_ids(
+            [sd.id for sd in shift_dimensions]
+        )
         templates = build_templates(
             workers,
             worker_dimensions,
             worker_properties_wd,
             shifts,
             shift_dimensions,
+            shift_dim_entries,
             shift_properties_sd,
             user.language,
         )

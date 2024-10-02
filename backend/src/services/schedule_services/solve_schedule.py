@@ -14,13 +14,13 @@ from core import (
 from engine import Engine
 from scripts.setup_database import (
     assignment_db,
+    attribute_db,
     constraint_db,
     coverage_selector_db,
     objective_breach_db,
     schedule_db,
     shift_db,
     shift_demand_db,
-    shift_property_db,
     worker_db,
     worker_property_db,
 )
@@ -51,7 +51,7 @@ def solve_schedule(
     workers = worker_db.get_workers(schedule.team_id)
     shifts = shift_db.get_shifts(schedule.team_id)
     worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
-    shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
+    shift_dim_dict = attribute_db.get_shifts_id_by_dim_and_attr()
     cbs_augmented = get_active_constraint_builds_by_ids(
         schedule.team_id, schedule.constraint_build_ids
     )

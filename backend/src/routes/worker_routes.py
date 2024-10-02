@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Worker, WorkerProperty
+from core import Attribute, Worker
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -16,9 +16,10 @@ from errors import (
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
-from routes.api_model import WorkerMessage, WorkerPropertyMessage
-from scripts.setup_database import worker_db, worker_dimension_db, worker_property_db
-from services.worker_services import create_or_update_worker_property
+from routes.api_model import WorkerMessage
+from routes.attribute_routes import core_to_msg_attribute
+from scripts.setup_database import attribute_db, worker_db
+from services.worker_services import create_worker as create_worker_service
 from services.worker_services import delete_worker as delete_worker_service
 
 router = APIRouter()
@@ -36,23 +37,8 @@ async def create_worker(
         ):
             raise NotAuthorizedError("You do not have permission to create a worker")
         w_data = msg_to_core_worker(worker)
-        worker_created = worker_db.create_worker(w_data)
-        wd_bool = worker_dimension_db.get_worker_dimensions_by_entry_type(
-            "bool", team_id
-        )
-        wp_bool = []
-        for wd in wd_bool:
-            wp_bool.append(
-                worker_property_db.create_worker_property(
-                    WorkerProperty(
-                        id="",
-                        value=False,
-                        worker_id=worker_created.id,
-                        worker_dimension_id=wd.id,
-                    )
-                )
-            )
-        response = core_to_msg_worker_and_properties(worker_created, wp_bool)
+        worker_created, a_bool = create_worker_service(w_data)
+        response = core_to_msg_worker_and_attributes(worker_created, a_bool)
     except Exception as e:
         log_info("Failed to create worker")
         handle_routes_errors(e)
@@ -70,13 +56,12 @@ async def get_workers(
         ):
             raise NotAuthorizedError("You do not have permission to get workers")
         workers = worker_db.get_workers_not_deleted(team_id)
-        workers_properties = [
-            worker_property_db.get_worker_properties_by_worker_id(worker.id)
-            for worker in workers
+        attributes = [
+            attribute_db.get_attributes_by_owner_id(worker.id) for worker in workers
         ]
         response = [
-            core_to_msg_worker_and_properties(w, wp)
-            for w, wp in zip(workers, workers_properties)
+            core_to_msg_worker_and_attributes(w, wp)
+            for w, wp in zip(workers, attributes)
         ]
     except Exception as e:
         log_info("Failed to get workers")
@@ -95,13 +80,12 @@ async def get_all_workers(
         ):
             raise NotAuthorizedError("You do not have permission to get workers")
         workers = worker_db.get_workers(team_id)
-        workers_properties = [
-            worker_property_db.get_worker_properties_by_worker_id(worker.id)
-            for worker in workers
+        attributes = [
+            attribute_db.get_attributes_by_owner_id(worker.id) for worker in workers
         ]
         response = [
-            core_to_msg_worker_and_properties(w, wp)
-            for w, wp in zip(workers, workers_properties)
+            core_to_msg_worker_and_attributes(w, wp)
+            for w, wp in zip(workers, attributes)
         ]
     except Exception as e:
         log_info("Failed to get workers")
@@ -122,34 +106,10 @@ async def update_worker(
             raise NotAuthorizedError("You do not have permission to update a worker")
         w_data = msg_to_core_worker(worker)
         updated_worker = worker_db.update_worker(w_data)
-        worker_properties = worker_property_db.get_worker_properties_by_worker_id(
-            updated_worker.id
-        )
-        response = core_to_msg_worker_and_properties(updated_worker, worker_properties)
+        attributes = attribute_db.get_attributes_by_owner_id(updated_worker.id)
+        response = core_to_msg_worker_and_attributes(updated_worker, attributes)
     except Exception as e:
         log_info("Failed to update worker")
-        handle_routes_errors(e)
-    return response
-
-
-@router.put("/workers/{worker_id}/properties/{worker_dimension_id}/teams/{team_id}")
-async def update_worker_property(
-    team_id: str,
-    worker_property: WorkerPropertyMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> WorkerPropertyMessage:
-    try:
-        if not await authz_check(
-            session.get_user_id(), "update-worker-property", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to update a worker property"
-            )
-        wp_data = msg_to_core_worker_property(worker_property)
-        new_wp = create_or_update_worker_property(wp_data)
-        response = core_to_msg_worker_property(new_wp)
-    except Exception as e:
-        log_info("Failed to update worker property")
         handle_routes_errors(e)
     return response
 
@@ -174,35 +134,15 @@ async def delete_worker(
 
 # Mappers
 # core to message
-def core_to_msg_worker_property(
-    worker_property: WorkerProperty,
-) -> WorkerPropertyMessage:
-    try:
-        data = asdict(worker_property)
-    except Exception as e:
-        log_info("Failed to convert WorkerProperty to dictionary")
-        raise MessageTypeError(str(e)) from e
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(WorkerPropertyMessage)
-    try:
-        wp_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert WorkerProperty to WorkerPropertyMessage")
-        handle_message_errors(e)
-    return wp_msg
-
-
-def core_to_msg_worker_and_properties(
-    worker: Worker, worker_properties: List[WorkerProperty]
+def core_to_msg_worker_and_attributes(
+    worker: Worker, attributes: List[Attribute]
 ) -> WorkerMessage:
     try:
         data = asdict(worker)
     except Exception as e:
         log_info("Failed to convert Worker to dictionary")
         raise MessageTypeError(str(e)) from e
-    data["worker_properties"] = [
-        core_to_msg_worker_property(wp) for wp in worker_properties
-    ]
+    data["attributes"] = [core_to_msg_attribute(a) for a in attributes]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(WorkerMessage)
     try:
@@ -223,13 +163,3 @@ def msg_to_core_worker(msg: WorkerMessage) -> Worker:
         log_info("Failed to convert WorkerMessage to Worker")
         handle_create_core_object_error(e)
     return worker
-
-
-def msg_to_core_worker_property(msg: WorkerPropertyMessage) -> WorkerProperty:
-    data_snake = humps.decamelize(msg.model_dump())
-    try:
-        worker_property = WorkerProperty(**data_snake)
-    except Exception as e:
-        log_info("Failed to convert WorkerPropertyMessage to WorkerProperty")
-        handle_create_core_object_error(e)
-    return worker_property

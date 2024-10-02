@@ -1,11 +1,13 @@
 import { unstable_noStore as noStore } from "next/cache";
+// Actions
+import { getDimensions } from "./dimension";
 // Types
-import { WorkerT, WorkerDimensionT, WorkerPropertyT } from "../../types/worker";
+import { WorkerT } from "../../types/worker";
+import { DimensionType } from "../../types/dimension";
 // Env Vars
 import { API_URL } from "./env";
 
 const apiUrlWorkers = API_URL + "/workers";
-const apiUrlWorkerDimensions = API_URL + "/worker-dimensions";
 
 //////////////////////////
 // Worker //
@@ -129,158 +131,6 @@ export async function deleteWorker(workerId: string, teamId: string) {
 }
 
 //////////////////////////
-// Worker Dimensions //
-//////////////////////////
-
-export async function addWorkerDimension(workerDimension: WorkerDimensionT) {
-  const options: RequestInit = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(workerDimension),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlWorkerDimensions}/teams/${workerDimension.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to add worker dimension: " + responseData.detail);
-    }
-    return responseData as {
-      newDimension: WorkerDimensionT;
-      newProperties: WorkerPropertyT[];
-    };
-  } catch (error) {
-    console.error("Failed to add worker dimension:", error);
-    throw new Error("Failed to add worker dimension, please try again later");
-  }
-}
-
-export async function getWorkerDimensions(teamId: string) {
-  noStore();
-  const options: RequestInit = {
-    method: "GET",
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlWorkerDimensions}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        "Failed to fetch worker dimensions: " + responseData.detail
-      );
-    }
-    return responseData as WorkerDimensionT[];
-  } catch (error) {
-    console.error("Failed to fetch worker dimensions:", error);
-    throw new Error(
-      "Failed to fetch worker dimensions, please try again later"
-    );
-  }
-}
-
-export async function updateWorkerDimension(
-  updatedWorkerDimension: WorkerDimensionT
-) {
-  const options: RequestInit = {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updatedWorkerDimension),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlWorkerDimensions}/${updatedWorkerDimension.id}/teams/${updatedWorkerDimension.teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        "Failed to update worker dimension: " + responseData.detail
-      );
-    }
-    return responseData as WorkerDimensionT;
-  } catch (error) {
-    console.error("Failed to update worker dimension:", error);
-    throw new Error(
-      "Failed to update worker dimension, please try again later"
-    );
-  }
-}
-
-export async function deleteWorkerDimension(
-  workerDimensionId: string,
-  teamId: string
-) {
-  const options: RequestInit = {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlWorkerDimensions}/${workerDimensionId}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        "Failed to delete worker dimension: " + responseData.detail
-      );
-    }
-  } catch (error) {
-    console.error("Failed to delete worker dimension:", error);
-    throw new Error(
-      "Failed to delete worker dimension, please try again later"
-    );
-  }
-}
-
-//////////////////////////
-// Worker Properties //
-//////////////////////////
-
-export async function updateWorkerProperty(
-  workerProperty: WorkerPropertyT,
-  teamId: string
-) {
-  const options: RequestInit = {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(workerProperty),
-  };
-  try {
-    const response = await fetch(
-      `${apiUrlWorkers}/${workerProperty.workerId}/properties/${workerProperty.workerDimensionId}/teams/${teamId}`,
-      options
-    );
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        "Failed to update worker property: " + responseData.detail
-      );
-    }
-    return responseData as WorkerPropertyT;
-  } catch (error) {
-    console.error("Failed to update worker property:", error);
-    throw new Error("Failed to update worker property, please try again later");
-  }
-}
-
-//////////////////////////
 // Workers Tab Data //
 //////////////////////////
 
@@ -288,9 +138,13 @@ export async function getWorkersTabData(teamId: string) {
   try {
     const workersTabData = await Promise.all([
       getWorkers(teamId),
-      getWorkerDimensions(teamId),
+      getDimensions([DimensionType.WORKER], teamId),
     ]);
-    return { workers: workersTabData[0], workerDimensions: workersTabData[1] };
+    return {
+      workers: workersTabData[0],
+      dimensions: workersTabData[1].dimensions,
+      dimEntries: workersTabData[1].dimEntries,
+    };
   } catch (error) {
     console.error("Failed to fetch workers tab data:", error);
     throw new Error("Failed to fetch workers tab data, please try again later");

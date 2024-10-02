@@ -53,7 +53,10 @@ class ShiftDB:
             # pylint: disable=no-member
             shifts = ShiftDocument.objects(  # type: ignore
                 team=team_id,
-                shift_type__in=[0, 1],  # ShiftType.NORMAL, ShiftType.DUTY
+                shift_type__in=[
+                    ShiftType.NORMAL.value,
+                    ShiftType.DUTY.value,
+                ],
             )
         except Exception as e:
             log_info("Failed to get shifts from database")
@@ -65,7 +68,10 @@ class ShiftDB:
             # pylint: disable=no-member
             shifts = ShiftDocument.objects(  # type: ignore
                 team=team_id,
-                shift_type__in=[0, 1],  # ShiftType.NORMAL, ShiftType.DUTY
+                shift_type__in=[
+                    ShiftType.NORMAL.value,
+                    ShiftType.DUTY.value,
+                ],
                 deleted=False,
             )
         except Exception as e:
@@ -78,7 +84,7 @@ class ShiftDB:
             # pylint: disable=no-member
             shifts = ShiftDocument.objects(  # type: ignore
                 team=team_id,
-                shift_type__in=[2, 3],  # ShiftType.REST, ShiftType.LEAVE
+                shift_type__in=[ShiftType.REST.value, ShiftType.LEAVE.value],
             )
         except Exception as e:
             log_info("Failed to get rest shifts from database")

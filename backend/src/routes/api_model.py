@@ -4,14 +4,45 @@ from typing import List
 from pydantic import BaseModel
 
 
-# Worker
-class WorkerPropertyMessage(BaseModel):
+# Attribute
+class AttributeMessage(BaseModel):
     id: str
-    value: str | int | bool | List[str]
-    workerDimensionId: str
-    workerId: str
+    value: str | int | bool
+    ownerType: int
+    ownerId: str
+    dimensionId: str
+    dimEntryIds: List[str]
 
 
+# Dimension
+class DimEntryMessage(BaseModel):
+    id: str
+    dimensionId: str
+    name: str
+    deleted: bool
+
+
+class DimensionMessage(BaseModel):
+    id: str
+    teamId: str
+    dimTypes: List[int]
+    name: str
+    entryType: int
+    deleted: bool
+
+
+class DimensionsAndDimEntriesMessage(BaseModel):
+    dimensions: List[DimensionMessage]
+    dimEntries: List[DimEntryMessage]
+
+
+class NewDimensionMessage(BaseModel):
+    newDimension: DimensionMessage
+    newDimEntries: List[DimEntryMessage]
+    newAttributes: List[AttributeMessage]
+
+
+# Worker
 class WorkerMessage(BaseModel):
     id: str
     teamId: str
@@ -21,31 +52,10 @@ class WorkerMessage(BaseModel):
     dutiesPerMonth: int
     annualLeave: int
     deleted: bool
-    workerProperties: List[WorkerPropertyMessage]
-
-
-class WorkerDimensionMessage(BaseModel):
-    id: str
-    teamId: str
-    name: str
-    entryType: str
-    entryOptions: List[str]
-    deleted: bool
-
-
-class NewWorkerDimensionMessage(BaseModel):
-    newDimension: WorkerDimensionMessage
-    newProperties: List[WorkerPropertyMessage]
+    attributes: List[AttributeMessage]
 
 
 # Shift
-class ShiftPropertyMessage(BaseModel):
-    id: str
-    value: str | int | bool | List[str]
-    shiftDimensionId: str
-    shiftId: str
-
-
 class ShiftMessage(BaseModel):
     id: str
     teamId: str
@@ -60,22 +70,7 @@ class ShiftMessage(BaseModel):
     recuperationTime: int
     recuperationDutyId: str | None
     deleted: bool
-    shiftProperties: List[ShiftPropertyMessage]
-
-
-class ShiftDimensionMessage(BaseModel):
-    id: str
-    isRest: bool
-    teamId: str
-    name: str
-    entryType: str
-    entryOptions: List[str]
-    deleted: bool
-
-
-class NewShiftDimensionMessage(BaseModel):
-    newDimension: ShiftDimensionMessage
-    newProperties: List[ShiftPropertyMessage]
+    attributes: List[AttributeMessage]
 
 
 # Coverage
@@ -290,22 +285,3 @@ class TeamMessage(BaseModel):
 # Health
 class HealthCheck(BaseModel):
     status: str
-
-
-# Bulk
-class BulkMessage(BaseModel):
-    selectedTeamId: str | None
-    user: UserMessage
-    teams: List[TeamMessage]
-    workers: List[WorkerMessage]
-    workerDimensions: List[WorkerDimensionMessage]
-    shifts: List[ShiftMessage]
-    shiftDimensions: List[ShiftDimensionMessage]
-    coverages: List[CoverageMessage]
-    constraints: List[ConstraintBuildMessage]
-    constraintTemplates: List[TemplateMessage]
-    requests: List[RequestMessage]
-    coverageSelectors: List[CoverageSelectorMessage]
-    assignments: List[AssignmentMessage]
-    schedule: ScheduleMessage
-    objectiveBreaches: List[ObjectiveBreachMessage]

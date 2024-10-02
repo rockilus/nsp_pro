@@ -1,4 +1,4 @@
-from core.bulk import Bulk
+from core.attribute import Attribute, AttributeOwnerType
 from core.config import Config
 from core.constraint import (
     Block,
@@ -14,16 +14,10 @@ from core.constraint import (
     VarWorker,
 )
 from core.coverage import Coverage, CoverageSelector, ShiftDemand, ShiftDemandDate
+from core.dimension import Dimension, DimensionEntryType, DimensionType, DimEntry
 from core.request import Request, RequestAugmented
 from core.schedule import Assignment, ObjectiveBreach, QuickStaffing, Schedule, Variable
-from core.shift import (
-    Shift,
-    ShiftDimension,
-    ShiftLeaveType,
-    ShiftProperty,
-    ShiftRestType,
-    ShiftType,
-)
+from core.shift import Shift, ShiftLeaveType, ShiftRestType, ShiftType
 from core.stats import Stats, StatsHeader, StatsOptions, StatsValue
 from core.team import Team
 from core.user import PasswordData, User
@@ -31,7 +25,8 @@ from core.worker import Worker, WorkerDimension, WorkerProperty
 
 # pylint: disable=R0801
 __all__ = [
-    "Bulk",
+    "Attribute",
+    "AttributeOwnerType",
     "Config",
     "Assignment",
     "Block",
@@ -49,6 +44,10 @@ __all__ = [
     "CoverageSelector",
     "ShiftDemand",
     "ShiftDemandDate",
+    "Dimension",
+    "DimensionEntryType",
+    "DimensionType",
+    "DimEntry",
     "Request",
     "RequestAugmented",
     "ObjectiveBreach",
@@ -56,9 +55,7 @@ __all__ = [
     "Schedule",
     "Variable",
     "Shift",
-    "ShiftDimension",
     "ShiftLeaveType",
-    "ShiftProperty",
     "ShiftRestType",
     "ShiftType",
     "StatsOptions",

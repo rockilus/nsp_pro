@@ -5,8 +5,8 @@ from constraint_parser import parse_selected_shifts
 from core import (
     Assignment,
     Block,
+    Dimension,
     Shift,
-    ShiftDimension,
     ShiftType,
     ShiftWorkerOption,
     Stats,
@@ -17,10 +17,10 @@ from core import (
 from errors import NoCampaignError
 from scripts.setup_database import (
     assignment_db,
+    attribute_db,
+    dimension_db,
     schedule_db,
     shift_db,
-    shift_dimension_db,
-    shift_property_db,
     stats_header_db,
     worker_db,
 )
@@ -67,8 +67,8 @@ def build_stats(
     except NoCampaignError as e:
         raise e
     shifts = shift_db.get_shifts_not_deleted(team_id)
-    shift_dimensions = shift_dimension_db.get_shift_dimensions(team_id)
-    shift_dim_dict = shift_property_db.get_shifts_id_by_dim_and_prop()
+    shift_dimensions = dimension_db.get_shift_dimensions(team_id)
+    shift_dim_dict = attribute_db.get_shifts_id_by_dim_and_attr()
     assignments = assignment_db.get_assignments_by_dates(
         start_date, end_date, schedules
     )
@@ -123,7 +123,7 @@ def build_stats(
 def build_work_shift_indexes(
     workers: List[Worker],
     shifts: List[Shift],
-    shift_dimensions: List[ShiftDimension],
+    shift_dimensions: List[Dimension],
     shift_dim_dict: Dict,
     selected_shifts: List[ShiftWorkerOption],
 ) -> Tuple[
@@ -195,7 +195,7 @@ def build_stats_custom(
     workers: List[Worker],
     date_to_i: Dict[date, int],
     shifts: List[Shift],
-    shift_dimensions: List[ShiftDimension],
+    shift_dimensions: List[Dimension],
     shift_dim_dict: Dict,
     assignments: List[Assignment],
     stats_headers: List[StatsHeader],

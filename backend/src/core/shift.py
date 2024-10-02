@@ -1,9 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List
-
-from utils.constants import Constants
 
 
 class ShiftType(Enum):
@@ -57,27 +54,3 @@ class Shift:
     recuperation_time: int  # in hours
     recuperation_duty_id: str | None
     deleted: bool
-
-
-# know this is a leave shift
-# know if this is a full day, morning, or afternoon leave shift
-
-
-@dataclass
-# pylint: disable=R0801
-class ShiftDimension:
-    id: str
-    is_rest: bool
-    team_id: str
-    name: str
-    entry_type: Constants.DIMENSION_ENTRY_TYPES  # str, int, bool, list
-    entry_options: List[str]
-    deleted: bool
-
-
-@dataclass
-class ShiftProperty:
-    id: str
-    value: str | int | float | bool | List[str]
-    shift_id: str
-    shift_dimension_id: str

@@ -4,10 +4,12 @@ from constraint_parser.build_templates_list_en import build_templates_list_en
 from constraint_parser.build_templates_list_es import build_templates_list_es
 from constraint_parser.build_templates_list_fr import build_templates_list_fr
 from core import (
+    Attribute,
+    Dimension,
+    DimensionEntryType,
+    DimEntry,
     Shift,
-    ShiftDimension,
     ShiftLeaveType,
-    ShiftProperty,
     ShiftWorkerOption,
     Template,
     Worker,
@@ -22,12 +24,15 @@ def build_templates(
     worker_dimensions: List[WorkerDimension],
     worker_properties: Dict[str, List[WorkerProperty]],
     shifts: List[Shift],
-    shift_dimensions: List[ShiftDimension],
-    shift_properties: Dict[str, List[ShiftProperty]],
+    shift_dimensions: List[Dimension],
+    shift_dim_entries: List[DimEntry],
+    shift_properties: Dict[str, List[Attribute]],
     lang_code: str,
 ) -> List[Template]:
     worker_options = build_worker_options(workers, worker_dimensions, worker_properties)
-    shift_options = build_shift_options(shifts, shift_dimensions, shift_properties)
+    shift_options = build_shift_options(
+        shifts, shift_dimensions, shift_dim_entries, shift_properties
+    )
     return build_templates_list(worker_options, shift_options, lang_code)
 
 
@@ -104,8 +109,9 @@ def build_worker_options(
 
 def build_shift_options(
     shifts: List[Shift],
-    shift_dimensions: List[ShiftDimension],
-    shift_properties: Dict[str, List[ShiftProperty]],
+    shift_dimensions: List[Dimension],
+    shift_dim_entries: List[DimEntry],
+    shift_properties: Dict[str, List[Attribute]],
 ) -> List[ShiftWorkerOption]:
     shift_options: List[ShiftWorkerOption] = [
         ShiftWorkerOption(
@@ -132,7 +138,7 @@ def build_shift_options(
             if shift_dimension.id in shift_properties
             else []
         )
-        if shift_dimension.entry_type == "bool":
+        if shift_dimension.entry_type == DimensionEntryType.BOOL:
             shift_options.append(
                 ShiftWorkerOption(
                     name="",
@@ -142,16 +148,21 @@ def build_shift_options(
                     category_name=shift_dimension.name,
                 )
             )
-        elif shift_dimension.entry_type == "list":
+        elif shift_dimension.entry_type == DimensionEntryType.DIM_ENTRIES:
+            dim_entry_names = [
+                de.name
+                for de in shift_dim_entries
+                if de.dimension_id == shift_dimension.id
+            ]
             shift_options += [
                 ShiftWorkerOption(
-                    name=str(sp_value),
+                    name=name,
                     id=shift_dimension.id,
                     id_type="shift_dimension",
                     is_bool_dim=False,
                     category_name=shift_dimension.name,
                 )
-                for sp_value in shift_dimension.entry_options  # showing all options
+                for name in dim_entry_names  # showing all options
                 # for sp_value in list(
                 #     set(
                 #         str(item)
