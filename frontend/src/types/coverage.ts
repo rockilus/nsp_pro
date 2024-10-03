@@ -5,7 +5,7 @@ import { ShiftT } from "./shift";
 export type ShiftDemandT = {
   id: string;
   dayIndex: number; // from 0 to 6
-  shift: ShiftT;
+  shiftId: string;
   coverageId: string;
 };
 
@@ -13,7 +13,6 @@ export type CoverageT = {
   id: string;
   teamId: string;
   name: string;
-  shiftDemands: ShiftDemandT[];
 };
 
 export type ShiftDemandCalendarT = {
@@ -39,4 +38,5 @@ export type EventT = {
   borderTopRadius: boolean;
   borderBottomRadius: boolean;
   shiftDemand: ShiftDemandT;
+  shift: ShiftT;
 };

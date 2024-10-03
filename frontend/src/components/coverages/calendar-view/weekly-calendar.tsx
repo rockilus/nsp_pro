@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
 // Components
@@ -12,30 +12,27 @@ import shiftDemandsToEvents from "./sds-to-events";
 // Styles
 import "./weekly-calendar.css";
 // Types
-import { CoverageT, EventT, ShiftDemandT } from "../../types/coverage";
-import {
-  ShiftT,
-  ShiftLeaveType,
-  ShiftType,
-  ShiftRestType,
-} from "../../types/shift";
+import { CoverageT, EventT, ShiftDemandT } from "../../../types/coverage";
+import { ShiftT } from "../../../types/shift";
 
 dayjs.extend(utc);
 
 export default function WeeklyCalendar({
   lng,
   coverage,
+  shiftDemands,
   shifts,
-  handleAddShiftDemand,
+  handleAddShiftDemands,
   handleUpdateShiftDemand,
-  handleDeleteShiftDemand,
+  handleDeleteShiftDemands,
 }: {
   lng: string;
   coverage: CoverageT | null;
+  shiftDemands: ShiftDemandT[];
   shifts: ShiftT[];
-  handleAddShiftDemand: (shiftDemand: ShiftDemandT) => void;
+  handleAddShiftDemands: (shiftDemand: ShiftDemandT[]) => void;
   handleUpdateShiftDemand: (shiftDemand: ShiftDemandT) => void;
-  handleDeleteShiftDemand: (coverageId: string, shiftDemandId: string) => void;
+  handleDeleteShiftDemands: (shiftDemandId: string[]) => void;
 }) {
   const { t: t_week_days } = useTranslation(lng, "week_days");
   const { t } = useTranslation(lng, "coverage-page");
@@ -43,23 +40,6 @@ export default function WeeklyCalendar({
   const tableRef = useRef<HTMLTableElement>(null);
   const [dayColWidth, setDayColWidth] = useState<number>(80);
   const [events, setEvents] = useState<EventT[]>([]);
-
-  const emptyShift = {
-    teamId: "",
-    id: "",
-    name: "",
-    startTime: dayjs(),
-    endTime: dayjs(),
-    staffing: 0,
-    color: "",
-    shiftType: ShiftType.NORMAL,
-    restType: ShiftRestType.NONE,
-    leaveType: ShiftLeaveType.NONE,
-    recuperationTime: 0,
-    recuperationDutyId: null,
-    deleted: false,
-    attributes: [],
-  };
 
   const timeHours: dayjs.Dayjs[] = [];
   let startTime = dayjs.utc().startOf("day");
@@ -129,10 +109,13 @@ export default function WeeklyCalendar({
 
   useEffect(() => {
     if (coverage) {
-      const events = shiftDemandsToEvents(coverage.shiftDemands);
+      const events = shiftDemandsToEvents(
+        shiftDemands.filter((sd) => sd.coverageId === coverage.id),
+        shifts
+      );
       setEvents(events);
     }
-  }, [coverage]);
+  }, [coverage, shiftDemands, shifts]);
 
   return (
     <div className="weekly-calendar-container" ref={tableRef}>
@@ -202,13 +185,13 @@ export default function WeeklyCalendar({
                     shiftDemand={{
                       id: "",
                       dayIndex: index,
-                      shift: emptyShift,
+                      shiftId: "",
                       coverageId: coverage.id,
                     }}
                     shifts={shifts}
-                    handleAddShiftDemand={handleAddShiftDemand}
+                    handleAddShiftDemands={handleAddShiftDemands}
                     handleUpdateShiftDemand={handleUpdateShiftDemand}
-                    handleDeleteShiftDemand={handleDeleteShiftDemand}
+                    handleDeleteShiftDemands={handleDeleteShiftDemands}
                   />
                 )}
               </div>
@@ -293,9 +276,9 @@ export default function WeeklyCalendar({
                       columnWidth={dayColWidth}
                       staffingLabel={t("staffing")}
                       shifts={shifts}
-                      handleAddShiftDemand={handleAddShiftDemand}
+                      handleAddShiftDemands={handleAddShiftDemands}
                       handleUpdateShiftDemand={handleUpdateShiftDemand}
-                      handleDeleteShiftDemand={handleDeleteShiftDemand}
+                      handleDeleteShiftDemands={handleDeleteShiftDemands}
                     />
                   );
                 })}

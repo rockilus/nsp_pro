@@ -5,8 +5,8 @@ import Menu from "@mui/material/Menu";
 // Components
 import ShiftDemandPanel from "./shift-demand-panel";
 // Types
-import { ShiftDemandT } from "../../types/coverage";
-import { ShiftT } from "../../types/shift";
+import { ShiftDemandT } from "../../../types/coverage";
+import { ShiftT } from "../../../types/shift";
 
 export default function ShiftDemandButton({
   lng,
@@ -15,9 +15,9 @@ export default function ShiftDemandButton({
   shifts,
   width,
   height,
-  handleAddShiftDemand,
+  handleAddShiftDemands,
   handleUpdateShiftDemand,
-  handleDeleteShiftDemand,
+  handleDeleteShiftDemands,
 }: {
   lng: string;
   buttonElement: React.ReactNode;
@@ -25,9 +25,9 @@ export default function ShiftDemandButton({
   shifts: ShiftT[];
   width?: number;
   height?: number;
-  handleAddShiftDemand: (shiftDemand: ShiftDemandT) => void;
+  handleAddShiftDemands: (shiftDemand: ShiftDemandT[]) => void;
   handleUpdateShiftDemand: (shiftDemand: ShiftDemandT) => void;
-  handleDeleteShiftDemand: (coverageId: string, shiftDemandId: string) => void;
+  handleDeleteShiftDemands: (shiftDemandId: string[]) => void;
 }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -74,9 +74,9 @@ export default function ShiftDemandButton({
           shiftDemand={shiftDemand}
           shifts={shifts}
           handleClose={handleClose}
-          handleAddShiftDemand={handleAddShiftDemand}
+          handleAddShiftDemands={handleAddShiftDemands}
           handleUpdateShiftDemand={handleUpdateShiftDemand}
-          handleDeleteShiftDemand={handleDeleteShiftDemand}
+          handleDeleteShiftDemands={handleDeleteShiftDemands}
         />
       </Menu>
     </Box>

@@ -1,13 +1,13 @@
 import React from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // Components
 import CoverageList from "./coverage-list";
-import TableAddButton from "../buttons/table-add-button";
+import TableAddButton from "../../../buttons/table-add-button";
 // Styles
-import "../../styles/text-styles.css";
+import "../../../../styles/text-styles.css";
 import "./coverage-selector.css";
 // Types
-import { CoverageT } from "../../types/coverage";
+import { CoverageT } from "../../../../types/coverage";
 
 export default function CoverageSelector({
   lng,

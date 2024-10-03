@@ -77,7 +77,7 @@ class ShiftMessage(BaseModel):
 class ShiftDemandMessage(BaseModel):
     id: str
     dayIndex: int
-    shift: ShiftMessage
+    shiftId: str
     coverageId: str
 
 
@@ -85,7 +85,6 @@ class CoverageMessage(BaseModel):
     id: str
     teamId: str
     name: str
-    shiftDemands: List[ShiftDemandMessage]
 
 
 class CoverageSelectorMessage(BaseModel):

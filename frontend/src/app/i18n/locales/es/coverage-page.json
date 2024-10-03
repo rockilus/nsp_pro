@@ -5,9 +5,13 @@
     "new_planner": "Nuevo agenda",
     "planner": "Agenda",
     "planners": "Agendas",
+    "quick_add": "Añadir rápido",
     "save": "Guardar",
     "shift": "Turno",
     "shift_demand": "Demanda de turnos",
     "staffing": "Personal",
-    "weekly_planners": "Agendas semanales"
+    "week": "Semana",
+    "weekend": "Finde",
+    "weekly_planners": "Agendas semanales",
+    "work_week": "Habiles"
 }

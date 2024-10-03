@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "../../app/i18n/client";
 // Components
-import CoverageSelector from "./coverage-selector";
-import WeeklyCalendar from "./weekly-calendar";
+import WeeklyCalendar from "./calendar-view/weekly-calendar";
+import CoverageMenu from "./coverage-menu/coverage-menu";
 // Skeletons
 import CoveragesSkeleton from "../skeletons/coverages-skeleton";
 // Actions
@@ -11,15 +11,18 @@ import {
   addCoverage,
   updateCoverage,
   deleteCoverage,
-  addShiftDemand,
-  updateShiftDemand,
-  deleteShiftDemand,
 } from "../../app/lib/coverage";
+import {
+  addShiftDemands,
+  updateShiftDemand,
+  deleteShiftDemands,
+} from "../../app/lib/shift-demand";
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
 import { CoverageT, ShiftDemandT } from "../../types/coverage";
 import { ShiftT } from "../../types/shift";
+import { set } from "zod";
 
 export default function CoverageTab({
   lng,
@@ -33,6 +36,7 @@ export default function CoverageTab({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [coverages, setCoverages] = useState<CoverageT[]>([]);
+  const [shiftDemands, setShiftDemands] = useState<ShiftDemandT[]>([]);
 
   const [selectedCoverage, setSelectedCoverage] = useState<CoverageT | null>(
     null
@@ -57,7 +61,6 @@ export default function CoverageTab({
       id: "",
       teamId: selectedTeamId,
       name: t("new_planner"),
-      shiftDemands: [],
     });
     setCoverages([...coverages, newCoverage]);
     setSelectedCoverage(newCoverage);
@@ -88,109 +91,41 @@ export default function CoverageTab({
   // Shift Demand Actions
   //////////////////////////
 
-  const handleAddShiftDemand = async (shiftDemand: ShiftDemandT) => {
+  const handleAddShiftDemands = async (shiftDemands: ShiftDemandT[]) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    if (shiftDemand.shift.id === "") {
-      return;
-    }
-    const newShiftDemand = await addShiftDemand(shiftDemand, selectedTeamId);
-    setCoverages((prevCoverages) =>
-      prevCoverages.map((coverage) =>
-        coverage.id === newShiftDemand.coverageId
-          ? {
-              ...coverage,
-              shiftDemands: [...coverage.shiftDemands, newShiftDemand],
-            }
-          : coverage
-      )
+    const shiftDemandsToCreate = shiftDemands.filter((sd) => sd.shiftId !== "");
+    const newShiftDemands = await addShiftDemands(
+      shiftDemandsToCreate,
+      selectedTeamId
     );
-    if (selectedCoverage && selectedCoverage.id === newShiftDemand.coverageId) {
-      setSelectedCoverage((prevCoverage) => {
-        if (!prevCoverage) {
-          return null;
-        }
-        return {
-          ...prevCoverage,
-          shiftDemands: [...prevCoverage.shiftDemands, newShiftDemand],
-        };
-      });
-    }
+    setShiftDemands((prevSDs) => [...prevSDs, ...newShiftDemands]);
   };
 
-  const handleUpdateShiftDemand = async (updatedShiftDemand: ShiftDemandT) => {
+  const handleUpdateShiftDemand = async (shiftDemand: ShiftDemandT) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await updateShiftDemand(updatedShiftDemand, selectedTeamId);
-    setCoverages((prevCoverages) =>
-      prevCoverages.map((coverage) =>
-        coverage.id === updatedShiftDemand.coverageId
-          ? {
-              ...coverage,
-              shiftDemands: coverage.shiftDemands.map((shiftDemand) =>
-                shiftDemand.id === updatedShiftDemand.id
-                  ? updatedShiftDemand
-                  : shiftDemand
-              ),
-            }
-          : coverage
+    const updatedShiftDemand = await updateShiftDemand(
+      shiftDemand,
+      selectedTeamId
+    );
+    setShiftDemands((prevSDs) =>
+      prevSDs.map((sd) =>
+        sd.id === updatedShiftDemand.id ? updatedShiftDemand : sd
       )
     );
-    if (
-      selectedCoverage &&
-      selectedCoverage.id === updatedShiftDemand.coverageId
-    ) {
-      setSelectedCoverage((prevCoverage) => {
-        if (!prevCoverage) {
-          return null;
-        }
-        return {
-          ...prevCoverage,
-          shiftDemands: prevCoverage.shiftDemands.map((shiftDemand) =>
-            shiftDemand.id === updatedShiftDemand.id
-              ? updatedShiftDemand
-              : shiftDemand
-          ),
-        };
-      });
-    }
   };
 
-  const handleDeleteShiftDemand = async (
-    coverageId: string,
-    shiftDemandId: string
-  ) => {
+  const handleDeleteShiftDemands = async (shiftDemandIds: string[]) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await deleteShiftDemand(coverageId, shiftDemandId, selectedTeamId);
-    setCoverages((prevCoverages) =>
-      prevCoverages.map((coverage) =>
-        coverage.id === coverageId
-          ? {
-              ...coverage,
-              shiftDemands: coverage.shiftDemands.filter(
-                (shiftDemand) => shiftDemand.id !== shiftDemandId
-              ),
-            }
-          : coverage
-      )
+    await deleteShiftDemands(shiftDemandIds, selectedTeamId);
+    setShiftDemands((prevSDs) =>
+      prevSDs.filter((sd) => !shiftDemandIds.includes(sd.id))
     );
-    if (selectedCoverage && selectedCoverage.id === coverageId) {
-      setSelectedCoverage((prevCoverage) => {
-        if (!prevCoverage) {
-          return null;
-        }
-        return {
-          ...prevCoverage,
-          shiftDemands: prevCoverage.shiftDemands.filter(
-            (shiftDemand) => shiftDemand.id !== shiftDemandId
-          ),
-        };
-      });
-    }
   };
 
   useEffect(() => {
@@ -200,10 +135,11 @@ export default function CoverageTab({
         const {
           shifts: fetchedShifts,
           coverages: fetchedCoverages,
-        }: { shifts: ShiftT[]; coverages: CoverageT[] } =
-          await getCoveragesTabData(selectedTeamId);
+          shiftDemands: fetchedShiftDemands,
+        } = await getCoveragesTabData(selectedTeamId);
         setShifts(fetchedShifts);
         setCoverages(fetchedCoverages);
+        setShiftDemands(fetchedShiftDemands);
         if (fetchedCoverages.length > 0) {
           setSelectedCoverage(fetchedCoverages[0]);
         }
@@ -219,9 +155,11 @@ export default function CoverageTab({
         <CoveragesSkeleton />
       ) : (
         <div className="tab-container-row">
-          <CoverageSelector
+          <CoverageMenu
             lng={lng}
             coverages={coverages}
+            shiftDemands={shiftDemands}
+            shifts={shifts}
             selectedCoverage={selectedCoverage}
             editingName={editingName}
             handleSelectCoverage={handleSelectCoverage}
@@ -229,15 +167,18 @@ export default function CoverageTab({
             handleAddCoverage={handleAddCoverage}
             handleUpdateCoverage={handleUpdateCoverage}
             handleDeleteCoverage={handleDeleteCoverage}
+            handleAddShiftDemands={handleAddShiftDemands}
+            handleDeleteShiftDemands={handleDeleteShiftDemands}
           />
           <div className="divider-vertical" />
           <WeeklyCalendar
             lng={lng}
             coverage={selectedCoverage}
+            shiftDemands={shiftDemands}
             shifts={shifts}
-            handleAddShiftDemand={handleAddShiftDemand}
+            handleAddShiftDemands={handleAddShiftDemands}
             handleUpdateShiftDemand={handleUpdateShiftDemand}
-            handleDeleteShiftDemand={handleDeleteShiftDemand}
+            handleDeleteShiftDemands={handleDeleteShiftDemands}
           />
         </div>
       )}

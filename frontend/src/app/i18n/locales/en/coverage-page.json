@@ -5,9 +5,13 @@
     "new_planner": "New planner",
     "planner": "Planner",
     "planners": "Planners",
+    "quick_add": "Quick add",
     "save": "Save",
     "shift": "Shift",
     "shift_demand": "Shift demand",
     "staffing": "Staffing",
-    "weekly_planners": "Weekly planners"
+    "week": "Week",
+    "weekend": "Weekend",
+    "weekly_planners": "Weekly planners",
+    "work_week": "Work week"
 }
