@@ -11,6 +11,9 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 // Component
 import NewDimensionDimEntriesInput from "./new-dimension-dim-entries-input";
+import LinkDimensionList from "./link-dimension-list";
+// Styles
+import "../../../styles/tab-container-styles.css";
 // Types
 import { DimensionType } from "@/types/dimension";
 import { DimensionEntryType } from "@/types/dimension";
@@ -21,23 +24,29 @@ export default function NewDimensionForm({
   lng,
   selectedTeamId,
   dimensionType,
+  dimensions,
+  dimEntries,
   setOpenParent,
   handleAddDimension,
+  handleUpdateDimension,
 }: {
   lng: string;
   selectedTeamId: string;
   dimensionType: DimensionType;
+  dimensions: DimensionT[];
+  dimEntries: DimEntryT[];
   setOpenParent: (open: boolean) => void | null;
   handleAddDimension: (
     newDimension: DimensionT,
     newDimEntries: DimEntryT[]
   ) => Promise<boolean>;
+  handleUpdateDimension: (dimension: DimensionT) => void;
 }) {
   const { t } = useTranslation(lng, "shift-page");
 
   const [name, setName] = useState<string>("");
   const [entryType, setEntryType] = useState<DimensionEntryType | null>(null);
-  const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
+  const [dimEntriesNewDim, setDimEntriesNewDim] = useState<DimEntryT[]>([]);
   const [nameError, setNameError] = useState<boolean>(false);
   const [entryTypeError, setEntryTypeError] = useState<boolean>(false);
   const [listError, setListError] = useState<boolean>(false);
@@ -57,13 +66,13 @@ export default function NewDimensionForm({
   };
 
   const handleTypeChange = (event: SelectChangeEvent<DimensionEntryType>) => {
-    setDimEntries([]);
+    setDimEntriesNewDim([]);
     setEntryType(event.target.value as DimensionEntryType);
   };
 
   const handleAddDimEntry = (newDimEntry: DimEntryT) => {
     if (newDimEntry.name.trim() !== "") {
-      setDimEntries([...dimEntries, newDimEntry]);
+      setDimEntriesNewDim([...dimEntriesNewDim, newDimEntry]);
       setListError(false);
     } else {
       setListError(true);
@@ -71,9 +80,9 @@ export default function NewDimensionForm({
   };
 
   const handleRemoveDimEntry = (index: number) => {
-    const updatedOptions = [...dimEntries];
+    const updatedOptions = [...dimEntriesNewDim];
     updatedOptions.splice(index, 1);
-    setDimEntries(updatedOptions);
+    setDimEntriesNewDim(updatedOptions);
   };
 
   const handleAddElement = async () => {
@@ -89,7 +98,7 @@ export default function NewDimensionForm({
     }
     if (
       entryType === DimensionEntryType.DIM_ENTRIES &&
-      dimEntries.length === 0
+      dimEntriesNewDim.length === 0
     ) {
       setListError(true);
     } else {
@@ -99,7 +108,8 @@ export default function NewDimensionForm({
     if (
       name.trim() !== "" &&
       entryType !== null &&
-      (entryType !== DimensionEntryType.DIM_ENTRIES || dimEntries.length > 0) &&
+      (entryType !== DimensionEntryType.DIM_ENTRIES ||
+        dimEntriesNewDim.length > 0) &&
       selectedTeamId
     ) {
       const newDimension: DimensionT = {
@@ -110,11 +120,11 @@ export default function NewDimensionForm({
         entryType: entryType,
         deleted: false,
       };
-      const addedOK = await handleAddDimension(newDimension, dimEntries);
+      const addedOK = await handleAddDimension(newDimension, dimEntriesNewDim);
       if (addedOK) {
         setName("");
         setEntryType(null);
-        setDimEntries([]);
+        setDimEntriesNewDim([]);
         if (setOpenParent) {
           setOpenParent(false);
         }
@@ -164,7 +174,7 @@ export default function NewDimensionForm({
         <Box mt={2}>
           <NewDimensionDimEntriesInput
             lng={lng}
-            dimEntries={dimEntries}
+            dimEntries={dimEntriesNewDim}
             listError={listError}
             addDimEntry={handleAddDimEntry}
             removeDimEntry={handleRemoveDimEntry}
@@ -176,6 +186,15 @@ export default function NewDimensionForm({
           {t("add")}
         </Button>
       </div>
+      <div className="divider" />
+      <LinkDimensionList
+        lng={lng}
+        dimensionType={dimensionType}
+        dimensions={dimensions}
+        dimEntries={dimEntries}
+        setOpenParent={setOpenParent}
+        handleUpdateDimension={handleUpdateDimension}
+      />
     </Box>
   );
 }

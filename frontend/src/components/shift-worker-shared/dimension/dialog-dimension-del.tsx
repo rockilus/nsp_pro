@@ -30,6 +30,11 @@ export default function DialogDimensionDel({
     setOpen(false);
   };
 
+  const handleClickDelete = () => {
+    handleDeleteDimension(dimensionId);
+    handleClose();
+  };
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
       <Button variant="outlined" onClick={handleClickOpen} fullWidth>
@@ -48,13 +53,7 @@ export default function DialogDimensionDel({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => {
-              handleDeleteDimension(dimensionId);
-              handleClose();
-            }}
-            color="error"
-          >
+          <Button onClick={handleClickDelete} color="error">
             {t("delete_confirm")}
           </Button>
           <Button onClick={handleClose} autoFocus>

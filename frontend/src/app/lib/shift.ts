@@ -175,7 +175,7 @@ export async function getShiftsTabData(teamId: string) {
   try {
     const shiftsTabData = await Promise.all([
       getShifts(teamId),
-      getDimensions([DimensionType.SHIFT, DimensionType.REST_SHIFT], teamId),
+      getDimensions(teamId),
     ]);
     return {
       shifts: shiftsTabData[0],

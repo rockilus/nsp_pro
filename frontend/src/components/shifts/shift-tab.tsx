@@ -282,9 +282,7 @@ export default function ShiftTab({
               lng={lng}
               selectedTeamId={selectedTeamId}
               isRest={false}
-              dimensions={dimensions.filter((d) =>
-                d.dimTypes.includes(DimensionType.SHIFT)
-              )}
+              dimensions={dimensions}
               dimEntries={dimEntries}
               shifts={shifts}
               defaultShiftFields={DefaultWorkShiftFields}
@@ -304,9 +302,7 @@ export default function ShiftTab({
               lng={lng}
               selectedTeamId={selectedTeamId}
               isRest={true}
-              dimensions={dimensions.filter((d) =>
-                d.dimTypes.includes(DimensionType.REST_SHIFT)
-              )}
+              dimensions={dimensions}
               dimEntries={dimEntries}
               shifts={shifts}
               defaultShiftFields={DefaultRestShiftFields}

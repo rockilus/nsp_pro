@@ -46,7 +46,10 @@ export async function addDimension(
   }
 }
 
-export async function getDimensions(dimType: DimensionType[], teamId: string) {
+export async function getDimensions(
+  teamId: string,
+  dimTypes?: DimensionType[]
+) {
   noStore();
   const options: RequestInit = {
     method: "GET",
@@ -56,10 +59,10 @@ export async function getDimensions(dimType: DimensionType[], teamId: string) {
     },
   };
   try {
-    const response = await fetch(
-      `${apiUrlDimensions}/teams/${teamId}?dim_types=${dimType.join(",")}`,
-      options
-    );
+    const url =
+      `${apiUrlDimensions}/teams/${teamId}` +
+      (dimTypes ? `?dim_types=${dimTypes.join(",")}` : "");
+    const response = await fetch(url, options);
     const responseData = await response.json();
     if (!response.ok) {
       throw new Error(

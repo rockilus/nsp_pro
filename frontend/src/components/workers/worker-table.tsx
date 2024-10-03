@@ -11,9 +11,9 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Components
-import NewDimensionForm from "../shifts/dimension/new-dimension-form";
-import DimensionCell from "../shifts/dimension/dimension-cell";
-import AttributeCell from "../shifts/attribute/attribute-cell";
+import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
+import DimensionCell from "../shift-worker-shared/dimension/dimension-cell";
+import AttributeCell from "../shift-worker-shared/attribute/attribute-cell";
 import PopoverRHS from "../inputs/popover-rhs";
 import TableAddButton from "../buttons/table-add-button";
 import WorkerFieldCell from "./worker-field-cell/worker-field-cell";
@@ -73,18 +73,9 @@ export default function WorkerTable({
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
   const [popoverRhsOpen, setPopoverRhsOpen] = useState(false);
 
-  const defaultProperties: {
-    str: string;
-    int: string;
-    bool: boolean;
-    list: string[];
-    [key: string]: string | boolean | string[];
-  } = {
-    str: "",
-    int: "",
-    bool: false,
-    list: [],
-  };
+  const dimensionsDisplayed = dimensions.filter((dim) =>
+    dim.dimTypes.includes(DimensionType.WORKER)
+  );
 
   return (
     <div>
@@ -98,8 +89,11 @@ export default function WorkerTable({
               lng={lng}
               selectedTeamId={selectedTeamId}
               dimensionType={DimensionType.WORKER}
+              dimensions={dimensions}
+              dimEntries={dimEntries}
               setOpenParent={setPopoverRhsOpen}
               handleAddDimension={handleAddDimension}
+              handleUpdateDimension={handleUpdateDimension}
             />
           }
           open={popoverRhsOpen}
@@ -115,11 +109,12 @@ export default function WorkerTable({
                   <span className="table-header-default">{field.label}</span>
                 </TableCell>
               ))}
-              {dimensions.map((dim, dIndex) => (
+              {dimensionsDisplayed.map((dim, dIndex) => (
                 <DimensionCell
                   key={dIndex}
                   lng={lng}
                   selectedTeamId={selectedTeamId}
+                  dimensionTypeTable={DimensionType.WORKER}
                   dimension={dim}
                   dimEntries={dimEntries.filter(
                     (de) => de.dimensionId === dim.id
@@ -150,7 +145,7 @@ export default function WorkerTable({
                     handleUpdateWorker={handleUpdateWorker}
                   />
                 ))}
-                {dimensions.map((dim, dIndex) => {
+                {dimensionsDisplayed.map((dim, dIndex) => {
                   const attribute = worker.attributes.find(
                     (a) => a.dimensionId === dim.id
                   );
