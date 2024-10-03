@@ -9,7 +9,7 @@ from core import (
     Block,
     ConstraintBuild,
     ConstraintBuildAugmented,
-    MissingProperty,
+    MissingAttribute,
     ShiftWorkerOption,
 )
 from errors import (
@@ -25,7 +25,7 @@ from logger import log_info
 from routes.api_model import (
     BlockMessage,
     ConstraintBuildMessage,
-    MissingPropertyMessage,
+    MissingAttributeMessage,
     ShiftWorkerOptionMessage,
 )
 from services.constraint_build_services import (
@@ -163,15 +163,15 @@ def core_to_msg_block(block: Block) -> BlockMessage:
 
 
 def core_to_msg_missing_property(
-    missing_property: MissingProperty,
-) -> MissingPropertyMessage:
+    missing_property: MissingAttribute,
+) -> MissingAttributeMessage:
     try:
         data = asdict(missing_property)
     except Exception as e:
         log_info("Failed to convert core MissingProperty to dictionary")
         raise MessageTypeError(str(e)) from e
     as_dict = humps.camelize(data)
-    validator = TypeAdapter(MissingPropertyMessage)
+    validator = TypeAdapter(MissingAttributeMessage)
     try:
         mp_msg = validator.validate_python(as_dict)
     except Exception as e:
@@ -187,7 +187,7 @@ def core_to_msg_constraint_build_augmented(
         data = asdict(cb_augmented)
         blocks = [core_to_msg_block(b) for b in cb_augmented.blocks]
         mps_message = [
-            core_to_msg_missing_property(mp) for mp in cb_augmented.missing_properties
+            core_to_msg_missing_property(mp) for mp in cb_augmented.missing_attributes
         ]
         data["blocks"] = blocks
         data["missing_properties"] = mps_message

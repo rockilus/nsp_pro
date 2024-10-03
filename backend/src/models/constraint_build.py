@@ -21,7 +21,7 @@ class ShiftWorkerOption(EmbeddedDocument):
     id = StringField(required=True)
     id_type = StringField(
         required=True,
-        choices=["shift", "worker", "shift_dimension", "worker_dimension", ""],
+        choices=["shift", "worker", "dimension", ""],
     )
     is_bool_dim = BooleanField(required=True)
     category_name = StringField(required=True)

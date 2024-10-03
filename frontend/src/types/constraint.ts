@@ -12,12 +12,12 @@ export type BlockT = {
   value: string | number | string[] | ShiftWorkerOptionT[];
 };
 
-export type MissingProperty = {
+export type MissingAttribute = {
   dimension_id: string;
   isBool: boolean;
   dimName: string;
   category: string;
-  propertyValues: string[] | number[] | boolean[];
+  attributeValues: string[] | number[] | boolean[];
 };
 
 export type ConstraintT = {
@@ -31,7 +31,7 @@ export type ConstraintT = {
   hard: boolean;
   priority: string;
   active: boolean;
-  missingProperties: MissingProperty[];
+  missingAttributes: MissingAttribute[];
 };
 
 export type TemplateBlockT = {

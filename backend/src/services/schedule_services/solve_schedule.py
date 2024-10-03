@@ -1,28 +1,14 @@
 import time
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
-from core import (
-    Assignment,
-    Constraint,
-    ConstraintBuildAugmented,
-    ObjectiveBreach,
-    RequestAugmented,
-    Schedule,
-    Shift,
-    Worker,
-)
+from core import Assignment, ObjectiveBreach, RequestAugmented, Schedule
 from engine import Engine
 from scripts.setup_database import (
     assignment_db,
-    attribute_db,
-    constraint_db,
     coverage_selector_db,
     objective_breach_db,
     schedule_db,
-    shift_db,
     shift_demand_db,
-    worker_db,
-    worker_property_db,
 )
 from services.constraint_build_services.get_constraint_build import (
     get_active_constraint_builds_by_ids,
@@ -30,6 +16,9 @@ from services.constraint_build_services.get_constraint_build import (
 from services.constraint_services import build_constraints
 from services.coverage_selector_services.build_shift_demand_date import (
     build_shift_demand_dates,
+)
+from services.data_fetching_services.fetch_data import (
+    fetch_workers_shifts_dim_attributes,
 )
 from services.request_services import get_requests_by_dates
 from services.schedule_services.assignment_services import (
@@ -48,12 +37,20 @@ def solve_schedule(
 ) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach], List[RequestAugmented]]:
     start_time = time.time()
     start_time_db = time.time()
-    workers = worker_db.get_workers(schedule.team_id)
-    shifts = shift_db.get_shifts(schedule.team_id)
-    worker_dim_dict = worker_property_db.get_workers_id_by_dim_and_prop()
-    shift_dim_dict = attribute_db.get_shifts_id_by_dim_and_attr()
+    (
+        workers,
+        shifts,
+        dimensions,
+        dim_entries,
+        attributes,
+    ) = fetch_workers_shifts_dim_attributes(schedule.team_id)
     cbs_augmented = get_active_constraint_builds_by_ids(
-        schedule.team_id, schedule.constraint_build_ids
+        schedule.constraint_build_ids,
+        workers,
+        shifts,
+        dimensions,
+        dim_entries,
+        attributes,
     )
     coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule.id)
     shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
@@ -67,12 +64,13 @@ def solve_schedule(
     wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
-    constraints = setup_constraints(
+    constraints = build_constraints(
         schedule,
         workers,
         shifts,
-        worker_dim_dict,
-        shift_dim_dict,
+        dimensions,
+        dim_entries,
+        attributes,
         cbs_augmented,
     )
     shift_demand_dates = build_shift_demand_dates(
@@ -164,25 +162,3 @@ def save_objective_breaches(
         return []
     out = objective_breach_db.create_objective_breaches(objective_breaches)
     return out
-
-
-# pylint: disable=too-many-arguments
-def setup_constraints(
-    schedule: Schedule,
-    workers: List[Worker],
-    shifts: List[Shift],
-    worker_dim_dict: Dict,
-    shift_dim_dict: Dict,
-    cstr_builds: List[ConstraintBuildAugmented],
-) -> List[Constraint]:
-    constraint_db.delete_constraints_by_schedule_id(schedule.id)
-    constraints_user, constraints_qs = build_constraints(
-        schedule,
-        workers,
-        shifts,
-        worker_dim_dict,
-        shift_dim_dict,
-        cstr_builds,
-    )
-    constraints_user_saved = constraint_db.create_constraints(constraints_user)
-    return constraints_user_saved + constraints_qs

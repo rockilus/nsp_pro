@@ -16,8 +16,6 @@ from scripts.setup_database import (
     stats_header_db,
     user_db,
     worker_db,
-    worker_dimension_db,
-    worker_property_db,
 )
 
 __all__ = [
@@ -38,6 +36,4 @@ __all__ = [
     "stats_header_db",
     "user_db",
     "worker_db",
-    "worker_dimension_db",
-    "worker_property_db",
 ]

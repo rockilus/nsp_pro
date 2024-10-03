@@ -236,11 +236,11 @@ export default function WorkerTab({
       if (selectedTeamId) {
         const {
           workers: fetchedWorkers,
-          dimensions: fetchedWorkerDimensions,
+          dimensions: fetchedDimensions,
           dimEntries: fetchedDimEntries,
         } = await getWorkersTabData(selectedTeamId);
         setWorkers(fetchedWorkers);
-        setDimensions(fetchedWorkerDimensions);
+        setDimensions(fetchedDimensions);
         setDimEntries(fetchedDimEntries);
         setIsLoading(false);
       }

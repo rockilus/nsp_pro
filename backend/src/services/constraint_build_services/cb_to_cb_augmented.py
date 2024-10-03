@@ -1,38 +1,40 @@
 from typing import List, Tuple
 
 from core import (
+    Attribute,
+    AttributeOwnerType,
     Block,
     ConstraintBuild,
     ConstraintBuildAugmented,
     Dimension,
     DimensionEntryType,
-    MissingProperty,
+    DimEntry,
+    MissingAttribute,
     Shift,
     ShiftWorkerOption,
     Worker,
-    WorkerDimension,
 )
-from scripts.setup_database import attribute_db, worker_property_db
 from services.constraint_build_services.blocks_to_string import blocks_to_string
 
 
+# pylint: disable=too-many-arguments
 def cb_to_cb_augmented(
     cb: ConstraintBuild,
     workers: List[Worker],
     shifts: List[Shift],
-    worker_dimensions: List[WorkerDimension],
-    shift_dimensions: List[Dimension],
+    dimensions: List[Dimension],
+    dim_entries: List[DimEntry],
+    attributes: List[Attribute],
 ) -> ConstraintBuildAugmented:
     text = blocks_to_string(
         cb.blocks,
         workers,
         shifts,
-        worker_dimensions,
-        shift_dimensions,
+        dimensions,
         cb.language,
     )
-    missing_properties, active = build_missing_properties_list_and_active(
-        cb.blocks, workers, worker_dimensions, shifts, shift_dimensions
+    missing_attributes, active = build_missing_attributes_and_active(
+        cb.blocks, workers, shifts, dimensions, dim_entries, attributes
     )
     return ConstraintBuildAugmented(
         id=cb.id,
@@ -44,36 +46,45 @@ def cb_to_cb_augmented(
         hard=cb.hard,
         priority=cb.priority,
         text=text,
-        missing_properties=missing_properties,
+        missing_attributes=missing_attributes,
         active=active,
     )
 
 
-def build_missing_properties_list_and_active(
+# pylint: disable=too-many-locals
+def build_missing_attributes_and_active(
     blocks: List[Block],
     workers: List[Worker],
-    worker_dimensions: List[WorkerDimension],
     shifts: List[Shift],
-    shift_dimensions: List[Dimension],
-) -> Tuple[List[MissingProperty], bool]:
-    mps: List[MissingProperty] = []
+    dimensions: List[Dimension],
+    dim_entries: List[DimEntry],
+    attributes: List[Attribute],
+) -> Tuple[List[MissingAttribute], bool]:
+    mps: List[MissingAttribute] = []
     active_worker = False
     active_shift = False
     active_shift_reference = False
     active_shift_relative = False
     for block in blocks:
         if block.name == "worker":
-            (
-                new_mps,
-                new_active_worker,
-            ) = build_missing_properties_list_and_active_worker(
-                block, workers, worker_dimensions
+            (new_mps, new_active_worker) = build_missing_attributes_and_active_owner(
+                AttributeOwnerType.WORKER,
+                block,
+                workers,
+                dimensions,
+                dim_entries,
+                attributes,
             )
             mps += new_mps
             active_worker = active_worker or new_active_worker
         if block.name in ["shift", "shift_reference", "shift_relative"]:
-            new_mps, new_active_shift = build_missing_properties_list_and_active_shift(
-                block, shifts, shift_dimensions
+            new_mps, new_active_shift = build_missing_attributes_and_active_owner(
+                AttributeOwnerType.SHIFT,
+                block,
+                shifts,
+                dimensions,
+                dim_entries,
+                attributes,
             )
             mps += new_mps
             if block.name == "shift":
@@ -88,60 +99,77 @@ def build_missing_properties_list_and_active(
     return mps, active
 
 
-def build_missing_properties_list_and_active_worker(
+def build_missing_attributes_and_active_owner(
+    owner_type: AttributeOwnerType,
     block: Block,
-    workers: List[Worker],
-    worker_dimensions: List[WorkerDimension],
-) -> Tuple[List[MissingProperty], bool]:
-    mps: List[MissingProperty] = []
+    owners: List[Worker] | List[Shift],
+    dimensions: List[Dimension],
+    dim_entries: List[DimEntry],
+    attributes: List[Attribute],
+) -> Tuple[List[MissingAttribute], bool]:
+    mps: List[MissingAttribute] = []
     active = False
     if not isinstance(block.value, list):
-        raise ValueError("Worker block value is not a list")
-    if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError("Worker block value list does not contain ShiftWorkerOption")
-    # if any(b.id_type in ["worker", ""] for b in block.value):  # type: ignore
+        raise ValueError("Block value is not a list")
+    if not all(isinstance(swo, ShiftWorkerOption) for swo in block.value):
+        raise ValueError("Block value list does not contain ShiftWorkerOption")
     if (
-        any(b.name == "all workers" for b in block.value)  # type: ignore
-        and len([w for w in workers if not w.deleted]) > 0
+        any(
+            b.name in ["all workers", "all shifts"] for b in block.value  # type: ignore
+        )
+        and len([o for o in owners if not o.deleted]) > 0
     ):
         active = True
-    new_mps, new_active = build_missing_properties_list_and_active_worker_deleted(
-        block, workers
+    new_mps, new_active = build_missing_attributes_and_active_owner_deleted(
+        AttributeOwnerType.WORKER, block, owners
     )
     mps += new_mps
     active = active or new_active
-    wd_ids = list(
+    swo_d_ids = list(
         set(
-            b.id  # type: ignore
-            for b in block.value
-            if b.id_type == "worker_dimension"  # type: ignore
+            swo.id  # type: ignore
+            for swo in block.value
+            if swo.id_type == "dimension"  # type: ignore
         )
     )
-    if any(wd_id is None for wd_id in wd_ids):
-        raise ValueError("Worker dimension id is missing")
-    for wd_id in wd_ids:
-        wd = next((wd for wd in worker_dimensions if wd.id == wd_id), None)
-        if wd is None:
-            raise ValueError("Worker dimension not found")
-        if wd.deleted:
-            mps.append(build_missing_properties_list_deleted_wd(block, wd))
+    if any(d_id is None for d_id in swo_d_ids):
+        raise ValueError("Dimension id is missing")
+    for d_id in swo_d_ids:
+        dimension = next((d for d in dimensions if d.id == d_id), None)
+        if dimension is None:
+            raise ValueError("Dimension not found")
+        if dimension.deleted:
+            mps.append(
+                build_missing_attributes_deleted_dimension(owner_type, block, dimension)
+            )
             continue
-        if wd.entry_type == "bool":
-            (
-                new_mp,
-                new_active,
-            ) = build_missing_properties_list_and_active_worker_bool_wd(block, wd)
+        if dimension.entry_type == DimensionEntryType.BOOL:
+            (new_mp, new_active) = build_missing_attributes_and_active_dimension_bool(
+                owner_type, block, owners, dimension, attributes
+            )
 
-        elif wd.entry_type == "list":
+        elif dimension.entry_type == DimensionEntryType.DIM_ENTRIES:
             (
                 new_mp,
                 new_active,
-            ) = build_missing_properties_list_and_active_worker_list_wd(block, wd)
-        elif wd.entry_type in ["str", "int"]:
+            ) = build_missing_attributes_and_active_dimension_dim_entry(
+                owner_type,
+                block,
+                owners,
+                dimension,
+                dim_entries,
+                attributes,
+            )
+        elif dimension.entry_type in [
+            DimensionEntryType.STR,
+            DimensionEntryType.INT,
+        ]:
             (
                 new_mp,
                 new_active,
-            ) = build_missing_properties_list_and_active_worker_str_int_wd(block, wd)
+            ) = build_missing_attributes_and_active_dimension_str_int(
+                owner_type, block, owners, dimension, attributes
+            )
         else:
             new_mp = None
             new_active = False
@@ -151,371 +179,197 @@ def build_missing_properties_list_and_active_worker(
     return mps, active
 
 
-def build_missing_properties_list_and_active_worker_deleted(
+def build_missing_attributes_and_active_owner_deleted(
+    owner_type: AttributeOwnerType,
     block: Block,
-    workers: List[Worker],
-) -> Tuple[List[MissingProperty], bool]:
+    owners: List[Worker] | List[Shift],
+) -> Tuple[List[MissingAttribute], bool]:
     mps = []
     active = False
     if not isinstance(block.value, list):
-        raise ValueError("Worker block value is not a list")
-    if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError("Worker block value list does not contain ShiftWorkerOption")
-    worker_ids = list(
-        set(b.id for b in block.value if b.id_type == "worker")  # type: ignore
+        raise ValueError("Block value is not a list")
+    if not all(isinstance(swo, ShiftWorkerOption) for swo in block.value):
+        raise ValueError("Block value list does not contain ShiftWorkerOption")
+    target_swo_id_type = (
+        "worker" if owner_type == AttributeOwnerType.WORKER else "shift"
     )
-    if any(worker_id is None for worker_id in worker_ids):
-        raise ValueError("Worker id is missing")
-    for worker_id in worker_ids:
-        worker = next((w for w in workers if w.id == worker_id), None)
-        if worker is None:
-            raise ValueError("Worker not found")
-        if not worker.deleted:
-            active = True
-            continue
-        mps.append(
-            MissingProperty(
-                dimension_id=worker_id,
-                is_bool=False,
-                dim_name=worker.name,
-                category="worker",
-                property_values=[worker.name],
-            )
-        )
-    return mps, active
-
-
-def build_missing_properties_list_deleted_wd(
-    block: Block, wd: WorkerDimension
-) -> MissingProperty:
-    if wd.entry_type == "list":
-        wp_values_constraint = [
-            b.name for b in block.value if b.id == wd.id  # type: ignore
-        ]
-    elif wd.entry_type == "bool":
-        wp_values_constraint = list(
-            set(b.name for b in block.value if b.id == wd.id)  # type: ignore
-        )
-    else:
-        wp_values_constraint = [
-            b.name for b in block.value if b.id == wd.id  # type: ignore
-        ]
-    return MissingProperty(
-        dimension_id=wd.id,
-        is_bool=wd.entry_type == "bool",
-        dim_name=wd.name,
-        category="worker",
-        property_values=wp_values_constraint,  # type: ignore
-    )
-
-
-def build_missing_properties_list_and_active_worker_bool_wd(
-    block: Block, wd: WorkerDimension
-) -> Tuple[MissingProperty | None, bool]:
-    if not isinstance(block.value, list):
-        raise ValueError("Worker block value is not a list")
-    if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError("Worker block value list does not contain ShiftWorkerOption")
-    wp_values_constraint: List[bool] = list(
-        set(b.name for b in block.value if b.id == wd.id)  # type: ignore
-    )
-    if any(value is None for value in wp_values_constraint):
-        raise ValueError("Worker property value from block is missing")
-    wp_all = worker_property_db.get_worker_properties_by_wd_id_for_not_deleted_w(wd.id)
-    wp_values_shifts = [wp.value for wp in wp_all]
-    if not all(isinstance(v, bool) for v in wp_values_shifts):
-        raise ValueError("Worker property value is not a boolean")
-    missing_values = list(
-        set(wp_values_constraint) - set(wp_values_shifts)  # type: ignore
-    )
-    not_missing_values = list(set(wp_values_constraint) - set(missing_values))
-    if missing_values:
-        mp = MissingProperty(
-            dimension_id=wd.id,
-            is_bool=True,
-            dim_name=wd.name,
-            category="worker",
-            property_values=missing_values,  # type: ignore
-        )
-    else:
-        mp = None
-    return mp, len(not_missing_values) > 0
-
-
-def build_missing_properties_list_and_active_worker_list_wd(
-    block: Block, wd: WorkerDimension
-) -> Tuple[MissingProperty | None, bool]:
-    if not isinstance(block.value, list):
-        raise ValueError("Worker block value is not a list")
-    if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError("Worker block value list does not contain ShiftWorkerOption")
-    wp_values_constraint = [
-        b.name for b in block.value if b.id == wd.id  # type: ignore
-    ]
-    if any(value is None for value in wp_values_constraint):
-        raise ValueError("Worker property value from block is missing")
-    wp_all = worker_property_db.get_worker_properties_by_wd_id_for_not_deleted_w(wd.id)
-    if not all(isinstance(wp.value, list) for wp in wp_all):
-        raise ValueError("Worker property value is not a list")
-    wp_values_shifts = [item for wp in wp_all for item in wp.value]  # type: ignore
-    missing_values = list(set(wp_values_constraint) - set(wp_values_shifts))
-    not_missing_values = list(set(wp_values_constraint) - set(missing_values))
-    if missing_values:
-        mp = MissingProperty(
-            dimension_id=wd.id,
-            is_bool=False,
-            dim_name=wd.name,
-            category="worker",
-            property_values=missing_values,  # type: ignore
-        )
-    else:
-        mp = None
-    return mp, len(not_missing_values) > 0
-
-
-def build_missing_properties_list_and_active_worker_str_int_wd(
-    block: Block, wd: WorkerDimension
-) -> Tuple[MissingProperty | None, bool]:
-    if not isinstance(block.value, list):
-        raise ValueError("Worker block value is not a list")
-    if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError("Worker block value list does not contain ShiftWorkerOption")
-    wp_values_constraint = [
-        b.name for b in block.value if b.id == wd.id  # type: ignore
-    ]
-    if any(value is None for value in wp_values_constraint):
-        raise ValueError("Worker property value from block is missing")
-    wp_all = worker_property_db.get_worker_properties_by_wd_id_for_not_deleted_w(wd.id)
-    if not (
-        all(isinstance(wp.value, str) for wp in wp_all)
-        or all(isinstance(wp.value, int) for wp in wp_all)
-    ):
-        raise ValueError("Worker property value is not a str or int")
-    wp_values_shifts = [wp.value for wp in wp_all]
-    missing_values = list(set(wp_values_constraint) - set(wp_values_shifts))
-    not_missing_values = list(set(wp_values_constraint) - set(missing_values))
-    if missing_values:
-        mp = MissingProperty(
-            dimension_id=wd.id,
-            is_bool=False,
-            dim_name=wd.name,
-            category="worker",
-            property_values=missing_values,  # type: ignore
-        )
-    else:
-        mp = None
-    return mp, len(not_missing_values) > 0
-
-
-def build_missing_properties_list_and_active_shift(
-    block: Block, shifts: List[Shift], shift_dimensions: List[Dimension]
-) -> Tuple[List[MissingProperty], bool]:
-    mps: List[MissingProperty] = []
-    active = False
-    if not isinstance(block.value, list):
-        raise ValueError("Shift block value is not a list")
-    if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError("Shift block value list does not contain ShiftWorkerOption")
-    # if any(b.id_type in ["shift", ""] for b in block.value):  # type: ignore
-    if (
-        any(b.name == "all shifts" for b in block.value)  # type: ignore
-        and len([s for s in shifts if not s.deleted]) > 0
-    ):
-        active = True
-    new_mps, new_active = build_missing_properties_list_and_active_shift_deleted(
-        block, shifts
-    )
-    mps += new_mps
-    active = active or new_active
-    sd_ids = list(
+    owner_ids = list(
         set(
-            b.id  # type: ignore
-            for b in block.value
-            if b.id_type == "shift_dimension"  # type: ignore
+            swo.id  # type: ignore
+            for swo in block.value
+            if swo.id_type == target_swo_id_type  # type: ignore
         )
     )
-    if any(sd_id is None for sd_id in sd_ids):
-        raise ValueError("Shift dimension id is missing")
-    for sd_id in sd_ids:
-        sd = next((sd for sd in shift_dimensions if sd.id == sd_id), None)
-        if sd is None:
-            raise ValueError("Shift dimension not found")
-        if sd.deleted:
-            mps.append(build_missing_properties_list_deleted_sd(block, sd))
-            continue
-        if sd.entry_type == DimensionEntryType.BOOL:
-            new_mp, new_active = build_missing_properties_list_and_active_shift_bool_sd(
-                block, sd
-            )
-
-        elif sd.entry_type == DimensionEntryType.DIM_ENTRIES:
-            new_mp, new_active = build_missing_properties_list_and_active_shift_list_sd(
-                block, sd
-            )
-        elif sd.entry_type in [DimensionEntryType.STR, DimensionEntryType.INT]:
-            (
-                new_mp,
-                new_active,
-            ) = build_missing_properties_list_and_active_shift_str_int_sd(block, sd)
-        else:
-            new_mp = None
-            new_active = True
-        if new_mp is not None:
-            mps.append(new_mp)
-        active = active or new_active
-    return mps, active
-
-
-def build_missing_properties_list_and_active_shift_deleted(
-    block: Block,
-    shifts: List[Shift],
-) -> Tuple[List[MissingProperty], bool]:
-    mps = []
-    active = False
-    if not isinstance(block.value, list):
-        raise ValueError("Shift block value is not a list")
-    if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError("Shift block value list does not contain ShiftWorkerOption")
-    shift_ids = list(
-        set(b.id for b in block.value if b.id_type == "shift")  # type: ignore
-    )
-    if any(shift_id is None for shift_id in shift_ids):
-        raise ValueError("Shift id is missing")
-    for shift_id in shift_ids:
-        shift = next((s for s in shifts if s.id == shift_id), None)
-        if shift is None:
-            raise ValueError("Shift not found")
-        if not shift.deleted:
+    if any(o_id is None for o_id in owner_ids):
+        raise ValueError("Owner id is missing")
+    for owner_id in owner_ids:
+        owner = next((o for o in owners if o.id == owner_id), None)
+        if owner is None:
+            raise ValueError("Owner not found")
+        if not owner.deleted:
             active = True
             continue
         mps.append(
-            MissingProperty(
-                dimension_id=shift_id,
+            MissingAttribute(
+                dimension_id=owner_id,
                 is_bool=False,
-                dim_name=shift.name,
-                category="shift",
-                property_values=[shift.name],
+                dim_name=owner.name,
+                category=(
+                    "worker" if owner_type == AttributeOwnerType.WORKER else "shift"
+                ),
+                attribute_values=[owner.name],
             )
         )
     return mps, active
 
 
-def build_missing_properties_list_deleted_sd(
-    block: Block, sd: Dimension
-) -> MissingProperty:
-    if sd.entry_type == "list":
-        sp_values_constraint = [
-            b.name for b in block.value if b.id == sd.id  # type: ignore
+def build_missing_attributes_deleted_dimension(
+    owner_type: AttributeOwnerType, block: Block, dimension: Dimension
+) -> MissingAttribute:
+    if dimension.entry_type == DimensionEntryType.DIM_ENTRIES:
+        a_values_constraint = [
+            swo.name for swo in block.value if swo.id == dimension.id  # type: ignore
         ]
-    elif sd.entry_type == "bool":
-        sp_values_constraint = list(
-            set(b.name for b in block.value if b.id == sd.id)  # type: ignore
+    elif dimension.entry_type == DimensionEntryType.BOOL:
+        a_values_constraint = list(
+            set(
+                swo.name  # type: ignore
+                for swo in block.value  # type: ignore
+                if swo.id == dimension.id  # type: ignore
+            )
         )
     else:
-        sp_values_constraint = [
-            b.name for b in block.value if b.id == sd.id  # type: ignore
+        a_values_constraint = [
+            swo.name for swo in block.value if swo.id == dimension.id  # type: ignore
         ]
-    return MissingProperty(
-        dimension_id=sd.id,
-        is_bool=sd.entry_type == "bool",
-        dim_name=sd.name,
-        category="shift",
-        property_values=sp_values_constraint,  # type: ignore
+    return MissingAttribute(
+        dimension_id=dimension.id,
+        is_bool=dimension.entry_type == DimensionEntryType.BOOL,
+        dim_name=dimension.name,
+        category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+        attribute_values=a_values_constraint,  # type: ignore
     )
 
 
-def build_missing_properties_list_and_active_shift_bool_sd(
-    block: Block, sd: Dimension
-) -> Tuple[MissingProperty | None, bool]:
+def build_missing_attributes_and_active_dimension_bool(
+    owner_type: AttributeOwnerType,
+    block: Block,
+    owners: List[Worker] | List[Shift],
+    dimension: Dimension,
+    attributes: List[Attribute],
+) -> Tuple[MissingAttribute | None, bool]:
     if not isinstance(block.value, list):
-        raise ValueError("Shift block value is not a list")
+        raise ValueError("Block value is not a list")
     if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError("Shift block value list does not contain ShiftWorkerOption")
-    sp_values_constraint: List[bool] = list(
-        set(b.name for b in block.value if b.id == sd.id)  # type: ignore
+        raise ValueError("Block value list does not contain ShiftWorkerOption")
+    a_values_constraint: List[bool] = list(
+        set(swo.name for swo in block.value if swo.id == dimension.id)  # type: ignore
     )
-    if any(value is None for value in sp_values_constraint):
-        raise ValueError("Shift property value from block is missing")
-    sp_all = attribute_db.get_attributes_by_dimension_id_for_not_deleted_shitfs(sd.id)
-    sp_values_shifts = [sp.value for sp in sp_all]
-    if not all(isinstance(v, bool) for v in sp_values_shifts):
-        raise ValueError("Shift property value is not a boolean")
+    if any(value is None for value in a_values_constraint):
+        raise ValueError("Attribute value from block is missing")
+    o_not_deleted_ids = [o.id for o in owners if not o.deleted]
+    a_all = [
+        a
+        for a in attributes
+        if a.dimension_id == dimension.id and a.owner_id in o_not_deleted_ids
+    ]
+    a_values_owners = [a.value for a in a_all]
+    if not all(isinstance(v, bool) for v in a_values_owners):
+        raise ValueError("Attribute value is not a boolean")
     missing_values = list(
-        set(sp_values_constraint) - set(sp_values_shifts)  # type: ignore
+        set(a_values_constraint) - set(a_values_owners)  # type: ignore
     )
-    not_missing_values = list(set(sp_values_constraint) - set(missing_values))
+    not_missing_values = list(set(a_values_constraint) - set(missing_values))
     if missing_values:
-        mp = MissingProperty(
-            dimension_id=sd.id,
+        mp = MissingAttribute(
+            dimension_id=dimension.id,
             is_bool=True,
-            dim_name=sd.name,
-            category="shift",
-            property_values=missing_values,  # type: ignore
+            dim_name=dimension.name,
+            category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+            attribute_values=missing_values,  # type: ignore
         )
     else:
         mp = None
     return mp, len(not_missing_values) > 0
 
 
-def build_missing_properties_list_and_active_shift_list_sd(
-    block: Block, sd: Dimension
-) -> Tuple[MissingProperty | None, bool]:
+def build_missing_attributes_and_active_dimension_dim_entry(
+    owner_type: AttributeOwnerType,
+    block: Block,
+    owners: List[Shift] | List[Worker],
+    dimension: Dimension,
+    dim_entries: List[DimEntry],
+    attributes: List[Attribute],
+) -> Tuple[MissingAttribute | None, bool]:
     if not isinstance(block.value, list):
-        raise ValueError("Shift block value is not a list")
-    if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError("Shift block value list does not contain ShiftWorkerOption")
-    sp_values_constraint = [
-        b.name for b in block.value if b.id == sd.id  # type: ignore
+        raise ValueError("Block value is not a list")
+    if not all(isinstance(swo, ShiftWorkerOption) for swo in block.value):
+        raise ValueError("Block value list does not contain ShiftWorkerOption")
+    a_values_constraint = [
+        swo.name for swo in block.value if swo.id == dimension.id  # type: ignore
     ]
-    if any(value is None for value in sp_values_constraint):
-        raise ValueError("Shift property value from block is missing")
-    sp_all = attribute_db.get_attributes_by_dimension_id_for_not_deleted_shitfs(sd.id)
-    if not all(isinstance(sp.value, list) for sp in sp_all):
-        raise ValueError("Shift property value is not a list")
-    sp_values_shifts = [item for sp in sp_all for item in sp.value]  # type: ignore
-    missing_values = list(set(sp_values_constraint) - set(sp_values_shifts))
-    not_missing_values = list(set(sp_values_constraint) - set(missing_values))
+    if any(value is None for value in a_values_constraint):
+        raise ValueError("Attribute value from block is missing")
+    o_not_deleted_ids = [o.id for o in owners if not o.deleted]
+    a_all = [
+        a
+        for a in attributes
+        if a.dimension_id == dimension.id and a.owner_id in o_not_deleted_ids
+    ]
+    dim_entry_ids = list(set(de_id for a in a_all for de_id in a.dim_entry_ids))
+    dim_entry_names_owners = [de.name for de in dim_entries if de.id in dim_entry_ids]
+    missing_values = list(set(a_values_constraint) - set(dim_entry_names_owners))
+    not_missing_values = list(set(a_values_constraint) - set(missing_values))
     if missing_values:
-        mp = MissingProperty(
-            dimension_id=sd.id,
+        mp = MissingAttribute(
+            dimension_id=dimension.id,
             is_bool=False,
-            dim_name=sd.name,
-            category="shift",
-            property_values=missing_values,  # type: ignore
+            dim_name=dimension.name,
+            category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+            attribute_values=missing_values,  # type: ignore
         )
     else:
         mp = None
     return mp, len(not_missing_values) > 0
 
 
-def build_missing_properties_list_and_active_shift_str_int_sd(
-    block: Block, sd: Dimension
-) -> Tuple[MissingProperty | None, bool]:
+def build_missing_attributes_and_active_dimension_str_int(
+    owner_type: AttributeOwnerType,
+    block: Block,
+    owners: List[Shift] | List[Worker],
+    dimension: Dimension,
+    attributes: List[Attribute],
+) -> Tuple[MissingAttribute | None, bool]:
     if not isinstance(block.value, list):
-        raise ValueError("Shift block value is not a list")
-    if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
-        raise ValueError("Shift block value list does not contain ShiftWorkerOption")
-    sp_values_constraint = [
-        b.name for b in block.value if b.id == sd.id  # type: ignore
+        raise ValueError("Block value is not a list")
+    if not all(isinstance(swo, ShiftWorkerOption) for swo in block.value):
+        raise ValueError("Block value list does not contain ShiftWorkerOption")
+    a_values_constraint = [
+        swo.name for swo in block.value if swo.id == dimension.id  # type: ignore
     ]
-    if any(value is None for value in sp_values_constraint):
-        raise ValueError("Shift property value from block is missing")
-    sp_all = attribute_db.get_attributes_by_dimension_id_for_not_deleted_shitfs(sd.id)
+    if any(value is None for value in a_values_constraint):
+        raise ValueError("Attribute value from block is missing")
+    o_not_deleted_ids = [o.id for o in owners if not o.deleted]
+    a_all = [
+        a
+        for a in attributes
+        if a.dimension_id == dimension.id and a.owner_id in o_not_deleted_ids
+    ]
     if not (
-        all(isinstance(sp.value, str) for sp in sp_all)
-        or all(isinstance(sp.value, int) for sp in sp_all)
+        all(isinstance(a.value, str) for a in a_all)
+        or all(isinstance(a.value, int) for a in a_all)
     ):
-        raise ValueError("Shift property value is not a str or int")
-    sp_values_shifts = [sp.value for sp in sp_all]
-    missing_values = list(set(sp_values_constraint) - set(sp_values_shifts))
-    not_missing_values = list(set(sp_values_constraint) - set(missing_values))
+        raise ValueError("Attribute value is not a str or int")
+    wp_values_shifts = [a.value for a in a_all]
+    missing_values = list(set(a_values_constraint) - set(wp_values_shifts))
+    not_missing_values = list(set(a_values_constraint) - set(missing_values))
     if missing_values:
-        mp = MissingProperty(
-            dimension_id=sd.id,
+        mp = MissingAttribute(
+            dimension_id=dimension.id,
             is_bool=False,
-            dim_name=sd.name,
-            category="shift",
-            property_values=missing_values,  # type: ignore
+            dim_name=dimension.name,
+            category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+            attribute_values=missing_values,  # type: ignore
         )
     else:
         mp = None

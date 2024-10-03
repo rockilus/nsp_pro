@@ -83,26 +83,6 @@ async def get_dimensions(
     return response
 
 
-@router.get("/dimensions/shift/all/teams/{team_id}")
-async def get_all_shift_dimensions(
-    team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> List[DimensionMessage]:
-    try:
-        if not await authz_check(
-            session.get_user_id(), "read-shift-dimensions", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shift dimensions"
-            )
-        shift_dimensions = dimension_db.get_shift_dimensions(team_id)
-        response = [core_to_msg_dimension(sd) for sd in shift_dimensions]
-    except Exception as e:
-        log_info("Failed to get shift dimensions")
-        handle_routes_errors(e)
-    return response
-
-
 @router.put("/dimensions/{dimension_id}/teams/{team_id}")
 async def update_dimension(
     team_id: str,
@@ -223,6 +203,6 @@ def msg_to_core_dimension(msg: DimensionMessage) -> Dimension:
     try:
         dimension = Dimension(**data_snake)
     except Exception as e:
-        log_info("Failed to convert ShiftDimensionMessage to ShiftDimension")
+        log_info("Failed to convert DimensionMessage to Dimension")
         handle_create_core_object_error(e)
     return dimension

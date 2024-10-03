@@ -111,7 +111,7 @@ export default function ConstraintSelector({
                     </span>
                     <MissingProperties
                       lng={lng}
-                      missingProperties={constraint.missingProperties}
+                      missingProperties={constraint.missingAttributes}
                     />
                   </div>
                 </TableCell>

@@ -1,12 +1,12 @@
 from typing import Dict, List
 
 from constraint_parser.mapping.map_shift import MapShift
-from core import MissingProperty, Shift, ShiftWorkerOption
+from core import MissingAttribute, Shift, ShiftWorkerOption
 
 
 def parse_selected_shifts(
     selected_shifts: List[ShiftWorkerOption],
-    missing_properties: List[MissingProperty],
+    missing_properties: List[MissingAttribute],
     shifts: List[Shift],
     shift_dim_dict: Dict,
 ) -> List[str]:

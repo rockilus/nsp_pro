@@ -1,12 +1,12 @@
 from dataclasses import asdict
-from typing import Dict, List
+from typing import List
 
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
 from constraint_parser.templates import build_templates
-from core import Attribute, Template, WorkerProperty
+from core import Template
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -17,15 +17,9 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import TemplateMessage
-from scripts.setup_database import (
-    attribute_db,
-    dim_entry_db,
-    dimension_db,
-    shift_db,
-    user_db,
-    worker_db,
-    worker_dimension_db,
-    worker_property_db,
+from scripts.setup_database import user_db
+from services.data_fetching_services import (
+    fetch_workers_not_d_shifts_not_d_dim_not_d_attributes,
 )
 
 router = APIRouter()
@@ -44,41 +38,18 @@ async def get_constraint_templates(
             raise NotAuthorizedError(
                 "You do not have permission to get constraint templates"
             )
-        user = user_db.get_user_by_id(session.get_user_id())
-        workers = worker_db.get_workers_not_deleted(team_id)
-        worker_properties = worker_property_db.get_worker_properties_by_worker_ids(
-            [w.id for w in workers]
-        )
-        worker_properties_wd: Dict[str, List[WorkerProperty]] = {}
-        for wp in worker_properties:
-            wd_id = wp.worker_dimension_id
-            if wd_id not in worker_properties_wd:
-                worker_properties_wd[wd_id] = []
-            worker_properties_wd[wd_id].append(wp)
-        worker_dimensions = worker_dimension_db.get_worker_dimensions(team_id)
-        shifts = shift_db.get_shifts_not_deleted(team_id)
-        shift_properties = attribute_db.get_attributes_by_owner_ids(
-            [s.id for s in shifts]
-        )
-        shift_properties_sd: Dict[str, List[Attribute]] = {}
-        for sp in shift_properties:
-            sd_id = sp.dimension_id
-            if sd_id not in shift_properties_sd:
-                shift_properties_sd[sd_id] = []
-            shift_properties_sd[sd_id].append(sp)
-        shift_dimensions = dimension_db.get_shift_dimensions(team_id)
-        shift_dim_entries = dim_entry_db.get_dim_entries_by_dim_ids(
-            [sd.id for sd in shift_dimensions]
-        )
-        templates = build_templates(
+        user_id = session.get_user_id()
+        user = user_db.get_user_by_id(user_id)
+        # pylint: disable=R0801
+        (
             workers,
-            worker_dimensions,
-            worker_properties_wd,
             shifts,
-            shift_dimensions,
-            shift_dim_entries,
-            shift_properties_sd,
-            user.language,
+            dimensions,
+            dim_entries,
+            attributes,
+        ) = fetch_workers_not_d_shifts_not_d_dim_not_d_attributes(team_id)
+        templates = build_templates(
+            workers, shifts, dimensions, dim_entries, attributes, user.language
         )
         response = [core_to_msg_constraint_template(ct) for ct in templates]
     except Exception as e:

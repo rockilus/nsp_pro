@@ -50,18 +50,17 @@ class Block:
 # {
 #     "name": "Vannes", # value of the property
 #     "id": "66b633ffcad3bb739b082fae", # id of the id_type
-#     "id_type": "shift_dimension" # type of the id: worker, worker_dimension,
-#                                    shift, shift_dimension
+#     "id_type": "dimension" # type of the id: worker, shift, dimension
 # }
 
 
 @dataclass
-class MissingProperty:
+class MissingAttribute:
     dimension_id: str
     is_bool: bool
     dim_name: str
     category: str  # worker or shift
-    property_values: List[str | int | float | bool]
+    attribute_values: List[str | int | float | bool]
 
 
 @dataclass
@@ -89,7 +88,7 @@ class ConstraintBuildAugmented:
     hard: bool
     priority: str
     active: bool
-    missing_properties: List[MissingProperty]
+    missing_attributes: List[MissingAttribute]
     text: str
 
 

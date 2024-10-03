@@ -5,7 +5,7 @@ from core.constraint import (
     Constraint,
     ConstraintBuild,
     ConstraintBuildAugmented,
-    MissingProperty,
+    MissingAttribute,
     ShiftWorkerOption,
     Template,
     TemplateBlock,
@@ -21,7 +21,7 @@ from core.shift import Shift, ShiftLeaveType, ShiftRestType, ShiftType
 from core.stats import Stats, StatsHeader, StatsOptions, StatsValue
 from core.team import Team
 from core.user import PasswordData, User
-from core.worker import Worker, WorkerDimension, WorkerProperty
+from core.worker import Worker
 
 # pylint: disable=R0801
 __all__ = [
@@ -33,7 +33,7 @@ __all__ = [
     "Constraint",
     "ConstraintBuild",
     "ConstraintBuildAugmented",
-    "MissingProperty",
+    "MissingAttribute",
     "ShiftWorkerOption",
     "Template",
     "TemplateBlock",
@@ -66,6 +66,4 @@ __all__ = [
     "PasswordData",
     "User",
     "Worker",
-    "WorkerDimension",
-    "WorkerProperty",
 ]

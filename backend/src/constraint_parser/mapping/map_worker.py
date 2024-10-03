@@ -4,7 +4,7 @@ from constraint_parser.mapping.utils import find_block_by_name
 from core import (
     Block,
     ConstraintBuildAugmented,
-    MissingProperty,
+    MissingAttribute,
     ShiftWorkerOption,
     VarWorker,
     Worker,
@@ -21,7 +21,7 @@ class MapWorker:
         values = self.get_worker_values(cstr_build.blocks)
         return VarWorker(
             selector=self.get_selector(values),
-            target_ids=self.get_target_ids(values, cstr_build.missing_properties),
+            target_ids=self.get_target_ids(values, cstr_build.missing_attributes),
             num_eligible_workers=0,
         )
 
@@ -36,7 +36,7 @@ class MapWorker:
     def get_target_ids(
         self,
         values: List[ShiftWorkerOption],
-        missing_properties: List[MissingProperty],
+        missing_properties: List[MissingAttribute],
     ) -> List[str]:
         if self.get_selector(values) == "all":
             return []
@@ -48,26 +48,24 @@ class MapWorker:
                         f"Worker {value.name} with id {value.id} not found"
                     )
                 out.append(value.id)
-            elif value.id_type == "worker_dimension":
-                target_ids = self.get_target_ids_worker_dimension(
-                    value, missing_properties
-                )
+            elif value.id_type == "dimension":
+                target_ids = self.get_target_ids_dimension(value, missing_properties)
                 if target_ids:
                     out += target_ids
         if not out:
             raise ValueError("No workers found")
         return sorted(list(set(out)))
 
-    def get_target_ids_worker_dimension(
+    def get_target_ids_dimension(
         self,
         value: ShiftWorkerOption,
-        missing_properties: List[MissingProperty],
+        missing_attributes: List[MissingAttribute],
     ) -> List[str] | None:
-        mp = next(
-            (mp for mp in missing_properties if mp.dimension_id == value.id),
+        ma = next(
+            (ma for ma in missing_attributes if ma.dimension_id == value.id),
             None,
         )
-        if mp and value.name in mp.property_values:
+        if ma and value.name in ma.attribute_values:
             return None
         if value.id not in self.worker_dim_dict:
             raise ValueError(f"Worker dimension {value.id} not found")
@@ -82,11 +80,13 @@ class MapWorker:
             return self.worker_dim_dict[value.id][value.name]
         if not isinstance(value.name, str):
             raise ValueError("Value name is not a string for non-bool dimension")
-        if value.name.lower() not in self.worker_dim_dict[value.id]:
+        # if value.name.lower() not in self.worker_dim_dict[value.id]:
+        if value.name not in self.worker_dim_dict[value.id]:
             raise ValueError(
                 f"Worker property {value.name} for dimension " + f"{value.id} not found"
             )
-        return self.worker_dim_dict[value.id][value.name.lower()]
+        # return self.worker_dim_dict[value.id][value.name.lower()]
+        return self.worker_dim_dict[value.id][value.name]
 
     def check_worker_id(self, worker_id: str) -> bool:
         return any(w.id == worker_id for w in self.workers)

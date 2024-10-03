@@ -4,7 +4,7 @@ from constraint_parser.mapping.utils import find_block_by_name
 from core import (
     Block,
     ConstraintBuildAugmented,
-    MissingProperty,
+    MissingAttribute,
     Shift,
     ShiftType,
     ShiftWorkerOption,
@@ -41,18 +41,18 @@ class MapShift:
             target_ids=self.get_target_ids(
                 shift_values,
                 cstr_build.constraint_type,
-                cstr_build.missing_properties,
+                cstr_build.missing_attributes,
                 cstr_operator,
             ),
             reference_ids=self.get_target_ids(
                 shift_reference_values,
                 cstr_build.constraint_type,
-                cstr_build.missing_properties,
+                cstr_build.missing_attributes,
             ),
             relative_ids=self.get_target_ids(
                 shift_relative_values,
                 cstr_build.constraint_type,
-                cstr_build.missing_properties,
+                cstr_build.missing_attributes,
             ),
         )
 
@@ -66,9 +66,9 @@ class MapShift:
             return "all"
         return "equal"
 
-    # "shift", "worker", "shift_dimension", "worker_dimension", ""
+    # "shift", "worker", "dimension", ""
     # if id_type is shift, check if the shift exists, and return the id
-    # if id_type is shift_dimension, check if the dimension exists.
+    # if id_type is dimension, check if the dimension exists.
     # if it does, check if the property is in missing properties.
     # if it is not in the missing property, return the list of shift ids that
     # have this property. This might be done differently if for bool dimensions
@@ -86,7 +86,7 @@ class MapShift:
         self,
         values: List[ShiftWorkerOption],
         cstr_type: str,
-        missing_properties: List[MissingProperty],
+        missing_properties: List[MissingAttribute],
         cstr_operator: str = "",
     ) -> List[str]:
         if self.get_selector(values, cstr_type) == "all" and cstr_type != "ord":
@@ -97,10 +97,9 @@ class MapShift:
                 if not self.check_shift_id(value.id):
                     raise ValueError(f"Shift {value.name} with id {value.id} not found")
                 out.append(value.id)
-            elif value.id_type == "shift_dimension":
-                target_ids = self.get_target_ids_shift_dimension(
-                    value, missing_properties
-                )
+            # pylint: disable=R0801
+            elif value.id_type == "dimension":
+                target_ids = self.get_target_ids_dimension(value, missing_properties)
                 if target_ids:
                     out += target_ids
         if cstr_type == "fil" and cstr_operator == "yes":
@@ -112,16 +111,16 @@ class MapShift:
         return sorted(list(set(out)))
 
     # pylint: disable=R0801
-    def get_target_ids_shift_dimension(
+    def get_target_ids_dimension(
         self,
         value: ShiftWorkerOption,
-        missing_properties: List[MissingProperty],
+        missing_properties: List[MissingAttribute],
     ) -> List[str] | None:
         mp = next(
             (mp for mp in missing_properties if mp.dimension_id == value.id),
             None,
         )
-        if mp and value.name in mp.property_values:
+        if mp and value.name in mp.attribute_values:
             return None
         if value.id not in self.shift_dim_dict:
             raise ValueError(f"Shift dimension {value.id} not found")
@@ -136,11 +135,13 @@ class MapShift:
             return self.shift_dim_dict[value.id][value.name]
         if not isinstance(value.name, str):
             raise ValueError("Value name is not a string for non-bool dimension")
-        if value.name.lower() not in self.shift_dim_dict[value.id]:
+        # if value.name.lower() not in self.shift_dim_dict[value.id]:
+        if value.name not in self.shift_dim_dict[value.id]:
             raise ValueError(
                 f"Shift property {value.name} " + f"for dimension {value.id} not found"
             )
-        return self.shift_dim_dict[value.id][value.name.lower()]
+        # return self.shift_dim_dict[value.id][value.name.lower()]
+        return self.shift_dim_dict[value.id][value.name]
 
     def check_shift_id(self, shift_id: str) -> bool:
         return any(s.id == shift_id for s in self.shifts)

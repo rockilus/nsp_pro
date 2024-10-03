@@ -15,8 +15,6 @@ from models.stats_header import StatsHeader
 from models.team import Team
 from models.user import User
 from models.worker import Worker
-from models.worker_dimension import WorkerDimension
-from models.worker_property import WorkerProperty
 
 __all__ = [
     "Assignment",
@@ -43,6 +41,4 @@ __all__ = [
     "Team",
     "User",
     "Worker",
-    "WorkerDimension",
-    "WorkerProperty",
 ]

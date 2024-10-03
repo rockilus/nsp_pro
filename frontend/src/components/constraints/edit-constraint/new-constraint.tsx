@@ -61,7 +61,7 @@ export default function NewConstraint({
               hard: true,
               priority: "medium",
               active: true,
-              missingProperties: [],
+              missingAttributes: [],
             }}
             template={selectedTemplate}
             handleAddConstraint={handleAddConstraint}

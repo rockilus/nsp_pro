@@ -323,7 +323,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -399,7 +399,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -445,7 +445,7 @@ test_data = [
                         ShiftWorkerOption(
                             name=True,
                             id="60+_id",
-                            id_type="worker_dimension",
+                            id_type="dimension",
                             is_bool_dim=True,
                             category_name="60+",
                         ),
@@ -462,7 +462,7 @@ test_data = [
                         ShiftWorkerOption(
                             name=False,
                             id="duty_id",
-                            id_type="shift_dimension",
+                            id_type="dimension",
                             is_bool_dim=True,
                             category_name="Duty",
                         ),
@@ -473,7 +473,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -521,7 +521,7 @@ test_data = [
                         ShiftWorkerOption(
                             name="surgeon",
                             id="specialty_id",
-                            id_type="worker_dimension",
+                            id_type="dimension",
                             is_bool_dim=False,
                             category_name="Specialty",
                         ),
@@ -538,7 +538,7 @@ test_data = [
                         ShiftWorkerOption(
                             name="unit 1",
                             id="unit_id",
-                            id_type="shift_dimension",
+                            id_type="dimension",
                             is_bool_dim=False,
                             category_name="Units",
                         )
@@ -549,7 +549,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -625,7 +625,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -715,7 +715,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -805,7 +805,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -897,7 +897,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -989,7 +989,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -1063,7 +1063,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -1136,7 +1136,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -1215,7 +1215,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",
@@ -1294,7 +1294,7 @@ test_data = [
             hard=True,
             priority="medium",
             active=True,
-            missing_properties=[],
+            missing_attributes=[],
         ),
         "out": Constraint(
             id="",

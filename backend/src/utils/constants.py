@@ -69,9 +69,7 @@ class Constants:
     VAR_DAY_SELECTOR_OPTIONS = Literal["all", "week", "period", "week_day_index"]
     VAR_SHIFT_SELECTOR_OPTIONS = Literal["all", "equal"]
     BLOCK_TYPE_OPTIONS = Literal["string", "number", "list", "shift_worker_option"]
-    SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS = Literal[
-        "shift", "worker", "shift_dimension", "worker_dimension", ""
-    ]
+    SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS = Literal["shift", "worker", "dimension", ""]
 
     # Stats
     STATS_TIME_FRAME_OPTIONS = Literal[
