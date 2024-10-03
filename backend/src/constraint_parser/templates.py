@@ -41,14 +41,14 @@ def build_templates(team_id: str, user_id: str) -> List[Template]:
             dim_to_attributes[d_id] = []
         dim_to_attributes[d_id].append(a)
 
-    worker_options = build_options(
+    worker_options = build_shift_options(
         AttributeOwnerType.WORKER,
         workers,
         [d for d in dimensions if d.dim_types == [DimensionType.WORKER]],
         dim_entries,
         dim_to_attributes,
     )
-    shift_options = build_options(
+    shift_options = build_shift_options(
         AttributeOwnerType.SHIFT,
         shifts,
         [
@@ -65,7 +65,7 @@ def build_templates(team_id: str, user_id: str) -> List[Template]:
     return build_templates_list(worker_options, shift_options, user.language)
 
 
-def build_options(
+def build_shift_options(
     owner_type: AttributeOwnerType,
     owners: List[Worker] | List[Shift],
     dimensions: List[Dimension],

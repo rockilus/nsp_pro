@@ -9,7 +9,7 @@ from core import (
     Block,
     ConstraintBuild,
     ConstraintBuildAugmented,
-    MissingAttribute,
+    MissingProperty,
     ShiftWorkerOption,
 )
 from errors import (
@@ -163,7 +163,7 @@ def core_to_msg_block(block: Block) -> BlockMessage:
 
 
 def core_to_msg_missing_property(
-    missing_property: MissingAttribute,
+    missing_property: MissingProperty,
 ) -> MissingPropertyMessage:
     try:
         data = asdict(missing_property)

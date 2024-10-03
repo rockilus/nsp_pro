@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from constraint_parser import build_options
+from constraint_parser import build_shift_options
 from core import Attribute, AttributeOwnerType, DimensionType, ShiftWorkerOption
 from scripts.setup_database import attribute_db, dim_entry_db, dimension_db, shift_db
 
@@ -20,7 +20,7 @@ def get_shift_options(team_id: str) -> List[ShiftWorkerOption]:
         if d_id not in dim_to_attributes:
             dim_to_attributes[d_id] = []
         dim_to_attributes[d_id].append(a)
-    return build_options(
+    return build_shift_options(
         AttributeOwnerType.SHIFT,
         shifts,
         dimensions,

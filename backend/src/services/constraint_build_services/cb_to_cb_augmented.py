@@ -9,7 +9,7 @@ from core import (
     Dimension,
     DimensionEntryType,
     DimEntry,
-    MissingAttribute,
+    MissingProperty,
     Shift,
     ShiftWorkerOption,
     Worker,
@@ -65,8 +65,8 @@ def build_missing_attributes_and_active(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
-) -> Tuple[List[MissingAttribute], bool]:
-    mps: List[MissingAttribute] = []
+) -> Tuple[List[MissingProperty], bool]:
+    mps: List[MissingProperty] = []
     active_worker = False
     active_shift = False
     active_shift_reference = False
@@ -112,8 +112,8 @@ def build_missing_attributes_and_active_owner(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
-) -> Tuple[List[MissingAttribute], bool]:
-    mps: List[MissingAttribute] = []
+) -> Tuple[List[MissingProperty], bool]:
+    mps: List[MissingProperty] = []
     active = False
     if not isinstance(block.value, list):
         raise ValueError("Block value is not a list")
@@ -189,7 +189,7 @@ def build_missing_attributes_and_active_owner_deleted(
     owner_type: AttributeOwnerType,
     block: Block,
     owners: List[Worker] | List[Shift],
-) -> Tuple[List[MissingAttribute], bool]:
+) -> Tuple[List[MissingProperty], bool]:
     mps = []
     active = False
     if not isinstance(block.value, list):
@@ -216,14 +216,14 @@ def build_missing_attributes_and_active_owner_deleted(
             active = True
             continue
         mps.append(
-            MissingAttribute(
+            MissingProperty(
                 dimension_id=owner_id,
                 is_bool=False,
                 dim_name=owner.name,
                 category=(
                     "worker" if owner_type == AttributeOwnerType.WORKER else "shift"
                 ),
-                attribute_values=[owner.name],
+                property_values=[owner.name],
             )
         )
     return mps, active
@@ -231,7 +231,7 @@ def build_missing_attributes_and_active_owner_deleted(
 
 def build_missing_attributes_deleted_dimension(
     owner_type: AttributeOwnerType, block: Block, dimension: Dimension
-) -> MissingAttribute:
+) -> MissingProperty:
     if dimension.entry_type == DimensionEntryType.DIM_ENTRIES:
         a_values_constraint = [
             swo.name for swo in block.value if swo.id == dimension.id  # type: ignore
@@ -248,12 +248,12 @@ def build_missing_attributes_deleted_dimension(
         a_values_constraint = [
             swo.name for swo in block.value if swo.id == dimension.id  # type: ignore
         ]
-    return MissingAttribute(
+    return MissingProperty(
         dimension_id=dimension.id,
         is_bool=dimension.entry_type == DimensionEntryType.BOOL,
         dim_name=dimension.name,
         category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
-        attribute_values=a_values_constraint,  # type: ignore
+        property_values=a_values_constraint,  # type: ignore
     )
 
 
@@ -263,7 +263,7 @@ def build_missing_attributes_and_active_dimension_bool(
     owners: List[Worker] | List[Shift],
     dimension: Dimension,
     attributes: List[Attribute],
-) -> Tuple[MissingAttribute | None, bool]:
+) -> Tuple[MissingProperty | None, bool]:
     if not isinstance(block.value, list):
         raise ValueError("Block value is not a list")
     if not all(isinstance(b, ShiftWorkerOption) for b in block.value):
@@ -287,12 +287,12 @@ def build_missing_attributes_and_active_dimension_bool(
     )
     not_missing_values = list(set(a_values_constraint) - set(missing_values))
     if missing_values:
-        mp = MissingAttribute(
+        mp = MissingProperty(
             dimension_id=dimension.id,
             is_bool=True,
             dim_name=dimension.name,
             category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
-            attribute_values=missing_values,  # type: ignore
+            property_values=missing_values,  # type: ignore
         )
     else:
         mp = None
@@ -306,7 +306,7 @@ def build_missing_attributes_and_active_dimension_dim_entry(
     dimension: Dimension,
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
-) -> Tuple[MissingAttribute | None, bool]:
+) -> Tuple[MissingProperty | None, bool]:
     if not isinstance(block.value, list):
         raise ValueError("Block value is not a list")
     if not all(isinstance(swo, ShiftWorkerOption) for swo in block.value):
@@ -327,12 +327,12 @@ def build_missing_attributes_and_active_dimension_dim_entry(
     missing_values = list(set(a_values_constraint) - set(dim_entry_names_owners))
     not_missing_values = list(set(a_values_constraint) - set(missing_values))
     if missing_values:
-        mp = MissingAttribute(
+        mp = MissingProperty(
             dimension_id=dimension.id,
             is_bool=False,
             dim_name=dimension.name,
             category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
-            attribute_values=missing_values,  # type: ignore
+            property_values=missing_values,  # type: ignore
         )
     else:
         mp = None
@@ -345,7 +345,7 @@ def build_missing_attributes_and_active_dimension_str_int(
     owners: List[Shift] | List[Worker],
     dimension: Dimension,
     attributes: List[Attribute],
-) -> Tuple[MissingAttribute | None, bool]:
+) -> Tuple[MissingProperty | None, bool]:
     if not isinstance(block.value, list):
         raise ValueError("Block value is not a list")
     if not all(isinstance(swo, ShiftWorkerOption) for swo in block.value):
@@ -370,12 +370,12 @@ def build_missing_attributes_and_active_dimension_str_int(
     missing_values = list(set(a_values_constraint) - set(wp_values_shifts))
     not_missing_values = list(set(a_values_constraint) - set(missing_values))
     if missing_values:
-        mp = MissingAttribute(
+        mp = MissingProperty(
             dimension_id=dimension.id,
             is_bool=False,
             dim_name=dimension.name,
             category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
-            attribute_values=missing_values,  # type: ignore
+            property_values=missing_values,  # type: ignore
         )
     else:
         mp = None

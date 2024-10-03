@@ -4,7 +4,7 @@ from constraint_parser.mapping.utils import find_block_by_name
 from core import (
     Block,
     ConstraintBuildAugmented,
-    MissingAttribute,
+    MissingProperty,
     Shift,
     ShiftType,
     ShiftWorkerOption,
@@ -86,7 +86,7 @@ class MapShift:
         self,
         values: List[ShiftWorkerOption],
         cstr_type: str,
-        missing_properties: List[MissingAttribute],
+        missing_properties: List[MissingProperty],
         cstr_operator: str = "",
     ) -> List[str]:
         if self.get_selector(values, cstr_type) == "all" and cstr_type != "ord":
@@ -115,13 +115,13 @@ class MapShift:
     def get_target_ids_shift_dimension(
         self,
         value: ShiftWorkerOption,
-        missing_properties: List[MissingAttribute],
+        missing_properties: List[MissingProperty],
     ) -> List[str] | None:
         mp = next(
             (mp for mp in missing_properties if mp.dimension_id == value.id),
             None,
         )
-        if mp and value.name in mp.attribute_values:
+        if mp and value.name in mp.property_values:
             return None
         if value.id not in self.shift_dim_dict:
             raise ValueError(f"Shift dimension {value.id} not found")
