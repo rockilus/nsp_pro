@@ -67,9 +67,12 @@ async def get_dimensions(
                 "You do not have permission to read shift dimensions"
             )
         if dim_types_query is None:
-            return core_to_msg_dimensions_and_dim_entries([], [])
-        dim_types_int = [int(dt) for dtq in dim_types_query for dt in dtq.split(",")]
-        dt_data = [DimensionType(dt) for dt in dim_types_int]
+            dt_data = list(DimensionType)
+        else:
+            dim_types_int = [
+                int(dt) for dtq in dim_types_query for dt in dtq.split(",")
+            ]
+            dt_data = [DimensionType(dt) for dt in dim_types_int]
         dimensions = dimension_db.get_dimensions_by_dim_types_not_deleted(
             dt_data, team_id
         )

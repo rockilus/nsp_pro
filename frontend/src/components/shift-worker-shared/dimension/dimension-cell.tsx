@@ -11,13 +11,13 @@ import UpdateDimensionForm from "./update-dimension-form";
 // Styles
 import "../../../styles/table-styles.css";
 //Types
-import { DimEntryT } from "@/types/dimension";
-import { DimensionT } from "@/types/dimension";
+import { DimEntryT, DimensionT, DimensionType } from "../../../types/dimension";
 
 export default function DimensionCell({
   lng,
   selectedTeamId,
-  dimension: dimension,
+  dimensionTypeTable,
+  dimension,
   dimEntries,
   handleUpdateDimension,
   handleDeleteDimension,
@@ -27,6 +27,7 @@ export default function DimensionCell({
 }: {
   lng: string;
   selectedTeamId: string;
+  dimensionTypeTable: DimensionType;
   dimension: DimensionT;
   dimEntries: DimEntryT[];
   handleUpdateDimension: (dimension: DimensionT) => void;
@@ -64,6 +65,7 @@ export default function DimensionCell({
           <UpdateDimensionForm
             lng={lng}
             selectedTeamId={selectedTeamId}
+            dimensionTypeTable={dimensionTypeTable}
             dimension={dimension}
             dimEntries={dimEntries}
             setOpenParent={setPopoverAnchorOpen}

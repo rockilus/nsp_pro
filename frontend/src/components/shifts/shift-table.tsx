@@ -14,11 +14,11 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import ToggleButton from "@mui/material/ToggleButton";
 // Components
-import NewDimensionForm from "./dimension/new-dimension-form";
+import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
 import PopoverRHS from "../inputs/popover-rhs";
-import DimensionCell from "./dimension/dimension-cell";
+import DimensionCell from "../shift-worker-shared/dimension/dimension-cell";
 import ShiftFieldCell from "./shift-field-cell/shift-field-cell";
-import AttributeCell from "./attribute/attribute-cell";
+import AttributeCell from "../shift-worker-shared/attribute/attribute-cell";
 import TableAddButton from "../buttons/table-add-button";
 import {
   filterWorkShifts,
@@ -92,6 +92,12 @@ export default function ShiftTable({
       : filterRestShiftsNonDefault(shifts)
     : filterWorkShifts(shifts);
 
+  const dimensionsDisplayed = dimensions.filter((dim) =>
+    isRest
+      ? dim.dimTypes.includes(DimensionType.REST_SHIFT)
+      : dim.dimTypes.includes(DimensionType.SHIFT)
+  );
+
   return (
     <div>
       <div className="title-container">
@@ -125,8 +131,11 @@ export default function ShiftTable({
               dimensionType={
                 isRest ? DimensionType.REST_SHIFT : DimensionType.SHIFT
               }
+              dimensions={dimensions}
+              dimEntries={dimEntries}
               setOpenParent={setPopoverRhsOpen}
               handleAddDimension={handleAddDimension}
+              handleUpdateDimension={handleUpdateDimension}
             />
           }
           open={popoverRhsOpen}
@@ -142,11 +151,14 @@ export default function ShiftTable({
                   <span className="table-header-default">{field.label}</span>
                 </TableCell>
               ))}
-              {dimensions.map((dim, dIndex) => (
+              {dimensionsDisplayed.map((dim, dIndex) => (
                 <DimensionCell
                   key={dIndex}
                   lng={lng}
                   selectedTeamId={selectedTeamId}
+                  dimensionTypeTable={
+                    isRest ? DimensionType.REST_SHIFT : DimensionType.SHIFT
+                  }
                   dimension={dim}
                   dimEntries={dimEntries.filter(
                     (de) => de.dimensionId === dim.id
@@ -186,7 +198,7 @@ export default function ShiftTable({
                     handleUpdateShift={handleUpdateShift}
                   />
                 ))}
-                {dimensions.map((dim, dIndex) => {
+                {dimensionsDisplayed.map((dim, dIndex) => {
                   const attribute = shift.attributes.find(
                     (a) => a.dimensionId === dim.id
                   );

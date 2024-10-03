@@ -8,13 +8,17 @@ import TextField from "@mui/material/TextField";
 import UpdateDimensionDimEntriesInput from "./update-dimension-dim-entries-input";
 import DialogDimensionDel from "./dialog-dimension-del";
 // Types
-import { DimensionEntryType } from "@/types/dimension";
-import { DimEntryT } from "@/types/dimension";
-import { DimensionT } from "@/types/dimension";
+import {
+  DimensionEntryType,
+  DimEntryT,
+  DimensionT,
+  DimensionType,
+} from "../../../types/dimension";
 
 export default function UpdateDimensionForm({
   lng,
   selectedTeamId,
+  dimensionTypeTable,
   dimension: dimension,
   dimEntries,
   setOpenParent,
@@ -26,6 +30,7 @@ export default function UpdateDimensionForm({
 }: {
   lng: string;
   selectedTeamId: string;
+  dimensionTypeTable: DimensionType;
   dimension: DimensionT;
   dimEntries: DimEntryT[];
   setOpenParent: (open: boolean) => void | null;
@@ -83,6 +88,20 @@ export default function UpdateDimensionForm({
     }
   };
 
+  const handleClickDelete = () => {
+    if (
+      dimension.dimTypes.length > 1 &&
+      dimension.dimTypes.includes(dimensionTypeTable)
+    ) {
+      handleUpdateDimension({
+        ...dimension,
+        dimTypes: dimension.dimTypes.filter(
+          (dimType) => dimType !== dimensionTypeTable
+        ),
+      });
+    }
+  };
+
   return (
     <Box sx={{ width: "100%" }}>
       <TextField
@@ -116,11 +135,18 @@ export default function UpdateDimensionForm({
         >
           {t("save")}
         </Button>
-        <DialogDimensionDel
-          lng={lng}
-          dimensionId={dimension.id}
-          handleDeleteDimension={handleDeleteDimension}
-        />
+        {dimension.dimTypes.length > 1 &&
+        dimension.dimTypes.includes(dimensionTypeTable) ? (
+          <Button variant="outlined" onClick={handleClickDelete} fullWidth>
+            {t("delete")}
+          </Button>
+        ) : (
+          <DialogDimensionDel
+            lng={lng}
+            dimensionId={dimension.id}
+            handleDeleteDimension={handleDeleteDimension}
+          />
+        )}
       </div>
     </Box>
   );
