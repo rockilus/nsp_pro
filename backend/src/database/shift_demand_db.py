@@ -31,6 +31,20 @@ class ShiftDemandDB:
             handle_save_document_error(e)
         return doc_to_core_shift_demand(sd_saved)
 
+    def create_shift_demands(
+        self, shift_demands: List[ShiftDemand]
+    ) -> List[ShiftDemand]:
+        if not shift_demands:
+            return []
+        sd_docs = core_to_doc_shift_demands(shift_demands, creating=True)
+        try:
+            # pylint: disable=no-member
+            sd_saved = ShiftDemandDocument.objects.insert(sd_docs)  # type: ignore
+        except Exception as e:
+            log_info("Failed to save shift demands to database")
+            handle_save_document_error(e)
+        return [doc_to_core_shift_demand(sd) for sd in sd_saved]
+
     def get_shift_demand_by_id(self, shift_demand_id: str) -> ShiftDemand:
         try:
             # pylint: disable=no-member
@@ -216,6 +230,35 @@ def core_to_doc_shift_demand(
         log_info("Failed to convert ShiftDemand to ShiftDemandDocument")
         handle_create_document_error(e)
     return sd_doc
+
+
+def core_to_doc_shift_demands(
+    dataclass_objs: List[ShiftDemand], creating: bool = False
+) -> List[ShiftDemandDocument]:
+    shift_ids = list(set(doc.shift_id for doc in dataclass_objs))
+    shifts = {
+        shift.id: shift
+        # pylint: disable=no-member
+        for shift in ShiftDocument.objects.filter(id__in=shift_ids)  # type: ignore
+    }
+    coverage_ids = list(set(doc.coverage_id for doc in dataclass_objs))
+    coverages = {
+        coverage.id: coverage
+        # pylint: disable=no-member
+        for coverage in CoverageDocument.objects.filter(  # type: ignore
+            id__in=coverage_ids
+        )
+    }
+    out = []
+    for dataclass_obj in dataclass_objs:
+        assignment_doc = ShiftDemandDocument(
+            id=str(ObjectId()) if creating else dataclass_obj.id,
+            day_index=dataclass_obj.day_index,
+            shift=shifts.get(dataclass_obj.shift_id),
+            coverage=coverages.get(dataclass_obj.coverage_id),
+        )
+        out.append(assignment_doc)
+    return out
 
 
 # document to core

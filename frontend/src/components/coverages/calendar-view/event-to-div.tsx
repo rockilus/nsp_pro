@@ -12,9 +12,9 @@ export default function EventToDiv({
   columnWidth,
   staffingLabel,
   shifts,
-  handleAddShiftDemand,
+  handleAddShiftDemands,
   handleUpdateShiftDemand,
-  handleDeleteShiftDemand,
+  handleDeleteShiftDemands,
 }: {
   lng: string;
   event: EventT;
@@ -22,9 +22,9 @@ export default function EventToDiv({
   columnWidth: number;
   staffingLabel: string;
   shifts: ShiftT[];
-  handleAddShiftDemand: (shiftDemand: ShiftDemandT) => void;
+  handleAddShiftDemands: (shiftDemand: ShiftDemandT[]) => void;
   handleUpdateShiftDemand: (shiftDemand: ShiftDemandT) => void;
-  handleDeleteShiftDemand: (coverageId: string, shiftDemandId: string) => void;
+  handleDeleteShiftDemands: (shiftDemandId: string[]) => void;
 }) {
   const spaceBetween = 1;
   const borderWidth = 1;
@@ -47,7 +47,7 @@ export default function EventToDiv({
         left: startX,
         width: width,
         height: height,
-        backgroundColor: event.shiftDemand.shift.color,
+        backgroundColor: event.shift.color,
         opacity: 0.8,
         color: "white",
         borderTopLeftRadius: event.borderTopRadius ? "4px" : "0px",
@@ -65,9 +65,9 @@ export default function EventToDiv({
         staffingLabel={staffingLabel}
         width={width}
         height={height}
-        handleAddShiftDemand={handleAddShiftDemand}
+        handleAddShiftDemands={handleAddShiftDemands}
         handleUpdateShiftDemand={handleUpdateShiftDemand}
-        handleDeleteShiftDemand={handleDeleteShiftDemand}
+        handleDeleteShiftDemands={handleDeleteShiftDemands}
       />
     </div>
   );

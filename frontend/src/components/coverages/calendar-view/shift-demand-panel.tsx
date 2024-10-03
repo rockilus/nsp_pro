@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
@@ -13,57 +12,35 @@ import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
 // Types
 import { ShiftDemandT } from "../../../types/coverage";
-import {
-  ShiftT,
-  ShiftLeaveType,
-  ShiftType,
-  ShiftRestType,
-} from "../../../types/shift";
+import { ShiftT } from "../../../types/shift";
 
 export default function ShiftDemandPanel({
   lng,
   shiftDemand,
   shifts,
   handleClose,
-  handleAddShiftDemand,
+  handleAddShiftDemands,
   handleUpdateShiftDemand,
-  handleDeleteShiftDemand,
+  handleDeleteShiftDemands,
 }: {
   lng: string;
   shiftDemand: ShiftDemandT;
   shifts: ShiftT[];
   handleClose: () => void;
-  handleAddShiftDemand: (shiftDemand: ShiftDemandT) => void;
+  handleAddShiftDemands: (shiftDemand: ShiftDemandT[]) => void;
   handleUpdateShiftDemand: (shiftDemand: ShiftDemandT) => void;
-  handleDeleteShiftDemand: (coverageId: string, shiftDemandId: string) => void;
+  handleDeleteShiftDemands: (shiftDemandId: string[]) => void;
 }) {
   const { t } = useTranslation(lng, "coverage-page");
 
   const [SDState, setSDState] = useState<ShiftDemandT>(shiftDemand);
 
-  const emptyShift = {
-    teamId: "",
-    id: "",
-    name: "",
-    startTime: dayjs(),
-    endTime: dayjs(),
-    staffing: 0,
-    color: "",
-    deleted: false,
-    shiftType: ShiftType.NORMAL,
-    restType: ShiftRestType.NONE,
-    leaveType: ShiftLeaveType.NONE,
-    recuperationTime: 0,
-    recuperationDutyId: null,
-    attributes: [],
-  };
-
   const handleSaveSD = async () => {
-    if (SDState.shift.id === "") {
+    if (SDState.shiftId === "") {
       return;
     }
     if (SDState.id === "") {
-      await handleAddShiftDemand(SDState);
+      await handleAddShiftDemands([SDState]);
     } else {
       await handleUpdateShiftDemand(SDState);
     }
@@ -72,7 +49,7 @@ export default function ShiftDemandPanel({
 
   const handleDeleteSD = async () => {
     if (SDState.id !== "") {
-      await handleDeleteShiftDemand(SDState.coverageId, SDState.id);
+      await handleDeleteShiftDemands([SDState.id]);
     }
     handleClose();
   };
@@ -82,14 +59,12 @@ export default function ShiftDemandPanel({
       <Box sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}>
         <FormControl fullWidth>
           <Select
-            value={SDState.shift.id}
+            value={SDState.shiftId}
             label={t("shift")}
             onChange={(e) =>
               setSDState({
                 ...SDState,
-                shift:
-                  shifts.find((s) => s.id === (e.target.value as string)) ||
-                  emptyShift,
+                shiftId: e.target.value,
               })
             }
           >

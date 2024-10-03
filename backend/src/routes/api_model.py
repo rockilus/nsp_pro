@@ -85,7 +85,6 @@ class CoverageMessage(BaseModel):
     id: str
     teamId: str
     name: str
-    shiftDemands: List[ShiftDemandMessage]
 
 
 class CoverageSelectorMessage(BaseModel):

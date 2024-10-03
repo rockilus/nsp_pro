@@ -5,11 +5,15 @@ import {
   EventT,
   ShiftDemandCalendarT,
 } from "../../../types/coverage";
+import { ShiftT } from "../../../types/shift";
 
-const shiftDemandsToEvents = (shiftDemands: ShiftDemandT[]): EventT[] => {
+const shiftDemandsToEvents = (
+  shiftDemands: ShiftDemandT[],
+  shifts: ShiftT[]
+): EventT[] => {
   const out: EventT[] = [];
   // Convert ShiftDemandT to ShiftDemandCalendarT and duplicate two days shifts
-  const shiftDemandsCalendar = buildShiftDemandCalendar(shiftDemands);
+  const shiftDemandsCalendar = buildShiftDemandCalendar(shiftDemands, shifts);
   // Group shift demands by day index
   const groupedShiftDemands = groupByDayIndex(shiftDemandsCalendar);
   // Iterate over each day
@@ -39,35 +43,42 @@ const getShiftNameByShiftDemandId = (
 };
 
 const buildShiftDemandCalendar = (
-  shiftDemands: ShiftDemandT[]
+  shiftDemands: ShiftDemandT[],
+  shifts: ShiftT[]
 ): ShiftDemandCalendarT[] => {
   const out: ShiftDemandCalendarT[] = [];
   shiftDemands.forEach((shiftDemand) => {
-    const isTwoDays =
-      shiftDemand.shift.startTime.day() !== shiftDemand.shift.endTime.day();
+    const shift = shifts.find((s) => s.id === shiftDemand.shiftId);
+    if (!shift) {
+      return;
+    }
+    const isTwoDays = shift.startTime.day() !== shift.endTime.day();
     if (!isTwoDays) {
       out.push({
         ...shiftDemand,
+        shift,
         isTwoDays,
         isSecondDay: false,
-        startTime: setDayJSDate(shiftDemand.shift.startTime),
-        endTime: setDayJSDate(shiftDemand.shift.endTime),
+        startTime: setDayJSDate(shift.startTime),
+        endTime: setDayJSDate(shift.endTime),
       });
     } else {
       out.push({
         ...shiftDemand,
+        shift,
         isTwoDays,
         isSecondDay: false,
-        startTime: setDayJSDate(shiftDemand.shift.startTime),
-        endTime: setDayJSDate(shiftDemand.shift.startTime.endOf("day")),
+        startTime: setDayJSDate(shift.startTime),
+        endTime: setDayJSDate(shift.startTime.endOf("day")),
       });
       out.push({
         ...shiftDemand,
+        shift,
         isTwoDays,
         isSecondDay: true,
         dayIndex: (shiftDemand.dayIndex + 1) % 7,
-        startTime: setDayJSDate(shiftDemand.shift.endTime.startOf("day")),
-        endTime: setDayJSDate(shiftDemand.shift.endTime),
+        startTime: setDayJSDate(shift.endTime.startOf("day")),
+        endTime: setDayJSDate(shift.endTime),
       });
     }
   });
@@ -80,7 +91,7 @@ const shiftDemandCalendarToShiftDemand = (
   return {
     id: shiftDemand.id,
     dayIndex: shiftDemand.dayIndex,
-    shift: shiftDemand.shift,
+    shiftId: shiftDemand.shift.id,
     coverageId: shiftDemand.coverageId,
   };
 };
@@ -453,6 +464,7 @@ const createEvent = (
     borderTopRadius: !shiftDemand.isTwoDays || !shiftDemand.isSecondDay,
     borderBottomRadius: !(shiftDemand.isTwoDays && !shiftDemand.isSecondDay),
     shiftDemand: shiftDemandCalendarToShiftDemand(shiftDemand),
+    shift: shiftDemand.shift,
   };
 };
 
@@ -573,7 +585,7 @@ const covertOverlappingDictToShiftNames = (
 const buildShiftNameToEventDict = (events: EventT[]): Map<string, EventT[]> => {
   const out = new Map<string, EventT[]>();
   events.forEach((event) => {
-    const shiftName = event.shiftDemand.shift.name;
+    const shiftName = event.shift.name;
     if (!out.has(shiftName)) {
       out.set(shiftName, []);
     }

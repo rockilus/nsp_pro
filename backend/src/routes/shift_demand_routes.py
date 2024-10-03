@@ -22,12 +22,12 @@ from scripts.setup_database import coverage_db, shift_demand_db
 router = APIRouter()
 
 
-@router.post("/shift_demands/teams/{team_id}", status_code=201)
-async def create_shift_demand(
+@router.post("/shift-demands/teams/{team_id}", status_code=201)
+async def create_shift_demands(
     team_id: str,
-    shift_demand: ShiftDemandMessage,
+    shift_demands: List[ShiftDemandMessage],
     session: SessionContainerType = Depends(authn_verify_session()),
-) -> ShiftDemandMessage:
+) -> List[ShiftDemandMessage]:
     try:
         if not await authz_check(
             session.get_user_id(), "create-shift-demand", "team", team_id
@@ -35,9 +35,9 @@ async def create_shift_demand(
             raise NotAuthorizedError(
                 "You do not have permission to create a shift demand",
             )
-        sd_data = msg_to_core_shift_demand(shift_demand)
-        sd_created = shift_demand_db.create_shift_demand(sd_data)
-        response = core_to_msg_shift_demand(sd_created)
+        sds_data = [msg_to_core_shift_demand(sd) for sd in shift_demands]
+        sd_created = shift_demand_db.create_shift_demands(sds_data)
+        response = [core_to_msg_shift_demand(sd) for sd in sd_created]
     except Exception as e:
         log_info("Failed to create shift demand")
         handle_routes_errors(e)
@@ -65,7 +65,7 @@ async def get_shift_demands(
     return response
 
 
-@router.put("/shift_demands/{shift_demand_id}/teams/{team_id}")
+@router.put("/shift-demands/{shift_demand_id}/teams/{team_id}")
 async def update_shift_demand(
     team_id: str,
     req: ShiftDemandMessage,
@@ -87,17 +87,18 @@ async def update_shift_demand(
     return response
 
 
-@router.delete("/shift_demands/{shift_demand_id}/teams/{team_id}")
-async def delete_shift_demand(
-    shift_demand_id: str,
+@router.delete("/shift-demands/teams/{team_id}")
+async def delete_shift_demands(
     team_id: str,
+    shift_demand_ids: List[str],
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
     if not await authz_check(
         session.get_user_id(), "delete-shift-demand", "team", team_id
     ):
         raise NotAuthorizedError("You do not have permission to delete a shift demand")
-    shift_demand_db.delete_shift_demand(shift_demand_id)
+    for shift_demand_id in shift_demand_ids:
+        shift_demand_db.delete_shift_demand(shift_demand_id)
     return {"message": "Shift demand deleted successfully"}
 
 
