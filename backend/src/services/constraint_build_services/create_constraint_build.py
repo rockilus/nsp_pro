@@ -1,7 +1,9 @@
 from core import ConstraintBuild, ConstraintBuildAugmented
 from scripts.setup_database import constraint_build_db, schedule_db
 from services.constraint_build_services.cb_to_cb_augmented import cb_to_cb_augmented
-from services.data_fetching_services import fetch_workers_shifts_dim_attributes
+from services.data_fetching_services.fetch_data import (
+    fetch_workers_shifts_dim_attributes,
+)
 
 
 def create_constraint_build(

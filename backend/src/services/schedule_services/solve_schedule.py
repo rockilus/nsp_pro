@@ -17,7 +17,9 @@ from services.constraint_services import build_constraints
 from services.coverage_selector_services.build_shift_demand_date import (
     build_shift_demand_dates,
 )
-from services.data_fetching_services import fetch_workers_shifts_dim_attributes
+from services.data_fetching_services.fetch_data import (
+    fetch_workers_shifts_dim_attributes,
+)
 from services.request_services import get_requests_by_dates
 from services.schedule_services.assignment_services import (
     get_fixed_assignments,
