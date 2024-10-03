@@ -15,25 +15,19 @@ from core import (
     Template,
     Worker,
 )
-from scripts.setup_database import (
-    attribute_db,
-    dim_entry_db,
-    dimension_db,
-    shift_db,
-    user_db,
-    worker_db,
-)
+
+# WARNING: IMPORTING DBs HERE CREATED ERROR WITH PYTEST
 
 
 # pylint: disable=too-many-arguments
-def build_templates(team_id: str, user_id: str) -> List[Template]:
-    user = user_db.get_user_by_id(user_id)
-    workers = worker_db.get_workers_not_deleted(team_id)
-    shifts = shift_db.get_shifts_not_deleted(team_id)
-    sw_ids = [s.id for s in shifts] + [w.id for w in workers]
-    dimensions = dimension_db.get_dimensions_not_deleted(team_id)
-    dim_entries = dim_entry_db.get_dim_entries_by_dim_ids([d.id for d in dimensions])
-    attributes = attribute_db.get_attributes_by_owner_ids(sw_ids)
+def build_templates(
+    workers: List[Worker],
+    shifts: List[Shift],
+    dimensions: List[Dimension],
+    dim_entries: List[DimEntry],
+    attributes: List[Attribute],
+    lng: str,
+) -> List[Template]:
     dim_to_attributes: Dict[str, List[Attribute]] = {}
     for a in attributes:
         d_id = a.dimension_id
@@ -62,7 +56,7 @@ def build_templates(team_id: str, user_id: str) -> List[Template]:
         dim_entries,
         dim_to_attributes,
     )
-    return build_templates_list(worker_options, shift_options, user.language)
+    return build_templates_list(worker_options, shift_options, lng)
 
 
 def build_options(

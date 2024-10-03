@@ -17,6 +17,10 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import TemplateMessage
+from scripts.setup_database import user_db
+from services.data_fetching_services import (
+    fetch_workers_not_d_shifts_not_d_dim_not_d_attributes,
+)
 
 router = APIRouter()
 
@@ -35,7 +39,18 @@ async def get_constraint_templates(
                 "You do not have permission to get constraint templates"
             )
         user_id = session.get_user_id()
-        templates = build_templates(team_id, user_id)
+        user = user_db.get_user_by_id(user_id)
+        # pylint: disable=R0801
+        (
+            workers,
+            shifts,
+            dimensions,
+            dim_entries,
+            attributes,
+        ) = fetch_workers_not_d_shifts_not_d_dim_not_d_attributes(team_id)
+        templates = build_templates(
+            workers, shifts, dimensions, dim_entries, attributes, user.language
+        )
         response = [core_to_msg_constraint_template(ct) for ct in templates]
     except Exception as e:
         log_info("Failed to get constraint templates")
