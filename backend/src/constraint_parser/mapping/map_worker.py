@@ -21,7 +21,9 @@ class MapWorker:
         values = self.get_worker_values(cstr_build.blocks)
         return VarWorker(
             selector=self.get_selector(values),
-            target_ids=self.get_target_ids(values, cstr_build.missing_attributes),
+            target_ids=self.get_target_ids(
+                values, cstr_build.missing_properties
+            ),
             num_eligible_workers=0,
         )
 
@@ -73,7 +75,9 @@ class MapWorker:
             raise ValueError(f"Worker dimension {value.id} not found")
         if value.is_bool_dim:
             if not isinstance(value.name, bool):
-                raise ValueError("Value name is not a boolean for bool dimension")
+                raise ValueError(
+                    "Value name is not a boolean for bool dimension"
+                )
             if value.name not in self.worker_dim_dict[value.id]:
                 raise ValueError(
                     f"Worker property {value.name} "
@@ -81,10 +85,13 @@ class MapWorker:
                 )
             return self.worker_dim_dict[value.id][value.name]
         if not isinstance(value.name, str):
-            raise ValueError("Value name is not a string for non-bool dimension")
+            raise ValueError(
+                "Value name is not a string for non-bool dimension"
+            )
         if value.name.lower() not in self.worker_dim_dict[value.id]:
             raise ValueError(
-                f"Worker property {value.name} for dimension " + f"{value.id} not found"
+                f"Worker property {value.name} for dimension "
+                + f"{value.id} not found"
             )
         return self.worker_dim_dict[value.id][value.name.lower()]
 
@@ -98,7 +105,9 @@ class MapWorker:
             if not isinstance(worker_block.value, list):
                 raise ValueError("Worker block value is not a list")
 
-            if not all(isinstance(v, ShiftWorkerOption) for v in worker_block.value):
+            if not all(
+                isinstance(v, ShiftWorkerOption) for v in worker_block.value
+            ):
                 raise ValueError(
                     "Worker block value is not a list of ShiftWorkerOption"
                 )

@@ -89,7 +89,7 @@ class ConstraintBuildAugmented:
     hard: bool
     priority: str
     active: bool
-    missing_attributes: List[MissingProperty]
+    missing_properties: List[MissingProperty]
     text: str
 
 

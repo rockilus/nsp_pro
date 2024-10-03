@@ -21,7 +21,9 @@ from scripts.setup_database import (
     shift_db,
     worker_db,
 )
-from services.constraint_build_services.blocks_to_string import blocks_to_string
+from services.constraint_build_services.blocks_to_string import (
+    blocks_to_string,
+)
 
 
 # pylint: disable=too-many-arguments
@@ -30,7 +32,9 @@ def cb_to_cb_augmented(cb: ConstraintBuild) -> ConstraintBuildAugmented:
     shifts = shift_db.get_shifts(cb.team_id)
     sw_ids = [s.id for s in shifts] + [w.id for w in workers]
     dimensions = dimension_db.get_dimensions(cb.team_id)
-    dim_entries = dim_entry_db.get_dim_entries_by_dim_ids([d.id for d in dimensions])
+    dim_entries = dim_entry_db.get_dim_entries_by_dim_ids(
+        [d.id for d in dimensions]
+    )
     attributes = attribute_db.get_attributes_by_owner_ids(sw_ids)
     text = blocks_to_string(
         cb.blocks,
@@ -52,7 +56,7 @@ def cb_to_cb_augmented(cb: ConstraintBuild) -> ConstraintBuildAugmented:
         hard=cb.hard,
         priority=cb.priority,
         text=text,
-        missing_attributes=missing_attributes,
+        missing_properties=missing_attributes,
         active=active,
     )
 
@@ -73,32 +77,40 @@ def build_missing_attributes_and_active(
     active_shift_relative = False
     for block in blocks:
         if block.name == "worker":
-            (new_mps, new_active_worker) = build_missing_attributes_and_active_owner(
-                AttributeOwnerType.WORKER,
-                block,
-                workers,
-                dimensions,
-                dim_entries,
-                attributes,
+            (new_mps, new_active_worker) = (
+                build_missing_attributes_and_active_owner(
+                    AttributeOwnerType.WORKER,
+                    block,
+                    workers,
+                    dimensions,
+                    dim_entries,
+                    attributes,
+                )
             )
             mps += new_mps
             active_worker = active_worker or new_active_worker
         if block.name in ["shift", "shift_reference", "shift_relative"]:
-            new_mps, new_active_shift = build_missing_attributes_and_active_owner(
-                AttributeOwnerType.SHIFT,
-                block,
-                shifts,
-                dimensions,
-                dim_entries,
-                attributes,
+            new_mps, new_active_shift = (
+                build_missing_attributes_and_active_owner(
+                    AttributeOwnerType.SHIFT,
+                    block,
+                    shifts,
+                    dimensions,
+                    dim_entries,
+                    attributes,
+                )
             )
             mps += new_mps
             if block.name == "shift":
                 active_shift = active_shift or new_active_shift
             if block.name == "shift_reference":
-                active_shift_reference = active_shift_reference or new_active_shift
+                active_shift_reference = (
+                    active_shift_reference or new_active_shift
+                )
             if block.name == "shift_relative":
-                active_shift_relative = active_shift_relative or new_active_shift
+                active_shift_relative = (
+                    active_shift_relative or new_active_shift
+                )
     active = active_worker and (
         active_shift or (active_shift_reference and active_shift_relative)
     )
@@ -146,12 +158,16 @@ def build_missing_attributes_and_active_owner(
             raise ValueError("Dimension not found")
         if dimension.deleted:
             mps.append(
-                build_missing_attributes_deleted_dimension(owner_type, block, dimension)
+                build_missing_attributes_deleted_dimension(
+                    owner_type, block, dimension
+                )
             )
             continue
         if dimension.entry_type == DimensionEntryType.BOOL:
-            (new_mp, new_active) = build_missing_attributes_and_active_dimension_bool(
-                owner_type, block, owners, dimension, attributes
+            (new_mp, new_active) = (
+                build_missing_attributes_and_active_dimension_bool(
+                    owner_type, block, owners, dimension, attributes
+                )
             )
 
         elif dimension.entry_type == DimensionEntryType.DIM_ENTRIES:
@@ -221,7 +237,9 @@ def build_missing_attributes_and_active_owner_deleted(
                 is_bool=False,
                 dim_name=owner.name,
                 category=(
-                    "worker" if owner_type == AttributeOwnerType.WORKER else "shift"
+                    "worker"
+                    if owner_type == AttributeOwnerType.WORKER
+                    else "shift"
                 ),
                 property_values=[owner.name],
             )
@@ -252,7 +270,9 @@ def build_missing_attributes_deleted_dimension(
         dimension_id=dimension.id,
         is_bool=dimension.entry_type == DimensionEntryType.BOOL,
         dim_name=dimension.name,
-        category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+        category=(
+            "worker" if owner_type == AttributeOwnerType.WORKER else "shift"
+        ),
         property_values=a_values_constraint,  # type: ignore
     )
 
@@ -291,7 +311,11 @@ def build_missing_attributes_and_active_dimension_bool(
             dimension_id=dimension.id,
             is_bool=True,
             dim_name=dimension.name,
-            category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+            category=(
+                "worker"
+                if owner_type == AttributeOwnerType.WORKER
+                else "shift"
+            ),
             property_values=missing_values,  # type: ignore
         )
     else:
@@ -322,16 +346,26 @@ def build_missing_attributes_and_active_dimension_dim_entry(
         for a in attributes
         if a.dimension_id == dimension.id and a.owner_id in o_not_deleted
     ]
-    dim_entry_ids = list(set(de_id for a in a_all for de_id in a.dim_entry_ids))
-    dim_entry_names_owners = [de.name for de in dim_entries if de.id in dim_entry_ids]
-    missing_values = list(set(a_values_constraint) - set(dim_entry_names_owners))
+    dim_entry_ids = list(
+        set(de_id for a in a_all for de_id in a.dim_entry_ids)
+    )
+    dim_entry_names_owners = [
+        de.name for de in dim_entries if de.id in dim_entry_ids
+    ]
+    missing_values = list(
+        set(a_values_constraint) - set(dim_entry_names_owners)
+    )
     not_missing_values = list(set(a_values_constraint) - set(missing_values))
     if missing_values:
         mp = MissingProperty(
             dimension_id=dimension.id,
             is_bool=False,
             dim_name=dimension.name,
-            category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+            category=(
+                "worker"
+                if owner_type == AttributeOwnerType.WORKER
+                else "shift"
+            ),
             property_values=missing_values,  # type: ignore
         )
     else:
@@ -374,7 +408,11 @@ def build_missing_attributes_and_active_dimension_str_int(
             dimension_id=dimension.id,
             is_bool=False,
             dim_name=dimension.name,
-            category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+            category=(
+                "worker"
+                if owner_type == AttributeOwnerType.WORKER
+                else "shift"
+            ),
             property_values=missing_values,  # type: ignore
         )
     else:
