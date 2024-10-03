@@ -35,11 +35,19 @@ export default function ShiftDemandQuickAdd({
   const timeFrames = [
     {
       name: "work_week",
-      label: "work week",
+      label: t("work_week").toLowerCase(),
       requiredIndexes: [0, 1, 2, 3, 4],
     },
-    { name: "weekend", label: "weekend", requiredIndexes: [5, 6] },
-    { name: "week", label: "week", requiredIndexes: [0, 1, 2, 3, 4, 5, 6] },
+    {
+      name: "weekend",
+      label: t("weekend").toLowerCase(),
+      requiredIndexes: [5, 6],
+    },
+    {
+      name: "week",
+      label: t("week").toLowerCase(),
+      requiredIndexes: [0, 1, 2, 3, 4, 5, 6],
+    },
   ];
 
   const arraysMatch = (arr1: number[], arr2: number[]): boolean => {
@@ -50,14 +58,6 @@ export default function ShiftDemandQuickAdd({
     }
     return sortedArr1.every((value, index) => value === sortedArr2[index]);
   };
-  // const arraysMatch = (arr1: number[], arr2: number[]): boolean => {
-  //   if (arr1.length !== arr2.length) {
-  //     return false;
-  //   }
-  //   const sortedArr1 = [...arr1].sort();
-  //   const sortedArr2 = [...arr2].sort();
-  //   return sortedArr1.every((value, index) => value === sortedArr2[index]);
-  // };
 
   const checkShiftDemandTargetIndexes = (
     shiftId: string,
@@ -120,8 +120,7 @@ export default function ShiftDemandQuickAdd({
 
   return (
     <div className="coverage-selector-container">
-      {/* <span className="title">{t("weekly_planners")}</span> */}
-      <span className="title">Quick add</span>
+      <span className="title">{t("quick_add")}</span>
       {shifts.map((shift) => (
         <div key={shift.id} className="shift-list-item">
           <span>{shift.name}</span>
