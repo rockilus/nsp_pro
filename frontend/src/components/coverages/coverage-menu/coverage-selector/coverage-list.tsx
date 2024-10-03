@@ -5,7 +5,7 @@ import List from "@mui/material/List";
 // Components
 import CoverageItem from "./coverage-item";
 // Types
-import { CoverageT } from "../../types/coverage";
+import { CoverageT } from "../../../../types/coverage";
 
 export default function CoverageList({
   coverages,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
 // Components
@@ -12,13 +12,13 @@ import shiftDemandsToEvents from "./sds-to-events";
 // Styles
 import "./weekly-calendar.css";
 // Types
-import { CoverageT, EventT, ShiftDemandT } from "../../types/coverage";
+import { CoverageT, EventT, ShiftDemandT } from "../../../types/coverage";
 import {
   ShiftT,
   ShiftLeaveType,
   ShiftType,
   ShiftRestType,
-} from "../../types/shift";
+} from "../../../types/shift";
 
 dayjs.extend(utc);
 

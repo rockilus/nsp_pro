@@ -10,7 +10,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import TextField from "@mui/material/TextField";
 // Types
-import { CoverageT } from "../../types/coverage";
+import { CoverageT } from "../../../../types/coverage";
 
 export default function CoverageItem({
   coverage,

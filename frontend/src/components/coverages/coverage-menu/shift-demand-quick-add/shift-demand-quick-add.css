@@ -1,0 +1,27 @@
+.shift-list-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 5px 0;
+}
+
+.add-buttons-container {
+  display: flex;
+  flex-direction: row;
+  padding: 0 0 5px 0;
+}
+
+.add-shift-demands-button {
+  height: 100%;
+  border-radius: 4px;
+  padding: 0 5px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #61616191;
+  cursor: pointer;
+  border: 1px solid #6161611f;
+  margin-right: 5px;
+}
+
+.add-shift-demands-button:hover {
+  background-color: #f1f3f4;
+}

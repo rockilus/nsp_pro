@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -12,13 +12,13 @@ import Select from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
 // Types
-import { ShiftDemandT } from "../../types/coverage";
+import { ShiftDemandT } from "../../../types/coverage";
 import {
   ShiftT,
   ShiftLeaveType,
   ShiftType,
   ShiftRestType,
-} from "../../types/shift";
+} from "../../../types/shift";
 
 export default function ShiftDemandPanel({
   lng,

@@ -10,6 +10,7 @@ from routes.health_routes import router as router_health
 from routes.objective_breach_routes import router as router_objective_breach
 from routes.request_routes import router as router_request
 from routes.schedule_routes import router as router_schedule
+from routes.shift_demand_routes import router as router_shift_demand
 from routes.shift_routes import router as router_shift
 from routes.stats_routes import router as router_stats
 from routes.team_routes import router as router_team
@@ -29,6 +30,7 @@ __all__ = [
     "router_objective_breach",
     "router_request",
     "router_schedule",
+    "router_shift_demand",
     "router_shift",
     "router_stats",
     "router_team",

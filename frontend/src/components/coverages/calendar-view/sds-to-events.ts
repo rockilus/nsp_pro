@@ -4,7 +4,7 @@ import {
   ShiftDemandT,
   EventT,
   ShiftDemandCalendarT,
-} from "../../types/coverage";
+} from "../../../types/coverage";
 
 const shiftDemandsToEvents = (shiftDemands: ShiftDemandT[]): EventT[] => {
   const out: EventT[] = [];

@@ -77,7 +77,7 @@ class ShiftMessage(BaseModel):
 class ShiftDemandMessage(BaseModel):
     id: str
     dayIndex: int
-    shift: ShiftMessage
+    shiftId: str
     coverageId: str
 
 

@@ -5,8 +5,8 @@ import Typography from "@mui/material/Typography";
 // Components
 import ShiftDemandButton from "./shift-demand-button";
 // Types
-import { ShiftDemandT } from "../../types/coverage";
-import { ShiftT } from "../../types/shift";
+import { ShiftDemandT } from "../../../types/coverage";
+import { ShiftT } from "../../../types/shift";
 
 export default function EventDivContent({
   lng,

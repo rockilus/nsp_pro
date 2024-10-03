@@ -55,6 +55,19 @@ class ShiftDemandDB:
 
     def get_shift_demands_by_coverage_ids(
         self, coverage_ids: List[str]
+    ) -> List[ShiftDemand]:
+        try:
+            # pylint: disable=no-member
+            shift_demands = ShiftDemandDocument.objects.filter(  # type: ignore
+                coverage__in=coverage_ids
+            )
+        except Exception as e:
+            log_info("Failed to get shift demands by coverage ids from database")
+            handle_get_document_error(e)
+        return [doc_to_core_shift_demand(sd) for sd in list(shift_demands)]
+
+    def get_cov_id_to_shift_demands_by_coverage_ids(
+        self, coverage_ids: List[str]
     ) -> Dict[str, List[ShiftDemand]]:
         try:
             # pylint: disable=no-member

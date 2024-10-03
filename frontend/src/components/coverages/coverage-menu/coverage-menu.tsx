@@ -1,17 +1,19 @@
 import React from "react";
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from "../../../app/i18n/client";
 // Components
-import CoverageList from "./coverage-list";
-import TableAddButton from "../buttons/table-add-button";
+import CoverageSelector from "./coverage-selector/coverage-selector";
+import ShiftDemandQuickAdd from "./shift-demand-quick-add/shift-demand-quick-add";
 // Styles
-import "../../styles/text-styles.css";
-import "./coverage-selector.css";
+import "../../../styles/text-styles.css";
+import "./coverage-menu.css";
 // Types
-import { CoverageT } from "../../types/coverage";
+import { CoverageT, ShiftDemandT } from "../../../types/coverage";
+import { ShiftT } from "../../../types/shift";
 
-export default function CoverageSelector({
+export default function CoverageMenu({
   lng,
   coverages,
+  shifts,
   selectedCoverage,
   editingName,
   handleSelectCoverage,
@@ -22,6 +24,7 @@ export default function CoverageSelector({
 }: {
   lng: string;
   coverages: CoverageT[];
+  shifts: ShiftT[];
   selectedCoverage: CoverageT | null;
   editingName: boolean;
   handleSelectCoverage: (coverage: CoverageT) => void;
@@ -33,18 +36,25 @@ export default function CoverageSelector({
   const { t } = useTranslation(lng, "coverage-page");
 
   return (
-    <div className="coverage-selector-container">
-      <span className="title">{t("weekly_planners")}</span>
-      <CoverageList
+    <div className="coverage-menu-container">
+      <CoverageSelector
+        lng={lng}
         coverages={coverages}
         selectedCoverage={selectedCoverage}
         editingName={editingName}
         handleSelectCoverage={handleSelectCoverage}
         setEditingName={setEditingName}
+        handleAddCoverage={handleAddCoverage}
         handleUpdateCoverage={handleUpdateCoverage}
         handleDeleteCoverage={handleDeleteCoverage}
       />
-      <TableAddButton text={t("planner")} handleClick={handleAddCoverage} />
+      {selectedCoverage && (
+        <ShiftDemandQuickAdd
+          lng={lng}
+          selectedCoverage={selectedCoverage}
+          shifts={shifts}
+        />
+      )}
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "../../app/i18n/client";
 // Components
-import CoverageSelector from "./coverage-selector";
-import WeeklyCalendar from "./weekly-calendar";
+import WeeklyCalendar from "./calendar-view/weekly-calendar";
+import CoverageMenu from "./coverage-menu/coverage-menu";
 // Skeletons
 import CoveragesSkeleton from "../skeletons/coverages-skeleton";
 // Actions
@@ -33,6 +33,7 @@ export default function CoverageTab({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [coverages, setCoverages] = useState<CoverageT[]>([]);
+  const [shiftDemands, setShiftDemands] = useState<ShiftDemandT[]>([]);
 
   const [selectedCoverage, setSelectedCoverage] = useState<CoverageT | null>(
     null
@@ -219,9 +220,10 @@ export default function CoverageTab({
         <CoveragesSkeleton />
       ) : (
         <div className="tab-container-row">
-          <CoverageSelector
+          <CoverageMenu
             lng={lng}
             coverages={coverages}
+            shifts={shifts}
             selectedCoverage={selectedCoverage}
             editingName={editingName}
             handleSelectCoverage={handleSelectCoverage}
