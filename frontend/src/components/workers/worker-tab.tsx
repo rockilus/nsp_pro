@@ -49,6 +49,8 @@ export default function WorkerTab({
   const DefaultWorkerFields: Record<string, string>[] = [
     { name: "name", label: t("name") },
     { name: "weeklyHours", label: t("weekly_hours") },
+    { name: "weeklyHoursDesired", label: t("weekly_hours_desired") },
+    { name: "dutiesPerMonth", label: t("duties_per_month") },
     { name: "annualLeave", label: t("annual_leave") },
   ];
 

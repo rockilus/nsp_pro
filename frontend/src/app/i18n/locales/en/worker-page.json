@@ -6,6 +6,7 @@
     "delete_confirm": "Delete all",
     "delete_text": "Deleting this property will remove it from all workers. This action cannot be undone.",
     "delete_title": "Delete this property for all?",
+    "duties_per_month": "Duties per month",
     "name": "Name",
     "name_helper_text": "Please enter a name",
     "new_property": "New property",
@@ -18,6 +19,7 @@
     "type_list": "Tags",
     "type_str": "Text",
     "weekly_hours": "Weekly hours",
+    "weekly_hours_desired": "Desired weekly hours",
     "worker": "Worker",
     "workers": "Workers"
 }
