@@ -274,7 +274,6 @@ def _build_interval_parameters(
                 s.start_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
                 // Constants.NUM_SECONDS_MINUTE
             )
-
             s_end_times[d_string, s.id] = int(
                 (
                     s.end_time.replace(year=d.year, month=d.month, day=d.day)
@@ -283,6 +282,7 @@ def _build_interval_parameters(
                 // Constants.NUM_SECONDS_MINUTE
                 - 1
             )
+
     return s_durations, s_start_times, s_end_times
 
     # shift_durations = {
@@ -319,3 +319,25 @@ def _build_interval_parameters(
     #     for s in shifts
     # }
     # return shift_durations, shift_start_times, shift_end_times
+
+
+# if s.id == "66e88a44b774f3030fb038e3":
+#     if d in [date(2024, 10, 26), date(2024, 10, 27)]:
+#         start_time_dt = datetime.fromtimestamp(
+#             s_start_times[d_string, s.id] * Constants.NUM_SECONDS_MINUTE
+#         )
+#         end_time_dt = datetime.fromtimestamp(
+#             s_end_times[d_string, s.id] * Constants.NUM_SECONDS_MINUTE
+#         )
+#         print("id           ", s.id)
+#         print("name         ", s.name)
+#         print("date         ", d_string)
+#         print("start        ", s_start_times[d_string, s.id])
+#         print("end          ", s_end_times[d_string, s.id])
+#         print("start_dt     ", start_time_dt)
+#         print("end_dt       ", end_time_dt)
+#         print("duration     ", s_durations[s.id])
+#         print(
+#             "duration calc",
+#             (s_end_times[d_string, s.id] - s_start_times[d_string, s.id]),
+#         )

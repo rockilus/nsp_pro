@@ -20,8 +20,13 @@ def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:
     if shift.leave_type != ShiftLeaveType.NONE:
         raise ValueError("Cannot create a leave shift")
     shift_created = shift_db.create_shift(shift)
+    dim_types = (
+        [DimensionType.SHIFT]
+        if shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+        else [DimensionType.REST_SHIFT]
+    )
     d_bool = dimension_db.get_dimensions_by_dim_types_and_entry_type(
-        [DimensionType.SHIFT, DimensionType.REST_SHIFT],
+        dim_types,
         DimensionEntryType.BOOL,
         shift_created.team_id,
     )
@@ -42,38 +47,63 @@ def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:
     return shift_created, attributes_saved
 
 
-def create_duty_recuperation_shifts(shifts: List[Shift]) -> List[Shift]:
-    rs_new = []
-    for duty in [s for s in shifts if s.shift_type == ShiftType.DUTY]:
+def create_duty_recuperation_shifts(
+    shifts: List[Shift],
+) -> List[Shift]:
+    drs_new = []
+    drs_updated = []
+    drs_deleted = []
+    for shift in [s for s in shifts if not s.deleted]:
         dr_existing = next(
             (
                 s
                 for s in shifts
                 if s.shift_type == ShiftType.REST
                 and s.rest_type == ShiftRestType.RECUPERATION
-                and s.recuperation_duty_id == duty.id
+                and s.recuperation_duty_id == shift.id
             ),
             None,
         )
+        dr_start_time = shift.end_time
+        dr_end_time = dr_start_time + timedelta(hours=shift.recuperation_time)
         if dr_existing:
+            if shift.shift_type != ShiftType.DUTY and not dr_existing.deleted:
+                drs_deleted.append(shift_db.logical_delete_shift(dr_existing.id))
+                continue
+            if (
+                dr_existing.start_time == dr_start_time
+                and dr_existing.end_time == dr_end_time
+                and not dr_existing.deleted
+            ):
+                continue
+            dr_existing.start_time = dr_start_time
+            dr_existing.end_time = dr_end_time
+            dr_existing.deleted = False
+            drs_updated.append(dr_existing)
+            continue
+        if shift.shift_type != ShiftType.DUTY:
             continue
         dr = Shift(
             id="",
-            team_id=duty.team_id,
+            team_id=shift.team_id,
             name="Duty recuperation",
-            start_time=duty.end_time,
-            end_time=duty.end_time + timedelta(hours=duty.recuperation_time),
+            start_time=dr_start_time,
+            end_time=dr_end_time,
             staffing=0,
             color="#EDBB99",
             shift_type=ShiftType.REST,
             rest_type=ShiftRestType.RECUPERATION,
             leave_type=ShiftLeaveType.NONE,
             recuperation_time=0,
-            recuperation_duty_id=duty.id,
+            recuperation_duty_id=shift.id,
             deleted=False,
         )
-        rs_new.append(dr)
-    return shift_db.create_shifts(rs_new)
+        drs_new.append(dr)
+    return (
+        shift_db.create_shifts(drs_new)
+        + shift_db.update_shifts(drs_updated)
+        + drs_deleted
+    )
 
 
 def create_default_shifts(team_id: str) -> None:

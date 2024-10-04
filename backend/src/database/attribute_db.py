@@ -33,6 +33,8 @@ class AttributeDB:
         return doc_to_core_attribute(p_saved)
 
     def create_attributes(self, attributes: List[Attribute]) -> List[Attribute]:
+        if not attributes:
+            return []
         a_docs = core_to_doc_attributes(attributes, creating=True)
         try:
             # pylint: disable=no-member

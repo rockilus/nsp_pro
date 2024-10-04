@@ -1,7 +1,7 @@
 import time
 from typing import List, Tuple
 
-from core import Assignment, ObjectiveBreach, RequestAugmented, Schedule
+from core import Assignment, ObjectiveBreach, RequestAugmented, Schedule, Shift
 from engine import Engine
 from scripts.setup_database import (
     assignment_db,
@@ -35,7 +35,13 @@ from services.shift_services.create_shift import create_duty_recuperation_shifts
 # pylint: disable=too-many-locals, too-many-statements
 def solve_schedule(
     schedule: Schedule,
-) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach], List[RequestAugmented]]:
+) -> Tuple[
+    Schedule,
+    List[Assignment],
+    List[ObjectiveBreach],
+    List[RequestAugmented],
+    List[Shift],
+]:
     start_time = time.time()
     start_time_db = time.time()
     (
@@ -53,7 +59,11 @@ def solve_schedule(
         dim_entries,
         attributes,
     )
-    shifts += create_duty_recuperation_shifts(shifts)
+    recuperation_shifts_new = create_duty_recuperation_shifts(shifts)
+    shift_id_to_shift = {shift.id: shift for shift in shifts}
+    for rec_shift in recuperation_shifts_new:
+        shift_id_to_shift[rec_shift.id] = rec_shift
+    shifts = list(shift_id_to_shift.values())
     coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule.id)
     shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
         coverage_selectors
@@ -153,6 +163,7 @@ def solve_schedule(
         updated_assignments,
         new_objective_breaches,
         updated_requests,
+        recuperation_shifts_new,
     )
 
 

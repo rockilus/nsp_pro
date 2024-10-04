@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from datetime import datetime, timezone
 from typing import Dict, List
 
 import humps
@@ -158,6 +159,8 @@ def core_to_msg_shift_and_attributes(
     except Exception as e:
         log_info("Failed to convert Shift to dictionary")
         raise MessageTypeError(str(e)) from e
+    data["start_time"] = shift.start_time.timestamp()
+    data["end_time"] = shift.end_time.timestamp()
     data["attributes"] = [core_to_msg_attribute(a) for a in attributes]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ShiftMessage)
@@ -173,6 +176,12 @@ def core_to_msg_shift_and_attributes(
 def msg_to_core_to_shift(msg: ShiftMessage) -> Shift:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake = {k: v for k, v in data_snake.items() if k != "attributes"}
+    data_snake["start_time"] = datetime.fromtimestamp(
+        data_snake["start_time"], timezone.utc
+    )
+    data_snake["end_time"] = datetime.fromtimestamp(
+        data_snake["end_time"], timezone.utc
+    )
     data_snake["shift_type"] = ShiftType(data_snake["shift_type"])
     data_snake["rest_type"] = ShiftRestType(data_snake["rest_type"])
     data_snake["leave_type"] = ShiftLeaveType(data_snake["leave_type"])

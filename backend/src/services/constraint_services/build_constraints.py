@@ -175,7 +175,7 @@ def build_duty_recuperation_constraints(
     shifts: List[Shift], schedule: Schedule
 ) -> List[Constraint]:
     out = []
-    for duty in [s for s in shifts if s.shift_type == ShiftType.DUTY]:
+    for duty in [s for s in shifts if s.shift_type == ShiftType.DUTY and not s.deleted]:
         # pylint: disable=R0801
         dr = next(
             (

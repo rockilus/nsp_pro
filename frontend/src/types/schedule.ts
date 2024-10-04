@@ -57,6 +57,7 @@ export type SolutionT = {
   assignments: AssignmentT[];
   objectiveBreaches: BreachT[];
   requests: RequestT[];
+  recuperationShiftsNew: ShiftT[];
 };
 
 // Validate

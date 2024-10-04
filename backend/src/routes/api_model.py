@@ -60,8 +60,8 @@ class ShiftMessage(BaseModel):
     id: str
     teamId: str
     name: str
-    startTime: datetime
-    endTime: datetime
+    startTime: float
+    endTime: float
     staffing: int
     color: str
     shiftType: int
@@ -219,6 +219,7 @@ class SolutionMessage(BaseModel):
     assignments: List[AssignmentMessage]
     objectiveBreaches: List[ObjectiveBreachMessage]
     requests: List[RequestMessage]
+    recuperationShiftsNew: List[ShiftMessage]
 
 
 class ValidateMessage(BaseModel):

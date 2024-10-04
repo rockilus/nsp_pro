@@ -8,10 +8,12 @@ import { toRequestT, getRequests } from "./request";
 import { getAllWorkers } from "./worker";
 import { getAllShifts } from "./shift";
 import { getStats } from "./stats";
+import { toShiftT } from "./shift";
 // Types
 import { ScheduleT, AssignmentT, BreachT } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import { StatsOptionsT } from "../../types/stats";
+import { ShiftT } from "../../types/shift";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -75,11 +77,13 @@ export async function solveSchedule(scheduleId: string, teamId: string) {
       assignments: responseData.assignments.map(toAssignmentT),
       breaches: responseData.objectiveBreaches.map(toBreachT),
       requests: responseData.requests.map(toRequestT),
+      recuperationShiftsNew: responseData.recuperationShiftsNew.map(toShiftT),
     } as {
       schedule: ScheduleT;
       assignments: AssignmentT[];
       breaches: BreachT[];
       requests: RequestT[];
+      recuperationShiftsNew: ShiftT[];
     };
   } catch (error) {
     console.error("Failed to solve schedule:", error);
