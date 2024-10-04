@@ -161,11 +161,11 @@ class ShiftDB:
             log_info("Failed to get shift by id to logical delete from database")
             handle_get_document_error(e)
         try:
-            s_doc.update(set__deleted=True)
+            s_doc_deleted = s_doc.update(set__deleted=True)
         except Exception as e:
             log_info("Failed to logical delete shift from database")
             handle_save_document_error(e)
-        return doc_to_core_shift(s_doc)
+        return doc_to_core_shift(s_doc_deleted)
 
 
 # Mappers

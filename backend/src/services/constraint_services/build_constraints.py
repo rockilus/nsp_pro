@@ -52,7 +52,7 @@ def build_constraints(
     ]
     out = []
     out += constraint_db.create_constraints(constraints_user)
-    out += build_duty_recuperation_constraints(shifts, schedule)
+    # out += build_duty_recuperation_constraints(shifts, schedule)
     out += build_quick_staffing_constraints(schedule)
     return out
 
@@ -193,7 +193,7 @@ def build_duty_recuperation_constraints(
             Constraint(
                 id="",
                 constraint_type="ord",
-                operator="yes_exclusively",
+                operator="yes",
                 target_value=0,
                 target_unit="",
                 worker_var=VarWorker(

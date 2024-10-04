@@ -16,6 +16,7 @@ class VariableSpace:
     days_solving: List[str]
     all_shifts: List[str]
     shifts_not_deleted: List[str]
+    duty_recup_pairs: List[Tuple[str, str]]
 
 
 # pylint: disable=R0801

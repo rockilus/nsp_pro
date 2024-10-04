@@ -20,6 +20,7 @@ class Model:
         days_solving: List[str],
         all_shifts: List[str],
         shifts_not_deleted: List[str],
+        duty_recup_pairs: List[Tuple[str, str]],
         shift_durations: Dict[str, int],
         shift_start_times: Dict[Tuple, int],
         shift_end_times: Dict[Tuple, int],
@@ -31,6 +32,7 @@ class Model:
         self.days_solving = days_solving
         self.shifts = all_shifts
         self.shifts_not_deleted = shifts_not_deleted
+        self.duty_recup_pairs = duty_recup_pairs
 
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple, cp_model.IntVar] = {}
@@ -152,31 +154,58 @@ class Model:
     def sequential_solve(self, inputs: Inputs) -> None:
         # hts stand for high to soft
         self.solve_model_hts_custom(
-            inputs, coverage_hts=False, request_hts=False, constraint_hts=False
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=False,
+            request_hts=False,
+            constraint_hts=False,
         )
         if self.status != cp_model.INFEASIBLE:
             return
         self.reset_model()
         self.solve_model_hts_custom(
-            inputs, coverage_hts=False, request_hts=True, constraint_hts=False
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=False,
+            request_hts=True,
+            constraint_hts=False,
         )
         if self.status != cp_model.INFEASIBLE:
             return
         self.reset_model()
         self.solve_model_hts_custom(
-            inputs, coverage_hts=False, request_hts=True, constraint_hts=True
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=False,
+            request_hts=True,
+            constraint_hts=True,
         )
         if self.status != cp_model.INFEASIBLE:
             return
         self.reset_model()
         self.solve_model_hts_custom(
-            inputs, coverage_hts=True, request_hts=True, constraint_hts=True
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=True,
+            request_hts=True,
+            constraint_hts=True,
+        )
+        if self.status != cp_model.INFEASIBLE:
+            return
+        self.reset_model()
+        self.solve_model_hts_custom(
+            inputs,
+            coverage_hts=True,
+            duty_recup_hts=True,
+            request_hts=True,
+            constraint_hts=True,
         )
 
     def solve_model_hts_custom(
         self,
         inputs: Inputs,
         coverage_hts: bool,
+        duty_recup_hts: bool,
         request_hts: bool,
         constraint_hts: bool,
     ) -> None:
@@ -193,6 +222,7 @@ class Model:
         self.add_constraint_factory.add_coverage.add_coverage(
             inputs.coverage.coverage, coverage_hts
         )
+        # self.add_duty_recup_constraints(duty_recup_hts)
         self.add_constraint_factory.add_request.add_requests(
             inputs.requests, request_hts
         )
@@ -202,7 +232,9 @@ class Model:
         self.add_objective()
         self.solve()
         self.print_model_metadata(
-            f"COVERAGE_HTS: {coverage_hts}, REQUEST_HTS: {request_hts}, "
+            f"COVERAGE_HTS: {coverage_hts}, "
+            + f"DUTY_RECUP_HTS: {duty_recup_hts}, "
+            + f"REQUEST_HTS: {request_hts}, "
             + f"CONSTRAINT_HTS: {constraint_hts}"
         )
 
@@ -514,6 +546,32 @@ class Model:
             self.model.AddAbsEquality(excess, delta)
             self.obj.int_vars.append(excess)
             self.obj.int_coeffs.append(10)
+
+    def add_duty_recup_constraints(self, hard_to_soft: bool) -> None:
+        for duty, recup in self.duty_recup_pairs:
+            for w in self.workers_not_deleted:
+                for d in self.days_solving:
+                    if not hard_to_soft:
+                        self.model.Add(
+                            self.variables[w, d, duty] == self.variables[w, d, recup]
+                        )
+                    else:
+                        # var_name = build_var_name(
+                        #     constraint, cstr_vars, "constraint"
+                        # )
+                        delta = self.model.NewIntVar(-1, 1, "")
+                        self.model.Add(
+                            delta
+                            == self.variables[w, d, duty] - self.variables[w, d, recup]
+                        )
+                        excess = self.model.NewIntVar(
+                            0,
+                            1,
+                            "No recup after duty",
+                        )
+                        self.model.AddAbsEquality(excess, delta)
+                        self.obj.int_vars.append(excess)
+                        self.obj.int_coeffs.append(10)
 
     def add_custom_constraints(
         self,

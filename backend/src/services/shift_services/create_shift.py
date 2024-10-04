@@ -67,8 +67,9 @@ def create_duty_recuperation_shifts(
         dr_start_time = shift.end_time
         dr_end_time = dr_start_time + timedelta(hours=shift.recuperation_time)
         if dr_existing:
-            if shift.shift_type != ShiftType.DUTY and not dr_existing.deleted:
-                drs_deleted.append(shift_db.logical_delete_shift(dr_existing.id))
+            if shift.shift_type != ShiftType.DUTY:
+                if not dr_existing.deleted:
+                    drs_deleted.append(shift_db.logical_delete_shift(dr_existing.id))
                 continue
             if (
                 dr_existing.start_time == dr_start_time

@@ -33,10 +33,8 @@ class AddConstraintOrd(AddConstraint):
         hard_to_soft: bool,
     ) -> None:
         if constraint.hard and not hard_to_soft:
-            if constraint.operator in ["yes", "yes_exclusively"]:
+            if constraint.operator == "yes":
                 transition = [cstr_vars[0].Not(), cstr_vars[1]]
-                if constraint.operator == "yes_exclusively":
-                    self.model.Add(cstr_vars[1] <= cstr_vars[0])
             elif constraint.operator == "no":
                 transition = [cstr_var.Not() for cstr_var in cstr_vars]
             else:
@@ -57,10 +55,8 @@ class AddConstraintOrd(AddConstraint):
                 ],
             )
             var_name = build_var_name(constraint, cstr_vars, "constraint")
-            if constraint.operator in ["yes", "yes_exclusively"]:
+            if constraint.operator == "yes":
                 transition = [cstr_vars[0].Not(), cstr_vars[1]]
-                if constraint.operator == "yes_exclusively":
-                    self.model.Add(cstr_vars[1] <= cstr_vars[0])
             elif constraint.operator == "no":
                 transition = [cstr_var.Not() for cstr_var in cstr_vars]
             else:

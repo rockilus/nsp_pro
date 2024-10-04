@@ -8,6 +8,8 @@ from core import (
     Shift,
     ShiftDemandDate,
     ShiftLeaveType,
+    ShiftRestType,
+    ShiftType,
     VarDay,
     VarShift,
     VarWorker,
@@ -50,6 +52,7 @@ def core_to_engine_inputs(
         days_solving=_build_day_coordinates(start_date, end_date),
         all_shifts=[shift.id for shift in shifts],
         shifts_not_deleted=[s.id for s in shifts if not s.deleted],
+        duty_recup_pairs=build_duty_recup_pairs(shifts),
     )
     coverage_engine = CoverageEngine(
         [ShiftDemandEngine(**sd.__dict__) for sd in shift_demand_dates]
@@ -284,6 +287,27 @@ def _build_interval_parameters(
             )
 
     return s_durations, s_start_times, s_end_times
+
+
+def build_duty_recup_pairs(shifts: List[Shift]) -> List[Tuple[str, str]]:
+    out = []
+    for shift in [s for s in shifts if not s.deleted]:
+        if shift.shift_type == ShiftType.DUTY:
+            # pylint: disable=R0801
+            rec_shift = next(
+                (
+                    s
+                    for s in shifts
+                    if s.shift_type == ShiftType.REST
+                    and s.rest_type == ShiftRestType.RECUPERATION
+                    and s.recuperation_duty_id == shift.id
+                    and not s.deleted
+                ),
+                None,
+            )
+            if rec_shift:
+                out.append((shift.id, rec_shift.id))
+    return out
 
     # shift_durations = {
     #     shift.id: int(
