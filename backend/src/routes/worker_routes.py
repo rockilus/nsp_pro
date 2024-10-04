@@ -156,7 +156,7 @@ def core_to_msg_worker_and_attributes(
 # message to core
 def msg_to_core_worker(msg: WorkerMessage) -> Worker:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake = {k: v for k, v in data_snake.items() if k != "worker_properties"}
+    data_snake = {k: v for k, v in data_snake.items() if k != "attributes"}
     try:
         worker = Worker(**data_snake)
     except Exception as e:

@@ -5,6 +5,8 @@ import TableCell from "@mui/material/TableCell";
 import WorkerFieldCellName from "./worker-field-cell-name";
 import WorkerFieldCellWeeklyHours from "./worker-field-cell-weekly-hours";
 import WorkerFieldCellAnnualLeave from "./worker-field-cell-annual-leave";
+import WorkerFieldCellDutiesPerMonth from "./worker-field-cell-duties-per-month";
+import WorkerFieldCellWeeklyHoursDesired from "./worker-field-cell-weekly-hours-desired";
 // Types
 import { WorkerT } from "../../../types/worker";
 
@@ -32,6 +34,20 @@ export default function WorkerFieldCell({
     <WorkerFieldCellWeeklyHours
       worker={worker}
       editing={editing[worker.id] === "weeklyHours"}
+      setEditing={setEditing}
+      handleUpdateWorker={handleUpdateWorker}
+    />
+  ) : workerField === "weeklyHoursDesired" ? (
+    <WorkerFieldCellWeeklyHoursDesired
+      worker={worker}
+      editing={editing[worker.id] === "weeklyHoursDesired"}
+      setEditing={setEditing}
+      handleUpdateWorker={handleUpdateWorker}
+    />
+  ) : workerField === "dutiesPerMonth" ? (
+    <WorkerFieldCellDutiesPerMonth
+      worker={worker}
+      editing={editing[worker.id] === "dutiesPerMonth"}
       setEditing={setEditing}
       handleUpdateWorker={handleUpdateWorker}
     />
