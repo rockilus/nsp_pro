@@ -200,7 +200,7 @@ def _build_description_cb_ord(
         d_reference.strftime("%b %d"),
         (
             f"instead of shift {', '.join([s.name for s in s_relative])}"
-            if constraint.operator == "yes"
+            if constraint.operator in ["yes", "yes_exclusively"]
             else ""
         ),
         "for",

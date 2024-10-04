@@ -11,6 +11,8 @@ from core import (
     DimEntry,
     Schedule,
     Shift,
+    ShiftRestType,
+    ShiftType,
     VarDay,
     VarShift,
     VarWorker,
@@ -48,9 +50,11 @@ def build_constraints(
         )
         for cstr_build in cstr_builds
     ]
-    constraints_user_saved = constraint_db.create_constraints(constraints_user)
-    constraints_quick_staffing = build_quick_staffing_constraints(schedule)
-    return constraints_user_saved + constraints_quick_staffing
+    out = []
+    out += constraint_db.create_constraints(constraints_user)
+    out += build_duty_recuperation_constraints(shifts, schedule)
+    out += build_quick_staffing_constraints(schedule)
+    return out
 
 
 def build_default_constraints(
@@ -164,4 +168,55 @@ def build_dim_to_attr_value_to_owner(
                     attr_value_to_owner[a.value] = []
                 attr_value_to_owner[a.value].append(a.owner_id)
         out[dim.id] = attr_value_to_owner
+    return out
+
+
+def build_duty_recuperation_constraints(
+    shifts: List[Shift], schedule: Schedule
+) -> List[Constraint]:
+    out = []
+    for duty in [s for s in shifts if s.shift_type == ShiftType.DUTY]:
+        # pylint: disable=R0801
+        dr = next(
+            (
+                s
+                for s in shifts
+                if s.shift_type == ShiftType.REST
+                and s.rest_type == ShiftRestType.RECUPERATION
+                and s.recuperation_duty_id == duty.id
+            ),
+            None,
+        )
+        if dr is None:
+            continue
+        out.append(
+            Constraint(
+                id="",
+                constraint_type="ord",
+                operator="yes_exclusively",
+                target_value=0,
+                target_unit="",
+                worker_var=VarWorker(
+                    selector="all", target_ids=[], num_eligible_workers=0
+                ),
+                day_var=VarDay(
+                    selector="all",
+                    target=0,
+                    start_date=schedule.start_date,
+                    end_date=schedule.end_date,
+                    interval=0,
+                ),
+                shift_var=VarShift(
+                    selector="all",
+                    target_ids=[],
+                    reference_ids=[duty.id],
+                    relative_ids=[dr.id],
+                ),
+                active=True,
+                hard=True,
+                priority="low",
+                schedule_id=schedule.id,
+                constraint_build_id="",
+            )
+        )
     return out

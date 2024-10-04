@@ -30,6 +30,18 @@ class ShiftDB:
             handle_save_document_error(e)
         return doc_to_core_shift(s_saved)
 
+    def create_shifts(self, shifts: List[Shift]) -> List[Shift]:
+        if not shifts:
+            return []
+        s_docs = core_to_doc_shifts(shifts, creating=True)
+        try:
+            # pylint: disable=no-member
+            s_saved = ShiftDocument.objects.insert(s_docs)  # type: ignore
+        except Exception as e:
+            log_info("Failed to save shifts to database")
+            handle_save_document_error(e)
+        return [doc_to_core_shift(s) for s in s_saved]
+
     def get_shifts(self, team_id: str) -> List[Shift]:
         try:
             # pylint: disable=no-member
@@ -148,7 +160,12 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
     try:
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
-        recuperation_duty = None
+        if dataclass_obj.rest_type == ShiftRestType.RECUPERATION:
+            recuperation_duty = ShiftDocument.objects(  # type: ignore
+                id=dataclass_obj.recuperation_duty_id
+            )
+        else:
+            recuperation_duty = None
         if dataclass_obj.recuperation_duty_id is not None:
             recuperation_duty = ShiftDocument.objects(  # type: ignore
                 id=dataclass_obj.recuperation_duty_id
@@ -176,6 +193,47 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
         log_info("Failed to convert Shift to ShiftDocument")
         handle_create_document_error(e)
     return s_doc
+
+
+def core_to_doc_shifts(
+    dataclass_objs: List[Shift], creating: bool = False
+) -> List[ShiftDocument]:
+    team_ids = list(set(doc.team_id for doc in dataclass_objs))
+    # pylint: disable=no-member
+    teams = {
+        team.id: team
+        for team in TeamDocument.objects.filter(id__in=team_ids)  # type: ignore
+    }
+    duty_ids = list(
+        set(
+            doc.recuperation_duty_id
+            for doc in dataclass_objs
+            if doc.rest_type == ShiftRestType.RECUPERATION
+        )
+    )
+    duties = {
+        duty.id: duty
+        for duty in ShiftDocument.objects.filter(id__in=duty_ids)  # type: ignore
+    }
+    out = []
+    for dataclass_obj in dataclass_objs:
+        shift_doc = ShiftDocument(
+            id=str(ObjectId()) if creating else dataclass_obj.id,
+            team=teams.get(dataclass_obj.team_id),
+            name=dataclass_obj.name,
+            start_time=dataclass_obj.start_time,
+            end_time=dataclass_obj.end_time,
+            staffing=dataclass_obj.staffing,
+            color=dataclass_obj.color,
+            shift_type=dataclass_obj.shift_type.value,
+            rest_type=dataclass_obj.rest_type.value,
+            leave_type=dataclass_obj.leave_type.value,
+            recuperation_time=dataclass_obj.recuperation_time,
+            recuperation_duty=duties.get(dataclass_obj.recuperation_duty_id),
+            deleted=dataclass_obj.deleted,
+        )
+        out.append(shift_doc)
+    return out
 
 
 # document to core

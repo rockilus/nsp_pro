@@ -62,6 +62,7 @@ class Constants:
         "greater_than_or_equal",
         "greater_than",
         "yes",
+        "yes_exclusively",
         "no",
     ]
     CONSTRAINT_TYPE_OPTIONS = Literal["sum", "seq", "ord", "fil", "fai", "eve"]

@@ -42,6 +42,40 @@ def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:
     return shift_created, attributes_saved
 
 
+def create_duty_recuperation_shifts(shifts: List[Shift]) -> List[Shift]:
+    rs_new = []
+    for duty in [s for s in shifts if s.shift_type == ShiftType.DUTY]:
+        dr_existing = next(
+            (
+                s
+                for s in shifts
+                if s.shift_type == ShiftType.REST
+                and s.rest_type == ShiftRestType.RECUPERATION
+                and s.recuperation_duty_id == duty.id
+            ),
+            None,
+        )
+        if dr_existing:
+            continue
+        dr = Shift(
+            id="",
+            team_id=duty.team_id,
+            name="Duty recuperation",
+            start_time=duty.end_time,
+            end_time=duty.end_time + timedelta(hours=duty.recuperation_time),
+            staffing=0,
+            color="#EDBB99",
+            shift_type=ShiftType.REST,
+            rest_type=ShiftRestType.RECUPERATION,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=0,
+            recuperation_duty_id=duty.id,
+            deleted=False,
+        )
+        rs_new.append(dr)
+    return shift_db.create_shifts(rs_new)
+
+
 def create_default_shifts(team_id: str) -> None:
     reference_date = datetime.now(timezone.utc)
     reference_date_start = reference_date.replace(
@@ -342,5 +376,4 @@ def create_default_shifts(team_id: str) -> None:
             deleted=False,
         ),
     ]
-    for shift in rest_shifts + leave_shifts:
-        shift_db.create_shift(shift)
+    shift_db.create_shifts(rest_shifts + leave_shifts)

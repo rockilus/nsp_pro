@@ -29,6 +29,7 @@ from services.schedule_services.core_to_engine import core_to_engine_inputs
 from services.schedule_services.engine_to_core import engine_to_core_outputs
 from services.schedule_services.inputs_processing import build_no_coverage_date
 from services.schedule_services.outputs_processing import update_request_status
+from services.shift_services.create_shift import create_duty_recuperation_shifts
 
 
 # pylint: disable=too-many-locals, too-many-statements
@@ -52,6 +53,7 @@ def solve_schedule(
         dim_entries,
         attributes,
     )
+    shifts += create_duty_recuperation_shifts(shifts)
     coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule.id)
     shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
         coverage_selectors
