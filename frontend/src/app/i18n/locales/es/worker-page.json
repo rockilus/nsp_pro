@@ -6,6 +6,7 @@
     "delete_confirm": "Eliminar para todos",
     "delete_text": "Eliminar esta propiedad la eliminará de todos los trabajadores. Esta acción no se puede deshacer.",
     "delete_title": "Eliminar esta propiedad de todos los trabajadores?",
+    "duties_per_month": "Guardias al mes",
     "name": "Nombre",
     "name_helper_text": "Por favor, introduce un nombre",
     "new_property": "Nueva propiedad",
@@ -18,6 +19,7 @@
     "type_bool": "Si/No",
     "type_list": "Tags",
     "weekly_hours": "Horas semanales",
+    "weekly_hours_desired": "Horas semanales deseadas",
     "workers": "Trabajadores",
     "worker": "Trabajador"
 }

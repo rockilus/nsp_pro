@@ -7,6 +7,7 @@
     "delete_confirm": "Supprimer pour tous",
     "delete_text": "Supprimer cette propriété la retirera de tous les travailleurs. Cette action ne peut pas être annulée.",
     "delete_title": "Supprimer cette propriété pour tous les travailleurs?",
+    "duties_per_month": "Gardes par mois",
     "name_helper_text": "Entrez le nom du travailleur",
     "new_property": "Nouvelle propriété",
     "property": "Propriété",
@@ -18,6 +19,7 @@
     "type_bool": "Vrai/Faux",
     "type_list": "Tags",
     "weekly_hours": "Heures hebdomadaires",
+    "weekly_hours_desired": "Heures hebdomadaires souhaitées",
     "worker": "Travailleur",
     "workers": "Travailleurs"
 }
