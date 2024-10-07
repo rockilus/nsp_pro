@@ -111,7 +111,9 @@ def core_to_engine_inputs(
             max_weekly_hours_worked=_build_period_target_work_hours_week(
                 80, dates_campaign
             ),
-            max_duties_per_month=8,
+            max_duties_per_month=_build_period_target_duties_month(
+                8, dates_campaign
+            ),
         ),
     )
     return inputs

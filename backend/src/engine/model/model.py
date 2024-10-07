@@ -190,6 +190,7 @@ class Model:
         self.add_solution_hint(inputs.sol_hint)
         self.no_interval_overlap()
         self.add_max_weekly_worktime_constraints()
+        self.add_max_nb_duties_per_month_constraints()
         # self.add_at_least_one_shift_per_day_solving_constraint()
         # self.status = self.solver.Solve(  # type: ignore
         #     self.model, self.solution_printer
@@ -694,9 +695,7 @@ class Model:
                         [self.variables[worker.id, d, duty] for d in pt.period]
                     )
                 if not hard_to_soft:
-                    self.model.Add(
-                        sum(v for v in constraint_vars) <= pt.target
-                    )
+                    self.model.Add(sum(constraint_vars) <= pt.target)
                 else:
                     var_name = build_var_name(
                         None, constraint_vars, "duties_per_month"
@@ -706,15 +705,23 @@ class Model:
                         len(constraint_vars),
                         "",
                     )
-                    self.model.Add(
-                        delta == sum(v for v in constraint_vars) - pt.target
-                    )
+                    self.model.Add(delta == sum(constraint_vars) - pt.target)
                     excess = self.model.NewIntVar(
                         0, len(constraint_vars), var_name
                     )
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(100)
+
+    def add_max_nb_duties_per_month_constraints(self) -> None:
+        for w in self.workers_not_deleted:
+            for pt in self.fixed_config.max_duties_per_month:
+                constraint_vars = []
+                for duty, _ in self.duty_recup_pairs:
+                    constraint_vars.extend(
+                        [self.variables[w, d, duty] for d in pt.period]
+                    )
+                self.model.Add(sum(constraint_vars) <= pt.target)
 
     def add_custom_constraints(
         self,
