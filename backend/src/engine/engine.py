@@ -16,8 +16,12 @@ class Engine:
     # pylint: disable=too-few-public-methods
     def solve(self, inputs: Inputs) -> Outputs:
         current_path = os.path.dirname(os.path.realpath(__file__))
-        model_config_file_path = os.path.join(current_path, "model_config.json")
-        with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
+        model_config_file_path = os.path.join(
+            current_path, "model_config.json"
+        )
+        with open(
+            model_config_file_path, "r", encoding="utf-8"
+        ) as penalties_file:
             model_config = json.load(penalties_file)
         model = Model(
             inputs.variable_space.workers,
@@ -30,6 +34,7 @@ class Engine:
             inputs.shift_durations,
             inputs.shift_start_times,
             inputs.shift_end_times,
+            inputs.fixed_config,
             model_config,
         )
         start_time = time.time()

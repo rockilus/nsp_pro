@@ -30,6 +30,7 @@ from engine import VarWorker as VarWorkerEngine
 from engine import Worker as WorkerEngine
 from services.schedule_services.penalty_map import penalty_map
 from utils.constants import Constants
+import calendar
 
 
 # pylint: disable=too-many-arguments, too-many-locals
@@ -123,7 +124,9 @@ def _core_to_engine_worker(worker: Worker, dates: List[date]) -> WorkerEngine:
         work_hours_desired=_build_period_target_work_hours(
             worker.weekly_hours_desired, dates
         ),
-        duties_per_month=[],
+        duties_per_month=_build_period_target_duties_month(
+            worker.duties_per_month, dates
+        ),
         deleted=worker.deleted,
     )
 
@@ -161,6 +164,40 @@ def _build_period_target_work_hours_week(
         # Create PeriodTarget object
         period_target = PeriodTargetEngine(
             period=[d.isoformat() for d in week_dates],
+            target=adjusted_target,
+        )
+        out.append(period_target)
+    return out
+
+
+def _build_period_target_duties_month(
+    duties_per_month: int, dates: List[date]
+) -> List[PeriodTargetEngine]:
+    out: List[PeriodTargetEngine] = []
+    dates = sorted(dates)  # Ensure dates are sorted
+
+    while dates:
+        # Get the start of the month
+        start_date = dates[0]
+        start_of_month = date(start_date.year, start_date.month, 1)
+        _, last_day_month = calendar.monthrange(
+            start_date.year, start_date.month
+        )
+        end_of_month = date(start_date.year, start_date.month, last_day_month)
+
+        # Get all dates in the current month
+        month_dates = [d for d in dates if start_of_month <= d <= end_of_month]
+        dates = [d for d in dates if d > end_of_month]
+
+        # Calculate the adjusted target
+        num_days_in_month = len(month_dates)
+        adjusted_target = math.ceil(
+            (duties_per_month / end_of_month.day) * num_days_in_month
+        )
+
+        # Create PeriodTarget object
+        period_target = PeriodTargetEngine(
+            period=[d.isoformat() for d in month_dates],
             target=adjusted_target,
         )
         out.append(period_target)

@@ -31,8 +31,8 @@ class Model:
         shift_durations: Dict[str, int],
         shift_start_times: Dict[Tuple, int],
         shift_end_times: Dict[Tuple, int],
-        model_config: Dict,
         fixed_config: FixedConfig,
+        model_config: Dict,
     ) -> None:
         self.workers = workers
         self.all_workers = [w.id for w in workers]
@@ -76,6 +76,7 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=False,
+            nb_duty_hts=False,
             work_time_desired_hts=False,
             constraint_hts=False,
             request_hts=False,
@@ -88,6 +89,7 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=False,
+            nb_duty_hts=False,
             work_time_desired_hts=False,
             constraint_hts=False,
             request_hts=False,
@@ -100,6 +102,7 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=False,
+            nb_duty_hts=False,
             work_time_desired_hts=False,
             constraint_hts=False,
             request_hts=True,
@@ -112,6 +115,7 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=False,
+            nb_duty_hts=False,
             work_time_desired_hts=False,
             constraint_hts=True,
             request_hts=True,
@@ -124,6 +128,20 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=False,
+            nb_duty_hts=False,
+            work_time_desired_hts=True,
+            constraint_hts=True,
+            request_hts=True,
+            work_time_hts=True,
+        )
+        if self.status != cp_model.INFEASIBLE:
+            return
+        self.reset_model()
+        self.solve_model_hts_custom(
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=False,
+            nb_duty_hts=True,
             work_time_desired_hts=True,
             constraint_hts=True,
             request_hts=True,
@@ -136,6 +154,7 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=True,
+            nb_duty_hts=True,
             work_time_desired_hts=True,
             constraint_hts=True,
             request_hts=True,
@@ -148,6 +167,7 @@ class Model:
             inputs,
             coverage_hts=True,
             duty_recup_hts=True,
+            nb_duty_hts=True,
             work_time_desired_hts=True,
             constraint_hts=True,
             request_hts=True,
@@ -161,6 +181,7 @@ class Model:
         duty_recup_hts: bool,
         work_time_hts: bool,
         work_time_desired_hts: bool,
+        nb_duty_hts: bool,
         request_hts: bool,
         constraint_hts: bool,
     ) -> None:
@@ -181,6 +202,7 @@ class Model:
         self.add_duty_recup_constraints(duty_recup_hts)
         self.add_weekly_contractual_worktime_constraints(work_time_hts)
         self.add_weekly_desired_worktime_constraints(work_time_desired_hts)
+        self.add_nb_duties_per_month_constraints(nb_duty_hts)
         self.add_constraint_factory.add_request.add_requests(
             inputs.requests, request_hts
         )
@@ -190,12 +212,13 @@ class Model:
         self.add_objective()
         self.solve()
         self.print_model_metadata(
-            f"COVERAGE_HTS: {coverage_hts}, "
-            + f"DUTY_RECUP_HTS: {duty_recup_hts}, "
-            + f"WORK_TIME_HTS: {work_time_hts}, "
-            + f"WORK_TIME_DESIRED_HTS: {work_time_desired_hts}, "
-            + f"REQUEST_HTS: {request_hts}, "
-            + f"CONSTRAINT_HTS: {constraint_hts}"
+            coverage_hts,
+            duty_recup_hts,
+            work_time_hts,
+            work_time_desired_hts,
+            nb_duty_hts,
+            request_hts,
+            constraint_hts,
         )
 
     def reset_model(self) -> None:
@@ -662,6 +685,37 @@ class Model:
                         <= pt.target
                     )
 
+    def add_nb_duties_per_month_constraints(self, hard_to_soft: bool) -> None:
+        for worker in [w for w in self.workers if not w.deleted]:
+            for pt in worker.duties_per_month:
+                constraint_vars = []
+                for duty, _ in self.duty_recup_pairs:
+                    constraint_vars.extend(
+                        [self.variables[worker.id, d, duty] for d in pt.period]
+                    )
+                if not hard_to_soft:
+                    self.model.Add(
+                        sum(v for v in constraint_vars) <= pt.target
+                    )
+                else:
+                    var_name = build_var_name(
+                        None, constraint_vars, "duties_per_month"
+                    )
+                    delta = self.model.NewIntVar(
+                        -pt.target,
+                        len(constraint_vars),
+                        "",
+                    )
+                    self.model.Add(
+                        delta == sum(v for v in constraint_vars) - pt.target
+                    )
+                    excess = self.model.NewIntVar(
+                        0, len(constraint_vars), var_name
+                    )
+                    self.model.AddMaxEquality(excess, [delta, 0])
+                    self.obj.int_vars.append(excess)
+                    self.obj.int_coeffs.append(100)
+
     def add_custom_constraints(
         self,
         constraints: List[Constraint],
@@ -720,9 +774,29 @@ class Model:
         )
         # self.bt.total_end = time.time()
 
-    def print_model_metadata(self, model_description: str) -> None:
-        print(f"----------- {model_description} -----------")
+    def print_model_metadata(
+        self,
+        coverage_hts: bool,
+        duty_recup_hts: bool,
+        work_time_hts: bool,
+        work_time_desired_hts: bool,
+        nb_duty_hts: bool,
+        request_hts: bool,
+        constraint_hts: bool,
+    ) -> None:
+        print("----------- HARD TO SOFT -----------")
+        print(f"COVERAGE:          {coverage_hts}")
+        print(f"DUTY_RECUP:        {duty_recup_hts}")
+        print(f"NB_DUTY:           {nb_duty_hts}")
+        print(f"WORK_TIME_DESIRED: {work_time_desired_hts}")
+        print(f"CONSTRAINT:        {constraint_hts}")
+        print(f"REQUEST:           {request_hts}")
+        print(f"WORK_TIME:         {work_time_hts}")
+        print("\n")
+
+        print("----------- STATS -----------")
         print(f"Branches:        {self.solver.NumBranches()}")
         print(f"Wall time:       {self.solver.WallTime()} s")
         print(f"Objective value: {self.solver.ObjectiveValue()}")
         print(f"Status:          {self.solver.StatusName()}")
+        print("\n")
