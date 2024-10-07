@@ -8,6 +8,7 @@ from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import build_var_name, get_nested_value
 from engine.types.input_output_types import Constraint, Inputs, ShiftDemand, Worker
 from engine.types.model_types import BenchmarkTimes, Objective
+from utils.constants import Constants
 
 
 class Model:
@@ -19,6 +20,7 @@ class Model:
         days_solving: List[str],
         all_shifts: List[str],
         shifts_not_deleted: List[str],
+        shifts_work: List[str],
         duty_recup_pairs: List[Tuple[str, str]],
         shift_durations: Dict[str, int],
         shift_start_times: Dict[Tuple, int],
@@ -32,6 +34,7 @@ class Model:
         self.days_solving = days_solving
         self.shifts = all_shifts
         self.shifts_not_deleted = shifts_not_deleted
+        self.shifts_work = shifts_work
         self.duty_recup_pairs = duty_recup_pairs
 
         self.model = cp_model.CpModel()
@@ -65,6 +68,7 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=False,
+            work_time_hts=False,
             request_hts=False,
             constraint_hts=False,
         )
@@ -75,6 +79,7 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=False,
+            work_time_hts=False,
             request_hts=True,
             constraint_hts=False,
         )
@@ -85,6 +90,7 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=False,
+            work_time_hts=False,
             request_hts=True,
             constraint_hts=True,
         )
@@ -95,6 +101,7 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=True,
+            work_time_hts=False,
             request_hts=True,
             constraint_hts=True,
         )
@@ -105,6 +112,18 @@ class Model:
             inputs,
             coverage_hts=True,
             duty_recup_hts=True,
+            work_time_hts=False,
+            request_hts=True,
+            constraint_hts=True,
+        )
+        if self.status != cp_model.INFEASIBLE:
+            return
+        self.reset_model()
+        self.solve_model_hts_custom(
+            inputs,
+            coverage_hts=True,
+            duty_recup_hts=True,
+            work_time_hts=True,
             request_hts=True,
             constraint_hts=True,
         )
@@ -114,6 +133,7 @@ class Model:
         inputs: Inputs,
         coverage_hts: bool,
         duty_recup_hts: bool,
+        work_time_hts: bool,
         request_hts: bool,
         constraint_hts: bool,
     ) -> None:
@@ -131,6 +151,7 @@ class Model:
             inputs.coverage.coverage, coverage_hts
         )
         self.add_duty_recup_constraints(duty_recup_hts)
+        self.add_weekly_worktime_constraints(work_time_hts)
         self.add_constraint_factory.add_request.add_requests(
             inputs.requests, request_hts
         )
@@ -142,6 +163,7 @@ class Model:
         self.print_model_metadata(
             f"COVERAGE_HTS: {coverage_hts}, "
             + f"DUTY_RECUP_HTS: {duty_recup_hts}, "
+            + f"WORK_TIME_HTS: {work_time_hts}, "
             + f"REQUEST_HTS: {request_hts}, "
             + f"CONSTRAINT_HTS: {constraint_hts}"
         )
@@ -465,6 +487,47 @@ class Model:
                         self.model.AddAbsEquality(excess, delta)
                         self.obj.int_vars.append(excess)
                         self.obj.int_coeffs.append(100)
+
+    def add_weekly_worktime_constraints(self, hard_to_soft: bool) -> None:
+        for worker in [w for w in self.workers if not w.deleted]:
+            for pt in worker.work_hours:
+                constraint_vars = []
+                constraint_durs = []
+                for s in self.shifts_work:
+                    constraint_vars.extend(
+                        [self.variables[worker.id, d, s] for d in pt.period]
+                    )
+                    constraint_durs.extend([self.durations[s] for _ in pt.period])
+
+                if not hard_to_soft:
+                    self.model.Add(
+                        sum(v * d for v, d in zip(constraint_vars, constraint_durs))
+                        <= pt.target
+                    )
+                else:
+                    var_name = build_var_name(None, constraint_vars, "work_time")
+                    delta = self.model.NewIntVar(
+                        -pt.target,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR,
+                        "",
+                    )
+                    self.model.Add(
+                        delta
+                        == sum(v * d for v, d in zip(constraint_vars, constraint_durs))
+                        - pt.target
+                    )
+                    excess = self.model.NewIntVar(
+                        0,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR,
+                        var_name,
+                    )
+                    self.model.AddMaxEquality(excess, [delta, 0])
+                    self.obj.int_vars.append(excess)
+                    self.obj.int_coeffs.append(100)
 
     def add_custom_constraints(
         self,

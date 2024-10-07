@@ -155,7 +155,7 @@ def build_work_shift_indexes(
         value=selected_shifts,
     )
     # pylint: disable=R0801
-    missing_properties, _ = build_missing_attributes_and_active_owner(
+    missing_attributes, _ = build_missing_attributes_and_active_owner(
         AttributeOwnerType.SHIFT,
         block,
         shifts,
@@ -164,7 +164,7 @@ def build_work_shift_indexes(
         attributes,
     )
     selected_shifts_ids = parse_selected_shifts(
-        selected_shifts, missing_properties, shifts, shift_dim_dict
+        selected_shifts, missing_attributes, shifts, shift_dim_dict
     )
     worker_to_i = {worker.id: i for i, worker in enumerate(workers)}
     # shift_to_i = {shift.id: i for i, shift in enumerate(shifts)}
@@ -174,7 +174,7 @@ def build_work_shift_indexes(
             [
                 s
                 for s in shifts
-                if s in [ShiftType.NORMAL, ShiftType.DUTY]
+                if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
                 and s.id in selected_shifts_ids
             ]
         )
@@ -182,7 +182,8 @@ def build_work_shift_indexes(
     work_shift_to_duration = {
         s.id: (s.end_time - s.start_time).total_seconds() / 3600
         for s in shifts
-        if s in [ShiftType.NORMAL, ShiftType.DUTY] and s.id in selected_shifts_ids
+        if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+        and s.id in selected_shifts_ids
     }
     rest_shift_to_i = {
         shift.id: i
@@ -190,7 +191,7 @@ def build_work_shift_indexes(
             [
                 s
                 for s in shifts
-                if s in [ShiftType.REST, ShiftType.LEAVE]
+                if s.shift_type in [ShiftType.REST, ShiftType.LEAVE]
                 and s.id in selected_shifts_ids
             ]
         )

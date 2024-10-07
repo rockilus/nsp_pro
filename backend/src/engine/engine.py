@@ -25,6 +25,7 @@ class Engine:
             inputs.variable_space.days_solving,
             inputs.variable_space.all_shifts,
             inputs.variable_space.shifts_not_deleted,
+            inputs.variable_space.shift_work,
             inputs.variable_space.duty_recup_pairs,
             inputs.shift_durations,
             inputs.shift_start_times,

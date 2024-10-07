@@ -9,11 +9,19 @@ from utils.constants import Constants
 
 
 @dataclass
+class PeriodTarget:
+    period: List[str]
+    target: int
+
+
+@dataclass
 class Worker:
     id: str
-    weekly_hours: int  # in hours, contract
-    weekly_hours_desired: int  # in hours, desired
-    duties_per_month: int  # number of duties per month
+    work_hours: List[PeriodTarget]  # in hours for each week on the campaign, contract
+    work_hours_desired: List[
+        PeriodTarget
+    ]  # in hours for each week on the campaign, desired
+    duties_per_month: List[PeriodTarget]  # number of duties per month
     deleted: bool
 
 
@@ -24,6 +32,7 @@ class VariableSpace:
     days_solving: List[str]
     all_shifts: List[str]
     shifts_not_deleted: List[str]
+    shift_work: List[str]
     duty_recup_pairs: List[Tuple[str, str]]
 
 
@@ -102,6 +111,12 @@ class Constraint:
 
 
 @dataclass
+class FixedConfig:
+    max_weekly_hours_worked: int
+    max_duties_per_month: int
+
+
+@dataclass
 class Inputs:
     variable_space: VariableSpace
     coverage: Coverage
@@ -116,6 +131,7 @@ class Inputs:
     shift_end_times: Dict[
         Tuple[str, str], int
     ]  # timestamp in minutes, key: (date, shift_id)
+    fixed_config: FixedConfig
 
 
 ##############################
