@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 from typing import Dict, List, Tuple
 
-# from google.protobuf import text_format  # type: ignore
-from ortools.sat.python import cp_model  # type: ignore
-
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import build_var_name, get_nested_value
 from engine.types.input_output_types import (
     Constraint,
+    FixedConfig,
     Inputs,
     ShiftDemand,
     Worker,
 )
 from engine.types.model_types import BenchmarkTimes, Objective
+
+# from google.protobuf import text_format  # type: ignore
+from ortools.sat.python import cp_model  # type: ignore
 from utils.constants import Constants
 
 
@@ -31,6 +32,7 @@ class Model:
         shift_start_times: Dict[Tuple, int],
         shift_end_times: Dict[Tuple, int],
         model_config: Dict,
+        fixed_config: FixedConfig,
     ) -> None:
         self.workers = workers
         self.all_workers = [w.id for w in workers]
@@ -41,6 +43,7 @@ class Model:
         self.shifts_not_deleted = shifts_not_deleted
         self.shifts_work = shifts_work
         self.duty_recup_pairs = duty_recup_pairs
+        self.fixed_config = fixed_config
 
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple, cp_model.IntVar] = {}
@@ -165,6 +168,7 @@ class Model:
         self.set_fixed_variables(inputs.fixed_values)
         self.add_solution_hint(inputs.sol_hint)
         self.no_interval_overlap()
+        self.add_max_weekly_worktime_constraints()
         # self.add_at_least_one_shift_per_day_solving_constraint()
         # self.status = self.solver.Solve(  # type: ignore
         #     self.model, self.solution_printer
@@ -637,6 +641,26 @@ class Model:
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(100)
+
+    def add_max_weekly_worktime_constraints(self) -> None:
+        for w in self.workers_not_deleted:
+            for pt in self.fixed_config.max_weekly_hours_worked:
+                constraint_vars = []
+                constraint_durs = []
+                for s in self.shifts_work:
+                    constraint_vars.extend(
+                        [self.variables[w, d, s] for d in pt.period]
+                    )
+                    constraint_durs.extend(
+                        [self.durations[s] for _ in pt.period]
+                    )
+                    self.model.Add(
+                        sum(
+                            v * d
+                            for v, d in zip(constraint_vars, constraint_durs)
+                        )
+                        <= pt.target
+                    )
 
     def add_custom_constraints(
         self,

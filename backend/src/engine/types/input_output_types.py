@@ -17,7 +17,9 @@ class PeriodTarget:
 @dataclass
 class Worker:
     id: str
-    work_hours: List[PeriodTarget]  # in hours for each week on the campaign, contract
+    work_hours: List[
+        PeriodTarget
+    ]  # in hours for each week on the campaign, contract
     work_hours_desired: List[
         PeriodTarget
     ]  # in hours for each week on the campaign, desired
@@ -112,8 +114,8 @@ class Constraint:
 
 @dataclass
 class FixedConfig:
-    max_weekly_hours_worked: int
-    max_duties_per_month: int
+    max_weekly_hours_worked: List[PeriodTarget]
+    max_duties_per_month: List[PeriodTarget]
 
 
 @dataclass
