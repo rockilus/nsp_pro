@@ -5,7 +5,14 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Assignment, ObjectiveBreach, QuickStaffing, RequestAugmented, Schedule
+from core import (
+    Assignment,
+    ObjectiveBreach,
+    QuickStaffing,
+    RequestAugmented,
+    Schedule,
+    Shift,
+)
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -22,12 +29,14 @@ from routes.api_model import (
     QuickStaffingMessage,
     RequestMessage,
     ScheduleMessage,
+    ShiftMessage,
     SolutionMessage,
     ValidateMessage,
 )
 from routes.assignment_routes import core_to_msg_assignment
 from routes.objective_breach_routes import core_to_msg_objective_breach
 from routes.request_routes import core_to_msg_request_augmented
+from routes.shift_routes import core_to_msg_shift_and_attributes
 from scripts.setup_database import (
     assignment_db,
     constraint_db,
@@ -76,11 +85,19 @@ async def solve_schedule(
                 "You do not have permission to solve a schedule",
             )
         schedule = schedule_db.get_schedule_by_id(schedule_id)
-        schedule, assignments, objective_breaches, requests = solve_schedule_service(
-            schedule
-        )
+        (
+            schedule,
+            assignments,
+            objective_breaches,
+            requests,
+            recuperation_shifts_new,
+        ) = solve_schedule_service(schedule)
         response = core_to_msg_solution(
-            schedule, assignments, objective_breaches, requests
+            schedule,
+            assignments,
+            objective_breaches,
+            requests,
+            recuperation_shifts_new,
         )
     except Exception as e:
         log_info("Failed to solve schedule")
@@ -219,13 +236,15 @@ def core_to_msg_solution(
     assignments: List[Assignment],
     objective_breaches: List[ObjectiveBreach],
     requests: List[RequestAugmented],
+    recuperation_shifts_new: List[Shift],
 ) -> SolutionMessage:
     data: Dict[
         str,
         ScheduleMessage
         | List[AssignmentMessage]
         | List[ObjectiveBreachMessage]
-        | List[RequestMessage],
+        | List[RequestMessage]
+        | List[ShiftMessage],
     ] = {}
     data["schedule"] = core_to_msg_schedule(schedule)
     data["assignments"] = [core_to_msg_assignment(a) for a in assignments]
@@ -233,6 +252,9 @@ def core_to_msg_solution(
         core_to_msg_objective_breach(ob) for ob in objective_breaches
     ]
     data["requests"] = [core_to_msg_request_augmented(r) for r in requests]
+    data["recuperation_shifts_new"] = [
+        core_to_msg_shift_and_attributes(s, []) for s in recuperation_shifts_new
+    ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(SolutionMessage)
     try:

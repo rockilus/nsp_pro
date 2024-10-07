@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint_factory import AddConstraintFactory
-from engine.model.utils.model_utils import get_nested_value
+from engine.model.utils.model_utils import build_var_name, get_nested_value
 from engine.types.input_output_types import Constraint, Inputs, ShiftDemand
 from engine.types.model_types import BenchmarkTimes, Objective
 
@@ -20,6 +20,7 @@ class Model:
         days_solving: List[str],
         all_shifts: List[str],
         shifts_not_deleted: List[str],
+        duty_recup_pairs: List[Tuple[str, str]],
         shift_durations: Dict[str, int],
         shift_start_times: Dict[Tuple, int],
         shift_end_times: Dict[Tuple, int],
@@ -31,6 +32,7 @@ class Model:
         self.days_solving = days_solving
         self.shifts = all_shifts
         self.shifts_not_deleted = shifts_not_deleted
+        self.duty_recup_pairs = duty_recup_pairs
 
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple, cp_model.IntVar] = {}
@@ -152,31 +154,58 @@ class Model:
     def sequential_solve(self, inputs: Inputs) -> None:
         # hts stand for high to soft
         self.solve_model_hts_custom(
-            inputs, coverage_hts=False, request_hts=False, constraint_hts=False
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=False,
+            request_hts=False,
+            constraint_hts=False,
         )
         if self.status != cp_model.INFEASIBLE:
             return
         self.reset_model()
         self.solve_model_hts_custom(
-            inputs, coverage_hts=False, request_hts=True, constraint_hts=False
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=False,
+            request_hts=True,
+            constraint_hts=False,
         )
         if self.status != cp_model.INFEASIBLE:
             return
         self.reset_model()
         self.solve_model_hts_custom(
-            inputs, coverage_hts=False, request_hts=True, constraint_hts=True
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=False,
+            request_hts=True,
+            constraint_hts=True,
         )
         if self.status != cp_model.INFEASIBLE:
             return
         self.reset_model()
         self.solve_model_hts_custom(
-            inputs, coverage_hts=True, request_hts=True, constraint_hts=True
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=True,
+            request_hts=True,
+            constraint_hts=True,
+        )
+        if self.status != cp_model.INFEASIBLE:
+            return
+        self.reset_model()
+        self.solve_model_hts_custom(
+            inputs,
+            coverage_hts=True,
+            duty_recup_hts=True,
+            request_hts=True,
+            constraint_hts=True,
         )
 
     def solve_model_hts_custom(
         self,
         inputs: Inputs,
         coverage_hts: bool,
+        duty_recup_hts: bool,
         request_hts: bool,
         constraint_hts: bool,
     ) -> None:
@@ -184,7 +213,7 @@ class Model:
         self.set_fixed_variables(inputs.fixed_values)
         self.add_solution_hint(inputs.sol_hint)
         self.no_interval_overlap()
-        self.add_at_least_one_shift_per_day_solving_constraint()
+        # self.add_at_least_one_shift_per_day_solving_constraint()
         # self.status = self.solver.Solve(  # type: ignore
         #     self.model, self.solution_printer
         # )
@@ -193,6 +222,7 @@ class Model:
         self.add_constraint_factory.add_coverage.add_coverage(
             inputs.coverage.coverage, coverage_hts
         )
+        self.add_duty_recup_constraints(duty_recup_hts)
         self.add_constraint_factory.add_request.add_requests(
             inputs.requests, request_hts
         )
@@ -202,7 +232,9 @@ class Model:
         self.add_objective()
         self.solve()
         self.print_model_metadata(
-            f"COVERAGE_HTS: {coverage_hts}, REQUEST_HTS: {request_hts}, "
+            f"COVERAGE_HTS: {coverage_hts}, "
+            + f"DUTY_RECUP_HTS: {duty_recup_hts}, "
+            + f"REQUEST_HTS: {request_hts}, "
             + f"CONSTRAINT_HTS: {constraint_hts}"
         )
 
@@ -279,10 +311,21 @@ class Model:
                         f"inter_{worker}_{day}_{shift}",
                     )
                     # if (
-                    #     day == "2024-10-27"
+                    #     day == "2024-10-08"
                     #     and worker == "66b62b88cad3bb739b082f97"
-                    #     and shift == "66b63332cad3bb739b082fa4"
+                    #     and shift
+                    #     in [
+                    #         "66b63331cad3bb739b082fa2",
+                    #         "670395a23251f75c012b61e2",
+                    #     ]
                     # ):
+                    #     print(
+                    #         "DUTY:"
+                    #         if shift == "66b63331cad3bb739b082fa2"
+                    #         else "RECUP:"
+                    #     )
+                    #     print("variable: ", self.variables[worker, day, shift])
+                    #     print("interval: ", self.intervals[worker, day, shift])
                     #     print(
                     #         "start time: ",
                     #         datetime.fromtimestamp(
@@ -514,6 +557,25 @@ class Model:
             self.model.AddAbsEquality(excess, delta)
             self.obj.int_vars.append(excess)
             self.obj.int_coeffs.append(10)
+
+    def add_duty_recup_constraints(self, hard_to_soft: bool) -> None:
+        for duty, recup in self.duty_recup_pairs:
+            for w in self.workers_not_deleted:
+                for d in self.days_solving:
+                    duty_var = self.variables[w, d, duty]
+                    recup_var = self.variables[w, d, recup]
+                    if not hard_to_soft:
+                        self.model.Add(duty_var == recup_var)
+                    else:
+                        var_name = build_var_name(
+                            None, [duty_var, recup_var], "recuperation"
+                        )
+                        delta = self.model.NewIntVar(-1, 1, "")
+                        self.model.Add(delta == duty_var - recup_var)
+                        excess = self.model.NewIntVar(0, 1, var_name)
+                        self.model.AddAbsEquality(excess, delta)
+                        self.obj.int_vars.append(excess)
+                        self.obj.int_coeffs.append(100)
 
     def add_custom_constraints(
         self,

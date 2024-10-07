@@ -16,6 +16,7 @@ class VariableSpace:
     days_solving: List[str]
     all_shifts: List[str]
     shifts_not_deleted: List[str]
+    duty_recup_pairs: List[Tuple[str, str]]
 
 
 # pylint: disable=R0801
@@ -117,7 +118,7 @@ class Inputs:
 @dataclass
 class ConstraintBreach:
     constraint_id: str
-    category: Literal["request", "constraint", "coverage"]
+    category: Literal["request", "constraint", "coverage", "recuperation"]
     variables: List[Tuple[str, date, str]]
     value_diff: int
     hard_to_soft: bool

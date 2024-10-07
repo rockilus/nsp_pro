@@ -16,8 +16,16 @@ const apiUrlShifts = API_URL + "/shifts";
 export const toShiftT = (data: any): ShiftT => {
   return {
     ...data,
-    startTime: dayjs.utc(data.startTime),
-    endTime: dayjs.utc(data.endTime),
+    startTime: dayjs.unix(data.startTime).utc(),
+    endTime: dayjs.unix(data.endTime).utc(),
+  };
+};
+
+export const fromShiftT = (data: ShiftT): any => {
+  return {
+    ...data,
+    startTime: data.startTime.unix(),
+    endTime: data.endTime.unix(),
   };
 };
 
@@ -31,7 +39,7 @@ export async function addShift(shift: ShiftT) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(shift),
+    body: JSON.stringify(fromShiftT(shift)),
   };
   try {
     const response = await fetch(
@@ -127,7 +135,7 @@ export async function updateShift(updatedShift: ShiftT) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(updatedShift),
+    body: JSON.stringify(fromShiftT(updatedShift)),
   };
   try {
     const response = await fetch(

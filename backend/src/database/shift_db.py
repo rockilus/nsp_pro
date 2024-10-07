@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List
 
 from bson import ObjectId
@@ -29,6 +30,18 @@ class ShiftDB:
             log_info("Failed to save shift to database")
             handle_save_document_error(e)
         return doc_to_core_shift(s_saved)
+
+    def create_shifts(self, shifts: List[Shift]) -> List[Shift]:
+        if not shifts:
+            return []
+        s_docs = core_to_doc_shifts(shifts, creating=True)
+        try:
+            # pylint: disable=no-member
+            s_saved = ShiftDocument.objects.insert(s_docs)  # type: ignore
+        except Exception as e:
+            log_info("Failed to save shifts to database")
+            handle_save_document_error(e)
+        return [doc_to_core_shift(s) for s in s_saved]
 
     def get_shifts(self, team_id: str) -> List[Shift]:
         try:
@@ -115,6 +128,18 @@ class ShiftDB:
             handle_save_document_error(e)
         return doc_to_core_shift(s_saved)
 
+    def update_shifts(self, shifts: List[Shift]) -> List[Shift]:
+        if not shifts:
+            return []
+        s_docs = core_to_doc_shifts(shifts)
+        try:
+            for s_doc in s_docs:
+                s_doc.save()
+        except Exception as e:
+            log_info("Failed to update shifts in database")
+            handle_save_document_error(e)
+        return [doc_to_core_shift(s) for s in s_docs]
+
     def delete_shift(self, shift_id: str) -> None:
         try:
             # pylint: disable=no-member
@@ -128,18 +153,19 @@ class ShiftDB:
             log_info("Failed to delete shift from database")
             handle_delete_document_error(e)
 
-    def logical_delete_shift(self, shift_id: str) -> None:
+    def logical_delete_shift(self, shift_id: str) -> Shift:
         try:
             # pylint: disable=no-member
-            shift = ShiftDocument.objects.get(id=shift_id)  # type: ignore
+            s_doc = ShiftDocument.objects.get(id=shift_id)  # type: ignore
         except Exception as e:
             log_info("Failed to get shift by id to logical delete from database")
             handle_get_document_error(e)
         try:
-            shift.update(set__deleted=True)
+            s_doc.update(set__deleted=True)
         except Exception as e:
             log_info("Failed to logical delete shift from database")
             handle_save_document_error(e)
+        return doc_to_core_shift(s_doc)
 
 
 # Mappers
@@ -148,7 +174,12 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
     try:
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
-        recuperation_duty = None
+        if dataclass_obj.rest_type == ShiftRestType.RECUPERATION:
+            recuperation_duty = ShiftDocument.objects(  # type: ignore
+                id=dataclass_obj.recuperation_duty_id
+            )
+        else:
+            recuperation_duty = None
         if dataclass_obj.recuperation_duty_id is not None:
             recuperation_duty = ShiftDocument.objects(  # type: ignore
                 id=dataclass_obj.recuperation_duty_id
@@ -161,8 +192,8 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
             id=dataclass_obj.id,
             team=team,
             name=dataclass_obj.name,
-            start_time=dataclass_obj.start_time,
-            end_time=dataclass_obj.end_time,
+            start_time=dataclass_obj.start_time.timestamp(),
+            end_time=dataclass_obj.end_time.timestamp(),
             staffing=dataclass_obj.staffing,
             color=dataclass_obj.color,
             shift_type=dataclass_obj.shift_type.value,
@@ -178,6 +209,47 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
     return s_doc
 
 
+def core_to_doc_shifts(
+    dataclass_objs: List[Shift], creating: bool = False
+) -> List[ShiftDocument]:
+    team_ids = list(set(doc.team_id for doc in dataclass_objs))
+    # pylint: disable=no-member
+    teams = {
+        team.id: team
+        for team in TeamDocument.objects.filter(id__in=team_ids)  # type: ignore
+    }
+    duty_ids = list(
+        set(
+            doc.recuperation_duty_id
+            for doc in dataclass_objs
+            if doc.rest_type == ShiftRestType.RECUPERATION
+        )
+    )
+    duties = {
+        duty.id: duty
+        for duty in ShiftDocument.objects.filter(id__in=duty_ids)  # type: ignore
+    }
+    out = []
+    for dataclass_obj in dataclass_objs:
+        shift_doc = ShiftDocument(
+            id=str(ObjectId()) if creating else dataclass_obj.id,
+            team=teams.get(dataclass_obj.team_id),
+            name=dataclass_obj.name,
+            start_time=dataclass_obj.start_time.timestamp(),
+            end_time=dataclass_obj.end_time.timestamp(),
+            staffing=dataclass_obj.staffing,
+            color=dataclass_obj.color,
+            shift_type=dataclass_obj.shift_type.value,
+            rest_type=dataclass_obj.rest_type.value,
+            leave_type=dataclass_obj.leave_type.value,
+            recuperation_time=dataclass_obj.recuperation_time,
+            recuperation_duty=duties.get(dataclass_obj.recuperation_duty_id),
+            deleted=dataclass_obj.deleted,
+        )
+        out.append(shift_doc)
+    return out
+
+
 # document to core
 def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
     try:
@@ -185,8 +257,8 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             id=doc_obj.id,
             team_id=doc_obj.team.id,
             name=str(doc_obj.name) if doc_obj.name is not None else "",
-            start_time=doc_obj.start_time,
-            end_time=doc_obj.end_time,
+            start_time=datetime.fromtimestamp(doc_obj.start_time, timezone.utc),
+            end_time=datetime.fromtimestamp(doc_obj.end_time, timezone.utc),
             staffing=doc_obj.staffing,
             color=doc_obj.color,
             shift_type=ShiftType(doc_obj.shift_type),

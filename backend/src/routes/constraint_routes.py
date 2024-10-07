@@ -239,7 +239,7 @@ def msg_to_core_constraint_build(
     data_snake["blocks"] = [msg_to_core_block(b) for b in msg.blocks]
     data_snake.pop("text")
     data_snake.pop("active")
-    data_snake.pop("missing_properties")
+    data_snake.pop("missing_attributes")
     try:
         constraint_build = ConstraintBuild(**data_snake)
     except Exception as e:

@@ -66,6 +66,7 @@ class TestEngine:
             ],
             all_shifts=shift_names,
             shifts_not_deleted=shift_names,
+            duty_recup_pairs=[],
         )
         coverage = Coverage([])
         requests: List[Request] = []

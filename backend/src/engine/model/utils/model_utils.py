@@ -32,22 +32,28 @@ def get_total_coverage_shift(
 
 
 def build_var_name(
-    constraint: Constraint | Request | ShiftDemand,
+    constraint: Constraint | Request | ShiftDemand | None,
     cstr_vars: List[cp_model.IntVar],
-    category: Literal['request', 'constraint', 'coverage'],
+    category: Literal['request', 'constraint', 'coverage', "recuperation"],
 ) -> str:
     return json.dumps(
         asdict(
             VarName(
                 constraint_id=(
-                    constraint.id
-                    if not isinstance(constraint, ShiftDemand)
-                    else "no_shift_demand_id"
+                    ""
+                    if constraint is None
+                    else (
+                        constraint.id
+                        if not isinstance(constraint, ShiftDemand)
+                        else "no_shift_demand_id"
+                    )
                 ),
                 cstr_vars=[var.Name() for var in cstr_vars],
                 category=category,
                 hard_to_soft=(
-                    True if isinstance(constraint, ShiftDemand) else constraint.hard
+                    True
+                    if isinstance(constraint, ShiftDemand) or constraint is None
+                    else constraint.hard
                 ),
             )
         )

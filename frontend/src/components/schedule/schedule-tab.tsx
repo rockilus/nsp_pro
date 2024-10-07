@@ -116,6 +116,7 @@ export default function ScheduleTab({
       assignments: newAssignments,
       breaches: newBreaches,
       requests: newRequests,
+      recuperationShiftsNew: newShifts,
     } = await solveSchedule(scheduleId, selectedTeamId);
     setSchedule(newSchedule);
     setAssignments((prev) => [
@@ -125,6 +126,11 @@ export default function ScheduleTab({
     setBreaches(newBreaches);
     setRequests((prev) =>
       prev.map((r) => newRequests.find((nr) => nr.id === r.id) || r)
+    );
+    setShifts((prev) =>
+      prev
+        .filter((s) => !newShifts.find((ns) => ns.id === s.id))
+        .concat(newShifts)
     );
   };
 
