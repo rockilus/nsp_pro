@@ -121,7 +121,7 @@ def build_missing_attributes_and_active_owner(
     ):
         active = True
     new_mps, new_active = build_missing_attributes_and_active_owner_deleted(
-        AttributeOwnerType.WORKER, block, owners
+        owner_type, block, owners
     )
     mps += new_mps
     active = active or new_active

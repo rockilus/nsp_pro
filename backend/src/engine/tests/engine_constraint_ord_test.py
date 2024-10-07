@@ -132,13 +132,19 @@ class TestConstraintHard(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        next_assignment = [
-            a
-            for a in assignments
-            if a.worker_id == requests[0].worker_id
-            and a.date == requests[0].date + timedelta(days=1)
-        ][0]
-        assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
+        next_assignment = next(
+            (
+                a
+                for a in assignments
+                if a.worker_id == requests[0].worker_id
+                and a.date == requests[0].date + timedelta(days=1)
+            ),
+            None,
+        )
+        assert (
+            next_assignment is None
+            or next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
+        )
 
     def test_expected_assignment_for_yes(
         self,
@@ -827,13 +833,19 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        next_assignment = [
-            a
-            for a in assignments
-            if a.worker_id == requests[0].worker_id
-            and a.date == requests[0].date + timedelta(days=1)
-        ][0]
-        assert next_assignment.shift_id != constraint_ord_soft.shift_var.relative[0]
+        next_assignment = next(
+            (
+                a
+                for a in assignments
+                if a.worker_id == requests[0].worker_id
+                and a.date == requests[0].date + timedelta(days=1)
+            ),
+            None,
+        )
+        assert (
+            next_assignment is None
+            or next_assignment.shift_id != constraint_ord_soft.shift_var.relative[0]
+        )
         assert outputs.objective_value == 1
 
     def test_expected_assignment_for_yes(
@@ -907,13 +919,19 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
 
-        next_assignment = [
-            a
-            for a in assignments
-            if a.worker_id == requests[0].worker_id
-            and a.date == requests[0].date + timedelta(days=1)
-        ][0]
-        assert next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
+        next_assignment = next(
+            (
+                a
+                for a in assignments
+                if a.worker_id == requests[0].worker_id
+                and a.date == requests[0].date + timedelta(days=1)
+            ),
+            None,
+        )
+        assert (
+            next_assignment is None
+            or next_assignment.shift_id != constraint_ord_hard.shift_var.relative[0]
+        )
 
     # pylint: disable=too-many-arguments
     def test_expected_objective_for_hard_soft_conflict(

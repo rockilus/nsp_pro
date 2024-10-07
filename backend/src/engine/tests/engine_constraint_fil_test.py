@@ -15,6 +15,7 @@ from engine.types.input_output_types import (
     Inputs,
     Outputs,
     Request,
+    ShiftDemand,
     VarDay,
     VarShift,
     VarWorker,
@@ -474,16 +475,23 @@ class TestConstraintSoft(TestEngine, TestConstraint):
     ) -> None:
         # Worker w0 and w1 should not work shift s0 or s1 (hard)
         # Worker w0 and w1 should only work shift s0 or s1 (soft)
-        constraint_fil_soft.operator = "yes"
+        constraint_fil_hard.operator = "yes"
         inputs.constraints = [
             constraint_fil_hard,
             constraint_fil_soft,
+        ]
+        inputs.coverage.coverage = [
+            ShiftDemand(
+                date=date.fromisoformat("2023-10-02"),
+                shift_id="s0",
+                staffing=len(inputs.variable_space.workers_not_deleted),
+            )
         ]
         outputs = engine_solve(inputs)
 
         assert outputs.objective_value == penalty * len(
             constraint_fil_soft.worker_var.target
-        ) * len(inputs.variable_space.all_days)
+        )
 
     def test_expected_constraint_breaches_variables_for_hard_soft_conflict(
         self,
