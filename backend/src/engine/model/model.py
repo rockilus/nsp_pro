@@ -6,7 +6,7 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import Constraint, Inputs, ShiftDemand
+from engine.types.input_output_types import Constraint, Inputs, ShiftDemand, Worker
 from engine.types.model_types import BenchmarkTimes, Objective
 
 
@@ -14,8 +14,7 @@ class Model:
     # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(
         self,
-        all_workers: List[str],
-        workers_not_deleted: List[str],
+        workers: List[Worker],
         all_days: List[str],
         days_solving: List[str],
         all_shifts: List[str],
@@ -26,8 +25,9 @@ class Model:
         shift_end_times: Dict[Tuple, int],
         model_config: Dict,
     ) -> None:
-        self.all_workers = all_workers
-        self.workers_not_deleted = workers_not_deleted
+        self.workers = workers
+        self.all_workers = [w.id for w in workers]
+        self.workers_not_deleted = [w.id for w in workers if not w.deleted]
         self.all_days = all_days
         self.days_solving = days_solving
         self.shifts = all_shifts
@@ -58,98 +58,6 @@ class Model:
             self.obj,
             self.model_config,
         )
-
-    # pylint: disable=too-many-statements
-    # def sequential_solve_debug(self, inputs: Inputs) -> None:
-    #     self.solver.parameters.max_time_in_seconds = 20.0
-
-    #     self.build_variables()
-    #     self.set_fixed_variables(inputs.fixed_values)
-    #     self.add_solution_hint(inputs.sol_hint)
-    #     self.no_interval_overlap()
-    #     self.add_at_least_one_shift_per_day_constraint()
-    #     self.status = self.solver.Solve(  # type: ignore
-    #         self.model, self.solution_printer
-    #     )
-    #     self.print_model_metadata("NAKED")
-
-    #     if self.status == cp_model.INFEASIBLE:
-    #         return
-    #     temp_model = self.model
-
-    #     if len(inputs.coverage.coverage) > 0:
-    #         self.add_coverage.add_coverage(inputs.coverage.coverage)
-    #         self.add_objective()
-    #         self.status = self.solver.Solve(  # type: ignore
-    #             self.model, self.solution_printer
-    #         )
-    #         self.print_model_metadata("COVERAGE")
-    #         if self.status == cp_model.INFEASIBLE:
-    #             self.model = temp_model
-    #             return
-    #         temp_model = self.model
-
-    #     if len(inputs.requests) > 0:
-    #         self.add_far.add_requests(inputs.requests)
-    #         self.add_objective()
-    #         self.status = self.solver.Solve(  # type: ignore
-    #             self.model, self.solution_printer
-    #         )
-    #         self.print_model_metadata("REQUESTS")
-    #         if self.status == cp_model.INFEASIBLE:
-    #             self.model = temp_model
-    #             return
-    #         temp_model = self.model
-
-    #     if len(inputs.constraints) > 0:
-    #         self.add_custom_constraints(
-    #             inputs.constraints, inputs.coverage.coverage
-    #         )
-    #         self.add_objective()
-    #         self.status = self.solver.Solve(  # type: ignore
-    #             self.model, self.solution_printer
-    #         )
-    #         self.print_model_metadata("CONSTRAINTS")
-    #         if self.status == cp_model.INFEASIBLE:
-    #             self.model = temp_model
-    #             return
-    #         temp_model = self.model
-
-    #     # if not inputs.sol_hint:
-    #     # if False:
-    #     solving_dates = [
-    #         d
-    #         for d in self.days
-    #         if d not in [fvd for _, fvd, _ in inputs.fixed_values]
-    #     ]
-    #     cov_shifts = list(
-    #         set(
-    #             sd.shift_id
-    #             for sd in inputs.coverage.coverage
-    #             if sd.staffing > 0
-    #         )
-    #     )
-
-    #     self.spread_through_time(solving_dates, cov_shifts)
-    #     self.add_objective()
-    #     self.status = self.solver.Solve(  # type: ignore
-    #         self.model, self.solution_printer
-    #     )
-    #     self.print_model_metadata("EVENNESS")
-    #     if self.status == cp_model.INFEASIBLE:
-    #         self.model = temp_model
-    #         return
-    #     temp_model = self.model
-
-    #     self.spread_across_workers(solving_dates, cov_shifts)
-    #     self.add_objective()
-    #     solution_callback = SolverSolutionCallback(0)
-    #     self.status = self.solver.Solve(self.model, solution_callback)  # type: ignore
-    #     self.print_model_metadata("FAIRNESS")
-    #     if self.status == cp_model.INFEASIBLE:
-    #         self.model = temp_model
-    #         return
-    #     temp_model = self.model
 
     def sequential_solve(self, inputs: Inputs) -> None:
         # hts stand for high to soft
@@ -359,25 +267,6 @@ class Model:
     ) -> None:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
-        # for w in self.workers_not_deleted:
-        # self.model.Add(
-        #     self.variables[
-        #         w, "2024-10-27", "66b63360cad3bb739b082fa7" # repos
-        #     ]
-        #     == 1
-        # )
-        # self.model.Add(
-        #     self.variables[
-        #         w, "2024-10-27", "66b63334cad3bb739b082fa5"  # consult van
-        #     ]
-        #     == 1
-        # )
-        # self.model.Add(
-        #     self.variables[
-        #         w, "2024-10-27", "66b63332cad3bb739b082fa4"  # garde plo
-        #     ]
-        #     == 1
-        # )
 
     def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
         for k, v in solution_hint.items():

@@ -12,6 +12,7 @@ from engine.types.input_output_types import (
     VariableSpace,
     VarShift,
     VarWorker,
+    Worker,
 )
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     "VarDay",
     "VarShift",
     "VarWorker",
+    "Worker",
 ]

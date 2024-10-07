@@ -9,9 +9,17 @@ from utils.constants import Constants
 
 
 @dataclass
+class Worker:
+    id: str
+    weekly_hours: int  # in hours, contract
+    weekly_hours_desired: int  # in hours, desired
+    duties_per_month: int  # number of duties per month
+    deleted: bool
+
+
+@dataclass
 class VariableSpace:
-    all_workers: List[str]
-    workers_not_deleted: List[str]
+    workers: List[Worker]
     all_days: List[str]
     days_solving: List[str]
     all_shifts: List[str]
