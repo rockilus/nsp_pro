@@ -1,5 +1,11 @@
 from mongoengine import Document
-from mongoengine.fields import BooleanField, IntField, ReferenceField, StringField
+from mongoengine.fields import (
+    BooleanField,
+    IntField,
+    ListField,
+    ReferenceField,
+    StringField,
+)
 
 
 class Worker(Document):
@@ -12,4 +18,5 @@ class Worker(Document):
     weekly_hours_desired = IntField(required=True)
     duties_per_month = IntField(required=True)
     annual_leave = IntField(required=True)
+    specialties = ListField(ReferenceField("Specialty"))
     deleted = BooleanField(required=True)

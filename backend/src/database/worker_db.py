@@ -12,6 +12,7 @@ from errors import (
     handle_save_document_error,
 )
 from logger import log_info
+from models import Specialty as SpecialtyDocument
 from models import Team as TeamDocument
 from models import Worker as WorkerDocument
 
@@ -109,6 +110,9 @@ def core_to_doc_worker(dataclass_obj: Worker) -> WorkerDocument:
     try:
         # pylint: disable=no-member
         team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
+        specialties = SpecialtyDocument.objects.filter(  # type: ignore
+            id__in=dataclass_obj.specialty_ids
+        )
     except Exception as e:
         log_info("Failed to get team by id to create worker")
         handle_get_document_error(e)
@@ -121,6 +125,7 @@ def core_to_doc_worker(dataclass_obj: Worker) -> WorkerDocument:
             weekly_hours_desired=dataclass_obj.weekly_hours_desired,
             duties_per_month=dataclass_obj.duties_per_month,
             annual_leave=dataclass_obj.annual_leave,
+            specialties=specialties,
             deleted=dataclass_obj.deleted,
         )
     except Exception as e:
@@ -140,7 +145,7 @@ def doc_to_core_worker(doc_obj: WorkerDocument) -> Worker:
             weekly_hours_desired=doc_obj.weekly_hours_desired,
             duties_per_month=doc_obj.duties_per_month,
             annual_leave=doc_obj.annual_leave,
-            specialty_ids=[],
+            specialty_ids=[s.id for s in doc_obj.specialties],
             deleted=doc_obj.deleted,
         )
     except Exception as e:

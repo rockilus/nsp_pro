@@ -12,7 +12,7 @@ from models.schedule import QuickStaffing, Schedule
 from models.shift import Shift
 from models.shift_demand import ShiftDemand
 from models.stats_header import StatsHeader
-from models.team import Team
+from models.team import Specialty, Team
 from models.user import User
 from models.worker import Worker
 
@@ -38,6 +38,7 @@ __all__ = [
     "Shift",
     "ShiftDemand",
     "StatsHeader",
+    "Specialty",
     "Team",
     "User",
     "Worker",
