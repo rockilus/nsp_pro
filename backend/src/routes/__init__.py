@@ -12,6 +12,7 @@ from routes.request_routes import router as router_request
 from routes.schedule_routes import router as router_schedule
 from routes.shift_demand_routes import router as router_shift_demand
 from routes.shift_routes import router as router_shift
+from routes.specialty_routes import router as router_specialty
 from routes.stats_routes import router as router_stats
 from routes.team_routes import router as router_team
 from routes.user_routes import router as router_user
@@ -32,6 +33,7 @@ __all__ = [
     "router_schedule",
     "router_shift_demand",
     "router_shift",
+    "router_specialty",
     "router_stats",
     "router_team",
     "router_user",

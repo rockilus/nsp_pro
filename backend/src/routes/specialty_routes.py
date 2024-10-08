@@ -44,6 +44,7 @@ async def create_specialty(
     return response
 
 
+# pylint: disable=R0801
 @router.get("/specialties/teams/{team_id}")
 async def get_specialties(
     team_id: str,
@@ -51,7 +52,7 @@ async def get_specialties(
 ) -> List[SpecialtyMessage]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-shift-dimension", "team", team_id
+            session.get_user_id(), "read-workers", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read specialties")
         specialties = specialty_db.get_specialties_by_team_id(team_id)

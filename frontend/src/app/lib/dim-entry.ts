@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { DimEntryT } from "@/types/dimension";
-import { AttributeT } from "@/types/attribute";
+import { DimEntryT } from "../../types/dimension";
+import { AttributeT } from "../../types/attribute";
 // Env Vars
 import { API_URL } from "./env";
 

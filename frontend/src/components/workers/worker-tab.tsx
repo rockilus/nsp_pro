@@ -31,6 +31,7 @@ import "../../styles/tab-container-styles.css";
 import { WorkerT } from "../../types/worker";
 import { DimensionT, DimEntryT } from "../../types/dimension";
 import { AttributeT } from "../../types/attribute";
+import { SpecialtyT } from "../../types/team";
 
 export default function WorkerTab({
   lng,
@@ -45,6 +46,7 @@ export default function WorkerTab({
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [dimensions, setDimensions] = useState<DimensionT[]>([]);
   const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
+  const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
 
   const DefaultWorkerFields: Record<string, string>[] = [
     { name: "name", label: t("name") },
@@ -241,10 +243,12 @@ export default function WorkerTab({
           workers: fetchedWorkers,
           dimensions: fetchedDimensions,
           dimEntries: fetchedDimEntries,
+          specialties: fetchedSpecialties,
         } = await getWorkersTabData(selectedTeamId);
         setWorkers(fetchedWorkers);
         setDimensions(fetchedDimensions);
         setDimEntries(fetchedDimEntries);
+        setSpecialties(fetchedSpecialties);
         setIsLoading(false);
       }
     };

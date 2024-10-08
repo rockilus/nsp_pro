@@ -1,4 +1,4 @@
-export type Specialty = {
+export type SpecialtyT = {
   id: string;
   teamId: string;
   name: string;
