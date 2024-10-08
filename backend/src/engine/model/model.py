@@ -12,7 +12,6 @@ from engine.types.input_output_types import (
     Inputs,
     ShiftDemand,
     Worker,
-    WorkerShiftFilter,
 )
 from engine.types.model_types import BenchmarkTimes, Objective
 from utils.constants import Constants
@@ -701,27 +700,23 @@ class Model:
                 self.model.Add(sum(constraint_vars) <= pt.target)
 
     def add_worker_shift_filter_constraints(
-        self, worker_shift_filters: List[WorkerShiftFilter], hard_to_soft: bool
+        self, worker_shift_filters: List[Tuple[str, str]], hard_to_soft: bool
     ) -> None:
-        for wsf in worker_shift_filters:
-            for w in wsf.worker_ids:
-                for d in self.days_solving:
-                    for s in wsf.shift_not_to_ids:
-                        cstr_var = self.variables[w, d, s]
-                        if not hard_to_soft:
-                            self.model.Add(cstr_var == 0)
-                        else:
-                            var_name = build_var_name(
-                                None, [cstr_var], "worker_shift_filter"
-                            )
-                            cstr_vars: List[
-                                cp_model.IntVar | cp_model._NotBooleanVariable
-                            ] = [cstr_var.Not()]
-                            lit = self.model.NewBoolVar(var_name)
-                            cstr_vars.append(lit)
-                            self.model.AddBoolOr(cstr_vars)
-                            self.obj.bool_vars.append(lit)
-                            self.obj.bool_coeffs.append(100)
+        for w, s in worker_shift_filters:
+            for d in self.days_solving:
+                cstr_var = self.variables[w, d, s]
+                if not hard_to_soft:
+                    self.model.Add(cstr_var == 0)
+                else:
+                    var_name = build_var_name(None, [cstr_var], "worker_shift_filter")
+                    cstr_vars: List[cp_model.IntVar | cp_model._NotBooleanVariable] = [
+                        cstr_var.Not()
+                    ]
+                    lit = self.model.NewBoolVar(var_name)
+                    cstr_vars.append(lit)
+                    self.model.AddBoolOr(cstr_vars)
+                    self.obj.bool_vars.append(lit)
+                    self.obj.bool_coeffs.append(100)
 
     def add_custom_constraints(
         self,

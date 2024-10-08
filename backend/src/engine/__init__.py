@@ -15,7 +15,6 @@ from engine.types.input_output_types import (
     VarShift,
     VarWorker,
     Worker,
-    WorkerShiftFilter,
 )
 
 __all__ = [
@@ -35,5 +34,4 @@ __all__ = [
     "VarShift",
     "VarWorker",
     "Worker",
-    "WorkerShiftFilter",
 ]

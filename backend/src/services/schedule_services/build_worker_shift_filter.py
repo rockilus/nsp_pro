@@ -10,7 +10,6 @@ from core import (
     ShiftType,
     Worker,
 )
-from engine import WorkerShiftFilter as WorkerShiftFilterEngine
 
 
 # pylint: disable=too-many-locals, too-many-branches
@@ -19,8 +18,8 @@ def build_worker_shift_filters(
     shifts: List[Shift],
     dimensions: List[Dimension],
     attributes: List[Attribute],
-) -> List[WorkerShiftFilterEngine]:
-    worker_filters: List[WorkerShiftFilterEngine] = []
+) -> List[Tuple[str, str]]:
+    out: Set[Tuple[str, str]] = set()
 
     # Step 1: Identify shared dimensions
     shared_dimensions = [
@@ -39,19 +38,20 @@ def build_worker_shift_filters(
 
     # Step 2: Build attribute mappings
     # Worker attributes: worker_id -> dimension_id -> dim_entry_ids
-    worker_attrs: Dict[str, Dict[str, List[str]]] = defaultdict(dict)
+    worker_attrs: Dict[str, Dict[str, Set[str]]] = defaultdict(lambda: defaultdict(set))
     # Shift attributes: shift_id -> dimension_id -> dim_entry_ids
-    shift_attrs: Dict[str, Dict[str, List[str]]] = defaultdict(dict)
+    shift_attrs: Dict[str, Dict[str, Set[str]]] = defaultdict(lambda: defaultdict(set))
 
     for attr in attributes:
         if attr.owner_type == AttributeOwnerType.WORKER:
-            worker_attrs[attr.owner_id][attr.dimension_id] = attr.dim_entry_ids
+            for de_id in attr.dim_entry_ids:
+                worker_attrs[attr.owner_id][attr.dimension_id].add(de_id)
         elif attr.owner_type == AttributeOwnerType.SHIFT:
-            shift_attrs[attr.owner_id][attr.dimension_id] = attr.dim_entry_ids
+            for de_id in attr.dim_entry_ids:
+                shift_attrs[attr.owner_id][attr.dimension_id].add(de_id)
 
     # Map to group workers by their invalid_shift_ids
-    shift_filter_map: Dict[Tuple[str, ...], List[str]] = defaultdict(list)
-    all_worker_ids: Set[str] = {worker.id for worker in workers}
+    all_worker_ids: Set[str] = {worker.id for worker in workers if not worker.deleted}
 
     # Step 3: Build worker shift filters
     for dimension in shared_dimensions:
@@ -72,75 +72,61 @@ def build_worker_shift_filters(
             for shift in shifts
             if not shift.deleted and shift.shift_type in shift_types_to_include
         }
-        # -------- Check for shift with unmatched attributes --------
 
-        # Collect all dimension entry IDs for workers and shifts
-        worker_dim_entry_ids: Set[str] = set()
-        for attrs in worker_attrs.values():
-            if dimension_id in attrs:
-                worker_dim_entry_ids.update(attrs[dimension_id])
-
-        shift_dim_entry_ids: Set[str] = set()
-        for attrs in shift_attrs.values():
-            if dimension_id in attrs:
-                shift_dim_entry_ids.update(attrs[dimension_id])
-
-        # Identify dimension entries not present in any worker
-        unmatched_dim_entries = shift_dim_entry_ids - worker_dim_entry_ids
-
-        # Collect shifts with unmatched attributes
-        shifts_with_unmatched_attrs: Set[str] = set()
-        for shift_id, attrs in shift_attrs.items():
-            if (
-                dimension_id in attrs
-                and set(attrs[dimension_id]) & unmatched_dim_entries
-            ):
-                shifts_with_unmatched_attrs.add(shift_id)
-
-        # Exclude these shifts from being assigned to any worker
-        if shifts_with_unmatched_attrs:
-            # Convert to sorted tuple for consistent key
-            invalid_shift_ids_key = tuple(sorted(shifts_with_unmatched_attrs))
-            shift_filter_map[invalid_shift_ids_key] = list(all_worker_ids)
-
-        # -------- Map worker's attributes to shift attributes --------
+        # -------- Filter out shifts that don't have worker attribute --------
 
         # Map of attribute value to shift IDs
         attr_value_to_shift_ids: Dict[str, Set[str]] = defaultdict(set)
         for shift_id, attrs in shift_attrs.items():
             if dimension_id in attrs:
                 attr_dim_entry_ids = attrs[dimension_id]
-                for dim_entry_id in attr_dim_entry_ids:
-                    attr_value_to_shift_ids[dim_entry_id].add(shift_id)
-                # attr_value_to_shift_ids[attr_dim_entry_ids].add(shift_id)
+                for de_id in attr_dim_entry_ids:
+                    attr_value_to_shift_ids[de_id].add(shift_id)
 
         for worker in workers:
             if worker.id in worker_attrs and dimension_id in worker_attrs[worker.id]:
-                worker_attr_dim_entry_ids = set(worker_attrs[worker.id][dimension_id])
+                worker_attr_dim_entry_ids = worker_attrs.get(worker.id, {}).get(
+                    dimension_id, set()
+                )
 
                 valid_shift_ids = set()
-                for dim_entry_id in worker_attr_dim_entry_ids:
-                    valid_shift_ids.update(
-                        attr_value_to_shift_ids.get(dim_entry_id, set())
-                    )
+                for de_id in worker_attr_dim_entry_ids:
+                    valid_shift_ids.update(attr_value_to_shift_ids.get(de_id, set()))
 
                 # Shifts that do not have the same attribute value
                 invalid_shift_ids = relevant_shift_ids - valid_shift_ids
 
-                # Convert invalid_shift_ids to a sorted tuple to use as a
-                # dictionary key
-                invalid_shift_ids_key = tuple(sorted(invalid_shift_ids))
+                # Add invalid tuples for the worker
+                for shift_id in invalid_shift_ids:
+                    out.add((worker.id, shift_id))
 
-                # Add the worker ID to the list of workers with this
-                # invalid_shift_ids_key
-                shift_filter_map[invalid_shift_ids_key].append(worker.id)
+        # -------- Filter out workers that don't have shift attribute --------
 
-    # Create WorkerShiftFilterEngine objects for each group
-    for invalid_shift_ids_key, worker_ids in shift_filter_map.items():
-        worker_filter = WorkerShiftFilterEngine(
-            worker_ids=worker_ids, shift_not_to_ids=list(invalid_shift_ids_key)
-        )
-        worker_filters.append(worker_filter)
+        # Map of attribute value to worker IDs
+        attr_value_to_worker_ids: Dict[str, Set[str]] = defaultdict(set)
+        for worker_id, attrs in worker_attrs.items():
+            if dimension_id in attrs:
+                attr_dim_entry_ids = attrs[dimension_id]
+                for de_id in attr_dim_entry_ids:
+                    attr_value_to_worker_ids[de_id].add(worker_id)
 
-    # Step 4: Return the list of WorkerShiftFilter objects
-    return worker_filters
+        for shift in shifts:
+            if shift.id in shift_attrs and dimension_id in shift_attrs[shift.id]:
+                shift_attr_dim_entry_ids = shift_attrs.get(shift.id, {}).get(
+                    dimension_id, set()
+                )
+
+                valid_worker_ids = set()
+                for de_id in shift_attr_dim_entry_ids:
+                    valid_worker_ids.update(attr_value_to_worker_ids.get(de_id, set()))
+
+                # Shifts that do not have the same attribute value
+                invalid_worker_ids = all_worker_ids - valid_worker_ids
+
+                # Add invalid tuples for the worker
+                for worker_id in invalid_worker_ids:
+                    out.add((worker_id, shift.id))
+
+    # Return the list of unique (worker_id, invalid_shift_id) and
+    # (invalid_worker_id, shift_id) tuples
+    return list(out)
