@@ -70,6 +70,7 @@ export default function WorkerTab({
       weeklyHoursDesired: 39,
       dutiesPerMonth: 4,
       annualLeave: 25,
+      specialtyIds: [],
       deleted: false,
       attributes: [],
     });

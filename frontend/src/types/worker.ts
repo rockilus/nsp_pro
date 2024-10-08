@@ -8,6 +8,7 @@ export type WorkerT = {
   weeklyHoursDesired: number;
   dutiesPerMonth: number;
   annualLeave: number;
+  specialtyIds: string[];
   deleted: boolean;
   attributes: AttributeT[];
 };
