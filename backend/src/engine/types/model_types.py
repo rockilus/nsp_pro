@@ -22,6 +22,7 @@ class VarName:
         "recuperation",
         "work_time",
         "duties_per_month",
+        "worker_shift_filter",
     ]
     cstr_vars: List[str]
     hard_to_soft: bool

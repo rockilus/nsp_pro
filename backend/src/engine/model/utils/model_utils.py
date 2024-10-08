@@ -41,6 +41,7 @@ def build_var_name(
         "recuperation",
         "work_time",
         "duties_per_month",
+        "worker_shift_filter",
     ],
 ) -> str:
     return json.dumps(

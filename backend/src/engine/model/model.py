@@ -12,11 +12,13 @@ from engine.types.input_output_types import (
     Inputs,
     ShiftDemand,
     Worker,
+    WorkerShiftFilter,
 )
 from engine.types.model_types import BenchmarkTimes, Objective
 from utils.constants import Constants
 
 
+# pylint: disable=too-many-public-methods
 class Model:
     # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(
@@ -76,6 +78,7 @@ class Model:
         self.solve_model_hts_custom(
             inputs,
             coverage_hts=False,
+            worker_shift_filter_hts=False,
             duty_recup_hts=False,
             nb_duty_hts=False,
             work_time_desired_hts=False,
@@ -89,6 +92,7 @@ class Model:
         self.solve_model_hts_custom(
             inputs,
             coverage_hts=False,
+            worker_shift_filter_hts=False,
             duty_recup_hts=False,
             nb_duty_hts=False,
             work_time_desired_hts=False,
@@ -102,6 +106,7 @@ class Model:
         self.solve_model_hts_custom(
             inputs,
             coverage_hts=False,
+            worker_shift_filter_hts=False,
             duty_recup_hts=False,
             nb_duty_hts=False,
             work_time_desired_hts=False,
@@ -115,6 +120,7 @@ class Model:
         self.solve_model_hts_custom(
             inputs,
             coverage_hts=False,
+            worker_shift_filter_hts=False,
             duty_recup_hts=False,
             nb_duty_hts=False,
             work_time_desired_hts=False,
@@ -128,6 +134,7 @@ class Model:
         self.solve_model_hts_custom(
             inputs,
             coverage_hts=False,
+            worker_shift_filter_hts=False,
             duty_recup_hts=False,
             nb_duty_hts=False,
             work_time_desired_hts=True,
@@ -141,6 +148,7 @@ class Model:
         self.solve_model_hts_custom(
             inputs,
             coverage_hts=False,
+            worker_shift_filter_hts=False,
             duty_recup_hts=False,
             nb_duty_hts=True,
             work_time_desired_hts=True,
@@ -154,6 +162,21 @@ class Model:
         self.solve_model_hts_custom(
             inputs,
             coverage_hts=False,
+            worker_shift_filter_hts=False,
+            duty_recup_hts=True,
+            nb_duty_hts=True,
+            work_time_desired_hts=True,
+            constraint_hts=True,
+            request_hts=True,
+            work_time_hts=True,
+        )
+        if self.status != cp_model.INFEASIBLE:
+            return
+        self.reset_model()
+        self.solve_model_hts_custom(
+            inputs,
+            coverage_hts=False,
+            worker_shift_filter_hts=True,
             duty_recup_hts=True,
             nb_duty_hts=True,
             work_time_desired_hts=True,
@@ -167,6 +190,7 @@ class Model:
         self.solve_model_hts_custom(
             inputs,
             coverage_hts=True,
+            worker_shift_filter_hts=True,
             duty_recup_hts=True,
             nb_duty_hts=True,
             work_time_desired_hts=True,
@@ -180,6 +204,7 @@ class Model:
         inputs: Inputs,
         coverage_hts: bool,
         duty_recup_hts: bool,
+        worker_shift_filter_hts: bool,
         work_time_hts: bool,
         work_time_desired_hts: bool,
         nb_duty_hts: bool,
@@ -205,6 +230,9 @@ class Model:
         self.add_weekly_contractual_worktime_constraints(work_time_hts)
         self.add_weekly_desired_worktime_constraints(work_time_desired_hts)
         self.add_nb_duties_per_month_constraints(nb_duty_hts)
+        self.add_worker_shift_filter_constraints(
+            inputs.worker_shift_filters, worker_shift_filter_hts
+        )
         self.add_constraint_factory.add_request.add_requests(
             inputs.requests, request_hts
         )
@@ -215,6 +243,7 @@ class Model:
         self.solve()
         self.print_model_metadata(
             coverage_hts,
+            worker_shift_filter_hts,
             duty_recup_hts,
             work_time_hts,
             work_time_desired_hts,
@@ -671,6 +700,29 @@ class Model:
                     )
                 self.model.Add(sum(constraint_vars) <= pt.target)
 
+    def add_worker_shift_filter_constraints(
+        self, worker_shift_filters: List[WorkerShiftFilter], hard_to_soft: bool
+    ) -> None:
+        for wsf in worker_shift_filters:
+            for w in wsf.worker_ids:
+                for d in self.days_solving:
+                    for s in wsf.shift_not_to_ids:
+                        cstr_var = self.variables[w, d, s]
+                        if not hard_to_soft:
+                            self.model.Add(cstr_var == 0)
+                        else:
+                            var_name = build_var_name(
+                                None, [cstr_var], "worker_shift_filter"
+                            )
+                            cstr_vars: List[
+                                cp_model.IntVar | cp_model._NotBooleanVariable
+                            ] = [cstr_var.Not()]
+                            lit = self.model.NewBoolVar(var_name)
+                            cstr_vars.append(lit)
+                            self.model.AddBoolOr(cstr_vars)
+                            self.obj.bool_vars.append(lit)
+                            self.obj.bool_coeffs.append(100)
+
     def add_custom_constraints(
         self,
         constraints: List[Constraint],
@@ -732,6 +784,7 @@ class Model:
     def print_model_metadata(
         self,
         coverage_hts: bool,
+        worker_shift_filter_hts: bool,
         duty_recup_hts: bool,
         work_time_hts: bool,
         work_time_desired_hts: bool,
@@ -740,13 +793,14 @@ class Model:
         constraint_hts: bool,
     ) -> None:
         print("----------- HARD TO SOFT -----------")
-        print(f"COVERAGE:          {coverage_hts}")
-        print(f"DUTY_RECUP:        {duty_recup_hts}")
-        print(f"NB_DUTY:           {nb_duty_hts}")
-        print(f"WORK_TIME_DESIRED: {work_time_desired_hts}")
-        print(f"CONSTRAINT:        {constraint_hts}")
-        print(f"REQUEST:           {request_hts}")
-        print(f"WORK_TIME:         {work_time_hts}")
+        print(f"COVERAGE:            {coverage_hts}")
+        print(f"WORKER_SHIFT_FILTER: {worker_shift_filter_hts}")
+        print(f"DUTY_RECUP:          {duty_recup_hts}")
+        print(f"NB_DUTY:             {nb_duty_hts}")
+        print(f"WORK_TIME_DESIRED:   {work_time_desired_hts}")
+        print(f"CONSTRAINT:          {constraint_hts}")
+        print(f"REQUEST:             {request_hts}")
+        print(f"WORK_TIME:           {work_time_hts}")
         print("\n")
 
         print("----------- STATS -----------")

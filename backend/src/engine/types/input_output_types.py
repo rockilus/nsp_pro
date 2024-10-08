@@ -156,6 +156,7 @@ class ConstraintBreach:
         "recuperation",
         "work_time",
         "duties_per_month",
+        "worker_shift_filter",
     ]
     variables: List[Tuple[str, date, str]]
     value_diff: int
