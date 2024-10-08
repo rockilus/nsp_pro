@@ -148,6 +148,7 @@ workers = [
         weekly_hours_desired=39,
         duties_per_month=10,
         annual_leave=25,
+        specialty_ids=[],
         deleted=False,
     ),
     Worker(
@@ -158,6 +159,7 @@ workers = [
         weekly_hours_desired=39,
         duties_per_month=10,
         annual_leave=25,
+        specialty_ids=[],
         deleted=False,
     ),
     Worker(
@@ -168,6 +170,7 @@ workers = [
         weekly_hours_desired=39,
         duties_per_month=10,
         annual_leave=25,
+        specialty_ids=[],
         deleted=False,
     ),
     Worker(
@@ -178,6 +181,7 @@ workers = [
         weekly_hours_desired=39,
         duties_per_month=10,
         annual_leave=25,
+        specialty_ids=[],
         deleted=False,
     ),
     Worker(
@@ -188,6 +192,7 @@ workers = [
         weekly_hours_desired=39,
         duties_per_month=10,
         annual_leave=25,
+        specialty_ids=[],
         deleted=False,
     ),
     Worker(
@@ -198,6 +203,7 @@ workers = [
         weekly_hours_desired=39,
         duties_per_month=10,
         annual_leave=25,
+        specialty_ids=[],
         deleted=False,
     ),
     Worker(
@@ -208,6 +214,7 @@ workers = [
         weekly_hours_desired=39,
         duties_per_month=10,
         annual_leave=25,
+        specialty_ids=[],
         deleted=False,
     ),
     Worker(
@@ -218,6 +225,7 @@ workers = [
         weekly_hours_desired=39,
         duties_per_month=10,
         annual_leave=25,
+        specialty_ids=[],
         deleted=False,
     ),
     Worker(
@@ -228,6 +236,7 @@ workers = [
         weekly_hours_desired=39,
         duties_per_month=10,
         annual_leave=25,
+        specialty_ids=[],
         deleted=False,
     ),
     Worker(
@@ -238,6 +247,7 @@ workers = [
         weekly_hours_desired=39,
         duties_per_month=10,
         annual_leave=25,
+        specialty_ids=[],
         deleted=False,
     ),
 ]

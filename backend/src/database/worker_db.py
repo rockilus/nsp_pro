@@ -140,6 +140,7 @@ def doc_to_core_worker(doc_obj: WorkerDocument) -> Worker:
             weekly_hours_desired=doc_obj.weekly_hours_desired,
             duties_per_month=doc_obj.duties_per_month,
             annual_leave=doc_obj.annual_leave,
+            specialty_ids=[],
             deleted=doc_obj.deleted,
         )
     except Exception as e:
