@@ -105,7 +105,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
 
         counts = [
             max_consecutive_shift_count(assignments, w, s)
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
             for s in constraint_seq_hard.shift_var.target
         ]
 
@@ -200,12 +200,12 @@ class TestConstraintHard(TestEngine, TestConstraint):
 
         counts_max = [
             max_consecutive_shift_count(assignments, w, s)
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
             for s in constraint_seq_hard.shift_var.target
         ]
         counts_min = [
             min_consecutive_shift_count(assignments, w, s)
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
             for s in constraint_seq_hard.shift_var.target
         ]
 
@@ -304,7 +304,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
 
         counts = [
             min_consecutive_shift_count(assignments, w, s)
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
             for s in constraint_seq_hard.shift_var.target
         ]
 
@@ -537,7 +537,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
 
         counts = [
             max_consecutive_shift_count(assignments, w, s)
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
             for s in constraint_seq_hard.shift_var.target
         ]
 
@@ -713,7 +713,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         counts = [
             max_consecutive_shift_count(assignments, w, s)
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
             for s in constraint_seq_soft.shift_var.target
         ]
 
@@ -808,12 +808,12 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         counts_max = [
             max_consecutive_shift_count(assignments, w, s)
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
             for s in constraint_seq_soft.shift_var.target
         ]
         counts_min = [
             min_consecutive_shift_count(assignments, w, s)
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
             for s in constraint_seq_soft.shift_var.target
         ]
 
@@ -912,7 +912,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         counts = [
             min_consecutive_shift_count(assignments, w, s)
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
             for s in constraint_seq_soft.shift_var.target
         ]
 

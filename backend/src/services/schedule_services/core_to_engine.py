@@ -1,3 +1,4 @@
+import calendar
 import math
 from datetime import date, timedelta
 from typing import Dict, List, Tuple
@@ -30,7 +31,6 @@ from engine import VarWorker as VarWorkerEngine
 from engine import Worker as WorkerEngine
 from services.schedule_services.penalty_map import penalty_map
 from utils.constants import Constants
-import calendar
 
 
 # pylint: disable=too-many-arguments, too-many-locals
@@ -46,11 +46,7 @@ def core_to_engine_inputs(
     wip_assignments: List[Assignment],
 ) -> Inputs:
     start_date_hist = min(
-        (
-            min(a.date for a in fixed_assignments)
-            if fixed_assignments
-            else start_date
-        ),
+        (min(a.date for a in fixed_assignments) if fixed_assignments else start_date),
         start_date,
     )
     end_date_hist = start_date - timedelta(days=1)
@@ -67,9 +63,7 @@ def core_to_engine_inputs(
         all_shifts=[shift.id for shift in shifts],
         shifts_not_deleted=[s.id for s in shifts if not s.deleted],
         shift_work=[
-            s.id
-            for s in shifts
-            if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+            s.id for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
         ],
         duty_recup_pairs=build_duty_recup_pairs(shifts),
     )
@@ -111,9 +105,7 @@ def core_to_engine_inputs(
             max_weekly_hours_worked=_build_period_target_work_hours_week(
                 80, dates_campaign
             ),
-            max_duties_per_month=_build_period_target_duties_month(
-                8, dates_campaign
-            ),
+            max_duties_per_month=_build_period_target_duties_month(8, dates_campaign),
         ),
     )
     return inputs
@@ -159,8 +151,7 @@ def _build_period_target_work_hours_week(
         # Calculate the adjusted target
         num_days_in_week = len(week_dates)
         adjusted_target = math.ceil(
-            (weekly_target_minutes / Constants.NUM_DAYS_WEEK)
-            * num_days_in_week
+            (weekly_target_minutes / Constants.NUM_DAYS_WEEK) * num_days_in_week
         )
 
         # Create PeriodTarget object
@@ -182,9 +173,7 @@ def _build_period_target_duties_month(
         # Get the start of the month
         start_date = dates[0]
         start_of_month = date(start_date.year, start_date.month, 1)
-        _, last_day_month = calendar.monthrange(
-            start_date.year, start_date.month
-        )
+        _, last_day_month = calendar.monthrange(start_date.year, start_date.month)
         end_of_month = date(start_date.year, start_date.month, last_day_month)
 
         # Get all dates in the current month
@@ -247,10 +236,7 @@ def core_to_engine_fixed_values(
 ) -> Dict[Tuple[str, str, str], int]:
     # Assignments before solving period
     out = {
-        (w.id, d, s.id): 0
-        for w in workers
-        for d in days_not_solving
-        for s in shifts
+        (w.id, d, s.id): 0 for w in workers for d in days_not_solving for s in shifts
     }
     for a in assignments:
         out[
@@ -271,9 +257,7 @@ def core_to_engine_fixed_values(
     # Leave shifts not requested:
     for w in [w for w in workers if not w.deleted]:
         for d in days_solving:
-            for s in [
-                s for s in shifts if s.leave_type != ShiftLeaveType.NONE
-            ]:
+            for s in [s for s in shifts if s.leave_type != ShiftLeaveType.NONE]:
                 d_date = date.fromisoformat(d)
                 request = [
                     r
@@ -377,23 +361,17 @@ def _build_dates(start_date: date, end_date: date) -> List[date]:
 
 def _build_interval_parameters(
     shifts: List[Shift], dates=List[date]
-) -> Tuple[
-    Dict[str, int], Dict[Tuple[str, str], int], Dict[Tuple[str, str], int]
-]:
+) -> Tuple[Dict[str, int], Dict[Tuple[str, str], int], Dict[Tuple[str, str], int]]:
     s_durations = {}
     s_start_times = {}
     s_end_times = {}
     for s in shifts:
-        s_durations[s.id] = int(
-            (s.end_time - s.start_time).total_seconds() // 60 - 1
-        )
+        s_durations[s.id] = int((s.end_time - s.start_time).total_seconds() // 60 - 1)
         day_diff = (s.end_time.date() - s.start_time.date()).days
         for d in dates:
             d_string = d.isoformat()
             s_start_times[d_string, s.id] = int(
-                s.start_time.replace(
-                    year=d.year, month=d.month, day=d.day
-                ).timestamp()
+                s.start_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
                 // Constants.NUM_SECONDS_MINUTE
             )
             s_end_times[d_string, s.id] = int(

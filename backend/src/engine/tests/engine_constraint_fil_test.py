@@ -484,7 +484,9 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             ShiftDemand(
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
-                staffing=len(inputs.variable_space.workers_not_deleted),
+                staffing=len(
+                    [w for w in inputs.variable_space.workers if not w.deleted]
+                ),
             )
         ]
         outputs = engine_solve(inputs)

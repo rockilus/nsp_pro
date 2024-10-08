@@ -66,16 +66,10 @@ class Constants:
     ]
     CONSTRAINT_TYPE_OPTIONS = Literal["sum", "seq", "ord", "fil", "fai", "eve"]
     VAR_WORKER_SELECTOR_OPTIONS = Literal["all", "equal"]
-    VAR_DAY_SELECTOR_OPTIONS = Literal[
-        "all", "week", "period", "week_day_index"
-    ]
+    VAR_DAY_SELECTOR_OPTIONS = Literal["all", "week", "period", "week_day_index"]
     VAR_SHIFT_SELECTOR_OPTIONS = Literal["all", "equal"]
-    BLOCK_TYPE_OPTIONS = Literal[
-        "string", "number", "list", "shift_worker_option"
-    ]
-    SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS = Literal[
-        "shift", "worker", "dimension", ""
-    ]
+    BLOCK_TYPE_OPTIONS = Literal["string", "number", "list", "shift_worker_option"]
+    SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS = Literal["shift", "worker", "dimension", ""]
 
     # Stats
     STATS_TIME_FRAME_OPTIONS = Literal[
@@ -90,9 +84,7 @@ class Constants:
         "nb_times_shift",
         "nb_times_rest",
     ]
-    HEADER_UNIT_OPTIONS = Literal[
-        "weekday", "week", "month", "year", "all", "shift"
-    ]
+    HEADER_UNIT_OPTIONS = Literal["weekday", "week", "month", "year", "all", "shift"]
 
     # Routes
     USER_ERROR_MESSAGE_GENERIC: str = (

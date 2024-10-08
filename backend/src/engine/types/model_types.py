@@ -15,7 +15,14 @@ class Objective:
 @dataclass
 class VarName:
     constraint_id: str
-    category: Literal["request", "constraint", "coverage", "recuperation"]
+    category: Literal[
+        "request",
+        "constraint",
+        "coverage",
+        "recuperation",
+        "work_time",
+        "duties_per_month",
+    ]
     cstr_vars: List[str]
     hard_to_soft: bool
 

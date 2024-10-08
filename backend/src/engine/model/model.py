@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 from typing import Dict, List, Tuple
 
+# from google.protobuf import text_format  # type: ignore
+from ortools.sat.python import cp_model  # type: ignore
+
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import build_var_name, get_nested_value
 from engine.types.input_output_types import (
@@ -11,9 +14,6 @@ from engine.types.input_output_types import (
     Worker,
 )
 from engine.types.model_types import BenchmarkTimes, Objective
-
-# from google.protobuf import text_format  # type: ignore
-from ortools.sat.python import cp_model  # type: ignore
 from utils.constants import Constants
 
 
@@ -70,6 +70,7 @@ class Model:
             self.model_config,
         )
 
+    # pylint: disable=too-many-return-statements
     def sequential_solve(self, inputs: Inputs) -> None:
         # hts stand for high to soft
         self.solve_model_hts_custom(
@@ -282,17 +283,17 @@ class Model:
         for worker in self.all_workers:
             for day in self.all_days:
                 for shift in self.shifts:
-                    self.variables[(worker, day, shift)] = (
-                        self.model.NewBoolVar(f"{worker}_{day}_{shift}")
+                    self.variables[(worker, day, shift)] = self.model.NewBoolVar(
+                        f"{worker}_{day}_{shift}"
                     )
-                    self.intervals[(worker, day, shift)] = (
-                        self.model.NewOptionalIntervalVar(
-                            self.shift_start_times[day, shift],
-                            self.durations[shift],
-                            self.shift_end_times[day, shift],
-                            self.variables[worker, day, shift],
-                            f"inter_{worker}_{day}_{shift}",
-                        )
+                    self.intervals[
+                        (worker, day, shift)
+                    ] = self.model.NewOptionalIntervalVar(
+                        self.shift_start_times[day, shift],
+                        self.durations[shift],
+                        self.shift_end_times[day, shift],
+                        self.variables[worker, day, shift],
+                        f"inter_{worker}_{day}_{shift}",
                     )
                     # if (
                     #     day == "2024-10-08"
@@ -344,9 +345,7 @@ class Model:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
 
-    def add_solution_hint(
-        self, solution_hint: Dict[Tuple[str, str, str], int]
-    ) -> None:
+    def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
         for k, v in solution_hint.items():
             self.model.AddHint(self.variables[k], v)
 
@@ -354,21 +353,13 @@ class Model:
         for w in self.workers_not_deleted:
             for d in self.days_solving:
                 self.model.Add(
-                    sum(
-                        self.variables[w, d, s]
-                        for s in self.shifts_not_deleted
-                    )
-                    >= 1
+                    sum(self.variables[w, d, s] for s in self.shifts_not_deleted) >= 1
                 )
 
     def no_interval_overlap(self) -> None:
         for w in self.all_workers:
             self.model.AddNoOverlap(
-                [
-                    self.intervals[w, d, s]
-                    for d in self.all_days
-                    for s in self.shifts
-                ]
+                [self.intervals[w, d, s] for d in self.all_days for s in self.shifts]
             )
 
     def spread_through_time(
@@ -421,15 +412,11 @@ class Model:
                         self.variables[w, solving_dates[start_d + d], s]
                         for d in range(interval)
                     ]
-                    self.model.Add(
-                        weekly_staffing == sum(weekly_staffing_vars)
-                    )
+                    self.model.Add(weekly_staffing == sum(weekly_staffing_vars))
                     weekly_staffings.append(weekly_staffing)
 
                 min_weekly_staffing = self.model.NewIntVar(0, 100, "")
-                self.model.AddMinEquality(
-                    min_weekly_staffing, weekly_staffings
-                )
+                self.model.AddMinEquality(min_weekly_staffing, weekly_staffings)
                 for ws in weekly_staffings:
                     # var_name = build_var_name(
                     #     Constraint(
@@ -481,9 +468,7 @@ class Model:
         staffings = []
         for w in self.all_workers:
             worker_staffing_vars = [
-                self.variables[w, d, s]
-                for d in solving_dates
-                for s in cov_shifts
+                self.variables[w, d, s] for d in solving_dates for s in cov_shifts
             ]
             worker_staffing = self.model.NewIntVar(
                 0, len(self.shifts) * len(solving_dates), f"{w}"
@@ -527,9 +512,7 @@ class Model:
             #     [],
             #     "constraint",
             # )
-            delta = self.model.NewIntVar(
-                0, len(self.shifts) * len(solving_dates), ""
-            )
+            delta = self.model.NewIntVar(0, len(self.shifts) * len(solving_dates), "")
             self.model.Add(delta == stf - min_staffing)
             excess = self.model.NewIntVar(
                 0,
@@ -560,9 +543,7 @@ class Model:
                         self.obj.int_vars.append(excess)
                         self.obj.int_coeffs.append(100)
 
-    def add_weekly_contractual_worktime_constraints(
-        self, hard_to_soft: bool
-    ) -> None:
+    def add_weekly_contractual_worktime_constraints(self, hard_to_soft: bool) -> None:
         for worker in [w for w in self.workers if not w.deleted]:
             for pt in worker.work_hours:
                 constraint_vars = []
@@ -571,22 +552,15 @@ class Model:
                     constraint_vars.extend(
                         [self.variables[worker.id, d, s] for d in pt.period]
                     )
-                    constraint_durs.extend(
-                        [self.durations[s] for _ in pt.period]
-                    )
+                    constraint_durs.extend([self.durations[s] for _ in pt.period])
 
                 if not hard_to_soft:
                     self.model.Add(
-                        sum(
-                            v * d
-                            for v, d in zip(constraint_vars, constraint_durs)
-                        )
+                        sum(v * d for v, d in zip(constraint_vars, constraint_durs))
                         <= pt.target
                     )
                 else:
-                    var_name = build_var_name(
-                        None, constraint_vars, "work_time"
-                    )
+                    var_name = build_var_name(None, constraint_vars, "work_time")
                     delta = self.model.NewIntVar(
                         -pt.target,
                         len(constraint_vars)
@@ -596,10 +570,7 @@ class Model:
                     )
                     self.model.Add(
                         delta
-                        == sum(
-                            v * d
-                            for v, d in zip(constraint_vars, constraint_durs)
-                        )
+                        == sum(v * d for v, d in zip(constraint_vars, constraint_durs))
                         - pt.target
                     )
                     excess = self.model.NewIntVar(
@@ -613,9 +584,7 @@ class Model:
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(50)
 
-    def add_weekly_desired_worktime_constraints(
-        self, hard_to_soft: bool
-    ) -> None:
+    def add_weekly_desired_worktime_constraints(self, hard_to_soft: bool) -> None:
         for worker in [w for w in self.workers if not w.deleted]:
             for pt in worker.work_hours_desired:
                 constraint_vars = []
@@ -624,22 +593,15 @@ class Model:
                     constraint_vars.extend(
                         [self.variables[worker.id, d, s] for d in pt.period]
                     )
-                    constraint_durs.extend(
-                        [self.durations[s] for _ in pt.period]
-                    )
+                    constraint_durs.extend([self.durations[s] for _ in pt.period])
 
                 if not hard_to_soft:
                     self.model.Add(
-                        sum(
-                            v * d
-                            for v, d in zip(constraint_vars, constraint_durs)
-                        )
+                        sum(v * d for v, d in zip(constraint_vars, constraint_durs))
                         <= pt.target
                     )
                 else:
-                    var_name = build_var_name(
-                        None, constraint_vars, "work_time"
-                    )
+                    var_name = build_var_name(None, constraint_vars, "work_time")
                     delta = self.model.NewIntVar(
                         -pt.target,
                         len(constraint_vars)
@@ -649,10 +611,7 @@ class Model:
                     )
                     self.model.Add(
                         delta
-                        == sum(
-                            v * d
-                            for v, d in zip(constraint_vars, constraint_durs)
-                        )
+                        == sum(v * d for v, d in zip(constraint_vars, constraint_durs))
                         - pt.target
                     )
                     excess = self.model.NewIntVar(
@@ -672,17 +631,10 @@ class Model:
                 constraint_vars = []
                 constraint_durs = []
                 for s in self.shifts_work:
-                    constraint_vars.extend(
-                        [self.variables[w, d, s] for d in pt.period]
-                    )
-                    constraint_durs.extend(
-                        [self.durations[s] for _ in pt.period]
-                    )
+                    constraint_vars.extend([self.variables[w, d, s] for d in pt.period])
+                    constraint_durs.extend([self.durations[s] for _ in pt.period])
                     self.model.Add(
-                        sum(
-                            v * d
-                            for v, d in zip(constraint_vars, constraint_durs)
-                        )
+                        sum(v * d for v, d in zip(constraint_vars, constraint_durs))
                         <= pt.target
                     )
 
@@ -697,18 +649,14 @@ class Model:
                 if not hard_to_soft:
                     self.model.Add(sum(constraint_vars) <= pt.target)
                 else:
-                    var_name = build_var_name(
-                        None, constraint_vars, "duties_per_month"
-                    )
+                    var_name = build_var_name(None, constraint_vars, "duties_per_month")
                     delta = self.model.NewIntVar(
                         -pt.target,
                         len(constraint_vars),
                         "",
                     )
                     self.model.Add(delta == sum(constraint_vars) - pt.target)
-                    excess = self.model.NewIntVar(
-                        0, len(constraint_vars), var_name
-                    )
+                    excess = self.model.NewIntVar(0, len(constraint_vars), var_name)
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(100)

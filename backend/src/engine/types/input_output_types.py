@@ -17,9 +17,7 @@ class PeriodTarget:
 @dataclass
 class Worker:
     id: str
-    work_hours: List[
-        PeriodTarget
-    ]  # in hours for each week on the campaign, contract
+    work_hours: List[PeriodTarget]  # in hours for each week on the campaign, contract
     work_hours_desired: List[
         PeriodTarget
     ]  # in hours for each week on the campaign, desired
@@ -144,7 +142,14 @@ class Inputs:
 @dataclass
 class ConstraintBreach:
     constraint_id: str
-    category: Literal["request", "constraint", "coverage", "recuperation"]
+    category: Literal[
+        "request",
+        "constraint",
+        "coverage",
+        "recuperation",
+        "work_time",
+        "duties_per_month",
+    ]
     variables: List[Tuple[str, date, str]]
     value_diff: int
     hard_to_soft: bool

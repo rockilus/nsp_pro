@@ -14,9 +14,7 @@ def get_average_nb_shifts_per_worker(
     days: List[str],
     shifts: List[str],
 ) -> float:
-    total_coverage = sum(
-        get_total_coverage_shift(coverage, s, days) for s in shifts
-    )
+    total_coverage = sum(get_total_coverage_shift(coverage, s, days) for s in shifts)
     target_average = total_coverage / num_eligible_workers
     return target_average
 
@@ -61,8 +59,7 @@ def build_var_name(
                 category=category,
                 hard_to_soft=(
                     True
-                    if isinstance(constraint, ShiftDemand)
-                    or constraint is None
+                    if isinstance(constraint, ShiftDemand) or constraint is None
                     else constraint.hard
                 ),
             )
@@ -70,9 +67,7 @@ def build_var_name(
     )
 
 
-def build_var_name_seq(
-    constraint: Constraint, span: List[cp_model.IntVar]
-) -> str:
+def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> str:
     # pylint: disable=protected-access
     return json.dumps(
         asdict(
@@ -92,9 +87,7 @@ def build_var_name_seq(
 
 def build_shifts_in_coverage(coverage: List[ShiftDemand]) -> Set[str]:
     return set(
-        shift_demand.shift_id
-        for shift_demand in coverage
-        if shift_demand.staffing > 0
+        shift_demand.shift_id for shift_demand in coverage if shift_demand.staffing > 0
     )
 
 
