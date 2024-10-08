@@ -17,7 +17,7 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import AttributeMessage, DimEntryMessage
-from routes.shift_routes import core_to_msg_attribute
+from routes.attribute_routes import core_to_msg_attribute
 from scripts.setup_database import dim_entry_db
 from services.dimension_services import create_dim_entry as create_dim_entry_service
 from services.dimension_services import delete_dim_entry as delete_dim_entry_service

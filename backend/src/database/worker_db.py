@@ -31,6 +31,20 @@ class WorkerDB:
             handle_save_document_error(e)
         return doc_to_core_worker(worker_saved)
 
+    def create_workers(self, workers: List[Worker]) -> List[Worker]:
+        try:
+            w_docs = core_to_doc_workers(workers, creating=True)
+        except Exception as e:
+            log_info("Failed to convert Workers to WorkerDocuments")
+            handle_create_document_error(e)
+        try:
+            # pylint: disable=no-member
+            w_saved = WorkerDocument.objects.insert(w_docs)  # type: ignore
+        except Exception as e:
+            log_info("Failed to save workers to database")
+            handle_save_document_error(e)
+        return [doc_to_core_worker(w) for w in w_saved]
+
     def get_workers(self, team_id: str) -> List[Worker]:
         try:
             # pylint: disable=no-member
@@ -60,6 +74,17 @@ class WorkerDB:
             handle_get_document_error(e)
         return doc_to_core_worker(worker)
 
+    def get_workers_by_specialty_id(self, specialty_id: str) -> List[Worker]:
+        try:
+            # pylint: disable=no-member
+            w_docs = WorkerDocument.objects.filter(  # type: ignore
+                specialties__contains=specialty_id
+            )
+        except Exception as e:
+            log_info("Failed to get workers by specialty id from database")
+            handle_get_document_error(e)
+        return [doc_to_core_worker(a) for a in w_docs]
+
     def update_worker(self, worker: Worker) -> Worker:
         worker_doc = core_to_doc_worker(worker)
         try:
@@ -74,6 +99,20 @@ class WorkerDB:
             log_info("Failed to update worker to database")
             handle_save_document_error(e)
         return doc_to_core_worker(worker_saved)
+
+    def update_workers(self, workers: List[Worker]) -> List[Worker]:
+        try:
+            w_docs = core_to_doc_workers(workers)
+        except Exception as e:
+            log_info("Failed to convert Workers to WorkerDocuments")
+            handle_create_document_error(e)
+        try:
+            for w_doc in w_docs:
+                w_doc.save()
+        except Exception as e:
+            log_info("Failed to update workers")
+            handle_save_document_error(e)
+        return [doc_to_core_worker(w) for w in w_docs]
 
     def delete_worker(self, worker_id: str) -> None:
         try:
@@ -132,6 +171,40 @@ def core_to_doc_worker(dataclass_obj: Worker) -> WorkerDocument:
         log_info("Failed to convert Worker to WorkerDocument")
         handle_create_document_error(e)
     return w_doc
+
+
+def core_to_doc_workers(
+    dataclass_objs: List[Worker], creating: bool = False
+) -> List[WorkerDocument]:
+    team_ids = list(set(doc.team_id for doc in dataclass_objs))
+    # pylint: disable=no-member
+    teams = {
+        team.id: team
+        for team in TeamDocument.objects.filter(id__in=team_ids)  # type: ignore
+    }
+    specialty_ids = list(set(doc.specialty_ids for doc in dataclass_objs))
+    # pylint: disable=no-member
+    specialties = {
+        specialty.id: specialty
+        for specialty in SpecialtyDocument.objects.filter(  # type: ignore
+            id__in=specialty_ids
+        )
+    }
+    out = []
+    for dataclass_obj in dataclass_objs:
+        w_doc = WorkerDocument(
+            id=str(ObjectId()) if creating else dataclass_obj.id,
+            team=teams.get(dataclass_obj.team_id),
+            name=dataclass_obj.name,
+            weekly_hours=dataclass_obj.weekly_hours,
+            weekly_hours_desired=dataclass_obj.weekly_hours_desired,
+            duties_per_month=dataclass_obj.duties_per_month,
+            annual_leave=dataclass_obj.annual_leave,
+            specialties=[specialties.get(s) for s in dataclass_obj.specialty_ids],
+            deleted=dataclass_obj.deleted,
+        )
+        out.append(w_doc)
+    return out
 
 
 # document to core

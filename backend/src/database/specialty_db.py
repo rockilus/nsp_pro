@@ -40,16 +40,18 @@ class SpecialtyDB:
             handle_get_document_error(e)
         return doc_to_core_specialty(specialty)
 
-    def get_specialties_by_dim_id(self, team_id: str) -> List[Specialty]:
+    def get_specialties_by_team_id(self, team_id: str) -> List[Specialty]:
         try:
             # pylint: disable=no-member
-            specialties = SpecialtyDocument.objects.filter(team=team_id)  # type: ignore
+            specialties = SpecialtyDocument.objects.filter(  # type: ignore
+                team=team_id, deleted=False
+            )
         except Exception as e:
             log_info("Failed to get dim entries from database")
             handle_get_document_error(e)
         return [doc_to_core_specialty(a) for a in list(specialties)]
 
-    def get_specialties_by_dim_ids(self, team_ids: List[str]) -> List[Specialty]:
+    def get_specialties_by_team_ids(self, team_ids: List[str]) -> List[Specialty]:
         try:
             # pylint: disable=no-member
             specialties = SpecialtyDocument.objects.filter(  # type: ignore
