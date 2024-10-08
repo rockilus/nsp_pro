@@ -10,10 +10,12 @@ from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
 from engine.types.input_output_types import (
     Constraint,
     Coverage,
+    FixedConfig,
     Inputs,
     Outputs,
     Request,
     VariableSpace,
+    Worker,
 )
 from utils.constants import Constants
 
@@ -39,16 +41,63 @@ class TestEngine:
             datetime.fromisoformat("2023-10-02 17:00:00"),  # 1 hours, conflict with s3
         ]
         variable_space = VariableSpace(
-            all_workers=["w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7"],
-            workers_not_deleted=[
-                "w0",
-                "w1",
-                "w2",
-                "w3",
-                "w4",
-                "w5",
-                "w6",
-                "w7",
+            workers=[
+                Worker(
+                    id="w0",
+                    work_hours=[],
+                    work_hours_desired=[],
+                    duties_per_month=[],
+                    deleted=False,
+                ),
+                Worker(
+                    id="w1",
+                    work_hours=[],
+                    work_hours_desired=[],
+                    duties_per_month=[],
+                    deleted=False,
+                ),
+                Worker(
+                    id="w2",
+                    work_hours=[],
+                    work_hours_desired=[],
+                    duties_per_month=[],
+                    deleted=False,
+                ),
+                Worker(
+                    id="w3",
+                    work_hours=[],
+                    work_hours_desired=[],
+                    duties_per_month=[],
+                    deleted=False,
+                ),
+                Worker(
+                    id="w4",
+                    work_hours=[],
+                    work_hours_desired=[],
+                    duties_per_month=[],
+                    deleted=False,
+                ),
+                Worker(
+                    id="w5",
+                    work_hours=[],
+                    work_hours_desired=[],
+                    duties_per_month=[],
+                    deleted=False,
+                ),
+                Worker(
+                    id="w6",
+                    work_hours=[],
+                    work_hours_desired=[],
+                    duties_per_month=[],
+                    deleted=False,
+                ),
+                Worker(
+                    id="w7",
+                    work_hours=[],
+                    work_hours_desired=[],
+                    duties_per_month=[],
+                    deleted=False,
+                ),
             ],
             all_days=[
                 d.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
@@ -66,6 +115,7 @@ class TestEngine:
             ],
             all_shifts=shift_names,
             shifts_not_deleted=shift_names,
+            shift_work=shift_names,
             duty_recup_pairs=[],
         )
         coverage = Coverage([])
@@ -106,6 +156,7 @@ class TestEngine:
                     for i in range((end_date - start_date).days + 1)
                 ]
             },
+            fixed_config=FixedConfig([], []),
         )
         return inputs
 

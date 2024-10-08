@@ -6,33 +6,44 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import Constraint, Inputs, ShiftDemand
+from engine.types.input_output_types import (
+    Constraint,
+    FixedConfig,
+    Inputs,
+    ShiftDemand,
+    Worker,
+)
 from engine.types.model_types import BenchmarkTimes, Objective
+from utils.constants import Constants
 
 
 class Model:
     # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(
         self,
-        all_workers: List[str],
-        workers_not_deleted: List[str],
+        workers: List[Worker],
         all_days: List[str],
         days_solving: List[str],
         all_shifts: List[str],
         shifts_not_deleted: List[str],
+        shifts_work: List[str],
         duty_recup_pairs: List[Tuple[str, str]],
         shift_durations: Dict[str, int],
         shift_start_times: Dict[Tuple, int],
         shift_end_times: Dict[Tuple, int],
+        fixed_config: FixedConfig,
         model_config: Dict,
     ) -> None:
-        self.all_workers = all_workers
-        self.workers_not_deleted = workers_not_deleted
+        self.workers = workers
+        self.all_workers = [w.id for w in workers]
+        self.workers_not_deleted = [w.id for w in workers if not w.deleted]
         self.all_days = all_days
         self.days_solving = days_solving
         self.shifts = all_shifts
         self.shifts_not_deleted = shifts_not_deleted
+        self.shifts_work = shifts_work
         self.duty_recup_pairs = duty_recup_pairs
+        self.fixed_config = fixed_config
 
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple, cp_model.IntVar] = {}
@@ -59,106 +70,18 @@ class Model:
             self.model_config,
         )
 
-    # pylint: disable=too-many-statements
-    # def sequential_solve_debug(self, inputs: Inputs) -> None:
-    #     self.solver.parameters.max_time_in_seconds = 20.0
-
-    #     self.build_variables()
-    #     self.set_fixed_variables(inputs.fixed_values)
-    #     self.add_solution_hint(inputs.sol_hint)
-    #     self.no_interval_overlap()
-    #     self.add_at_least_one_shift_per_day_constraint()
-    #     self.status = self.solver.Solve(  # type: ignore
-    #         self.model, self.solution_printer
-    #     )
-    #     self.print_model_metadata("NAKED")
-
-    #     if self.status == cp_model.INFEASIBLE:
-    #         return
-    #     temp_model = self.model
-
-    #     if len(inputs.coverage.coverage) > 0:
-    #         self.add_coverage.add_coverage(inputs.coverage.coverage)
-    #         self.add_objective()
-    #         self.status = self.solver.Solve(  # type: ignore
-    #             self.model, self.solution_printer
-    #         )
-    #         self.print_model_metadata("COVERAGE")
-    #         if self.status == cp_model.INFEASIBLE:
-    #             self.model = temp_model
-    #             return
-    #         temp_model = self.model
-
-    #     if len(inputs.requests) > 0:
-    #         self.add_far.add_requests(inputs.requests)
-    #         self.add_objective()
-    #         self.status = self.solver.Solve(  # type: ignore
-    #             self.model, self.solution_printer
-    #         )
-    #         self.print_model_metadata("REQUESTS")
-    #         if self.status == cp_model.INFEASIBLE:
-    #             self.model = temp_model
-    #             return
-    #         temp_model = self.model
-
-    #     if len(inputs.constraints) > 0:
-    #         self.add_custom_constraints(
-    #             inputs.constraints, inputs.coverage.coverage
-    #         )
-    #         self.add_objective()
-    #         self.status = self.solver.Solve(  # type: ignore
-    #             self.model, self.solution_printer
-    #         )
-    #         self.print_model_metadata("CONSTRAINTS")
-    #         if self.status == cp_model.INFEASIBLE:
-    #             self.model = temp_model
-    #             return
-    #         temp_model = self.model
-
-    #     # if not inputs.sol_hint:
-    #     # if False:
-    #     solving_dates = [
-    #         d
-    #         for d in self.days
-    #         if d not in [fvd for _, fvd, _ in inputs.fixed_values]
-    #     ]
-    #     cov_shifts = list(
-    #         set(
-    #             sd.shift_id
-    #             for sd in inputs.coverage.coverage
-    #             if sd.staffing > 0
-    #         )
-    #     )
-
-    #     self.spread_through_time(solving_dates, cov_shifts)
-    #     self.add_objective()
-    #     self.status = self.solver.Solve(  # type: ignore
-    #         self.model, self.solution_printer
-    #     )
-    #     self.print_model_metadata("EVENNESS")
-    #     if self.status == cp_model.INFEASIBLE:
-    #         self.model = temp_model
-    #         return
-    #     temp_model = self.model
-
-    #     self.spread_across_workers(solving_dates, cov_shifts)
-    #     self.add_objective()
-    #     solution_callback = SolverSolutionCallback(0)
-    #     self.status = self.solver.Solve(self.model, solution_callback)  # type: ignore
-    #     self.print_model_metadata("FAIRNESS")
-    #     if self.status == cp_model.INFEASIBLE:
-    #         self.model = temp_model
-    #         return
-    #     temp_model = self.model
-
+    # pylint: disable=too-many-return-statements
     def sequential_solve(self, inputs: Inputs) -> None:
         # hts stand for high to soft
         self.solve_model_hts_custom(
             inputs,
             coverage_hts=False,
             duty_recup_hts=False,
+            nb_duty_hts=False,
+            work_time_desired_hts=False,
+            constraint_hts=False,
             request_hts=False,
-            constraint_hts=False,
+            work_time_hts=False,
         )
         if self.status != cp_model.INFEASIBLE:
             return
@@ -167,8 +90,11 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=False,
-            request_hts=True,
+            nb_duty_hts=False,
+            work_time_desired_hts=False,
             constraint_hts=False,
+            request_hts=False,
+            work_time_hts=True,
         )
         if self.status != cp_model.INFEASIBLE:
             return
@@ -177,8 +103,50 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=False,
+            nb_duty_hts=False,
+            work_time_desired_hts=False,
+            constraint_hts=False,
             request_hts=True,
+            work_time_hts=True,
+        )
+        if self.status != cp_model.INFEASIBLE:
+            return
+        self.reset_model()
+        self.solve_model_hts_custom(
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=False,
+            nb_duty_hts=False,
+            work_time_desired_hts=False,
             constraint_hts=True,
+            request_hts=True,
+            work_time_hts=True,
+        )
+        if self.status != cp_model.INFEASIBLE:
+            return
+        self.reset_model()
+        self.solve_model_hts_custom(
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=False,
+            nb_duty_hts=False,
+            work_time_desired_hts=True,
+            constraint_hts=True,
+            request_hts=True,
+            work_time_hts=True,
+        )
+        if self.status != cp_model.INFEASIBLE:
+            return
+        self.reset_model()
+        self.solve_model_hts_custom(
+            inputs,
+            coverage_hts=False,
+            duty_recup_hts=False,
+            nb_duty_hts=True,
+            work_time_desired_hts=True,
+            constraint_hts=True,
+            request_hts=True,
+            work_time_hts=True,
         )
         if self.status != cp_model.INFEASIBLE:
             return
@@ -187,8 +155,11 @@ class Model:
             inputs,
             coverage_hts=False,
             duty_recup_hts=True,
-            request_hts=True,
+            nb_duty_hts=True,
+            work_time_desired_hts=True,
             constraint_hts=True,
+            request_hts=True,
+            work_time_hts=True,
         )
         if self.status != cp_model.INFEASIBLE:
             return
@@ -197,8 +168,11 @@ class Model:
             inputs,
             coverage_hts=True,
             duty_recup_hts=True,
-            request_hts=True,
+            nb_duty_hts=True,
+            work_time_desired_hts=True,
             constraint_hts=True,
+            request_hts=True,
+            work_time_hts=True,
         )
 
     def solve_model_hts_custom(
@@ -206,6 +180,9 @@ class Model:
         inputs: Inputs,
         coverage_hts: bool,
         duty_recup_hts: bool,
+        work_time_hts: bool,
+        work_time_desired_hts: bool,
+        nb_duty_hts: bool,
         request_hts: bool,
         constraint_hts: bool,
     ) -> None:
@@ -213,6 +190,8 @@ class Model:
         self.set_fixed_variables(inputs.fixed_values)
         self.add_solution_hint(inputs.sol_hint)
         self.no_interval_overlap()
+        self.add_max_weekly_worktime_constraints()
+        self.add_max_nb_duties_per_month_constraints()
         # self.add_at_least_one_shift_per_day_solving_constraint()
         # self.status = self.solver.Solve(  # type: ignore
         #     self.model, self.solution_printer
@@ -223,6 +202,9 @@ class Model:
             inputs.coverage.coverage, coverage_hts
         )
         self.add_duty_recup_constraints(duty_recup_hts)
+        self.add_weekly_contractual_worktime_constraints(work_time_hts)
+        self.add_weekly_desired_worktime_constraints(work_time_desired_hts)
+        self.add_nb_duties_per_month_constraints(nb_duty_hts)
         self.add_constraint_factory.add_request.add_requests(
             inputs.requests, request_hts
         )
@@ -232,10 +214,13 @@ class Model:
         self.add_objective()
         self.solve()
         self.print_model_metadata(
-            f"COVERAGE_HTS: {coverage_hts}, "
-            + f"DUTY_RECUP_HTS: {duty_recup_hts}, "
-            + f"REQUEST_HTS: {request_hts}, "
-            + f"CONSTRAINT_HTS: {constraint_hts}"
+            coverage_hts,
+            duty_recup_hts,
+            work_time_hts,
+            work_time_desired_hts,
+            nb_duty_hts,
+            request_hts,
+            constraint_hts,
         )
 
     def reset_model(self) -> None:
@@ -359,25 +344,6 @@ class Model:
     ) -> None:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
-        # for w in self.workers_not_deleted:
-        # self.model.Add(
-        #     self.variables[
-        #         w, "2024-10-27", "66b63360cad3bb739b082fa7" # repos
-        #     ]
-        #     == 1
-        # )
-        # self.model.Add(
-        #     self.variables[
-        #         w, "2024-10-27", "66b63334cad3bb739b082fa5"  # consult van
-        #     ]
-        #     == 1
-        # )
-        # self.model.Add(
-        #     self.variables[
-        #         w, "2024-10-27", "66b63332cad3bb739b082fa4"  # garde plo
-        #     ]
-        #     == 1
-        # )
 
     def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
         for k, v in solution_hint.items():
@@ -577,6 +543,134 @@ class Model:
                         self.obj.int_vars.append(excess)
                         self.obj.int_coeffs.append(100)
 
+    def add_weekly_contractual_worktime_constraints(self, hard_to_soft: bool) -> None:
+        for worker in [w for w in self.workers if not w.deleted]:
+            for pt in worker.work_hours:
+                constraint_vars = []
+                constraint_durs = []
+                for s in self.shifts_work:
+                    constraint_vars.extend(
+                        [self.variables[worker.id, d, s] for d in pt.period]
+                    )
+                    constraint_durs.extend([self.durations[s] for _ in pt.period])
+
+                if not hard_to_soft:
+                    self.model.Add(
+                        sum(v * d for v, d in zip(constraint_vars, constraint_durs))
+                        <= pt.target
+                    )
+                else:
+                    var_name = build_var_name(None, constraint_vars, "work_time")
+                    delta = self.model.NewIntVar(
+                        -pt.target,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR,
+                        "",
+                    )
+                    self.model.Add(
+                        delta
+                        == sum(v * d for v, d in zip(constraint_vars, constraint_durs))
+                        - pt.target
+                    )
+                    excess = self.model.NewIntVar(
+                        0,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR,
+                        var_name,
+                    )
+                    self.model.AddMaxEquality(excess, [delta, 0])
+                    self.obj.int_vars.append(excess)
+                    self.obj.int_coeffs.append(50)
+
+    def add_weekly_desired_worktime_constraints(self, hard_to_soft: bool) -> None:
+        for worker in [w for w in self.workers if not w.deleted]:
+            for pt in worker.work_hours_desired:
+                constraint_vars = []
+                constraint_durs = []
+                for s in self.shifts_work:
+                    constraint_vars.extend(
+                        [self.variables[worker.id, d, s] for d in pt.period]
+                    )
+                    constraint_durs.extend([self.durations[s] for _ in pt.period])
+
+                if not hard_to_soft:
+                    self.model.Add(
+                        sum(v * d for v, d in zip(constraint_vars, constraint_durs))
+                        <= pt.target
+                    )
+                else:
+                    var_name = build_var_name(None, constraint_vars, "work_time")
+                    delta = self.model.NewIntVar(
+                        -pt.target,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR,
+                        "",
+                    )
+                    self.model.Add(
+                        delta
+                        == sum(v * d for v, d in zip(constraint_vars, constraint_durs))
+                        - pt.target
+                    )
+                    excess = self.model.NewIntVar(
+                        0,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR,
+                        var_name,
+                    )
+                    self.model.AddMaxEquality(excess, [delta, 0])
+                    self.obj.int_vars.append(excess)
+                    self.obj.int_coeffs.append(100)
+
+    def add_max_weekly_worktime_constraints(self) -> None:
+        for w in self.workers_not_deleted:
+            for pt in self.fixed_config.max_weekly_hours_worked:
+                constraint_vars = []
+                constraint_durs = []
+                for s in self.shifts_work:
+                    constraint_vars.extend([self.variables[w, d, s] for d in pt.period])
+                    constraint_durs.extend([self.durations[s] for _ in pt.period])
+                    self.model.Add(
+                        sum(v * d for v, d in zip(constraint_vars, constraint_durs))
+                        <= pt.target
+                    )
+
+    def add_nb_duties_per_month_constraints(self, hard_to_soft: bool) -> None:
+        for worker in [w for w in self.workers if not w.deleted]:
+            for pt in worker.duties_per_month:
+                constraint_vars = []
+                for duty, _ in self.duty_recup_pairs:
+                    constraint_vars.extend(
+                        [self.variables[worker.id, d, duty] for d in pt.period]
+                    )
+                if not hard_to_soft:
+                    self.model.Add(sum(constraint_vars) <= pt.target)
+                else:
+                    var_name = build_var_name(None, constraint_vars, "duties_per_month")
+                    delta = self.model.NewIntVar(
+                        -pt.target,
+                        len(constraint_vars),
+                        "",
+                    )
+                    self.model.Add(delta == sum(constraint_vars) - pt.target)
+                    excess = self.model.NewIntVar(0, len(constraint_vars), var_name)
+                    self.model.AddMaxEquality(excess, [delta, 0])
+                    self.obj.int_vars.append(excess)
+                    self.obj.int_coeffs.append(100)
+
+    def add_max_nb_duties_per_month_constraints(self) -> None:
+        for w in self.workers_not_deleted:
+            for pt in self.fixed_config.max_duties_per_month:
+                constraint_vars = []
+                for duty, _ in self.duty_recup_pairs:
+                    constraint_vars.extend(
+                        [self.variables[w, d, duty] for d in pt.period]
+                    )
+                self.model.Add(sum(constraint_vars) <= pt.target)
+
     def add_custom_constraints(
         self,
         constraints: List[Constraint],
@@ -635,9 +729,29 @@ class Model:
         )
         # self.bt.total_end = time.time()
 
-    def print_model_metadata(self, model_description: str) -> None:
-        print(f"----------- {model_description} -----------")
+    def print_model_metadata(
+        self,
+        coverage_hts: bool,
+        duty_recup_hts: bool,
+        work_time_hts: bool,
+        work_time_desired_hts: bool,
+        nb_duty_hts: bool,
+        request_hts: bool,
+        constraint_hts: bool,
+    ) -> None:
+        print("----------- HARD TO SOFT -----------")
+        print(f"COVERAGE:          {coverage_hts}")
+        print(f"DUTY_RECUP:        {duty_recup_hts}")
+        print(f"NB_DUTY:           {nb_duty_hts}")
+        print(f"WORK_TIME_DESIRED: {work_time_desired_hts}")
+        print(f"CONSTRAINT:        {constraint_hts}")
+        print(f"REQUEST:           {request_hts}")
+        print(f"WORK_TIME:         {work_time_hts}")
+        print("\n")
+
+        print("----------- STATS -----------")
         print(f"Branches:        {self.solver.NumBranches()}")
         print(f"Wall time:       {self.solver.WallTime()} s")
         print(f"Objective value: {self.solver.ObjectiveValue()}")
         print(f"Status:          {self.solver.StatusName()}")
+        print("\n")

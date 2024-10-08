@@ -112,7 +112,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 and a.shift_id in constraint_sum_hard.shift_var.target
             )
             for week in dates_weeks
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
         ]
 
         assert max(counts) <= constraint_sum_hard.target_value
@@ -140,7 +140,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 and a.shift_id in constraint_sum_hard.shift_var.target
             )
             for week in dates_weeks
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
         ]
 
         assert all(count == constraint_sum_hard.target_value for count in counts)
@@ -168,7 +168,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 and a.shift_id in constraint_sum_hard.shift_var.target
             )
             for week in dates_weeks
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
         ]
 
         assert min(counts) >= constraint_sum_hard.target_value
@@ -253,7 +253,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 and a.shift_id in constraint_sum_soft.shift_var.target
             )
             for week in dates_weeks
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
         ]
 
         assert max(counts) <= constraint_sum_soft.target_value
@@ -281,7 +281,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 and a.shift_id in constraint_sum_soft.shift_var.target
             )
             for week in dates_weeks
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
         ]
 
         assert all(count == constraint_sum_soft.target_value for count in counts)
@@ -309,7 +309,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 and a.shift_id in constraint_sum_soft.shift_var.target
             )
             for week in dates_weeks
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
         ]
 
         assert min(counts) >= constraint_sum_soft.target_value
@@ -342,7 +342,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 and a.shift_id in constraint_sum_hard.shift_var.target
             )
             for week in dates_weeks
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
         ]
 
         assert all(count == constraint_sum_hard.target_value for count in counts)
@@ -367,7 +367,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         dates_weeks = get_dates_weeks(inputs.variable_space.all_days)
 
         assert outputs.objective_value == penalty * len(
-            inputs.variable_space.all_workers
+            inputs.variable_space.workers
         ) * len(dates_weeks) * abs(
             constraint_sum_hard.target_value - constraint_sum_soft.target_value
         )
@@ -391,7 +391,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
 
         expected_variables = [
             [(w, d, s) for d in week]
-            for w in inputs.variable_space.all_workers
+            for w in [w.id for w in inputs.variable_space.workers]
             for week in dates_weeks
             for s in constraint_sum_hard.shift_var.target
         ]

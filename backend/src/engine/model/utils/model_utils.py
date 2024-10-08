@@ -34,7 +34,14 @@ def get_total_coverage_shift(
 def build_var_name(
     constraint: Constraint | Request | ShiftDemand | None,
     cstr_vars: List[cp_model.IntVar],
-    category: Literal['request', 'constraint', 'coverage', "recuperation"],
+    category: Literal[
+        'request',
+        'constraint',
+        'coverage',
+        "recuperation",
+        "work_time",
+        "duties_per_month",
+    ],
 ) -> str:
     return json.dumps(
         asdict(

@@ -20,16 +20,17 @@ class Engine:
         with open(model_config_file_path, "r", encoding="utf-8") as penalties_file:
             model_config = json.load(penalties_file)
         model = Model(
-            inputs.variable_space.all_workers,
-            inputs.variable_space.workers_not_deleted,
+            inputs.variable_space.workers,
             inputs.variable_space.all_days,
             inputs.variable_space.days_solving,
             inputs.variable_space.all_shifts,
             inputs.variable_space.shifts_not_deleted,
+            inputs.variable_space.shift_work,
             inputs.variable_space.duty_recup_pairs,
             inputs.shift_durations,
             inputs.shift_start_times,
             inputs.shift_end_times,
+            inputs.fixed_config,
             model_config,
         )
         start_time = time.time()

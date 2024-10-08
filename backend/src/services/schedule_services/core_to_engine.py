@@ -1,3 +1,5 @@
+import calendar
+import math
 from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
@@ -17,13 +19,16 @@ from core import (
 )
 from engine import Constraint as ConstraintEngine
 from engine import Coverage as CoverageEngine
+from engine import FixedConfig as FixedConfigEngine
 from engine import Inputs
+from engine import PeriodTarget as PeriodTargetEngine
 from engine import Request as RequestEngine
 from engine import ShiftDemand as ShiftDemandEngine
 from engine import VarDay as VarDayEngine
 from engine import VariableSpace
 from engine import VarShift as VarShiftEngine
 from engine import VarWorker as VarWorkerEngine
+from engine import Worker as WorkerEngine
 from services.schedule_services.penalty_map import penalty_map
 from utils.constants import Constants
 
@@ -45,13 +50,21 @@ def core_to_engine_inputs(
         start_date,
     )
     end_date_hist = start_date - timedelta(days=1)
+    dates_all = _build_dates(start_date_hist, end_date)
+    dates_hist = _build_dates(start_date_hist, end_date_hist)
+    dates_campaign = _build_dates(start_date, end_date)
+    dates_all_str = [d.isoformat() for d in dates_all]
+    dates_hist_str = [d.isoformat() for d in dates_hist]
+    dates_campaign_str = [d.isoformat() for d in dates_campaign]
     variable_space = VariableSpace(
-        all_workers=[w.id for w in workers],
-        workers_not_deleted=[w.id for w in workers if not w.deleted],
-        all_days=_build_day_coordinates(start_date_hist, end_date),
-        days_solving=_build_day_coordinates(start_date, end_date),
+        workers=[_core_to_engine_worker(w, dates_campaign) for w in workers],
+        all_days=dates_all_str,
+        days_solving=dates_campaign_str,
         all_shifts=[shift.id for shift in shifts],
         shifts_not_deleted=[s.id for s in shifts if not s.deleted],
+        shift_work=[
+            s.id for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+        ],
         duty_recup_pairs=build_duty_recup_pairs(shifts),
     )
     coverage_engine = CoverageEngine(
@@ -61,21 +74,22 @@ def core_to_engine_inputs(
     constraints_engine = [_core_to_engine_constraint(c) for c in constraints]
     fixed_values_engine = core_to_engine_fixed_values(
         workers,
-        _build_day_coordinates(start_date_hist, end_date_hist),
-        _build_day_coordinates(start_date, end_date),
+        dates_hist_str,
+        dates_campaign_str,
         shifts,
         fixed_assignments,
         requests,
     )
     sol_hint_engine = core_to_engine_sol_hint(
-        variable_space.workers_not_deleted,
-        start_date,
-        end_date,
+        [w.id for w in workers if not w.deleted],
+        dates_campaign,
+        dates_campaign_str,
         variable_space.shifts_not_deleted,
         wip_assignments,
     )
-    dates = _build_dates(start_date_hist, end_date)
-    s_durations, s_start_times, s_end_times = _build_interval_parameters(shifts, dates)
+    s_durations, s_start_times, s_end_times = _build_interval_parameters(
+        shifts, dates_all
+    )
 
     inputs = Inputs(
         variable_space=variable_space,
@@ -87,8 +101,98 @@ def core_to_engine_inputs(
         shift_durations=s_durations,
         shift_start_times=s_start_times,
         shift_end_times=s_end_times,
+        fixed_config=FixedConfigEngine(
+            max_weekly_hours_worked=_build_period_target_work_hours_week(
+                80, dates_campaign
+            ),
+            max_duties_per_month=_build_period_target_duties_month(8, dates_campaign),
+        ),
     )
     return inputs
+
+
+def _core_to_engine_worker(worker: Worker, dates: List[date]) -> WorkerEngine:
+    return WorkerEngine(
+        id=worker.id,
+        work_hours=_build_period_target_work_hours(worker.weekly_hours, dates),
+        work_hours_desired=_build_period_target_work_hours(
+            worker.weekly_hours_desired, dates
+        ),
+        duties_per_month=_build_period_target_duties_month(
+            worker.duties_per_month, dates
+        ),
+        deleted=worker.deleted,
+    )
+
+
+def _build_period_target_work_hours(
+    weekly_target_hours: int, dates: List[date]
+) -> List[PeriodTargetEngine]:
+    return _build_period_target_work_hours_week(weekly_target_hours, dates)
+
+
+def _build_period_target_work_hours_week(
+    weekly_target_hours: int, dates: List[date]
+) -> List[PeriodTargetEngine]:
+    weekly_target_minutes = weekly_target_hours * Constants.NUM_MINUTES_HOUR
+    out: List[PeriodTargetEngine] = []
+    dates = sorted(dates)  # Ensure dates are sorted
+
+    while dates:
+        # Get the start of the week (Monday)
+        start_date = dates[0]
+        start_of_week = start_date - timedelta(days=start_date.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
+
+        # Get all dates in the current week
+        week_dates = [d for d in dates if start_of_week <= d <= end_of_week]
+        dates = [d for d in dates if d > end_of_week]
+
+        # Calculate the adjusted target
+        num_days_in_week = len(week_dates)
+        adjusted_target = math.ceil(
+            (weekly_target_minutes / Constants.NUM_DAYS_WEEK) * num_days_in_week
+        )
+
+        # Create PeriodTarget object
+        period_target = PeriodTargetEngine(
+            period=[d.isoformat() for d in week_dates],
+            target=adjusted_target,
+        )
+        out.append(period_target)
+    return out
+
+
+def _build_period_target_duties_month(
+    duties_per_month: int, dates: List[date]
+) -> List[PeriodTargetEngine]:
+    out: List[PeriodTargetEngine] = []
+    dates = sorted(dates)  # Ensure dates are sorted
+
+    while dates:
+        # Get the start of the month
+        start_date = dates[0]
+        start_of_month = date(start_date.year, start_date.month, 1)
+        _, last_day_month = calendar.monthrange(start_date.year, start_date.month)
+        end_of_month = date(start_date.year, start_date.month, last_day_month)
+
+        # Get all dates in the current month
+        month_dates = [d for d in dates if start_of_month <= d <= end_of_month]
+        dates = [d for d in dates if d > end_of_month]
+
+        # Calculate the adjusted target
+        num_days_in_month = len(month_dates)
+        adjusted_target = math.ceil(
+            (duties_per_month / end_of_month.day) * num_days_in_month
+        )
+
+        # Create PeriodTarget object
+        period_target = PeriodTargetEngine(
+            period=[d.isoformat() for d in month_dates],
+            target=adjusted_target,
+        )
+        out.append(period_target)
+    return out
 
 
 def _core_to_engine_requests(requests: List[Request]) -> List[RequestEngine]:
@@ -137,7 +241,7 @@ def core_to_engine_fixed_values(
     for a in assignments:
         out[
             a.worker_id,
-            a.date.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
+            a.date.isoformat(),
             a.shift_id,
         ] = 1
     # Assignments during solving period
@@ -170,28 +274,27 @@ def core_to_engine_fixed_values(
 
 def core_to_engine_sol_hint(
     workers_not_deleted: List[str],
-    start_date: date,
-    end_date: date,
+    dates_campaign: List[date],
+    dates_campaign_str: List[str],
     shifts_not_deleted: List[str],
     assignments: List[Assignment],
 ) -> Dict[Tuple[str, str, str], int]:
-    days = _build_day_coordinates(start_date, end_date)
     out = {
         (w, d, s): 0
         for w in workers_not_deleted
-        for d in days
+        for d in dates_campaign_str
         for s in shifts_not_deleted
     }
     for a in assignments:
         a_in_domain = (
             a.worker_id in workers_not_deleted
-            and start_date <= a.date <= end_date
+            and a.date in dates_campaign
             and a.shift_id in shifts_not_deleted
         )
         if a_in_domain:
             out[
                 a.worker_id,
-                a.date.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
+                a.date.isoformat(),
                 a.shift_id,
             ] = 1
     return out
@@ -251,12 +354,6 @@ def _core_to_engine_var_shift(var_shift: VarShift) -> VarShiftEngine:
     )
 
 
-def _build_day_coordinates(start_date: date, end_date: date) -> List[str]:
-    delta = end_date - start_date
-    dates = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
-    return [date.strftime(Constants.ENGINE_STRING_DATE_FORMAT) for date in dates]
-
-
 def _build_dates(start_date: date, end_date: date) -> List[date]:
     delta = end_date - start_date
     return [start_date + timedelta(days=i) for i in range(delta.days + 1)]
@@ -272,7 +369,7 @@ def _build_interval_parameters(
         s_durations[s.id] = int((s.end_time - s.start_time).total_seconds() // 60 - 1)
         day_diff = (s.end_time.date() - s.start_time.date()).days
         for d in dates:
-            d_string = d.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
+            d_string = d.isoformat()
             s_start_times[d_string, s.id] = int(
                 s.start_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
                 // Constants.NUM_SECONDS_MINUTE

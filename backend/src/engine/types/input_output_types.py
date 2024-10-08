@@ -9,13 +9,30 @@ from utils.constants import Constants
 
 
 @dataclass
+class PeriodTarget:
+    period: List[str]
+    target: int
+
+
+@dataclass
+class Worker:
+    id: str
+    work_hours: List[PeriodTarget]  # in hours for each week on the campaign, contract
+    work_hours_desired: List[
+        PeriodTarget
+    ]  # in hours for each week on the campaign, desired
+    duties_per_month: List[PeriodTarget]  # number of duties per month
+    deleted: bool
+
+
+@dataclass
 class VariableSpace:
-    all_workers: List[str]
-    workers_not_deleted: List[str]
+    workers: List[Worker]
     all_days: List[str]
     days_solving: List[str]
     all_shifts: List[str]
     shifts_not_deleted: List[str]
+    shift_work: List[str]
     duty_recup_pairs: List[Tuple[str, str]]
 
 
@@ -94,6 +111,12 @@ class Constraint:
 
 
 @dataclass
+class FixedConfig:
+    max_weekly_hours_worked: List[PeriodTarget]
+    max_duties_per_month: List[PeriodTarget]
+
+
+@dataclass
 class Inputs:
     variable_space: VariableSpace
     coverage: Coverage
@@ -108,6 +131,7 @@ class Inputs:
     shift_end_times: Dict[
         Tuple[str, str], int
     ]  # timestamp in minutes, key: (date, shift_id)
+    fixed_config: FixedConfig
 
 
 ##############################
@@ -118,7 +142,14 @@ class Inputs:
 @dataclass
 class ConstraintBreach:
     constraint_id: str
-    category: Literal["request", "constraint", "coverage", "recuperation"]
+    category: Literal[
+        "request",
+        "constraint",
+        "coverage",
+        "recuperation",
+        "work_time",
+        "duties_per_month",
+    ]
     variables: List[Tuple[str, date, str]]
     value_diff: int
     hard_to_soft: bool
