@@ -15,6 +15,12 @@ class PeriodTarget:
 
 
 @dataclass
+class WorkerShiftFilter:
+    worker_ids: List[str]
+    shift_not_to_ids: List[str]
+
+
+@dataclass
 class Worker:
     id: str
     work_hours: List[PeriodTarget]  # in hours for each week on the campaign, contract
@@ -122,6 +128,7 @@ class Inputs:
     coverage: Coverage
     requests: List[Request]
     constraints: List[Constraint]
+    worker_shift_filters: List[WorkerShiftFilter]
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
     shift_durations: Dict[str, int]  # in minutes, key: shift_id

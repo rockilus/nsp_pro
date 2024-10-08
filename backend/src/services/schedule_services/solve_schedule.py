@@ -93,6 +93,8 @@ def solve_schedule(
         schedule.start_date,
         schedule.end_date,
         shifts,
+        dimensions,
+        attributes,
         shift_demand_dates,
         requests,
         constraints,

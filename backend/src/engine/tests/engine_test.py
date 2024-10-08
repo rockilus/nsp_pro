@@ -126,6 +126,7 @@ class TestEngine:
             coverage=coverage,
             requests=requests,
             constraints=constraints,
+            worker_shift_filters=[],
             fixed_values={},
             sol_hint={},
             shift_durations={

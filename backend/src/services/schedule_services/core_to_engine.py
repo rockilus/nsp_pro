@@ -5,7 +5,9 @@ from typing import Dict, List, Tuple
 
 from core import (
     Assignment,
+    Attribute,
     Constraint,
+    Dimension,
     Request,
     Shift,
     ShiftDemandDate,
@@ -29,6 +31,9 @@ from engine import VariableSpace
 from engine import VarShift as VarShiftEngine
 from engine import VarWorker as VarWorkerEngine
 from engine import Worker as WorkerEngine
+from services.schedule_services.build_worker_shift_filter import (
+    build_worker_shift_filters,
+)
 from services.schedule_services.penalty_map import penalty_map
 from utils.constants import Constants
 
@@ -39,6 +44,8 @@ def core_to_engine_inputs(
     start_date: date,
     end_date: date,
     shifts: List[Shift],
+    dimensions: List[Dimension],
+    attributes: List[Attribute],
     shift_demand_dates: List[ShiftDemandDate],
     requests: List[Request],
     constraints: List[Constraint],
@@ -96,6 +103,9 @@ def core_to_engine_inputs(
         coverage=coverage_engine,
         requests=requests_engine,
         constraints=constraints_engine,
+        worker_shift_filters=build_worker_shift_filters(
+            workers, shifts, dimensions, attributes
+        ),
         fixed_values=fixed_values_engine,
         sol_hint=sol_hint_engine,
         shift_durations=s_durations,
