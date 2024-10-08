@@ -122,6 +122,7 @@ class Inputs:
     coverage: Coverage
     requests: List[Request]
     constraints: List[Constraint]
+    worker_shift_filters: List[Tuple[str, str]]
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
     shift_durations: Dict[str, int]  # in minutes, key: shift_id
@@ -149,6 +150,7 @@ class ConstraintBreach:
         "recuperation",
         "work_time",
         "duties_per_month",
+        "worker_shift_filter",
     ]
     variables: List[Tuple[str, date, str]]
     value_diff: int
