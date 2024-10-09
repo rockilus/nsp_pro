@@ -37,13 +37,18 @@ export enum ShiftLeaveType {
   OTHER_AFTERNOON = 18,
 }
 
+export type StaffingT = {
+  specialtyId: string | null;
+  staffing: number;
+};
+
 export type ShiftT = {
   id: string;
   teamId: string;
   name: string;
   startTime: dayjs.Dayjs;
   endTime: dayjs.Dayjs;
-  staffing: number;
+  staffing: StaffingT[];
   color: string;
   shiftType: ShiftType;
   restType: ShiftRestType;

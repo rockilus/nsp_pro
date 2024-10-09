@@ -8,14 +8,15 @@ import ShiftFieldCellDuty from "./shift-field-cell-duty";
 import ShiftFieldCellRecuperation from "./shift-field-cell-recuperation";
 import ShiftFieldCellStartTime from "./shift-field-cell-start-time";
 import ShiftFieldCellEndTime from "./shift-field-cell-end-time";
-import ShiftFieldCellStaff from "./shift-field-cell-staff";
+import ShiftStaffingCell from "./staffing/shift-staffing-cell";
 // Types
 import { ShiftT } from "../../../types/shift";
+import { SpecialtyT } from "../../../types/team";
 
 export default function ShiftFieldCell({
   lng,
   shift,
-  shifts,
+  specialties,
   shiftField,
   editing,
   setEditing,
@@ -23,7 +24,7 @@ export default function ShiftFieldCell({
 }: {
   lng: string;
   shift: ShiftT;
-  shifts: ShiftT[];
+  specialties: SpecialtyT[];
   shiftField: string;
   editing: { [key: string]: string };
   setEditing: Dispatch<SetStateAction<{}>>;
@@ -64,10 +65,9 @@ export default function ShiftFieldCell({
       handleUpdateShift={handleUpdateShift}
     />
   ) : shiftField === "staffing" ? (
-    <ShiftFieldCellStaff
+    <ShiftStaffingCell
       shift={shift}
-      editing={editing[shift.id] === "staffing"}
-      setEditing={setEditing}
+      specialties={specialties}
       handleUpdateShift={handleUpdateShift}
     />
   ) : (

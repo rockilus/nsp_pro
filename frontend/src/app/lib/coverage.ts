@@ -2,6 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 // Actions
 import { getWorkShifts } from "./shift";
 import { getShiftDemands } from "./shift-demand";
+import { getSpecialties } from "./specialty";
 // Types
 import { CoverageT } from "../../types/coverage";
 // Env Vars
@@ -113,13 +114,15 @@ export async function getCoveragesTabData(teamId: string) {
   try {
     const coveragesTabData = await Promise.all([
       getWorkShifts(teamId),
+      getSpecialties(teamId),
       getCoverages(teamId),
       getShiftDemands(teamId),
     ]);
     return {
       shifts: coveragesTabData[0],
-      coverages: coveragesTabData[1],
-      shiftDemands: coveragesTabData[2],
+      specialties: coveragesTabData[1],
+      coverages: coveragesTabData[2],
+      shiftDemands: coveragesTabData[3],
     };
   } catch (error) {
     console.error("Failed to fetch coverages tab data:", error);

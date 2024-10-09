@@ -3,8 +3,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Actions
 import { getDimensions } from "./dimension";
+import { getSpecialties } from "./specialty";
 // Types
-import { DimensionType } from "../../types/dimension";
 import { ShiftT } from "../../types/shift";
 // Env Vars
 import { API_URL } from "./env";
@@ -184,11 +184,13 @@ export async function getShiftsTabData(teamId: string) {
     const shiftsTabData = await Promise.all([
       getShifts(teamId),
       getDimensions(teamId),
+      getSpecialties(teamId),
     ]);
     return {
       shifts: shiftsTabData[0],
       dimensions: shiftsTabData[1].dimensions,
       dimEntries: shiftsTabData[1].dimEntries,
+      specialties: shiftsTabData[2],
     };
   } catch (error) {
     console.error("Failed to fetch shifts tab data:", error);

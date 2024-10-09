@@ -7,11 +7,13 @@ import ShiftDemandButton from "./shift-demand-button";
 // Types
 import { ShiftDemandT } from "../../../types/coverage";
 import { ShiftT } from "../../../types/shift";
+import { SpecialtyT } from "../../../types/team";
 
 export default function EventDivContent({
   lng,
   shiftDemand,
   shifts,
+  specialties,
   staffingLabel,
   width,
   height,
@@ -22,6 +24,7 @@ export default function EventDivContent({
   lng: string;
   shiftDemand: ShiftDemandT;
   shifts: ShiftT[];
+  specialties: SpecialtyT[];
   staffingLabel: string;
   width: number;
   height: number;
@@ -83,7 +86,20 @@ export default function EventDivContent({
             }}
           >
             {`${staffingLabel}: `}
-            {shift.staffing}
+            {shift.staffing.map((staffing, index) => {
+              const specialty = specialties.find(
+                (s) => s.id === staffing.specialtyId
+              );
+              return (
+                <span key={staffing.specialtyId || index}>{`${
+                  staffing.specialtyId === null
+                    ? "Any"
+                    : specialty
+                    ? specialty.name
+                    : "Name not found"
+                }: ${staffing.staffing}`}</span>
+              );
+            })}
           </Typography>
         </Stack>
       )

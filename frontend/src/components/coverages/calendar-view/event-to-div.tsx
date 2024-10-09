@@ -4,6 +4,7 @@ import EventDivContent from "./event-div-content";
 // Types
 import { EventT, ShiftDemandT } from "../../../types/coverage";
 import { ShiftT } from "../../../types/shift";
+import { SpecialtyT } from "../../../types/team";
 
 export default function EventToDiv({
   lng,
@@ -12,6 +13,7 @@ export default function EventToDiv({
   columnWidth,
   staffingLabel,
   shifts,
+  specialties,
   handleAddShiftDemands,
   handleUpdateShiftDemand,
   handleDeleteShiftDemands,
@@ -22,6 +24,7 @@ export default function EventToDiv({
   columnWidth: number;
   staffingLabel: string;
   shifts: ShiftT[];
+  specialties: SpecialtyT[];
   handleAddShiftDemands: (shiftDemand: ShiftDemandT[]) => void;
   handleUpdateShiftDemand: (shiftDemand: ShiftDemandT) => void;
   handleDeleteShiftDemands: (shiftDemandId: string[]) => void;
@@ -62,6 +65,7 @@ export default function EventToDiv({
         lng={lng}
         shiftDemand={event.shiftDemand}
         shifts={shifts}
+        specialties={specialties}
         staffingLabel={staffingLabel}
         width={width}
         height={height}

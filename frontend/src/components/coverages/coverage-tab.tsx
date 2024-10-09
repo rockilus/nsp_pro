@@ -22,7 +22,7 @@ import "../../styles/tab-container-styles.css";
 // Types
 import { CoverageT, ShiftDemandT } from "../../types/coverage";
 import { ShiftT } from "../../types/shift";
-import { set } from "zod";
+import { SpecialtyT } from "../../types/team";
 
 export default function CoverageTab({
   lng,
@@ -35,6 +35,7 @@ export default function CoverageTab({
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
+  const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
   const [coverages, setCoverages] = useState<CoverageT[]>([]);
   const [shiftDemands, setShiftDemands] = useState<ShiftDemandT[]>([]);
 
@@ -134,10 +135,12 @@ export default function CoverageTab({
       if (selectedTeamId) {
         const {
           shifts: fetchedShifts,
+          specialties: fetchedSpecialties,
           coverages: fetchedCoverages,
           shiftDemands: fetchedShiftDemands,
         } = await getCoveragesTabData(selectedTeamId);
         setShifts(fetchedShifts);
+        setSpecialties(fetchedSpecialties);
         setCoverages(fetchedCoverages);
         setShiftDemands(fetchedShiftDemands);
         if (fetchedCoverages.length > 0) {
@@ -176,6 +179,7 @@ export default function CoverageTab({
             coverage={selectedCoverage}
             shiftDemands={shiftDemands}
             shifts={shifts}
+            specialties={specialties}
             handleAddShiftDemands={handleAddShiftDemands}
             handleUpdateShiftDemand={handleUpdateShiftDemand}
             handleDeleteShiftDemands={handleDeleteShiftDemands}

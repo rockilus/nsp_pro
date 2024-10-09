@@ -33,8 +33,9 @@ import {
   ShiftType,
   ShiftRestType,
 } from "../../types/shift";
-import { DimEntryT, DimensionT, DimensionType } from "../../types/dimension";
+import { DimEntryT, DimensionT } from "../../types/dimension";
 import { AttributeT } from "../../types/attribute";
+import { SpecialtyT } from "../../types/team";
 
 dayjs.extend(utc);
 
@@ -51,6 +52,7 @@ export default function ShiftTab({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [dimensions, setDimensions] = useState<DimensionT[]>([]);
   const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
+  const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
 
   const DefaultWorkShiftFields: Record<string, string>[] = [
     { name: "color", label: t("color") },
@@ -87,7 +89,12 @@ export default function ShiftTab({
       name: "",
       startTime: roundTime(dayjs.utc()),
       endTime: roundTime(dayjs.utc()),
-      staffing: 1,
+      staffing: [
+        {
+          specialtyId: null,
+          staffing: 1,
+        },
+      ],
       color: "grey",
       shiftType: isRest ? ShiftType.REST : ShiftType.NORMAL,
       restType: ShiftRestType.NONE,
@@ -261,10 +268,12 @@ export default function ShiftTab({
           shifts: fetchedShifts,
           dimensions: fetchedDimensions,
           dimEntries: fetchedDimEntries,
+          specialties: fetchedSpecialties,
         } = await getShiftsTabData(selectedTeamId);
         setShifts(fetchedShifts);
         setDimensions(fetchedDimensions);
         setDimEntries(fetchedDimEntries);
+        setSpecialties(fetchedSpecialties);
         setIsLoading(false);
       }
     };
@@ -285,6 +294,7 @@ export default function ShiftTab({
               dimensions={dimensions}
               dimEntries={dimEntries}
               shifts={shifts}
+              specialties={specialties}
               defaultShiftFields={DefaultWorkShiftFields}
               handleAddShift={handleAddShift}
               handleUpdateShift={handleUpdateShift}
@@ -305,6 +315,7 @@ export default function ShiftTab({
               dimensions={dimensions}
               dimEntries={dimEntries}
               shifts={shifts}
+              specialties={[]}
               defaultShiftFields={DefaultRestShiftFields}
               handleAddShift={handleAddShift}
               handleUpdateShift={handleUpdateShift}
