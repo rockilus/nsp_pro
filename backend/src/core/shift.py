@@ -16,6 +16,7 @@ class ShiftRestType(Enum):
     RECUPERATION = 2
 
 
+#
 class ShiftLeaveType(Enum):
     NONE = 0
     VACATION = 1
