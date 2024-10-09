@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from typing import List
 
 
 class ShiftType(Enum):
@@ -16,7 +17,6 @@ class ShiftRestType(Enum):
     RECUPERATION = 2
 
 
-#
 class ShiftLeaveType(Enum):
     NONE = 0
     VACATION = 1
@@ -39,6 +39,12 @@ class ShiftLeaveType(Enum):
     OTHER_AFTERNOON = 18
 
 
+@dataclass
+class Staffing:
+    specialty_id: str | None
+    staffing: int
+
+
 # pylint: disable=too-many-instance-attributes
 @dataclass
 class Shift:
@@ -47,7 +53,7 @@ class Shift:
     name: str
     start_time: datetime
     end_time: datetime
-    staffing: int
+    staffing: List[Staffing]
     color: str
     shift_type: ShiftType
     rest_type: ShiftRestType
