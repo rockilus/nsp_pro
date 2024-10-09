@@ -17,7 +17,7 @@ import AttributeCell from "../shift-worker-shared/attribute/attribute-cell";
 import PopoverRHS from "../inputs/popover-rhs";
 import TableAddButton from "../buttons/table-add-button";
 import WorkerFieldCell from "./worker-field-cell/worker-field-cell";
-import WorkerSpecialtyHeaderCell from "./worker-field-cell/worker-specialty-header-cell";
+import WorkerSpecialtyHeaderCell from "./worker-field-cell/specialties/worker-specialty-header-cell";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
@@ -163,6 +163,7 @@ export default function WorkerTable({
                     key={index}
                     worker={worker}
                     workerField={field.name}
+                    specialties={specialties}
                     editing={bodyEditing}
                     setEditing={setBodyEditing}
                     handleUpdateWorker={handleUpdateWorker}

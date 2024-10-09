@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 // Component
 import UpdateSpecialtiesInput from "./update-specialties-input";
 // Types
-import { SpecialtyT } from "../../../types/team";
+import { SpecialtyT } from "../../../../types/team";
 
 export default function UpdateSpecialtiesForm({
   lng,

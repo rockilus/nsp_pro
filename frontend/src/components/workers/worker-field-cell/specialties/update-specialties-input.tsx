@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import CheckIcon from "@mui/icons-material/Check";
@@ -11,7 +11,7 @@ import TextField from "@mui/material/TextField";
 // Styles
 import "./update-specialties-input.css";
 // Types
-import { SpecialtyT } from "../../../types/team";
+import { SpecialtyT } from "../../../../types/team";
 
 export default function UpdateSpecialtiesInput({
   lng,
