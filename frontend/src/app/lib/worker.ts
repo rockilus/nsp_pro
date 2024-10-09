@@ -1,9 +1,9 @@
 import { unstable_noStore as noStore } from "next/cache";
 // Actions
 import { getDimensions } from "./dimension";
+import { getSpecialties } from "./specialty";
 // Types
 import { WorkerT } from "../../types/worker";
-import { DimensionType } from "../../types/dimension";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -139,11 +139,13 @@ export async function getWorkersTabData(teamId: string) {
     const workersTabData = await Promise.all([
       getWorkers(teamId),
       getDimensions(teamId),
+      getSpecialties(teamId),
     ]);
     return {
       workers: workersTabData[0],
       dimensions: workersTabData[1].dimensions,
       dimEntries: workersTabData[1].dimEntries,
+      specialties: workersTabData[2],
     };
   } catch (error) {
     console.error("Failed to fetch workers tab data:", error);

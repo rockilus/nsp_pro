@@ -19,7 +19,7 @@ from core.request import Request, RequestAugmented
 from core.schedule import Assignment, ObjectiveBreach, QuickStaffing, Schedule, Variable
 from core.shift import Shift, ShiftLeaveType, ShiftRestType, ShiftType
 from core.stats import Stats, StatsHeader, StatsOptions, StatsValue
-from core.team import Team
+from core.team import Specialty, Team
 from core.user import PasswordData, User
 from core.worker import Worker
 
@@ -62,6 +62,7 @@ __all__ = [
     "Stats",
     "StatsHeader",
     "StatsValue",
+    "Specialty",
     "Team",
     "PasswordData",
     "User",

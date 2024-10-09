@@ -15,6 +15,7 @@ from database import (
     ScheduleDB,
     ShiftDB,
     ShiftDemandDB,
+    SpecialtyDB,
     StatsHeaderDB,
     TeamDB,
     UserDB,
@@ -60,6 +61,7 @@ request_db = RequestDB(db)
 schedule_db = ScheduleDB(db)
 shift_db = ShiftDB(db)
 shift_demand_db = ShiftDemandDB(db)
+specialty_db = SpecialtyDB(db)
 stats_header_db = StatsHeaderDB(db)
 team_db = TeamDB(db)
 user_db = UserDB(db)

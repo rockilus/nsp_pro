@@ -7,18 +7,22 @@ import WorkerFieldCellWeeklyHours from "./worker-field-cell-weekly-hours";
 import WorkerFieldCellAnnualLeave from "./worker-field-cell-annual-leave";
 import WorkerFieldCellDutiesPerMonth from "./worker-field-cell-duties-per-month";
 import WorkerFieldCellWeeklyHoursDesired from "./worker-field-cell-weekly-hours-desired";
+import WorkerSpecialtyCell from "./specialties/worker-specialty-cell";
 // Types
 import { WorkerT } from "../../../types/worker";
+import { SpecialtyT } from "../../../types/team";
 
 export default function WorkerFieldCell({
   worker,
   workerField,
+  specialties,
   editing,
   setEditing,
   handleUpdateWorker,
 }: {
   worker: WorkerT;
   workerField: string;
+  specialties: SpecialtyT[];
   editing: { [key: string]: string };
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
@@ -28,6 +32,12 @@ export default function WorkerFieldCell({
       worker={worker}
       editing={editing[worker.id] === "name"}
       setEditing={setEditing}
+      handleUpdateWorker={handleUpdateWorker}
+    />
+  ) : workerField === "specialties" ? (
+    <WorkerSpecialtyCell
+      worker={worker}
+      specialties={specialties}
       handleUpdateWorker={handleUpdateWorker}
     />
   ) : workerField === "weeklyHours" ? (

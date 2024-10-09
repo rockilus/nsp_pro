@@ -52,6 +52,7 @@ class WorkerMessage(BaseModel):
     dutiesPerMonth: int
     annualLeave: int
     deleted: bool
+    specialtyIds: List[str]
     attributes: List[AttributeMessage]
 
 
@@ -276,6 +277,13 @@ class PasswordDataMessage(BaseModel):
 
 
 # Team
+class SpecialtyMessage(BaseModel):
+    id: str
+    teamId: str
+    name: str
+    deleted: bool
+
+
 class TeamMessage(BaseModel):
     id: str
     # team_members: List[str]

@@ -24,6 +24,11 @@ import {
   deleteDimEntry,
 } from "../../app/lib/dim-entry";
 import { updateAttribute } from "../../app/lib/attribute";
+import {
+  addSpecialty,
+  updateSpecialty,
+  deleteSpecialty,
+} from "../../app/lib/specialty";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/tab-container-styles.css";
@@ -31,6 +36,7 @@ import "../../styles/tab-container-styles.css";
 import { WorkerT } from "../../types/worker";
 import { DimensionT, DimEntryT } from "../../types/dimension";
 import { AttributeT } from "../../types/attribute";
+import { SpecialtyT } from "../../types/team";
 
 export default function WorkerTab({
   lng,
@@ -45,9 +51,11 @@ export default function WorkerTab({
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [dimensions, setDimensions] = useState<DimensionT[]>([]);
   const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
+  const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
 
   const DefaultWorkerFields: Record<string, string>[] = [
     { name: "name", label: t("name") },
+    { name: "specialties", label: t("specialties") },
     { name: "weeklyHours", label: t("weekly_hours") },
     { name: "weeklyHoursDesired", label: t("weekly_hours_desired") },
     { name: "dutiesPerMonth", label: t("duties_per_month") },
@@ -70,6 +78,7 @@ export default function WorkerTab({
       weeklyHoursDesired: 39,
       dutiesPerMonth: 4,
       annualLeave: 25,
+      specialtyIds: [],
       deleted: false,
       attributes: [],
     });
@@ -232,6 +241,47 @@ export default function WorkerTab({
     );
   };
 
+  //////////////////////////
+  // Specialty Actions
+  //////////////////////////
+
+  const handleAddSpecialty = async (specialty: SpecialtyT) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const newSpecialty = await addSpecialty(specialty, selectedTeamId);
+    setSpecialties([...specialties, newSpecialty]);
+  };
+
+  const handleUpdateSpecialty = async (specialty: SpecialtyT) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const updatedSpecialty = await updateSpecialty(specialty, selectedTeamId);
+    setSpecialties((prevSpecialties) =>
+      prevSpecialties.map((de) =>
+        de.id === updatedSpecialty.id ? updatedSpecialty : de
+      )
+    );
+  };
+
+  const handleDeleteSpecialty = async (specialtyId: string) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const updatedWorkers = await deleteSpecialty(specialtyId, selectedTeamId);
+    setSpecialties(
+      specialties.filter((specialty) => specialty.id !== specialtyId)
+    );
+
+    setWorkers((prevWorkers) =>
+      prevWorkers.map((worker) => {
+        const updatedWorker = updatedWorkers.find((w) => w.id === worker.id);
+        return updatedWorker ? updatedWorker : worker;
+      })
+    );
+  };
+
   useEffect(() => {
     const fetchWorkersTabData = async () => {
       setIsLoading(true);
@@ -240,10 +290,12 @@ export default function WorkerTab({
           workers: fetchedWorkers,
           dimensions: fetchedDimensions,
           dimEntries: fetchedDimEntries,
+          specialties: fetchedSpecialties,
         } = await getWorkersTabData(selectedTeamId);
         setWorkers(fetchedWorkers);
         setDimensions(fetchedDimensions);
         setDimEntries(fetchedDimEntries);
+        setSpecialties(fetchedSpecialties);
         setIsLoading(false);
       }
     };
@@ -262,6 +314,7 @@ export default function WorkerTab({
             dimensions={dimensions}
             dimEntries={dimEntries}
             workers={workers}
+            specialties={specialties}
             defaultWorkerFields={DefaultWorkerFields}
             handleAddWorker={handleAddWorker}
             handleUpdateWorker={handleUpdateWorker}
@@ -273,6 +326,9 @@ export default function WorkerTab({
             handleUpdateDimEntry={handleUpdateDimEntry}
             handleDeleteDimEntry={handleDeleteDimEntry}
             handleUpdateAttribute={handleUpdateAttribute}
+            handleAddSpecialty={handleAddSpecialty}
+            handleUpdateSpecialty={handleUpdateSpecialty}
+            handleDeleteSpecialty={handleDeleteSpecialty}
           />
         )
       )}

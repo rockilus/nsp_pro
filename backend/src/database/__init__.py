@@ -13,6 +13,7 @@ from database.request_db import RequestDB
 from database.schedule_db import ScheduleDB
 from database.shift_db import ShiftDB
 from database.shift_demand_db import ShiftDemandDB
+from database.specialty_db import SpecialtyDB
 from database.stats_header_db import StatsHeaderDB
 from database.team_db import TeamDB
 from database.user_db import UserDB
@@ -36,6 +37,7 @@ __all__ = [
     "ScheduleDB",
     "ShiftDB",
     "ShiftDemandDB",
+    "SpecialtyDB",
     "StatsHeaderDB",
     "TeamDB",
     "UserDB",

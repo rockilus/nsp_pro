@@ -23,6 +23,7 @@ from routes import (
     router_schedule,
     router_shift,
     router_shift_demand,
+    router_specialty,
     router_stats,
     router_team,
     router_user,
@@ -61,6 +62,7 @@ app.include_router(router_request)
 app.include_router(router_schedule)
 app.include_router(router_shift)
 app.include_router(router_shift_demand)
+app.include_router(router_specialty)
 app.include_router(router_stats)
 app.include_router(router_team)
 app.include_router(router_user)

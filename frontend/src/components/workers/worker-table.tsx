@@ -17,6 +17,7 @@ import AttributeCell from "../shift-worker-shared/attribute/attribute-cell";
 import PopoverRHS from "../inputs/popover-rhs";
 import TableAddButton from "../buttons/table-add-button";
 import WorkerFieldCell from "./worker-field-cell/worker-field-cell";
+import WorkerSpecialtyHeaderCell from "./worker-field-cell/specialties/worker-specialty-header-cell";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
@@ -29,6 +30,7 @@ import {
   DimensionEntryType,
 } from "../../types/dimension";
 import { AttributeT, AttributeOwnerType } from "../../types/attribute";
+import { SpecialtyT } from "../../types/team";
 
 export default function WorkerTable({
   lng,
@@ -36,6 +38,7 @@ export default function WorkerTable({
   dimensions,
   dimEntries,
   workers,
+  specialties,
   defaultWorkerFields,
   handleAddWorker,
   handleUpdateWorker,
@@ -47,12 +50,16 @@ export default function WorkerTable({
   handleUpdateDimEntry,
   handleDeleteDimEntry,
   handleUpdateAttribute,
+  handleAddSpecialty,
+  handleUpdateSpecialty,
+  handleDeleteSpecialty,
 }: {
   lng: string;
   selectedTeamId: string;
   dimensions: DimensionT[];
   dimEntries: DimEntryT[];
   workers: WorkerT[];
+  specialties: SpecialtyT[];
   defaultWorkerFields: Record<string, string>[];
   handleAddWorker: () => void;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
@@ -67,6 +74,9 @@ export default function WorkerTable({
   handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
   handleDeleteDimEntry: (dimEntryId: string) => void;
   handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
+  handleAddSpecialty: (specialty: SpecialtyT) => void;
+  handleUpdateSpecialty: (specialty: SpecialtyT) => void;
+  handleDeleteSpecialty: (specialtyId: string) => void;
 }) {
   const { t } = useTranslation(lng, "worker-page");
 
@@ -104,11 +114,24 @@ export default function WorkerTable({
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              {defaultWorkerFields.map((field, index) => (
-                <TableCell key={index} sx={{ paddingY: 0 }}>
-                  <span className="table-header-default">{field.label}</span>
-                </TableCell>
-              ))}
+              {defaultWorkerFields.map((field, index) =>
+                field.name === "specialties" ? (
+                  <WorkerSpecialtyHeaderCell
+                    key={index}
+                    lng={lng}
+                    teamId={selectedTeamId}
+                    specialties={specialties}
+                    handleAddSpecialty={handleAddSpecialty}
+                    handleUpdateSpecialty={handleUpdateSpecialty}
+                    handleDeleteSpecialty={handleDeleteSpecialty}
+                  />
+                ) : (
+                  <TableCell key={index} sx={{ paddingY: 0 }}>
+                    <span className="table-header-default">{field.label}</span>
+                  </TableCell>
+                )
+              )}
+
               {dimensionsDisplayed.map((dim, dIndex) => (
                 <DimensionCell
                   key={dIndex}
@@ -140,6 +163,7 @@ export default function WorkerTable({
                     key={index}
                     worker={worker}
                     workerField={field.name}
+                    specialties={specialties}
                     editing={bodyEditing}
                     setEditing={setBodyEditing}
                     handleUpdateWorker={handleUpdateWorker}

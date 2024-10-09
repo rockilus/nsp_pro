@@ -1,5 +1,14 @@
 from mongoengine import Document
-from mongoengine.fields import ListField, ReferenceField, StringField
+from mongoengine.fields import BooleanField, ListField, ReferenceField, StringField
+
+
+class Specialty(Document):
+    meta = {"collection": "specialties"}
+
+    id = StringField(primary_key=True, required=True)
+    team = ReferenceField("Team", required=True)
+    name = StringField(required=True)
+    deleted = BooleanField(required=True)
 
 
 class Team(Document):
