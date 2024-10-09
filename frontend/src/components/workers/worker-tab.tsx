@@ -24,6 +24,11 @@ import {
   deleteDimEntry,
 } from "../../app/lib/dim-entry";
 import { updateAttribute } from "../../app/lib/attribute";
+import {
+  addSpecialty,
+  updateSpecialty,
+  deleteSpecialty,
+} from "../../app/lib/specialty";
 // Styles
 import "../../styles/text-styles.css";
 import "../../styles/tab-container-styles.css";
@@ -50,6 +55,7 @@ export default function WorkerTab({
 
   const DefaultWorkerFields: Record<string, string>[] = [
     { name: "name", label: t("name") },
+    { name: "specialties", label: t("specialties") },
     { name: "weeklyHours", label: t("weekly_hours") },
     { name: "weeklyHoursDesired", label: t("weekly_hours_desired") },
     { name: "dutiesPerMonth", label: t("duties_per_month") },
@@ -235,6 +241,47 @@ export default function WorkerTab({
     );
   };
 
+  //////////////////////////
+  // Specialty Actions
+  //////////////////////////
+
+  const handleAddSpecialty = async (specialty: SpecialtyT) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const newSpecialty = await addSpecialty(specialty, selectedTeamId);
+    setSpecialties([...specialties, newSpecialty]);
+  };
+
+  const handleUpdateSpecialty = async (specialty: SpecialtyT) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const updatedSpecialty = await updateSpecialty(specialty, selectedTeamId);
+    setSpecialties((prevSpecialties) =>
+      prevSpecialties.map((de) =>
+        de.id === updatedSpecialty.id ? updatedSpecialty : de
+      )
+    );
+  };
+
+  const handleDeleteSpecialty = async (specialtyId: string) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    const updatedWorkers = await deleteSpecialty(specialtyId, selectedTeamId);
+    setSpecialties(
+      specialties.filter((specialty) => specialty.id !== specialtyId)
+    );
+
+    setWorkers((prevWorkers) =>
+      prevWorkers.map((worker) => {
+        const updatedWorker = updatedWorkers.find((w) => w.id === worker.id);
+        return updatedWorker ? updatedWorker : worker;
+      })
+    );
+  };
+
   useEffect(() => {
     const fetchWorkersTabData = async () => {
       setIsLoading(true);
@@ -267,6 +314,7 @@ export default function WorkerTab({
             dimensions={dimensions}
             dimEntries={dimEntries}
             workers={workers}
+            specialties={specialties}
             defaultWorkerFields={DefaultWorkerFields}
             handleAddWorker={handleAddWorker}
             handleUpdateWorker={handleUpdateWorker}
@@ -278,6 +326,9 @@ export default function WorkerTab({
             handleUpdateDimEntry={handleUpdateDimEntry}
             handleDeleteDimEntry={handleDeleteDimEntry}
             handleUpdateAttribute={handleUpdateAttribute}
+            handleAddSpecialty={handleAddSpecialty}
+            handleUpdateSpecialty={handleUpdateSpecialty}
+            handleDeleteSpecialty={handleDeleteSpecialty}
           />
         )
       )}
