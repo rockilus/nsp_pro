@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List
 
 from bson import ObjectId
@@ -196,6 +197,12 @@ def core_to_doc_workers(
             id=str(ObjectId()) if creating else dataclass_obj.id,
             team=teams.get(dataclass_obj.team_id),
             name=dataclass_obj.name,
+            employment_start_date=dataclass_obj.employment_start_date.timestamp(),
+            employment_start_date=(
+                dataclass_obj.employment_end_date.timestamp()
+                if dataclass_obj.employment_end_date
+                else None
+            ),
             weekly_hours=dataclass_obj.weekly_hours,
             weekly_hours_desired=dataclass_obj.weekly_hours_desired,
             duties_per_month=dataclass_obj.duties_per_month,
@@ -214,6 +221,14 @@ def doc_to_core_worker(doc_obj: WorkerDocument) -> Worker:
             id=doc_obj.id,
             team_id=str(doc_obj.team.id),
             name=str(doc_obj.name) if doc_obj.name is not None else "",
+            employment_start_date=datetime.fromtimestamp(
+                doc_obj.employment_start_date, timezone.utc
+            ),
+            employment_end_date=(
+                datetime.fromtimestamp(doc_obj.employment_end_date, timezone.utc)
+                if doc_obj.employment_end_date
+                else None
+            ),
             weekly_hours=doc_obj.weekly_hours,
             weekly_hours_desired=doc_obj.weekly_hours_desired,
             duties_per_month=doc_obj.duties_per_month,

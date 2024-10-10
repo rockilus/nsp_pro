@@ -18,6 +18,7 @@ class TestCoverage(TestEngine):
         coverage = Coverage(
             coverage=[
                 ShiftDemand(
+                    worker_ids=[w.id for w in inputs.variable_space.workers],
                     date=date.fromisoformat("2023-10-02"),
                     shift_id="s0",
                     staffing=target_coverage,

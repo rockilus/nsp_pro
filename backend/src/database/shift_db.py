@@ -160,9 +160,7 @@ class ShiftDB:
             # pylint: disable=no-member
             s_doc = ShiftDocument.objects.get(id=shift_id)  # type: ignore
         except Exception as e:
-            log_info(
-                "Failed to get shift by id to logical delete from database"
-            )
+            log_info("Failed to get shift by id to logical delete from database")
             handle_get_document_error(e)
         try:
             s_doc.update(set__deleted=True)
@@ -291,8 +289,7 @@ def core_to_doc_shifts(
             start_time=dataclass_obj.start_time.timestamp(),
             end_time=dataclass_obj.end_time.timestamp(),
             staffing=[
-                core_to_doc_staffing(s, specialties)
-                for s in dataclass_obj.staffing
+                core_to_doc_staffing(s, specialties) for s in dataclass_obj.staffing
             ],
             color=dataclass_obj.color,
             shift_type=dataclass_obj.shift_type.value,
@@ -309,9 +306,7 @@ def core_to_doc_shifts(
 # document to core
 def doc_to_core_staffing(doc_obj: StaffingDocument) -> Staffing:
     doc_dict = doc_obj.to_mongo().to_dict()
-    doc_dict["specialty_id"] = (
-        doc_dict["specialty"] if doc_obj.specialty else None
-    )
+    doc_dict["specialty_id"] = doc_dict["specialty"] if doc_obj.specialty else None
     if doc_obj.specialty:
         doc_dict.pop("specialty")
     return Staffing(**doc_dict)
@@ -323,9 +318,7 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             id=doc_obj.id,
             team_id=doc_obj.team.id,
             name=str(doc_obj.name) if doc_obj.name is not None else "",
-            start_time=datetime.fromtimestamp(
-                doc_obj.start_time, timezone.utc
-            ),
+            start_time=datetime.fromtimestamp(doc_obj.start_time, timezone.utc),
             end_time=datetime.fromtimestamp(doc_obj.end_time, timezone.utc),
             staffing=[doc_to_core_staffing(s) for s in doc_obj.staffing],
             color=doc_obj.color,

@@ -482,6 +482,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         ]
         inputs.coverage.coverage = [
             ShiftDemand(
+                worker_ids=[w.id for w in inputs.variable_space.workers],
                 date=date.fromisoformat("2023-10-02"),
                 shift_id="s0",
                 staffing=len(

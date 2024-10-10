@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from datetime import datetime, timezone
 from typing import Dict, List
 
 import humps
@@ -142,6 +143,10 @@ def core_to_msg_worker_and_attributes(
     except Exception as e:
         log_info("Failed to convert Worker to dictionary")
         raise MessageTypeError(str(e)) from e
+    data["employment_start_date"] = worker.employment_start_date.timestamp()
+    data["employment_end_date"] = (
+        worker.employment_end_date.timestamp() if worker.employment_end_date else None
+    )
     data["attributes"] = [core_to_msg_attribute(a) for a in attributes]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(WorkerMessage)
@@ -157,6 +162,14 @@ def core_to_msg_worker_and_attributes(
 def msg_to_core_worker(msg: WorkerMessage) -> Worker:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake = {k: v for k, v in data_snake.items() if k != "attributes"}
+    data_snake["employment_start_date"] = datetime.fromtimestamp(
+        data_snake["employment_start_date"], timezone.utc
+    )
+    data_snake["employment_end_date"] = (
+        datetime.fromtimestamp(data_snake["employment_end_date"], timezone.utc)
+        if data_snake["employment_end_date"]
+        else None
+    )
     try:
         worker = Worker(**data_snake)
     except Exception as e:

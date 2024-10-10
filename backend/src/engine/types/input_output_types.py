@@ -39,6 +39,7 @@ class VariableSpace:
 # pylint: disable=R0801
 @dataclass
 class ShiftDemand:
+    worker_ids: List[str]
     date: date
     shift_id: str
     staffing: int

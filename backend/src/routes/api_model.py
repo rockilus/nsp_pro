@@ -47,6 +47,8 @@ class WorkerMessage(BaseModel):
     id: str
     teamId: str
     name: str
+    employmentStartDate: float
+    employmentEndDate: float | None
     weeklyHours: int
     weeklyHoursDesired: int
     dutiesPerMonth: int

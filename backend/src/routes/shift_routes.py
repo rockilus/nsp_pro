@@ -6,14 +6,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import (
-    Attribute,
-    Shift,
-    ShiftLeaveType,
-    ShiftRestType,
-    ShiftType,
-    Staffing,
-)
+from core import Attribute, Shift, ShiftLeaveType, ShiftRestType, ShiftType, Staffing
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -21,10 +14,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import ShiftMessage, StaffingMessage
@@ -47,9 +37,7 @@ async def create_shift(
         if not await authz_check(
             session.get_user_id(), "create-shift", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to create a shift"
-            )
+            raise NotAuthorizedError("You do not have permission to create a shift")
         s_data = msg_to_core_to_shift(shift)
         shift_created, a_bool = create_shift_service(s_data)
         response = core_to_msg_shift_and_attributes(shift_created, a_bool)
@@ -65,20 +53,14 @@ async def get_shifts(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ShiftMessage]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shifts", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shifts"
-            )
+        if not await authz_check(session.get_user_id(), "read-shifts", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = shift_db.get_shifts_not_deleted(team_id)
         attributes = [
-            attribute_db.get_attributes_by_owner_id(shift.id)
-            for shift in shifts
+            attribute_db.get_attributes_by_owner_id(shift.id) for shift in shifts
         ]
         response = [
-            core_to_msg_shift_and_attributes(s, sp)
-            for s, sp in zip(shifts, attributes)
+            core_to_msg_shift_and_attributes(s, sp) for s, sp in zip(shifts, attributes)
         ]
     except Exception as e:
         log_info("Failed to get shifts")
@@ -92,20 +74,14 @@ async def get_work_shifts(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ShiftMessage]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shifts", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shifts"
-            )
+        if not await authz_check(session.get_user_id(), "read-shifts", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = shift_db.get_work_shifts_not_deleted(team_id)
         attributes = [
-            attribute_db.get_attributes_by_owner_id(shift.id)
-            for shift in shifts
+            attribute_db.get_attributes_by_owner_id(shift.id) for shift in shifts
         ]
         response = [
-            core_to_msg_shift_and_attributes(s, sp)
-            for s, sp in zip(shifts, attributes)
+            core_to_msg_shift_and_attributes(s, sp) for s, sp in zip(shifts, attributes)
         ]
     except Exception as e:
         log_info("Failed to get shifts")
@@ -119,20 +95,14 @@ async def get_all_shifts(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ShiftMessage]:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-shifts", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shifts"
-            )
+        if not await authz_check(session.get_user_id(), "read-shifts", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = shift_db.get_shifts(team_id)
         attributes = [
-            attribute_db.get_attributes_by_owner_id(shift.id)
-            for shift in shifts
+            attribute_db.get_attributes_by_owner_id(shift.id) for shift in shifts
         ]
         response = [
-            core_to_msg_shift_and_attributes(s, sp)
-            for s, sp in zip(shifts, attributes)
+            core_to_msg_shift_and_attributes(s, sp) for s, sp in zip(shifts, attributes)
         ]
     except Exception as e:
         log_info("Failed to get shifts")
@@ -150,9 +120,7 @@ async def update_shift(
         if not await authz_check(
             session.get_user_id(), "update-shift", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update shifts"
-            )
+            raise NotAuthorizedError("You do not have permission to update shifts")
         shift_data = msg_to_core_to_shift(shift)
         updated_shift = update_shift_service(shift_data)
         attributes = attribute_db.get_attributes_by_owner_id(updated_shift.id)
@@ -173,9 +141,7 @@ async def delete_shift(
         if not await authz_check(
             session.get_user_id(), "delete-shift", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to delete shifts"
-            )
+            raise NotAuthorizedError("You do not have permission to delete shifts")
         delete_shift_service(shift_id)
     except Exception as e:
         log_info("Failed to delete shift")
