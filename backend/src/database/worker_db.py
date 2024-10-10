@@ -198,7 +198,7 @@ def core_to_doc_workers(
             team=teams.get(dataclass_obj.team_id),
             name=dataclass_obj.name,
             employment_start_date=dataclass_obj.employment_start_date.timestamp(),
-            employment_start_date=(
+            employment_end_date=(
                 dataclass_obj.employment_end_date.timestamp()
                 if dataclass_obj.employment_end_date
                 else None
