@@ -1,6 +1,7 @@
-from mongoengine import Document
+from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (
     BooleanField,
+    EmbeddedDocumentListField,
     FloatField,
     IntField,
     ReferenceField,
@@ -8,6 +9,11 @@ from mongoengine.fields import (
 )
 
 from core import ShiftLeaveType, ShiftRestType, ShiftType
+
+
+class Staffing(EmbeddedDocument):
+    specialty = ReferenceField("Specialty", required=False)
+    staffing = IntField(required=True)
 
 
 class Shift(Document):
@@ -18,7 +24,7 @@ class Shift(Document):
     name = StringField(required=True)
     start_time = FloatField(required=True)
     end_time = FloatField(required=True)
-    staffing = IntField(required=True)
+    staffing = EmbeddedDocumentListField(Staffing, required=True)
     color = StringField(required=True)
     shift_type = IntField(required=True, choices=[e.value for e in ShiftType])
     rest_type = IntField(required=True, choices=[e.value for e in ShiftRestType])

@@ -47,6 +47,8 @@ class WorkerMessage(BaseModel):
     id: str
     teamId: str
     name: str
+    employmentStartDate: float
+    employmentEndDate: float | None
     weeklyHours: int
     weeklyHoursDesired: int
     dutiesPerMonth: int
@@ -57,13 +59,18 @@ class WorkerMessage(BaseModel):
 
 
 # Shift
+class StaffingMessage(BaseModel):
+    specialtyId: str | None
+    staffing: int
+
+
 class ShiftMessage(BaseModel):
     id: str
     teamId: str
     name: str
     startTime: float
     endTime: float
-    staffing: int
+    staffing: List[StaffingMessage]
     color: str
     shiftType: int
     restType: int

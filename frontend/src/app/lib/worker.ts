@@ -1,4 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 // Actions
 import { getDimensions } from "./dimension";
 import { getSpecialties } from "./specialty";
@@ -7,7 +9,29 @@ import { WorkerT } from "../../types/worker";
 // Env Vars
 import { API_URL } from "./env";
 
+dayjs.extend(utc);
+
 const apiUrlWorkers = API_URL + "/workers";
+
+export const toWorkerT = (data: any): WorkerT => {
+  return {
+    ...data,
+    employmentStartDate: dayjs.unix(data.employmentStartDate).utc(),
+    employmentEndDate: data.employmentEndDate
+      ? dayjs.unix(data.employmentEndDate).utc()
+      : null,
+  };
+};
+
+export const fromWorkerT = (data: WorkerT): any => {
+  return {
+    ...data,
+    employmentStartDate: data.employmentStartDate.unix(),
+    employmentEndDate: data.employmentEndDate
+      ? data.employmentEndDate.unix()
+      : null,
+  };
+};
 
 //////////////////////////
 // Worker //
@@ -19,7 +43,7 @@ export async function addWorker(worker: WorkerT) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(worker),
+    body: JSON.stringify(fromWorkerT(worker)),
   };
   try {
     const response = await fetch(
@@ -30,7 +54,7 @@ export async function addWorker(worker: WorkerT) {
     if (!response.ok) {
       throw new Error("Failed to add worker: " + responseData.detail);
     }
-    return responseData as WorkerT;
+    return toWorkerT(responseData) as WorkerT;
   } catch (error) {
     console.error("Failed to add worker:", error);
     throw new Error("Failed to add worker, please try again later");
@@ -52,7 +76,7 @@ export async function getWorkers(teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to fetch workers: " + responseData.detail);
     }
-    return responseData as WorkerT[];
+    return responseData.map(toWorkerT);
   } catch (error) {
     console.error("Failed to fetch workers:", error);
     throw new Error("Failed to fetch workers, please try again later");
@@ -77,7 +101,7 @@ export async function getAllWorkers(teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to fetch workers: " + responseData.detail);
     }
-    return responseData as WorkerT[];
+    return responseData.map(toWorkerT);
   } catch (error) {
     console.error("Failed to fetch workers:", error);
     throw new Error("Failed to fetch workers, please try again later");
@@ -90,7 +114,7 @@ export async function updateWorker(updatedWorker: WorkerT) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(updatedWorker),
+    body: JSON.stringify(fromWorkerT(updatedWorker)),
   };
   try {
     const response = await fetch(
@@ -101,7 +125,7 @@ export async function updateWorker(updatedWorker: WorkerT) {
     if (!response.ok) {
       throw new Error("Failed to update worker: " + responseData.detail);
     }
-    return responseData as WorkerT;
+    return toWorkerT(responseData) as WorkerT;
   } catch (error) {
     console.error("Failed to update worker:", error);
     throw new Error("Failed to update worker, please try again later");

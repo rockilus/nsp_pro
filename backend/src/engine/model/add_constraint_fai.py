@@ -27,7 +27,8 @@ class AddConstraintFai(AddConstraint):
                 + f"but got {format(type(d_vars))} instead."
             )
         constraints_vars = [
-            [self.variables[w, d, s] for d in d_vars for s in s_vars] for w in w_vars
+            [self.variables[w, d, s] for d in d_vars for s in s_vars]  # type: ignore
+            for w in w_vars
         ]
         target_average = get_average_nb_shifts_per_worker(
             coverage, len(w_vars), d_vars, s_vars  # type: ignore

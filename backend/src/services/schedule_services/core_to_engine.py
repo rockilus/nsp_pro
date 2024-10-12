@@ -25,7 +25,9 @@ from engine import FixedConfig as FixedConfigEngine
 from engine import Inputs
 from engine import PeriodTarget as PeriodTargetEngine
 from engine import Request as RequestEngine
+from engine import Shift as ShiftEngine
 from engine import ShiftDemand as ShiftDemandEngine
+from engine import Staffing as StaffingEngine
 from engine import VarDay as VarDayEngine
 from engine import VariableSpace
 from engine import VarShift as VarShiftEngine
@@ -67,11 +69,7 @@ def core_to_engine_inputs(
         workers=[_core_to_engine_worker(w, dates_campaign) for w in workers],
         all_days=dates_all_str,
         days_solving=dates_campaign_str,
-        all_shifts=[shift.id for shift in shifts],
-        shifts_not_deleted=[s.id for s in shifts if not s.deleted],
-        shift_work=[
-            s.id for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
-        ],
+        shifts=[_core_to_engine_shift(s) for s in shifts],
         duty_recup_pairs=build_duty_recup_pairs(shifts),
     )
     coverage_engine = CoverageEngine(
@@ -91,7 +89,7 @@ def core_to_engine_inputs(
         [w.id for w in workers if not w.deleted],
         dates_campaign,
         dates_campaign_str,
-        variable_space.shifts_not_deleted,
+        [s.id for s in shifts if not s.deleted],
         wip_assignments,
     )
     s_durations, s_start_times, s_end_times = _build_interval_parameters(
@@ -131,7 +129,17 @@ def _core_to_engine_worker(worker: Worker, dates: List[date]) -> WorkerEngine:
         duties_per_month=_build_period_target_duties_month(
             worker.duties_per_month, dates
         ),
+        specialty_ids=worker.specialty_ids,
         deleted=worker.deleted,
+    )
+
+
+def _core_to_engine_shift(shift: Shift) -> ShiftEngine:
+    return ShiftEngine(
+        id=shift.id,
+        staffing=[StaffingEngine(**s.__dict__) for s in shift.staffing],
+        work_shift=shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY],
+        deleted=shift.deleted,
     )
 
 

@@ -14,6 +14,8 @@ from engine.types.input_output_types import (
     Inputs,
     Outputs,
     Request,
+    Shift,
+    Staffing,
     VariableSpace,
     Worker,
 )
@@ -47,6 +49,7 @@ class TestEngine:
                     work_hours=[],
                     work_hours_desired=[],
                     duties_per_month=[],
+                    specialty_ids=[],
                     deleted=False,
                 ),
                 Worker(
@@ -54,6 +57,7 @@ class TestEngine:
                     work_hours=[],
                     work_hours_desired=[],
                     duties_per_month=[],
+                    specialty_ids=[],
                     deleted=False,
                 ),
                 Worker(
@@ -61,6 +65,7 @@ class TestEngine:
                     work_hours=[],
                     work_hours_desired=[],
                     duties_per_month=[],
+                    specialty_ids=[],
                     deleted=False,
                 ),
                 Worker(
@@ -68,6 +73,7 @@ class TestEngine:
                     work_hours=[],
                     work_hours_desired=[],
                     duties_per_month=[],
+                    specialty_ids=[],
                     deleted=False,
                 ),
                 Worker(
@@ -75,6 +81,7 @@ class TestEngine:
                     work_hours=[],
                     work_hours_desired=[],
                     duties_per_month=[],
+                    specialty_ids=[],
                     deleted=False,
                 ),
                 Worker(
@@ -82,6 +89,7 @@ class TestEngine:
                     work_hours=[],
                     work_hours_desired=[],
                     duties_per_month=[],
+                    specialty_ids=[],
                     deleted=False,
                 ),
                 Worker(
@@ -89,6 +97,7 @@ class TestEngine:
                     work_hours=[],
                     work_hours_desired=[],
                     duties_per_month=[],
+                    specialty_ids=[],
                     deleted=False,
                 ),
                 Worker(
@@ -96,6 +105,7 @@ class TestEngine:
                     work_hours=[],
                     work_hours_desired=[],
                     duties_per_month=[],
+                    specialty_ids=[],
                     deleted=False,
                 ),
             ],
@@ -113,9 +123,15 @@ class TestEngine:
                     for i in range((end_date - start_date).days + 1)
                 ]
             ],
-            all_shifts=shift_names,
-            shifts_not_deleted=shift_names,
-            shift_work=shift_names,
+            shifts=[
+                Shift(
+                    id=s_id,
+                    staffing=[Staffing(specialty_id=None, staffing=1)],
+                    work_shift=True,
+                    deleted=False,
+                )
+                for s_id in shift_names
+            ],
             duty_recup_pairs=[],
         )
         coverage = Coverage([])

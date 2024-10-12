@@ -14,7 +14,7 @@ class AddRequest:
     def __init__(
         self,
         model: cp_model.CpModel,
-        variables: Dict[Tuple, cp_model.IntVar],
+        variables: Dict[Tuple[str, str, str], cp_model.IntVar],
         workers: List[str],
         obj: Objective,
         model_config: Dict,

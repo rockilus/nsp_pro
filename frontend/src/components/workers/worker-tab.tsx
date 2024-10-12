@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // Components
 import WorkerTable from "./worker-table";
@@ -38,6 +40,8 @@ import { DimensionT, DimEntryT } from "../../types/dimension";
 import { AttributeT } from "../../types/attribute";
 import { SpecialtyT } from "../../types/team";
 
+dayjs.extend(utc);
+
 export default function WorkerTab({
   lng,
   selectedTeamId,
@@ -74,6 +78,8 @@ export default function WorkerTab({
       id: "",
       teamId: selectedTeamId,
       name: "",
+      employmentStartDate: dayjs.utc(),
+      employmentEndDate: null,
       weeklyHours: 39,
       weeklyHoursDesired: 39,
       dutiesPerMonth: 4,

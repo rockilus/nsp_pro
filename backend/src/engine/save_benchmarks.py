@@ -106,7 +106,7 @@ def save_benchmark_to_csv(
         "date": get_date_time(),
         "num_workers": len(model.all_workers),
         "num_days": len(model.all_days),
-        "num_shifts": len(model.shifts),
+        "num_shifts": len(model.shift_ids),
         "num_variables": len(model.variables),
         "num_constraints_total": num_constraints_total,
         "num_constraints_sum": num_constraints_sum,

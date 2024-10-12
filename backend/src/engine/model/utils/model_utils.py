@@ -22,12 +22,10 @@ def get_average_nb_shifts_per_worker(
 def get_total_coverage_shift(
     coverage: List[ShiftDemand], shift_id: str, days: List[str]
 ) -> int:
-    date_format = "%Y-%m-%d"
     return sum(
-        shift_demand.staffing
+        shift_demand.nb_times_shift  # QUICK FIX TO CHANGE XXX
         for shift_demand in coverage
-        if shift_demand.shift_id == shift_id
-        and shift_demand.date.strftime(date_format) in days
+        if shift_demand.shift_id == shift_id and shift_demand.date.isoformat() in days
     )
 
 
@@ -88,7 +86,9 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
 
 def build_shifts_in_coverage(coverage: List[ShiftDemand]) -> Set[str]:
     return set(
-        shift_demand.shift_id for shift_demand in coverage if shift_demand.staffing > 0
+        shift_demand.shift_id
+        for shift_demand in coverage
+        if shift_demand.nb_times_shift > 0  # QUICK FIX TO CHANGE XXX
     )
 
 

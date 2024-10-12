@@ -3,31 +3,37 @@ from typing import Dict, List, Set, Tuple, Union
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.types.input_output_types import Constraint
+from engine.types.input_output_types import Constraint, Shift, Worker
 from engine.types.model_types import Objective
 from utils.constants import Constants
 
 
-# pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods, too-many-instance-attributes
 class AddConstraint:
     # pylint: disable=too-many-arguments
     def __init__(
         self,
         model: cp_model.CpModel,
-        variables: Dict[Tuple, cp_model.IntVar],
+        variables: Dict[Tuple[str, str, str], cp_model.IntVar],
+        assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar],
         durations: Dict[str, int],
-        workers: List[str],
+        workers: List[Worker],
+        worker_ids: List[str],
         days: List[str],
-        shifts: List[str],
+        shifts: List[Shift],
+        shift_ids: List[str],
         obj: Objective,
         model_config: Dict,
     ) -> None:
         self.model = model
         self.variables = variables
+        self.assignment_wdss = assignment_wdss
         self.durations = durations
         self.workers = workers
+        self.worker_ids = worker_ids
         self.days = days
         self.shifts = shifts
+        self.shift_ids = shift_ids
         self.obj = obj
         self.model_config = model_config
 
@@ -51,7 +57,7 @@ class AddConstraint:
     ##########################
     def _get_coords_workers(self, constraint: Constraint) -> List[str]:
         if constraint.worker_var.selector == "all":
-            return self.workers
+            return self.worker_ids
         if constraint.worker_var.selector == "equal":
             return constraint.worker_var.target
         raise NotImplementedError(
@@ -156,8 +162,8 @@ class AddConstraint:
             return self._get_coords_shifts_ord(constraint)
         if constraint.shift_var.selector == "all":
             if shifts_in_coverage is not None:
-                return [s for s in self.shifts if s in shifts_in_coverage]
-            return self.shifts
+                return [s for s in self.shift_ids if s in shifts_in_coverage]
+            return self.shift_ids
         if constraint.shift_var.selector == "equal":
             if constraint.constraint_type == "fil":
                 return self._get_coords_shifts_fil(constraint)
@@ -169,7 +175,7 @@ class AddConstraint:
     def _get_coords_shifts_fil(self, constraint: Constraint) -> List[str]:
         if constraint.operator == "no":
             return constraint.shift_var.target
-        return [s for s in self.shifts if s not in constraint.shift_var.target]
+        return [s for s in self.shift_ids if s not in constraint.shift_var.target]
 
     def _get_coords_shifts_ord(self, constraint: Constraint) -> List[List[str]]:
         return [

@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
-from typing import List
+from typing import Dict, List
 
 from bson import ObjectId
 
-from core import Shift, ShiftLeaveType, ShiftRestType, ShiftType
+from core import Shift, ShiftLeaveType, ShiftRestType, ShiftType, Staffing
 from database.db import DB
 from errors import (
     handle_create_core_object_error,
@@ -14,6 +14,8 @@ from errors import (
 )
 from logger import log_info
 from models import Shift as ShiftDocument
+from models import Specialty as SpecialtyDocument
+from models import Staffing as StaffingDocument
 from models import Team as TeamDocument
 
 
@@ -170,6 +172,24 @@ class ShiftDB:
 
 # Mappers
 # core to document
+def core_to_doc_staffing(
+    dataclass_obj: Staffing, spe_id_to_spe_doc: Dict[str, SpecialtyDocument]
+) -> StaffingDocument:
+    try:
+        s_doc = StaffingDocument(
+            specialty=(
+                spe_id_to_spe_doc.get(dataclass_obj.specialty_id, None)
+                if dataclass_obj.specialty_id is not None
+                else None
+            ),
+            staffing=dataclass_obj.staffing,
+        )
+    except Exception as e:
+        log_info("Failed to convert Staffing to StaffingDocument")
+        handle_create_document_error(e)
+    return s_doc
+
+
 def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
     try:
         # pylint: disable=no-member
@@ -184,6 +204,19 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
             recuperation_duty = ShiftDocument.objects(  # type: ignore
                 id=dataclass_obj.recuperation_duty_id
             )
+        specialty_ids = list(
+            set(
+                s.specialty_id
+                for s in dataclass_obj.staffing
+                if s.specialty_id is not None
+            )
+        )
+        specialties = {
+            specialty.id: specialty
+            for specialty in SpecialtyDocument.objects.filter(  # type: ignore
+                id__in=specialty_ids
+            )
+        }
     except Exception as e:
         log_info("Failed to get team by id")
         handle_get_document_error(e)
@@ -194,7 +227,10 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
             name=dataclass_obj.name,
             start_time=dataclass_obj.start_time.timestamp(),
             end_time=dataclass_obj.end_time.timestamp(),
-            staffing=dataclass_obj.staffing,
+            staffing=[
+                core_to_doc_staffing(staffing, specialties)
+                for staffing in dataclass_obj.staffing
+            ],
             color=dataclass_obj.color,
             shift_type=dataclass_obj.shift_type.value,
             rest_type=dataclass_obj.rest_type.value,
@@ -229,6 +265,21 @@ def core_to_doc_shifts(
         duty.id: duty
         for duty in ShiftDocument.objects.filter(id__in=duty_ids)  # type: ignore
     }
+    specialty_ids = list(
+        set(
+            s.specialty_id
+            for doc in dataclass_objs
+            for s in doc.staffing
+            if s.specialty_id is not None
+        )
+    )
+    # pylint: disable=R0801
+    specialties = {
+        specialty.id: specialty
+        for specialty in SpecialtyDocument.objects.filter(  # type: ignore
+            id__in=specialty_ids
+        )
+    }
     out = []
     for dataclass_obj in dataclass_objs:
         shift_doc = ShiftDocument(
@@ -237,7 +288,9 @@ def core_to_doc_shifts(
             name=dataclass_obj.name,
             start_time=dataclass_obj.start_time.timestamp(),
             end_time=dataclass_obj.end_time.timestamp(),
-            staffing=dataclass_obj.staffing,
+            staffing=[
+                core_to_doc_staffing(s, specialties) for s in dataclass_obj.staffing
+            ],
             color=dataclass_obj.color,
             shift_type=dataclass_obj.shift_type.value,
             rest_type=dataclass_obj.rest_type.value,
@@ -251,6 +304,14 @@ def core_to_doc_shifts(
 
 
 # document to core
+def doc_to_core_staffing(doc_obj: StaffingDocument) -> Staffing:
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["specialty_id"] = doc_dict["specialty"] if doc_obj.specialty else None
+    if doc_obj.specialty:
+        doc_dict.pop("specialty")
+    return Staffing(**doc_dict)
+
+
 def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
     try:
         shift = Shift(
@@ -259,7 +320,7 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             name=str(doc_obj.name) if doc_obj.name is not None else "",
             start_time=datetime.fromtimestamp(doc_obj.start_time, timezone.utc),
             end_time=datetime.fromtimestamp(doc_obj.end_time, timezone.utc),
-            staffing=doc_obj.staffing,
+            staffing=[doc_to_core_staffing(s) for s in doc_obj.staffing],
             color=doc_obj.color,
             shift_type=ShiftType(doc_obj.shift_type),
             rest_type=ShiftRestType(doc_obj.rest_type),

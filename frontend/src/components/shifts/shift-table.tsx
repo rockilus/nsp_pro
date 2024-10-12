@@ -31,12 +31,13 @@ import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
 // Types
 import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../types/shift";
-import { DimensionType } from "@/types/dimension";
-import { DimensionEntryType } from "@/types/dimension";
-import { DimEntryT } from "@/types/dimension";
-import { DimensionT } from "@/types/dimension";
-import { AttributeOwnerType } from "@/types/attribute";
-import { AttributeT } from "@/types/attribute";
+import { DimensionType } from "../../types/dimension";
+import { DimensionEntryType } from "../../types/dimension";
+import { DimEntryT } from "../../types/dimension";
+import { DimensionT } from "../../types/dimension";
+import { AttributeOwnerType } from "../../types/attribute";
+import { AttributeT } from "../../types/attribute";
+import { SpecialtyT } from "../../types/team";
 
 dayjs.extend(utc);
 
@@ -47,6 +48,7 @@ export default function ShiftTable({
   dimensions,
   dimEntries,
   shifts,
+  specialties,
   defaultShiftFields,
   handleAddShift,
   handleUpdateShift,
@@ -65,6 +67,7 @@ export default function ShiftTable({
   dimensions: DimensionT[];
   dimEntries: DimEntryT[];
   shifts: ShiftT[];
+  specialties: SpecialtyT[];
   defaultShiftFields: Record<string, string>[];
   handleAddShift: (isRest: boolean) => void;
   handleUpdateShift: (updatedShift: ShiftT) => void;
@@ -191,7 +194,7 @@ export default function ShiftTable({
                     key={index}
                     lng={lng}
                     shift={shift}
-                    shifts={shifts}
+                    specialties={specialties}
                     shiftField={field.name}
                     editing={bodyEditing}
                     setEditing={setBodyEditing}

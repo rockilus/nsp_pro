@@ -9,7 +9,7 @@ from models.dimension import Dimension, DimEntry
 from models.objective_breach import ObjectiveBreach
 from models.request import Request
 from models.schedule import QuickStaffing, Schedule
-from models.shift import Shift
+from models.shift import Shift, Staffing
 from models.shift_demand import ShiftDemand
 from models.stats_header import StatsHeader
 from models.team import Specialty, Team
@@ -36,6 +36,7 @@ __all__ = [
     "QuickStaffing",
     "Schedule",
     "Shift",
+    "Staffing",
     "ShiftDemand",
     "StatsHeader",
     "Specialty",

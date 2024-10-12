@@ -6,7 +6,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Attribute, Shift, ShiftLeaveType, ShiftRestType, ShiftType
+from core import Attribute, Shift, ShiftLeaveType, ShiftRestType, ShiftType, Staffing
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -17,7 +17,7 @@ from errors import (
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
-from routes.api_model import ShiftMessage
+from routes.api_model import ShiftMessage, StaffingMessage
 from routes.attribute_routes import core_to_msg_attribute
 from scripts.setup_database import attribute_db, shift_db
 from services.shift_services import create_shift as create_shift_service
@@ -173,6 +173,16 @@ def core_to_msg_shift_and_attributes(
 
 
 # message to core
+def msg_to_core_staffing(msg: StaffingMessage) -> Staffing:
+    data_snake = humps.decamelize(msg.model_dump())
+    try:
+        staffing = Staffing(**data_snake)
+    except Exception as e:
+        log_info("Failed to convert StaffingMessage to Staffing")
+        handle_create_core_object_error(e)
+    return staffing
+
+
 def msg_to_core_to_shift(msg: ShiftMessage) -> Shift:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake = {k: v for k, v in data_snake.items() if k != "attributes"}
@@ -185,6 +195,7 @@ def msg_to_core_to_shift(msg: ShiftMessage) -> Shift:
     data_snake["shift_type"] = ShiftType(data_snake["shift_type"])
     data_snake["rest_type"] = ShiftRestType(data_snake["rest_type"])
     data_snake["leave_type"] = ShiftLeaveType(data_snake["leave_type"])
+    data_snake["staffing"] = [msg_to_core_staffing(s) for s in msg.staffing]
     try:
         shift = Shift(**data_snake)
     except Exception as e:

@@ -58,7 +58,7 @@ def build_shift_demand_dates(
                 ShiftDemandDate(
                     date=cur_date,
                     shift_id=s.id,
-                    staffing=s.staffing * len(sds),
+                    nb_times_shift=len(sds),
                 )
             )
     return out

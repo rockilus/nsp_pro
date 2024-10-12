@@ -23,7 +23,7 @@ class AddConstraintSum(AddConstraint):
                     constraint_durs = []
                     for s in s_vars:
                         constraint_vars.extend(
-                            [self.variables[w, d, s] for d in period]
+                            [self.variables[w, d, s] for d in period]  # type: ignore
                         )
                         constraint_durs.extend(
                             [self.durations[s] for _ in period]  # type: ignore
@@ -39,7 +39,9 @@ class AddConstraintSum(AddConstraint):
                 for period in d_vars:
                     constraint_vars = []
                     for s in s_vars:
-                        constraint_vars += [self.variables[w, d, s] for d in period]
+                        constraint_vars += [
+                            self.variables[w, d, s] for d in period  # type: ignore
+                        ]
                     self._add_constraint_sum_other(
                         constraint, constraint_vars, hard_to_soft
                     )

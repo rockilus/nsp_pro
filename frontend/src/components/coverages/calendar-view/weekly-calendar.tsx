@@ -14,6 +14,7 @@ import "./weekly-calendar.css";
 // Types
 import { CoverageT, EventT, ShiftDemandT } from "../../../types/coverage";
 import { ShiftT } from "../../../types/shift";
+import { SpecialtyT } from "../../../types/team";
 
 dayjs.extend(utc);
 
@@ -22,6 +23,7 @@ export default function WeeklyCalendar({
   coverage,
   shiftDemands,
   shifts,
+  specialties,
   handleAddShiftDemands,
   handleUpdateShiftDemand,
   handleDeleteShiftDemands,
@@ -30,6 +32,7 @@ export default function WeeklyCalendar({
   coverage: CoverageT | null;
   shiftDemands: ShiftDemandT[];
   shifts: ShiftT[];
+  specialties: SpecialtyT[];
   handleAddShiftDemands: (shiftDemand: ShiftDemandT[]) => void;
   handleUpdateShiftDemand: (shiftDemand: ShiftDemandT) => void;
   handleDeleteShiftDemands: (shiftDemandId: string[]) => void;
@@ -276,6 +279,7 @@ export default function WeeklyCalendar({
                       columnWidth={dayColWidth}
                       staffingLabel={t("staffing")}
                       shifts={shifts}
+                      specialties={specialties}
                       handleAddShiftDemands={handleAddShiftDemands}
                       handleUpdateShiftDemand={handleUpdateShiftDemand}
                       handleDeleteShiftDemands={handleDeleteShiftDemands}

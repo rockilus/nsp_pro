@@ -1,5 +1,7 @@
 from datetime import date, timedelta
-from typing import List
+from typing import Dict, List, Tuple
+
+from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
 from engine.model.add_constraint_sum import AddConstraintSum
@@ -10,44 +12,56 @@ from engine.model.utils.model_utils import (
 )
 from engine.types.input_output_types import (
     Constraint,
+    Shift,
     ShiftDemand,
     VarDay,
     VarShift,
     VarWorker,
+    Worker,
 )
+from engine.types.model_types import Objective
 
 
 class AddConstraintEve(AddConstraint):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        model,
-        variables,
-        durations,
-        workers,
-        days,
-        shifts,
-        obj,
-        model_config,
+        model: cp_model.CpModel,
+        variables: Dict[Tuple[str, str, str], cp_model.IntVar],
+        assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar],
+        durations: Dict[str, int],
+        workers: List[Worker],
+        worker_ids: List[str],
+        days: List[str],
+        shifts: List[Shift],
+        shift_ids: List[str],
+        obj: Objective,
+        model_config: Dict,
     ) -> None:
         # pylint: disable=R0801
         super().__init__(
             model,
             variables,
+            assignment_wdss,
             durations,
             workers,
+            worker_ids,
             days,
             shifts,
+            shift_ids,
             obj,
             model_config,
         )
         self.add_constraint_sum = AddConstraintSum(
             self.model,
             self.variables,
+            self.assignment_wdss,
             self.durations,
             self.workers,
+            self.worker_ids,
             self.days,
             self.shifts,
+            self.shift_ids,
             self.obj,
             self.model_config,
         )
