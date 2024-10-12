@@ -8,7 +8,6 @@ from core import (
     ShiftDemand,
     ShiftDemandDate,
     ShiftType,
-    Worker,
 )
 
 
@@ -17,7 +16,6 @@ def build_shift_demand_dates(
     schedule: Schedule,
     coverage_selectors: List[CoverageSelector],
     shift_demands: List[ShiftDemand],
-    workers: List[Worker],
     shifts: List[Shift],
 ) -> List[ShiftDemandDate]:
     work_shifts = [
@@ -54,24 +52,13 @@ def build_shift_demand_dates(
 
     out = []
     for s in work_shifts:
-        for staffing in s.staffing:
-            worker_specialized = (
-                [
-                    w
-                    for w in workers
-                    if staffing.specialty_id in w.specialty_ids and not w.deleted
-                ]
-                if staffing.specialty_id
-                else [w for w in workers if not w.deleted]
-            )
-            for cur_date in dates:
-                sds = sd_dict[(cur_date, s.id)]
-                out.append(
-                    ShiftDemandDate(
-                        worker_ids=[w.id for w in worker_specialized],
-                        date=cur_date,
-                        shift_id=s.id,
-                        staffing=staffing.staffing * len(sds),
-                    )
+        for cur_date in dates:
+            sds = sd_dict[(cur_date, s.id)]
+            out.append(
+                ShiftDemandDate(
+                    date=cur_date,
+                    shift_id=s.id,
+                    nb_times_shift=len(sds),
                 )
+            )
     return out

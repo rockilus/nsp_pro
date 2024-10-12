@@ -161,6 +161,12 @@ def core_to_doc_worker(dataclass_obj: Worker) -> WorkerDocument:
             id=dataclass_obj.id,
             team=team,
             name=dataclass_obj.name,
+            employment_start_date=dataclass_obj.employment_start_date.timestamp(),
+            employment_end_date=(
+                dataclass_obj.employment_end_date.timestamp()
+                if dataclass_obj.employment_end_date
+                else None
+            ),
             weekly_hours=dataclass_obj.weekly_hours,
             weekly_hours_desired=dataclass_obj.weekly_hours_desired,
             duties_per_month=dataclass_obj.duties_per_month,

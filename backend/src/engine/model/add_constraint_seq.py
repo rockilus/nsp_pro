@@ -13,12 +13,18 @@ from engine.types.input_output_types import Constraint
 
 class AddConstraintSeq(AddConstraint):
     def add_constraint(self, constraint: Constraint, hard_to_soft: bool) -> None:
+        # pylint: disable=R0801
         w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
+        if not all(isinstance(item, str) for item in s_vars):
+            raise TypeError(
+                "Expected a list of strings, "
+                + f"but got {format(type(s_vars))} instead."
+            )
         for w in w_vars:
             for s in s_vars:
                 constraint_vars = []
                 for d in d_vars:
-                    constraint_vars.append(self.variables[w, d, s])
+                    constraint_vars.append(self.variables[w, d, s])  # type: ignore
             self._add_constraint_seq_to_model(constraint, constraint_vars, hard_to_soft)
 
     def _add_constraint_seq_to_model(

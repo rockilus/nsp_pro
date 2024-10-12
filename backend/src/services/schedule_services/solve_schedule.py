@@ -86,7 +86,7 @@ def solve_schedule(
         cbs_augmented,
     )
     shift_demand_dates = build_shift_demand_dates(
-        schedule, coverage_selectors, shift_demands, workers, shifts
+        schedule, coverage_selectors, shift_demands, shifts
     )
     inputs = core_to_engine_inputs(
         workers,

@@ -10,6 +10,7 @@ from engine.types.input_output_types import (
     Constraint,
     FixedConfig,
     Inputs,
+    Shift,
     ShiftDemand,
     Worker,
 )
@@ -25,9 +26,7 @@ class Model:
         workers: List[Worker],
         all_days: List[str],
         days_solving: List[str],
-        all_shifts: List[str],
-        shifts_not_deleted: List[str],
-        shifts_work: List[str],
+        shifts: List[Shift],
         duty_recup_pairs: List[Tuple[str, str]],
         shift_durations: Dict[str, int],
         shift_start_times: Dict[Tuple, int],
@@ -40,15 +39,19 @@ class Model:
         self.workers_not_deleted = [w.id for w in workers if not w.deleted]
         self.all_days = all_days
         self.days_solving = days_solving
-        self.shifts = all_shifts
-        self.shifts_not_deleted = shifts_not_deleted
-        self.shifts_work = shifts_work
+        self.shifts = shifts
+        self.shift_ids = [s.id for s in shifts]
+        self.shifts_not_deleted = [s.id for s in shifts if not s.deleted]
+        self.shifts_work = [s.id for s in shifts if s.work_shift]
         self.duty_recup_pairs = duty_recup_pairs
         self.fixed_config = fixed_config
 
         self.model = cp_model.CpModel()
-        self.variables: Dict[Tuple, cp_model.IntVar] = {}
-        self.intervals: Dict[Tuple, cp_model.IntervalVar] = {}
+        self.variables: Dict[Tuple[str, str, str], cp_model.IntVar] = {}
+        self.intervals: Dict[Tuple[str, str, str], cp_model.IntervalVar] = {}
+        self.assignment_wdss: Dict[
+            Tuple[str, str, str, str], cp_model.IntVar
+        ] = {}  # worker, day, shift, specialty
         self.durations: Dict[str, int] = shift_durations
         self.shift_start_times: Dict[Tuple, int] = shift_start_times
         self.shift_end_times: Dict[Tuple, int] = shift_end_times
@@ -63,10 +66,13 @@ class Model:
         self.add_constraint_factory = AddConstraintFactory(
             self.model,
             self.variables,
+            self.assignment_wdss,
             self.durations,
+            self.workers,
             self.all_workers,
             self.all_days,
             self.shifts,
+            self.shift_ids,
             self.obj,
             self.model_config,
         )
@@ -262,10 +268,13 @@ class Model:
         self.add_constraint_factory = AddConstraintFactory(
             self.model,
             self.variables,
+            self.assignment_wdss,
             self.durations,
+            self.workers,
             self.all_workers,
             self.all_days,
             self.shifts,
+            self.shift_ids,
             self.obj,
             self.model_config,
         )
@@ -310,7 +319,7 @@ class Model:
     def build_variables(self) -> None:
         for worker in self.all_workers:
             for day in self.all_days:
-                for shift in self.shifts:
+                for shift in self.shift_ids:
                     self.variables[(worker, day, shift)] = self.model.NewBoolVar(
                         f"{worker}_{day}_{shift}"
                     )
@@ -387,7 +396,7 @@ class Model:
     def no_interval_overlap(self) -> None:
         for w in self.all_workers:
             self.model.AddNoOverlap(
-                [self.intervals[w, d, s] for d in self.all_days for s in self.shifts]
+                [self.intervals[w, d, s] for d in self.all_days for s in self.shift_ids]
             )
 
     def spread_through_time(
@@ -499,12 +508,12 @@ class Model:
                 self.variables[w, d, s] for d in solving_dates for s in cov_shifts
             ]
             worker_staffing = self.model.NewIntVar(
-                0, len(self.shifts) * len(solving_dates), f"{w}"
+                0, len(self.shift_ids) * len(solving_dates), f"{w}"
             )
             self.model.Add(worker_staffing == sum(worker_staffing_vars))
             staffings.append(worker_staffing)
         min_staffing = self.model.NewIntVar(
-            0, len(self.shifts) * len(solving_dates), ""
+            0, len(self.shift_ids) * len(solving_dates), ""
         )
         self.model.AddMinEquality(min_staffing, staffings)
         for stf in staffings:
@@ -540,11 +549,13 @@ class Model:
             #     [],
             #     "constraint",
             # )
-            delta = self.model.NewIntVar(0, len(self.shifts) * len(solving_dates), "")
+            delta = self.model.NewIntVar(
+                0, len(self.shift_ids) * len(solving_dates), ""
+            )
             self.model.Add(delta == stf - min_staffing)
             excess = self.model.NewIntVar(
                 0,
-                len(self.shifts) * len(solving_dates),
+                len(self.shift_ids) * len(solving_dates),
                 # var_name,
                 "",
             )

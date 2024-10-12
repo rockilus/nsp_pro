@@ -22,6 +22,22 @@ class Worker:
         PeriodTarget
     ]  # in hours for each week on the campaign, desired
     duties_per_month: List[PeriodTarget]  # number of duties per month
+    specialty_ids: List[str]
+    deleted: bool
+
+
+# pylint: disable=R0801
+@dataclass
+class Staffing:
+    specialty_id: str | None
+    staffing: int
+
+
+@dataclass
+class Shift:
+    id: str
+    staffing: List[Staffing]
+    work_shift: bool
     deleted: bool
 
 
@@ -30,20 +46,16 @@ class VariableSpace:
     workers: List[Worker]
     all_days: List[str]
     days_solving: List[str]
-    all_shifts: List[str]
-    shifts_not_deleted: List[str]
-    shift_work: List[str]
+    shifts: List[Shift]
     duty_recup_pairs: List[Tuple[str, str]]
 
 
 # pylint: disable=R0801
 @dataclass
 class ShiftDemand:
-    worker_ids: List[str]
     date: date
     shift_id: str
-    staffing: int
-    # duration: int  # in minutes
+    nb_times_shift: int
 
 
 @dataclass

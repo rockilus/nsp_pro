@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List
 
 
 @dataclass
@@ -17,10 +16,9 @@ class ShiftDemand:
 
 @dataclass
 class ShiftDemandDate:
-    worker_ids: List[str]
     date: date
     shift_id: str
-    staffing: int
+    nb_times_shift: int
 
 
 @dataclass

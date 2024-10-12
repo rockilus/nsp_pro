@@ -402,10 +402,10 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         dates_weeks = get_dates_weeks(inputs.variable_space.all_days)
 
         expected_variables = [
-            [(w, d, s) for d in week]
+            [(w, d, s.id) for d in week]
             for w in constraint_sum_hard.worker_var.target
             for week in dates_weeks
-            for s in inputs.variable_space.all_shifts
+            for s in inputs.variable_space.shifts
         ]
 
         # all constraint_breaches' variables are in expected_variables
