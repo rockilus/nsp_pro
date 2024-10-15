@@ -8,11 +8,14 @@ import WorkerFieldCellAnnualLeave from "./worker-field-cell-annual-leave";
 import WorkerFieldCellDutiesPerMonth from "./worker-field-cell-duties-per-month";
 import WorkerFieldCellWeeklyHoursDesired from "./worker-field-cell-weekly-hours-desired";
 import WorkerSpecialtyCell from "./specialties/worker-specialty-cell";
+import WorkerFieldEmploymentStart from "./worker-field-employment-start";
+import WorkerFieldEmploymentEnd from "./worker-field-employment-end";
 // Types
 import { WorkerT } from "../../../types/worker";
 import { SpecialtyT } from "../../../types/team";
 
 export default function WorkerFieldCell({
+  lng,
   worker,
   workerField,
   specialties,
@@ -20,6 +23,7 @@ export default function WorkerFieldCell({
   setEditing,
   handleUpdateWorker,
 }: {
+  lng: string;
   worker: WorkerT;
   workerField: string;
   specialties: SpecialtyT[];
@@ -31,6 +35,21 @@ export default function WorkerFieldCell({
     <WorkerFieldCellName
       worker={worker}
       editing={editing[worker.id] === "name"}
+      setEditing={setEditing}
+      handleUpdateWorker={handleUpdateWorker}
+    />
+  ) : workerField === "employmentStartDate" ? (
+    <WorkerFieldEmploymentStart
+      worker={worker}
+      editing={editing[worker.id] === "employmentStartDate"}
+      setEditing={setEditing}
+      handleUpdateWorker={handleUpdateWorker}
+    />
+  ) : workerField === "employmentEndDate" ? (
+    <WorkerFieldEmploymentEnd
+      lng={lng}
+      worker={worker}
+      editing={editing[worker.id] === "employmentEndDate"}
       setEditing={setEditing}
       handleUpdateWorker={handleUpdateWorker}
     />

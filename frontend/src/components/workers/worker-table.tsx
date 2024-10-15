@@ -161,6 +161,7 @@ export default function WorkerTable({
                 {defaultWorkerFields.map((field, index) => (
                   <WorkerFieldCell
                     key={index}
+                    lng={lng}
                     worker={worker}
                     workerField={field.name}
                     specialties={specialties}
