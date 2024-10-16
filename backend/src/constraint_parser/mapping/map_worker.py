@@ -6,7 +6,6 @@ from core import (
     ConstraintBuildAugmented,
     MissingAttribute,
     ShiftWorkerOption,
-    VarWorker,
     Worker,
 )
 from utils.constants import Constants
@@ -17,31 +16,29 @@ class MapWorker:
         self.workers = workers
         self.worker_dim_dict = worker_dim_dict
 
-    def __call__(self, cstr_build: ConstraintBuildAugmented) -> VarWorker:
-        values = self.get_worker_values(cstr_build.blocks)
-        return VarWorker(
-            selector=self.get_selector(values),
-            target_ids=self.get_target_ids(values, cstr_build.missing_attributes),
-            num_eligible_workers=0,
-        )
+    def __call__(self, cstr_build: ConstraintBuildAugmented) -> List[str]:
+        swos_worker = self.get_worker_shift_worker_options(cstr_build.blocks)
+        return self.get_target_ids(swos_worker, cstr_build.missing_attributes)
 
     def get_selector(
-        self, values: List[ShiftWorkerOption]
+        self, swos_worker: List[ShiftWorkerOption]
     ) -> Constants.VAR_WORKER_SELECTOR_OPTIONS:
-        string_values = [v.name for v in values if isinstance(v.name, str)]
+        string_values = [
+            v.name for v in swos_worker if isinstance(v.name, str)
+        ]
         if any("all workers" in v for v in string_values):
             return "all"
         return "equal"
 
     def get_target_ids(
         self,
-        values: List[ShiftWorkerOption],
+        swos_worker: List[ShiftWorkerOption],
         missing_properties: List[MissingAttribute],
     ) -> List[str]:
-        if self.get_selector(values) == "all":
-            return []
+        if self.get_selector(swos_worker) == "all":
+            return [w.id for w in self.workers]
         out = []
-        for value in values:
+        for value in swos_worker:
             if value.id_type == "worker":
                 if not self.check_worker_id(value.id):
                     raise ValueError(
@@ -49,7 +46,9 @@ class MapWorker:
                     )
                 out.append(value.id)
             elif value.id_type == "dimension":
-                target_ids = self.get_target_ids_dimension(value, missing_properties)
+                target_ids = self.get_target_ids_dimension(
+                    value, missing_properties
+                )
                 if target_ids:
                     out += target_ids
         if not out:
@@ -71,7 +70,9 @@ class MapWorker:
             raise ValueError(f"Worker dimension {value.id} not found")
         if value.is_bool_dim:
             if not isinstance(value.name, bool):
-                raise ValueError("Value name is not a boolean for bool dimension")
+                raise ValueError(
+                    "Value name is not a boolean for bool dimension"
+                )
             if value.name not in self.worker_dim_dict[value.id]:
                 raise ValueError(
                     f"Worker property {value.name} "
@@ -79,11 +80,14 @@ class MapWorker:
                 )
             return self.worker_dim_dict[value.id][value.name]
         if not isinstance(value.name, str):
-            raise ValueError("Value name is not a string for non-bool dimension")
+            raise ValueError(
+                "Value name is not a string for non-bool dimension"
+            )
         # if value.name.lower() not in self.worker_dim_dict[value.id]:
         if value.name not in self.worker_dim_dict[value.id]:
             raise ValueError(
-                f"Worker property {value.name} for dimension " + f"{value.id} not found"
+                f"Worker property {value.name} for dimension "
+                + f"{value.id} not found"
             )
         # return self.worker_dim_dict[value.id][value.name.lower()]
         return self.worker_dim_dict[value.id][value.name]
@@ -92,13 +96,16 @@ class MapWorker:
         return any(w.id == worker_id for w in self.workers)
 
     @staticmethod
-    def get_worker_values(blocks: List[Block]) -> List[ShiftWorkerOption]:
+    def get_worker_shift_worker_options(
+        blocks: List[Block],
+    ) -> List[ShiftWorkerOption]:
         worker_block = find_block_by_name(blocks, "worker")
         if worker_block:
             if not isinstance(worker_block.value, list):
                 raise ValueError("Worker block value is not a list")
-
-            if not all(isinstance(v, ShiftWorkerOption) for v in worker_block.value):
+            if not all(
+                isinstance(v, ShiftWorkerOption) for v in worker_block.value
+            ):
                 raise ValueError(
                     "Worker block value is not a list of ShiftWorkerOption"
                 )

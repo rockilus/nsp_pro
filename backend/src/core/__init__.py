@@ -5,7 +5,12 @@ from core.constraint import (
     Constraint,
     ConstraintBuild,
     ConstraintBuildAugmented,
+    ConstraintFai,
+    ConstraintFil,
     ConstraintOperator,
+    ConstraintOrd,
+    ConstraintSeq,
+    ConstraintSum,
     ConstraintType,
     MissingAttribute,
     ShiftWorkerOption,
@@ -15,11 +20,33 @@ from core.constraint import (
     VarShift,
     VarWorker,
 )
-from core.coverage import Coverage, CoverageSelector, ShiftDemand, ShiftDemandDate
-from core.dimension import Dimension, DimensionEntryType, DimensionType, DimEntry
+from core.coverage import (
+    Coverage,
+    CoverageSelector,
+    ShiftDemand,
+    ShiftDemandDate,
+)
+from core.dimension import (
+    Dimension,
+    DimensionEntryType,
+    DimensionType,
+    DimEntry,
+)
 from core.request import Request, RequestAugmented
-from core.schedule import Assignment, ObjectiveBreach, QuickStaffing, Schedule, Variable
-from core.shift import Shift, ShiftLeaveType, ShiftRestType, ShiftType, Staffing
+from core.schedule import (
+    Assignment,
+    ObjectiveBreach,
+    QuickStaffing,
+    Schedule,
+    Variable,
+)
+from core.shift import (
+    Shift,
+    ShiftLeaveType,
+    ShiftRestType,
+    ShiftType,
+    Staffing,
+)
 from core.stats import Stats, StatsHeader, StatsOptions, StatsValue
 from core.team import Specialty, Team
 from core.user import PasswordData, User
@@ -35,7 +62,12 @@ __all__ = [
     "Constraint",
     "ConstraintBuild",
     "ConstraintBuildAugmented",
+    "ConstraintFai",
+    "ConstraintFil",
     "ConstraintOperator",
+    "ConstraintOrd",
+    "ConstraintSeq",
+    "ConstraintSum",
     "ConstraintType",
     "MissingAttribute",
     "ShiftWorkerOption",

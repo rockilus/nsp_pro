@@ -67,7 +67,8 @@ class AddConstraint:
         if constraint.worker_var.selector == "equal":
             return constraint.worker_var.target
         raise NotImplementedError(
-            f"Worker selector {constraint.worker_var.selector} " + "not implemented"
+            f"Worker selector {constraint.worker_var.selector} "
+            + "not implemented"
         )
 
     ##########################
@@ -153,14 +154,18 @@ class AddConstraint:
         period = [
             constraint.day_var.start_date + timedelta(days=i)
             for i in range(
-                (constraint.day_var.end_date - constraint.day_var.start_date).days + 1
+                (
+                    constraint.day_var.end_date - constraint.day_var.start_date
+                ).days
+                + 1
             )
         ]
         return [
             [
                 day.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
                 for day in period
-                if day.strftime(Constants.ENGINE_STRING_DATE_FORMAT) in self.days
+                if day.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
+                in self.days
             ]
         ]
 
@@ -183,15 +188,20 @@ class AddConstraint:
                 return self._get_coords_shifts_fil(constraint)
             return constraint.shift_var.target
         raise NotImplementedError(
-            f"Shift selector {constraint.shift_var.selector} " + "not implemented"
+            f"Shift selector {constraint.shift_var.selector} "
+            + "not implemented"
         )
 
     def _get_coords_shifts_fil(self, constraint: Constraint) -> List[str]:
         if constraint.operator == ConstraintOperator.NO:
             return constraint.shift_var.target
-        return [s for s in self.shift_ids if s not in constraint.shift_var.target]
+        return [
+            s for s in self.shift_ids if s not in constraint.shift_var.target
+        ]
 
-    def _get_coords_shifts_ord(self, constraint: Constraint) -> List[List[str]]:
+    def _get_coords_shifts_ord(
+        self, constraint: Constraint
+    ) -> List[List[str]]:
         return [
             [s_ref, s_rel]
             for s_ref in constraint.shift_var.reference

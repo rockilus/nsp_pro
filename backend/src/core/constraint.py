@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 from enum import Enum
-from typing import List
+from typing import List, Tuple
 
 from utils.constants import Constants
 
@@ -112,22 +112,68 @@ class ConstraintBuildAugmented:
     text: str
 
 
+# @dataclass
+# # pylint: disable=too-many-instance-attributes
+# class Constraint:
+#     id: str
+#     constraint_type: ConstraintType
+#     operator: ConstraintOperator | None
+#     target_value: int
+#     target_unit: str  # worker, shift, day, hour
+#     worker_var: VarWorker
+#     day_var: VarDay
+#     shift_var: VarShift
+#     active: bool
+#     hard: bool
+#     priority: str
+#     schedule_id: str
+#     constraint_build_id: str
+
+
 @dataclass
-# pylint: disable=too-many-instance-attributes
 class Constraint:
     id: str
     constraint_type: ConstraintType
     operator: ConstraintOperator | None
     target_value: int
     target_unit: str  # worker, shift, day, hour
-    worker_var: VarWorker
-    day_var: VarDay
-    shift_var: VarShift
     active: bool
     hard: bool
     priority: str
     schedule_id: str
     constraint_build_id: str
+
+
+# for each worker, list for each target shifts on the target period
+@dataclass
+class ConstraintSum(Constraint):
+    constraint_variables: List[List[Tuple[str, str, str]]]
+
+
+# for each worker and shift, list for days over which target periods are covered
+@dataclass
+class ConstraintSeq(Constraint):
+    constraint_variables: List[List[Tuple[str, str, str]]]
+
+
+# for each worker, tuple for d_ref/s_ref and d_rel/s_rel, for all combinations
+@dataclass
+class ConstraintOrd(Constraint):
+    constraint_variables: List[
+        Tuple[Tuple[str, str, str], Tuple[str, str, str]]
+    ]
+
+
+# list of variables to set to 0
+@dataclass
+class ConstraintFil(Constraint):
+    constraint_variables: List[Tuple[str, str, str]]
+
+
+# for each worker, for all target days and shifts
+@dataclass
+class ConstraintFai(Constraint):
+    constraint_variables: List[List[Tuple[str, str, str]]]
 
 
 @dataclass
