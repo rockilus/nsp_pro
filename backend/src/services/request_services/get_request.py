@@ -40,9 +40,19 @@ def get_requests_by_dates(
     for r in requests:
         worker = next((w for w in workers if w.id == r.worker_id), None)
         shift = next((s for s in shifts if s.id == r.shift_id), None)
-        active = (not worker.deleted if worker else False) and (
-            not shift.deleted if shift else False
-        )
+        if not worker or not shift:
+            active = False
+        else:
+            active = (
+                (not worker.deleted)
+                and (worker.employment_start_date <= r.start_date)
+                and (
+                    worker.employment_end_date >= r.end_date
+                    if worker.employment_end_date
+                    else True
+                )
+                and (not shift.deleted if shift else False)
+            )
         if active:
             out.append(r)
     return out
