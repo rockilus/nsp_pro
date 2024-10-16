@@ -1,7 +1,15 @@
 from dataclasses import asdict
 from typing import List, Tuple
 
-from core import Assignment, Constraint, ObjectiveBreach, Schedule, Variable
+from core import (
+    Assignment,
+    Constraint,
+    ConstraintOperator,
+    ConstraintType,
+    ObjectiveBreach,
+    Schedule,
+    Variable,
+)
 from engine import Assignment as AssignmentEngine
 from engine import ConstraintBreach as ConstraintBreachEngine
 from engine import Outputs
@@ -69,13 +77,13 @@ def _engine_to_core_objective_breach(
 ) -> ObjectiveBreach:
     if cb.category == "constraint":
         constraint = constraint_db.get_constraint_by_id(cb.constraint_id)
-        if constraint.constraint_type == "sum":
+        if constraint.constraint_type == ConstraintType.SUM:
             description = _build_description_cb_sum(constraint, cb, assignments)
-        elif constraint.constraint_type == "seq":
+        elif constraint.constraint_type == ConstraintType.SEQ:
             description = _build_description_cb_seq(constraint, cb, assignments)
-        elif constraint.constraint_type == "ord":
+        elif constraint.constraint_type == ConstraintType.ORD:
             description = _build_description_cb_ord(constraint, cb, assignments)
-        elif constraint.constraint_type == "fil":
+        elif constraint.constraint_type == ConstraintType.FIL:
             description = _build_description_cb_fil(cb)
         else:
             description = f"{constraint.constraint_type} constraint not implemented yet"
@@ -200,7 +208,7 @@ def _build_description_cb_ord(
         d_reference.strftime("%b %d"),
         (
             f"instead of shift {', '.join([s.name for s in s_relative])}"
-            if constraint.operator == "yes"
+            if constraint.operator == ConstraintOperator.YES
             else ""
         ),
         "for",

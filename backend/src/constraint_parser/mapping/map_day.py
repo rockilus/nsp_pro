@@ -2,7 +2,7 @@ from datetime import date
 from typing import List
 
 from constraint_parser.mapping.utils import find_block_by_name
-from core import Block, ConstraintBuildAugmented, VarDay
+from core import Block, ConstraintBuildAugmented, ConstraintType, VarDay
 from utils.constants import Constants
 
 
@@ -17,33 +17,33 @@ class MapDay:
         )
 
     def get_selector(
-        self, blocks: List[Block], cstr_type: str
+        self, blocks: List[Block], cstr_type: ConstraintType
     ) -> Constants.VAR_DAY_SELECTOR_OPTIONS:
         timing_block = find_block_by_name(blocks, "timing")
         weekday_block = find_block_by_name(blocks, "weekday")
         if timing_block:
-            if cstr_type == "sum":
+            if cstr_type == ConstraintType.SUM:
                 if timing_block.value == "per week":
                     return "week"
                 raise ValueError(f"Operator {timing_block.value} not recognized")
-            if cstr_type == "seq":
+            if cstr_type == ConstraintType.SEQ:
                 if timing_block.value == "consecutive":
                     return "all"
                 raise ValueError(f"Operator {timing_block.value} not recognized")
-            if cstr_type == "ord":
+            if cstr_type == ConstraintType.ORD:
                 if timing_block.value in ["before", "after"]:
                     if weekday_block:
                         return "week_day_index"
                     return "all"
-        if cstr_type == "fil":
+        if cstr_type == ConstraintType.FIL:
             return "all"
         if weekday_block:
-            if cstr_type in ["eve", "fai"]:
+            if cstr_type in [ConstraintType.EVE, ConstraintType.FAI]:
                 return "week_day_index"
         raise ValueError("Timing block not found")
 
-    def get_target(self, blocks: List[Block], cstr_type: str) -> int:
-        if cstr_type in ["sum", "seq"]:
+    def get_target(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
+        if cstr_type in [ConstraintType.SUM, ConstraintType.SEQ]:
             return 0
         if self.get_selector(blocks, cstr_type) != "week_day_index":
             return 0
@@ -54,8 +54,13 @@ class MapDay:
             raise ValueError(f"Weekday {weekday_block.value} not recognized")
         raise ValueError("Weekday block not found")
 
-    def get_interval(self, blocks: List[Block], cstr_type: str) -> int:
-        if cstr_type in ["sum", "seq", "fil", "eve"]:
+    def get_interval(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
+        if cstr_type in [
+            ConstraintType.SUM,
+            ConstraintType.SEQ,
+            ConstraintType.FIL,
+            ConstraintType.EVE,
+        ]:
             return 0
         timing_block = find_block_by_name(blocks, "timing")
         if timing_block:

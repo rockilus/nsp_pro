@@ -20,6 +20,8 @@ from core import (
     Worker,
 )
 from engine import Constraint as ConstraintEngine
+from engine import ConstraintOperator as ConstraintOperatorEngine
+from engine import ConstraintType as ConstraintTypeEngine
 from engine import Coverage as CoverageEngine
 from engine import FixedConfig as FixedConfigEngine
 from engine import Inputs
@@ -322,8 +324,8 @@ def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
     hard_to_soft = Constants.HARD_TO_SOFT
     return ConstraintEngine(
         id=constraint.id,
-        constraint_type=constraint.constraint_type,
-        operator=constraint.operator,
+        constraint_type=ConstraintTypeEngine(constraint.constraint_type),
+        operator=ConstraintOperatorEngine(constraint.operator),
         target_value=constraint.target_value,
         target_unit=constraint.target_unit,
         worker_var=_core_to_engine_var_worker(constraint.worker_var),

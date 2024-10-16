@@ -12,6 +12,8 @@ from engine.tests.engine_test import TestEngine
 from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
 from engine.types.input_output_types import (
     Constraint,
+    ConstraintOperator,
+    ConstraintType,
     Inputs,
     Outputs,
     Request,
@@ -29,8 +31,8 @@ class TestConstraint:
     def constraint_fil_hard(self) -> Constraint:
         return Constraint(
             id="constraint_fil_hard",
-            constraint_type="fil",
-            operator="no",
+            constraint_type=ConstraintType.FIL,
+            operator=ConstraintOperator.NO,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
@@ -58,8 +60,8 @@ class TestConstraint:
     def constraint_fil_soft(self) -> Constraint:
         return Constraint(
             id="constraint_fil_soft",
-            constraint_type="fil",
-            operator="no",
+            constraint_type=ConstraintType.FIL,
+            operator=ConstraintOperator.NO,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
@@ -160,7 +162,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         ]
 
         inputs.requests = requests
-        constraint_fil_hard.operator = "yes"
+        constraint_fil_hard.operator = ConstraintOperator.YES
         inputs.constraints = [constraint_fil_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -243,7 +245,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         ]
 
         inputs.requests = requests
-        constraint_fil_hard.operator = "yes"
+        constraint_fil_hard.operator = ConstraintOperator.YES
         constraint_fil_hard.worker_var.target = [
             "w2",
             "w3",
@@ -328,7 +330,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         ]
 
         inputs.requests = requests
-        constraint_fil_soft.operator = "yes"
+        constraint_fil_soft.operator = ConstraintOperator.YES
         inputs.constraints = [constraint_fil_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -419,7 +421,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             "w6",
             "w7",
         ]
-        constraint_fil_soft.operator = "yes"
+        constraint_fil_soft.operator = ConstraintOperator.YES
         inputs.constraints = [constraint_fil_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -445,7 +447,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
     ) -> None:
         # Worker w0 and w1 should only work shift s0 or s1 (hard)
         # Worker w0 and w1 should not work shift s0 or s1 (soft)
-        constraint_fil_hard.operator = "yes"
+        constraint_fil_hard.operator = ConstraintOperator.YES
         inputs.constraints = [
             constraint_fil_hard,
             constraint_fil_soft,
@@ -475,7 +477,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
     ) -> None:
         # Worker w0 and w1 should not work shift s0 or s1 (hard)
         # Worker w0 and w1 should only work shift s0 or s1 (soft)
-        constraint_fil_hard.operator = "yes"
+        constraint_fil_hard.operator = ConstraintOperator.YES
         inputs.constraints = [
             constraint_fil_hard,
             constraint_fil_soft,
@@ -504,7 +506,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
     ) -> None:
         # Worker w0 and w1 should not work shift s0 or s1 (hard)
         # Worker w0 and w1 should only work shift s0 or s1 (soft)
-        constraint_fil_soft.operator = "yes"
+        constraint_fil_soft.operator = ConstraintOperator.YES
         inputs.constraints = [
             constraint_fil_hard,
             constraint_fil_soft,
@@ -544,7 +546,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
     ) -> None:
         # Worker w0 and w1 should not work shift s0 or s1 (hard)
         # Worker w0 and w1 should only work shift s0 or s1 (soft)
-        constraint_fil_soft.operator = "yes"
+        constraint_fil_soft.operator = ConstraintOperator.YES
         inputs.constraints = [
             constraint_fil_hard,
             constraint_fil_soft,

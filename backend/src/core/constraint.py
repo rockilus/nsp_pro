@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Literal
+from enum import Enum
+from typing import List
 
 from utils.constants import Constants
 
@@ -63,12 +64,31 @@ class MissingAttribute:
     attribute_values: List[str | int | float | bool]
 
 
+class ConstraintType(Enum):
+    SUM = 0
+    SEQ = 1
+    ORD = 2
+    FIL = 3
+    FAI = 4
+    EVE = 5
+
+
+class ConstraintOperator(Enum):
+    LESS_THAN = 0
+    LESS_THAN_OR_EQUAL = 1
+    EQUAL = 2
+    GREATER_THAN_OR_EQUAL = 3
+    GREATER_THAN = 4
+    YES = 5
+    NO = 6
+
+
 @dataclass
 # pylint: disable=too-many-instance-attributes
 class ConstraintBuild:
     id: str
     team_id: str
-    constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
+    constraint_type: ConstraintType
     template_id: str
     language: str
     blocks: List[Block]
@@ -81,7 +101,7 @@ class ConstraintBuild:
 class ConstraintBuildAugmented:
     id: str
     team_id: str
-    constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
+    constraint_type: ConstraintType
     template_id: str
     language: str
     blocks: List[Block]
@@ -96,8 +116,8 @@ class ConstraintBuildAugmented:
 # pylint: disable=too-many-instance-attributes
 class Constraint:
     id: str
-    constraint_type: Constants.CONSTRAINT_TYPE_OPTIONS
-    operator: Constants.CONSTRAINT_OPERATOR_OPTIONS
+    constraint_type: ConstraintType
+    operator: ConstraintOperator | None
     target_value: int
     target_unit: str  # worker, shift, day, hour
     worker_var: VarWorker
@@ -121,7 +141,7 @@ class TemplateBlock:
 @dataclass
 class Template:
     id: str
-    constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
+    constraint_type: ConstraintType
     text: str
     language: str
     blocks: List[TemplateBlock]

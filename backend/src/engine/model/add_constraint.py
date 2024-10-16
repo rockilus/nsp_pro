@@ -3,7 +3,13 @@ from typing import Dict, List, Set, Tuple, Union
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.types.input_output_types import Constraint, Shift, Worker
+from engine.types.input_output_types import (
+    Constraint,
+    ConstraintOperator,
+    ConstraintType,
+    Shift,
+    Worker,
+)
 from engine.types.model_types import Objective
 from utils.constants import Constants
 
@@ -70,16 +76,24 @@ class AddConstraint:
     def _get_coords_days(
         self, constraint: Constraint
     ) -> Union[List[str], List[List[str]]]:
-        if constraint.constraint_type == "ord" and constraint.day_var.selector in [
-            "all",
-            "week_day_index",
-        ]:
+        if (
+            constraint.constraint_type == ConstraintType.ORD
+            and constraint.day_var.selector
+            in [
+                "all",
+                "week_day_index",
+            ]
+        ):
             return self._get_coords_days_ord(constraint)
-        if constraint.constraint_type == "sum" and constraint.day_var.selector in [
-            "all",
-            "week",
-            "period",
-        ]:
+        if (
+            constraint.constraint_type == ConstraintType.SUM
+            and constraint.day_var.selector
+            in [
+                "all",
+                "week",
+                "period",
+            ]
+        ):
             return self._get_coords_days_sum(constraint)
         if constraint.day_var.selector == "all":
             return self.days
@@ -158,14 +172,14 @@ class AddConstraint:
         constraint: Constraint,
         shifts_in_coverage: Union[Set[str], None] = None,
     ) -> List[str] | List[List[str]]:
-        if constraint.constraint_type == "ord":
+        if constraint.constraint_type == ConstraintType.ORD:
             return self._get_coords_shifts_ord(constraint)
         if constraint.shift_var.selector == "all":
             if shifts_in_coverage is not None:
                 return [s for s in self.shift_ids if s in shifts_in_coverage]
             return self.shift_ids
         if constraint.shift_var.selector == "equal":
-            if constraint.constraint_type == "fil":
+            if constraint.constraint_type == ConstraintType.FIL:
                 return self._get_coords_shifts_fil(constraint)
             return constraint.shift_var.target
         raise NotImplementedError(
@@ -173,7 +187,7 @@ class AddConstraint:
         )
 
     def _get_coords_shifts_fil(self, constraint: Constraint) -> List[str]:
-        if constraint.operator == "no":
+        if constraint.operator == ConstraintOperator.NO:
             return constraint.shift_var.target
         return [s for s in self.shift_ids if s not in constraint.shift_var.target]
 

@@ -6,6 +6,8 @@ from core import (
     Attribute,
     Constraint,
     ConstraintBuildAugmented,
+    ConstraintOperator,
+    ConstraintType,
     Dimension,
     DimensionEntryType,
     DimEntry,
@@ -72,8 +74,8 @@ def build_default_fairness_constraints(
             # pylint: disable=R0801
             Constraint(
                 id="",
-                constraint_type="fai",
-                operator="",
+                constraint_type=ConstraintType.FAI,
+                operator=None,
                 target_value=0,
                 target_unit="",
                 worker_var=VarWorker(
@@ -106,8 +108,8 @@ def build_quick_staffing_constraints(schedule: Schedule) -> List[Constraint]:
     return [
         Constraint(
             id="",
-            constraint_type="sum",
-            operator="equal",
+            constraint_type=ConstraintType.SUM,
+            operator=ConstraintOperator.EQUAL,
             target_value=qs.target,
             target_unit="shift",
             worker_var=VarWorker(
@@ -192,8 +194,8 @@ def build_duty_recuperation_constraints(
         out.append(
             Constraint(
                 id="",
-                constraint_type="ord",
-                operator="yes",
+                constraint_type=ConstraintType.ORD,
+                operator=ConstraintOperator.YES,
                 target_value=0,
                 target_unit="",
                 worker_var=VarWorker(

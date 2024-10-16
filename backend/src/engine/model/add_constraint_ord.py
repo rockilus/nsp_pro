@@ -4,7 +4,7 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import Constraint
+from engine.types.input_output_types import Constraint, ConstraintOperator
 
 
 class AddConstraintOrd(AddConstraint):
@@ -33,9 +33,9 @@ class AddConstraintOrd(AddConstraint):
         hard_to_soft: bool,
     ) -> None:
         if constraint.hard and not hard_to_soft:
-            if constraint.operator == "yes":
+            if constraint.operator == ConstraintOperator.YES:
                 transition = [cstr_vars[0].Not(), cstr_vars[1]]
-            elif constraint.operator == "no":
+            elif constraint.operator == ConstraintOperator.NO:
                 transition = [cstr_var.Not() for cstr_var in cstr_vars]
             else:
                 raise NotImplementedError(
@@ -55,9 +55,9 @@ class AddConstraintOrd(AddConstraint):
                 ],
             )
             var_name = build_var_name(constraint, cstr_vars, "constraint")
-            if constraint.operator == "yes":
+            if constraint.operator == ConstraintOperator.YES:
                 transition = [cstr_vars[0].Not(), cstr_vars[1]]
-            elif constraint.operator == "no":
+            elif constraint.operator == ConstraintOperator.NO:
                 transition = [cstr_var.Not() for cstr_var in cstr_vars]
             else:
                 raise NotImplementedError(

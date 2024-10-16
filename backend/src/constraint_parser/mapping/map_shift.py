@@ -4,6 +4,8 @@ from constraint_parser.mapping.utils import find_block_by_name
 from core import (
     Block,
     ConstraintBuildAugmented,
+    ConstraintOperator,
+    ConstraintType,
     MissingAttribute,
     Shift,
     ShiftType,
@@ -19,21 +21,23 @@ class MapShift:
         self.shift_dim_dict = shift_dim_dict
 
     def __call__(
-        self, cstr_build: ConstraintBuildAugmented, cstr_operator: str
+        self,
+        cstr_build: ConstraintBuildAugmented,
+        cstr_operator: ConstraintOperator | None,
     ) -> VarShift:
         shift_values = (
             self.get_shift_values(cstr_build.blocks, "shift")
-            if cstr_build.constraint_type != "ord"
+            if cstr_build.constraint_type != ConstraintType.ORD
             else []
         )
         shift_reference_values = (
             self.get_shift_values(cstr_build.blocks, "shift_reference")
-            if cstr_build.constraint_type == "ord"
+            if cstr_build.constraint_type == ConstraintType.ORD
             else []
         )
         shift_relative_values = (
             self.get_shift_values(cstr_build.blocks, "shift_relative")
-            if cstr_build.constraint_type == "ord"
+            if cstr_build.constraint_type == ConstraintType.ORD
             else []
         )
         return VarShift(
@@ -57,9 +61,9 @@ class MapShift:
         )
 
     def get_selector(
-        self, values: List[ShiftWorkerOption], cstr_type: str
+        self, values: List[ShiftWorkerOption], cstr_type: ConstraintType | None
     ) -> Constants.VAR_SHIFT_SELECTOR_OPTIONS:
-        if cstr_type == "ord":
+        if cstr_type == ConstraintType.ORD:
             return "all"
         string_values = [v.name for v in values if isinstance(v.name, str)]
         if any("all shifts" in v for v in string_values):
@@ -85,11 +89,14 @@ class MapShift:
     def get_target_ids(
         self,
         values: List[ShiftWorkerOption],
-        cstr_type: str,
+        cstr_type: ConstraintType | None,
         missing_properties: List[MissingAttribute],
-        cstr_operator: str = "",
+        cstr_operator: ConstraintOperator | None = None,
     ) -> List[str]:
-        if self.get_selector(values, cstr_type) == "all" and cstr_type != "ord":
+        if (
+            self.get_selector(values, cstr_type) == "all"
+            and cstr_type != ConstraintType.ORD
+        ):
             return []
         out = []
         for value in values:
@@ -102,7 +109,7 @@ class MapShift:
                 target_ids = self.get_target_ids_dimension(value, missing_properties)
                 if target_ids:
                     out += target_ids
-        if cstr_type == "fil" and cstr_operator == "yes":
+        if cstr_type == ConstraintType.FIL and cstr_operator == ConstraintOperator.YES:
             out += [
                 s.id
                 for s in self.shifts

@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
+from enum import Enum
 from typing import Dict, List, Literal, Tuple
-
-from utils.constants import Constants
 
 ##############################
 # Inputs
@@ -107,12 +106,31 @@ class VarShift:
     relative: List[str]
 
 
+class ConstraintType(Enum):
+    SUM = 0
+    SEQ = 1
+    ORD = 2
+    FIL = 3
+    FAI = 4
+    EVE = 5
+
+
+class ConstraintOperator(Enum):
+    LESS_THAN = 0
+    LESS_THAN_OR_EQUAL = 1
+    EQUAL = 2
+    GREATER_THAN_OR_EQUAL = 3
+    GREATER_THAN = 4
+    YES = 5
+    NO = 6
+
+
 @dataclass
 # pylint: disable=too-many-instance-attributes
 class Constraint:
     id: str
-    constraint_type: Literal["sum", "seq", "ord", "fil", "fai", "eve"]
-    operator: Constants.CONSTRAINT_OPERATOR_OPTIONS
+    constraint_type: ConstraintType
+    operator: ConstraintOperator | None
     target_value: int
     target_unit: str  # worker, shift, day, hour
     worker_var: VarWorker

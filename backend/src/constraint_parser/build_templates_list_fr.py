@@ -1,6 +1,6 @@
 from typing import List
 
-from core import ShiftWorkerOption, Template, TemplateBlock
+from core import ConstraintType, ShiftWorkerOption, Template, TemplateBlock
 from utils.constants import Constants
 
 
@@ -12,7 +12,7 @@ def build_templates_list_fr(
     return [
         Template(
             id="0",
-            constraint_type="seq",
+            constraint_type=ConstraintType.SEQ,
             text="Jean doit faire au plus 2 consultations consécutives",
             language="fr",
             blocks=[
@@ -56,7 +56,7 @@ def build_templates_list_fr(
         ),
         Template(
             id="1",
-            constraint_type="sum",
+            constraint_type=ConstraintType.SUM,
             text="Jean doit faire au moins 1 garde par semaine",
             language="fr",
             blocks=[
@@ -100,7 +100,7 @@ def build_templates_list_fr(
         ),
         Template(
             id="2",
-            constraint_type="ord",
+            constraint_type=ConstraintType.ORD,
             text="Pas de consultation 1 jour après une garde pour Jean",
             language="fr",
             blocks=[
@@ -156,7 +156,7 @@ def build_templates_list_fr(
         ),
         Template(
             id="3",
-            constraint_type="ord",
+            constraint_type=ConstraintType.ORD,
             text="Si garde, alors repos 1 jour après pour Jean",
             language="fr",
             blocks=[
@@ -218,7 +218,7 @@ def build_templates_list_fr(
         ),
         Template(
             id="4",
-            constraint_type="ord",
+            constraint_type=ConstraintType.ORD,
             text="Si garde le samedi, alors repos 2 jours après pour Jean",
             # text="If morning on saturday, then off 2 days afer for John",
             language="fr",
@@ -294,7 +294,7 @@ def build_templates_list_fr(
         # Filter
         Template(
             id="5",
-            constraint_type="fil",
+            constraint_type=ConstraintType.FIL,
             text="Jean doit seulement faire des consultations",
             language="fr",
             blocks=[
@@ -327,7 +327,7 @@ def build_templates_list_fr(
         # Evenness
         Template(
             id="6",
-            constraint_type="eve",
+            constraint_type=ConstraintType.EVE,
             text="Les gardes le dimanche doivent être réparties de manière "
             + "égale dans le temps pour tous les travailleurs",
             language="fr",
@@ -374,7 +374,7 @@ def build_templates_list_fr(
         # Fairness
         Template(
             id="7",
-            constraint_type="fai",
+            constraint_type=ConstraintType.FAI,
             text="Les gardes le dimanche doivent être réparties de manière "
             + "équitable entre tous les travailleurs",
             language="fr",

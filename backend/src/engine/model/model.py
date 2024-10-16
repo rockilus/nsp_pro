@@ -8,6 +8,7 @@ from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import build_var_name, get_nested_value
 from engine.types.input_output_types import (
     Constraint,
+    ConstraintType,
     FixedConfig,
     Inputs,
     Shift,
@@ -736,27 +737,27 @@ class Model:
         hard_to_soft: bool,
     ) -> None:
         for constraint in constraints:
-            if constraint.constraint_type == "sum":
+            if constraint.constraint_type == ConstraintType.SUM:
                 self.add_constraint_factory.add_constraint_sum.add_constraint(
                     constraint, hard_to_soft
                 )
-            elif constraint.constraint_type == "seq":
+            elif constraint.constraint_type == ConstraintType.SEQ:
                 self.add_constraint_factory.add_constraint_seq.add_constraint(
                     constraint, hard_to_soft
                 )
-            elif constraint.constraint_type == "ord":
+            elif constraint.constraint_type == ConstraintType.ORD:
                 self.add_constraint_factory.add_constraint_ord.add_constraint(
                     constraint, hard_to_soft
                 )
-            elif constraint.constraint_type == "fil":
+            elif constraint.constraint_type == ConstraintType.FIL:
                 self.add_constraint_factory.add_constraint_fil.add_constraint(
                     constraint, hard_to_soft
                 )
-            elif constraint.constraint_type == "fai":
+            elif constraint.constraint_type == ConstraintType.FAI:
                 self.add_constraint_factory.add_constraint_fai.add_constraint(
                     constraint, coverage
                 )
-            elif constraint.constraint_type == "eve":
+            elif constraint.constraint_type == ConstraintType.EVE:
                 self.add_constraint_factory.add_constraint_eve.add_constraint(
                     constraint, coverage
                 )

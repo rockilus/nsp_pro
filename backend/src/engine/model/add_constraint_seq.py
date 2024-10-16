@@ -8,7 +8,7 @@ from engine.model.utils.model_utils import (
     build_var_name_seq,
     get_nested_value,
 )
-from engine.types.input_output_types import Constraint
+from engine.types.input_output_types import Constraint, ConstraintOperator
 
 
 class AddConstraintSeq(AddConstraint):
@@ -34,18 +34,18 @@ class AddConstraintSeq(AddConstraint):
         hard_to_soft: bool,
     ) -> None:
         if constraint.hard and not hard_to_soft:
-            if constraint.operator == "less_than_or_equal":
+            if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                 self._add_constraint_seq_less_than_or_equal_hard_to_model(
                     constraint, cstr_vars
                 )
-            elif constraint.operator == "equal":
+            elif constraint.operator == ConstraintOperator.EQUAL:
                 self._add_constraint_seq_less_than_or_equal_hard_to_model(
                     constraint, cstr_vars
                 )
                 self._add_constraint_seq_greater_than_or_equal_hard_to_model(
                     constraint, cstr_vars
                 )
-            elif constraint.operator == "greater_than_or_equal":
+            elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                 self._add_constraint_seq_greater_than_or_equal_hard_to_model(
                     constraint, cstr_vars
                 )
@@ -65,18 +65,18 @@ class AddConstraintSeq(AddConstraint):
                     "hard" if constraint.hard else "soft",
                 ],
             )
-            if constraint.operator == "less_than_or_equal":
+            if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                 self._add_constraint_seq_less_than_or_equal_soft_to_model(
                     constraint, cstr_vars, penalty
                 )
-            elif constraint.operator == "equal":
+            elif constraint.operator == ConstraintOperator.EQUAL:
                 self._add_constraint_seq_less_than_or_equal_soft_to_model(
                     constraint, cstr_vars, penalty
                 )
                 self._add_constraint_seq_greater_than_or_equal_soft_to_model(
                     constraint, cstr_vars, penalty
                 )
-            elif constraint.operator == "greater_than_or_equal":
+            elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                 self._add_constraint_seq_greater_than_or_equal_soft_to_model(
                     constraint, cstr_vars, penalty
                 )

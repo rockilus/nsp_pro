@@ -5,6 +5,8 @@ from core import (
     Block,
     Constraint,
     ConstraintBuildAugmented,
+    ConstraintOperator,
+    ConstraintType,
     Shift,
     ShiftLeaveType,
     ShiftRestType,
@@ -315,7 +317,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="seq",
+            constraint_type=ConstraintType.SEQ,
             template_id="0",
             language="en",
             blocks=[
@@ -358,8 +360,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="seq",
-            operator="less_than_or_equal",
+            constraint_type=ConstraintType.SEQ,
+            operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=2,
             target_unit="",
             worker_var=VarWorker(
@@ -391,7 +393,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="seq",
+            constraint_type=ConstraintType.SEQ,
             template_id="0",
             language="en",
             blocks=[
@@ -434,8 +436,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="seq",
-            operator="less_than_or_equal",
+            constraint_type=ConstraintType.SEQ,
+            operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=2,
             target_unit="",
             worker_var=VarWorker(selector="all", target_ids=[], num_eligible_workers=0),
@@ -465,7 +467,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="seq",
+            constraint_type=ConstraintType.SEQ,
             template_id="0",
             language="en",
             blocks=[
@@ -508,8 +510,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="seq",
-            operator="less_than_or_equal",
+            constraint_type=ConstraintType.SEQ,
+            operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=2,
             target_unit="",
             worker_var=VarWorker(
@@ -541,7 +543,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="seq",
+            constraint_type=ConstraintType.SEQ,
             template_id="0",
             language="en",
             blocks=[
@@ -584,8 +586,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="seq",
-            operator="less_than_or_equal",
+            constraint_type=ConstraintType.SEQ,
+            operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=2,
             target_unit="",
             worker_var=VarWorker(
@@ -617,7 +619,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="sum",
+            constraint_type=ConstraintType.SUM,
             template_id="1",
             language="en",
             blocks=[
@@ -660,8 +662,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="sum",
-            operator="greater_than_or_equal",
+            constraint_type=ConstraintType.SUM,
+            operator=ConstraintOperator.GREATER_THAN_OR_EQUAL,
             target_value=1,
             target_unit="",
             worker_var=VarWorker(
@@ -693,7 +695,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="ord",
+            constraint_type=ConstraintType.ORD,
             template_id="2",
             language="en",
             blocks=[
@@ -750,8 +752,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="ord",
-            operator="no",
+            constraint_type=ConstraintType.ORD,
+            operator=ConstraintOperator.NO,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
@@ -782,7 +784,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="ord",
+            constraint_type=ConstraintType.ORD,
             template_id="3",
             language="en",
             blocks=[
@@ -840,8 +842,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="ord",
-            operator="yes",
+            constraint_type=ConstraintType.ORD,
+            operator=ConstraintOperator.YES,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
@@ -872,7 +874,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="ord",
+            constraint_type=ConstraintType.ORD,
             template_id="4",
             language="en",
             blocks=[
@@ -932,8 +934,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="ord",
-            operator="yes",
+            constraint_type=ConstraintType.ORD,
+            operator=ConstraintOperator.YES,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
@@ -964,7 +966,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="ord",
+            constraint_type=ConstraintType.ORD,
             template_id="4",
             language="en",
             blocks=[
@@ -1024,8 +1026,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="ord",
-            operator="yes",
+            constraint_type=ConstraintType.ORD,
+            operator=ConstraintOperator.YES,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
@@ -1057,7 +1059,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="fil",
+            constraint_type=ConstraintType.FIL,
             template_id="5",
             language="en",
             blocks=[
@@ -1098,8 +1100,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="fil",
-            operator="yes",
+            constraint_type=ConstraintType.FIL,
+            operator=ConstraintOperator.YES,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
@@ -1130,7 +1132,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="fil",
+            constraint_type=ConstraintType.FIL,
             template_id="5",
             language="en",
             blocks=[
@@ -1171,8 +1173,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="fil",
-            operator="no",
+            constraint_type=ConstraintType.FIL,
+            operator=ConstraintOperator.NO,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
@@ -1204,7 +1206,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="eve",
+            constraint_type=ConstraintType.EVE,
             template_id="6",
             language="en",
             blocks=[
@@ -1250,8 +1252,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="eve",
-            operator="",
+            constraint_type=ConstraintType.EVE,
+            operator=None,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(
@@ -1283,7 +1285,7 @@ test_data = [
         "in": ConstraintBuildAugmented(
             id="",
             team_id="0",
-            constraint_type="fai",
+            constraint_type=ConstraintType.FAI,
             template_id="7",
             language="en",
             blocks=[
@@ -1329,8 +1331,8 @@ test_data = [
         ),
         "out": Constraint(
             id="",
-            constraint_type="fai",
-            operator="",
+            constraint_type=ConstraintType.FAI,
+            operator=None,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(selector="all", target_ids=[], num_eligible_workers=0),

@@ -4,7 +4,7 @@ import os
 import subprocess
 
 from engine.model.model import Model
-from engine.types.input_output_types import Inputs
+from engine.types.input_output_types import ConstraintType, Inputs
 from utils.constants import Constants
 
 
@@ -77,22 +77,34 @@ def save_benchmark_to_csv(
         "commit",
     ]
     num_constraints_sum = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "sum"
+        1
+        for constraint in inputs.constraints
+        if constraint.constraint_type == ConstraintType.SUM
     )
     num_constraints_seq = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "seq"
+        1
+        for constraint in inputs.constraints
+        if constraint.constraint_type == ConstraintType.SEQ
     )
     num_constraints_ord = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "ord"
+        1
+        for constraint in inputs.constraints
+        if constraint.constraint_type == ConstraintType.ORD
     )
     num_constraints_fil = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "fil"
+        1
+        for constraint in inputs.constraints
+        if constraint.constraint_type == ConstraintType.FIL
     )
     num_constraints_fai = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "fai"
+        1
+        for constraint in inputs.constraints
+        if constraint.constraint_type == ConstraintType.FAI
     )
     num_constraints_eve = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "eve"
+        1
+        for constraint in inputs.constraints
+        if constraint.constraint_type == ConstraintType.EVE
     )
     num_constraints_total = (
         num_constraints_sum

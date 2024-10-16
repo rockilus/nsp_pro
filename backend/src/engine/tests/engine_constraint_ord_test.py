@@ -13,6 +13,8 @@ from engine.tests.engine_test import TestEngine
 from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
 from engine.types.input_output_types import (
     Constraint,
+    ConstraintOperator,
+    ConstraintType,
     Inputs,
     Outputs,
     Request,
@@ -29,8 +31,8 @@ class TestConstraint:
     def constraint_ord_hard(self) -> Constraint:
         return Constraint(
             id="constraint_ord_hard",
-            constraint_type="ord",
-            operator="no",
+            constraint_type=ConstraintType.ORD,
+            operator=ConstraintOperator.NO,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(selector="all", target=[], num_eligible_workers=0),
@@ -53,8 +55,8 @@ class TestConstraint:
     def constraint_ord_soft(self) -> Constraint:
         return Constraint(
             id="constraint_ord_soft",
-            constraint_type="ord",
-            operator="no",
+            constraint_type=ConstraintType.ORD,
+            operator=ConstraintOperator.NO,
             target_value=0,
             target_unit="",
             worker_var=VarWorker(selector="all", target=[], num_eligible_workers=0),
@@ -164,7 +166,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 penalty=0,
             ),
         ]
-        constraint_ord_hard.operator = "yes"
+        constraint_ord_hard.operator = ConstraintOperator.YES
         constraint_ord_hard.shift_var.relative = ["s3"]
         inputs.constraints = [constraint_ord_hard]
         inputs.requests = requests
@@ -242,7 +244,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             ),
         ]
         inputs.constraints = [constraint_ord_hard]
-        constraint_ord_hard.operator = "yes"
+        constraint_ord_hard.operator = ConstraintOperator.YES
         constraint_ord_hard.shift_var.relative = ["s3"]
         inputs.requests = requests
         outputs = engine_solve(inputs)
@@ -329,7 +331,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 penalty=0,
             ),
         ]
-        constraint_ord_hard.operator = "yes"
+        constraint_ord_hard.operator = ConstraintOperator.YES
         constraint_ord_hard.day_var.interval = 3
         inputs.constraints = [constraint_ord_hard]
         inputs.requests = requests
@@ -436,7 +438,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 penalty=0,
             ),
         ]
-        constraint_ord_hard.operator = "yes"
+        constraint_ord_hard.operator = ConstraintOperator.YES
         constraint_ord_hard.day_var.interval = -3
         inputs.constraints = [constraint_ord_hard]
         inputs.requests = requests
@@ -602,7 +604,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 penalty=0,
             ),
         ]
-        constraint_ord_hard.operator = "yes"
+        constraint_ord_hard.operator = ConstraintOperator.YES
         constraint_ord_hard.day_var.selector = "week_day_index"
         constraint_ord_hard.day_var.interval = 3
         inputs.constraints = [constraint_ord_hard]
@@ -769,7 +771,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
                 penalty=0,
             ),
         ]
-        constraint_ord_hard.operator = "yes"
+        constraint_ord_hard.operator = ConstraintOperator.YES
         constraint_ord_hard.day_var.selector = "week_day_index"
         constraint_ord_hard.day_var.interval = 3
         constraint_ord_hard.day_var.target = 0
@@ -875,7 +877,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 penalty=1,
             ),
         ]
-        constraint_ord_soft.operator = "yes"
+        constraint_ord_soft.operator = ConstraintOperator.YES
         constraint_ord_soft.shift_var.relative = ["s3"]
         inputs.constraints = [constraint_ord_soft]
         inputs.requests = requests
@@ -910,7 +912,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 penalty=0,
             ),
         ]
-        constraint_ord_soft.operator = "yes"
+        constraint_ord_soft.operator = ConstraintOperator.YES
         inputs.constraints = [
             constraint_ord_hard,
             constraint_ord_soft,
@@ -954,7 +956,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 penalty=0,
             ),
         ]
-        constraint_ord_soft.operator = "yes"
+        constraint_ord_soft.operator = ConstraintOperator.YES
         inputs.constraints = [
             constraint_ord_hard,
             constraint_ord_soft,
@@ -983,7 +985,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 penalty=0,
             ),
         ]
-        constraint_ord_soft.operator = "yes"
+        constraint_ord_soft.operator = ConstraintOperator.YES
         inputs.constraints = [
             constraint_ord_hard,
             constraint_ord_soft,
@@ -1037,7 +1039,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
                 penalty=0,
             ),
         ]
-        constraint_ord_soft.operator = "yes"
+        constraint_ord_soft.operator = ConstraintOperator.YES
         inputs.constraints = [
             constraint_ord_hard,
             constraint_ord_soft,

@@ -12,6 +12,8 @@ from engine.model.utils.model_utils import (
 )
 from engine.types.input_output_types import (
     Constraint,
+    ConstraintOperator,
+    ConstraintType,
     Shift,
     ShiftDemand,
     VarDay,
@@ -126,8 +128,8 @@ class AddConstraintEve(AddConstraint):
             constraints_sum.append(
                 Constraint(
                     id=constraint.id,
-                    constraint_type="sum",
-                    operator="less_than_or_equal",
+                    constraint_type=ConstraintType.SUM,
+                    operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
                     target_value=1,
                     target_unit="day",
                     worker_var=VarWorker(

@@ -4,8 +4,15 @@ from constraint_parser.mapping.map_day import MapDay
 from constraint_parser.mapping.map_shift import MapShift
 from constraint_parser.mapping.map_worker import MapWorker
 from constraint_parser.mapping.utils import find_block_by_name
-from core import Block, Constraint, ConstraintBuildAugmented, Shift, Worker
-from utils.constants import Constants
+from core import (
+    Block,
+    Constraint,
+    ConstraintBuildAugmented,
+    ConstraintOperator,
+    ConstraintType,
+    Shift,
+    Worker,
+)
 
 
 class MapConstaint:
@@ -48,21 +55,26 @@ class MapConstaint:
         )
 
     def get_operator(
-        self, blocks: List[Block], cstr_type: str
-    ) -> Constants.CONSTRAINT_OPERATOR_OPTIONS:
-        if cstr_type in ["eve", "fai"]:
-            return ""
+        self, blocks: List[Block], cstr_type: ConstraintType
+    ) -> ConstraintOperator | None:
+        if cstr_type in [ConstraintType.EVE, ConstraintType.FAI]:
+            return None
         operator_block = find_block_by_name(blocks, "operator")
         if operator_block:
             if not isinstance(operator_block.value, str):
                 raise ValueError("Operator block value is not a string")
             return self.convert_operator(operator_block.value)
-        if cstr_type == "ord":
-            return "yes"
+        if cstr_type == ConstraintType.ORD:
+            return ConstraintOperator.YES
         raise ValueError("Operator not found")
 
-    def get_target_value(self, blocks: List[Block], cstr_type: str) -> int:
-        if cstr_type in ["ord", "fil", "eve", "fai"]:
+    def get_target_value(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
+        if cstr_type in [
+            ConstraintType.ORD,
+            ConstraintType.FIL,
+            ConstraintType.EVE,
+            ConstraintType.FAI,
+        ]:
             return 0
         qty_block = find_block_by_name(blocks, "#")
         if qty_block:
@@ -75,27 +87,25 @@ class MapConstaint:
     # pylint: disable=too-many-return-statements
     def convert_operator(
         operator: str,
-    ) -> Constants.CONSTRAINT_OPERATOR_OPTIONS:
+    ) -> ConstraintOperator | None:
         operator_mod = operator.lower().replace(" ", "_")
         if operator_mod in ["less_than"]:
-            return "less_than"
+            return ConstraintOperator.LESS_THAN
         if operator_mod in [
             "less_than_or_equal",
             "less_than_or_equal_to",
             "at_most",
             "maximum",
         ]:
-            return "less_than_or_equal"
+            return ConstraintOperator.LESS_THAN_OR_EQUAL
         if operator_mod in ["equal", "exactly"]:
-            return "equal"
+            return ConstraintOperator.EQUAL
         if operator_mod in ["greater_than_or_equal", "at_least"]:
-            return "greater_than_or_equal"
-        if operator_mod in ["yes", "no"]:
-            return operator_mod  # type: ignore
-        if operator_mod in ["should_only"]:
-            return "yes"
-        if operator_mod in ["should_not"]:
-            return "no"
+            return ConstraintOperator.GREATER_THAN_OR_EQUAL
+        if operator_mod in ["yes", "should_only"]:
+            return ConstraintOperator.YES
+        if operator_mod in ["no", "should_not"]:
+            return ConstraintOperator.NO
         raise ValueError(f"Operator {operator} not recognized")
 
     # @staticmethod

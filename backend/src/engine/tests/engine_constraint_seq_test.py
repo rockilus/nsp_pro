@@ -14,6 +14,8 @@ from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
 from engine.types.input_output_types import (
     Assignment,
     Constraint,
+    ConstraintOperator,
+    ConstraintType,
     Inputs,
     Outputs,
     Request,
@@ -29,8 +31,8 @@ class TestConstraint:
     def constraint_seq_hard(self) -> Constraint:
         return Constraint(
             id="constraint_seq_hard",
-            constraint_type="seq",
-            operator="less_than_or_equal",
+            constraint_type=ConstraintType.SEQ,
+            operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=4,
             target_unit="day",
             worker_var=VarWorker(selector="all", target=[], num_eligible_workers=0),
@@ -53,8 +55,8 @@ class TestConstraint:
     def constraint_seq_soft(self) -> Constraint:
         return Constraint(
             id="constraint_seq_soft",
-            constraint_type="seq",
-            operator="less_than_or_equal",
+            constraint_type=ConstraintType.SEQ,
+            operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=2,
             target_unit="day",
             worker_var=VarWorker(selector="all", target=[], num_eligible_workers=0),
@@ -193,7 +195,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             ),
         ]
         inputs.requests = requests
-        constraint_seq_hard.operator = "equal"
+        constraint_seq_hard.operator = ConstraintOperator.EQUAL
         inputs.constraints = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -297,7 +299,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             ),
         ]
         inputs.requests = requests
-        constraint_seq_hard.operator = "greater_than_or_equal"
+        constraint_seq_hard.operator = ConstraintOperator.GREATER_THAN_OR_EQUAL
         inputs.constraints = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -465,7 +467,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         ]
 
         inputs.requests = requests
-        constraint_seq_hard.operator = "greater_than_or_equal"
+        constraint_seq_hard.operator = ConstraintOperator.GREATER_THAN_OR_EQUAL
         constraint_seq_hard.shift_var.target = ["s1"]
         inputs.constraints = [constraint_seq_hard]
         outputs = engine_solve(inputs)
@@ -626,7 +628,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             ),
         ]
         inputs.requests = requests
-        constraint_seq_hard.operator = "equal"
+        constraint_seq_hard.operator = ConstraintOperator.EQUAL
         inputs.constraints = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -686,7 +688,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
             ),
         ]
         inputs.requests = requests
-        constraint_seq_hard.operator = "greater_than_or_equal"
+        constraint_seq_hard.operator = ConstraintOperator.GREATER_THAN_OR_EQUAL
         inputs.constraints = [constraint_seq_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -801,7 +803,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             ),
         ]
         inputs.requests = requests
-        constraint_seq_soft.operator = "equal"
+        constraint_seq_soft.operator = ConstraintOperator.EQUAL
         inputs.constraints = [constraint_seq_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -905,7 +907,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             ),
         ]
         inputs.requests = requests
-        constraint_seq_soft.operator = "greater_than_or_equal"
+        constraint_seq_soft.operator = ConstraintOperator.GREATER_THAN_OR_EQUAL
         inputs.constraints = [constraint_seq_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -938,7 +940,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             ),
         ]
         inputs.requests = requests
-        constraint_seq_hard.operator = "equal"
+        constraint_seq_hard.operator = ConstraintOperator.EQUAL
         inputs.constraints = [
             constraint_seq_hard,
             constraint_seq_soft,
@@ -984,7 +986,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             ),
         ]
         inputs.requests = requests
-        constraint_seq_hard.operator = "equal"
+        constraint_seq_hard.operator = ConstraintOperator.EQUAL
         inputs.constraints = [
             constraint_seq_hard,
             constraint_seq_soft,
@@ -1015,7 +1017,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             ),
         ]
         inputs.requests = requests
-        constraint_seq_hard.operator = "equal"
+        constraint_seq_hard.operator = ConstraintOperator.EQUAL
         inputs.constraints = [
             constraint_seq_hard,
             constraint_seq_soft,
@@ -1077,7 +1079,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
             ),
         ]
         inputs.requests = requests
-        constraint_seq_hard.operator = "equal"
+        constraint_seq_hard.operator = ConstraintOperator.EQUAL
         inputs.constraints = [
             constraint_seq_hard,
             constraint_seq_soft,

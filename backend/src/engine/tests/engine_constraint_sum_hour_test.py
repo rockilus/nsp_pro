@@ -12,6 +12,8 @@ from engine.tests.engine_test import TestEngine
 from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
 from engine.types.input_output_types import (
     Constraint,
+    ConstraintOperator,
+    ConstraintType,
     Inputs,
     Outputs,
     VarDay,
@@ -27,8 +29,8 @@ class TestConstraint:
     def constraint_sum_hard(self) -> Constraint:
         return Constraint(
             id="constraint_sum_hard",
-            constraint_type="sum",
-            operator="less_than_or_equal",
+            constraint_type=ConstraintType.SUM,
+            operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=12,
             target_unit="hour",
             worker_var=VarWorker(
@@ -51,8 +53,8 @@ class TestConstraint:
     def constraint_sum_soft(self) -> Constraint:
         return Constraint(
             id="constraint_sum_soft",
-            constraint_type="sum",
-            operator="less_than_or_equal",
+            constraint_type=ConstraintType.SUM,
+            operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=8,
             target_unit="hour",
             worker_var=VarWorker(
@@ -125,7 +127,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_sum_hard: Constraint,
     ) -> None:
         # 12 hours per week for worker w0
-        constraint_sum_hard.operator = "equal"
+        constraint_sum_hard.operator = ConstraintOperator.EQUAL
         inputs.constraints = [constraint_sum_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -154,7 +156,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_sum_hard: Constraint,
     ) -> None:
         # At least 12 hours per week for worker w0
-        constraint_sum_hard.operator = "greater_than_or_equal"
+        constraint_sum_hard.operator = ConstraintOperator.GREATER_THAN_OR_EQUAL
         inputs.constraints = [constraint_sum_hard]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -183,7 +185,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
         constraint_sum_hard: Constraint,
     ) -> None:
         # Worker w0 works 12 hours total
-        constraint_sum_hard.operator = "equal"
+        constraint_sum_hard.operator = ConstraintOperator.EQUAL
         constraint_sum_hard.day_var.selector = "all"
         inputs.constraints = [constraint_sum_hard]
         outputs = engine_solve(inputs)
@@ -208,7 +210,7 @@ class TestConstraintHard(TestEngine, TestConstraint):
     ) -> None:
         # Worker w0 works 12 hours during first week (between
         # 2023-10-02 and 2023-10-08)
-        constraint_sum_hard.operator = "equal"
+        constraint_sum_hard.operator = ConstraintOperator.EQUAL
         constraint_sum_hard.day_var.selector = "period"
         constraint_sum_hard.day_var.start_date = date.fromisoformat("2023-10-02")
         constraint_sum_hard.day_var.end_date = date.fromisoformat("2023-10-08")
@@ -269,7 +271,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_sum_soft: Constraint,
     ) -> None:
         # Exactly 4 shift off per week
-        constraint_sum_soft.operator = "equal"
+        constraint_sum_soft.operator = ConstraintOperator.EQUAL
         inputs.constraints = [constraint_sum_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -297,7 +299,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
         constraint_sum_soft: Constraint,
     ) -> None:
         # At least 4 shift off per week
-        constraint_sum_soft.operator = "greater_than_or_equal"
+        constraint_sum_soft.operator = ConstraintOperator.GREATER_THAN_OR_EQUAL
         inputs.constraints = [constraint_sum_soft]
         outputs = engine_solve(inputs)
         assignments = outputs.assignments
@@ -328,7 +330,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
     ) -> None:
         # Worker w0 works excalty 12 hours per week hard, at most 8 hours per
         # week soft
-        constraint_sum_hard.operator = "equal"
+        constraint_sum_hard.operator = ConstraintOperator.EQUAL
         inputs.constraints = [
             constraint_sum_hard,
             constraint_sum_soft,
@@ -365,7 +367,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
     ) -> None:
         # Worker w0 works excalty 12 hours per week hard, at most 8 hours per
         # week soft
-        constraint_sum_hard.operator = "equal"
+        constraint_sum_hard.operator = ConstraintOperator.EQUAL
         inputs.constraints = [
             constraint_sum_hard,
             constraint_sum_soft,
@@ -392,7 +394,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
     ) -> None:
         # Worker w0 works excalty 12 hours per week hard, at most 8 hours per
         # week soft
-        constraint_sum_hard.operator = "equal"
+        constraint_sum_hard.operator = ConstraintOperator.EQUAL
         inputs.constraints = [
             constraint_sum_hard,
             constraint_sum_soft,
@@ -430,7 +432,7 @@ class TestConstraintSoft(TestEngine, TestConstraint):
     ) -> None:
         # Worker w0 works excalty 12 hours per week hard, at most 8 hours per
         # week soft
-        constraint_sum_hard.operator = "equal"
+        constraint_sum_hard.operator = ConstraintOperator.EQUAL
         inputs.constraints = [
             constraint_sum_hard,
             constraint_sum_soft,
