@@ -97,7 +97,7 @@ class MapShift:
 
     def get_coords_shifts_ord(
         self, cba: ConstraintBuildAugmented
-    ) -> List[Tuple[str, str]]:
+    ) -> List[Tuple[Shift, Shift]]:
         swos_shift_ref = self.get_shift_values(cba.blocks, "shift_reference")
         swos_shift_rel = self.get_shift_values(cba.blocks, "shift_relative")
         shift_ref_ids = self.get_target_ids(
@@ -110,11 +110,9 @@ class MapShift:
             cba.constraint_type,
             cba.missing_attributes,
         )
-        return [
-            (s_ref, s_rel)
-            for s_ref in shift_ref_ids
-            for s_rel in shift_rel_ids
-        ]
+        shifts_ref = [s for s in self.shifts if s.id in shift_ref_ids]
+        shifts_rel = [s for s in self.shifts if s.id in shift_rel_ids]
+        return [(s_ref, s_rel) for s_ref in shifts_ref for s_rel in shifts_rel]
 
     def get_coords_shifts_fil(
         self,

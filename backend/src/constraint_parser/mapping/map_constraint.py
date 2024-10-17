@@ -128,6 +128,42 @@ class MapConstaint:
             constraint_build_id=cba.id,
         )
 
+    def map_constraint_ord(
+        self, cba: ConstraintBuildAugmented, schedule_id: str
+    ) -> ConstraintOrd:
+        cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
+        coord_workers = self.map_worker.get_coord_workers(cba)
+        coord_days = self.map_day.get_coords_days_ord(cba)
+        coord_shifts = self.map_shift.get_coords_shifts_ord(cba)
+
+        constraints_vars: List[
+            Tuple[Tuple[str, str, str], Tuple[str, str, str]]
+        ] = []
+        for w in coord_workers:
+            for d1, d2 in coord_days:
+                for s_ref, s_rel in coord_shifts:
+                    constraint_vars = (
+                        (w.id, d1.isoformat(), s_ref.id),
+                        (w.id, d2.isoformat(), s_rel.id),
+                    )
+                    constraints_vars.append(constraint_vars)
+
+        return ConstraintOrd(
+            id=cba.id,
+            constraint_type=cba.constraint_type,
+            operator=cstr_operator,
+            target_value=self.get_target_value(
+                cba.blocks, cba.constraint_type
+            ),
+            target_unit="",
+            constraint_variables=constraints_vars,
+            active=cba.active,
+            hard=cba.hard,
+            priority=cba.priority,
+            schedule_id=schedule_id,
+            constraint_build_id=cba.id,
+        )
+
     def __call__(
         self, cstr_build: ConstraintBuildAugmented, schedule_id: str
     ) -> Constraint:

@@ -30,17 +30,19 @@ class MapDay:
 
     def get_coords_days_ord(
         self, cba: ConstraintBuildAugmented
-    ) -> List[Tuple[str, str]]:
-        d_vars: List[Tuple[str, str]] = []
+    ) -> List[Tuple[date, date]]:
+        d_vars: List[Tuple[date, date]] = []
         selector = self.get_selector(cba.blocks, cba.constraint_type)
         interval = self.get_interval(cba.blocks, cba.constraint_type)
         target = self.get_target(cba.blocks, cba.constraint_type)
         if selector == "all":
             for i in range(
                 abs(min(interval, 0)),
-                len(self.days) - max(interval, 0),
+                len(self.days_solving) - max(interval, 0),
             ):
-                d_vars.append((self.days[i], self.days[i + interval]))
+                d_vars.append(
+                    (self.days_solving[i], self.days_solving[i + interval])
+                )
             return d_vars
         start = (
             target
@@ -49,13 +51,13 @@ class MapDay:
         )
         for i in range(
             start,
-            len(self.days) - max(interval, 0),
+            len(self.days_solving) - max(interval, 0),
             Constants.NUM_DAYS_WEEK,
         ):
             d_vars.append(
                 (
-                    self.days[i],
-                    self.days[i + interval],
+                    self.days_solving[i],
+                    self.days_solving[i + interval],
                 )
             )
         return d_vars
