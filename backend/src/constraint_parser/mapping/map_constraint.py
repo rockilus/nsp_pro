@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Dict, List, Tuple
 
 from constraint_parser.mapping.map_day import MapDay
@@ -12,23 +13,84 @@ from core import (
     ConstraintType,
     Shift,
     Worker,
+    ConstraintSum,
 )
-from utils.constants import Constants
 
 
 class MapConstaint:
     def __init__(
         self,
         workers: List[Worker],
-        shifts: List[Shift],
         worker_dim_dict: Dict,
+        days_solving: List[date],
+        shifts: List[Shift],
         shift_dim_dict: Dict,
+        shift_ids_in_coverage: List[str] | None = None,
     ) -> None:
         self.workers = workers
         self.shifts = shifts
         self.map_worker = MapWorker(workers, worker_dim_dict)
-        self.map_day = MapDay()
-        self.map_shift = MapShift(shifts, shift_dim_dict)
+        self.map_day = MapDay(days_solving)
+        self.map_shift = MapShift(
+            shifts, shift_dim_dict, shift_ids_in_coverage
+        )
+
+    def map_constraint_sum(
+        self, cba: ConstraintBuildAugmented, schedule_id: str
+    ) -> ConstraintSum:
+        cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
+        coord_workers = self.map_worker.get_coord_workers(cba)
+        coord_days = self.map_day.get_coords_days_sum(cba)
+        coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
+        # w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
+        # if not all(isinstance(item, str) for item in s_vars):
+        #     raise TypeError(
+        #         "Expected a list of strings, "
+        #         + f"but got {format(type(s_vars))} instead."
+        #     )
+        # if constraint.target_unit == "hour":
+        #     for w in w_vars:
+        #         for period in d_vars:
+        #             constraint_vars = []
+        #             constraint_durs = []
+        #             for s in s_vars:
+        #                 constraint_vars.extend(
+        #                     [self.variables[w, d, s] for d in period]  # type: ignore
+        #                 )
+        #                 constraint_durs.extend(
+        #                     [self.durations[s] for _ in period]  # type: ignore
+        #                 )
+        #             self._add_constraint_sum_hour(
+        #                 constraint,
+        #                 constraint_vars,
+        #                 constraint_durs,
+        #                 hard_to_soft,
+        #             )
+        # else:
+        constraints_vars = []
+        for w in coord_workers:
+            for period in coord_days:
+                constraint_vars = []
+                for s in coord_shifts:
+                    constraint_vars += [
+                        (w.id, d.isoformat(), s.id) for d in period
+                    ]
+                constraints_vars.append(constraint_vars)
+        return ConstraintSum(
+            id=cba.id,
+            constraint_type=cba.constraint_type,
+            operator=cstr_operator,
+            target_value=self.get_target_value(
+                cba.blocks, cba.constraint_type
+            ),
+            target_unit="",
+            constraint_variables=constraints_vars,
+            active=cba.active,
+            hard=cba.hard,
+            priority=cba.priority,
+            schedule_id=schedule_id,
+            constraint_build_id=cba.id,
+        )
 
     def __call__(
         self, cstr_build: ConstraintBuildAugmented, schedule_id: str

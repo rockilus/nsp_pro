@@ -16,9 +16,28 @@ class MapWorker:
         self.workers = workers
         self.worker_dim_dict = worker_dim_dict
 
-    def __call__(self, cstr_build: ConstraintBuildAugmented) -> List[str]:
-        swos_worker = self.get_worker_shift_worker_options(cstr_build.blocks)
-        return self.get_target_ids(swos_worker, cstr_build.missing_attributes)
+    def get_coord_workers(self, cba: ConstraintBuildAugmented) -> List[Worker]:
+        swos_worker = self.get_worker_shift_worker_options(cba.blocks)
+        if self.get_selector(swos_worker) == "all":
+            return self.workers
+        worker_ids = []
+        for value in swos_worker:
+            if value.id_type == "worker":
+                if not self.check_worker_id(value.id):
+                    raise ValueError(
+                        f"Worker {value.name} with id {value.id} not found"
+                    )
+                worker_ids.append(value.id)
+            elif value.id_type == "dimension":
+                target_ids = self.get_target_ids_dimension(
+                    value, cba.missing_attributes
+                )
+                if target_ids:
+                    worker_ids += target_ids
+        if not worker_ids:
+            raise ValueError("No workers found")
+        worker_ids = sorted(list(set(worker_ids)))
+        return [w for w in self.workers if w.id in worker_ids]
 
     def get_selector(
         self, swos_worker: List[ShiftWorkerOption]
@@ -29,31 +48,6 @@ class MapWorker:
         if any("all workers" in v for v in string_values):
             return "all"
         return "equal"
-
-    def get_target_ids(
-        self,
-        swos_worker: List[ShiftWorkerOption],
-        missing_properties: List[MissingAttribute],
-    ) -> List[str]:
-        if self.get_selector(swos_worker) == "all":
-            return [w.id for w in self.workers]
-        out = []
-        for value in swos_worker:
-            if value.id_type == "worker":
-                if not self.check_worker_id(value.id):
-                    raise ValueError(
-                        f"Worker {value.name} with id {value.id} not found"
-                    )
-                out.append(value.id)
-            elif value.id_type == "dimension":
-                target_ids = self.get_target_ids_dimension(
-                    value, missing_properties
-                )
-                if target_ids:
-                    out += target_ids
-        if not out:
-            raise ValueError("No workers found")
-        return sorted(list(set(out)))
 
     def get_target_ids_dimension(
         self,

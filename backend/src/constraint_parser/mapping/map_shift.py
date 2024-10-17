@@ -1,4 +1,4 @@
-from typing import Dict, List, Set, Tuple, Union
+from typing import Dict, List, Set, Tuple
 
 from constraint_parser.mapping.utils import find_block_by_name
 from core import (
@@ -16,9 +16,15 @@ from utils.constants import Constants
 
 
 class MapShift:
-    def __init__(self, shifts: List[Shift], shift_dim_dict: Dict) -> None:
+    def __init__(
+        self,
+        shifts: List[Shift],
+        shift_dim_dict: Dict,
+        shift_ids_in_coverage: List[str] | None = None,
+    ) -> None:
         self.shifts = shifts
         self.shift_dim_dict = shift_dim_dict
+        self.shift_ids_in_coverage = shift_ids_in_coverage
 
     def __call__(
         self,
@@ -61,6 +67,70 @@ class MapShift:
                 cstr_build.missing_attributes,
             ),
         )
+
+    def get_coords_shifts(
+        self,
+        cba: ConstraintBuildAugmented,
+        cstr_operator: ConstraintOperator | None,
+    ) -> List[Shift]:
+        swos_shift = self.get_shift_values(cba.blocks, "shift")
+        selector = self.get_selector(swos_shift, cba.constraint_type)
+        target_ids = self.get_target_ids(
+            swos_shift,
+            cba.constraint_type,
+            cba.missing_attributes,
+            cstr_operator,
+        )
+        if selector == "all":
+            if self.shift_ids_in_coverage is not None:
+                return [
+                    s
+                    for s in self.shifts
+                    if s.id in self.shift_ids_in_coverage
+                ]
+            return self.shifts
+        if selector == "equal":
+            return [s for s in self.shifts if s.id in target_ids]
+        raise NotImplementedError(
+            f"Shift selector {selector} " + "not implemented"
+        )
+
+    def get_coords_shifts_ord(
+        self, cba: ConstraintBuildAugmented
+    ) -> List[Tuple[str, str]]:
+        swos_shift_ref = self.get_shift_values(cba.blocks, "shift_reference")
+        swos_shift_rel = self.get_shift_values(cba.blocks, "shift_relative")
+        shift_ref_ids = self.get_target_ids(
+            swos_shift_ref,
+            cba.constraint_type,
+            cba.missing_attributes,
+        )
+        shift_rel_ids = self.get_target_ids(
+            swos_shift_rel,
+            cba.constraint_type,
+            cba.missing_attributes,
+        )
+        return [
+            (s_ref, s_rel)
+            for s_ref in shift_ref_ids
+            for s_rel in shift_rel_ids
+        ]
+
+    def get_coords_shifts_fil(
+        self,
+        cba: ConstraintBuildAugmented,
+        cstr_operator: ConstraintOperator | None,
+    ) -> List[str]:
+        swos_shift = self.get_shift_values(cba.blocks, "shift")
+        shift_ids = self.get_target_ids(
+            swos_shift,
+            cba.constraint_type,
+            cba.missing_attributes,
+            cstr_operator,
+        )
+        if cstr_operator == ConstraintOperator.NO:
+            return shift_ids
+        return [s.id for s in self.shifts if s not in shift_ids]
 
     def get_selector(
         self, values: List[ShiftWorkerOption], cstr_type: ConstraintType | None
@@ -183,64 +253,3 @@ class MapShift:
                 )
             return shift_block.value  # type: ignore
         raise ValueError("Shift block not found")
-
-    def get_coords_shifts(
-        self,
-        cba: ConstraintBuildAugmented,
-        cstr_operator: ConstraintOperator | None,
-        shifts_in_coverage: Union[Set[str], None] = None,
-    ) -> List[str] | List[List[str]]:
-        swos_shift = self.get_shift_values(cba.blocks, "shift")
-        selector = self.get_selector(swos_shift, cba.constraint_type)
-        target_ids = self.get_target_ids(
-            swos_shift,
-            cba.constraint_type,
-            cba.missing_attributes,
-            cstr_operator,
-        )
-        if selector == "all":
-            if shifts_in_coverage is not None:
-                return [s for s in self.shift_ids if s in shifts_in_coverage]
-            return self.shift_ids
-        if selector == "equal":
-            return target_ids
-        raise NotImplementedError(
-            f"Shift selector {selector} " + "not implemented"
-        )
-
-    def get_coords_shifts_ord(
-        self, cba: ConstraintBuildAugmented
-    ) -> List[Tuple[str, str]]:
-        swos_shift_ref = self.get_shift_values(cba.blocks, "shift_reference")
-        swos_shift_rel = self.get_shift_values(cba.blocks, "shift_relative")
-        shift_ref_ids = self.get_target_ids(
-            swos_shift_ref,
-            cba.constraint_type,
-            cba.missing_attributes,
-        )
-        shift_rel_ids = self.get_target_ids(
-            swos_shift_rel,
-            cba.constraint_type,
-            cba.missing_attributes,
-        )
-        return [
-            (s_ref, s_rel)
-            for s_ref in shift_ref_ids
-            for s_rel in shift_rel_ids
-        ]
-
-    def get_coords_shifts_fil(
-        self,
-        cba: ConstraintBuildAugmented,
-        cstr_operator: ConstraintOperator | None,
-    ) -> List[str]:
-        swos_shift = self.get_shift_values(cba.blocks, "shift")
-        shift_ids = self.get_target_ids(
-            swos_shift,
-            cba.constraint_type,
-            cba.missing_attributes,
-            cstr_operator,
-        )
-        if cstr_operator == ConstraintOperator.NO:
-            return shift_ids
-        return [s.id for s in self.shifts if s not in shift_ids]

@@ -1,26 +1,97 @@
-from datetime import date, timedelta
+from datetime import date
 from typing import List, Tuple
 
 from constraint_parser.mapping.utils import find_block_by_name
-from core import Block, ConstraintBuildAugmented, ConstraintType, VarDay
+from core import Block, ConstraintBuildAugmented, ConstraintType
 from utils.constants import Constants
 
 
 class MapDay:
-    def __call__(self, cstr_build: ConstraintBuildAugmented) -> VarDay:
-        return VarDay(
-            selector=self.get_selector(
-                cstr_build.blocks, cstr_build.constraint_type
-            ),
-            target=self.get_target(
-                cstr_build.blocks, cstr_build.constraint_type
-            ),
-            start_date=date.today(),
-            end_date=date.today(),
-            interval=self.get_interval(
-                cstr_build.blocks, cstr_build.constraint_type
-            ),
+    def __init__(self, days_solving: List[date]) -> None:
+        self.days_solving = days_solving
+
+    def get_coords_days(
+        self, cba: ConstraintBuildAugmented
+    ) -> List[List[str]]:
+        selector = self.get_selector(cba.blocks, cba.constraint_type)
+        target = self.get_target(cba.blocks, cba.constraint_type)
+        if selector == "all":
+            return self.days
+        if selector == "week_day_index":
+            return [
+                self.days[i]
+                for i in range(
+                    target,
+                    len(self.days),
+                    Constants.NUM_DAYS_WEEK,
+                )
+            ]
+        raise NotImplementedError(
+            f"Day selector {selector} " + "not implemented"
         )
+
+    def get_coords_days_ord(
+        self, cba: ConstraintBuildAugmented
+    ) -> List[Tuple[str, str]]:
+        d_vars: List[Tuple[str, str]] = []
+        selector = self.get_selector(cba.blocks, cba.constraint_type)
+        interval = self.get_interval(cba.blocks, cba.constraint_type)
+        target = self.get_target(cba.blocks, cba.constraint_type)
+        if selector == "all":
+            for i in range(
+                abs(min(interval, 0)),
+                len(self.days) - max(interval, 0),
+            ):
+                d_vars.append((self.days[i], self.days[i + interval]))
+            return d_vars
+        start = (
+            target
+            if (target + interval >= 0)
+            else target + Constants.NUM_DAYS_WEEK
+        )
+        for i in range(
+            start,
+            len(self.days) - max(interval, 0),
+            Constants.NUM_DAYS_WEEK,
+        ):
+            d_vars.append(
+                (
+                    self.days[i],
+                    self.days[i + interval],
+                )
+            )
+        return d_vars
+
+    def get_coords_days_sum(
+        self, cba: ConstraintBuildAugmented
+    ) -> List[List[date]]:
+        selector = self.get_selector(cba.blocks, cba.constraint_type)
+        if selector == "all":
+            return [self.days_solving]
+        if selector == "week":
+            weekday_first_day = self.days_solving[0].weekday()
+            d_indexes = self._build_weeks_day_index_list(
+                weekday_first_day, len(self.days_solving)
+            )
+            return [
+                [self.days_solving[i] for i in d_index]
+                for d_index in d_indexes
+            ]
+        raise ValueError(f"Selector {selector} not recognized")
+        # period = [
+        #     cba.day_var.start_date + timedelta(days=i)
+        #     for i in range(
+        #         (cba.day_var.end_date - cba.day_var.start_date).days + 1
+        #     )
+        # ]
+        # return [
+        #     [
+        #         day.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
+        #         for day in period
+        #         if day.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
+        #         in self.days
+        #     ]
+        # ]
 
     def get_selector(
         self, blocks: List[Block], cstr_type: ConstraintType
@@ -86,86 +157,6 @@ class MapDay:
                     return qty_block.value
             raise ValueError("Quantity block not found")
         return 0
-
-    def get_coords_days(
-        self, cba: ConstraintBuildAugmented
-    ) -> List[List[str]]:
-        selector = self.get_selector(cba.blocks, cba.constraint_type)
-        target = self.get_target(cba.blocks, cba.constraint_type)
-        if selector == "all":
-            return self.days
-        if selector == "week_day_index":
-            return [
-                self.days[i]
-                for i in range(
-                    target,
-                    len(self.days),
-                    Constants.NUM_DAYS_WEEK,
-                )
-            ]
-        raise NotImplementedError(
-            f"Day selector {selector} " + "not implemented"
-        )
-
-    def get_coords_days_ord(
-        self, cba: ConstraintBuildAugmented
-    ) -> List[Tuple[str, str]]:
-        d_vars: List[Tuple[str, str]] = []
-        selector = self.get_selector(cba.blocks, cba.constraint_type)
-        interval = self.get_interval(cba.blocks, cba.constraint_type)
-        target = self.get_target(cba.blocks, cba.constraint_type)
-        if selector == "all":
-            for i in range(
-                abs(min(interval, 0)),
-                len(self.days) - max(interval, 0),
-            ):
-                d_vars.append((self.days[i], self.days[i + interval]))
-            return d_vars
-        start = (
-            target
-            if (target + interval >= 0)
-            else target + Constants.NUM_DAYS_WEEK
-        )
-        for i in range(
-            start,
-            len(self.days) - max(interval, 0),
-            Constants.NUM_DAYS_WEEK,
-        ):
-            d_vars.append(
-                (
-                    self.days[i],
-                    self.days[i + interval],
-                )
-            )
-        return d_vars
-
-    def _get_coords_days_sum(
-        self, cba: ConstraintBuildAugmented
-    ) -> List[List[str]]:
-        selector = self.get_selector(cba.blocks, cba.constraint_type)
-        if selector == "all":
-            return [self.days]
-        if selector == "week":
-            weekday_first_day = date.fromisoformat(self.days[0]).weekday()
-            d_indexes = self._build_weeks_day_index_list(
-                weekday_first_day, len(self.days)
-            )
-            return [[self.days[i] for i in d_index] for d_index in d_indexes]
-        raise ValueError(f"Selector {selector} not recognized")
-        # period = [
-        #     cba.day_var.start_date + timedelta(days=i)
-        #     for i in range(
-        #         (cba.day_var.end_date - cba.day_var.start_date).days + 1
-        #     )
-        # ]
-        # return [
-        #     [
-        #         day.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
-        #         for day in period
-        #         if day.strftime(Constants.ENGINE_STRING_DATE_FORMAT)
-        #         in self.days
-        #     ]
-        # ]
 
     @staticmethod
     def _build_weeks_day_index_list(
