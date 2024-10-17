@@ -126,19 +126,56 @@ class ConstraintOperator(Enum):
 
 
 @dataclass
-# pylint: disable=too-many-instance-attributes
 class Constraint:
     id: str
     constraint_type: ConstraintType
     operator: ConstraintOperator | None
     target_value: int
     target_unit: str  # worker, shift, day, hour
-    worker_var: VarWorker
-    day_var: VarDay
-    shift_var: VarShift
+    active: bool
     hard: bool
-    hard_to_soft: bool
-    penalty: int
+    priority: str
+    schedule_id: str
+    constraint_build_id: str
+
+
+# for each worker, list for each target shifts on the target period
+@dataclass
+class ConstraintSum(Constraint):
+    constraint_variables: List[List[Tuple[str, str, str]]]
+
+
+# for each worker and shift, list for days over which target periods are covered
+@dataclass
+class ConstraintSeq(Constraint):
+    constraint_variables: List[List[Tuple[str, str, str]]]
+
+
+# for each worker, tuple for d_ref/s_ref and d_rel/s_rel, for all combinations
+@dataclass
+class ConstraintOrd(Constraint):
+    constraint_variables: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
+
+
+# list of variables to set to 0
+@dataclass
+class ConstraintFil(Constraint):
+    constraint_variables: List[Tuple[str, str, str]]
+
+
+# for each worker, for all target days and shifts
+@dataclass
+class ConstraintFai(Constraint):
+    constraint_variables: List[List[Tuple[str, str, str]]]
+
+
+@dataclass
+class Constraints:
+    sum: List[ConstraintSum]
+    seq: List[ConstraintSeq]
+    ord: List[ConstraintOrd]
+    fil: List[ConstraintFil]
+    fai: List[ConstraintFai]
 
 
 @dataclass
@@ -152,7 +189,7 @@ class Inputs:
     variable_space: VariableSpace
     coverage: Coverage
     requests: List[Request]
-    constraints: List[Constraint]
+    constraints: Constraints
     worker_shift_filters: List[Tuple[str, str]]
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]

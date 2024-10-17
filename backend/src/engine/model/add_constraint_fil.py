@@ -4,30 +4,19 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import Constraint
+from engine.types.input_output_types import ConstraintFil
 
 
 class AddConstraintFil(AddConstraint):
-    def add_constraint(self, constraint: Constraint, hard_to_soft: bool) -> None:
-        # pylint: disable=R0801
-        w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
-        if not all(isinstance(item, str) for item in s_vars):
-            raise TypeError(
-                "Expected a list of strings, "
-                + f"but got {format(type(s_vars))} instead."
+    def add_constraint(self, constraint: ConstraintFil, hard_to_soft: bool) -> None:
+        for coord in constraint.constraint_variables:
+            self._add_constraint_fil_to_model(
+                constraint, self.variables[coord], hard_to_soft
             )
-        for w in w_vars:
-            for d in d_vars:
-                for s in s_vars:
-                    self._add_constraint_fil_to_model(
-                        constraint,
-                        self.variables[w, d, s],  # type: ignore
-                        hard_to_soft,
-                    )
 
     def _add_constraint_fil_to_model(
         self,
-        constraint: Constraint,
+        constraint: ConstraintFil,
         cstr_var: cp_model.IntVar,
         hard_to_soft: bool,
     ) -> None:

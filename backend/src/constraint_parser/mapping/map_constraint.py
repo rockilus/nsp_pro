@@ -35,9 +35,7 @@ class MapConstaint:
         self.shifts = shifts
         self.map_worker = MapWorker(workers, worker_dim_dict)
         self.map_day = MapDay(days_solving)
-        self.map_shift = MapShift(
-            shifts, shift_dim_dict, shift_ids_in_coverage
-        )
+        self.map_shift = MapShift(shifts, shift_dim_dict, shift_ids_in_coverage)
 
     def map_constraint_sum(
         self, cba: ConstraintBuildAugmented, schedule_id: str
@@ -76,17 +74,13 @@ class MapConstaint:
             for period in coord_days:
                 constraint_vars = []
                 for s in coord_shifts:
-                    constraint_vars += [
-                        (w.id, d.isoformat(), s.id) for d in period
-                    ]
+                    constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
                 constraints_vars.append(constraint_vars)
         return ConstraintSum(
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(
-                cba.blocks, cba.constraint_type
-            ),
+            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
             target_unit="",
             constraint_variables=constraints_vars,
             active=cba.active,
@@ -96,7 +90,7 @@ class MapConstaint:
             constraint_build_id=cba.id,
         )
 
-    def map_constaint_seq(
+    def map_constraint_seq(
         self, cba: ConstraintBuildAugmented, schedule_id: str
     ) -> ConstraintSeq:
         cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
@@ -116,9 +110,7 @@ class MapConstaint:
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(
-                cba.blocks, cba.constraint_type
-            ),
+            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
             target_unit="",
             constraint_variables=constraints_vars,
             active=cba.active,
@@ -136,9 +128,7 @@ class MapConstaint:
         coord_days = self.map_day.get_coords_days_ord(cba)
         coord_shifts = self.map_shift.get_coords_shifts_ord(cba)
 
-        constraints_vars: List[
-            Tuple[Tuple[str, str, str], Tuple[str, str, str]]
-        ] = []
+        constraints_vars: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]] = []
         for w in coord_workers:
             for d1, d2 in coord_days:
                 for s_ref, s_rel in coord_shifts:
@@ -152,9 +142,7 @@ class MapConstaint:
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(
-                cba.blocks, cba.constraint_type
-            ),
+            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
             target_unit="",
             constraint_variables=constraints_vars,
             active=cba.active,
@@ -182,9 +170,7 @@ class MapConstaint:
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(
-                cba.blocks, cba.constraint_type
-            ),
+            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
             target_unit="",
             constraint_variables=constraints_vars,
             active=cba.active,
@@ -203,11 +189,7 @@ class MapConstaint:
         coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
 
         constraints_vars: List[List[Tuple[str, str, str]]] = [
-            [
-                (w.id, d.isoformat(), s.id)
-                for d in coord_days
-                for s in coord_shifts
-            ]
+            [(w.id, d.isoformat(), s.id) for d in coord_days for s in coord_shifts]
             for w in coord_workers
         ]
 
@@ -215,9 +197,7 @@ class MapConstaint:
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(
-                cba.blocks, cba.constraint_type
-            ),
+            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
             target_unit="",
             constraint_variables=constraints_vars,
             active=cba.active,
@@ -258,9 +238,7 @@ class MapConstaint:
             for period in coord_days:
                 constraint_vars = []
                 for s in coord_shifts:
-                    constraint_vars += [
-                        (w.id, d.isoformat(), s.id) for d in period
-                    ]
+                    constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
                 constraints_vars.append(constraint_vars)
 
         return ConstraintSum(
@@ -281,9 +259,7 @@ class MapConstaint:
     def integer_division_list(numerator: int, denominator: int) -> List[int]:
         quotient = numerator // denominator
         remainder = numerator % denominator
-        result = [quotient + 1] * remainder + [quotient] * (
-            denominator - remainder
-        )
+        result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
         return result
 
     def get_operator(
@@ -300,9 +276,7 @@ class MapConstaint:
             return ConstraintOperator.YES
         raise ValueError("Operator not found")
 
-    def get_target_value(
-        self, blocks: List[Block], cstr_type: ConstraintType
-    ) -> int:
+    def get_target_value(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
         if cstr_type in [
             ConstraintType.ORD,
             ConstraintType.FIL,

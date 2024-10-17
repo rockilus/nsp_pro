@@ -159,9 +159,7 @@ class ConstraintSeq(Constraint):
 # for each worker, tuple for d_ref/s_ref and d_rel/s_rel, for all combinations
 @dataclass
 class ConstraintOrd(Constraint):
-    constraint_variables: List[
-        Tuple[Tuple[str, str, str], Tuple[str, str, str]]
-    ]
+    constraint_variables: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
 
 
 # list of variables to set to 0
@@ -174,6 +172,15 @@ class ConstraintFil(Constraint):
 @dataclass
 class ConstraintFai(Constraint):
     constraint_variables: List[List[Tuple[str, str, str]]]
+
+
+@dataclass
+class Constraints:
+    sum: List[ConstraintSum]
+    seq: List[ConstraintSeq]
+    ord: List[ConstraintOrd]
+    fil: List[ConstraintFil]
+    fai: List[ConstraintFai]
 
 
 @dataclass

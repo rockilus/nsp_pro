@@ -8,28 +8,18 @@ from engine.model.utils.model_utils import (
     build_var_name_seq,
     get_nested_value,
 )
-from engine.types.input_output_types import Constraint, ConstraintOperator
+from engine.types.input_output_types import ConstraintOperator, ConstraintSeq
 
 
 class AddConstraintSeq(AddConstraint):
-    def add_constraint(self, constraint: Constraint, hard_to_soft: bool) -> None:
-        # pylint: disable=R0801
-        w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
-        if not all(isinstance(item, str) for item in s_vars):
-            raise TypeError(
-                "Expected a list of strings, "
-                + f"but got {format(type(s_vars))} instead."
-            )
-        for w in w_vars:
-            for s in s_vars:
-                constraint_vars = []
-                for d in d_vars:
-                    constraint_vars.append(self.variables[w, d, s])  # type: ignore
+    def add_constraint(self, constraint: ConstraintSeq, hard_to_soft: bool) -> None:
+        for coords in constraint.constraint_variables:
+            constraint_vars = [self.variables[coord] for coord in coords]
             self._add_constraint_seq_to_model(constraint, constraint_vars, hard_to_soft)
 
     def _add_constraint_seq_to_model(
         self,
-        constraint: Constraint,
+        constraint: ConstraintSeq,
         cstr_vars: List[cp_model.IntVar],
         hard_to_soft: bool,
     ) -> None:
@@ -82,7 +72,7 @@ class AddConstraintSeq(AddConstraint):
                 )
 
     def _add_constraint_seq_less_than_or_equal_hard_to_model(
-        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
+        self, constraint: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
     ) -> None:
         for start in range(len(cstr_vars) - constraint.target_value):
             self.model.AddBoolOr(
@@ -93,7 +83,7 @@ class AddConstraintSeq(AddConstraint):
             )
 
     def _add_constraint_seq_greater_than_or_equal_hard_to_model(
-        self, constraint: Constraint, cstr_vars: List[cp_model.IntVar]
+        self, constraint: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
     ) -> None:
         for length in range(1, constraint.target_value):
             for start in range(len(cstr_vars) - length + 1):
@@ -103,7 +93,7 @@ class AddConstraintSeq(AddConstraint):
 
     def _add_constraint_seq_less_than_or_equal_soft_to_model(
         self,
-        constraint: Constraint,
+        constraint: ConstraintSeq,
         cstr_vars: List[cp_model.IntVar],
         penalty: int,
     ) -> None:
@@ -140,7 +130,7 @@ class AddConstraintSeq(AddConstraint):
 
     def _add_constraint_seq_greater_than_or_equal_soft_to_model(
         self,
-        constraint: Constraint,
+        constraint: ConstraintSeq,
         cstr_vars: List[cp_model.IntVar],
         penalty: int,
     ) -> None:

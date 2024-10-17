@@ -40,17 +40,11 @@ class MapShift:
         )
         if selector == "all":
             if self.shift_ids_in_coverage is not None:
-                return [
-                    s
-                    for s in self.shifts
-                    if s.id in self.shift_ids_in_coverage
-                ]
+                return [s for s in self.shifts if s.id in self.shift_ids_in_coverage]
             return self.shifts
         if selector == "equal":
             return [s for s in self.shifts if s.id in target_ids]
-        raise NotImplementedError(
-            f"Shift selector {selector} " + "not implemented"
-        )
+        raise NotImplementedError(f"Shift selector {selector} " + "not implemented")
 
     def get_coords_shifts_ord(
         self, cba: ConstraintBuildAugmented
@@ -129,21 +123,14 @@ class MapShift:
         for value in values:
             if value.id_type == "shift":
                 if not self.check_shift_id(value.id):
-                    raise ValueError(
-                        f"Shift {value.name} with id {value.id} not found"
-                    )
+                    raise ValueError(f"Shift {value.name} with id {value.id} not found")
                 out.append(value.id)
             # pylint: disable=R0801
             elif value.id_type == "dimension":
-                target_ids = self.get_target_ids_dimension(
-                    value, missing_properties
-                )
+                target_ids = self.get_target_ids_dimension(value, missing_properties)
                 if target_ids:
                     out += target_ids
-        if (
-            cstr_type == ConstraintType.FIL
-            and cstr_operator == ConstraintOperator.YES
-        ):
+        if cstr_type == ConstraintType.FIL and cstr_operator == ConstraintOperator.YES:
             out += [
                 s.id
                 for s in self.shifts
@@ -167,9 +154,7 @@ class MapShift:
             raise ValueError(f"Shift dimension {value.id} not found")
         if value.is_bool_dim:
             if not isinstance(value.name, bool):
-                raise ValueError(
-                    "Value name is not a boolean for bool dimension"
-                )
+                raise ValueError("Value name is not a boolean for bool dimension")
             if value.name not in self.shift_dim_dict[value.id]:
                 raise ValueError(
                     f"Shift property {value.name} "
@@ -177,14 +162,11 @@ class MapShift:
                 )
             return self.shift_dim_dict[value.id][value.name]
         if not isinstance(value.name, str):
-            raise ValueError(
-                "Value name is not a string for non-bool dimension"
-            )
+            raise ValueError("Value name is not a string for non-bool dimension")
         # if value.name.lower() not in self.shift_dim_dict[value.id]:
         if value.name not in self.shift_dim_dict[value.id]:
             raise ValueError(
-                f"Shift property {value.name} "
-                + f"for dimension {value.id} not found"
+                f"Shift property {value.name} " + f"for dimension {value.id} not found"
             )
         # return self.shift_dim_dict[value.id][value.name.lower()]
         return self.shift_dim_dict[value.id][value.name]
@@ -200,11 +182,7 @@ class MapShift:
         if shift_block:
             if not isinstance(shift_block.value, list):
                 raise ValueError("Shift block value is not a list")
-            if not all(
-                isinstance(v, ShiftWorkerOption) for v in shift_block.value
-            ):
-                raise ValueError(
-                    "Shift block value is not a list of ShiftWorkerOption"
-                )
+            if not all(isinstance(v, ShiftWorkerOption) for v in shift_block.value):
+                raise ValueError("Shift block value is not a list of ShiftWorkerOption")
             return shift_block.value  # type: ignore
         raise ValueError("Shift block not found")

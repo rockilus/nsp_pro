@@ -7,8 +7,7 @@ from ortools.sat.python import cp_model  # type: ignore
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import build_var_name, get_nested_value
 from engine.types.input_output_types import (
-    Constraint,
-    ConstraintType,
+    Constraints,
     FixedConfig,
     Inputs,
     Shift,
@@ -732,35 +731,30 @@ class Model:
 
     def add_custom_constraints(
         self,
-        constraints: List[Constraint],
+        constraints: Constraints,
         coverage: List[ShiftDemand],
         hard_to_soft: bool,
     ) -> None:
-        for constraint in constraints:
-            if constraint.constraint_type == ConstraintType.SUM:
-                self.add_constraint_factory.add_constraint_sum.add_constraint(
-                    constraint, hard_to_soft
-                )
-            elif constraint.constraint_type == ConstraintType.SEQ:
-                self.add_constraint_factory.add_constraint_seq.add_constraint(
-                    constraint, hard_to_soft
-                )
-            elif constraint.constraint_type == ConstraintType.ORD:
-                self.add_constraint_factory.add_constraint_ord.add_constraint(
-                    constraint, hard_to_soft
-                )
-            elif constraint.constraint_type == ConstraintType.FIL:
-                self.add_constraint_factory.add_constraint_fil.add_constraint(
-                    constraint, hard_to_soft
-                )
-            elif constraint.constraint_type == ConstraintType.FAI:
-                self.add_constraint_factory.add_constraint_fai.add_constraint(
-                    constraint, coverage
-                )
-            elif constraint.constraint_type == ConstraintType.EVE:
-                self.add_constraint_factory.add_constraint_eve.add_constraint(
-                    constraint, coverage
-                )
+        for c_sum in constraints.sum:
+            self.add_constraint_factory.add_constraint_sum.add_constraint(
+                c_sum, hard_to_soft
+            )
+        for c_seq in constraints.seq:
+            self.add_constraint_factory.add_constraint_seq.add_constraint(
+                c_seq, hard_to_soft
+            )
+        for c_ord in constraints.ord:
+            self.add_constraint_factory.add_constraint_ord.add_constraint(
+                c_ord, hard_to_soft
+            )
+        for c_fil in constraints.fil:
+            self.add_constraint_factory.add_constraint_fil.add_constraint(
+                c_fil, hard_to_soft
+            )
+        for c_fai in constraints.fai:
+            self.add_constraint_factory.add_constraint_fai.add_constraint(
+                c_fai, coverage
+            )
 
     def add_objective(self) -> None:
         self.model.Minimize(

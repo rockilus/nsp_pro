@@ -45,8 +45,9 @@ from utils.constants import Constants
 # pylint: disable=too-many-arguments, too-many-locals
 def core_to_engine_inputs(
     workers: List[Worker],
-    start_date: date,
-    end_date: date,
+    dates_all: List[date],
+    dates_hist: List[date],
+    dates_campaign: List[date],
     shifts: List[Shift],
     dimensions: List[Dimension],
     attributes: List[Attribute],
@@ -56,14 +57,6 @@ def core_to_engine_inputs(
     fixed_assignments: List[Assignment],
     wip_assignments: List[Assignment],
 ) -> Inputs:
-    start_date_hist = min(
-        (min(a.date for a in fixed_assignments) if fixed_assignments else start_date),
-        start_date,
-    )
-    end_date_hist = start_date - timedelta(days=1)
-    dates_all = _build_dates(start_date_hist, end_date)
-    dates_hist = _build_dates(start_date_hist, end_date_hist)
-    dates_campaign = _build_dates(start_date, end_date)
     dates_all_str = [d.isoformat() for d in dates_all]
     dates_hist_str = [d.isoformat() for d in dates_hist]
     dates_campaign_str = [d.isoformat() for d in dates_campaign]

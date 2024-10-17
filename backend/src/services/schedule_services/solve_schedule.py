@@ -1,4 +1,5 @@
 import time
+from datetime import date, timedelta
 from typing import List, Tuple
 
 from core import Assignment, ObjectiveBreach, RequestAugmented, Schedule, Shift
@@ -51,6 +52,19 @@ def solve_schedule(
         dim_entries,
         attributes,
     ) = fetch_workers_shifts_dim_attributes(schedule.team_id)
+    fixed_assignments, wip_fixed_assignments = get_fixed_assignments(schedule)
+    start_date_hist = min(
+        (
+            min(a.date for a in fixed_assignments)
+            if fixed_assignments
+            else schedule.start_date
+        ),
+        schedule.start_date,
+    )
+    end_date_hist = schedule.start_date - timedelta(days=1)
+    dates_all = _build_dates(start_date_hist, schedule.end_date)
+    dates_hist = _build_dates(start_date_hist, end_date_hist)
+    dates_campaign = _build_dates(schedule.start_date, schedule.end_date)
     cbs_augmented = get_active_constraint_builds_by_ids(
         schedule.constraint_build_ids,
         workers,
@@ -72,7 +86,6 @@ def solve_schedule(
         schedule.start_date, schedule.end_date, workers, shifts
     )
     team_schedules = schedule_db.get_schedules(schedule.team_id)
-    fixed_assignments, wip_fixed_assignments = get_fixed_assignments(schedule)
     wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
@@ -84,14 +97,16 @@ def solve_schedule(
         dim_entries,
         attributes,
         cbs_augmented,
+        dates_campaign,
     )
     shift_demand_dates = build_shift_demand_dates(
         schedule, coverage_selectors, shift_demands, shifts
     )
     inputs = core_to_engine_inputs(
         workers,
-        schedule.start_date,
-        schedule.end_date,
+        dates_all,
+        dates_hist,
+        dates_campaign,
         shifts,
         dimensions,
         attributes,
@@ -177,3 +192,8 @@ def save_objective_breaches(
         return []
     out = objective_breach_db.create_objective_breaches(objective_breaches)
     return out
+
+
+def _build_dates(start_date: date, end_date: date) -> List[date]:
+    delta = end_date - start_date
+    return [start_date + timedelta(days=i) for i in range(delta.days + 1)]

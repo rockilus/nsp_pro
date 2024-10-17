@@ -4,51 +4,44 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import Constraint, ConstraintOperator
+from engine.types.input_output_types import ConstraintOperator, ConstraintSum
 from utils.constants import Constants
 
 
 class AddConstraintSum(AddConstraint):
-    def add_constraint(self, constraint: Constraint, hard_to_soft: bool) -> None:
-        w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
-        if not all(isinstance(item, str) for item in s_vars):
-            raise TypeError(
-                "Expected a list of strings, "
-                + f"but got {format(type(s_vars))} instead."
-            )
-        if constraint.target_unit == "hour":
-            for w in w_vars:
-                for period in d_vars:
-                    constraint_vars = []
-                    constraint_durs = []
-                    for s in s_vars:
-                        constraint_vars.extend(
-                            [self.variables[w, d, s] for d in period]  # type: ignore
-                        )
-                        constraint_durs.extend(
-                            [self.durations[s] for _ in period]  # type: ignore
-                        )
-                    self._add_constraint_sum_hour(
-                        constraint,
-                        constraint_vars,
-                        constraint_durs,
-                        hard_to_soft,
-                    )
-        else:
-            for w in w_vars:
-                for period in d_vars:
-                    constraint_vars = []
-                    for s in s_vars:
-                        constraint_vars += [
-                            self.variables[w, d, s] for d in period  # type: ignore
-                        ]
-                    self._add_constraint_sum_other(
-                        constraint, constraint_vars, hard_to_soft
-                    )
+    def add_constraint(self, constraint: ConstraintSum, hard_to_soft: bool) -> None:
+        for coords in constraint.constraint_variables:
+            constraint_vars = [self.variables[coord] for coord in coords]
+            self._add_constraint_sum_other(constraint, constraint_vars, hard_to_soft)
+        # w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
+        # if not all(isinstance(item, str) for item in s_vars):
+        #     raise TypeError(
+        #         "Expected a list of strings, "
+        #         + f"but got {format(type(s_vars))} instead."
+        #     )
+        # if constraint.target_unit == "hour":
+        #     for w in w_vars:
+        #         for period in d_vars:
+        #             constraint_vars = []
+        #             constraint_durs = []
+        #             for s in s_vars:
+        #                 constraint_vars.extend(
+        #                     [self.variables[w, d, s] for d in period]  # type: ignore
+        #                 )
+        #                 constraint_durs.extend(
+        #                     [self.durations[s] for _ in period]  # type: ignore
+        #                 )
+        #             self._add_constraint_sum_hour(
+        #                 constraint,
+        #                 constraint_vars,
+        #                 constraint_durs,
+        #                 hard_to_soft,
+        #             )
+        # else:
 
     def _add_constraint_sum_hour(
         self,
-        constraint: Constraint,
+        constraint: ConstraintSum,
         cstr_vars: List[cp_model.IntVar],
         cstr_durs: List[int],
         hard_to_soft: bool,
@@ -162,7 +155,7 @@ class AddConstraintSum(AddConstraint):
 
     def _add_constraint_sum_other(
         self,
-        constraint: Constraint,
+        constraint: ConstraintSum,
         cstr_vars: List[cp_model.IntVar],
         hard_to_soft: bool,
     ) -> None:

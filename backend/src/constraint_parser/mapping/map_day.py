@@ -24,9 +24,7 @@ class MapDay:
                     Constants.NUM_DAYS_WEEK,
                 )
             ]
-        raise NotImplementedError(
-            f"Day selector {selector} " + "not implemented"
-        )
+        raise NotImplementedError(f"Day selector {selector} " + "not implemented")
 
     def get_coords_days_ord(
         self, cba: ConstraintBuildAugmented
@@ -40,15 +38,9 @@ class MapDay:
                 abs(min(interval, 0)),
                 len(self.days_solving) - max(interval, 0),
             ):
-                d_vars.append(
-                    (self.days_solving[i], self.days_solving[i + interval])
-                )
+                d_vars.append((self.days_solving[i], self.days_solving[i + interval]))
             return d_vars
-        start = (
-            target
-            if (target + interval >= 0)
-            else target + Constants.NUM_DAYS_WEEK
-        )
+        start = target if (target + interval >= 0) else target + Constants.NUM_DAYS_WEEK
         for i in range(
             start,
             len(self.days_solving) - max(interval, 0),
@@ -62,9 +54,7 @@ class MapDay:
             )
         return d_vars
 
-    def get_coords_days_sum(
-        self, cba: ConstraintBuildAugmented
-    ) -> List[List[date]]:
+    def get_coords_days_sum(self, cba: ConstraintBuildAugmented) -> List[List[date]]:
         selector = self.get_selector(cba.blocks, cba.constraint_type)
         if selector == "all":
             return [self.days_solving]
@@ -73,10 +63,7 @@ class MapDay:
             d_indexes = self._build_weeks_day_index_list(
                 weekday_first_day, len(self.days_solving)
             )
-            return [
-                [self.days_solving[i] for i in d_index]
-                for d_index in d_indexes
-            ]
+            return [[self.days_solving[i] for i in d_index] for d_index in d_indexes]
         raise ValueError(f"Selector {selector} not recognized")
         # period = [
         #     cba.day_var.start_date + timedelta(days=i)
@@ -102,15 +89,11 @@ class MapDay:
             if cstr_type == ConstraintType.SUM:
                 if timing_block.value == "per week":
                     return "week"
-                raise ValueError(
-                    f"Operator {timing_block.value} not recognized"
-                )
+                raise ValueError(f"Operator {timing_block.value} not recognized")
             if cstr_type == ConstraintType.SEQ:
                 if timing_block.value == "consecutive":
                     return "all"
-                raise ValueError(
-                    f"Operator {timing_block.value} not recognized"
-                )
+                raise ValueError(f"Operator {timing_block.value} not recognized")
             if cstr_type == ConstraintType.ORD:
                 if timing_block.value in ["before", "after"]:
                     if weekday_block:
@@ -123,9 +106,7 @@ class MapDay:
                 return "week_day_index"
         raise ValueError("Timing block not found")
 
-    def get_target(
-        self, blocks: List[Block], cstr_type: ConstraintType
-    ) -> int:
+    def get_target(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
         if cstr_type in [ConstraintType.SUM, ConstraintType.SEQ]:
             return 0
         if self.get_selector(blocks, cstr_type) != "week_day_index":
@@ -137,9 +118,7 @@ class MapDay:
             raise ValueError(f"Weekday {weekday_block.value} not recognized")
         raise ValueError("Weekday block not found")
 
-    def get_interval(
-        self, blocks: List[Block], cstr_type: ConstraintType
-    ) -> int:
+    def get_interval(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
         if cstr_type in [
             ConstraintType.SUM,
             ConstraintType.SEQ,

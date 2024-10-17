@@ -31,7 +31,8 @@ def build_constraints(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
-    cstr_builds: List[ConstraintBuildAugmented],
+    cbas: List[ConstraintBuildAugmented],
+    dates_campaign: List[date],
 ) -> List[Constraint]:
     constraint_db.delete_constraints_by_schedule_id(schedule.id)
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
@@ -40,18 +41,15 @@ def build_constraints(
     dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
         shifts, dimensions, dim_entries, attributes
     )
-    constraints_user = [
-        # pylint: disable=R0801
-        parse_constraint(
-            cstr_build,
-            workers,
-            shifts,
-            dim_to_attr_value_to_worker,
-            dim_to_attr_value_to_shift,
-            schedule.id,
-        )
-        for cstr_build in cstr_builds
-    ]
+    constraints_user = parse_constraint(
+        cbas,
+        schedule.id,
+        workers,
+        dim_to_attr_value_to_worker,
+        dates_campaign,
+        shifts,
+        dim_to_attr_value_to_shift,
+    )
     out = []
     out += constraint_db.create_constraints(constraints_user)
     # out += build_duty_recuperation_constraints(shifts, schedule)

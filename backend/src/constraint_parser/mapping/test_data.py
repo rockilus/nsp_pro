@@ -1,11 +1,15 @@
 # pylint: disable = too-many-lines, R0801
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from core import (
     Block,
-    Constraint,
     ConstraintBuildAugmented,
+    ConstraintFai,
+    ConstraintFil,
     ConstraintOperator,
+    ConstraintOrd,
+    ConstraintSeq,
+    ConstraintSum,
     ConstraintType,
     Shift,
     ShiftLeaveType,
@@ -13,9 +17,6 @@ from core import (
     ShiftType,
     ShiftWorkerOption,
     Staffing,
-    VarDay,
-    VarShift,
-    VarWorker,
     Worker,
 )
 
@@ -294,6 +295,8 @@ worker_dim_dict = {
     },
 }
 
+dates_campaign = [date.today() + timedelta(days=i) for i in range(60)]
+
 # 1 - Block inputted avec des templates -> pure mapping
 # @WORKER:[John] should have @OPERATOR:[at least] @QUANTITY:two @SHIFT:[days
 # off] @TIMING:[per week]
@@ -358,28 +361,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintSeq(
             id="",
             constraint_type=ConstraintType.SEQ,
             operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=2,
             target_unit="",
-            worker_var=VarWorker(
-                selector="equal", target_ids=["0"], num_eligible_workers=0
-            ),
-            day_var=VarDay(
-                selector="all",
-                target=0,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=0,
-            ),
-            shift_var=VarShift(
-                selector="equal",
-                target_ids=["0"],
-                reference_ids=[],
-                relative_ids=[],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -434,26 +422,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintSeq(
             id="",
             constraint_type=ConstraintType.SEQ,
             operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=2,
             target_unit="",
-            worker_var=VarWorker(selector="all", target_ids=[], num_eligible_workers=0),
-            day_var=VarDay(
-                selector="all",
-                target=0,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=0,
-            ),
-            shift_var=VarShift(
-                selector="all",
-                target_ids=[],
-                reference_ids=[],
-                relative_ids=[],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -508,28 +483,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintSeq(
             id="",
             constraint_type=ConstraintType.SEQ,
             operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=2,
             target_unit="",
-            worker_var=VarWorker(
-                selector="equal", target_ids=["4", "5"], num_eligible_workers=0
-            ),
-            day_var=VarDay(
-                selector="all",
-                target=0,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=0,
-            ),
-            shift_var=VarShift(
-                selector="equal",
-                target_ids=["0", "1", "4", "5", "6", "7"],
-                reference_ids=[],
-                relative_ids=[],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -584,28 +544,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintSeq(
             id="",
             constraint_type=ConstraintType.SEQ,
             operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=2,
             target_unit="",
-            worker_var=VarWorker(
-                selector="equal", target_ids=["1", "2"], num_eligible_workers=0
-            ),
-            day_var=VarDay(
-                selector="all",
-                target=0,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=0,
-            ),
-            shift_var=VarShift(
-                selector="equal",
-                target_ids=["0", "1", "2", "3"],
-                reference_ids=[],
-                relative_ids=[],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -660,28 +605,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintSum(
             id="",
             constraint_type=ConstraintType.SUM,
             operator=ConstraintOperator.GREATER_THAN_OR_EQUAL,
             target_value=1,
             target_unit="",
-            worker_var=VarWorker(
-                selector="equal", target_ids=["0"], num_eligible_workers=0
-            ),
-            day_var=VarDay(
-                selector="week",
-                target=0,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=0,
-            ),
-            shift_var=VarShift(
-                selector="equal",
-                target_ids=["0"],
-                reference_ids=[],
-                relative_ids=[],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -750,28 +680,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintOrd(
             id="",
             constraint_type=ConstraintType.ORD,
             operator=ConstraintOperator.NO,
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(
-                selector="equal", target_ids=["0"], num_eligible_workers=0
-            ),
-            day_var=VarDay(
-                selector="all",
-                target=0,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=1,
-            ),
-            shift_var=VarShift(
-                selector="all",
-                target_ids=[],
-                reference_ids=["3"],
-                relative_ids=["2"],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -840,28 +755,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintOrd(
             id="",
             constraint_type=ConstraintType.ORD,
             operator=ConstraintOperator.YES,
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(
-                selector="equal", target_ids=["0"], num_eligible_workers=0
-            ),
-            day_var=VarDay(
-                selector="all",
-                target=0,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=1,
-            ),
-            shift_var=VarShift(
-                selector="all",
-                target_ids=[],
-                reference_ids=["3"],
-                relative_ids=["0"],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -932,28 +832,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintOrd(
             id="",
             constraint_type=ConstraintType.ORD,
             operator=ConstraintOperator.YES,
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(
-                selector="equal", target_ids=["0"], num_eligible_workers=0
-            ),
-            day_var=VarDay(
-                selector="week_day_index",
-                target=5,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=2,
-            ),
-            shift_var=VarShift(
-                selector="all",
-                target_ids=[],
-                reference_ids=["1"],
-                relative_ids=["0"],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -1024,28 +909,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintOrd(
             id="",
             constraint_type=ConstraintType.ORD,
             operator=ConstraintOperator.YES,
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(
-                selector="equal", target_ids=["0"], num_eligible_workers=0
-            ),
-            day_var=VarDay(
-                selector="week_day_index",
-                target=5,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=-2,
-            ),
-            shift_var=VarShift(
-                selector="all",
-                target_ids=[],
-                reference_ids=["1"],
-                relative_ids=["0"],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -1098,28 +968,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintFil(
             id="",
             constraint_type=ConstraintType.FIL,
             operator=ConstraintOperator.YES,
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(
-                selector="equal", target_ids=["0"], num_eligible_workers=0
-            ),
-            day_var=VarDay(
-                selector="all",
-                target=0,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=0,
-            ),
-            shift_var=VarShift(
-                selector="equal",
-                target_ids=["0", "3"],
-                reference_ids=[],
-                relative_ids=[],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -1171,28 +1026,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintFil(
             id="",
             constraint_type=ConstraintType.FIL,
             operator=ConstraintOperator.NO,
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(
-                selector="equal", target_ids=["0"], num_eligible_workers=0
-            ),
-            day_var=VarDay(
-                selector="all",
-                target=0,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=0,
-            ),
-            shift_var=VarShift(
-                selector="equal",
-                target_ids=["3"],
-                reference_ids=[],
-                relative_ids=[],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -1250,28 +1090,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintSum(
             id="",
-            constraint_type=ConstraintType.EVE,
+            constraint_type=ConstraintType.SUM,
             operator=None,
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(
-                selector="equal", target_ids=["0"], num_eligible_workers=0
-            ),
-            day_var=VarDay(
-                selector="week_day_index",
-                target=6,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=0,
-            ),
-            shift_var=VarShift(
-                selector="equal",
-                target_ids=["3"],
-                reference_ids=[],
-                relative_ids=[],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
@@ -1329,26 +1154,13 @@ test_data = [
             active=True,
             missing_attributes=[],
         ),
-        "out": Constraint(
+        "out": ConstraintFai(
             id="",
             constraint_type=ConstraintType.FAI,
             operator=None,
             target_value=0,
             target_unit="",
-            worker_var=VarWorker(selector="all", target_ids=[], num_eligible_workers=0),
-            day_var=VarDay(
-                selector="week_day_index",
-                target=6,
-                start_date=date.today(),
-                end_date=date.today(),
-                interval=0,
-            ),
-            shift_var=VarShift(
-                selector="equal",
-                target_ids=["3"],
-                reference_ids=[],
-                relative_ids=[],
-            ),
+            constraint_variables=[],
             active=True,
             hard=True,
             priority="medium",
