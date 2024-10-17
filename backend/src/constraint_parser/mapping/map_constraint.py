@@ -14,6 +14,10 @@ from core import (
     Shift,
     Worker,
     ConstraintSum,
+    ConstraintFai,
+    ConstraintSeq,
+    ConstraintFil,
+    ConstraintOrd,
 )
 
 
@@ -67,7 +71,7 @@ class MapConstaint:
         #                 hard_to_soft,
         #             )
         # else:
-        constraints_vars = []
+        constraints_vars: List[List[Tuple[str, str, str]]] = []
         for w in coord_workers:
             for period in coord_days:
                 constraint_vars = []
@@ -77,6 +81,38 @@ class MapConstaint:
                     ]
                 constraints_vars.append(constraint_vars)
         return ConstraintSum(
+            id=cba.id,
+            constraint_type=cba.constraint_type,
+            operator=cstr_operator,
+            target_value=self.get_target_value(
+                cba.blocks, cba.constraint_type
+            ),
+            target_unit="",
+            constraint_variables=constraints_vars,
+            active=cba.active,
+            hard=cba.hard,
+            priority=cba.priority,
+            schedule_id=schedule_id,
+            constraint_build_id=cba.id,
+        )
+
+    def map_constaint_seq(
+        self, cba: ConstraintBuildAugmented, schedule_id: str
+    ) -> ConstraintSeq:
+        cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
+        coord_workers = self.map_worker.get_coord_workers(cba)
+        coord_days = self.map_day.get_coords_days(cba)
+        coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
+
+        constraints_vars: List[List[Tuple[str, str, str]]] = []
+        for w in coord_workers:
+            for s in coord_shifts:
+                constraint_vars = []
+                for d in coord_days:
+                    constraint_vars.append((w.id, d.isoformat(), s.id))
+            constraints_vars.append(constraint_vars)
+
+        return ConstraintSeq(
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,

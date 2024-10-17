@@ -10,19 +10,17 @@ class MapDay:
     def __init__(self, days_solving: List[date]) -> None:
         self.days_solving = days_solving
 
-    def get_coords_days(
-        self, cba: ConstraintBuildAugmented
-    ) -> List[List[str]]:
+    def get_coords_days(self, cba: ConstraintBuildAugmented) -> List[date]:
         selector = self.get_selector(cba.blocks, cba.constraint_type)
         target = self.get_target(cba.blocks, cba.constraint_type)
         if selector == "all":
-            return self.days
+            return self.days_solving
         if selector == "week_day_index":
             return [
-                self.days[i]
+                self.days_solving[i]
                 for i in range(
                     target,
-                    len(self.days),
+                    len(self.days_solving),
                     Constants.NUM_DAYS_WEEK,
                 )
             ]
