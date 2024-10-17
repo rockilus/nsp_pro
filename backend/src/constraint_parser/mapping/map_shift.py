@@ -1,4 +1,4 @@
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Tuple
 
 from constraint_parser.mapping.utils import find_block_by_name
 from core import (
@@ -10,7 +10,6 @@ from core import (
     Shift,
     ShiftType,
     ShiftWorkerOption,
-    VarShift,
 )
 from utils.constants import Constants
 
@@ -25,48 +24,6 @@ class MapShift:
         self.shifts = shifts
         self.shift_dim_dict = shift_dim_dict
         self.shift_ids_in_coverage = shift_ids_in_coverage
-
-    def __call__(
-        self,
-        cstr_build: ConstraintBuildAugmented,
-        cstr_operator: ConstraintOperator | None,
-    ) -> VarShift:
-        shift_values = (
-            self.get_shift_values(cstr_build.blocks, "shift")
-            if cstr_build.constraint_type != ConstraintType.ORD
-            else []
-        )
-        shift_reference_values = (
-            self.get_shift_values(cstr_build.blocks, "shift_reference")
-            if cstr_build.constraint_type == ConstraintType.ORD
-            else []
-        )
-        shift_relative_values = (
-            self.get_shift_values(cstr_build.blocks, "shift_relative")
-            if cstr_build.constraint_type == ConstraintType.ORD
-            else []
-        )
-        return VarShift(
-            selector=self.get_selector(
-                shift_values, cstr_build.constraint_type
-            ),
-            target_ids=self.get_target_ids(
-                shift_values,
-                cstr_build.constraint_type,
-                cstr_build.missing_attributes,
-                cstr_operator,
-            ),
-            reference_ids=self.get_target_ids(
-                shift_reference_values,
-                cstr_build.constraint_type,
-                cstr_build.missing_attributes,
-            ),
-            relative_ids=self.get_target_ids(
-                shift_relative_values,
-                cstr_build.constraint_type,
-                cstr_build.missing_attributes,
-            ),
-        )
 
     def get_coords_shifts(
         self,
@@ -118,7 +75,7 @@ class MapShift:
         self,
         cba: ConstraintBuildAugmented,
         cstr_operator: ConstraintOperator | None,
-    ) -> List[str]:
+    ) -> List[Shift]:
         swos_shift = self.get_shift_values(cba.blocks, "shift")
         shift_ids = self.get_target_ids(
             swos_shift,
@@ -127,8 +84,8 @@ class MapShift:
             cstr_operator,
         )
         if cstr_operator == ConstraintOperator.NO:
-            return shift_ids
-        return [s.id for s in self.shifts if s not in shift_ids]
+            return [s for s in self.shifts if s.id in shift_ids]
+        return [s for s in self.shifts if s.id not in shift_ids]
 
     def get_selector(
         self, values: List[ShiftWorkerOption], cstr_type: ConstraintType | None
