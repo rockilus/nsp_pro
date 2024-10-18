@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import date
 from typing import Dict, List, Set, Tuple
 
 from core import (
@@ -15,11 +16,12 @@ from core import (
 # pylint: disable=too-many-locals, too-many-branches
 def build_worker_shift_filters(
     workers: List[Worker],
+    dates_campaign: List[date],
     shifts: List[Shift],
     dimensions: List[Dimension],
     attributes: List[Attribute],
-) -> List[Tuple[str, str]]:
-    out: Set[Tuple[str, str]] = set()
+) -> List[Tuple[str, str, str]]:
+    out: Set[Tuple[str, str, str]] = set()
 
     # Step 1: Identify shared dimensions
     shared_dimensions = [
@@ -98,7 +100,9 @@ def build_worker_shift_filters(
 
                 # Add invalid tuples for the worker
                 for shift_id in invalid_shift_ids:
-                    out.add((worker.id, shift_id))
+                    out.update(
+                        [(worker.id, d.isoformat(), shift_id) for d in dates_campaign]
+                    )
 
         # -------- Filter out workers that don't have shift attribute --------
 
@@ -125,7 +129,9 @@ def build_worker_shift_filters(
 
                 # Add invalid tuples for the worker
                 for worker_id in invalid_worker_ids:
-                    out.add((worker_id, shift.id))
+                    out.update(
+                        [(worker_id, d.isoformat(), shift.id) for d in dates_campaign]
+                    )
 
     # Return the list of unique (worker_id, invalid_shift_id) and
     # (invalid_worker_id, shift_id) tuples

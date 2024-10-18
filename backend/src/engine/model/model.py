@@ -614,23 +614,24 @@ class Model:
                     self.obj.int_coeffs.append(nb_duties.penalty)
 
     def add_worker_shift_filter_constraints(
-        self, worker_shift_filters: List[Tuple[str, str]], hard_to_soft: bool
+        self,
+        worker_shift_filters: List[Tuple[str, str, str]],
+        hard_to_soft: bool,
     ) -> None:
-        for w, s in worker_shift_filters:
-            for d in self.days_solving:
-                cstr_var = self.variables[w, d, s]
-                if not hard_to_soft:
-                    self.model.Add(cstr_var == 0)
-                else:
-                    var_name = build_var_name(None, [cstr_var], "worker_shift_filter")
-                    cstr_vars: List[cp_model.IntVar | cp_model._NotBooleanVariable] = [
-                        cstr_var.Not()
-                    ]
-                    lit = self.model.NewBoolVar(var_name)
-                    cstr_vars.append(lit)
-                    self.model.AddBoolOr(cstr_vars)
-                    self.obj.bool_vars.append(lit)
-                    self.obj.bool_coeffs.append(100)
+        for a in worker_shift_filters:
+            cstr_var = self.variables[a]
+            if not hard_to_soft:
+                self.model.Add(cstr_var == 0)
+            else:
+                var_name = build_var_name(None, [cstr_var], "worker_shift_filter")
+                cstr_vars: List[cp_model.IntVar | cp_model._NotBooleanVariable] = [
+                    cstr_var.Not()
+                ]
+                lit = self.model.NewBoolVar(var_name)
+                cstr_vars.append(lit)
+                self.model.AddBoolOr(cstr_vars)
+                self.obj.bool_vars.append(lit)
+                self.obj.bool_coeffs.append(100)
 
     def add_custom_constraints(
         self,

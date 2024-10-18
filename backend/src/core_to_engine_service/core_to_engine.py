@@ -100,7 +100,7 @@ def core_to_engine_inputs(
         requests=requests_engine,
         constraints=constraints_engine,
         worker_shift_filters=build_worker_shift_filters(
-            workers, shifts, dimensions, attributes
+            workers, dates_campaign, shifts, dimensions, attributes
         ),
         fixed_values=fixed_values_engine,
         sol_hint=sol_hint_engine,
