@@ -12,6 +12,7 @@ from engine.types.input_output_types import (
     Coverage,
     FixedConfig,
     Inputs,
+    NbDuties,
     Outputs,
     Request,
     Shift,
@@ -19,8 +20,8 @@ from engine.types.input_output_types import (
     Variables,
     VariableSpace,
     Worker,
+    WorkLoads,
     WorkTime,
-    WorkTimes,
 )
 from utils.constants import Constants
 
@@ -143,7 +144,7 @@ class TestEngine:
         inputs = Inputs(
             variables=Variables([], []),
             no_overlap_shift_intervals=[[]],
-            work_time=WorkTimes(
+            work_loads=WorkLoads(
                 weekly_work_time_contractual=WorkTime(
                     assignments=[],
                     targets=[],
@@ -160,6 +161,16 @@ class TestEngine:
                     assignments=[],
                     targets=[],
                     durations=[],
+                    penalty=0,
+                ),
+                monthly_nb_duties_desired=NbDuties(
+                    assignments=[],
+                    targets=[],
+                    penalty=100,
+                ),
+                monthly_nb_duties_max=NbDuties(
+                    assignments=[],
+                    targets=[],
                     penalty=0,
                 ),
             ),

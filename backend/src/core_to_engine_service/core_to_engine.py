@@ -17,7 +17,7 @@ from core import (
     Worker,
 )
 from core_to_engine_service.build_engine_variables import build_engine_variables
-from core_to_engine_service.build_engine_work_times import build_engine_work_times
+from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
 from core_to_engine_service.penalty_map import penalty_map
 from engine import ConstraintFai as ConstraintFaiEngine
@@ -92,7 +92,7 @@ def core_to_engine_inputs(
             [(w.id, d.isoformat(), s.id) for d in dates_all for s in shifts]
             for w in workers
         ],
-        work_time=build_engine_work_times(
+        work_loads=build_engine_work_loads(
             workers, dates_campaign, shifts, shift_id_to_duration_dict
         ),
         variable_space=variable_space,

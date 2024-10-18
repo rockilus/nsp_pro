@@ -14,6 +14,7 @@ from engine.types.input_output_types import (
     Coverage,
     FixedConfig,
     Inputs,
+    NbDuties,
     Outputs,
     PeriodTarget,
     Request,
@@ -26,8 +27,8 @@ from engine.types.input_output_types import (
     VarShift,
     VarWorker,
     Worker,
+    WorkLoads,
     WorkTime,
-    WorkTimes,
 )
 
 __all__ = [
@@ -46,6 +47,7 @@ __all__ = [
     "FixedConfig",
     "Engine",
     "Inputs",
+    "NbDuties",
     "Outputs",
     "PeriodTarget",
     "Request",
@@ -59,5 +61,5 @@ __all__ = [
     "VarWorker",
     "Worker",
     "WorkTime",
-    "WorkTimes",
+    "WorkLoads",
 ]

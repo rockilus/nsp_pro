@@ -10,6 +10,7 @@ from engine.types.input_output_types import (
     Constraints,
     FixedConfig,
     Inputs,
+    NbDuties,
     Shift,
     ShiftDemand,
     Variables,
@@ -218,8 +219,8 @@ class Model:
         self.set_fixed_variables(inputs.fixed_values)
         self.add_solution_hint(inputs.sol_hint)
         self.no_interval_overlap(inputs.no_overlap_shift_intervals)
-        self.add_worktime_constraints(inputs.work_time.weekly_work_time_max)
-        self.add_max_nb_duties_per_month_constraints()
+        self.add_work_time_constraints(inputs.work_loads.weekly_work_time_max)
+        self.add_nb_duties_constraints(inputs.work_loads.monthly_nb_duties_max)
         # self.add_at_least_one_shift_per_day_solving_constraint()
         # self.status = self.solver.Solve(  # type: ignore
         #     self.model, self.solution_printer
@@ -230,13 +231,15 @@ class Model:
             inputs.coverage.coverage, coverage_hts
         )
         self.add_duty_recup_constraints(duty_recup_hts)
-        self.add_worktime_constraints(
-            inputs.work_time.weekly_work_time_contractual, work_time_hts
+        self.add_work_time_constraints(
+            inputs.work_loads.weekly_work_time_contractual, work_time_hts
         )
-        self.add_worktime_constraints(
-            inputs.work_time.weekly_work_time_desired, work_time_desired_hts
+        self.add_work_time_constraints(
+            inputs.work_loads.weekly_work_time_desired, work_time_desired_hts
         )
-        self.add_nb_duties_per_month_constraints(nb_duty_hts)
+        self.add_nb_duties_constraints(
+            inputs.work_loads.monthly_nb_duties_desired, nb_duty_hts
+        )
         self.add_worker_shift_filter_constraints(
             inputs.worker_shift_filters, worker_shift_filter_hts
         )
@@ -536,7 +539,7 @@ class Model:
                         self.obj.int_vars.append(excess)
                         self.obj.int_coeffs.append(100)
 
-    def add_worktime_constraints(
+    def add_work_time_constraints(
         self, work_time: WorkTime, hard_to_soft: bool = False
     ) -> None:
         for w_assignments, w_targets, w_durations in zip(
@@ -578,38 +581,37 @@ class Model:
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(work_time.penalty)
 
-    def add_nb_duties_per_month_constraints(self, hard_to_soft: bool) -> None:
-        for worker in [w for w in self.workers if not w.deleted]:
-            for pt in worker.duties_per_month:
-                constraint_vars = []
-                for duty, _ in self.duty_recup_pairs:
-                    constraint_vars.extend(
-                        [self.variables[worker.id, d, duty] for d in pt.period]
-                    )
+    def add_nb_duties_constraints(
+        self, nb_duties: NbDuties, hard_to_soft: bool = False
+    ) -> None:
+        for w_assignments, w_targets in zip(
+            nb_duties.assignments,
+            nb_duties.targets,
+        ):
+            for p_assignments, p_target in zip(w_assignments, w_targets):
+                constraint_vars = [self.variables[a] for a in p_assignments]
                 if not hard_to_soft:
-                    self.model.Add(sum(constraint_vars) <= pt.target)
+                    self.model.Add(sum(v for v in constraint_vars) <= p_target)
                 else:
                     var_name = build_var_name(None, constraint_vars, "duties_per_month")
                     delta = self.model.NewIntVar(
-                        -pt.target,
-                        len(constraint_vars),
+                        -p_target,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR,
                         "",
                     )
-                    self.model.Add(delta == sum(constraint_vars) - pt.target)
-                    excess = self.model.NewIntVar(0, len(constraint_vars), var_name)
+                    self.model.Add(delta == sum(v for v in constraint_vars) - p_target)
+                    excess = self.model.NewIntVar(
+                        0,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR,
+                        var_name,
+                    )
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(100)
-
-    def add_max_nb_duties_per_month_constraints(self) -> None:
-        for w in self.workers_not_deleted:
-            for pt in self.fixed_config.max_duties_per_month:
-                constraint_vars = []
-                for duty, _ in self.duty_recup_pairs:
-                    constraint_vars.extend(
-                        [self.variables[w, d, duty] for d in pt.period]
-                    )
-                self.model.Add(sum(constraint_vars) <= pt.target)
+                    self.obj.int_coeffs.append(nb_duties.penalty)
 
     def add_worker_shift_filter_constraints(
         self, worker_shift_filters: List[Tuple[str, str]], hard_to_soft: bool

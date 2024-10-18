@@ -212,10 +212,25 @@ class WorkTime:
 
 
 @dataclass
-class WorkTimes:
+class NbDuties:
+    # for each worker, a list of assignments for the target periods
+    # (size workers x periods x shifts * period length])
+    assignments: List[List[List[Tuple[str, str, str]]]]
+    # for each period, the target contractual work time
+    # (size workers x periods)
+    targets: List[List[int]]
+    # for each assignment, the duration of the shift
+    # (size workers x periods x shifts * period length)
+    penalty: int
+
+
+@dataclass
+class WorkLoads:
     weekly_work_time_contractual: WorkTime
     weekly_work_time_desired: WorkTime
     weekly_work_time_max: WorkTime
+    monthly_nb_duties_desired: NbDuties
+    monthly_nb_duties_max: NbDuties
 
 
 # pylint: disable=too-many-instance-attributes
@@ -225,7 +240,7 @@ class Inputs:
     no_overlap_shift_intervals: List[
         List[Tuple[str, str, str]]
     ]  # list of assignments for each worker
-    work_time: WorkTimes
+    work_loads: WorkLoads
     variable_space: VariableSpace
     coverage: Coverage
     requests: List[Request]
