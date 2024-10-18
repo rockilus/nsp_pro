@@ -184,9 +184,40 @@ class FixedConfig:
     max_duties_per_month: List[PeriodTarget]
 
 
+@dataclass
+class Variables:
+    assignments: List[Tuple[str, str, str]]  # worker_id, date, shift_id
+    shift_intervals: List[
+        Tuple[
+            int,  # shift start time
+            int,  # shift duration
+            int,  # shift end time
+            Tuple[str, str, str],  # associated assignment
+        ]
+    ]
+
+
+@dataclass
+class WorkTime:
+    # for each worker, a list of assignments for the target periods
+    # (size workers x periods x shifts * period length])
+    weekly_work_time_contractual_assignments: List[List[List[Tuple[str, str, str]]]]
+    # for each period, the target contractual work time
+    # (size workers x periods)
+    weekly_work_time_constractual_targets: List[List[int]]
+    # for each assignment, the duration of the shift
+    # (size workers x periods x shifts * period length)
+    weekly_work_time_constractual_durations: List[List[List[int]]]
+
+
 # pylint: disable=too-many-instance-attributes
 @dataclass
 class Inputs:
+    variables: Variables
+    no_overlap_shift_intervals: List[
+        List[Tuple[str, str, str]]
+    ]  # list of assignments for each worker
+    work_time: WorkTime
     variable_space: VariableSpace
     coverage: Coverage
     requests: List[Request]
@@ -195,12 +226,6 @@ class Inputs:
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
     shift_durations: Dict[str, int]  # in minutes, key: shift_id
-    shift_start_times: Dict[
-        Tuple[str, str], int
-    ]  # timestamp in minutes, key: (date, shift_id)
-    shift_end_times: Dict[
-        Tuple[str, str], int
-    ]  # timestamp in minutes, key: (date, shift_id)
     fixed_config: FixedConfig
 
 

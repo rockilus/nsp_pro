@@ -16,6 +16,7 @@ from core import (
     ShiftType,
     Worker,
 )
+from core_to_engine_service.build_engine_variables import build_engine_variables
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
 from core_to_engine_service.penalty_map import penalty_map
 from engine import ConstraintFai as ConstraintFaiEngine
@@ -34,6 +35,7 @@ from engine import ShiftDemand as ShiftDemandEngine
 from engine import Staffing as StaffingEngine
 from engine import VariableSpace
 from engine import Worker as WorkerEngine
+from engine import WorkTime as WorkTimeEngine
 from utils.constants import Constants
 
 
@@ -82,11 +84,17 @@ def core_to_engine_inputs(
         [s.id for s in shifts if not s.deleted],
         wip_assignments,
     )
-    s_durations, s_start_times, s_end_times = _build_interval_parameters(
-        shifts, dates_all
-    )
+    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
 
     inputs = Inputs(
+        variables=build_engine_variables(workers, dates_all, shifts),
+        no_overlap_shift_intervals=[
+            [(w.id, d.isoformat(), s.id) for d in dates_all for s in shifts]
+            for w in workers
+        ],
+        work_time=_build_work_time_engine(
+            workers, dates_campaign, shifts, shift_id_to_duration_dict
+        ),
         variable_space=variable_space,
         coverage=coverage_engine,
         requests=requests_engine,
@@ -96,9 +104,7 @@ def core_to_engine_inputs(
         ),
         fixed_values=fixed_values_engine,
         sol_hint=sol_hint_engine,
-        shift_durations=s_durations,
-        shift_start_times=s_start_times,
-        shift_end_times=s_end_times,
+        shift_durations=shift_id_to_duration_dict,
         fixed_config=FixedConfigEngine(
             max_weekly_hours_worked=_build_period_target_work_hours_week(
                 80, dates_campaign
@@ -318,31 +324,10 @@ def _core_to_engine_constraints(constraints: Constraints) -> ConstraintsEngine:
     )
 
 
-def _build_interval_parameters(
-    shifts: List[Shift], dates=List[date]
-) -> Tuple[Dict[str, int], Dict[Tuple[str, str], int], Dict[Tuple[str, str], int]]:
-    s_durations = {}
-    s_start_times = {}
-    s_end_times = {}
-    for s in shifts:
-        s_durations[s.id] = int((s.end_time - s.start_time).total_seconds() // 60 - 1)
-        day_diff = (s.end_time.date() - s.start_time.date()).days
-        for d in dates:
-            d_string = d.isoformat()
-            s_start_times[d_string, s.id] = int(
-                s.start_time.replace(year=d.year, month=d.month, day=d.day).timestamp()
-                // Constants.NUM_SECONDS_MINUTE
-            )
-            s_end_times[d_string, s.id] = int(
-                (
-                    s.end_time.replace(year=d.year, month=d.month, day=d.day)
-                    + timedelta(day_diff)
-                ).timestamp()
-                // Constants.NUM_SECONDS_MINUTE
-                - 1
-            )
-
-    return s_durations, s_start_times, s_end_times
+def _build_shift_id_to_duration_dict(shifts: List[Shift]) -> Dict[str, int]:
+    return {
+        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1) for s in shifts
+    }
 
 
 def build_duty_recup_pairs(shifts: List[Shift]) -> List[Tuple[str, str]]:
@@ -365,59 +350,68 @@ def build_duty_recup_pairs(shifts: List[Shift]) -> List[Tuple[str, str]]:
                 out.append((shift.id, rec_shift.id))
     return out
 
-    # shift_durations = {
-    #     shift.id: int(
-    #         (shift.end_time - shift.start_time).total_seconds() // 60 - 1
-    #     )
-    #     for shift in shifts
-    # }
-    # shift_start_times = {
-    #     (
-    #         d.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
-    #         s.id,
-    #     ): int(
-    #         s.start_time.replace(
-    #             year=d.year, month=d.month, day=d.day
-    #         ).timestamp()
-    #         // Constants.NUM_SECONDS_MINUTE
-    #     )
-    #     for d in dates
-    #     for s in shifts
-    # }
-    # shift_end_times = {
-    #     (
-    #         d.strftime(Constants.ENGINE_STRING_DATE_FORMAT),
-    #         s.id,
-    #     ): int(
-    #         s.end_time.replace(
-    #             year=d.year, month=d.month, day=d.day
-    #         ).timestamp()
-    #         // Constants.NUM_SECONDS_MINUTE
-    #         - 1
-    #     )
-    #     for d in dates
-    #     for s in shifts
-    # }
-    # return shift_durations, shift_start_times, shift_end_times
 
+def _build_work_time_engine(
+    workers: List[Worker],
+    dates_campaign: List[date],
+    shifts: List[Shift],
+    shift_id_to_duration_dict: Dict[str, int],
+) -> WorkTimeEngine:
+    weekly_work_time_contractual_assignments: List[
+        List[List[Tuple[str, str, str]]]
+    ] = []
+    weekly_work_time_constractual_targets: List[List[int]] = []
+    weekly_work_time_constractual_durations: List[List[List[int]]] = []
 
-# if s.id == "66e88a44b774f3030fb038e3":
-#     if d in [date(2024, 10, 26), date(2024, 10, 27)]:
-#         start_time_dt = datetime.fromtimestamp(
-#             s_start_times[d_string, s.id] * Constants.NUM_SECONDS_MINUTE
-#         )
-#         end_time_dt = datetime.fromtimestamp(
-#             s_end_times[d_string, s.id] * Constants.NUM_SECONDS_MINUTE
-#         )
-#         print("id           ", s.id)
-#         print("name         ", s.name)
-#         print("date         ", d_string)
-#         print("start        ", s_start_times[d_string, s.id])
-#         print("end          ", s_end_times[d_string, s.id])
-#         print("start_dt     ", start_time_dt)
-#         print("end_dt       ", end_time_dt)
-#         print("duration     ", s_durations[s.id])
-#         print(
-#             "duration calc",
-#             (s_end_times[d_string, s.id] - s_start_times[d_string, s.id]),
-#         )
+    dates_campaign = sorted(dates_campaign)  # Ensure dates are sorted
+
+    periods: List[List[date]] = []
+    while dates_campaign:
+        # Get the start of the week (Monday)
+        start_date = dates_campaign[0]
+        start_of_week = start_date - timedelta(days=start_date.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
+
+        # Get all dates in the current week
+        periods.append([d for d in dates_campaign if start_of_week <= d <= end_of_week])
+        dates_campaign = [d for d in dates_campaign if d > end_of_week]
+
+    for w in [w for w in workers if not w.deleted]:
+        weekly_target_minutes = w.weekly_hours * Constants.NUM_MINUTES_HOUR
+        w_weekly_work_time_contractual_assignments: List[
+            List[Tuple[str, str, str]]
+        ] = []
+        w_weekly_work_time_constractual_targets: List[int] = []
+        w_weekly_work_time_constractual_durations: List[List[int]] = []
+        for period in periods:
+            # Calculate the adjusted target
+            num_days_in_week = len(period)
+            adjusted_target = math.ceil(
+                (weekly_target_minutes / Constants.NUM_DAYS_WEEK) * num_days_in_week
+            )
+            w_weekly_work_time_contractual_assignments.append(
+                [(w.id, d.isoformat(), s.id) for d in period for s in shifts]
+            )
+            w_weekly_work_time_constractual_targets.append(adjusted_target)
+            w_weekly_work_time_constractual_durations.append(
+                [shift_id_to_duration_dict[s.id] for _ in period for s in shifts]
+            )
+        weekly_work_time_contractual_assignments.append(
+            w_weekly_work_time_contractual_assignments
+        )
+        weekly_work_time_constractual_targets.append(
+            w_weekly_work_time_constractual_targets
+        )
+        weekly_work_time_constractual_durations.append(
+            w_weekly_work_time_constractual_durations
+        )
+
+    return WorkTimeEngine(
+        weekly_work_time_contractual_assignments=(
+            weekly_work_time_contractual_assignments
+        ),
+        weekly_work_time_constractual_targets=(weekly_work_time_constractual_targets),
+        weekly_work_time_constractual_durations=(
+            weekly_work_time_constractual_durations
+        ),
+    )

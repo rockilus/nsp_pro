@@ -26,8 +26,6 @@ class Engine:
             inputs.variable_space.shifts,
             inputs.variable_space.duty_recup_pairs,
             inputs.shift_durations,
-            inputs.shift_start_times,
-            inputs.shift_end_times,
             inputs.fixed_config,
             model_config,
         )

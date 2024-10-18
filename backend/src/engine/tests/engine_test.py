@@ -16,8 +16,10 @@ from engine.types.input_output_types import (
     Request,
     Shift,
     Staffing,
+    Variables,
     VariableSpace,
     Worker,
+    WorkTime,
 )
 from utils.constants import Constants
 
@@ -138,6 +140,13 @@ class TestEngine:
         requests: List[Request] = []
         constraints: Constraints = Constraints(sum=[], seq=[], ord=[], fil=[], fai=[])
         inputs = Inputs(
+            variables=Variables([], []),
+            no_overlap_shift_intervals=[[]],
+            work_time=WorkTime(
+                weekly_work_time_contractual_assignments=[],
+                weekly_work_time_constractual_targets=[],
+                weekly_work_time_constractual_durations=[],
+            ),
             variable_space=variable_space,
             coverage=coverage,
             requests=requests,
@@ -150,28 +159,6 @@ class TestEngine:
                 for s_id, s_st, s_et in zip(
                     shift_names, shift_start_times, shift_end_times
                 )
-            },
-            shift_start_times={
-                (d.strftime(Constants.ENGINE_STRING_DATE_FORMAT), s_id): int(
-                    s_st.replace(year=d.year, month=d.month, day=d.day).timestamp()
-                    // Constants.NUM_SECONDS_MINUTE
-                )
-                for s_id, s_st in zip(shift_names, shift_start_times)
-                for d in [
-                    start_date + timedelta(days=i)
-                    for i in range((end_date - start_date).days + 1)
-                ]
-            },
-            shift_end_times={
-                (d.strftime(Constants.ENGINE_STRING_DATE_FORMAT), s_id): int(
-                    s_et.replace(year=d.year, month=d.month, day=d.day).timestamp()
-                    // Constants.NUM_SECONDS_MINUTE
-                )
-                for s_id, s_et in zip(shift_names, shift_end_times)
-                for d in [
-                    start_date + timedelta(days=i)
-                    for i in range((end_date - start_date).days + 1)
-                ]
             },
             fixed_config=FixedConfig([], []),
         )

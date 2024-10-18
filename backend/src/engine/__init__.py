@@ -21,10 +21,12 @@ from engine.types.input_output_types import (
     ShiftDemand,
     Staffing,
     VarDay,
+    Variables,
     VariableSpace,
     VarShift,
     VarWorker,
     Worker,
+    WorkTime,
 )
 
 __all__ = [
@@ -49,9 +51,11 @@ __all__ = [
     "Shift",
     "ShiftDemand",
     "Staffing",
+    "Variables",
     "VariableSpace",
     "VarDay",
     "VarShift",
     "VarWorker",
     "Worker",
+    "WorkTime",
 ]
