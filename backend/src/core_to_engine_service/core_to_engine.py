@@ -16,6 +16,8 @@ from core import (
     ShiftType,
     Worker,
 )
+from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
+from core_to_engine_service.penalty_map import penalty_map
 from engine import ConstraintFai as ConstraintFaiEngine
 from engine import ConstraintFil as ConstraintFilEngine
 from engine import ConstraintOrd as ConstraintOrdEngine
@@ -32,10 +34,6 @@ from engine import ShiftDemand as ShiftDemandEngine
 from engine import Staffing as StaffingEngine
 from engine import VariableSpace
 from engine import Worker as WorkerEngine
-from services.schedule_services.build_worker_shift_filter import (
-    build_worker_shift_filters,
-)
-from services.schedule_services.penalty_map import penalty_map
 from utils.constants import Constants
 
 
