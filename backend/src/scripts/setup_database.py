@@ -5,7 +5,6 @@ from database import (
     AttributeDB,
     ConfigDB,
     ConstraintBuildDB,
-    ConstraintDB,
     CoverageDB,
     CoverageSelectorDB,
     DimensionDB,
@@ -51,7 +50,6 @@ assignment_db = AssignmentDB(db)
 attribute_db = AttributeDB(db)
 config_db = ConfigDB(db)
 constraint_build_db = ConstraintBuildDB(db)
-constraint_db = ConstraintDB(db)
 coverage_db = CoverageDB(db)
 coverage_selector_db = CoverageSelectorDB(db)
 dimension_db = DimensionDB(db)

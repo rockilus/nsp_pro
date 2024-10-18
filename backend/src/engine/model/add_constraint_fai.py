@@ -6,6 +6,7 @@ from engine.types.input_output_types import ConstraintFai, ShiftDemand
 # from ortools.sat.python import cp_model  # type: ignore
 
 
+# pylint: disable=too-few-public-methods
 class AddConstraintFai(AddConstraint):
     def add_constraint(
         self, constraint: ConstraintFai, coverage: List[ShiftDemand]

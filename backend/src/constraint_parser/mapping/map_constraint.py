@@ -21,6 +21,7 @@ from core import (
 
 
 class MapConstaint:
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         workers: List[Worker],
@@ -207,6 +208,7 @@ class MapConstaint:
             constraint_build_id=cba.id,
         )
 
+    # pylint: disable=too-many-locals
     def map_constraint_eve(
         self, cba: ConstraintBuildAugmented, schedule_id: str
     ) -> ConstraintSum:

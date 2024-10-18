@@ -1,26 +1,21 @@
 from datetime import date
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from constraint_parser import parse_constraint
 from core import (
     Attribute,
-    Constraint,
     ConstraintBuildAugmented,
     ConstraintOperator,
+    Constraints,
+    ConstraintSum,
     ConstraintType,
     Dimension,
     DimensionEntryType,
     DimEntry,
     Schedule,
     Shift,
-    ShiftRestType,
-    ShiftType,
-    VarDay,
-    VarShift,
-    VarWorker,
     Worker,
 )
-from scripts.setup_database import constraint_db
 
 
 # pylint: disable=too-many-arguments
@@ -33,15 +28,14 @@ def build_constraints(
     attributes: List[Attribute],
     cbas: List[ConstraintBuildAugmented],
     dates_campaign: List[date],
-) -> List[Constraint]:
-    constraint_db.delete_constraints_by_schedule_id(schedule.id)
+) -> Constraints:
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
         workers, dimensions, dim_entries, attributes
     )
     dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
         shifts, dimensions, dim_entries, attributes
     )
-    constraints_user = parse_constraint(
+    constraints = parse_constraint(
         cbas,
         schedule.id,
         workers,
@@ -50,92 +44,43 @@ def build_constraints(
         shifts,
         dim_to_attr_value_to_shift,
     )
-    out = []
-    out += constraint_db.create_constraints(constraints_user)
-    # out += build_duty_recuperation_constraints(shifts, schedule)
-    out += build_quick_staffing_constraints(schedule)
-    return out
+    constraints.sum += build_quick_staffing_constraints(
+        schedule, workers, dates_campaign, shifts
+    )
+    return constraints
 
 
-def build_default_constraints(
-    shifts: List[Shift], schedule_id: str
-) -> List[Constraint]:
-    return build_default_fairness_constraints(shifts, schedule_id)
-
-
-def build_default_fairness_constraints(
-    shifts: List[Shift], schedule_id: str
-) -> List[Constraint]:
-    out = []
-    for shift in shifts:
+def build_quick_staffing_constraints(
+    schedule: Schedule,
+    workers: List[Worker],
+    dates_campaign: List[date],
+    shifts: List[Shift],
+) -> List[ConstraintSum]:
+    out: List[ConstraintSum] = []
+    for qs in schedule.quick_staffings:
+        worker = next(w for w in workers if w.id == qs.worker_id)
+        shift = next(s for s in shifts if s.id == qs.shift_id)
+        if worker is None or shift is None:
+            continue
+        constraints_vars: List[List[Tuple[str, str, str]]] = [
+            [(worker.id, d.isoformat(), shift.id) for d in dates_campaign]
+        ]
         out.append(
-            # pylint: disable=R0801
-            Constraint(
+            ConstraintSum(
                 id="",
-                constraint_type=ConstraintType.FAI,
-                operator=None,
-                target_value=0,
-                target_unit="",
-                worker_var=VarWorker(
-                    selector="all", target_ids=[], num_eligible_workers=0
-                ),
-                day_var=VarDay(
-                    selector="all",
-                    target=0,
-                    start_date=date.today(),
-                    end_date=date.today(),
-                    interval=0,
-                ),
-                shift_var=VarShift(
-                    selector="equal",
-                    target_ids=[shift.id],
-                    reference_ids=[],
-                    relative_ids=[],
-                ),
+                constraint_type=ConstraintType.SUM,
+                operator=ConstraintOperator.EQUAL,
+                target_value=qs.target,
+                target_unit="shift",
+                constraint_variables=constraints_vars,
                 active=True,
                 hard=False,
-                priority="low",
-                schedule_id=schedule_id,
+                priority="high",
+                schedule_id=schedule.id,
                 constraint_build_id="",
             )
         )
     return out
-
-
-def build_quick_staffing_constraints(schedule: Schedule) -> List[Constraint]:
-    return [
-        Constraint(
-            id="",
-            constraint_type=ConstraintType.SUM,
-            operator=ConstraintOperator.EQUAL,
-            target_value=qs.target,
-            target_unit="shift",
-            worker_var=VarWorker(
-                selector="equal",
-                target_ids=[qs.worker_id],
-                num_eligible_workers=0,
-            ),
-            day_var=VarDay(
-                selector="period",
-                target=0,
-                start_date=schedule.start_date,
-                end_date=schedule.end_date,
-                interval=0,
-            ),
-            shift_var=VarShift(
-                selector="equal",
-                target_ids=[qs.shift_id],
-                reference_ids=[],
-                relative_ids=[],
-            ),
-            active=True,
-            hard=False,
-            priority="high",
-            schedule_id=schedule.id,
-            constraint_build_id="",
-        )
-        for qs in schedule.quick_staffings
-    ]
 
 
 def build_dim_to_attr_value_to_owner(
@@ -168,55 +113,4 @@ def build_dim_to_attr_value_to_owner(
                     attr_value_to_owner[a.value] = []
                 attr_value_to_owner[a.value].append(a.owner_id)
         out[dim.id] = attr_value_to_owner
-    return out
-
-
-def build_duty_recuperation_constraints(
-    shifts: List[Shift], schedule: Schedule
-) -> List[Constraint]:
-    out = []
-    for duty in [s for s in shifts if s.shift_type == ShiftType.DUTY and not s.deleted]:
-        # pylint: disable=R0801
-        dr = next(
-            (
-                s
-                for s in shifts
-                if s.shift_type == ShiftType.REST
-                and s.rest_type == ShiftRestType.RECUPERATION
-                and s.recuperation_duty_id == duty.id
-            ),
-            None,
-        )
-        if dr is None:
-            continue
-        out.append(
-            Constraint(
-                id="",
-                constraint_type=ConstraintType.ORD,
-                operator=ConstraintOperator.YES,
-                target_value=0,
-                target_unit="",
-                worker_var=VarWorker(
-                    selector="all", target_ids=[], num_eligible_workers=0
-                ),
-                day_var=VarDay(
-                    selector="all",
-                    target=0,
-                    start_date=schedule.start_date,
-                    end_date=schedule.end_date,
-                    interval=0,
-                ),
-                shift_var=VarShift(
-                    selector="all",
-                    target_ids=[],
-                    reference_ids=[duty.id],
-                    relative_ids=[dr.id],
-                ),
-                active=True,
-                hard=True,
-                priority="low",
-                schedule_id=schedule.id,
-                constraint_build_id="",
-            )
-        )
     return out

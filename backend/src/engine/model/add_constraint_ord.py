@@ -7,6 +7,7 @@ from engine.model.utils.model_utils import build_var_name, get_nested_value
 from engine.types.input_output_types import ConstraintOperator, ConstraintOrd
 
 
+# pylint: disable=too-few-public-methods
 class AddConstraintOrd(AddConstraint):
     def add_constraint(self, constraint: ConstraintOrd, hard_to_soft: bool) -> None:
         for coord_ref, coord_rel in constraint.constraint_variables:

@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple
 from core import (
     Assignment,
     Attribute,
-    Constraint,
+    Constraints,
     Dimension,
     Request,
     Shift,
@@ -14,14 +14,14 @@ from core import (
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
-    VarDay,
-    VarShift,
-    VarWorker,
     Worker,
 )
-from engine import Constraint as ConstraintEngine
-from engine import ConstraintOperator as ConstraintOperatorEngine
-from engine import ConstraintType as ConstraintTypeEngine
+from engine import ConstraintFai as ConstraintFaiEngine
+from engine import ConstraintFil as ConstraintFilEngine
+from engine import ConstraintOrd as ConstraintOrdEngine
+from engine import Constraints as ConstraintsEngine
+from engine import ConstraintSeq as ConstraintSeqEngine
+from engine import ConstraintSum as ConstraintSumEngine
 from engine import Coverage as CoverageEngine
 from engine import FixedConfig as FixedConfigEngine
 from engine import Inputs
@@ -30,10 +30,7 @@ from engine import Request as RequestEngine
 from engine import Shift as ShiftEngine
 from engine import ShiftDemand as ShiftDemandEngine
 from engine import Staffing as StaffingEngine
-from engine import VarDay as VarDayEngine
 from engine import VariableSpace
-from engine import VarShift as VarShiftEngine
-from engine import VarWorker as VarWorkerEngine
 from engine import Worker as WorkerEngine
 from services.schedule_services.build_worker_shift_filter import (
     build_worker_shift_filters,
@@ -53,7 +50,7 @@ def core_to_engine_inputs(
     attributes: List[Attribute],
     shift_demand_dates: List[ShiftDemandDate],
     requests: List[Request],
-    constraints: List[Constraint],
+    constraints: Constraints,
     fixed_assignments: List[Assignment],
     wip_assignments: List[Assignment],
 ) -> Inputs:
@@ -71,7 +68,7 @@ def core_to_engine_inputs(
         [ShiftDemandEngine(**sd.__dict__) for sd in shift_demand_dates]
     )
     requests_engine = _core_to_engine_requests(requests)
-    constraints_engine = [_core_to_engine_constraint(c) for c in constraints]
+    constraints_engine = _core_to_engine_constraints(constraints)
     fixed_values_engine = core_to_engine_fixed_values(
         workers,
         dates_hist_str,
@@ -313,63 +310,14 @@ def core_to_engine_sol_hint(
     return out
 
 
-def _core_to_engine_constraint(constraint: Constraint) -> ConstraintEngine:
-    hard_to_soft = Constants.HARD_TO_SOFT
-    return ConstraintEngine(
-        id=constraint.id,
-        constraint_type=ConstraintTypeEngine(constraint.constraint_type),
-        operator=ConstraintOperatorEngine(constraint.operator),
-        target_value=constraint.target_value,
-        target_unit=constraint.target_unit,
-        worker_var=_core_to_engine_var_worker(constraint.worker_var),
-        day_var=_core_to_engine_var_day(constraint.day_var),
-        shift_var=_core_to_engine_var_shift(constraint.shift_var),
-        hard=constraint.hard if not hard_to_soft else False,
-        hard_to_soft=hard_to_soft and constraint.hard,
-        penalty=(
-            getattr(
-                penalty_map.constraint,
-                constraint.priority if constraint.priority != "" else "no",
-            )
-            if not hard_to_soft and constraint.hard
-            else getattr(
-                penalty_map.constraint,
-                "hard",
-            )
-        ),
+def _core_to_engine_constraints(constraints: Constraints) -> ConstraintsEngine:
+    return ConstraintsEngine(
+        sum=[ConstraintSumEngine(**c_sum.__dict__) for c_sum in constraints.sum],
+        seq=[ConstraintSeqEngine(**c_seq.__dict__) for c_seq in constraints.seq],
+        ord=[ConstraintOrdEngine(**c_ord.__dict__) for c_ord in constraints.ord],
+        fil=[ConstraintFilEngine(**c_fil.__dict__) for c_fil in constraints.fil],
+        fai=[ConstraintFaiEngine(**c_fai.__dict__) for c_fai in constraints.fai],
     )
-
-
-def _core_to_engine_var_worker(var_worker: VarWorker) -> VarWorkerEngine:
-    return VarWorkerEngine(
-        selector=var_worker.selector,
-        target=var_worker.target_ids,
-        num_eligible_workers=var_worker.num_eligible_workers,
-    )
-
-
-def _core_to_engine_var_day(var_day: VarDay) -> VarDayEngine:
-    return VarDayEngine(
-        selector=var_day.selector,
-        target=var_day.target,
-        start_date=var_day.start_date,
-        end_date=var_day.end_date,
-        interval=var_day.interval,
-    )
-
-
-def _core_to_engine_var_shift(var_shift: VarShift) -> VarShiftEngine:
-    return VarShiftEngine(
-        selector=var_shift.selector,
-        target=var_shift.target_ids,
-        reference=var_shift.reference_ids,
-        relative=var_shift.relative_ids,
-    )
-
-
-def _build_dates(start_date: date, end_date: date) -> List[date]:
-    delta = end_date - start_date
-    return [start_date + timedelta(days=i) for i in range(delta.days + 1)]
 
 
 def _build_interval_parameters(

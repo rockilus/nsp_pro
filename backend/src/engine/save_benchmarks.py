@@ -4,7 +4,7 @@ import os
 import subprocess
 
 from engine.model.model import Model
-from engine.types.input_output_types import ConstraintType, Inputs
+from engine.types.input_output_types import Inputs
 from utils.constants import Constants
 
 
@@ -49,7 +49,6 @@ def save_benchmark_to_csv(
         "num_constraints_ord",
         "num_constraints_fil",
         "num_constraints_fai",
-        "num_constraints_eve",
         "num_requests",
         "num_shift_demands",
         "total_time",
@@ -76,43 +75,17 @@ def save_benchmark_to_csv(
         'solution_fingerprint',
         "commit",
     ]
-    num_constraints_sum = sum(
-        1
-        for constraint in inputs.constraints
-        if constraint.constraint_type == ConstraintType.SUM
-    )
-    num_constraints_seq = sum(
-        1
-        for constraint in inputs.constraints
-        if constraint.constraint_type == ConstraintType.SEQ
-    )
-    num_constraints_ord = sum(
-        1
-        for constraint in inputs.constraints
-        if constraint.constraint_type == ConstraintType.ORD
-    )
-    num_constraints_fil = sum(
-        1
-        for constraint in inputs.constraints
-        if constraint.constraint_type == ConstraintType.FIL
-    )
-    num_constraints_fai = sum(
-        1
-        for constraint in inputs.constraints
-        if constraint.constraint_type == ConstraintType.FAI
-    )
-    num_constraints_eve = sum(
-        1
-        for constraint in inputs.constraints
-        if constraint.constraint_type == ConstraintType.EVE
-    )
+    num_constraints_sum = len(inputs.constraints.sum)
+    num_constraints_seq = len(inputs.constraints.seq)
+    num_constraints_ord = len(inputs.constraints.ord)
+    num_constraints_fil = len(inputs.constraints.fil)
+    num_constraints_fai = len(inputs.constraints.fai)
     num_constraints_total = (
         num_constraints_sum
         + num_constraints_seq
         + num_constraints_ord
         + num_constraints_fil
         + num_constraints_fai
-        + num_constraints_eve
     )
     entry = {
         "date": get_date_time(),
@@ -126,7 +99,6 @@ def save_benchmark_to_csv(
         "num_constraints_ord": num_constraints_ord,
         "num_constraints_fil": num_constraints_fil,
         "num_constraints_fai": num_constraints_fai,
-        "num_constraints_eve": num_constraints_eve,
         "num_requests": len(inputs.requests),
         "num_shift_demands": len(inputs.coverage.coverage),
         "total_time": model.bt.total_end - model.bt.total_start,

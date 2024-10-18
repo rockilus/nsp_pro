@@ -8,6 +8,7 @@ from engine.types.input_output_types import ConstraintOperator, ConstraintSum
 from utils.constants import Constants
 
 
+# pylint: disable=too-few-public-methods
 class AddConstraintSum(AddConstraint):
     def add_constraint(self, constraint: ConstraintSum, hard_to_soft: bool) -> None:
         for coords in constraint.constraint_variables:

@@ -11,6 +11,7 @@ from engine.model.utils.model_utils import (
 from engine.types.input_output_types import ConstraintOperator, ConstraintSeq
 
 
+# pylint: disable=too-few-public-methods
 class AddConstraintSeq(AddConstraint):
     def add_constraint(self, constraint: ConstraintSeq, hard_to_soft: bool) -> None:
         for coords in constraint.constraint_variables:

@@ -8,7 +8,7 @@ from engine.engine import Engine
 # pylint: disable=unused-import
 from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
 from engine.types.input_output_types import (
-    Constraint,
+    Constraints,
     Coverage,
     FixedConfig,
     Inputs,
@@ -136,7 +136,7 @@ class TestEngine:
         )
         coverage = Coverage([])
         requests: List[Request] = []
-        constraints: List[Constraint] = []
+        constraints: Constraints = Constraints(sum=[], seq=[], ord=[], fil=[], fai=[])
         inputs = Inputs(
             variable_space=variable_space,
             coverage=coverage,

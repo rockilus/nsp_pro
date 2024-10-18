@@ -184,6 +184,7 @@ class FixedConfig:
     max_duties_per_month: List[PeriodTarget]
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class Inputs:
     variable_space: VariableSpace
