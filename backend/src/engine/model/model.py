@@ -230,10 +230,12 @@ class Model:
             inputs.coverage.coverage, coverage_hts
         )
         self.add_duty_recup_constraints(duty_recup_hts)
-        self.add_weekly_contractual_worktime_constraints(
-            inputs.work_time, work_time_hts
+        self.add_worktime_constraints(
+            inputs.work_time.weekly_work_time_contractual, work_time_hts
         )
-        self.add_weekly_desired_worktime_constraints(work_time_desired_hts)
+        self.add_worktime_constraints(
+            inputs.work_time.weekly_work_time_desired, work_time_desired_hts
+        )
         self.add_nb_duties_per_month_constraints(nb_duty_hts)
         self.add_worker_shift_filter_constraints(
             inputs.worker_shift_filters, worker_shift_filter_hts
@@ -334,9 +336,7 @@ class Model:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
 
-    def add_solution_hint(
-        self, solution_hint: Dict[Tuple[str, str, str], int]
-    ) -> None:
+    def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
         for k, v in solution_hint.items():
             self.model.AddHint(self.variables[k], v)
 
@@ -344,11 +344,7 @@ class Model:
         for w in self.workers_not_deleted:
             for d in self.days_solving:
                 self.model.Add(
-                    sum(
-                        self.variables[w, d, s]
-                        for s in self.shifts_not_deleted
-                    )
-                    >= 1
+                    sum(self.variables[w, d, s] for s in self.shifts_not_deleted) >= 1
                 )
 
     def no_interval_overlap(
@@ -407,15 +403,11 @@ class Model:
                         self.variables[w, solving_dates[start_d + d], s]
                         for d in range(interval)
                     ]
-                    self.model.Add(
-                        weekly_staffing == sum(weekly_staffing_vars)
-                    )
+                    self.model.Add(weekly_staffing == sum(weekly_staffing_vars))
                     weekly_staffings.append(weekly_staffing)
 
                 min_weekly_staffing = self.model.NewIntVar(0, 100, "")
-                self.model.AddMinEquality(
-                    min_weekly_staffing, weekly_staffings
-                )
+                self.model.AddMinEquality(min_weekly_staffing, weekly_staffings)
                 for ws in weekly_staffings:
                     # var_name = build_var_name(
                     #     Constraint(
@@ -467,9 +459,7 @@ class Model:
         staffings = []
         for w in self.all_workers:
             worker_staffing_vars = [
-                self.variables[w, d, s]
-                for d in solving_dates
-                for s in cov_shifts
+                self.variables[w, d, s] for d in solving_dates for s in cov_shifts
             ]
             worker_staffing = self.model.NewIntVar(
                 0, len(self.shift_ids) * len(solving_dates), f"{w}"
@@ -546,13 +536,11 @@ class Model:
                         self.obj.int_vars.append(excess)
                         self.obj.int_coeffs.append(100)
 
-    def add_weekly_contractual_worktime_constraints(
-        self, work_time: WorkTime, hard_to_soft: bool
-    ) -> None:
+    def add_worktime_constraints(self, work_time: WorkTime, hard_to_soft: bool) -> None:
         for w_assignments, w_targets, w_durations in zip(
-            work_time.weekly_work_time_contractual_assignments,
-            work_time.weekly_work_time_constractual_targets,
-            work_time.weekly_work_time_constractual_durations,
+            work_time.assignments,
+            work_time.targets,
+            work_time.durations,
         ):
             for p_assignments, p_target, p_durations in zip(
                 w_assignments, w_targets, w_durations
@@ -560,16 +548,11 @@ class Model:
                 constraint_vars = [self.variables[a] for a in p_assignments]
                 if not hard_to_soft:
                     self.model.Add(
-                        sum(
-                            v * dur
-                            for v, dur in zip(constraint_vars, p_durations)
-                        )
+                        sum(v * dur for v, dur in zip(constraint_vars, p_durations))
                         <= p_target
                     )
                 else:
-                    var_name = build_var_name(
-                        None, constraint_vars, "work_time"
-                    )
+                    var_name = build_var_name(None, constraint_vars, "work_time")
                     delta = self.model.NewIntVar(
                         -p_target,
                         len(constraint_vars)
@@ -579,10 +562,7 @@ class Model:
                     )
                     self.model.Add(
                         delta
-                        == sum(
-                            v * dur
-                            for v, dur in zip(constraint_vars, p_durations)
-                        )
+                        == sum(v * dur for v, dur in zip(constraint_vars, p_durations))
                         - p_target
                     )
                     excess = self.model.NewIntVar(
@@ -594,60 +574,7 @@ class Model:
                     )
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(50)
-
-    def add_weekly_desired_worktime_constraints(
-        self, hard_to_soft: bool
-    ) -> None:
-        for worker in [w for w in self.workers if not w.deleted]:
-            for pt in worker.work_hours_desired:
-                constraint_vars = []
-                constraint_durs = []
-                for s in self.shifts_work:
-                    constraint_vars.extend(
-                        [self.variables[worker.id, d, s] for d in pt.period]
-                    )
-                    constraint_durs.extend(
-                        [self.durations[s] for _ in pt.period]
-                    )
-
-                if not hard_to_soft:
-                    self.model.Add(
-                        sum(
-                            v * d
-                            for v, d in zip(constraint_vars, constraint_durs)
-                        )
-                        <= pt.target
-                    )
-                else:
-                    var_name = build_var_name(
-                        None, constraint_vars, "work_time"
-                    )
-                    delta = self.model.NewIntVar(
-                        -pt.target,
-                        len(constraint_vars)
-                        * Constants.NUM_HOURS_DAY
-                        * Constants.NUM_MINUTES_HOUR,
-                        "",
-                    )
-                    self.model.Add(
-                        delta
-                        == sum(
-                            v * d
-                            for v, d in zip(constraint_vars, constraint_durs)
-                        )
-                        - pt.target
-                    )
-                    excess = self.model.NewIntVar(
-                        0,
-                        len(constraint_vars)
-                        * Constants.NUM_HOURS_DAY
-                        * Constants.NUM_MINUTES_HOUR,
-                        var_name,
-                    )
-                    self.model.AddMaxEquality(excess, [delta, 0])
-                    self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(100)
+                    self.obj.int_coeffs.append(work_time.penalty)
 
     def add_max_weekly_worktime_constraints(self) -> None:
         for w in self.workers_not_deleted:
@@ -655,17 +582,10 @@ class Model:
                 constraint_vars = []
                 constraint_durs = []
                 for s in self.shifts_work:
-                    constraint_vars.extend(
-                        [self.variables[w, d, s] for d in pt.period]
-                    )
-                    constraint_durs.extend(
-                        [self.durations[s] for _ in pt.period]
-                    )
+                    constraint_vars.extend([self.variables[w, d, s] for d in pt.period])
+                    constraint_durs.extend([self.durations[s] for _ in pt.period])
                     self.model.Add(
-                        sum(
-                            v * d
-                            for v, d in zip(constraint_vars, constraint_durs)
-                        )
+                        sum(v * d for v, d in zip(constraint_vars, constraint_durs))
                         <= pt.target
                     )
 
@@ -680,18 +600,14 @@ class Model:
                 if not hard_to_soft:
                     self.model.Add(sum(constraint_vars) <= pt.target)
                 else:
-                    var_name = build_var_name(
-                        None, constraint_vars, "duties_per_month"
-                    )
+                    var_name = build_var_name(None, constraint_vars, "duties_per_month")
                     delta = self.model.NewIntVar(
                         -pt.target,
                         len(constraint_vars),
                         "",
                     )
                     self.model.Add(delta == sum(constraint_vars) - pt.target)
-                    excess = self.model.NewIntVar(
-                        0, len(constraint_vars), var_name
-                    )
+                    excess = self.model.NewIntVar(0, len(constraint_vars), var_name)
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(100)
@@ -715,12 +631,10 @@ class Model:
                 if not hard_to_soft:
                     self.model.Add(cstr_var == 0)
                 else:
-                    var_name = build_var_name(
-                        None, [cstr_var], "worker_shift_filter"
-                    )
-                    cstr_vars: List[
-                        cp_model.IntVar | cp_model._NotBooleanVariable
-                    ] = [cstr_var.Not()]
+                    var_name = build_var_name(None, [cstr_var], "worker_shift_filter")
+                    cstr_vars: List[cp_model.IntVar | cp_model._NotBooleanVariable] = [
+                        cstr_var.Not()
+                    ]
                     lit = self.model.NewBoolVar(var_name)
                     cstr_vars.append(lit)
                     self.model.AddBoolOr(cstr_vars)

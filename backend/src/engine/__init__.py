@@ -27,6 +27,7 @@ from engine.types.input_output_types import (
     VarWorker,
     Worker,
     WorkTime,
+    WorkTimes,
 )
 
 __all__ = [
@@ -58,4 +59,5 @@ __all__ = [
     "VarWorker",
     "Worker",
     "WorkTime",
+    "WorkTimes",
 ]

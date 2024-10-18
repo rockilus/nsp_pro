@@ -201,13 +201,20 @@ class Variables:
 class WorkTime:
     # for each worker, a list of assignments for the target periods
     # (size workers x periods x shifts * period length])
-    weekly_work_time_contractual_assignments: List[List[List[Tuple[str, str, str]]]]
+    assignments: List[List[List[Tuple[str, str, str]]]]
     # for each period, the target contractual work time
     # (size workers x periods)
-    weekly_work_time_constractual_targets: List[List[int]]
+    targets: List[List[int]]
     # for each assignment, the duration of the shift
     # (size workers x periods x shifts * period length)
-    weekly_work_time_constractual_durations: List[List[List[int]]]
+    durations: List[List[List[int]]]
+    penalty: int
+
+
+@dataclass
+class WorkTimes:
+    weekly_work_time_contractual: WorkTime
+    weekly_work_time_desired: WorkTime
 
 
 # pylint: disable=too-many-instance-attributes
@@ -217,7 +224,7 @@ class Inputs:
     no_overlap_shift_intervals: List[
         List[Tuple[str, str, str]]
     ]  # list of assignments for each worker
-    work_time: WorkTime
+    work_time: WorkTimes
     variable_space: VariableSpace
     coverage: Coverage
     requests: List[Request]

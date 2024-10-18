@@ -20,6 +20,7 @@ from engine.types.input_output_types import (
     VariableSpace,
     Worker,
     WorkTime,
+    WorkTimes,
 )
 from utils.constants import Constants
 
@@ -142,10 +143,19 @@ class TestEngine:
         inputs = Inputs(
             variables=Variables([], []),
             no_overlap_shift_intervals=[[]],
-            work_time=WorkTime(
-                weekly_work_time_contractual_assignments=[],
-                weekly_work_time_constractual_targets=[],
-                weekly_work_time_constractual_durations=[],
+            work_time=WorkTimes(
+                weekly_work_time_contractual=WorkTime(
+                    assignments=[],
+                    targets=[],
+                    durations=[],
+                    penalty=50,
+                ),
+                weekly_work_time_desired=WorkTime(
+                    assignments=[],
+                    targets=[],
+                    durations=[],
+                    penalty=50,
+                ),
             ),
             variable_space=variable_space,
             coverage=coverage,

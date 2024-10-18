@@ -17,6 +17,7 @@ from core import (
     Worker,
 )
 from core_to_engine_service.build_engine_variables import build_engine_variables
+from core_to_engine_service.build_engine_work_times import build_engine_work_times
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
 from core_to_engine_service.penalty_map import penalty_map
 from engine import ConstraintFai as ConstraintFaiEngine
@@ -35,7 +36,6 @@ from engine import ShiftDemand as ShiftDemandEngine
 from engine import Staffing as StaffingEngine
 from engine import VariableSpace
 from engine import Worker as WorkerEngine
-from engine import WorkTime as WorkTimeEngine
 from utils.constants import Constants
 
 
@@ -92,7 +92,7 @@ def core_to_engine_inputs(
             [(w.id, d.isoformat(), s.id) for d in dates_all for s in shifts]
             for w in workers
         ],
-        work_time=_build_work_time_engine(
+        work_time=build_engine_work_times(
             workers, dates_campaign, shifts, shift_id_to_duration_dict
         ),
         variable_space=variable_space,
@@ -349,69 +349,3 @@ def build_duty_recup_pairs(shifts: List[Shift]) -> List[Tuple[str, str]]:
             if rec_shift:
                 out.append((shift.id, rec_shift.id))
     return out
-
-
-def _build_work_time_engine(
-    workers: List[Worker],
-    dates_campaign: List[date],
-    shifts: List[Shift],
-    shift_id_to_duration_dict: Dict[str, int],
-) -> WorkTimeEngine:
-    weekly_work_time_contractual_assignments: List[
-        List[List[Tuple[str, str, str]]]
-    ] = []
-    weekly_work_time_constractual_targets: List[List[int]] = []
-    weekly_work_time_constractual_durations: List[List[List[int]]] = []
-
-    dates_campaign = sorted(dates_campaign)  # Ensure dates are sorted
-
-    periods: List[List[date]] = []
-    while dates_campaign:
-        # Get the start of the week (Monday)
-        start_date = dates_campaign[0]
-        start_of_week = start_date - timedelta(days=start_date.weekday())
-        end_of_week = start_of_week + timedelta(days=6)
-
-        # Get all dates in the current week
-        periods.append([d for d in dates_campaign if start_of_week <= d <= end_of_week])
-        dates_campaign = [d for d in dates_campaign if d > end_of_week]
-
-    for w in [w for w in workers if not w.deleted]:
-        weekly_target_minutes = w.weekly_hours * Constants.NUM_MINUTES_HOUR
-        w_weekly_work_time_contractual_assignments: List[
-            List[Tuple[str, str, str]]
-        ] = []
-        w_weekly_work_time_constractual_targets: List[int] = []
-        w_weekly_work_time_constractual_durations: List[List[int]] = []
-        for period in periods:
-            # Calculate the adjusted target
-            num_days_in_week = len(period)
-            adjusted_target = math.ceil(
-                (weekly_target_minutes / Constants.NUM_DAYS_WEEK) * num_days_in_week
-            )
-            w_weekly_work_time_contractual_assignments.append(
-                [(w.id, d.isoformat(), s.id) for d in period for s in shifts]
-            )
-            w_weekly_work_time_constractual_targets.append(adjusted_target)
-            w_weekly_work_time_constractual_durations.append(
-                [shift_id_to_duration_dict[s.id] for _ in period for s in shifts]
-            )
-        weekly_work_time_contractual_assignments.append(
-            w_weekly_work_time_contractual_assignments
-        )
-        weekly_work_time_constractual_targets.append(
-            w_weekly_work_time_constractual_targets
-        )
-        weekly_work_time_constractual_durations.append(
-            w_weekly_work_time_constractual_durations
-        )
-
-    return WorkTimeEngine(
-        weekly_work_time_contractual_assignments=(
-            weekly_work_time_contractual_assignments
-        ),
-        weekly_work_time_constractual_targets=(weekly_work_time_constractual_targets),
-        weekly_work_time_constractual_durations=(
-            weekly_work_time_constractual_durations
-        ),
-    )
