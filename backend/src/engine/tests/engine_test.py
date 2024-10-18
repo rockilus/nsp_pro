@@ -156,6 +156,12 @@ class TestEngine:
                     durations=[],
                     penalty=50,
                 ),
+                weekly_work_time_max=WorkTime(
+                    assignments=[],
+                    targets=[],
+                    durations=[],
+                    penalty=0,
+                ),
             ),
             variable_space=variable_space,
             coverage=coverage,

@@ -215,6 +215,7 @@ class WorkTime:
 class WorkTimes:
     weekly_work_time_contractual: WorkTime
     weekly_work_time_desired: WorkTime
+    weekly_work_time_max: WorkTime
 
 
 # pylint: disable=too-many-instance-attributes

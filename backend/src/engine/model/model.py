@@ -218,7 +218,7 @@ class Model:
         self.set_fixed_variables(inputs.fixed_values)
         self.add_solution_hint(inputs.sol_hint)
         self.no_interval_overlap(inputs.no_overlap_shift_intervals)
-        self.add_max_weekly_worktime_constraints()
+        self.add_worktime_constraints(inputs.work_time.weekly_work_time_max)
         self.add_max_nb_duties_per_month_constraints()
         # self.add_at_least_one_shift_per_day_solving_constraint()
         # self.status = self.solver.Solve(  # type: ignore
@@ -536,7 +536,9 @@ class Model:
                         self.obj.int_vars.append(excess)
                         self.obj.int_coeffs.append(100)
 
-    def add_worktime_constraints(self, work_time: WorkTime, hard_to_soft: bool) -> None:
+    def add_worktime_constraints(
+        self, work_time: WorkTime, hard_to_soft: bool = False
+    ) -> None:
         for w_assignments, w_targets, w_durations in zip(
             work_time.assignments,
             work_time.targets,
@@ -575,19 +577,6 @@ class Model:
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(work_time.penalty)
-
-    def add_max_weekly_worktime_constraints(self) -> None:
-        for w in self.workers_not_deleted:
-            for pt in self.fixed_config.max_weekly_hours_worked:
-                constraint_vars = []
-                constraint_durs = []
-                for s in self.shifts_work:
-                    constraint_vars.extend([self.variables[w, d, s] for d in pt.period])
-                    constraint_durs.extend([self.durations[s] for _ in pt.period])
-                    self.model.Add(
-                        sum(v * d for v, d in zip(constraint_vars, constraint_durs))
-                        <= pt.target
-                    )
 
     def add_nb_duties_per_month_constraints(self, hard_to_soft: bool) -> None:
         for worker in [w for w in self.workers if not w.deleted]:

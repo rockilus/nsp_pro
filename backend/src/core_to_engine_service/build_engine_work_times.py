@@ -32,6 +32,14 @@ def build_engine_work_times(
             [w.weekly_hours_desired for w in workers_not_deleted],
             50,
         ),
+        weekly_work_time_max=_build_engine_work_time(
+            workers_not_deleted,
+            periods_weekly,
+            shifts,
+            shift_id_to_duration_dict,
+            [80 for _ in workers_not_deleted],
+            0,
+        ),
     )
 
 
