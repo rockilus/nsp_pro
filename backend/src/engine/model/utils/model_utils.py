@@ -6,6 +6,7 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.types.input_output_types import (
     Constraint,
+    NewRequest,
     NewShiftDemand,
     Request,
     ShiftDemand,
@@ -35,7 +36,9 @@ def get_total_coverage_shift(
 
 
 def build_var_name(
-    constraint: Constraint | Request | ShiftDemand | NewShiftDemand | None,
+    constraint: (
+        Constraint | Request | NewRequest | ShiftDemand | NewShiftDemand | None
+    ),
     cstr_vars: List[cp_model.IntVar],
     category: Literal[
         'request',
@@ -55,7 +58,7 @@ def build_var_name(
                     if constraint is None
                     else (
                         constraint.id
-                        if not isinstance(constraint, ShiftDemand)
+                        if not isinstance(constraint, (ShiftDemand, NewShiftDemand))
                         else "no_shift_demand_id"
                     )
                 ),
@@ -63,7 +66,8 @@ def build_var_name(
                 category=category,
                 hard_to_soft=(
                     True
-                    if isinstance(constraint, ShiftDemand) or constraint is None
+                    if isinstance(constraint, (ShiftDemand, NewShiftDemand))
+                    or constraint is None
                     else constraint.hard
                 ),
             )

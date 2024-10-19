@@ -178,6 +178,7 @@ class TestEngine:
             coverage=coverage,
             new_shift_demands=[],
             requests=requests,
+            new_requests=[],
             constraints=constraints,
             duty_recup_pairs=[],
             worker_shift_filters=[],

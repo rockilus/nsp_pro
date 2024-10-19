@@ -16,6 +16,7 @@ from core import (
     Worker,
 )
 from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
+from core_to_engine_service.build_engine_requests import build_engine_requests
 from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
 from core_to_engine_service.build_engine_variables import build_engine_variables
 from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
@@ -55,11 +56,17 @@ def core_to_engine_inputs(
     fixed_assignments: List[Assignment],
     wip_assignments: List[Assignment],
 ) -> Inputs:
+    # Workers
     workers_not_deleted = [w for w in workers if not w.deleted]
-    shifts_not_deleted = [s for s in shifts if not s.deleted]
+    worker_not_deleted_ids = [w.id for w in workers if not w.deleted]
+    # Dates
     dates_all_str = [d.isoformat() for d in dates_all]
     dates_hist_str = [d.isoformat() for d in dates_hist]
     dates_campaign_str = [d.isoformat() for d in dates_campaign]
+    # Shifts
+    shifts_not_deleted = [s for s in shifts if not s.deleted]
+    shift_not_deleted_ids = [s.id for s in shifts if not s.deleted]
+
     variable_space = VariableSpace(
         workers=[_core_to_engine_worker(w, dates_campaign) for w in workers],
         all_days=dates_all_str,
@@ -109,6 +116,12 @@ def core_to_engine_inputs(
             shift_demand_dates,
         ),
         requests=requests_engine,
+        new_requests=build_engine_requests(
+            worker_not_deleted_ids,
+            dates_campaign,
+            shift_not_deleted_ids,
+            requests,
+        ),
         constraints=constraints_engine,
         duty_recup_pairs=build_duty_recup_pairs(
             workers_not_deleted, dates_campaign, shifts_not_deleted

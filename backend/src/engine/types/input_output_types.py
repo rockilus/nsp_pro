@@ -82,6 +82,13 @@ class Request:
 
 
 @dataclass
+class NewRequest:
+    id: str
+    assignments: List[Tuple[str, str, str]]
+    hard: bool
+
+
+@dataclass
 class Assignment:
     worker_id: str
     date: date
@@ -252,6 +259,7 @@ class Inputs:
     coverage: Coverage
     new_shift_demands: List[NewShiftDemand]
     requests: List[Request]
+    new_requests: List[NewRequest]
     constraints: Constraints
     duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
     worker_shift_filters: List[Tuple[str, str, str]]

@@ -220,7 +220,7 @@ class Model:
         self.add_work_time_constraints(inputs.work_loads.weekly_work_time_max)
         self.add_nb_duties_constraints(inputs.work_loads.monthly_nb_duties_max)
         self.add_constraint_factory.add_coverage.add_coverage(
-            inputs.coverage.coverage, coverage_hts
+            inputs.new_shift_demands, coverage_hts
         )
         self.add_duty_recup_constraints(inputs.duty_recup_pairs, duty_recup_hts)
         self.add_work_time_constraints(
@@ -236,7 +236,7 @@ class Model:
             inputs.worker_shift_filters, worker_shift_filter_hts
         )
         self.add_constraint_factory.add_request.add_requests(
-            inputs.requests, request_hts
+            inputs.new_requests, request_hts
         )
         self.add_custom_constraints(
             inputs.constraints, inputs.coverage.coverage, constraint_hts
