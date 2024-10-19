@@ -15,7 +15,10 @@ def build_engine_shift_demands(
     for shift_demand in shift_demands:
         if shift_demand.date not in dates_campaing:
             continue
-        shift = next(s for s in shifts_not_deleted if s.id == shift_demand.shift_id)
+        shift = next(
+            (s for s in shifts_not_deleted if s.id == shift_demand.shift_id),
+            None,
+        )
         if shift is None:
             continue
         for staffing in shift.staffing:

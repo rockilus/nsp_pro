@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from core import Shift, Worker
 from engine import Variables as VariablesEngine
@@ -10,6 +10,7 @@ def build_engine_variables(
     workers: List[Worker],
     dates_all: List[date],
     shifts: List[Shift],
+    shift_id_to_duration_dict: Dict[str, int],
 ) -> VariablesEngine:
     assignment_vars: List[Tuple[str, str, str]] = []
     shift_interval_vars: List[Tuple[int, int, int, Tuple[str, str, str]]] = []
@@ -18,7 +19,7 @@ def build_engine_variables(
             for s in shifts:
                 assignment_vars.append((w.id, d.isoformat(), s.id))
 
-                s_duration = int((s.end_time - s.start_time).total_seconds() // 60 - 1)
+                s_duration = shift_id_to_duration_dict[s.id]
                 s_start_time = int(
                     s.start_time.replace(
                         year=d.year, month=d.month, day=d.day

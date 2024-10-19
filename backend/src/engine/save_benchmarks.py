@@ -39,9 +39,6 @@ def save_benchmark_to_csv(
     )
     fieldnames = [
         "date",
-        "num_workers",
-        "num_days",
-        "num_shifts",
         "num_variables",
         "num_constraints_total",
         "num_constraints_sum",
@@ -89,9 +86,6 @@ def save_benchmark_to_csv(
     )
     entry = {
         "date": get_date_time(),
-        "num_workers": len(model.all_workers),
-        "num_days": len(model.all_days),
-        "num_shifts": len(model.shift_ids),
         "num_variables": len(model.variables),
         "num_constraints_total": num_constraints_total,
         "num_constraints_sum": num_constraints_sum,
@@ -99,8 +93,8 @@ def save_benchmark_to_csv(
         "num_constraints_ord": num_constraints_ord,
         "num_constraints_fil": num_constraints_fil,
         "num_constraints_fai": num_constraints_fai,
-        "num_requests": len(inputs.requests),
-        "num_shift_demands": len(inputs.coverage.coverage),
+        "num_requests": len(inputs.new_requests),
+        "num_shift_demands": len(inputs.new_shift_demands),
         "total_time": model.bt.total_end - model.bt.total_start,
         "setup_time": model.bt.full_setup_end - model.bt.full_setup_start,
         "solve_time": model.solver.WallTime(),

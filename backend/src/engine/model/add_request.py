@@ -9,34 +9,32 @@ from engine.types.model_types import Objective
 
 # pylint: disable=too-few-public-methods
 class AddRequest:
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         model: cp_model.CpModel,
         variables: Dict[Tuple[str, str, str], cp_model.IntVar],
-        workers: List[str],
         obj: Objective,
         model_config: Dict,
     ) -> None:
         self.model = model
         self.variables = variables
-        self.workers = workers
         self.obj = obj
         self.model_config = model_config
 
     def add_requests(self, requests: List[NewRequest], hard_to_soft: bool) -> None:
         penalty = get_nested_value(self.model_config, ["penalties", "request", "soft"])
         for r in requests:
-            cstr_vars: List[cp_model.IntVar] = [
+            c_variables: List[cp_model.IntVar] = [
                 self.variables[a] for a in r.assignments
             ]
-            for var in cstr_vars:
+            for var in c_variables:
                 if r.hard and not hard_to_soft:
                     self.model.Add(var == 1)
                     continue
+                cstr_vars: List[cp_model.IntVar] = [var]
                 var_name = build_var_name(
                     r,
-                    [var],
+                    cstr_vars,
                     "request",
                 )
                 # pylint: disable=R0801

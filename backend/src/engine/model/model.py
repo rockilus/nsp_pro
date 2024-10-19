@@ -8,13 +8,9 @@ from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import build_var_name, get_nested_value
 from engine.types.input_output_types import (
     Constraints,
-    FixedConfig,
     Inputs,
     NbDuties,
-    Shift,
-    ShiftDemand,
     Variables,
-    Worker,
     WorkTime,
 )
 from engine.types.model_types import BenchmarkTimes, Objective
@@ -24,34 +20,13 @@ from utils.constants import Constants
 # pylint: disable=too-many-public-methods
 class Model:
     # pylint: disable=too-many-instance-attributes, too-many-arguments
-    def __init__(
-        self,
-        workers: List[Worker],
-        all_days: List[str],
-        days_solving: List[str],
-        shifts: List[Shift],
-        shift_durations: Dict[str, int],
-        fixed_config: FixedConfig,
-        model_config: Dict,
-    ) -> None:
-        self.workers = workers
-        self.all_workers = [w.id for w in workers]
-        self.workers_not_deleted = [w.id for w in workers if not w.deleted]
-        self.all_days = all_days
-        self.days_solving = days_solving
-        self.shifts = shifts
-        self.shift_ids = [s.id for s in shifts]
-        self.shifts_not_deleted = [s.id for s in shifts if not s.deleted]
-        self.shifts_work = [s.id for s in shifts if s.work_shift]
-        self.fixed_config = fixed_config
-
+    def __init__(self, model_config: Dict) -> None:
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple[str, str, str], cp_model.IntVar] = {}
         self.intervals: Dict[Tuple[str, str, str], cp_model.IntervalVar] = {}
         self.assignment_wdss: Dict[
             Tuple[str, str, str, str], cp_model.IntVar
         ] = {}  # worker, day, shift, specialty
-        self.durations: Dict[str, int] = shift_durations
         self.model_config = model_config
 
         self.obj = Objective()
@@ -64,12 +39,6 @@ class Model:
             self.model,
             self.variables,
             self.assignment_wdss,
-            self.durations,
-            self.workers,
-            self.all_workers,
-            self.all_days,
-            self.shifts,
-            self.shift_ids,
             self.obj,
             self.model_config,
         )
@@ -238,9 +207,7 @@ class Model:
         self.add_constraint_factory.add_request.add_requests(
             inputs.new_requests, request_hts
         )
-        self.add_custom_constraints(
-            inputs.constraints, inputs.coverage.coverage, constraint_hts
-        )
+        self.add_custom_constraints(inputs.constraints, constraint_hts)
         self.add_objective()
         self.solve()
         self.print_model_metadata(
@@ -266,12 +233,6 @@ class Model:
             self.model,
             self.variables,
             self.assignment_wdss,
-            self.durations,
-            self.workers,
-            self.all_workers,
-            self.all_days,
-            self.shifts,
-            self.shift_ids,
             self.obj,
             self.model_config,
         )
@@ -418,10 +379,7 @@ class Model:
                 self.obj.bool_coeffs.append(100)
 
     def add_custom_constraints(
-        self,
-        constraints: Constraints,
-        coverage: List[ShiftDemand],
-        hard_to_soft: bool,
+        self, constraints: Constraints, hard_to_soft: bool
     ) -> None:
         for c_sum in constraints.sum:
             self.add_constraint_factory.add_constraint_sum.add_constraint(
@@ -440,9 +398,7 @@ class Model:
                 c_fil, hard_to_soft
             )
         for c_fai in constraints.fai:
-            self.add_constraint_factory.add_constraint_fai.add_constraint(
-                c_fai, coverage
-            )
+            self.add_constraint_factory.add_constraint_fai.add_constraint(c_fai)
 
     def add_objective(self) -> None:
         self.model.Minimize(

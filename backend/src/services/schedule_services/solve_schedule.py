@@ -14,7 +14,7 @@ from core import (
     Schedule,
     Shift,
 )
-from core_to_engine_service import build_engine_inputs
+from core_to_engine_service import core_to_engine_inputs
 from engine import Constraints as ConstraintsEngine
 from engine import Engine
 from scripts.setup_database import (
@@ -85,7 +85,7 @@ def solve_schedule(
     wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
-    inputs = build_engine_inputs(
+    inputs = core_to_engine_inputs(
         schedule,
         workers,
         shifts,

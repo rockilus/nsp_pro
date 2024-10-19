@@ -1,16 +1,12 @@
-from typing import List
-
 from engine.model.add_constraint import AddConstraint
-from engine.types.input_output_types import ConstraintFai, ShiftDemand
+from engine.types.input_output_types import ConstraintFai
 
 # from ortools.sat.python import cp_model  # type: ignore
 
 
 # pylint: disable=too-few-public-methods
 class AddConstraintFai(AddConstraint):
-    def add_constraint(
-        self, constraint: ConstraintFai, coverage: List[ShiftDemand]
-    ) -> None:
+    def add_constraint(self, constraint: ConstraintFai) -> None:
         pass
 
     #     w_vars, d_vars, s_vars = self.get_vars_coordinates(

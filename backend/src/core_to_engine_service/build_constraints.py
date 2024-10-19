@@ -58,8 +58,8 @@ def build_quick_staffing_constraints(
 ) -> List[ConstraintSum]:
     out: List[ConstraintSum] = []
     for qs in schedule.quick_staffings:
-        worker = next(w for w in workers if w.id == qs.worker_id)
-        shift = next(s for s in shifts if s.id == qs.shift_id)
+        worker = next((w for w in workers if w.id == qs.worker_id), None)
+        shift = next((s for s in shifts if s.id == qs.shift_id), None)
         if worker is None or shift is None:
             continue
         constraints_vars: List[List[Tuple[str, str, str]]] = [
