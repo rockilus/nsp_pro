@@ -24,7 +24,6 @@ class Engine:
             inputs.variable_space.all_days,
             inputs.variable_space.days_solving,
             inputs.variable_space.shifts,
-            inputs.variable_space.duty_recup_pairs,
             inputs.shift_durations,
             inputs.fixed_config,
             model_config,

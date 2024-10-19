@@ -46,7 +46,7 @@ class VariableSpace:
     all_days: List[str]
     days_solving: List[str]
     shifts: List[Shift]
-    duty_recup_pairs: List[Tuple[str, str]]
+    duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
 
 
 # pylint: disable=R0801
@@ -60,6 +60,13 @@ class ShiftDemand:
 @dataclass
 class Coverage:
     coverage: List[ShiftDemand]
+
+
+@dataclass
+class NewShiftDemand:
+    assignments: List[Tuple[str, str, str]]
+    assignments_specialty: List[Tuple[str, str, str, str]]
+    target: int
 
 
 # pylint: disable=R0801
@@ -243,8 +250,10 @@ class Inputs:
     work_loads: WorkLoads
     variable_space: VariableSpace
     coverage: Coverage
+    new_shift_demands: List[NewShiftDemand]
     requests: List[Request]
     constraints: Constraints
+    duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
     worker_shift_filters: List[Tuple[str, str, str]]
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]

@@ -12,10 +12,11 @@ from core import (
     Shift,
     ShiftDemandDate,
     ShiftLeaveType,
-    ShiftRestType,
     ShiftType,
     Worker,
 )
+from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
+from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
 from core_to_engine_service.build_engine_variables import build_engine_variables
 from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
@@ -54,6 +55,8 @@ def core_to_engine_inputs(
     fixed_assignments: List[Assignment],
     wip_assignments: List[Assignment],
 ) -> Inputs:
+    workers_not_deleted = [w for w in workers if not w.deleted]
+    shifts_not_deleted = [s for s in shifts if not s.deleted]
     dates_all_str = [d.isoformat() for d in dates_all]
     dates_hist_str = [d.isoformat() for d in dates_hist]
     dates_campaign_str = [d.isoformat() for d in dates_campaign]
@@ -62,7 +65,9 @@ def core_to_engine_inputs(
         all_days=dates_all_str,
         days_solving=dates_campaign_str,
         shifts=[_core_to_engine_shift(s) for s in shifts],
-        duty_recup_pairs=build_duty_recup_pairs(shifts),
+        duty_recup_pairs=build_duty_recup_pairs(
+            workers_not_deleted, dates_campaign, shifts_not_deleted
+        ),
     )
     coverage_engine = CoverageEngine(
         [ShiftDemandEngine(**sd.__dict__) for sd in shift_demand_dates]
@@ -97,8 +102,17 @@ def core_to_engine_inputs(
         ),
         variable_space=variable_space,
         coverage=coverage_engine,
+        new_shift_demands=build_engine_shift_demands(
+            workers_not_deleted,
+            dates_campaign,
+            shifts_not_deleted,
+            shift_demand_dates,
+        ),
         requests=requests_engine,
         constraints=constraints_engine,
+        duty_recup_pairs=build_duty_recup_pairs(
+            workers_not_deleted, dates_campaign, shifts_not_deleted
+        ),
         worker_shift_filters=build_worker_shift_filters(
             workers, dates_campaign, shifts, dimensions, attributes
         ),
@@ -328,24 +342,3 @@ def _build_shift_id_to_duration_dict(shifts: List[Shift]) -> Dict[str, int]:
     return {
         s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1) for s in shifts
     }
-
-
-def build_duty_recup_pairs(shifts: List[Shift]) -> List[Tuple[str, str]]:
-    out = []
-    for shift in [s for s in shifts if not s.deleted]:
-        if shift.shift_type == ShiftType.DUTY:
-            # pylint: disable=R0801
-            rec_shift = next(
-                (
-                    s
-                    for s in shifts
-                    if s.shift_type == ShiftType.REST
-                    and s.rest_type == ShiftRestType.RECUPERATION
-                    and s.recuperation_duty_id == shift.id
-                    and not s.deleted
-                ),
-                None,
-            )
-            if rec_shift:
-                out.append((shift.id, rec_shift.id))
-    return out

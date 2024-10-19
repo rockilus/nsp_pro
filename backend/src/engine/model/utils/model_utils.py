@@ -4,7 +4,12 @@ from typing import Any, List, Literal, Set
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.types.input_output_types import Constraint, Request, ShiftDemand
+from engine.types.input_output_types import (
+    Constraint,
+    NewShiftDemand,
+    Request,
+    ShiftDemand,
+)
 from engine.types.model_types import VarName
 
 
@@ -30,7 +35,7 @@ def get_total_coverage_shift(
 
 
 def build_var_name(
-    constraint: Constraint | Request | ShiftDemand | None,
+    constraint: Constraint | Request | ShiftDemand | NewShiftDemand | None,
     cstr_vars: List[cp_model.IntVar],
     category: Literal[
         'request',
