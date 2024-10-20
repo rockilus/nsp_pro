@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import NewRequest
+from engine.types.input_output_types import Request
 from engine.types.model_types import Objective
 
 
@@ -21,7 +21,7 @@ class AddRequest:
         self.obj = obj
         self.model_config = model_config
 
-    def add_requests(self, requests: List[NewRequest], hard_to_soft: bool) -> None:
+    def add_requests(self, requests: List[Request], hard_to_soft: bool) -> None:
         penalty = get_nested_value(self.model_config, ["penalties", "request", "soft"])
         for r in requests:
             c_variables: List[cp_model.IntVar] = [

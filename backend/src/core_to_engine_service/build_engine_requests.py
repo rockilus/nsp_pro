@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from typing import List
 
 from core import Request
-from engine import NewRequest as NewRequestEngine
+from engine import Request as NewRequestEngine
 
 
 def build_engine_requests(

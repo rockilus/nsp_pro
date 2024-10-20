@@ -105,13 +105,14 @@ def core_to_engine_inputs(
             shifts,
             shift_id_to_duration_dict,
         ),
-        new_shift_demands=build_engine_shift_demands(
+        shift_demands=build_engine_shift_demands(
             workers_not_deleted,
             dates_campaign,
+            worker_ids_to_worker_dates,
             shifts_not_deleted,
             shift_demand_dates,
         ),
-        new_requests=build_engine_requests(
+        requests=build_engine_requests(
             worker_not_deleted_ids,
             dates_campaign,
             shift_not_deleted_ids,

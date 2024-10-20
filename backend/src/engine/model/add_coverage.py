@@ -4,12 +4,12 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import NewShiftDemand
+from engine.types.input_output_types import ShiftDemand
 
 
 # pylint: disable=too-few-public-methods
 class AddCoverage(AddConstraint):
-    def add_coverage(self, shift_demands: List[NewShiftDemand], hard_to_soft: bool):
+    def add_coverage(self, shift_demands: List[ShiftDemand], hard_to_soft: bool):
         penalty = get_nested_value(
             self.model_config,
             ["penalties", "coverage", "hard"],

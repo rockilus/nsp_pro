@@ -1,13 +1,15 @@
 from datetime import date
-from typing import List
+from typing import Dict, List
 
 from core import Shift, ShiftDemandDate, Worker
-from engine import NewShiftDemand as NewShiftDemandEngine
+from core_to_engine_service.types import WorkerDates
+from engine import ShiftDemand as NewShiftDemandEngine
 
 
 def build_engine_shift_demands(
     workers_not_deleted: List[Worker],
     dates_campaing: List[date],
+    worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts_not_deleted: List[Shift],
     shift_demands: List[ShiftDemandDate],
 ) -> List[NewShiftDemandEngine]:
@@ -32,6 +34,8 @@ def build_engine_shift_demands(
                         assignments=[
                             (w.id, shift_demand.date.isoformat(), shift.id)
                             for w in workers_not_deleted
+                            if shift_demand.date
+                            in worker_ids_to_worker_dates[w.id].dates_campaign
                         ],
                         assignments_specialty=[],
                         target=target_staffing,
@@ -53,6 +57,8 @@ def build_engine_shift_demands(
                             specialty_id,
                         )
                         for w in qualified_workers
+                        if shift_demand.date
+                        in worker_ids_to_worker_dates[w.id].dates_campaign
                     ],
                     target=target_staffing,
                 )
