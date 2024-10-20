@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from constraint_parser.templates import build_templates
+from constraint_templates import build_templates
 from core import Template
 from errors import (
     MessageTypeError,

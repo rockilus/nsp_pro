@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Dict, List, Tuple
 
-from constraint_parser import parse_constraint
+from constraint_parser.constraint_parse import parse_constraint
 from core import (
     Attribute,
     ConstraintBuildAugmented,
@@ -23,6 +23,7 @@ from core_to_engine_service.types import WorkerDates
 def build_constraints(
     schedule: Schedule,
     workers: List[Worker],
+    dates_hist: List[date],
     dates_campaign: List[date],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
@@ -42,7 +43,9 @@ def build_constraints(
         schedule.id,
         workers,
         dim_to_attr_value_to_worker,
+        dates_hist,
         dates_campaign,
+        worker_ids_to_worker_dates,
         shifts,
         dim_to_attr_value_to_shift,
     )

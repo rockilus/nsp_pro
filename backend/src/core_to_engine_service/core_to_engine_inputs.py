@@ -70,6 +70,7 @@ def core_to_engine_inputs(
     constraints = build_constraints(
         schedule,
         workers,
+        dates_hist,
         dates_campaign,
         worker_ids_to_worker_dates,
         shifts,

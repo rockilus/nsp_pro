@@ -18,6 +18,7 @@ from core import (
     Shift,
     Worker,
 )
+from core_to_engine_service.types import WorkerDates
 
 
 class MapConstaint:
@@ -26,16 +27,20 @@ class MapConstaint:
         self,
         workers: List[Worker],
         worker_dim_dict: Dict,
-        days_solving: List[date],
+        dates_hist: List[date],
+        dates_campaign: List[date],
+        worker_ids_to_worker_dates: Dict[str, WorkerDates],
         shifts: List[Shift],
         shift_dim_dict: Dict,
         shift_ids_in_coverage: List[str] | None = None,
     ) -> None:
         self.workers = workers
-        self.days_solving = days_solving
+        self.dates_hist = dates_hist
+        self.dates_campaign = dates_campaign
+        self.worker_ids_to_worker_dates = worker_ids_to_worker_dates
         self.shifts = shifts
         self.map_worker = MapWorker(workers, worker_dim_dict)
-        self.map_day = MapDay(days_solving)
+        self.map_day = MapDay(dates_hist, dates_campaign)
         self.map_shift = MapShift(shifts, shift_dim_dict, shift_ids_in_coverage)
 
     def map_constraint_sum(
@@ -131,7 +136,13 @@ class MapConstaint:
 
         constraints_vars: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]] = []
         for w in coord_workers:
+            worker_dates = (
+                self.worker_ids_to_worker_dates[w.id].dates_hist
+                + self.worker_ids_to_worker_dates[w.id].dates_campaign
+            )
             for d1, d2 in coord_days:
+                if d1 not in worker_dates or d2 not in worker_dates:
+                    continue
                 for s_ref, s_rel in coord_shifts:
                     constraint_vars = (
                         (w.id, d1.isoformat(), s_ref.id),
@@ -224,15 +235,15 @@ class MapConstaint:
         # )
         target_average = 1
         period_lengths = self.integer_division_list(
-            len(self.days_solving), int(target_average)
+            len(self.dates_campaign), int(target_average)
         )
         coord_days: List[List[date]] = []
         for index, period_length in enumerate(period_lengths):
             cum_days = sum(period_lengths[:index])
-            start_date = self.days_solving[0] + timedelta(days=cum_days)
+            start_date = self.dates_campaign[0] + timedelta(days=cum_days)
             end_date = start_date + timedelta(days=period_length - 1)
             coord_days.append(
-                [d for d in self.days_solving if start_date <= d <= end_date]
+                [d for d in self.dates_campaign if start_date <= d <= end_date]
             )
 
         constraints_vars: List[List[Tuple[str, str, str]]] = []
