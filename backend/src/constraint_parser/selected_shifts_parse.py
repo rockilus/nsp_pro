@@ -14,4 +14,4 @@ def parse_selected_shifts(
     if any("all shifts" in v for v in string_values):
         return [s.id for s in shifts]
     map_shift = MapShift(shifts, shift_dim_dict)
-    return map_shift.get_target_ids(selected_shifts, "stats", missing_properties)
+    return map_shift.get_target_ids(selected_shifts, None, missing_properties)

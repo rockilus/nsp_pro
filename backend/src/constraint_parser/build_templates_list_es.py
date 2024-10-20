@@ -1,6 +1,6 @@
 from typing import List
 
-from core import ShiftWorkerOption, Template, TemplateBlock
+from core import ConstraintType, ShiftWorkerOption, Template, TemplateBlock
 from utils.constants import Constants
 
 
@@ -12,7 +12,7 @@ def build_templates_list_es(
     return [
         Template(
             id="0",
-            constraint_type="seq",
+            constraint_type=ConstraintType.SEQ,
             text="Juan debe hacer como máximo 2 consultas consecutivas",
             language="es",
             blocks=[
@@ -56,7 +56,7 @@ def build_templates_list_es(
         ),
         Template(
             id="1",
-            constraint_type="sum",
+            constraint_type=ConstraintType.SUM,
             text="Juan debe hacer al menos 1 guardia por semana",
             language="es",
             blocks=[
@@ -100,7 +100,7 @@ def build_templates_list_es(
         ),
         Template(
             id="2",
-            constraint_type="ord",
+            constraint_type=ConstraintType.ORD,
             text="No consulta 1 día después de una guardia para Juan",
             language="es",
             blocks=[
@@ -156,7 +156,7 @@ def build_templates_list_es(
         ),
         Template(
             id="3",
-            constraint_type="ord",
+            constraint_type=ConstraintType.ORD,
             text="Si guardia, entonces descanso 1 día después para Juan",
             language="es",
             blocks=[
@@ -218,7 +218,7 @@ def build_templates_list_es(
         ),
         Template(
             id="4",
-            constraint_type="ord",
+            constraint_type=ConstraintType.ORD,
             text="Si guardia el sábado, entonces descanso 2 días después para Juan",
             language="es",
             blocks=[
@@ -293,7 +293,7 @@ def build_templates_list_es(
         # Filter
         Template(
             id="5",
-            constraint_type="fil",
+            constraint_type=ConstraintType.FIL,
             text="Juan solo debe hacer consultas",
             language="es",
             blocks=[
@@ -326,7 +326,7 @@ def build_templates_list_es(
         # Evenness
         Template(
             id="6",
-            constraint_type="eve",
+            constraint_type=ConstraintType.EVE,
             text="Las guardias el domingo deben ser repartidas de manera "
             + "igual en el tiempo para todos los trabajadores",
             language="es",
@@ -373,7 +373,7 @@ def build_templates_list_es(
         # Fairness
         Template(
             id="7",
-            constraint_type="fai",
+            constraint_type=ConstraintType.FAI,
             text="Las guardias el domingo deben ser repartidas de manera "
             + "equitativa entre todos los trabajadores",
             language="es",

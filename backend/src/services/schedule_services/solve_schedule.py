@@ -1,7 +1,21 @@
 import time
 from typing import List, Tuple
 
-from core import Assignment, ObjectiveBreach, RequestAugmented, Schedule, Shift
+from core import (
+    Assignment,
+    ConstraintFai,
+    ConstraintFil,
+    ConstraintOrd,
+    Constraints,
+    ConstraintSeq,
+    ConstraintSum,
+    ObjectiveBreach,
+    RequestAugmented,
+    Schedule,
+    Shift,
+)
+from core_to_engine_service import core_to_engine_inputs
+from engine import Constraints as ConstraintsEngine
 from engine import Engine
 from scripts.setup_database import (
     assignment_db,
@@ -13,10 +27,6 @@ from scripts.setup_database import (
 from services.constraint_build_services.get_constraint_build import (
     get_active_constraint_builds_by_ids,
 )
-from services.constraint_services import build_constraints
-from services.coverage_selector_services.build_shift_demand_date import (
-    build_shift_demand_dates,
-)
 from services.data_fetching_services.fetch_data import (
     fetch_workers_shifts_dim_attributes,
 )
@@ -25,7 +35,6 @@ from services.schedule_services.assignment_services import (
     get_fixed_assignments,
     save_assignments,
 )
-from services.schedule_services.core_to_engine import core_to_engine_inputs
 from services.schedule_services.engine_to_core import engine_to_core_outputs
 from services.schedule_services.inputs_processing import build_no_coverage_date
 from services.schedule_services.outputs_processing import update_request_status
@@ -51,6 +60,7 @@ def solve_schedule(
         dim_entries,
         attributes,
     ) = fetch_workers_shifts_dim_attributes(schedule.team_id)
+    fixed_assignments, wip_fixed_assignments = get_fixed_assignments(schedule)
     cbs_augmented = get_active_constraint_builds_by_ids(
         schedule.constraint_build_ids,
         workers,
@@ -72,33 +82,21 @@ def solve_schedule(
         schedule.start_date, schedule.end_date, workers, shifts
     )
     team_schedules = schedule_db.get_schedules(schedule.team_id)
-    fixed_assignments, wip_fixed_assignments = get_fixed_assignments(schedule)
     wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
-    constraints = build_constraints(
+    inputs = core_to_engine_inputs(
         schedule,
         workers,
         shifts,
         dimensions,
         dim_entries,
         attributes,
-        cbs_augmented,
-    )
-    shift_demand_dates = build_shift_demand_dates(
-        schedule, coverage_selectors, shift_demands, shifts
-    )
-    inputs = core_to_engine_inputs(
-        workers,
-        schedule.start_date,
-        schedule.end_date,
-        shifts,
-        dimensions,
-        attributes,
-        shift_demand_dates,
-        requests,
-        constraints,
         fixed_assignments,
+        cbs_augmented,
+        coverage_selectors,
+        shift_demands,
+        requests,
         wip_assignments,
     )
     end_time_engine_inputs = time.time()
@@ -107,6 +105,7 @@ def solve_schedule(
     outputs = engine.solve(inputs)
     end_time_engine = time.time()
     start_time_process_outputs = time.time()
+    constraints = _engine_to_core_constraints(inputs.constraints)
     schedule, assignments, objective_breaches = engine_to_core_outputs(
         schedule, outputs, constraints
     )
@@ -177,3 +176,33 @@ def save_objective_breaches(
         return []
     out = objective_breach_db.create_objective_breaches(objective_breaches)
     return out
+
+
+def _engine_to_core_constraints(
+    constraints_engine: ConstraintsEngine,
+) -> Constraints:
+    def convert_constraint_engine(constraint_engine, constraint_cls):
+        return constraint_cls(**constraint_engine.__dict__)
+
+    return Constraints(
+        sum=[
+            convert_constraint_engine(c_sum, ConstraintSum)
+            for c_sum in constraints_engine.sum
+        ],
+        seq=[
+            convert_constraint_engine(c_seq, ConstraintSeq)
+            for c_seq in constraints_engine.seq
+        ],
+        ord=[
+            convert_constraint_engine(c_ord, ConstraintOrd)
+            for c_ord in constraints_engine.ord
+        ],
+        fil=[
+            convert_constraint_engine(c_fil, ConstraintFil)
+            for c_fil in constraints_engine.fil
+        ],
+        fai=[
+            convert_constraint_engine(c_fai, ConstraintFai)
+            for c_fai in constraints_engine.fai
+        ],
+    )

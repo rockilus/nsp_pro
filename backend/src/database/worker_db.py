@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, time, timezone
 from typing import List
 
 from bson import ObjectId
@@ -161,9 +161,13 @@ def core_to_doc_worker(dataclass_obj: Worker) -> WorkerDocument:
             id=dataclass_obj.id,
             team=team,
             name=dataclass_obj.name,
-            employment_start_date=dataclass_obj.employment_start_date.timestamp(),
+            employment_start_date=datetime.combine(
+                dataclass_obj.employment_start_date, time.min, timezone.utc
+            ).timestamp(),
             employment_end_date=(
-                dataclass_obj.employment_end_date.timestamp()
+                datetime.combine(
+                    dataclass_obj.employment_end_date, time.min, timezone.utc
+                ).timestamp()
                 if dataclass_obj.employment_end_date
                 else None
             ),
@@ -203,9 +207,13 @@ def core_to_doc_workers(
             id=str(ObjectId()) if creating else dataclass_obj.id,
             team=teams.get(dataclass_obj.team_id),
             name=dataclass_obj.name,
-            employment_start_date=dataclass_obj.employment_start_date.timestamp(),
+            employment_start_date=datetime.combine(
+                dataclass_obj.employment_start_date, time.min, timezone.utc
+            ).timestamp(),
             employment_end_date=(
-                dataclass_obj.employment_end_date.timestamp()
+                datetime.combine(
+                    dataclass_obj.employment_end_date, time.min, timezone.utc
+                ).timestamp()
                 if dataclass_obj.employment_end_date
                 else None
             ),
@@ -229,9 +237,9 @@ def doc_to_core_worker(doc_obj: WorkerDocument) -> Worker:
             name=str(doc_obj.name) if doc_obj.name is not None else "",
             employment_start_date=datetime.fromtimestamp(
                 doc_obj.employment_start_date, timezone.utc
-            ),
+            ).date(),
             employment_end_date=(
-                datetime.fromtimestamp(doc_obj.employment_end_date, timezone.utc)
+                datetime.fromtimestamp(doc_obj.employment_end_date, timezone.utc).date()
                 if doc_obj.employment_end_date
                 else None
             ),

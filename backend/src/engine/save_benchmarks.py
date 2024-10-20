@@ -39,9 +39,6 @@ def save_benchmark_to_csv(
     )
     fieldnames = [
         "date",
-        "num_workers",
-        "num_days",
-        "num_shifts",
         "num_variables",
         "num_constraints_total",
         "num_constraints_sum",
@@ -49,7 +46,6 @@ def save_benchmark_to_csv(
         "num_constraints_ord",
         "num_constraints_fil",
         "num_constraints_fai",
-        "num_constraints_eve",
         "num_requests",
         "num_shift_demands",
         "total_time",
@@ -76,37 +72,20 @@ def save_benchmark_to_csv(
         'solution_fingerprint',
         "commit",
     ]
-    num_constraints_sum = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "sum"
-    )
-    num_constraints_seq = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "seq"
-    )
-    num_constraints_ord = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "ord"
-    )
-    num_constraints_fil = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "fil"
-    )
-    num_constraints_fai = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "fai"
-    )
-    num_constraints_eve = sum(
-        1 for constraint in inputs.constraints if constraint.constraint_type == "eve"
-    )
+    num_constraints_sum = len(inputs.constraints.sum)
+    num_constraints_seq = len(inputs.constraints.seq)
+    num_constraints_ord = len(inputs.constraints.ord)
+    num_constraints_fil = len(inputs.constraints.fil)
+    num_constraints_fai = len(inputs.constraints.fai)
     num_constraints_total = (
         num_constraints_sum
         + num_constraints_seq
         + num_constraints_ord
         + num_constraints_fil
         + num_constraints_fai
-        + num_constraints_eve
     )
     entry = {
         "date": get_date_time(),
-        "num_workers": len(model.all_workers),
-        "num_days": len(model.all_days),
-        "num_shifts": len(model.shift_ids),
         "num_variables": len(model.variables),
         "num_constraints_total": num_constraints_total,
         "num_constraints_sum": num_constraints_sum,
@@ -114,9 +93,8 @@ def save_benchmark_to_csv(
         "num_constraints_ord": num_constraints_ord,
         "num_constraints_fil": num_constraints_fil,
         "num_constraints_fai": num_constraints_fai,
-        "num_constraints_eve": num_constraints_eve,
-        "num_requests": len(inputs.requests),
-        "num_shift_demands": len(inputs.coverage.coverage),
+        "num_requests": len(inputs.new_requests),
+        "num_shift_demands": len(inputs.new_shift_demands),
         "total_time": model.bt.total_end - model.bt.total_start,
         "setup_time": model.bt.full_setup_end - model.bt.full_setup_start,
         "solve_time": model.solver.WallTime(),

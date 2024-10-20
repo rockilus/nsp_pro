@@ -1,68 +1,290 @@
-from typing import Dict, List
+from datetime import date, timedelta
+from typing import Dict, List, Tuple
 
 from constraint_parser.mapping.map_day import MapDay
 from constraint_parser.mapping.map_shift import MapShift
 from constraint_parser.mapping.map_worker import MapWorker
 from constraint_parser.mapping.utils import find_block_by_name
-from core import Block, Constraint, ConstraintBuildAugmented, Shift, Worker
-from utils.constants import Constants
+from core import (
+    Block,
+    ConstraintBuildAugmented,
+    ConstraintFai,
+    ConstraintFil,
+    ConstraintOperator,
+    ConstraintOrd,
+    ConstraintSeq,
+    ConstraintSum,
+    ConstraintType,
+    Shift,
+    Worker,
+)
 
 
 class MapConstaint:
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         workers: List[Worker],
-        shifts: List[Shift],
         worker_dim_dict: Dict,
+        days_solving: List[date],
+        shifts: List[Shift],
         shift_dim_dict: Dict,
+        shift_ids_in_coverage: List[str] | None = None,
     ) -> None:
         self.workers = workers
+        self.days_solving = days_solving
         self.shifts = shifts
         self.map_worker = MapWorker(workers, worker_dim_dict)
-        self.map_day = MapDay()
-        self.map_shift = MapShift(shifts, shift_dim_dict)
+        self.map_day = MapDay(days_solving)
+        self.map_shift = MapShift(shifts, shift_dim_dict, shift_ids_in_coverage)
 
-    def __call__(
-        self, cstr_build: ConstraintBuildAugmented, schedule_id: str
-    ) -> Constraint:
-        var_worker = self.map_worker(cstr_build)
-        var_day = self.map_day(cstr_build)
-        cstr_operator = self.get_operator(cstr_build.blocks, cstr_build.constraint_type)
-        var_shift = self.map_shift(cstr_build, cstr_operator)
-        return Constraint(
-            id=cstr_build.id,
-            constraint_type=cstr_build.constraint_type,
+    def map_constraint_sum(
+        self, cba: ConstraintBuildAugmented, schedule_id: str
+    ) -> ConstraintSum:
+        cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
+        coord_workers = self.map_worker.get_coord_workers(cba)
+        coord_days = self.map_day.get_coords_days_sum(cba)
+        coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
+        # w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
+        # if not all(isinstance(item, str) for item in s_vars):
+        #     raise TypeError(
+        #         "Expected a list of strings, "
+        #         + f"but got {format(type(s_vars))} instead."
+        #     )
+        # if constraint.target_unit == "hour":
+        #     for w in w_vars:
+        #         for period in d_vars:
+        #             constraint_vars = []
+        #             constraint_durs = []
+        #             for s in s_vars:
+        #                 constraint_vars.extend(
+        #                     [self.variables[w, d, s] for d in period]  # type: ignore
+        #                 )
+        #                 constraint_durs.extend(
+        #                     [self.durations[s] for _ in period]  # type: ignore
+        #                 )
+        #             self._add_constraint_sum_hour(
+        #                 constraint,
+        #                 constraint_vars,
+        #                 constraint_durs,
+        #                 hard_to_soft,
+        #             )
+        # else:
+        constraints_vars: List[List[Tuple[str, str, str]]] = []
+        for w in coord_workers:
+            for period in coord_days:
+                constraint_vars = []
+                for s in coord_shifts:
+                    constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
+                constraints_vars.append(constraint_vars)
+        return ConstraintSum(
+            id=cba.id,
+            constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(
-                cstr_build.blocks, cstr_build.constraint_type
-            ),
+            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
             target_unit="",
-            worker_var=var_worker,
-            day_var=var_day,
-            shift_var=var_shift,
-            active=cstr_build.active,
-            hard=cstr_build.hard,
-            priority=cstr_build.priority,
+            constraint_variables=constraints_vars,
+            active=cba.active,
+            hard=cba.hard,
+            priority=cba.priority,
             schedule_id=schedule_id,
-            constraint_build_id=cstr_build.id,
+            constraint_build_id=cba.id,
         )
 
+    def map_constraint_seq(
+        self, cba: ConstraintBuildAugmented, schedule_id: str
+    ) -> ConstraintSeq:
+        cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
+        coord_workers = self.map_worker.get_coord_workers(cba)
+        coord_days = self.map_day.get_coords_days(cba)
+        coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
+
+        constraints_vars: List[List[Tuple[str, str, str]]] = []
+        for w in coord_workers:
+            for s in coord_shifts:
+                constraint_vars = []
+                for d in coord_days:
+                    constraint_vars.append((w.id, d.isoformat(), s.id))
+            constraints_vars.append(constraint_vars)
+
+        return ConstraintSeq(
+            id=cba.id,
+            constraint_type=cba.constraint_type,
+            operator=cstr_operator,
+            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_unit="",
+            constraint_variables=constraints_vars,
+            active=cba.active,
+            hard=cba.hard,
+            priority=cba.priority,
+            schedule_id=schedule_id,
+            constraint_build_id=cba.id,
+        )
+
+    def map_constraint_ord(
+        self, cba: ConstraintBuildAugmented, schedule_id: str
+    ) -> ConstraintOrd:
+        cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
+        coord_workers = self.map_worker.get_coord_workers(cba)
+        coord_days = self.map_day.get_coords_days_ord(cba)
+        coord_shifts = self.map_shift.get_coords_shifts_ord(cba)
+
+        constraints_vars: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]] = []
+        for w in coord_workers:
+            for d1, d2 in coord_days:
+                for s_ref, s_rel in coord_shifts:
+                    constraint_vars = (
+                        (w.id, d1.isoformat(), s_ref.id),
+                        (w.id, d2.isoformat(), s_rel.id),
+                    )
+                    constraints_vars.append(constraint_vars)
+
+        return ConstraintOrd(
+            id=cba.id,
+            constraint_type=cba.constraint_type,
+            operator=cstr_operator,
+            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_unit="",
+            constraint_variables=constraints_vars,
+            active=cba.active,
+            hard=cba.hard,
+            priority=cba.priority,
+            schedule_id=schedule_id,
+            constraint_build_id=cba.id,
+        )
+
+    def map_constraint_fil(
+        self, cba: ConstraintBuildAugmented, schedule_id: str
+    ) -> ConstraintFil:
+        cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
+        coord_workers = self.map_worker.get_coord_workers(cba)
+        coord_days = self.map_day.get_coords_days(cba)
+        coord_shifts = self.map_shift.get_coords_shifts_fil(cba, cstr_operator)
+
+        constraints_vars: List[Tuple[str, str, str]] = []
+        for w in coord_workers:
+            for d in coord_days:
+                for s in coord_shifts:
+                    constraints_vars.append((w.id, d.isoformat(), s.id))
+
+        return ConstraintFil(
+            id=cba.id,
+            constraint_type=cba.constraint_type,
+            operator=cstr_operator,
+            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_unit="",
+            constraint_variables=constraints_vars,
+            active=cba.active,
+            hard=cba.hard,
+            priority=cba.priority,
+            schedule_id=schedule_id,
+            constraint_build_id=cba.id,
+        )
+
+    def map_constraint_fai(
+        self, cba: ConstraintBuildAugmented, schedule_id: str
+    ) -> ConstraintFai:
+        cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
+        coord_workers = self.map_worker.get_coord_workers(cba)
+        coord_days = self.map_day.get_coords_days(cba)
+        coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
+
+        constraints_vars: List[List[Tuple[str, str, str]]] = [
+            [(w.id, d.isoformat(), s.id) for d in coord_days for s in coord_shifts]
+            for w in coord_workers
+        ]
+
+        return ConstraintFai(
+            id=cba.id,
+            constraint_type=cba.constraint_type,
+            operator=cstr_operator,
+            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_unit="",
+            constraint_variables=constraints_vars,
+            active=cba.active,
+            hard=cba.hard,
+            priority=cba.priority,
+            schedule_id=schedule_id,
+            constraint_build_id=cba.id,
+        )
+
+    # pylint: disable=too-many-locals
+    def map_constraint_eve(
+        self, cba: ConstraintBuildAugmented, schedule_id: str
+    ) -> ConstraintSum:
+        cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
+        coord_workers = self.map_worker.get_coord_workers(cba)
+        coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
+
+        # target_average = get_average_nb_shifts_per_worker(
+        #     coverage,
+        #     constraint.worker_var.num_eligible_workers,
+        #     d_vars,  # type: ignore
+        #     s_vars,  # type: ignore
+        # )
+        target_average = 1
+        period_lengths = self.integer_division_list(
+            len(self.days_solving), int(target_average)
+        )
+        coord_days: List[List[date]] = []
+        for index, period_length in enumerate(period_lengths):
+            cum_days = sum(period_lengths[:index])
+            start_date = self.days_solving[0] + timedelta(days=cum_days)
+            end_date = start_date + timedelta(days=period_length - 1)
+            coord_days.append(
+                [d for d in self.days_solving if start_date <= d <= end_date]
+            )
+
+        constraints_vars: List[List[Tuple[str, str, str]]] = []
+        for w in coord_workers:
+            for period in coord_days:
+                constraint_vars = []
+                for s in coord_shifts:
+                    constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
+                constraints_vars.append(constraint_vars)
+
+        return ConstraintSum(
+            id=cba.id,
+            constraint_type=ConstraintType.SUM,
+            operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
+            target_value=1,
+            target_unit="day",
+            constraint_variables=constraints_vars,
+            active=cba.active,
+            hard=cba.hard,
+            priority=cba.priority,
+            schedule_id=schedule_id,
+            constraint_build_id=cba.id,
+        )
+
+    @staticmethod
+    def integer_division_list(numerator: int, denominator: int) -> List[int]:
+        quotient = numerator // denominator
+        remainder = numerator % denominator
+        result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
+        return result
+
     def get_operator(
-        self, blocks: List[Block], cstr_type: str
-    ) -> Constants.CONSTRAINT_OPERATOR_OPTIONS:
-        if cstr_type in ["eve", "fai"]:
-            return ""
+        self, blocks: List[Block], cstr_type: ConstraintType
+    ) -> ConstraintOperator | None:
+        if cstr_type in [ConstraintType.EVE, ConstraintType.FAI]:
+            return None
         operator_block = find_block_by_name(blocks, "operator")
         if operator_block:
             if not isinstance(operator_block.value, str):
                 raise ValueError("Operator block value is not a string")
             return self.convert_operator(operator_block.value)
-        if cstr_type == "ord":
-            return "yes"
+        if cstr_type == ConstraintType.ORD:
+            return ConstraintOperator.YES
         raise ValueError("Operator not found")
 
-    def get_target_value(self, blocks: List[Block], cstr_type: str) -> int:
-        if cstr_type in ["ord", "fil", "eve", "fai"]:
+    def get_target_value(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
+        if cstr_type in [
+            ConstraintType.ORD,
+            ConstraintType.FIL,
+            ConstraintType.EVE,
+            ConstraintType.FAI,
+        ]:
             return 0
         qty_block = find_block_by_name(blocks, "#")
         if qty_block:
@@ -75,28 +297,49 @@ class MapConstaint:
     # pylint: disable=too-many-return-statements
     def convert_operator(
         operator: str,
-    ) -> Constants.CONSTRAINT_OPERATOR_OPTIONS:
+    ) -> ConstraintOperator | None:
         operator_mod = operator.lower().replace(" ", "_")
         if operator_mod in ["less_than"]:
-            return "less_than"
+            return ConstraintOperator.LESS_THAN
         if operator_mod in [
             "less_than_or_equal",
             "less_than_or_equal_to",
             "at_most",
             "maximum",
         ]:
-            return "less_than_or_equal"
+            return ConstraintOperator.LESS_THAN_OR_EQUAL
         if operator_mod in ["equal", "exactly"]:
-            return "equal"
+            return ConstraintOperator.EQUAL
         if operator_mod in ["greater_than_or_equal", "at_least"]:
-            return "greater_than_or_equal"
-        if operator_mod in ["yes", "no"]:
-            return operator_mod  # type: ignore
-        if operator_mod in ["should_only"]:
-            return "yes"
-        if operator_mod in ["should_not"]:
-            return "no"
+            return ConstraintOperator.GREATER_THAN_OR_EQUAL
+        if operator_mod in ["yes", "should_only"]:
+            return ConstraintOperator.YES
+        if operator_mod in ["no", "should_not"]:
+            return ConstraintOperator.NO
         raise ValueError(f"Operator {operator} not recognized")
+
+    # def get_average_nb_shifts_per_worker(
+    #     self,
+    #     coverage: List[ShiftDemand],
+    #     num_eligible_workers: int,
+    #     days: List[str],
+    #     shifts: List[str],
+    # ) -> float:
+    #     total_coverage = sum(
+    #         self.get_total_coverage_shift(coverage, s, days) for s in shifts
+    #     )
+    #     target_average = total_coverage / num_eligible_workers
+    #     return target_average
+
+    # def get_total_coverage_shift(
+    #     self, coverage: List[ShiftDemand], shift_id: str, days: List[str]
+    # ) -> int:
+    #     return sum(
+    #         shift_demand.nb_times_shift  # QUICK FIX TO CHANGE XXX
+    #         for shift_demand in coverage
+    #         if shift_demand.shift_id == shift_id
+    #         and shift_demand.date.isoformat() in days
+    #     )
 
     # @staticmethod
     # # pylint: disable=R0801

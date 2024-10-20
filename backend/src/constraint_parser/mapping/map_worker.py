@@ -6,7 +6,6 @@ from core import (
     ConstraintBuildAugmented,
     MissingAttribute,
     ShiftWorkerOption,
-    VarWorker,
     Worker,
 )
 from utils.constants import Constants
@@ -17,44 +16,36 @@ class MapWorker:
         self.workers = workers
         self.worker_dim_dict = worker_dim_dict
 
-    def __call__(self, cstr_build: ConstraintBuildAugmented) -> VarWorker:
-        values = self.get_worker_values(cstr_build.blocks)
-        return VarWorker(
-            selector=self.get_selector(values),
-            target_ids=self.get_target_ids(values, cstr_build.missing_attributes),
-            num_eligible_workers=0,
-        )
-
-    def get_selector(
-        self, values: List[ShiftWorkerOption]
-    ) -> Constants.VAR_WORKER_SELECTOR_OPTIONS:
-        string_values = [v.name for v in values if isinstance(v.name, str)]
-        if any("all workers" in v for v in string_values):
-            return "all"
-        return "equal"
-
-    def get_target_ids(
-        self,
-        values: List[ShiftWorkerOption],
-        missing_properties: List[MissingAttribute],
-    ) -> List[str]:
-        if self.get_selector(values) == "all":
-            return []
-        out = []
-        for value in values:
+    def get_coord_workers(self, cba: ConstraintBuildAugmented) -> List[Worker]:
+        swos_worker = self.get_worker_shift_worker_options(cba.blocks)
+        if self.get_selector(swos_worker) == "all":
+            return self.workers
+        worker_ids = []
+        for value in swos_worker:
             if value.id_type == "worker":
                 if not self.check_worker_id(value.id):
                     raise ValueError(
                         f"Worker {value.name} with id {value.id} not found"
                     )
-                out.append(value.id)
+                worker_ids.append(value.id)
             elif value.id_type == "dimension":
-                target_ids = self.get_target_ids_dimension(value, missing_properties)
+                target_ids = self.get_target_ids_dimension(
+                    value, cba.missing_attributes
+                )
                 if target_ids:
-                    out += target_ids
-        if not out:
+                    worker_ids += target_ids
+        if not worker_ids:
             raise ValueError("No workers found")
-        return sorted(list(set(out)))
+        worker_ids = sorted(list(set(worker_ids)))
+        return [w for w in self.workers if w.id in worker_ids]
+
+    def get_selector(
+        self, swos_worker: List[ShiftWorkerOption]
+    ) -> Constants.VAR_WORKER_SELECTOR_OPTIONS:
+        string_values = [v.name for v in swos_worker if isinstance(v.name, str)]
+        if any("all workers" in v for v in string_values):
+            return "all"
+        return "equal"
 
     def get_target_ids_dimension(
         self,
@@ -92,12 +83,13 @@ class MapWorker:
         return any(w.id == worker_id for w in self.workers)
 
     @staticmethod
-    def get_worker_values(blocks: List[Block]) -> List[ShiftWorkerOption]:
+    def get_worker_shift_worker_options(
+        blocks: List[Block],
+    ) -> List[ShiftWorkerOption]:
         worker_block = find_block_by_name(blocks, "worker")
         if worker_block:
             if not isinstance(worker_block.value, list):
                 raise ValueError("Worker block value is not a list")
-
             if not all(isinstance(v, ShiftWorkerOption) for v in worker_block.value):
                 raise ValueError(
                     "Worker block value is not a list of ShiftWorkerOption"

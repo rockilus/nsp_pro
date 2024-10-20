@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import datetime, time, timezone
 from typing import Dict, List
 
 import humps
@@ -143,9 +143,13 @@ def core_to_msg_worker_and_attributes(
     except Exception as e:
         log_info("Failed to convert Worker to dictionary")
         raise MessageTypeError(str(e)) from e
-    data["employment_start_date"] = worker.employment_start_date.timestamp()
+    data["employment_start_date"] = datetime.combine(
+        worker.employment_start_date, time.min, tzinfo=timezone.utc
+    ).timestamp()
     data["employment_end_date"] = (
-        worker.employment_end_date.timestamp() if worker.employment_end_date else None
+        datetime.combine(worker.employment_end_date, time.min, timezone.utc).timestamp()
+        if worker.employment_end_date
+        else None
     )
     data["attributes"] = [core_to_msg_attribute(a) for a in attributes]
     as_dict = humps.camelize(data)
@@ -164,9 +168,9 @@ def msg_to_core_worker(msg: WorkerMessage) -> Worker:
     data_snake = {k: v for k, v in data_snake.items() if k != "attributes"}
     data_snake["employment_start_date"] = datetime.fromtimestamp(
         data_snake["employment_start_date"], timezone.utc
-    )
+    ).date()
     data_snake["employment_end_date"] = (
-        datetime.fromtimestamp(data_snake["employment_end_date"], timezone.utc)
+        datetime.fromtimestamp(data_snake["employment_end_date"], timezone.utc).date()
         if data_snake["employment_end_date"]
         else None
     )
