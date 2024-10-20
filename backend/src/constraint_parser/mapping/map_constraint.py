@@ -29,6 +29,8 @@ class MapConstaint:
         worker_dim_dict: Dict,
         dates_hist: List[date],
         dates_campaign: List[date],
+        periods_weekly: List[List[date]],
+        periods_monthly: List[List[date]],
         worker_ids_to_worker_dates: Dict[str, WorkerDates],
         shifts: List[Shift],
         shift_dim_dict: Dict,
@@ -40,7 +42,9 @@ class MapConstaint:
         self.worker_ids_to_worker_dates = worker_ids_to_worker_dates
         self.shifts = shifts
         self.map_worker = MapWorker(workers, worker_dim_dict)
-        self.map_day = MapDay(dates_hist, dates_campaign)
+        self.map_day = MapDay(
+            dates_hist, dates_campaign, periods_weekly, periods_monthly
+        )
         self.map_shift = MapShift(shifts, shift_dim_dict, shift_ids_in_coverage)
 
     def map_constraint_sum(
@@ -77,7 +81,12 @@ class MapConstaint:
         # else:
         constraints_vars: List[List[Tuple[str, str, str]]] = []
         for w in coord_workers:
+            dates_worker_set = set(
+                self.worker_ids_to_worker_dates[w.id].dates_hist
+                + self.worker_ids_to_worker_dates[w.id].dates_campaign
+            )
             for period in coord_days:
+                period = list(set(period).intersection(dates_worker_set))
                 constraint_vars = []
                 for s in coord_shifts:
                     constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]

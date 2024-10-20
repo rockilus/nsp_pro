@@ -7,9 +7,17 @@ from utils.constants import Constants
 
 
 class MapDay:
-    def __init__(self, dates_hist: List[date], dates_campaign: List[date]) -> None:
+    def __init__(
+        self,
+        dates_hist: List[date],
+        dates_campaign: List[date],
+        periods_weekly: List[List[date]],
+        periods_monthly: List[List[date]],
+    ) -> None:
         self.dates_hist = dates_hist
         self.dates_campaign = dates_campaign
+        self.periods_weekly = periods_weekly
+        self.periods_monthly = periods_monthly
 
     def get_coords_days(self, cba: ConstraintBuildAugmented) -> List[date]:
         selector = self.get_selector(cba.blocks, cba.constraint_type)
@@ -64,11 +72,9 @@ class MapDay:
         if selector == "all":
             return [self.dates_campaign]
         if selector == "week":
-            weekday_first_day = self.dates_campaign[0].weekday()
-            d_indexes = self._build_weeks_day_index_list(
-                weekday_first_day, len(self.dates_campaign)
-            )
-            return [[self.dates_campaign[i] for i in d_index] for d_index in d_indexes]
+            return self.periods_weekly
+        if selector == "month":
+            return self.periods_monthly
         raise ValueError(f"Selector {selector} not recognized")
         # period = [
         #     cba.day_var.start_date + timedelta(days=i)

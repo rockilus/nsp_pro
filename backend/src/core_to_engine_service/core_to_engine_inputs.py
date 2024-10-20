@@ -14,19 +14,25 @@ from core import (
     ShiftType,
     Worker,
 )
-from core_to_engine_service.build_constraints import build_constraints
 from core_to_engine_service.build_dates import (
     build_dates,
     build_worker_ids_to_worker_dates,
 )
+from core_to_engine_service.build_dim_to_attr_value_to_owner import (
+    build_dim_to_attr_value_to_owner,
+)
 from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
-from core_to_engine_service.build_engine_constraints import core_to_engine_constraints
+from core_to_engine_service.build_engine_constraints import build_engine_constraints
 from core_to_engine_service.build_engine_fixed_values import core_to_engine_fixed_values
 from core_to_engine_service.build_engine_requests import build_engine_requests
 from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
 from core_to_engine_service.build_engine_sol_hint import core_to_engine_sol_hint
 from core_to_engine_service.build_engine_variables import build_engine_variables
 from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
+from core_to_engine_service.build_periods import (
+    build_periods_monthly,
+    build_periods_weekly,
+)
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
 from engine import Inputs as InputsEngine
 from services.coverage_selector_services.build_shift_demand_date import (
@@ -52,9 +58,14 @@ def core_to_engine_inputs(
     # Workers
     workers_not_deleted = [w for w in workers if not w.deleted]
     worker_not_deleted_ids = [w.id for w in workers if not w.deleted]
+    dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
+        workers, dimensions, dim_entries, attributes
+    )
 
     # Dates
     dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
+    periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
+    periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
         schedule, workers, fixed_assignments, dates_campaign
     )
@@ -65,19 +76,8 @@ def core_to_engine_inputs(
     shift_duties = [s for s in shifts if s.shift_type == ShiftType.DUTY]
     shift_duties_not_deleted = [s for s in shift_duties if not s.deleted]
     shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
-
-    # Constraints
-    constraints = build_constraints(
-        schedule,
-        workers,
-        dates_hist,
-        dates_campaign,
-        worker_ids_to_worker_dates,
-        shifts,
-        dimensions,
-        dim_entries,
-        attributes,
-        cbs_augmented,
+    dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
+        shifts, dimensions, dim_entries, attributes
     )
 
     # ShiftDemands
@@ -103,8 +103,8 @@ def core_to_engine_inputs(
         ],
         work_loads=build_engine_work_loads(
             workers,
-            dates_hist,
-            dates_campaign,
+            periods_weekly,
+            periods_monthly,
             worker_ids_to_worker_dates,
             shifts,
             shift_duties,
@@ -123,7 +123,19 @@ def core_to_engine_inputs(
             shift_not_deleted_ids,
             requests,
         ),
-        constraints=core_to_engine_constraints(constraints),
+        constraints=build_engine_constraints(
+            cbs_augmented,
+            schedule,
+            workers,
+            dim_to_attr_value_to_worker,
+            dates_hist,
+            dates_campaign,
+            periods_weekly,
+            periods_monthly,
+            worker_ids_to_worker_dates,
+            shifts,
+            dim_to_attr_value_to_shift,
+        ),
         duty_recup_pairs=build_duty_recup_pairs(
             workers_not_deleted,
             worker_ids_to_worker_dates,
