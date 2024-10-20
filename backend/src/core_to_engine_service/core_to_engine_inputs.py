@@ -114,7 +114,7 @@ def core_to_engine_inputs(
         ),
         requests=build_engine_requests(
             worker_not_deleted_ids,
-            dates_campaign,
+            worker_ids_to_worker_dates,
             shift_not_deleted_ids,
             requests,
         ),
