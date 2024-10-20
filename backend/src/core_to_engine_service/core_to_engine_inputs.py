@@ -11,6 +11,7 @@ from core import (
     Schedule,
     Shift,
     ShiftDemand,
+    ShiftType,
     Worker,
 )
 from core_to_engine_service.build_constraints import build_constraints
@@ -63,6 +64,8 @@ def core_to_engine_inputs(
     # Shifts
     shifts_not_deleted = [s for s in shifts if not s.deleted]
     shift_not_deleted_ids = [s.id for s in shifts if not s.deleted]
+    shift_duties = [s for s in shifts if s.shift_type == ShiftType.DUTY]
+    shift_duties_not_deleted = [s for s in shift_duties if not s.deleted]
     shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
 
     # Constraints
@@ -103,6 +106,7 @@ def core_to_engine_inputs(
             dates_campaign,
             worker_ids_to_worker_dates,
             shifts,
+            shift_duties,
             shift_id_to_duration_dict,
         ),
         shift_demands=build_engine_shift_demands(
@@ -120,7 +124,10 @@ def core_to_engine_inputs(
         ),
         constraints=core_to_engine_constraints(constraints),
         duty_recup_pairs=build_duty_recup_pairs(
-            workers_not_deleted, dates_campaign, shifts_not_deleted
+            workers_not_deleted,
+            worker_ids_to_worker_dates,
+            shifts_not_deleted,
+            shift_duties_not_deleted,
         ),
         worker_shift_filters=build_worker_shift_filters(
             workers, dates_campaign, shifts, dimensions, attributes

@@ -3,7 +3,7 @@ import math
 from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
-from core import Shift, ShiftType, Worker
+from core import Shift, Worker
 from core_to_engine_service.types import WorkerDates
 from engine import NbDuties as NbDutiesEngine
 from engine import WorkLoads as WorkLoadsEngine
@@ -18,12 +18,11 @@ def build_engine_work_loads(
     dates_campaign: List[date],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
+    shift_duties: List[Shift],
     shift_id_to_duration_dict: Dict[str, int],
 ) -> WorkLoadsEngine:
     periods_weekly = _build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = _build_periods_monthly(dates_hist, dates_campaign)
-
-    shift_duties = [s for s in shifts if s.shift_type == ShiftType.DUTY]
 
     return WorkLoadsEngine(
         weekly_work_time_contractual=_build_engine_work_time(
