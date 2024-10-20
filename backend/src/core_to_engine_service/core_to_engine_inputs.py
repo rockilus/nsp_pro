@@ -14,7 +14,10 @@ from core import (
     Worker,
 )
 from core_to_engine_service.build_constraints import build_constraints
-from core_to_engine_service.build_dates import build_dates
+from core_to_engine_service.build_dates import (
+    build_dates,
+    build_worker_ids_to_worker_dates,
+)
 from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
 from core_to_engine_service.build_engine_constraints import core_to_engine_constraints
 from core_to_engine_service.build_engine_fixed_values import core_to_engine_fixed_values
@@ -50,10 +53,12 @@ def core_to_engine_inputs(
     worker_not_deleted_ids = [w.id for w in workers if not w.deleted]
 
     # Dates
-    dates_all, dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
-    # dates_all_str = [d.isoformat() for d in dates_all]
+    dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
     dates_hist_str = [d.isoformat() for d in dates_hist]
     dates_campaign_str = [d.isoformat() for d in dates_campaign]
+    worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+        schedule, workers, fixed_assignments, dates_campaign
+    )
 
     # Shifts
     shifts_not_deleted = [s for s in shifts if not s.deleted]
@@ -79,14 +84,26 @@ def core_to_engine_inputs(
 
     inputs = InputsEngine(
         variables=build_engine_variables(
-            workers, dates_all, shifts, shift_id_to_duration_dict
+            workers,
+            worker_ids_to_worker_dates,
+            shifts,
+            shift_id_to_duration_dict,
         ),
         no_overlap_shift_intervals=[
-            [(w.id, d.isoformat(), s.id) for d in dates_all for s in shifts]
-            for w in workers
+            [
+                (w_id, d.isoformat(), s_id)
+                for d in worker_ids_to_worker_dates[w_id].dates_campaign
+                for s_id in shift_not_deleted_ids
+            ]
+            for w_id in worker_not_deleted_ids
         ],
         work_loads=build_engine_work_loads(
-            workers, dates_campaign, shifts, shift_id_to_duration_dict
+            workers,
+            dates_hist,
+            dates_campaign,
+            worker_ids_to_worker_dates,
+            shifts,
+            shift_id_to_duration_dict,
         ),
         new_shift_demands=build_engine_shift_demands(
             workers_not_deleted,
