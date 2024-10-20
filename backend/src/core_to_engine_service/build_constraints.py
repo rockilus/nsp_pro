@@ -16,18 +16,20 @@ from core import (
     Shift,
     Worker,
 )
+from core_to_engine_service.types import WorkerDates
 
 
 # pylint: disable=too-many-arguments
 def build_constraints(
     schedule: Schedule,
     workers: List[Worker],
+    dates_campaign: List[date],
+    worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
     cbas: List[ConstraintBuildAugmented],
-    dates_campaign: List[date],
 ) -> Constraints:
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
         workers, dimensions, dim_entries, attributes
@@ -45,7 +47,7 @@ def build_constraints(
         dim_to_attr_value_to_shift,
     )
     constraints.sum += build_quick_staffing_constraints(
-        schedule, workers, dates_campaign, shifts
+        schedule, workers, worker_ids_to_worker_dates, shifts
     )
     return constraints
 
@@ -53,7 +55,7 @@ def build_constraints(
 def build_quick_staffing_constraints(
     schedule: Schedule,
     workers: List[Worker],
-    dates_campaign: List[date],
+    worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
 ) -> List[ConstraintSum]:
     out: List[ConstraintSum] = []
@@ -63,7 +65,10 @@ def build_quick_staffing_constraints(
         if worker is None or shift is None:
             continue
         constraints_vars: List[List[Tuple[str, str, str]]] = [
-            [(worker.id, d.isoformat(), shift.id) for d in dates_campaign]
+            [
+                (worker.id, d.isoformat(), shift.id)
+                for d in worker_ids_to_worker_dates[worker.id].dates_campaign
+            ]
         ]
         out.append(
             ConstraintSum(
