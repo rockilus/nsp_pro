@@ -130,7 +130,7 @@ def core_to_engine_inputs(
             shift_duties_not_deleted,
         ),
         worker_shift_filters=build_worker_shift_filters(
-            workers, dates_campaign, shifts, dimensions, attributes
+            workers, worker_ids_to_worker_dates, shifts, dimensions, attributes
         ),
         fixed_values=core_to_engine_fixed_values(
             workers,
