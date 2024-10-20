@@ -55,7 +55,6 @@ def core_to_engine_inputs(
 
     # Dates
     dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
-    dates_campaign_str = [d.isoformat() for d in dates_campaign]
     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
         schedule, workers, fixed_assignments, dates_campaign
     )
@@ -141,10 +140,9 @@ def core_to_engine_inputs(
             requests,
         ),
         sol_hint=core_to_engine_sol_hint(
-            [w.id for w in workers if not w.deleted],
-            dates_campaign,
-            dates_campaign_str,
-            [s.id for s in shifts if not s.deleted],
+            worker_not_deleted_ids,
+            worker_ids_to_worker_dates,
+            shift_not_deleted_ids,
             wip_assignments,
         ),
     )
