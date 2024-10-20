@@ -11,6 +11,7 @@ def build_engine_variables(
     workers: List[Worker],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
+    shifts_not_deleted: List[Shift],
     shift_id_to_duration_dict: Dict[str, int],
 ) -> VariablesEngine:
     assignment_vars: List[Tuple[str, str, str]] = []
@@ -21,7 +22,7 @@ def build_engine_variables(
                 assignment_vars.append((w.id, d.isoformat(), s.id))
 
         for d in worker_ids_to_worker_dates[w.id].dates_campaign:
-            for s in [s for s in shifts if not s.deleted]:
+            for s in shifts_not_deleted:
                 assignment_vars.append((w.id, d.isoformat(), s.id))
                 s_duration = shift_id_to_duration_dict[s.id]
                 s_start_time = int(

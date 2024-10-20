@@ -55,7 +55,6 @@ def core_to_engine_inputs(
 
     # Dates
     dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
-    dates_hist_str = [d.isoformat() for d in dates_hist]
     dates_campaign_str = [d.isoformat() for d in dates_campaign]
     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
         schedule, workers, fixed_assignments, dates_campaign
@@ -90,6 +89,7 @@ def core_to_engine_inputs(
             workers,
             worker_ids_to_worker_dates,
             shifts,
+            shifts_not_deleted,
             shift_id_to_duration_dict,
         ),
         no_overlap_shift_intervals=[
@@ -134,8 +134,8 @@ def core_to_engine_inputs(
         ),
         fixed_values=core_to_engine_fixed_values(
             workers,
-            dates_hist_str,
-            dates_campaign_str,
+            workers_not_deleted,
+            worker_ids_to_worker_dates,
             shifts,
             fixed_assignments,
             requests,
