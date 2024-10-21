@@ -1,3 +1,4 @@
+import calendar
 import math
 from datetime import date
 from typing import Dict, List, Tuple
@@ -15,8 +16,8 @@ def build_engine_work_loads(
     workers_not_deleted: List[Worker],
     periods_weekly: List[List[date]],
     periods_monthly: List[List[date]],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shifts: List[Shift],
+    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
+    shifts_work: List[Shift],
     shift_duties: List[Shift],
     shift_id_to_duration_dict: Dict[str, int],
 ) -> WorkLoadsEngine:
@@ -24,8 +25,8 @@ def build_engine_work_loads(
         weekly_work_time_contractual=_build_engine_work_time(
             workers_not_deleted,
             periods_weekly,
-            worker_ids_to_worker_dates,
-            shifts,
+            ws_to_dates,
+            shifts_work,
             shift_id_to_duration_dict,
             [w.weekly_hours for w in workers_not_deleted],
             100,
@@ -33,8 +34,8 @@ def build_engine_work_loads(
         weekly_work_time_desired=_build_engine_work_time(
             workers_not_deleted,
             periods_weekly,
-            worker_ids_to_worker_dates,
-            shifts,
+            ws_to_dates,
+            shifts_work,
             shift_id_to_duration_dict,
             [w.weekly_hours_desired for w in workers_not_deleted],
             50,
@@ -42,8 +43,8 @@ def build_engine_work_loads(
         weekly_work_time_max=_build_engine_work_time(
             workers_not_deleted,
             periods_weekly,
-            worker_ids_to_worker_dates,
-            shifts,
+            ws_to_dates,
+            shifts_work,
             shift_id_to_duration_dict,
             [80 for _ in workers_not_deleted],
             0,
@@ -51,7 +52,7 @@ def build_engine_work_loads(
         monthly_nb_duties_desired=_build_engine_nb_duties(
             workers_not_deleted,
             periods_monthly,
-            worker_ids_to_worker_dates,
+            ws_to_dates,
             shift_duties,
             [w.duties_per_month for w in workers_not_deleted],
             100,
@@ -59,7 +60,7 @@ def build_engine_work_loads(
         monthly_nb_duties_max=_build_engine_nb_duties(
             workers_not_deleted,
             periods_monthly,
-            worker_ids_to_worker_dates,
+            ws_to_dates,
             shift_duties,
             [8 for _ in workers_not_deleted],
             0,
@@ -67,12 +68,12 @@ def build_engine_work_loads(
     )
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-locals
 def _build_engine_work_time(
     workers_not_deleted: List[Worker],
     periods: List[List[date]],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shifts: List[Shift],
+    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
+    shifts_work: List[Shift],
     shift_id_to_duration_dict: Dict[str, int],
     worker_to_target_list: List[int],
     penalty: int,
@@ -84,8 +85,8 @@ def _build_engine_work_time(
         w_assignments, w_targets, w_durations = build_engine_work_time_worker(
             w,
             periods,
-            worker_ids_to_worker_dates,
-            shifts,
+            ws_to_dates,
+            shifts_work,
             shift_id_to_duration_dict,
             w_target,
         )
@@ -104,7 +105,7 @@ def _build_engine_work_time(
 def _build_engine_nb_duties(
     workers_not_deleted: List[Worker],
     periods: List[List[date]],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
+    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
     shift_duties: List[Shift],
     worker_to_target_list: List[int],
     penalty: int,
@@ -113,7 +114,11 @@ def _build_engine_nb_duties(
     targets: List[List[int]] = []
     for w, w_target in zip(workers_not_deleted, worker_to_target_list):
         w_assignments, w_targets = build_engine_nb_duties_worker(
-            w, periods, worker_ids_to_worker_dates, shift_duties, w_target
+            w,
+            periods,
+            ws_to_dates,
+            shift_duties,
+            w_target,
         )
         assignments.append(w_assignments)
         targets.append(w_targets)
@@ -128,8 +133,8 @@ def _build_engine_nb_duties(
 def build_engine_work_time_worker(
     worker: Worker,
     periods: List[List[date]],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shifts: List[Shift],
+    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
+    shifts_work: List[Shift],
     shift_id_to_duration_dict: Dict[str, int],
     target: int,
 ) -> Tuple[List[List[Tuple[str, str, str]]], List[int], List[List[int]]]:
@@ -137,52 +142,68 @@ def build_engine_work_time_worker(
     w_targets: List[int] = []
     w_durations: List[List[int]] = []
 
-    dates_worker_set = set(
-        worker_ids_to_worker_dates[worker.id].dates_hist
-        + worker_ids_to_worker_dates[worker.id].dates_campaign
-    )
     period_target_minutes = target * Constants.NUM_MINUTES_HOUR
     for period in periods:
-        period = list(set(period).intersection(dates_worker_set))
         # Calculate the adjusted target
-        num_days_in_week = len(period)
+        num_days_in_period = len(period)
         adjusted_target = math.ceil(
-            (period_target_minutes / Constants.NUM_DAYS_WEEK) * num_days_in_week
+            (period_target_minutes / Constants.NUM_DAYS_WEEK) * num_days_in_period
         )
-        w_assignments.append(
-            [(worker.id, d.isoformat(), s.id) for d in period for s in shifts]
-        )
+
+        ws_assignments: List[Tuple[str, str, str]] = []
+        ws_durations: List[int] = []
+        for s in shifts_work:
+            dates_ws = (
+                ws_to_dates[(worker.id, s.id)].dates_hist
+                + ws_to_dates[(worker.id, s.id)].dates_campaign
+            )
+            ws_assignments.extend(
+                [(worker.id, d.isoformat(), s.id) for d in period if d in dates_ws]
+            )
+            ws_durations.extend(
+                [shift_id_to_duration_dict[s.id] for d in period if d in dates_ws]
+            )
+        if len(ws_assignments) == 0:
+            continue
+        w_assignments.append(ws_assignments)
         w_targets.append(adjusted_target)
-        w_durations.append(
-            [shift_id_to_duration_dict[s.id] for _ in period for s in shifts]
-        )
+        w_durations.append(ws_durations)
+
     return w_assignments, w_targets, w_durations
 
 
 def build_engine_nb_duties_worker(
     worker: Worker,
     periods: List[List[date]],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
+    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
     shift_duties: List[Shift],
     target: int,
 ) -> Tuple[List[List[Tuple[str, str, str]]], List[int]]:
     w_assignments: List[List[Tuple[str, str, str]]] = []
     w_targets: List[int] = []
 
-    dates_worker_set = set(
-        worker_ids_to_worker_dates[worker.id].dates_hist
-        + worker_ids_to_worker_dates[worker.id].dates_campaign
-    )
-    period_target_minutes = target * Constants.NUM_MINUTES_HOUR
     for period in periods:
-        period = list(set(period).intersection(dates_worker_set))
         # Calculate the adjusted target
-        num_days_in_week = len(period)
-        adjusted_target = math.ceil(
-            (period_target_minutes / Constants.NUM_DAYS_WEEK) * num_days_in_week
-        )
-        w_assignments.append(
-            [(worker.id, d.isoformat(), s.id) for d in period for s in shift_duties]
-        )
+        num_days_in_period = len(period)
+        if num_days_in_period == 0:
+            continue
+        first_day = period[0]
+        num_days_in_month = calendar.monthrange(first_day.year, first_day.month)[1]
+
+        adjusted_target = math.ceil((target / num_days_in_month) * num_days_in_period)
+
+        ws_assignments: List[Tuple[str, str, str]] = []
+        for s in shift_duties:
+            dates_ws = (
+                ws_to_dates[(worker.id, s.id)].dates_hist
+                + ws_to_dates[(worker.id, s.id)].dates_campaign
+            )
+            ws_assignments.extend(
+                [(worker.id, d.isoformat(), s.id) for d in period if d in dates_ws]
+            )
+        if len(ws_assignments) == 0:
+            continue
+        w_assignments.append(ws_assignments)
         w_targets.append(adjusted_target)
+
     return w_assignments, w_targets

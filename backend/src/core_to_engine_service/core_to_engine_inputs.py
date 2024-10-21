@@ -17,6 +17,7 @@ from core import (
 from core_to_engine_service.build_dates import (
     build_dates,
     build_worker_ids_to_worker_dates,
+    build_ws_ids_to_dates,
 )
 from core_to_engine_service.build_dim_to_attr_value_to_owner import (
     build_dim_to_attr_value_to_owner,
@@ -62,6 +63,19 @@ def core_to_engine_inputs(
         workers, dimensions, dim_entries, attributes
     )
 
+    # Shifts
+    shifts_not_deleted = [s for s in shifts if not s.deleted]
+    shift_not_deleted_ids = [s.id for s in shifts if not s.deleted]
+    shifts_work = [
+        s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+    ]
+    shift_duties = [s for s in shifts if s.shift_type == ShiftType.DUTY]
+    shift_duties_not_deleted = [s for s in shift_duties if not s.deleted]
+    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
+    dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
+        shifts, dimensions, dim_entries, attributes
+    )
+
     # Dates
     dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
@@ -69,15 +83,14 @@ def core_to_engine_inputs(
     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
         schedule, workers, fixed_assignments, dates_campaign
     )
-
-    # Shifts
-    shifts_not_deleted = [s for s in shifts if not s.deleted]
-    shift_not_deleted_ids = [s.id for s in shifts if not s.deleted]
-    shift_duties = [s for s in shifts if s.shift_type == ShiftType.DUTY]
-    shift_duties_not_deleted = [s for s in shift_duties if not s.deleted]
-    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
-    dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
-        shifts, dimensions, dim_entries, attributes
+    ws_to_dates = build_ws_ids_to_dates(
+        schedule,
+        workers,
+        workers_not_deleted,
+        shifts,
+        shifts_not_deleted,
+        fixed_assignments,
+        dates_campaign,
     )
 
     # ShiftDemands
@@ -102,11 +115,11 @@ def core_to_engine_inputs(
             for w_id in worker_not_deleted_ids
         ],
         work_loads=build_engine_work_loads(
-            workers,
+            workers_not_deleted,
             periods_weekly,
             periods_monthly,
-            worker_ids_to_worker_dates,
-            shifts,
+            ws_to_dates,
+            shifts_work,
             shift_duties,
             shift_id_to_duration_dict,
         ),

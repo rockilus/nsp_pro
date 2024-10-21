@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
-from core import Assignment, Schedule, Worker
+from core import Assignment, Schedule, Shift, Worker
 from core_to_engine_service.types import WorkerDates
 
 
@@ -55,6 +55,50 @@ def build_worker_ids_to_worker_dates(
             dates_hist=dates_hist_worker, dates_campaign=dates_campaign_worker
         )
     return worker_ids_to_worker_dates
+
+
+# pylint: disable=too-many-arguments
+def build_ws_ids_to_dates(
+    schedule: Schedule,
+    workers: List[Worker],
+    workers_not_deleted: List[Worker],
+    shifts: List[Shift],
+    shifts_not_deleted: List[Shift],
+    assignments: List[Assignment],
+    dates_campaign: List[date],
+) -> Dict[Tuple[str, str], WorkerDates]:
+    ws_ids_to_dates: Dict[Tuple[str, str], WorkerDates] = {}
+    for w in workers:
+        for s in shifts:
+            # Worker and shift past dates, i.e. dates for past assignments
+            a_worker_past = [
+                a
+                for a in assignments
+                if a.worker_id == w.id
+                and a.date < schedule.start_date
+                and a.shift_id == s.id
+            ]
+            dates_hist_ws = list(sorted(set(a.date for a in a_worker_past)))
+            ws_ids_to_dates[(w.id, s.id)] = WorkerDates(
+                dates_hist=dates_hist_ws, dates_campaign=[]
+            )
+
+        # Worker and shift campaign dates, i.e. dates during the campaign and
+        # worker's employment period
+    for w in workers_not_deleted:
+        dates_worker_employment_set = set(
+            _build_dates_list(
+                w.employment_start_date,
+                w.employment_end_date or schedule.end_date,
+            )
+        )
+        for s in shifts_not_deleted:
+            dates_campaign_ws = list(
+                sorted(set(dates_campaign).intersection(dates_worker_employment_set))
+            )
+            ws_ids_to_dates[w.id, s.id].dates_campaign = dates_campaign_ws
+
+    return ws_ids_to_dates
 
 
 def _build_dates_list(start_date: date, end_date: date) -> List[date]:
