@@ -3,6 +3,7 @@ from typing import Dict, List
 
 from constraint_parser.mapping.map_constraint import MapConstaint
 from core import ConstraintBuildAugmented, Constraints, ConstraintType, Shift, Worker
+from core_to_engine_service.types import WorkerDates
 
 
 # pylint: disable=too-many-arguments
@@ -11,12 +12,24 @@ def parse_constraint(
     schedule_id: str,
     workers: List[Worker],
     worker_dim_dict: Dict,
-    days_solving: List[date],
+    dates_hist: List[date],
+    dates_campaign: List[date],
+    periods_weekly: List[List[date]],
+    periods_monthly: List[List[date]],
+    worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
     shift_dim_dict: Dict,
 ) -> Constraints:
     map_constraint = MapConstaint(
-        workers, worker_dim_dict, days_solving, shifts, shift_dim_dict
+        workers,
+        worker_dim_dict,
+        dates_hist,
+        dates_campaign,
+        periods_weekly,
+        periods_monthly,
+        worker_ids_to_worker_dates,
+        shifts,
+        shift_dim_dict,
     )
     return Constraints(
         sum=[

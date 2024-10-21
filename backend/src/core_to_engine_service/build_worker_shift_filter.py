@@ -1,5 +1,4 @@
 from collections import defaultdict
-from datetime import date
 from typing import Dict, List, Set, Tuple
 
 from core import (
@@ -11,12 +10,13 @@ from core import (
     ShiftType,
     Worker,
 )
+from core_to_engine_service.types import WorkerDates
 
 
 # pylint: disable=too-many-locals, too-many-branches
 def build_worker_shift_filters(
     workers: List[Worker],
-    dates_campaign: List[date],
+    worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
     dimensions: List[Dimension],
     attributes: List[Attribute],
@@ -101,7 +101,12 @@ def build_worker_shift_filters(
                 # Add invalid tuples for the worker
                 for shift_id in invalid_shift_ids:
                     out.update(
-                        [(worker.id, d.isoformat(), shift_id) for d in dates_campaign]
+                        [
+                            (worker.id, d.isoformat(), shift_id)
+                            for d in worker_ids_to_worker_dates[
+                                worker.id
+                            ].dates_campaign
+                        ]
                     )
 
         # -------- Filter out workers that don't have shift attribute --------
@@ -130,7 +135,12 @@ def build_worker_shift_filters(
                 # Add invalid tuples for the worker
                 for worker_id in invalid_worker_ids:
                     out.update(
-                        [(worker_id, d.isoformat(), shift.id) for d in dates_campaign]
+                        [
+                            (worker_id, d.isoformat(), shift.id)
+                            for d in worker_ids_to_worker_dates[
+                                worker_id
+                            ].dates_campaign
+                        ]
                     )
 
     # Return the list of unique (worker_id, invalid_shift_id) and

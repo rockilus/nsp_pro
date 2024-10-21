@@ -9,14 +9,14 @@ from typing import Dict, List, Literal, Tuple
 
 
 @dataclass
-class NewShiftDemand:
+class ShiftDemand:
     assignments: List[Tuple[str, str, str]]
     assignments_specialty: List[Tuple[str, str, str, str]]
     target: int
 
 
 @dataclass
-class NewRequest:
+class Request:
     id: str
     assignments: List[Tuple[str, str, str]]
     hard: bool
@@ -160,8 +160,8 @@ class Inputs:
         List[Tuple[str, str, str]]
     ]  # list of assignments for each worker
     work_loads: WorkLoads
-    new_shift_demands: List[NewShiftDemand]
-    new_requests: List[NewRequest]
+    shift_demands: List[ShiftDemand]
+    requests: List[Request]
     constraints: Constraints
     duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
     worker_shift_filters: List[Tuple[str, str, str]]

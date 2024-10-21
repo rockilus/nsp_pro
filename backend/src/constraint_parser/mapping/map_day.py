@@ -7,20 +7,29 @@ from utils.constants import Constants
 
 
 class MapDay:
-    def __init__(self, days_solving: List[date]) -> None:
-        self.days_solving = days_solving
+    def __init__(
+        self,
+        dates_hist: List[date],
+        dates_campaign: List[date],
+        periods_weekly: List[List[date]],
+        periods_monthly: List[List[date]],
+    ) -> None:
+        self.dates_hist = dates_hist
+        self.dates_campaign = dates_campaign
+        self.periods_weekly = periods_weekly
+        self.periods_monthly = periods_monthly
 
     def get_coords_days(self, cba: ConstraintBuildAugmented) -> List[date]:
         selector = self.get_selector(cba.blocks, cba.constraint_type)
         target = self.get_target(cba.blocks, cba.constraint_type)
         if selector == "all":
-            return self.days_solving
+            return self.dates_campaign
         if selector == "week_day_index":
             return [
-                self.days_solving[i]
+                self.dates_campaign[i]
                 for i in range(
                     target,
-                    len(self.days_solving),
+                    len(self.dates_campaign),
                     Constants.NUM_DAYS_WEEK,
                 )
             ]
@@ -33,23 +42,27 @@ class MapDay:
         selector = self.get_selector(cba.blocks, cba.constraint_type)
         interval = self.get_interval(cba.blocks, cba.constraint_type)
         target = self.get_target(cba.blocks, cba.constraint_type)
+
+        interval_abs = abs(interval)
+        dates_constraint = self.dates_hist[-interval_abs:] + self.dates_campaign
+
         if selector == "all":
             for i in range(
                 abs(min(interval, 0)),
-                len(self.days_solving) - max(interval, 0),
+                len(dates_constraint) - max(interval, 0),
             ):
-                d_vars.append((self.days_solving[i], self.days_solving[i + interval]))
+                d_vars.append((dates_constraint[i], dates_constraint[i + interval]))
             return d_vars
         start = target if (target + interval >= 0) else target + Constants.NUM_DAYS_WEEK
         for i in range(
             start,
-            len(self.days_solving) - max(interval, 0),
+            len(dates_constraint) - max(interval, 0),
             Constants.NUM_DAYS_WEEK,
         ):
             d_vars.append(
                 (
-                    self.days_solving[i],
-                    self.days_solving[i + interval],
+                    dates_constraint[i],
+                    dates_constraint[i + interval],
                 )
             )
         return d_vars
@@ -57,13 +70,11 @@ class MapDay:
     def get_coords_days_sum(self, cba: ConstraintBuildAugmented) -> List[List[date]]:
         selector = self.get_selector(cba.blocks, cba.constraint_type)
         if selector == "all":
-            return [self.days_solving]
+            return [self.dates_campaign]
         if selector == "week":
-            weekday_first_day = self.days_solving[0].weekday()
-            d_indexes = self._build_weeks_day_index_list(
-                weekday_first_day, len(self.days_solving)
-            )
-            return [[self.days_solving[i] for i in d_index] for d_index in d_indexes]
+            return self.periods_weekly
+        if selector == "month":
+            return self.periods_monthly
         raise ValueError(f"Selector {selector} not recognized")
         # period = [
         #     cba.day_var.start_date + timedelta(days=i)
@@ -79,6 +90,17 @@ class MapDay:
         #         in self.days
         #     ]
         # ]
+
+    def get_coords_days_seq(
+        self, cba: ConstraintBuildAugmented, target: int
+    ) -> List[date]:
+        selector = self.get_selector(cba.blocks, cba.constraint_type)
+
+        target_abs = max(abs(target) - 1, 0)
+        dates_constraint = self.dates_hist[-target_abs:] + self.dates_campaign
+        if selector == "all":
+            return dates_constraint
+        raise NotImplementedError(f"Day selector {selector} " + "not implemented")
 
     def get_selector(
         self, blocks: List[Block], cstr_type: ConstraintType

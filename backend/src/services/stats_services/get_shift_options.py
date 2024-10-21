@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from constraint_parser import build_options
+from constraint_templates import build_options
 from core import Attribute, AttributeOwnerType, DimensionType, ShiftWorkerOption
 from scripts.setup_database import attribute_db, dim_entry_db, dimension_db, shift_db
 

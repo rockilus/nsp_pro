@@ -1,27 +1,26 @@
-from datetime import date
 from typing import Dict, List, Tuple
 
 from core import Assignment
+from core_to_engine_service.types import WorkerDates
 
 
 def core_to_engine_sol_hint(
-    workers_not_deleted: List[str],
-    dates_campaign: List[date],
-    dates_campaign_str: List[str],
-    shifts_not_deleted: List[str],
+    worker_not_deleted_ids: List[str],
+    worker_ids_to_worker_dates: Dict[str, WorkerDates],
+    shift_not_deleted_ids: List[str],
     assignments: List[Assignment],
 ) -> Dict[Tuple[str, str, str], int]:
     out = {
-        (w, d, s): 0
-        for w in workers_not_deleted
-        for d in dates_campaign_str
-        for s in shifts_not_deleted
+        (w, d.isoformat(), s): 0
+        for w in worker_not_deleted_ids
+        for d in worker_ids_to_worker_dates[w].dates_campaign
+        for s in shift_not_deleted_ids
     }
     for a in assignments:
         a_in_domain = (
-            a.worker_id in workers_not_deleted
-            and a.date in dates_campaign
-            and a.shift_id in shifts_not_deleted
+            a.worker_id in worker_not_deleted_ids
+            and a.date in worker_ids_to_worker_dates[a.worker_id].dates_campaign
+            and a.shift_id in shift_not_deleted_ids
         )
         if a_in_domain:
             out[

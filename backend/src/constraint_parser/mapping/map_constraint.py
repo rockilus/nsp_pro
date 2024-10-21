@@ -18,6 +18,7 @@ from core import (
     Shift,
     Worker,
 )
+from core_to_engine_service.types import WorkerDates
 
 
 class MapConstaint:
@@ -26,16 +27,24 @@ class MapConstaint:
         self,
         workers: List[Worker],
         worker_dim_dict: Dict,
-        days_solving: List[date],
+        dates_hist: List[date],
+        dates_campaign: List[date],
+        periods_weekly: List[List[date]],
+        periods_monthly: List[List[date]],
+        worker_ids_to_worker_dates: Dict[str, WorkerDates],
         shifts: List[Shift],
         shift_dim_dict: Dict,
         shift_ids_in_coverage: List[str] | None = None,
     ) -> None:
         self.workers = workers
-        self.days_solving = days_solving
+        self.dates_hist = dates_hist
+        self.dates_campaign = dates_campaign
+        self.worker_ids_to_worker_dates = worker_ids_to_worker_dates
         self.shifts = shifts
         self.map_worker = MapWorker(workers, worker_dim_dict)
-        self.map_day = MapDay(days_solving)
+        self.map_day = MapDay(
+            dates_hist, dates_campaign, periods_weekly, periods_monthly
+        )
         self.map_shift = MapShift(shifts, shift_dim_dict, shift_ids_in_coverage)
 
     def map_constraint_sum(
@@ -72,7 +81,12 @@ class MapConstaint:
         # else:
         constraints_vars: List[List[Tuple[str, str, str]]] = []
         for w in coord_workers:
+            dates_worker_set = set(
+                self.worker_ids_to_worker_dates[w.id].dates_hist
+                + self.worker_ids_to_worker_dates[w.id].dates_campaign
+            )
             for period in coord_days:
+                period = list(set(period).intersection(dates_worker_set))
                 constraint_vars = []
                 for s in coord_shifts:
                     constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
@@ -95,15 +109,21 @@ class MapConstaint:
         self, cba: ConstraintBuildAugmented, schedule_id: str
     ) -> ConstraintSeq:
         cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
+        cstr_target = self.get_target_value(cba.blocks, cba.constraint_type)
         coord_workers = self.map_worker.get_coord_workers(cba)
-        coord_days = self.map_day.get_coords_days(cba)
+        coord_days = self.map_day.get_coords_days_seq(cba, cstr_target)
         coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
 
         constraints_vars: List[List[Tuple[str, str, str]]] = []
         for w in coord_workers:
+            dates_worker_set = set(
+                self.worker_ids_to_worker_dates[w.id].dates_hist
+                + self.worker_ids_to_worker_dates[w.id].dates_campaign
+            )
             for s in coord_shifts:
                 constraint_vars = []
-                for d in coord_days:
+                dates_cstr = list(set(coord_days).intersection(dates_worker_set))
+                for d in dates_cstr:
                     constraint_vars.append((w.id, d.isoformat(), s.id))
             constraints_vars.append(constraint_vars)
 
@@ -111,7 +131,7 @@ class MapConstaint:
             id=cba.id,
             constraint_type=cba.constraint_type,
             operator=cstr_operator,
-            target_value=self.get_target_value(cba.blocks, cba.constraint_type),
+            target_value=cstr_target,
             target_unit="",
             constraint_variables=constraints_vars,
             active=cba.active,
@@ -131,7 +151,13 @@ class MapConstaint:
 
         constraints_vars: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]] = []
         for w in coord_workers:
+            worker_dates = (
+                self.worker_ids_to_worker_dates[w.id].dates_hist
+                + self.worker_ids_to_worker_dates[w.id].dates_campaign
+            )
             for d1, d2 in coord_days:
+                if d1 not in worker_dates or d2 not in worker_dates:
+                    continue
                 for s_ref, s_rel in coord_shifts:
                     constraint_vars = (
                         (w.id, d1.isoformat(), s_ref.id),
@@ -163,7 +189,9 @@ class MapConstaint:
 
         constraints_vars: List[Tuple[str, str, str]] = []
         for w in coord_workers:
-            for d in coord_days:
+            dates_worker_set = set(self.worker_ids_to_worker_dates[w.id].dates_campaign)
+            dates_cstr = list(set(coord_days).intersection(dates_worker_set))
+            for d in dates_cstr:
                 for s in coord_shifts:
                     constraints_vars.append((w.id, d.isoformat(), s.id))
 
@@ -190,7 +218,12 @@ class MapConstaint:
         coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
 
         constraints_vars: List[List[Tuple[str, str, str]]] = [
-            [(w.id, d.isoformat(), s.id) for d in coord_days for s in coord_shifts]
+            [
+                (w.id, d.isoformat(), s.id)
+                for d in coord_days
+                if d in self.worker_ids_to_worker_dates[w.id].dates_campaign
+                for s in coord_shifts
+            ]
             for w in coord_workers
         ]
 
@@ -224,20 +257,25 @@ class MapConstaint:
         # )
         target_average = 1
         period_lengths = self.integer_division_list(
-            len(self.days_solving), int(target_average)
+            len(self.dates_campaign), int(target_average)
         )
         coord_days: List[List[date]] = []
         for index, period_length in enumerate(period_lengths):
             cum_days = sum(period_lengths[:index])
-            start_date = self.days_solving[0] + timedelta(days=cum_days)
+            start_date = self.dates_campaign[0] + timedelta(days=cum_days)
             end_date = start_date + timedelta(days=period_length - 1)
             coord_days.append(
-                [d for d in self.days_solving if start_date <= d <= end_date]
+                [d for d in self.dates_campaign if start_date <= d <= end_date]
             )
 
         constraints_vars: List[List[Tuple[str, str, str]]] = []
         for w in coord_workers:
+            dates_worker_set = set(
+                self.worker_ids_to_worker_dates[w.id].dates_hist
+                + self.worker_ids_to_worker_dates[w.id].dates_campaign
+            )
             for period in coord_days:
+                period = list(set(period).intersection(dates_worker_set))
                 constraint_vars = []
                 for s in coord_shifts:
                     constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]

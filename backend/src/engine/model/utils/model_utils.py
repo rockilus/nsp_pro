@@ -4,7 +4,7 @@ from typing import Any, List, Literal
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.types.input_output_types import Constraint, NewRequest, NewShiftDemand
+from engine.types.input_output_types import Constraint, Request, ShiftDemand
 from engine.types.model_types import VarName
 
 # def get_average_nb_shifts_per_worker(
@@ -29,7 +29,7 @@ from engine.types.model_types import VarName
 
 
 def build_var_name(
-    constraint: Constraint | NewRequest | NewShiftDemand | None,
+    constraint: Constraint | Request | ShiftDemand | None,
     cstr_vars: List[cp_model.IntVar],
     category: Literal[
         'request',
@@ -49,7 +49,7 @@ def build_var_name(
                     if constraint is None
                     else (
                         constraint.id
-                        if not isinstance(constraint, NewShiftDemand)
+                        if not isinstance(constraint, ShiftDemand)
                         else "no_shift_demand_id"
                     )
                 ),
@@ -57,7 +57,7 @@ def build_var_name(
                 category=category,
                 hard_to_soft=(
                     True
-                    if isinstance(constraint, NewShiftDemand) or constraint is None
+                    if isinstance(constraint, ShiftDemand) or constraint is None
                     else constraint.hard
                 ),
             )

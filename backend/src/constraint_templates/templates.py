@@ -1,8 +1,8 @@
 from typing import Dict, List
 
-from constraint_parser.build_templates_list_en import build_templates_list_en
-from constraint_parser.build_templates_list_es import build_templates_list_es
-from constraint_parser.build_templates_list_fr import build_templates_list_fr
+from constraint_templates.build_templates_list_en import build_templates_list_en
+from constraint_templates.build_templates_list_es import build_templates_list_es
+from constraint_templates.build_templates_list_fr import build_templates_list_fr
 from core import (
     Attribute,
     AttributeOwnerType,
