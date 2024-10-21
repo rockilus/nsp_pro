@@ -91,6 +91,17 @@ class MapDay:
         #     ]
         # ]
 
+    def get_coords_days_seq(
+        self, cba: ConstraintBuildAugmented, target: int
+    ) -> List[date]:
+        selector = self.get_selector(cba.blocks, cba.constraint_type)
+
+        target_abs = max(abs(target) - 1, 0)
+        dates_constraint = self.dates_hist[-target_abs:] + self.dates_campaign
+        if selector == "all":
+            return dates_constraint
+        raise NotImplementedError(f"Day selector {selector} " + "not implemented")
+
     def get_selector(
         self, blocks: List[Block], cstr_type: ConstraintType
     ) -> Constants.VAR_DAY_SELECTOR_OPTIONS:
