@@ -15,6 +15,23 @@ export type AssignmentT = {
   fixed: boolean;
 };
 
+// Daily Shift Demand
+export enum ShiftRestType {
+  SHIFT_DEMAND = 0,
+  SCHEDULE = 1,
+}
+
+export type DailyShiftDemandT = {
+  id: string;
+  teamId: string;
+  scheduleId: string;
+  shiftDemandId: string;
+  sourceType: ShiftRestType;
+  date: dayjs.Dayjs;
+  shiftId: string;
+  count: number;
+};
+
 // Objective Breach
 export type VariableT = {
   workerId: string;

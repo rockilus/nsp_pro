@@ -43,6 +43,7 @@ import {
   BreachT,
   AssignmentT,
   SelectedCellT,
+  DailyShiftDemandT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import { StatsT } from "../../types/stats";
@@ -69,6 +70,9 @@ export default function ScheduleTab({
   const [requests, setRequests] = useState<RequestT[]>([]);
   const [schedule, setSchedule] = useState<ScheduleT | null>(null);
   const [assignments, setAssignments] = useState<AssignmentT[]>([]);
+  const [dailyShiftDemands, setDailyShiftDemands] = useState<
+    DailyShiftDemandT[]
+  >([]);
   const [breaches, setBreaches] = useState<BreachT[]>([]);
   const [stats, setStats] = useState<StatsT | null>(null);
 
@@ -309,10 +313,12 @@ export default function ScheduleTab({
           assignments: fetchedAssignments,
           workers: fetchedWorkers,
           shifts: fetchedShifts,
-        } = await getScheduleTabData(selectedTeamId);
+          dailyShiftDemands: fetchedDailyShiftDemands,
+        } = await getScheduleAssignmentsData(selectedTeamId);
         setAssignments(fetchedAssignments);
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
+        setDailyShiftDemands(fetchedDailyShiftDemands);
         setIsLoadingAssignments(false);
       }
     };

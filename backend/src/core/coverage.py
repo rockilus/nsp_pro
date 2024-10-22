@@ -15,7 +15,6 @@ class ShiftDemand:
             raise ValueError("dayIndex must be between 0 and 6")
 
 
-@dataclass
 class DSDSourceType(Enum):
     SHIFT_DEMAND = 0
     SCHEDULE = 1

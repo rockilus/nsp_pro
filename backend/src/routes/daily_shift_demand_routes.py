@@ -6,7 +6,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import DailyShiftDemand
+from core import DailyShiftDemand, DSDSourceType
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -141,6 +141,7 @@ def msg_to_core_daily_shift_demand(
     msg: DailyShiftDemandMessage,
 ) -> DailyShiftDemand:
     data_snake = humps.decamelize(msg.model_dump())
+    data_snake["source_type"] = DSDSourceType(data_snake["source_type"])
     data_snake["date"] = datetime.fromtimestamp(data_snake["date"], timezone.utc).date()
     try:
         daily_shift_demand = DailyShiftDemand(**data_snake)
