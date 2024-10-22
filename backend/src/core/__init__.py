@@ -24,9 +24,9 @@ from core.constraint import (
 from core.coverage import (
     Coverage,
     CoverageSelector,
-    SDDSourceType,
+    DailyShiftDemand,
+    DSDSourceType,
     ShiftDemand,
-    ShiftDemandDaily,
 )
 from core.dimension import Dimension, DimensionEntryType, DimensionType, DimEntry
 from core.request import Request, RequestAugmented
@@ -64,9 +64,9 @@ __all__ = [
     "VarWorker",
     "Coverage",
     "CoverageSelector",
-    "SDDSourceType",
+    "DailyShiftDemand",
+    "DSDSourceType",
     "ShiftDemand",
-    "ShiftDemandDaily",
     "Dimension",
     "DimensionEntryType",
     "DimensionType",

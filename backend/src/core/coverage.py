@@ -16,16 +16,18 @@ class ShiftDemand:
 
 
 @dataclass
-class SDDSourceType(Enum):
+class DSDSourceType(Enum):
     SHIFT_DEMAND = 0
     SCHEDULE = 1
 
 
 @dataclass
-class ShiftDemandDaily:
+class DailyShiftDemand:
+    id: str
     team_id: str
-    source_type: SDDSourceType
-    source_id: str
+    schedule_id: str
+    shift_demand_id: str | None
+    source_type: DSDSourceType
     date: date
     shift_id: str
     count: int

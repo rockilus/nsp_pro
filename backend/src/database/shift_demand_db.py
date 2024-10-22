@@ -251,13 +251,13 @@ def core_to_doc_shift_demands(
     }
     out = []
     for dataclass_obj in dataclass_objs:
-        assignment_doc = ShiftDemandDocument(
+        sd_doc = ShiftDemandDocument(
             id=str(ObjectId()) if creating else dataclass_obj.id,
             day_index=dataclass_obj.day_index,
             shift=shifts.get(dataclass_obj.shift_id),
             coverage=coverages.get(dataclass_obj.coverage_id),
         )
-        out.append(assignment_doc)
+        out.append(sd_doc)
     return out
 
 

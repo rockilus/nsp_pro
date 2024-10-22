@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Dict, List
 
-from core import Shift, ShiftDemandDaily, Worker
+from core import DailyShiftDemand, Shift, Worker
 from core_to_engine_service.types import WorkerDates
 from engine import ShiftDemand as NewShiftDemandEngine
 
@@ -11,7 +11,7 @@ def build_engine_shift_demands(
     dates_campaing: List[date],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts_not_deleted: List[Shift],
-    shift_demands: List[ShiftDemandDaily],
+    shift_demands: List[DailyShiftDemand],
 ) -> List[NewShiftDemandEngine]:
     out: List[NewShiftDemandEngine] = []
     for shift_demand in shift_demands:
