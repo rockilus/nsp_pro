@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+from enum import Enum
 
 
 @dataclass
@@ -15,10 +16,19 @@ class ShiftDemand:
 
 
 @dataclass
-class ShiftDemandDate:
+class SDDSourceType(Enum):
+    SHIFT_DEMAND = 0
+    SCHEDULE = 1
+
+
+@dataclass
+class ShiftDemandDaily:
+    team_id: str
+    source_type: SDDSourceType
+    source_id: str
     date: date
     shift_id: str
-    nb_times_shift: int
+    count: int
 
 
 @dataclass

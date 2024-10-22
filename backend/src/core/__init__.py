@@ -21,7 +21,13 @@ from core.constraint import (
     VarShift,
     VarWorker,
 )
-from core.coverage import Coverage, CoverageSelector, ShiftDemand, ShiftDemandDate
+from core.coverage import (
+    Coverage,
+    CoverageSelector,
+    SDDSourceType,
+    ShiftDemand,
+    ShiftDemandDaily,
+)
 from core.dimension import Dimension, DimensionEntryType, DimensionType, DimEntry
 from core.request import Request, RequestAugmented
 from core.schedule import Assignment, ObjectiveBreach, QuickStaffing, Schedule, Variable
@@ -58,8 +64,9 @@ __all__ = [
     "VarWorker",
     "Coverage",
     "CoverageSelector",
+    "SDDSourceType",
     "ShiftDemand",
-    "ShiftDemandDate",
+    "ShiftDemandDaily",
     "Dimension",
     "DimensionEntryType",
     "DimensionType",

@@ -4,9 +4,10 @@ from typing import Dict, List, Tuple
 from core import (
     CoverageSelector,
     Schedule,
+    SDDSourceType,
     Shift,
     ShiftDemand,
-    ShiftDemandDate,
+    ShiftDemandDaily,
     ShiftType,
 )
 
@@ -17,7 +18,7 @@ def build_shift_demand_dates(
     coverage_selectors: List[CoverageSelector],
     shift_demands: List[ShiftDemand],
     shifts: List[Shift],
-) -> List[ShiftDemandDate]:
+) -> List[ShiftDemandDaily]:
     work_shifts = [
         s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
     ]
@@ -54,11 +55,17 @@ def build_shift_demand_dates(
     for s in work_shifts:
         for cur_date in dates:
             sds = sd_dict[(cur_date, s.id)]
-            out.append(
-                ShiftDemandDate(
-                    date=cur_date,
-                    shift_id=s.id,
-                    nb_times_shift=len(sds),
-                )
+            out.extend(
+                [
+                    ShiftDemandDaily(
+                        team_id=schedule.team_id,
+                        source_type=SDDSourceType.SHIFT_DEMAND,
+                        source_id=sd.id,
+                        date=cur_date,
+                        shift_id=s.id,
+                        count=1,
+                    )
+                    for sd in sds
+                ]
             )
     return out
