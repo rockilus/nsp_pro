@@ -59,12 +59,13 @@ async def get_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to get assignments",
             )
-        if start_date is None or end_date is None:
-            raise ValueError("Start date and end date are required")
         schedules = schedule_db.get_schedules(team_id)
-        assignments = assignment_db.get_assignments_by_dates(
-            start_date, end_date, schedules
-        )
+        if start_date is None or end_date is None:
+            assignments = assignment_db.get_assignments(schedules)
+        else:
+            assignments = assignment_db.get_assignments_by_dates(
+                start_date, end_date, schedules
+            )
         response = [core_to_msg_assignment(a) for a in assignments]
     except Exception as e:
         log_info("Failed to get assignments")
