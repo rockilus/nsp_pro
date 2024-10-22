@@ -36,9 +36,7 @@ from core_to_engine_service.build_periods import (
 )
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
 from engine import Inputs as InputsEngine
-from services.coverage_selector_services.build_shift_demand_date import (
-    build_shift_demand_dates,
-)
+from services.daily_shift_demand_services.build_dsds import build_daily_shift_demands
 
 
 # pylint: disable=too-many-arguments, too-many-locals, R0801
@@ -94,7 +92,7 @@ def core_to_engine_inputs(
     )
 
     # ShiftDemands
-    shift_demand_dates = build_shift_demand_dates(
+    shift_demand_dates = build_daily_shift_demands(
         schedule, coverage_selectors, shift_demands, shifts
     )
 

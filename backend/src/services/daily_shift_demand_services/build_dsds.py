@@ -8,26 +8,22 @@ from core import (
     Schedule,
     Shift,
     ShiftDemand,
-    ShiftType,
 )
 
 
 # pylint: disable=too-many-locals
-def build_shift_demand_dates(
+def build_daily_shift_demands(
     schedule: Schedule,
     coverage_selectors: List[CoverageSelector],
     shift_demands: List[ShiftDemand],
-    shifts: List[Shift],
+    shifts_work_not_deleted: List[Shift],
 ) -> List[DailyShiftDemand]:
-    work_shifts = [
-        s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
-    ]
     dates = [
         schedule.start_date + timedelta(days=i)
         for i in range((schedule.end_date - schedule.start_date).days + 1)
     ]
     sd_dict: Dict[Tuple[date, str], List[ShiftDemand]] = {
-        (d, s.id): [] for d in dates for s in work_shifts
+        (d, s.id): [] for d in dates for s in shifts_work_not_deleted
     }
 
     cov_to_sds: Dict[str, List[ShiftDemand]] = {}
@@ -52,7 +48,7 @@ def build_shift_demand_dates(
                 sd_dict[(current_date, sd.shift_id)].append(sd)
 
     out = []
-    for s in work_shifts:
+    for s in shifts_work_not_deleted:
         for cur_date in dates:
             sds = sd_dict[(cur_date, s.id)]
             out.extend(

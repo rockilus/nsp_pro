@@ -188,6 +188,17 @@ class AssignmentMessage(BaseModel):
     fixed: bool
 
 
+class DailyShiftDemandMessage(BaseModel):
+    id: str
+    teamId: str
+    scheduleId: str
+    shiftDemandId: str
+    sourceType: int
+    date: float
+    shiftId: str
+    count: int
+
+
 class VariableMessage(BaseModel):
     workerId: str
     date: date
