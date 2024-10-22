@@ -15,18 +15,26 @@ import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 // Skeletons
-import ScheduleSkeleton from "../skeletons/schedule-skeleton";
+import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
+import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
 import {
   getScheduleTabData,
   solveSchedule,
   validateSchedule,
   updateSchedule,
+  getSchedule,
+  getScheduleAssignmentsData,
+  getScheduleLHSData,
 } from "../../app/lib/schedule";
-import { getAssignments, updateAssignment } from "../../app/lib/assignment";
+import {
+  getAssignmentsByDates,
+  updateAssignment,
+} from "../../app/lib/assignment";
 import { getStats } from "../../app/lib/stats";
 // Styles
 import "../../styles/tab-container-styles.css";
+import "./schedule-tab.css";
 // Types
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
@@ -51,7 +59,11 @@ export default function ScheduleTab({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoadingSchedule, setIsLoadingSchedule] = useState<boolean>(true);
+  const [isLoadingAssignments, setIsLoadingAssignments] =
+    useState<boolean>(true);
+  const [isLoadingLHS, setIsLoadingLHS] = useState<boolean>(true);
+
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [requests, setRequests] = useState<RequestT[]>([]);
@@ -178,12 +190,12 @@ export default function ScheduleTab({
         : dayjs.utc(); // Default to current time if neither "week" nor "month"
     setCurrentPeriodStart(newPeriodStart);
     setCurrentPeriodEnd(newPeriodEnd);
-    const assigmentsNewPeriod = await getAssignments(
-      newPeriodStart,
-      newPeriodEnd,
-      selectedTeamId
-    );
-    setAssignments(assigmentsNewPeriod);
+    // const assigmentsNewPeriod = await getAssignmentsByDates(
+    //   selectedTeamId,
+    //   newPeriodStart,
+    //   newPeriodEnd
+    // );
+    // setAssignments(assigmentsNewPeriod);
   };
 
   const handlePreviousPeriod = async () => {
@@ -200,12 +212,12 @@ export default function ScheduleTab({
     );
     setCurrentPeriodStart(newPeriodStart);
     setCurrentPeriodEnd(newPeriodEnd);
-    const assigmentsNewPeriod = await getAssignments(
-      newPeriodStart,
-      newPeriodEnd,
-      selectedTeamId
-    );
-    setAssignments(assigmentsNewPeriod);
+    // const assigmentsNewPeriod = await getAssignmentsByDates(
+    //   selectedTeamId,
+    //   newPeriodStart,
+    //   newPeriodEnd
+    // );
+    // setAssignments(assigmentsNewPeriod);
   };
 
   const handleNextPeriod = async () => {
@@ -222,12 +234,12 @@ export default function ScheduleTab({
     );
     setCurrentPeriodStart(newPeriodStart);
     setCurrentPeriodEnd(newPeriodEnd);
-    const assigmentsNewPeriod = await getAssignments(
-      newPeriodStart,
-      newPeriodEnd,
-      selectedTeamId
-    );
-    setAssignments(assigmentsNewPeriod);
+    // const assigmentsNewPeriod = await getAssignmentsByDates(
+    //   selectedTeamId,
+    //   newPeriodStart,
+    //   newPeriodEnd
+    // );
+    // setAssignments(assigmentsNewPeriod);
   };
 
   const handleChangeSelectedTimeView = async (newSelectedTimeView: string) => {
@@ -248,12 +260,12 @@ export default function ScheduleTab({
     }
     setCurrentPeriodStart(currentPeriodStart.startOf("month"));
     setCurrentPeriodEnd(currentPeriodEnd.endOf("month"));
-    const assigmentsNewPeriod = await getAssignments(
-      newPeriodStart,
-      newPeriodEnd,
-      selectedTeamId
-    );
-    setAssignments(assigmentsNewPeriod);
+    // const assigmentsNewPeriod = await getAssignmentsByDates(
+    //   selectedTeamId,
+    //   newPeriodStart,
+    //   newPeriodEnd
+    // );
+    // setAssignments(assigmentsNewPeriod);
   };
 
   //////////////////////////
@@ -278,34 +290,52 @@ export default function ScheduleTab({
   };
 
   useEffect(() => {
-    const fetchScheduleTabData = async () => {
-      setIsLoading(true);
+    const fetchSchedule = async () => {
+      setIsLoadingSchedule(true);
+      if (selectedTeamId) {
+        const fetchedSchedule = await getSchedule(selectedTeamId);
+        setSchedule(fetchedSchedule);
+        setIsLoadingSchedule(false);
+      }
+    };
+    fetchSchedule();
+  }, [selectedTeamId]);
+
+  useEffect(() => {
+    const fetchScheduleAssignmentsData = async () => {
+      setIsLoadingAssignments(true);
       if (selectedTeamId) {
         const {
           assignments: fetchedAssignments,
-          breaches: fetchedBreaches,
-          requests: fetchedRequests,
-          schedule: fetchedSchedule,
           workers: fetchedWorkers,
           shifts: fetchedShifts,
-          stats: fetchedStats,
-        } = await getScheduleTabData(
-          currentPeriodStart,
-          currentPeriodEnd,
-          selectedTeamId
-        );
+        } = await getScheduleTabData(selectedTeamId);
         setAssignments(fetchedAssignments);
-        setBreaches(fetchedBreaches);
-        setRequests(fetchedRequests);
-        setSchedule(fetchedSchedule);
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
-        setStats(fetchedStats);
-        setIsLoading(false);
+        setIsLoadingAssignments(false);
       }
     };
-    fetchScheduleTabData();
-  }, [selectedTeamId, currentPeriodStart, currentPeriodEnd]);
+    fetchScheduleAssignmentsData();
+  }, [selectedTeamId]);
+
+  useEffect(() => {
+    const fetchScheduleLHSData = async () => {
+      setIsLoadingLHS(true);
+      if (selectedTeamId) {
+        const {
+          breaches: fetchedBreaches,
+          requests: fetchedRequests,
+          stats: fetchedStats,
+        } = await getScheduleLHSData(selectedTeamId);
+        setBreaches(fetchedBreaches);
+        setRequests(fetchedRequests);
+        setStats(fetchedStats);
+        setIsLoadingLHS(false);
+      }
+    };
+    fetchScheduleLHSData();
+  }, [selectedTeamId]);
 
   const lhsTabContent = {
     Breaches: (
@@ -355,10 +385,12 @@ export default function ScheduleTab({
 
   return (
     <div className="tab-container-ultrawide">
-      {isLoading ? (
-        <ScheduleSkeleton />
-      ) : (
-        <div>
+      <div>
+        {isLoadingSchedule ? (
+          <div className="container-schedule-selector-skeleton">
+            <ScheduleSelectorSkeleton />
+          </div>
+        ) : (
           <ScheduleNavBar
             lng={lng}
             currentPeriodStart={currentPeriodStart}
@@ -376,49 +408,51 @@ export default function ScheduleTab({
             handleSolveSchedule={handleSolveSchedule}
             handleValidateSchedule={handleValidateSchedule}
           />
-          <div style={{ display: "flex", flexDirection: "row" }}>
-            <LHSTab
-              tabContent={lhsTabContent}
-              selectedTab={selectedTab}
-              toggleTab={toggleTab}
-            />
-            {assignments.length === 0 || !schedule ? (
-              <Box
-                sx={{
-                  margin: 2,
-                  marginLeft: 0,
-                  overflowX: "auto",
-                  backgroundColor: "none",
-                  width: "100%",
-                }}
+        )}
+        <div style={{ display: "flex", flexDirection: "row" }}>
+          <LHSTab
+            tabContent={lhsTabContent}
+            selectedTab={selectedTab}
+            toggleTab={toggleTab}
+          />
+          {isLoadingAssignments ? (
+            <ScheduleTableSkeleton />
+          ) : assignments.length === 0 || !schedule ? (
+            <Box
+              sx={{
+                margin: 2,
+                marginLeft: 0,
+                overflowX: "auto",
+                backgroundColor: "none",
+                width: "100%",
+              }}
+            >
+              <Typography
+                variant="body1"
+                color="textSecondary"
+                sx={{ fontStyle: "italic" }}
               >
-                <Typography
-                  variant="body1"
-                  color="textSecondary"
-                  sx={{ fontStyle: "italic" }}
-                >
-                  {t("no_schedule_text")}
-                </Typography>
-              </Box>
-            ) : (
-              <ScheduleDisplay
-                schedule={schedule as ScheduleT}
-                startDate={currentPeriodStart}
-                endDate={currentPeriodEnd}
-                assignments={assignments}
-                breaches={breaches}
-                workers={workers}
-                shifts={shifts}
-                requests={requests}
-                selectedDisplay={selectedDisplay}
-                showBreaches={showBreaches}
-                CBsDisplayed={CBsDisplayed}
-                handleCellSelection={handleCellSelection}
-              />
-            )}
-          </div>
+                {t("no_schedule_text")}
+              </Typography>
+            </Box>
+          ) : (
+            <ScheduleDisplay
+              schedule={schedule as ScheduleT}
+              startDate={currentPeriodStart}
+              endDate={currentPeriodEnd}
+              assignments={assignments}
+              breaches={breaches}
+              workers={workers}
+              shifts={shifts}
+              requests={requests}
+              selectedDisplay={selectedDisplay}
+              showBreaches={showBreaches}
+              CBsDisplayed={CBsDisplayed}
+              handleCellSelection={handleCellSelection}
+            />
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
