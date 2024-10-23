@@ -16,17 +16,18 @@ export type AssignmentT = {
 };
 
 // Daily Shift Demand
-export enum ShiftRestType {
+export enum DSDSourceType {
   SHIFT_DEMAND = 0,
-  SCHEDULE = 1,
+  SHIFT_DEMAND_MODIFY = 1,
+  SCHEDULE = 2,
 }
 
 export type DailyShiftDemandT = {
   id: string;
   teamId: string;
   scheduleId: string;
-  shiftDemandId: string;
-  sourceType: ShiftRestType;
+  shiftDemandId: string | null;
+  sourceType: DSDSourceType;
   date: dayjs.Dayjs;
   shiftId: string;
   count: number;

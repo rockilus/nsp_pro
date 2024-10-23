@@ -13,7 +13,14 @@ const apiUrlDailyShiftDemand = API_URL + "/daily-shift-demands";
 export const toDailyShiftDemandT = (data: any): DailyShiftDemandT => {
   return {
     ...data,
-    date: dayjs.utc(data.date),
+    date: dayjs.unix(data.date).utc(),
+  };
+};
+
+export const fromDailyShiftDemandT = (data: DailyShiftDemandT): any => {
+  return {
+    ...data,
+    date: data.date.unix(),
   };
 };
 
@@ -27,7 +34,7 @@ export async function addDailyShiftDemand(dailyShiftDemand: DailyShiftDemandT) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ dailyShiftDemand }),
+    body: JSON.stringify(fromDailyShiftDemandT(dailyShiftDemand)),
   };
   try {
     const response = await fetch(
@@ -73,19 +80,18 @@ export async function getDailyShiftDemands(teamId: string) {
 }
 
 export async function updateDailyShiftDemand(
-  dailyShiftDemand: DailyShiftDemandT,
-  teamId: string
+  dailyShiftDemand: DailyShiftDemandT
 ) {
   const options: RequestInit = {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(dailyShiftDemand),
+    body: JSON.stringify(fromDailyShiftDemandT(dailyShiftDemand)),
   };
   try {
     const response = await fetch(
-      `${apiUrlDailyShiftDemand}/${dailyShiftDemand.id}/teams/${teamId}`,
+      `${apiUrlDailyShiftDemand}/${dailyShiftDemand.id}/teams/${dailyShiftDemand.teamId}`,
       options
     );
     const responseData = await response.json();
@@ -99,6 +105,32 @@ export async function updateDailyShiftDemand(
     console.error("Failed to update daily shift demand:", error);
     throw new Error(
       "Failed to update daily shift demand, please try again later"
+    );
+  }
+}
+
+export async function deleteDailyShiftDemand(dsdId: string, teamId: string) {
+  const options: RequestInit = {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const response = await fetch(
+      `${apiUrlDailyShiftDemand}/${dsdId}/teams/${teamId}`,
+      options
+    );
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        "Failed to delete daily shift demand: " + responseData.detail
+      );
+    }
+  } catch (error) {
+    console.error("Failed to delete daily shift demand:", error);
+    throw new Error(
+      "Failed to delete daily shift demand, please try again later"
     );
   }
 }

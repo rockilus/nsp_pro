@@ -201,7 +201,8 @@ def core_to_doc_daily_shift_demand(
             id=dataclass_obj.schedule_id
         )
         if (
-            dataclass_obj.source_type == DSDSourceType.SHIFT_DEMAND
+            dataclass_obj.source_type
+            in [DSDSourceType.SHIFT_DEMAND, DSDSourceType.SHIFT_DEMAND_MODIFY]
             and dataclass_obj.shift_demand_id
         ):
             shift_demand = ShiftDemandDocument.objects.get(  # type: ignore
@@ -296,13 +297,14 @@ def doc_to_core_daily_shift_demand(
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["team_id"] = doc_dict["team"]
     doc_dict["schedule_id"] = doc_dict["schedule"]
-    doc_dict["shift_demand_id"] = doc_dict["shift_demand"]
+    doc_dict["shift_demand_id"] = doc_dict.get("shift_demand", None)
     doc_dict["source_type"] = DSDSourceType(doc_dict["source_type"])
     doc_dict["date"] = datetime.fromtimestamp(doc_dict["date"], timezone.utc).date()
     doc_dict["shift_id"] = doc_dict["shift"]
     doc_dict.pop("_id")
     doc_dict.pop("team")
     doc_dict.pop("schedule")
-    doc_dict.pop("shift_demand")
+    if "shift_demand" in doc_dict:
+        doc_dict.pop("shift_demand")
     doc_dict.pop("shift")
     return DailyShiftDemand(**doc_dict)

@@ -192,7 +192,7 @@ class DailyShiftDemandMessage(BaseModel):
     id: str
     teamId: str
     scheduleId: str
-    shiftDemandId: str
+    shiftDemandId: str | None
     sourceType: int
     date: float
     shiftId: str

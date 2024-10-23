@@ -17,7 +17,8 @@ class ShiftDemand:
 
 class DSDSourceType(Enum):
     SHIFT_DEMAND = 0
-    SCHEDULE = 1
+    SHIFT_DEMAND_MODIFY = 1
+    SCHEDULE = 2
 
 
 @dataclass

@@ -32,6 +32,11 @@ import {
   updateAssignment,
 } from "../../app/lib/assignment";
 import { getStats } from "../../app/lib/stats";
+import {
+  addDailyShiftDemand,
+  updateDailyShiftDemand,
+  deleteDailyShiftDemand,
+} from "../../app/lib/daily-shift-demand";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -160,6 +165,38 @@ export default function ScheduleTab({
     setAssignments((prev) =>
       prev.map((a) => newAssignments.find((na) => na.id === a.id) || a)
     );
+  };
+
+  //////////////////////////
+  // Daily Shift Demand Actions
+  //////////////////////////
+
+  const handleCreateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    const newDailyShiftDemand = await addDailyShiftDemand(dailyShiftDemand);
+    setDailyShiftDemands([...dailyShiftDemands, newDailyShiftDemand]);
+  };
+
+  const handleUpdateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    const newDailyShiftDemand = await updateDailyShiftDemand(dailyShiftDemand);
+    setDailyShiftDemands(
+      dailyShiftDemands.map((dsd) =>
+        dsd.id === newDailyShiftDemand.id ? newDailyShiftDemand : dsd
+      )
+    );
+  };
+
+  const handleDeleteDSD = async (dsdId: string) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    await deleteDailyShiftDemand(dsdId, selectedTeamId);
+    setDailyShiftDemands(dailyShiftDemands.filter((dsd) => dsd.id !== dsdId));
   };
 
   //////////////////////////
@@ -443,10 +480,12 @@ export default function ScheduleTab({
             </Box>
           ) : (
             <ScheduleDisplay
+              teamId={selectedTeamId as string}
               schedule={schedule as ScheduleT}
               startDate={currentPeriodStart}
               endDate={currentPeriodEnd}
               assignments={assignments}
+              dailyShiftDemands={dailyShiftDemands}
               breaches={breaches}
               workers={workers}
               shifts={shifts}
@@ -455,6 +494,9 @@ export default function ScheduleTab({
               showBreaches={showBreaches}
               CBsDisplayed={CBsDisplayed}
               handleCellSelection={handleCellSelection}
+              handleCreateDSD={handleCreateDSD}
+              handleUpdateDSD={handleUpdateDSD}
+              handleDeleteDSD={handleDeleteDSD}
             />
           )}
         </div>

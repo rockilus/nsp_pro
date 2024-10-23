@@ -10,7 +10,7 @@ class DailyShiftDemand(Document):
     id = StringField(primary_key=True, required=True)
     team = ReferenceField("Team", required=True)
     schedule = ReferenceField("Schedule", required=True)
-    shift_demand = ReferenceField("ShiftDemand", required=True)
+    shift_demand = ReferenceField("ShiftDemand")
     source_type = IntField(choices=[s.value for s in DSDSourceType], required=True)
     date = FloatField(required=True)
     shift = ReferenceField("Shift", required=True)
