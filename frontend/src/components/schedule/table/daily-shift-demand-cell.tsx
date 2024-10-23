@@ -66,9 +66,6 @@ export default function DailyShiftDemandCell({
   };
 
   const handleDecreaseDSD = (shift: ShiftT) => {
-    const test = dailyShiftDemands.filter((dsd) => dsd.shiftId === shift.id);
-    console.log(test);
-
     const dsdSchedule = dailyShiftDemands.find(
       (dsd) =>
         dsd.shiftId === shift.id && dsd.sourceType === DSDSourceType.SCHEDULE
@@ -103,9 +100,6 @@ export default function DailyShiftDemandCell({
   };
 
   const handleIncreaseDSD = (shift: ShiftT) => {
-    const test = dailyShiftDemands.filter((dsd) => dsd.shiftId === shift.id);
-    console.log(test);
-
     const dsdShiftDemand = dailyShiftDemands.find(
       (dsd) =>
         dsd.shiftId === shift.id &&
@@ -167,7 +161,9 @@ export default function DailyShiftDemandCell({
 
   const DSDPopoverButton = () => {
     return (
-      <span className="dsd-stats-total">
+      <span
+        className={`dsd-stats-total ${actualTotal !== targetTotal && "breach"}`}
+      >
         {`${actualTotal} / ${targetTotal}`}
       </span>
     );
@@ -188,11 +184,21 @@ export default function DailyShiftDemandCell({
 
           return (
             <div key={shift.id} className="container-dsd-item">
-              <div className="shift-name">{shift.name}</div>
-              <div className="container-dsd-stats">
-                <span className="dsd-stats dsd-stats-actual">{actualNum}</span>
-                <span className="dsd-stats dsd-stats-slash">/</span>
-                <span className="dsd-stats dsd-stats-target">{targetNum}</span>
+              <div
+                className={`container-dsd-item-text ${
+                  actualNum !== targetNum && "breach"
+                }`}
+              >
+                <div className="shift-name">{shift.name}</div>
+                <div className="container-dsd-stats">
+                  <span className="dsd-stats dsd-stats-actual">
+                    {actualNum}
+                  </span>
+                  <span className="dsd-stats dsd-stats-slash">/</span>
+                  <span className="dsd-stats dsd-stats-target">
+                    {targetNum}
+                  </span>
+                </div>
               </div>
               <div className="container-dsd-adjust-buttons">
                 <AdjustStaffingButtons shift={shift} />
