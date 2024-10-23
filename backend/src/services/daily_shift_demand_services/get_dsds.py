@@ -21,13 +21,22 @@ def get_daily_shift_demands(
     shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
         coverage_selectors
     )
+    dsds_sd_modify = (
+        daily_shift_demand_db.get_daily_shift_demands_modified_by_schedule_id(
+            schedule.id
+        )
+    )
 
     # Update daily shift demands from shift demands for wip schedule
     daily_shift_demand_db.delete_dsds_by_schedule_id_and_source_shift_demand(
         schedule.id
     )
     new_dsds = build_daily_shift_demands(
-        schedule, coverage_selectors, shift_demands, shifts_work_not_deleted
+        schedule,
+        coverage_selectors,
+        shift_demands,
+        shifts_work_not_deleted,
+        dsds_sd_modify,
     )
     daily_shift_demand_db.create_daily_shift_demands(new_dsds)
 

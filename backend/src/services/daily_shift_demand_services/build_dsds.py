@@ -17,6 +17,7 @@ def build_daily_shift_demands(
     coverage_selectors: List[CoverageSelector],
     shift_demands: List[ShiftDemand],
     shifts_work_not_deleted: List[Shift],
+    dsds_sd_modify: List[DailyShiftDemand],
 ) -> List[DailyShiftDemand]:
     dates = [
         schedule.start_date + timedelta(days=i)
@@ -64,6 +65,12 @@ def build_daily_shift_demands(
                         count=1,
                     )
                     for sd in sds
+                    if not any(
+                        dsd.shift_demand_id == sd.id
+                        and dsd.date == cur_date
+                        and dsd.shift_id == s.id
+                        for dsd in dsds_sd_modify
+                    )
                 ]
             )
     return out

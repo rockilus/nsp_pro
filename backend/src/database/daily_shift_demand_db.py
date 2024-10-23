@@ -88,6 +88,20 @@ class DailyShiftDemandDB:
             handle_get_document_error(e)
         return [doc_to_core_daily_shift_demand(dsd) for dsd in list(dsd_docs)]
 
+    def get_daily_shift_demands_modified_by_schedule_id(
+        self, schedule_id: str
+    ) -> List[DailyShiftDemand]:
+        try:
+            # pylint: disable=no-member
+            dsd_docs = DailyShiftDemandDocument.objects.filter(  # type: ignore
+                schedule=schedule_id,
+                source_type=DSDSourceType.SHIFT_DEMAND_MODIFY.value,
+            )
+        except Exception as e:
+            log_info("Failed to get daily shift demands by schedule from database")
+            handle_get_document_error(e)
+        return [doc_to_core_daily_shift_demand(dsd) for dsd in list(dsd_docs)]
+
     def get_daily_shift_demands_by_shift_demand_id(
         self, shift_demand_id: List[str]
     ) -> List[DailyShiftDemand]:

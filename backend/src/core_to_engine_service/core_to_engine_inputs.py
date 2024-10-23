@@ -4,13 +4,12 @@ from core import (
     Assignment,
     Attribute,
     ConstraintBuildAugmented,
-    CoverageSelector,
+    DailyShiftDemand,
     Dimension,
     DimEntry,
     Request,
     Schedule,
     Shift,
-    ShiftDemand,
     ShiftType,
     Worker,
 )
@@ -36,7 +35,6 @@ from core_to_engine_service.build_periods import (
 )
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
 from engine import Inputs as InputsEngine
-from services.daily_shift_demand_services.build_dsds import build_daily_shift_demands
 
 
 # pylint: disable=too-many-arguments, too-many-locals, R0801
@@ -49,8 +47,7 @@ def core_to_engine_inputs(
     attributes: List[Attribute],
     fixed_assignments: List[Assignment],
     cbs_augmented: List[ConstraintBuildAugmented],
-    coverage_selectors: List[CoverageSelector],
-    shift_demands: List[ShiftDemand],
+    daily_shift_demands: List[DailyShiftDemand],
     requests: List[Request],
     wip_assignments: List[Assignment],
 ) -> InputsEngine:
@@ -91,11 +88,6 @@ def core_to_engine_inputs(
         dates_campaign,
     )
 
-    # ShiftDemands
-    shift_demand_dates = build_daily_shift_demands(
-        schedule, coverage_selectors, shift_demands, shifts
-    )
-
     inputs = InputsEngine(
         variables=build_engine_variables(
             workers,
@@ -126,7 +118,7 @@ def core_to_engine_inputs(
             dates_campaign,
             worker_ids_to_worker_dates,
             shifts_not_deleted,
-            shift_demand_dates,
+            daily_shift_demands,
         ),
         requests=build_engine_requests(
             worker_not_deleted_ids,
