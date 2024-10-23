@@ -6,9 +6,13 @@ import { toAssignmentT, getAssignmentsByDates } from "./assignment";
 import { toBreachT, getBreaches } from "./breach";
 import { toRequestT, getRequests } from "./request";
 import { getAllWorkers } from "./worker";
-import { getAllShifts } from "./shift";
+import { getAllShifts, toShiftT } from "./shift";
 import { getStats } from "./stats";
-import { toShiftT } from "./shift";
+import {
+  getDailyShiftDemands,
+  toDailyShiftDemandT,
+} from "./daily-shift-demand";
+
 // Types
 import { ScheduleT, AssignmentT, BreachT } from "../../types/schedule";
 import { RequestT } from "../../types/request";
@@ -239,11 +243,13 @@ export async function getScheduleAssignmentsData(teamId: string) {
       getAssignmentsByDates(teamId),
       getAllShifts(teamId),
       getAllWorkers(teamId),
+      getDailyShiftDemands(teamId),
     ]);
     return {
       assignments: campaignTabData[0],
       shifts: campaignTabData[1],
       workers: campaignTabData[2],
+      dailyShiftDemands: campaignTabData[3],
     };
   } catch (error) {
     console.error("Failed to fetch schedule assignments data:", error);

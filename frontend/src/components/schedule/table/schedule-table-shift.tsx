@@ -14,6 +14,7 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 // Components
 import ScheduleTableCellContent from "./schedule-table-cell-content";
+import DailyShiftDemandCell from "./daily-shift-demand-cell";
 // Utils
 import { getCellBackgroundColor } from "../../data-display/schedule-utils";
 // Types
@@ -24,6 +25,7 @@ import {
   ScheduleT,
   BreachT,
   SelectedCellT,
+  DailyShiftDemandT,
 } from "../../../types/schedule";
 import { RequestT } from "../../../types/request";
 
@@ -31,27 +33,37 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 export default function ScheduleTableShift({
+  teamId,
   shifts,
   workers,
   requests,
   assignments,
+  dailyShiftDemands,
   schedule,
   dates,
   breaches,
   showBreaches,
   selectedDisplay,
   handleCellSelection,
+  handleCreateDSD,
+  handleUpdateDSD,
+  handleDeleteDSD,
 }: {
+  teamId: string;
   shifts: ShiftT[];
   workers: WorkerT[];
   requests: RequestT[];
   assignments: AssignmentT[];
+  dailyShiftDemands: DailyShiftDemandT[];
   schedule: ScheduleT;
   dates: dayjs.Dayjs[];
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
   handleCellSelection: (selectedCell: SelectedCellT) => void;
+  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
+  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  handleDeleteDSD: (dsdId: string, teamId: string) => void;
 }) {
   const shiftIdsInAssignments = new Set(assignments.map((a) => a.shiftId));
 
@@ -108,6 +120,59 @@ export default function ScheduleTableShift({
                 </Box>
               </TableCell>
             ))}
+          </TableRow>
+          <TableRow>
+            <TableCell
+              sx={{
+                position: "sticky",
+                left: 0,
+                backgroundColor: "#FFFFFF",
+                padding: 0,
+              }}
+            >
+              <Box
+                sx={{
+                  width: "100px",
+                  padding: "10px",
+                }}
+              ></Box>
+            </TableCell>
+            <TableCell
+              sx={{
+                position: "sticky",
+                left: "100px",
+                backgroundColor: "#FFFFFF",
+              }}
+            ></TableCell>
+            {dates.map((date, dateIndex) => {
+              const dsdDate: DailyShiftDemandT[] = dailyShiftDemands.filter(
+                (dsd) => dsd.date.isSame(date, "day")
+              );
+              const aDate: AssignmentT[] = assignments.filter((a) =>
+                a.date.isSame(date, "day")
+              );
+              return (
+                <TableCell
+                  key={dateIndex}
+                  sx={{
+                    padding: 0,
+                    backgroundColor: getCellBackgroundColor(date, schedule),
+                  }}
+                >
+                  <DailyShiftDemandCell
+                    teamId={teamId}
+                    schedule={schedule}
+                    dateCell={date}
+                    assignments={aDate}
+                    dailyShiftDemands={dsdDate}
+                    shifts={shifts}
+                    handleCreateDSD={handleCreateDSD}
+                    handleUpdateDSD={handleUpdateDSD}
+                    handleDeleteDSD={handleDeleteDSD}
+                  />
+                </TableCell>
+              );
+            })}
           </TableRow>
         </TableHead>
         <TableBody>

@@ -7,6 +7,7 @@ from database import (
     ConstraintBuildDB,
     CoverageDB,
     CoverageSelectorDB,
+    DailyShiftDemandDB,
     DimensionDB,
     DimEntryDB,
     ObjectiveBreachDB,
@@ -52,6 +53,7 @@ config_db = ConfigDB(db)
 constraint_build_db = ConstraintBuildDB(db)
 coverage_db = CoverageDB(db)
 coverage_selector_db = CoverageSelectorDB(db)
+daily_shift_demand_db = DailyShiftDemandDB(db)
 dimension_db = DimensionDB(db)
 dim_entry_db = DimEntryDB(db)
 objective_breach_db = ObjectiveBreachDB(db)

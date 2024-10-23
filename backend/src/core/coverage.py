@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+from enum import Enum
 
 
 @dataclass
@@ -14,11 +15,22 @@ class ShiftDemand:
             raise ValueError("dayIndex must be between 0 and 6")
 
 
+class DSDSourceType(Enum):
+    SHIFT_DEMAND = 0
+    SHIFT_DEMAND_MODIFY = 1
+    SCHEDULE = 2
+
+
 @dataclass
-class ShiftDemandDate:
+class DailyShiftDemand:
+    id: str
+    team_id: str
+    schedule_id: str
+    shift_demand_id: str | None
+    source_type: DSDSourceType
     date: date
     shift_id: str
-    nb_times_shift: int
+    count: int
 
 
 @dataclass

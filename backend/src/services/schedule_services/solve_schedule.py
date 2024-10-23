@@ -19,10 +19,9 @@ from engine import Constraints as ConstraintsEngine
 from engine import Engine
 from scripts.setup_database import (
     assignment_db,
-    coverage_selector_db,
+    daily_shift_demand_db,
     objective_breach_db,
     schedule_db,
-    shift_demand_db,
 )
 from services.constraint_build_services.get_constraint_build import (
     get_active_constraint_builds_by_ids,
@@ -36,7 +35,6 @@ from services.schedule_services.assignment_services import (
     save_assignments,
 )
 from services.schedule_services.engine_to_core import engine_to_core_outputs
-from services.schedule_services.inputs_processing import build_no_coverage_date
 from services.schedule_services.outputs_processing import update_request_status
 from services.shift_services.create_shift import create_duty_recuperation_shifts
 
@@ -74,9 +72,8 @@ def solve_schedule(
     for rec_shift in recuperation_shifts_new:
         shift_id_to_shift[rec_shift.id] = rec_shift
     shifts = list(shift_id_to_shift.values())
-    coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule.id)
-    shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
-        coverage_selectors
+    daily_shift_demands = daily_shift_demand_db.get_daily_shift_demands_by_schedule_id(
+        schedule.id
     )
     requests = get_requests_by_dates(
         schedule.start_date, schedule.end_date, workers, shifts
@@ -94,8 +91,7 @@ def solve_schedule(
         attributes,
         fixed_assignments,
         cbs_augmented,
-        coverage_selectors,
-        shift_demands,
+        daily_shift_demands,
         requests,
         wip_assignments,
     )
@@ -108,11 +104,6 @@ def solve_schedule(
     constraints = _engine_to_core_constraints(inputs.constraints)
     schedule, assignments, objective_breaches = engine_to_core_outputs(
         schedule, outputs, constraints
-    )
-    schedule.missing_coverage_dates = build_no_coverage_date(
-        schedule.start_date,
-        schedule.end_date,
-        coverage_selectors,
     )
     end_time_process_outputs = time.time()
     start_time_update_db = time.time()

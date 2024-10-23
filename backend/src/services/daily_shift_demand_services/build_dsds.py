@@ -3,30 +3,28 @@ from typing import Dict, List, Tuple
 
 from core import (
     CoverageSelector,
+    DailyShiftDemand,
+    DSDSourceType,
     Schedule,
     Shift,
     ShiftDemand,
-    ShiftDemandDate,
-    ShiftType,
 )
 
 
 # pylint: disable=too-many-locals
-def build_shift_demand_dates(
+def build_daily_shift_demands(
     schedule: Schedule,
     coverage_selectors: List[CoverageSelector],
     shift_demands: List[ShiftDemand],
-    shifts: List[Shift],
-) -> List[ShiftDemandDate]:
-    work_shifts = [
-        s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
-    ]
+    shifts_work_not_deleted: List[Shift],
+    dsds_sd_modify: List[DailyShiftDemand],
+) -> List[DailyShiftDemand]:
     dates = [
         schedule.start_date + timedelta(days=i)
         for i in range((schedule.end_date - schedule.start_date).days + 1)
     ]
     sd_dict: Dict[Tuple[date, str], List[ShiftDemand]] = {
-        (d, s.id): [] for d in dates for s in work_shifts
+        (d, s.id): [] for d in dates for s in shifts_work_not_deleted
     }
 
     cov_to_sds: Dict[str, List[ShiftDemand]] = {}
@@ -51,14 +49,28 @@ def build_shift_demand_dates(
                 sd_dict[(current_date, sd.shift_id)].append(sd)
 
     out = []
-    for s in work_shifts:
+    for s in shifts_work_not_deleted:
         for cur_date in dates:
             sds = sd_dict[(cur_date, s.id)]
-            out.append(
-                ShiftDemandDate(
-                    date=cur_date,
-                    shift_id=s.id,
-                    nb_times_shift=len(sds),
-                )
+            out.extend(
+                [
+                    DailyShiftDemand(
+                        id="",
+                        team_id=schedule.team_id,
+                        schedule_id=schedule.id,
+                        shift_demand_id=sd.id,
+                        source_type=DSDSourceType.SHIFT_DEMAND,
+                        date=cur_date,
+                        shift_id=s.id,
+                        count=1,
+                    )
+                    for sd in sds
+                    if not any(
+                        dsd.shift_demand_id == sd.id
+                        and dsd.date == cur_date
+                        and dsd.shift_id == s.id
+                        for dsd in dsds_sd_modify
+                    )
+                ]
             )
     return out

@@ -15,6 +15,7 @@ from routes import (
     router_constraint_template,
     router_coverage,
     router_coverage_selector,
+    router_daily_shift_demand,
     router_dim_entry,
     router_dimension,
     router_health,
@@ -54,6 +55,7 @@ app.include_router(router_constraint)
 app.include_router(router_constraint_template)
 app.include_router(router_coverage)
 app.include_router(router_coverage_selector)
+app.include_router(router_daily_shift_demand)
 app.include_router(router_dim_entry)
 app.include_router(router_dimension)
 app.include_router(router_health)

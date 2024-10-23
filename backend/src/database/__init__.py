@@ -4,6 +4,7 @@ from database.config_db import ConfigDB
 from database.constraint_build_db import ConstraintBuildDB
 from database.coverage_db import CoverageDB
 from database.coverage_selector_db import CoverageSelectorDB
+from database.daily_shift_demand_db import DailyShiftDemandDB
 from database.db import DB
 from database.dim_entry_db import DimEntryDB
 from database.dimension_db import DimensionDB
@@ -27,6 +28,7 @@ __all__ = [
     "ConstraintBuildDB",
     "CoverageDB",
     "CoverageSelectorDB",
+    "DailyShiftDemandDB",
     "DB",
     "DimEntryDB",
     "DimensionDB",

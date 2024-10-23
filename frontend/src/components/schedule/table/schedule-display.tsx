@@ -10,6 +10,7 @@ import {
   ScheduleT,
   BreachT,
   SelectedCellT,
+  DailyShiftDemandT,
 } from "../../../types/schedule";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -18,10 +19,12 @@ import { RequestT } from "../../../types/request";
 dayjs.extend(utc);
 
 export default function ScheduleDisplay({
+  teamId,
   schedule,
   startDate,
   endDate,
   assignments,
+  dailyShiftDemands,
   breaches,
   workers,
   shifts,
@@ -30,11 +33,16 @@ export default function ScheduleDisplay({
   showBreaches,
   CBsDisplayed,
   handleCellSelection,
+  handleCreateDSD,
+  handleUpdateDSD,
+  handleDeleteDSD,
 }: {
+  teamId: string;
   schedule: ScheduleT;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
   assignments: AssignmentT[];
+  dailyShiftDemands: DailyShiftDemandT[];
   breaches: BreachT[];
   workers: WorkerT[];
   shifts: ShiftT[];
@@ -43,6 +51,9 @@ export default function ScheduleDisplay({
   showBreaches: boolean;
   CBsDisplayed: string[];
   handleCellSelection: (selectedCell: SelectedCellT) => void;
+  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
+  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  handleDeleteDSD: (dsdId: string, teamId: string) => void;
 }) {
   const buildDates = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
     const dates = [];
@@ -58,16 +69,21 @@ export default function ScheduleDisplay({
   const scheduleDisplays: { [key: string]: JSX.Element } = {
     shift: (
       <ScheduleTableShift
+        teamId={teamId}
         shifts={shifts}
         workers={workers}
         requests={requests}
         assignments={assignments}
+        dailyShiftDemands={dailyShiftDemands}
         schedule={schedule}
         dates={buildDates(startDate, endDate)}
         breaches={breaches}
         showBreaches={showBreaches}
         selectedDisplay={selectedDisplay}
         handleCellSelection={handleCellSelection}
+        handleCreateDSD={handleCreateDSD}
+        handleUpdateDSD={handleUpdateDSD}
+        handleDeleteDSD={handleDeleteDSD}
       />
     ),
     worker: (

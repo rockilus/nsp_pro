@@ -1,6 +1,7 @@
 from services import (
     attribute_services,
     constraint_build_services,
+    daily_shift_demand_services,
     dimension_services,
     request_services,
     schedule_services,
@@ -13,6 +14,7 @@ from services import (
 __all__ = [
     "attribute_services",
     "constraint_build_services",
+    "daily_shift_demand_services",
     "dimension_services",
     "request_services",
     "schedule_services",

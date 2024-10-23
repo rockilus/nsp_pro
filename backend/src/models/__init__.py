@@ -5,6 +5,7 @@ from models.constraint import Constraint, VarDay, VarShift, VarWorker
 from models.constraint_build import Block, ConstraintBuild, ShiftWorkerOption
 from models.coverage import Coverage
 from models.coverage_selector import CoverageSelector
+from models.daily_shift_demand import DailyShiftDemand
 from models.dimension import Dimension, DimEntry
 from models.objective_breach import ObjectiveBreach
 from models.request import Request
@@ -29,6 +30,7 @@ __all__ = [
     "ShiftWorkerOption",
     "Coverage",
     "CoverageSelector",
+    "DailyShiftDemand",
     "Dimension",
     "DimEntry",
     "ObjectiveBreach",
