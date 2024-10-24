@@ -1,5 +1,6 @@
 from models.assignment import Assignment
 from models.attribute import Attribute
+from models.breach import Breach, Variable
 from models.config import Config
 from models.constraint import Constraint, VarDay, VarShift, VarWorker
 from models.constraint_build import Block, ConstraintBuild, ShiftWorkerOption
@@ -7,7 +8,6 @@ from models.coverage import Coverage
 from models.coverage_selector import CoverageSelector
 from models.daily_shift_demand import DailyShiftDemand
 from models.dimension import Dimension, DimEntry
-from models.objective_breach import ObjectiveBreach
 from models.request import Request
 from models.schedule import QuickStaffing, Schedule
 from models.shift import Shift, Staffing
@@ -20,6 +20,8 @@ from models.worker import Worker
 __all__ = [
     "Assignment",
     "Attribute",
+    "Breach",
+    "Variable",
     "Config",
     "Constraint",
     "VarDay",
@@ -33,7 +35,6 @@ __all__ = [
     "DailyShiftDemand",
     "Dimension",
     "DimEntry",
-    "ObjectiveBreach",
     "Request",
     "QuickStaffing",
     "Schedule",

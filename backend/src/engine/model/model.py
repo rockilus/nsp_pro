@@ -5,15 +5,17 @@ from typing import Dict, List, Tuple
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint_factory import AddConstraintFactory
-from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import (
+from engine.model.utils.model_utils import build_var_name_work_time, get_nested_value
+from engine.types import (
+    BenchmarkTimes,
     Constraints,
     Inputs,
     NbDuties,
+    Objective,
+    ObjectiveCategory,
     Variables,
     WorkTime,
 )
-from engine.types.model_types import BenchmarkTimes, Objective
 from utils.constants import Constants
 
 
@@ -276,7 +278,10 @@ class Model:
             if not hard_to_soft:
                 self.model.Add(duty_var == recup_var)
             else:
-                var_name = build_var_name(None, [duty_var, recup_var], "recuperation")
+                # var_name = build_var_name_constraint(
+                #     None, [duty_var, recup_var], "recuperation"
+                # )
+                var_name = ""
                 delta = self.model.NewIntVar(-1, 1, "")
                 self.model.Add(delta == duty_var - recup_var)
                 excess = self.model.NewIntVar(0, 1, var_name)
@@ -302,7 +307,9 @@ class Model:
                         <= p_target
                     )
                 else:
-                    var_name = build_var_name(None, constraint_vars, "work_time")
+                    var_name = build_var_name_work_time(
+                        constraint_vars, ObjectiveCategory.WORK_TIME
+                    )
                     delta = self.model.NewIntVar(
                         -p_target,
                         len(constraint_vars)
@@ -338,7 +345,9 @@ class Model:
                 if not hard_to_soft:
                     self.model.Add(sum(v for v in constraint_vars) <= p_target)
                 else:
-                    var_name = build_var_name(None, constraint_vars, "duties_per_month")
+                    var_name = build_var_name_work_time(
+                        constraint_vars, ObjectiveCategory.DUTIES_PER_MONTH
+                    )
                     delta = self.model.NewIntVar(
                         -p_target,
                         len(constraint_vars)
@@ -368,7 +377,10 @@ class Model:
             if not hard_to_soft:
                 self.model.Add(cstr_var == 0)
             else:
-                var_name = build_var_name(None, [cstr_var], "worker_shift_filter")
+                # var_name = build_var_name_constraint(
+                #     None, [cstr_var], "worker_shift_filter"
+                # )
+                var_name = ""
                 cstr_vars: List[cp_model.IntVar | cp_model._NotBooleanVariable] = [
                     cstr_var.Not()
                 ]

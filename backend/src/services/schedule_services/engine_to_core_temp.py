@@ -3,8 +3,8 @@ from typing import List, Tuple
 
 from core import (  # ConstraintOperator,; ConstraintType,; Variable,
     Assignment,
+    Breach,
     Constraints,
-    ObjectiveBreach,
     Schedule,
 )
 
@@ -17,12 +17,12 @@ from engine import Outputs
 
 def engine_to_core_outputs(
     schedule: Schedule, outputs: Outputs, constraints: Constraints
-) -> Tuple[Schedule, List[Assignment], List[ObjectiveBreach]]:
+) -> Tuple[Schedule, List[Assignment], List[Breach]]:
     # objective_breaches = _engine_to_core_objective_breaches(
     #     outputs.constraint_breaches, outputs.assignments, schedule, constraints
     # )
     print(constraints)
-    objective_breaches: List[ObjectiveBreach] = []
+    objective_breaches: List[Breach] = []
     if outputs.is_solution:
         if len(objective_breaches) == 0:
             schedule.solve_status = "Solved"

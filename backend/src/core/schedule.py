@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+from enum import Enum
 from typing import List
 
 
@@ -21,16 +22,24 @@ class Variable:
     shift_id: str
 
 
+class ObjectiveCategory(Enum):
+    CONSTRAINT = 0
+    REQUEST = 1
+    DAILY_SHIFT_DEMAND = 2
+    WORK_TIME = 3
+    DUTIES_PER_MONTH = 4
+
+
 # pylint: disable=R0801
 @dataclass
-class ObjectiveBreach:
+class Breach:
     id: str
-    objective_id: str
-    objective_category: str  # constraint, request, fixed assignment, coverage?
-    variables: List[Variable]
-    hard_to_soft: bool
-    description: str
     schedule_id: str
+    objective_id: str
+    objective_category: ObjectiveCategory
+    variables: List[Variable]
+    description: str
+    hard_to_soft: bool
 
 
 @dataclass

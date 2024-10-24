@@ -3,8 +3,8 @@ from typing import List
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import ConstraintOperator, ConstraintOrd
+from engine.model.utils.model_utils import build_var_name_constraint, get_nested_value
+from engine.types import ConstraintOperator, ConstraintOrd, ObjectiveCategory
 
 
 # pylint: disable=too-few-public-methods
@@ -45,7 +45,9 @@ class AddConstraintOrd(AddConstraint):
                     "hard" if constraint.hard else "soft",
                 ],
             )
-            var_name = build_var_name(constraint, cstr_vars, "constraint")
+            var_name = build_var_name_constraint(
+                constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
+            )
             if constraint.operator == ConstraintOperator.YES:
                 transition = [cstr_vars[0].Not(), cstr_vars[1]]
             elif constraint.operator == ConstraintOperator.NO:

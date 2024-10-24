@@ -5,7 +5,7 @@ from core import Assignment, Request, RequestAugmented, Shift, Worker
 from services.request_services import update_requests
 
 
-def update_request_status(
+def update_requests_and_build_request_breaches(
     assignments: List[Assignment],
     requests: List[Request],
     workers: List[Worker],

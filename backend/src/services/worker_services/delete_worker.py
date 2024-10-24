@@ -1,4 +1,4 @@
-from scripts.setup_database import objective_breach_db, schedule_db, worker_db
+from scripts.setup_database import breach_db, schedule_db, worker_db
 
 
 def delete_worker(worker_id: str) -> None:
@@ -10,14 +10,14 @@ def delete_worker(worker_id: str) -> None:
 
 
 def delete_worker_from_objective_breach(worker_id: str) -> None:
-    obs = objective_breach_db.get_objective_breaches_by_worker_id(worker_id)
+    obs = breach_db.get_breaches_by_worker_id(worker_id)
     for ob in obs:
         new_vars = [v for v in ob.variables if v.worker_id != worker_id]
         if not new_vars:
-            objective_breach_db.delete_objective_breach(ob.id)
+            breach_db.delete_breach(ob.id)
             continue
         ob.variables = new_vars
-        objective_breach_db.update_objective_breach(ob)
+        breach_db.update_breach(ob)
 
 
 def delete_worker_from_schedule_quick_staffing(worker_id: str) -> None:

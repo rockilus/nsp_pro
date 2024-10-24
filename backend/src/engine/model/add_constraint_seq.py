@@ -4,11 +4,11 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import (
-    build_var_name,
+    build_var_name_constraint,
     build_var_name_seq,
     get_nested_value,
 )
-from engine.types.input_output_types import ConstraintOperator, ConstraintSeq
+from engine.types import ConstraintOperator, ConstraintSeq, ObjectiveCategory
 
 
 # pylint: disable=too-few-public-methods
@@ -119,7 +119,9 @@ class AddConstraintSeq(AddConstraint):
         for i in range(len(cstr_vars) - constraint.target_value):
             span = [cstr_vars[i + j] for j in range(constraint.target_value + 1)]
             # pylint: disable=protected-access
-            var_name = build_var_name(constraint, span, "constraint")
+            var_name = build_var_name_constraint(
+                constraint, span, ObjectiveCategory.CONSTRAINT
+            )
             lit = self.model.NewBoolVar(var_name)
             self.model.Add(sum(span) <= constraint.target_value).OnlyEnforceIf(
                 lit.Not()

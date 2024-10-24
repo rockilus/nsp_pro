@@ -3,6 +3,7 @@ from database import (
     DB,
     AssignmentDB,
     AttributeDB,
+    BreachDB,
     ConfigDB,
     ConstraintBuildDB,
     CoverageDB,
@@ -10,7 +11,6 @@ from database import (
     DailyShiftDemandDB,
     DimensionDB,
     DimEntryDB,
-    ObjectiveBreachDB,
     RequestDB,
     ScheduleDB,
     ShiftDB,
@@ -49,6 +49,7 @@ except DBConnectionError as e:
 
 assignment_db = AssignmentDB(db)
 attribute_db = AttributeDB(db)
+breach_db = BreachDB(db)
 config_db = ConfigDB(db)
 constraint_build_db = ConstraintBuildDB(db)
 coverage_db = CoverageDB(db)
@@ -56,7 +57,6 @@ coverage_selector_db = CoverageSelectorDB(db)
 daily_shift_demand_db = DailyShiftDemandDB(db)
 dimension_db = DimensionDB(db)
 dim_entry_db = DimEntryDB(db)
-objective_breach_db = ObjectiveBreachDB(db)
 request_db = RequestDB(db)
 schedule_db = ScheduleDB(db)
 shift_db = ShiftDB(db)

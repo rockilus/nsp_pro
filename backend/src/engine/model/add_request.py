@@ -2,9 +2,8 @@ from typing import Dict, List, Tuple
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import Request
-from engine.types.model_types import Objective
+from engine.model.utils.model_utils import build_var_name_constraint, get_nested_value
+from engine.types import Objective, ObjectiveCategory, Request
 
 
 # pylint: disable=too-few-public-methods
@@ -32,10 +31,8 @@ class AddRequest:
                     self.model.Add(var == 1)
                     continue
                 cstr_vars: List[cp_model.IntVar] = [var]
-                var_name = build_var_name(
-                    r,
-                    cstr_vars,
-                    "request",
+                var_name = build_var_name_constraint(
+                    r, cstr_vars, ObjectiveCategory.REQUEST
                 )
                 # pylint: disable=R0801
                 lit = self.model.NewBoolVar(var_name)

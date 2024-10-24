@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import ObjectiveBreach, Variable
+from core import Breach, Variable
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -17,7 +17,7 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import ObjectiveBreachMessage, VariableMessage
-from scripts.setup_database import objective_breach_db, schedule_db
+from scripts.setup_database import breach_db, schedule_db
 
 router = APIRouter()
 
@@ -35,7 +35,7 @@ async def get_objective_breaches(
                 "You do not have permission to get objective breaches",
             )
         team_schedules = schedule_db.get_schedules(team_id)
-        objective_breaches = objective_breach_db.get_objective_breaches(team_schedules)
+        objective_breaches = breach_db.get_breaches(team_schedules)
         response = [core_to_msg_objective_breach(a) for a in objective_breaches]
     except Exception as e:
         log_info("Failed to get objective breaches")
@@ -57,9 +57,7 @@ async def update_objective_breach(
                 "You do not have permission to update objective breaches",
             )
         objective_breach_data = msg_to_core_objective_breach(objective_breach_api)
-        updated_objective_breach = objective_breach_db.update_objective_breach(
-            objective_breach_data
-        )
+        updated_objective_breach = breach_db.update_breach(objective_breach_data)
         response = core_to_msg_objective_breach(updated_objective_breach)
     except Exception as e:
         log_info("Failed to update objective breach")
@@ -80,7 +78,7 @@ async def delete_objective_breach(
             raise NotAuthorizedError(
                 "You do not have permission to delete objective breaches",
             )
-        objective_breach_db.delete_objective_breach(objective_breach_id)
+        breach_db.delete_breach(objective_breach_id)
     except Exception as e:
         log_info("Failed to delete objective breach")
         handle_routes_errors(e)
@@ -90,7 +88,7 @@ async def delete_objective_breach(
 # Mappers
 # core to message
 def core_to_msg_objective_breach(
-    objective_breach: ObjectiveBreach,
+    objective_breach: Breach,
 ) -> ObjectiveBreachMessage:
     try:
         data = asdict(objective_breach)
@@ -120,11 +118,11 @@ def msg_to_core_variable(msg: VariableMessage) -> Variable:
 
 def msg_to_core_objective_breach(
     msg: ObjectiveBreachMessage,
-) -> ObjectiveBreach:
+) -> Breach:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake["variables"] = [msg_to_core_variable(v) for v in msg.variables]
     try:
-        objective_breach = ObjectiveBreach(**data_snake)
+        objective_breach = Breach(**data_snake)
     except Exception as e:
         log_info("Failed to convert ObjectiveBreachMessage to ObjectiveBreach")
         handle_create_core_object_error(e)

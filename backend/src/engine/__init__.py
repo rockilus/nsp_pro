@@ -1,8 +1,8 @@
 from engine.engine import Engine
-from engine.types.input_output_types import (
+from engine.types import (
     Assignment,
+    Breach,
     Constraint,
-    ConstraintBreach,
     ConstraintFai,
     ConstraintFil,
     ConstraintOperator,
@@ -24,7 +24,7 @@ from engine.types.input_output_types import (
 __all__ = [
     "Assignment",
     "Constraint",
-    "ConstraintBreach",
+    "Breach",
     "ConstraintFai",
     "ConstraintFil",
     "ConstraintOperator",

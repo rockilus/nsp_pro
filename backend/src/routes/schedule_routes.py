@@ -5,14 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import (
-    Assignment,
-    ObjectiveBreach,
-    QuickStaffing,
-    RequestAugmented,
-    Schedule,
-    Shift,
-)
+from core import Assignment, Breach, QuickStaffing, RequestAugmented, Schedule, Shift
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -37,7 +30,7 @@ from routes.assignment_routes import core_to_msg_assignment
 from routes.objective_breach_routes import core_to_msg_objective_breach
 from routes.request_routes import core_to_msg_request_augmented
 from routes.shift_routes import core_to_msg_shift_and_attributes
-from scripts.setup_database import assignment_db, objective_breach_db, schedule_db
+from scripts.setup_database import assignment_db, breach_db, schedule_db
 from services.schedule_services import solve_schedule as solve_schedule_service
 from services.schedule_services import validate_schedule as validate_schedule_service
 from services.schedule_services.get_schedule_wip import get_schedule_wip
@@ -180,7 +173,7 @@ async def delete_schedule(
                 "You do not have permission to delete a schedule",
             )
         assignment_db.delete_assignments_by_schedule_id(schedule_id)
-        objective_breach_db.delete_objective_breaches_by_schedule_id(schedule_id)
+        breach_db.delete_breaches_by_schedule_id(schedule_id)
         schedule_db.delete_schedule(schedule_id)
     except Exception as e:
         log_info("Failed to delete schedule")
@@ -228,7 +221,7 @@ def core_to_msg_schedule(schedule: Schedule) -> ScheduleMessage:
 def core_to_msg_solution(
     schedule: Schedule,
     assignments: List[Assignment],
-    objective_breaches: List[ObjectiveBreach],
+    objective_breaches: List[Breach],
     requests: List[RequestAugmented],
     recuperation_shifts_new: List[Shift],
 ) -> SolutionMessage:

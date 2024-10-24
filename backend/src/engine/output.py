@@ -5,8 +5,7 @@ from typing import List
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.model import Model
-from engine.types.input_output_types import Assignment, ConstraintBreach, Outputs
-from engine.types.model_types import VarName
+from engine.types import Assignment, Breach, Outputs, VarName
 
 
 class Output:
@@ -43,7 +42,7 @@ class Output:
                 )
         return assignments
 
-    def build_constraint_breaches(self) -> List[ConstraintBreach]:
+    def build_constraint_breaches(self) -> List[Breach]:
         constraint_breaches = []
         # var_debug = {k: v for k, v in self.model.variables.items()}
         for i, var in enumerate(self.model.obj.bool_vars):
@@ -53,9 +52,9 @@ class Output:
                     (v[0], date.fromisoformat(v[1]), v[2])
                     for v in [v.split("_") for v in var_name.cstr_vars]
                 ]
-                constraint_breach = ConstraintBreach(
-                    constraint_id=var_name.constraint_id,
-                    category=var_name.category,
+                constraint_breach = Breach(
+                    objective_id=var_name.objective_id,
+                    objective_category=var_name.objective_category,
                     variables=variables,
                     hard_to_soft=var_name.hard_to_soft,
                     value_diff=self.model.solver.Value(var),
@@ -72,9 +71,9 @@ class Output:
                     (v[0], date.fromisoformat(v[1]), v[2])
                     for v in [v.split("_") for v in var_name.cstr_vars]
                 ]
-                constraint_breach = ConstraintBreach(
-                    constraint_id=var_name.constraint_id,
-                    category=var_name.category,
+                constraint_breach = Breach(
+                    objective_id=var_name.objective_id,
+                    objective_category=var_name.objective_category,
                     variables=variables,
                     hard_to_soft=var_name.hard_to_soft,
                     value_diff=self.model.solver.Value(var),
