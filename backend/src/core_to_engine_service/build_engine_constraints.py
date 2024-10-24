@@ -34,7 +34,7 @@ def build_engine_constraints(
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
     dim_to_attr_value_to_shift: Dict,
-) -> ConstraintsEngine:
+) -> Constraints:
     constraints = parse_constraint(
         cbs_augmented,
         schedule.id,
@@ -51,7 +51,7 @@ def build_engine_constraints(
     constraints.sum += _build_quick_staffing_constraints(
         schedule, workers, worker_ids_to_worker_dates, shifts
     )
-    return _core_to_engine_constraints(constraints)
+    return constraints
 
 
 def _build_quick_staffing_constraints(
@@ -90,7 +90,7 @@ def _build_quick_staffing_constraints(
     return out
 
 
-def _core_to_engine_constraints(constraints: Constraints) -> ConstraintsEngine:
+def core_to_engine_constraints(constraints: Constraints) -> ConstraintsEngine:
     return ConstraintsEngine(
         sum=[ConstraintSumEngine(**c_sum.__dict__) for c_sum in constraints.sum],
         seq=[ConstraintSeqEngine(**c_seq.__dict__) for c_seq in constraints.seq],

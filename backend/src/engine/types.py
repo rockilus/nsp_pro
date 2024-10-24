@@ -183,14 +183,18 @@ class ObjectiveCategory(Enum):
 
 
 # pylint: disable=R0801
+# @dataclass
+# class Breach:
+#     objective_id: str | None
+#     objective_category: ObjectiveCategory
+#     variables: List[Tuple[str, date, str]]
+#     value_diff: int
+#     hard_to_soft: bool | None
+#     penalty: int
 @dataclass
 class Breach:
-    objective_id: str | None
-    objective_category: ObjectiveCategory
-    variables: List[Tuple[str, date, str]]
+    var_name: str
     value_diff: int
-    hard_to_soft: bool | None
-    penalty: int
 
 
 @dataclass
@@ -198,7 +202,7 @@ class Outputs:
     is_solution: bool
     assignments: List[Assignment]
     objective_value: int
-    constraint_breaches: List[Breach]
+    breaches: List[Breach]
 
 
 ##############################

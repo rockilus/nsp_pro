@@ -1,11 +1,10 @@
-import json
 from datetime import date
 from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.model import Model
-from engine.types import Assignment, Breach, Outputs, VarName
+from engine.types import Assignment, Breach, Outputs
 
 
 class Output:
@@ -20,12 +19,12 @@ class Output:
         if is_solution:
             assignments = self.build_solution()
             objective_value = self.model.solver.ObjectiveValue()
-            constraint_breaches = self.build_constraint_breaches()
+            breaches = self.build_constraint_breaches()
             return Outputs(
                 is_solution,
                 assignments,
                 objective_value,  # type: ignore # [CHECK IF OK]
-                constraint_breaches,
+                breaches,
             )
         return Outputs(is_solution, [], 0, [])
 
@@ -43,41 +42,24 @@ class Output:
         return assignments
 
     def build_constraint_breaches(self) -> List[Breach]:
-        constraint_breaches = []
+        out = []
         # var_debug = {k: v for k, v in self.model.variables.items()}
-        for i, var in enumerate(self.model.obj.bool_vars):
+        for var in self.model.obj.bool_vars:
             if self.model.solver.BooleanValue(var):
-                var_name = VarName(**json.loads(var.Name()))
-                variables = [
-                    (v[0], date.fromisoformat(v[1]), v[2])
-                    for v in [v.split("_") for v in var_name.cstr_vars]
-                ]
-                constraint_breach = Breach(
-                    objective_id=var_name.objective_id,
-                    objective_category=var_name.objective_category,
-                    variables=variables,
-                    hard_to_soft=var_name.hard_to_soft,
-                    value_diff=self.model.solver.Value(var),
-                    penalty=self.model.obj.bool_coeffs[i],
+                out.append(
+                    Breach(
+                        var_name=var.Name(),
+                        value_diff=self.model.solver.Value(var),
+                    )
                 )
-                constraint_breaches.append(constraint_breach)
-
-        for i, var in enumerate(self.model.obj.int_vars):
+        for var in self.model.obj.int_vars:
             if self.model.solver.Value(var) > 0:
                 if var.Name() == "":
                     continue
-                var_name = VarName(**json.loads(var.Name()))
-                variables = [
-                    (v[0], date.fromisoformat(v[1]), v[2])
-                    for v in [v.split("_") for v in var_name.cstr_vars]
-                ]
-                constraint_breach = Breach(
-                    objective_id=var_name.objective_id,
-                    objective_category=var_name.objective_category,
-                    variables=variables,
-                    hard_to_soft=var_name.hard_to_soft,
-                    value_diff=self.model.solver.Value(var),
-                    penalty=self.model.obj.int_coeffs[i],
+                out.append(
+                    Breach(
+                        var_name=var.Name(),
+                        value_diff=self.model.solver.Value(var),
+                    )
                 )
-                constraint_breaches.append(constraint_breach)
-        return constraint_breaches
+        return out

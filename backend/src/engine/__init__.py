@@ -17,6 +17,7 @@ from engine.types import (
     Request,
     ShiftDemand,
     Variables,
+    VarName,
     WorkLoads,
     WorkTime,
 )
@@ -40,6 +41,7 @@ __all__ = [
     "ShiftDemand",
     "Outputs",
     "Variables",
+    "VarName",
     "WorkTime",
     "WorkLoads",
 ]

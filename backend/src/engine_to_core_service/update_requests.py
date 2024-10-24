@@ -1,17 +1,13 @@
 from datetime import timedelta
 from typing import List
 
-from core import Assignment, Request, RequestAugmented, Shift, Worker
-from services.request_services import update_requests
+from core import Assignment, Request
 
 
 def update_requests_and_build_request_breaches(
-    assignments: List[Assignment],
-    requests: List[Request],
-    workers: List[Worker],
-    shifts: List[Shift],
-) -> List[RequestAugmented]:
-    updated_requests = []
+    assignments: List[Assignment], requests: List[Request]
+) -> List[Request]:
+    out: List[Request] = []
     for r in requests:
         dates = [
             r.start_date + timedelta(days=i)
@@ -28,5 +24,5 @@ def update_requests_and_build_request_breaches(
             r.status = "rejected"
         else:
             r.status = "approved"
-        updated_requests.append(r)
-    return update_requests(updated_requests, workers, shifts)
+        out.append(r)
+    return out

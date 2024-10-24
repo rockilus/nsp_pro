@@ -1,9 +1,10 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from core import (
     Assignment,
     Attribute,
     ConstraintBuildAugmented,
+    Constraints,
     DailyShiftDemand,
     Dimension,
     DimEntry,
@@ -22,7 +23,10 @@ from core_to_engine_service.build_dim_to_attr_value_to_owner import (
     build_dim_to_attr_value_to_owner,
 )
 from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
-from core_to_engine_service.build_engine_constraints import build_engine_constraints
+from core_to_engine_service.build_engine_constraints import (
+    build_engine_constraints,
+    core_to_engine_constraints,
+)
 from core_to_engine_service.build_engine_fixed_values import core_to_engine_fixed_values
 from core_to_engine_service.build_engine_requests import build_engine_requests
 from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
@@ -50,7 +54,7 @@ def core_to_engine_inputs(
     daily_shift_demands: List[DailyShiftDemand],
     requests: List[Request],
     wip_assignments: List[Assignment],
-) -> InputsEngine:
+) -> Tuple[InputsEngine, Constraints]:
     # Workers
     workers_not_deleted = [w for w in workers if not w.deleted]
     worker_not_deleted_ids = [w.id for w in workers if not w.deleted]
@@ -86,6 +90,21 @@ def core_to_engine_inputs(
         shifts_not_deleted,
         fixed_assignments,
         dates_campaign,
+    )
+
+    # Constraints:
+    constraints = build_engine_constraints(
+        cbs_augmented,
+        schedule,
+        workers,
+        dim_to_attr_value_to_worker,
+        dates_hist,
+        dates_campaign,
+        periods_weekly,
+        periods_monthly,
+        worker_ids_to_worker_dates,
+        shifts,
+        dim_to_attr_value_to_shift,
     )
 
     inputs = InputsEngine(
@@ -126,19 +145,7 @@ def core_to_engine_inputs(
             shift_not_deleted_ids,
             requests,
         ),
-        constraints=build_engine_constraints(
-            cbs_augmented,
-            schedule,
-            workers,
-            dim_to_attr_value_to_worker,
-            dates_hist,
-            dates_campaign,
-            periods_weekly,
-            periods_monthly,
-            worker_ids_to_worker_dates,
-            shifts,
-            dim_to_attr_value_to_shift,
-        ),
+        constraints=core_to_engine_constraints(constraints),
         duty_recup_pairs=build_duty_recup_pairs(
             workers_not_deleted,
             worker_ids_to_worker_dates,
@@ -163,7 +170,7 @@ def core_to_engine_inputs(
             wip_assignments,
         ),
     )
-    return inputs
+    return inputs, constraints
 
 
 def _build_shift_id_to_duration_dict(shifts: List[Shift]) -> Dict[str, int]:

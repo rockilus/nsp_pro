@@ -5,9 +5,6 @@ from core import Assignment, Breach, RequestAugmented, Schedule, Shift
 from core_to_engine_service import core_to_engine_inputs
 from engine import Engine
 from engine_to_core_service import engine_to_core
-from engine_to_core_service.update_requests import (
-    update_requests_and_build_request_breaches,
-)
 from scripts.setup_database import (
     assignment_db,
     breach_db,
@@ -21,6 +18,7 @@ from services.data_fetching_services.fetch_data import (
     fetch_workers_shifts_dim_attributes,
 )
 from services.request_services import get_requests_by_dates
+from services.request_services.update_request import update_requests
 from services.schedule_services.assignment_services import (
     get_fixed_assignments,
     save_assignments,
@@ -47,7 +45,7 @@ def solve_schedule(
         dim_entries,
         attributes,
     ) = fetch_workers_shifts_dim_attributes(schedule.team_id)
-    fixed_assignments, wip_fixed_assignments = get_fixed_assignments(schedule)
+    as_hist, as_wip_fixed = get_fixed_assignments(schedule)
     cbs_augmented = get_active_constraint_builds_by_ids(
         schedule.constraint_build_ids,
         workers,
@@ -71,14 +69,14 @@ def solve_schedule(
     wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
-    inputs = core_to_engine_inputs(
+    inputs, constraints = core_to_engine_inputs(
         schedule,
         workers,
         shifts,
         dimensions,
         dim_entries,
         attributes,
-        fixed_assignments,
+        as_hist + as_wip_fixed,
         cbs_augmented,
         daily_shift_demands,
         requests,
@@ -90,24 +88,20 @@ def solve_schedule(
     outputs = engine.solve(inputs)
     end_time_engine = time.time()
     start_time_process_outputs = time.time()
-    schedule, assignments, breaches, updated_requests = engine_to_core(
+    schedule, a_campaign, breaches, updated_requests = engine_to_core(
         schedule,
         outputs,
         workers,
         shifts,
         requests,
-        inputs.constraints,
-        wip_fixed_assignments,
+        constraints,
+        as_hist,
     )
     end_time_process_outputs = time.time()
     start_time_update_db = time.time()
-    updated_requests = update_requests_and_build_request_breaches(
-        assignments, requests, workers, shifts
-    )
+    r_augmented = update_requests(updated_requests, workers, shifts)
     updated_schedule = schedule_db.update_schedule(schedule)
-    updated_assignments = save_assignments(
-        assignments, updated_schedule, wip_fixed_assignments
-    )
+    updated_assignments = save_assignments(a_campaign, updated_schedule, as_wip_fixed)
     new_objective_breaches = save_objective_breaches(updated_schedule, breaches)
     end_time_update_db = time.time()
     end_time = time.time()
@@ -148,7 +142,7 @@ def solve_schedule(
         updated_schedule,
         updated_assignments,
         new_objective_breaches,
-        updated_requests,
+        r_augmented,
         recuperation_shifts_new,
     )
 

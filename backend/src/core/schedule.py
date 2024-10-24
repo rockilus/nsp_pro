@@ -35,11 +35,11 @@ class ObjectiveCategory(Enum):
 class Breach:
     id: str
     schedule_id: str
-    objective_id: str
+    objective_id: str | None
     objective_category: ObjectiveCategory
     variables: List[Variable]
     description: str
-    hard_to_soft: bool
+    hard_to_soft: bool | None
 
 
 @dataclass

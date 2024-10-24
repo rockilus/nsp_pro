@@ -1,0 +1,329 @@
+import json
+from datetime import date
+from typing import List
+
+from core import (
+    Assignment,
+    Breach,
+    ConstraintFai,
+    ConstraintFil,
+    ConstraintOperator,
+    ConstraintOrd,
+    Constraints,
+    ConstraintSeq,
+    ConstraintSum,
+    ObjectiveCategory,
+    Schedule,
+    Shift,
+    Variable,
+    Worker,
+)
+from engine import Breach as BreachEngine
+from engine import VarName as VarNameEngine
+
+
+# pylint: disable=too-many-arguments
+def build_breaches(
+    schedule: Schedule,
+    workers: List[Worker],
+    shifts: List[Shift],
+    assignments: List[Assignment],
+    constraints: Constraints,
+    breaches_engine: List[BreachEngine],
+) -> List[Breach]:
+    breaches = parse_breaches_engine(schedule, breaches_engine)
+    for breach in breaches:
+        breach.description = _build_breach_description(
+            workers,
+            shifts,
+            assignments,
+            constraints,
+            breach,
+        )
+    return breaches
+
+
+def parse_breaches_engine(
+    schedule: Schedule, breaches_engine: List[BreachEngine]
+) -> List[Breach]:
+    out: List[Breach] = []
+    for be in breaches_engine:
+        var_name = VarNameEngine(**json.loads(be.var_name))
+        variables = [
+            (v[0], date.fromisoformat(v[1]), v[2])
+            for v in [v.split("_") for v in var_name.cstr_vars]
+        ]
+        out.append(
+            Breach(
+                id="",
+                schedule_id=schedule.id,
+                objective_id=var_name.objective_id,
+                objective_category=ObjectiveCategory(var_name.objective_category.value),
+                variables=[Variable(*v) for v in variables],
+                description="",
+                hard_to_soft=var_name.hard_to_soft,
+            )
+        )
+    return out
+
+
+# pylint: disable=too-many-return-statements
+def _build_breach_description(
+    workers: List[Worker],
+    shifts: List[Shift],
+    assignments: List[Assignment],
+    constraints: Constraints,
+    breach: Breach,
+) -> str:
+    if breach.objective_category == ObjectiveCategory.CONSTRAINT:
+        if breach.objective_id is None:
+            raise ValueError("Objective id is missing")
+        constraint = _get_constraint_by_id(breach.objective_id, constraints)
+        if constraint is None:
+            raise ValueError(f"Constraint with id {breach.objective_id} not found")
+        if isinstance(constraint, ConstraintSum):
+            return _build_description_cb_sum(
+                workers,
+                shifts,
+                assignments,
+                constraint,
+                breach,
+            )
+        if isinstance(constraint, ConstraintSeq):
+            return _build_description_cb_seq(
+                workers,
+                shifts,
+                assignments,
+                constraint,
+                breach,
+            )
+        if isinstance(constraint, ConstraintOrd):
+            return _build_description_cb_ord(
+                workers,
+                shifts,
+                assignments,
+                constraint,
+                breach,
+            )
+        if isinstance(constraint, ConstraintFil):
+            return _build_description_cb_fil(
+                workers,
+                shifts,
+                breach,
+            )
+        return f"{constraint.constraint_type} constraint not implemented yet"
+    if breach.objective_category == ObjectiveCategory.REQUEST:
+        return _build_description_breach_request(
+            workers,
+            shifts,
+            assignments,
+            breach,
+        )
+    return f"{breach.objective_category} constraint not implemented yet"
+
+
+def _get_constraint_by_id(
+    constraint_id: str, constraints: Constraints
+) -> (
+    ConstraintSum | ConstraintSeq | ConstraintOrd | ConstraintFil | ConstraintFai | None
+):
+    constraints_flat = (
+        constraints.sum
+        + constraints.seq
+        + constraints.ord
+        + constraints.fil
+        + constraints.fai
+    )
+    for constraint in constraints_flat:
+        if constraint.id == constraint_id:
+            return constraint
+    return None
+
+
+def _build_description_cb_sum(
+    workers: List[Worker],
+    shifts: List[Shift],
+    assignments: List[Assignment],
+    constraint: ConstraintSum,
+    breach: Breach,
+) -> str:
+    # 1 shift off too many/short on period Oct 2 - Oct 8
+    workers_id = set(v.worker_id for v in breach.variables)
+    dates = set(v.date for v in breach.variables)
+    start_date, end_date = min(dates), max(dates)
+    shifts_id = set(v.shift_id for v in breach.variables)
+    ws_breach = [w for w in workers if w.id in workers_id]
+    ss_breach = [s for s in shifts if s.id in shifts_id]
+    count = sum(
+        1
+        for a in assignments
+        if a.worker_id in workers_id and a.date in dates and a.shift_id in shifts_id
+    )
+    diff = count - constraint.target_value
+    string_list = [
+        str(abs(diff)),
+        "shifts" if abs(diff) > 1 else "shift",
+        " ".join([s.name for s in ss_breach]),
+        "too many" if diff > 0 else "short",
+        "on period",
+        f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}",
+        "for",
+        " ".join([w.name for w in ws_breach]),
+    ]
+    return " ".join(string_list)
+
+
+def _build_description_cb_seq(
+    workers: List[Worker],
+    shifts: List[Shift],
+    assignments: List[Assignment],
+    constraint: ConstraintSeq,
+    breach: Breach,
+) -> str:
+    # 1 shift off consecutive too many/short on period Oct 2 - Oct 8
+    workers_id = set(v.worker_id for v in breach.variables)
+    dates = set(v.date for v in breach.variables)
+    start_date, end_date = min(dates), max(dates)
+    shifts_id = set(v.shift_id for v in breach.variables)
+    ws_breach = [w for w in workers if w.id in workers_id]
+    ss_breach = [s for s in shifts if s.id in shifts_id]
+    count = sum(
+        1
+        for a in assignments
+        if a.worker_id in workers_id and a.date in dates and a.shift_id in shifts_id
+    )
+    diff = count - constraint.target_value
+    string_list = [
+        str(abs(diff)),
+        "shifts" if abs(diff) > 1 else "shift",
+        " ".join([s.name for s in ss_breach]),
+        "consecutive",
+        "too many" if diff > 0 else "short",
+        "on period" if len(dates) > 1 else "on",
+        (
+            f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}"
+            if len(dates) > 1
+            else f"{start_date.strftime('%b %d')}"
+        ),
+        "for",
+        " ".join([w.name for w in ws_breach]),
+    ]
+    return " ".join(string_list)
+
+
+def _build_description_cb_ord(
+    workers: List[Worker],
+    shifts: List[Shift],
+    assignments: List[Assignment],
+    constraint: ConstraintOrd,
+    breach: Breach,
+) -> str:
+    # No:
+    # Shift morning 1 day after/before shift night
+    # Yes:
+    # Shift afternoon 1 day after/before shift night instead of shift morning
+    workers_id = set(v.worker_id for v in breach.variables)
+    d_reference, d_relative = (
+        breach.variables[0].date,
+        breach.variables[1].date,
+    )
+    ws_breach = [w for w in workers if w.id in workers_id]
+    ss_reference = [s for s in shifts if s.id in constraint.shift_reference_ids]
+    ss_relative = [s for s in shifts if s.id in constraint.shift_relative_ids]
+    a_d_relative = next(
+        (a for a in assignments if a.worker_id in workers_id and a.date == d_relative),
+        None,
+    )
+    if a_d_relative is None:
+        shift_assigned_name = "unknown"
+    else:
+        s_d_relative = next(
+            (s for s in ss_relative if s.id == a_d_relative.shift_id),
+            None,
+        )
+        shift_assigned_name = s_d_relative.name if s_d_relative else "unknown"
+    string_list = [
+        "Shift",
+        shift_assigned_name,
+        str(abs(constraint.interval)),
+        "day" if abs(constraint.interval) <= 1 else "days",
+        "after" if constraint.interval >= 0 else "before",
+        "shift",
+        ", ".join([s.name for s in ss_reference]),
+        "on",
+        d_reference.strftime("%b %d"),
+        (
+            f"instead of shift {', '.join([s.name for s in ss_relative])}"
+            if constraint.operator == ConstraintOperator.YES
+            else ""
+        ),
+        "for",
+        " ".join([w.name for w in ws_breach]),
+    ]
+    return " ".join(string_list)
+
+
+def _build_description_cb_fil(
+    workers: List[Worker],
+    shifts: List[Shift],
+    breach: Breach,
+) -> str:
+    # No:
+    # No Plouharnel worker should work in Vannes site.
+    # Yes:
+    # Plouharnel worker should only work in Plouharnel site.
+    workers_id = set(v.worker_id for v in breach.variables)
+    dates = set(v.date for v in breach.variables)
+    shifts_id = set(v.shift_id for v in breach.variables)
+    ws_breach = [w for w in workers if w.id in workers_id]
+    ss_breach = [s for s in shifts if s.id in shifts_id]
+    # a_conflict = [
+    #     a for a in assignments if a.worker_id in workers_id and a.date in dates
+    # ]
+    # shift_assigned_names = [
+    #     shift_db.get_shift_by_id(a.shift_id).name for a in a_conflict
+    # ]
+    string_list = [
+        "Shift",
+        " ".join([s.name for s in ss_breach]),
+        # " ".join(shift_assigned_names),
+        "on",
+        " ".join([f"{d.strftime('%b %d')}" for d in dates]),
+        "for",
+        " ".join([w.name for w in ws_breach]),
+        "not allowed",
+    ]
+    return " ".join(string_list)
+
+
+def _build_description_breach_request(
+    workers: List[Worker],
+    shifts: List[Shift],
+    assignments: List[Assignment],
+    breach: Breach,
+) -> str:
+    worker = next((w for w in workers if w.id == breach.variables[0].worker_id), None)
+    dates = list(set(v.date for v in breach.variables))
+    start_date, end_date = min(dates), max(dates)
+    shift = next((s for s in shifts if s.id == breach.variables[0].shift_id), None)
+    if worker is None or shift is None:
+        return "Unknown worker or shift"
+    shift_actual_ids = set(
+        a.shift_id for a in assignments if a.worker_id == worker.id and a.date in dates
+    )
+    shifts_assigned = [s for s in shifts if s.id in shift_actual_ids]
+    shifts_breach_names = [s.name for s in shifts_assigned if s.id != shift.id]
+    string_list = [
+        worker.name,
+        "requested",
+        shift.name,
+        "on",
+        (
+            dates[0].strftime("%b %d")
+            if len(dates) == 1
+            else f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}"
+        ),
+        "but works",
+        " ".join(shifts_breach_names),
+    ]
+    return " ".join(string_list)

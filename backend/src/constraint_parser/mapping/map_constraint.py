@@ -141,12 +141,15 @@ class MapConstaint:
             constraint_build_id=cba.id,
         )
 
+    # pylint: disable=too-many-locals
     def map_constraint_ord(
         self, cba: ConstraintBuildAugmented, schedule_id: str
     ) -> ConstraintOrd:
+        interval = self.map_day.get_interval(cba.blocks, cba.constraint_type)
+
         cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
         coord_workers = self.map_worker.get_coord_workers(cba)
-        coord_days = self.map_day.get_coords_days_ord(cba)
+        coord_days = self.map_day.get_coords_days_ord(cba, interval)
         coord_shifts = self.map_shift.get_coords_shifts_ord(cba)
 
         constraints_vars: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]] = []
@@ -171,6 +174,9 @@ class MapConstaint:
             operator=cstr_operator,
             target_value=self.get_target_value(cba.blocks, cba.constraint_type),
             target_unit="",
+            shift_reference_ids=[s.id for s, _ in coord_shifts],
+            shift_relative_ids=[s.id for _, s in coord_shifts],
+            interval=interval,
             constraint_variables=constraints_vars,
             active=cba.active,
             hard=cba.hard,
