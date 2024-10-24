@@ -1,6 +1,6 @@
 import json
 from datetime import date
-from typing import List
+from typing import Dict, List
 
 from core import (
     Assignment,
@@ -15,6 +15,7 @@ from core import (
     ObjectiveCategory,
     Schedule,
     Shift,
+    ShiftType,
     Variable,
     Worker,
 )
@@ -82,7 +83,7 @@ def _build_breach_description(
         if constraint is None:
             raise ValueError(f"Constraint with id {breach.objective_id} not found")
         if isinstance(constraint, ConstraintSum):
-            return _build_description_cb_sum(
+            return _build_description_breach_constraint_sum(
                 workers,
                 shifts,
                 assignments,
@@ -90,7 +91,7 @@ def _build_breach_description(
                 breach,
             )
         if isinstance(constraint, ConstraintSeq):
-            return _build_description_cb_seq(
+            return _build_description_breach_constraint_seq(
                 workers,
                 shifts,
                 assignments,
@@ -98,7 +99,7 @@ def _build_breach_description(
                 breach,
             )
         if isinstance(constraint, ConstraintOrd):
-            return _build_description_cb_ord(
+            return _build_description_breach_constraint_ord(
                 workers,
                 shifts,
                 assignments,
@@ -106,7 +107,7 @@ def _build_breach_description(
                 breach,
             )
         if isinstance(constraint, ConstraintFil):
-            return _build_description_cb_fil(
+            return _build_description_breach_constraint_fil(
                 workers,
                 shifts,
                 breach,
@@ -114,6 +115,23 @@ def _build_breach_description(
         return f"{constraint.constraint_type} constraint not implemented yet"
     if breach.objective_category == ObjectiveCategory.REQUEST:
         return _build_description_breach_request(
+            workers,
+            shifts,
+            assignments,
+            breach,
+        )
+    if breach.objective_category in [
+        ObjectiveCategory.WORK_TIME_CONTRACT,
+        ObjectiveCategory.WORK_TIME_DESIRED,
+    ]:
+        return _build_description_breach_work_time(
+            workers,
+            shifts,
+            assignments,
+            breach,
+        )
+    if breach.objective_category == ObjectiveCategory.DUTIES_PER_MONTH:
+        return _build_description_breach_nb_duties(
             workers,
             shifts,
             assignments,
@@ -140,7 +158,7 @@ def _get_constraint_by_id(
     return None
 
 
-def _build_description_cb_sum(
+def _build_description_breach_constraint_sum(
     workers: List[Worker],
     shifts: List[Shift],
     assignments: List[Assignment],
@@ -173,7 +191,7 @@ def _build_description_cb_sum(
     return " ".join(string_list)
 
 
-def _build_description_cb_seq(
+def _build_description_breach_constraint_seq(
     workers: List[Worker],
     shifts: List[Shift],
     assignments: List[Assignment],
@@ -211,7 +229,7 @@ def _build_description_cb_seq(
     return " ".join(string_list)
 
 
-def _build_description_cb_ord(
+def _build_description_breach_constraint_ord(
     workers: List[Worker],
     shifts: List[Shift],
     assignments: List[Assignment],
@@ -263,7 +281,7 @@ def _build_description_cb_ord(
     return " ".join(string_list)
 
 
-def _build_description_cb_fil(
+def _build_description_breach_constraint_fil(
     workers: List[Worker],
     shifts: List[Shift],
     breach: Breach,
@@ -325,5 +343,83 @@ def _build_description_breach_request(
         ),
         "but works",
         " ".join(shifts_breach_names),
+    ]
+    return " ".join(string_list)
+
+
+def _build_description_breach_work_time(
+    workers: List[Worker],
+    shifts: List[Shift],
+    assignments: List[Assignment],
+    breach: Breach,
+) -> str:
+    shifts_work = [
+        s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+    ]
+    shift_id_to_duration_dict: Dict[str, float] = {
+        s.id: (s.end_time - s.start_time).total_seconds() // 3600 for s in shifts_work
+    }
+    worker = next((w for w in workers if w.id == breach.variables[0].worker_id), None)
+    dates = list(set(v.date for v in breach.variables))
+    start_date, end_date = min(dates), max(dates)
+    if worker is None:
+        return "Unknown worker"
+    as_work = [
+        a
+        for a in assignments
+        if a.worker_id == worker.id
+        and a.date in dates
+        and a.shift_id in shift_id_to_duration_dict
+    ]
+    work_time_target = (
+        worker.weekly_hours_desired
+        if breach.objective_category == ObjectiveCategory.WORK_TIME_DESIRED
+        else worker.weekly_hours
+    )
+    work_time_actual = round(
+        sum(shift_id_to_duration_dict[a.shift_id] for a in as_work)
+    )
+    string_list = [
+        worker.name,
+        (
+            "open to work"
+            if breach.objective_category == ObjectiveCategory.WORK_TIME_DESIRED
+            else "contracted"
+        ),
+        f"{str(work_time_target)}h/week",
+        "but works",
+        f"{str(work_time_actual)}h",
+        "on week",
+        f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}",
+    ]
+    return " ".join(string_list)
+
+
+def _build_description_breach_nb_duties(
+    workers: List[Worker],
+    shifts: List[Shift],
+    assignments: List[Assignment],
+    breach: Breach,
+) -> str:
+    shift_duty_ids = [s.id for s in shifts if s.shift_type == ShiftType.DUTY]
+    worker = next((w for w in workers if w.id == breach.variables[0].worker_id), None)
+    dates = list(set(v.date for v in breach.variables))
+    start_date, end_date = min(dates), max(dates)
+    if worker is None:
+        return "Unknown worker"
+    as_duty = [
+        a
+        for a in assignments
+        if a.worker_id == worker.id and a.date in dates and a.shift_id in shift_duty_ids
+    ]
+    count_actual = len(as_duty)
+    string_list = [
+        worker.name,
+        "open to work",
+        f"{str(worker.duties_per_month)} duties/month",
+        "but works",
+        str(count_actual),
+        "on month",
+        f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}",
     ]
     return " ".join(string_list)

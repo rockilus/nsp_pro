@@ -188,17 +188,19 @@ class Model:
         self.set_fixed_variables(inputs.fixed_values)
         self.add_solution_hint(inputs.sol_hint)
         self.no_interval_overlap(inputs.no_overlap_shift_intervals)
-        self.add_work_time_constraints(inputs.work_loads.weekly_work_time_max)
+        self.add_work_time_constraints(inputs.work_loads.weekly_work_time_max, False)
         self.add_nb_duties_constraints(inputs.work_loads.monthly_nb_duties_max)
         self.add_constraint_factory.add_coverage.add_coverage(
             inputs.shift_demands, coverage_hts
         )
         self.add_duty_recup_constraints(inputs.duty_recup_pairs, duty_recup_hts)
         self.add_work_time_constraints(
-            inputs.work_loads.weekly_work_time_contractual, work_time_hts
+            inputs.work_loads.weekly_work_time_contractual, True, work_time_hts
         )
         self.add_work_time_constraints(
-            inputs.work_loads.weekly_work_time_desired, work_time_desired_hts
+            inputs.work_loads.weekly_work_time_desired,
+            False,
+            work_time_desired_hts,
         )
         self.add_nb_duties_constraints(
             inputs.work_loads.monthly_nb_duties_desired, nb_duty_hts
@@ -290,7 +292,7 @@ class Model:
                 self.obj.int_coeffs.append(100)
 
     def add_work_time_constraints(
-        self, work_time: WorkTime, hard_to_soft: bool = False
+        self, work_time: WorkTime, contract: bool, hard_to_soft: bool = False
     ) -> None:
         for w_assignments, w_targets, w_durations in zip(
             work_time.assignments,
@@ -308,7 +310,12 @@ class Model:
                     )
                 else:
                     var_name = build_var_name_work_time(
-                        constraint_vars, ObjectiveCategory.WORK_TIME
+                        constraint_vars,
+                        (
+                            ObjectiveCategory.WORK_TIME_WEEK_CONTRACT
+                            if contract
+                            else ObjectiveCategory.WORK_TIME_WEEK_DESIRED
+                        ),
                     )
                     delta = self.model.NewIntVar(
                         -p_target,

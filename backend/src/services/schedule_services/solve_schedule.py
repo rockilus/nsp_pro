@@ -5,12 +5,12 @@ from core import Assignment, Breach, RequestAugmented, Schedule, Shift
 from core_to_engine_service import core_to_engine_inputs
 from engine import Engine
 from engine_to_core_service import engine_to_core
-from scripts.setup_database import (
-    assignment_db,
-    breach_db,
-    daily_shift_demand_db,
-    schedule_db,
+from scripts.setup_database import assignment_db, daily_shift_demand_db, schedule_db
+from services.assignment_services.assignment_services import (
+    get_fixed_assignments,
+    save_assignments,
 )
+from services.breach_services.save_breaches import save_breaches
 from services.constraint_build_services.get_constraint_build import (
     get_active_constraint_builds_by_ids,
 )
@@ -19,10 +19,6 @@ from services.data_fetching_services.fetch_data import (
 )
 from services.request_services import get_requests_by_dates
 from services.request_services.update_request import update_requests
-from services.schedule_services.assignment_services import (
-    get_fixed_assignments,
-    save_assignments,
-)
 from services.shift_services.create_shift import create_duty_recuperation_shifts
 
 
@@ -102,7 +98,7 @@ def solve_schedule(
     r_augmented = update_requests(updated_requests, workers, shifts)
     updated_schedule = schedule_db.update_schedule(schedule)
     updated_assignments = save_assignments(a_campaign, updated_schedule, as_wip_fixed)
-    new_objective_breaches = save_objective_breaches(updated_schedule, breaches)
+    new_objective_breaches = save_breaches(updated_schedule, breaches)
     end_time_update_db = time.time()
     end_time = time.time()
     # time stats
@@ -145,13 +141,3 @@ def solve_schedule(
         r_augmented,
         recuperation_shifts_new,
     )
-
-
-def save_objective_breaches(
-    schedule: Schedule, objective_breaches: List[Breach]
-) -> List[Breach]:
-    breach_db.delete_breaches_by_schedule_id(schedule.id)
-    if not objective_breaches:
-        return []
-    out = breach_db.create_breaches(objective_breaches)
-    return out

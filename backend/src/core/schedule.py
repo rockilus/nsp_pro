@@ -26,8 +26,9 @@ class ObjectiveCategory(Enum):
     CONSTRAINT = 0
     REQUEST = 1
     DAILY_SHIFT_DEMAND = 2
-    WORK_TIME = 3
-    DUTIES_PER_MONTH = 4
+    WORK_TIME_CONTRACT = 3
+    WORK_TIME_DESIRED = 4
+    DUTIES_PER_MONTH = 5
 
 
 # pylint: disable=R0801
