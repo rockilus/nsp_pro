@@ -89,6 +89,7 @@ def solve_schedule(
         outputs,
         workers,
         shifts,
+        daily_shift_demands,
         requests,
         constraints,
         as_hist,

@@ -1,6 +1,15 @@
 from typing import List, Tuple
 
-from core import Assignment, Breach, Constraints, Request, Schedule, Shift, Worker
+from core import (
+    Assignment,
+    Breach,
+    Constraints,
+    DailyShiftDemand,
+    Request,
+    Schedule,
+    Shift,
+    Worker,
+)
 from engine import Outputs as OutputsEngine
 from engine_to_core_service.build_breaches import build_breaches
 from engine_to_core_service.build_campaign_assignments import build_campaign_assignments
@@ -16,6 +25,7 @@ def engine_to_core(
     outputs: OutputsEngine,
     workers: List[Worker],
     shifts: List[Shift],
+    daily_shift_demand: List[DailyShiftDemand],
     requests: List[Request],
     constraints: Constraints,
     as_hist: List[Assignment],
@@ -26,6 +36,7 @@ def engine_to_core(
         schedule,
         workers,
         shifts,
+        daily_shift_demand,
         assignments,
         constraints,
         outputs.breaches,

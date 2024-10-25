@@ -12,6 +12,7 @@ from core import (
     Constraints,
     ConstraintSeq,
     ConstraintSum,
+    DailyShiftDemand,
     ObjectiveCategory,
     Schedule,
     Shift,
@@ -28,11 +29,12 @@ def build_breaches(
     schedule: Schedule,
     workers: List[Worker],
     shifts: List[Shift],
+    daily_shift_demands: List[DailyShiftDemand],
     assignments: List[Assignment],
     constraints: Constraints,
     breaches_engine: List[BreachEngine],
 ) -> List[Breach]:
-    breaches = parse_breaches_engine(schedule, breaches_engine)
+    breaches = _parse_breaches_engine(schedule, breaches_engine)
     for breach in breaches:
         breach.description = _build_breach_description(
             workers,
@@ -41,10 +43,16 @@ def build_breaches(
             constraints,
             breach,
         )
+    breaches += _build_daily_shift_demand_breaches(
+        schedule,
+        shifts,
+        daily_shift_demands,
+        assignments,
+    )
     return breaches
 
 
-def parse_breaches_engine(
+def _parse_breaches_engine(
     schedule: Schedule, breaches_engine: List[BreachEngine]
 ) -> List[Breach]:
     out: List[Breach] = []
@@ -423,3 +431,43 @@ def _build_description_breach_nb_duties(
         f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}",
     ]
     return " ".join(string_list)
+
+
+def _build_daily_shift_demand_breaches(
+    schedule: Schedule,
+    shifts: List[Shift],
+    daily_shift_demands: List[DailyShiftDemand],
+    assignments: List[Assignment],
+) -> List[Breach]:
+    out: List[Breach] = []
+    for s in [s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]]:
+        dsds = [dsd for dsd in daily_shift_demands if dsd.shift_id == s.id]
+        dates_dsds = list(set(dsd.date for dsd in dsds))
+        for d in dates_dsds:
+            dsds_d = [dsd for dsd in dsds if dsd.date == d]
+            count_target = sum(dsd.count for dsd in dsds_d)
+            count_actual = sum(
+                1 for a in assignments if a.date == d and a.shift_id == s.id
+            )
+            diff = count_actual - count_target
+            if diff != 0:
+                out.append(
+                    Breach(
+                        id="",
+                        schedule_id=schedule.id,
+                        objective_id=None,
+                        objective_category=ObjectiveCategory.DAILY_SHIFT_DEMAND,
+                        variables=[
+                            Variable(
+                                worker_id="",
+                                date=d,
+                                shift_id=s.id,
+                            )
+                        ],
+                        description=f"{str(abs(diff))} shifts {s.name} "
+                        + f"{'too many' if diff > 0 else 'short'} on "
+                        + f"{d.strftime('%b %d')}",
+                        hard_to_soft=None,
+                    )
+                )
+    return out
