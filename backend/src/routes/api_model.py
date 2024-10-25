@@ -201,18 +201,18 @@ class DailyShiftDemandMessage(BaseModel):
 
 class VariableMessage(BaseModel):
     workerId: str
-    date: date
+    date: float
     shiftId: str
 
 
-class ObjectiveBreachMessage(BaseModel):
+class BreachMessage(BaseModel):
     id: str
-    objectiveId: str
-    objectiveCategory: str  # constraint, request, fixed assignment, coverage?
-    variables: List[VariableMessage]
-    hardToSoft: bool
-    description: str
     scheduleId: str
+    objectiveId: str | None
+    objectiveCategory: int
+    variables: List[VariableMessage]
+    description: str
+    hardToSoft: bool | None
 
 
 class QuickStaffingMessage(BaseModel):
@@ -236,7 +236,7 @@ class ScheduleMessage(BaseModel):
 class SolutionMessage(BaseModel):
     schedule: ScheduleMessage
     assignments: List[AssignmentMessage]
-    objectiveBreaches: List[ObjectiveBreachMessage]
+    objectiveBreaches: List[BreachMessage]
     requests: List[RequestMessage]
     recuperationShiftsNew: List[ShiftMessage]
 

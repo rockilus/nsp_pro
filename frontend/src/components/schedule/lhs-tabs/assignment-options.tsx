@@ -12,7 +12,11 @@ import Typography from "@mui/material/Typography";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
-import { AssignmentT, SelectedCellT } from "../../../types/schedule";
+import {
+  AssignmentT,
+  SelectedCellT,
+  ObjectiveCategory,
+} from "../../../types/schedule";
 
 export default function AssignmentOptions({
   lng,
@@ -62,7 +66,7 @@ export default function AssignmentOptions({
   };
 
   const breachesNoRequests = selectedCell.breaches.filter(
-    (b) => b.objectiveCategory !== "request"
+    (b) => b.objectiveCategory !== ObjectiveCategory.REQUEST
   );
 
   useEffect(() => {

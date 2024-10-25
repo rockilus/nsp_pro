@@ -18,7 +18,7 @@ from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
     AssignmentMessage,
-    ObjectiveBreachMessage,
+    BreachMessage,
     QuickStaffingMessage,
     RequestMessage,
     ScheduleMessage,
@@ -27,7 +27,7 @@ from routes.api_model import (
     ValidateMessage,
 )
 from routes.assignment_routes import core_to_msg_assignment
-from routes.objective_breach_routes import core_to_msg_objective_breach
+from routes.breach_routes import core_to_msg_objective_breach
 from routes.request_routes import core_to_msg_request_augmented
 from routes.shift_routes import core_to_msg_shift_and_attributes
 from scripts.setup_database import assignment_db, breach_db, schedule_db
@@ -229,7 +229,7 @@ def core_to_msg_solution(
         str,
         ScheduleMessage
         | List[AssignmentMessage]
-        | List[ObjectiveBreachMessage]
+        | List[BreachMessage]
         | List[RequestMessage]
         | List[ShiftMessage],
     ] = {}

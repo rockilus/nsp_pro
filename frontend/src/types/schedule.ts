@@ -33,21 +33,30 @@ export type DailyShiftDemandT = {
   count: number;
 };
 
-// Objective Breach
+// Breach
 export type VariableT = {
   workerId: string;
   date: dayjs.Dayjs;
   shiftId: string;
 };
 
+export enum ObjectiveCategory {
+  CONSTRAINT = 0,
+  REQUEST = 1,
+  DAILY_SHIFT_DEMAND = 2,
+  WORK_TIME_CONTRACT = 3,
+  WORK_TIME_DESIRED = 4,
+  DUTIES_PER_MONTH = 5,
+}
+
 export type BreachT = {
   id: string;
-  objectiveId: string;
-  objectiveCategory: string;
-  variables: VariableT[];
-  hardToSoft: boolean;
-  description: string;
   scheduleId: string;
+  objectiveId: string | null;
+  objectiveCategory: ObjectiveCategory;
+  variables: VariableT[];
+  description: string;
+  hardToSoft: boolean | null;
 };
 
 // Schedule
