@@ -222,7 +222,7 @@ class Objective:
 @dataclass
 class VarName:
     objective_id: str | None
-    objective_category: ObjectiveCategory
+    objective_category: int
     cstr_vars: List[str]
     hard_to_soft: bool | None
 

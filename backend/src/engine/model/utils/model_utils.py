@@ -37,7 +37,7 @@ def build_var_name_constraint(
             VarName(
                 objective_id=constraint.id,
                 cstr_vars=[var.Name() for var in cstr_vars],
-                objective_category=category,
+                objective_category=category.value,
                 hard_to_soft=constraint.hard,
             )
         )
@@ -52,7 +52,7 @@ def build_var_name_work_time(
             VarName(
                 objective_id=None,
                 cstr_vars=[var.Name() for var in cstr_vars],
-                objective_category=category,
+                objective_category=category.value,
                 hard_to_soft=None,
             )
         )
@@ -108,7 +108,7 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
                     for var in span
                     if isinstance(var, cp_model._NotBooleanVariable)
                 ],
-                objective_category=ObjectiveCategory.CONSTRAINT,
+                objective_category=ObjectiveCategory.CONSTRAINT.value,
                 hard_to_soft=constraint.hard,
             )
         )

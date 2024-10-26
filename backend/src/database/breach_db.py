@@ -264,8 +264,10 @@ def doc_to_core_breach(
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["schedule_id"] = doc_dict["schedule"]
+    doc_dict["objective_id"] = doc_dict.get("objective_id", None)
     doc_dict["objective_category"] = ObjectiveCategory(doc_dict["objective_category"])
     doc_dict["variables"] = [doc_to_core_variable(v) for v in doc_obj.variables]
+    doc_dict["hard_to_soft"] = doc_dict.get("hard_to_soft", None)
     doc_dict.pop("_id")
     doc_dict.pop("schedule")
     return Breach(**doc_dict)

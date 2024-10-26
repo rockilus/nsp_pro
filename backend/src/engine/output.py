@@ -46,6 +46,8 @@ class Output:
         # var_debug = {k: v for k, v in self.model.variables.items()}
         for var in self.model.obj.bool_vars:
             if self.model.solver.BooleanValue(var):
+                if var.Name() == "":
+                    continue
                 out.append(
                     Breach(
                         var_name=var.Name(),

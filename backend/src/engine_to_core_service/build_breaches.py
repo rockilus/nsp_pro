@@ -67,7 +67,7 @@ def _parse_breaches_engine(
                 id="",
                 schedule_id=schedule.id,
                 objective_id=var_name.objective_id,
-                objective_category=ObjectiveCategory(var_name.objective_category.value),
+                objective_category=ObjectiveCategory(var_name.objective_category),
                 variables=[Variable(*v) for v in variables],
                 description="",
                 hard_to_soft=var_name.hard_to_soft,
