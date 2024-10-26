@@ -1,7 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from enum import Enum
-from typing import Dict, List, Literal, Tuple
+from typing import Dict, List, Tuple
+
+from ortools.sat.python import cp_model  # type: ignore
 
 ##############################
 # Inputs
@@ -172,25 +174,28 @@ class Inputs:
 ##############################
 # Outputs
 ##############################
+class ObjectiveCategory(Enum):
+    CONSTRAINT = 0
+    REQUEST = 1
+    DAILY_SHIFT_DEMAND = 2
+    WORK_TIME_WEEK_CONTRACT = 3
+    WORK_TIME_WEEK_DESIRED = 4
+    DUTIES_PER_MONTH = 5
 
 
 # pylint: disable=R0801
+# @dataclass
+# class Breach:
+#     objective_id: str | None
+#     objective_category: ObjectiveCategory
+#     variables: List[Tuple[str, date, str]]
+#     value_diff: int
+#     hard_to_soft: bool | None
+#     penalty: int
 @dataclass
-class ConstraintBreach:
-    constraint_id: str
-    category: Literal[
-        "request",
-        "constraint",
-        "coverage",
-        "recuperation",
-        "work_time",
-        "duties_per_month",
-        "worker_shift_filter",
-    ]
-    variables: List[Tuple[str, date, str]]
+class Breach:
+    var_name: str
     value_diff: int
-    hard_to_soft: bool
-    penalty: int
 
 
 @dataclass
@@ -198,4 +203,46 @@ class Outputs:
     is_solution: bool
     assignments: List[Assignment]
     objective_value: int
-    constraint_breaches: List[ConstraintBreach]
+    breaches: List[Breach]
+
+
+##############################
+# Model
+##############################
+
+
+@dataclass
+class Objective:
+    int_vars: List[cp_model.IntVar] = field(default_factory=list)
+    int_coeffs: List[int] = field(default_factory=list)
+    bool_vars: List[cp_model.IntVar] = field(default_factory=list)
+    bool_coeffs: List[int] = field(default_factory=list)
+
+
+@dataclass
+class VarName:
+    objective_id: str | None
+    objective_category: int
+    cstr_vars: List[str]
+    hard_to_soft: bool | None
+
+
+@dataclass
+class BenchmarkTimes:
+    total_start: float = 0.0
+    total_end: float = 0.0
+    full_setup_start: float = 0.0
+    full_setup_end: float = 0.0
+    variables_start: float = 0.0
+    variables_end: float = 0.0
+    constraints_start: float = 0.0
+    constraints_end: float = 0.0
+    objective_start: float = 0.0
+    objective_end: float = 0.0
+
+
+# status 0: UNKNOWN
+# status 1: MODEL_INVALID
+# status 2: FEASIBLE
+# status 3: INFEASIBLE
+# status 4: OPTIMAL

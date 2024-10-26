@@ -2,7 +2,7 @@ from typing import Dict, Tuple
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.types.model_types import Objective
+from engine.types import Objective
 
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes

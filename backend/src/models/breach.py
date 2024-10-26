@@ -3,9 +3,12 @@ from mongoengine.fields import (
     BooleanField,
     DateTimeField,
     EmbeddedDocumentListField,
+    IntField,
     ReferenceField,
     StringField,
 )
+
+from core import ObjectiveCategory
 
 
 class Variable(EmbeddedDocument):
@@ -14,15 +17,15 @@ class Variable(EmbeddedDocument):
     shift = ReferenceField("Shift", required=True)
 
 
-class ObjectiveBreach(Document):
-    meta = {"collection": "objective_breaches"}
+class Breach(Document):
+    meta = {"collection": "breaches"}
 
     id = StringField(primary_key=True, required=True)
-    objective_id = StringField(required=True)
-    objective_category = StringField(
-        required=True
-    )  # constraint, request, fixed assignment, coverage (hard for now)?
-    variables = EmbeddedDocumentListField(Variable, required=True)
-    hard_to_soft = BooleanField(required=True)
-    description = StringField(required=True)
     schedule = ReferenceField("Schedule", required=True)
+    objective_id = StringField(required=True)
+    objective_category = IntField(
+        choices=[e.value for e in ObjectiveCategory], required=True
+    )
+    variables = EmbeddedDocumentListField(Variable, required=True)
+    description = StringField(required=True)
+    hard_to_soft = BooleanField(required=True)

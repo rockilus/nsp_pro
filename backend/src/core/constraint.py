@@ -159,6 +159,9 @@ class ConstraintSeq(Constraint):
 # for each worker, tuple for d_ref/s_ref and d_rel/s_rel, for all combinations
 @dataclass
 class ConstraintOrd(Constraint):
+    shift_reference_ids: List[str]
+    shift_relative_ids: List[str]
+    interval: int
     constraint_variables: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
 
 

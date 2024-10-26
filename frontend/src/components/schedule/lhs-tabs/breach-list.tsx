@@ -3,7 +3,7 @@ import { useTranslation } from "../../../app/i18n/client";
 // Components
 import BreachItem from "./breach-item";
 // Types
-import { BreachT } from "../../../types/schedule";
+import { BreachT, ObjectiveCategory } from "../../../types/schedule";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 
@@ -27,10 +27,10 @@ export default function BreachList({
   const { t } = useTranslation(lng, "schedule-page");
 
   const CBsConstraint: BreachT[] = breaches
-    .filter((cb) => cb.objectiveCategory === "constraint")
+    .filter((cb) => cb.objectiveCategory === ObjectiveCategory.CONSTRAINT)
     .sort((a, b) => (a.hardToSoft ? -1 : 1));
   const CBsRequest: BreachT[] = breaches.filter(
-    (cb) => cb.objectiveCategory === "request"
+    (cb) => cb.objectiveCategory === ObjectiveCategory.REQUEST
   );
 
   const checkedConstraint: boolean = CBsConstraint.some((cb) =>

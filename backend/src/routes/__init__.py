@@ -1,5 +1,6 @@
 from routes.assignment_routes import router as router_assignment
 from routes.attribute_routes import router as router_attribute
+from routes.breach_routes import router as router_breach
 from routes.constraint_routes import router as router_constraint
 from routes.constraint_template_routes import router as router_constraint_template
 from routes.coverage_routes import router as router_coverage
@@ -8,7 +9,6 @@ from routes.daily_shift_demand_routes import router as router_daily_shift_demand
 from routes.dim_entry_routes import router as router_dim_entry
 from routes.dimension_routes import router as router_dimension
 from routes.health_routes import router as router_health
-from routes.objective_breach_routes import router as router_objective_breach
 from routes.request_routes import router as router_request
 from routes.schedule_routes import router as router_schedule
 from routes.shift_demand_routes import router as router_shift_demand
@@ -22,6 +22,7 @@ from routes.worker_routes import router as router_worker
 __all__ = [
     "router_assignment",
     "router_attribute",
+    "router_breach",
     "router_constraint",
     "router_constraint_template",
     "router_coverage",
@@ -30,7 +31,6 @@ __all__ = [
     "router_dim_entry",
     "router_dimension",
     "router_health",
-    "router_objective_breach",
     "router_request",
     "router_schedule",
     "router_shift_demand",

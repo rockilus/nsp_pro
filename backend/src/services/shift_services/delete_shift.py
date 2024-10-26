@@ -1,8 +1,8 @@
 # pylint: disable=R0801
 from core import ShiftLeaveType, ShiftRestType
 from scripts.setup_database import (
+    breach_db,
     daily_shift_demand_db,
-    objective_breach_db,
     schedule_db,
     shift_db,
     shift_demand_db,
@@ -27,14 +27,14 @@ def delete_shift(shift_id: str) -> None:
 
 
 def delete_shift_from_objective_breach(shift_id: str) -> None:
-    obs = objective_breach_db.get_objective_breaches_by_shift_id(shift_id)
+    obs = breach_db.get_breaches_by_shift_id(shift_id)
     for ob in obs:
         new_vars = [v for v in ob.variables if v.shift_id != shift_id]
         if not new_vars:
-            objective_breach_db.delete_objective_breach(ob.id)
+            breach_db.delete_breach(ob.id)
             continue
         ob.variables = new_vars
-        objective_breach_db.update_objective_breach(ob)
+        breach_db.update_breach(ob)
 
 
 def delete_shift_from_schedule_quick_staffing(shift_id: str) -> None:

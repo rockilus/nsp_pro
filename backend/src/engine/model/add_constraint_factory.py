@@ -9,7 +9,7 @@ from engine.model.add_constraint_seq import AddConstraintSeq
 from engine.model.add_constraint_sum import AddConstraintSum
 from engine.model.add_coverage import AddCoverage
 from engine.model.add_request import AddRequest
-from engine.types.model_types import Objective
+from engine.types import Objective
 
 
 # pylint: disable=too-few-public-methods

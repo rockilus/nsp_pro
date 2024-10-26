@@ -9,13 +9,13 @@ def get_fixed_assignments(
     schedule: Schedule,
 ) -> Tuple[List[Assignment], List[Assignment]]:
     team_schedules = schedule_db.get_schedules(schedule.team_id)
-    prev_assignments = assignment_db.get_assignments_by_status(
+    as_hist = assignment_db.get_assignments_by_status(
         ["past", "validated"], team_schedules
     )  # validated assignments
-    wip_fixed_assignments = assignment_db.get_assignments_wip_fixed(
+    as_wip_fixed = assignment_db.get_assignments_wip_fixed(
         team_schedules
     )  # assignments wip and fixed
-    return prev_assignments + wip_fixed_assignments, wip_fixed_assignments
+    return as_hist, as_wip_fixed
 
 
 def save_assignments(

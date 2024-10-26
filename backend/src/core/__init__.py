@@ -30,7 +30,14 @@ from core.coverage import (
 )
 from core.dimension import Dimension, DimensionEntryType, DimensionType, DimEntry
 from core.request import Request, RequestAugmented
-from core.schedule import Assignment, ObjectiveBreach, QuickStaffing, Schedule, Variable
+from core.schedule import (
+    Assignment,
+    Breach,
+    ObjectiveCategory,
+    QuickStaffing,
+    Schedule,
+    Variable,
+)
 from core.shift import Shift, ShiftLeaveType, ShiftRestType, ShiftType, Staffing
 from core.stats import Stats, StatsHeader, StatsOptions, StatsValue
 from core.team import Specialty, Team
@@ -73,7 +80,8 @@ __all__ = [
     "DimEntry",
     "Request",
     "RequestAugmented",
-    "ObjectiveBreach",
+    "Breach",
+    "ObjectiveCategory",
     "QuickStaffing",
     "Schedule",
     "Variable",

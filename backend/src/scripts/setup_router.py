@@ -11,6 +11,7 @@ from logger import log_middleware
 from routes import (
     router_assignment,
     router_attribute,
+    router_breach,
     router_constraint,
     router_constraint_template,
     router_coverage,
@@ -19,7 +20,6 @@ from routes import (
     router_dim_entry,
     router_dimension,
     router_health,
-    router_objective_breach,
     router_request,
     router_schedule,
     router_shift,
@@ -59,7 +59,7 @@ app.include_router(router_daily_shift_demand)
 app.include_router(router_dim_entry)
 app.include_router(router_dimension)
 app.include_router(router_health)
-app.include_router(router_objective_breach)
+app.include_router(router_breach)
 app.include_router(router_request)
 app.include_router(router_schedule)
 app.include_router(router_shift)

@@ -1,11 +1,10 @@
 import json
 from dataclasses import asdict
-from typing import Any, List, Literal
+from typing import Any, List
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.types.input_output_types import Constraint, Request, ShiftDemand
-from engine.types.model_types import VarName
+from engine.types import Constraint, ObjectiveCategory, Request, VarName
 
 # def get_average_nb_shifts_per_worker(
 #     coverage: List[ShiftDemand],
@@ -28,41 +27,74 @@ from engine.types.model_types import VarName
 #     )
 
 
-def build_var_name(
-    constraint: Constraint | Request | ShiftDemand | None,
+def build_var_name_constraint(
+    constraint: Constraint | Request,
     cstr_vars: List[cp_model.IntVar],
-    category: Literal[
-        'request',
-        'constraint',
-        'coverage',
-        "recuperation",
-        "work_time",
-        "duties_per_month",
-        "worker_shift_filter",
-    ],
+    category: ObjectiveCategory,
 ) -> str:
     return json.dumps(
         asdict(
             VarName(
-                constraint_id=(
-                    ""
-                    if constraint is None
-                    else (
-                        constraint.id
-                        if not isinstance(constraint, ShiftDemand)
-                        else "no_shift_demand_id"
-                    )
-                ),
+                objective_id=constraint.id,
                 cstr_vars=[var.Name() for var in cstr_vars],
-                category=category,
-                hard_to_soft=(
-                    True
-                    if isinstance(constraint, ShiftDemand) or constraint is None
-                    else constraint.hard
-                ),
+                objective_category=category.value,
+                hard_to_soft=constraint.hard,
             )
         )
     )
+
+
+def build_var_name_work_time(
+    cstr_vars: List[cp_model.IntVar], category: ObjectiveCategory
+) -> str:
+    return json.dumps(
+        asdict(
+            VarName(
+                objective_id=None,
+                cstr_vars=[var.Name() for var in cstr_vars],
+                objective_category=category.value,
+                hard_to_soft=None,
+            )
+        )
+    )
+
+
+# def build_var_name_constraint(
+#     constraint: Constraint | Request | ShiftDemand | None,
+#     cstr_vars: List[cp_model.IntVar],
+#     category: Literal[
+#         'request',
+#         'constraint',
+#         'coverage',
+#         "recuperation",
+#         "work_time",
+#         "duties_per_month",
+#         "worker_shift_filter",
+#     ],
+# ) -> str:
+#     return json.dumps(
+#         asdict(
+#             VarName(
+#                 objective_id=(
+#                     ""
+#                     if constraint is None
+#                     else (
+#                         constraint.id
+#                         if not isinstance(constraint, ShiftDemand)
+#                         else "no_shift_demand_id"
+#                     )
+#                 ),
+#                 cstr_vars=[var.Name() for var in cstr_vars],
+#                 objective_category=category,
+#                 hard_to_soft=(
+#                     True
+#                     if isinstance(constraint, ShiftDemand)
+#                     or constraint is None
+#                     else constraint.hard
+#                 ),
+#             )
+#         )
+#     )
 
 
 def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> str:
@@ -70,13 +102,13 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
     return json.dumps(
         asdict(
             VarName(
-                constraint_id=constraint.id,
+                objective_id=constraint.id,
                 cstr_vars=[
                     var.Not().Name()  # type: ignore # [CHECK IF OK]
                     for var in span
                     if isinstance(var, cp_model._NotBooleanVariable)
                 ],
-                category="constraint",
+                objective_category=ObjectiveCategory.CONSTRAINT.value,
                 hard_to_soft=constraint.hard,
             )
         )

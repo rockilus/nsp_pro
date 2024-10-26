@@ -6,7 +6,7 @@ from engine.engine import Engine
 
 # pylint: disable=unused-import
 from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
-from engine.types.input_output_types import (
+from engine.types import (
     Constraints,
     Inputs,
     NbDuties,

@@ -4,7 +4,7 @@ import os
 import subprocess
 
 from engine.model.model import Model
-from engine.types.input_output_types import Inputs
+from engine.types import Inputs
 from utils.constants import Constants
 
 

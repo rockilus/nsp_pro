@@ -3,8 +3,8 @@ from typing import List
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import ConstraintFil
+from engine.model.utils.model_utils import build_var_name_constraint, get_nested_value
+from engine.types import ConstraintFil, ObjectiveCategory
 
 
 # pylint: disable=too-few-public-methods
@@ -35,7 +35,9 @@ class AddConstraintFil(AddConstraint):
                 ],
             )
             cstr_vars: List[cp_model.IntVar] = [cstr_var]
-            var_name = build_var_name(constraint, cstr_vars, "constraint")
+            var_name = build_var_name_constraint(
+                constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
+            )
             cstr_vars = [var.Not() for var in cstr_vars]  # type: ignore # [CHECK IF OK]
             lit = self.model.NewBoolVar(var_name)
             cstr_vars.append(lit)

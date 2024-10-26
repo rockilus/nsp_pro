@@ -3,8 +3,8 @@ from typing import List
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import ShiftDemand
+from engine.model.utils.model_utils import get_nested_value
+from engine.types import ShiftDemand
 
 
 # pylint: disable=too-few-public-methods
@@ -26,7 +26,7 @@ class AddCoverage(AddConstraint):
                     )
                     self.model.Add(sum(c_variables) == sum_var)
                     continue
-                var_name = build_var_name(shift_demand, c_variables, "coverage")
+                var_name = ""
                 delta = self.model.NewIntVar(-100, 100, "")
                 self.model.Add(delta == sum(c_variables) - shift_demand.target)
                 excess = self.model.NewIntVar(-100, 100, var_name)
@@ -57,7 +57,7 @@ class AddCoverage(AddConstraint):
             if not hard_to_soft:
                 self.model.Add(sum(c_variables_spe) == shift_demand.target)
             else:
-                var_name = build_var_name(shift_demand, c_variables_gen, "coverage")
+                var_name = ""
                 delta = self.model.NewIntVar(-100, 100, "")
                 self.model.Add(delta == sum(c_variables_spe) - shift_demand.target)
                 excess = self.model.NewIntVar(-100, 100, var_name)

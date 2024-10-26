@@ -1,5 +1,5 @@
 from engine.model.add_constraint import AddConstraint
-from engine.types.input_output_types import ConstraintFai
+from engine.types import ConstraintFai
 
 # from ortools.sat.python import cp_model  # type: ignore
 

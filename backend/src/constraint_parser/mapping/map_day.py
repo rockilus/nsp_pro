@@ -36,11 +36,10 @@ class MapDay:
         raise NotImplementedError(f"Day selector {selector} " + "not implemented")
 
     def get_coords_days_ord(
-        self, cba: ConstraintBuildAugmented
+        self, cba: ConstraintBuildAugmented, interval: int
     ) -> List[Tuple[date, date]]:
         d_vars: List[Tuple[date, date]] = []
         selector = self.get_selector(cba.blocks, cba.constraint_type)
-        interval = self.get_interval(cba.blocks, cba.constraint_type)
         target = self.get_target(cba.blocks, cba.constraint_type)
 
         interval_abs = abs(interval)

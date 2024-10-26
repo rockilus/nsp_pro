@@ -3,8 +3,8 @@ from typing import List
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import build_var_name, get_nested_value
-from engine.types.input_output_types import ConstraintOperator, ConstraintSum
+from engine.model.utils.model_utils import build_var_name_constraint, get_nested_value
+from engine.types import ConstraintOperator, ConstraintSum, ObjectiveCategory
 from utils.constants import Constants
 
 
@@ -83,7 +83,9 @@ class AddConstraintSum(AddConstraint):
                     "hard" if constraint.hard else "soft",
                 ],
             )
-            var_name = build_var_name(constraint, cstr_vars, "constraint")
+            var_name = build_var_name_constraint(
+                constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
+            )
             if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(
                     -constraint.target_value * Constants.NUM_MINUTES_HOUR,
@@ -189,7 +191,9 @@ class AddConstraintSum(AddConstraint):
                     "hard" if constraint.hard else "soft",
                 ],
             )
-            var_name = build_var_name(constraint, cstr_vars, "constraint")
+            var_name = build_var_name_constraint(
+                constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
+            )
             if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
                 self.model.Add(delta == sum(cstr_vars) - constraint.target_value)

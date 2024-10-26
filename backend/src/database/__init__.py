@@ -1,5 +1,6 @@
 from database.assignment_db import AssignmentDB
 from database.attribute_db import AttributeDB
+from database.breach_db import BreachDB
 from database.config_db import ConfigDB
 from database.constraint_build_db import ConstraintBuildDB
 from database.coverage_db import CoverageDB
@@ -8,7 +9,6 @@ from database.daily_shift_demand_db import DailyShiftDemandDB
 from database.db import DB
 from database.dim_entry_db import DimEntryDB
 from database.dimension_db import DimensionDB
-from database.objective_breach_db import ObjectiveBreachDB
 from database.request_db import RequestDB
 from database.schedule_db import ScheduleDB
 from database.shift_db import ShiftDB
@@ -24,6 +24,7 @@ from database.worker_db import WorkerDB
 __all__ = [
     "AssignmentDB",
     "AttributeDB",
+    "BreachDB",
     "ConfigDB",
     "ConstraintBuildDB",
     "CoverageDB",
@@ -32,7 +33,6 @@ __all__ = [
     "DB",
     "DimEntryDB",
     "DimensionDB",
-    "ObjectiveBreachDB",
     "RequestDB",
     "ScheduleDB",
     "ShiftDB",
