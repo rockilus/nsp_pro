@@ -1,5 +1,12 @@
+.breach-lhs-tab-container {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  width: 100%;
+  margin: 10px 10px 5px 5px;
+}
+
 .breach-selector-button {
-  background-color: #f5f5f5;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   color: #333;
@@ -8,4 +15,45 @@
   font-size: 12px;
   margin-right: 5px;
   padding: 1px 6px;
+  background-color: transparent; /* Transparent when not selected */
+  transition: background-color 0.3s, color 0.3s; /* Smooth transitions */
+}
+
+/* Light gray background when selected */
+.breach-selector-button.selected {
+  background-color: #f5f5f5;
+}
+
+/* Change background color on hover */
+.breach-selector-button:hover {
+  background-color: rgba(0, 0, 0, 0.05); /* Slightly darker transparent */
+}
+
+.category-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.breach-list-container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 15px;
+}
+
+.no-breach-container {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 0.5px solid lightgrey;
+  padding: 5px 0;
+  align-items: center;
+}
+
+.no-breach-text {
+  font-weight: 400;
+  font-size: 0.875rem;
+  font-style: italic;
+  line-height: 1.4;
+  letter-spacing: 0.001rem;
+  margin: 0;
+  padding: 0 5px 0 0;
 }

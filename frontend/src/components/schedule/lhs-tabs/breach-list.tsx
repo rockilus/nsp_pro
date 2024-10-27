@@ -3,6 +3,7 @@ import { useTranslation } from "../../../app/i18n/client";
 // Components
 import BreachItem from "./breach-item";
 // Styles
+import "../../../styles/text-styles.css";
 import "./breach-list.css";
 // Types
 import { BreachT, ObjectiveCategory } from "../../../types/schedule";
@@ -62,30 +63,24 @@ export default function BreachList({
     }
   };
 
+  console.log(selectedCategories);
+
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignSelf: "flex-start",
-        width: "100%",
-        margin: "10px 10px 5px 5px",
-      }}
-    >
-      <span
-        style={{
-          fontSize: "1rem",
-          fontWeight: 600,
-          color: "#3C4043",
-        }}
-      >
-        {t("breaches")}
-      </span>
+    <div className="breach-lhs-tab-container">
+      <span className="title">{t("breaches")}</span>
       <div>
         {categoryMap.map((c) => (
           <button
             key={c.category}
-            className="breach-selector-button"
+            className={`breach-selector-button ${
+              c.category === "all"
+                ? selectedCategories.length === 6
+                  ? "selected"
+                  : ""
+                : selectedCategories.includes(c.category)
+                ? "selected"
+                : ""
+            }`}
             onClick={() => handleCategoryClick(c.category)}
           >
             {c.label}
@@ -93,7 +88,7 @@ export default function BreachList({
         ))}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column" }}>
+      <div className="category-container">
         {categoryMap
           .filter(
             (c) =>
@@ -104,42 +99,11 @@ export default function BreachList({
               (breach) => breach.objectiveCategory === category.category
             );
             return (
-              <div
-                key={category.category}
-                style={{ display: "flex", flexDirection: "column" }}
-              >
-                <span
-                  style={{
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                    color: "#3C4043",
-                  }}
-                >
-                  {category.label}
-                </span>
+              <div key={category.category} className="breach-list-container">
+                <span className="subtitle">{category.label}</span>
                 {breachesCategory.length === 0 ? (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      borderBottom: "0.5px solid lightgrey",
-                      padding: "5px 0",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontWeight: 400,
-                        fontSize: "0.875rem",
-                        fontStyle: "italic",
-                        lineHeight: "1.4",
-                        letterSpacing: "0.001rem",
-                        margin: "0",
-                        padding: "0 5px 0 0",
-                      }}
-                    >
-                      {"No breach."}
-                    </span>
+                  <div className="no-breach-container">
+                    <span className="no-breach-text">{"No breach."}</span>
                   </div>
                 ) : (
                   breachesCategory.map((breach) => (
