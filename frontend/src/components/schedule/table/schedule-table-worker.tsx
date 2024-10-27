@@ -10,11 +10,9 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
 // Components
 import ScheduleTableCellContent from "./schedule-table-cell-content";
-// Utils
-import { getCellBackgroundColor } from "../../data-display/schedule-utils";
+import DateHeaderCell from "./date-header-cell";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -79,39 +77,7 @@ export default function ScheduleTableWorker({
               ></Box>
             </TableCell>
             {dates.map((date, dateIndex) => (
-              <TableCell key={dateIndex} sx={{ padding: 0 }}>
-                <Box>
-                  <Typography
-                    sx={{
-                      fontSize: "0.75rem",
-                      color: "grey.500",
-                      textAlign: "center",
-                      backgroundColor: getCellBackgroundColor(date, schedule),
-                    }}
-                  >
-                    {date.format("MMM")}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: "0.8rem",
-                      textAlign: "center",
-                      backgroundColor: getCellBackgroundColor(date, schedule),
-                    }}
-                  >
-                    {date.format("ddd")}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: "0.9rem",
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: getCellBackgroundColor(date, schedule),
-                    }}
-                  >
-                    {date.format("DD")}
-                  </Typography>
-                </Box>
-              </TableCell>
+              <DateHeaderCell key={dateIndex} date={date} />
             ))}
           </TableRow>
         </TableHead>
@@ -145,7 +111,6 @@ export default function ScheduleTableWorker({
                     key={dateIndex}
                     sx={{
                       align: "center",
-                      backgroundColor: getCellBackgroundColor(date, schedule),
                     }}
                   >
                     {targetAs.map((a, aIndex) => {
