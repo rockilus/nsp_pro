@@ -11,12 +11,10 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
 // Components
 import ScheduleTableCellContent from "./schedule-table-cell-content";
 import DailyShiftDemandCell from "./daily-shift-demand-cell";
-// Utils
-import { getCellBackgroundColor } from "../../data-display/schedule-utils";
+import DateHeaderCell from "./date-header-cell";
 // Types
 import { ShiftT, ShiftType } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -97,28 +95,7 @@ export default function ScheduleTableShift({
               }}
             ></TableCell>
             {dates.map((date, dateIndex) => (
-              <TableCell
-                key={dateIndex}
-                sx={{
-                  padding: 0,
-                  backgroundColor: getCellBackgroundColor(date, schedule),
-                }}
-              >
-                <Box>
-                  <Typography sx={{ fontSize: "0.8rem", textAlign: "center" }}>
-                    {date.format("ddd")}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: "0.9rem",
-                      fontWeight: "bold",
-                      textAlign: "center",
-                    }}
-                  >
-                    {date.format("DD")}
-                  </Typography>
-                </Box>
-              </TableCell>
+              <DateHeaderCell key={dateIndex} date={date} />
             ))}
           </TableRow>
           <TableRow>
@@ -156,7 +133,6 @@ export default function ScheduleTableShift({
                   key={dateIndex}
                   sx={{
                     padding: 0,
-                    backgroundColor: getCellBackgroundColor(date, schedule),
                   }}
                 >
                   <DailyShiftDemandCell
@@ -225,7 +201,6 @@ export default function ScheduleTableShift({
                       key={dateIndex}
                       sx={{
                         align: "center",
-                        backgroundColor: getCellBackgroundColor(date, schedule),
                       }}
                     >
                       {targetAs.map((a, aIndex) => {

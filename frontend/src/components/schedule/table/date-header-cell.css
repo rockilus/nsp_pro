@@ -1,0 +1,41 @@
+.date-header-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 5px 0;
+}
+
+.weekday {
+  font-size: 0.7rem;
+  text-align: center;
+  text-transform: uppercase;
+  color: #616161;
+  height: 20px;
+}
+.weekday.today {
+  color: #1a73e8;
+}
+
+.month-day-container {
+  background-color: transparent;
+  padding: 7px;
+  border-radius: 50%;
+  text-align: center;
+}
+
+/* Light blue background for today */
+.month-day-container.today {
+  background-color: #1a73e8;
+}
+
+.month-day {
+  font-size: 1.5rem;
+  font-weight: 350;
+  text-align: center;
+}
+
+.month-day.today {
+  color: white;
+}
