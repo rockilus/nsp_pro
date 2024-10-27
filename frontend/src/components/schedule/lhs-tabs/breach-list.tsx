@@ -19,21 +19,21 @@ export default function BreachList({
 
   const categoryMap: { category: ObjectiveCategory | "all"; label: string }[] =
     [
-      { category: "all", label: "All" },
-      { category: ObjectiveCategory.CONSTRAINT, label: "Constraint" },
-      { category: ObjectiveCategory.REQUEST, label: "Request" },
-      { category: ObjectiveCategory.DAILY_SHIFT_DEMAND, label: "Coverage" },
+      { category: "all", label: t("all") },
+      { category: ObjectiveCategory.CONSTRAINT, label: t("constraint") },
+      { category: ObjectiveCategory.REQUEST, label: t("request") },
+      { category: ObjectiveCategory.DAILY_SHIFT_DEMAND, label: t("coverage") },
       {
         category: ObjectiveCategory.WORK_TIME_CONTRACT,
-        label: "Work time contract",
+        label: t("work_time_contract"),
       },
       {
         category: ObjectiveCategory.WORK_TIME_DESIRED,
-        label: "Work time desired",
+        label: t("work_time_desired"),
       },
       {
         category: ObjectiveCategory.DUTIES_PER_MONTH,
-        label: "Duties per month",
+        label: t("duties_per_month"),
       },
     ];
 
@@ -103,7 +103,7 @@ export default function BreachList({
                 <span className="subtitle">{category.label}</span>
                 {breachesCategory.length === 0 ? (
                   <div className="no-breach-container">
-                    <span className="no-breach-text">{"No breach."}</span>
+                    <span className="no-breach-text">{t("no_breach")}</span>
                   </div>
                 ) : (
                   breachesCategory.map((breach) => (
