@@ -322,7 +322,7 @@ export default function AssignmentOptions({
                 fontStyle: "italic",
               }}
             >
-              {t("no_breaches")}
+              {t("no_breach")}
             </Typography>
           ) : (
             breachesNoRequests.map((breach, index) => (

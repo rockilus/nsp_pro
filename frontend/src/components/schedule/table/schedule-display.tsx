@@ -31,7 +31,6 @@ export default function ScheduleDisplay({
   requests,
   selectedDisplay,
   showBreaches,
-  CBsDisplayed,
   handleCellSelection,
   handleCreateDSD,
   handleUpdateDSD,
@@ -49,7 +48,6 @@ export default function ScheduleDisplay({
   requests: RequestT[];
   selectedDisplay: string;
   showBreaches: boolean;
-  CBsDisplayed: string[];
   handleCellSelection: (selectedCell: SelectedCellT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;

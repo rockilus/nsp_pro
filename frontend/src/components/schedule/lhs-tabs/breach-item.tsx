@@ -5,62 +5,10 @@ import minMax from "dayjs/plugin/minMax";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 // Types
 import { BreachT } from "../../../types/schedule";
-import { ShiftT } from "../../../types/shift";
-import { WorkerT } from "../../../types/worker";
 
 dayjs.extend(minMax);
 
-export default function BreachItem({
-  breach,
-  CBDisplayed,
-  workers,
-  shifts,
-  addCBsDisplayed,
-  removeCBsDisplayed,
-}: {
-  breach: BreachT;
-  CBDisplayed: boolean;
-  workers: WorkerT[];
-  shifts: ShiftT[];
-  addCBsDisplayed: (ids: string[]) => void;
-  removeCBsDisplayed: (ids: string[]) => void;
-}) {
-  const getDates = (): string => {
-    const dates = breach.variables.map((variable) => variable.date);
-    if (dates.length === 0) {
-      return "";
-    }
-    const minDate = dayjs.min(dates) as dayjs.Dayjs;
-    const maxDate = dayjs.max(dates) as dayjs.Dayjs;
-    if (minDate.isSame(maxDate, "date")) {
-      return minDate.format("MM/DD/YYYY");
-    } else {
-      return `${minDate.format("MM/DD/YYYY")} - ${maxDate.format(
-        "MM/DD/YYYY"
-      )}`;
-    }
-  };
-
-  const getWorkerNames = (): string => {
-    const workerIds = Array.from(
-      new Set(breach.variables.map((variable) => variable.workerId))
-    );
-    const workerNames = workers
-      .filter((worker) => workerIds.includes(worker.id))
-      .map((worker) => worker.name);
-    return workerNames.join(", ");
-  };
-
-  const getShiftNames = (): string => {
-    const shiftIds = Array.from(
-      new Set(breach.variables.map((variable) => variable.shiftId))
-    );
-    const shiftNames = shifts
-      .filter((shift) => shiftIds.includes(shift.id))
-      .map((shift) => shift.name);
-    return shiftNames.join(", ");
-  };
-
+export default function BreachItem({ breach }: { breach: BreachT }) {
   return (
     <div
       style={{

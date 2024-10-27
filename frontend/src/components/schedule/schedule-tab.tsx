@@ -83,7 +83,6 @@ export default function ScheduleTab({
 
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
-  const [CBsDisplayed, setCBsDisplayed] = useState<string[]>([]);
   const [selectedCell, setSelectedCell] = useState<SelectedCellT | null>(null);
 
   const [selectedTimeView, setSelectedTimeView] = useState<string>("week");
@@ -105,13 +104,6 @@ export default function ScheduleTab({
     } else {
       setSelectedTab(tabName);
     }
-  };
-
-  const addCBsDisplayed = (ids: string[]) => {
-    setCBsDisplayed(Array.from(new Set([...CBsDisplayed, ...ids])));
-  };
-  const removeCBsDisplayed = (ids: string[]) => {
-    setCBsDisplayed(CBsDisplayed.filter((cbId) => !ids.includes(cbId)));
   };
 
   const handleCellSelection = (selectedCell: SelectedCellT) => {
@@ -381,17 +373,7 @@ export default function ScheduleTab({
   }, [selectedTeamId]);
 
   const lhsTabContent = {
-    Breaches: (
-      <BreachList
-        lng={lng}
-        breaches={breaches}
-        CBsDisplayed={CBsDisplayed}
-        workers={workers}
-        shifts={shifts}
-        addCBsDisplayed={addCBsDisplayed}
-        removeCBsDisplayed={removeCBsDisplayed}
-      />
-    ),
+    Breaches: <BreachList lng={lng} breaches={breaches} />,
     "Quick staffing": schedule ? (
       <QuickStaffingTable
         lng={lng}
@@ -492,7 +474,6 @@ export default function ScheduleTab({
               requests={requests}
               selectedDisplay={selectedDisplay}
               showBreaches={showBreaches}
-              CBsDisplayed={CBsDisplayed}
               handleCellSelection={handleCellSelection}
               handleCreateDSD={handleCreateDSD}
               handleUpdateDSD={handleUpdateDSD}
