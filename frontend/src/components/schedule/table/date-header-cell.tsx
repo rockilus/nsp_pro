@@ -1,17 +1,15 @@
 import React from "react";
 import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import utc from "dayjs/plugin/utc";
 // MUI
 import TableCell from "@mui/material/TableCell";
 // Styles
 import "./date-header-cell.css";
 
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
+dayjs.extend(utc);
 
 export default function DateHeaderCell({ date }: { date: dayjs.Dayjs }) {
-  const today = dayjs().startOf("day");
+  const today = dayjs.utc().startOf("day");
   const isToday = date.isSame(today, "day");
 
   return (

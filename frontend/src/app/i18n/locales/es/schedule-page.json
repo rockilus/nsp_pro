@@ -20,6 +20,7 @@
     "selection": "Selección",
     "set": "Fijar",
     "shift": "Turno",
+    "shift_count": "Número de turnos",
     "solve": "Resolver",
     "start": "Inicio",
     "status": "Estado",
@@ -30,6 +31,7 @@
     "validate_title": "Validar la campaña?",
     "view": "Vista",
     "worker": "Trabajador",
+    "worker_count": "Número de trabajadores",
     "work_time_contract": "Tiempo de trabajo contratado",
     "work_time_desired": "Tiempo de trabajo deseado"
 }

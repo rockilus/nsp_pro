@@ -1,6 +1,4 @@
 import React from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Checkbox from "@mui/material/Checkbox";
@@ -17,8 +15,6 @@ import "../../styles/text-styles.css";
 // Types
 import { ScheduleT } from "../../types/schedule";
 import { ConstraintT } from "../../types/constraint";
-
-dayjs.extend(utc);
 
 export default function ConstraintSelector({
   lng,

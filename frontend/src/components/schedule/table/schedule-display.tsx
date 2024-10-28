@@ -19,6 +19,7 @@ import { RequestT } from "../../../types/request";
 dayjs.extend(utc);
 
 export default function ScheduleDisplay({
+  lng,
   teamId,
   schedule,
   startDate,
@@ -36,6 +37,7 @@ export default function ScheduleDisplay({
   handleUpdateDSD,
   handleDeleteDSD,
 }: {
+  lng: string;
   teamId: string;
   schedule: ScheduleT;
   startDate: dayjs.Dayjs;
@@ -67,6 +69,7 @@ export default function ScheduleDisplay({
   const scheduleDisplays: { [key: string]: JSX.Element } = {
     shift: (
       <ScheduleTableShift
+        lng={lng}
         teamId={teamId}
         shifts={shifts}
         workers={workers}
@@ -86,16 +89,22 @@ export default function ScheduleDisplay({
     ),
     worker: (
       <ScheduleTableWorker
+        lng={lng}
+        teamId={teamId}
         shifts={shifts}
         workers={workers}
         requests={requests}
         assignments={assignments}
+        dailyShiftDemands={dailyShiftDemands}
         schedule={schedule}
         dates={buildDates(startDate, endDate)}
         breaches={breaches}
         showBreaches={showBreaches}
         selectedDisplay={selectedDisplay}
         handleCellSelection={handleCellSelection}
+        handleCreateDSD={handleCreateDSD}
+        handleUpdateDSD={handleUpdateDSD}
+        handleDeleteDSD={handleDeleteDSD}
       />
     ),
   };

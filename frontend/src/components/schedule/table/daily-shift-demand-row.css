@@ -1,0 +1,11 @@
+.dsd-row-label-container {
+  width: 100px;
+  padding-left: 10px;
+}
+
+.dsd-row-label {
+  font-size: 0.8125rem;
+  font-weight: 300;
+  font-style: italic;
+  color: #616161;
+}

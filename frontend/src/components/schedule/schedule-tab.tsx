@@ -462,6 +462,7 @@ export default function ScheduleTab({
             </Box>
           ) : (
             <ScheduleDisplay
+              lng={lng}
               teamId={selectedTeamId as string}
               schedule={schedule as ScheduleT}
               startDate={currentPeriodStart}
