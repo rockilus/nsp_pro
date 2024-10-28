@@ -51,6 +51,7 @@ export default function DailyShiftDemandRow({
           left: 0,
           backgroundColor: "#FFFFFF",
           padding: 0,
+          width: "100px",
         }}
       >
         <div className="dsd-row-label-container">

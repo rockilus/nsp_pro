@@ -3,18 +3,15 @@ import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // MUI
-import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
 // Components
-import ScheduleTableCellContent from "./schedule-table-cell-content";
 import DatesHeaderRow from "./dates-header-row";
 import DailyShiftDemandRow from "./daily-shift-demand-row";
+import ShiftTableRow from "./shift-table-row";
 // Types
 import { ShiftT, ShiftType } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -39,7 +36,7 @@ export default function ScheduleTableShift({
   assignments,
   dailyShiftDemands,
   schedule,
-  dates,
+  periodDates,
   breaches,
   showBreaches,
   selectedDisplay,
@@ -56,7 +53,7 @@ export default function ScheduleTableShift({
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
   schedule: ScheduleT;
-  dates: dayjs.Dayjs[];
+  periodDates: dayjs.Dayjs[];
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
@@ -73,7 +70,7 @@ export default function ScheduleTableShift({
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
-          <DatesHeaderRow dates={dates} />
+          <DatesHeaderRow dates={periodDates} />
           <DailyShiftDemandRow
             lng={lng}
             selectedDisplay={selectedDisplay}
@@ -82,7 +79,7 @@ export default function ScheduleTableShift({
             assignments={assignments}
             dailyShiftDemands={dailyShiftDemands}
             schedule={schedule}
-            dates={dates}
+            dates={periodDates}
             handleCreateDSD={handleCreateDSD}
             handleUpdateDSD={handleUpdateDSD}
             handleDeleteDSD={handleDeleteDSD}
@@ -96,78 +93,20 @@ export default function ScheduleTableShift({
                 s.shiftType === ShiftType.DUTY
             )
             .map((shift, shiftIndex) => (
-              <TableRow key={shiftIndex}>
-                <TableCell
-                  sx={{
-                    position: "sticky",
-                    left: 0,
-                    backgroundColor: "#FFFFFF",
-                    padding: 0,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: "100px",
-                      padding: "10px",
-                    }}
-                  >
-                    {shift.name} {shift.startTime.format("HH:mm")}
-                    <br />
-                    {shift.endTime.format("HH:mm")}
-                    {!shift.endTime.isSame(shift.startTime, "day") && (
-                      <sup>+1</sup>
-                    )}
-                  </Box>
-                </TableCell>
-                {dates.map((date, dateIndex) => {
-                  const targetAs = assignments.filter(
-                    (a) => a.shiftId === shift.id && a.date.isSame(date, "date")
-                  );
-
-                  return (
-                    <TableCell
-                      key={dateIndex}
-                      sx={{
-                        align: "center",
-                      }}
-                    >
-                      {targetAs.map((a, aIndex) => {
-                        const worker =
-                          workers.find((w) => w.id === a.workerId) || null;
-                        const targetBs = breaches.filter((b) =>
-                          b.variables.find(
-                            (v) =>
-                              v.workerId === a.workerId &&
-                              v.date.isSame(a.date, "date")
-                            // v.shiftId === a.shiftId
-                          )
-                        );
-                        const targetRequests = requests.filter(
-                          (r) =>
-                            r.workerId === a.workerId &&
-                            r.startDate.isSameOrBefore(a.date, "date") &&
-                            r.endDate.isSameOrAfter(a.date, "date")
-                        );
-                        return (
-                          worker && (
-                            <ScheduleTableCellContent
-                              key={aIndex}
-                              worker={worker}
-                              shift={shift}
-                              requests={targetRequests}
-                              assignment={a}
-                              breaches={targetBs}
-                              showBreaches={showBreaches}
-                              selectedDisplay={selectedDisplay}
-                              handleCellSelection={handleCellSelection}
-                            />
-                          )
-                        );
-                      })}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
+              <ShiftTableRow
+                key={shiftIndex}
+                shift={shift}
+                workers={workers}
+                requests={requests}
+                assignments={assignments}
+                dailyShiftDemands={dailyShiftDemands}
+                periodDates={periodDates}
+                schedule={schedule}
+                breaches={breaches}
+                showBreaches={showBreaches}
+                selectedDisplay={selectedDisplay}
+                handleCellSelection={handleCellSelection}
+              />
             ))}
         </TableBody>
       </Table>
