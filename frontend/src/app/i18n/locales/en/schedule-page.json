@@ -20,6 +20,7 @@
     "selection": "Selection",
     "set": "Set",
     "shift": "Shift",
+    "shift_count": "Shift count",
     "solve": "Solve",
     "start": "Start",
     "status": "Status",
@@ -30,6 +31,7 @@
     "validate_title": "Validate this campaign?",
     "view": "View",
     "worker": "Worker",
+    "worker_count": "Worker count",
     "work_time_contract": "Work time contract",
     "work_time_desired": "Work time desired"
 }

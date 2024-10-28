@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Popover from "@mui/material/Popover";
 // Styles
 import "./daily-shift-demand-cell.css";
+import "../../../styles/text-styles.css";
 // Types
 import {
   AssignmentT,
@@ -17,6 +19,8 @@ import { ShiftT, ShiftType } from "../../../types/shift";
 dayjs.extend(utc);
 
 export default function DailyShiftDemandCell({
+  lng,
+  selectedDisplay,
   teamId,
   schedule,
   dateCell,
@@ -27,6 +31,8 @@ export default function DailyShiftDemandCell({
   handleUpdateDSD,
   handleDeleteDSD,
 }: {
+  lng: string;
+  selectedDisplay: string;
   teamId: string;
   schedule: ScheduleT;
   dateCell: dayjs.Dayjs;
@@ -37,6 +43,8 @@ export default function DailyShiftDemandCell({
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleDeleteDSD: (dsdId: string, teamId: string) => void;
 }) {
+  const { t } = useTranslation(lng, "schedule-page");
+
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );
@@ -51,11 +59,32 @@ export default function DailyShiftDemandCell({
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
 
-  const actualTotal = assignmentsWorkNotDeleted.length;
-  const targetTotal = dsdsWorkNotDeleted.reduce(
-    (sum, dsd) => sum + dsd.count,
-    0
+  // Create a shiftId to Shift map for efficient lookup
+  const shiftMap: { [key: string]: ShiftT } = shiftsWorkNotDeleted.reduce(
+    (map, shift) => {
+      map[shift.id] = shift;
+      return map;
+    },
+    {} as { [key: string]: ShiftT }
   );
+
+  const actualTotal = assignmentsWorkNotDeleted.length;
+  const targetTotal =
+    selectedDisplay === "shift"
+      ? dsdsWorkNotDeleted.reduce((sum, dsd) => sum + dsd.count, 0)
+      : dsdsWorkNotDeleted.reduce((total, dsd) => {
+          const shift = shiftMap[dsd.shiftId];
+          if (shift && shift.staffing.length > 0) {
+            // Sum all staffing counts for this shift
+            const shiftStaffingTotal = shift.staffing.reduce(
+              (shiftTotal, staffingEntry) =>
+                shiftTotal + staffingEntry.staffing,
+              0
+            );
+            return total + shiftStaffingTotal * dsd.count;
+          }
+          return total;
+        }, 0);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -172,15 +201,30 @@ export default function DailyShiftDemandCell({
   const PopoverContent = () => {
     return (
       <div>
+        <span className="subtitle">
+          {selectedDisplay === "shift" ? t("shift_count") : t("worker_count")}
+        </span>
+        <div className="divider-popover" />
         {shiftsWorkNotDeleted.map((shift) => {
-          const shiftAssignments = assignments.filter(
+          const assignmentsShift = assignments.filter(
             (a) => a.shiftId === shift.id
           );
-          const shiftDSDs = dailyShiftDemands.filter(
+          const DSDsShift = dailyShiftDemands.filter(
             (dsd) => dsd.shiftId === shift.id
           );
-          const actualNum = shiftAssignments.length;
-          const targetNum = shiftDSDs.reduce((sum, dsd) => sum + dsd.count, 0);
+          const shiftStaffingTotal = shift.staffing.reduce(
+            (sum, staffingEntry) => sum + staffingEntry.staffing,
+            0
+          );
+
+          const actualNum = assignmentsShift.length;
+          const targetNum =
+            selectedDisplay === "shift"
+              ? DSDsShift.reduce((sum, dsd) => sum + dsd.count, 0)
+              : DSDsShift.reduce(
+                  (sum, dsd) => sum + dsd.count * shiftStaffingTotal,
+                  0
+                );
 
           return (
             <div key={shift.id} className="container-dsd-item">
@@ -190,6 +234,9 @@ export default function DailyShiftDemandCell({
                 }`}
               >
                 <div className="shift-name">{shift.name}</div>
+                {selectedDisplay === "worker" && (
+                  <span className="dsd-stats staffing-count">{`(${shiftStaffingTotal})`}</span>
+                )}
                 <div className="container-dsd-stats">
                   <span className="dsd-stats dsd-stats-actual">
                     {actualNum}

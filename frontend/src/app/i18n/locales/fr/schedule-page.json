@@ -20,6 +20,7 @@
     "selection": "Sélection",
     "set": "Fixer",
     "shift": "Tache",
+    "shift_count": "Nombre de tâches",
     "solve": "Résoudre",
     "start": "Début",
     "status": "Statut",
@@ -30,6 +31,7 @@
     "validate_title": "Valider cette campagne?",
     "view": "Vue",
     "worker": "Travailleur",
+    "worker_count": "Nombre de travailleurs",
     "work_time_contract": "Temps de travail contractuel",
     "work_time_desired": "Temps de travail souhaité"
 }

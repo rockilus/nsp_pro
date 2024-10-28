@@ -12,7 +12,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Components
 import ScheduleTableCellContent from "./schedule-table-cell-content";
-import DateHeaderCell from "./date-header-cell";
+import DatesHeaderRow from "./dates-header-row";
+import DailyShiftDemandRow from "./daily-shift-demand-row";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -21,6 +22,7 @@ import {
   BreachT,
   ScheduleT,
   SelectedCellT,
+  DailyShiftDemandT,
 } from "../../../types/schedule";
 import { RequestT } from "../../../types/request";
 
@@ -28,27 +30,39 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 export default function ScheduleTableWorker({
+  lng,
+  teamId,
   shifts,
   workers,
   requests,
   assignments,
+  dailyShiftDemands,
   schedule,
   dates,
   breaches,
   showBreaches,
   selectedDisplay,
   handleCellSelection,
+  handleCreateDSD,
+  handleUpdateDSD,
+  handleDeleteDSD,
 }: {
+  lng: string;
+  teamId: string;
   shifts: ShiftT[];
   workers: WorkerT[];
   requests: RequestT[];
   assignments: AssignmentT[];
+  dailyShiftDemands: DailyShiftDemandT[];
   schedule: ScheduleT;
   dates: dayjs.Dayjs[];
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
   handleCellSelection: (selectedCell: SelectedCellT) => void;
+  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
+  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  handleDeleteDSD: (dsdId: string, teamId: string) => void;
 }) {
   const workerIdsInAssignments = new Set(assignments.map((a) => a.workerId));
 
@@ -60,26 +74,20 @@ export default function ScheduleTableWorker({
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
-          <TableRow>
-            <TableCell
-              sx={{
-                position: "sticky",
-                left: 0,
-                backgroundColor: "#FFFFFF",
-                padding: 0,
-              }}
-            >
-              <Box
-                sx={{
-                  width: "100px",
-                  padding: "10px",
-                }}
-              ></Box>
-            </TableCell>
-            {dates.map((date, dateIndex) => (
-              <DateHeaderCell key={dateIndex} date={date} />
-            ))}
-          </TableRow>
+          <DatesHeaderRow dates={dates} />{" "}
+          <DailyShiftDemandRow
+            lng={lng}
+            selectedDisplay={selectedDisplay}
+            teamId={teamId}
+            shifts={shifts}
+            assignments={assignments}
+            dailyShiftDemands={dailyShiftDemands}
+            schedule={schedule}
+            dates={dates}
+            handleCreateDSD={handleCreateDSD}
+            handleUpdateDSD={handleUpdateDSD}
+            handleDeleteDSD={handleDeleteDSD}
+          />
         </TableHead>
         <TableBody>
           {filteredWorkers.map((worker, workerIndex) => (
