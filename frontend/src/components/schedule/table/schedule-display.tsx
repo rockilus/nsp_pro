@@ -66,6 +66,8 @@ export default function ScheduleDisplay({
     return dates;
   };
 
+  const periodDates = buildDates(startDate, endDate);
+
   const scheduleDisplays: { [key: string]: JSX.Element } = {
     shift: (
       <ScheduleTableShift
@@ -77,7 +79,7 @@ export default function ScheduleDisplay({
         assignments={assignments}
         dailyShiftDemands={dailyShiftDemands}
         schedule={schedule}
-        dates={buildDates(startDate, endDate)}
+        periodDates={periodDates}
         breaches={breaches}
         showBreaches={showBreaches}
         selectedDisplay={selectedDisplay}
@@ -97,7 +99,7 @@ export default function ScheduleDisplay({
         assignments={assignments}
         dailyShiftDemands={dailyShiftDemands}
         schedule={schedule}
-        dates={buildDates(startDate, endDate)}
+        dates={periodDates}
         breaches={breaches}
         showBreaches={showBreaches}
         selectedDisplay={selectedDisplay}
