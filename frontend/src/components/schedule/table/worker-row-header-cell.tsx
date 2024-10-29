@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import TableCell from "@mui/material/TableCell";
 // Styles
@@ -26,6 +27,8 @@ export default function WorkerRowHeaderCell({
   assignments: AssignmentT[];
   schedule: ScheduleT;
 }) {
+  const { t } = useTranslation(lng, "schedule-page");
+
   const assignmentsWorker = assignments.filter(
     (assignment) =>
       assignment.workerId === worker.id &&
@@ -89,7 +92,6 @@ export default function WorkerRowHeaderCell({
       <div className="worker-row-header-cell-container">
         <span className="worker-name">{worker.name}</span>
         <div className="worker-stats-item">
-          <span className="worker-stats-label">Work time:</span>
           <div
             className={`worker-stats-container ${
               workerWeeklyWorkTimeActual > worker.weeklyHoursDesired && "breach"
@@ -101,9 +103,9 @@ export default function WorkerRowHeaderCell({
             <span className="worker-stats-slash">/</span>
             <span className="worker-stats">{worker.weeklyHoursDesired}</span>
           </div>
+          <span className="worker-stats-label">{t("h/week")}</span>
         </div>
         <div className="worker-stats-item">
-          <span className="worker-stats-label">Nb duties:</span>
           <div
             className={`worker-stats-container ${
               workerDutiesPerMonthActual > worker.dutiesPerMonth && "breach"
@@ -115,6 +117,7 @@ export default function WorkerRowHeaderCell({
             <span className="worker-stats-slash">/</span>
             <span className="worker-stats">{worker.dutiesPerMonth}</span>
           </div>
+          <span className="worker-stats-label">{t("duties/month")}</span>
         </div>
       </div>
     </TableCell>
