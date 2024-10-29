@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import Popover from "@mui/material/Popover";
 // Styles
@@ -13,8 +13,8 @@ import {
   DailyShiftDemandT,
   DSDSourceType,
   ScheduleT,
-} from "../../../types/schedule";
-import { ShiftT, ShiftType } from "../../../types/shift";
+} from "../../../../types/schedule";
+import { ShiftT, ShiftType } from "../../../../types/shift";
 
 dayjs.extend(utc);
 

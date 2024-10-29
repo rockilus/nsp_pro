@@ -9,20 +9,20 @@ import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 // Components
-import DatesHeaderRow from "./dates-header-row";
-import DailyShiftDemandRow from "./daily-shift-demand-row";
+import DatesHeaderRow from "../shared/dates-header-row";
+import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
 import ShiftTableRow from "./shift-table-row";
 // Types
-import { ShiftT, ShiftType } from "../../../types/shift";
-import { WorkerT } from "../../../types/worker";
+import { ShiftT, ShiftType } from "../../../../types/shift";
+import { WorkerT } from "../../../../types/worker";
 import {
   AssignmentT,
   ScheduleT,
   BreachT,
   SelectedCellT,
   DailyShiftDemandT,
-} from "../../../types/schedule";
-import { RequestT } from "../../../types/request";
+} from "../../../../types/schedule";
+import { RequestT } from "../../../../types/request";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);

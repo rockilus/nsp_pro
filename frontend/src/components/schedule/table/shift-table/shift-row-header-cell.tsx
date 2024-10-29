@@ -4,12 +4,12 @@ import TableCell from "@mui/material/TableCell";
 // Styles
 import "./shift-row-header-cell.css";
 // Types
-import { ShiftT } from "../../../types/shift";
+import { ShiftT } from "../../../../types/shift";
 import {
   AssignmentT,
   DailyShiftDemandT,
   ScheduleT,
-} from "../../../types/schedule";
+} from "../../../../types/schedule";
 
 export default function ShiftRowHeaderCell({
   shift,

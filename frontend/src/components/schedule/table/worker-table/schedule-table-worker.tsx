@@ -2,30 +2,26 @@ import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // MUI
-import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
 // Components
-import ScheduleTableCellContent from "./schedule-table-cell-content";
-import DatesHeaderRow from "./dates-header-row";
-import DailyShiftDemandRow from "./daily-shift-demand-row";
+import DatesHeaderRow from "../shared/dates-header-row";
+import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
 import WorkerTableRow from "./worker-table-row";
 // Types
-import { ShiftT } from "../../../types/shift";
-import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../../types/shift";
+import { WorkerT } from "../../../../types/worker";
 import {
   AssignmentT,
   BreachT,
   ScheduleT,
   SelectedCellT,
   DailyShiftDemandT,
-} from "../../../types/schedule";
-import { RequestT } from "../../../types/request";
+} from "../../../../types/schedule";
+import { RequestT } from "../../../../types/request";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);

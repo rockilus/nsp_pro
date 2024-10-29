@@ -1,6 +1,6 @@
 import React from "react";
 import dayjs from "dayjs";
-import { useTranslation } from "../../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
@@ -9,12 +9,12 @@ import DailyShiftDemandCell from "./daily-shift-demand-cell";
 // Styles
 import "./daily-shift-demand-row.css";
 // Types
-import { ShiftT } from "../../../types/shift";
+import { ShiftT } from "../../../../types/shift";
 import {
   AssignmentT,
   ScheduleT,
   DailyShiftDemandT,
-} from "../../../types/schedule";
+} from "../../../../types/schedule";
 
 export default function DailyShiftDemandRow({
   lng,

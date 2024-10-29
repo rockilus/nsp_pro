@@ -2,8 +2,8 @@ import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Components
-import ScheduleTableShift from "./schedule-table-shift";
-import ScheduleTableWorker from "./schedule-table-worker";
+import ScheduleTableShift from "./shift-table/schedule-table-shift";
+import ScheduleTableWorker from "./worker-table/schedule-table-worker";
 // Types
 import {
   AssignmentT,

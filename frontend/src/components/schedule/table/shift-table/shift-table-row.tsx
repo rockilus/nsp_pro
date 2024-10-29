@@ -1,3 +1,4 @@
+import React from "react";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
@@ -5,42 +6,43 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 // Components
-import ScheduleTableCellContent from "./schedule-table-cell-content";
-import WorkerRowHeaderCell from "./worker-row-header-cell";
+import ScheduleTableCellContent from "../schedule-table-cell-content";
+import ShiftRowHeaderCell from "./shift-row-header-cell";
 // Types
-import { ShiftT } from "../../../types/shift";
-import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../../types/shift";
+import { WorkerT } from "../../../../types/worker";
 import {
   AssignmentT,
-  BreachT,
   ScheduleT,
+  BreachT,
   SelectedCellT,
-} from "../../../types/schedule";
-import { RequestT } from "../../../types/request";
+  DailyShiftDemandT,
+} from "../../../../types/schedule";
+import { RequestT } from "../../../../types/request";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
-export default function WorkerTableRow({
-  lng,
-  shifts,
-  worker,
+export default function ShiftTableRow({
+  shift,
+  workers,
   requests,
   assignments,
+  dailyShiftDemands,
+  periodDates,
   schedule,
-  dates,
   breaches,
   showBreaches,
   selectedDisplay,
   handleCellSelection,
 }: {
-  lng: string;
-  shifts: ShiftT[];
-  worker: WorkerT;
+  shift: ShiftT;
+  workers: WorkerT[];
   requests: RequestT[];
   assignments: AssignmentT[];
+  dailyShiftDemands: DailyShiftDemandT[];
+  periodDates: dayjs.Dayjs[];
   schedule: ScheduleT;
-  dates: dayjs.Dayjs[];
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
@@ -48,16 +50,15 @@ export default function WorkerTableRow({
 }) {
   return (
     <TableRow>
-      <WorkerRowHeaderCell
-        lng={lng}
-        shifts={shifts}
-        worker={worker}
+      <ShiftRowHeaderCell
+        shift={shift}
         assignments={assignments}
+        dailyShiftDemands={dailyShiftDemands}
         schedule={schedule}
       />
-      {dates.map((date, dateIndex) => {
+      {periodDates.map((date, dateIndex) => {
         const targetAs = assignments.filter(
-          (a) => a.workerId === worker.id && a.date.isSame(date, "date")
+          (a) => a.shiftId === shift.id && a.date.isSame(date, "date")
         );
 
         return (
@@ -68,11 +69,12 @@ export default function WorkerTableRow({
             }}
           >
             {targetAs.map((a, aIndex) => {
-              const shift = shifts.find((s) => s.id === a.shiftId);
+              const worker = workers.find((w) => w.id === a.workerId) || null;
               const targetBs = breaches.filter((b) =>
                 b.variables.find(
                   (v) =>
                     v.workerId === a.workerId && v.date.isSame(a.date, "date")
+                  // v.shiftId === a.shiftId
                 )
               );
               const targetRequests = requests.filter(
@@ -82,7 +84,7 @@ export default function WorkerTableRow({
                   r.endDate.isSameOrAfter(a.date, "date")
               );
               return (
-                shift && (
+                worker && (
                   <ScheduleTableCellContent
                     key={aIndex}
                     worker={worker}

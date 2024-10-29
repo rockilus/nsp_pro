@@ -1,15 +1,15 @@
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { useTranslation } from "../../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import TableCell from "@mui/material/TableCell";
 // Styles
 import "./worker-row-header-cell.css";
 // Types
-import { ShiftT, ShiftType } from "../../../types/shift";
-import { WorkerT } from "../../../types/worker";
-import { AssignmentT, ScheduleT } from "../../../types/schedule";
+import { ShiftT, ShiftType } from "../../../../types/shift";
+import { WorkerT } from "../../../../types/worker";
+import { AssignmentT, ScheduleT } from "../../../../types/schedule";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
