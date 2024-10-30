@@ -43,6 +43,7 @@ export default function ShiftRowHeaderCell({
         position: "sticky",
         left: 0,
         backgroundColor: "#FFFFFF",
+        borderRight: "1px solid #e0e0e07d",
         padding: 0,
       }}
     >

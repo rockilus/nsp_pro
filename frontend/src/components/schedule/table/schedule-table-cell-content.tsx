@@ -1,6 +1,7 @@
 import React from "react";
 // MUI
 import Box from "@mui/material/Box";
+import TableCell from "@mui/material/TableCell";
 import { red } from "@mui/material/colors";
 // Utils
 import { getBreachType } from "../../data-display/schedule-utils";
@@ -33,46 +34,53 @@ export default function ScheduleTableCellContent({
   const backColor = getBreachType(breaches);
 
   return (
-    <Box
-      onClick={() =>
-        handleCellSelection({
-          assignment: assignment,
-          worker: worker,
-          shift: shift,
-          requests: requests,
-          breaches: breaches,
-        })
-      }
+    <TableCell
       sx={{
-        width: "100%",
-        height: "100%",
-        backgroundColor: showBreaches
-          ? backColor === "hardBreach"
-            ? red[200]
-            : backColor === "softBreach"
-            ? red[100]
-            : "none"
-          : "none",
-        border:
-          assignment.status === "wip" && assignment.fixed
-            ? "3px solid #bdbdbd"
-            : "none",
-        cursor: "pointer",
-        color: assignment.date.isBefore(dayjs(), "day")
-          ? "black"
-          : selectedDisplay === "shift"
-          ? worker.deleted
-            ? "red"
-            : "black"
-          : selectedDisplay === "worker"
-          ? shift.deleted
-            ? "red"
-            : "black"
-          : "black",
+        align: "center",
+        borderRight: "1px solid #e0e0e07d",
       }}
     >
-      {selectedDisplay === "worker" && assignment && shift && shift.name}
-      {selectedDisplay === "shift" && assignment && worker && worker.name}
-    </Box>
+      <Box
+        onClick={() =>
+          handleCellSelection({
+            assignment: assignment,
+            worker: worker,
+            shift: shift,
+            requests: requests,
+            breaches: breaches,
+          })
+        }
+        sx={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: showBreaches
+            ? backColor === "hardBreach"
+              ? red[200]
+              : backColor === "softBreach"
+              ? red[100]
+              : "none"
+            : "none",
+          border:
+            assignment.status === "wip" && assignment.fixed
+              ? "3px solid #bdbdbd"
+              : "none",
+          cursor: "pointer",
+          color: assignment.date.isBefore(dayjs(), "day")
+            ? "black"
+            : selectedDisplay === "shift"
+            ? worker.deleted
+              ? "red"
+              : "black"
+            : selectedDisplay === "worker"
+            ? shift.deleted
+              ? "red"
+              : "black"
+            : "black",
+        }}
+      >
+        {selectedDisplay === "worker" && assignment && shift && shift.name}
+        {selectedDisplay === "shift" && assignment && worker && worker.name}
+      </Box>
+    </TableCell>
   );
 }

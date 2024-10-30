@@ -12,7 +12,7 @@ from core import ObjectiveCategory
 
 
 class Variable(EmbeddedDocument):
-    worker = ReferenceField("Worker", required=True)
+    worker = ReferenceField("Worker")
     date = DateTimeField(required=True)
     shift = ReferenceField("Shift", required=True)
 

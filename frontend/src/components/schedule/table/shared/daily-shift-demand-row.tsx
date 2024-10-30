@@ -50,6 +50,7 @@ export default function DailyShiftDemandRow({
           position: "sticky",
           left: 0,
           backgroundColor: "#FFFFFF",
+          borderRight: "1px solid #e0e0e07d",
           padding: 0,
           width: "100px",
         }}
@@ -68,26 +69,20 @@ export default function DailyShiftDemandRow({
           a.date.isSame(date, "day")
         );
         return (
-          <TableCell
+          <DailyShiftDemandCell
             key={dateIndex}
-            sx={{
-              padding: 0,
-            }}
-          >
-            <DailyShiftDemandCell
-              lng={lng}
-              selectedDisplay={selectedDisplay}
-              teamId={teamId}
-              schedule={schedule}
-              dateCell={date}
-              assignments={aDate}
-              dailyShiftDemands={dsdDate}
-              shifts={shifts}
-              handleCreateDSD={handleCreateDSD}
-              handleUpdateDSD={handleUpdateDSD}
-              handleDeleteDSD={handleDeleteDSD}
-            />
-          </TableCell>
+            lng={lng}
+            selectedDisplay={selectedDisplay}
+            teamId={teamId}
+            schedule={schedule}
+            dateCell={date}
+            assignments={aDate}
+            dailyShiftDemands={dsdDate}
+            shifts={shifts}
+            handleCreateDSD={handleCreateDSD}
+            handleUpdateDSD={handleUpdateDSD}
+            handleDeleteDSD={handleDeleteDSD}
+          />
         );
       })}
     </TableRow>
