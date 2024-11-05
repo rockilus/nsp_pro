@@ -4,8 +4,6 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // MUI
 import TableCell from "@mui/material/TableCell";
-// Utils
-import { getBreachType } from "../../../data-display/schedule-utils";
 // Styles
 import "./shift-cell.css";
 // Types
@@ -31,7 +29,6 @@ export default function ShiftCell({
   assignments,
   breaches,
   showBreaches,
-  selectedDisplay,
   handleCellSelection,
 }: {
   date: dayjs.Dayjs;
@@ -42,7 +39,6 @@ export default function ShiftCell({
   assignments: AssignmentT[];
   breaches: BreachT[];
   showBreaches: boolean;
-  selectedDisplay: string;
   handleCellSelection: (seletedCell: SelectedCellT) => void;
 }) {
   const AssignmentDiv = ({
@@ -53,11 +49,13 @@ export default function ShiftCell({
     isLastAssignment,
   }: {
     assignment: AssignmentT;
-    worker: WorkerT;
+    worker: WorkerT | null;
     breaches: BreachT[];
     requests: RequestT[];
     isLastAssignment: boolean;
   }) => {
+    if (!worker) return <div>No assignment</div>;
+
     const assignmentFixed =
       assignment.scheduleId === schedule.id && assignment.fixed;
     const breachHard =
@@ -67,12 +65,11 @@ export default function ShiftCell({
       !breachHard &&
       (breaches.some((b) => !b.hardToSoft) ||
         requests.some((r) => !r.hard && r.status === "rejected" && r.active));
-
     return (
       <div
         className={`assignment-div-container ${
-          assignmentFixed ? "fix" : isLastAssignment ? "last" : ""
-        }${
+          isLastAssignment ? "last" : ""
+        } ${
           showBreaches && breachHard
             ? "hard-breach"
             : showBreaches && breachSoft
@@ -89,40 +86,42 @@ export default function ShiftCell({
           })
         }
       >
-        <span className="worker-name">{worker.name}</span>
+        <span className={`worker-name-cell ${assignmentFixed ? "fix" : ""}`}>
+          {worker.name}
+        </span>
       </div>
     );
   };
 
   const CellContent = ({}) => {
-    const targetAs = assignments.filter(
-      (a) => a.shiftId === shift.id && a.date.isSame(date, "date")
+    const assignmentsShiftDate = assignments.filter(
+      (a) => a.shiftId === shift.id && a.date.isSame(date, "day")
     );
-    if (targetAs.length === 0) return <div>No assignment</div>;
+
     return (
       <div className="cell-content-container">
-        {targetAs.map((a, aIndex) => {
-          const worker = workers.find((w) => w.id === a.workerId) || null;
-          const targetBs = breaches.filter((b) =>
+        {assignmentsShiftDate.map((a, aIndex) => {
+          const workerAssign = workers.find((w) => w.id === a.workerId) || null;
+          const breachesAssign = breaches.filter((b) =>
             b.variables.find(
-              (v) => v.workerId === a.workerId && v.date.isSame(a.date, "date")
-              // v.shiftId === a.shiftId
+              (v) => v.workerId === a.workerId && v.date.isSame(a.date, "day")
             )
           );
-          const targetRequests = requests.filter(
+          const requestsAssign = requests.filter(
             (r) =>
               r.workerId === a.workerId &&
-              r.startDate.isSameOrBefore(a.date, "date") &&
-              r.endDate.isSameOrAfter(a.date, "date")
+              r.startDate.isSameOrBefore(a.date, "day") &&
+              r.endDate.isSameOrAfter(a.date, "day")
           );
+
           return (
             <AssignmentDiv
               key={aIndex}
               assignment={a}
-              worker={worker}
-              breaches={targetBs}
-              requests={targetRequests}
-              isLastAssignment={aIndex === targetAs.length - 1}
+              worker={workerAssign}
+              breaches={breachesAssign}
+              requests={requestsAssign}
+              isLastAssignment={aIndex === assignmentsShiftDate.length - 1}
             />
           );
         })}
@@ -139,47 +138,6 @@ export default function ShiftCell({
       }}
     >
       <CellContent />
-      {/* <Box
-        onClick={() =>
-          handleCellSelection({
-            assignment: assignment,
-            worker: worker,
-            shift: shift,
-            requests: requests,
-            breaches: breaches,
-          })
-        }
-        sx={{
-          width: "100%",
-          height: "100%",
-          backgroundColor: showBreaches
-            ? backColor === "hardBreach"
-              ? red[200]
-              : backColor === "softBreach"
-              ? red[100]
-              : "none"
-            : "none",
-          border:
-            assignment.status === "wip" && assignment.fixed
-              ? "3px solid #bdbdbd"
-              : "none",
-          cursor: "pointer",
-          color: assignment.date.isBefore(dayjs(), "day")
-            ? "black"
-            : selectedDisplay === "shift"
-            ? worker.deleted
-              ? "red"
-              : "black"
-            : selectedDisplay === "worker"
-            ? shift.deleted
-              ? "red"
-              : "black"
-            : "black",
-        }}
-      >
-        {selectedDisplay === "worker" && assignment && shift && shift.name}
-        {selectedDisplay === "shift" && assignment && worker && worker.name}
-      </Box> */}
     </TableCell>
   );
 }

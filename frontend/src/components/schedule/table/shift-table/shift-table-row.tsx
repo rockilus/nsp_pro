@@ -27,7 +27,6 @@ export default function ShiftTableRow({
   schedule,
   breaches,
   showBreaches,
-  selectedDisplay,
   handleCellSelection,
 }: {
   shift: ShiftT;
@@ -39,7 +38,6 @@ export default function ShiftTableRow({
   schedule: ScheduleT;
   breaches: BreachT[];
   showBreaches: boolean;
-  selectedDisplay: string;
   handleCellSelection: (selectedCell: SelectedCellT) => void;
 }) {
   return (
@@ -61,7 +59,6 @@ export default function ShiftTableRow({
           assignments={assignments}
           breaches={breaches}
           showBreaches={showBreaches}
-          selectedDisplay={selectedDisplay}
           handleCellSelection={handleCellSelection}
         />
       ))}

@@ -104,7 +104,6 @@ export default function ScheduleTableShift({
                 schedule={schedule}
                 breaches={breaches}
                 showBreaches={showBreaches}
-                selectedDisplay={selectedDisplay}
                 handleCellSelection={handleCellSelection}
               />
             ))}

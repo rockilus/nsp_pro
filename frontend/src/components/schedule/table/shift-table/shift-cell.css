@@ -7,7 +7,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  height: 45px;
   width: 100%;
   cursor: pointer;
   border-bottom: 1px solid #e0e0e07d;
@@ -17,19 +17,19 @@
   border-bottom: none;
 }
 
-.assignment-div-container.fix {
-  border: 4px solid #e0e0e0;
-}
-
 .assignment-div-container.hard-breach {
-  border-bottom: none;
+  background-color: #ff00001e;
 }
 
 .assignment-div-container.soft-breach {
-  border-bottom: none;
+  background-color: #ffa5001e;
 }
 
-.worker-name {
+.worker-name-cell {
   font-size: 0.85rem;
   font-weight: 350;
+}
+
+.worker-name-cell.fix {
+  font-weight: 550;
 }
