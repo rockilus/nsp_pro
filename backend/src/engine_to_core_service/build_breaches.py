@@ -459,7 +459,7 @@ def _build_daily_shift_demand_breaches(
                         objective_category=ObjectiveCategory.DAILY_SHIFT_DEMAND,
                         variables=[
                             Variable(
-                                worker_id="",
+                                worker_id=None,
                                 date=d,
                                 shift_id=s.id,
                             )

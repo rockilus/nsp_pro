@@ -1,6 +1,6 @@
 import React from "react";
 import dayjs from "dayjs";
-import { useTranslation } from "../../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
@@ -9,12 +9,12 @@ import DailyShiftDemandCell from "./daily-shift-demand-cell";
 // Styles
 import "./daily-shift-demand-row.css";
 // Types
-import { ShiftT } from "../../../types/shift";
+import { ShiftT } from "../../../../types/shift";
 import {
   AssignmentT,
   ScheduleT,
   DailyShiftDemandT,
-} from "../../../types/schedule";
+} from "../../../../types/schedule";
 
 export default function DailyShiftDemandRow({
   lng,
@@ -50,6 +50,7 @@ export default function DailyShiftDemandRow({
           position: "sticky",
           left: 0,
           backgroundColor: "#FFFFFF",
+          borderRight: "1px solid #e0e0e07d",
           padding: 0,
           width: "100px",
         }}
@@ -68,26 +69,20 @@ export default function DailyShiftDemandRow({
           a.date.isSame(date, "day")
         );
         return (
-          <TableCell
+          <DailyShiftDemandCell
             key={dateIndex}
-            sx={{
-              padding: 0,
-            }}
-          >
-            <DailyShiftDemandCell
-              lng={lng}
-              selectedDisplay={selectedDisplay}
-              teamId={teamId}
-              schedule={schedule}
-              dateCell={date}
-              assignments={aDate}
-              dailyShiftDemands={dsdDate}
-              shifts={shifts}
-              handleCreateDSD={handleCreateDSD}
-              handleUpdateDSD={handleUpdateDSD}
-              handleDeleteDSD={handleDeleteDSD}
-            />
-          </TableCell>
+            lng={lng}
+            selectedDisplay={selectedDisplay}
+            teamId={teamId}
+            schedule={schedule}
+            dateCell={date}
+            assignments={aDate}
+            dailyShiftDemands={dsdDate}
+            shifts={shifts}
+            handleCreateDSD={handleCreateDSD}
+            handleUpdateDSD={handleUpdateDSD}
+            handleDeleteDSD={handleDeleteDSD}
+          />
         );
       })}
     </TableRow>

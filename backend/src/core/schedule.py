@@ -17,7 +17,7 @@ class Assignment:
 
 @dataclass
 class Variable:
-    worker_id: str
+    worker_id: str | None
     date: date
     shift_id: str
 

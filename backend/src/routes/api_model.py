@@ -200,7 +200,7 @@ class DailyShiftDemandMessage(BaseModel):
 
 
 class VariableMessage(BaseModel):
-    workerId: str
+    workerId: str | None
     date: float
     shiftId: str
 

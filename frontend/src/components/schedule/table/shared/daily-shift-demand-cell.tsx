@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../app/i18n/client";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import Popover from "@mui/material/Popover";
+import TableCell from "@mui/material/TableCell";
 // Styles
 import "./daily-shift-demand-cell.css";
-import "../../../styles/text-styles.css";
+import "../../../../styles/text-styles.css";
 // Types
 import {
   AssignmentT,
   DailyShiftDemandT,
   DSDSourceType,
   ScheduleT,
-} from "../../../types/schedule";
-import { ShiftT, ShiftType } from "../../../types/shift";
+} from "../../../../types/schedule";
+import { ShiftT, ShiftType } from "../../../../types/shift";
 
 dayjs.extend(utc);
 
@@ -276,31 +277,38 @@ export default function DailyShiftDemandCell({
   }, [shifts, assignments, dailyShiftDemands]);
 
   return (
-    <div className="container-dsd-cell">
-      <button onClick={handleClick}>
-        <DSDPopoverButton />
-      </button>
-      <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        slotProps={{
-          paper: {
-            style: {
-              boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
-              padding: 20,
-              width: 300,
+    <TableCell
+      sx={{
+        padding: 0,
+        borderRight: "1px solid #e0e0e07d",
+      }}
+    >
+      <div className="container-dsd-cell">
+        <button onClick={handleClick}>
+          <DSDPopoverButton />
+        </button>
+        <Popover
+          id={id}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          slotProps={{
+            paper: {
+              style: {
+                boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+                padding: 20,
+                width: 300,
+              },
             },
-          },
-        }}
-      >
-        <PopoverContent />
-      </Popover>
-    </div>
+          }}
+        >
+          <PopoverContent />
+        </Popover>
+      </div>
+    </TableCell>
   );
 }

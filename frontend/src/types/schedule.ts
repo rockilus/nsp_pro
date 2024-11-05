@@ -35,7 +35,7 @@ export type DailyShiftDemandT = {
 
 // Breach
 export type VariableT = {
-  workerId: string;
+  workerId: string | null;
   date: dayjs.Dayjs;
   shiftId: string;
 };
