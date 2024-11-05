@@ -38,9 +38,7 @@ class BreachDB:
         try:
             b_docs = core_to_doc_breaches(breaches, creating=True)
         except Exception as e:
-            log_info(
-                "Failed to convert ObjectBreaches to ObjectiveBreachDocuments"
-            )
+            log_info("Failed to convert ObjectBreaches to ObjectiveBreachDocuments")
             handle_create_document_error(e)
         try:
             # pylint: disable=no-member
@@ -197,16 +195,12 @@ def core_to_doc_breach(
             schedule=schedule,
             objective_id=dataclass_obj.objective_id,
             objective_category=dataclass_obj.objective_category.value,
-            variables=[
-                core_to_doc_variable(v) for v in dataclass_obj.variables
-            ],
+            variables=[core_to_doc_variable(v) for v in dataclass_obj.variables],
             description=dataclass_obj.description,
             hard_to_soft=dataclass_obj.hard_to_soft,
         )
     except Exception as e:
-        log_info(
-            "Failed to convert ObjectiveBreach to ObjectiveBreachDocument"
-        )
+        log_info("Failed to convert ObjectiveBreach to ObjectiveBreachDocument")
         handle_create_document_error(e)
     return b_doc
 
@@ -217,21 +211,14 @@ def core_to_doc_breaches(
 ) -> List[BreachDocument]:
     # pylint: disable=R0801
     worker_ids = list(
-        set(
-            v.worker_id
-            for doc in dataclass_objs
-            for v in doc.variables
-            if v.worker_id
-        )
+        set(v.worker_id for doc in dataclass_objs for v in doc.variables if v.worker_id)
     )
     # pylint: disable=no-member
     workers = {
         worker.id: worker
         for worker in WorkerDocument.objects.filter(id__in=worker_ids)  # type: ignore
     }
-    shift_ids = list(
-        set(v.shift_id for doc in dataclass_objs for v in doc.variables)
-    )
+    shift_ids = list(set(v.shift_id for doc in dataclass_objs for v in doc.variables))
     shifts = {
         shift.id: shift
         for shift in ShiftDocument.objects.filter(id__in=shift_ids)  # type: ignore
@@ -284,12 +271,8 @@ def doc_to_core_breach(
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["schedule_id"] = doc_dict["schedule"]
     doc_dict["objective_id"] = doc_dict.get("objective_id", None)
-    doc_dict["objective_category"] = ObjectiveCategory(
-        doc_dict["objective_category"]
-    )
-    doc_dict["variables"] = [
-        doc_to_core_variable(v) for v in doc_obj.variables
-    ]
+    doc_dict["objective_category"] = ObjectiveCategory(doc_dict["objective_category"])
+    doc_dict["variables"] = [doc_to_core_variable(v) for v in doc_obj.variables]
     doc_dict["hard_to_soft"] = doc_dict.get("hard_to_soft", None)
     doc_dict.pop("_id")
     doc_dict.pop("schedule")
