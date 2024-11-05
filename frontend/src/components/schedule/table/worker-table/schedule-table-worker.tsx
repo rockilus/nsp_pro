@@ -96,77 +96,11 @@ export default function ScheduleTableWorker({
               requests={requests}
               assignments={assignments}
               schedule={schedule}
-              dates={dates}
+              periodDates={dates}
               breaches={breaches}
               showBreaches={showBreaches}
-              selectedDisplay={selectedDisplay}
               handleCellSelection={handleCellSelection}
             />
-            // <TableRow key={workerIndex}>
-            //   <TableCell
-            //     sx={{
-            //       position: "sticky",
-            //       left: 0,
-            //       backgroundColor: "#FFFFFF",
-            //       padding: 0,
-            //     }}
-            //   >
-            //     <Box
-            //       sx={{
-            //         width: "100px",
-            //         padding: "10px",
-            //       }}
-            //     >
-            //       {worker.name}
-            //     </Box>
-            //   </TableCell>
-            //   {dates.map((date, dateIndex) => {
-            //     const targetAs = assignments.filter(
-            //       (a) => a.workerId === worker.id && a.date.isSame(date, "date")
-            //     );
-
-            //     return (
-            //       <TableCell
-            //         key={dateIndex}
-            //         sx={{
-            //           align: "center",
-            //         }}
-            //       >
-            //         {targetAs.map((a, aIndex) => {
-            //           const shift = shifts.find((s) => s.id === a.shiftId);
-            //           const targetBs = breaches.filter((b) =>
-            //             b.variables.find(
-            //               (v) =>
-            //                 v.workerId === a.workerId &&
-            //                 v.date.isSame(a.date, "date")
-            //             )
-            //           );
-            //           const targetRequests = requests.filter(
-            //             (r) =>
-            //               r.workerId === a.workerId &&
-            //               r.startDate.isSameOrBefore(a.date, "date") &&
-            //               r.endDate.isSameOrAfter(a.date, "date")
-            //           );
-            //           return (
-            //             shift && (
-            //               <ScheduleTableCellContent
-            //                 key={aIndex}
-            //                 worker={worker}
-            //                 shift={shift}
-            //                 requests={targetRequests}
-            //                 assignment={a}
-            //                 breaches={targetBs}
-            //                 showBreaches={showBreaches}
-            //                 selectedDisplay={selectedDisplay}
-            //                 handleCellSelection={handleCellSelection}
-            //               />
-            //             )
-            //           );
-            //         })}
-            //       </TableCell>
-            //     );
-            //   })}
-            // </TableRow>
           ))}
         </TableBody>
       </Table>

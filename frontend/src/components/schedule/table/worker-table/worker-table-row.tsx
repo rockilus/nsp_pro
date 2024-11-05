@@ -2,11 +2,10 @@ import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // MUI
-import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 // Components
-import ScheduleTableCellContent from "../schedule-table-cell-content";
 import WorkerRowHeaderCell from "./worker-row-header-cell";
+import WorkerCell from "./worker-cell";
 // Types
 import { ShiftT } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
@@ -28,10 +27,9 @@ export default function WorkerTableRow({
   requests,
   assignments,
   schedule,
-  dates,
+  periodDates,
   breaches,
   showBreaches,
-  selectedDisplay,
   handleCellSelection,
 }: {
   lng: string;
@@ -40,10 +38,9 @@ export default function WorkerTableRow({
   requests: RequestT[];
   assignments: AssignmentT[];
   schedule: ScheduleT;
-  dates: dayjs.Dayjs[];
+  periodDates: dayjs.Dayjs[];
   breaches: BreachT[];
   showBreaches: boolean;
-  selectedDisplay: string;
   handleCellSelection: (selectedCell: SelectedCellT) => void;
 }) {
   return (
@@ -55,51 +52,20 @@ export default function WorkerTableRow({
         assignments={assignments}
         schedule={schedule}
       />
-      {dates.map((date, dateIndex) => {
-        const targetAs = assignments.filter(
-          (a) => a.workerId === worker.id && a.date.isSame(date, "date")
-        );
-
-        return (
-          <TableCell
-            key={dateIndex}
-            sx={{
-              align: "center",
-            }}
-          >
-            {targetAs.map((a, aIndex) => {
-              const shift = shifts.find((s) => s.id === a.shiftId);
-              const targetBs = breaches.filter((b) =>
-                b.variables.find(
-                  (v) =>
-                    v.workerId === a.workerId && v.date.isSame(a.date, "date")
-                )
-              );
-              const targetRequests = requests.filter(
-                (r) =>
-                  r.workerId === a.workerId &&
-                  r.startDate.isSameOrBefore(a.date, "date") &&
-                  r.endDate.isSameOrAfter(a.date, "date")
-              );
-              return (
-                shift && (
-                  <ScheduleTableCellContent
-                    key={aIndex}
-                    worker={worker}
-                    shift={shift}
-                    requests={targetRequests}
-                    assignment={a}
-                    breaches={targetBs}
-                    showBreaches={showBreaches}
-                    selectedDisplay={selectedDisplay}
-                    handleCellSelection={handleCellSelection}
-                  />
-                )
-              );
-            })}
-          </TableCell>
-        );
-      })}
+      {periodDates.map((date, dateIndex) => (
+        <WorkerCell
+          key={dateIndex}
+          date={date}
+          schedule={schedule}
+          worker={worker}
+          shifts={shifts}
+          requests={requests}
+          assignments={assignments}
+          breaches={breaches}
+          showBreaches={showBreaches}
+          handleCellSelection={handleCellSelection}
+        />
+      ))}
     </TableRow>
   );
 }
