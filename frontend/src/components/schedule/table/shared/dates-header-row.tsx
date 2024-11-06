@@ -8,7 +8,12 @@ import DateHeaderCell from "./date-header-cell";
 
 export default function DatesHeaderRow({ dates }: { dates: dayjs.Dayjs[] }) {
   return (
-    <TableRow>
+    <TableRow
+      style={{
+        backgroundColor: "white",
+        boxShadow: "1px 1px 0px 0px rgba(224, 224, 224, 1)",
+      }}
+    >
       <TableCell
         sx={{
           position: "sticky",
