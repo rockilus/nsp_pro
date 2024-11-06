@@ -4,6 +4,15 @@
   padding-left: 10px;
 }
 
+.shift-type-marker {
+  width: 10px;
+  height: 10px;
+}
+
+.shift-type-marker.duty {
+  background-color: blue;
+}
+
 .shift-row-header-cell-left {
   display: flex;
   flex-direction: column;
