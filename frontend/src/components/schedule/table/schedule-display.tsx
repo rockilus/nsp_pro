@@ -112,17 +112,4 @@ export default function ScheduleDisplay({
   };
 
   return scheduleDisplays[selectedDisplay];
-  // <Box
-  //   sx={{
-  //     border: "1px solid grey",
-  //     margin: 2,
-  //     marginLeft: 0,
-  //     overflowX: "auto",
-  //     borderRadius: 2,
-  //     backgroundColor: "none",
-  //   }}
-  // >
-  //   {scheduleDisplays[selectedDisplay]}
-  // </Box>
-  // );
 }
