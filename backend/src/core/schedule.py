@@ -7,10 +7,11 @@ from typing import List
 @dataclass
 class Assignment:
     id: str
+    team_id: str
+    schedule_id: str
     worker_id: str
     date: date
     shift_id: str
-    schedule_id: str
     status: str  # wip, valid, past
     fixed: bool
 
