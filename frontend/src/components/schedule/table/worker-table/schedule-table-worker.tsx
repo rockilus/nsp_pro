@@ -68,10 +68,20 @@ export default function ScheduleTableWorker({
   );
 
   return (
-    <TableContainer component={Paper} style={{ width: "100%" }}>
+    <TableContainer
+      component={Paper}
+      style={{ width: "100%", height: "calc(100vh - 104px)" }}
+    >
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <DatesHeaderRow dates={dates} />{" "}
+        <TableHead
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+            backgroundColor: "white",
+          }}
+        >
+          <DatesHeaderRow dates={dates} />
           <DailyShiftDemandRow
             lng={lng}
             selectedDisplay={selectedDisplay}

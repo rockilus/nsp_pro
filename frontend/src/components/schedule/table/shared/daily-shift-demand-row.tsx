@@ -44,7 +44,12 @@ export default function DailyShiftDemandRow({
   const { t } = useTranslation(lng, "schedule-page");
 
   return (
-    <TableRow>
+    <TableRow
+      style={{
+        backgroundColor: "white",
+        boxShadow: "1px 1px 0px 0px rgba(224, 224, 224, 1)",
+      }}
+    >
       <TableCell
         sx={{
           position: "sticky",
