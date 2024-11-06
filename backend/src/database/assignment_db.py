@@ -51,7 +51,20 @@ class AssignmentDB:
             handle_save_document_error(e)
         return [doc_to_core_assignment(a) for a in a_saved]
 
-    def get_assignments(self, schedules: List[Schedule]) -> List[Assignment]:
+    def get_assignments(self, team_id: str) -> List[Assignment]:
+        try:
+            # pylint: disable=no-member
+            assignments = AssignmentDocument.objects.filter(  # type: ignore
+                team=team_id
+            )
+        except Exception as e:
+            log_info("Failed to get assignments from database")
+            handle_get_document_error(e)
+        return [doc_to_core_assignment(a) for a in list(assignments)]
+
+    def get_assignments_by_schedules(
+        self, schedules: List[Schedule]
+    ) -> List[Assignment]:
         s_docs = [core_to_doc_schedule(s) for s in schedules]
         try:
             # pylint: disable=no-member
@@ -95,13 +108,12 @@ class AssignmentDB:
         return doc_to_core_assignment(assignment)
 
     def get_assignments_by_dates(
-        self, start_date: date, end_date: date, schedules: List[Schedule]
+        self, team_id: str, start_date: date, end_date: date
     ) -> List[Assignment]:
-        s_docs = [core_to_doc_schedule(s) for s in schedules]
         try:
             # pylint: disable=no-member
             assignments = AssignmentDocument.objects.filter(  # type: ignore
-                date__gte=start_date, date__lte=end_date, schedule__in=s_docs
+                team=team_id, date__gte=start_date, date__lte=end_date
             )
         except Exception as e:
             log_info("Failed to get assignments by dates from database")
