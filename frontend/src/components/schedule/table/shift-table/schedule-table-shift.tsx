@@ -99,7 +99,7 @@ export default function ScheduleTableShift({
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
-          <DatesHeaderRow dates={periodDates} />
+          <DatesHeaderRow lng={lng} dates={periodDates} />
           <DailyShiftDemandRow
             lng={lng}
             selectedDisplay={selectedDisplay}

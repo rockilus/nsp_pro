@@ -1,12 +1,18 @@
 import React from "react";
 import dayjs from "dayjs";
 // MUI
-import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 // Components
 import DateHeaderCell from "./date-header-cell";
+import ExportCell from "./export-cell";
 
-export default function DatesHeaderRow({ dates }: { dates: dayjs.Dayjs[] }) {
+export default function DatesHeaderRow({
+  lng,
+  dates,
+}: {
+  lng: string;
+  dates: dayjs.Dayjs[];
+}) {
   return (
     <TableRow
       style={{
@@ -14,21 +20,7 @@ export default function DatesHeaderRow({ dates }: { dates: dayjs.Dayjs[] }) {
         boxShadow: "1px 1px 0px 0px rgba(224, 224, 224, 1)",
       }}
     >
-      <TableCell
-        sx={{
-          position: "sticky",
-          left: 0,
-          backgroundColor: "#FFFFFF",
-          padding: 0,
-        }}
-      >
-        <div
-          style={{
-            width: "100px",
-            padding: "10px",
-          }}
-        ></div>
-      </TableCell>
+      <ExportCell lng={lng} dates={dates} />
       {dates.map((date, dateIndex) => (
         <DateHeaderCell key={dateIndex} date={date} />
       ))}

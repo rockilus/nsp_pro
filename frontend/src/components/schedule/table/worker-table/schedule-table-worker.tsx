@@ -81,7 +81,7 @@ export default function ScheduleTableWorker({
             backgroundColor: "white",
           }}
         >
-          <DatesHeaderRow dates={dates} />
+          <DatesHeaderRow lng={lng} dates={dates} />
           <DailyShiftDemandRow
             lng={lng}
             selectedDisplay={selectedDisplay}
