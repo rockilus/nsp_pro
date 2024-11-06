@@ -180,10 +180,11 @@ class TemplateMessage(BaseModel):
 # Schedule
 class AssignmentMessage(BaseModel):
     id: str
+    teamId: str
+    scheduleId: str
     workerId: str
     date: date
     shiftId: str
-    scheduleId: str
     status: str
     fixed: bool
 

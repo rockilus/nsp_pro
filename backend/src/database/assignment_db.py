@@ -15,10 +15,11 @@ from errors import (
     handle_save_document_error,
 )
 from logger import log_info
-from models.assignment import Assignment as AssignmentDocument
-from models.schedule import Schedule as ScheduleDocument
-from models.shift import Shift as ShiftDocument
-from models.worker import Worker as WorkerDocument
+from models import Assignment as AssignmentDocument
+from models import Schedule as ScheduleDocument
+from models import Shift as ShiftDocument
+from models import Team as TeamDocument
+from models import Worker as WorkerDocument
 
 
 class AssignmentDB:
@@ -50,7 +51,20 @@ class AssignmentDB:
             handle_save_document_error(e)
         return [doc_to_core_assignment(a) for a in a_saved]
 
-    def get_assignments(self, schedules: List[Schedule]) -> List[Assignment]:
+    def get_assignments(self, team_id: str) -> List[Assignment]:
+        try:
+            # pylint: disable=no-member
+            assignments = AssignmentDocument.objects.filter(  # type: ignore
+                team=team_id
+            )
+        except Exception as e:
+            log_info("Failed to get assignments from database")
+            handle_get_document_error(e)
+        return [doc_to_core_assignment(a) for a in list(assignments)]
+
+    def get_assignments_by_schedules(
+        self, schedules: List[Schedule]
+    ) -> List[Assignment]:
         s_docs = [core_to_doc_schedule(s) for s in schedules]
         try:
             # pylint: disable=no-member
@@ -94,13 +108,12 @@ class AssignmentDB:
         return doc_to_core_assignment(assignment)
 
     def get_assignments_by_dates(
-        self, start_date: date, end_date: date, schedules: List[Schedule]
+        self, team_id: str, start_date: date, end_date: date
     ) -> List[Assignment]:
-        s_docs = [core_to_doc_schedule(s) for s in schedules]
         try:
             # pylint: disable=no-member
             assignments = AssignmentDocument.objects.filter(  # type: ignore
-                date__gte=start_date, date__lte=end_date, schedule__in=s_docs
+                team=team_id, date__gte=start_date, date__lte=end_date
             )
         except Exception as e:
             log_info("Failed to get assignments by dates from database")
@@ -263,6 +276,12 @@ class AssignmentDB:
 def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
     try:
         # pylint: disable=no-member
+        team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
+    except Exception as e:
+        log_info("Failed to get team by id")
+        handle_get_document_error(e)
+    try:
+        # pylint: disable=no-member
         worker = WorkerDocument.objects.get(id=dataclass_obj.worker_id)  # type: ignore
     except Exception as e:
         log_info("Failed to get worker by id")
@@ -284,6 +303,8 @@ def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
     try:
         assignment_doc = AssignmentDocument(
             id=dataclass_obj.id,
+            team=team,
+            schedule=schedule,
             worker=worker,
             date=datetime(
                 dataclass_obj.date.year,
@@ -291,7 +312,6 @@ def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
                 dataclass_obj.date.day,
             ),
             shift=shift,
-            schedule=schedule,
             status=dataclass_obj.status,
             fixed=dataclass_obj.fixed,
         )
@@ -305,6 +325,12 @@ def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
 def core_to_doc_assignments(
     dataclass_objs: List[Assignment], creating: bool = False
 ) -> List[AssignmentDocument]:
+    team_ids = list(set(doc.team_id for doc in dataclass_objs))
+    # pylint: disable=no-member
+    teams = {
+        team.id: team
+        for team in TeamDocument.objects.filter(id__in=team_ids)  # type: ignore
+    }
     worker_ids = list(set(doc.worker_id for doc in dataclass_objs))
     # pylint: disable=no-member
     workers = {
@@ -341,6 +367,8 @@ def core_to_doc_assignments(
         # assignment_doc = AssignmentDocument(**a_dict)
         assignment_doc = AssignmentDocument(
             id=str(ObjectId()) if creating else dataclass_obj.id,
+            team=teams.get(dataclass_obj.team_id),
+            schedule=schedules.get(dataclass_obj.schedule_id),
             worker=workers.get(dataclass_obj.worker_id),
             date=datetime(
                 dataclass_obj.date.year,
@@ -348,7 +376,6 @@ def core_to_doc_assignments(
                 dataclass_obj.date.day,
             ),
             shift=shifts.get(dataclass_obj.shift_id),
-            schedule=schedules.get(dataclass_obj.schedule_id),
             status=dataclass_obj.status,
             fixed=dataclass_obj.fixed,
         )
@@ -360,12 +387,14 @@ def core_to_doc_assignments(
 def doc_to_core_assignment(doc_obj: AssignmentDocument) -> Assignment:
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
+    doc_dict["team_id"] = doc_dict["team"]
+    doc_dict["schedule_id"] = doc_dict["schedule"]
     doc_dict["worker_id"] = doc_dict["worker"]
     doc_dict["date"] = doc_dict["date"].date()
     doc_dict["shift_id"] = doc_dict["shift"]
-    doc_dict["schedule_id"] = doc_dict["schedule"]
     doc_dict.pop("_id")
+    doc_dict.pop("team")
+    doc_dict.pop("schedule")
     doc_dict.pop("worker")
     doc_dict.pop("shift")
-    doc_dict.pop("schedule")
     return Assignment(**doc_dict)

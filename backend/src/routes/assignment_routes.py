@@ -18,7 +18,7 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import AssignmentMessage
-from scripts.setup_database import assignment_db, schedule_db
+from scripts.setup_database import assignment_db
 
 router = APIRouter()
 
@@ -59,12 +59,11 @@ async def get_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to get assignments",
             )
-        schedules = schedule_db.get_schedules(team_id)
         if start_date is None or end_date is None:
-            assignments = assignment_db.get_assignments(schedules)
+            assignments = assignment_db.get_assignments(team_id)
         else:
             assignments = assignment_db.get_assignments_by_dates(
-                start_date, end_date, schedules
+                team_id, start_date, end_date
             )
         response = [core_to_msg_assignment(a) for a in assignments]
     except Exception as e:
