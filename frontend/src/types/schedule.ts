@@ -7,10 +7,11 @@ import { RequestT } from "./request";
 // Assignment
 export type AssignmentT = {
   id: string;
+  teamId: string;
+  scheduleId: string;
   workerId: string;
   date: dayjs.Dayjs;
   shiftId: string;
-  scheduleId: string;
   status: string;
   fixed: boolean;
 };
