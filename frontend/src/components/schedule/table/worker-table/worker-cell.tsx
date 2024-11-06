@@ -7,7 +7,7 @@ import TableCell from "@mui/material/TableCell";
 // Styles
 import "./worker-cell.css";
 // Types
-import { ShiftT } from "../../../../types/shift";
+import { ShiftT, ShiftType } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
 import {
   AssignmentT,
@@ -99,6 +99,11 @@ export default function WorkerCell({
             {!shift.endTime.isSame(shift.startTime, "day") && <sup>+1</sup>}
           </span>
         </div>
+        <div
+          className={`w-shift-type-marker ${
+            shift.shiftType === ShiftType.DUTY ? "duty" : "other"
+          }`}
+        ></div>
       </div>
     );
   };

@@ -35,6 +35,15 @@
   font-weight: 550;
 }
 
+.w-shift-type-marker {
+  width: 60px;
+  height: 5px;
+}
+
+.w-shift-type-marker.duty {
+  background-color: #0000ff70;
+}
+
 .shift-times-container {
   display: flex;
   flex-direction: row;
