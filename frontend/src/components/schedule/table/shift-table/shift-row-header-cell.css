@@ -1,7 +1,16 @@
 .shift-row-header-cell-container {
   display: flex;
   flex-direction: row;
-  padding-left: 10px;
+  /* padding-left: 10px; */
+}
+
+.shift-type-marker {
+  width: 5px;
+  margin-right: 5px;
+}
+
+.shift-type-marker.duty {
+  background-color: #0000ff70;
 }
 
 .shift-row-header-cell-left {

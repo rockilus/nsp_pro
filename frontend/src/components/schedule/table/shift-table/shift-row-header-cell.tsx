@@ -4,7 +4,7 @@ import TableCell from "@mui/material/TableCell";
 // Styles
 import "./shift-row-header-cell.css";
 // Types
-import { ShiftT } from "../../../../types/shift";
+import { ShiftT, ShiftType } from "../../../../types/shift";
 import {
   AssignmentT,
   DailyShiftDemandT,
@@ -48,6 +48,11 @@ export default function ShiftRowHeaderCell({
       }}
     >
       <div className="shift-row-header-cell-container">
+        <div
+          className={`shift-type-marker ${
+            shift.shiftType === ShiftType.DUTY ? "duty" : "other"
+          }`}
+        ></div>
         <div className="shift-row-header-cell-left">
           <span className="shift-name">{shift.name}</span>
           <span
