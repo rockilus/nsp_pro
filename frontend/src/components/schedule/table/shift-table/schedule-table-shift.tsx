@@ -21,6 +21,7 @@ import {
   BreachT,
   SelectedCellT,
   DailyShiftDemandT,
+  ExportOptionsT,
 } from "../../../../types/schedule";
 import { RequestT } from "../../../../types/request";
 
@@ -44,6 +45,7 @@ export default function ScheduleTableShift({
   handleCreateDSD,
   handleUpdateDSD,
   handleDeleteDSD,
+  handleExportSchedule,
 }: {
   lng: string;
   teamId: string;
@@ -61,6 +63,7 @@ export default function ScheduleTableShift({
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleDeleteDSD: (dsdId: string, teamId: string) => void;
+  handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
   // Sorts an array of shifts with the following order:
   // 1. Duty shifts (`ShiftType.DUTY`), ordered by start time.
@@ -99,7 +102,12 @@ export default function ScheduleTableShift({
     <TableContainer component={Paper} style={{ width: "100%" }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
-          <DatesHeaderRow dates={periodDates} />
+          <DatesHeaderRow
+            lng={lng}
+            dates={periodDates}
+            schedule={schedule}
+            handleExportSchedule={handleExportSchedule}
+          />
           <DailyShiftDemandRow
             lng={lng}
             selectedDisplay={selectedDisplay}

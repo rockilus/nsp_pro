@@ -101,3 +101,17 @@ export type SelectedCellT = {
   requests: RequestT[];
   breaches: BreachT[];
 };
+
+// Excel export options
+export enum ExportPeriodOptions {
+  CURRENT_SELECTION = 0,
+  CAMPAIGN = 1,
+  ALL = 2,
+  CUSTOM = 3,
+}
+
+export type ExportOptionsT = {
+  periodOption: ExportPeriodOptions;
+  startDate: dayjs.Dayjs;
+  endDate: dayjs.Dayjs;
+};

@@ -20,6 +20,7 @@ import {
   ScheduleT,
   SelectedCellT,
   DailyShiftDemandT,
+  ExportOptionsT,
 } from "../../../../types/schedule";
 import { RequestT } from "../../../../types/request";
 
@@ -43,6 +44,7 @@ export default function ScheduleTableWorker({
   handleCreateDSD,
   handleUpdateDSD,
   handleDeleteDSD,
+  handleExportSchedule,
 }: {
   lng: string;
   teamId: string;
@@ -60,6 +62,7 @@ export default function ScheduleTableWorker({
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleDeleteDSD: (dsdId: string, teamId: string) => void;
+  handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
   const workerIdsInAssignments = new Set(assignments.map((a) => a.workerId));
 
@@ -81,7 +84,12 @@ export default function ScheduleTableWorker({
             backgroundColor: "white",
           }}
         >
-          <DatesHeaderRow dates={dates} />
+          <DatesHeaderRow
+            lng={lng}
+            dates={dates}
+            schedule={schedule}
+            handleExportSchedule={handleExportSchedule}
+          />
           <DailyShiftDemandRow
             lng={lng}
             selectedDisplay={selectedDisplay}

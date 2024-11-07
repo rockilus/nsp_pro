@@ -37,6 +37,7 @@ import {
   updateDailyShiftDemand,
   deleteDailyShiftDemand,
 } from "../../app/lib/daily-shift-demand";
+import { exportSchedule } from "../../app/lib/export-schedule";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -49,6 +50,7 @@ import {
   AssignmentT,
   SelectedCellT,
   DailyShiftDemandT,
+  ExportOptionsT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import { StatsT } from "../../types/stats";
@@ -302,7 +304,7 @@ export default function ScheduleTab({
   };
 
   //////////////////////////
-  // Assignment Actions
+  // Stats Actions
   //////////////////////////
 
   const handleChangeStatsTimeFrame = async (timeFrame: string) => {
@@ -320,6 +322,17 @@ export default function ScheduleTab({
     const newStats = await getStats(newStatsOptions, selectedTeamId);
     setStats(newStats);
     setSelectedQuickStatsTimeFrame(timeFrame);
+  };
+
+  //////////////////////////
+  // Export Actions
+  //////////////////////////
+
+  const handleExportSchedule = async (exportOptions: ExportOptionsT) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    await exportSchedule(selectedTeamId, exportOptions);
   };
 
   useEffect(() => {
@@ -479,6 +492,7 @@ export default function ScheduleTab({
               handleCreateDSD={handleCreateDSD}
               handleUpdateDSD={handleUpdateDSD}
               handleDeleteDSD={handleDeleteDSD}
+              handleExportSchedule={handleExportSchedule}
             />
           )}
         </div>

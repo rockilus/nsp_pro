@@ -8,6 +8,7 @@ from routes.coverage_selector_routes import router as router_coverage_selector
 from routes.daily_shift_demand_routes import router as router_daily_shift_demand
 from routes.dim_entry_routes import router as router_dim_entry
 from routes.dimension_routes import router as router_dimension
+from routes.export_routes import router as router_export
 from routes.health_routes import router as router_health
 from routes.request_routes import router as router_request
 from routes.schedule_routes import router as router_schedule
@@ -30,6 +31,7 @@ __all__ = [
     "router_daily_shift_demand",
     "router_dim_entry",
     "router_dimension",
+    "router_export",
     "router_health",
     "router_request",
     "router_schedule",

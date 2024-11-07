@@ -11,6 +11,7 @@ import {
   BreachT,
   SelectedCellT,
   DailyShiftDemandT,
+  ExportOptionsT,
 } from "../../../types/schedule";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -36,6 +37,7 @@ export default function ScheduleDisplay({
   handleCreateDSD,
   handleUpdateDSD,
   handleDeleteDSD,
+  handleExportSchedule,
 }: {
   lng: string;
   teamId: string;
@@ -54,6 +56,7 @@ export default function ScheduleDisplay({
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleDeleteDSD: (dsdId: string, teamId: string) => void;
+  handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
   const buildDates = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
     const dates = [];
@@ -87,6 +90,7 @@ export default function ScheduleDisplay({
         handleCreateDSD={handleCreateDSD}
         handleUpdateDSD={handleUpdateDSD}
         handleDeleteDSD={handleDeleteDSD}
+        handleExportSchedule={handleExportSchedule}
       />
     ),
     worker: (
@@ -107,6 +111,7 @@ export default function ScheduleDisplay({
         handleCreateDSD={handleCreateDSD}
         handleUpdateDSD={handleUpdateDSD}
         handleDeleteDSD={handleDeleteDSD}
+        handleExportSchedule={handleExportSchedule}
       />
     ),
   };
