@@ -33,11 +33,23 @@ export async function exportSchedule(
       `${apiUrlExportSchedule}/teams/${teamId}`,
       options
     );
-    const responseData = await response.json();
     if (!response.ok) {
+      const responseData = await response.json();
       throw new Error("Failed to export schedule: " + responseData.detail);
     }
-    return responseData;
+
+    // Fetch the response as a blob
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    // Create a link element and trigger a download
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `schedule_${teamId}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error("Failed to export schedule:", error);
     throw new Error("Failed to export schedule, please try again later");

@@ -15,7 +15,7 @@ def core_to_excel_schedule(
     shifts: List[Shift],
     assignments: List[Assignment],
     dates: List[date],
-) -> None:
+) -> Workbook:
     # Create a new workbook and add a sheet named "schedule_shifts"
     wb = Workbook()
     ws_shift_schedule = wb.active
@@ -55,10 +55,7 @@ def core_to_excel_schedule(
         border_rigth_black_bottom_grey,
         border_bottom_grey,
     )
-
-    # Save the workbook
-    wb.save("schedule_with_image.xlsx")
-    print("Workbook saved successfully")
+    return wb
 
 
 # pylint: disable=too-many-arguments
