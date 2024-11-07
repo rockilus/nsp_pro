@@ -13,6 +13,7 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import ExportOptionsMessage
+from services.export_services import export_schedule_to_excel
 
 router = APIRouter()
 
@@ -32,8 +33,7 @@ async def export_schedule(
                 "You do not have permission to export a schedule",
             )
         data = msg_to_core_export_options(export_options)
-        print(data)
-        response = ""
+        response = export_schedule_to_excel(team_id, data)
     except Exception as e:
         log_info("Failed to export schedule")
         handle_routes_errors(e)

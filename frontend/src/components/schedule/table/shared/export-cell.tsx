@@ -37,8 +37,8 @@ export default function ExportCell({
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [exportOptionsState, setExportOptionsState] = useState<ExportOptionsT>({
     periodOption: ExportPeriodOptions.CAMPAIGN,
-    startDate: dayjs.utc(),
-    endDate: dayjs.utc(),
+    startDate: schedule.startDate,
+    endDate: schedule.endDate,
   });
 
   const open = Boolean(anchorEl);
