@@ -16,6 +16,7 @@ import "../../../../styles/text-styles.css";
 import {
   ExportOptionsT,
   ExportPeriodOptions,
+  ScheduleT,
 } from "../../../../types/schedule";
 
 dayjs.extend(utc);
@@ -23,9 +24,13 @@ dayjs.extend(utc);
 export default function ExportCell({
   lng,
   dates,
+  schedule,
+  handleExportSchedule,
 }: {
   lng: string;
   dates: dayjs.Dayjs[];
+  schedule: ScheduleT;
+  handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -72,8 +77,18 @@ export default function ExportCell({
           startDate: dates[0],
           endDate: dates[dates.length - 1],
         }));
+      } else if (newAlignment === ExportPeriodOptions.CAMPAIGN) {
+        setExportOptionsState((prevState) => ({
+          ...prevState,
+          startDate: dayjs.utc(schedule.startDate),
+          endDate: dayjs.utc(schedule.endDate),
+        }));
       }
     }
+  };
+
+  const handleConfirmExport = () => {
+    handleExportSchedule(exportOptionsState);
   };
 
   const PopoverContent = () => {
@@ -152,7 +167,10 @@ export default function ExportCell({
           />
         </div>
         <div className="confirm-export-button-container">
-          <button className="export-to-excel-button" onClick={handleClose}>
+          <button
+            className="export-to-excel-button"
+            onClick={handleConfirmExport}
+          >
             {t("export_to_excel")}
           </button>
         </div>

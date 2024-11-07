@@ -309,6 +309,13 @@ class TeamMessage(BaseModel):
     # team_leaders: List[str]
 
 
+# Export
+class ExportOptionsMessage(BaseModel):
+    periodOption: int
+    startDate: float
+    endDate: float
+
+
 # Health
 class HealthCheck(BaseModel):
     status: str

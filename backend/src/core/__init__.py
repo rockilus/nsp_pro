@@ -29,6 +29,7 @@ from core.coverage import (
     ShiftDemand,
 )
 from core.dimension import Dimension, DimensionEntryType, DimensionType, DimEntry
+from core.export_options import ExportOptions, ExportPeriodOptions
 from core.request import Request, RequestAugmented
 from core.schedule import (
     Assignment,
@@ -78,6 +79,8 @@ __all__ = [
     "DimensionEntryType",
     "DimensionType",
     "DimEntry",
+    "ExportOptions",
+    "ExportPeriodOptions",
     "Request",
     "RequestAugmented",
     "Breach",
