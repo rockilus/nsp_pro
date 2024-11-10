@@ -1,0 +1,31 @@
+.placeholder-value {
+  display: inline-block;
+  cursor: pointer;
+  font-style: italic;
+  font-weight: bold;
+  color: #808080;
+}
+
+.placeholder-value.error {
+  color: #ff0000;
+}
+
+.name-display-line {
+  margin-top: 1px;
+  margin-bottom: 0px;
+  border-color: #808080;
+}
+
+.name-display-line.error {
+  border-color: #ff0000;
+}
+
+.name-display-field-name {
+  font-size: 10px;
+  color: #000000;
+}
+
+.name-display-field-name.error {
+  font-weight: 600;
+  color: #ff0000;
+}

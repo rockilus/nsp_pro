@@ -19,18 +19,24 @@ import { ConstraintDefaultColors } from "../../../../constants/constants";
 
 export default function BlockEditString({
   lng,
+  index,
   block,
   templateBlock,
+  error,
   handleEditBlock,
   handleClose,
   translateOptionName,
+  handleRemoveError,
 }: {
   lng: string;
+  index: number;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
+  error: boolean;
   handleEditBlock: (block: BlockT) => void;
   handleClose: () => void;
   translateOptionName: (name: string) => string;
+  handleRemoveError: (index: number) => void;
 }) {
   const { t } = useTranslation(lng, "constraint-page");
 
@@ -138,6 +144,9 @@ export default function BlockEditString({
         templateOptions.filter((option) => option !== newOption)
       );
       setSearchQuery("");
+      if (error) {
+        handleRemoveError(index);
+      }
     }
     // Update the external state for "selected" here
   };

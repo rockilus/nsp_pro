@@ -4,7 +4,7 @@ import { useTranslation } from "../../../app/i18n/client";
 import Box from "@mui/material/Box";
 // Components
 import PopoverBoxAnchorElOver from "../../inputs/popover-box-anchor-el-over";
-import { blockDislayValue } from "../../data-display/block-dislay";
+import { blockDislayValue } from "../../data-display/block-display";
 import ShiftOptionsEdit from "./shift-options-edit";
 // Utils
 import {
