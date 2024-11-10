@@ -8,20 +8,26 @@ import {
   blockDisplayName,
   blockDisplayPlaceholder,
   blockDislayValue,
-} from "../../../data-display/block-dislay";
+} from "../../../data-display/block-display";
 // Types
 import { TemplateBlockT, BlockT } from "../../../../types/constraint";
 
 export default function BlockDisplayString({
   lng,
+  index,
   block,
   templateBlock,
+  error,
   handleEditBlock,
+  handleRemoveError,
 }: {
   lng: string;
+  index: number;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
+  error: boolean;
   handleEditBlock: (block: BlockT) => void;
+  handleRemoveError: (index: number) => void;
 }) {
   const { t } = useTranslation(lng, "constraint-page");
 
@@ -57,8 +63,8 @@ export default function BlockDisplayString({
       <div>
         {block && block.value !== ""
           ? blockDislayValue(translateOptionName(block.value as string))
-          : blockDisplayPlaceholder(templateBlock.placeholder)}
-        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name))}
+          : blockDisplayPlaceholder(templateBlock.placeholder, error)}
+        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name), error)}
       </div>
     );
   };
@@ -73,11 +79,14 @@ export default function BlockDisplayString({
       content={
         <BlockEditString
           lng={lng}
+          index={index}
           block={block}
           templateBlock={templateBlock}
+          error={error}
           handleEditBlock={handleEditBlock}
           handleClose={handleClose}
           translateOptionName={translateOptionName}
+          handleRemoveError={handleRemoveError}
         />
       }
       open={open}

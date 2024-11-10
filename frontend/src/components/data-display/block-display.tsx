@@ -1,5 +1,7 @@
 // Constants
 import { ConstraintDefaultColors } from "../../constants/constants";
+// Styles
+import "./block-display.css";
 
 export const blockDislayValue = (value: string | number) => {
   return (
@@ -17,34 +19,22 @@ export const blockDislayValue = (value: string | number) => {
   );
 };
 
-export const blockDisplayPlaceholder = (placeholder: string | number) => {
+export const blockDisplayPlaceholder = (
+  placeholder: string | number,
+  error: boolean
+) => {
   return (
-    <div
-      className="field-value"
-      style={{
-        display: "inline-block",
-        cursor: "pointer",
-        fontStyle: "italic",
-        fontWeight: "bold",
-        color: ConstraintDefaultColors.shade2,
-      }}
-    >
+    <div className={`placeholder-value ${error ? "error" : ""}`}>
       {placeholder}
     </div>
   );
 };
 
-export const blockDisplayName = (name: string) => {
+export const blockDisplayName = (name: string, error: boolean) => {
   return (
     <div>
-      <hr style={{ marginTop: "1px", marginBottom: "0px" }} />
-      <div
-        className="field-name"
-        style={{
-          fontSize: "10px",
-          color: ConstraintDefaultColors.shade3,
-        }}
-      >
+      <hr className={`name-display-line ${error ? "error" : ""}`} />
+      <div className={`name-display-field-name ${error ? "error" : ""}`}>
         {name.charAt(0).toUpperCase() + name.slice(1)}
       </div>
     </div>

@@ -8,7 +8,7 @@ import {
   blockDisplayName,
   blockDisplayPlaceholder,
   blockDislayValue,
-} from "../../../data-display/block-dislay";
+} from "../../../data-display/block-display";
 // Utils
 import {
   getShiftWorkerOptionDisplayName,
@@ -24,14 +24,20 @@ import {
 
 export default function BlockDisplayShiftWorkerOption({
   lng,
+  index,
   block,
   templateBlock,
+  error,
   handleEditBlock,
+  handleRemoveError,
 }: {
   lng: string;
+  index: number;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
+  error: boolean;
   handleEditBlock: (block: BlockT) => void;
+  handleRemoveError: (index: number) => void;
 }) {
   const { t } = useTranslation(lng, "constraint-page");
 
@@ -61,8 +67,8 @@ export default function BlockDisplayShiftWorkerOption({
                 )
                 .join(", ")
             )
-          : blockDisplayPlaceholder(templateBlock.placeholder)}
-        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name))}
+          : blockDisplayPlaceholder(templateBlock.placeholder, error)}
+        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name), error)}
       </div>
     );
   };
@@ -77,14 +83,17 @@ export default function BlockDisplayShiftWorkerOption({
       content={
         <BlockEditShiftWorkerOption
           lng={lng}
+          index={index}
           block={block}
           templateBlock={templateBlock}
+          error={error}
           shiftWorkerOptionDict={groupByCategoryName(
             expandBoolDimOptions(templateBlock.options as ShiftWorkerOptionT[])
           )}
           handleEditBlock={handleEditBlock}
           handleClose={handleClose}
           translateOptionName={translateOptionName}
+          handleRemoveError={handleRemoveError}
         />
       }
       open={open}

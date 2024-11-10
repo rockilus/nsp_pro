@@ -7,20 +7,26 @@ import {
   blockDisplayName,
   blockDisplayPlaceholder,
   blockDislayValue,
-} from "../../../data-display/block-dislay";
+} from "../../../data-display/block-display";
 // Types
 import { TemplateBlockT, BlockT } from "../../../../types/constraint";
 
 export default function BlockDisplayNumber({
   lng,
+  index,
   block,
   templateBlock,
+  error,
   handleEditBlock,
+  handleRemoveError,
 }: {
   lng: string;
+  index: number;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
+  error: boolean;
   handleEditBlock: (block: BlockT) => void;
+  handleRemoveError: (index: number) => void;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -29,8 +35,8 @@ export default function BlockDisplayNumber({
       <div>
         {block && block.value !== ""
           ? blockDislayValue(block.value as number)
-          : blockDisplayPlaceholder(templateBlock.placeholder)}
-        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name))}
+          : blockDisplayPlaceholder(templateBlock.placeholder, error)}
+        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name), error)}
       </div>
     );
   };
@@ -44,10 +50,13 @@ export default function BlockDisplayNumber({
       buttonContent={blockDisplay()}
       content={
         <BlockEditQty
+          index={index}
           block={block}
           templateBlock={templateBlock}
+          error={error}
           handleEditBlock={handleEditBlock}
           handleClose={handleClose}
+          handleRemoveError={handleRemoveError}
         />
       }
       open={open}

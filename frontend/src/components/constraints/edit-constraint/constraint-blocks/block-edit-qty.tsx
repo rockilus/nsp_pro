@@ -5,15 +5,21 @@ import { BlockT, TemplateBlockT } from "../../../../types/constraint";
 import { ConstraintDefaultColors } from "../../../../constants/constants";
 
 export default function BlockEditQty({
+  index,
   block,
   templateBlock,
+  error,
   handleEditBlock,
   handleClose,
+  handleRemoveError,
 }: {
+  index: number;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
+  error: boolean;
   handleEditBlock: (block: BlockT) => void;
   handleClose: () => void;
+  handleRemoveError: (index: number) => void;
 }) {
   const initialValue = useCallback(() => {
     if (block === null) {
@@ -40,9 +46,20 @@ export default function BlockEditQty({
         type: templateBlock.type,
         value: parseInt(valueState),
       });
+      if (error) {
+        handleRemoveError(index);
+      }
       handleClose();
     }
-  }, [handleEditBlock, templateBlock, valueState, handleClose]);
+  }, [
+    templateBlock,
+    valueState,
+    error,
+    index,
+    handleEditBlock,
+    handleClose,
+    handleRemoveError,
+  ]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" || event.key === "Escape") {

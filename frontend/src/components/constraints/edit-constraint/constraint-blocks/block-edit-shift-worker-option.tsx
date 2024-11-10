@@ -27,20 +27,26 @@ import { ConstraintDefaultColors } from "../../../../constants/constants";
 
 export default function BlockEditShiftWorkerOption({
   lng,
+  index,
   block,
   templateBlock,
+  error,
   shiftWorkerOptionDict,
   handleEditBlock,
   handleClose,
   translateOptionName,
+  handleRemoveError,
 }: {
   lng: string;
+  index: number;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
+  error: boolean;
   shiftWorkerOptionDict: { [key: string]: ShiftWorkerOptionT[] };
   handleEditBlock: (block: BlockT) => void;
   handleClose: () => void;
   translateOptionName: (name: string) => string;
+  handleRemoveError: (index: number) => void;
 }) {
   const { t } = useTranslation(lng, "constraint-page");
 
@@ -291,6 +297,9 @@ export default function BlockEditShiftWorkerOption({
       });
       setFilteredOptions(filterOptions("", newValue, templateOptions));
       setSearchQuery("");
+      if (error) {
+        handleRemoveError(index);
+      }
     }
     // Update the external state for "selected" here
   };

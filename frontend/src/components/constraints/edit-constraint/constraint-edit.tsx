@@ -13,6 +13,7 @@ import {
   TemplateBlockT,
   ShiftWorkerOptionT,
 } from "../../../types/constraint";
+import { set } from "zod";
 
 export default function ConstraintEdit({
   lng,
@@ -28,6 +29,7 @@ export default function ConstraintEdit({
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
 }) {
   const { t } = useTranslation(lng, "constraint-page");
+  const [errors, setErrors] = useState<number[]>([]);
 
   const initialBlockValue = (
     templateBlock: TemplateBlockT
@@ -75,7 +77,44 @@ export default function ConstraintEdit({
     initialConstraintState
   );
 
+  const validateConstraint = (): boolean => {
+    const updatedErrors: number[] = [];
+    if (template) {
+      template.blocks.map((block, index) => {
+        const value = constraintState.blocks[index].value;
+        if (block.type === "shift_worker_option" || block.type === "list") {
+          if (Array.isArray(value) && value.length === 0) {
+            updatedErrors.push(index);
+            console.log("added error", index);
+          }
+        } else if (block.type === "string" || block.type === "number") {
+          if (value === "") {
+            updatedErrors.push(index);
+            console.log("added error", index);
+          }
+        }
+      });
+      setErrors(updatedErrors);
+      return updatedErrors.length === 0;
+    } else {
+      return false;
+    }
+  };
+
+  const handleRemoveError = (index: number): void => {
+    const updatedErrors = errors.filter((error) => error !== index);
+    console.log("errors after remove", updatedErrors);
+
+    setErrors(updatedErrors);
+  };
+
   const handleSaveConstraint = () => {
+    const valid = validateConstraint();
+    console.log("constraintState", constraintState);
+
+    if (!valid) {
+      return;
+    }
     if (constraint.id === "") {
       handleAddConstraint(constraintState);
     } else {
@@ -106,7 +145,10 @@ export default function ConstraintEdit({
 
   useEffect(() => {
     setConstraintState(initialConstraintState());
+    setErrors([]);
   }, [initialConstraintState]);
+
+  console.log("errors", errors);
 
   return (
     <Box
@@ -130,9 +172,12 @@ export default function ConstraintEdit({
           >
             <BlockDisplay
               lng={lng}
+              index={index}
               block={findBlockByName(templateBlock.name)}
               templateBlock={templateBlock}
+              error={errors.includes(index)}
               handleEditBlock={handleEditBlock}
+              handleRemoveError={handleRemoveError}
             />
           </div>
         ))}
