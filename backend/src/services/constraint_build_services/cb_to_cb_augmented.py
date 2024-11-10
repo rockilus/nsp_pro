@@ -222,9 +222,7 @@ def build_missing_attributes_and_active_owner_deleted(
                 dimension_id=owner_id,
                 is_bool=False,
                 dim_name=owner.name,
-                category=(
-                    "worker" if owner_type == AttributeOwnerType.WORKER else "shift"
-                ),
+                category=owner_type,
                 attribute_values=[owner.name],
             )
         )
@@ -254,7 +252,7 @@ def build_missing_attributes_deleted_dimension(
         dimension_id=dimension.id,
         is_bool=dimension.entry_type == DimensionEntryType.BOOL,
         dim_name=dimension.name,
-        category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+        category=owner_type,
         attribute_values=a_values_constraint,  # type: ignore
     )
 
@@ -293,7 +291,7 @@ def build_missing_attributes_and_active_dimension_bool(
             dimension_id=dimension.id,
             is_bool=True,
             dim_name=dimension.name,
-            category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+            category=owner_type,
             attribute_values=missing_values,  # type: ignore
         )
     else:
@@ -333,7 +331,7 @@ def build_missing_attributes_and_active_dimension_dim_entry(
             dimension_id=dimension.id,
             is_bool=False,
             dim_name=dimension.name,
-            category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+            category=owner_type,
             attribute_values=missing_values,  # type: ignore
         )
     else:
@@ -376,7 +374,7 @@ def build_missing_attributes_and_active_dimension_str_int(
             dimension_id=dimension.id,
             is_bool=False,
             dim_name=dimension.name,
-            category=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+            category=owner_type,
             attribute_values=missing_values,  # type: ignore
         )
     else:

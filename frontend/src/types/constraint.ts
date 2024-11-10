@@ -1,3 +1,6 @@
+// Types
+import { AttributeOwnerType } from "./attribute";
+
 export enum SWOIdTypes {
   NONE = 0,
   WORKER = 1,
@@ -42,7 +45,7 @@ export type MissingAttribute = {
   dimension_id: string;
   isBool: boolean;
   dimName: string;
-  category: string;
+  category: AttributeOwnerType;
   attributeValues: string[] | number[] | boolean[];
 };
 

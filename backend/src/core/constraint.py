@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple
 
+from core.attribute import AttributeOwnerType
+
 
 class VarWorkerSelectorOptions(Enum):
     ALL = 0
@@ -77,7 +79,7 @@ class MissingAttribute:
     dimension_id: str
     is_bool: bool
     dim_name: str
-    category: str  # worker or shift
+    category: AttributeOwnerType
     attribute_values: List[str | int | float | bool]
 
 
