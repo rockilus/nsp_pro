@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import date
 from enum import Enum
 from typing import List, Tuple
 
@@ -7,13 +6,6 @@ from typing import List, Tuple
 class VarWorkerSelectorOptions(Enum):
     ALL = 0
     EQUAL = 1
-
-
-@dataclass
-class VarWorker:
-    selector: VarWorkerSelectorOptions
-    target_ids: List[str]
-    num_eligible_workers: int
 
 
 class VarDaySelectorOptions(Enum):
@@ -24,26 +16,9 @@ class VarDaySelectorOptions(Enum):
     WEEK_DAY_INDEX = 4
 
 
-@dataclass
-class VarDay:
-    selector: VarDaySelectorOptions
-    target: int
-    start_date: date
-    end_date: date
-    interval: int
-
-
 class VarShiftSelectorOptions(Enum):
     ALL = 0
     EQUAL = 1
-
-
-@dataclass
-class VarShift:
-    selector: VarShiftSelectorOptions
-    target_ids: List[str]
-    reference_ids: List[str]
-    relative_ids: List[str]
 
 
 class SWOIdTypes(Enum):
@@ -152,24 +127,6 @@ class ConstraintBuildAugmented:
     active: bool
     missing_attributes: List[MissingAttribute]
     text: str
-
-
-# @dataclass
-# # pylint: disable=too-many-instance-attributes
-# class Constraint:
-#     id: str
-#     constraint_type: ConstraintType
-#     operator: ConstraintOperator | None
-#     target_value: int
-#     target_unit: str  # worker, shift, day, hour
-#     worker_var: VarWorker
-#     day_var: VarDay
-#     shift_var: VarShift
-#     active: bool
-#     hard: bool
-#     priority: str
-#     schedule_id: str
-#     constraint_build_id: str
 
 
 @dataclass
