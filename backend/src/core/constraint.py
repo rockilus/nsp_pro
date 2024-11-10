@@ -4,11 +4,12 @@ from typing import List, Tuple
 
 from core.attribute import AttributeOwnerType
 
+
 class VarWorkerSelectorOptions(Enum):
     ALL = 0
     EQUAL = 1
 
-    
+
 class VarDaySelectorOptions(Enum):
     ALL = 0
     WEEK = 1
@@ -16,7 +17,7 @@ class VarDaySelectorOptions(Enum):
     PERIOD = 3
     WEEK_DAY_INDEX = 4
 
-    
+
 class VarShiftSelectorOptions(Enum):
     ALL = 0
     EQUAL = 1
