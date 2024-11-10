@@ -3,6 +3,8 @@ from datetime import date, datetime, timedelta
 
 from core import (
     Block,
+    BlockNameOptions,
+    BlockTypeOptions,
     ConstraintBuildAugmented,
     ConstraintFai,
     ConstraintFil,
@@ -17,6 +19,7 @@ from core import (
     ShiftType,
     ShiftWorkerOption,
     Staffing,
+    SWOIdTypes,
     Worker,
 )
 
@@ -325,30 +328,46 @@ test_data = [
             language="en",
             blocks=[
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="John",
                             id="0",
-                            id_type="worker",
+                            id_type=SWOIdTypes.WORKER,
                             is_bool_dim=False,
                             category_name="Workers",
                         )
                     ],
                 ),
-                Block(name="text", type="string", value="should work"),
-                Block(name="operator", type="string", value="at most"),
-                Block(name="#", type="number", value=2),
-                Block(name="timing", type="string", value="consecutive"),
                 Block(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="should work",
+                ),
+                Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="at most",
+                ),
+                Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=2,
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="consecutive",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="off",
                             id="0",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         )
@@ -386,30 +405,46 @@ test_data = [
             language="en",
             blocks=[
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="all workers",
                             id="",
-                            id_type="",
+                            id_type=SWOIdTypes.NONE,
                             is_bool_dim=False,
                             category_name="All",
                         ),
                     ],
                 ),
-                Block(name="text", type="string", value="should work"),
-                Block(name="operator", type="string", value="at most"),
-                Block(name="#", type="number", value=2),
-                Block(name="timing", type="string", value="consecutive"),
                 Block(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="should work",
+                ),
+                Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="at most",
+                ),
+                Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=2,
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="consecutive",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="all shifts",
                             id="",
-                            id_type="",
+                            id_type=SWOIdTypes.NONE,
                             is_bool_dim=False,
                             category_name="All",
                         ),
@@ -447,30 +482,46 @@ test_data = [
             language="en",
             blocks=[
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name=True,
                             id="60+_id",
-                            id_type="dimension",
+                            id_type=SWOIdTypes.DIMENSION,
                             is_bool_dim=True,
                             category_name="60+",
                         ),
                     ],
                 ),
-                Block(name="text", type="string", value="should work"),
-                Block(name="operator", type="string", value="at most"),
-                Block(name="#", type="number", value=2),
-                Block(name="timing", type="string", value="consecutive"),
                 Block(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="should work",
+                ),
+                Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="at most",
+                ),
+                Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=2,
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="consecutive",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name=False,
                             id="duty_id",
-                            id_type="dimension",
+                            id_type=SWOIdTypes.DIMENSION,
                             is_bool_dim=True,
                             category_name="Duty",
                         ),
@@ -508,30 +559,46 @@ test_data = [
             language="en",
             blocks=[
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="surgeon",
                             id="specialty_id",
-                            id_type="dimension",
+                            id_type=SWOIdTypes.DIMENSION,
                             is_bool_dim=False,
                             category_name="Specialty",
                         ),
                     ],
                 ),
-                Block(name="text", type="string", value="should work"),
-                Block(name="operator", type="string", value="at most"),
-                Block(name="#", type="number", value=2),
-                Block(name="timing", type="string", value="consecutive"),
                 Block(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="should work",
+                ),
+                Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="at most",
+                ),
+                Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=2,
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="consecutive",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="unit 1",
                             id="unit_id",
-                            id_type="dimension",
+                            id_type=SWOIdTypes.DIMENSION,
                             is_bool_dim=False,
                             category_name="Units",
                         )
@@ -569,35 +636,51 @@ test_data = [
             language="en",
             blocks=[
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="John",
                             id="0",
-                            id_type="worker",
+                            id_type=SWOIdTypes.WORKER,
                             is_bool_dim=False,
                             category_name="Workers",
                         )
                     ],
                 ),
-                Block(name="text", type="string", value="should work"),
-                Block(name="operator", type="string", value="at least"),
-                Block(name="#", type="number", value=1),
                 Block(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="should work",
+                ),
+                Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="at least",
+                ),
+                Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=1,
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="off",
                             id="0",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         )
                     ],
                 ),
-                Block(name="timing", type="string", value="per week"),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="per week",
+                ),
             ],
             text="",
             hard=True,
@@ -629,45 +712,65 @@ test_data = [
             template_id="2",
             language="en",
             blocks=[
-                Block(name="operator", type="string", value="no"),
                 Block(
-                    name="shift_reference",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="no",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_REFERENCE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="night",
                             id="3",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         ),
                     ],
                 ),
-                Block(name="#", type="number", value=1),
-                Block(name="text", type="string", value="day"),
-                Block(name="timing", type="string", value="after"),
                 Block(
-                    name="shift_relative",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=1,
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="day",
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="after",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_RELATIVE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="afternoon",
                             id="2",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         ),
                     ],
                 ),
-                Block(name="text", type="string", value="for"),
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="for",
+                ),
+                Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="John",
                             id="0",
-                            id_type="worker",
+                            id_type=SWOIdTypes.WORKER,
                             is_bool_dim=False,
                             category_name="Workers",
                         )
@@ -706,46 +809,70 @@ test_data = [
             template_id="3",
             language="en",
             blocks=[
-                Block(name="text", type="string", value="if"),
                 Block(
-                    name="shift_reference",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="if",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_REFERENCE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="night",
                             id="3",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         ),
                     ],
                 ),
-                Block(name="text", type="string", value="then"),
                 Block(
-                    name="shift_relative",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="then",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_RELATIVE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="off",
                             id="0",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         )
                     ],
                 ),
-                Block(name="#", type="number", value=1),
-                Block(name="text", type="string", value="day"),
-                Block(name="timing", type="string", value="after"),
-                Block(name="text", type="string", value="for"),
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=1,
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="day",
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="after",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="for",
+                ),
+                Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="John",
                             id="0",
-                            id_type="worker",
+                            id_type=SWOIdTypes.WORKER,
                             is_bool_dim=False,
                             category_name="Workers",
                         )
@@ -784,48 +911,80 @@ test_data = [
             template_id="4",
             language="en",
             blocks=[
-                Block(name="text", type="string", value="if"),
                 Block(
-                    name="shift_reference",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="if",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_REFERENCE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="morning",
                             id="1",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         ),
                     ],
                 ),
-                Block(name="text", type="string", value="on"),
-                Block(name="weekday", type="string", value="saturday"),
-                Block(name="text", type="string", value="then"),
                 Block(
-                    name="shift_relative",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="on",
+                ),
+                Block(
+                    name=BlockNameOptions.WEEKDAY,
+                    type=BlockTypeOptions.STRING,
+                    value="saturday",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="then",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_RELATIVE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="off",
                             id="0",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         )
                     ],
                 ),
-                Block(name="#", type="number", value=2),
-                Block(name="text", type="string", value="day"),
-                Block(name="timing", type="string", value="after"),
-                Block(name="text", type="string", value="for"),
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=2,
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="day",
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="after",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="for",
+                ),
+                Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="John",
                             id="0",
-                            id_type="worker",
+                            id_type=SWOIdTypes.WORKER,
                             is_bool_dim=False,
                             category_name="Workers",
                         )
@@ -864,48 +1023,80 @@ test_data = [
             template_id="4",
             language="en",
             blocks=[
-                Block(name="text", type="string", value="if"),
                 Block(
-                    name="shift_reference",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="if",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_REFERENCE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="morning",
                             id="1",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         ),
                     ],
                 ),
-                Block(name="text", type="string", value="on"),
-                Block(name="weekday", type="string", value="saturday"),
-                Block(name="text", type="string", value="then"),
                 Block(
-                    name="shift_relative",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="on",
+                ),
+                Block(
+                    name=BlockNameOptions.WEEKDAY,
+                    type=BlockTypeOptions.STRING,
+                    value="saturday",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="then",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_RELATIVE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="off",
                             id="0",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         )
                     ],
                 ),
-                Block(name="#", type="number", value=2),
-                Block(name="text", type="string", value="day"),
-                Block(name="timing", type="string", value="before"),
-                Block(name="text", type="string", value="for"),
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=2,
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="day",
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="before",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="for",
+                ),
+                Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="John",
                             id="0",
-                            id_type="worker",
+                            id_type=SWOIdTypes.WORKER,
                             is_bool_dim=False,
                             category_name="Workers",
                         )
@@ -946,28 +1137,36 @@ test_data = [
             language="en",
             blocks=[
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="John",
                             id="0",
-                            id_type="worker",
+                            id_type=SWOIdTypes.WORKER,
                             is_bool_dim=False,
                             category_name="Workers",
                         )
                     ],
                 ),
-                Block(name="operator", type="string", value="should only"),
-                Block(name="text", type="string", value="work"),
                 Block(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="should only",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="work",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="night",
                             id="3",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         ),
@@ -1004,28 +1203,36 @@ test_data = [
             language="en",
             blocks=[
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="John",
                             id="0",
-                            id_type="worker",
+                            id_type=SWOIdTypes.WORKER,
                             is_bool_dim=False,
                             category_name="Workers",
                         )
                     ],
                 ),
-                Block(name="operator", type="string", value="should not"),
-                Block(name="text", type="string", value="work"),
                 Block(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="should not",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="work",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="night",
                             id="3",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         ),
@@ -1063,33 +1270,41 @@ test_data = [
             language="en",
             blocks=[
                 Block(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="night",
                             id="3",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         ),
                     ],
                 ),
-                Block(name="text", type="string", value="on"),
-                Block(name="weekday", type="string", value="sunday"),
                 Block(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="on",
+                ),
+                Block(
+                    name=BlockNameOptions.WEEKDAY,
+                    type=BlockTypeOptions.STRING,
+                    value="sunday",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     value="should be evenly spread in time for",
                 ),
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="John",
                             id="0",
-                            id_type="worker",
+                            id_type=SWOIdTypes.WORKER,
                             is_bool_dim=False,
                             category_name="Workers",
                         )
@@ -1127,33 +1342,41 @@ test_data = [
             language="en",
             blocks=[
                 Block(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="night",
                             id="3",
-                            id_type="shift",
+                            id_type=SWOIdTypes.SHIFT,
                             is_bool_dim=False,
                             category_name="Shifts",
                         ),
                     ],
                 ),
-                Block(name="text", type="string", value="on"),
-                Block(name="weekday", type="string", value="sunday"),
                 Block(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="on",
+                ),
+                Block(
+                    name=BlockNameOptions.WEEKDAY,
+                    type=BlockTypeOptions.STRING,
+                    value="sunday",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     value="should be fairly spread across",
                 ),
                 Block(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     value=[
                         ShiftWorkerOption(
                             name="all workers",
                             id="",
-                            id_type="",
+                            id_type=SWOIdTypes.NONE,
                             is_bool_dim=False,
                             category_name="All",
                         ),

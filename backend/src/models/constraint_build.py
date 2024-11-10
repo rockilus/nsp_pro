@@ -8,13 +8,6 @@ from mongoengine.fields import (
     StringField,
 )
 
-# class ShiftWorkerOption(EmbeddedDocument):
-#     name: str | bool
-#     id: str
-#     id_type: Constants.SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS
-#     is_bool_dim: bool
-#     category_name: str
-
 
 class ShiftWorkerOption(EmbeddedDocument):
     name = DynamicField(required=True)

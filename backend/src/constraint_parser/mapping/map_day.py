@@ -2,7 +2,13 @@ from datetime import date
 from typing import List, Tuple
 
 from constraint_parser.mapping.utils import find_block_by_name
-from core import Block, ConstraintBuildAugmented, ConstraintType
+from core import (
+    Block,
+    BlockNameOptions,
+    ConstraintBuildAugmented,
+    ConstraintType,
+    VarDaySelectorOptions,
+)
 from utils.constants import Constants
 
 
@@ -22,9 +28,9 @@ class MapDay:
     def get_coords_days(self, cba: ConstraintBuildAugmented) -> List[date]:
         selector = self.get_selector(cba.blocks, cba.constraint_type)
         target = self.get_target(cba.blocks, cba.constraint_type)
-        if selector == "all":
+        if selector == VarDaySelectorOptions.ALL:
             return self.dates_campaign
-        if selector == "week_day_index":
+        if selector == VarDaySelectorOptions.WEEK_DAY_INDEX:
             return [
                 self.dates_campaign[i]
                 for i in range(
@@ -45,7 +51,7 @@ class MapDay:
         interval_abs = abs(interval)
         dates_constraint = self.dates_hist[-interval_abs:] + self.dates_campaign
 
-        if selector == "all":
+        if selector == VarDaySelectorOptions.ALL:
             for i in range(
                 abs(min(interval, 0)),
                 len(dates_constraint) - max(interval, 0),
@@ -68,11 +74,11 @@ class MapDay:
 
     def get_coords_days_sum(self, cba: ConstraintBuildAugmented) -> List[List[date]]:
         selector = self.get_selector(cba.blocks, cba.constraint_type)
-        if selector == "all":
+        if selector == VarDaySelectorOptions.ALL:
             return [self.dates_campaign]
-        if selector == "week":
+        if selector == VarDaySelectorOptions.WEEK:
             return self.periods_weekly
-        if selector == "month":
+        if selector == VarDaySelectorOptions.MONTH:
             return self.periods_monthly
         raise ValueError(f"Selector {selector} not recognized")
         # period = [
@@ -97,42 +103,42 @@ class MapDay:
 
         target_abs = max(abs(target) - 1, 0)
         dates_constraint = self.dates_hist[-target_abs:] + self.dates_campaign
-        if selector == "all":
+        if selector == VarDaySelectorOptions.ALL:
             return dates_constraint
         raise NotImplementedError(f"Day selector {selector} " + "not implemented")
 
     def get_selector(
         self, blocks: List[Block], cstr_type: ConstraintType
-    ) -> Constants.VAR_DAY_SELECTOR_OPTIONS:
-        timing_block = find_block_by_name(blocks, "timing")
-        weekday_block = find_block_by_name(blocks, "weekday")
+    ) -> VarDaySelectorOptions:
+        timing_block = find_block_by_name(blocks, BlockNameOptions.TIMING)
+        weekday_block = find_block_by_name(blocks, BlockNameOptions.WEEKDAY)
         if timing_block:
             if cstr_type == ConstraintType.SUM:
                 if timing_block.value == "per week":
-                    return "week"
+                    return VarDaySelectorOptions.WEEK
                 raise ValueError(f"Operator {timing_block.value} not recognized")
             if cstr_type == ConstraintType.SEQ:
                 if timing_block.value == "consecutive":
-                    return "all"
+                    return VarDaySelectorOptions.ALL
                 raise ValueError(f"Operator {timing_block.value} not recognized")
             if cstr_type == ConstraintType.ORD:
                 if timing_block.value in ["before", "after"]:
                     if weekday_block:
-                        return "week_day_index"
-                    return "all"
+                        return VarDaySelectorOptions.WEEK_DAY_INDEX
+                    return VarDaySelectorOptions.ALL
         if cstr_type == ConstraintType.FIL:
-            return "all"
+            return VarDaySelectorOptions.ALL
         if weekday_block:
             if cstr_type in [ConstraintType.EVE, ConstraintType.FAI]:
-                return "week_day_index"
+                return VarDaySelectorOptions.WEEK_DAY_INDEX
         raise ValueError("Timing block not found")
 
     def get_target(self, blocks: List[Block], cstr_type: ConstraintType) -> int:
         if cstr_type in [ConstraintType.SUM, ConstraintType.SEQ]:
             return 0
-        if self.get_selector(blocks, cstr_type) != "week_day_index":
+        if self.get_selector(blocks, cstr_type) != VarDaySelectorOptions.WEEK_DAY_INDEX:
             return 0
-        weekday_block = find_block_by_name(blocks, "weekday")
+        weekday_block = find_block_by_name(blocks, BlockNameOptions.WEEKDAY)
         if weekday_block:
             if weekday_block.value in Constants.WEEK_DAYS:
                 return Constants.WEEK_DAYS.index(weekday_block.value)
@@ -147,9 +153,9 @@ class MapDay:
             ConstraintType.EVE,
         ]:
             return 0
-        timing_block = find_block_by_name(blocks, "timing")
+        timing_block = find_block_by_name(blocks, BlockNameOptions.TIMING)
         if timing_block:
-            qty_block = find_block_by_name(blocks, "#")
+            qty_block = find_block_by_name(blocks, BlockNameOptions.NUMBER)
             if qty_block and isinstance(qty_block.value, int):
                 if timing_block.value == "before":
                     return qty_block.value * -1

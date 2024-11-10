@@ -3,46 +3,88 @@ from datetime import date
 from enum import Enum
 from typing import List, Tuple
 
-from utils.constants import Constants
+
+class VarWorkerSelectorOptions(Enum):
+    ALL = 0
+    EQUAL = 1
 
 
 @dataclass
 class VarWorker:
-    selector: Constants.VAR_WORKER_SELECTOR_OPTIONS
+    selector: VarWorkerSelectorOptions
     target_ids: List[str]
     num_eligible_workers: int
 
 
+class VarDaySelectorOptions(Enum):
+    ALL = 0
+    WEEK = 1
+    MONTH = 2
+    PERIOD = 3
+    WEEK_DAY_INDEX = 4
+
+
 @dataclass
 class VarDay:
-    selector: Constants.VAR_DAY_SELECTOR_OPTIONS
+    selector: VarDaySelectorOptions
     target: int
     start_date: date
     end_date: date
     interval: int
 
 
+class VarShiftSelectorOptions(Enum):
+    ALL = 0
+    EQUAL = 1
+
+
 @dataclass
 class VarShift:
-    selector: Constants.VAR_SHIFT_SELECTOR_OPTIONS
+    selector: VarShiftSelectorOptions
     target_ids: List[str]
     reference_ids: List[str]
     relative_ids: List[str]
+
+
+class SWOIdTypes(Enum):
+    NONE = 0
+    WORKER = 1
+    SHIFT = 2
+    DIMENSION = 3
 
 
 @dataclass
 class ShiftWorkerOption:
     name: str | bool  # value shown in the dropdown in the ui
     id: str  # id of the shift, worker or dimension
-    id_type: Constants.SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS
+    id_type: SWOIdTypes
     is_bool_dim: bool
     category_name: str  # workers, shifts, all, or the name of the dimension
 
 
+class BlockNameOptions(Enum):
+    OPERATOR = 0
+    NUMBER = 1
+    TIMING = 2
+    SHIFT = 3
+    WORKER = 4
+    TEXT = 5
+    SHIFT_REFERENCE = 6
+    SHIFT_RELATIVE = 7
+    WEEKDAY = 8
+
+
+class BlockTypeOptions(Enum):
+    STRING = 0
+    NUMBER = 1
+    LIST = 2
+    SHIFT_WORKER_OPTION = 3
+
+
 @dataclass
 class Block:
-    name: Constants.BLOCK_NAME_OPTIONS
-    type: Constants.BLOCK_TYPE_OPTIONS
+    name: BlockNameOptions
+    type: BlockTypeOptions
     value: str | int | List[str] | List[ShiftWorkerOption]
 
 
@@ -188,8 +230,8 @@ class Constraints:
 
 @dataclass
 class TemplateBlock:
-    name: Constants.BLOCK_NAME_OPTIONS
-    type: Constants.BLOCK_TYPE_OPTIONS
+    name: BlockNameOptions
+    type: BlockTypeOptions
     options: List[str] | List[ShiftWorkerOption]
     placeholder: str | int
 

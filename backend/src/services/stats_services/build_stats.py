@@ -7,6 +7,8 @@ from core import (
     Attribute,
     AttributeOwnerType,
     Block,
+    BlockNameOptions,
+    BlockTypeOptions,
     Dimension,
     DimEntry,
     Shift,
@@ -148,8 +150,8 @@ def build_work_shift_indexes(
     Dict[int, str],
 ]:
     block = Block(
-        name="shift",
-        type="shift_worker_option",
+        name=BlockNameOptions.SHIFT,
+        type=BlockTypeOptions.SHIFT_WORKER_OPTION,
         value=selected_shifts,
     )
     # pylint: disable=R0801
