@@ -2,7 +2,6 @@ from models.assignment import Assignment
 from models.attribute import Attribute
 from models.breach import Breach, Variable
 from models.config import Config
-from models.constraint import Constraint, VarDay, VarShift, VarWorker
 from models.constraint_build import Block, ConstraintBuild, ShiftWorkerOption
 from models.coverage import Coverage
 from models.coverage_selector import CoverageSelector
@@ -23,10 +22,6 @@ __all__ = [
     "Breach",
     "Variable",
     "Config",
-    "Constraint",
-    "VarDay",
-    "VarShift",
-    "VarWorker",
     "Block",
     "ConstraintBuild",
     "ShiftWorkerOption",
