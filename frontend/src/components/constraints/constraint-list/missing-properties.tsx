@@ -2,6 +2,7 @@ import React, { ReactElement } from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // Types
 import { MissingAttribute } from "../../../types/constraint";
+import { AttributeOwnerType } from "../../../types/attribute";
 // Styles
 import "./missing-properties.css";
 
@@ -24,7 +25,7 @@ export default function MissingProperties({
         const newString = mp.attributeValues.map((pv) =>
           pv ? mp.dimName.toLowerCase() : "no " + mp.dimName.toLowerCase()
         );
-        if (mp.category === "worker") {
+        if (mp.category === AttributeOwnerType.WORKER) {
           mpValuesStringWorkers.push(...newString);
         } else {
           mpValuesStringShifts.push(...newString);
@@ -33,7 +34,7 @@ export default function MissingProperties({
         const newString = mp.attributeValues.map((pv) =>
           String(pv).toLowerCase()
         );
-        if (mp.category === "worker") {
+        if (mp.category === AttributeOwnerType.WORKER) {
           mpValuesStringWorkers.push(...newString);
         } else {
           mpValuesStringShifts.push(...newString);

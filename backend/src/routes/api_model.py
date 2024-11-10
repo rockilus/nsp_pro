@@ -144,7 +144,7 @@ class MissingAttributeMessage(BaseModel):
     dimensionId: str
     isBool: bool
     dimName: str
-    category: str
+    category: int
     attributeValues: List[str | int | float | bool]
 
 
