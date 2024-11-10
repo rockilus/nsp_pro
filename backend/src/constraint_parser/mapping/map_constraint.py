@@ -7,6 +7,7 @@ from constraint_parser.mapping.map_worker import MapWorker
 from constraint_parser.mapping.utils import find_block_by_name
 from core import (
     Block,
+    BlockNameOptions,
     ConstraintBuildAugmented,
     ConstraintFai,
     ConstraintFil,
@@ -313,7 +314,7 @@ class MapConstaint:
     ) -> ConstraintOperator | None:
         if cstr_type in [ConstraintType.EVE, ConstraintType.FAI]:
             return None
-        operator_block = find_block_by_name(blocks, "operator")
+        operator_block = find_block_by_name(blocks, BlockNameOptions.OPERATOR)
         if operator_block:
             if not isinstance(operator_block.value, str):
                 raise ValueError("Operator block value is not a string")
@@ -330,7 +331,7 @@ class MapConstaint:
             ConstraintType.FAI,
         ]:
             return 0
-        qty_block = find_block_by_name(blocks, "#")
+        qty_block = find_block_by_name(blocks, BlockNameOptions.NUMBER)
         if qty_block:
             if not isinstance(qty_block.value, int):
                 raise ValueError("Quantity block value is not an int")

@@ -2,10 +2,17 @@ from typing import List
 
 from bson import ObjectId
 
-from core import Block, ConstraintBuild, ShiftWorkerOption
+from core import (
+    Block,
+    BlockNameOptions,
+    BlockTypeOptions,
+    ConstraintBuild,
+    ConstraintType,
+    ShiftWorkerOption,
+    SWOIdTypes,
+)
 from database.db import DB
-from errors import (
-    handle_create_core_object_error,
+from errors import (  # handle_create_core_object_error,
     handle_create_document_error,
     handle_delete_document_error,
     handle_get_document_error,
@@ -145,7 +152,7 @@ def core_to_doc_shift_worker_option(
         shift_worker_option_doc = ShiftWorkerOptionDocument(
             name=dataclass_obj.name,
             id=dataclass_obj.id,
-            id_type=dataclass_obj.id_type,
+            id_type=dataclass_obj.id_type.value,
             is_bool_dim=dataclass_obj.is_bool_dim,
             category_name=dataclass_obj.category_name,
         )
@@ -158,14 +165,14 @@ def core_to_doc_shift_worker_option(
 def core_to_doc_block(dataclass_obj: Block) -> BlockDocument:
     try:
         block_doc = BlockDocument(
-            name=dataclass_obj.name,
-            type=dataclass_obj.type,
+            name=dataclass_obj.name.value,
+            type=dataclass_obj.type.value,
             value=(
                 [
                     core_to_doc_shift_worker_option(v)  # type: ignore
                     for v in dataclass_obj.value  # type: ignore
                 ]
-                if dataclass_obj.type == "shift_worker_option"
+                if dataclass_obj.type == BlockTypeOptions.SHIFT_WORKER_OPTION
                 else dataclass_obj.value
             ),
         )
@@ -188,7 +195,7 @@ def core_to_doc_constraint_build(
         cb_doc = ConstraintBuildDocument(
             id=dataclass_obj.id,
             team=team,
-            constraint_type=dataclass_obj.constraint_type,
+            constraint_type=dataclass_obj.constraint_type.value,
             template_id=dataclass_obj.template_id,
             language=dataclass_obj.language,
             blocks=[core_to_doc_block(b) for b in dataclass_obj.blocks],
@@ -213,54 +220,76 @@ def doc_to_core_shift_worker_option(
                 f'Invalid document type: {type(doc_obj)} for ShiftWorkerOption'
             )
     doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["id_type"] = SWOIdTypes(doc_dict["id_type"])
     return ShiftWorkerOption(**doc_dict)
 
 
 def doc_to_core_block(doc_obj: BlockDocument) -> Block:
-    try:
-        block = Block(
-            name=doc_obj.name,  # type: ignore
-            type=doc_obj.type,  # type: ignore
-            value=(
-                [doc_to_core_shift_worker_option(v) for v in doc_obj.value]
-                if doc_obj.type == "shift_worker_option"
-                else (
-                    doc_obj.value
-                    if isinstance(doc_obj.value, (str, int))
-                    else list(doc_obj.value)
-                )
-            ),
-        )
-    except Exception as e:
-        log_info('Failed to convert BlockDocument to Block')
-        handle_create_core_object_error(e)
-    return block
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["name"] = BlockNameOptions(doc_dict["name"])
+    doc_dict["type"] = BlockTypeOptions(doc_dict["type"])
+    if doc_dict["type"] == BlockTypeOptions.SHIFT_WORKER_OPTION:
+        doc_dict["value"] = [
+            doc_to_core_shift_worker_option(v) for v in doc_dict["value"]
+        ]
+    return Block(**doc_dict)
+    # try:
+    #     block = Block(
+    #         name=doc_obj.name,  # type: ignore
+    #         type=doc_obj.type,  # type: ignore
+    #         value=(
+    #             [doc_to_core_shift_worker_option(v) for v in doc_obj.value]
+    #             if doc_obj.type == "shift_worker_option"
+    #             else (
+    #                 doc_obj.value
+    #                 if isinstance(doc_obj.value, (str, int))
+    #                 else list(doc_obj.value)
+    #             )
+    #         ),
+    #     )
+    # except Exception as e:
+    #     log_info('Failed to convert BlockDocument to Block')
+    #     handle_create_core_object_error(e)
+    # return block
 
 
 def doc_to_core_constraint_build(
     doc_obj: ConstraintBuildDocument,
 ) -> ConstraintBuild:
-    try:
-        if doc_obj.constraint_type not in [
-            'sum',
-            'seq',
-            'ord',
-            'fil',
-            'fai',
-            'eve',
-        ]:
-            raise ValueError(f'Invalid constraint_type: {doc_obj.constraint_type}')
-        constraint_build = ConstraintBuild(
-            id=doc_obj.id,
-            team_id=doc_obj.team.id,
-            constraint_type=doc_obj.constraint_type,  # type: ignore
-            template_id=doc_obj.template_id,
-            language=doc_obj.language,
-            blocks=[doc_to_core_block(b) for b in doc_obj.blocks],
-            hard=doc_obj.hard,
-            priority=doc_obj.priority,
-        )
-    except Exception as e:
-        log_info('Failed to convert ConstraintBuildDocument to ConstraintBuild')
-        handle_create_core_object_error(e)
-    return constraint_build
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["id"] = doc_dict["_id"]
+    doc_dict["team_id"] = doc_dict["team"]
+    doc_dict["constraint_type"] = ConstraintType(doc_dict["constraint_type"])
+    doc_dict["blocks"] = [doc_to_core_block(b) for b in doc_obj.blocks]
+    doc_dict.pop("_id")
+    doc_dict.pop("team")
+    return ConstraintBuild(**doc_dict)
+
+    # try:
+    #     if doc_obj.constraint_type not in [
+    #         'sum',
+    #         'seq',
+    #         'ord',
+    #         'fil',
+    #         'fai',
+    #         'eve',
+    #     ]:
+    #         raise ValueError(
+    #             f'Invalid constraint_type: {doc_obj.constraint_type}'
+    #         )
+    #     constraint_build = ConstraintBuild(
+    #         id=doc_obj.id,
+    #         team_id=doc_obj.team.id,
+    #         constraint_type=doc_obj.constraint_type,  # type: ignore
+    #         template_id=doc_obj.template_id,
+    #         language=doc_obj.language,
+    #         blocks=[doc_to_core_block(b) for b in doc_obj.blocks],
+    #         hard=doc_obj.hard,
+    #         priority=doc_obj.priority,
+    #     )
+    # except Exception as e:
+    #     log_info(
+    #         'Failed to convert ConstraintBuildDocument to ConstraintBuild'
+    #     )
+    #     handle_create_core_object_error(e)
+    # return constraint_build

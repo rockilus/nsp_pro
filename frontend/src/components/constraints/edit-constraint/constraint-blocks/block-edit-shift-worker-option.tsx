@@ -21,6 +21,7 @@ import {
   BlockT,
   TemplateBlockT,
   ShiftWorkerOptionT,
+  SWOIdTypes,
 } from "../../../../types/constraint";
 // Constants
 import { ConstraintDefaultColors } from "../../../../constants/constants";
@@ -84,7 +85,7 @@ export default function BlockEditShiftWorkerOption({
       "categoryName" in dict &&
       (typeof dict.name === "string" || typeof dict.name === "boolean") &&
       typeof dict.id === "string" &&
-      typeof dict.idType === "string" &&
+      typeof dict.idType === "number" &&
       typeof dict.isBoolDim === "boolean" &&
       typeof dict.categoryName === "string"
     );

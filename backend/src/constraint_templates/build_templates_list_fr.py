@@ -1,6 +1,13 @@
 from typing import List
 
-from core import ConstraintType, ShiftWorkerOption, Template, TemplateBlock
+from core import (
+    BlockNameOptions,
+    BlockTypeOptions,
+    ConstraintType,
+    ShiftWorkerOption,
+    Template,
+    TemplateBlock,
+)
 from utils.constants import Constants
 
 
@@ -17,38 +24,38 @@ def build_templates_list_fr(
             language="fr",
             blocks=[
                 TemplateBlock(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=worker_options,
                     placeholder="Jean",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="doit faire",
                 ),
                 TemplateBlock(
-                    name="operator",
-                    type="string",
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
                     options=["at most", "at least", "exactly"],
                     placeholder="au plus",
                 ),
                 TemplateBlock(
-                    name="#",
-                    type="number",
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
                     options=[],  # type: ignore
                     placeholder=2,
                 ),
                 TemplateBlock(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=shift_options,
                     placeholder="consultations",
                 ),
                 TemplateBlock(
-                    name="timing",
-                    type="string",
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
                     options=["consecutive"],
                     placeholder="consecutives",
                 ),
@@ -61,38 +68,38 @@ def build_templates_list_fr(
             language="fr",
             blocks=[
                 TemplateBlock(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=worker_options,
                     placeholder="Jean",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="doit faire",
                 ),
                 TemplateBlock(
-                    name="operator",
-                    type="string",
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
                     options=["at most", "at least", "exactly"],
                     placeholder="au moins",
                 ),
                 TemplateBlock(
-                    name="#",
-                    type="number",
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
                     options=[],  # type: ignore
                     placeholder=1,
                 ),
                 TemplateBlock(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=shift_options,
                     placeholder="garde",
                 ),
                 TemplateBlock(
-                    name="timing",
-                    type="string",
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
                     options=["per week", "per month", "per year"],
                     placeholder="par semaine",
                 ),
@@ -105,50 +112,50 @@ def build_templates_list_fr(
             language="fr",
             blocks=[
                 TemplateBlock(
-                    name="operator",
-                    type="string",
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
                     options=["no"],
                     placeholder="Pas de",
                 ),
                 TemplateBlock(
-                    name="shift_reference",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT_REFERENCE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=shift_options,
                     placeholder="consultation",
                 ),
                 TemplateBlock(
-                    name="#",
-                    type="number",
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
                     options=[],  # type: ignore
                     placeholder=1,
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="jour",
                 ),
                 TemplateBlock(
-                    name="timing",
-                    type="string",
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
                     options=["after", "before"],
                     placeholder="après",
                 ),
                 TemplateBlock(
-                    name="shift_relative",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT_RELATIVE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=shift_options,
                     placeholder="garde",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="pour",
                 ),
                 TemplateBlock(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=worker_options,
                     placeholder="Jean",
                 ),
@@ -161,56 +168,56 @@ def build_templates_list_fr(
             language="fr",
             blocks=[
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="Si",
                 ),
                 TemplateBlock(
-                    name="shift_reference",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT_REFERENCE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=shift_options,
                     placeholder="garde",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="alors",
                 ),
                 TemplateBlock(
-                    name="shift_relative",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT_RELATIVE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=shift_options,
                     placeholder="repos",
                 ),
                 TemplateBlock(
-                    name="#",
-                    type="number",
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
                     options=[],  # type: ignore
                     placeholder=1,
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="jour",
                 ),
                 TemplateBlock(
-                    name="timing",
-                    type="string",
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
                     options=["after", "before"],
                     placeholder="après",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="pour",
                 ),
                 TemplateBlock(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=worker_options,
                     placeholder="Jean",
                 ),
@@ -224,68 +231,68 @@ def build_templates_list_fr(
             language="fr",
             blocks=[
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="Si",
                 ),
                 TemplateBlock(
-                    name="shift_reference",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT_REFERENCE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=shift_options,
                     placeholder="garde",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="le",
                 ),
                 TemplateBlock(
-                    name="weekday",
-                    type="string",
+                    name=BlockNameOptions.WEEKDAY,
+                    type=BlockTypeOptions.STRING,
                     options=list(Constants.WEEK_DAYS),
                     placeholder="samedi",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="alors",
                 ),
                 TemplateBlock(
-                    name="shift_relative",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT_RELATIVE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=shift_options,
                     placeholder="repos",
                 ),
                 TemplateBlock(
-                    name="#",
-                    type="number",
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
                     options=[],  # type: ignore
                     placeholder=2,
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="jour",
                 ),
                 TemplateBlock(
-                    name="timing",
-                    type="string",
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
                     options=["after", "before"],
                     placeholder="après",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="pour",
                 ),
                 TemplateBlock(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=worker_options,
                     placeholder="Jean",
                 ),
@@ -299,26 +306,26 @@ def build_templates_list_fr(
             language="fr",
             blocks=[
                 TemplateBlock(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=worker_options,
                     placeholder="Jean",
                 ),
                 TemplateBlock(
-                    name="operator",
-                    type="string",
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
                     options=["should only", "should not"],
                     placeholder="doit seulement",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="faire des",
                 ),
                 TemplateBlock(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=shift_options,
                     placeholder="consultations",
                 ),
@@ -333,39 +340,39 @@ def build_templates_list_fr(
             language="fr",
             blocks=[
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="Les",
                 ),
                 TemplateBlock(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=shift_options,
                     placeholder="gardes",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="le",
                 ),
                 TemplateBlock(
-                    name="weekday",
-                    type="string",
+                    name=BlockNameOptions.WEEKDAY,
+                    type=BlockTypeOptions.STRING,
                     options=list(Constants.WEEK_DAYS),
                     placeholder="dimanche",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="doivent être réparties de manière égale dans "
                     + "le temps pour",
                 ),
                 TemplateBlock(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=worker_options,
                     placeholder="tous les travailleurs",
                 ),
@@ -380,38 +387,38 @@ def build_templates_list_fr(
             language="fr",
             blocks=[
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="Les",
                 ),
                 TemplateBlock(
-                    name="shift",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=shift_options,
                     placeholder="gardes",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="le",
                 ),
                 TemplateBlock(
-                    name="weekday",
-                    type="string",
+                    name=BlockNameOptions.WEEKDAY,
+                    type=BlockTypeOptions.STRING,
                     options=list(Constants.WEEK_DAYS),
                     placeholder="dimanche",
                 ),
                 TemplateBlock(
-                    name="text",
-                    type="string",
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
                     options=[],  # type: ignore
                     placeholder="doivent être réparties de manière équitable entre",
                 ),
                 TemplateBlock(
-                    name="worker",
-                    type="shift_worker_option",
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
                     options=worker_options,
                     placeholder="tous les travailleurs",
                 ),

@@ -1,6 +1,15 @@
 from typing import List
 
-from core import Block, Dimension, Shift, ShiftWorkerOption, Worker
+from core import (
+    Block,
+    BlockNameOptions,
+    BlockTypeOptions,
+    Dimension,
+    Shift,
+    ShiftWorkerOption,
+    SWOIdTypes,
+    Worker,
+)
 
 
 def translate_worker_block_value(value: str, language: str) -> str:
@@ -138,15 +147,15 @@ def get_shift_worker_option_display_name(
     dimensions: List[Dimension],
     lng: str,
 ) -> str:
-    if option.id_type == "worker":
+    if option.id_type == SWOIdTypes.WORKER:
         worker = next((w for w in workers if w.id == option.id), None)
         if worker:
             return worker.name
-    elif option.id_type == "shift":
+    elif option.id_type == SWOIdTypes.SHIFT:
         shift = next((s for s in shifts if s.id == option.id), None)
         if shift:
             return shift.name
-    elif option.id_type == "dimension":
+    elif option.id_type == SWOIdTypes.DIMENSION:
         if not option.is_bool_dim:
             if not isinstance(option.name, str):
                 raise ValueError("Invalid option name type for non-bool dim")
@@ -180,7 +189,7 @@ def blocks_to_string(
 ) -> str:
     values = []
     for block in blocks:
-        if block.type == "shift_worker_option":
+        if block.type == BlockTypeOptions.SHIFT_WORKER_OPTION:
             values.append(
                 block_to_string_shift_worker_option(
                     block,
@@ -192,11 +201,11 @@ def blocks_to_string(
             )
         else:
             block_value = block.value
-            if block.name == "operator":
+            if block.name == BlockNameOptions.OPERATOR:
                 block_value = translate_operator_block_value(str(block_value), language)
-            if block.name == "timing":
+            if block.name == BlockNameOptions.TIMING:
                 block_value = translate_timing_block_value(str(block_value), language)
-            if block.name == "weekday":
+            if block.name == BlockNameOptions.WEEKDAY:
                 block_value = translate_weekday_block_value(str(block_value), language)
             values.append(str(block_value))
     joined_values = ' '.join(values)

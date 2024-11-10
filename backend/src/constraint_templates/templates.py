@@ -12,6 +12,7 @@ from core import (
     DimEntry,
     Shift,
     ShiftWorkerOption,
+    SWOIdTypes,
     Template,
     Worker,
 )
@@ -74,7 +75,7 @@ def build_options(
                 else "all shifts"
             ),
             id="",
-            id_type="",
+            id_type=SWOIdTypes.NONE,
             is_bool_dim=False,
             category_name="All",
         )
@@ -82,7 +83,11 @@ def build_options(
         ShiftWorkerOption(
             name=o.name,
             id=o.id,
-            id_type=("worker" if owner_type == AttributeOwnerType.WORKER else "shift"),
+            id_type=(
+                SWOIdTypes.WORKER
+                if owner_type == AttributeOwnerType.WORKER
+                else SWOIdTypes.SHIFT
+            ),
             is_bool_dim=False,
             category_name=(
                 "Workers" if owner_type == AttributeOwnerType.WORKER else "Shifts"
@@ -99,7 +104,7 @@ def build_options(
                 ShiftWorkerOption(
                     name="",
                     id=dimension.id,
-                    id_type="dimension",
+                    id_type=SWOIdTypes.DIMENSION,
                     is_bool_dim=True,
                     category_name=dimension.name,
                 )
@@ -110,7 +115,7 @@ def build_options(
                 ShiftWorkerOption(
                     name=de.name,
                     id=dimension.id,
-                    id_type="dimension",
+                    id_type=SWOIdTypes.DIMENSION,
                     is_bool_dim=False,
                     category_name=dimension.name,
                 )
@@ -121,7 +126,7 @@ def build_options(
                 ShiftWorkerOption(
                     name=str(wp_value),
                     id=dimension.id,
-                    id_type="dimension",
+                    id_type=SWOIdTypes.DIMENSION,
                     is_bool_dim=False,
                     category_name=dimension.name,
                 )

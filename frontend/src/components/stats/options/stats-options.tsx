@@ -17,7 +17,7 @@ import "../../../styles/text-styles.css";
 import "./stats-options.css";
 // Types
 import { StatsOptionsT } from "../../../types/stats";
-import { ShiftWorkerOptionT } from "../../../types/constraint";
+import { ShiftWorkerOptionT, SWOIdTypes } from "../../../types/constraint";
 
 dayjs.extend(utc);
 
@@ -46,7 +46,7 @@ export default function StatsOptions({
       {
         name: "all shifts",
         id: "",
-        idType: "",
+        idType: SWOIdTypes.NONE,
         isBoolDim: false,
         categoryName: "All",
       },

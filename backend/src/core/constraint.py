@@ -1,48 +1,65 @@
 from dataclasses import dataclass
-from datetime import date
 from enum import Enum
 from typing import List, Tuple
 
-from utils.constants import Constants
+
+class VarWorkerSelectorOptions(Enum):
+    ALL = 0
+    EQUAL = 1
 
 
-@dataclass
-class VarWorker:
-    selector: Constants.VAR_WORKER_SELECTOR_OPTIONS
-    target_ids: List[str]
-    num_eligible_workers: int
+class VarDaySelectorOptions(Enum):
+    ALL = 0
+    WEEK = 1
+    MONTH = 2
+    PERIOD = 3
+    WEEK_DAY_INDEX = 4
 
 
-@dataclass
-class VarDay:
-    selector: Constants.VAR_DAY_SELECTOR_OPTIONS
-    target: int
-    start_date: date
-    end_date: date
-    interval: int
+class VarShiftSelectorOptions(Enum):
+    ALL = 0
+    EQUAL = 1
 
 
-@dataclass
-class VarShift:
-    selector: Constants.VAR_SHIFT_SELECTOR_OPTIONS
-    target_ids: List[str]
-    reference_ids: List[str]
-    relative_ids: List[str]
+class SWOIdTypes(Enum):
+    NONE = 0
+    WORKER = 1
+    SHIFT = 2
+    DIMENSION = 3
 
 
 @dataclass
 class ShiftWorkerOption:
     name: str | bool  # value shown in the dropdown in the ui
     id: str  # id of the shift, worker or dimension
-    id_type: Constants.SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS
+    id_type: SWOIdTypes
     is_bool_dim: bool
     category_name: str  # workers, shifts, all, or the name of the dimension
 
 
+class BlockNameOptions(Enum):
+    OPERATOR = 0
+    NUMBER = 1
+    TIMING = 2
+    SHIFT = 3
+    WORKER = 4
+    TEXT = 5
+    SHIFT_REFERENCE = 6
+    SHIFT_RELATIVE = 7
+    WEEKDAY = 8
+
+
+class BlockTypeOptions(Enum):
+    STRING = 0
+    NUMBER = 1
+    LIST = 2
+    SHIFT_WORKER_OPTION = 3
+
+
 @dataclass
 class Block:
-    name: Constants.BLOCK_NAME_OPTIONS
-    type: Constants.BLOCK_TYPE_OPTIONS
+    name: BlockNameOptions
+    type: BlockTypeOptions
     value: str | int | List[str] | List[ShiftWorkerOption]
 
 
@@ -98,36 +115,10 @@ class ConstraintBuild:
 
 @dataclass
 # pylint: disable=too-many-instance-attributes
-class ConstraintBuildAugmented:
-    id: str
-    team_id: str
-    constraint_type: ConstraintType
-    template_id: str
-    language: str
-    blocks: List[Block]
-    hard: bool
-    priority: str
+class ConstraintBuildAugmented(ConstraintBuild):
     active: bool
     missing_attributes: List[MissingAttribute]
     text: str
-
-
-# @dataclass
-# # pylint: disable=too-many-instance-attributes
-# class Constraint:
-#     id: str
-#     constraint_type: ConstraintType
-#     operator: ConstraintOperator | None
-#     target_value: int
-#     target_unit: str  # worker, shift, day, hour
-#     worker_var: VarWorker
-#     day_var: VarDay
-#     shift_var: VarShift
-#     active: bool
-#     hard: bool
-#     priority: str
-#     schedule_id: str
-#     constraint_build_id: str
 
 
 @dataclass
@@ -188,8 +179,8 @@ class Constraints:
 
 @dataclass
 class TemplateBlock:
-    name: Constants.BLOCK_NAME_OPTIONS
-    type: Constants.BLOCK_TYPE_OPTIONS
+    name: BlockNameOptions
+    type: BlockTypeOptions
     options: List[str] | List[ShiftWorkerOption]
     placeholder: str | int
 

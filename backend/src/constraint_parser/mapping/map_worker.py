@@ -3,12 +3,14 @@ from typing import Dict, List
 from constraint_parser.mapping.utils import find_block_by_name
 from core import (
     Block,
+    BlockNameOptions,
     ConstraintBuildAugmented,
     MissingAttribute,
     ShiftWorkerOption,
+    SWOIdTypes,
+    VarWorkerSelectorOptions,
     Worker,
 )
-from utils.constants import Constants
 
 
 class MapWorker:
@@ -18,17 +20,17 @@ class MapWorker:
 
     def get_coord_workers(self, cba: ConstraintBuildAugmented) -> List[Worker]:
         swos_worker = self.get_worker_shift_worker_options(cba.blocks)
-        if self.get_selector(swos_worker) == "all":
+        if self.get_selector(swos_worker) == VarWorkerSelectorOptions.ALL:
             return self.workers
         worker_ids = []
         for value in swos_worker:
-            if value.id_type == "worker":
+            if value.id_type == SWOIdTypes.WORKER:
                 if not self.check_worker_id(value.id):
                     raise ValueError(
                         f"Worker {value.name} with id {value.id} not found"
                     )
                 worker_ids.append(value.id)
-            elif value.id_type == "dimension":
+            elif value.id_type == SWOIdTypes.DIMENSION:
                 target_ids = self.get_target_ids_dimension(
                     value, cba.missing_attributes
                 )
@@ -41,11 +43,11 @@ class MapWorker:
 
     def get_selector(
         self, swos_worker: List[ShiftWorkerOption]
-    ) -> Constants.VAR_WORKER_SELECTOR_OPTIONS:
+    ) -> VarWorkerSelectorOptions:
         string_values = [v.name for v in swos_worker if isinstance(v.name, str)]
         if any("all workers" in v for v in string_values):
-            return "all"
-        return "equal"
+            return VarWorkerSelectorOptions.ALL
+        return VarWorkerSelectorOptions.EQUAL
 
     def get_target_ids_dimension(
         self,
@@ -86,7 +88,7 @@ class MapWorker:
     def get_worker_shift_worker_options(
         blocks: List[Block],
     ) -> List[ShiftWorkerOption]:
-        worker_block = find_block_by_name(blocks, "worker")
+        worker_block = find_block_by_name(blocks, BlockNameOptions.WORKER)
         if worker_block:
             if not isinstance(worker_block.value, list):
                 raise ValueError("Worker block value is not a list")

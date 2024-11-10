@@ -7,10 +7,14 @@ from pydantic import TypeAdapter
 
 from core import (
     Block,
+    BlockNameOptions,
+    BlockTypeOptions,
     ConstraintBuild,
     ConstraintBuildAugmented,
+    ConstraintType,
     MissingAttribute,
     ShiftWorkerOption,
+    SWOIdTypes,
 )
 from errors import (
     MessageTypeError,
@@ -209,6 +213,7 @@ def msg_to_core_shift_worker_option(
     msg: ShiftWorkerOptionMessage,
 ) -> ShiftWorkerOption:
     data_snake = humps.decamelize(msg.model_dump())
+    data_snake["id_type"] = SWOIdTypes(data_snake["id_type"])
     try:
         shift_worker_option = ShiftWorkerOption(**data_snake)
     except Exception as e:
@@ -219,7 +224,9 @@ def msg_to_core_shift_worker_option(
 
 def msg_to_core_block(msg: BlockMessage) -> Block:
     data_snake = humps.decamelize(msg.model_dump())
-    if msg.type == "shift_worker_option":
+    data_snake["name"] = BlockNameOptions(data_snake["name"])
+    data_snake["type"] = BlockTypeOptions(data_snake["type"])
+    if data_snake["type"] == BlockTypeOptions.SHIFT_WORKER_OPTION:
         if not isinstance(msg.value, list):
             raise ValueError("Invalid value type for shift_worker_option")
         value = [msg_to_core_shift_worker_option(v) for v in msg.value]  # type: ignore
@@ -236,6 +243,7 @@ def msg_to_core_constraint_build(
     msg: ConstraintBuildMessage,
 ) -> ConstraintBuild:
     data_snake = humps.decamelize(msg.model_dump())
+    data_snake["constraint_type"] = ConstraintType(data_snake["constraint_type"])
     data_snake["blocks"] = [msg_to_core_block(b) for b in msg.blocks]
     data_snake.pop("text")
     data_snake.pop("active")

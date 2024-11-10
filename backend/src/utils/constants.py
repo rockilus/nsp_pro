@@ -43,22 +43,6 @@ class Constants:
     QUANTITY_BLOCK_LABEL: str = "quantity"
     REFERENCE_BLOCK_LABEL: str = "reference"
     CONNECTOR_BLOCK_LABEL: str = "connector"
-    BLOCK_NAME_OPTIONS = Literal[
-        "operator",
-        "#",
-        "timing",
-        "shift",
-        "worker",
-        "text",
-        "shift_reference",
-        "shift_relative",
-        "weekday",
-    ]
-    VAR_WORKER_SELECTOR_OPTIONS = Literal["all", "equal"]
-    VAR_DAY_SELECTOR_OPTIONS = Literal["all", "week", "period", "week_day_index"]
-    VAR_SHIFT_SELECTOR_OPTIONS = Literal["all", "equal"]
-    BLOCK_TYPE_OPTIONS = Literal["string", "number", "list", "shift_worker_option"]
-    SHIFT_WORKER_OPTION_ID_TYPES_OPTIONS = Literal["shift", "worker", "dimension", ""]
 
     # Stats
     STATS_TIME_FRAME_OPTIONS = Literal[
