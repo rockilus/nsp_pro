@@ -23,10 +23,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from logger import log_info
 from routes.api_model import (
@@ -82,13 +79,10 @@ async def get_constraints(
         if not await authz_check(
             session.get_user_id(), "read-constraints", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to get constraints"
-            )
+            raise NotAuthorizedError("You do not have permission to get constraints")
         constraint_builds = get_constraint_builds_service(team_id)
         response = [
-            core_to_msg_constraint_build_augmented(cb)
-            for cb in constraint_builds
+            core_to_msg_constraint_build_augmented(cb) for cb in constraint_builds
         ]
     except Exception as e:
         log_info("Failed to get constraints")
@@ -185,9 +179,7 @@ def core_to_msg_missing_property(
     try:
         mp_msg = validator.validate_python(as_dict)
     except Exception as e:
-        log_info(
-            "Failed to convert core MissingProperty to MissingPropertyMessage"
-        )
+        log_info("Failed to convert core MissingProperty to MissingPropertyMessage")
         handle_message_errors(e)
     return mp_msg
 
@@ -199,8 +191,7 @@ def core_to_msg_constraint_build_augmented(
         data = asdict(cb_augmented)
         blocks = [core_to_msg_block(b) for b in cb_augmented.blocks]
         mps_message = [
-            core_to_msg_missing_property(mp)
-            for mp in cb_augmented.missing_attributes
+            core_to_msg_missing_property(mp) for mp in cb_augmented.missing_attributes
         ]
         data["blocks"] = blocks
         data["missing_properties"] = mps_message
@@ -212,9 +203,7 @@ def core_to_msg_constraint_build_augmented(
     try:
         cb_msg = validator.validate_python(as_dict)
     except Exception as e:
-        log_info(
-            "Failed to convert core ConstraintBuild to ConstraintBuildMessage"
-        )
+        log_info("Failed to convert core ConstraintBuild to ConstraintBuildMessage")
         handle_message_errors(e)
     return cb_msg
 
@@ -228,9 +217,7 @@ def msg_to_core_shift_worker_option(
     try:
         shift_worker_option = ShiftWorkerOption(**data_snake)
     except Exception as e:
-        log_info(
-            "Failed to convert ShiftWorkerOptionMessage to ShiftWorkerOption"
-        )
+        log_info("Failed to convert ShiftWorkerOptionMessage to ShiftWorkerOption")
         handle_create_core_object_error(e)
     return shift_worker_option
 
@@ -256,9 +243,7 @@ def msg_to_core_constraint_build(
     msg: ConstraintBuildMessage,
 ) -> ConstraintBuild:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["constraint_type"] = ConstraintType(
-        data_snake["constraint_type"]
-    )
+    data_snake["constraint_type"] = ConstraintType(data_snake["constraint_type"])
     data_snake["blocks"] = [msg_to_core_block(b) for b in msg.blocks]
     data_snake.pop("text")
     data_snake.pop("active")

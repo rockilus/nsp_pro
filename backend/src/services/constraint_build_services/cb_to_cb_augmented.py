@@ -4,6 +4,7 @@ from core import (
     Attribute,
     AttributeOwnerType,
     Block,
+    BlockNameOptions,
     ConstraintBuild,
     ConstraintBuildAugmented,
     Dimension,
@@ -12,6 +13,7 @@ from core import (
     MissingAttribute,
     Shift,
     ShiftWorkerOption,
+    SWOIdTypes,
     Worker,
 )
 from services.constraint_build_services.blocks_to_string import blocks_to_string
@@ -66,7 +68,7 @@ def build_missing_attributes_and_active(
     active_shift_reference = False
     active_shift_relative = False
     for block in blocks:
-        if block.name == "worker":
+        if block.name == BlockNameOptions.WORKER:
             (new_mps, new_active_worker) = build_missing_attributes_and_active_owner(
                 AttributeOwnerType.WORKER,
                 block,
@@ -77,7 +79,11 @@ def build_missing_attributes_and_active(
             )
             mps += new_mps
             active_worker = active_worker or new_active_worker
-        if block.name in ["shift", "shift_reference", "shift_relative"]:
+        if block.name in [
+            BlockNameOptions.SHIFT,
+            BlockNameOptions.SHIFT_REFERENCE,
+            BlockNameOptions.SHIFT_RELATIVE,
+        ]:
             new_mps, new_active_shift = build_missing_attributes_and_active_owner(
                 AttributeOwnerType.SHIFT,
                 block,
@@ -87,11 +93,11 @@ def build_missing_attributes_and_active(
                 attributes,
             )
             mps += new_mps
-            if block.name == "shift":
+            if block.name == BlockNameOptions.SHIFT:
                 active_shift = active_shift or new_active_shift
-            if block.name == "shift_reference":
+            if block.name == BlockNameOptions.SHIFT_REFERENCE:
                 active_shift_reference = active_shift_reference or new_active_shift
-            if block.name == "shift_relative":
+            if block.name == BlockNameOptions.SHIFT_RELATIVE:
                 active_shift_relative = active_shift_relative or new_active_shift
     active = active_worker and (
         active_shift or (active_shift_reference and active_shift_relative)
@@ -129,7 +135,7 @@ def build_missing_attributes_and_active_owner(
         set(
             swo.id  # type: ignore
             for swo in block.value
-            if swo.id_type == "dimension"  # type: ignore
+            if swo.id_type == SWOIdTypes.DIMENSION  # type: ignore
         )
     )
     if any(d_id is None for d_id in swo_d_ids):
@@ -191,7 +197,9 @@ def build_missing_attributes_and_active_owner_deleted(
     if not all(isinstance(swo, ShiftWorkerOption) for swo in block.value):
         raise ValueError("Block value list does not contain ShiftWorkerOption")
     target_swo_id_type = (
-        "worker" if owner_type == AttributeOwnerType.WORKER else "shift"
+        SWOIdTypes.WORKER
+        if owner_type == AttributeOwnerType.WORKER
+        else SWOIdTypes.SHIFT
     )
     owner_ids = list(
         set(

@@ -2,13 +2,13 @@ from typing import List
 
 from core import (
     Block,
+    BlockNameOptions,
+    BlockTypeOptions,
     Dimension,
     Shift,
     ShiftWorkerOption,
-    Worker,
-    BlockTypeOptions,
-    BlockNameOptions,
     SWOIdTypes,
+    Worker,
 )
 
 
@@ -202,17 +202,11 @@ def blocks_to_string(
         else:
             block_value = block.value
             if block.name == BlockNameOptions.OPERATOR:
-                block_value = translate_operator_block_value(
-                    str(block_value), language
-                )
+                block_value = translate_operator_block_value(str(block_value), language)
             if block.name == BlockNameOptions.TIMING:
-                block_value = translate_timing_block_value(
-                    str(block_value), language
-                )
+                block_value = translate_timing_block_value(str(block_value), language)
             if block.name == BlockNameOptions.WEEKDAY:
-                block_value = translate_weekday_block_value(
-                    str(block_value), language
-                )
+                block_value = translate_weekday_block_value(str(block_value), language)
             values.append(str(block_value))
     joined_values = ' '.join(values)
     capitalized_values = joined_values.capitalize()
@@ -230,9 +224,7 @@ def block_to_string_shift_worker_option(
     if not isinstance(block.value, list):
         raise ValueError("Invalid block value type for shift_worker_option")
     if not all(isinstance(v, ShiftWorkerOption) for v in block.value):
-        raise ValueError(
-            "Invalid block value item type for shift_worker_option"
-        )
+        raise ValueError("Invalid block value item type for shift_worker_option")
     block_values = [
         get_shift_worker_option_display_name(
             v,  # type: ignore
