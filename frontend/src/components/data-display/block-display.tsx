@@ -21,7 +21,7 @@ export const blockDislayValue = (value: string | number) => {
 
 export const blockDisplayPlaceholder = (
   placeholder: string | number,
-  error?: boolean
+  error: boolean
 ) => {
   return (
     <div className={`placeholder-value ${error ? "error" : ""}`}>
@@ -30,7 +30,7 @@ export const blockDisplayPlaceholder = (
   );
 };
 
-export const blockDisplayName = (name: string, error?: boolean) => {
+export const blockDisplayName = (name: string, error: boolean) => {
   return (
     <div>
       <hr className={`name-display-line ${error ? "error" : ""}`} />
