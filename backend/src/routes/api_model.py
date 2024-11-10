@@ -129,14 +129,14 @@ class RequestMessage(BaseModel):
 class ShiftWorkerOptionMessage(BaseModel):
     name: str | bool
     id: str
-    idType: str
+    idType: int
     isBoolDim: bool
     categoryName: str
 
 
 class BlockMessage(BaseModel):
-    name: str
-    type: str
+    name: int
+    type: int
     value: str | int | List[str] | List[ShiftWorkerOptionMessage]
 
 
@@ -151,7 +151,7 @@ class MissingAttributeMessage(BaseModel):
 class ConstraintBuildMessage(BaseModel):
     id: str
     teamId: str
-    constraintType: str
+    constraintType: int
     templateId: str
     language: str
     blocks: List[BlockMessage]
@@ -163,15 +163,15 @@ class ConstraintBuildMessage(BaseModel):
 
 
 class TemplateBlockMessage(BaseModel):
-    name: str
-    type: str
+    name: int
+    type: int
     options: List[str] | List[ShiftWorkerOptionMessage]
     placeholder: str | int
 
 
 class TemplateMessage(BaseModel):
     id: str
-    constraintType: str
+    constraintType: int
     text: str
     language: str
     blocks: List[TemplateBlockMessage]

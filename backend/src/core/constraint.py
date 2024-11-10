@@ -153,9 +153,7 @@ class ConstraintOrd(Constraint):
     shift_reference_ids: List[str]
     shift_relative_ids: List[str]
     interval: int
-    constraint_variables: List[
-        Tuple[Tuple[str, str, str], Tuple[str, str, str]]
-    ]
+    constraint_variables: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
 
 
 # list of variables to set to 0

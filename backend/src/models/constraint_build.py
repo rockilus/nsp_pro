@@ -1,4 +1,3 @@
-from core import BlockNameOptions, BlockTypeOptions, ConstraintType, SWOIdTypes
 from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (
     BooleanField,
@@ -9,6 +8,8 @@ from mongoengine.fields import (
     ReferenceField,
     StringField,
 )
+
+from core import BlockNameOptions, BlockTypeOptions, ConstraintType, SWOIdTypes
 
 
 class ShiftWorkerOption(EmbeddedDocument):
@@ -42,9 +43,7 @@ class ConstraintBuild(Document):
     id = StringField(primary_key=True, required=True)
     team = ReferenceField("Team", required=True)
     # rename to aggregator
-    constraint_type = IntField(
-        required=True, choices=[e.value for e in ConstraintType]
-    )
+    constraint_type = IntField(required=True, choices=[e.value for e in ConstraintType])
     template_id = StringField(required=True)
     language = StringField(required=True, choices=["en", "es", "fr"])
     blocks = ListField(EmbeddedDocumentField(Block))
