@@ -8,7 +8,12 @@ import BlockDisplayString from "./block-display-string";
 import BlockDisplayNumber from "./block-display-number";
 import { blockDisplayText } from "../../../data-display/block-display";
 // Types
-import { TemplateBlockT, BlockT } from "../../../../types/constraint";
+import {
+  TemplateBlockT,
+  BlockT,
+  BlockNameOptions,
+  BlockTypeOptions,
+} from "../../../../types/constraint";
 
 export default function BlockDisplay({
   lng,
@@ -29,9 +34,9 @@ export default function BlockDisplay({
 }) {
   return (
     <Box sx={{ height: "100%" }}>
-      {templateBlock.name === "text" ? (
+      {templateBlock.name === BlockNameOptions.TEXT ? (
         blockDisplayText(templateBlock.placeholder as string)
-      ) : templateBlock.type === "shift_worker_option" ? (
+      ) : templateBlock.type === BlockTypeOptions.SHIFT_WORKER_OPTION ? (
         <BlockDisplayShiftWorkerOption
           lng={lng}
           index={index}
@@ -41,7 +46,7 @@ export default function BlockDisplay({
           handleEditBlock={handleEditBlock}
           handleRemoveError={handleRemoveError}
         />
-      ) : templateBlock.type === "list" ? (
+      ) : templateBlock.type === BlockTypeOptions.LIST ? (
         <BlockDisplayList
           lng={lng}
           index={index}
@@ -51,7 +56,7 @@ export default function BlockDisplay({
           handleEditBlock={handleEditBlock}
           handleRemoveError={handleRemoveError}
         />
-      ) : templateBlock.type === "string" ? (
+      ) : templateBlock.type === BlockTypeOptions.STRING ? (
         <BlockDisplayString
           lng={lng}
           index={index}
@@ -61,7 +66,7 @@ export default function BlockDisplay({
           handleEditBlock={handleEditBlock}
           handleRemoveError={handleRemoveError}
         />
-      ) : templateBlock.type === "number" ? (
+      ) : templateBlock.type === BlockTypeOptions.NUMBER ? (
         <BlockDisplayNumber
           lng={lng}
           index={index}

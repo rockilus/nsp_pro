@@ -258,7 +258,7 @@ export default function BlockEditList({
             padding: "0 16px 6px 16px",
           }}
         >
-          {"Select one or more " + templateBlock.name.toLowerCase()}
+          {"Select one or more"}
         </div>
         <List dense={true} sx={{ padding: "0 0 0 0" }}>
           {filteredOptions.map((option) => (

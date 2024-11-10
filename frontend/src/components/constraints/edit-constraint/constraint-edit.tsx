@@ -12,8 +12,9 @@ import {
   BlockT,
   TemplateBlockT,
   ShiftWorkerOptionT,
+  BlockNameOptions,
+  BlockTypeOptions,
 } from "../../../types/constraint";
-import { set } from "zod";
 
 export default function ConstraintEdit({
   lng,
@@ -34,14 +35,14 @@ export default function ConstraintEdit({
   const initialBlockValue = (
     templateBlock: TemplateBlockT
   ): string | number | string[] | ShiftWorkerOptionT[] => {
-    if (templateBlock.type === "text") {
+    if (templateBlock.type === BlockTypeOptions.STRING) {
       return templateBlock.placeholder;
-    } else if (templateBlock.type === "shift_worker_option") {
+    } else if (templateBlock.type === BlockTypeOptions.SHIFT_WORKER_OPTION) {
       return [];
     } else {
       if (
         templateBlock.options.length === 0 &&
-        templateBlock.type !== "number"
+        templateBlock.type !== BlockTypeOptions.NUMBER
       ) {
         return templateBlock.placeholder;
       } else if (
@@ -50,7 +51,7 @@ export default function ConstraintEdit({
       ) {
         return templateBlock.options[0] as string;
       } else {
-        return templateBlock.type === "list" ? [] : "";
+        return templateBlock.type === BlockTypeOptions.LIST ? [] : "";
       }
     }
   };
@@ -82,12 +83,18 @@ export default function ConstraintEdit({
     if (template) {
       template.blocks.map((block, index) => {
         const value = constraintState.blocks[index].value;
-        if (block.type === "shift_worker_option" || block.type === "list") {
+        if (
+          block.type === BlockTypeOptions.SHIFT_WORKER_OPTION ||
+          block.type === BlockTypeOptions.LIST
+        ) {
           if (Array.isArray(value) && value.length === 0) {
             updatedErrors.push(index);
             console.log("added error", index);
           }
-        } else if (block.type === "string" || block.type === "number") {
+        } else if (
+          block.type === BlockTypeOptions.STRING ||
+          block.type === BlockTypeOptions.NUMBER
+        ) {
           if (value === "") {
             updatedErrors.push(index);
             console.log("added error", index);
@@ -122,7 +129,7 @@ export default function ConstraintEdit({
     }
   };
 
-  const findBlockByName = (name: string): BlockT | null => {
+  const findBlockByName = (name: BlockNameOptions): BlockT | null => {
     const block = constraintState.blocks.find((block) => block.name === name);
     return block ? block : null;
   };

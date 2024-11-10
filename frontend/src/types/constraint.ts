@@ -1,14 +1,40 @@
+export enum SWOIdTypes {
+  NONE = 0,
+  WORKER = 1,
+  SHIFT = 2,
+  DIMENSION = 3,
+}
+
 export type ShiftWorkerOptionT = {
   name: string | boolean;
   id: string;
-  idType: string;
+  idType: SWOIdTypes;
   isBoolDim: boolean;
   categoryName: string;
 };
 
+export enum BlockNameOptions {
+  OPERATOR = 0,
+  NUMBER = 1,
+  TIMING = 2,
+  SHIFT = 3,
+  WORKER = 4,
+  TEXT = 5,
+  SHIFT_REFERENCE = 6,
+  SHIFT_RELATIVE = 7,
+  WEEKDAY = 8,
+}
+
+export enum BlockTypeOptions {
+  STRING = 0,
+  NUMBER = 1,
+  LIST = 2,
+  SHIFT_WORKER_OPTION = 3,
+}
+
 export type BlockT = {
-  name: string;
-  type: string;
+  name: BlockNameOptions;
+  type: BlockTypeOptions;
   value: string | number | string[] | ShiftWorkerOptionT[];
 };
 
@@ -20,10 +46,19 @@ export type MissingAttribute = {
   attributeValues: string[] | number[] | boolean[];
 };
 
+export enum ConstraintType {
+  SUM = 0,
+  SEQ = 1,
+  ORD = 2,
+  FIL = 3,
+  FAI = 4,
+  EVE = 5,
+}
+
 export type ConstraintT = {
   id: string;
   teamId: string;
-  constraintType: string;
+  constraintType: ConstraintType;
   templateId: string;
   language: string;
   blocks: BlockT[];
@@ -35,15 +70,15 @@ export type ConstraintT = {
 };
 
 export type TemplateBlockT = {
-  name: string;
-  type: string;
+  name: BlockNameOptions;
+  type: BlockTypeOptions;
   options: string[] | ShiftWorkerOptionT[];
   placeholder: string | number;
 };
 
 export type TemplateT = {
   id: string;
-  constraintType: string;
+  constraintType: ConstraintType;
   text: string;
   language: string;
   blocks: TemplateBlockT[];
