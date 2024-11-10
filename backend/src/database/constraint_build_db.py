@@ -50,18 +50,24 @@ class ConstraintBuildDB:
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
-    def get_constraint_builds_active(self, team_id: str) -> List[ConstraintBuild]:
+    def get_constraint_builds_active(
+        self, team_id: str
+    ) -> List[ConstraintBuild]:
         try:
             # pylint: disable=no-member
             cb_docs = ConstraintBuildDocument.objects(  # type: ignore
                 active=True, team=team_id
             )
         except Exception as e:
-            log_info('Failed to get active constraint build documents from database')
+            log_info(
+                'Failed to get active constraint build documents from database'
+            )
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
-    def get_constraint_build_by_id(self, constraint_build_id: str) -> ConstraintBuild:
+    def get_constraint_build_by_id(
+        self, constraint_build_id: str
+    ) -> ConstraintBuild:
         try:
             # pylint: disable=no-member
             cb_doc = ConstraintBuildDocument.objects.get(  # type: ignore
@@ -81,7 +87,9 @@ class ConstraintBuildDB:
                 id__in=constraint_build_ids
             )
         except Exception as e:
-            log_info('Failed to get active constraint build by ids from database')
+            log_info(
+                'Failed to get active constraint build by ids from database'
+            )
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
@@ -106,7 +114,9 @@ class ConstraintBuildDB:
                 }
             )
         except Exception as e:
-            log_info('Failed to get constraint build by worker id from database')
+            log_info(
+                'Failed to get constraint build by worker id from database'
+            )
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
@@ -157,7 +167,9 @@ def core_to_doc_shift_worker_option(
             category_name=dataclass_obj.category_name,
         )
     except Exception as e:
-        log_info('Failed to convert ShiftWorkerOption to ShiftWorkerOptionDocument')
+        log_info(
+            'Failed to convert ShiftWorkerOption to ShiftWorkerOptionDocument'
+        )
         handle_create_document_error(e)
     return shift_worker_option_doc
 
@@ -172,7 +184,7 @@ def core_to_doc_block(dataclass_obj: Block) -> BlockDocument:
                     core_to_doc_shift_worker_option(v)  # type: ignore
                     for v in dataclass_obj.value  # type: ignore
                 ]
-                if dataclass_obj.type == "shift_worker_option"
+                if dataclass_obj.type == BlockTypeOptions.SHIFT_WORKER_OPTION
                 else dataclass_obj.value
             ),
         )
@@ -203,7 +215,9 @@ def core_to_doc_constraint_build(
             priority=dataclass_obj.priority,
         )
     except Exception as e:
-        log_info('Failed to convert ConstraintBuild to ConstraintBuildDocument')
+        log_info(
+            'Failed to convert ConstraintBuild to ConstraintBuildDocument'
+        )
         handle_create_document_error(e)
     return cb_doc
 
@@ -228,7 +242,7 @@ def doc_to_core_block(doc_obj: BlockDocument) -> Block:
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["name"] = BlockNameOptions(doc_dict["name"])
     doc_dict["type"] = BlockTypeOptions(doc_dict["type"])
-    if doc_dict["type"] == "shift_worker_option":
+    if doc_dict["type"] == BlockTypeOptions.SHIFT_WORKER_OPTION:
         doc_dict["value"] = [
             doc_to_core_shift_worker_option(v) for v in doc_dict["value"]
         ]

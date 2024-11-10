@@ -89,7 +89,6 @@ export default function ConstraintEdit({
         ) {
           if (Array.isArray(value) && value.length === 0) {
             updatedErrors.push(index);
-            console.log("added error", index);
           }
         } else if (
           block.type === BlockTypeOptions.STRING ||
@@ -97,7 +96,6 @@ export default function ConstraintEdit({
         ) {
           if (value === "") {
             updatedErrors.push(index);
-            console.log("added error", index);
           }
         }
       });
@@ -110,15 +108,11 @@ export default function ConstraintEdit({
 
   const handleRemoveError = (index: number): void => {
     const updatedErrors = errors.filter((error) => error !== index);
-    console.log("errors after remove", updatedErrors);
-
     setErrors(updatedErrors);
   };
 
   const handleSaveConstraint = () => {
     const valid = validateConstraint();
-    console.log("constraintState", constraintState);
-
     if (!valid) {
       return;
     }
@@ -154,8 +148,6 @@ export default function ConstraintEdit({
     setConstraintState(initialConstraintState());
     setErrors([]);
   }, [initialConstraintState]);
-
-  console.log("errors", errors);
 
   return (
     <Box

@@ -1,6 +1,15 @@
 from typing import List
 
-from core import Block, Dimension, Shift, ShiftWorkerOption, Worker
+from core import (
+    Block,
+    Dimension,
+    Shift,
+    ShiftWorkerOption,
+    Worker,
+    BlockTypeOptions,
+    BlockNameOptions,
+    SWOIdTypes,
+)
 
 
 def translate_worker_block_value(value: str, language: str) -> str:
@@ -138,15 +147,15 @@ def get_shift_worker_option_display_name(
     dimensions: List[Dimension],
     lng: str,
 ) -> str:
-    if option.id_type == "worker":
+    if option.id_type == SWOIdTypes.WORKER:
         worker = next((w for w in workers if w.id == option.id), None)
         if worker:
             return worker.name
-    elif option.id_type == "shift":
+    elif option.id_type == SWOIdTypes.SHIFT:
         shift = next((s for s in shifts if s.id == option.id), None)
         if shift:
             return shift.name
-    elif option.id_type == "dimension":
+    elif option.id_type == SWOIdTypes.DIMENSION:
         if not option.is_bool_dim:
             if not isinstance(option.name, str):
                 raise ValueError("Invalid option name type for non-bool dim")
@@ -180,7 +189,7 @@ def blocks_to_string(
 ) -> str:
     values = []
     for block in blocks:
-        if block.type == "shift_worker_option":
+        if block.type == BlockTypeOptions.SHIFT_WORKER_OPTION:
             values.append(
                 block_to_string_shift_worker_option(
                     block,
@@ -192,12 +201,18 @@ def blocks_to_string(
             )
         else:
             block_value = block.value
-            if block.name == "operator":
-                block_value = translate_operator_block_value(str(block_value), language)
-            if block.name == "timing":
-                block_value = translate_timing_block_value(str(block_value), language)
-            if block.name == "weekday":
-                block_value = translate_weekday_block_value(str(block_value), language)
+            if block.name == BlockNameOptions.OPERATOR:
+                block_value = translate_operator_block_value(
+                    str(block_value), language
+                )
+            if block.name == BlockNameOptions.TIMING:
+                block_value = translate_timing_block_value(
+                    str(block_value), language
+                )
+            if block.name == BlockNameOptions.WEEKDAY:
+                block_value = translate_weekday_block_value(
+                    str(block_value), language
+                )
             values.append(str(block_value))
     joined_values = ' '.join(values)
     capitalized_values = joined_values.capitalize()
@@ -215,7 +230,9 @@ def block_to_string_shift_worker_option(
     if not isinstance(block.value, list):
         raise ValueError("Invalid block value type for shift_worker_option")
     if not all(isinstance(v, ShiftWorkerOption) for v in block.value):
-        raise ValueError("Invalid block value item type for shift_worker_option")
+        raise ValueError(
+            "Invalid block value item type for shift_worker_option"
+        )
     block_values = [
         get_shift_worker_option_display_name(
             v,  # type: ignore
