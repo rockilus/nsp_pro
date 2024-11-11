@@ -67,13 +67,26 @@ export type QuickStaffingT = {
   target: number;
 };
 
+export enum ScheduleSolveStatus {
+  NOT_SOLVED = 0,
+  SOLVED = 1,
+  HARD_BREACHED = 2,
+  SOFT_BREACHED = 3,
+  NO_SOLUTION = 4,
+}
+
+export enum ScheduleStatus {
+  CAMPAIGN = 0,
+  VALIDATED = 1,
+}
+
 export type ScheduleT = {
   id: string;
   teamId: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
-  solveStatus: string;
-  status: string;
+  solveStatus: ScheduleSolveStatus;
+  status: ScheduleStatus;
   missingCoverageDates: dayjs.Dayjs[];
   constraintBuildIds: string[];
   quickStaffings: QuickStaffingT[];

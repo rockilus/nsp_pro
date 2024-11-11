@@ -97,7 +97,7 @@ export default function ScheduleWIP({
       <Chip
         label={GetStatusLabel(lng, schedule.solveStatus)}
         color={
-          (SolveStatusColors[SolveStatusList.indexOf(schedule.solveStatus)] as
+          (SolveStatusColors[schedule.solveStatus] as
             | "default"
             | "success"
             | "error"

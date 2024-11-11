@@ -11,7 +11,7 @@ import useStatusLabel from "../data-display/get-status-label";
 import "./schedule-selector.css";
 import "../../styles/text-styles.css";
 // Types
-import { ScheduleT } from "../../types/schedule";
+import { ScheduleT, ScheduleSolveStatus } from "../../types/schedule";
 //Constants
 import { SolveStatusList, SolveStatusColors } from "../../constants/constants";
 
@@ -83,9 +83,11 @@ export default function ScheduleSelector({
                 className="status-chip"
                 label={getStatusLabel(schedule.solveStatus)}
                 color={
-                  (SolveStatusColors[
-                    SolveStatusList.indexOf(schedule.solveStatus)
-                  ] as "default" | "success" | "error" | "warning") || "default"
+                  (SolveStatusColors[schedule.solveStatus] as
+                    | "default"
+                    | "success"
+                    | "error"
+                    | "warning") || "default"
                 }
               />
             }
