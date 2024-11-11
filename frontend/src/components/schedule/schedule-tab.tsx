@@ -153,12 +153,8 @@ export default function ScheduleTab({
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const { schedule: newSchedule, assignments: newAssignments } =
-      await validateSchedule(scheduleId, selectedTeamId);
+    const newSchedule = await validateSchedule(scheduleId, selectedTeamId);
     setSchedule(newSchedule);
-    setAssignments((prev) =>
-      prev.map((a) => newAssignments.find((na) => na.id === a.id) || a)
-    );
   };
 
   //////////////////////////
@@ -412,6 +408,7 @@ export default function ScheduleTab({
         lng={lng}
         workers={workers.filter((w) => !w.deleted)}
         shifts={shifts.filter((s) => !s.deleted)}
+        schedules={[schedule as ScheduleT]} // XXX CHANGE TO LIST OF SCHEDULES XXX
         assignments={assignments}
         selectedCell={selectedCell}
         selectedDisplay={selectedDisplay}

@@ -12,7 +12,6 @@ export type AssignmentT = {
   workerId: string;
   date: dayjs.Dayjs;
   shiftId: string;
-  status: string;
   fixed: boolean;
 };
 
