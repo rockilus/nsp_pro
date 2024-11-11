@@ -233,24 +233,6 @@ def doc_to_core_block(doc_obj: BlockDocument) -> Block:
             doc_to_core_shift_worker_option(v) for v in doc_dict["value"]
         ]
     return Block(**doc_dict)
-    # try:
-    #     block = Block(
-    #         name=doc_obj.name,  # type: ignore
-    #         type=doc_obj.type,  # type: ignore
-    #         value=(
-    #             [doc_to_core_shift_worker_option(v) for v in doc_obj.value]
-    #             if doc_obj.type == "shift_worker_option"
-    #             else (
-    #                 doc_obj.value
-    #                 if isinstance(doc_obj.value, (str, int))
-    #                 else list(doc_obj.value)
-    #             )
-    #         ),
-    #     )
-    # except Exception as e:
-    #     log_info('Failed to convert BlockDocument to Block')
-    #     handle_create_core_object_error(e)
-    # return block
 
 
 def doc_to_core_constraint_build(
@@ -264,32 +246,3 @@ def doc_to_core_constraint_build(
     doc_dict.pop("_id")
     doc_dict.pop("team")
     return ConstraintBuild(**doc_dict)
-
-    # try:
-    #     if doc_obj.constraint_type not in [
-    #         'sum',
-    #         'seq',
-    #         'ord',
-    #         'fil',
-    #         'fai',
-    #         'eve',
-    #     ]:
-    #         raise ValueError(
-    #             f'Invalid constraint_type: {doc_obj.constraint_type}'
-    #         )
-    #     constraint_build = ConstraintBuild(
-    #         id=doc_obj.id,
-    #         team_id=doc_obj.team.id,
-    #         constraint_type=doc_obj.constraint_type,  # type: ignore
-    #         template_id=doc_obj.template_id,
-    #         language=doc_obj.language,
-    #         blocks=[doc_to_core_block(b) for b in doc_obj.blocks],
-    #         hard=doc_obj.hard,
-    #         priority=doc_obj.priority,
-    #     )
-    # except Exception as e:
-    #     log_info(
-    #         'Failed to convert ConstraintBuildDocument to ConstraintBuild'
-    #     )
-    #     handle_create_core_object_error(e)
-    # return constraint_build

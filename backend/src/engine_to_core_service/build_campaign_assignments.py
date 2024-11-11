@@ -13,7 +13,6 @@ def build_campaign_assignments(
             **asdict(a),
             id="",
             schedule_id=schedule.id,
-            status="wip",
             fixed=False,
         )
         for a in as_engine

@@ -124,10 +124,7 @@ export async function validateSchedule(scheduleId: string, teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to validate schedule: " + responseData.detail);
     }
-    return {
-      schedule: toScheduleT(responseData.schedule),
-      assignments: responseData.assignments.map(toAssignmentT),
-    } as { schedule: ScheduleT; assignments: AssignmentT[] };
+    return toScheduleT(responseData);
   } catch (error) {
     console.error("Failed to validate schedule:", error);
     throw new Error("Failed to validate schedule, please try again later");

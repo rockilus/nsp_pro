@@ -39,6 +39,8 @@ from core.schedule import (
     ObjectiveCategory,
     QuickStaffing,
     Schedule,
+    ScheduleSolveStatus,
+    ScheduleStatus,
     Variable,
 )
 from core.shift import Shift, ShiftLeaveType, ShiftRestType, ShiftType, Staffing
@@ -91,6 +93,8 @@ __all__ = [
     "ObjectiveCategory",
     "QuickStaffing",
     "Schedule",
+    "ScheduleSolveStatus",
+    "ScheduleStatus",
     "Variable",
     "Shift",
     "ShiftLeaveType",

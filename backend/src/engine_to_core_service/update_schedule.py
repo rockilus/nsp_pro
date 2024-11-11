@@ -1,6 +1,6 @@
 from typing import List
 
-from core import Breach, Schedule
+from core import Breach, Schedule, ScheduleSolveStatus
 
 
 def update_schedule_status(
@@ -8,12 +8,12 @@ def update_schedule_status(
 ) -> Schedule:
     if is_solution:
         if len(breaches) == 0:
-            schedule.solve_status = "Solved"
+            schedule.solve_status = ScheduleSolveStatus.SOLVED
         else:
             if any(b.hard_to_soft for b in breaches):
-                schedule.solve_status = "Hard breached"
+                schedule.solve_status = ScheduleSolveStatus.HARD_BREACHED
             else:
-                schedule.solve_status = "Soft breached"
+                schedule.solve_status = ScheduleSolveStatus.SOFT_BREACHED
     else:
-        schedule.solve_status = "No solution"
+        schedule.solve_status = ScheduleSolveStatus.NO_SOLUTION
     return schedule

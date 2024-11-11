@@ -12,7 +12,6 @@ class Assignment:
     worker_id: str
     date: date
     shift_id: str
-    status: str  # wip, valid, past
     fixed: bool
 
 
@@ -51,14 +50,27 @@ class QuickStaffing:
     target: int
 
 
+class ScheduleSolveStatus(Enum):
+    NOT_SOLVED = 0
+    SOLVED = 1
+    HARD_BREACHED = 2
+    SOFT_BREACHED = 3
+    NO_SOLUTION = 4
+
+
+class ScheduleStatus(Enum):
+    CAMPAIGN = 0
+    VALIDATED = 1
+
+
 @dataclass
 class Schedule:
     id: str
     team_id: str
     start_date: date
     end_date: date
-    solve_status: (str)  # Not solved, Solved, Hard breached, Soft breached, No solution
-    status: str  # WIP, valid, past
+    solve_status: ScheduleSolveStatus
+    status: ScheduleStatus
     missing_coverage_dates: List[date]
     constraint_build_ids: List[str]
     quick_staffings: List[QuickStaffing]

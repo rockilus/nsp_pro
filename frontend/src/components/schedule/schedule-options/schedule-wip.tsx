@@ -65,10 +65,11 @@ export default function ScheduleWIP({
                 <Chip
                   label={GetStatusLabel(lng, schedule.solveStatus)}
                   color={
-                    (SolveStatusColors[
-                      SolveStatusList.indexOf(schedule.solveStatus)
-                    ] as "default" | "success" | "error" | "warning") ||
-                    "default"
+                    (SolveStatusColors[schedule.solveStatus] as
+                      | "default"
+                      | "success"
+                      | "error"
+                      | "warning") || "default"
                   }
                   sx={{ height: "25px", fontSize: "0.75rem" }}
                 />

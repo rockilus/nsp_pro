@@ -16,12 +16,16 @@ import {
   AssignmentT,
   SelectedCellT,
   ObjectiveCategory,
+  ScheduleT,
+  ScheduleStatus,
 } from "../../../types/schedule";
+import { set } from "zod";
 
 export default function AssignmentOptions({
   lng,
   workers,
   shifts,
+  schedules,
   assignments,
   selectedCell,
   selectedDisplay,
@@ -31,6 +35,7 @@ export default function AssignmentOptions({
   lng: string;
   workers: WorkerT[];
   shifts: ShiftT[];
+  schedules: ScheduleT[];
   assignments: AssignmentT[];
   selectedCell: SelectedCellT;
   selectedDisplay: string;
@@ -43,6 +48,8 @@ export default function AssignmentOptions({
     assignments.find((a) => a.id === selectedCell.assignment.id) ||
       selectedCell.assignment
   );
+  const [selectedAssignSchedule, setSelectedAssignSchedule] =
+    useState<ScheduleT | null>(null);
 
   const handleChangeAssignmentFixed = () => {
     handleUpdateAssignment({
@@ -70,11 +77,14 @@ export default function AssignmentOptions({
   );
 
   useEffect(() => {
-    setSelectedAssignment(
+    const newSelectedAssignment =
       assignments.find((a) => a.id === selectedCell.assignment.id) ||
-        selectedCell.assignment
-    );
-  }, [selectedCell, assignments]);
+      selectedCell.assignment;
+    const newSelectedAssignSchedule =
+      schedules.find((s) => s.id === newSelectedAssignment.scheduleId) || null;
+    setSelectedAssignment(newSelectedAssignment);
+    setSelectedAssignSchedule(newSelectedAssignSchedule);
+  }, [selectedCell, assignments, schedules]);
 
   return (
     <div
@@ -105,7 +115,8 @@ export default function AssignmentOptions({
         >
           {t("assignment")}
         </span>
-        {selectedAssignment.fixed || selectedAssignment.status !== "wip" ? (
+        {selectedAssignment.fixed ||
+        selectedAssignSchedule?.status !== ScheduleStatus.CAMPAIGN ? (
           <Box
             sx={{
               display: "flex",
@@ -179,7 +190,7 @@ export default function AssignmentOptions({
                 </FormControl>
               </Box>
             )}
-            {selectedAssignment.status === "wip" && (
+            {selectedAssignSchedule?.status === ScheduleStatus.CAMPAIGN && (
               <Button
                 onClick={handleChangeAssignmentFixed}
                 sx={{
@@ -302,7 +313,7 @@ export default function AssignmentOptions({
           )}
         </div>
       )}
-      {selectedAssignment.status === "wip" && (
+      {selectedAssignSchedule?.status === ScheduleStatus.CAMPAIGN && (
         <div style={{ marginTop: "10px" }}>
           <span
             style={{

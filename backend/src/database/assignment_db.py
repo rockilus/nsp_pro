@@ -131,35 +131,16 @@ class AssignmentDB:
             handle_get_document_error(e)
         return [doc_to_core_assignment(a) for a in list(assignments)]
 
-    def get_wip_validated_assignments_before_date(
-        self, a_date: date, schedules: List[Schedule]
-    ) -> List[Assignment]:
-        s_docs = [core_to_doc_schedule(s) for s in schedules]
-        try:
-            # pylint: disable=no-member
-            assignments = AssignmentDocument.objects.filter(  # type: ignore
-                date__lt=a_date,
-                status__in=["wip", "validated"],
-                schedule__in=s_docs,
-            )
-        except Exception as e:
-            log_info(
-                "Failed to get wip and validated assignments before date "
-                + "from database"
-            )
-            handle_get_document_error(e)
-        return [doc_to_core_assignment(a) for a in list(assignments)]
-
-    def get_assignments_by_status(
-        self, status: List[str], schedules: List[Schedule]
+    def get_assignments_by_schedule_ids(
+        self, schedule_ids: List[str]
     ) -> List[Assignment]:
         try:
             # pylint: disable=no-member
             a_docs = AssignmentDocument.objects.filter(  # type: ignore
-                status__in=status, schedule__in=[s.id for s in schedules]
+                schedule__in=schedule_ids
             )
         except Exception as e:
-            log_info("Failed to get assignments by status from database")
+            log_info("Failed to get assignments by schedule ids from database")
             handle_get_document_error(e)
         try:
             assigments = [doc_to_core_assignment(a) for a in list(a_docs)]
@@ -168,16 +149,17 @@ class AssignmentDB:
             handle_create_core_object_error(e)
         return assigments
 
-    def get_assignments_wip_fixed(self, schedules: List[Schedule]) -> List[Assignment]:
+    def get_assignments_fixed_by_schedule_ids(
+        self, schedule_ids: List[str]
+    ) -> List[Assignment]:
         try:
             # pylint: disable=no-member
             a_docs = AssignmentDocument.objects.filter(  # type: ignore
-                status="wip",
                 fixed=True,
-                schedule__in=[s.id for s in schedules],
+                schedule__in=schedule_ids,
             )
         except Exception as e:
-            log_info("Failed to get assignments by status from database")
+            log_info("Failed to get fixed assignments by schedule ids from database")
             handle_get_document_error(e)
         try:
             assigments = [doc_to_core_assignment(a) for a in list(a_docs)]
@@ -312,7 +294,6 @@ def core_to_doc_assignment(dataclass_obj: Assignment) -> AssignmentDocument:
                 dataclass_obj.date.day,
             ),
             shift=shift,
-            status=dataclass_obj.status,
             fixed=dataclass_obj.fixed,
         )
     # pylint: disable=broad-except
@@ -376,7 +357,6 @@ def core_to_doc_assignments(
                 dataclass_obj.date.day,
             ),
             shift=shifts.get(dataclass_obj.shift_id),
-            status=dataclass_obj.status,
             fixed=dataclass_obj.fixed,
         )
         out.append(assignment_doc)

@@ -185,7 +185,6 @@ class AssignmentMessage(BaseModel):
     workerId: str
     date: date
     shiftId: str
-    status: str
     fixed: bool
 
 
@@ -227,8 +226,8 @@ class ScheduleMessage(BaseModel):
     teamId: str
     startDate: date
     endDate: date
-    solveStatus: str
-    status: str
+    solveStatus: int
+    status: int
     missingCoverageDates: List[date]
     constraintBuildIds: List[str]
     quickStaffings: List[QuickStaffingMessage]
@@ -240,11 +239,6 @@ class SolutionMessage(BaseModel):
     objectiveBreaches: List[BreachMessage]
     requests: List[RequestMessage]
     recuperationShiftsNew: List[ShiftMessage]
-
-
-class ValidateMessage(BaseModel):
-    schedule: ScheduleMessage
-    assignments: List[AssignmentMessage]
 
 
 # Stats
