@@ -1,7 +1,7 @@
 import time
 from typing import List, Tuple
 
-from core import Assignment, Breach, RequestAugmented, Schedule, Shift
+from core import Assignment, Breach, RequestAugmented, Schedule, ScheduleStatus, Shift
 from core_to_engine_service import core_to_engine_inputs
 from engine import Engine
 from engine_to_core_service import engine_to_core
@@ -62,7 +62,9 @@ def solve_schedule(
         schedule.start_date, schedule.end_date, workers, shifts
     )
     team_schedules = schedule_db.get_schedules(schedule.team_id)
-    wip_assignments = assignment_db.get_assignments_by_status(["wip"], team_schedules)
+    wip_assignments = assignment_db.get_assignments_by_schedule_ids(
+        [s.id for s in team_schedules if s.status == ScheduleStatus.CAMPAIGN]
+    )
     end_time_db = time.time()
     start_time_engine_inputs = time.time()
     inputs, constraints = core_to_engine_inputs(

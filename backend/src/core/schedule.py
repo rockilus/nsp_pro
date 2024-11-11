@@ -12,7 +12,6 @@ class Assignment:
     worker_id: str
     date: date
     shift_id: str
-    status: str  # wip, valid, past
     fixed: bool
 
 

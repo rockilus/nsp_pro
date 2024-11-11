@@ -33,7 +33,6 @@ from routes.api_model import (
     ScheduleMessage,
     ShiftMessage,
     SolutionMessage,
-    ValidateMessage,
 )
 from routes.assignment_routes import core_to_msg_assignment
 from routes.breach_routes import core_to_msg_objective_breach
@@ -107,7 +106,7 @@ async def validate_schedule(
     schedule_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-) -> ValidateMessage:
+) -> ScheduleMessage:
     try:
         if not await authz_check(
             session.get_user_id(), "validate-schedule", "team", team_id
@@ -115,10 +114,8 @@ async def validate_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to validate a schedule",
             )
-        assignments = validate_schedule_service(schedule_id)
-        schedules = schedule_db.get_schedules(team_id)
-        schedule = get_schedule_wip(schedules, team_id)
-        response = core_to_msg_validate(schedule, assignments)
+        schedule = validate_schedule_service(schedule_id)
+        response = core_to_msg_schedule(schedule)
     except Exception as e:
         log_info("Failed to validate schedule")
         handle_routes_errors(e)
@@ -259,22 +256,6 @@ def core_to_msg_solution(
         log_info("Failed to convert Solution to SolutionMessage")
         handle_message_errors(e)
     return s_msg
-
-
-def core_to_msg_validate(
-    schedule: Schedule, assignments: List[Assignment]
-) -> ValidateMessage:
-    data: Dict[str, ScheduleMessage | List[AssignmentMessage]] = {}
-    data["schedule"] = core_to_msg_schedule(schedule)
-    data["assignments"] = [core_to_msg_assignment(a) for a in assignments]
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(ValidateMessage)
-    try:
-        v_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert Validate to ValidateMessage")
-        handle_message_errors(e)
-    return v_msg
 
 
 # message to core

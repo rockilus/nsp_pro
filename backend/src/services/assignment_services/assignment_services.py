@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from core import Assignment, Schedule
+from core import Assignment, Schedule, ScheduleStatus
 from scripts.setup_database import assignment_db, schedule_db
 
 
@@ -9,11 +9,11 @@ def get_fixed_assignments(
     schedule: Schedule,
 ) -> Tuple[List[Assignment], List[Assignment]]:
     team_schedules = schedule_db.get_schedules(schedule.team_id)
-    as_hist = assignment_db.get_assignments_by_status(
-        ["past", "validated"], team_schedules
+    as_hist = assignment_db.get_assignments_by_schedule_ids(
+        [s.id for s in team_schedules if s.status == ScheduleStatus.VALIDATED]
     )  # validated assignments
-    as_wip_fixed = assignment_db.get_assignments_wip_fixed(
-        team_schedules
+    as_wip_fixed = assignment_db.get_assignments_fixed_by_schedule_ids(
+        [s.id for s in team_schedules if s.status == ScheduleStatus.CAMPAIGN]
     )  # assignments wip and fixed
     return as_hist, as_wip_fixed
 

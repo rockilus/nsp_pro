@@ -11,5 +11,4 @@ class Assignment(Document):
     worker = ReferenceField("Worker", required=True)
     date = DateTimeField(required=True)
     shift = ReferenceField("Shift", required=True)
-    status = StringField(required=True)  # wip, valid, past
     fixed = BooleanField(required=True)

@@ -242,11 +242,6 @@ class SolutionMessage(BaseModel):
     recuperationShiftsNew: List[ShiftMessage]
 
 
-class ValidateMessage(BaseModel):
-    schedule: ScheduleMessage
-    assignments: List[AssignmentMessage]
-
-
 # Stats
 class StatsHeaderMessage(BaseModel):
     id: str
