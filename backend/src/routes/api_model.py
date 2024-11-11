@@ -185,7 +185,6 @@ class AssignmentMessage(BaseModel):
     workerId: str
     date: date
     shiftId: str
-    status: str
     fixed: bool
 
 
