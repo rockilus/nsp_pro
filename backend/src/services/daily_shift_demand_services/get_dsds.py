@@ -15,7 +15,7 @@ def get_daily_shift_demands(
     team_id: str,
 ) -> List[DailyShiftDemand]:
     # Get data from database
-    schedule = schedule_db.get_schedule_wip(team_id)
+    schedule = schedule_db.get_schedule_campaign(team_id)
     shifts_work_not_deleted = shift_db.get_work_shifts_not_deleted(team_id)
     coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule.id)
     shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(

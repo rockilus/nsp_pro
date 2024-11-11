@@ -3,7 +3,7 @@ from typing import List
 
 from bson import ObjectId
 
-from core import QuickStaffing, Schedule
+from core import QuickStaffing, Schedule, ScheduleSolveStatus, ScheduleStatus
 from database.db import DB
 from errors import (
     handle_delete_document_error,
@@ -42,27 +42,31 @@ class ScheduleDB:
             handle_get_document_error(e)
         return [doc_to_core_schedule(c) for c in list(schedules)]
 
-    def get_schedule_wip(self, team_id: str) -> Schedule:
+    def get_schedule_campaign(self, team_id: str) -> Schedule:
         try:
             # pylint: disable=no-member
             schedule = ScheduleDocument.objects.get(  # type: ignore
-                team=team_id, status="wip"
+                team=team_id, status=ScheduleStatus.CAMPAIGN.value
             )
         except Exception as e:
-            log_info("Failed to get WIP schedule from database")
+            log_info("Failed to get campaign schedule from database")
             handle_get_document_error(e)
         return doc_to_core_schedule(schedule)
 
-    def get_schedule_wip_by_constraint_build_id(
+    def get_schedule_campaign_by_constraint_build_id(
         self, team_id: str, cb_id: str
     ) -> Schedule | None:
         try:
             # pylint: disable=no-member
             schedule = ScheduleDocument.objects.get(  # type: ignore
-                constraint_builds=cb_id, status="wip", team=team_id
+                constraint_builds=cb_id,
+                status=ScheduleStatus.CAMPAIGN.value,
+                team=team_id,
             )
         except Exception as e:
-            log_info("Failed to get WIP schedule by constraint build id from database")
+            log_info(
+                "Failed to get campaign schedule by constraint build id from database"
+            )
             handle_get_document_error(e)
         return doc_to_core_schedule(schedule) if schedule else None
 
@@ -75,15 +79,11 @@ class ScheduleDB:
             handle_get_document_error(e)
         return doc_to_core_schedule(schedule)
 
-    def get_wip_validated_schedules_before_date(
-        self, s_date: date, team_id: str
-    ) -> List[Schedule]:
+    def get_schedules_before_date(self, s_date: date, team_id: str) -> List[Schedule]:
         try:
             # pylint: disable=no-member
             schedules = ScheduleDocument.objects.filter(  # type: ignore
-                end_date__lt=s_date,
-                status__in=["wip", "validated"],
-                team=team_id,
+                end_date__lt=s_date, team=team_id
             )
         except Exception as e:
             log_info("Failed to get schedules from database")
@@ -178,8 +178,8 @@ def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
             dataclass_obj.end_date.month,
             dataclass_obj.end_date.day,
         ),
-        solve_status=dataclass_obj.solve_status,
-        status=dataclass_obj.status,
+        solve_status=dataclass_obj.solve_status.value,
+        status=dataclass_obj.status.value,
         missing_coverage_dates=dataclass_obj.missing_coverage_dates,
         constraint_builds=constraint_builds,
         quick_staffings=[
@@ -212,6 +212,8 @@ def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
     doc_dict["team_id"] = doc_dict["team"]
     doc_dict["start_date"] = doc_dict["start_date"].date()
     doc_dict["end_date"] = doc_dict["end_date"].date()
+    doc_dict["solve_status"] = ScheduleSolveStatus(doc_dict["solve_status"])
+    doc_dict["status"] = ScheduleStatus(doc_dict["status"])
     doc_dict["missing_coverage_dates"] = [
         d.date() for d in doc_dict["missing_coverage_dates"]
     ]
@@ -223,21 +225,3 @@ def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
     doc_dict.pop("team")
     doc_dict.pop("constraint_builds")
     return Schedule(**doc_dict)
-    # try:
-    #     schedule = Schedule(
-    #         id=doc_obj.id,
-    #         team_id=doc_obj.team.id,
-    #         start_date=doc_obj.start_date.date(),
-    #         end_date=doc_obj.end_date.date(),
-    #         solve_status=doc_obj.solve_status,
-    #         status=doc_obj.status,
-    #         missing_coverage_dates=[
-    #             d.date()
-    #             for d in doc_obj.missing_coverage_dates
-    #             if isinstance(d, datetime)
-    #         ],
-    #     )
-    # except Exception as e:
-    #     log_info("Failed to convert ScheduleDocument to Schedule")
-    #     handle_create_core_object_error(e)
-    # return schedule

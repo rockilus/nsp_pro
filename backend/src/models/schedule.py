@@ -8,6 +8,8 @@ from mongoengine.fields import (
     StringField,
 )
 
+from core import ScheduleSolveStatus, ScheduleStatus
+
 
 class QuickStaffing(EmbeddedDocument):
     worker = ReferenceField("Worker", required=True)
@@ -22,10 +24,10 @@ class Schedule(Document):
     team = ReferenceField("Team", required=True)
     start_date = DateTimeField(required=True)
     end_date = DateTimeField(required=True)
-    solve_status = StringField(
-        required=True
-    )  # Not solved, Solved, Hard breached, Soft breached, No solution
-    status = StringField(required=True)  # WIP, valid, past
+    solve_status = IntField(
+        required=True, choices=[e.value for e in ScheduleSolveStatus]
+    )
+    status = IntField(required=True, choices=[e.value for e in ScheduleStatus])
     missing_coverage_dates = ListField(DateTimeField())
     constraint_builds = ListField(ReferenceField("ConstraintBuild"))
     quick_staffings = ListField(EmbeddedDocumentField(QuickStaffing))

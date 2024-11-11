@@ -1,6 +1,6 @@
 from typing import List
 
-from core import Assignment
+from core import Assignment, ScheduleStatus
 from scripts.setup_database import assignment_db, schedule_db
 
 
@@ -11,7 +11,7 @@ def validate_schedule(schedule_id: str) -> List[Assignment]:
     if schedule.status == "not solved":
         raise ValueError(f"Schedule with id {schedule_id} not solved")
     assignments = assignment_db.get_assignments_by_schedule_id(schedule_id)
-    schedule.status = "validated"
+    schedule.status = ScheduleStatus.VALIDATED
     schedule = schedule_db.update_schedule(schedule)
     updated_assignments = []
     for a in assignments:

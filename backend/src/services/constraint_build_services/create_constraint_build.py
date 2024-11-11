@@ -10,7 +10,7 @@ def create_constraint_build(
     cb_data: ConstraintBuild,
 ) -> ConstraintBuildAugmented:
     constraint_build = constraint_build_db.create_constraint_build(cb_data)
-    schedule_wip = schedule_db.get_schedule_wip(cb_data.team_id)
+    schedule_wip = schedule_db.get_schedule_campaign(cb_data.team_id)
     if schedule_wip:
         schedule_wip.constraint_build_ids.append(constraint_build.id)
         schedule_db.update_schedule(schedule_wip)

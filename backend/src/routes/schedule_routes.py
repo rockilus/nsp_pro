@@ -5,7 +5,16 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Assignment, Breach, QuickStaffing, RequestAugmented, Schedule, Shift
+from core import (
+    Assignment,
+    Breach,
+    QuickStaffing,
+    RequestAugmented,
+    Schedule,
+    ScheduleSolveStatus,
+    ScheduleStatus,
+    Shift,
+)
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -281,6 +290,8 @@ def msg_to_core_quick_staffing(msg: QuickStaffingMessage) -> QuickStaffing:
 
 def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake = humps.decamelize(msg.model_dump())
+    data_snake["solve_status"] = ScheduleSolveStatus(data_snake["solve_status"])
+    data_snake["status"] = ScheduleStatus(data_snake["status"])
     data_snake["quick_staffings"] = [
         msg_to_core_quick_staffing(qs) for qs in msg.quickStaffings
     ]

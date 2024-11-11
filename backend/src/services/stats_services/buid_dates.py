@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
-from core import Schedule
+from core import Schedule, ScheduleStatus
 from errors import NoCampaignError
 
 
@@ -15,7 +15,9 @@ def build_dates(
     min_schedule_date = min(s.start_date for s in schedules)
     max_schedule_date = max(s.end_date for s in schedules)
     if time_frame == "campaign":
-        schedule = next((s for s in schedules if s.status.lower() == "wip"), None)
+        schedule = next(
+            (s for s in schedules if s.status == ScheduleStatus.CAMPAIGN), None
+        )
         if schedule is None:
             raise NoCampaignError("No campaign schedule found")
         return (

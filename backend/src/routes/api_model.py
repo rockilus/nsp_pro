@@ -227,8 +227,8 @@ class ScheduleMessage(BaseModel):
     teamId: str
     startDate: date
     endDate: date
-    solveStatus: str
-    status: str
+    solveStatus: int
+    status: int
     missingCoverageDates: List[date]
     constraintBuildIds: List[str]
     quickStaffings: List[QuickStaffingMessage]
