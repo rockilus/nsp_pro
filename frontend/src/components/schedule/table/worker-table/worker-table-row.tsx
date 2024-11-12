@@ -14,6 +14,7 @@ import {
   BreachT,
   ScheduleT,
   SelectedCellT,
+  ScheduleStatus,
 } from "../../../../types/schedule";
 import { RequestT } from "../../../../types/request";
 
@@ -26,7 +27,7 @@ export default function WorkerTableRow({
   worker,
   requests,
   assignments,
-  schedule,
+  scheduleCampaign,
   periodDates,
   breaches,
   showBreaches,
@@ -37,8 +38,8 @@ export default function WorkerTableRow({
   worker: WorkerT;
   requests: RequestT[];
   assignments: AssignmentT[];
-  schedule: ScheduleT;
-  periodDates: dayjs.Dayjs[];
+  scheduleCampaign: ScheduleT | null;
+  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
   breaches: BreachT[];
   showBreaches: boolean;
   handleCellSelection: (selectedCell: SelectedCellT) => void;
@@ -50,13 +51,13 @@ export default function WorkerTableRow({
         shifts={shifts}
         worker={worker}
         assignments={assignments}
-        schedule={schedule}
+        scheduleCampaign={scheduleCampaign}
       />
-      {periodDates.map((date, dateIndex) => (
+      {periodDates.map((pDate, dateIndex) => (
         <WorkerCell
           key={dateIndex}
-          date={date}
-          schedule={schedule}
+          periodDate={pDate}
+          scheduleCampaign={scheduleCampaign}
           worker={worker}
           shifts={shifts}
           requests={requests}

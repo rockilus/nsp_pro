@@ -19,22 +19,24 @@ export default function WorkerRowHeaderCell({
   shifts,
   worker,
   assignments,
-  schedule,
+  scheduleCampaign,
 }: {
   lng: string;
   shifts: ShiftT[];
   worker: WorkerT;
   assignments: AssignmentT[];
-  schedule: ScheduleT;
+  scheduleCampaign: ScheduleT | null;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  const assignmentsWorker = assignments.filter(
-    (assignment) =>
-      assignment.workerId === worker.id &&
-      assignment.date.isSameOrAfter(schedule.startDate, "day") &&
-      assignment.date.isSameOrBefore(schedule.endDate, "day")
-  );
+  const assignmentsWorker = scheduleCampaign
+    ? assignments.filter(
+        (assignment) =>
+          assignment.workerId === worker.id &&
+          assignment.date.isSameOrAfter(scheduleCampaign.startDate, "day") &&
+          assignment.date.isSameOrBefore(scheduleCampaign.endDate, "day")
+      )
+    : [];
 
   const shiftMap: { [key: string]: ShiftT } = shifts.reduce((map, shift) => {
     map[shift.id] = shift;
@@ -42,6 +44,7 @@ export default function WorkerRowHeaderCell({
   }, {} as { [key: string]: ShiftT });
 
   const calcWeeklyWorkTimeActual = () => {
+    if (!scheduleCampaign) return 0;
     const workerTotalWorkTimeActual = assignmentsWorker.reduce(
       (acc, assignment) => {
         const shift = shiftMap[assignment.shiftId];
@@ -54,11 +57,13 @@ export default function WorkerRowHeaderCell({
       0
     );
     const numWeeksSchedule =
-      (schedule.endDate.diff(schedule.startDate, "day") + 1) / 7;
+      (scheduleCampaign.endDate.diff(scheduleCampaign.startDate, "day") + 1) /
+      7;
     return workerTotalWorkTimeActual / numWeeksSchedule;
   };
 
   const calcDutiesPerMonthActual = () => {
+    if (!scheduleCampaign) return 0;
     const workerTotalDutiesActual = assignmentsWorker.reduce(
       (acc, assignment) => {
         const shift = shiftMap[assignment.shiftId];
@@ -69,8 +74,8 @@ export default function WorkerRowHeaderCell({
       },
       0
     );
-    const numMonthsSchedule = schedule.endDate.diff(
-      schedule.startDate,
+    const numMonthsSchedule = scheduleCampaign.endDate.diff(
+      scheduleCampaign.startDate,
       "month",
       true
     );
@@ -92,34 +97,39 @@ export default function WorkerRowHeaderCell({
     >
       <div className="worker-row-header-cell-container">
         <span className="worker-name">{worker.name}</span>
-        <div className="worker-stats-item">
-          <div
-            className={`worker-stats-container ${
-              workerWeeklyWorkTimeActual > worker.weeklyHoursDesired && "breach"
-            }`}
-          >
-            <span className="worker-stats">
-              {workerWeeklyWorkTimeActual.toFixed(1)}
-            </span>
-            <span className="worker-stats-slash">/</span>
-            <span className="worker-stats">{worker.weeklyHoursDesired}</span>
+        {scheduleCampaign && (
+          <div className="worker-stats-item">
+            <div
+              className={`worker-stats-container ${
+                workerWeeklyWorkTimeActual > worker.weeklyHoursDesired &&
+                "breach"
+              }`}
+            >
+              <span className="worker-stats">
+                {workerWeeklyWorkTimeActual.toFixed(1)}
+              </span>
+              <span className="worker-stats-slash">/</span>
+              <span className="worker-stats">{worker.weeklyHoursDesired}</span>
+            </div>
+            <span className="worker-stats-label">{t("h/week")}</span>
           </div>
-          <span className="worker-stats-label">{t("h/week")}</span>
-        </div>
-        <div className="worker-stats-item">
-          <div
-            className={`worker-stats-container ${
-              workerDutiesPerMonthActual > worker.dutiesPerMonth && "breach"
-            }`}
-          >
-            <span className="worker-stats">
-              {workerDutiesPerMonthActual.toFixed(1)}
-            </span>
-            <span className="worker-stats-slash">/</span>
-            <span className="worker-stats">{worker.dutiesPerMonth}</span>
+        )}
+        {scheduleCampaign && (
+          <div className="worker-stats-item">
+            <div
+              className={`worker-stats-container ${
+                workerDutiesPerMonthActual > worker.dutiesPerMonth && "breach"
+              }`}
+            >
+              <span className="worker-stats">
+                {workerDutiesPerMonthActual.toFixed(1)}
+              </span>
+              <span className="worker-stats-slash">/</span>
+              <span className="worker-stats">{worker.dutiesPerMonth}</span>
+            </div>
+            <span className="worker-stats-label">{t("duties/month")}</span>
           </div>
-          <span className="worker-stats-label">{t("duties/month")}</span>
-        </div>
+        )}
       </div>
     </TableCell>
   );

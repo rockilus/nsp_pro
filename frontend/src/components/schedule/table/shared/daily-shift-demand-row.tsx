@@ -14,6 +14,7 @@ import {
   AssignmentT,
   ScheduleT,
   DailyShiftDemandT,
+  ScheduleStatus,
 } from "../../../../types/schedule";
 
 export default function DailyShiftDemandRow({
@@ -23,8 +24,8 @@ export default function DailyShiftDemandRow({
   shifts,
   assignments,
   dailyShiftDemands,
-  schedule,
-  dates,
+  scheduleCampaign,
+  periodDates,
   handleCreateDSD,
   handleUpdateDSD,
   handleDeleteDSD,
@@ -35,8 +36,8 @@ export default function DailyShiftDemandRow({
   shifts: ShiftT[];
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
-  schedule: ScheduleT;
-  dates: dayjs.Dayjs[];
+  scheduleCampaign: ScheduleT | null;
+  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleDeleteDSD: (dsdId: string, teamId: string) => void;
@@ -66,12 +67,12 @@ export default function DailyShiftDemandRow({
           </span>
         </div>
       </TableCell>
-      {dates.map((date, dateIndex) => {
+      {periodDates.map((pDate, dateIndex) => {
         const dsdDate: DailyShiftDemandT[] = dailyShiftDemands.filter((dsd) =>
-          dsd.date.isSame(date, "day")
+          dsd.date.isSame(pDate.date, "day")
         );
         const aDate: AssignmentT[] = assignments.filter((a) =>
-          a.date.isSame(date, "day")
+          a.date.isSame(pDate.date, "day")
         );
         return (
           <DailyShiftDemandCell
@@ -79,8 +80,8 @@ export default function DailyShiftDemandRow({
             lng={lng}
             selectedDisplay={selectedDisplay}
             teamId={teamId}
-            schedule={schedule}
-            dateCell={date}
+            scheduleCampaign={scheduleCampaign}
+            periodDate={pDate}
             assignments={aDate}
             dailyShiftDemands={dsdDate}
             shifts={shifts}

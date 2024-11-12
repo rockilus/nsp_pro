@@ -17,29 +17,38 @@ import {
   ExportOptionsT,
   ExportPeriodOptions,
   ScheduleT,
+  ScheduleStatus,
 } from "../../../../types/schedule";
 
 dayjs.extend(utc);
 
 export default function ExportCell({
   lng,
-  dates,
-  schedule,
+  periodDates,
+  scheduleCampaign,
   handleExportSchedule,
 }: {
   lng: string;
-  dates: dayjs.Dayjs[];
-  schedule: ScheduleT;
+  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  scheduleCampaign: ScheduleT | null;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const [exportOptionsState, setExportOptionsState] = useState<ExportOptionsT>({
-    periodOption: ExportPeriodOptions.CAMPAIGN,
-    startDate: schedule.startDate,
-    endDate: schedule.endDate,
-  });
+  const [exportOptionsState, setExportOptionsState] = useState<ExportOptionsT>(
+    scheduleCampaign
+      ? {
+          periodOption: ExportPeriodOptions.CAMPAIGN,
+          startDate: scheduleCampaign.startDate,
+          endDate: scheduleCampaign.endDate,
+        }
+      : {
+          periodOption: ExportPeriodOptions.CURRENT_SELECTION,
+          startDate: periodDates[0].date,
+          endDate: periodDates[periodDates.length - 1].date,
+        }
+  );
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
@@ -74,14 +83,17 @@ export default function ExportCell({
       if (newAlignment === ExportPeriodOptions.CURRENT_SELECTION) {
         setExportOptionsState((prevState) => ({
           ...prevState,
-          startDate: dates[0],
-          endDate: dates[dates.length - 1],
+          startDate: periodDates[0].date,
+          endDate: periodDates[periodDates.length - 1].date,
         }));
-      } else if (newAlignment === ExportPeriodOptions.CAMPAIGN) {
+      } else if (
+        newAlignment === ExportPeriodOptions.CAMPAIGN &&
+        scheduleCampaign
+      ) {
         setExportOptionsState((prevState) => ({
           ...prevState,
-          startDate: dayjs.utc(schedule.startDate),
-          endDate: dayjs.utc(schedule.endDate),
+          startDate: dayjs.utc(scheduleCampaign.startDate),
+          endDate: dayjs.utc(scheduleCampaign.endDate),
         }));
       }
     }
@@ -107,6 +119,9 @@ export default function ExportCell({
             {ExportOptionsMap.map((c) => (
               <ToggleButton
                 key={c.value}
+                disabled={
+                  c.value === ExportPeriodOptions.CAMPAIGN && !scheduleCampaign
+                }
                 value={c.value}
                 sx={{
                   textTransform: "none",

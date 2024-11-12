@@ -12,6 +12,7 @@ import {
   SelectedCellT,
   DailyShiftDemandT,
   ExportOptionsT,
+  ScheduleStatus,
 } from "../../../types/schedule";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -22,9 +23,8 @@ dayjs.extend(utc);
 export default function ScheduleDisplay({
   lng,
   teamId,
-  schedule,
-  startDate,
-  endDate,
+  scheduleCampaign,
+  periodDates,
   assignments,
   dailyShiftDemands,
   breaches,
@@ -41,9 +41,8 @@ export default function ScheduleDisplay({
 }: {
   lng: string;
   teamId: string;
-  schedule: ScheduleT;
-  startDate: dayjs.Dayjs;
-  endDate: dayjs.Dayjs;
+  scheduleCampaign: ScheduleT | null;
+  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
   breaches: BreachT[];
@@ -58,19 +57,6 @@ export default function ScheduleDisplay({
   handleDeleteDSD: (dsdId: string, teamId: string) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
-  const buildDates = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
-    const dates = [];
-    let currentDate = startDate;
-
-    while (currentDate.isBefore(endDate)) {
-      dates.push(currentDate);
-      currentDate = currentDate.add(1, "day");
-    }
-    return dates;
-  };
-
-  const periodDates = buildDates(startDate, endDate);
-
   const scheduleDisplays: { [key: string]: JSX.Element } = {
     shift: (
       <ScheduleTableShift
@@ -81,7 +67,7 @@ export default function ScheduleDisplay({
         requests={requests}
         assignments={assignments}
         dailyShiftDemands={dailyShiftDemands}
-        schedule={schedule}
+        scheduleCampaign={scheduleCampaign}
         periodDates={periodDates}
         breaches={breaches}
         showBreaches={showBreaches}
@@ -102,8 +88,8 @@ export default function ScheduleDisplay({
         requests={requests}
         assignments={assignments}
         dailyShiftDemands={dailyShiftDemands}
-        schedule={schedule}
-        dates={periodDates}
+        scheduleCampaign={scheduleCampaign}
+        periodDates={periodDates}
         breaches={breaches}
         showBreaches={showBreaches}
         selectedDisplay={selectedDisplay}

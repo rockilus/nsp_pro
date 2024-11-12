@@ -14,6 +14,7 @@ import {
   DailyShiftDemandT,
   DSDSourceType,
   ScheduleT,
+  ScheduleStatus,
 } from "../../../../types/schedule";
 import { ShiftT, ShiftType } from "../../../../types/shift";
 
@@ -23,8 +24,8 @@ export default function DailyShiftDemandCell({
   lng,
   selectedDisplay,
   teamId,
-  schedule,
-  dateCell,
+  scheduleCampaign,
+  periodDate: periodDate,
   assignments,
   dailyShiftDemands,
   shifts,
@@ -35,8 +36,8 @@ export default function DailyShiftDemandCell({
   lng: string;
   selectedDisplay: string;
   teamId: string;
-  schedule: ScheduleT;
-  dateCell: dayjs.Dayjs;
+  scheduleCampaign: ScheduleT | null;
+  periodDate: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null };
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
   shifts: ShiftT[];
@@ -96,6 +97,12 @@ export default function DailyShiftDemandCell({
   };
 
   const handleDecreaseDSD = (shift: ShiftT) => {
+    if (
+      !scheduleCampaign ||
+      periodDate.scheduleStatus !== ScheduleStatus.CAMPAIGN
+    ) {
+      return;
+    }
     const dsdSchedule = dailyShiftDemands.find(
       (dsd) =>
         dsd.shiftId === shift.id && dsd.sourceType === DSDSourceType.SCHEDULE
@@ -130,6 +137,12 @@ export default function DailyShiftDemandCell({
   };
 
   const handleIncreaseDSD = (shift: ShiftT) => {
+    if (
+      !scheduleCampaign ||
+      periodDate.scheduleStatus !== ScheduleStatus.CAMPAIGN
+    ) {
+      return;
+    }
     const dsdShiftDemand = dailyShiftDemands.find(
       (dsd) =>
         dsd.shiftId === shift.id &&
@@ -159,10 +172,10 @@ export default function DailyShiftDemandCell({
         handleCreateDSD({
           id: "",
           teamId: teamId,
-          scheduleId: schedule.id,
+          scheduleId: scheduleCampaign.id,
           shiftDemandId: null,
           sourceType: DSDSourceType.SCHEDULE,
-          date: dateCell,
+          date: periodDate.date,
           shiftId: shift.id,
           count: 1,
         });
@@ -248,9 +261,11 @@ export default function DailyShiftDemandCell({
                   </span>
                 </div>
               </div>
-              <div className="container-dsd-adjust-buttons">
-                <AdjustStaffingButtons shift={shift} />
-              </div>
+              {periodDate.scheduleStatus === ScheduleStatus.CAMPAIGN && (
+                <div className="container-dsd-adjust-buttons">
+                  <AdjustStaffingButtons shift={shift} />
+                </div>
+              )}
             </div>
           );
         })}
