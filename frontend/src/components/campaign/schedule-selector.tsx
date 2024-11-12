@@ -40,8 +40,8 @@ export default function ScheduleSelector({
     dayjs(0)
   ); // Initialize with the earliest possible date
   const today = dayjs.utc().startOf("day");
-  const minDate = lastScheduleValidatedDate.isAfter(today)
-    ? lastScheduleValidatedDate
+  const minDate = lastScheduleValidatedDate.add(1, "day").isAfter(today)
+    ? lastScheduleValidatedDate.add(1, "day")
     : today;
 
   return (

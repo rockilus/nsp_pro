@@ -8,14 +8,16 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+// Types
+import { ScheduleT, ScheduleSolveStatus } from "../../../types/schedule";
 
 export default function ScheduleDialogValidate({
   lng,
-  scheduleId,
+  scheduleCampaign,
   handleValidateSchedule,
 }: {
   lng: string;
-  scheduleId: string;
+  scheduleCampaign: ScheduleT;
   handleValidateSchedule: (scheduleId: string) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
@@ -33,6 +35,9 @@ export default function ScheduleDialogValidate({
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <Button
+        disabled={
+          scheduleCampaign.solveStatus === ScheduleSolveStatus.NOT_SOLVED
+        }
         variant="outlined"
         onClick={handleClickOpen}
         sx={{
@@ -63,7 +68,7 @@ export default function ScheduleDialogValidate({
           </Button>
           <Button
             onClick={() => {
-              handleValidateSchedule(scheduleId);
+              handleValidateSchedule(scheduleCampaign.id);
               handleClose();
             }}
             autoFocus

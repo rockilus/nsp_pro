@@ -15,7 +15,7 @@ export default function ScheduleNavBar({
   selectedTimeView,
   selectedDisplay,
   showBreaches,
-  schedule,
+  scheduleCampaign,
   handleToday,
   handlePreviousPeriod,
   handleNextPeriod,
@@ -31,7 +31,7 @@ export default function ScheduleNavBar({
   selectedTimeView: string;
   selectedDisplay: string;
   showBreaches: boolean;
-  schedule: ScheduleT | null;
+  scheduleCampaign: ScheduleT | null;
   handleToday: () => void;
   handlePreviousPeriod: () => void;
   handleNextPeriod: () => void;
@@ -69,10 +69,10 @@ export default function ScheduleNavBar({
         setSelectedDisplay={setSelectedDisplay}
         switchShowBreaches={switchShowBreaches}
       />
-      {schedule ? (
+      {scheduleCampaign ? (
         <CampaignInfo
           lng={lng}
-          schedule={schedule}
+          scheduleCampaign={scheduleCampaign}
           handleSolveSchedule={handleSolveSchedule}
           handleValidateSchedule={handleValidateSchedule}
         />

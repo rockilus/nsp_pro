@@ -209,6 +209,7 @@ export default function ScheduleTab({
     const newSchedule = await validateSchedule(scheduleId, selectedTeamId);
     setScheduleCampaign(null);
     setSchedulesValidated([...schedulesValidated, newSchedule]);
+    setBreaches([]);
   };
 
   //////////////////////////
@@ -486,7 +487,7 @@ export default function ScheduleTab({
             selectedTimeView={selectedTimeView}
             selectedDisplay={selectedDisplay}
             showBreaches={showBreaches}
-            schedule={scheduleCampaign}
+            scheduleCampaign={scheduleCampaign}
             handleToday={handleToday}
             handlePreviousPeriod={handlePreviousPeriod}
             handleNextPeriod={handleNextPeriod}
