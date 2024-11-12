@@ -52,7 +52,6 @@ import {
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import { StatsT } from "../../types/stats";
-import { set } from "zod";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -92,16 +91,16 @@ export default function ScheduleTab({
   const getDateScheduleStatus = (date: dayjs.Dayjs) => {
     if (scheduleCampaign) {
       if (
-        date.isBefore(dayjs.utc(scheduleCampaign.endDate)) &&
-        date.isAfter(dayjs.utc(scheduleCampaign.startDate))
+        date.isSameOrBefore(scheduleCampaign.endDate, "day") &&
+        date.isSameOrAfter(scheduleCampaign.startDate, "day")
       ) {
         return ScheduleStatus.CAMPAIGN;
       }
     }
     const validatedSchedule = schedulesValidated.find(
       (s) =>
-        date.isBefore(dayjs.utc(s.endDate)) &&
-        date.isAfter(dayjs.utc(s.startDate))
+        date.isSameOrBefore(s.endDate, "day") &&
+        date.isSameOrAfter(s.startDate, "day")
     );
     if (validatedSchedule) {
       return ScheduleStatus.VALIDATED;

@@ -100,7 +100,7 @@ export default function ScheduleNavBar({
               onMouseEnter={() => setIsHoveredCreateCampaign(true)}
               onMouseLeave={() => setIsHoveredCreateCampaign(false)}
             >
-              Create campaign to start solving
+              Create campaign
             </button>
           </Link>
         </div>

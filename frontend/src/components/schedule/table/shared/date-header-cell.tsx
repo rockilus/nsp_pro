@@ -18,6 +18,28 @@ export default function DateHeaderCell({
   const today = dayjs.utc().startOf("day");
   const isToday = periodDate.date.isSame(today, "day");
 
+  const ScheduleStatusLogo = () => {
+    return (
+      <div
+        className={`schedule-status-logo-container ${
+          periodDate.scheduleStatus === ScheduleStatus.VALIDATED
+            ? "validated"
+            : periodDate.scheduleStatus === ScheduleStatus.CAMPAIGN
+            ? "campaign"
+            : ""
+        }`}
+      >
+        <div className="schedule-status-logo">
+          {periodDate.scheduleStatus === ScheduleStatus.VALIDATED
+            ? "v"
+            : periodDate.scheduleStatus === ScheduleStatus.CAMPAIGN
+            ? "c"
+            : ""}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <TableCell
       sx={{
@@ -33,6 +55,9 @@ export default function DateHeaderCell({
             {periodDate.date.format("DD")}
           </span>
         </div>
+        {periodDate.scheduleStatus === ScheduleStatus.VALIDATED && (
+          <ScheduleStatusLogo />
+        )}
       </div>
     </TableCell>
   );
