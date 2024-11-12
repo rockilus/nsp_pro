@@ -442,7 +442,10 @@ export default function ScheduleTab({
         lng={lng}
         workers={workers.filter((w) => !w.deleted)}
         shifts={shifts.filter((s) => !s.deleted)}
-        schedules={[scheduleCampaign as ScheduleT]} // XXX CHANGE TO LIST OF SCHEDULES XXX
+        schedules={[
+          ...(scheduleCampaign ? [scheduleCampaign] : []),
+          ...schedulesValidated,
+        ]}
         assignments={assignments}
         selectedCell={selectedCell}
         selectedDisplay={selectedDisplay}
