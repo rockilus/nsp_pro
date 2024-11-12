@@ -158,7 +158,8 @@ export default function ScheduleTab({
       throw new Error("No team selected");
     }
     const newSchedule = await validateSchedule(scheduleId, selectedTeamId);
-    setScheduleCampaign(newSchedule);
+    setScheduleCampaign(null);
+    setSchedulesValidated([...schedulesValidated, newSchedule]);
   };
 
   //////////////////////////

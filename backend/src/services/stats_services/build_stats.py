@@ -11,6 +11,7 @@ from core import (
     BlockTypeOptions,
     Dimension,
     DimEntry,
+    ScheduleStatus,
     Shift,
     ShiftType,
     ShiftWorkerOption,
@@ -62,12 +63,18 @@ def build_stats(
     stats_options: StatsOptions,
 ) -> Stats:
     schedules = schedule_db.get_schedules(team_id)
+    schedule_campaign = next(
+        (s for s in schedules if s.status == ScheduleStatus.CAMPAIGN), None
+    )
+    if stats_options.time_frame == "campaign" and not schedule_campaign:
+        return Stats([], [])
     try:
         start_date, end_date, date_to_i = build_dates(
             stats_options.time_frame,
             stats_options.start_date,
             stats_options.end_date,
             schedules,
+            schedule_campaign,
         )
     except NoCampaignError as e:
         raise e

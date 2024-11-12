@@ -68,7 +68,7 @@ async def create_schedule(
 
 
 @router.get("/schedules/teams/{team_id}")
-async def get_schedule(
+async def get_schedules(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ScheduleMessage]:
