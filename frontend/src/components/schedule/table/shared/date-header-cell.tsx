@@ -55,9 +55,7 @@ export default function DateHeaderCell({
             {periodDate.date.format("DD")}
           </span>
         </div>
-        {periodDate.scheduleStatus === ScheduleStatus.VALIDATED && (
-          <ScheduleStatusLogo />
-        )}
+        {periodDate.scheduleStatus !== null && <ScheduleStatusLogo />}
       </div>
     </TableCell>
   );

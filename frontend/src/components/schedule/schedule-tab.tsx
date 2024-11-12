@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -88,42 +88,48 @@ export default function ScheduleTab({
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
   const [selectedCell, setSelectedCell] = useState<SelectedCellT | null>(null);
 
-  const getDateScheduleStatus = (date: dayjs.Dayjs) => {
-    if (scheduleCampaign) {
-      if (
-        date.isSameOrBefore(scheduleCampaign.endDate, "day") &&
-        date.isSameOrAfter(scheduleCampaign.startDate, "day")
-      ) {
-        return ScheduleStatus.CAMPAIGN;
+  const getDateScheduleStatus = useCallback(
+    (date: dayjs.Dayjs) => {
+      if (scheduleCampaign) {
+        if (
+          date.isSameOrBefore(scheduleCampaign.endDate, "day") &&
+          date.isSameOrAfter(scheduleCampaign.startDate, "day")
+        ) {
+          return ScheduleStatus.CAMPAIGN;
+        }
       }
-    }
-    const validatedSchedule = schedulesValidated.find(
-      (s) =>
-        date.isSameOrBefore(s.endDate, "day") &&
-        date.isSameOrAfter(s.startDate, "day")
-    );
-    if (validatedSchedule) {
-      return ScheduleStatus.VALIDATED;
-    }
-    return null;
-  };
+      const validatedSchedule = schedulesValidated.find(
+        (s) =>
+          date.isSameOrBefore(s.endDate, "day") &&
+          date.isSameOrAfter(s.startDate, "day")
+      );
+      if (validatedSchedule) {
+        return ScheduleStatus.VALIDATED;
+      }
+      return null;
+    },
+    [scheduleCampaign, schedulesValidated]
+  );
 
-  const buildDates = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
-    const dates: {
-      date: dayjs.Dayjs;
-      scheduleStatus: ScheduleStatus | null;
-    }[] = [];
-    let currentDate = startDate;
+  const buildDates = useCallback(
+    (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
+      const dates: {
+        date: dayjs.Dayjs;
+        scheduleStatus: ScheduleStatus | null;
+      }[] = [];
+      let currentDate = startDate;
 
-    while (currentDate.isBefore(endDate)) {
-      dates.push({
-        date: currentDate,
-        scheduleStatus: getDateScheduleStatus(currentDate),
-      });
-      currentDate = currentDate.add(1, "day");
-    }
-    return dates;
-  };
+      while (currentDate.isBefore(endDate)) {
+        dates.push({
+          date: currentDate,
+          scheduleStatus: getDateScheduleStatus(currentDate),
+        });
+        currentDate = currentDate.add(1, "day");
+      }
+      return dates;
+    },
+    [getDateScheduleStatus]
+  );
 
   const [selectedTimeView, setSelectedTimeView] = useState<string>("week");
   const initialStartDate = dayjs
@@ -414,6 +420,16 @@ export default function ScheduleTab({
     };
     fetchScheduleLHSData();
   }, [selectedTeamId]);
+
+  useEffect(() => {
+    setPeriodDates(buildDates(periodStartDate, periodEndDate));
+  }, [
+    periodStartDate,
+    periodEndDate,
+    buildDates,
+    scheduleCampaign,
+    schedulesValidated,
+  ]);
 
   const lhsTabContent = {
     Breaches: <BreachList lng={lng} breaches={breaches} />,

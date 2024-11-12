@@ -11,23 +11,38 @@ import useStatusLabel from "../data-display/get-status-label";
 import "./schedule-selector.css";
 import "../../styles/text-styles.css";
 // Types
-import { ScheduleT, ScheduleSolveStatus } from "../../types/schedule";
+import { ScheduleT } from "../../types/schedule";
 //Constants
-import { SolveStatusList, SolveStatusColors } from "../../constants/constants";
+import { SolveStatusColors } from "../../constants/constants";
 
 dayjs.extend(utc);
 
 export default function ScheduleSelector({
   lng,
-  schedule,
+  scheduleCampaign,
+  schedulesValidated,
   handleUpdateSchedule,
 }: {
   lng: string;
-  schedule: ScheduleT;
+  scheduleCampaign: ScheduleT;
+  schedulesValidated: ScheduleT[];
   handleUpdateSchedule: (schedule: ScheduleT) => void;
 }) {
   const { t } = useTranslation(lng, "campaign-page");
   const getStatusLabel = useStatusLabel(lng); // Use the custom hook
+  // Calculate the lastScheduleValidatedDate
+  const lastScheduleValidatedDate = schedulesValidated.reduce(
+    (latestDate, schedule) => {
+      return schedule.endDate.isAfter(latestDate)
+        ? schedule.endDate
+        : latestDate;
+    },
+    dayjs(0)
+  ); // Initialize with the earliest possible date
+  const today = dayjs.utc().startOf("day");
+  const minDate = lastScheduleValidatedDate.isAfter(today)
+    ? lastScheduleValidatedDate
+    : today;
 
   return (
     <div className="campaign-info-container">
@@ -41,12 +56,16 @@ export default function ScheduleSelector({
             {
               <DatePicker
                 className="custom-date-picker"
-                value={schedule.startDate}
+                minDate={minDate}
+                value={scheduleCampaign.startDate}
                 onChange={(newValue) => {
                   if (!newValue) return;
                   handleUpdateSchedule({
-                    ...schedule,
+                    ...scheduleCampaign,
                     startDate: dayjs.utc(newValue),
+                    endDate: newValue.isAfter(scheduleCampaign.endDate)
+                      ? newValue
+                      : scheduleCampaign.endDate,
                   });
                 }}
               />
@@ -61,11 +80,12 @@ export default function ScheduleSelector({
             {
               <DatePicker
                 className="custom-date-picker"
-                value={schedule.endDate}
+                minDate={scheduleCampaign.startDate}
+                value={scheduleCampaign.endDate}
                 onChange={(newValue) => {
                   if (!newValue) return;
                   handleUpdateSchedule({
-                    ...schedule,
+                    ...scheduleCampaign,
                     endDate: dayjs.utc(newValue),
                   });
                 }}
@@ -81,9 +101,9 @@ export default function ScheduleSelector({
             {
               <Chip
                 className="status-chip"
-                label={getStatusLabel(schedule.solveStatus)}
+                label={getStatusLabel(scheduleCampaign.solveStatus)}
                 color={
-                  (SolveStatusColors[schedule.solveStatus] as
+                  (SolveStatusColors[scheduleCampaign.solveStatus] as
                     | "default"
                     | "success"
                     | "error"
