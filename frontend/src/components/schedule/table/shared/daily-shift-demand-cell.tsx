@@ -298,32 +298,34 @@ export default function DailyShiftDemandCell({
         borderRight: "1px solid #e0e0e07d",
       }}
     >
-      <div className="container-dsd-cell">
-        <button onClick={handleClick}>
-          <DSDPopoverButton />
-        </button>
-        <Popover
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          slotProps={{
-            paper: {
-              style: {
-                boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
-                padding: 20,
-                width: 300,
+      {periodDate.scheduleStatus !== null && (
+        <div className="container-dsd-cell">
+          <button onClick={handleClick}>
+            <DSDPopoverButton />
+          </button>
+          <Popover
+            id={id}
+            open={open}
+            anchorEl={anchorEl}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+            slotProps={{
+              paper: {
+                style: {
+                  boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+                  padding: 20,
+                  width: 300,
+                },
               },
-            },
-          }}
-        >
-          <PopoverContent />
-        </Popover>
-      </div>
+            }}
+          >
+            <PopoverContent />
+          </Popover>
+        </div>
+      )}
     </TableCell>
   );
 }
