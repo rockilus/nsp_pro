@@ -2,11 +2,12 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Actions
-import { getSchedule } from "./schedule";
+import { getSchedules } from "./schedule";
 import { getCoverages } from "./coverage";
 import { getConstraints } from "./constraint";
 // Types
 import { CoverageSelectorT } from "../../types/campaign";
+import { ScheduleStatus } from "../../types/schedule";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -150,17 +151,24 @@ export async function deleteCoverageSelector(
 
 export async function getCampaignTabData(teamId: string) {
   try {
-    const schedule = await getSchedule(teamId);
-    if (!schedule) {
-      return null;
-    }
+    const schedules = await getSchedules(teamId);
+    const scheduleCampaign =
+      schedules.find(
+        (schedule) => schedule.status === ScheduleStatus.CAMPAIGN
+      ) || null;
+    const schedulesValidated = schedules.filter(
+      (schedule) => schedule.status === ScheduleStatus.VALIDATED
+    );
     const campaignTabData = await Promise.all([
       getCoverages(teamId),
       getConstraints(teamId),
-      getCoverageSelectors(schedule.id, teamId),
+      scheduleCampaign
+        ? getCoverageSelectors(scheduleCampaign.id, teamId)
+        : Promise.resolve([]),
     ]);
     return {
-      schedule: schedule,
+      scheduleCampaign: scheduleCampaign,
+      schedulesValidated: schedulesValidated,
       coverages: campaignTabData[0],
       constraints: campaignTabData[1],
       coverageSelectors: campaignTabData[2],

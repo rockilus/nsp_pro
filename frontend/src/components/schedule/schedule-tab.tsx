@@ -23,7 +23,7 @@ import {
   solveSchedule,
   validateSchedule,
   updateSchedule,
-  getSchedule,
+  getSchedules,
   getScheduleAssignmentsData,
   getScheduleLHSData,
 } from "../../app/lib/schedule";
@@ -51,6 +51,7 @@ import {
   SelectedCellT,
   DailyShiftDemandT,
   ExportOptionsT,
+  ScheduleStatus,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import { StatsT } from "../../types/stats";
@@ -75,7 +76,10 @@ export default function ScheduleTab({
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [requests, setRequests] = useState<RequestT[]>([]);
-  const [schedule, setSchedule] = useState<ScheduleT | null>(null);
+  const [schedulesValidated, setSchedulesValidated] = useState<ScheduleT[]>([]);
+  const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
+    null
+  );
   const [assignments, setAssignments] = useState<AssignmentT[]>([]);
   const [dailyShiftDemands, setDailyShiftDemands] = useState<
     DailyShiftDemandT[]
@@ -119,7 +123,7 @@ export default function ScheduleTab({
 
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
     const newSchedule = await updateSchedule(schedule);
-    setSchedule(newSchedule);
+    setScheduleCampaign(newSchedule);
   };
 
   const handleSolveSchedule = async (scheduleId: string) => {
@@ -133,7 +137,7 @@ export default function ScheduleTab({
       requests: newRequests,
       recuperationShiftsNew: newShifts,
     } = await solveSchedule(scheduleId, selectedTeamId);
-    setSchedule(newSchedule);
+    setScheduleCampaign(newSchedule);
     setAssignments((prev) => [
       ...prev.filter((a) => a.scheduleId !== scheduleId),
       ...newAssignments,
@@ -154,7 +158,7 @@ export default function ScheduleTab({
       throw new Error("No team selected");
     }
     const newSchedule = await validateSchedule(scheduleId, selectedTeamId);
-    setSchedule(newSchedule);
+    setScheduleCampaign(newSchedule);
   };
 
   //////////////////////////
@@ -335,8 +339,14 @@ export default function ScheduleTab({
     const fetchSchedule = async () => {
       setIsLoadingSchedule(true);
       if (selectedTeamId) {
-        const fetchedSchedule = await getSchedule(selectedTeamId);
-        setSchedule(fetchedSchedule);
+        const fetchedSchedule = await getSchedules(selectedTeamId);
+        setScheduleCampaign(
+          fetchedSchedule.find((s) => s.status === ScheduleStatus.CAMPAIGN) ||
+            null
+        );
+        setSchedulesValidated(
+          fetchedSchedule.filter((s) => s.status === ScheduleStatus.VALIDATED)
+        );
         setIsLoadingSchedule(false);
       }
     };
@@ -383,13 +393,13 @@ export default function ScheduleTab({
 
   const lhsTabContent = {
     Breaches: <BreachList lng={lng} breaches={breaches} />,
-    "Quick staffing": schedule ? (
+    "Quick staffing": scheduleCampaign ? (
       <QuickStaffingTable
         lng={lng}
         shifts={shifts.filter((s) => !s.deleted)}
         workers={workers.filter((w) => !w.deleted)}
         assignments={assignments}
-        schedule={schedule as ScheduleT}
+        schedule={scheduleCampaign as ScheduleT}
         handleUpdateSchedule={handleUpdateSchedule}
       />
     ) : null,
@@ -408,7 +418,7 @@ export default function ScheduleTab({
         lng={lng}
         workers={workers.filter((w) => !w.deleted)}
         shifts={shifts.filter((s) => !s.deleted)}
-        schedules={[schedule as ScheduleT]} // XXX CHANGE TO LIST OF SCHEDULES XXX
+        schedules={[scheduleCampaign as ScheduleT]} // XXX CHANGE TO LIST OF SCHEDULES XXX
         assignments={assignments}
         selectedCell={selectedCell}
         selectedDisplay={selectedDisplay}
@@ -433,7 +443,7 @@ export default function ScheduleTab({
             selectedTimeView={selectedTimeView}
             selectedDisplay={selectedDisplay}
             showBreaches={showBreaches}
-            schedule={schedule}
+            schedule={scheduleCampaign}
             handleToday={handleToday}
             handlePreviousPeriod={handlePreviousPeriod}
             handleNextPeriod={handleNextPeriod}
@@ -452,7 +462,7 @@ export default function ScheduleTab({
           />
           {isLoadingAssignments ? (
             <ScheduleTableSkeleton />
-          ) : assignments.length === 0 || !schedule ? (
+          ) : assignments.length === 0 || !scheduleCampaign ? (
             <Box
               sx={{
                 margin: 2,
@@ -474,7 +484,7 @@ export default function ScheduleTab({
             <ScheduleDisplay
               lng={lng}
               teamId={selectedTeamId as string}
-              schedule={schedule as ScheduleT}
+              schedule={scheduleCampaign as ScheduleT}
               startDate={currentPeriodStart}
               endDate={currentPeriodEnd}
               assignments={assignments}

@@ -131,7 +131,7 @@ export async function validateSchedule(scheduleId: string, teamId: string) {
   }
 }
 
-export async function getSchedule(teamId: string) {
+export async function getSchedules(teamId: string) {
   noStore();
   const options: RequestInit = {
     method: "GET",
@@ -146,7 +146,7 @@ export async function getSchedule(teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to fetch schedule: " + responseData.detail);
     }
-    return toScheduleT(responseData) as ScheduleT;
+    return responseData.map(toScheduleT) as ScheduleT[];
   } catch (error) {
     console.error("Failed to fetch schedule:", error);
     throw new Error("Failed to fetch schedule, please try again later");
@@ -248,7 +248,7 @@ export async function getScheduleTabData(teamId: string) {
       getAssignmentsByDates(teamId),
       getBreaches(teamId),
       getRequests(teamId),
-      getSchedule(teamId),
+      getSchedules(teamId),
       getAllShifts(teamId),
       getAllWorkers(teamId),
       getStats(statsOptions, teamId),
