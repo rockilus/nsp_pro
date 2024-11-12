@@ -15,27 +15,31 @@ export default function ShiftRowHeaderCell({
   shift,
   assignments,
   dailyShiftDemands,
-  schedule,
+  scheduleCampaign: scheduleCampaign,
 }: {
   shift: ShiftT;
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
-  schedule: ScheduleT;
+  scheduleCampaign: ScheduleT | null;
 }) {
-  const shiftCountActual = assignments.filter(
-    (assignment) =>
-      assignment.shiftId === shift.id &&
-      assignment.date.isSameOrAfter(schedule.startDate, "day") &&
-      assignment.date.isSameOrBefore(schedule.endDate, "day")
-  ).length;
-  const shiftCountTarget = dailyShiftDemands
-    .filter(
-      (dsd) =>
-        dsd.shiftId === shift.id &&
-        dsd.date.isSameOrAfter(schedule.startDate, "day") &&
-        dsd.date.isSameOrBefore(schedule.endDate, "day")
-    )
-    .reduce((sum, dsd) => sum + dsd.count, 0);
+  const shiftCountActual = scheduleCampaign
+    ? assignments.filter(
+        (assignment) =>
+          assignment.shiftId === shift.id &&
+          assignment.date.isSameOrAfter(scheduleCampaign.startDate, "day") &&
+          assignment.date.isSameOrBefore(scheduleCampaign.endDate, "day")
+      ).length
+    : 0;
+  const shiftCountTarget = scheduleCampaign
+    ? dailyShiftDemands
+        .filter(
+          (dsd) =>
+            dsd.shiftId === shift.id &&
+            dsd.date.isSameOrAfter(scheduleCampaign.startDate, "day") &&
+            dsd.date.isSameOrBefore(scheduleCampaign.endDate, "day")
+        )
+        .reduce((sum, dsd) => sum + dsd.count, 0)
+    : 0;
 
   return (
     <TableCell
@@ -55,13 +59,15 @@ export default function ShiftRowHeaderCell({
         ></div>
         <div className="shift-row-header-cell-left">
           <span className="shift-name">{shift.name}</span>
-          <span
-            className={`shift-stats-total ${
-              shiftCountActual !== shiftCountTarget && "breach"
-            }`}
-          >
-            {`${shiftCountActual} / ${shiftCountTarget}`}
-          </span>
+          {scheduleCampaign && (
+            <span
+              className={`shift-stats-total ${
+                shiftCountActual !== shiftCountTarget && "breach"
+              }`}
+            >
+              {`${shiftCountActual} / ${shiftCountTarget}`}
+            </span>
+          )}
         </div>
         <div className="shift-row-header-cell-right">
           <span className="shift-time">{shift.startTime.format("HH:mm")}</span>

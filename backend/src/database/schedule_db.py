@@ -2,6 +2,7 @@ from datetime import date, datetime
 from typing import List
 
 from bson import ObjectId
+from mongoengine import DoesNotExist
 
 from core import QuickStaffing, Schedule, ScheduleSolveStatus, ScheduleStatus
 from database.db import DB
@@ -42,12 +43,14 @@ class ScheduleDB:
             handle_get_document_error(e)
         return [doc_to_core_schedule(c) for c in list(schedules)]
 
-    def get_schedule_campaign(self, team_id: str) -> Schedule:
+    def get_schedule_campaign(self, team_id: str) -> Schedule | None:
         try:
             # pylint: disable=no-member
             schedule = ScheduleDocument.objects.get(  # type: ignore
                 team=team_id, status=ScheduleStatus.CAMPAIGN.value
             )
+        except DoesNotExist:
+            return None
         except Exception as e:
             log_info("Failed to get campaign schedule from database")
             handle_get_document_error(e)

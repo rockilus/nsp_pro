@@ -12,6 +12,7 @@ def build_campaign_assignments(
         Assignment(
             **asdict(a),
             id="",
+            team_id=schedule.team_id,
             schedule_id=schedule.id,
             fixed=False,
         )

@@ -14,6 +14,7 @@ import {
   BreachT,
   SelectedCellT,
   DailyShiftDemandT,
+  ScheduleStatus,
 } from "../../../../types/schedule";
 import { RequestT } from "../../../../types/request";
 
@@ -24,7 +25,7 @@ export default function ShiftTableRow({
   assignments,
   dailyShiftDemands,
   periodDates,
-  schedule,
+  scheduleCampaign,
   breaches,
   showBreaches,
   handleCellSelection,
@@ -34,8 +35,8 @@ export default function ShiftTableRow({
   requests: RequestT[];
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
-  periodDates: dayjs.Dayjs[];
-  schedule: ScheduleT;
+  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  scheduleCampaign: ScheduleT | null;
   breaches: BreachT[];
   showBreaches: boolean;
   handleCellSelection: (selectedCell: SelectedCellT) => void;
@@ -46,13 +47,13 @@ export default function ShiftTableRow({
         shift={shift}
         assignments={assignments}
         dailyShiftDemands={dailyShiftDemands}
-        schedule={schedule}
+        scheduleCampaign={scheduleCampaign}
       />
-      {periodDates.map((date, dateIndex) => (
+      {periodDates.map((pDate, dateIndex) => (
         <ShiftCell
           key={dateIndex}
-          date={date}
-          schedule={schedule}
+          periodDate={pDate}
+          scheduleCampaign={scheduleCampaign}
           workers={workers}
           shift={shift}
           requests={requests}

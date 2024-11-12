@@ -6,17 +6,21 @@ import TableRow from "@mui/material/TableRow";
 import DateHeaderCell from "./date-header-cell";
 import ExportCell from "./export-cell";
 // Types
-import { ExportOptionsT, ScheduleT } from "../../../../types/schedule";
+import {
+  ExportOptionsT,
+  ScheduleT,
+  ScheduleStatus,
+} from "../../../../types/schedule";
 
 export default function DatesHeaderRow({
   lng,
-  dates,
-  schedule,
+  periodDates,
+  scheduleCampaign,
   handleExportSchedule,
 }: {
   lng: string;
-  dates: dayjs.Dayjs[];
-  schedule: ScheduleT;
+  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  scheduleCampaign: ScheduleT | null;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
   return (
@@ -28,12 +32,12 @@ export default function DatesHeaderRow({
     >
       <ExportCell
         lng={lng}
-        dates={dates}
-        schedule={schedule}
+        periodDates={periodDates}
+        scheduleCampaign={scheduleCampaign}
         handleExportSchedule={handleExportSchedule}
       />
-      {dates.map((date, dateIndex) => (
-        <DateHeaderCell key={dateIndex} date={date} />
+      {periodDates.map((pDate, dateIndex) => (
+        <DateHeaderCell key={dateIndex} periodDate={pDate} />
       ))}
     </TableRow>
   );

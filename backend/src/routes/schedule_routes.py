@@ -41,7 +41,7 @@ from routes.shift_routes import core_to_msg_shift_and_attributes
 from scripts.setup_database import assignment_db, breach_db, schedule_db
 from services.schedule_services import solve_schedule as solve_schedule_service
 from services.schedule_services import validate_schedule as validate_schedule_service
-from services.schedule_services.get_schedule_wip import get_schedule_wip
+from services.schedule_services.get_schedule_wip import get_schedule_campaign
 
 router = APIRouter()
 
@@ -59,7 +59,7 @@ async def create_schedule(
                 "You do not have permission to create a schedule",
             )
         schedules = schedule_db.get_schedules(team_id)
-        schedule_wip = get_schedule_wip(schedules, team_id)
+        schedule_wip = get_schedule_campaign(schedules, team_id)
         response = core_to_msg_schedule(schedule_wip)
     except Exception as e:
         log_info("Failed to create schedule")
@@ -68,7 +68,7 @@ async def create_schedule(
 
 
 @router.get("/schedules/teams/{team_id}")
-async def get_schedule(
+async def get_schedules(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[ScheduleMessage]:

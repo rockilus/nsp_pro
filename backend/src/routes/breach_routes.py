@@ -35,8 +35,10 @@ async def get_objective_breaches(
             raise NotAuthorizedError(
                 "You do not have permission to get objective breaches",
             )
-        team_schedules = schedule_db.get_schedules(team_id)
-        objective_breaches = breach_db.get_breaches(team_schedules)
+        schedule_campaign = schedule_db.get_schedule_campaign(team_id)
+        if not schedule_campaign:
+            return []
+        objective_breaches = breach_db.get_breaches_by_schedule_id(schedule_campaign.id)
         response = [core_to_msg_objective_breach(a) for a in objective_breaches]
     except Exception as e:
         log_info("Failed to get objective breaches")

@@ -14,6 +14,7 @@ import {
   BreachT,
   SelectedCellT,
   ScheduleT,
+  ScheduleStatus,
 } from "../../../../types/schedule";
 import { RequestT } from "../../../../types/request";
 
@@ -21,8 +22,8 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 export default function WorkerCell({
-  date,
-  schedule,
+  periodDate,
+  scheduleCampaign,
   worker,
   shifts,
   requests,
@@ -31,8 +32,8 @@ export default function WorkerCell({
   showBreaches,
   handleCellSelection,
 }: {
-  date: dayjs.Dayjs;
-  schedule: ScheduleT;
+  periodDate: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null };
+  scheduleCampaign: ScheduleT | null;
   worker: WorkerT;
   shifts: ShiftT[];
   requests: RequestT[];
@@ -57,7 +58,9 @@ export default function WorkerCell({
     if (!shift) return <div>No assignment</div>;
 
     const assignmentFixed =
-      assignment.scheduleId === schedule.id && assignment.fixed;
+      scheduleCampaign &&
+      assignment.scheduleId === scheduleCampaign.id &&
+      assignment.fixed;
     const breachHard =
       breaches.some((b) => b.hardToSoft) ||
       requests.some((r) => r.hard && r.status === "rejected" && r.active);
@@ -110,7 +113,7 @@ export default function WorkerCell({
 
   const CellContent = ({}) => {
     const assignmentsWorkerDate = assignments.filter(
-      (a) => a.workerId === worker.id && a.date.isSame(date, "day")
+      (a) => a.workerId === worker.id && a.date.isSame(periodDate.date, "day")
     );
 
     return (

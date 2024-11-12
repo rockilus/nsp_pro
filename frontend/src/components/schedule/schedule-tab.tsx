@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -27,10 +27,7 @@ import {
   getScheduleAssignmentsData,
   getScheduleLHSData,
 } from "../../app/lib/schedule";
-import {
-  getAssignmentsByDates,
-  updateAssignment,
-} from "../../app/lib/assignment";
+import { updateAssignment } from "../../app/lib/assignment";
 import { getStats } from "../../app/lib/stats";
 import {
   addDailyShiftDemand,
@@ -91,13 +88,65 @@ export default function ScheduleTab({
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
   const [selectedCell, setSelectedCell] = useState<SelectedCellT | null>(null);
 
+  const getDateScheduleStatus = useCallback(
+    (date: dayjs.Dayjs) => {
+      if (scheduleCampaign) {
+        if (
+          date.isSameOrBefore(scheduleCampaign.endDate, "day") &&
+          date.isSameOrAfter(scheduleCampaign.startDate, "day")
+        ) {
+          return ScheduleStatus.CAMPAIGN;
+        }
+      }
+      const validatedSchedule = schedulesValidated.find(
+        (s) =>
+          date.isSameOrBefore(s.endDate, "day") &&
+          date.isSameOrAfter(s.startDate, "day")
+      );
+      if (validatedSchedule) {
+        return ScheduleStatus.VALIDATED;
+      }
+      return null;
+    },
+    [scheduleCampaign, schedulesValidated]
+  );
+
+  const buildDates = useCallback(
+    (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
+      const dates: {
+        date: dayjs.Dayjs;
+        scheduleStatus: ScheduleStatus | null;
+      }[] = [];
+      let currentDate = startDate;
+
+      while (currentDate.isBefore(endDate)) {
+        dates.push({
+          date: currentDate,
+          scheduleStatus: getDateScheduleStatus(currentDate),
+        });
+        currentDate = currentDate.add(1, "day");
+      }
+      return dates;
+    },
+    [getDateScheduleStatus]
+  );
+
   const [selectedTimeView, setSelectedTimeView] = useState<string>("week");
-  const [currentPeriodStart, setCurrentPeriodStart] = useState<dayjs.Dayjs>(
-    dayjs.utc().startOf(selectedTimeView === "month" ? "month" : "isoWeek")
-  );
-  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<dayjs.Dayjs>(
-    dayjs.utc().endOf(selectedTimeView === "month" ? "month" : "isoWeek")
-  );
+  const initialStartDate = dayjs
+    .utc()
+    .startOf(selectedTimeView === "month" ? "month" : "isoWeek");
+  const initialEndDate = dayjs
+    .utc()
+    .endOf(selectedTimeView === "month" ? "month" : "isoWeek");
+  const intialPeriodDates = buildDates(initialStartDate, initialEndDate);
+  const [periodStartDate, setPeriodStartDate] =
+    useState<dayjs.Dayjs>(initialStartDate);
+  const [periodEndDate, setPeriodEndDate] =
+    useState<dayjs.Dayjs>(initialEndDate);
+  const [periodDates, setPeriodDates] =
+    useState<{ date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[]>(
+      intialPeriodDates
+    );
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
 
@@ -158,7 +207,9 @@ export default function ScheduleTab({
       throw new Error("No team selected");
     }
     const newSchedule = await validateSchedule(scheduleId, selectedTeamId);
-    setScheduleCampaign(newSchedule);
+    setScheduleCampaign(null);
+    setSchedulesValidated([...schedulesValidated, newSchedule]);
+    setBreaches([]);
   };
 
   //////////////////////////
@@ -223,58 +274,43 @@ export default function ScheduleTab({
         : selectedTimeView === "month"
         ? dayjs.utc().endOf("month")
         : dayjs.utc(); // Default to current time if neither "week" nor "month"
-    setCurrentPeriodStart(newPeriodStart);
-    setCurrentPeriodEnd(newPeriodEnd);
-    // const assigmentsNewPeriod = await getAssignmentsByDates(
-    //   selectedTeamId,
-    //   newPeriodStart,
-    //   newPeriodEnd
-    // );
-    // setAssignments(assigmentsNewPeriod);
+    setPeriodStartDate(newPeriodStart);
+    setPeriodEndDate(newPeriodEnd);
+    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
   };
 
   const handlePreviousPeriod = async () => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const newPeriodStart = currentPeriodStart.subtract(
+    const newPeriodStart = periodStartDate.subtract(
       1,
       selectedTimeView === "month" ? "month" : "week"
     );
-    const newPeriodEnd = currentPeriodEnd.subtract(
+    const newPeriodEnd = periodEndDate.subtract(
       1,
       selectedTimeView === "month" ? "month" : "week"
     );
-    setCurrentPeriodStart(newPeriodStart);
-    setCurrentPeriodEnd(newPeriodEnd);
-    // const assigmentsNewPeriod = await getAssignmentsByDates(
-    //   selectedTeamId,
-    //   newPeriodStart,
-    //   newPeriodEnd
-    // );
-    // setAssignments(assigmentsNewPeriod);
+    setPeriodStartDate(newPeriodStart);
+    setPeriodEndDate(newPeriodEnd);
+    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
   };
 
   const handleNextPeriod = async () => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const newPeriodStart = currentPeriodStart.add(
+    const newPeriodStart = periodStartDate.add(
       1,
       selectedTimeView === "month" ? "month" : "week"
     );
-    const newPeriodEnd = currentPeriodEnd.add(
+    const newPeriodEnd = periodEndDate.add(
       1,
       selectedTimeView === "month" ? "month" : "week"
     );
-    setCurrentPeriodStart(newPeriodStart);
-    setCurrentPeriodEnd(newPeriodEnd);
-    // const assigmentsNewPeriod = await getAssignmentsByDates(
-    //   selectedTeamId,
-    //   newPeriodStart,
-    //   newPeriodEnd
-    // );
-    // setAssignments(assigmentsNewPeriod);
+    setPeriodStartDate(newPeriodStart);
+    setPeriodEndDate(newPeriodEnd);
+    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
   };
 
   const handleChangeSelectedTimeView = async (newSelectedTimeView: string) => {
@@ -284,23 +320,18 @@ export default function ScheduleTab({
       throw new Error("No team selected");
     }
     setSelectedTimeView(newSelectedTimeView);
-    let newPeriodStart = currentPeriodStart;
-    let newPeriodEnd = currentPeriodEnd;
+    let newPeriodStart = periodStartDate;
+    let newPeriodEnd = periodEndDate;
     if (newSelectedTimeView === "month") {
-      newPeriodStart = currentPeriodEnd.startOf("month");
-      newPeriodEnd = currentPeriodEnd.endOf("month");
+      newPeriodStart = periodEndDate.startOf("month");
+      newPeriodEnd = periodEndDate.endOf("month");
     } else if (newSelectedTimeView === "week") {
-      newPeriodStart = currentPeriodStart.startOf("isoWeek");
-      newPeriodEnd = currentPeriodStart.endOf("isoWeek");
+      newPeriodStart = periodStartDate.startOf("isoWeek");
+      newPeriodEnd = periodStartDate.endOf("isoWeek");
     }
-    setCurrentPeriodStart(currentPeriodStart.startOf("month"));
-    setCurrentPeriodEnd(currentPeriodEnd.endOf("month"));
-    // const assigmentsNewPeriod = await getAssignmentsByDates(
-    //   selectedTeamId,
-    //   newPeriodStart,
-    //   newPeriodEnd
-    // );
-    // setAssignments(assigmentsNewPeriod);
+    setPeriodStartDate(periodStartDate.startOf("month"));
+    setPeriodEndDate(periodEndDate.endOf("month"));
+    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
   };
 
   //////////////////////////
@@ -391,6 +422,16 @@ export default function ScheduleTab({
     fetchScheduleLHSData();
   }, [selectedTeamId]);
 
+  useEffect(() => {
+    setPeriodDates(buildDates(periodStartDate, periodEndDate));
+  }, [
+    periodStartDate,
+    periodEndDate,
+    buildDates,
+    scheduleCampaign,
+    schedulesValidated,
+  ]);
+
   const lhsTabContent = {
     Breaches: <BreachList lng={lng} breaches={breaches} />,
     "Quick staffing": scheduleCampaign ? (
@@ -418,7 +459,10 @@ export default function ScheduleTab({
         lng={lng}
         workers={workers.filter((w) => !w.deleted)}
         shifts={shifts.filter((s) => !s.deleted)}
-        schedules={[scheduleCampaign as ScheduleT]} // XXX CHANGE TO LIST OF SCHEDULES XXX
+        schedules={[
+          ...(scheduleCampaign ? [scheduleCampaign] : []),
+          ...schedulesValidated,
+        ]}
         assignments={assignments}
         selectedCell={selectedCell}
         selectedDisplay={selectedDisplay}
@@ -438,12 +482,12 @@ export default function ScheduleTab({
         ) : (
           <ScheduleNavBar
             lng={lng}
-            currentPeriodStart={currentPeriodStart}
-            currentPeriodEnd={currentPeriodEnd}
+            currentPeriodStart={periodStartDate}
+            currentPeriodEnd={periodEndDate}
             selectedTimeView={selectedTimeView}
             selectedDisplay={selectedDisplay}
             showBreaches={showBreaches}
-            schedule={scheduleCampaign}
+            scheduleCampaign={scheduleCampaign}
             handleToday={handleToday}
             handlePreviousPeriod={handlePreviousPeriod}
             handleNextPeriod={handleNextPeriod}
@@ -462,7 +506,7 @@ export default function ScheduleTab({
           />
           {isLoadingAssignments ? (
             <ScheduleTableSkeleton />
-          ) : assignments.length === 0 || !scheduleCampaign ? (
+          ) : assignments.length === 0 && !scheduleCampaign ? (
             <Box
               sx={{
                 margin: 2,
@@ -484,9 +528,8 @@ export default function ScheduleTab({
             <ScheduleDisplay
               lng={lng}
               teamId={selectedTeamId as string}
-              schedule={scheduleCampaign as ScheduleT}
-              startDate={currentPeriodStart}
-              endDate={currentPeriodEnd}
+              scheduleCampaign={scheduleCampaign as ScheduleT}
+              periodDates={periodDates}
               assignments={assignments}
               dailyShiftDemands={dailyShiftDemands}
               breaches={breaches}

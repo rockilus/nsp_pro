@@ -149,7 +149,8 @@ export default function CampaignTab({
         <div>
           <ScheduleSelector
             lng={lng}
-            schedule={scheduleCampaign}
+            scheduleCampaign={scheduleCampaign}
+            schedulesValidated={schedulesValidated}
             handleUpdateSchedule={handleUpdateSchedule}
           />
           <div className="divider" />

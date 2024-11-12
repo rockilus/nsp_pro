@@ -17,14 +17,14 @@ import {
   SolveStatusColors,
 } from "../../../constants/constants";
 
-export default function ScheduleWIP({
+export default function CampaignInfo({
   lng,
-  schedule,
+  scheduleCampaign,
   handleSolveSchedule,
   handleValidateSchedule,
 }: {
   lng: string;
-  schedule: ScheduleT;
+  scheduleCampaign: ScheduleT;
   handleSolveSchedule: (scheduleId: string) => void;
   handleValidateSchedule: (scheduleId: string) => void;
 }) {
@@ -36,7 +36,7 @@ export default function ScheduleWIP({
 
   const handleSolve = async () => {
     setIsSolving(true);
-    await handleSolveSchedule(schedule.id);
+    await handleSolveSchedule(scheduleCampaign.id);
     setIsSolving(false);
   };
 
@@ -91,13 +91,16 @@ export default function ScheduleWIP({
             fontWeight: 550,
           }}
         >
-          {getCampaignPeriodLabel(schedule.startDate, schedule.endDate)}
+          {getCampaignPeriodLabel(
+            scheduleCampaign.startDate,
+            scheduleCampaign.endDate
+          )}
         </span>
       </div>
       <Chip
-        label={GetStatusLabel(lng, schedule.solveStatus)}
+        label={GetStatusLabel(lng, scheduleCampaign.solveStatus)}
         color={
-          (SolveStatusColors[schedule.solveStatus] as
+          (SolveStatusColors[scheduleCampaign.solveStatus] as
             | "default"
             | "success"
             | "error"
@@ -146,7 +149,7 @@ export default function ScheduleWIP({
       )}
       <ScheduleDialogValidate
         lng={lng}
-        scheduleId={schedule.id}
+        scheduleCampaign={scheduleCampaign}
         handleValidateSchedule={handleValidateSchedule}
       />
     </div>

@@ -5,12 +5,12 @@ from core import Schedule, ScheduleSolveStatus, ScheduleStatus
 from scripts.setup_database import constraint_build_db, schedule_db
 
 
-def get_schedule_wip(schedules: List[Schedule], team_id: str) -> Schedule:
-    schedule_wip = next(
+def get_schedule_campaign(schedules: List[Schedule], team_id: str) -> Schedule:
+    schedule_campaign = next(
         (s for s in schedules if s.status == ScheduleStatus.CAMPAIGN), None
     )
-    if schedule_wip:
-        return schedule_wip
+    if schedule_campaign:
+        return schedule_campaign
     last_date = max(s.end_date for s in schedules) if schedules else None
     today_date = date.today()
     start_date = (

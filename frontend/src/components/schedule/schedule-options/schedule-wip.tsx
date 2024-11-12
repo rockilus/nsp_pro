@@ -27,12 +27,12 @@ dayjs.extend(utc);
 
 export default function ScheduleWIP({
   lng,
-  schedule,
+  scheduleCampaign,
   handleSolveSchedule,
   handleValidateSchedule,
 }: {
   lng: string;
-  schedule: ScheduleT;
+  scheduleCampaign: ScheduleT;
   handleSolveSchedule: (scheduleId: string) => void;
   handleValidateSchedule: (scheduleId: string) => void;
 }) {
@@ -42,7 +42,7 @@ export default function ScheduleWIP({
 
   const handleSolve = async () => {
     setIsSolving(true);
-    await handleSolveSchedule(schedule.id);
+    await handleSolveSchedule(scheduleCampaign.id);
     setIsSolving(false);
   };
 
@@ -53,19 +53,19 @@ export default function ScheduleWIP({
           <TableBody>
             <TableRowScheduleWIP
               name={t("start")}
-              content={schedule.startDate.format("D MMM YYYY")}
+              content={scheduleCampaign.startDate.format("D MMM YYYY")}
             />
             <TableRowScheduleWIP
               name={t("end")}
-              content={schedule.endDate.format("D MMM YYYY")}
+              content={scheduleCampaign.endDate.format("D MMM YYYY")}
             />
             <TableRowScheduleWIP
               name={t("status")}
               content={
                 <Chip
-                  label={GetStatusLabel(lng, schedule.solveStatus)}
+                  label={GetStatusLabel(lng, scheduleCampaign.solveStatus)}
                   color={
-                    (SolveStatusColors[schedule.solveStatus] as
+                    (SolveStatusColors[scheduleCampaign.solveStatus] as
                       | "default"
                       | "success"
                       | "error"
@@ -123,7 +123,7 @@ export default function ScheduleWIP({
           {/* <ScheduleDialogDelete team={team} scheduleId={schedule.id} /> */}
           <ScheduleDialogValidate
             lng={lng}
-            scheduleId={schedule.id}
+            scheduleCampaign={scheduleCampaign}
             handleValidateSchedule={handleValidateSchedule}
           />
         </Box>

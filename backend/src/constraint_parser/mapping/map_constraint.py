@@ -126,7 +126,7 @@ class MapConstaint:
                 dates_cstr = list(set(coord_days).intersection(dates_worker_set))
                 for d in dates_cstr:
                     constraint_vars.append((w.id, d.isoformat(), s.id))
-            constraints_vars.append(constraint_vars)
+                constraints_vars.append(constraint_vars)
 
         return ConstraintSeq(
             id=cba.id,
