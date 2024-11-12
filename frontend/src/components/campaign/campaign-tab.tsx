@@ -34,7 +34,10 @@ export default function CampaignTab({
   const { t } = useTranslation(lng, "campaign-page");
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [schedule, setSchedule] = useState<ScheduleT | null>(null);
+  const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
+    null
+  );
+  const [schedulesValidated, setSchedulesValidated] = useState<ScheduleT[]>([]);
   const [coverages, setCoverages] = useState<CoverageT[]>([]);
   const [constraints, setConstraints] = useState<ConstraintT[]>([]);
   const [coverageSelectors, setCoverageSelectors] = useState<
@@ -50,12 +53,12 @@ export default function CampaignTab({
       throw new Error("Team not selected");
     }
     const newSchedule = await addSchedule(selectedTeamId);
-    setSchedule(newSchedule);
+    setScheduleCampaign(newSchedule);
   };
 
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
     const newSchedule = await updateSchedule(schedule);
-    setSchedule(newSchedule);
+    setScheduleCampaign(newSchedule);
   };
 
   //////////////////////////
@@ -111,17 +114,25 @@ export default function CampaignTab({
       setIsLoading(true);
       if (selectedTeamId) {
         const out: {
-          schedule: ScheduleT;
+          scheduleCampaign: ScheduleT | null;
+          schedulesValidated: ScheduleT[];
           coverages: CoverageT[];
           constraints: ConstraintT[];
           coverageSelectors: CoverageSelectorT[];
-        } | null = await getCampaignTabData(selectedTeamId);
+        } = await getCampaignTabData(selectedTeamId);
         if (out) {
-          const { schedule, coverages, constraints, coverageSelectors } = out;
-          setSchedule(schedule);
-          setCoverages(coverages);
-          setConstraints(constraints);
-          setCoverageSelectors(coverageSelectors);
+          const {
+            scheduleCampaign: fetchedScheduleCampaign,
+            schedulesValidated: fetchedSchedulesValidated,
+            coverages: fetchedCoverages,
+            constraints: fetchedConstraints,
+            coverageSelectors: fetchedCoverageSelectors,
+          } = out;
+          setScheduleCampaign(fetchedScheduleCampaign);
+          setSchedulesValidated(fetchedSchedulesValidated);
+          setCoverages(fetchedCoverages);
+          setConstraints(fetchedConstraints);
+          setCoverageSelectors(fetchedCoverageSelectors);
         }
       }
       setIsLoading(false);
@@ -134,17 +145,17 @@ export default function CampaignTab({
     <div className="tab-container">
       {isLoading ? (
         <TablesSkeleton numTables={3} numInternalRows={3} />
-      ) : schedule ? (
+      ) : scheduleCampaign ? (
         <div>
           <ScheduleSelector
             lng={lng}
-            schedule={schedule}
+            schedule={scheduleCampaign}
             handleUpdateSchedule={handleUpdateSchedule}
           />
           <div className="divider" />
           <CoverageCampaignConfig
             lng={lng}
-            schedule={schedule}
+            schedule={scheduleCampaign}
             coverageSelectors={coverageSelectors}
             coverages={coverages}
             handleAddCoverageSelector={handleAddCoverageSelector}
@@ -154,7 +165,7 @@ export default function CampaignTab({
           <div className="divider" />
           <ConstraintSelector
             lng={lng}
-            schedule={schedule}
+            schedule={scheduleCampaign}
             constraints={constraints}
             handleUpdateSchedule={handleUpdateSchedule}
           />
