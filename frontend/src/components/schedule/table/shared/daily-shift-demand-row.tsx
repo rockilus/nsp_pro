@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
@@ -6,6 +6,7 @@ import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 // Components
 import DailyShiftDemandCell from "./daily-shift-demand-cell";
+import { countShifts, countStaffings } from "./assignment-count-methods";
 // Styles
 import "./daily-shift-demand-row.css";
 // Types
@@ -44,6 +45,32 @@ export default function DailyShiftDemandRow({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
+  const [counts, setCounts] = useState<{
+    [date: string]: {
+      [id: string]: {
+        actual: number;
+        target: number;
+        staffingTotal: number;
+      };
+      total: {
+        actual: number;
+        target: number;
+        staffingTotal: number;
+      };
+    };
+  }>({});
+
+  useEffect(() => {
+    console.log("DailyShiftDemandRow useEffect called");
+    const newCounts =
+      selectedDisplay === "shift"
+        ? countShifts(shifts, assignments, dailyShiftDemands, periodDates)
+        : countStaffings(shifts, assignments, dailyShiftDemands, periodDates);
+    console.log("newCounts", newCounts);
+
+    setCounts(newCounts);
+  }, [shifts, assignments, dailyShiftDemands, periodDates, selectedDisplay]);
+
   return (
     <TableRow
       style={{
@@ -68,11 +95,9 @@ export default function DailyShiftDemandRow({
         </div>
       </TableCell>
       {periodDates.map((pDate, dateIndex) => {
+        const dateStr = pDate.date.format("YYYY-MM-DD");
         const dsdDate: DailyShiftDemandT[] = dailyShiftDemands.filter((dsd) =>
           dsd.date.isSame(pDate.date, "day")
-        );
-        const aDate: AssignmentT[] = assignments.filter((a) =>
-          a.date.isSame(pDate.date, "day")
         );
         return (
           <DailyShiftDemandCell
@@ -82,9 +107,13 @@ export default function DailyShiftDemandRow({
             teamId={teamId}
             scheduleCampaign={scheduleCampaign}
             periodDate={pDate}
-            assignments={aDate}
             dailyShiftDemands={dsdDate}
             shifts={shifts}
+            counts={
+              counts[dateStr] || {
+                total: { actual: 0, target: 0, staffingTotal: 0 },
+              }
+            }
             handleCreateDSD={handleCreateDSD}
             handleUpdateDSD={handleUpdateDSD}
             handleDeleteDSD={handleDeleteDSD}

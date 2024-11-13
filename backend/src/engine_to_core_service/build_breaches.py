@@ -445,7 +445,9 @@ def _build_daily_shift_demand_breaches(
         dates_dsds = list(set(dsd.date for dsd in dsds))
         for d in dates_dsds:
             dsds_d = [dsd for dsd in dsds if dsd.date == d]
-            count_target = sum(dsd.count for dsd in dsds_d)
+            count_target = sum(stf.staffing for stf in s.staffing) * sum(
+                dsd.count for dsd in dsds_d
+            )
             count_actual = sum(
                 1 for a in assignments if a.date == d and a.shift_id == s.id
             )
