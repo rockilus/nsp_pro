@@ -57,8 +57,6 @@ export default function DailyShiftDemandCell({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  console.log("counts", counts);
-
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );

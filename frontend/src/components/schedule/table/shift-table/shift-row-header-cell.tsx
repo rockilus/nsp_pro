@@ -2,7 +2,7 @@ import React from "react";
 // MUI
 import TableCell from "@mui/material/TableCell";
 // Components
-import { countShiftsTotalPeriod } from "../shared/shift-count-methods";
+import { countShiftsTotalPeriod } from "../shared/assignment-count-methods";
 // Styles
 import "./shift-row-header-cell.css";
 // Types

@@ -6,7 +6,7 @@ import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 // Components
 import DailyShiftDemandCell from "./daily-shift-demand-cell";
-import { countShifts, countStaffings } from "./shift-count-methods";
+import { countShifts, countStaffings } from "./assignment-count-methods";
 // Styles
 import "./daily-shift-demand-row.css";
 // Types

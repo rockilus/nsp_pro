@@ -13,8 +13,6 @@ export const countShifts = (
   dsds: DailyShiftDemandT[],
   periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[]
 ) => {
-  console.log("countShifts called");
-
   const out: {
     [date: string]: {
       [id: string]: {
@@ -100,7 +98,6 @@ export const countShiftsTotalPeriod = (
   startDate: dayjs.Dayjs,
   endDate: dayjs.Dayjs
 ) => {
-  console.log("countShifts called");
   const shiftsWorkNotDeleted = shifts.filter(
     (s) =>
       [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted
