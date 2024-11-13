@@ -61,13 +61,10 @@ export default function DailyShiftDemandRow({
   }>({});
 
   useEffect(() => {
-    console.log("DailyShiftDemandRow useEffect called");
     const newCounts =
       selectedDisplay === "shift"
         ? countShifts(shifts, assignments, dailyShiftDemands, periodDates)
         : countStaffings(shifts, assignments, dailyShiftDemands, periodDates);
-    console.log("newCounts", newCounts);
-
     setCounts(newCounts);
   }, [shifts, assignments, dailyShiftDemands, periodDates, selectedDisplay]);
 
