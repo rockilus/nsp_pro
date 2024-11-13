@@ -10,7 +10,6 @@ import "./daily-shift-demand-cell.css";
 import "../../../../styles/text-styles.css";
 // Types
 import {
-  AssignmentT,
   DailyShiftDemandT,
   DSDSourceType,
   ScheduleT,
@@ -25,10 +24,10 @@ export default function DailyShiftDemandCell({
   selectedDisplay,
   teamId,
   scheduleCampaign,
-  periodDate: periodDate,
-  assignments,
+  periodDate,
   dailyShiftDemands,
   shifts,
+  counts,
   handleCreateDSD,
   handleUpdateDSD,
   handleDeleteDSD,
@@ -38,55 +37,35 @@ export default function DailyShiftDemandCell({
   teamId: string;
   scheduleCampaign: ScheduleT | null;
   periodDate: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null };
-  assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
   shifts: ShiftT[];
+  counts: {
+    [id: string]: {
+      actual: number;
+      target: number;
+      staffingTotal: number;
+    };
+    total: {
+      actual: number;
+      target: number;
+      staffingTotal: number;
+    };
+  };
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleDeleteDSD: (dsdId: string, teamId: string) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
+  console.log("counts", counts);
+
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );
   const [shiftsWorkNotDeleted, setShiftWorkNotDeleted] = useState<ShiftT[]>([]);
-  const [assignmentsWorkNotDeleted, setAssignmentsWorkNotDeleted] = useState<
-    AssignmentT[]
-  >([]);
-  const [dsdsWorkNotDeleted, setDsdsWorkNotDeleted] = useState<
-    DailyShiftDemandT[]
-  >([]);
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
-
-  // Create a shiftId to Shift map for efficient lookup
-  const shiftMap: { [key: string]: ShiftT } = shiftsWorkNotDeleted.reduce(
-    (map, shift) => {
-      map[shift.id] = shift;
-      return map;
-    },
-    {} as { [key: string]: ShiftT }
-  );
-
-  const actualTotal = assignmentsWorkNotDeleted.length;
-  const targetTotal =
-    selectedDisplay === "shift"
-      ? dsdsWorkNotDeleted.reduce((sum, dsd) => sum + dsd.count, 0)
-      : dsdsWorkNotDeleted.reduce((total, dsd) => {
-          const shift = shiftMap[dsd.shiftId];
-          if (shift && shift.staffing.length > 0) {
-            // Sum all staffing counts for this shift
-            const shiftStaffingTotal = shift.staffing.reduce(
-              (shiftTotal, staffingEntry) =>
-                shiftTotal + staffingEntry.staffing,
-              0
-            );
-            return total + shiftStaffingTotal * dsd.count;
-          }
-          return total;
-        }, 0);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -205,9 +184,11 @@ export default function DailyShiftDemandCell({
   const DSDPopoverButton = () => {
     return (
       <span
-        className={`dsd-stats-total ${actualTotal !== targetTotal && "breach"}`}
+        className={`dsd-stats-total ${
+          counts.total.actual !== counts.total.target && "breach"
+        }`}
       >
-        {`${actualTotal} / ${targetTotal}`}
+        {`${counts.total.actual} / ${counts.total.target}`}
       </span>
     );
   };
@@ -220,44 +201,27 @@ export default function DailyShiftDemandCell({
         </span>
         <div className="divider-popover" />
         {shiftsWorkNotDeleted.map((shift) => {
-          const assignmentsShift = assignments.filter(
-            (a) => a.shiftId === shift.id
-          );
-          const DSDsShift = dailyShiftDemands.filter(
-            (dsd) => dsd.shiftId === shift.id
-          );
-          const shiftStaffingTotal = shift.staffing.reduce(
-            (sum, staffingEntry) => sum + staffingEntry.staffing,
-            0
-          );
-
-          const actualNum = assignmentsShift.length;
-          const targetNum =
-            selectedDisplay === "shift"
-              ? DSDsShift.reduce((sum, dsd) => sum + dsd.count, 0)
-              : DSDsShift.reduce(
-                  (sum, dsd) => sum + dsd.count * shiftStaffingTotal,
-                  0
-                );
-
           return (
             <div key={shift.id} className="container-dsd-item">
               <div
                 className={`container-dsd-item-text ${
-                  actualNum !== targetNum && "breach"
+                  counts[shift.id].actual !== counts[shift.id].target &&
+                  "breach"
                 }`}
               >
                 <div className="shift-name">{shift.name}</div>
                 {selectedDisplay === "worker" && (
-                  <span className="dsd-stats staffing-count">{`(${shiftStaffingTotal})`}</span>
+                  <span className="dsd-stats staffing-count">{`(${
+                    counts[shift.id].staffingTotal
+                  })`}</span>
                 )}
                 <div className="container-dsd-stats">
                   <span className="dsd-stats dsd-stats-actual">
-                    {actualNum}
+                    {counts[shift.id].actual}
                   </span>
                   <span className="dsd-stats dsd-stats-slash">/</span>
                   <span className="dsd-stats dsd-stats-target">
-                    {targetNum}
+                    {counts[shift.id].target}
                   </span>
                 </div>
               </div>
@@ -279,17 +243,7 @@ export default function DailyShiftDemandCell({
         [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted
     );
     setShiftWorkNotDeleted(shiftWorkNotDeleted);
-    setAssignmentsWorkNotDeleted(
-      assignments.filter((a) =>
-        shiftWorkNotDeleted.some((s) => s.id === a.shiftId)
-      )
-    );
-    setDsdsWorkNotDeleted(
-      dailyShiftDemands.filter((dsd) =>
-        shiftWorkNotDeleted.some((s) => s.id === dsd.shiftId)
-      )
-    );
-  }, [shifts, assignments, dailyShiftDemands]);
+  }, [shifts]);
 
   return (
     <TableCell

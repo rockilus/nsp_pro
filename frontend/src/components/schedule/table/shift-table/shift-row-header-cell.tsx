@@ -1,6 +1,8 @@
 import React from "react";
 // MUI
 import TableCell from "@mui/material/TableCell";
+// Components
+import { countShiftsTotalPeriod } from "../shared/shift-count-methods";
 // Styles
 import "./shift-row-header-cell.css";
 // Types
@@ -22,24 +24,16 @@ export default function ShiftRowHeaderCell({
   dailyShiftDemands: DailyShiftDemandT[];
   scheduleCampaign: ScheduleT | null;
 }) {
-  const shiftCountActual = scheduleCampaign
-    ? assignments.filter(
-        (assignment) =>
-          assignment.shiftId === shift.id &&
-          assignment.date.isSameOrAfter(scheduleCampaign.startDate, "day") &&
-          assignment.date.isSameOrBefore(scheduleCampaign.endDate, "day")
-      ).length
-    : 0;
-  const shiftCountTarget = scheduleCampaign
-    ? dailyShiftDemands
-        .filter(
-          (dsd) =>
-            dsd.shiftId === shift.id &&
-            dsd.date.isSameOrAfter(scheduleCampaign.startDate, "day") &&
-            dsd.date.isSameOrBefore(scheduleCampaign.endDate, "day")
+  const { countActual: shiftCountActual, countTarget: shiftCountTarget } =
+    scheduleCampaign
+      ? countShiftsTotalPeriod(
+          [shift],
+          assignments,
+          dailyShiftDemands,
+          scheduleCampaign.startDate,
+          scheduleCampaign.endDate
         )
-        .reduce((sum, dsd) => sum + dsd.count, 0)
-    : 0;
+      : { countActual: 0, countTarget: 0 };
 
   return (
     <TableCell
