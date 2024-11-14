@@ -21,7 +21,6 @@ class AddRequest:
         self.model_config = model_config
 
     def add_requests(self, requests: List[Request], hard_to_soft: bool) -> None:
-        penalty = get_nested_value(self.model_config, ["penalties", "request", "soft"])
         for r in requests:
             c_variables: List[cp_model.IntVar] = [
                 self.variables[a] for a in r.assignments
@@ -30,16 +29,25 @@ class AddRequest:
                 if r.hard and not hard_to_soft:
                     self.model.Add(var == 0 if r.negative else var == 1)
                     continue
-                cstr_vars: List[cp_model.IntVar] = [var]
+                penalty = get_nested_value(
+                    self.model_config,
+                    ["penalties", "request", "hard" if r.hard else "soft"],
+                )
+                cstr_vars: List[cp_model.IntVar | cp_model._NotBooleanVariable] = [var]
+                if any(
+                    # pylint: disable=protected-access
+                    isinstance(var, cp_model._NotBooleanVariable)
+                    for var in cstr_vars
+                ):
+                    raise ValueError("Request constraints should be boolean variables")
                 var_name = build_var_name_constraint(
-                    r, cstr_vars, ObjectiveCategory.REQUEST
+                    r, cstr_vars, ObjectiveCategory.REQUEST  # type: ignore
                 )
                 # pylint: disable=R0801
                 lit = self.model.NewBoolVar(var_name)
                 if r.negative:
-                    self.model.Add(cstr_vars == lit)
-                else:
-                    cstr_vars.append(lit)
-                    self.model.AddBoolOr(cstr_vars)
+                    cstr_vars = [var.Not() for var in cstr_vars]
+                cstr_vars.append(lit)
+                self.model.AddBoolOr(cstr_vars)
                 self.obj.bool_vars.append(lit)
                 self.obj.bool_coeffs.append(penalty)

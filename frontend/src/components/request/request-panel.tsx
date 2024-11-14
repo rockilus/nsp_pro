@@ -3,16 +3,19 @@ import dayjs from "dayjs";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import Select from "@mui/material/Select";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+// Styles
+import "./request-panel.css";
 // Types
 import { RequestT, RequestStatus } from "../../types/request";
 import { ShiftT } from "../../types/shift";
@@ -51,6 +54,7 @@ export default function RequestPanel({
         requestState.startDate === request.startDate &&
         requestState.endDate === request.endDate &&
         requestState.shiftId === request.shiftId &&
+        requestState.negative === request.negative &&
         requestState.hard === request.hard
       ) {
         handleClose();
@@ -82,7 +86,7 @@ export default function RequestPanel({
 
   const selectWorker = () => {
     return (
-      <Box sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}>
+      <div className="select-container">
         <FormControl fullWidth>
           <Select
             value={requestState.workerId}
@@ -101,12 +105,12 @@ export default function RequestPanel({
             ))}
           </Select>
         </FormControl>
-      </Box>
+      </div>
     );
   };
   const selectShift = () => {
     return (
-      <Box sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}>
+      <div className="select-container">
         <FormControl fullWidth>
           <Select
             value={requestState.shiftId}
@@ -125,38 +129,17 @@ export default function RequestPanel({
             ))}
           </Select>
         </FormControl>
-      </Box>
+      </div>
     );
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          width: "100%",
-          marginBottom: 1,
-        }}
-      >
+    <div className="request-panel-container">
+      <div className="variable-input-container">
         <PeopleAltIcon sx={{ marginLeft: 2, marginRight: 1 }} />
         {selectWorker()}
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          width: "100%",
-        }}
-      >
+      </div>
+      <div className="variable-input-param-container">
         <Checkbox
           checked={dateRange}
           onChange={handleSelectDateRange}
@@ -164,18 +147,10 @@ export default function RequestPanel({
           sx={{ marginLeft: "49px", height: "30px", width: "30px" }}
         />
         <Typography sx={{ fontSize: "0.8rem" }}>{t("date_range")}</Typography>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          width: "100%",
-          marginBottom: 1,
-        }}
-      >
+      </div>
+      <div className="variable-input-container">
         <AccessTimeIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-        <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
+        <div className="date-pickers-container">
           <DatePicker
             minDate={dayjs.utc().startOf("day")}
             sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}
@@ -210,29 +185,52 @@ export default function RequestPanel({
               }
             />
           )}
-        </Box>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          width: "100%",
-          marginBottom: 1,
-        }}
-      >
+        </div>
+      </div>
+      <div className="variable-input-param-container">
+        <ToggleButtonGroup
+          color="primary"
+          value={requestState.negative}
+          exclusive
+          onChange={(event, value) =>
+            setRequestState({ ...requestState, negative: value })
+          }
+          aria-label="Platform"
+        >
+          <ToggleButton
+            value={false}
+            sx={{
+              marginTop: "5px",
+              marginBottom: "5px",
+              marginLeft: "56px",
+              textTransform: "none",
+              height: "30px",
+              width: "105px",
+              fontSize: "0.8rem",
+            }}
+          >
+            {t("work")}
+          </ToggleButton>
+          <ToggleButton
+            value={true}
+            sx={{
+              marginTop: "5px",
+              marginBottom: "5px",
+              textTransform: "none",
+              height: "30px",
+              width: "105px",
+              fontSize: "0.8rem",
+            }}
+          >
+            {t("doesnt_work")}
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </div>
+      <div className="variable-input-container">
         <WorkIcon sx={{ marginLeft: 2, marginRight: 1 }} />
         {selectShift()}
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          width: "100%",
-        }}
-      >
+      </div>
+      <div className="save-button-container">
         <Button
           variant="contained"
           color="primary"
@@ -241,7 +239,7 @@ export default function RequestPanel({
         >
           {t("save")}
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

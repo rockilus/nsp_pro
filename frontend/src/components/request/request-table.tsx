@@ -34,6 +34,7 @@ export default function RequestTable({
   const { t } = useTranslation(lng, "request-page");
 
   const requestTableFields: Record<string, string>[] = [
+    { name: "negative", label: "" },
     { name: "workerId", label: t("worker") },
     { name: "shiftId", label: t("shift") },
     { name: "date", label: t("date") },

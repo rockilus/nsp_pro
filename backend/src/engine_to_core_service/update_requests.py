@@ -20,9 +20,15 @@ def update_requests_and_build_request_breaches(
             and a.date in dates
             and a.shift_id == r.shift_id
         ]
-        if len(a_filtered) < len(dates):
-            r.status = RequestStatus.REJECTED
+        if r.negative:
+            if len(a_filtered) > 0:
+                r.status = RequestStatus.REJECTED
+            else:
+                r.status = RequestStatus.APPROVED
         else:
-            r.status = RequestStatus.APPROVED
+            if len(a_filtered) < len(dates):
+                r.status = RequestStatus.REJECTED
+            else:
+                r.status = RequestStatus.APPROVED
         out.append(r)
     return out

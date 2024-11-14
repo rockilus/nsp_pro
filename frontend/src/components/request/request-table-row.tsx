@@ -2,14 +2,19 @@ import dayjs from "dayjs";
 import React, { ReactElement, useState } from "react";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import BlockIcon from "@mui/icons-material/Block";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import IconButton from "@mui/material/IconButton";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
+import TaskAltIcon from "@mui/icons-material/TaskAlt";
 // Components
 import PopoverAnchorElBelow from "../inputs/popover-anchor-el-below";
 import RequestPanel from "./request-panel";
@@ -47,6 +52,14 @@ export default function RequestTableRow({
     { name: RequestStatus.APPROVED, label: t("approved") },
     { name: RequestStatus.REJECTED, label: t("rejected") },
   ];
+
+  const handleToggleNegative = async () => {
+    const updatedRequest: RequestT = {
+      ...request,
+      negative: !request.negative,
+    };
+    handleUpdateRequest(updatedRequest);
+  };
 
   const handleToggleHard = async (request: RequestT) => {
     const updatedRequest: RequestT = {
@@ -120,31 +133,46 @@ export default function RequestTableRow({
       className={`request-row ${request.active ? "active" : "inactive"}`}
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
-      {requestTableFields.map((field, index) => (
-        <TableCell key={index} sx={{ paddingY: 0 }}>
-          {(() => {
-            if (field.name === "workerId") {
-              return getWorkerName(request.workerId);
-            } else if (field.name === "date") {
-              if (request.startDate.isSame(request.endDate, "day")) {
-                return formatDate(request.startDate);
-              } else {
-                return `${formatDate(request.startDate)} - ${formatDate(
-                  request.endDate
-                )}`;
+      <TableCell sx={{ paddingY: 0 }}>
+        <IconButton
+          size="small"
+          aria-label="add"
+          onClick={handleToggleNegative}
+        >
+          {request.negative ? (
+            <BlockIcon sx={{ color: "darkgrey" }} />
+          ) : (
+            <CheckCircleOutlineIcon sx={{ color: "darkgrey" }} />
+          )}
+        </IconButton>
+      </TableCell>
+      {requestTableFields
+        .filter((rtf) => rtf.name !== "negative")
+        .map((field, index) => (
+          <TableCell key={index} sx={{ paddingY: 0 }}>
+            {(() => {
+              if (field.name === "workerId") {
+                return getWorkerName(request.workerId);
+              } else if (field.name === "date") {
+                if (request.startDate.isSame(request.endDate, "day")) {
+                  return formatDate(request.startDate);
+                } else {
+                  return `${formatDate(request.startDate)} - ${formatDate(
+                    request.endDate
+                  )}`;
+                }
+              } else if (field.name === "shiftId") {
+                return getShiftName(request.shiftId);
+              } else if (field.name === "hard") {
+                return HardSoftButton(lng, request.hard, () =>
+                  handleToggleHard(request)
+                );
+              } else if (field.name === "status") {
+                return getRequestStatus(request.status);
               }
-            } else if (field.name === "shiftId") {
-              return getShiftName(request.shiftId);
-            } else if (field.name === "hard") {
-              return HardSoftButton(lng, request.hard, () =>
-                handleToggleHard(request)
-              );
-            } else if (field.name === "status") {
-              return getRequestStatus(request.status);
-            }
-          })()}
-        </TableCell>
-      ))}
+            })()}
+          </TableCell>
+        ))}
       <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>
         <Box sx={{ display: "flex" }}>
           <PopoverAnchorElBelow

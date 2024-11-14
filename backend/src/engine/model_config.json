@@ -40,7 +40,7 @@
             "hard": 10
         },
         "request": {
-            "hard": 1,
+            "hard": 10,
             "soft": 1
         }
     },

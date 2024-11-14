@@ -56,8 +56,12 @@ class RequestDB:
         try:
             # pylint: disable=no-member
             requests = RequestDocument.objects.filter(  # type: ignore
-                start_date__gte=start_date,
-                end_date__lte=end_date,
+                start_date__gte=datetime.combine(
+                    start_date, time.min, timezone.utc
+                ).timestamp(),
+                end_date__lte=datetime.combine(
+                    end_date, time.min, timezone.utc
+                ).timestamp(),
                 worker__in=w_docs,
             )
         except Exception as e:
