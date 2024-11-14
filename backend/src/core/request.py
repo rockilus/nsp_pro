@@ -14,12 +14,5 @@ class Request:
 
 
 @dataclass
-class RequestAugmented:
-    id: str
-    worker_id: str
-    start_date: date
-    end_date: date
-    shift_id: str
-    hard: bool
-    status: str
+class RequestAugmented(Request):
     active: bool
