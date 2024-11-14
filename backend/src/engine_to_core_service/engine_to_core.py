@@ -39,6 +39,7 @@ def engine_to_core(
         daily_shift_demand,
         assignments,
         constraints,
+        requests,
         outputs.breaches,
     )
     schedule = update_schedule_status(schedule, outputs.is_solution, breaches)
