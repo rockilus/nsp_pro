@@ -1,18 +1,28 @@
 from mongoengine import Document
-from mongoengine.fields import BooleanField, DateTimeField, ReferenceField, StringField
+from mongoengine.fields import (
+    BooleanField,
+    FloatField,
+    IntField,
+    ReferenceField,
+    StringField,
+)
+
+from core import RequestStatus
 
 
 class Request(Document):
     meta = {"collection": "requests"}
 
     id = StringField(primary_key=True, required=True)
+    team = ReferenceField("Team", required=True)
     worker = ReferenceField("Worker", required=True)
-    start_date = DateTimeField(required=True)
-    end_date = DateTimeField(required=True)
+    start_date = FloatField(required=True)
+    end_date = FloatField(required=True)
     shift = ReferenceField("Shift", required=True)
+    negative = BooleanField(required=True)
     hard = BooleanField(required=True)
-    status = StringField(
+    status = IntField(
         required=True,
-        choices=["pending", "approved", "rejected", "disabled"],
-        default="pending",
+        choices=[e.value for e in RequestStatus],
+        default=RequestStatus.PENDING.value,
     )

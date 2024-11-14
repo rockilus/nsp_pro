@@ -14,6 +14,7 @@ from core import (
     ConstraintSum,
     DailyShiftDemand,
     ObjectiveCategory,
+    Request,
     Schedule,
     Shift,
     ShiftType,
@@ -32,6 +33,7 @@ def build_breaches(
     daily_shift_demands: List[DailyShiftDemand],
     assignments: List[Assignment],
     constraints: Constraints,
+    requests: List[Request],
     breaches_engine: List[BreachEngine],
 ) -> List[Breach]:
     breaches = _parse_breaches_engine(schedule, breaches_engine)
@@ -41,6 +43,7 @@ def build_breaches(
             shifts,
             assignments,
             constraints,
+            requests,
             breach,
         )
     breaches += _build_daily_shift_demand_breaches(
@@ -82,6 +85,7 @@ def _build_breach_description(
     shifts: List[Shift],
     assignments: List[Assignment],
     constraints: Constraints,
+    requests: List[Request],
     breach: Breach,
 ) -> str:
     if breach.objective_category == ObjectiveCategory.CONSTRAINT:
@@ -126,6 +130,7 @@ def _build_breach_description(
             workers,
             shifts,
             assignments,
+            requests,
             breach,
         )
     if breach.objective_category in [
@@ -326,32 +331,47 @@ def _build_description_breach_request(
     workers: List[Worker],
     shifts: List[Shift],
     assignments: List[Assignment],
+    requests: List[Request],
     breach: Breach,
 ) -> str:
+    request = next((r for r in requests if r.id == breach.objective_id), None)
     worker = next((w for w in workers if w.id == breach.variables[0].worker_id), None)
     dates = list(set(v.date for v in breach.variables))
     start_date, end_date = min(dates), max(dates)
     shift = next((s for s in shifts if s.id == breach.variables[0].shift_id), None)
-    if worker is None or shift is None:
-        return "Unknown worker or shift"
+    if request is None or worker is None or shift is None:
+        return "Unknown request, worker or shift"
     shift_actual_ids = set(
         a.shift_id for a in assignments if a.worker_id == worker.id and a.date in dates
     )
     shifts_assigned = [s for s in shifts if s.id in shift_actual_ids]
     shifts_breach_names = [s.name for s in shifts_assigned if s.id != shift.id]
-    string_list = [
-        worker.name,
-        "requested",
-        shift.name,
-        "on",
-        (
-            dates[0].strftime("%b %d")
-            if len(dates) == 1
-            else f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}"
-        ),
-        "but works",
-        " ".join(shifts_breach_names),
-    ]
+    if request.negative:
+        string_list = [
+            worker.name,
+            "requested not to work",
+            shift.name,
+            "on",
+            (
+                dates[0].strftime("%b %d")
+                if len(dates) == 1
+                else f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}"
+            ),
+        ]
+    else:
+        string_list = [
+            worker.name,
+            "requested",
+            shift.name,
+            "on",
+            (
+                dates[0].strftime("%b %d")
+                if len(dates) == 1
+                else f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}"
+            ),
+            "but works",
+            " ".join(shifts_breach_names),
+        ]
     return " ".join(string_list)
 
 

@@ -16,7 +16,7 @@ import {
   ScheduleT,
   ScheduleStatus,
 } from "../../../../types/schedule";
-import { RequestT } from "../../../../types/request";
+import { RequestT, RequestStatus } from "../../../../types/request";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -63,11 +63,15 @@ export default function WorkerCell({
       assignment.fixed;
     const breachHard =
       breaches.some((b) => b.hardToSoft) ||
-      requests.some((r) => r.hard && r.status === "rejected" && r.active);
+      requests.some(
+        (r) => r.hard && r.status === RequestStatus.REJECTED && r.active
+      );
     const breachSoft =
       !breachHard &&
       (breaches.some((b) => !b.hardToSoft) ||
-        requests.some((r) => !r.hard && r.status === "rejected" && r.active));
+        requests.some(
+          (r) => !r.hard && r.status === RequestStatus.REJECTED && r.active
+        ));
     return (
       <div
         className={`assignment-div-container ${

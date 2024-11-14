@@ -21,6 +21,7 @@ class ShiftDemand:
 class Request:
     id: str
     assignments: List[Tuple[str, str, str]]
+    negative: bool
     hard: bool
 
 

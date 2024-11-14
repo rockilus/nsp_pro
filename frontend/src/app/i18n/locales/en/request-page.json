@@ -2,6 +2,7 @@
     "approved": "Approved",
     "date": "Date",
     "date_range": "Date range",
+    "doesnt_work": "Doesn't work",
     "new_request": "New request",
     "no": "No",
     "no_requests": "No requests",
@@ -13,5 +14,6 @@
     "shift": "Shift",
     "status": "Status",
     "type": "Type",
+    "work": "Work",
     "worker": "Worker"
 }

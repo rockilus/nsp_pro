@@ -1,12 +1,12 @@
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, time, timezone
 from typing import List
 
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
-from core import Request, RequestAugmented
+from core import Request, RequestAugmented, RequestStatus
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -110,6 +110,12 @@ def core_to_msg_request_augmented(request: RequestAugmented) -> RequestMessage:
     except Exception as e:
         log_info("Failed to convert Request to dictionary")
         raise MessageTypeError(str(e)) from e
+    data["start_date"] = datetime.combine(
+        request.start_date, time.min, tzinfo=timezone.utc
+    ).timestamp()
+    data["end_date"] = datetime.combine(
+        request.end_date, time.min, tzinfo=timezone.utc
+    ).timestamp()
     as_dict = humps.camelize(data)
     validator = TypeAdapter(RequestMessage)
     try:
@@ -124,12 +130,13 @@ def core_to_msg_request_augmented(request: RequestAugmented) -> RequestMessage:
 def msg_to_core_request(msg: RequestMessage) -> Request:
     # pylint: disable=R0801
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["start_date"] = datetime.combine(
-        data_snake["start_date"], datetime.min.time()
-    )
-    data_snake["end_date"] = datetime.combine(
-        data_snake["end_date"], datetime.min.time()
-    )
+    data_snake["start_date"] = datetime.fromtimestamp(
+        data_snake["start_date"], timezone.utc
+    ).date()
+    data_snake["end_date"] = datetime.fromtimestamp(
+        data_snake["end_date"], timezone.utc
+    ).date()
+    data_snake["status"] = RequestStatus(data_snake["status"])
     data_snake.pop("active")
     try:
         request = Request(**data_snake)

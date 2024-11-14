@@ -13,10 +13,18 @@ const apiUrlRequests = API_URL + "/requests";
 export const toRequestT = (data: any) => {
   const r: RequestT = {
     ...data,
-    startDate: dayjs.utc(data.startDate),
-    endDate: dayjs.utc(data.endDate),
+    startDate: dayjs.unix(data.startDate).utc(),
+    endDate: dayjs.unix(data.endDate).utc(),
   };
   return r;
+};
+
+export const fromRequestT = (data: RequestT) => {
+  return {
+    ...data,
+    startDate: data.startDate.unix(),
+    endDate: data.endDate.unix(),
+  };
 };
 
 //////////////////////////
@@ -29,7 +37,7 @@ export async function addRequest(request: RequestT, teamId: string) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(request),
+    body: JSON.stringify(fromRequestT(request)),
   };
   try {
     const response = await fetch(`${apiUrlRequests}/teams/${teamId}`, options);
@@ -72,7 +80,7 @@ export async function updateRequest(updatedRequest: RequestT, teamId: string) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(updatedRequest),
+    body: JSON.stringify(fromRequestT(updatedRequest)),
   };
   try {
     const response = await fetch(

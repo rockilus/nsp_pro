@@ -20,7 +20,7 @@ import {
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
 // Types
-import { RequestT } from "../../types/request";
+import { RequestT, RequestStatus } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 
@@ -105,32 +105,36 @@ export default function RequestTab({
         <div>
           <div className="title-container">
             <span className="title">{t("requests")}</span>
-            <PopoverRHS
-              title={t("new_request")}
-              buttonContent={<TableAddButton text={t("request")} />}
-              content={
-                <RequestPanel
-                  lng={lng}
-                  request={{
-                    id: "",
-                    workerId: "",
-                    startDate: dayjs.utc().startOf("day"),
-                    endDate: dayjs.utc().startOf("day"),
-                    shiftId: "",
-                    hard: true,
-                    status: "pending",
-                    active: true,
-                  }}
-                  workers={workers.filter((w) => !w.deleted)}
-                  shifts={shifts.filter((s) => !s.deleted)}
-                  handleClose={handleClosePopoverRhs}
-                  handleAddRequest={handleAddRequest}
-                  handleUpdateRequest={handleUpdateRequest}
-                />
-              }
-              open={popoverRhsOpen}
-              setOpen={setPopoverRhsOpen}
-            />
+            {selectedTeamId && (
+              <PopoverRHS
+                title={t("new_request")}
+                buttonContent={<TableAddButton text={t("request")} />}
+                content={
+                  <RequestPanel
+                    lng={lng}
+                    request={{
+                      id: "",
+                      teamId: selectedTeamId,
+                      workerId: "",
+                      startDate: dayjs.utc().startOf("day"),
+                      endDate: dayjs.utc().startOf("day"),
+                      shiftId: "",
+                      negative: false,
+                      hard: true,
+                      status: RequestStatus.PENDING,
+                      active: true,
+                    }}
+                    workers={workers.filter((w) => !w.deleted)}
+                    shifts={shifts.filter((s) => !s.deleted)}
+                    handleClose={handleClosePopoverRhs}
+                    handleAddRequest={handleAddRequest}
+                    handleUpdateRequest={handleUpdateRequest}
+                  />
+                }
+                open={popoverRhsOpen}
+                setOpen={setPopoverRhsOpen}
+              />
+            )}
           </div>
           <RequestTable
             lng={lng}
