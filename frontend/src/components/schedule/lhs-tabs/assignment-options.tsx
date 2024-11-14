@@ -19,6 +19,7 @@ import {
   ScheduleT,
   ScheduleStatus,
 } from "../../../types/schedule";
+import { RequestStatus } from "../../../types/request";
 
 export default function AssignmentOptions({
   lng,
@@ -298,11 +299,11 @@ export default function AssignmentOptions({
                     fontSize: "1.1rem",
                     marginLeft: "10px",
                     color:
-                      request.status === "approved"
+                      request.status === RequestStatus.APPROVED
                         ? "green"
-                        : request.status === "rejected"
+                        : request.status === RequestStatus.REJECTED
                         ? "red"
-                        : request.status === "pending"
+                        : request.status === RequestStatus.PENDING
                         ? "grey"
                         : "none",
                   }}

@@ -17,7 +17,7 @@ import { HardSoftButton } from "../buttons/hard-soft-button";
 // Styles
 import "./request-table-row.css";
 // Types
-import { RequestT } from "../../types/request";
+import { RequestT, RequestStatus } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 
@@ -42,10 +42,10 @@ export default function RequestTableRow({
 
   const [open, setOpen] = useState<boolean>(false);
 
-  const requestStatus: Record<string, string>[] = [
-    { name: "pending", label: t("pending") },
-    { name: "approved", label: t("approved") },
-    { name: "rejected", label: t("rejected") },
+  const requestStatus: { name: RequestStatus; label: string }[] = [
+    { name: RequestStatus.PENDING, label: t("pending") },
+    { name: RequestStatus.APPROVED, label: t("approved") },
+    { name: RequestStatus.REJECTED, label: t("rejected") },
   ];
 
   const handleToggleHard = async (request: RequestT) => {
@@ -89,20 +89,20 @@ export default function RequestTableRow({
     return dayjs(date).format("dddd, MMM D");
   };
 
-  const getRequestStatus = (status: string): JSX.Element => {
+  const getRequestStatus = (status: RequestStatus): JSX.Element => {
     return (
       <div className="request-status-container">
         <FiberManualRecordIcon
           sx={{
             fontSize: "1.1rem",
             color:
-              request.status === "approved"
+              request.status === RequestStatus.APPROVED
                 ? "green"
-                : request.status === "rejected" && request.hard
+                : request.status === RequestStatus.REJECTED && request.hard
                 ? "red"
-                : request.status === "rejected" && !request.hard
+                : request.status === RequestStatus.REJECTED && !request.hard
                 ? "orange"
-                : request.status === "pending"
+                : request.status === RequestStatus.PENDING
                 ? "grey"
                 : "none",
           }}

@@ -14,7 +14,7 @@ import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Types
-import { RequestT } from "../../types/request";
+import { RequestT, RequestStatus } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 
@@ -37,16 +37,7 @@ export default function RequestPanel({
 }) {
   const { t } = useTranslation(lng, "request-page");
 
-  const [requestState, setRequestState] = useState<RequestT>({
-    id: request.id,
-    workerId: request.workerId,
-    startDate: request.startDate,
-    endDate: request.endDate,
-    shiftId: request.shiftId,
-    hard: request.hard,
-    status: request.status,
-    active: request.active,
-  });
+  const [requestState, setRequestState] = useState<RequestT>(request);
   const [dateRange, setDateRange] = useState<boolean>(
     !request.startDate.isSame(request.endDate, "day")
   );
@@ -67,7 +58,7 @@ export default function RequestPanel({
       }
       const updatedRequest = {
         ...requestState,
-        status: "pending",
+        status: RequestStatus.PENDING,
       };
       handleUpdateRequest(updatedRequest);
     }
