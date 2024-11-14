@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from core import Request
 from core_to_engine_service.types import WorkerDates
-from engine import Request as NewRequestEngine
+from engine import Request as RequestEngine
 
 
 def build_engine_requests(
@@ -11,7 +11,7 @@ def build_engine_requests(
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shift_not_deleted_ids: List[str],
     requests: List[Request],
-) -> List[NewRequestEngine]:
+) -> List[RequestEngine]:
     out = []
     for r in requests:
         dates_request = [
@@ -27,13 +27,14 @@ def build_engine_requests(
         if not worker_ok or not dates_ok or not shift_ok:
             continue
         out.append(
-            NewRequestEngine(
+            RequestEngine(
                 id=r.id,
                 assignments=[
                     (r.worker_id, d.isoformat(), r.shift_id)
                     for d in dates_request
                     if d in worker_ids_to_worker_dates[r.worker_id].dates_campaign
                 ],
+                negative=r.negative,
                 hard=r.hard,
             )
         )

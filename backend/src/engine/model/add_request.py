@@ -28,7 +28,7 @@ class AddRequest:
             ]
             for var in c_variables:
                 if r.hard and not hard_to_soft:
-                    self.model.Add(var == 1)
+                    self.model.Add(var == 0 if r.negative else var == 1)
                     continue
                 cstr_vars: List[cp_model.IntVar] = [var]
                 var_name = build_var_name_constraint(
@@ -36,7 +36,10 @@ class AddRequest:
                 )
                 # pylint: disable=R0801
                 lit = self.model.NewBoolVar(var_name)
-                cstr_vars.append(lit)
-                self.model.AddBoolOr(cstr_vars)
+                if r.negative:
+                    self.model.Add(cstr_vars == lit)
+                else:
+                    cstr_vars.append(lit)
+                    self.model.AddBoolOr(cstr_vars)
                 self.obj.bool_vars.append(lit)
                 self.obj.bool_coeffs.append(penalty)
