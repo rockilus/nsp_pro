@@ -32,7 +32,7 @@ from core.coverage import (
 )
 from core.dimension import Dimension, DimensionEntryType, DimensionType, DimEntry
 from core.export_options import ExportOptions, ExportPeriodOptions
-from core.request import Request, RequestAugmented
+from core.request import Request, RequestAugmented, RequestStatus
 from core.schedule import (
     Assignment,
     Breach,
@@ -89,6 +89,7 @@ __all__ = [
     "ExportPeriodOptions",
     "Request",
     "RequestAugmented",
+    "RequestStatus",
     "Breach",
     "ObjectiveCategory",
     "QuickStaffing",

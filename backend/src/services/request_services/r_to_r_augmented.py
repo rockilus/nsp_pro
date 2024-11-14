@@ -9,10 +9,12 @@ def r_to_r_augmented(
     )
     return RequestAugmented(
         id=request.id,
+        team_id=request.team_id,
         worker_id=request.worker_id,
         start_date=request.start_date,
         end_date=request.end_date,
         shift_id=request.shift_id,
+        negative=request.negative,
         hard=request.hard,
         status=request.status,
         active=active,

@@ -1,9 +1,9 @@
-from datetime import date
+from datetime import date, datetime, time, timezone
 from typing import List
 
 from bson import ObjectId
 
-from core import Request, Worker
+from core import Request, RequestStatus, Worker
 from database.db import DB
 from database.worker_db import core_to_doc_worker
 from errors import (
@@ -13,9 +13,10 @@ from errors import (
     handle_save_document_error,
 )
 from logger import log_info
+from models import Request as RequestDocument
 from models import Shift as ShiftDocument
+from models import Team as TeamDocument
 from models import Worker as WorkerDocument
-from models.request import Request as RequestDocument
 
 
 class RequestDB:
@@ -25,7 +26,7 @@ class RequestDB:
     def create_request(self, request: Request) -> Request:
         r_doc = core_to_doc_request(request)
         r_doc.id = str(ObjectId())
-        r_doc.status = "pending"
+        r_doc.status = RequestStatus.PENDING.value
         try:
             r_saved = r_doc.save()
         except Exception as e:
@@ -144,6 +145,12 @@ class RequestDB:
 def core_to_doc_request(dataclass_obj: Request) -> RequestDocument:
     try:
         # pylint: disable=no-member
+        team = TeamDocument.objects.get(id=dataclass_obj.team_id)  # type: ignore
+    except Exception as e:
+        log_info("Failed to get team by id from database")
+        handle_get_document_error(e)
+    try:
+        # pylint: disable=no-member
         worker = WorkerDocument.objects.get(id=dataclass_obj.worker_id)  # type: ignore
     except Exception as e:
         log_info("Failed to get worker by id from database")
@@ -157,12 +164,18 @@ def core_to_doc_request(dataclass_obj: Request) -> RequestDocument:
     try:
         r_doc = RequestDocument(
             id=dataclass_obj.id,
+            team=team,
             worker=worker,
-            start_date=dataclass_obj.start_date,
-            end_date=dataclass_obj.end_date,
+            start_date=datetime.combine(
+                dataclass_obj.start_date, time.min, timezone.utc
+            ).timestamp(),
+            end_date=datetime.combine(
+                dataclass_obj.end_date, time.min, timezone.utc
+            ).timestamp(),
             shift=shift,
+            negative=dataclass_obj.negative,
             hard=dataclass_obj.hard,
-            status=dataclass_obj.status,
+            status=dataclass_obj.status.value,
         )
     except Exception as e:
         log_info("Failed to convert Request to RequestDocument")
@@ -173,6 +186,12 @@ def core_to_doc_request(dataclass_obj: Request) -> RequestDocument:
 def core_to_doc_requests(
     dataclass_objs: List[Request], creating: bool = False
 ) -> List[RequestDocument]:
+    team_ids = list(set(doc.team_id for doc in dataclass_objs))
+    # pylint: disable=no-member
+    teams = {
+        team.id: team
+        for team in TeamDocument.objects.filter(id__in=team_ids)  # type: ignore
+    }
     # pylint: disable=R0801
     worker_ids = list(set(doc.worker_id for doc in dataclass_objs))
     # pylint: disable=no-member
@@ -189,12 +208,18 @@ def core_to_doc_requests(
     for dataclass_obj in dataclass_objs:
         request_doc = RequestDocument(
             id=str(ObjectId()) if creating else dataclass_obj.id,
+            team=teams.get(dataclass_obj.team_id),
             worker=workers.get(dataclass_obj.worker_id),
-            start_date=dataclass_obj.start_date,
-            end_date=dataclass_obj.end_date,
+            start_date=datetime.combine(
+                dataclass_obj.start_date, time.min, timezone.utc
+            ).timestamp(),
+            end_date=datetime.combine(
+                dataclass_obj.end_date, time.min, timezone.utc
+            ).timestamp(),
             shift=shifts.get(dataclass_obj.shift_id),
+            negative=dataclass_obj.negative,
             hard=dataclass_obj.hard,
-            status=dataclass_obj.status,
+            status=dataclass_obj.status.value,
         )
         out.append(request_doc)
     return out
@@ -205,11 +230,18 @@ def doc_to_core_request(doc_obj: RequestDocument) -> Request:
     # pylint: disable=R0801
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
+    doc_dict["team_id"] = doc_dict["team"]
     doc_dict["worker_id"] = doc_dict["worker"]
-    doc_dict["start_date"] = doc_dict["start_date"].date()
-    doc_dict["end_date"] = doc_dict["end_date"].date()
+    doc_dict["start_date"] = datetime.fromtimestamp(
+        doc_dict["start_date"], timezone.utc
+    ).date()
+    doc_dict["end_date"] = datetime.fromtimestamp(
+        doc_dict["end_date"], timezone.utc
+    ).date()
     doc_dict["shift_id"] = doc_dict["shift"]
+    doc_dict["status"] = RequestStatus(doc_dict["status"])
     doc_dict.pop("_id")
+    doc_dict.pop("team")
     doc_dict.pop("worker")
     doc_dict.pop("shift")
     return Request(**doc_dict)

@@ -116,12 +116,14 @@ class FixedAssignmentMessage(BaseModel):
 # Request
 class RequestMessage(BaseModel):
     id: str
+    teamId: str
     workerId: str
-    startDate: date
-    endDate: date
+    startDate: float
+    endDate: float
     shiftId: str
+    negative: bool
     hard: bool
-    status: str
+    status: int
     active: bool
 
 

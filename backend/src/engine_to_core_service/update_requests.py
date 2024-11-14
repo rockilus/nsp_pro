@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import List
 
-from core import Assignment, Request
+from core import Assignment, Request, RequestStatus
 
 
 def update_requests_and_build_request_breaches(
@@ -21,8 +21,8 @@ def update_requests_and_build_request_breaches(
             and a.shift_id == r.shift_id
         ]
         if len(a_filtered) < len(dates):
-            r.status = "rejected"
+            r.status = RequestStatus.REJECTED
         else:
-            r.status = "approved"
+            r.status = RequestStatus.APPROVED
         out.append(r)
     return out
