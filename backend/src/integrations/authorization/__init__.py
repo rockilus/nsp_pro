@@ -1,5 +1,6 @@
 from integrations.authorization.authz_services import (
     authz_check,
+    authz_get_all_users,
     authz_role_assignment_get_user_team_ids,
     authz_team_resource_instance_create,
     authz_user_sync,
@@ -7,6 +8,7 @@ from integrations.authorization.authz_services import (
 
 __all__ = [
     "authz_check",
+    "authz_get_all_users",
     "authz_role_assignment_get_user_team_ids",
     "authz_team_resource_instance_create",
     "authz_user_sync",

@@ -1,11 +1,14 @@
 from typing import List
 
-from permit import Permit, PermitConnectionError  # type: ignore
+from permit import Permit, PermitConnectionError, UserRead  # type: ignore
 
 from core import Team, User
 from errors import AuthzConnectionError, handle_permit_errors
 from logger import log_debug, log_info
 from utils.env_config import PDP_API_KEY, PDP_URL
+
+# Permit API doc:
+# https://api.permit.io/v2/redoc#tag/Users
 
 try:
     permit = Permit(pdp=PDP_URL, token=PDP_API_KEY)
@@ -86,3 +89,34 @@ async def authz_check(
         log_info("Permit check error")
         handle_permit_errors(e)
     return out
+
+
+# async def authz_get_all_users():
+#     try:
+#         users = await permit.api.users.list()
+#     except Exception as e:
+#         log_info("Permit get all users error")
+#         handle_permit_errors(e)
+#     return users
+
+
+async def authz_get_all_users() -> List[UserRead]:
+    users: List[UserRead] = []
+    page = 1
+    per_page = 100  # Adjust this value based on the actual limit specified by the API
+
+    try:
+        while True:
+            response = await permit.api.users.list(page=page, per_page=per_page)
+            users.extend(response.data)
+
+            # Check if there's another page of results
+            if len(response.data) < per_page:
+                break
+            page += 1
+
+    except Exception as e:
+        log_info("Permit get all users error")
+        handle_permit_errors(e)
+
+    return users

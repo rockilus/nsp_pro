@@ -1,3 +1,5 @@
+from typing import List
+
 from core import User
 from database.db import DB
 from errors import (
@@ -22,6 +24,15 @@ class UserDB:
             log_info("Failed to save user to database")
             handle_save_document_error(e)
         return doc_to_core_user(user_saved)
+
+    def get_users(self) -> List[User]:
+        try:
+            # pylint: disable=no-member
+            users = UserDocument.objects.all()  # type: ignore
+        except Exception as e:
+            log_info("Failed to get users from database")
+            handle_get_document_error(e)
+        return [doc_to_core_user(user) for user in users]
 
     def get_user_by_id(self, user_id: str) -> User:
         try:
