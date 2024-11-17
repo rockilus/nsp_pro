@@ -2,13 +2,14 @@ from typing import Dict, List
 
 import requests
 
+from core import UserAuth
 from utils.env_config import ST_API_KEY, ST_CONNECTION_URI
 
 # Supertokens API doc:
 # https://app.swaggerhub.com/apis/supertokens/CDI/4.0.2#/Core/getUsers
 
 
-def authn_get_all_users() -> List[Dict]:
+def authn_get_all_users() -> List[UserAuth]:
     users = []
     pagination_token = None
 
@@ -41,4 +42,11 @@ def authn_get_all_users() -> List[Dict]:
         print(f"Error fetching users: {e}")
         return []
 
-    return users
+    return [supertokens_to_core_user_auth(u) for u in users]
+
+
+def supertokens_to_core_user_auth(user_st: Dict) -> UserAuth:
+    return UserAuth(
+        id=user_st.get("id", ""),
+        email=user_st.get("email", ""),
+    )

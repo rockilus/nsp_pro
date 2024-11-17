@@ -21,3 +21,16 @@ class PasswordData:
     current_password: str
     new_password: str
     new_password_confirm: str
+
+
+@dataclass
+class UserAuth:
+    id: str
+    email: str
+
+
+@dataclass
+class UserDashboard:
+    user: User | None
+    user_authn: UserAuth | None
+    user_authz: UserAuth | None

@@ -2,7 +2,7 @@ from typing import List
 
 from permit import Permit, PermitConnectionError, UserRead  # type: ignore
 
-from core import Team, User
+from core import Team, User, UserAuth
 from errors import AuthzConnectionError, handle_permit_errors
 from logger import log_debug, log_info
 from utils.env_config import PDP_API_KEY, PDP_URL
@@ -100,7 +100,7 @@ async def authz_check(
 #     return users
 
 
-async def authz_get_all_users() -> List[UserRead]:
+async def authz_get_all_users() -> List[UserAuth]:
     users: List[UserRead] = []
     page = 1
     per_page = 100  # Adjust this value based on the actual limit specified by the API
@@ -119,4 +119,11 @@ async def authz_get_all_users() -> List[UserRead]:
         log_info("Permit get all users error")
         handle_permit_errors(e)
 
-    return users
+    return [permit_to_core_user_auth(u) for u in users]
+
+
+def permit_to_core_user_auth(user_read: UserRead) -> UserAuth:
+    return UserAuth(
+        id=user_read.key,
+        email=user_read.email,
+    )

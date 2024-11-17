@@ -46,7 +46,7 @@ from core.schedule import (
 from core.shift import Shift, ShiftLeaveType, ShiftRestType, ShiftType, Staffing
 from core.stats import Stats, StatsHeader, StatsOptions, StatsValue
 from core.team import Specialty, Team
-from core.user import PasswordData, User
+from core.user import PasswordData, User, UserAuth, UserDashboard
 from core.worker import Worker
 
 # pylint: disable=R0801
@@ -110,5 +110,7 @@ __all__ = [
     "Team",
     "PasswordData",
     "User",
+    "UserAuth",
+    "UserDashboard",
     "Worker",
 ]
