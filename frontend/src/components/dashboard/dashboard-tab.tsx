@@ -7,6 +7,8 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+// Components
+import SavedCell from "./saved-cell";
 // Actions
 import { getUsersDashboard } from "../../app/lib/dashboard";
 // Styles
@@ -26,6 +28,7 @@ export default function DashboardTab({ lng }: { lng: string }) {
     { name: "firstName", label: t("first_name") },
     { name: "lastName", label: t("last_name") },
     { name: "email", label: t("email") },
+    { name: "saved", label: t("saved") },
   ];
 
   useEffect(() => {
@@ -39,7 +42,7 @@ export default function DashboardTab({ lng }: { lng: string }) {
   }, []);
 
   return (
-    <div className="tab-container">
+    <div className="tab-container-wide">
       <TableContainer>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -57,11 +60,20 @@ export default function DashboardTab({ lng }: { lng: string }) {
                     key={ud.user.id}
                     sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                   >
-                    {tableHeaders.map((header) => (
-                      <TableCell key={header.name}>
-                        {ud.user?.[header.name as keyof UserT] as string}
-                      </TableCell>
-                    ))}
+                    {tableHeaders.map((header) =>
+                      header.name === "saved" ? (
+                        <SavedCell
+                          key={ud.user?.id + header.name}
+                          mongo={true}
+                          supertokens={ud.userAuthn !== null}
+                          permit={ud.userAuthz !== null}
+                        />
+                      ) : (
+                        <TableCell key={ud.user?.id + header.name}>
+                          {ud.user?.[header.name as keyof UserT] as string}
+                        </TableCell>
+                      )
+                    )}
                   </TableRow>
                 );
               } else {
@@ -71,13 +83,22 @@ export default function DashboardTab({ lng }: { lng: string }) {
                     key={userAuth.id}
                     sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                   >
-                    {tableHeaders.map((header) => (
-                      <TableCell key={header.name}>
-                        {header.name === "email"
-                          ? (userAuth.email as string)
-                          : ""}
-                      </TableCell>
-                    ))}
+                    {tableHeaders.map((header) =>
+                      header.name === "saved" ? (
+                        <SavedCell
+                          key={userAuth.id + header.name}
+                          mongo={false}
+                          supertokens={ud.userAuthn !== null}
+                          permit={ud.userAuthz !== null}
+                        />
+                      ) : (
+                        <TableCell key={userAuth.id + header.name}>
+                          {header.name === "email"
+                            ? (userAuth.email as string)
+                            : ""}
+                        </TableCell>
+                      )
+                    )}
                   </TableRow>
                 );
               }
