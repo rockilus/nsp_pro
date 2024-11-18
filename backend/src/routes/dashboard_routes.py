@@ -67,9 +67,7 @@ async def impersonate(
 ):
     user_id = session.get_user_id()
     if not await authz_check(user_id, "read", "user", user_id):
-        raise NotAuthorizedError(
-            "You do not have permission to read the user dashboard"
-        )
+        raise NotAuthorizedError("You do not have permission to impersonate users")
     data = await request.json()
     target_user_id = data.get("user_id", None)
     if not target_user_id:
@@ -82,14 +80,20 @@ async def impersonate(
 
     if user is None:
         # return a 400 error to the client
-        return
+        raise HTTPException(status_code=400, detail="User not found")
+
+    # Revoke the admin's current session
+    await session.revoke_session()
 
     await create_new_session(
         request,
         "public",
         # user[0].login_methods[0].recipe_user_id,
         target_user_id,
-        {"isImpersonation": True},
+        {
+            "isImpersonation": True,
+            "adminUserId": user_id,
+        },
     )
 
     # a new session has been created.
@@ -97,6 +101,41 @@ async def impersonate(
     # - a new row has been inserted into the database for this new session
 
     return JSONResponse({"message": "Impersonation complete!"})
+
+
+@router.post("/admin-dashboard/restore-session")
+async def restore_admin_session(
+    request: Request,
+    session: SessionContainerType = Depends(authn_verify_session()),
+):
+    access_token_payload = session.get_access_token_payload()
+
+    # Check if this is an impersonated session
+    if not access_token_payload.get("isImpersonation"):
+        raise HTTPException(status_code=400, detail="Not impersonating any user")
+
+    # Get the admin's user ID from the access token payload
+    admin_user_id = access_token_payload.get("adminUserId", None)
+    if not admin_user_id:
+        raise HTTPException(status_code=400, detail="Admin user ID not found")
+
+    # if not await authz_check(user_id, "impersonate", "user", user_id):
+    #     raise NotAuthorizedError("You do not have permission to impersonate users")
+
+    # Revoke the current impersonated session
+    await session.revoke_session()
+
+    # Create a new session for the admin user
+    await create_new_session(
+        request,
+        "public",
+        user_id=admin_user_id,
+        # access_token_payload={
+        #     # Include any necessary data for the admin session
+        # },
+    )
+
+    return {"message": "Admin session restored"}
 
 
 # # Mappers

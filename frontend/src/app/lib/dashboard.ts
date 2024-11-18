@@ -71,3 +71,25 @@ export async function impersonateUser(userId: string) {
     throw new Error("Failed to impersonate user, please try again later");
   }
 }
+
+export const stopImpersonation = async () => {
+  try {
+    const options: RequestInit = {
+      method: "POST",
+      credentials: "include" as RequestCredentials,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    const url = `${apiUrlDashboard}/restore-session`;
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail);
+    }
+    return true;
+  } catch (error) {
+    console.error("Failed to restore admin session:", error);
+    throw new Error("Failed to restore admin session, please try again later");
+  }
+};

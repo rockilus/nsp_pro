@@ -6,5 +6,23 @@
 
 .impersonation-banner-text {
   font-size: 0.8rem;
-  font-weight: bold;
+  font-weight: 600;
+}
+
+.stop-impersonation-button {
+  background-color: red;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 5px;
+  padding: 5px;
+}
+
+.stop-impersonation-button:disabled {
+  background-color: grey;
+  cursor: default;
+  opacity: 0.6;
 }
