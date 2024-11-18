@@ -9,8 +9,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 // Components
 import SavedCell from "./saved-cell";
+import ActionsCell from "./actions-cell";
 // Actions
-import { getUsersDashboard } from "../../app/lib/dashboard";
+import { getUsersDashboard, impersonateUser } from "../../app/lib/dashboard";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
@@ -19,7 +20,7 @@ import "./dashboard-tab.css";
 import { UserT, UserDashboardT, UserAuthT } from "../../types/user";
 
 export default function DashboardTab({ lng }: { lng: string }) {
-  const { t } = useTranslation(lng, "request-page");
+  const { t } = useTranslation(lng, "dashboard-page");
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [usersDashboard, setUsersDashboard] = useState<UserDashboardT[]>([]);
@@ -29,7 +30,19 @@ export default function DashboardTab({ lng }: { lng: string }) {
     { name: "lastName", label: t("last_name") },
     { name: "email", label: t("email") },
     { name: "saved", label: t("saved") },
+    { name: "actions", label: t("actions") },
   ];
+
+  //////////////////////////
+  // User Actions
+  //////////////////////////
+
+  const handleImpersonate = async (targetUser: UserT) => {
+    const impersonateSuccess = await impersonateUser(targetUser.id);
+    if (impersonateSuccess) {
+      window.location.href = `/${targetUser.language}/plan/workers`;
+    }
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -67,6 +80,13 @@ export default function DashboardTab({ lng }: { lng: string }) {
                           mongo={true}
                           supertokens={ud.userAuthn !== null}
                           permit={ud.userAuthz !== null}
+                        />
+                      ) : header.name === "actions" ? (
+                        <ActionsCell
+                          key={ud.user?.id + header.name}
+                          lng={lng}
+                          targetUser={ud.user as UserT}
+                          handleImpersonate={handleImpersonate}
                         />
                       ) : (
                         <TableCell key={ud.user?.id + header.name}>

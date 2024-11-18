@@ -3097,13 +3097,13 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyam
 
 [[package]]
 name = "supertokens-python"
-version = "0.18.11"
+version = "0.23.1"
 description = "SuperTokens SDK for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "supertokens_python-0.18.11-py3-none-any.whl", hash = "sha256:55004a886742b7ce2b0dd891f7299805852ff86e2c8163ae9e31223976f3d175"},
-    {file = "supertokens_python-0.18.11.tar.gz", hash = "sha256:ede4cc72ede72338a8165c3fd93f1a4bde335a4c358a363ef831c06d68d44148"},
+    {file = "supertokens_python-0.23.1-py3-none-any.whl", hash = "sha256:5556ae2f4e652e893abd710814d6be5d9608f3c001f9e6ebd3d0d58cf2e87e90"},
+    {file = "supertokens_python-0.23.1.tar.gz", hash = "sha256:e4828185c09fa4a06894bab7d5953bba8c7c52a7b99279233cfb55481d522f38"},
 ]
 
 [package.dependencies]
@@ -3122,7 +3122,7 @@ typing-extensions = ">=4.1.1,<5.0.0"
 [package.extras]
 django = ["django (>=3)", "django-cors-headers (==3.11.0)", "django-stubs (==1.9.0)", "python-dotenv (==0.19.2)", "uvicorn (==0.18.2)"]
 django2x = ["django (>=2,<3)", "django-cors-headers (==3.11.0)", "django-stubs (==1.9.0)", "gunicorn (==20.1.0)", "python-dotenv (==0.19.2)"]
-drf = ["adrf", "django (>=4)", "django-cors-headers (==3.11.0)", "django-stubs (==1.9.0)", "djangorestframework", "gunicorn (==20.1.0)", "python-dotenv (==0.19.2)", "uvicorn (==0.18.2)"]
+drf = ["adrf", "django (>=4)", "django-cors-headers (==3.11.0)", "django-stubs (==1.9.0)", "djangorestframework", "gunicorn (==20.1.0)", "python-dotenv (==0.19.2)", "tzdata (==2021.5)", "uvicorn (==0.18.2)"]
 fastapi = ["Fastapi", "python-dotenv (==0.19.2)", "respx (==0.19.2)", "uvicorn (==0.18.2)"]
 flask = ["Flask", "flask-cors", "python-dotenv (==0.19.2)"]
 
@@ -3652,4 +3652,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "21916369a150f412b3a4705a03c74535cfb98fc90c52874ed08547512c0c6c7c"
+content-hash = "c4a165961ee8591cf02bbf8452bff75ba90bedd2f77c2f36d0ec368c4d3a8191"

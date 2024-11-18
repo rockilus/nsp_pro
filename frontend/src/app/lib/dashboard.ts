@@ -47,3 +47,27 @@ export async function getUsersDashboard() {
     throw new Error("Failed to fetch users, please try again later");
   }
 }
+
+export async function impersonateUser(userId: string) {
+  noStore();
+  const options: RequestInit = {
+    method: "POST",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ user_id: userId }),
+  };
+  try {
+    const url = `${apiUrlDashboard}/impersonate`;
+    const response = await fetch(url, options);
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error("Failed to impersonate user: " + responseData.detail);
+    }
+    return true;
+  } catch (error) {
+    console.error("Failed to impersonate user:", error);
+    throw new Error("Failed to impersonate user, please try again later");
+  }
+}

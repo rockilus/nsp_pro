@@ -8,6 +8,9 @@ from utils.env_config import ST_API_KEY, ST_CONNECTION_URI
 # Supertokens API doc:
 # https://app.swaggerhub.com/apis/supertokens/CDI/4.0.2#/Core/getUsers
 
+# supertokens_python API doc:
+# https://supertokens.com/docs/python/index.html
+
 
 def authn_get_all_users() -> List[UserAuth]:
     users = []

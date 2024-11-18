@@ -9,6 +9,8 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpPostEmailAlreadyExistsError,
     SignUpPostOkResult,
 )
+
+# EmailAlreadyExistsError,; SignUpPostNotAllowedResponse,
 from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.utils import find_first_occurrence_in_list
 
@@ -33,6 +35,10 @@ def override_emailpassword_apis(original_implementation: APIInterface):
         Any,
         Any,
         SignUpPostOkResult | SignUpPostEmailAlreadyExistsError | GeneralErrorResponse,
+        # SignUpPostOkResult
+        # | EmailAlreadyExistsError
+        # | SignUpPostNotAllowedResponse
+        # | GeneralErrorResponse,
     ]:
         email_form_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields
