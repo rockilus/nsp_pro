@@ -1,0 +1,10 @@
+.impersonation-banner {
+  background-color: yellow;
+  padding: 10px;
+  text-align: center;
+}
+
+.impersonation-banner-text {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
