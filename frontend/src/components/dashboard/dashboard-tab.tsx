@@ -10,8 +10,14 @@ import TableRow from "@mui/material/TableRow";
 // Components
 import SavedCell from "./saved-cell";
 import ActionsCell from "./actions-cell";
+import ActionsNotInDBCell from "./actions-not-in-db-cell";
 // Actions
-import { getUsersDashboard, impersonateUser } from "../../app/lib/dashboard";
+import {
+  getUsersDashboard,
+  getUserDashboard,
+  impersonateUser,
+  deleteUser,
+} from "../../app/lib/dashboard";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
@@ -41,6 +47,31 @@ export default function DashboardTab({ lng }: { lng: string }) {
     const impersonateSuccess = await impersonateUser(targetUser.id);
     if (impersonateSuccess) {
       window.location.href = `/${targetUser.language}/plan/workers`;
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    const deleteSuccess = await deleteUser(userId);
+    if (deleteSuccess) {
+      const updatedUsers = usersDashboard.filter(
+        (ud) =>
+          ud.user?.id !== userId &&
+          ud.userAuthn?.id !== userId &&
+          ud.userAuthz?.id !== userId
+      );
+      setUsersDashboard(updatedUsers);
+    } else {
+      const userToDelete = await getUserDashboard(userId);
+      if (userToDelete) {
+        const updatedUsers = usersDashboard.map((ud) =>
+          ud.user?.id === userId ||
+          ud.userAuthn?.id === userId ||
+          ud.userAuthz?.id === userId
+            ? userToDelete
+            : ud
+        );
+        setUsersDashboard(updatedUsers);
+      }
     }
   };
 
@@ -110,6 +141,13 @@ export default function DashboardTab({ lng }: { lng: string }) {
                           mongo={false}
                           supertokens={ud.userAuthn !== null}
                           permit={ud.userAuthz !== null}
+                        />
+                      ) : header.name === "actions" ? (
+                        <ActionsNotInDBCell
+                          key={userAuth.id + header.name}
+                          lng={lng}
+                          targetUser={ud}
+                          handleDeleteUser={handleDeleteUser}
                         />
                       ) : (
                         <TableCell key={userAuth.id + header.name}>

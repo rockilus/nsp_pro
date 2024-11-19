@@ -5,8 +5,8 @@
 }
 
 .impersonation-banner-text {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .stop-impersonation-button {
@@ -17,7 +17,7 @@
   cursor: pointer;
   font-size: 0.8rem;
   font-weight: 600;
-  margin-left: 5px;
+  margin-left: 20px;
   padding: 5px;
 }
 

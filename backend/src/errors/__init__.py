@@ -10,6 +10,7 @@ from errors.authn_errors.authn_errors import (
 from errors.authz_errors.authz_error_handlers import handle_permit_errors
 from errors.authz_errors.authz_errors import AuthzConnectionError
 from errors.core_errors.core_error_handlers import handle_create_core_object_error
+from errors.core_errors.core_errors import UserNotFoundError
 from errors.database_errors.db_connection_error import DBConnectionError
 from errors.database_errors.document_error_handlers import (
     handle_create_document_error,
@@ -38,6 +39,7 @@ __all__ = [
     "handle_permit_errors",
     "AuthzConnectionError",
     "handle_create_core_object_error",
+    "UserNotFoundError",
     "DBConnectionError",
     "handle_create_document_error",
     "handle_delete_document_error",

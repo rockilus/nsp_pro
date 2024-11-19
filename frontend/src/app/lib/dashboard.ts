@@ -48,6 +48,31 @@ export async function getUsersDashboard() {
   }
 }
 
+export async function getUserDashboard(userId: string) {
+  noStore();
+  const options: RequestInit = {
+    method: "GET",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const url = `${apiUrlDashboard}/users/${userId}`;
+    const response = await fetch(url, options);
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        "Failed to fetch shift dimensions: " + responseData.detail
+      );
+    }
+    return toUserDashboardT(responseData);
+  } catch (error) {
+    console.error("Failed to fetch user:", error);
+    throw new Error("Failed to fetch user, please try again later");
+  }
+}
+
 export async function impersonateUser(userId: string) {
   noStore();
   const options: RequestInit = {
@@ -93,3 +118,26 @@ export const stopImpersonation = async () => {
     throw new Error("Failed to restore admin session, please try again later");
   }
 };
+
+export async function deleteUser(userId: string) {
+  noStore();
+  const options: RequestInit = {
+    method: "DELETE",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const url = `${apiUrlDashboard}/users/${userId}`;
+    const response = await fetch(url, options);
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error("Failed to delete user: " + responseData.detail);
+    }
+    return true;
+  } catch (error) {
+    console.error("Failed to delete user:", error);
+    throw new Error("Failed to delete user, please try again later");
+  }
+}

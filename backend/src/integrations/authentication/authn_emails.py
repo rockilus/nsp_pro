@@ -16,6 +16,7 @@ from supertokens_python.recipe.emailverification.types import (
     EmailTemplateVars as EVEmailTemplateVars,
 )
 
+from errors import UserNotFoundError
 from integrations.email_sender.verification_email import (
     send_reset_password_email,
     send_verification_email,
@@ -33,6 +34,8 @@ def custom_email_deliver(
         template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -> None:
         user = user_db.get_user_by_id(template_vars.user.id)
+        if user is None:
+            raise UserNotFoundError(f"User with id {template_vars.user.id} not found")
         send_reset_password_email(
             user=user,
             reset_password_link=template_vars.password_reset_link,
@@ -52,6 +55,8 @@ def custom_emailverification_delivery(
         template_vars: EVEmailTemplateVars, user_context: Dict[str, Any]
     ) -> None:
         user = user_db.get_user_by_id(template_vars.user.id)
+        if user is None:
+            raise UserNotFoundError(f"User with id {template_vars.user.id} not found")
         send_verification_email(
             user=user,
             email_verify_link=template_vars.email_verify_link,

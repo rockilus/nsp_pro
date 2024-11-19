@@ -34,10 +34,12 @@ class UserDB:
             handle_get_document_error(e)
         return [doc_to_core_user(user) for user in users]
 
-    def get_user_by_id(self, user_id: str) -> User:
+    def get_user_by_id(self, user_id: str) -> User | None:
         try:
             # pylint: disable=no-member
             user = UserDocument.objects.get(id=user_id)  # type: ignore
+        except UserDocument.DoesNotExist:
+            return None
         except Exception as e:
             log_info("Failed to get user by id from database")
             handle_get_document_error(e)

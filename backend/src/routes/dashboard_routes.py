@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from typing import List
+from typing import Dict, List
 
 import humps
 
@@ -22,10 +22,17 @@ from errors import (
 )
 from integrations.authentication import (
     SessionContainerType,
+    authn_delete_user,
     authn_get_all_users,
+    authn_get_user,
     authn_verify_session,
 )
-from integrations.authorization import authz_check, authz_get_all_users
+from integrations.authorization import (
+    authz_check,
+    authz_delete_user,
+    authz_get_all_users,
+    authz_get_user,
+)
 from logger import log_info
 from routes.api_model import UserAuthMessage, UserDashboardMessage
 from routes.user_routes import core_to_msg_user
@@ -40,7 +47,7 @@ router = APIRouter()
 
 
 @router.get("/admin-dashboard/users")
-async def get_current_user(
+async def get_users(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> List[UserDashboardMessage]:
     try:
@@ -56,6 +63,30 @@ async def get_current_user(
         response = [core_to_msg_user_dashboard(ud) for ud in users_dashboard]
     except Exception as e:
         log_info("Failed to get users dashboard")
+        handle_routes_errors(e)
+    return response
+
+
+@router.get("/admin-dashboard/users/{target_user_id}")
+async def get_user(
+    target_user_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> UserDashboardMessage:
+    try:
+        user_id = session.get_user_id()
+        if not await authz_check(user_id, "read", "user", user_id):
+            raise NotAuthorizedError(
+                "You do not have permission to read the user dashboard"
+            )
+        user = user_db.get_user_by_id(target_user_id)
+        user_authn = await authn_get_user(target_user_id)
+        user_authz = await authz_get_user(target_user_id)
+        user_dashboard = UserDashboard(
+            user=user, user_authn=user_authn, user_authz=user_authz
+        )
+        response = core_to_msg_user_dashboard(user_dashboard)
+    except Exception as e:
+        log_info("Failed to get user dashboard")
         handle_routes_errors(e)
     return response
 
@@ -76,9 +107,9 @@ async def impersonate(
     # we use the email password recipe here, but you can use the recipe you use
     # user = await list_users_by_account_info("public", AccountInfo(email=email))
     # user = await get_user(user_id)
-    user = await get_user_by_id(target_user_id)
+    target_user_authn = await get_user_by_id(target_user_id)
 
-    if user is None:
+    if target_user_authn is None:
         # return a 400 error to the client
         raise HTTPException(status_code=400, detail="User not found")
 
@@ -92,6 +123,7 @@ async def impersonate(
         target_user_id,
         {
             "isImpersonation": True,
+            "impersonatedUserEmail": target_user_authn.email,
             "adminUserId": user_id,
         },
     )
@@ -136,6 +168,32 @@ async def restore_admin_session(
     )
 
     return {"message": "Admin session restored"}
+
+
+@router.delete("/admin-dashboard/users/{target_user_id}")
+async def delete_user(
+    target_user_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> Dict:
+    try:
+        user_id = session.get_user_id()
+        if not await authz_check(user_id, "read", "user", user_id):
+            raise NotAuthorizedError(
+                "You do not have permission to read the user dashboard"
+            )
+        user = user_db.get_user_by_id(target_user_id)
+        if user:
+            raise HTTPException(status_code=400, detail="User can't be deleted")
+        user_authn = await authn_get_user(target_user_id)
+        if user_authn:
+            await authn_delete_user(target_user_id)
+        user_authz = await authz_get_user(target_user_id)
+        if user_authz:
+            await authz_delete_user(target_user_id)
+    except Exception as e:
+        log_info("Failed to get users dashboard")
+        handle_routes_errors(e)
+    return {"message": "User deleted"}
 
 
 # # Mappers

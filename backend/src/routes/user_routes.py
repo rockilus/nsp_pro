@@ -2,7 +2,7 @@ from dataclasses import asdict
 from typing import Dict
 
 import humps
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core import PasswordData, User
@@ -34,6 +34,8 @@ async def get_current_user(
         if not await authz_check(user_id, "read", "user", user_id):
             raise NotAuthorizedError("You do not have permission to read the user")
         user = user_db.get_user_by_id(user_id)
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
         response = core_to_msg_user(user)
     except Exception as e:
         log_info("Failed to get current user")

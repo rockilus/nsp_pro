@@ -1,5 +1,6 @@
 from typing import List
 
+from permit import PermitApiError  # type: ignore
 from permit import Permit, PermitConnectionError, UserRead  # type: ignore
 
 from core import Team, User, UserAuth
@@ -120,6 +121,28 @@ async def authz_get_all_users() -> List[UserAuth]:
         handle_permit_errors(e)
 
     return [permit_to_core_user_auth(u) for u in users]
+
+
+async def authz_get_user(user_id: str) -> UserAuth | None:
+    try:
+        user = await permit.api.users.get(user_id)
+    except PermitApiError as e:
+        if e.status_code == 404:
+            return None
+        log_info("Permit get user error")
+        handle_permit_errors(e)
+    except Exception as e:
+        log_info("Permit get user error")
+        handle_permit_errors(e)
+    return permit_to_core_user_auth(user)
+
+
+async def authz_delete_user(user_id: str) -> None:
+    try:
+        await permit.api.users.delete(user_id)
+    except Exception as e:
+        log_info("Permit delete user error")
+        handle_permit_errors(e)
 
 
 def permit_to_core_user_auth(user_read: UserRead) -> UserAuth:

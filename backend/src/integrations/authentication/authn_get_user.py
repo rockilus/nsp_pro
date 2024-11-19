@@ -1,6 +1,9 @@
 from typing import Dict, List
 
 import requests
+from supertokens_python.asyncio import delete_user
+from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
+from supertokens_python.recipe.emailpassword.types import User
 
 from core import UserAuth
 from utils.env_config import ST_API_KEY, ST_CONNECTION_URI
@@ -10,6 +13,13 @@ from utils.env_config import ST_API_KEY, ST_CONNECTION_URI
 
 # supertokens_python API doc:
 # https://supertokens.com/docs/python/index.html
+
+
+async def authn_get_user(user_id: str) -> UserAuth | None:
+    user = await get_user_by_id(user_id)
+    if not user:
+        return None
+    return user_supertokens_to_core(user)
 
 
 def authn_get_all_users() -> List[UserAuth]:
@@ -45,11 +55,22 @@ def authn_get_all_users() -> List[UserAuth]:
         print(f"Error fetching users: {e}")
         return []
 
-    return [supertokens_to_core_user_auth(u) for u in users]
+    return [user_dict_supertokens_to_core(u) for u in users]
 
 
-def supertokens_to_core_user_auth(user_st: Dict) -> UserAuth:
+async def authn_delete_user(user_id: str) -> None:
+    await delete_user(user_id)
+
+
+def user_dict_supertokens_to_core(user_st: Dict) -> UserAuth:
     return UserAuth(
         id=user_st.get("id", ""),
         email=user_st.get("email", ""),
+    )
+
+
+def user_supertokens_to_core(user: User) -> UserAuth:
+    return UserAuth(
+        id=user.user_id,
+        email=user.email,
     )

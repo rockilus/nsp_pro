@@ -30,7 +30,8 @@ const ImpersonationBanner = () => {
   return (
     <div className="impersonation-banner">
       <span className="impersonation-banner-text">
-        You are currently impersonating a user.
+        Impersonating{" "}
+        <strong>{accessTokenPayload?.impersonatedUserEmail}</strong>
       </span>
       <button
         className="stop-impersonation-button"
