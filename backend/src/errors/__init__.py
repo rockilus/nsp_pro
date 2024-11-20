@@ -1,6 +1,8 @@
 from errors.authn_errors.authn_error_handlers import handle_supertokens_errors
 from errors.authn_errors.authn_errors import (
     AuthnEmailAlreadyExistsError,
+    AuthnEmailChangeNotAllowedError,
+    AuthnEmailNotFoundForUserError,
     AuthnPasswordChangeError,
     AuthnPasswordPolicyViolationError,
     AuthnUpdateEmailError,
@@ -31,6 +33,8 @@ from errors.stats_errors.stats_errors import NoCampaignError
 __all__ = [
     "handle_supertokens_errors",
     "AuthnEmailAlreadyExistsError",
+    "AuthnEmailChangeNotAllowedError",
+    "AuthnEmailNotFoundForUserError",
     "AuthnPasswordChangeError",
     "AuthnPasswordPolicyViolationError",
     "AuthnUserNotFoundError",

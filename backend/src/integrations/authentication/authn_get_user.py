@@ -1,9 +1,8 @@
 from typing import Dict, List
 
 import requests
-from supertokens_python.asyncio import delete_user
-from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
-from supertokens_python.recipe.emailpassword.types import User
+from supertokens_python.asyncio import delete_user, get_user
+from supertokens_python.types import User
 
 from core import UserAuth
 from utils.env_config import ST_API_KEY, ST_CONNECTION_URI
@@ -16,7 +15,7 @@ from utils.env_config import ST_API_KEY, ST_CONNECTION_URI
 
 
 async def authn_get_user(user_id: str) -> UserAuth | None:
-    user = await get_user_by_id(user_id)
+    user = await get_user(user_id)
     if not user:
         return None
     return user_supertokens_to_core(user)
@@ -71,6 +70,6 @@ def user_dict_supertokens_to_core(user_st: Dict) -> UserAuth:
 
 def user_supertokens_to_core(user: User) -> UserAuth:
     return UserAuth(
-        id=user.user_id,
-        email=user.email,
+        id=user.user_id,  # type: ignore
+        email=user.email or "",  # type: ignore
     )

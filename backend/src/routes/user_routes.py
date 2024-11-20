@@ -52,8 +52,10 @@ async def update_user(
     try:
         if not await authz_check(session.get_user_id(), "update", "user", user_id):
             raise NotAuthorizedError("You do not have permission to update a user")
+        recipe_user_id = session.get_recipe_user_id()
+        tenant_id = session.get_tenant_id()
         u_data = msg_to_core_user(user)
-        updated_user = await update_user_service(u_data)
+        updated_user = await update_user_service(u_data, recipe_user_id, tenant_id)
         response = core_to_msg_user(updated_user)
     except Exception as e:
         log_info("Failed to update user")
@@ -72,11 +74,12 @@ async def change_user_password(
             session.get_user_id(), "change-password", "user", user_id
         ):
             raise NotAuthorizedError("You do not have permission to update a user")
+        recipe_user_id = session.get_recipe_user_id()
         tenant_id = session.get_tenant_id()
         p_data = msg_to_core_password_data(password_data)
         if p_data.new_password != p_data.new_password_confirm:
             raise PasswordsDoNotMatchError("Passwords do not match")
-        await change_user_password_service(user_id, tenant_id, p_data)
+        await change_user_password_service(user_id, recipe_user_id, tenant_id, p_data)
         response = {"message": "Password updated successfully"}
     except Exception as e:
         log_info("Failed to update user password")

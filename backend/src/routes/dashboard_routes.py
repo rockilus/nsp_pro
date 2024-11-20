@@ -2,15 +2,9 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
-
-# from supertokens_python.asyncio import get_user
-# from supertokens_python.types import AccountInfo
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import TypeAdapter
-from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
-
-# from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.asyncio import create_new_session
 
 from core import UserAuth, UserDashboard
@@ -38,10 +32,6 @@ from routes.api_model import UserAuthMessage, UserDashboardMessage
 from routes.user_routes import core_to_msg_user
 from scripts.setup_database import user_db
 from services.user_services import build_user_dashboard
-
-# from supertokens_python.recipe.session import SessionContainer
-# from supertokens_python.recipe.userroles import UserRoleClaim
-
 
 router = APIRouter()
 
@@ -106,8 +96,7 @@ async def impersonate(
 
     # we use the email password recipe here, but you can use the recipe you use
     # user = await list_users_by_account_info("public", AccountInfo(email=email))
-    # user = await get_user(user_id)
-    target_user_authn = await get_user_by_id(target_user_id)
+    target_user_authn = await authn_get_user(target_user_id)
 
     if target_user_authn is None:
         # return a 400 error to the client
@@ -117,11 +106,10 @@ async def impersonate(
     await session.revoke_session()
 
     await create_new_session(
-        request,
-        "public",
-        # user[0].login_methods[0].recipe_user_id,
-        target_user_id,
-        {
+        request=request,
+        tenant_id="public",
+        recipe_user_id=target_user_id,
+        access_token_payload={
             "isImpersonation": True,
             "impersonatedUserEmail": target_user_authn.email,
             "adminUserId": user_id,
@@ -159,12 +147,9 @@ async def restore_admin_session(
 
     # Create a new session for the admin user
     await create_new_session(
-        request,
-        "public",
-        user_id=admin_user_id,
-        # access_token_payload={
-        #     # Include any necessary data for the admin session
-        # },
+        request=request,
+        tenant_id="public",
+        recipe_user_id=admin_user_id,
     )
 
     return {"message": "Admin session restored"}
