@@ -111,8 +111,8 @@ def override_emailpassword_apis(original_implementation: APIInterface):
             and len(result.user.login_methods) == 1
             and session is None
         ):
-            user_id = result.user.user_id  # type: ignore
-            email = result.user.email  # type: ignore
+            user_id = result.user.id
+            email = result.user.emails[0]
             if result.user:
                 print("creating user and team in mongodb:", email)
                 await create_user(

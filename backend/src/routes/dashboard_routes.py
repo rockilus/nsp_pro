@@ -48,7 +48,7 @@ async def get_users(
                 "You do not have permission to read the user dashboard"
             )
         users = user_db.get_users()
-        users_authn = authn_get_all_users()
+        users_authn = await authn_get_all_users()
         users_authz = await authz_get_all_users()
         users_dashboard = build_user_dashboard(users, users_authn, users_authz)
         response = [core_to_msg_user_dashboard(ud) for ud in users_dashboard]
