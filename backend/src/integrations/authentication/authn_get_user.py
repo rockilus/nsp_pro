@@ -70,6 +70,6 @@ def user_dict_supertokens_to_core(user_st: Dict) -> UserAuth:
 
 def user_supertokens_to_core(user: User) -> UserAuth:
     return UserAuth(
-        id=user.user_id,  # type: ignore
-        email=user.email or "",  # type: ignore
+        id=user.id,
+        email=user.emails[0] if len(user.emails) > 0 else "",
     )

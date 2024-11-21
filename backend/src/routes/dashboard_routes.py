@@ -5,7 +5,6 @@ import humps
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import TypeAdapter
-from supertokens_python.recipe.session.asyncio import create_new_session
 
 from core import UserAuth, UserDashboard
 from errors import (
@@ -19,6 +18,8 @@ from integrations.authentication import (
     authn_delete_user,
     authn_get_all_users,
     authn_get_user,
+    authn_impersonate_user,
+    authn_restore_admin_session,
     authn_verify_session,
 )
 from integrations.authorization import (
@@ -93,33 +94,8 @@ async def impersonate(
     target_user_id = data.get("user_id", None)
     if not target_user_id:
         raise HTTPException(status_code=400, detail="User ID is required")
-
-    # we use the email password recipe here, but you can use the recipe you use
-    # user = await list_users_by_account_info("public", AccountInfo(email=email))
-    target_user_authn = await authn_get_user(target_user_id)
-
-    if target_user_authn is None:
-        # return a 400 error to the client
-        raise HTTPException(status_code=400, detail="User not found")
-
-    # Revoke the admin's current session
     await session.revoke_session()
-
-    await create_new_session(
-        request=request,
-        tenant_id="public",
-        recipe_user_id=target_user_id,
-        access_token_payload={
-            "isImpersonation": True,
-            "impersonatedUserEmail": target_user_authn.email,
-            "adminUserId": user_id,
-        },
-    )
-
-    # a new session has been created.
-    # - an access & refresh token has been attached to the response's cookie
-    # - a new row has been inserted into the database for this new session
-
+    await authn_impersonate_user(request, target_user_id, user_id)
     return JSONResponse({"message": "Impersonation complete!"})
 
 
@@ -129,29 +105,18 @@ async def restore_admin_session(
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
     access_token_payload = session.get_access_token_payload()
-
     # Check if this is an impersonated session
     if not access_token_payload.get("isImpersonation"):
         raise HTTPException(status_code=400, detail="Not impersonating any user")
-
     # Get the admin's user ID from the access token payload
     admin_user_id = access_token_payload.get("adminUserId", None)
     if not admin_user_id:
         raise HTTPException(status_code=400, detail="Admin user ID not found")
-
     # if not await authz_check(user_id, "impersonate", "user", user_id):
     #     raise NotAuthorizedError("You do not have permission to impersonate users")
-
     # Revoke the current impersonated session
     await session.revoke_session()
-
-    # Create a new session for the admin user
-    await create_new_session(
-        request=request,
-        tenant_id="public",
-        recipe_user_id=admin_user_id,
-    )
-
+    await authn_restore_admin_session(request, admin_user_id)
     return {"message": "Admin session restored"}
 
 

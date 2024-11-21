@@ -9,6 +9,10 @@ from integrations.authentication.authn_services import (
     authn_get_middleware,
     authn_verify_session,
 )
+from integrations.authentication.authn_session_management import (
+    authn_impersonate_user,
+    authn_restore_admin_session,
+)
 from integrations.authentication.authn_types import (
     RecipeUserIdType,
     SessionContainerType,
@@ -23,6 +27,8 @@ __all__ = [
     "authn_get_cors_headers",
     "authn_get_middleware",
     "authn_verify_session",
+    "authn_impersonate_user",
+    "authn_restore_admin_session",
     "RecipeUserIdType",
     "SessionContainerType",
     "authn_update_user_email",
