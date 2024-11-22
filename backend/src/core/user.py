@@ -14,6 +14,7 @@ class User:
     workers: List[str]
     language: SUPPORTED_LANGUAGES_LITERAL
     sign_up_at: datetime
+    impersonating_user_id: str | None
 
 
 @dataclass

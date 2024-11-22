@@ -92,6 +92,7 @@ async def change_user_password(
 def core_to_msg_user(user: User) -> UserMessage:
     try:
         data = asdict(user)
+        data.pop("impersonating_user_id")
     except Exception as e:
         log_info("Failed to convert User to dictionary")
         raise MessageTypeError(str(e)) from e
@@ -108,6 +109,7 @@ def core_to_msg_user(user: User) -> UserMessage:
 # message to core
 def msg_to_core_user(msg: UserMessage) -> User:
     data_snake = humps.decamelize(msg.model_dump())
+    data_snake["impersonating_user_id"] = None
     try:
         user = User(**data_snake)
     except Exception as e:

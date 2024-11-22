@@ -32,7 +32,10 @@ from logger import log_info
 from routes.api_model import UserAuthMessage, UserDashboardMessage
 from routes.user_routes import core_to_msg_user
 from scripts.setup_database import user_db
-from services.user_services import build_user_dashboard
+from services.user_services import (
+    build_user_dashboard,
+    update_user_impersonating_user_id,
+)
 
 router = APIRouter()
 
@@ -43,10 +46,8 @@ async def get_users(
 ) -> List[UserDashboardMessage]:
     try:
         user_id = session.get_user_id()
-        if not await authz_check(user_id, "read", "user", user_id):
-            raise NotAuthorizedError(
-                "You do not have permission to read the user dashboard"
-            )
+        if not await authz_check(user_id, "read-users", "admin"):
+            raise NotAuthorizedError("You do not have permission to read users")
         users = user_db.get_users()
         users_authn = await authn_get_all_users()
         users_authz = await authz_get_all_users()
@@ -65,10 +66,8 @@ async def get_user(
 ) -> UserDashboardMessage:
     try:
         user_id = session.get_user_id()
-        if not await authz_check(user_id, "read", "user", user_id):
-            raise NotAuthorizedError(
-                "You do not have permission to read the user dashboard"
-            )
+        if not await authz_check(user_id, "read-user", "admin"):
+            raise NotAuthorizedError("You do not have permission to read a user")
         user = user_db.get_user_by_id(target_user_id)
         user_authn = await authn_get_user(target_user_id)
         user_authz = await authz_get_user(target_user_id)
@@ -88,7 +87,7 @@ async def impersonate(
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
     user_id = session.get_user_id()
-    if not await authz_check(user_id, "read", "user", user_id):
+    if not await authz_check(user_id, "create-impersonation", "admin"):
         raise NotAuthorizedError("You do not have permission to impersonate users")
     data = await request.json()
     target_user_id = data.get("user_id", None)
@@ -96,6 +95,7 @@ async def impersonate(
         raise HTTPException(status_code=400, detail="User ID is required")
     await session.revoke_session()
     await authn_impersonate_user(request, target_user_id, user_id)
+    update_user_impersonating_user_id(user_id, target_user_id)
     return JSONResponse({"message": "Impersonation complete!"})
 
 
@@ -104,19 +104,37 @@ async def restore_admin_session(
     request: Request,
     session: SessionContainerType = Depends(authn_verify_session()),
 ):
+    user_id = session.get_user_id()
     access_token_payload = session.get_access_token_payload()
     # Check if this is an impersonated session
     if not access_token_payload.get("isImpersonation"):
-        raise HTTPException(status_code=400, detail="Not impersonating any user")
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to restore the admin session",
+        )
     # Get the admin's user ID from the access token payload
     admin_user_id = access_token_payload.get("adminUserId", None)
     if not admin_user_id:
-        raise HTTPException(status_code=400, detail="Admin user ID not found")
-    # if not await authz_check(user_id, "impersonate", "user", user_id):
-    #     raise NotAuthorizedError("You do not have permission to impersonate users")
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to restore the admin session",
+        )
+    if not await authz_check(admin_user_id, "delete-impersonation", "admin"):
+        raise NotAuthorizedError(
+            "You do not have permission to restore the admin session"
+        )
+    admin_user = user_db.get_user_by_id(admin_user_id)
+    if not admin_user:
+        raise HTTPException(status_code=400, detail="Admin user not found")
+    if admin_user.impersonating_user_id != user_id:
+        raise HTTPException(
+            status_code=400,
+            detail="You do not have permission to restore the admin session",
+        )
     # Revoke the current impersonated session
     await session.revoke_session()
     await authn_restore_admin_session(request, admin_user_id)
+    update_user_impersonating_user_id(admin_user_id, None)
     return {"message": "Admin session restored"}
 
 
@@ -127,10 +145,8 @@ async def delete_user(
 ) -> Dict:
     try:
         user_id = session.get_user_id()
-        if not await authz_check(user_id, "read", "user", user_id):
-            raise NotAuthorizedError(
-                "You do not have permission to read the user dashboard"
-            )
+        if not await authz_check(user_id, "delete-user", "admin"):
+            raise NotAuthorizedError("You do not have permission to delete users")
         user = user_db.get_user_by_id(target_user_id)
         if user:
             raise HTTPException(status_code=400, detail="User can't be deleted")

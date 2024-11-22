@@ -88,6 +88,12 @@ class UserDB:
 # Mappers
 # core to document
 def core_to_doc_user(dataclass_obj: User) -> UserDocument:
+    impersonating_user = None
+    if dataclass_obj.impersonating_user_id:
+        # pylint: disable=no-member
+        impersonating_user = UserDocument.objects.get(  # type: ignore
+            id=dataclass_obj.impersonating_user_id
+        )
     try:
         u_doc = UserDocument(
             id=dataclass_obj.id,
@@ -96,6 +102,7 @@ def core_to_doc_user(dataclass_obj: User) -> UserDocument:
             last_name=dataclass_obj.last_name,
             workers=[],
             language=dataclass_obj.language,
+            impersonating_user=impersonating_user,
         )
     except Exception as e:
         log_info("Failed to convert User to UserDocument")
@@ -107,7 +114,10 @@ def core_to_doc_user(dataclass_obj: User) -> UserDocument:
 def doc_to_core_user(doc_obj: UserDocument) -> User:
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
+    doc_dict["impersonating_user_id"] = doc_dict.get("impersonating_user", None)
     doc_dict.pop("_id")
+    if "impersonating_user" in doc_dict:
+        doc_dict.pop("impersonating_user")
     return User(**doc_dict)
     # try:
     #     user = User(

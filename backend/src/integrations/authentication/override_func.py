@@ -124,6 +124,7 @@ def override_emailpassword_apis(original_implementation: APIInterface):
                         workers=[],
                         language=language,  # type: ignore
                         sign_up_at=datetime.now(timezone.utc),
+                        impersonating_user_id=None,
                     )
                 )
                 team = await create_team(

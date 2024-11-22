@@ -20,3 +20,4 @@ class User(Document):
     workers = ListField(ReferenceField("Worker"))
     language = StringField(required=True, choices=["en", "es", "fr"])
     sign_up_at = DateTimeField(default=datetime.now(timezone.utc))
+    impersonating_user = ReferenceField("User")

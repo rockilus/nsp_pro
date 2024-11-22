@@ -18,6 +18,7 @@ async def update_user(
         raise UserNotFoundError(f"User with id {user.id} not found")
     if existing_user.email != user.email:
         await update_user_email(user, recipe_user_id, tenant_id)
+    user.impersonating_user_id = existing_user.impersonating_user_id
     return user_db.update_user(user)
 
 
@@ -44,6 +45,16 @@ async def change_user_password(
         password_data.current_password,
         password_data.new_password,
     )
+
+
+def update_user_impersonating_user_id(
+    user_id: str, impersonating_user_id: str | None
+) -> User:
+    user = user_db.get_user_by_id(user_id)
+    if user is None:
+        raise UserNotFoundError(f"User with id {user_id} not found")
+    user.impersonating_user_id = impersonating_user_id
+    return user_db.update_user(user)
 
 
 async def is_valid_email(value: str) -> bool:
