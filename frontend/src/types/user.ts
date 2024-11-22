@@ -9,3 +9,14 @@ export type UserT = {
   language: string;
   signUpDate: dayjs.Dayjs;
 };
+
+export type UserAuthT = {
+  id: string;
+  email: string;
+};
+
+export type UserDashboardT = {
+  user: UserT | null;
+  userAuthn: UserAuthT | null;
+  userAuthz: UserAuthT | null;
+};

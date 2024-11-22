@@ -2,7 +2,7 @@ from dataclasses import asdict
 from typing import Dict
 
 import humps
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 
 from core import PasswordData, User
@@ -34,6 +34,8 @@ async def get_current_user(
         if not await authz_check(user_id, "read", "user", user_id):
             raise NotAuthorizedError("You do not have permission to read the user")
         user = user_db.get_user_by_id(user_id)
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
         response = core_to_msg_user(user)
     except Exception as e:
         log_info("Failed to get current user")
@@ -50,8 +52,10 @@ async def update_user(
     try:
         if not await authz_check(session.get_user_id(), "update", "user", user_id):
             raise NotAuthorizedError("You do not have permission to update a user")
+        recipe_user_id = session.get_recipe_user_id()
+        tenant_id = session.get_tenant_id()
         u_data = msg_to_core_user(user)
-        updated_user = await update_user_service(u_data)
+        updated_user = await update_user_service(u_data, recipe_user_id, tenant_id)
         response = core_to_msg_user(updated_user)
     except Exception as e:
         log_info("Failed to update user")
@@ -70,11 +74,12 @@ async def change_user_password(
             session.get_user_id(), "change-password", "user", user_id
         ):
             raise NotAuthorizedError("You do not have permission to update a user")
+        recipe_user_id = session.get_recipe_user_id()
         tenant_id = session.get_tenant_id()
         p_data = msg_to_core_password_data(password_data)
         if p_data.new_password != p_data.new_password_confirm:
             raise PasswordsDoNotMatchError("Passwords do not match")
-        await change_user_password_service(user_id, tenant_id, p_data)
+        await change_user_password_service(user_id, recipe_user_id, tenant_id, p_data)
         response = {"message": "Password updated successfully"}
     except Exception as e:
         log_info("Failed to update user password")
@@ -87,6 +92,7 @@ async def change_user_password(
 def core_to_msg_user(user: User) -> UserMessage:
     try:
         data = asdict(user)
+        data.pop("impersonating_user_id")
     except Exception as e:
         log_info("Failed to convert User to dictionary")
         raise MessageTypeError(str(e)) from e
@@ -103,6 +109,7 @@ def core_to_msg_user(user: User) -> UserMessage:
 # message to core
 def msg_to_core_user(msg: UserMessage) -> User:
     data_snake = humps.decamelize(msg.model_dump())
+    data_snake["impersonating_user_id"] = None
     try:
         user = User(**data_snake)
     except Exception as e:

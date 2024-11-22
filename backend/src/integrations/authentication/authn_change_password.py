@@ -1,15 +1,17 @@
-from supertokens_python.recipe.emailpassword.asyncio import (
-    get_user_by_id,
-    sign_in,
-    update_email_or_password,
-)
 from supertokens_python.recipe.emailpassword.interfaces import (
-    SignInWrongCredentialsError,
+    PasswordPolicyViolationError,
     UpdateEmailOrPasswordOkResult,
-    UpdateEmailOrPasswordPasswordPolicyViolationError,
+    WrongCredentialsError,
 )
+from supertokens_python.recipe.emailpassword.syncio import (
+    update_email_or_password,
+    verify_credentials,
+)
+from supertokens_python.syncio import get_user
+from supertokens_python.types import RecipeUserId
 
 from errors import (
+    AuthnEmailNotFoundForUserError,
     AuthnPasswordChangeError,
     AuthnPasswordPolicyViolationError,
     AuthnUserNotFoundError,
@@ -18,26 +20,54 @@ from errors import (
 
 
 async def authn_change_password(
-    user_id: str, tenant_id: str, current_password: str, new_password: str
+    user_id: str,
+    recipe_user_id: RecipeUserId,
+    tenant_id: str,
+    current_password: str,
+    new_password: str,
 ) -> None:
     # get the signed in user's email from the getUserById function
-    users_info = await get_user_by_id(user_id)
+    users_info = get_user(user_id)
+
     if users_info is None:
         raise AuthnUserNotFoundError("User not found")
-    # call signin to check that the input password is correct
-    isPasswordValid = await sign_in(
-        "public", users_info.email, password=current_password
+
+    # Find the login method for the current user
+    login_method = next(
+        (
+            lm
+            for lm in users_info.login_methods
+            if lm.recipe_user_id.get_as_string() == recipe_user_id
+            and lm.recipe_id == "emailpassword"
+        ),
+        None,
     )
-    if isinstance(isPasswordValid, SignInWrongCredentialsError):
+
+    if login_method is None:
+        raise AuthnPasswordChangeError(
+            "User does not have an emailpassword login method"
+        )
+
+    email = login_method.email
+
+    if email is None:
+        raise AuthnEmailNotFoundForUserError("Email not found for the user")
+
+    # call signin to check that the input password is correct
+    isPasswordValid = verify_credentials("public", email, password=current_password)
+
+    if isinstance(isPasswordValid, WrongCredentialsError):
         raise AuthnWrongCredentialsError("Incorrect password")
+
     # update the users password
-    update_response = await update_email_or_password(
-        user_id,
+    update_response = update_email_or_password(
+        recipe_user_id,
         password=new_password,
         tenant_id_for_password_policy=tenant_id,
     )
+
     if isinstance(update_response, UpdateEmailOrPasswordOkResult):
         return
-    if isinstance(update_response, UpdateEmailOrPasswordPasswordPolicyViolationError):
+    if isinstance(update_response, PasswordPolicyViolationError):
         raise AuthnPasswordPolicyViolationError(str(update_response.failure_reason))
     raise AuthnPasswordChangeError("Unknown error")

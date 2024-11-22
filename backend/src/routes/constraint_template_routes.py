@@ -10,6 +10,7 @@ from core import Template
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
+    UserNotFoundError,
     handle_message_errors,
     handle_routes_errors,
 )
@@ -40,6 +41,8 @@ async def get_constraint_templates(
             )
         user_id = session.get_user_id()
         user = user_db.get_user_by_id(user_id)
+        if user is None:
+            raise UserNotFoundError(f"User with id {user_id} not found")
         # pylint: disable=R0801
         (
             workers,

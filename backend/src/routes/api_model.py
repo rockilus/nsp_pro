@@ -291,6 +291,17 @@ class PasswordDataMessage(BaseModel):
     newPasswordConfirm: str
 
 
+class UserAuthMessage(BaseModel):
+    id: str
+    email: str
+
+
+class UserDashboardMessage(BaseModel):
+    user: UserMessage | None
+    userAuthn: UserAuthMessage | None
+    userAuthz: UserAuthMessage | None
+
+
 # Team
 class SpecialtyMessage(BaseModel):
     id: str

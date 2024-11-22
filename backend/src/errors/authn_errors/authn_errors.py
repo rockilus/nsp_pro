@@ -16,6 +16,12 @@ class AuthnUpdateEmailError(Exception):
         super().__init__(self.message)
 
 
+class AuthnEmailChangeNotAllowedError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
 class AuthnPasswordChangeError(Exception):
     def __init__(self, message):
         self.message = message
@@ -35,6 +41,12 @@ class AuthnWrongCredentialsError(Exception):
 
 
 class AuthnUserNotFoundError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+class AuthnEmailNotFoundForUserError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)

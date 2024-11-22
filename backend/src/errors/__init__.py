@@ -1,6 +1,8 @@
 from errors.authn_errors.authn_error_handlers import handle_supertokens_errors
 from errors.authn_errors.authn_errors import (
     AuthnEmailAlreadyExistsError,
+    AuthnEmailChangeNotAllowedError,
+    AuthnEmailNotFoundForUserError,
     AuthnPasswordChangeError,
     AuthnPasswordPolicyViolationError,
     AuthnUpdateEmailError,
@@ -10,6 +12,7 @@ from errors.authn_errors.authn_errors import (
 from errors.authz_errors.authz_error_handlers import handle_permit_errors
 from errors.authz_errors.authz_errors import AuthzConnectionError
 from errors.core_errors.core_error_handlers import handle_create_core_object_error
+from errors.core_errors.core_errors import UserNotFoundError
 from errors.database_errors.db_connection_error import DBConnectionError
 from errors.database_errors.document_error_handlers import (
     handle_create_document_error,
@@ -30,6 +33,8 @@ from errors.stats_errors.stats_errors import NoCampaignError
 __all__ = [
     "handle_supertokens_errors",
     "AuthnEmailAlreadyExistsError",
+    "AuthnEmailChangeNotAllowedError",
+    "AuthnEmailNotFoundForUserError",
     "AuthnPasswordChangeError",
     "AuthnPasswordPolicyViolationError",
     "AuthnUserNotFoundError",
@@ -38,6 +43,7 @@ __all__ = [
     "handle_permit_errors",
     "AuthzConnectionError",
     "handle_create_core_object_error",
+    "UserNotFoundError",
     "DBConnectionError",
     "handle_create_document_error",
     "handle_delete_document_error",

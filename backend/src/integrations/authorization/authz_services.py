@@ -1,11 +1,15 @@
 from typing import List
 
-from permit import Permit, PermitConnectionError  # type: ignore
+from permit import PermitApiError  # type: ignore
+from permit import Permit, PermitConnectionError, UserRead  # type: ignore
 
-from core import Team, User
+from core import Team, User, UserAuth
 from errors import AuthzConnectionError, handle_permit_errors
 from logger import log_debug, log_info
 from utils.env_config import PDP_API_KEY, PDP_URL
+
+# Permit API doc:
+# https://api.permit.io/v2/redoc#tag/Users
 
 try:
     permit = Permit(pdp=PDP_URL, token=PDP_API_KEY)
@@ -86,3 +90,63 @@ async def authz_check(
         log_info("Permit check error")
         handle_permit_errors(e)
     return out
+
+
+# async def authz_get_all_users():
+#     try:
+#         users = await permit.api.users.list()
+#     except Exception as e:
+#         log_info("Permit get all users error")
+#         handle_permit_errors(e)
+#     return users
+
+
+async def authz_get_all_users() -> List[UserAuth]:
+    users: List[UserRead] = []
+    page = 1
+    per_page = 100  # Adjust this value based on the actual limit specified by the API
+
+    try:
+        while True:
+            response = await permit.api.users.list(page=page, per_page=per_page)
+            users.extend(response.data)
+
+            # Check if there's another page of results
+            if len(response.data) < per_page:
+                break
+            page += 1
+
+    except Exception as e:
+        log_info("Permit get all users error")
+        handle_permit_errors(e)
+
+    return [permit_to_core_user_auth(u) for u in users]
+
+
+async def authz_get_user(user_id: str) -> UserAuth | None:
+    try:
+        user = await permit.api.users.get(user_id)
+    except PermitApiError as e:
+        if e.status_code == 404:
+            return None
+        log_info("Permit get user error")
+        handle_permit_errors(e)
+    except Exception as e:
+        log_info("Permit get user error")
+        handle_permit_errors(e)
+    return permit_to_core_user_auth(user)
+
+
+async def authz_delete_user(user_id: str) -> None:
+    try:
+        await permit.api.users.delete(user_id)
+    except Exception as e:
+        log_info("Permit delete user error")
+        handle_permit_errors(e)
+
+
+def permit_to_core_user_auth(user_read: UserRead) -> UserAuth:
+    return UserAuth(
+        id=user_read.key,
+        email=user_read.email,
+    )

@@ -24,7 +24,7 @@ class Shift(Document):
     name = StringField(required=True)
     start_time = FloatField(required=True)
     end_time = FloatField(required=True)
-    staffing = EmbeddedDocumentListField(Staffing, required=True)
+    staffing = EmbeddedDocumentListField(Staffing)
     color = StringField(required=True)
     shift_type = IntField(required=True, choices=[e.value for e in ShiftType])
     rest_type = IntField(required=True, choices=[e.value for e in ShiftRestType])

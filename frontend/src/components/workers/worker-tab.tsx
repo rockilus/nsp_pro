@@ -40,6 +40,8 @@ import { DimensionT, DimEntryT } from "../../types/dimension";
 import { AttributeT } from "../../types/attribute";
 import { SpecialtyT } from "../../types/team";
 
+import Session from "supertokens-auth-react/recipe/session";
+
 dayjs.extend(utc);
 
 export default function WorkerTab({
@@ -309,6 +311,21 @@ export default function WorkerTab({
     };
     fetchWorkersTabData();
   }, [selectedTeamId]);
+
+  useEffect(() => {
+    const fetchAccessTokenPayload = async () => {
+      try {
+        const payload = await Session.getAccessTokenPayloadSecurely();
+        console.log("Access token payload:", payload);
+
+        // setAccessTokenPayload(payload);
+      } catch (error) {
+        console.error("Failed to get access token payload:", error);
+      }
+    };
+
+    fetchAccessTokenPayload();
+  }, []);
 
   return (
     <div className="tab-container-wide">
