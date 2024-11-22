@@ -23,6 +23,30 @@ const toUserDashboardT = (data: any): UserDashboardT => {
 // Users Dashboard //
 //////////////////////////
 
+export const checkUserAuthz = async () => {
+  noStore();
+  const options: RequestInit = {
+    method: "GET",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const url = `${apiUrlDashboard}/check-authz`;
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error("Failed to check user authz");
+    }
+    return true;
+  } catch (error) {
+    console.error("Error checking user authorization:", error);
+    throw new Error(
+      "Error checking user authorization, please try again later"
+    );
+  }
+};
+
 export async function getUsersDashboard() {
   noStore();
   const options: RequestInit = {

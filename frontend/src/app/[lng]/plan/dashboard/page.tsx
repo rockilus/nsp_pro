@@ -2,6 +2,7 @@
 
 // Components
 import DashboardTab from "../../../../components/dashboard/dashboard-tab";
+import DashboardHOC from "../../../../components/dashboard/dashboard-hoc";
 
 export default function Page({
   params: { lng },
@@ -10,5 +11,7 @@ export default function Page({
     lng: string;
   };
 }) {
-  return <DashboardTab lng={lng} />;
+  const DashboardTabWithAuth = DashboardHOC(DashboardTab);
+
+  return <DashboardTabWithAuth lng={lng} />;
 }

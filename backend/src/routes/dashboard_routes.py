@@ -40,6 +40,16 @@ from services.user_services import (
 router = APIRouter()
 
 
+@router.get("/admin-dashboard/check-authz")
+async def check_dashboard_authz(
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> Dict:
+    user_id = session.get_user_id()
+    if not await authz_check(user_id, "read-dashboard", "admin"):
+        raise NotAuthorizedError("You do not have permission to view the dashboard")
+    return {"message": "You have permission to view the dashboard"}
+
+
 @router.get("/admin-dashboard/users")
 async def get_users(
     session: SessionContainerType = Depends(authn_verify_session()),
