@@ -50,3 +50,9 @@ class AuthnEmailNotFoundForUserError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+
+
+class AuthnConnectionError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)

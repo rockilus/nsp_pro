@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import List
+from typing import Dict, List
 
 from pydantic import BaseModel
 
@@ -324,5 +324,15 @@ class ExportOptionsMessage(BaseModel):
 
 
 # Health
+# class HealthCheck(BaseModel):
+#     status: str
+
+
+class ServiceStatus(BaseModel):
+    status: str
+    details: str | None
+
+
 class HealthCheck(BaseModel):
     status: str
+    services: Dict[str, ServiceStatus]
