@@ -150,3 +150,11 @@ def permit_to_core_user_auth(user_read: UserRead) -> UserAuth:
         id=user_read.key,
         email=user_read.email,
     )
+
+
+def authz_health_check() -> None:
+    try:
+        permit.api.tenants.list()
+    except Exception as e:
+        log_info("Permit health check error: " + str(e))
+        handle_permit_errors(e)

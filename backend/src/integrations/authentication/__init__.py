@@ -4,6 +4,7 @@ from integrations.authentication.authn_get_user import (
     authn_get_all_users,
     authn_get_user,
 )
+from integrations.authentication.authn_health_check import authn_health_check
 from integrations.authentication.authn_services import (
     authn_get_cors_headers,
     authn_get_middleware,
@@ -24,6 +25,7 @@ __all__ = [
     "authn_delete_user",
     "authn_get_all_users",
     "authn_get_user",
+    "authn_health_check",
     "authn_get_cors_headers",
     "authn_get_middleware",
     "authn_verify_session",

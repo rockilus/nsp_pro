@@ -312,20 +312,20 @@ export default function WorkerTab({
     fetchWorkersTabData();
   }, [selectedTeamId]);
 
-  useEffect(() => {
-    const fetchAccessTokenPayload = async () => {
-      try {
-        const payload = await Session.getAccessTokenPayloadSecurely();
-        console.log("Access token payload:", payload);
+  // useEffect(() => {
+  //   const fetchAccessTokenPayload = async () => {
+  //     try {
+  //       const payload = await Session.getAccessTokenPayloadSecurely();
+  //       console.log("Access token payload:", payload);
 
-        // setAccessTokenPayload(payload);
-      } catch (error) {
-        console.error("Failed to get access token payload:", error);
-      }
-    };
+  //       // setAccessTokenPayload(payload);
+  //     } catch (error) {
+  //       console.error("Failed to get access token payload:", error);
+  //     }
+  //   };
 
-    fetchAccessTokenPayload();
-  }, []);
+  //   fetchAccessTokenPayload();
+  // }, []);
 
   return (
     <div className="tab-container-wide">

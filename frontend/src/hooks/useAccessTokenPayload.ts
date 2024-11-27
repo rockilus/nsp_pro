@@ -12,8 +12,6 @@ const useAccessTokenPayload = () => {
   useEffect(() => {
     const getAccessTokenPayload = async () => {
       const payload = await Session.getAccessTokenPayloadSecurely();
-      console.log("payload", payload);
-
       setAccessTokenPayload(payload);
     };
     getAccessTokenPayload();
