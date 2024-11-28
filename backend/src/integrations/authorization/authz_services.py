@@ -11,14 +11,20 @@ from utils.env_config import PDP_API_KEY, PDP_URL
 # Permit API doc:
 # https://api.permit.io/v2/redoc#tag/Users
 
-try:
-    permit = Permit(pdp=PDP_URL, token=PDP_API_KEY)
-    log_debug("Permit SDK initialization and connection to PDP OK")
-except PermitConnectionError as err:
-    log_info("Permit connection error")
-    raise AuthzConnectionError(
-        "Failed to connect to Permit Policy Decision Point (PDP)"
-    ) from err
+
+def authz_connect() -> Permit:
+    try:
+        permit_obj = Permit(pdp=PDP_URL, token=PDP_API_KEY)
+        log_debug("Permit SDK initialization and connection to PDP OK")
+        return permit_obj
+    except PermitConnectionError as err:
+        log_info("Permit connection error")
+        raise AuthzConnectionError(
+            "Failed to connect to Permit Policy Decision Point (PDP)"
+        ) from err
+
+
+permit = authz_connect()
 
 
 async def authz_user_sync(user: User) -> None:
@@ -156,5 +162,5 @@ def authz_health_check() -> None:
     try:
         permit.api.tenants.list()
     except Exception as e:
-        log_info("Permit health check error: " + str(e))
-        handle_permit_errors(e)
+        log_info("Permit health check error, trying to reconnect: " + str(e))
+        authz_connect()

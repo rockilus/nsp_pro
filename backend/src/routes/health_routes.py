@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 
 from errors import AuthnConnectionError, AuthzConnectionError, DBConnectionError
 from integrations.authentication import authn_health_check
@@ -40,5 +40,10 @@ async def health_check() -> HealthCheck:
         if all(service.status == "ok" for service in health_status.values())
         else "error"
     )
-
+    if overall_status == "error":
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            # detail=health_status,
+            detail={key: value.model_dump() for key, value in health_status.items()},
+        )
     return HealthCheck(status=overall_status, services=health_status)
