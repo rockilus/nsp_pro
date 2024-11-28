@@ -25,8 +25,9 @@ class DB:
             database = mongoengine.get_db()
             database.command('ping')
         except ConnectionFailure as e:
-            log_info("Database connection error: " + str(e))
-            raise DBConnectionError("Database connection error") from e
+            log_info("Database health check error, trying to reconnect: " + str(e))
+            self.connect()
+            # raise DBConnectionError("Database connection error") from e
         except Exception as e:
             log_info("Database connection error: " + str(e))
             raise DBConnectionError("Database connection error") from e
