@@ -53,6 +53,7 @@ export default function EventToDiv({
         backgroundColor: event.shift.color,
         opacity: 0.8,
         color: "white",
+        borderBottom: "1px solid #ffffff",
         borderTopLeftRadius: event.borderTopRadius ? "4px" : "0px",
         borderTopRightRadius: event.borderTopRadius ? "4px" : "0px",
         borderBottomLeftRadius: event.borderBottomRadius ? "4px" : "0px",
