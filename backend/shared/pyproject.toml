@@ -1,18 +1,20 @@
 [tool.poetry]
-name = "backend"
+name = "shared"
 version = "0.1.0"
 description = ""
 authors = ["Felipe Kharaba"]
 readme = "README.md"
-package-mode = false
+packages = [
+    { include = "database" },
+    { include = "schemas" },
+    { include = "logger" }
+]
 
 [tool.poetry.dependencies]
-python = "^3.11"
-black = "^24.10.0"
-mypy = "^1.13.0"
-flake8 = "^7.1.1"
-autoflake = "^2.3.1"
-isort = "^5.13.2"
+python = ">=3.10,<=3.13"
+mongoengine = "^0.29.1"
+loguru = "^0.7.2"
+mongo-types = "^0.15.1"
 
 
 [build-system]
