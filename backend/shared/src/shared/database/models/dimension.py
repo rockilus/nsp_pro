@@ -6,7 +6,8 @@ from mongoengine.fields import (
     ReferenceField,
     StringField,
 )
-from schemas import DimensionEntryType, DimensionType
+
+from shared.schemas.schemas.dimension import DimensionEntryType, DimensionType
 
 
 class DimEntry(Document):

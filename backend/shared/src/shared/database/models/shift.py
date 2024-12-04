@@ -7,7 +7,8 @@ from mongoengine.fields import (
     ReferenceField,
     StringField,
 )
-from schemas import ShiftLeaveType, ShiftRestType, ShiftType
+
+from shared.schemas.schemas.shift import ShiftLeaveType, ShiftRestType, ShiftType
 
 
 class Staffing(EmbeddedDocument):

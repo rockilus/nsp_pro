@@ -2,6 +2,7 @@ from typing import Dict
 
 from celery.result import AsyncResult  # type: ignore
 from redis import Redis
+
 from task_queue_service.tasks import send_to_processing_engine
 
 redis_client = Redis(host="localhost", port=6379, db=0)

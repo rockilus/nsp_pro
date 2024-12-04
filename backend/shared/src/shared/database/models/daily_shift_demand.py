@@ -1,6 +1,7 @@
 from mongoengine import Document
 from mongoengine.fields import FloatField, IntField, ReferenceField, StringField
-from schemas import DSDSourceType
+
+from shared.schemas.schemas.coverage import DSDSourceType
 
 
 class DailyShiftDemand(Document):

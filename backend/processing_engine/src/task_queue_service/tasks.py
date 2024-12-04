@@ -1,10 +1,10 @@
 import time  # For simulation purposes
 
-from celery_app import app
+from task_queue_service.celery_app import app
 
 
 @app.task(bind=True)
-def process_data(self, user_id, data):
+def process_data(user_id):
     # Simulate processing time
     time.sleep(5)
     # Process the data (implement your solver algorithm here)

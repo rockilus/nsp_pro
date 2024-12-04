@@ -23,6 +23,7 @@ from shared.database import (
 from shared.database.errors import DBConnectionError
 from shared.logger import log_critical, log_info
 from shared.schemas import Config
+
 from utils.env_config import DB_URI
 
 

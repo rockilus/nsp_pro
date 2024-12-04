@@ -1,8 +1,6 @@
 from datetime import date
 from typing import Dict, List
 
-from constraint_parser.mapping.map_constraint import MapConstaint
-from core_to_engine_service.types import WorkerDates
 from shared.schemas import (
     ConstraintBuildAugmented,
     Constraints,
@@ -10,6 +8,9 @@ from shared.schemas import (
     Shift,
     Worker,
 )
+
+from constraint_parser.mapping.map_constraint import MapConstaint
+from core_to_engine_service.types import WorkerDates
 
 
 # pylint: disable=too-many-arguments

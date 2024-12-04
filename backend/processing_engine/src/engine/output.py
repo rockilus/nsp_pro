@@ -1,9 +1,10 @@
 from datetime import date
 from typing import List
 
+from ortools.sat.python import cp_model  # type: ignore
+
 from engine.model.model import Model
 from engine.types import Assignment, Breach, Outputs
-from ortools.sat.python import cp_model  # type: ignore
 
 
 class Output:

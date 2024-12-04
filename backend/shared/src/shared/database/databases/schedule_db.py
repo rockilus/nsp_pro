@@ -3,6 +3,7 @@ from typing import List
 
 from bson import ObjectId
 from mongoengine import DoesNotExist
+
 from shared.database.databases.db import DB
 from shared.database.errors.document_error_handlers import (
     handle_delete_document_error,

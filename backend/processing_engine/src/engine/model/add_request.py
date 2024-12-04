@@ -1,8 +1,9 @@
 from typing import Dict, List, Tuple
 
+from ortools.sat.python import cp_model  # type: ignore
+
 from engine.model.utils.model_utils import build_var_name_constraint, get_nested_value
 from engine.types import Objective, ObjectiveCategory, Request
-from ortools.sat.python import cp_model  # type: ignore
 
 
 # pylint: disable=too-few-public-methods

@@ -1,8 +1,9 @@
 from dataclasses import asdict
 from typing import List
 
-from engine import Assignment as AssignmentEngine
 from shared.schemas import Assignment, Schedule
+
+from engine import Assignment as AssignmentEngine
 
 
 def build_campaign_assignments(

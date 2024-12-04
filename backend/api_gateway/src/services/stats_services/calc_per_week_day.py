@@ -2,6 +2,7 @@ from datetime import date
 from typing import Dict, Tuple
 
 import numpy as np
+
 from utils.constants import Constants
 
 

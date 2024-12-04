@@ -7,7 +7,6 @@ from shared.database.errors import (
     DocumentNotUniqueError,
 )
 from shared.schemas.errors import SchemaTypeError, SchemaValueError
-from utils.constants import Constants
 
 from errors.authn_errors.authn_errors import (
     AuthnPasswordPolicyViolationError,
@@ -26,6 +25,7 @@ from errors.message_errors.message_errors import (
 )
 from errors.routes_errors.routes_errors import NotAuthorizedError
 from errors.stats_errors.stats_errors import NoCampaignError
+from utils.constants import Constants
 
 
 def handle_routes_errors(error: Exception):

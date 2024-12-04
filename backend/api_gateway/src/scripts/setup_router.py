@@ -3,7 +3,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from shared.logger import log_middleware
 from starlette.middleware.base import BaseHTTPMiddleware
-from utils.env_config import API_DOMAIN, API_PORT, ORIGINS, UVICORN_RELOAD
 
 # pylint: disable=unused-import
 from integrations.authentication import authn_services  # noqa: F401
@@ -33,6 +32,7 @@ from routes import (
     router_user,
     router_worker,
 )
+from utils.env_config import API_DOMAIN, API_PORT, ORIGINS, UVICORN_RELOAD
 
 app = FastAPI()
 

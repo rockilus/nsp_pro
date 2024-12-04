@@ -20,7 +20,6 @@ from shared.schemas import (
     StatsOptions,
     Worker,
 )
-from utils.constants import Constants
 
 from errors import NoCampaignError
 from scripts.setup_database import (
@@ -56,6 +55,7 @@ from services.stats_services.np_to_core import (
     np_to_core_days_worked_per_year,
     np_to_core_nb_times_shift,
 )
+from utils.constants import Constants
 
 
 # pylint: disable=too-many-locals

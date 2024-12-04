@@ -1,5 +1,20 @@
 from typing import Dict, List, Tuple
 
+from shared.schemas import (
+    Assignment,
+    Attribute,
+    ConstraintBuildAugmented,
+    Constraints,
+    DailyShiftDemand,
+    Dimension,
+    DimEntry,
+    Request,
+    Schedule,
+    Shift,
+    ShiftType,
+    Worker,
+)
+
 from core_to_engine_service.build_dates import (
     build_dates,
     build_worker_ids_to_worker_dates,
@@ -25,20 +40,6 @@ from core_to_engine_service.build_periods import (
 )
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
 from engine import Inputs as InputsEngine
-from shared.schemas import (
-    Assignment,
-    Attribute,
-    ConstraintBuildAugmented,
-    Constraints,
-    DailyShiftDemand,
-    Dimension,
-    DimEntry,
-    Request,
-    Schedule,
-    Shift,
-    ShiftType,
-    Worker,
-)
 
 
 # pylint: disable=too-many-arguments, too-many-locals, R0801

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List
 
 from bson import ObjectId
+
 from shared.database.databases.db import DB
 from shared.database.databases.schedule_db import core_to_doc_schedule
 from shared.database.errors.document_error_handlers import (

@@ -1,4 +1,5 @@
 from bson import ObjectId
+
 from shared.database.databases.db import DB
 from shared.database.errors.document_error_handlers import (
     handle_create_document_error,

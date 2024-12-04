@@ -1,6 +1,7 @@
 from typing import Callable
 
 import pytest
+
 from engine.engine import Engine
 
 # pylint: disable=unused-import

@@ -6,7 +6,8 @@ from mongoengine.fields import (
     ReferenceField,
     StringField,
 )
-from schemas import AttributeOwnerType
+
+from shared.schemas.schemas.attribute import AttributeOwnerType
 
 
 class Attribute(Document):

@@ -1,7 +1,6 @@
 from datetime import date
 from typing import List, Tuple
 
-from constraint_parser.mapping.utils import find_block_by_name
 from shared.schemas import (
     Block,
     BlockNameOptions,
@@ -9,6 +8,8 @@ from shared.schemas import (
     ConstraintType,
     VarDaySelectorOptions,
 )
+
+from constraint_parser.mapping.utils import find_block_by_name
 from utils.constants import Constants
 
 

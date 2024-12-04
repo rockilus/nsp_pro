@@ -2,8 +2,6 @@ import json
 from datetime import date
 from typing import Dict, List
 
-from engine import Breach as BreachEngine
-from engine import VarName as VarNameEngine
 from shared.schemas import (
     Assignment,
     Breach,
@@ -23,6 +21,9 @@ from shared.schemas import (
     Variable,
     Worker,
 )
+
+from engine import Breach as BreachEngine
+from engine import VarName as VarNameEngine
 
 
 # pylint: disable=too-many-arguments

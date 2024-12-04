@@ -1,5 +1,7 @@
 from typing import Dict, Tuple
 
+from ortools.sat.python import cp_model  # type: ignore
+
 from engine.model.add_constraint_fai import AddConstraintFai
 from engine.model.add_constraint_fil import AddConstraintFil
 from engine.model.add_constraint_ord import AddConstraintOrd
@@ -8,7 +10,6 @@ from engine.model.add_constraint_sum import AddConstraintSum
 from engine.model.add_coverage import AddCoverage
 from engine.model.add_request import AddRequest
 from engine.types import Objective
-from ortools.sat.python import cp_model  # type: ignore
 
 
 # pylint: disable=too-few-public-methods

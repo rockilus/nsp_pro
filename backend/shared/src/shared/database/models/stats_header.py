@@ -6,7 +6,7 @@ from mongoengine.fields import (
     StringField,
 )
 
-from database.models.constraint_build import ShiftWorkerOption
+from shared.database.models.constraint_build import ShiftWorkerOption
 
 
 class StatsHeader(Document):

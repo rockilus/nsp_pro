@@ -1,6 +1,5 @@
 from typing import Dict, List, Tuple
 
-from constraint_parser.mapping.utils import find_block_by_name
 from shared.schemas import (
     Block,
     BlockNameOptions,
@@ -13,6 +12,8 @@ from shared.schemas import (
     ShiftWorkerOption,
     VarShiftSelectorOptions,
 )
+
+from constraint_parser.mapping.utils import find_block_by_name
 
 
 class MapShift:

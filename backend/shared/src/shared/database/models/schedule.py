@@ -7,7 +7,8 @@ from mongoengine.fields import (
     ReferenceField,
     StringField,
 )
-from schemas import ScheduleSolveStatus, ScheduleStatus
+
+from shared.schemas.schemas.schedule import ScheduleSolveStatus, ScheduleStatus
 
 
 class QuickStaffing(EmbeddedDocument):

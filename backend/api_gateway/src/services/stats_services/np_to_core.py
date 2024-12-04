@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 from shared.schemas import ShiftWorkerOption, Stats, StatsHeader, StatsValue
+
 from utils.constants import Constants
 
 

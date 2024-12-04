@@ -1,5 +1,6 @@
 import boto3  # type: ignore
 from shared.schemas import User
+
 from utils.env_config import ENVIRONMENT
 
 

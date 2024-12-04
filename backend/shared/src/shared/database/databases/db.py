@@ -1,5 +1,6 @@
 import mongoengine  # type: ignore
 from mongoengine.connection import ConnectionFailure
+
 from shared.database.errors.db_connection_error import DBConnectionError
 from shared.logger.logger import log_debug, log_info
 

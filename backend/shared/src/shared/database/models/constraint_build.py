@@ -8,7 +8,13 @@ from mongoengine.fields import (
     ReferenceField,
     StringField,
 )
-from schemas import BlockNameOptions, BlockTypeOptions, ConstraintType, SWOIdTypes
+
+from shared.schemas.schemas.constraint import (
+    BlockNameOptions,
+    BlockTypeOptions,
+    ConstraintType,
+    SWOIdTypes,
+)
 
 
 class ShiftWorkerOption(EmbeddedDocument):

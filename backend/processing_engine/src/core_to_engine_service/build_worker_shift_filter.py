@@ -1,7 +1,6 @@
 from collections import defaultdict
 from typing import Dict, List, Set, Tuple
 
-from core_to_engine_service.types import WorkerDates
 from shared.schemas import (
     Attribute,
     AttributeOwnerType,
@@ -11,6 +10,8 @@ from shared.schemas import (
     ShiftType,
     Worker,
 )
+
+from core_to_engine_service.types import WorkerDates
 
 
 # pylint: disable=too-many-locals, too-many-branches

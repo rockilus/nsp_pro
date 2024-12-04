@@ -2,8 +2,9 @@ import json
 from dataclasses import asdict
 from typing import Any, List
 
-from engine.types import Constraint, ObjectiveCategory, Request, VarName
 from ortools.sat.python import cp_model  # type: ignore
+
+from engine.types import Constraint, ObjectiveCategory, Request, VarName
 
 # def get_average_nb_shifts_per_worker(
 #     coverage: List[ShiftDemand],

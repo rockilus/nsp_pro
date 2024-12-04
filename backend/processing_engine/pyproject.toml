@@ -7,11 +7,18 @@ readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.10,<=3.13"
 celery = "^5.4.0"
 redis = "^5.2.0"
 ortools = "^9.11.4210"
 shared = {path = "../shared"}
+mypy = "^1.13.0"
+pylint = "^3.3.2"
+autoflake = "^2.3.1"
+isort = "^5.13.2"
+black = "^24.10.0"
+flake8 = "^7.1.1"
+pytest = "^8.3.4"
 
 [build-system]
 requires = ["poetry-core"]

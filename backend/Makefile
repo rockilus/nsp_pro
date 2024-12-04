@@ -104,10 +104,10 @@ storage_service_check:
 shared_check:
 	@echo "Running checks in shared..."
 	@cd shared && \
-	poetry run flake8 . && \
-	poetry run black --check . && \
-	poetry run pylint . && \
-	poetry run mypy .
+	poetry run flake8 src && \
+	poetry run black --check src && \
+	poetry run pylint src && \
+	poetry run mypy src
 
 # Run all tests
 test: api_gateway_test processing_engine_test storage_service_test

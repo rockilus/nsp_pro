@@ -1,7 +1,8 @@
 from typing import Dict, List, Tuple
 
-from core_to_engine_service.types import WorkerDates
 from shared.schemas import Shift, ShiftRestType, ShiftType, Worker
+
+from core_to_engine_service.types import WorkerDates
 
 
 def build_duty_recup_pairs(

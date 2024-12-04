@@ -1,14 +1,6 @@
 from datetime import date
 from typing import Dict, List, Tuple
 
-from constraint_parser.constraint_parse import parse_constraint
-from core_to_engine_service.types import WorkerDates
-from engine import ConstraintFai as ConstraintFaiEngine
-from engine import ConstraintFil as ConstraintFilEngine
-from engine import ConstraintOrd as ConstraintOrdEngine
-from engine import Constraints as ConstraintsEngine
-from engine import ConstraintSeq as ConstraintSeqEngine
-from engine import ConstraintSum as ConstraintSumEngine
 from shared.schemas import (
     ConstraintBuildAugmented,
     ConstraintOperator,
@@ -19,6 +11,15 @@ from shared.schemas import (
     Shift,
     Worker,
 )
+
+from constraint_parser.constraint_parse import parse_constraint
+from core_to_engine_service.types import WorkerDates
+from engine import ConstraintFai as ConstraintFaiEngine
+from engine import ConstraintFil as ConstraintFilEngine
+from engine import ConstraintOrd as ConstraintOrdEngine
+from engine import Constraints as ConstraintsEngine
+from engine import ConstraintSeq as ConstraintSeqEngine
+from engine import ConstraintSum as ConstraintSumEngine
 
 
 # pylint: disable=too-many-arguments, R0801

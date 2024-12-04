@@ -14,13 +14,13 @@ from supertokens_python.recipe.emailpassword.interfaces import (
 from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.utils import find_first_occurrence_in_list
-from utils.constants import SUPPORTED_LANGUAGES_LIST
 
 from integrations.authorization.authz_services import authz_role_assignment_assign
 from integrations.email_sender.verification_email import send_signup_attempt_email
 from scripts.setup_database import config_db
 from services.team_services.team_services import create_team
 from services.user_services.user_sign_up import create_user
+from utils.constants import SUPPORTED_LANGUAGES_LIST
 
 
 def override_emailpassword_apis(original_implementation: APIInterface):

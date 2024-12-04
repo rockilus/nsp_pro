@@ -1,11 +1,6 @@
 from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
-from constraint_parser.mapping.map_day import MapDay
-from constraint_parser.mapping.map_shift import MapShift
-from constraint_parser.mapping.map_worker import MapWorker
-from constraint_parser.mapping.utils import find_block_by_name
-from core_to_engine_service.types import WorkerDates
 from shared.schemas import (
     Block,
     BlockNameOptions,
@@ -20,6 +15,12 @@ from shared.schemas import (
     Shift,
     Worker,
 )
+
+from constraint_parser.mapping.map_day import MapDay
+from constraint_parser.mapping.map_shift import MapShift
+from constraint_parser.mapping.map_worker import MapWorker
+from constraint_parser.mapping.utils import find_block_by_name
+from core_to_engine_service.types import WorkerDates
 
 
 class MapConstaint:

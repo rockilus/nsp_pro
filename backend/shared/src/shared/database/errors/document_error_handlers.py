@@ -6,6 +6,7 @@ from mongoengine.errors import (
     NotUniqueError,
     ValidationError,
 )
+
 from shared.database.errors.db_connection_error import DBConnectionError
 from shared.database.errors.document_errors import (
     DocumentDoesNotExistError,

@@ -1,12 +1,5 @@
 from typing import List, Tuple
 
-from engine import Outputs as OutputsEngine
-from engine_to_core_service.build_breaches import build_breaches
-from engine_to_core_service.build_campaign_assignments import build_campaign_assignments
-from engine_to_core_service.update_requests import (
-    update_requests_and_build_request_breaches,
-)
-from engine_to_core_service.update_schedule import update_schedule_status
 from shared.schemas import (
     Assignment,
     Breach,
@@ -17,6 +10,14 @@ from shared.schemas import (
     Shift,
     Worker,
 )
+
+from engine import Outputs as OutputsEngine
+from engine_to_core_service.build_breaches import build_breaches
+from engine_to_core_service.build_campaign_assignments import build_campaign_assignments
+from engine_to_core_service.update_requests import (
+    update_requests_and_build_request_breaches,
+)
+from engine_to_core_service.update_schedule import update_schedule_status
 
 
 # pylint: disable=too-many-arguments

@@ -1,7 +1,8 @@
 from typing import Dict, List, Tuple
 
-from core_to_engine_service.types import WorkerDates
 from shared.schemas import Assignment, Request, Shift, ShiftLeaveType, Worker
+
+from core_to_engine_service.types import WorkerDates
 
 
 # pylint: disable=too-many-arguments, R0801

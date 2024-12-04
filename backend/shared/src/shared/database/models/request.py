@@ -6,7 +6,8 @@ from mongoengine.fields import (
     ReferenceField,
     StringField,
 )
-from schemas import RequestStatus
+
+from shared.schemas.schemas.request import RequestStatus
 
 
 class Request(Document):

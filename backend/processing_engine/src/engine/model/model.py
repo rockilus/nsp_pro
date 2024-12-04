@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 from typing import Dict, List, Tuple
 
+# from google.protobuf import text_format  # type: ignore
+from ortools.sat.python import cp_model  # type: ignore
+
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import build_var_name_work_time, get_nested_value
 from engine.types import (
@@ -13,9 +16,6 @@ from engine.types import (
     Variables,
     WorkTime,
 )
-
-# from google.protobuf import text_format  # type: ignore
-from ortools.sat.python import cp_model  # type: ignore
 from utils.constants import Constants
 
 

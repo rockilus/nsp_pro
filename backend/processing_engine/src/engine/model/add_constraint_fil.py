@@ -1,9 +1,10 @@
 from typing import List
 
+from ortools.sat.python import cp_model  # type: ignore
+
 from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import build_var_name_constraint, get_nested_value
 from engine.types import ConstraintFil, ObjectiveCategory
-from ortools.sat.python import cp_model  # type: ignore
 
 
 # pylint: disable=too-few-public-methods

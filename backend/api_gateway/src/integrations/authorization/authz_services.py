@@ -4,9 +4,9 @@ from permit import PermitApiError  # type: ignore
 from permit import Permit, PermitConnectionError, UserRead  # type: ignore
 from shared.logger import log_debug, log_info
 from shared.schemas import Team, User, UserAuth
-from utils.env_config import PDP_API_KEY, PDP_URL
 
 from errors import AuthzConnectionError, handle_permit_errors
+from utils.env_config import PDP_API_KEY, PDP_URL
 
 # Permit API doc:
 # https://api.permit.io/v2/redoc#tag/Users

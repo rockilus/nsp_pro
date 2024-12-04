@@ -7,7 +7,8 @@ from mongoengine.fields import (
     ReferenceField,
     StringField,
 )
-from schemas import ObjectiveCategory
+
+from shared.schemas.schemas.schedule import ObjectiveCategory
 
 
 class Variable(EmbeddedDocument):
