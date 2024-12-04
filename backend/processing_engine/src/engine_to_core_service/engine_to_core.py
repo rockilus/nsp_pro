@@ -7,7 +7,6 @@ from engine_to_core_service.update_requests import (
     update_requests_and_build_request_breaches,
 )
 from engine_to_core_service.update_schedule import update_schedule_status
-
 from shared.schemas import (
     Assignment,
     Breach,

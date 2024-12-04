@@ -45,9 +45,6 @@ class Constants:
     CONNECTOR_BLOCK_LABEL: str = "connector"
 
     # Stats
-    STATS_TIME_FRAME_OPTIONS = Literal[
-        "last_12_months", "last_24_months", "last_36_months", "custom"
-    ]
     STATS_UNIT_OPTIONS = Literal[
         "nb_days_worked",
         "time_worked",
@@ -67,4 +64,3 @@ class Constants:
 
 # User
 SUPPORTED_LANGUAGES_LIST: List[str] = ["en", "es", "fr"]
-SUPPORTED_LANGUAGES_LITERAL = Literal["en", "es", "fr"]

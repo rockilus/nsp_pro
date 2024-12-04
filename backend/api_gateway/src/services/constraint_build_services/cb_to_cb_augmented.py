@@ -1,7 +1,5 @@
 from typing import List, Tuple
 
-from services.constraint_build_services.blocks_to_string import blocks_to_string
-
 from shared.schemas import (
     Attribute,
     AttributeOwnerType,
@@ -18,6 +16,8 @@ from shared.schemas import (
     SWOIdTypes,
     Worker,
 )
+
+from services.constraint_build_services.blocks_to_string import blocks_to_string
 
 
 # pylint: disable=too-many-arguments

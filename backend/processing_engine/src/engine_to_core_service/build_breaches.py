@@ -4,7 +4,6 @@ from typing import Dict, List
 
 from engine import Breach as BreachEngine
 from engine import VarName as VarNameEngine
-
 from shared.schemas import (
     Assignment,
     Breach,

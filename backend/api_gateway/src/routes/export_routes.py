@@ -2,17 +2,17 @@ from datetime import datetime, timezone
 from io import BytesIO
 
 import humps
-from errors import NotAuthorizedError, handle_routes_errors
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from shared.logger import log_info
+from shared.schemas import ExportOptions, ExportPeriodOptions
+from shared.schemas.errors import handle_create_schema_object_error
+
+from errors import NotAuthorizedError, handle_routes_errors
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from routes.api_model import ExportOptionsMessage
 from services.export_services import export_schedule_to_excel
-
-from shared.logger import log_info
-from shared.schemas import ExportOptions, ExportPeriodOptions
-from shared.schemas.errors import handle_create_schema_object_error
 
 router = APIRouter()
 
@@ -45,9 +45,9 @@ async def export_schedule(
             media_type="application/"
             + "vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        response.headers[
-            "Content-Disposition"
-        ] = f"attachment; filename=schedule_{team_id}.xlsx"
+        response.headers["Content-Disposition"] = (
+            f"attachment; filename=schedule_{team_id}.xlsx"
+        )
         return response
     except Exception as e:
         log_info("Failed to export schedule")

@@ -1,7 +1,5 @@
 from typing import List
 
-from utils.constants import Constants
-
 from shared.schemas import (
     BlockNameOptions,
     BlockTypeOptions,
@@ -10,6 +8,7 @@ from shared.schemas import (
     Template,
     TemplateBlock,
 )
+from utils.constants import Constants
 
 
 def build_templates_list_en(

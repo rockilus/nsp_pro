@@ -1,9 +1,10 @@
+from pydantic_core import ValidationError
+
 from errors.message_errors.message_errors import (
     MessageTypeError,
     MessageValidationError,
     MessageValueError,
 )
-from pydantic_core import ValidationError
 
 
 def handle_message_errors(e: Exception):

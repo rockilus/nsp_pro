@@ -1,7 +1,27 @@
 from datetime import date
 from typing import Dict, List, Tuple
 
-from constraint_parser import parse_selected_shifts
+# from constraint_parser import parse_selected_shifts
+from shared.schemas import (
+    Assignment,
+    Attribute,
+    AttributeOwnerType,
+    Block,
+    BlockNameOptions,
+    BlockTypeOptions,
+    Dimension,
+    DimEntry,
+    ScheduleStatus,
+    Shift,
+    ShiftType,
+    ShiftWorkerOption,
+    Stats,
+    StatsHeader,
+    StatsOptions,
+    Worker,
+)
+from utils.constants import Constants
+
 from errors import NoCampaignError
 from scripts.setup_database import (
     assignment_db,
@@ -35,26 +55,6 @@ from services.stats_services.np_to_core import (
     np_to_core_days_worked_per_weekday,
     np_to_core_days_worked_per_year,
     np_to_core_nb_times_shift,
-)
-from utils.constants import Constants
-
-from shared.schemas import (
-    Assignment,
-    Attribute,
-    AttributeOwnerType,
-    Block,
-    BlockNameOptions,
-    BlockTypeOptions,
-    Dimension,
-    DimEntry,
-    ScheduleStatus,
-    Shift,
-    ShiftType,
-    ShiftWorkerOption,
-    Stats,
-    StatsHeader,
-    StatsOptions,
-    Worker,
 )
 
 
@@ -171,9 +171,11 @@ def build_work_shift_indexes(
         dim_entries,
         attributes,
     )
-    selected_shifts_ids = parse_selected_shifts(
-        selected_shifts, missing_attributes, shifts, shift_dim_dict
-    )
+    # selected_shifts_ids = parse_selected_shifts(
+    #     selected_shifts, missing_attributes, shifts, shift_dim_dict
+    # )
+    print(shift_dim_dict, missing_attributes)
+    selected_shifts_ids: List[str] = []
     worker_to_i = {worker.id: i for i, worker in enumerate(workers)}
     # shift_to_i = {shift.id: i for i, shift in enumerate(shifts)}
     work_shift_to_i = {

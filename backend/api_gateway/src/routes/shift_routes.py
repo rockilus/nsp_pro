@@ -3,23 +3,8 @@ from datetime import datetime, timezone
 from typing import Dict, List
 
 import humps
-from errors import (
-    MessageTypeError,
-    NotAuthorizedError,
-    handle_message_errors,
-    handle_routes_errors,
-)
 from fastapi import APIRouter, Depends
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
 from pydantic import TypeAdapter
-from routes.api_model import ShiftMessage, StaffingMessage
-from routes.attribute_routes import core_to_msg_attribute
-from scripts.setup_database import attribute_db, shift_db
-from services.shift_services import create_shift as create_shift_service
-from services.shift_services import delete_shift as delete_shift_service
-from services.shift_services import update_shift as update_shift_service
-
 from shared.logger import log_info
 from shared.schemas import (
     Attribute,
@@ -30,6 +15,21 @@ from shared.schemas import (
     Staffing,
 )
 from shared.schemas.errors import handle_create_schema_object_error
+
+from errors import (
+    MessageTypeError,
+    NotAuthorizedError,
+    handle_message_errors,
+    handle_routes_errors,
+)
+from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authorization import authz_check
+from routes.api_model import ShiftMessage, StaffingMessage
+from routes.attribute_routes import core_to_msg_attribute
+from scripts.setup_database import attribute_db, shift_db
+from services.shift_services import create_shift as create_shift_service
+from services.shift_services import delete_shift as delete_shift_service
+from services.shift_services import update_shift as update_shift_service
 
 router = APIRouter()
 

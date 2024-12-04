@@ -3,25 +3,25 @@ from datetime import datetime, time, timezone
 from typing import Dict, List
 
 import humps
+from fastapi import APIRouter, Depends
+from pydantic import TypeAdapter
+from shared.logger import log_info
+from shared.schemas import Attribute, Worker
+from shared.schemas.errors import handle_create_schema_object_error
+
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from fastapi import APIRouter, Depends
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
-from pydantic import TypeAdapter
 from routes.api_model import WorkerMessage
 from routes.attribute_routes import core_to_msg_attribute
 from scripts.setup_database import attribute_db, worker_db
 from services.worker_services import create_worker as create_worker_service
 from services.worker_services import delete_worker as delete_worker_service
-
-from shared.logger import log_info
-from shared.schemas import Attribute, Worker
-from shared.schemas.errors import handle_create_schema_object_error
 
 router = APIRouter()
 

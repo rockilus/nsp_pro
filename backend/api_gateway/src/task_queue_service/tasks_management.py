@@ -1,6 +1,6 @@
 from typing import Dict
 
-from celery.result import AsyncResult
+from celery.result import AsyncResult  # type: ignore
 from redis import Redis
 from task_queue_service.tasks import send_to_processing_engine
 
@@ -22,7 +22,9 @@ def get_task_status(user_id: str) -> Dict:
         return {"status": "unknown"}
 
     # Get task status
-    task = AsyncResult(task_id.decode("utf-8"), app=send_to_processing_engine)
+    task = AsyncResult(
+        task_id.decode("utf-8"), app=send_to_processing_engine  # type: ignore
+    )
     status = task.status
 
     # Optionally, retrieve result or track position in queue

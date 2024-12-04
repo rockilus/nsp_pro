@@ -1,9 +1,9 @@
 from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
-from errors import NoCampaignError
-
 from shared.schemas import Schedule
+
+from errors import NoCampaignError
 
 
 # pylint: disable=too-many-return-statements

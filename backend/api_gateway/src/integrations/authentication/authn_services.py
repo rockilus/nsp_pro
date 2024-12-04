@@ -1,12 +1,12 @@
 from typing import List
 
-from errors import handle_supertokens_errors
-from integrations.authentication import config
+from shared.logger import log_debug, log_info
 from supertokens_python import get_all_cors_headers, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 
-from shared.logger import log_debug, log_info
+from errors import handle_supertokens_errors
+from integrations.authentication import config
 
 
 def authn_connect():

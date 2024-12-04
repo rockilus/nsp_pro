@@ -1,8 +1,8 @@
 # from errors import AuthzConnectionError
-from integrations.authentication.authn_services import authn_connect
+from shared.logger import log_info
 from supertokens_python.querier import Querier
 
-from shared.logger import log_info
+from integrations.authentication.authn_services import authn_connect
 
 
 def authn_health_check() -> None:

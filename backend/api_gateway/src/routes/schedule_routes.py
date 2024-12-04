@@ -2,16 +2,29 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
+from fastapi import APIRouter, Depends
+from pydantic import TypeAdapter
+from shared.logger import log_info
+from shared.schemas import (
+    Assignment,
+    Breach,
+    QuickStaffing,
+    RequestAugmented,
+    Schedule,
+    ScheduleSolveStatus,
+    ScheduleStatus,
+    Shift,
+)
+from shared.schemas.errors import handle_create_schema_object_error
+
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from fastapi import APIRouter, Depends
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
-from pydantic import TypeAdapter
 from routes.api_model import (
     AssignmentMessage,
     BreachMessage,
@@ -29,19 +42,6 @@ from scripts.setup_database import assignment_db, breach_db, schedule_db
 from services.schedule_services import solve_schedule as solve_schedule_service
 from services.schedule_services import validate_schedule as validate_schedule_service
 from services.schedule_services.get_schedule_wip import get_schedule_campaign
-
-from shared.logger import log_info
-from shared.schemas import (
-    Assignment,
-    Breach,
-    QuickStaffing,
-    RequestAugmented,
-    Schedule,
-    ScheduleSolveStatus,
-    ScheduleStatus,
-    Shift,
-)
-from shared.schemas.errors import handle_create_schema_object_error
 
 router = APIRouter()
 
@@ -92,7 +92,8 @@ async def solve_schedule(
     schedule_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-) -> SolutionMessage:
+) -> str:
+    # ) -> SolutionMessage:
     try:
         if not await authz_check(
             session.get_user_id(), "solve-schedule", "team", team_id
@@ -101,20 +102,21 @@ async def solve_schedule(
                 "You do not have permission to solve a schedule",
             )
         schedule = schedule_db.get_schedule_by_id(schedule_id)
-        (
-            schedule,
-            assignments,
-            objective_breaches,
-            requests,
-            recuperation_shifts_new,
-        ) = solve_schedule_service(schedule)
-        response = core_to_msg_solution(
-            schedule,
-            assignments,
-            objective_breaches,
-            requests,
-            recuperation_shifts_new,
-        )
+        # (
+        #     schedule,
+        #     assignments,
+        #     objective_breaches,
+        #     requests,
+        #     recuperation_shifts_new,
+        # ) = solve_schedule_service(schedule)
+        # response = core_to_msg_solution(
+        #     schedule,
+        #     assignments,
+        #     objective_breaches,
+        #     requests,
+        #     recuperation_shifts_new,
+        # )
+        response = solve_schedule_service(schedule)
     except Exception as e:
         log_info("Failed to solve schedule")
         handle_routes_errors(e)

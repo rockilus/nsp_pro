@@ -2,16 +2,30 @@ from dataclasses import asdict
 from typing import List
 
 import humps
+from fastapi import APIRouter, Depends
+from pydantic import TypeAdapter
+from shared.logger import log_info
+from shared.schemas import (
+    Block,
+    BlockNameOptions,
+    BlockTypeOptions,
+    ConstraintBuild,
+    ConstraintBuildAugmented,
+    ConstraintType,
+    MissingAttribute,
+    ShiftWorkerOption,
+    SWOIdTypes,
+)
+from shared.schemas.errors import handle_create_schema_object_error
+
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from fastapi import APIRouter, Depends
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
-from pydantic import TypeAdapter
 from routes.api_model import (
     BlockMessage,
     ConstraintBuildMessage,
@@ -30,20 +44,6 @@ from services.constraint_build_services import (
 from services.constraint_build_services import (
     update_constraint_build as update_constraint_build_service,
 )
-
-from shared.logger import log_info
-from shared.schemas import (
-    Block,
-    BlockNameOptions,
-    BlockTypeOptions,
-    ConstraintBuild,
-    ConstraintBuildAugmented,
-    ConstraintType,
-    MissingAttribute,
-    ShiftWorkerOption,
-    SWOIdTypes,
-)
-from shared.schemas.errors import handle_create_schema_object_error
 
 router = APIRouter()
 

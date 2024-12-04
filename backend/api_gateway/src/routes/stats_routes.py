@@ -2,11 +2,15 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
-from errors import NotAuthorizedError, handle_routes_errors
 from fastapi import APIRouter, Depends
+from pydantic import TypeAdapter
+from shared.logger import log_info
+from shared.schemas import Stats, StatsHeader, StatsOptions, StatsValue
+from shared.schemas.errors import handle_create_schema_object_error
+
+from errors import NotAuthorizedError, handle_routes_errors
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
-from pydantic import TypeAdapter
 from routes.api_model import (
     ShiftWorkerOptionMessage,
     StatsHeaderMessage,
@@ -21,10 +25,6 @@ from routes.constraint_routes import (
 from scripts.setup_database import stats_header_db
 from services.stats_services import build_stats
 from services.stats_services import get_shift_options as get_shift_options_service
-
-from shared.logger import log_info
-from shared.schemas import Stats, StatsHeader, StatsOptions, StatsValue
-from shared.schemas.errors import handle_create_schema_object_error
 
 router = APIRouter()
 

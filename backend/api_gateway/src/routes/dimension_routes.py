@@ -2,16 +2,26 @@ from dataclasses import asdict
 from typing import Dict, List
 
 import humps
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import TypeAdapter
+from shared.logger import log_info
+from shared.schemas import (
+    Attribute,
+    Dimension,
+    DimensionEntryType,
+    DimensionType,
+    DimEntry,
+)
+from shared.schemas.errors import handle_create_schema_object_error
+
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from fastapi import APIRouter, Depends, HTTPException, Query
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
-from pydantic import TypeAdapter
 from routes.api_model import (
     DimensionMessage,
     DimensionsAndDimEntriesMessage,
@@ -23,16 +33,6 @@ from routes.shift_routes import core_to_msg_attribute
 from scripts.setup_database import dim_entry_db, dimension_db
 from services.dimension_services import create_dimension as create_dimension_service
 from services.dimension_services import delete_dimension as delete_dimension_service
-
-from shared.logger import log_info
-from shared.schemas import (
-    Attribute,
-    Dimension,
-    DimensionEntryType,
-    DimensionType,
-    DimEntry,
-)
-from shared.schemas.errors import handle_create_schema_object_error
 
 router = APIRouter()
 

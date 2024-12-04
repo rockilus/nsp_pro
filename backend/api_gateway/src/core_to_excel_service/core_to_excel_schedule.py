@@ -6,7 +6,6 @@ from openpyxl.drawing.image import Image
 from openpyxl.styles import Alignment, Border, Font, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
-
 from shared.schemas import Assignment, Shift, ShiftType, Worker
 
 

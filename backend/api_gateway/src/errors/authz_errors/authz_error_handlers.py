@@ -1,11 +1,12 @@
+from permit import PermitConnectionError  # type: ignore
+from permit import PermitApiError, PermitContextError  # type: ignore
+
 from errors.authz_errors.authz_errors import (
     AuthzApiErrorError,
     AuthzConnectionError,
     AuthzContextError,
     AuthzKeyMissingKeyError,
 )
-from permit import PermitConnectionError  # type: ignore
-from permit import PermitApiError, PermitContextError  # type: ignore
 
 
 def handle_permit_errors(error: Exception):

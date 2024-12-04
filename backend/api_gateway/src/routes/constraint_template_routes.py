@@ -2,26 +2,26 @@ from dataclasses import asdict
 from typing import List
 
 import humps
+from fastapi import APIRouter, Depends
+from pydantic import TypeAdapter
+from shared.logger import log_info
+from shared.schemas import Template
+from shared.schemas.errors import UserNotFoundError
+
 from constraint_templates import build_templates
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
-    UserNotFoundError,
     handle_message_errors,
     handle_routes_errors,
 )
-from fastapi import APIRouter, Depends
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
-from pydantic import TypeAdapter
 from routes.api_model import TemplateMessage
 from scripts.setup_database import user_db
 from services.data_fetching_services import (
     fetch_workers_not_d_shifts_not_d_dim_not_d_attributes,
 )
-
-from shared.logger import log_info
-from shared.schemas import Template
 
 router = APIRouter()
 

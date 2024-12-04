@@ -1,13 +1,5 @@
 from typing import List, Tuple
 
-from scripts.setup_database import (
-    attribute_db,
-    dim_entry_db,
-    dimension_db,
-    shift_db,
-    worker_db,
-)
-
 from shared.schemas import (
     Attribute,
     AttributeOwnerType,
@@ -15,6 +7,14 @@ from shared.schemas import (
     DimensionEntryType,
     DimensionType,
     DimEntry,
+)
+
+from scripts.setup_database import (
+    attribute_db,
+    dim_entry_db,
+    dimension_db,
+    shift_db,
+    worker_db,
 )
 
 

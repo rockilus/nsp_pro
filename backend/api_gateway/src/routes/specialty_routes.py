@@ -2,24 +2,24 @@ from dataclasses import asdict
 from typing import List
 
 import humps
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import TypeAdapter
+from shared.logger import log_info
+from shared.schemas import Specialty
+from shared.schemas.errors import handle_create_schema_object_error
+
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from fastapi import APIRouter, Depends, HTTPException
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
-from pydantic import TypeAdapter
 from routes.api_model import SpecialtyMessage, WorkerMessage
 from routes.worker_routes import core_to_msg_worker_and_attributes
 from scripts.setup_database import attribute_db, specialty_db
 from services.team_services import delete_specialty as delete_specialty_service
-
-from shared.logger import log_info
-from shared.schemas import Specialty
-from shared.schemas.errors import handle_create_schema_object_error
 
 router = APIRouter()
 

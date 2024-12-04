@@ -1,7 +1,6 @@
 import boto3  # type: ignore
-from utils.env_config import ENVIRONMENT
-
 from shared.schemas import User
+from utils.env_config import ENVIRONMENT
 
 
 def send_verification_email(user: User, email_verify_link: str) -> None:

@@ -1,9 +1,5 @@
 from typing import Dict, List
 
-from constraint_templates.build_templates_list_en import build_templates_list_en
-from constraint_templates.build_templates_list_es import build_templates_list_es
-from constraint_templates.build_templates_list_fr import build_templates_list_fr
-
 from shared.schemas import (
     Attribute,
     AttributeOwnerType,
@@ -17,6 +13,10 @@ from shared.schemas import (
     Template,
     Worker,
 )
+
+from constraint_templates.build_templates_list_en import build_templates_list_en
+from constraint_templates.build_templates_list_es import build_templates_list_es
+from constraint_templates.build_templates_list_fr import build_templates_list_fr
 
 # WARNING: IMPORTING DBs HERE CREATED ERROR WITH PYTEST
 

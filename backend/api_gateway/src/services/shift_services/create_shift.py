@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
 
-from scripts.setup_database import attribute_db, dimension_db, shift_db
-
 from shared.schemas import (
     Attribute,
     AttributeOwnerType,
@@ -13,6 +11,8 @@ from shared.schemas import (
     ShiftRestType,
     ShiftType,
 )
+
+from scripts.setup_database import attribute_db, dimension_db, shift_db
 
 
 def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:

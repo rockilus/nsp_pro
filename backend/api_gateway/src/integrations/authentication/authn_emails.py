@@ -1,11 +1,6 @@
 from typing import Any, Dict
 
-from errors import UserNotFoundError
-from integrations.email_sender.verification_email import (
-    send_reset_password_email,
-    send_verification_email,
-)
-from scripts.setup_database import user_db
+from shared.schemas.errors import UserNotFoundError
 
 # from supertokens_python import InputAppInfo, init
 # from supertokens_python.ingredients.emaildelivery.types import (
@@ -22,6 +17,12 @@ from supertokens_python.recipe.emailverification.types import (
 from supertokens_python.recipe.emailverification.types import (
     EmailTemplateVars as EVEmailTemplateVars,
 )
+
+from integrations.email_sender.verification_email import (
+    send_reset_password_email,
+    send_verification_email,
+)
+from scripts.setup_database import user_db
 
 
 def custom_email_deliver(

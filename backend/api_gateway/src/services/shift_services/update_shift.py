@@ -1,6 +1,6 @@
-from scripts.setup_database import shift_db
-
 from shared.schemas import Shift, ShiftLeaveType, ShiftRestType
+
+from scripts.setup_database import shift_db
 
 
 def update_shift(new_shift: Shift) -> Shift:

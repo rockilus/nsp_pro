@@ -2,9 +2,8 @@ import calendar
 from typing import Dict, List, Tuple
 
 import numpy as np
-from utils.constants import Constants
-
 from shared.schemas import ShiftWorkerOption, Stats, StatsHeader, StatsValue
+from utils.constants import Constants
 
 
 # Weekday

@@ -2,7 +2,6 @@ from datetime import date
 from typing import Dict, List
 
 import numpy as np
-
 from shared.schemas import Assignment
 
 

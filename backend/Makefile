@@ -40,20 +40,55 @@
 .PHONY: format check test api_gateway_check processing_engine_check storage_service_check
 
 # Format code in all services
-format:
-	poetry run black \
-		api_gateway/src \
-		processing_engine/src \
-		storage_service/src \
-		shared
+format: \
+	api_gateway_format \
+	processing_engine_format \
+	storage_service_format \
+	shared_format
+
+api_gateway_format:
+	@echo "Formatting code in api_gateway..."
+	@cd api_gateway && \
+	poetry run isort src && \
+	poetry run autoflake --remove-all-unused-imports --in-place --recursive src && \
+	poetry run black src
+
+processing_engine_format:
+	@echo "Formatting code in processing_engine..."
+	@cd processing_engine && \
+	poetry run isort src && \
+	poetry run autoflake --remove-all-unused-imports --in-place --recursive src && \
+	poetry run black src
+
+storage_service_format:
+	@echo "Formatting code in storage_service..."
+	@cd storage_service && \
+	poetry run isort src && \
+	poetry run autoflake --remove-all-unused-imports --in-place --recursive src && \
+	poetry run black src
+
+shared_format:
+	@echo "Formatting code in shared..."
+	@cd shared && \
+	poetry run isort src && \
+	poetry run autoflake --remove-all-unused-imports --in-place --recursive src && \
+	poetry run black src
 
 # Run all checks
-check: api_gateway_check processing_engine_check storage_service_check
+check: \
+	api_gateway_check \
+	processing_engine_check \
+	storage_service_check \
+	shared_check
 
 # Run checks in api_gateway
 api_gateway_check:
 	@echo "Running checks in api_gateway..."
-	@cd api_gateway && poetry run flake8 src && poetry run black --check src && poetry run pylint src && poetry run mypy src
+	@cd api_gateway && \
+	poetry run flake8 src && \
+	poetry run black --check src && \
+	poetry run pylint src && \
+	poetry run mypy src
 
 # Run checks in processing_engine
 processing_engine_check:
@@ -64,6 +99,15 @@ processing_engine_check:
 storage_service_check:
 	@echo "Running checks in storage_service..."
 	@cd storage_service && poetry run flake8 src && poetry run black --check src && poetry run pylint src && poetry run mypy src
+
+# Run checks in shared
+shared_check:
+	@echo "Running checks in shared..."
+	@cd shared && \
+	poetry run flake8 . && \
+	poetry run black --check . && \
+	poetry run pylint . && \
+	poetry run mypy .
 
 # Run all tests
 test: api_gateway_test processing_engine_test storage_service_test

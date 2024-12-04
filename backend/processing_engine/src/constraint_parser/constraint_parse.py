@@ -3,7 +3,6 @@ from typing import Dict, List
 
 from constraint_parser.mapping.map_constraint import MapConstaint
 from core_to_engine_service.types import WorkerDates
-
 from shared.schemas import (
     ConstraintBuildAugmented,
     Constraints,

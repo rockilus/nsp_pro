@@ -1,9 +1,8 @@
 from typing import List
 
+from shared.schemas import UserAuth
 from supertokens_python.asyncio import delete_user, get_user, get_users_newest_first
 from supertokens_python.types import User
-
-from shared.schemas import UserAuth
 
 # Supertokens API doc:
 # https://app.swaggerhub.com/apis/supertokens/CDI/4.0.2#/Core/getUsers

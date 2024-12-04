@@ -1,7 +1,6 @@
 from typing import Dict, List
 
 from constraint_parser.mapping.map_shift import MapShift
-
 from shared.schemas import MissingAttribute, Shift, ShiftWorkerOption
 
 

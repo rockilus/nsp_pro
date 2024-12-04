@@ -1,5 +1,5 @@
-from errors import UserNotFoundError
 from fastapi import Request
+from shared.schemas.errors import UserNotFoundError
 from supertokens_python.asyncio import get_user
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import create_new_session

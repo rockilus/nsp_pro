@@ -2,22 +2,22 @@ from dataclasses import asdict
 from typing import List
 
 import humps
+from fastapi import APIRouter, Depends
+from pydantic import TypeAdapter
+from shared.logger import log_info
+from shared.schemas import ShiftDemand
+from shared.schemas.errors import handle_create_schema_object_error
+
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from fastapi import APIRouter, Depends
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
-from pydantic import TypeAdapter
 from routes.api_model import ShiftDemandMessage
 from scripts.setup_database import coverage_db, shift_demand_db
-
-from shared.logger import log_info
-from shared.schemas import ShiftDemand
-from shared.schemas.errors import handle_create_schema_object_error
 
 router = APIRouter()
 

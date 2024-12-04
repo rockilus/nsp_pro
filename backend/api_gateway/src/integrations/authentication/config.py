@@ -1,8 +1,3 @@
-from integrations.authentication.authn_emails import (
-    custom_email_deliver,
-    custom_emailverification_delivery,
-)
-from integrations.authentication.override_func import override_emailpassword_apis
 from supertokens_python import InputAppInfo, SupertokensConfig
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.recipe import (
@@ -20,6 +15,12 @@ from utils.env_config import (
     ST_COOKIE_DOMAIN,
     ST_DASHBOARD_ADMINS,
 )
+
+from integrations.authentication.authn_emails import (
+    custom_email_deliver,
+    custom_emailverification_delivery,
+)
+from integrations.authentication.override_func import override_emailpassword_apis
 
 # this is the location of the SuperTokens core.
 supertokens_config = SupertokensConfig(

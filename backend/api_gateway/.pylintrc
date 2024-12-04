@@ -4,6 +4,10 @@ disable=
     C0114, # missing-module-docstring
     C0115, # missing-class-docstring
     C0116, # missing-function-docstring
+    W0718, # broad-exception-caught
+    R0917, # too-many-positional-arguments
+init-hook='import sys; sys.path.append("../shared_lib/src")'
 
 [design]
 max-attributes=10
+

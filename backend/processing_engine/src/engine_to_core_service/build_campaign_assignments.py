@@ -2,7 +2,6 @@ from dataclasses import asdict
 from typing import List
 
 from engine import Assignment as AssignmentEngine
-
 from shared.schemas import Assignment, Schedule
 
 

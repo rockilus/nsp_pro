@@ -1,4 +1,6 @@
 # pylint: disable=R0801
+from shared.schemas import ShiftLeaveType, ShiftRestType
+
 from scripts.setup_database import (
     breach_db,
     daily_shift_demand_db,
@@ -6,8 +8,6 @@ from scripts.setup_database import (
     shift_db,
     shift_demand_db,
 )
-
-from shared.schemas import ShiftLeaveType, ShiftRestType
 
 
 def delete_shift(shift_id: str) -> None:

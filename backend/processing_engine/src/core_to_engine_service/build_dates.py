@@ -2,7 +2,6 @@ from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
 from core_to_engine_service.types import WorkerDates
-
 from shared.schemas import Assignment, Schedule, Shift, Worker
 
 

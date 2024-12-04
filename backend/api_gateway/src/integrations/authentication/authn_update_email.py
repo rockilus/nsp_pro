@@ -1,8 +1,3 @@
-from errors import (
-    AuthnEmailAlreadyExistsError,
-    AuthnEmailChangeNotAllowedError,
-    AuthnUpdateEmailError,
-)
 from supertokens_python.recipe.accountlinking.syncio import is_email_change_allowed
 from supertokens_python.recipe.emailpassword.interfaces import (
     EmailAlreadyExistsError,
@@ -15,6 +10,12 @@ from supertokens_python.recipe.emailverification.syncio import (
 )
 from supertokens_python.syncio import get_user, list_users_by_account_info
 from supertokens_python.types import AccountInfo, RecipeUserId
+
+from errors import (
+    AuthnEmailAlreadyExistsError,
+    AuthnEmailChangeNotAllowedError,
+    AuthnUpdateEmailError,
+)
 
 
 async def authn_update_user_email(

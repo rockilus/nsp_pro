@@ -25,7 +25,6 @@ from core_to_engine_service.build_periods import (
 )
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
 from engine import Inputs as InputsEngine
-
 from shared.schemas import (
     Assignment,
     Attribute,

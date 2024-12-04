@@ -1,5 +1,7 @@
 from typing import List, Tuple
 
+from shared.schemas import Attribute, Dimension, DimEntry, Shift, Worker
+
 from scripts.setup_database import (
     attribute_db,
     dim_entry_db,
@@ -7,8 +9,6 @@ from scripts.setup_database import (
     shift_db,
     worker_db,
 )
-
-from shared.schemas import Attribute, Dimension, DimEntry, Shift, Worker
 
 
 def fetch_workers_shifts_dim_attributes(

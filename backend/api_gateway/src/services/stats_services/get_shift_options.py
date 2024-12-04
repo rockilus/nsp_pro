@@ -1,14 +1,14 @@
 from typing import Dict, List
 
-from constraint_templates import build_options
-from scripts.setup_database import attribute_db, dim_entry_db, dimension_db, shift_db
-
 from shared.schemas import (
     Attribute,
     AttributeOwnerType,
     DimensionType,
     ShiftWorkerOption,
 )
+
+from constraint_templates import build_options
+from scripts.setup_database import attribute_db, dim_entry_db, dimension_db, shift_db
 
 
 def get_shift_options(team_id: str) -> List[ShiftWorkerOption]:

@@ -1,9 +1,9 @@
 from typing import List
 
+from shared.schemas import Request, RequestAugmented, Shift, Worker
+
 from scripts.setup_database import request_db, shift_db, worker_db
 from services.request_services.r_to_r_augmented import r_to_r_augmented
-
-from shared.schemas import Request, RequestAugmented, Shift, Worker
 
 
 # pylint: disable=R0801

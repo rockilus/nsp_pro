@@ -1,3 +1,14 @@
+from fastapi import HTTPException
+from shared.database.errors import (
+    DBConnectionError,
+    DocumentDoesNotExistError,
+    DocumentHasExtraFieldError,
+    DocumentMultipleFoundError,
+    DocumentNotUniqueError,
+)
+from shared.schemas.errors import SchemaTypeError, SchemaValueError
+from utils.constants import Constants
+
 from errors.authn_errors.authn_errors import (
     AuthnPasswordPolicyViolationError,
     AuthnWrongCredentialsError,
@@ -8,14 +19,6 @@ from errors.authz_errors.authz_errors import (
     AuthzContextError,
     AuthzKeyMissingKeyError,
 )
-from errors.core_errors.core_errors import CoreTypeError, CoreValueError
-from errors.database_errors.db_connection_error import DBConnectionError
-from errors.database_errors.document_errors import (
-    DocumentDoesNotExistError,
-    DocumentHasExtraFieldError,
-    DocumentMultipleFoundError,
-    DocumentNotUniqueError,
-)
 from errors.message_errors.message_errors import (
     MessageTypeError,
     MessageValidationError,
@@ -23,12 +26,10 @@ from errors.message_errors.message_errors import (
 )
 from errors.routes_errors.routes_errors import NotAuthorizedError
 from errors.stats_errors.stats_errors import NoCampaignError
-from fastapi import HTTPException
-from utils.constants import Constants
 
 
 def handle_routes_errors(error: Exception):
-    if isinstance(error, CoreTypeError):
+    if isinstance(error, SchemaTypeError):
         raise HTTPException(
             status_code=400,
             detail="invalid input type, please check your data",
@@ -47,7 +48,7 @@ def handle_routes_errors(error: Exception):
             status_code=409,
             detail="the provided value already exists, please use a different value",
         )
-    if isinstance(error, CoreValueError):
+    if isinstance(error, SchemaValueError):
         raise HTTPException(
             status_code=422,
             detail="invalid input value, please check your data",

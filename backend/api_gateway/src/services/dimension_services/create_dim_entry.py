@@ -1,6 +1,6 @@
-from scripts.setup_database import dim_entry_db, dimension_db
-
 from shared.schemas import DimEntry
+
+from scripts.setup_database import dim_entry_db, dimension_db
 
 
 def create_dim_entry(dim_entry: DimEntry) -> DimEntry:

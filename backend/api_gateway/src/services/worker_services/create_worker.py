@@ -1,7 +1,5 @@
 from typing import List, Tuple
 
-from scripts.setup_database import attribute_db, dimension_db, worker_db
-
 from shared.schemas import (
     Attribute,
     AttributeOwnerType,
@@ -9,6 +7,8 @@ from shared.schemas import (
     DimensionType,
     Worker,
 )
+
+from scripts.setup_database import attribute_db, dimension_db, worker_db
 
 
 def create_worker(worker: Worker) -> Tuple[Worker, List[Attribute]]:

@@ -3,7 +3,6 @@ from typing import Dict, List
 
 from core_to_engine_service.types import WorkerDates
 from engine import Request as RequestEngine
-
 from shared.schemas import Request
 
 

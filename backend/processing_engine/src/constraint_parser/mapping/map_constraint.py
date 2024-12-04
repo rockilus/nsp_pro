@@ -6,7 +6,6 @@ from constraint_parser.mapping.map_shift import MapShift
 from constraint_parser.mapping.map_worker import MapWorker
 from constraint_parser.mapping.utils import find_block_by_name
 from core_to_engine_service.types import WorkerDates
-
 from shared.schemas import (
     Block,
     BlockNameOptions,

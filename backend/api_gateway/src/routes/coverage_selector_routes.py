@@ -3,22 +3,22 @@ from datetime import datetime
 from typing import Dict, List
 
 import humps
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import TypeAdapter
+from shared.logger import log_info
+from shared.schemas import CoverageSelector
+from shared.schemas.errors import handle_create_schema_object_error
+
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from fastapi import APIRouter, Depends, HTTPException
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
-from pydantic import TypeAdapter
 from routes.api_model import CoverageSelectorMessage
 from scripts.setup_database import coverage_selector_db
-
-from shared.logger import log_info
-from shared.schemas import CoverageSelector
-from shared.schemas.errors import handle_create_schema_object_error
 
 router = APIRouter()
 

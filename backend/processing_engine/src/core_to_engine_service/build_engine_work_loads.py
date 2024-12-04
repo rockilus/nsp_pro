@@ -7,9 +7,8 @@ from core_to_engine_service.types import WorkerDates
 from engine import NbDuties as NbDutiesEngine
 from engine import WorkLoads as WorkLoadsEngine
 from engine import WorkTime as WorkTimeEngine
-from utils.constants import Constants
-
 from shared.schemas import Shift, Worker
+from utils.constants import Constants
 
 
 # pylint: disable=too-many-arguments

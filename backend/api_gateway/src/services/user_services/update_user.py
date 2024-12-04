@@ -1,12 +1,13 @@
 from re import fullmatch
 
-from errors import AuthnUpdateEmailError, UserNotFoundError
+from shared.schemas import PasswordData, User
+from shared.schemas.errors import UserNotFoundError
+
+from errors import AuthnUpdateEmailError
 from integrations.authentication.authn_change_password import authn_change_password
 from integrations.authentication.authn_types import RecipeUserIdType
 from integrations.authentication.authn_update_email import authn_update_user_email
 from scripts.setup_database import user_db
-
-from shared.schemas import PasswordData, User
 
 
 async def update_user(

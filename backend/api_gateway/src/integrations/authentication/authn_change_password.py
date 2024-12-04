@@ -1,10 +1,3 @@
-from errors import (
-    AuthnEmailNotFoundForUserError,
-    AuthnPasswordChangeError,
-    AuthnPasswordPolicyViolationError,
-    AuthnUserNotFoundError,
-    AuthnWrongCredentialsError,
-)
 from supertokens_python.recipe.emailpassword.interfaces import (
     PasswordPolicyViolationError,
     UpdateEmailOrPasswordOkResult,
@@ -16,6 +9,14 @@ from supertokens_python.recipe.emailpassword.syncio import (
 )
 from supertokens_python.syncio import get_user
 from supertokens_python.types import RecipeUserId
+
+from errors import (
+    AuthnEmailNotFoundForUserError,
+    AuthnPasswordChangeError,
+    AuthnPasswordPolicyViolationError,
+    AuthnUserNotFoundError,
+    AuthnWrongCredentialsError,
+)
 
 
 async def authn_change_password(

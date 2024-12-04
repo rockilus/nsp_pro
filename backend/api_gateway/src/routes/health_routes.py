@@ -1,5 +1,7 @@
-from errors import AuthnConnectionError, AuthzConnectionError, DBConnectionError
 from fastapi import APIRouter, HTTPException, status
+from shared.database.errors import DBConnectionError
+
+from errors import AuthnConnectionError, AuthzConnectionError
 from integrations.authentication import authn_health_check
 from integrations.authorization import authz_health_check
 from routes.api_model import HealthCheck, ServiceStatus

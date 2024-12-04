@@ -9,7 +9,6 @@ from engine import ConstraintOrd as ConstraintOrdEngine
 from engine import Constraints as ConstraintsEngine
 from engine import ConstraintSeq as ConstraintSeqEngine
 from engine import ConstraintSum as ConstraintSumEngine
-
 from shared.schemas import (
     ConstraintBuildAugmented,
     ConstraintOperator,
