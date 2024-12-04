@@ -23,7 +23,6 @@ jobs:
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13']
         poetry-version: [1.8.2]
-        service: [api_gateway, processing_engine, storage_service, shared]
 
 
     steps:
@@ -42,15 +41,39 @@ jobs:
         path: ~/.local  # the path depends on the OS
         key: poetry-${{ matrix.poetry-version }}-0  # increment to reset cache
 
-    - name: Install Poetry for ${{ matrix.service }}
+    - name: Install Poetry
       if: steps.cached-poetry.outputs.cache-hit != 'true'
       uses: snok/install-poetry@v1
       with:
         version: ${{ matrix.poetry-version }}
 
-    - name: Install dependencies for ${{ matrix.service }}
+    - name: Load cached Poetry dependencies
+      id: cached-poetry-dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pypoetry
+          backend/api_gateway/.venv
+          backend/processing_engine/.venv
+          backend/storage_service/.venv
+          backend/shared/.venv
+        key: poetry-dependencies-${{ matrix.python-version }}-${{ matrix.poetry-version }}-0
+  
+    - name: Install dependencies for api_gateway
       run: poetry install
-      working-directory: ./backend/${{ matrix.service }}
+      working-directory: ./backend/api_gateway
+  
+    - name: Install dependencies for processing_engine
+      run: poetry install
+      working-directory: ./backend/processing_engine
+  
+    - name: Install dependencies for storage_service
+      run: poetry install
+      working-directory: ./backend/storage_service
+  
+    - name: Install dependencies for shared
+      run: poetry install
+      working-directory: ./backend/shared
 
     - name: Run checks
       run: make check
