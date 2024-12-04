@@ -39,10 +39,8 @@ jobs:
       id: cached-poetry
       uses: actions/cache@v3
       with:
-        path: |
-          ~/.cache/pypoetry
-          backend/${{ matrix.service }}/.venv
-        key: poetry-dependencies-${{ matrix.service }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}-0
+        path: ~/.local  # the path depends on the OS
+        key: poetry-${{ matrix.poetry-version }}-0  # increment to reset cache
 
     - name: Install Poetry for ${{ matrix.service }}
       if: steps.cached-poetry.outputs.cache-hit != 'true'
