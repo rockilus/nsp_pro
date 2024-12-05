@@ -42,6 +42,7 @@ from scripts.setup_database import assignment_db, breach_db, schedule_db
 from services.schedule_services import solve_schedule as solve_schedule_service
 from services.schedule_services import validate_schedule as validate_schedule_service
 from services.schedule_services.get_schedule_wip import get_schedule_campaign
+from task_queue_service import submit_solve_problem_task
 
 router = APIRouter()
 
@@ -102,6 +103,7 @@ async def solve_schedule(
                 "You do not have permission to solve a schedule",
             )
         schedule = schedule_db.get_schedule_by_id(schedule_id)
+        submit_solve_problem_task({"test_data": "this is the test data"})
         # (
         #     schedule,
         #     assignments,
