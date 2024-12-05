@@ -1,6 +1,7 @@
-from dataclasses import dataclass
-from datetime import date
+from dataclasses import asdict, dataclass
+from datetime import date, datetime, time, timezone
 from enum import Enum
+from typing import Dict
 
 
 class RequestStatus(Enum):
@@ -21,6 +22,33 @@ class Request:
     negative: bool
     hard: bool
     status: RequestStatus
+
+    def to_dict(self) -> Dict:
+        out = asdict(self)
+        out["start_date"] = datetime.combine(
+            self.start_date, time.min, tzinfo=timezone.utc
+        ).timestamp()
+        out["end_date"] = datetime.combine(
+            self.end_date, time.min, tzinfo=timezone.utc
+        ).timestamp()
+        out["status"] = self.status.value
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Request":
+        return cls(
+            id=data["id"],
+            team_id=data["team_id"],
+            worker_id=data["worker_id"],
+            start_date=datetime.fromtimestamp(
+                data["start_date"], tz=timezone.utc
+            ).date(),
+            end_date=datetime.fromtimestamp(data["end_date"], tz=timezone.utc).date(),
+            shift_id=data["shift_id"],
+            negative=data["negative"],
+            hard=data["hard"],
+            status=RequestStatus(data["status"]),
+        )
 
 
 @dataclass

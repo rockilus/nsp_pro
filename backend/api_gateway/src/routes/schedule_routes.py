@@ -42,7 +42,6 @@ from scripts.setup_database import assignment_db, breach_db, schedule_db
 from services.schedule_services import solve_schedule as solve_schedule_service
 from services.schedule_services import validate_schedule as validate_schedule_service
 from services.schedule_services.get_schedule_wip import get_schedule_campaign
-from task_queue_service import submit_solve_problem_task
 
 router = APIRouter()
 
@@ -103,14 +102,7 @@ async def solve_schedule(
                 "You do not have permission to solve a schedule",
             )
         schedule = schedule_db.get_schedule_by_id(schedule_id)
-        submit_solve_problem_task({"test_data": "this is the test data"})
-        # (
-        #     schedule,
-        #     assignments,
-        #     objective_breaches,
-        #     requests,
-        #     recuperation_shifts_new,
-        # ) = solve_schedule_service(schedule)
+        task_id = solve_schedule_service(schedule)
         # response = core_to_msg_solution(
         #     schedule,
         #     assignments,
@@ -118,11 +110,11 @@ async def solve_schedule(
         #     requests,
         #     recuperation_shifts_new,
         # )
-        response = solve_schedule_service(schedule)
+        # response = solve_schedule_service(schedule)
     except Exception as e:
         log_info("Failed to solve schedule")
         handle_routes_errors(e)
-    return response
+    return task_id
 
 
 @router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)

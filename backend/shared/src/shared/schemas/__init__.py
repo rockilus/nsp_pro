@@ -36,6 +36,7 @@ from shared.schemas.schemas.dimension import (
     DimensionType,
     DimEntry,
 )
+from shared.schemas.schemas.engine import EngineInputs, EngineOutputs
 from shared.schemas.schemas.export_options import ExportOptions, ExportPeriodOptions
 from shared.schemas.schemas.request import Request, RequestAugmented, RequestStatus
 from shared.schemas.schemas.schedule import (
@@ -96,6 +97,8 @@ __all__ = [
     "DimensionEntryType",
     "DimensionType",
     "DimEntry",
+    "EngineInputs",
+    "EngineOutputs",
     "ExportOptions",
     "ExportPeriodOptions",
     "Request",

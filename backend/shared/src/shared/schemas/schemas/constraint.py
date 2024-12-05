@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from shared.schemas.schemas.attribute import AttributeOwnerType
 
@@ -38,6 +38,21 @@ class ShiftWorkerOption:
     is_bool_dim: bool
     category_name: str  # workers, shifts, all, or the name of the dimension
 
+    def to_dict(self):
+        out = asdict(self)
+        out["id_type"] = self.id_type.value
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "ShiftWorkerOption":
+        return cls(
+            name=data["name"],
+            id=data["id"],
+            id_type=SWOIdTypes(data["id_type"]),
+            is_bool_dim=data["is_bool_dim"],
+            category_name=data["category_name"],
+        )
+
 
 class BlockNameOptions(Enum):
     OPERATOR = 0
@@ -64,6 +79,25 @@ class Block:
     type: BlockTypeOptions
     value: str | int | List[str] | List[ShiftWorkerOption]
 
+    def to_dict(self):
+        out = asdict(self)
+        out["name"] = self.name.value
+        out["type"] = self.type.value
+        if isinstance(self.value, ShiftWorkerOption):
+            out["value"] = self.value.to_dict()
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Block":
+        value = data["value"]
+        if data["type"] == BlockTypeOptions.SHIFT_WORKER_OPTION.value:
+            value = [ShiftWorkerOption.from_dict(v) for v in data["value"]]
+        return cls(
+            name=BlockNameOptions(data["name"]),
+            type=BlockTypeOptions(data["type"]),
+            value=value,
+        )
+
 
 # If the name of a Block is worker, shift, shift_reference or shift_relative,
 # the value is a list of dict with this format:
@@ -81,6 +115,21 @@ class MissingAttribute:
     dim_name: str
     category: AttributeOwnerType
     attribute_values: List[str | int | float | bool]
+
+    def to_dict(self):
+        out = asdict(self)
+        out["category"] = self.category.value
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "MissingAttribute":
+        return cls(
+            dimension_id=data["dimension_id"],
+            is_bool=data["is_bool"],
+            dim_name=data["dim_name"],
+            category=AttributeOwnerType(data["category"]),
+            attribute_values=data["attribute_values"],
+        )
 
 
 class ConstraintType(Enum):
@@ -114,6 +163,25 @@ class ConstraintBuild:
     hard: bool
     priority: str
 
+    def to_dict(self) -> Dict:
+        out = asdict(self)
+        out["constraint_type"] = self.constraint_type.value
+        out["blocks"] = [block.to_dict() for block in self.blocks]
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "ConstraintBuild":
+        return cls(
+            id=data["id"],
+            team_id=data["team_id"],
+            constraint_type=ConstraintType(data["constraint_type"]),
+            template_id=data["template_id"],
+            language=data["language"],
+            blocks=[Block.from_dict(block) for block in data["blocks"]],
+            hard=data["hard"],
+            priority=data["priority"],
+        )
+
 
 @dataclass
 # pylint: disable=too-many-instance-attributes
@@ -121,6 +189,35 @@ class ConstraintBuildAugmented(ConstraintBuild):
     active: bool
     missing_attributes: List[MissingAttribute]
     text: str
+
+    def to_dict(self) -> Dict:
+        out = super().to_dict()
+        out.update(
+            {
+                "active": self.active,
+                "missing_attributes": [ma.to_dict() for ma in self.missing_attributes],
+                "text": self.text,
+            }
+        )
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "ConstraintBuildAugmented":
+        return cls(
+            id=data["id"],
+            team_id=data["team_id"],
+            constraint_type=ConstraintType(data["constraint_type"]),
+            template_id=data["template_id"],
+            language=data["language"],
+            blocks=[Block.from_dict(block) for block in data["blocks"]],
+            hard=data["hard"],
+            priority=data["priority"],
+            active=data["active"],
+            missing_attributes=[
+                MissingAttribute.from_dict(ma) for ma in data["missing_attributes"]
+            ],
+            text=data["text"],
+        )
 
 
 @dataclass

@@ -1,7 +1,7 @@
-from dataclasses import dataclass
-from datetime import date
+from dataclasses import asdict, dataclass
+from datetime import date, datetime, time, timezone
 from enum import Enum
-from typing import List
+from typing import Dict, List
 
 
 @dataclass
@@ -14,12 +14,46 @@ class Assignment:
     shift_id: str
     fixed: bool
 
+    def to_dict(self) -> Dict:
+        out = asdict(self)
+        out["date"] = datetime.combine(
+            self.date, time.min, tzinfo=timezone.utc
+        ).timestamp()
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Assignment":
+        return cls(
+            id=data["id"],
+            team_id=data["team_id"],
+            schedule_id=data["schedule_id"],
+            worker_id=data["worker_id"],
+            date=datetime.fromtimestamp(data["date"], tz=timezone.utc).date(),
+            shift_id=data["shift_id"],
+            fixed=data["fixed"],
+        )
+
 
 @dataclass
 class Variable:
     worker_id: str | None
     date: date
     shift_id: str
+
+    def to_dict(self) -> Dict:
+        out = asdict(self)
+        out["date"] = datetime.combine(
+            self.date, time.min, tzinfo=timezone.utc
+        ).timestamp()
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Variable":
+        return cls(
+            worker_id=data["worker_id"],
+            date=datetime.fromtimestamp(data["date"], tz=timezone.utc).date(),
+            shift_id=data["shift_id"],
+        )
 
 
 class ObjectiveCategory(Enum):
@@ -41,6 +75,24 @@ class Breach:
     variables: List[Variable]
     description: str
     hard_to_soft: bool | None
+
+    def to_dict(self) -> Dict:
+        out = asdict(self)
+        out["objective_category"] = self.objective_category.value
+        out["variables"] = [var.to_dict() for var in self.variables]
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Breach":
+        return cls(
+            id=data["id"],
+            schedule_id=data["schedule_id"],
+            objective_id=data["objective_id"],
+            objective_category=ObjectiveCategory(data["objective_category"]),
+            variables=[Variable.from_dict(var) for var in data["variables"]],
+            description=data["description"],
+            hard_to_soft=data["hard_to_soft"],
+        )
 
 
 @dataclass
@@ -74,6 +126,39 @@ class Schedule:
     missing_coverage_dates: List[date]
     constraint_build_ids: List[str]
     quick_staffings: List[QuickStaffing]
+
+    def to_dict(self) -> Dict:
+        out = asdict(self)
+        out["start_date"] = datetime.combine(
+            self.start_date, time.min, tzinfo=timezone.utc
+        ).timestamp()
+        out["end_date"] = datetime.combine(
+            self.end_date, time.min, tzinfo=timezone.utc
+        ).timestamp()
+        out["solve_status"] = self.solve_status.value
+        out["status"] = self.status.value
+        out["missing_coverage_dates"] = [
+            datetime.combine(dt, time.min, tzinfo=timezone.utc).timestamp()
+            for dt in self.missing_coverage_dates
+        ]
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Schedule":
+        return cls(
+            id=data["id"],
+            team_id=data["team_id"],
+            start_date=datetime.fromtimestamp(data["start_date"], timezone.utc).date(),
+            end_date=datetime.fromtimestamp(data["end_date"], timezone.utc).date(),
+            solve_status=ScheduleSolveStatus(data["solve_status"]),
+            status=ScheduleStatus(data["status"]),
+            missing_coverage_dates=[
+                datetime.fromtimestamp(ts, timezone.utc).date()
+                for ts in data["missing_coverage_dates"]
+            ],
+            constraint_build_ids=data["constraint_build_ids"],
+            quick_staffings=[QuickStaffing(**qs) for qs in data["quick_staffings"]],
+        )
 
 
 # @dataclass

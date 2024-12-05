@@ -1,7 +1,7 @@
-from dataclasses import dataclass
-from datetime import datetime
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 from enum import Enum
-from typing import List
+from typing import Dict, List
 
 
 class ShiftType(Enum):
@@ -61,3 +61,31 @@ class Shift:
     recuperation_time: int  # in hours
     recuperation_duty_id: str | None
     deleted: bool
+
+    def to_dict(self) -> Dict:
+        out = asdict(self)
+        out["start_time"] = self.start_time.timestamp()
+        out["end_time"] = self.end_time.timestamp()
+        out["shift_type"] = self.shift_type.value
+        out["rest_type"] = self.rest_type.value
+        out["leave_type"] = self.leave_type.value
+        # pylint: disable=R0801
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Shift":
+        return cls(
+            id=data["id"],
+            team_id=data["team_id"],
+            name=data["name"],
+            start_time=datetime.fromtimestamp(data["start_time"], tz=timezone.utc),
+            end_time=datetime.fromtimestamp(data["end_time"], tz=timezone.utc),
+            staffing=[Staffing(**s) for s in data["staffing"]],
+            color=data["color"],
+            shift_type=ShiftType(data["shift_type"]),
+            rest_type=ShiftRestType(data["rest_type"]),
+            leave_type=ShiftLeaveType(data["leave_type"]),
+            recuperation_time=data["recuperation_time"],
+            recuperation_duty_id=data["recuperation_duty_id"],
+            deleted=data["deleted"],
+        )
