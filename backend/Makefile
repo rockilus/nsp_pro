@@ -93,7 +93,11 @@ api_gateway_check:
 # Run checks in processing_engine
 processing_engine_check:
 	@echo "Running checks in processing_engine..."
-	@cd processing_engine && poetry run flake8 src && poetry run black --check src && poetry run pylint src && poetry run mypy src
+	@cd processing_engine && \
+	poetry run flake8 src && \
+	poetry run black --check src && \
+	poetry run pylint src && \
+	poetry run mypy src
 
 # Run checks in storage_service
 storage_service_check:

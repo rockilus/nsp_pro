@@ -1,72 +1,28 @@
-from shared.database import (
-    DB,
-    AssignmentDB,
-    AttributeDB,
-    BreachDB,
-    ConfigDB,
-    ConstraintBuildDB,
-    CoverageDB,
-    CoverageSelectorDB,
-    DailyShiftDemandDB,
-    DimensionDB,
-    DimEntryDB,
-    RequestDB,
-    ScheduleDB,
-    ShiftDB,
-    ShiftDemandDB,
-    SpecialtyDB,
-    StatsHeaderDB,
-    TeamDB,
-    UserDB,
-    WorkerDB,
-)
-from shared.database.errors import DBConnectionError
-from shared.logger import log_critical, log_info
-from shared.schemas import Config
+from shared.database import setup_database
 
 from utils.env_config import DB_URI
 
+# Set up the database and initialize collections
+collections = setup_database(DB_URI)
 
-def ensure_config_exists():
-    if config_db.get_config() is None:
-        config_db.create_config(
-            Config(
-                id="",
-                signup_emails_whitelist_enabled=True,
-                signup_emails_whitelist=[],
-                signup_emails_attempt=[],
-            )
-        )
-        log_info("Config document not found. Created a new one.")
-
-
-db = DB(DB_URI)
-try:
-    db.connect()
-except DBConnectionError as e:
-    log_critical("Failed to connect to database" + str(e))
-    raise e
-
-
-assignment_db = AssignmentDB(db)
-attribute_db = AttributeDB(db)
-breach_db = BreachDB(db)
-config_db = ConfigDB(db)
-constraint_build_db = ConstraintBuildDB(db)
-coverage_db = CoverageDB(db)
-coverage_selector_db = CoverageSelectorDB(db)
-daily_shift_demand_db = DailyShiftDemandDB(db)
-dimension_db = DimensionDB(db)
-dim_entry_db = DimEntryDB(db)
-request_db = RequestDB(db)
-schedule_db = ScheduleDB(db)
-shift_db = ShiftDB(db)
-shift_demand_db = ShiftDemandDB(db)
-specialty_db = SpecialtyDB(db)
-stats_header_db = StatsHeaderDB(db)
-team_db = TeamDB(db)
-user_db = UserDB(db)
-worker_db = WorkerDB(db)
-
-
-ensure_config_exists()
+# Access the collections as needed
+db = collections.db
+assignment_db = collections.assignment_db
+attribute_db = collections.attribute_db
+breach_db = collections.breach_db
+config_db = collections.config_db
+constraint_build_db = collections.constraint_build_db
+coverage_db = collections.coverage_db
+coverage_selector_db = collections.coverage_selector_db
+daily_shift_demand_db = collections.daily_shift_demand_db
+dimension_db = collections.dimension_db
+dim_entry_db = collections.dim_entry_db
+request_db = collections.request_db
+schedule_db = collections.schedule_db
+shift_db = collections.shift_db
+shift_demand_db = collections.shift_demand_db
+specialty_db = collections.specialty_db
+stats_header_db = collections.stats_header_db
+team_db = collections.team_db
+user_db = collections.user_db
+worker_db = collections.worker_db

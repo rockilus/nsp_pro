@@ -2989,7 +2989,7 @@ type = ["importlib_metadata (>=7.0.2)", "jaraco.develop (>=7.21)", "mypy (>=1.12
 
 [[package]]
 name = "shared"
-version = "0.1.4"
+version = "0.1.6"
 description = ""
 optional = false
 python-versions = ">=3.10,<=3.13"
