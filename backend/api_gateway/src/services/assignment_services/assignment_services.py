@@ -17,24 +17,3 @@ def get_fixed_assignments(
         [s.id for s in team_schedules if s.status == ScheduleStatus.CAMPAIGN]
     )  # assignments wip and fixed
     return as_hist, as_wip_fixed
-
-
-def save_assignments(
-    assignments: List[Assignment],
-    schedule: Schedule,
-    fixed_assignments: List[Assignment],
-) -> List[Assignment]:
-    assignment_db.delete_assignments_by_schedule_id(schedule.id)
-    if not assignments:
-        return []
-    for assignment in assignments:
-        for fixed_assignment in fixed_assignments:
-            if (
-                assignment.date == fixed_assignment.date
-                and assignment.shift_id == fixed_assignment.shift_id
-                and assignment.worker_id == fixed_assignment.worker_id
-            ):
-                assignment.fixed = True
-                break
-    out = assignment_db.create_assignments(assignments)
-    return out

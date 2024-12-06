@@ -117,6 +117,16 @@ async def solve_schedule(
     return task_id
 
 
+@router.get("/schedules/{schedule_id}/notifify-solved/teams/{team_id}")
+async def notify_solved_schedule(schedule_id: str, team_id: str) -> str:
+    try:
+        print(f"schedule_id notified as solved: {schedule_id}, {team_id}")
+    except Exception as e:
+        log_info("Failed to notify solved schedule")
+        handle_routes_errors(e)
+    return "Task ID"
+
+
 @router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
 async def validate_schedule(
     schedule_id: str,

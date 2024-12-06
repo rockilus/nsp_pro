@@ -5,6 +5,9 @@ tsconfig.tsbuildinfo
 **/.env
 **/.env.dev
 **/.env.local
+**/.env.development
+**/.env.docker
+**/.env.production
 compose.dev.yaml
 
 

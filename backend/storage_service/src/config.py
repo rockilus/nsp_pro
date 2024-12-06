@@ -15,11 +15,8 @@ print(f"env_file_loaded: {env_file_loaded}")
 
 
 class AppConfig(BaseSettings):
-    """
-    Configuration class for the application.
-    Validates and loads environment variables.
-    """
-
+    api_gateway_url: str = Field(..., description="API Gateway URL")
+    database_url: str = Field(..., description="Database connection URL")
     redis_url: str = Field(..., description="Redis connection URL")
     result_backend: str = Field(..., description="Redis URL for result backend")
     log_level: str = Field(
@@ -39,11 +36,3 @@ try:
 except ValidationError as e:
     print(f"Configuration validation failed: {e}")
     raise
-
-
-# class AppConfig(BaseSettings):
-#     redis_url: str = "redis://localhost:6379/0"
-#     result_backend: str = "redis://localhost:6379/1"
-
-#     class Config:
-#         env_file = ".env"
