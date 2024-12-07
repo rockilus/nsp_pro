@@ -7,6 +7,9 @@ celery_app = Celery(
     "storage_service",
     broker=config.redis_url,
     backend=config.result_backend,
+    task_routes={
+        "storage_service.save_engine_outputs": {"queue": "storage_queue"},
+    },
 )
 
 # Set Celery config

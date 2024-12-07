@@ -4,9 +4,6 @@ from dotenv import load_dotenv
 from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings
 
-print(f"Current working directory: {os.getcwd()}")
-
-
 # Determine the environment-specific .env file
 default_env_file = os.path.join(os.path.dirname(__file__), ".env.development")
 env_file = os.getenv("ENV_FILE", default_env_file)
@@ -21,7 +18,9 @@ class AppConfig(BaseSettings):
     """
 
     redis_url: str = Field(..., description="Redis connection URL")
-    result_backend: str = Field(..., description="Redis URL for result backend")
+    result_backend: str = Field(
+        ..., description="Redis URL for result backend"
+    )
     log_level: str = Field(
         "INFO",
         description="Logging level",

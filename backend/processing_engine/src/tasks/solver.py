@@ -8,9 +8,16 @@ from tasks.sender import submit_store_engine_outputs
 
 
 @celery_app.task(name="processing_engine.solve_problem")
-def solve_problem(data: Dict) -> str:
+def solve_problem(data: Dict) -> Dict:
     engine_inputs = EngineInputs.from_dict(data)
     engine_outputs = solve_schedule(engine_inputs)
-    print(f"Task completed: {engine_outputs}")
-    task_id = submit_store_engine_outputs(engine_inputs, engine_outputs)
-    return task_id
+    print("PROCESSING ENGINE TASKS COMPLETE")
+    # task_id = submit_store_engine_outputs(engine_inputs, engine_outputs)
+    # print("SENT TO STORAGE SERVICE")
+    # return task_id
+    out = {
+        "engine_inputs": engine_inputs.to_dict(),
+        "engine_outputs": engine_outputs.to_dict(),
+    }
+    print("SENT TO STORAGE SERVICE")
+    return out

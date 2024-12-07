@@ -1,25 +1,15 @@
 from celery import Celery  # type: ignore
 
-# celery_app = Celery(
-#     "api_gateway",
-#     broker="redis://localhost:6379/0",
-#     backend="redis://localhost:6379/0",
-# )
-
-# celery_app.conf.update(
-#     result_expires=3600,
-# )
-
 
 def create_celery_app() -> Celery:
-    """
-    Create and configure a Celery application.
-    Returns:
-        Celery: The configured Celery instance.
-    """
     app = Celery(
         broker="redis://localhost:6379/0",
-        backend="redis://localhost:6379/1",
+        # backend="redis://localhost:6379/1",
+        backend="redis://localhost:6379/0",
+        task_routes={
+            'processing_engine.solve_problem': {'queue': 'processing_queue'},
+            'storage_service.save_engine_outputs': {'queue': 'storage_queue'},
+        },
     )
     app.conf.update(
         task_serializer="json",

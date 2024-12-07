@@ -5,7 +5,7 @@ from db_operations import save_engine_outputs
 from notification import notify_api_gateway
 
 
-@celery_app.task(name="storage_service.store_engine_outputs")
+@celery_app.task(name="storage_service.save_engine_outputs")
 def save_engine_outputs_task(data: dict) -> None:
     if "engine_inputs" not in data:
         raise ValueError("engine_inputs not found in data")
@@ -14,4 +14,7 @@ def save_engine_outputs_task(data: dict) -> None:
     engine_inputs = EngineInputs.from_dict(data["engine_inputs"])
     engine_outputs = EngineOutputs.from_dict(data["engine_outputs"])
     save_engine_outputs(engine_inputs, engine_outputs)
-    notify_api_gateway(engine_outputs.schedule.id, engine_outputs.schedule.team_id)
+    print("TASK COMPLETE - SAVED ENGINE OUTPUTS")
+    notify_api_gateway(
+        engine_outputs.schedule.id, engine_outputs.schedule.team_id
+    )
