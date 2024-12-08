@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "data-fetcher"
+version = "0.1.0"
+description = ""
+authors = ["Felipe Kharaba <felipe.kharaba@rockilus.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.10,<=3.13"
+mypy = "^1.13.0"
+pylint = "^3.3.2"
+autoflake = "^2.3.1"
+isort = "^5.13.2"
+black = "^24.10.0"
+flake8 = "^7.1.1"
+celery = "^5.4.0"
+pydantic-settings = "^2.6.1"
+python-dotenv = "^1.0.1"
+pydantic = "^2.10.3"
+redis = "^5.2.1"
+shared = {path = "../shared"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

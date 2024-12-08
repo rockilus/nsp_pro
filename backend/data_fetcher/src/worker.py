@@ -1,5 +1,5 @@
 # pylint: disable=unused-import
-from tasks.saver import save_engine_outputs_task  # noqa: F401
+from tasks.fetcher import get_engine_inputs_task  # noqa: F401
 
 if __name__ == "__main__":
     from app import celery_app
@@ -10,7 +10,7 @@ if __name__ == "__main__":
             "app",
             "worker",
             "--loglevel=info",
-            "--queues=storage_queue",
-            "--hostname=storage_worker@%h",
+            "--queues=fetcher_queue",
+            "--hostname=fetcher_worker@%h",
         ]
     )

@@ -42,6 +42,7 @@
 # Format code in all services
 format: \
 	api_gateway_format \
+	data_fetcher_format \
 	processing_engine_format \
 	storage_service_format \
 	shared_format
@@ -49,6 +50,13 @@ format: \
 api_gateway_format:
 	@echo "Formatting code in api_gateway..."
 	@cd api_gateway && \
+	poetry run isort src && \
+	poetry run autoflake --remove-all-unused-imports --in-place --recursive src && \
+	poetry run black src
+
+data_fetcher_format:
+	@echo "Formatting code in data_fetcher..."
+	@cd data_fetcher && \
 	poetry run isort src && \
 	poetry run autoflake --remove-all-unused-imports --in-place --recursive src && \
 	poetry run black src
@@ -77,6 +85,7 @@ shared_format:
 # Run all checks
 check: \
 	api_gateway_check \
+	data_fetcher_check \
 	processing_engine_check \
 	storage_service_check \
 	shared_check
@@ -85,6 +94,15 @@ check: \
 api_gateway_check:
 	@echo "Running checks in api_gateway..."
 	@cd api_gateway && \
+	poetry run flake8 src && \
+	poetry run black --check src && \
+	poetry run pylint src && \
+	poetry run mypy src
+
+# Run checks in data_fetcher
+data_fetcher_check:
+	@echo "Running checks in data_fetcher..."
+	@cd data_fetcher && \
 	poetry run flake8 src && \
 	poetry run black --check src && \
 	poetry run pylint src && \

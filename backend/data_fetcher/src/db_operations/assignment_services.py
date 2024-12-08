@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 from shared.schemas import Assignment, Schedule, ScheduleStatus
 
-from scripts.setup_database import assignment_db, schedule_db
+from db_operations.setup_database import assignment_db, schedule_db
 
 
 # pylint: disable=too-many-locals, too-many-statements

@@ -11,5 +11,6 @@ if __name__ == "__main__":
             "worker",
             "--loglevel=info",
             "--queues=processing_queue",
+            "--hostname=processing_worker@%h",
         ]
     )

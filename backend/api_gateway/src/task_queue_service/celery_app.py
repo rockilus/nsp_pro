@@ -7,6 +7,7 @@ def create_celery_app() -> Celery:
         # backend="redis://localhost:6379/1",
         backend="redis://localhost:6379/0",
         task_routes={
+            "data_fetcher.get_engine_inputs": {"queue": "fetcher_queue"},
             'processing_engine.solve_problem': {'queue': 'processing_queue'},
             'storage_service.save_engine_outputs': {'queue': 'storage_queue'},
         },

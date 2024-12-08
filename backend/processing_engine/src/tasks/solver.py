@@ -8,7 +8,9 @@ from solve_service.solve_schedule import solve_schedule
 
 @celery_app.task(name="processing_engine.solve_problem")
 def solve_problem(data: Dict) -> Dict:
-    engine_inputs = EngineInputs.from_dict(data)
+    if "engine_inputs" not in data:
+        raise ValueError("engine_inputs not found in data")
+    engine_inputs = EngineInputs.from_dict(data["engine_inputs"])
     engine_outputs = solve_schedule(engine_inputs)
     print("PROCESSING ENGINE TASKS COMPLETE")
     # task_id = submit_store_engine_outputs(engine_inputs, engine_outputs)
