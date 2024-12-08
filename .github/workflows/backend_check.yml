@@ -70,6 +70,10 @@ jobs:
     - name: Install dependencies for api_gateway
       run: poetry install
       working-directory: ./backend/api_gateway
+
+    - name: Install dependencies for data_fetcher
+      run: poetry install
+      working-directory: ./backend/data_fetcher
   
     - name: Install dependencies for processing_engine
       run: poetry install
