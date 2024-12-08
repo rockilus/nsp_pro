@@ -18,9 +18,7 @@ class AppConfig(BaseSettings):
     """
 
     redis_url: str = Field(..., description="Redis connection URL")
-    result_backend: str = Field(
-        ..., description="Redis URL for result backend"
-    )
+    result_backend: str = Field(..., description="Redis URL for result backend")
     log_level: str = Field(
         "INFO",
         description="Logging level",

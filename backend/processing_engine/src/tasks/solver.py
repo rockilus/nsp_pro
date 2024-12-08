@@ -4,7 +4,6 @@ from shared.schemas import EngineInputs
 
 from app import celery_app
 from solve_service.solve_schedule import solve_schedule
-from tasks.sender import submit_store_engine_outputs
 
 
 @celery_app.task(name="processing_engine.solve_problem")

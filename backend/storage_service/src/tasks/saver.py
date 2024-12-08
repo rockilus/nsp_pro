@@ -15,6 +15,4 @@ def save_engine_outputs_task(data: dict) -> None:
     engine_outputs = EngineOutputs.from_dict(data["engine_outputs"])
     save_engine_outputs(engine_inputs, engine_outputs)
     print("TASK COMPLETE - SAVED ENGINE OUTPUTS")
-    notify_api_gateway(
-        engine_outputs.schedule.id, engine_outputs.schedule.team_id
-    )
+    notify_api_gateway(engine_outputs.schedule.id, engine_outputs.schedule.team_id)

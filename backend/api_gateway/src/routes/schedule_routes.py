@@ -23,10 +23,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from routes.api_model import (
     AssignmentMessage,
@@ -43,9 +40,7 @@ from routes.request_routes import core_to_msg_request_augmented
 from routes.shift_routes import core_to_msg_shift_and_attributes
 from scripts.setup_database import assignment_db, breach_db, schedule_db
 from services.schedule_services import solve_schedule as solve_schedule_service
-from services.schedule_services import (
-    validate_schedule as validate_schedule_service,
-)
+from services.schedule_services import validate_schedule as validate_schedule_service
 from services.schedule_services.get_schedule_wip import get_schedule_campaign
 
 router = APIRouter()
@@ -132,9 +127,7 @@ async def notify_solved_schedule(schedule_id: str, team_id: str) -> str:
     return "Task ID"
 
 
-@router.post(
-    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
-)
+@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -258,8 +251,7 @@ def core_to_msg_solution(
     ]
     data["requests"] = [core_to_msg_request_augmented(r) for r in requests]
     data["recuperation_shifts_new"] = [
-        core_to_msg_shift_and_attributes(s, [])
-        for s in recuperation_shifts_new
+        core_to_msg_shift_and_attributes(s, []) for s in recuperation_shifts_new
     ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(SolutionMessage)
@@ -284,9 +276,7 @@ def msg_to_core_quick_staffing(msg: QuickStaffingMessage) -> QuickStaffing:
 
 def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["solve_status"] = ScheduleSolveStatus(
-        data_snake["solve_status"]
-    )
+    data_snake["solve_status"] = ScheduleSolveStatus(data_snake["solve_status"])
     data_snake["status"] = ScheduleStatus(data_snake["status"])
     data_snake["quick_staffings"] = [
         msg_to_core_quick_staffing(qs) for qs in msg.quickStaffings

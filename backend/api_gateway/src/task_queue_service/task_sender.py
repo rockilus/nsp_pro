@@ -1,8 +1,7 @@
+from celery import chain, signature  # type: ignore
 from shared.schemas import EngineInputs
 
 from task_queue_service.celery_app import celery_app
-from celery import chain
-from celery import signature
 
 
 @celery_app.task(name="api_gateway.trigger_workflow")
