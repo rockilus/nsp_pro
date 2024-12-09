@@ -1,0 +1,86 @@
+from fastapi import HTTPException
+from shared.database.errors import (
+    DBConnectionError,
+    DocumentDoesNotExistError,
+    DocumentHasExtraFieldError,
+    DocumentMultipleFoundError,
+    DocumentNotUniqueError,
+)
+from shared.schemas.errors import SchemaTypeError, SchemaValueError
+
+from errors.authn_errors.authn_errors import (
+    AuthnPasswordPolicyViolationError,
+    AuthnWrongCredentialsError,
+)
+from errors.authz_errors.authz_errors import (
+    AuthzApiErrorError,
+    AuthzConnectionError,
+    AuthzContextError,
+    AuthzKeyMissingKeyError,
+)
+from errors.message_errors.message_errors import (
+    MessageTypeError,
+    MessageValidationError,
+    MessageValueError,
+)
+from errors.routes_errors.routes_errors import NotAuthorizedError
+from errors.stats_errors.stats_errors import NoCampaignError
+from utils.constants import Constants
+
+
+def handle_routes_errors(error: Exception):
+    if isinstance(error, SchemaTypeError):
+        raise HTTPException(
+            status_code=400,
+            detail="invalid input type, please check your data",
+        )
+    if isinstance(error, NotAuthorizedError):
+        raise HTTPException(
+            status_code=403,
+            detail=error.message,
+        )
+    if isinstance(error, DocumentDoesNotExistError):
+        raise HTTPException(
+            status_code=404, detail="the requested resource could not be found"
+        )
+    if isinstance(error, DocumentNotUniqueError):
+        raise HTTPException(
+            status_code=409,
+            detail="the provided value already exists, please use a different value",
+        )
+    if isinstance(error, SchemaValueError):
+        raise HTTPException(
+            status_code=422,
+            detail="invalid input value, please check your data",
+        )
+    if isinstance(error, AuthnWrongCredentialsError):
+        raise HTTPException(
+            status_code=403, detail="incorrect password, please try again"
+        )
+    if isinstance(error, AuthnPasswordPolicyViolationError):
+        raise HTTPException(
+            status_code=400,
+            detail=error.message,
+        )
+    if isinstance(error, NoCampaignError):
+        raise HTTPException(status_code=404, detail="No campaign schedule found")
+    if isinstance(
+        error,
+        (
+            AuthzConnectionError,
+            AuthzApiErrorError,
+            AuthzContextError,
+            AuthzKeyMissingKeyError,
+            DBConnectionError,
+            DocumentHasExtraFieldError,
+            DocumentMultipleFoundError,
+            MessageTypeError,
+            MessageValueError,
+            MessageValidationError,
+        ),
+    ):
+        raise HTTPException(
+            status_code=503, detail=Constants.USER_ERROR_MESSAGE_GENERIC
+        )
+
+    raise HTTPException(status_code=503, detail=Constants.USER_ERROR_MESSAGE_GENERIC)

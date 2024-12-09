@@ -35,7 +35,7 @@ export default function CampaignInfo({
   const spaceBetween: string = "8px";
 
   const handleSolve = async () => {
-    setIsSolving(true);
+    // setIsSolving(true);
     await handleSolveSchedule(scheduleCampaign.id);
     setIsSolving(false);
   };
