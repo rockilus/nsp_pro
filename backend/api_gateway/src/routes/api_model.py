@@ -185,7 +185,7 @@ class AssignmentMessage(BaseModel):
     teamId: str
     scheduleId: str
     workerId: str
-    date: date
+    date: float
     shiftId: str
     fixed: bool
 
@@ -226,11 +226,11 @@ class QuickStaffingMessage(BaseModel):
 class ScheduleMessage(BaseModel):
     id: str
     teamId: str
-    startDate: date
-    endDate: date
+    startDate: float
+    endDate: float
     solveStatus: int
     status: int
-    missingCoverageDates: List[date]
+    missingCoverageDates: List[float]
     constraintBuildIds: List[str]
     quickStaffings: List[QuickStaffingMessage]
 
@@ -238,9 +238,9 @@ class ScheduleMessage(BaseModel):
 class SolutionMessage(BaseModel):
     schedule: ScheduleMessage
     assignments: List[AssignmentMessage]
-    objectiveBreaches: List[BreachMessage]
+    breaches: List[BreachMessage]
     requests: List[RequestMessage]
-    recuperationShiftsNew: List[ShiftMessage]
+    shiftsRecupNew: List[ShiftMessage]
 
 
 # Stats

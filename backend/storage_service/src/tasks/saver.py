@@ -13,6 +13,6 @@ def save_engine_outputs_task(data: dict) -> None:
         raise ValueError("engine_outputs not found in data")
     engine_inputs = EngineInputs.from_dict(data["engine_inputs"])
     engine_outputs = EngineOutputs.from_dict(data["engine_outputs"])
-    save_engine_outputs(engine_inputs, engine_outputs)
+    eo_augmented = save_engine_outputs(engine_inputs, engine_outputs)
     print("TASK COMPLETE - SAVED ENGINE OUTPUTS")
-    notify_api_gateway(engine_outputs)
+    notify_api_gateway(eo_augmented)

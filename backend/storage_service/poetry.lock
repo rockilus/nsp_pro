@@ -1071,7 +1071,7 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "shared"
-version = "0.1.10"
+version = "0.1.11"
 description = ""
 optional = false
 python-versions = ">=3.10,<=3.13"

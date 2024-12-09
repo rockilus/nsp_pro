@@ -36,9 +36,20 @@ from shared.schemas.schemas.dimension import (
     DimensionType,
     DimEntry,
 )
-from shared.schemas.schemas.engine import EngineInputs, EngineOutputs
-from shared.schemas.schemas.export_options import ExportOptions, ExportPeriodOptions
-from shared.schemas.schemas.request import Request, RequestAugmented, RequestStatus
+from shared.schemas.schemas.engine import (
+    EngineInputs,
+    EngineOutputs,
+    EngineOutputsAugmented,
+)
+from shared.schemas.schemas.export_options import (
+    ExportOptions,
+    ExportPeriodOptions,
+)
+from shared.schemas.schemas.request import (
+    Request,
+    RequestAugmented,
+    RequestStatus,
+)
 from shared.schemas.schemas.schedule import (
     Assignment,
     Breach,
@@ -56,9 +67,19 @@ from shared.schemas.schemas.shift import (
     ShiftType,
     Staffing,
 )
-from shared.schemas.schemas.stats import Stats, StatsHeader, StatsOptions, StatsValue
+from shared.schemas.schemas.stats import (
+    Stats,
+    StatsHeader,
+    StatsOptions,
+    StatsValue,
+)
 from shared.schemas.schemas.team import Specialty, Team
-from shared.schemas.schemas.user import PasswordData, User, UserAuth, UserDashboard
+from shared.schemas.schemas.user import (
+    PasswordData,
+    User,
+    UserAuth,
+    UserDashboard,
+)
 from shared.schemas.schemas.worker import Worker, WorkerDates
 
 # pylint: disable=R0801
@@ -99,6 +120,7 @@ __all__ = [
     "DimEntry",
     "EngineInputs",
     "EngineOutputs",
+    "EngineOutputsAugmented",
     "ExportOptions",
     "ExportPeriodOptions",
     "Request",

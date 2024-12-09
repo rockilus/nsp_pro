@@ -1217,7 +1217,7 @@ ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==23.2.1)", "requests (>=2.31.0)"
 
 [[package]]
 name = "shared"
-version = "0.1.10"
+version = "0.1.11"
 description = ""
 optional = false
 python-versions = ">=3.10,<=3.13"

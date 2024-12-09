@@ -33,10 +33,10 @@ const apiUrlSchedule = API_URL + "/schedules";
 export const toScheduleT = (data: any): ScheduleT => {
   return {
     ...data,
-    startDate: dayjs.utc(data.startDate),
-    endDate: dayjs.utc(data.endDate),
-    missingCoverageDates: data.missingCoverageDates.map((isoDate: string) =>
-      dayjs.utc(isoDate)
+    startDate: dayjs.unix(data.startDate).utc(),
+    endDate: dayjs.unix(data.endDate).utc(),
+    missingCoverageDates: data.missingCoverageDates.map((timeStamp: number) =>
+      dayjs.unix(timeStamp).utc()
     ),
   };
 };
@@ -89,24 +89,47 @@ export async function solveSchedule(scheduleId: string, teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to solve schedule: " + responseData.detail);
     }
-    return {
-      schedule: toScheduleT(responseData.schedule),
-      assignments: responseData.assignments.map(toAssignmentT),
-      breaches: responseData.objectiveBreaches.map(toBreachT),
-      requests: responseData.requests.map(toRequestT),
-      recuperationShiftsNew: responseData.recuperationShiftsNew.map(toShiftT),
-    } as {
-      schedule: ScheduleT;
-      assignments: AssignmentT[];
-      breaches: BreachT[];
-      requests: RequestT[];
-      recuperationShiftsNew: ShiftT[];
-    };
+    return toScheduleT(responseData) as ScheduleT;
   } catch (error) {
     console.error("Failed to solve schedule:", error);
     throw new Error("Failed to solve schedule, please try again later");
   }
 }
+
+// export async function solveSchedule(scheduleId: string, teamId: string) {
+//   const options: RequestInit = {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//   };
+//   try {
+//     const response = await fetch(
+//       `${apiUrlSchedule}/${scheduleId}/solve/teams/${teamId}`,
+//       options
+//     );
+//     const responseData = await response.json();
+//     if (!response.ok) {
+//       throw new Error("Failed to solve schedule: " + responseData.detail);
+//     }
+//     return {
+//       schedule: toScheduleT(responseData.schedule),
+//       assignments: responseData.assignments.map(toAssignmentT),
+//       breaches: responseData.objectiveBreaches.map(toBreachT),
+//       requests: responseData.requests.map(toRequestT),
+//       recuperationShiftsNew: responseData.recuperationShiftsNew.map(toShiftT),
+//     } as {
+//       schedule: ScheduleT;
+//       assignments: AssignmentT[];
+//       breaches: BreachT[];
+//       requests: RequestT[];
+//       recuperationShiftsNew: ShiftT[];
+//     };
+//   } catch (error) {
+//     console.error("Failed to solve schedule:", error);
+//     throw new Error("Failed to solve schedule, please try again later");
+//   }
+// }
 
 export async function validateSchedule(scheduleId: string, teamId: string) {
   const options: RequestInit = {
