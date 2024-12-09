@@ -9,9 +9,8 @@ from shared.schemas import (
     Shift,
     ShiftType,
     Worker,
+    WorkerDates,
 )
-
-from core_to_engine_service.types import WorkerDates
 
 
 # pylint: disable=too-many-locals, too-many-branches

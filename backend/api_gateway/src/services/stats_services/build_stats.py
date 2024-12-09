@@ -1,7 +1,8 @@
 from datetime import date
 from typing import Dict, List, Tuple
 
-# from constraint_parser import parse_selected_shifts
+from shared.augment import build_missing_attributes_and_active_owner
+from shared.constraint_parser import parse_selected_shifts
 from shared.schemas import (
     Assignment,
     Attribute,
@@ -31,9 +32,6 @@ from scripts.setup_database import (
     shift_db,
     stats_header_db,
     worker_db,
-)
-from services.constraint_build_services.cb_to_cb_augmented import (
-    build_missing_attributes_and_active_owner,
 )
 from services.stats_services.buid_dates import build_dates
 from services.stats_services.calc_per_week_day import (
@@ -171,11 +169,9 @@ def build_work_shift_indexes(
         dim_entries,
         attributes,
     )
-    # selected_shifts_ids = parse_selected_shifts(
-    #     selected_shifts, missing_attributes, shifts, shift_dim_dict
-    # )
-    print(shift_dim_dict, missing_attributes)
-    selected_shifts_ids: List[str] = []
+    selected_shifts_ids = parse_selected_shifts(
+        selected_shifts, missing_attributes, shifts, shift_dim_dict
+    )
     worker_to_i = {worker.id: i for i, worker in enumerate(workers)}
     # shift_to_i = {shift.id: i for i, shift in enumerate(shifts)}
     work_shift_to_i = {

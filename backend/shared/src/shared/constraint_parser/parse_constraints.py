@@ -1,20 +1,19 @@
 from datetime import date
 from typing import Dict, List
 
+from shared.constraint_parser.mapping.map_constraint import MapConstaint
 from shared.schemas import (
     ConstraintBuildAugmented,
     Constraints,
     ConstraintType,
     Shift,
     Worker,
+    WorkerDates,
 )
-
-from constraint_parser.mapping.map_constraint import MapConstaint
-from core_to_engine_service.types import WorkerDates
 
 
 # pylint: disable=too-many-arguments
-def parse_constraint(
+def parse_constraints(
     cbas: List[ConstraintBuildAugmented],
     schedule_id: str,
     workers: List[Worker],

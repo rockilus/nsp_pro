@@ -1,6 +1,7 @@
 from datetime import date
 from typing import Dict, List, Tuple
 
+from shared.constraint_parser.parse_constraints import parse_constraints
 from shared.schemas import (
     ConstraintBuildAugmented,
     ConstraintOperator,
@@ -10,10 +11,9 @@ from shared.schemas import (
     Schedule,
     Shift,
     Worker,
+    WorkerDates,
 )
 
-from constraint_parser.constraint_parse import parse_constraint
-from core_to_engine_service.types import WorkerDates
 from engine import ConstraintFai as ConstraintFaiEngine
 from engine import ConstraintFil as ConstraintFilEngine
 from engine import ConstraintOrd as ConstraintOrdEngine
@@ -36,7 +36,7 @@ def build_engine_constraints(
     shifts: List[Shift],
     dim_to_attr_value_to_shift: Dict,
 ) -> Constraints:
-    constraints = parse_constraint(
+    constraints = parse_constraints(
         cbs_augmented,
         schedule.id,
         workers,

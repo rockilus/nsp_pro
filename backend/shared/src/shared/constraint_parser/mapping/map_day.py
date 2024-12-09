@@ -1,6 +1,7 @@
 from datetime import date
 from typing import List, Tuple
 
+from shared.constraint_parser.mapping.utils import find_block_by_name
 from shared.schemas import (
     Block,
     BlockNameOptions,
@@ -9,8 +10,16 @@ from shared.schemas import (
     VarDaySelectorOptions,
 )
 
-from constraint_parser.mapping.utils import find_block_by_name
-from utils.constants import Constants
+NUM_DAYS_WEEK: int = 7
+WEEK_DAYS: Tuple[str, ...] = (
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+)
 
 
 class MapDay:
@@ -37,7 +46,7 @@ class MapDay:
                 for i in range(
                     target,
                     len(self.dates_campaign),
-                    Constants.NUM_DAYS_WEEK,
+                    NUM_DAYS_WEEK,
                 )
             ]
         raise NotImplementedError(f"Day selector {selector} " + "not implemented")
@@ -59,11 +68,11 @@ class MapDay:
             ):
                 d_vars.append((dates_constraint[i], dates_constraint[i + interval]))
             return d_vars
-        start = target if (target + interval >= 0) else target + Constants.NUM_DAYS_WEEK
+        start = target if (target + interval >= 0) else target + NUM_DAYS_WEEK
         for i in range(
             start,
             len(dates_constraint) - max(interval, 0),
-            Constants.NUM_DAYS_WEEK,
+            NUM_DAYS_WEEK,
         ):
             d_vars.append(
                 (
@@ -141,8 +150,8 @@ class MapDay:
             return 0
         weekday_block = find_block_by_name(blocks, BlockNameOptions.WEEKDAY)
         if weekday_block:
-            if weekday_block.value in Constants.WEEK_DAYS:
-                return Constants.WEEK_DAYS.index(weekday_block.value)
+            if weekday_block.value in WEEK_DAYS:
+                return WEEK_DAYS.index(weekday_block.value)
             raise ValueError(f"Weekday {weekday_block.value} not recognized")
         raise ValueError("Weekday block not found")
 

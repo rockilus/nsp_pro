@@ -53,3 +53,9 @@ class Worker:
             specialty_ids=data["specialty_ids"],
             deleted=data["deleted"],
         )
+
+
+@dataclass
+class WorkerDates:
+    dates_hist: List[date]
+    dates_campaign: List[date]

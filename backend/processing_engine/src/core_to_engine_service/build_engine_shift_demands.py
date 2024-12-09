@@ -1,9 +1,8 @@
 from datetime import date
 from typing import Dict, List
 
-from shared.schemas import DailyShiftDemand, Shift, Worker
+from shared.schemas import DailyShiftDemand, Shift, Worker, WorkerDates
 
-from core_to_engine_service.types import WorkerDates
 from engine import ShiftDemand as ShiftDemandEngine
 
 

@@ -1,9 +1,8 @@
 from datetime import timedelta
 from typing import Dict, List
 
-from shared.schemas import Request
+from shared.schemas import Request, WorkerDates
 
-from core_to_engine_service.types import WorkerDates
 from engine import Request as RequestEngine
 
 

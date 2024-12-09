@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from shared.constraint_parser.mapping.utils import find_block_by_name
 from shared.schemas import (
     Block,
     BlockNameOptions,
@@ -10,8 +11,6 @@ from shared.schemas import (
     VarWorkerSelectorOptions,
     Worker,
 )
-
-from constraint_parser.mapping.utils import find_block_by_name
 
 
 class MapWorker:

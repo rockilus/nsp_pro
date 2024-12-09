@@ -59,7 +59,7 @@ from shared.schemas.schemas.shift import (
 from shared.schemas.schemas.stats import Stats, StatsHeader, StatsOptions, StatsValue
 from shared.schemas.schemas.team import Specialty, Team
 from shared.schemas.schemas.user import PasswordData, User, UserAuth, UserDashboard
-from shared.schemas.schemas.worker import Worker
+from shared.schemas.schemas.worker import Worker, WorkerDates
 
 # pylint: disable=R0801
 __all__ = [
@@ -127,4 +127,5 @@ __all__ = [
     "UserAuth",
     "UserDashboard",
     "Worker",
+    "WorkerDates",
 ]
