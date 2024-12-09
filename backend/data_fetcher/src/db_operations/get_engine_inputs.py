@@ -53,6 +53,7 @@ def get_engine_inputs(schedule: Schedule) -> EngineInputs:
         schedule=schedule,
         workers=workers,
         shifts=shifts,
+        shifts_recup_new=recuperation_shifts_new,
         dimensions=dimensions,
         dim_entries=dim_entries,
         attributes=attributes,

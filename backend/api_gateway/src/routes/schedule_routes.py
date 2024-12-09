@@ -8,6 +8,7 @@ from shared.logger import log_info
 from shared.schemas import (
     Assignment,
     Breach,
+    EngineOutputs,
     QuickStaffing,
     RequestAugmented,
     Schedule,
@@ -118,9 +119,13 @@ async def solve_schedule(
 
 
 @router.post("/schedules/{schedule_id}/notifify-solved/teams/{team_id}")
-async def notify_solved_schedule(schedule_id: str, team_id: str) -> str:
+async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> str:
     try:
+        if "engine_outputs" not in data:
+            raise MessageTypeError("engine_outputs not in data")
+        engine_outputs = EngineOutputs.from_dict(data["engine_outputs"])
         print(f"schedule_id notified as solved: {schedule_id}, {team_id}")
+        print(f"engine_outputs: {engine_outputs}")
     except Exception as e:
         log_info("Failed to notify solved schedule")
         handle_routes_errors(e)

@@ -52,4 +52,5 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
         assignments=a_campaign,
         breaches=breaches,
         requests=updated_requests,
+        shifts_recup_new=engine_inputs.shifts_recup_new,
     )

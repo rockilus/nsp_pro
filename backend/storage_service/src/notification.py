@@ -1,14 +1,15 @@
 import requests
+from shared.schemas import EngineOutputs
 
 from config import config
 
 
-def notify_api_gateway(schedule_id: str, team_id: str) -> None:
+def notify_api_gateway(engine_outputs: EngineOutputs) -> None:
     url = (
-        f"{config.api_gateway_url}/schedules/{schedule_id}"
-        + f"/notifify-solved/teams/{team_id}"
+        f"{config.api_gateway_url}/schedules/{engine_outputs.schedule.id}"
+        + f"/notifify-solved/teams/{engine_outputs.schedule.team_id}"
     )
-    payload = {"record_id": "record_id"}
+    payload = {"engine_outputs": engine_outputs.to_dict()}
     try:
         response = requests.post(url, json=payload, timeout=10)
         response.raise_for_status()

@@ -17,6 +17,7 @@ class EngineInputs:
     schedule: Schedule
     workers: List[Worker]
     shifts: List[Shift]
+    shifts_recup_new: List[Shift]
     dimensions: List[Dimension]
     dim_entries: List[DimEntry]
     attributes: List[Attribute]
@@ -32,6 +33,7 @@ class EngineInputs:
             "schedule": self.schedule.to_dict(),
             "workers": [worker.to_dict() for worker in self.workers],
             "shifts": [shift.to_dict() for shift in self.shifts],
+            "shifts_recup_new": [shift.to_dict() for shift in self.shifts_recup_new],
             "dimensions": [dim.to_dict() for dim in self.dimensions],
             "dim_entries": [entry.to_dict() for entry in self.dim_entries],
             "attributes": [attr.to_dict() for attr in self.attributes],
@@ -55,6 +57,9 @@ class EngineInputs:
             schedule=Schedule.from_dict(data["schedule"]),
             workers=[Worker.from_dict(worker) for worker in data["workers"]],
             shifts=[Shift.from_dict(shift) for shift in data["shifts"]],
+            shifts_recup_new=[
+                Shift.from_dict(shift) for shift in data["shifts_recup_new"]
+            ],
             dimensions=[Dimension.from_dict(dim) for dim in data["dimensions"]],
             dim_entries=[DimEntry.from_dict(entry) for entry in data["dim_entries"]],
             attributes=[Attribute.from_dict(attr) for attr in data["attributes"]],
@@ -86,6 +91,7 @@ class EngineOutputs:
     assignments: List[Assignment]
     breaches: List[Breach]
     requests: List[Request]
+    shifts_recup_new: List[Shift]
 
     def to_dict(self) -> Dict:
         return {
@@ -93,6 +99,7 @@ class EngineOutputs:
             "assignments": [assignment.to_dict() for assignment in self.assignments],
             "breaches": [breach.to_dict() for breach in self.breaches],
             "requests": [request.to_dict() for request in self.requests],
+            "shifts_recup_new": [shift.to_dict() for shift in self.shifts_recup_new],
         }
 
     @classmethod
@@ -104,4 +111,7 @@ class EngineOutputs:
             ],
             breaches=[Breach.from_dict(breach) for breach in data["breaches"]],
             requests=[Request.from_dict(request) for request in data["requests"]],
+            shifts_recup_new=[
+                Shift.from_dict(shift) for shift in data["shifts_recup_new"]
+            ],
         )
