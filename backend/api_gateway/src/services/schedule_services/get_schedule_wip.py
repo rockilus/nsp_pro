@@ -27,6 +27,7 @@ def get_schedule_campaign(schedules: List[Schedule], team_id: str) -> Schedule:
             team_id=team_id,
             start_date=start_date,
             end_date=end_date,
+            solve_details=None,
             solve_status=ScheduleSolveStatus.NOT_SOLVED,
             status=ScheduleStatus.CAMPAIGN,
             missing_coverage_dates=[],
