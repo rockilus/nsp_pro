@@ -19,6 +19,8 @@ import {
   AssignmentT,
   BreachT,
   ExportOptionsT,
+  SolveDetailsT,
+  SolveDetailsStatus,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import { StatsOptionsT } from "../../types/stats";
@@ -30,11 +32,19 @@ dayjs.extend(utc);
 
 const apiUrlSchedule = API_URL + "/schedules";
 
+export const toSolveDetailsT = (data: any): SolveDetailsT => {
+  return {
+    ...data,
+    updated_at: dayjs.unix(data.updated_at).utc(),
+  };
+};
+
 export const toScheduleT = (data: any): ScheduleT => {
   return {
     ...data,
     startDate: dayjs.unix(data.startDate).utc(),
     endDate: dayjs.unix(data.endDate).utc(),
+    solveDetails: data.solveDetails ? toSolveDetailsT(data.solveDetails) : null,
     missingCoverageDates: data.missingCoverageDates.map((timeStamp: number) =>
       dayjs.unix(timeStamp).utc()
     ),

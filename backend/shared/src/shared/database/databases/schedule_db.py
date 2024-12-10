@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import List
 
 from bson import ObjectId
@@ -15,6 +15,7 @@ from shared.database.models.constraint_build import (
 )
 from shared.database.models.schedule import QuickStaffing as QuickStaffingDocument
 from shared.database.models.schedule import Schedule as ScheduleDocument
+from shared.database.models.schedule import SolveDetails as SolveDetailsDocument
 from shared.database.models.shift import Shift as ShiftDocument
 from shared.database.models.team import Team as TeamDocument
 from shared.database.models.worker import Worker as WorkerDocument
@@ -24,6 +25,8 @@ from shared.schemas.schemas.schedule import (
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
+    SolveDetails,
+    SolveDetailsStatus,
 )
 
 
@@ -188,6 +191,15 @@ def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
             dataclass_obj.end_date.month,
             dataclass_obj.end_date.day,
         ),
+        solve_details=(
+            SolveDetailsDocument(
+                task_id=dataclass_obj.solve_details.task_id,
+                status=dataclass_obj.solve_details.status.value,
+                updated_at=dataclass_obj.solve_details.updated_at.timestamp(),
+            )
+            if dataclass_obj.solve_details
+            else None
+        ),
         solve_status=dataclass_obj.solve_status.value,
         status=dataclass_obj.status.value,
         missing_coverage_dates=dataclass_obj.missing_coverage_dates,
@@ -216,12 +228,29 @@ def doc_to_core_quick_staffing(
     return QuickStaffing(**doc_dict)
 
 
+def doc_to_core_solve_details(doc_obj: SolveDetailsDocument) -> SolveDetails:
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["status"] = SolveDetailsStatus(doc_dict["status"])
+    doc_dict["updated_at"] = datetime.fromtimestamp(
+        doc_dict["updated_at"], tz=timezone.utc
+    )
+    return SolveDetails(**doc_dict)
+
+
 def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["team_id"] = doc_dict["team"]
     doc_dict["start_date"] = doc_dict["start_date"].date()
     doc_dict["end_date"] = doc_dict["end_date"].date()
+    if doc_dict["solve_details"]:
+        doc_dict["solve_details"] = (
+            doc_to_core_solve_details(doc_obj.solve_details)
+            if doc_obj.solve_details
+            else None
+        )
+    else:
+        doc_dict["solve_details"] = None
     doc_dict["solve_status"] = ScheduleSolveStatus(doc_dict["solve_status"])
     doc_dict["status"] = ScheduleStatus(doc_dict["status"])
     doc_dict["missing_coverage_dates"] = [

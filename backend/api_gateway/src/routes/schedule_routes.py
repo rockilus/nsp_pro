@@ -1,6 +1,6 @@
 from dataclasses import asdict
-from typing import Dict, List
 from datetime import datetime, time, timezone
+from typing import Dict, List
 
 import humps
 from fastapi import APIRouter, Depends
@@ -16,6 +16,8 @@ from shared.schemas import (
     ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
+    SolveDetails,
+    SolveDetailsStatus,
 )
 from shared.schemas.errors import handle_create_schema_object_error
 
@@ -25,10 +27,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from routes.api_model import (
     AssignmentMessage,
@@ -38,6 +37,7 @@ from routes.api_model import (
     ScheduleMessage,
     ShiftMessage,
     SolutionMessage,
+    SolveDetailsMessage,
 )
 from routes.assignment_routes import core_to_msg_assignment
 from routes.breach_routes import core_to_msg_breach
@@ -45,9 +45,7 @@ from routes.request_routes import core_to_msg_request_augmented
 from routes.shift_routes import core_to_msg_shift_and_attributes
 from scripts.setup_database import assignment_db, breach_db, schedule_db
 from services.schedule_services import solve_schedule as solve_schedule_service
-from services.schedule_services import (
-    validate_schedule as validate_schedule_service,
-)
+from services.schedule_services import validate_schedule as validate_schedule_service
 from services.schedule_services.get_schedule_wip import get_schedule_campaign
 from utils import event_manager
 
@@ -109,16 +107,7 @@ async def solve_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to solve a schedule",
             )
-        schedule = schedule_db.get_schedule_by_id(schedule_id)
-        task_id = solve_schedule_service(schedule)
-        # response = core_to_msg_solution(
-        #     schedule,
-        #     assignments,
-        #     objective_breaches,
-        #     requests,
-        #     recuperation_shifts_new,
-        # )
-        # response = solve_schedule_service(schedule)
+        schedule = solve_schedule_service(schedule_id)
         response = core_to_msg_schedule(schedule)
     except Exception as e:
         log_info("Failed to solve schedule")
@@ -127,9 +116,7 @@ async def solve_schedule(
 
 
 @router.post("/schedules/{schedule_id}/notifify-solved/teams/{team_id}")
-async def notify_solved_schedule(
-    schedule_id: str, team_id: str, data: Dict
-) -> str:
+async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> str:
     try:
         if "eo_augmented" not in data:
             raise MessageTypeError("eo_augmented not in data")
@@ -150,9 +137,7 @@ async def notify_solved_schedule(
     return "Task ID"
 
 
-@router.post(
-    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
-)
+@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -235,6 +220,23 @@ def core_to_msg_quick_staffing(qs: QuickStaffing) -> QuickStaffingMessage:
     return qs_msg
 
 
+def core_to_msg_solve_details(sd: SolveDetails) -> SolveDetailsMessage:
+    try:
+        data = asdict(sd)
+    except Exception as e:
+        log_info("Failed to convert SolveDetails to dictionary")
+        raise MessageTypeError(str(e)) from e
+    data["start_date"] = sd.updated_at.timestamp()
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(SolveDetailsMessage)
+    try:
+        sd_msg = validator.validate_python(as_dict)
+    except Exception as e:
+        log_info("Failed to convert SolveDetails to SolveDetailsMessage")
+        handle_message_errors(e)
+    return sd_msg
+
+
 def core_to_msg_schedule(schedule: Schedule) -> ScheduleMessage:
     try:
         data = asdict(schedule)
@@ -247,6 +249,11 @@ def core_to_msg_schedule(schedule: Schedule) -> ScheduleMessage:
     data["end_date"] = datetime.combine(
         schedule.end_date, time.min, timezone.utc
     ).timestamp()
+    data["solve_status"] = (
+        core_to_msg_solve_details(schedule.solve_details)
+        if schedule.solve_details
+        else None
+    )
     data["missing_coverage_dates"] = [
         datetime.combine(d, time.min, tzinfo=timezone.utc).timestamp()
         for d in schedule.missing_coverage_dates
@@ -307,6 +314,20 @@ def msg_to_core_quick_staffing(msg: QuickStaffingMessage) -> QuickStaffing:
     return quick_staffing
 
 
+def msg_to_core_solve_details(msg: SolveDetailsMessage) -> SolveDetails:
+    data_snake = humps.decamelize(msg.model_dump())
+    data_snake["status"] = SolveDetailsStatus(data_snake["status"])
+    data_snake["updated_at"] = datetime.fromtimestamp(
+        data_snake["updated_at"], timezone.utc
+    )
+    try:
+        solve_details = SolveDetails(**data_snake)
+    except Exception as e:
+        log_info("Failed to convert SolveDetailsMessage to SolveDetails")
+        handle_create_schema_object_error(e)
+    return solve_details
+
+
 def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake["start_date"] = datetime.fromtimestamp(
@@ -315,9 +336,9 @@ def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake["end_date"] = datetime.fromtimestamp(
         data_snake["end_date"], timezone.utc
     ).date()
-    data_snake["solve_status"] = ScheduleSolveStatus(
-        data_snake["solve_status"]
-    )
+    if msg.solveDetails:
+        data_snake["solve_details"] = msg_to_core_solve_details(msg.solveDetails)
+    data_snake["solve_status"] = ScheduleSolveStatus(data_snake["solve_status"])
     data_snake["status"] = ScheduleStatus(data_snake["status"])
     data_snake["missing_coverage_dates"] = [
         datetime.fromtimestamp(d, timezone.utc).date()

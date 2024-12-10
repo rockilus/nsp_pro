@@ -1,6 +1,7 @@
 import requests
-from config import config
 from shared.schemas import EngineOutputsAugmented
+
+from config import config
 
 
 def notify_api_gateway(eo_augmented: EngineOutputsAugmented) -> None:

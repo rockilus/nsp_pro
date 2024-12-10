@@ -223,11 +223,18 @@ class QuickStaffingMessage(BaseModel):
     target: int
 
 
+class SolveDetailsMessage(BaseModel):
+    task_id: str
+    status: int
+    updated_at: float
+
+
 class ScheduleMessage(BaseModel):
     id: str
     teamId: str
     startDate: float
     endDate: float
+    solveDetails: SolveDetailsMessage | None
     solveStatus: int
     status: int
     missingCoverageDates: List[float]

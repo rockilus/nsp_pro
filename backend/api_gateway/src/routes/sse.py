@@ -1,10 +1,11 @@
 import asyncio
+import json
 from typing import Callable
 
 from fastapi import APIRouter, Response
-from utils import event_manager
 from starlette.responses import StreamingResponse
-import json
+
+from utils import event_manager
 
 router = APIRouter()
 
@@ -18,7 +19,6 @@ async def sse() -> Callable:
 
         def send_event(data: dict):
             """Listener function to send events to the queue."""
-            print("sending event")
             queue.put_nowait(data)
 
         # Subscribe to the EventManager
@@ -26,14 +26,12 @@ async def sse() -> Callable:
 
         try:
             while True:
-                print("waiting for data")
                 data = await queue.get()
                 # yield f"data: {data}\n\n"
                 yield f"data: {json.dumps(data)}\n\n"
 
         finally:
             # Unsubscribe the listener when the connection is closed
-            print("unsubscribing")
             event_manager.listeners.remove(send_event)
 
     print("returning response")

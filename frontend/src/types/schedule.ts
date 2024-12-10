@@ -66,6 +66,19 @@ export type QuickStaffingT = {
   target: number;
 };
 
+export enum SolveDetailsStatus {
+  PENDING = 0,
+  IN_PROGRESS = 1,
+  SUCCESS = 2,
+  FAILURE = 3,
+}
+
+export type SolveDetailsT = {
+  task_id: string;
+  status: SolveDetailsStatus;
+  updated_at: dayjs.Dayjs;
+};
+
 export enum ScheduleSolveStatus {
   NOT_SOLVED = 0,
   SOLVED = 1,
@@ -84,6 +97,7 @@ export type ScheduleT = {
   teamId: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
+  solveDetails: SolveDetailsT | null;
   solveStatus: ScheduleSolveStatus;
   status: ScheduleStatus;
   missingCoverageDates: dayjs.Dayjs[];

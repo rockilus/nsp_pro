@@ -43,9 +43,7 @@ class Request:
             start_date=datetime.fromtimestamp(
                 data["start_date"], tz=timezone.utc
             ).date(),
-            end_date=datetime.fromtimestamp(
-                data["end_date"], tz=timezone.utc
-            ).date(),
+            end_date=datetime.fromtimestamp(data["end_date"], tz=timezone.utc).date(),
             shift_id=data["shift_id"],
             negative=data["negative"],
             hard=data["hard"],
@@ -71,9 +69,7 @@ class RequestAugmented(Request):
             start_date=datetime.fromtimestamp(
                 data["start_date"], tz=timezone.utc
             ).date(),
-            end_date=datetime.fromtimestamp(
-                data["end_date"], tz=timezone.utc
-            ).date(),
+            end_date=datetime.fromtimestamp(data["end_date"], tz=timezone.utc).date(),
             shift_id=data["shift_id"],
             negative=data["negative"],
             hard=data["hard"],

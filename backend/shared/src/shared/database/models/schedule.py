@@ -8,13 +8,23 @@ from mongoengine.fields import (
     StringField,
 )
 
-from shared.schemas.schemas.schedule import ScheduleSolveStatus, ScheduleStatus
+from shared.schemas.schemas.schedule import (
+    ScheduleSolveStatus,
+    ScheduleStatus,
+    SolveDetailsStatus,
+)
 
 
 class QuickStaffing(EmbeddedDocument):
     worker = ReferenceField("Worker", required=True)
     shift = ReferenceField("Shift", required=True)
     target = IntField(required=True)
+
+
+class SolveDetails(EmbeddedDocument):
+    task_id = StringField(required=True)
+    status = IntField(required=True, choices=[e.value for e in SolveDetailsStatus])
+    updated_at = IntField(required=True)
 
 
 class Schedule(Document):
@@ -24,6 +34,7 @@ class Schedule(Document):
     team = ReferenceField("Team", required=True)
     start_date = DateTimeField(required=True)
     end_date = DateTimeField(required=True)
+    solve_details = EmbeddedDocumentField(SolveDetails)
     solve_status = IntField(
         required=True, choices=[e.value for e in ScheduleSolveStatus]
     )

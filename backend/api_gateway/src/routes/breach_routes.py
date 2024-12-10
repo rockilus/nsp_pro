@@ -15,10 +15,7 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
+from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from routes.api_model import BreachMessage, VariableMessage
 from scripts.setup_database import breach_db, schedule_db
@@ -41,9 +38,7 @@ async def get_objective_breaches(
         schedule_campaign = schedule_db.get_schedule_campaign(team_id)
         if not schedule_campaign:
             return []
-        objective_breaches = breach_db.get_breaches_by_schedule_id(
-            schedule_campaign.id
-        )
+        objective_breaches = breach_db.get_breaches_by_schedule_id(schedule_campaign.id)
         response = [core_to_msg_breach(a) for a in objective_breaches]
     except Exception as e:
         log_info("Failed to get objective breaches")
@@ -65,9 +60,7 @@ async def update_objective_breach(
                 "You do not have permission to update objective breaches",
             )
         objective_breach_data = msg_to_core_breach(objective_breach_api)
-        updated_objective_breach = breach_db.update_breach(
-            objective_breach_data
-        )
+        updated_objective_breach = breach_db.update_breach(objective_breach_data)
         response = core_to_msg_breach(updated_objective_breach)
     except Exception as e:
         log_info("Failed to update objective breach")
@@ -136,9 +129,7 @@ def core_to_msg_breach(breach: Breach) -> BreachMessage:
 # message to core
 def msg_to_core_variable(msg: VariableMessage) -> Variable:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["date"] = datetime.fromtimestamp(
-        data_snake["date"], timezone.utc
-    ).date()
+    data_snake["date"] = datetime.fromtimestamp(data_snake["date"], timezone.utc).date()
     try:
         variable = Variable(**data_snake)
     except Exception as e:

@@ -1,8 +1,9 @@
 from typing import List
 
-from db_operations.setup_database import request_db
 from shared.augment import r_to_r_augmented
 from shared.schemas import Request, RequestAugmented, Shift, Worker
+
+from db_operations.setup_database import request_db
 
 
 def update_requests(
