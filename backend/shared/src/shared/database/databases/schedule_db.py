@@ -13,9 +13,13 @@ from shared.database.errors.document_error_handlers import (
 from shared.database.models.constraint_build import (
     ConstraintBuild as ConstraintBuildDocument,
 )
-from shared.database.models.schedule import QuickStaffing as QuickStaffingDocument
+from shared.database.models.schedule import (
+    QuickStaffing as QuickStaffingDocument,
+)
 from shared.database.models.schedule import Schedule as ScheduleDocument
-from shared.database.models.schedule import SolveDetails as SolveDetailsDocument
+from shared.database.models.schedule import (
+    SolveDetails as SolveDetailsDocument,
+)
 from shared.database.models.shift import Shift as ShiftDocument
 from shared.database.models.team import Team as TeamDocument
 from shared.database.models.worker import Worker as WorkerDocument
@@ -92,7 +96,9 @@ class ScheduleDB:
             handle_get_document_error(e)
         return doc_to_core_schedule(schedule)
 
-    def get_schedules_before_date(self, s_date: date, team_id: str) -> List[Schedule]:
+    def get_schedules_before_date(
+        self, s_date: date, team_id: str
+    ) -> List[Schedule]:
         try:
             # pylint: disable=no-member
             schedules = ScheduleDocument.objects.filter(  # type: ignore
@@ -167,7 +173,9 @@ def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
     constraint_builds = ConstraintBuildDocument.objects.filter(  # type: ignore
         id__in=dataclass_obj.constraint_build_ids
     )
-    worker_ids = list(set(qs.worker_id for qs in dataclass_obj.quick_staffings))
+    worker_ids = list(
+        set(qs.worker_id for qs in dataclass_obj.quick_staffings)
+    )
     workers = {
         worker.id: worker
         for worker in WorkerDocument.objects.filter(id__in=worker_ids)  # type: ignore
@@ -264,3 +272,6 @@ def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
     doc_dict.pop("team")
     doc_dict.pop("constraint_builds")
     return Schedule(**doc_dict)
+
+
+# test
