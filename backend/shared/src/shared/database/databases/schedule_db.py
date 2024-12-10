@@ -3,7 +3,6 @@ from typing import List
 
 from bson import ObjectId
 from mongoengine import DoesNotExist
-
 from shared.database.databases.db import DB
 from shared.database.errors.document_error_handlers import (
     handle_delete_document_error,
@@ -272,6 +271,3 @@ def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
     doc_dict.pop("team")
     doc_dict.pop("constraint_builds")
     return Schedule(**doc_dict)
-
-
-# test
