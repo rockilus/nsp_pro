@@ -224,9 +224,9 @@ class QuickStaffingMessage(BaseModel):
 
 
 class SolveDetailsMessage(BaseModel):
-    task_id: str
+    taskId: str
     status: int
-    updated_at: float
+    updatedAt: float
 
 
 class ScheduleMessage(BaseModel):

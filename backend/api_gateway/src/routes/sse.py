@@ -1,39 +1,191 @@
 import asyncio
 import json
-from typing import Callable
+from typing import Any, Callable, Dict
 
-from fastapi import APIRouter, Response
+from celery.result import AsyncResult  # type: ignore
+from fastapi import APIRouter, Request, Response
+from shared.schemas import EngineOutputsAugmented, SolveDetailsStatus
 from starlette.responses import StreamingResponse
 
-from utils import event_manager
+from routes.schedule_routes import core_to_msg_schedule, core_to_msg_solution
+from services.schedule_services import (
+    update_schedule_solve_details_failure,
+    update_schedule_solve_details_success,
+)
+from task_queue_service.celery_app import celery_app
+
+# from utils import event_manager
 
 router = APIRouter()
 
+celery_to_core_status_dict = {
+    "PENDING": SolveDetailsStatus.PENDING,
+    "STARTED": SolveDetailsStatus.STARTED,
+    "RETRY": SolveDetailsStatus.RETRY,
+    "FAILURE": SolveDetailsStatus.FAILURE,
+    "SUCCESS": SolveDetailsStatus.SUCCESS,
+}
 
+
+def celery_to_core_status(celery_status: str) -> int | None:
+    status = celery_to_core_status_dict.get(celery_status, None)
+    return status.value if status else None
+
+
+# POLLING ARCHITECTURE
 @router.get("/sse", response_class=Response)
-async def sse() -> Callable:
-    print("sse route hit")
+async def sse(request: Request) -> Callable:
 
-    async def event_stream():
-        queue = asyncio.Queue()
-
-        def send_event(data: dict):
-            """Listener function to send events to the queue."""
-            queue.put_nowait(data)
-
-        # Subscribe to the EventManager
-        event_manager.subscribe(send_event)
+    async def event_stream(task_id: str | None = None, schedule_id: str | None = None):
+        previous_status = None
 
         try:
-            while True:
-                data = await queue.get()
-                # yield f"data: {data}\n\n"
-                yield f"data: {json.dumps(data)}\n\n"
+            if task_id:
+                # Check the status of the task in Celery
+                async_result = AsyncResult(task_id, app=celery_app)
 
-        finally:
-            # Unsubscribe the listener when the connection is closed
-            event_manager.listeners.remove(send_event)
+                # Task status pending, started, or retry
+                # Send the status to the client each time it changes
+                while not async_result.ready():
+                    current_status = async_result.status
+                    if current_status != previous_status:
+                        event = "task_status"
+                        data_status: Dict[str, Any] = {
+                            "task_id": task_id,
+                            "status": celery_to_core_status(current_status),
+                            "message": f"Task is {current_status.lower()}",
+                        }
+                        yield f"event: {event}\n data: {json.dumps(data_status)}\n\n"
+                        previous_status = current_status
+                    await asyncio.sleep(1)  # Polling interval
 
-    print("returning response")
-    # return Response(event_stream(), media_type="text/event-stream")
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+                # Task status success or failure
+                current_status = async_result.status
+                event = "output"
+                data: Dict[str, Any] = {
+                    "task_id": task_id,
+                    "status": celery_to_core_status(current_status),
+                    "message": f"Task is {current_status.lower()}",
+                }
+
+                # Task status failure
+                # Update schedule's solve_details for the failure, and send the
+                # updated schedule to the client
+                if async_result.failed():
+                    if schedule_id:
+                        schedule = update_schedule_solve_details_failure(
+                            schedule_id=schedule_id,
+                            error=str(async_result.result),
+                            task_id=task_id,
+                        )
+                        data["schedule"] = core_to_msg_schedule(schedule).model_dump()
+                    # task_meta = async_result.info
+                    # if task_meta and "schedule_id" in task_meta:
+                    # schedule_id = task_meta["schedule_id"]
+                    data["message"] = "Task failed"
+                    data["exception"] = str(async_result.result)
+
+                # Task status success
+                # Check if the task result includes the schedule with updated
+                # solve_details (i.e. it was saved in the database):
+                # - If it does, send the updated schedule to the client
+                # - If it doesn't, update the schedule's solve_details for the
+                #   success, and send the updated schedule to the client
+                elif async_result.successful():
+                    if "eo_augmented" in async_result.result:
+                        eo_augmented = EngineOutputsAugmented.from_dict(
+                            async_result.result["eo_augmented"]
+                        )
+                        # pylint: disable=R0801
+                        solution_message = core_to_msg_solution(
+                            eo_augmented.schedule,
+                            eo_augmented.assignments,
+                            eo_augmented.breaches,
+                            eo_augmented.requests,
+                            eo_augmented.shifts_recup_new,
+                        )
+                        data["solution"] = solution_message.model_dump()
+                    else:
+                        if schedule_id:
+                            schedule = update_schedule_solve_details_success(
+                                schedule_id=schedule_id,
+                                task_id=task_id,
+                                result=async_result.result,
+                            )
+                            data["schedule"] = core_to_msg_schedule(
+                                schedule
+                            ).model_dump()
+                        data["message"] = "Task succeeded"
+                    data["message"] = "Task succeeded"
+                yield f"event: {event}\n data: {json.dumps(data)}\n\n"
+                # yield f"data: {json.dumps(data)}\n\n"
+                return  # Close the connection after sending the message
+
+            # Task ID is None
+            event = "error"
+            data = {"message": "No task ID provided"}
+            yield f"event: {event}\n data: {json.dumps(data)}\n\n"
+            return  # Close the connection after sending the message
+
+        except Exception as e:
+            event = "error"
+            data = {"message": "An error occurred", "error": str(e)}
+            yield f"event: {event}\n data: {json.dumps(data)}\n\n"
+            return  # Close the connection after sending the message
+
+    task_id = request.query_params.get("task_id")
+    schedule_id = request.query_params.get("schedule_id")
+    return StreamingResponse(
+        event_stream(task_id, schedule_id), media_type="text/event-stream"
+    )
+
+
+# EVENT DRIVEN ARCHITECTURE
+# @router.get("/sse", response_class=Response)
+# async def sse() -> Callable:
+
+#     async def event_stream():
+#         queue = asyncio.Queue()
+
+#         def send_event(data: dict):
+#             """Listener function to send events to the queue."""
+#             queue.put_nowait(data)
+
+#         # Subscribe to the EventManager
+#         event_manager.subscribe(send_event)
+
+#         try:
+#             while True:
+#                 data = await queue.get()
+#                 # yield f"data: {data}\n\n"
+#                 yield f"data: {json.dumps(data)}\n\n"
+
+#         finally:
+#             # Unsubscribe the listener when the connection is closed
+#             event_manager.listeners.remove(send_event)
+
+#     # return Response(event_stream(), media_type="text/event-stream")
+#     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+# *PENDING*
+
+#     The task is waiting for execution.
+
+# *STARTED*
+
+#     The task has been started.
+
+# *RETRY*
+
+#     The task is to be retried, possibly because of failure.
+
+# *FAILURE*
+
+#     The task raised an exception, or has exceeded the retry limit.
+#     The :attr:`result` attribute then contains the
+#     exception raised by the task.
+
+# *SUCCESS*
+
+#     The task executed successfully.  The :attr:`result` attribute
+#     then contains the tasks return value.

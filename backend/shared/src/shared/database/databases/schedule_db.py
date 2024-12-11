@@ -196,6 +196,7 @@ def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
                 task_id=dataclass_obj.solve_details.task_id,
                 status=dataclass_obj.solve_details.status.value,
                 updated_at=dataclass_obj.solve_details.updated_at.timestamp(),
+                result=dataclass_obj.solve_details.result,
             )
             if dataclass_obj.solve_details
             else None
@@ -234,6 +235,7 @@ def doc_to_core_solve_details(doc_obj: SolveDetailsDocument) -> SolveDetails:
     doc_dict["updated_at"] = datetime.fromtimestamp(
         doc_dict["updated_at"], tz=timezone.utc
     )
+    doc_dict["result"] = doc_dict.get("result", None)
     return SolveDetails(**doc_dict)
 
 
@@ -243,7 +245,7 @@ def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
     doc_dict["team_id"] = doc_dict["team"]
     doc_dict["start_date"] = doc_dict["start_date"].date()
     doc_dict["end_date"] = doc_dict["end_date"].date()
-    if doc_dict["solve_details"]:
+    if "solve_details" in doc_dict:
         doc_dict["solve_details"] = (
             doc_to_core_solve_details(doc_obj.solve_details)
             if doc_obj.solve_details

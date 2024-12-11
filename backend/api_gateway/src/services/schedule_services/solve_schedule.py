@@ -11,8 +11,9 @@ def solve_schedule(schedule_id: str) -> Schedule:
     task_id = submit_solve_problem_task(schedule)
     schedule.solve_details = SolveDetails(
         task_id=task_id,
-        status=SolveDetailsStatus.IN_PROGRESS,
+        status=SolveDetailsStatus.PENDING,
         updated_at=datetime.now(tz=timezone.utc),
+        result=None,
     )
     schedule = schedule_db.update_schedule(schedule)
     return schedule

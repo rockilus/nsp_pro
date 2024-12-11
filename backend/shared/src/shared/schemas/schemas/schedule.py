@@ -117,9 +117,10 @@ class ScheduleStatus(Enum):
 
 class SolveDetailsStatus(Enum):
     PENDING = 0
-    IN_PROGRESS = 1
-    SUCCESS = 2
+    STARTED = 1
+    RETRY = 2
     FAILURE = 3
+    SUCCESS = 4
 
 
 @dataclass
@@ -127,9 +128,7 @@ class SolveDetails:
     task_id: str
     status: SolveDetailsStatus
     updated_at: datetime
-    # result: Optional[dict] = (
-    #     None  # Additional data or result of the solving process
-    # )
+    result: Dict | None
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -143,6 +142,7 @@ class SolveDetails:
             task_id=data["task_id"],
             status=SolveDetailsStatus(data["status"]),
             updated_at=datetime.fromtimestamp(data["updated_at"], tz=timezone.utc),
+            result=data["result"],
         )
 
 

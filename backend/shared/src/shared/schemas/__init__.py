@@ -63,6 +63,7 @@ from shared.schemas.schemas.shift import (
     Staffing,
 )
 from shared.schemas.schemas.stats import Stats, StatsHeader, StatsOptions, StatsValue
+from shared.schemas.schemas.task import TaskServices
 from shared.schemas.schemas.team import Specialty, Team
 from shared.schemas.schemas.user import PasswordData, User, UserAuth, UserDashboard
 from shared.schemas.schemas.worker import Worker, WorkerDates
@@ -129,6 +130,7 @@ __all__ = [
     "Stats",
     "StatsHeader",
     "StatsValue",
+    "TaskServices",
     "Specialty",
     "Team",
     "PasswordData",

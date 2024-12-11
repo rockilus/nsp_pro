@@ -68,15 +68,17 @@ export type QuickStaffingT = {
 
 export enum SolveDetailsStatus {
   PENDING = 0,
-  IN_PROGRESS = 1,
-  SUCCESS = 2,
+  STARTED = 1,
+  RETRY = 2,
   FAILURE = 3,
+  SUCCESS = 4,
 }
 
 export type SolveDetailsT = {
-  task_id: string;
+  taskId: string;
   status: SolveDetailsStatus;
-  updated_at: dayjs.Dayjs;
+  updatedAt: dayjs.Dayjs;
+  result: { [key: string]: any } | null;
 };
 
 export enum ScheduleSolveStatus {

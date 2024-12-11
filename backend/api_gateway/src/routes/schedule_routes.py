@@ -226,7 +226,7 @@ def core_to_msg_solve_details(sd: SolveDetails) -> SolveDetailsMessage:
     except Exception as e:
         log_info("Failed to convert SolveDetails to dictionary")
         raise MessageTypeError(str(e)) from e
-    data["start_date"] = sd.updated_at.timestamp()
+    data["updated_at"] = sd.updated_at.timestamp()
     as_dict = humps.camelize(data)
     validator = TypeAdapter(SolveDetailsMessage)
     try:
@@ -249,7 +249,7 @@ def core_to_msg_schedule(schedule: Schedule) -> ScheduleMessage:
     data["end_date"] = datetime.combine(
         schedule.end_date, time.min, timezone.utc
     ).timestamp()
-    data["solve_status"] = (
+    data["solve_details"] = (
         core_to_msg_solve_details(schedule.solve_details)
         if schedule.solve_details
         else None

@@ -1,6 +1,7 @@
 from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (
     DateTimeField,
+    DictField,
     EmbeddedDocumentField,
     IntField,
     ListField,
@@ -25,6 +26,7 @@ class SolveDetails(EmbeddedDocument):
     task_id = StringField(required=True)
     status = IntField(required=True, choices=[e.value for e in SolveDetailsStatus])
     updated_at = IntField(required=True)
+    result = DictField()
 
 
 class Schedule(Document):
