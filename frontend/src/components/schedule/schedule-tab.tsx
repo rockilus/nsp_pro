@@ -618,6 +618,7 @@ export default function ScheduleTab({
             selectedDisplay={selectedDisplay}
             showBreaches={showBreaches}
             scheduleCampaign={scheduleCampaign}
+            solveStatus={solveStatus}
             handleToday={handleToday}
             handlePreviousPeriod={handlePreviousPeriod}
             handleNextPeriod={handleNextPeriod}
