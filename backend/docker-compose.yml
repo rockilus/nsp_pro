@@ -1,0 +1,51 @@
+services:
+  api_gateway:
+    build:
+      context: .
+      dockerfile: api_gateway/Dockerfile
+    env_file:
+      - api_gateway/src/.env.docker_compose
+    ports:
+      - "4000:4000"
+    depends_on:
+      - redis
+      - permit_pdp
+
+  data_fetcher:
+    build:
+      context: .
+      dockerfile: data_fetcher/Dockerfile
+    env_file:
+      - data_fetcher/src/.env.docker_compose
+    depends_on:
+      - redis
+
+  processing_engine:
+    build:
+      context: .
+      dockerfile: processing_engine/Dockerfile
+    env_file:
+      - processing_engine/src/.env.docker_compose
+    depends_on:
+      - redis
+
+  storage_service:
+    build:
+      context: .
+      dockerfile: storage_service/Dockerfile
+    env_file:
+      - storage_service/src/.env.docker_compose
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  permit_pdp:
+    image: permitio/pdp-v2:latest
+    ports:
+      - "7766:7000"
+    env_file:
+      - .env.docker_compose

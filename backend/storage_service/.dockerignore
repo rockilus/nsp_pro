@@ -94,4 +94,5 @@ venv/
 **/.env.local
 **/.env.development
 **/.env.docker
+**/.env.docker_compose
 **/.env.production

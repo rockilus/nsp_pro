@@ -7,6 +7,7 @@ tsconfig.tsbuildinfo
 **/.env.local
 **/.env.development
 **/.env.docker
+**/.env.docker_compose
 **/.env.production
 compose.dev.yaml
 
