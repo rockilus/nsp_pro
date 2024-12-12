@@ -115,12 +115,44 @@ class ScheduleStatus(Enum):
     VALIDATED = 1
 
 
+class SolveDetailsStatus(Enum):
+    PENDING = 0
+    STARTED = 1
+    RETRY = 2
+    FAILURE = 3
+    SUCCESS = 4
+
+
+@dataclass
+class SolveDetails:
+    task_id: str
+    status: SolveDetailsStatus
+    updated_at: datetime
+    result: Dict | None
+
+    def to_dict(self) -> Dict:
+        out = asdict(self)
+        out["updated_at"] = self.updated_at.timestamp()
+        out["status"] = self.status.value
+        return out
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "SolveDetails":
+        return cls(
+            task_id=data["task_id"],
+            status=SolveDetailsStatus(data["status"]),
+            updated_at=datetime.fromtimestamp(data["updated_at"], tz=timezone.utc),
+            result=data["result"],
+        )
+
+
 @dataclass
 class Schedule:
     id: str
     team_id: str
     start_date: date
     end_date: date
+    solve_details: SolveDetails | None
     solve_status: ScheduleSolveStatus
     status: ScheduleStatus
     missing_coverage_dates: List[date]
@@ -135,6 +167,8 @@ class Schedule:
         out["end_date"] = datetime.combine(
             self.end_date, time.min, tzinfo=timezone.utc
         ).timestamp()
+        if self.solve_details:
+            out["solve_details"] = self.solve_details.to_dict()
         out["solve_status"] = self.solve_status.value
         out["status"] = self.status.value
         out["missing_coverage_dates"] = [
@@ -150,6 +184,11 @@ class Schedule:
             team_id=data["team_id"],
             start_date=datetime.fromtimestamp(data["start_date"], timezone.utc).date(),
             end_date=datetime.fromtimestamp(data["end_date"], timezone.utc).date(),
+            solve_details=(
+                SolveDetails.from_dict(data["solve_details"])
+                if data.get("solve_details", None) is not None
+                else None
+            ),
             solve_status=ScheduleSolveStatus(data["solve_status"]),
             status=ScheduleStatus(data["status"]),
             missing_coverage_dates=[

@@ -6,7 +6,7 @@ import DataViewSelector from "./data-view-selector";
 import TimeViewSelector from "./time-view-selector";
 import CampaignInfo from "./campaign-info";
 // Types
-import { ScheduleT } from "../../../types/schedule";
+import { ScheduleT, SolveDetailsStatus } from "../../../types/schedule";
 
 export default function ScheduleNavBar({
   lng,
@@ -16,6 +16,7 @@ export default function ScheduleNavBar({
   selectedDisplay,
   showBreaches,
   scheduleCampaign,
+  solveStatus,
   handleToday,
   handlePreviousPeriod,
   handleNextPeriod,
@@ -32,6 +33,7 @@ export default function ScheduleNavBar({
   selectedDisplay: string;
   showBreaches: boolean;
   scheduleCampaign: ScheduleT | null;
+  solveStatus: SolveDetailsStatus | null | "error";
   handleToday: () => void;
   handlePreviousPeriod: () => void;
   handleNextPeriod: () => void;
@@ -73,6 +75,7 @@ export default function ScheduleNavBar({
         <CampaignInfo
           lng={lng}
           scheduleCampaign={scheduleCampaign}
+          solveStatus={solveStatus}
           handleSolveSchedule={handleSolveSchedule}
           handleValidateSchedule={handleValidateSchedule}
         />

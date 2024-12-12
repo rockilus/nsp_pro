@@ -10,7 +10,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import ScheduleDialogValidate from "../schedule-options/schedule-dialog-validate";
 import { GetStatusLabel } from "../../data-display/get-status-label";
 // Types
-import { ScheduleT } from "../../../types/schedule";
+import { ScheduleT, SolveDetailsStatus } from "../../../types/schedule";
 //Constants
 import {
   SolveStatusList,
@@ -20,24 +20,22 @@ import {
 export default function CampaignInfo({
   lng,
   scheduleCampaign,
+  solveStatus,
   handleSolveSchedule,
   handleValidateSchedule,
 }: {
   lng: string;
   scheduleCampaign: ScheduleT;
+  solveStatus: SolveDetailsStatus | null | "error";
   handleSolveSchedule: (scheduleId: string) => void;
   handleValidateSchedule: (scheduleId: string) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  const [isSolving, setIsSolving] = useState(false);
-
   const spaceBetween: string = "8px";
 
   const handleSolve = async () => {
-    // setIsSolving(true);
-    await handleSolveSchedule(scheduleCampaign.id);
-    setIsSolving(false);
+    handleSolveSchedule(scheduleCampaign.id);
   };
 
   function getCampaignPeriodLabel(
@@ -114,7 +112,9 @@ export default function CampaignInfo({
           fontWeight: 550,
         }}
       />
-      {isSolving ? (
+      {solveStatus === SolveDetailsStatus.PENDING ||
+      solveStatus === SolveDetailsStatus.STARTED ||
+      solveStatus === SolveDetailsStatus.RETRY ? (
         <Box
           sx={{
             backgroundColor: "#1976d2",

@@ -5,7 +5,7 @@ from shared.schemas.schemas.attribute import Attribute
 from shared.schemas.schemas.constraint import ConstraintBuildAugmented
 from shared.schemas.schemas.coverage import DailyShiftDemand
 from shared.schemas.schemas.dimension import Dimension, DimEntry
-from shared.schemas.schemas.request import Request
+from shared.schemas.schemas.request import Request, RequestAugmented
 from shared.schemas.schemas.schedule import Assignment, Breach, Schedule
 from shared.schemas.schemas.shift import Shift
 from shared.schemas.schemas.worker import Worker
@@ -91,6 +91,33 @@ class EngineOutputs:
     assignments: List[Assignment]
     breaches: List[Breach]
     requests: List[Request]
+
+    def to_dict(self) -> Dict:
+        return {
+            "schedule": self.schedule.to_dict(),
+            "assignments": [assignment.to_dict() for assignment in self.assignments],
+            "breaches": [breach.to_dict() for breach in self.breaches],
+            "requests": [request.to_dict() for request in self.requests],
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "EngineOutputs":
+        return cls(
+            schedule=Schedule.from_dict(data["schedule"]),
+            assignments=[
+                Assignment.from_dict(assignment) for assignment in data["assignments"]
+            ],
+            breaches=[Breach.from_dict(breach) for breach in data["breaches"]],
+            requests=[Request.from_dict(request) for request in data["requests"]],
+        )
+
+
+@dataclass
+class EngineOutputsAugmented:
+    schedule: Schedule
+    assignments: List[Assignment]
+    breaches: List[Breach]
+    requests: List[RequestAugmented]
     shifts_recup_new: List[Shift]
 
     def to_dict(self) -> Dict:
@@ -103,14 +130,16 @@ class EngineOutputs:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict) -> "EngineOutputs":
+    def from_dict(cls, data: Dict) -> "EngineOutputsAugmented":
         return cls(
             schedule=Schedule.from_dict(data["schedule"]),
             assignments=[
                 Assignment.from_dict(assignment) for assignment in data["assignments"]
             ],
             breaches=[Breach.from_dict(breach) for breach in data["breaches"]],
-            requests=[Request.from_dict(request) for request in data["requests"]],
+            requests=[
+                RequestAugmented.from_dict(request) for request in data["requests"]
+            ],
             shifts_recup_new=[
                 Shift.from_dict(shift) for shift in data["shifts_recup_new"]
             ],

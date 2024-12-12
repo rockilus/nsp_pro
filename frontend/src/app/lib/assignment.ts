@@ -13,7 +13,7 @@ const apiUrlAssignment = API_URL + "/assignments";
 export const toAssignmentT = (data: any): AssignmentT => {
   return {
     ...data,
-    date: dayjs.utc(data.date),
+    date: dayjs.unix(data.date).utc(),
   };
 };
 
