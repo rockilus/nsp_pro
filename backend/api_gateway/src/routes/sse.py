@@ -55,7 +55,7 @@ async def sse(request: Request) -> Callable:
                             "status": celery_to_core_status(current_status),
                             "message": f"Task is {current_status.lower()}",
                         }
-                        yield f"event: {event}\n data: {json.dumps(data_status)}\n\n"
+                        yield f"event: {event}\ndata: {json.dumps(data_status)}\n\n"
                         previous_status = current_status
                     await asyncio.sleep(1)  # Polling interval
 
@@ -117,20 +117,20 @@ async def sse(request: Request) -> Callable:
                             ).model_dump()
                         data["message"] = "Task succeeded"
                     data["message"] = "Task succeeded"
-                yield f"event: {event}\n data: {json.dumps(data)}\n\n"
+                yield f"event: {event}\ndata: {json.dumps(data)}\n\n"
                 # yield f"data: {json.dumps(data)}\n\n"
                 return  # Close the connection after sending the message
 
             # Task ID is None
             event = "error"
             data = {"message": "No task ID provided"}
-            yield f"event: {event}\n data: {json.dumps(data)}\n\n"
+            yield f"event: {event}\ndata: {json.dumps(data)}\n\n"
             return  # Close the connection after sending the message
 
         except Exception as e:
             event = "error"
             data = {"message": "An error occurred", "error": str(e)}
-            yield f"event: {event}\n data: {json.dumps(data)}\n\n"
+            yield f"event: {event}\ndata: {json.dumps(data)}\n\n"
             return  # Close the connection after sending the message
 
     task_id = request.query_params.get("task_id")

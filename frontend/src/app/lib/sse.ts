@@ -44,6 +44,7 @@ export class SSEManager {
 
     this.eventSource.addEventListener("task_status", (event) => {
       try {
+        console.log("Task status event received:", event);
         const data = JSON.parse(event.data);
         console.log("Task status event received:", data);
         if (Object.values(SolveDetailsStatus).includes(data.status)) {
@@ -58,6 +59,7 @@ export class SSEManager {
 
     this.eventSource.addEventListener("output", (event) => {
       try {
+        console.log("Output event received:", event);
         const data = JSON.parse(event.data);
         console.log("Output event received:", data);
         if (data.status === SolveDetailsStatus.SUCCESS) {
