@@ -12,7 +12,7 @@ from shared.database.models.coverage_selector import CoverageSelector
 from shared.database.models.daily_shift_demand import DailyShiftDemand
 from shared.database.models.dimension import Dimension, DimEntry
 from shared.database.models.request import Request
-from shared.database.models.schedule import QuickStaffing, Schedule
+from shared.database.models.schedule import QuickStaffing, Schedule, SolveDetailsStatus
 from shared.database.models.shift import Shift, Staffing
 from shared.database.models.shift_demand import ShiftDemand
 from shared.database.models.stats_header import StatsHeader
@@ -37,6 +37,7 @@ __all__ = [
     "Request",
     "QuickStaffing",
     "Schedule",
+    "SolveDetailsStatus",
     "Shift",
     "Staffing",
     "ShiftDemand",

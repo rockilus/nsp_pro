@@ -19,6 +19,8 @@ import {
   AssignmentT,
   BreachT,
   ExportOptionsT,
+  SolveDetailsT,
+  SolveDetailsStatus,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import { StatsOptionsT } from "../../types/stats";
@@ -30,13 +32,21 @@ dayjs.extend(utc);
 
 const apiUrlSchedule = API_URL + "/schedules";
 
+export const toSolveDetailsT = (data: any): SolveDetailsT => {
+  return {
+    ...data,
+    updated_at: dayjs.unix(data.updated_at).utc(),
+  };
+};
+
 export const toScheduleT = (data: any): ScheduleT => {
   return {
     ...data,
-    startDate: dayjs.utc(data.startDate),
-    endDate: dayjs.utc(data.endDate),
-    missingCoverageDates: data.missingCoverageDates.map((isoDate: string) =>
-      dayjs.utc(isoDate)
+    startDate: dayjs.unix(data.startDate).utc(),
+    endDate: dayjs.unix(data.endDate).utc(),
+    solveDetails: data.solveDetails ? toSolveDetailsT(data.solveDetails) : null,
+    missingCoverageDates: data.missingCoverageDates.map((timeStamp: number) =>
+      dayjs.unix(timeStamp).utc()
     ),
   };
 };
@@ -89,19 +99,7 @@ export async function solveSchedule(scheduleId: string, teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to solve schedule: " + responseData.detail);
     }
-    return {
-      schedule: toScheduleT(responseData.schedule),
-      assignments: responseData.assignments.map(toAssignmentT),
-      breaches: responseData.objectiveBreaches.map(toBreachT),
-      requests: responseData.requests.map(toRequestT),
-      recuperationShiftsNew: responseData.recuperationShiftsNew.map(toShiftT),
-    } as {
-      schedule: ScheduleT;
-      assignments: AssignmentT[];
-      breaches: BreachT[];
-      requests: RequestT[];
-      recuperationShiftsNew: ShiftT[];
-    };
+    return toScheduleT(responseData) as ScheduleT;
   } catch (error) {
     console.error("Failed to solve schedule:", error);
     throw new Error("Failed to solve schedule, please try again later");

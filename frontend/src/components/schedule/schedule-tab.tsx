@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -35,6 +35,7 @@ import {
   deleteDailyShiftDemand,
 } from "../../app/lib/daily-shift-demand";
 import { exportSchedule } from "../../app/lib/export-schedule";
+import { SSEManager } from "../../app/lib/sse";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -49,9 +50,11 @@ import {
   DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
+  SolveDetailsStatus,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import { StatsT } from "../../types/stats";
+import { set } from "zod";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -69,6 +72,7 @@ export default function ScheduleTab({
   const [isLoadingAssignments, setIsLoadingAssignments] =
     useState<boolean>(true);
   const [isLoadingLHS, setIsLoadingLHS] = useState<boolean>(true);
+  const [isConnected, setIsConnected] = useState(false);
 
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
@@ -87,6 +91,13 @@ export default function ScheduleTab({
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
   const [selectedCell, setSelectedCell] = useState<SelectedCellT | null>(null);
+
+  const [solveStatus, setSolveStatus] = useState<
+    SolveDetailsStatus | null | "error"
+  >(null);
+  console.log("solveStatus", solveStatus);
+
+  const hasConnectedRef = useRef(false);
 
   const getDateScheduleStatus = useCallback(
     (date: dayjs.Dayjs) => {
@@ -179,27 +190,26 @@ export default function ScheduleTab({
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const {
-      schedule: newSchedule,
-      assignments: newAssignments,
-      breaches: newBreaches,
-      requests: newRequests,
-      recuperationShiftsNew: newShifts,
-    } = await solveSchedule(scheduleId, selectedTeamId);
+    const newSchedule = await solveSchedule(scheduleId, selectedTeamId);
+    console.log("Connected to SSE in handleSolveSchedule...");
+
+    if (newSchedule.solveDetails) {
+      connectSSE(newSchedule.solveDetails.taskId, newSchedule.id);
+    }
     setScheduleCampaign(newSchedule);
-    setAssignments((prev) => [
-      ...prev.filter((a) => a.scheduleId !== scheduleId),
-      ...newAssignments,
-    ]);
-    setBreaches(newBreaches);
-    setRequests((prev) =>
-      prev.map((r) => newRequests.find((nr) => nr.id === r.id) || r)
-    );
-    setShifts((prev) =>
-      prev
-        .filter((s) => !newShifts.find((ns) => ns.id === s.id))
-        .concat(newShifts)
-    );
+    // setAssignments((prev) => [
+    //   ...prev.filter((a) => a.scheduleId !== scheduleId),
+    //   ...newAssignments,
+    // ]);
+    // setBreaches(newBreaches);
+    // setRequests((prev) =>
+    //   prev.map((r) => newRequests.find((nr) => nr.id === r.id) || r)
+    // );
+    // setShifts((prev) =>
+    //   prev
+    //     .filter((s) => !newShifts.find((ns) => ns.id === s.id))
+    //     .concat(newShifts)
+    // );
   };
 
   const handleValidateSchedule = async (scheduleId: string) => {
@@ -366,6 +376,109 @@ export default function ScheduleTab({
     await exportSchedule(selectedTeamId, exportOptions);
   };
 
+  //////////////////////////
+  // SSE Actions
+  //////////////////////////
+
+  const connectSSE = useCallback(
+    (taskId?: string, scheduleId?: string) => {
+      if (hasConnectedRef.current) return;
+
+      setIsConnected(true);
+      hasConnectedRef.current = true;
+
+      const sseManager = new SSEManager();
+
+      const handleTaskStatusEvent = (status: SolveDetailsStatus) => {
+        setSolveStatus(status);
+      };
+
+      const handleOutputEventSuccessSolution = ({
+        newSchedule,
+        newAssignments,
+        newBreaches,
+        newRequests,
+        newShifts,
+      }: {
+        newSchedule: ScheduleT;
+        newAssignments: AssignmentT[];
+        newBreaches: BreachT[];
+        newRequests: RequestT[];
+        newShifts: ShiftT[];
+      }) => {
+        console.log("Updating schedule data...");
+
+        setScheduleCampaign(newSchedule);
+        setAssignments((prev) => [
+          ...prev.filter((a) => a.scheduleId !== newSchedule.id),
+          ...newAssignments,
+        ]);
+        setBreaches(newBreaches);
+        setRequests((prev) =>
+          prev.map((r) => newRequests.find((nr) => nr.id === r.id) || r)
+        );
+        setShifts((prev) =>
+          prev
+            .filter((s) => !newShifts.find((ns) => ns.id === s.id))
+            .concat(newShifts)
+        );
+        setSolveStatus(SolveDetailsStatus.SUCCESS);
+        // Disconnect from SSE after receiving the data
+        sseManager.close();
+        setIsConnected(false);
+        hasConnectedRef.current = false;
+      };
+
+      const handleOutputEventSuccessSchedule = ({
+        newSchedule,
+      }: {
+        newSchedule: ScheduleT;
+      }) => {
+        console.log("Updating schedule data...");
+
+        setScheduleCampaign(newSchedule);
+        setSolveStatus(SolveDetailsStatus.SUCCESS);
+        // Disconnect from SSE after receiving the data
+        sseManager.close();
+        setIsConnected(false);
+        hasConnectedRef.current = false;
+      };
+
+      const handleOutputEventFailure = ({
+        newSchedule,
+      }: {
+        newSchedule: ScheduleT;
+      }) => {
+        console.log("Updating schedule data...");
+
+        setScheduleCampaign(newSchedule);
+        setSolveStatus(SolveDetailsStatus.FAILURE);
+        // Disconnect from SSE after receiving the data
+        sseManager.close();
+        setIsConnected(false);
+        hasConnectedRef.current = false;
+      };
+
+      const handleSSEError = () => {
+        console.error("SSE connection error.");
+        setSolveStatus("error");
+        setIsConnected(false);
+        hasConnectedRef.current = false;
+      };
+
+      sseManager.connect(
+        handleTaskStatusEvent,
+        handleOutputEventSuccessSolution,
+        handleOutputEventSuccessSchedule,
+        handleOutputEventFailure,
+        handleSSEError,
+        taskId,
+        scheduleId
+      );
+    },
+    [hasConnectedRef]
+  );
+
   useEffect(() => {
     const fetchSchedule = async () => {
       setIsLoadingSchedule(true);
@@ -432,6 +545,23 @@ export default function ScheduleTab({
     schedulesValidated,
   ]);
 
+  useEffect(() => {
+    if (
+      !hasConnectedRef.current &&
+      scheduleCampaign &&
+      scheduleCampaign.solveDetails &&
+      (scheduleCampaign.solveDetails.status === SolveDetailsStatus.PENDING ||
+        scheduleCampaign.solveDetails.status === SolveDetailsStatus.STARTED ||
+        scheduleCampaign.solveDetails.status === SolveDetailsStatus.RETRY)
+    ) {
+      console.log("Connecting to SSE in useEffect...");
+
+      connectSSE(scheduleCampaign.solveDetails.taskId, scheduleCampaign.id);
+      hasConnectedRef.current = true;
+      setSolveStatus(scheduleCampaign.solveDetails.status);
+    }
+  }, [scheduleCampaign, connectSSE]);
+
   const lhsTabContent = {
     Breaches: <BreachList lng={lng} breaches={breaches} />,
     "Quick staffing": scheduleCampaign ? (
@@ -488,6 +618,7 @@ export default function ScheduleTab({
             selectedDisplay={selectedDisplay}
             showBreaches={showBreaches}
             scheduleCampaign={scheduleCampaign}
+            solveStatus={solveStatus}
             handleToday={handleToday}
             handlePreviousPeriod={handlePreviousPeriod}
             handleNextPeriod={handleNextPeriod}

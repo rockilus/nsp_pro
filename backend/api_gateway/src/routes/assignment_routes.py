@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from datetime import date, datetime
+from datetime import date, datetime, time, timezone
 from typing import Dict, List, Optional
 
 import humps
@@ -122,6 +122,9 @@ def core_to_msg_assignment(assignment: Assignment) -> AssignmentMessage:
     except Exception as e:
         log_info("Failed to convert Assignment to dictionary")
         raise MessageTypeError(str(e)) from e
+    data["date"] = datetime.combine(
+        assignment.date, time.min, tzinfo=timezone.utc
+    ).timestamp()
     as_dict = humps.camelize(data)
     validator = TypeAdapter(AssignmentMessage)
     try:
@@ -135,7 +138,7 @@ def core_to_msg_assignment(assignment: Assignment) -> AssignmentMessage:
 # message to core
 def msg_to_core_assignment(msg: AssignmentMessage) -> Assignment:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["date"] = datetime.combine(data_snake["date"], datetime.min.time())
+    data_snake["date"] = datetime.fromtimestamp(data_snake["date"], timezone.utc).date()
     try:
         assignment = Assignment(**data_snake)
     except Exception as e:
