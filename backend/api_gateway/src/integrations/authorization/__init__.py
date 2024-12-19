@@ -1,5 +1,6 @@
 from integrations.authorization.authz_services import (
     authz_check,
+    authz_connect,
     authz_delete_user,
     authz_get_all_users,
     authz_get_user,
@@ -11,6 +12,7 @@ from integrations.authorization.authz_services import (
 
 __all__ = [
     "authz_check",
+    "authz_connect",
     "authz_delete_user",
     "authz_get_all_users",
     "authz_get_user",

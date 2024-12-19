@@ -17,6 +17,8 @@ services:
       dockerfile: data_fetcher/Dockerfile
     env_file:
       - data_fetcher/src/.env.docker_compose
+    ports:
+      - "8000:8000"
     depends_on:
       - redis
 

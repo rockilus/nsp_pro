@@ -12,9 +12,9 @@ from utils.env_config import PDP_API_KEY, PDP_URL
 # https://api.permit.io/v2/redoc#tag/Users
 
 
-def authz_connect() -> Permit:
+def authz_connect(pdp_url: str, pdp_api_key: str) -> Permit:
     try:
-        permit_obj = Permit(pdp=PDP_URL, token=PDP_API_KEY)
+        permit_obj = Permit(pdp=pdp_url, token=pdp_api_key)
         log_debug("Permit SDK initialization and connection to PDP OK")
         return permit_obj
     except PermitConnectionError as err:
@@ -24,7 +24,7 @@ def authz_connect() -> Permit:
         ) from err
 
 
-permit = authz_connect()
+permit = authz_connect(PDP_URL, PDP_API_KEY)
 
 
 async def authz_user_sync(user: User) -> None:
@@ -158,9 +158,10 @@ def permit_to_core_user_auth(user_read: UserRead) -> UserAuth:
     )
 
 
-def authz_health_check() -> None:
+async def authz_health_check() -> None:
     try:
-        permit.api.tenants.list()
+        await permit.api.tenants.list()
+        log_info("Permit health check OK")
     except Exception as e:
         log_info("Permit health check error, trying to reconnect: " + str(e))
-        authz_connect()
+        authz_connect(PDP_URL, PDP_API_KEY)

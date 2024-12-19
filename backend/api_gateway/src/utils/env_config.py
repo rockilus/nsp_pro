@@ -56,6 +56,7 @@ elif ENVIRONMENT == "production":
         + "&appName=nsp-pro-db-cluster"
     )
 
+
 # Supertokens config
 ST_CONNECTION_URI: str = get_env_variable("ST_CONNECTION_URI")
 ST_API_KEY: str = get_env_variable("ST_API_KEY")
@@ -77,3 +78,4 @@ RESULT_BACKEND: str = get_env_variable("RESULT_BACKEND")
 
 print("ST_COOKIE_DOMAIN", ST_COOKIE_DOMAIN)
 print("API_URL", API_URL)
+print("PDP_URL", PDP_URL)

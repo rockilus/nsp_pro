@@ -18,6 +18,8 @@ RUN poetry build
 WORKDIR /app
 RUN poetry install
 
+EXPOSE 8000
+
 CMD ["poetry", "run", "python", "src/worker.py"]
 
 
