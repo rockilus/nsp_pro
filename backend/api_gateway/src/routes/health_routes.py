@@ -115,3 +115,28 @@ async def check_data_fetcher_health(
         raise HTTPException(
             status_code=500, detail=f"Unexpected error: {str(e)}"
         ) from e
+
+
+@router.get("/check-processing-engine-health")
+async def check_processing_engine_health(
+    processing_engine_url: str = Query(
+        ..., description="The URL of the processing-engine service"
+    )
+):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{processing_engine_url}/health")
+            response.raise_for_status()
+            return {
+                "status": "success",
+                "processing_engine_status": response.json(),
+            }
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(
+            status_code=e.response.status_code,
+            detail=f"Processing Engine health check failed: {e.response.text}",
+        ) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Unexpected error: {str(e)}"
+        ) from e

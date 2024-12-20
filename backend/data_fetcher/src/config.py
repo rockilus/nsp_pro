@@ -71,11 +71,12 @@ def initialize_environment() -> AppConfig:
     if environment == "production":
         print("Running in production mode.")
 
+        region = "eu-west-3"
+
         if not os.getenv("DB_URI"):
             print("DB_URI not set; retrieving it from Secrets Manager.")
             # Retrieve secret from Secrets Manager
             secret_name = "DB_URI"
-            region = "eu-west-3"
             secret = get_secret(secret_name, region_name=region)
             if secret:
                 os.environ["SECRET_VALUE"] = secret  # Store in environment variables

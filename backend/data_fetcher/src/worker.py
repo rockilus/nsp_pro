@@ -6,15 +6,6 @@ from uvicorn import Config, Server
 from config import config
 from tasks.fetcher import get_engine_inputs_task  # noqa: F401
 
-# def start_fastapi_server():
-#     uvicorn.run(
-#         "health_check:app",
-#         host=config.api_domain,
-#         port=config.api_port,
-#         reload=config.uvicorn_reload,
-#         log_level="info",
-#     )
-
 
 def start_fastapi_server():
     uvicorn_config = Config(
