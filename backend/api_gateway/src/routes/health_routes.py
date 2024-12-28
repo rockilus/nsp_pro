@@ -99,7 +99,7 @@ async def check_data_fetcher_health(
     )
 ):
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=20.0) as client:
             response = await client.get(f"{data_fetcher_url}/health")
             response.raise_for_status()
             return {

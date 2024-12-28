@@ -1,3 +1,4 @@
+import time
 from typing import Dict
 
 import redis
@@ -31,17 +32,23 @@ async def health_check() -> HealthCheck:
     }
 
     try:
-        try:
-            redis_client = redis.StrictRedis.from_url(config.redis_url)
-            if not redis_client.ping():
-                # pylint: disable=broad-exception-raised
-                raise Exception("Failed to ping Redis")
-        except redis.ConnectionError as e:
-            health_status["redis"].status = "error"
-            health_status["redis"].details = str(e)
-        except Exception as e:
-            health_status["redis"].status = "error"
-            health_status["redis"].details = str(e)
+        redis_client = redis.StrictRedis.from_url(config.redis_url)
+        max_retries = 5
+        retry_delay = 2
+        for attempt in range(max_retries):
+            try:
+                if redis_client.ping():
+                    break
+            except redis.ConnectionError as e:
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    continue
+                health_status["redis"].status = "error"
+                health_status["redis"].details = str(e)
+            except Exception as e:
+                health_status["redis"].status = "error"
+                health_status["redis"].details = str(e)
+                break
 
         try:
             inspector = celery_app.control.inspect()
@@ -64,15 +71,13 @@ async def health_check() -> HealthCheck:
             if all(service.status == "ok" for service in health_status.values())
             else "error"
         )
-        if overall_status == "error":
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail={
-                    key: value.model_dump() for key, value in health_status.items()
-                },
-            )
-        return HealthCheck(status=overall_status, services=health_status)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Unexpected error: {str(e)}"
         ) from e
+    if overall_status == "error":
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={key: value.model_dump() for key, value in health_status.items()},
+        )
+    return HealthCheck(status=overall_status, services=health_status)

@@ -19,5 +19,10 @@ celery_app.conf.update(
     result_serializer="json",
     timezone="UTC",
     enable_utc=True,
+    broker_connection_retry=True,
+    broker_connection_max_retries=None,  # Retry indefinitely
     broker_connection_retry_on_startup=True,
+    broker_connection_retry_interval_start=0.2,  # Initial retry delay (seconds)
+    broker_connection_retry_interval_max=10.0,  # Maximum retry delay (seconds)
+    broker_connection_retry_interval_step=0.2,  # Incremental backoff factor
 )
