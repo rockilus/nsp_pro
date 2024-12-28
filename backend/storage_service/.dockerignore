@@ -89,7 +89,6 @@ venv/
 .vscode/
 
 # Exlude all .env files
-**.env
 **/.env
 **/.env.dev
 **/.env.local

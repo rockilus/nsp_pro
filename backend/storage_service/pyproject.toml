@@ -22,7 +22,10 @@ shared = {path = "../shared"}
 requests = "^2.32.3"
 types-requests = "^2.32.0.20241016"
 redis = "^5.2.1"
-
+fastapi = "^0.115.6"
+uvicorn = "^0.34.0"
+boto3 = "^1.35.86"
+pymongo = {extras = ["aws"], version = "^4.6.2"}
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.32.0.20241016"

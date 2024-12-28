@@ -89,7 +89,6 @@ venv/
 .vscode/
 
 # Exlude all .env files
-**.env
 **/.env
 **/.env.dev
 **/.env.local
@@ -97,3 +96,6 @@ venv/
 **/.env.docker
 **/.env.docker_compose
 **/.env.production
+
+# Exclude all .conf files
+**/*.conf
