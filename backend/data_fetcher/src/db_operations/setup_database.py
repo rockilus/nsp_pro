@@ -3,7 +3,7 @@ from shared.database import setup_database
 from config import config
 
 # Set up the database and initialize collections
-collections = setup_database(config.database_url)
+collections = setup_database(config.db_uri)
 
 # Access the collections as needed
 db = collections.db

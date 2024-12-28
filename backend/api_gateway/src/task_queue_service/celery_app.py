@@ -1,11 +1,12 @@
 from celery import Celery  # type: ignore
 
+from utils.env_config import REDIS_URL, RESULT_BACKEND
+
 
 def create_celery_app() -> Celery:
     app = Celery(
-        broker="redis://localhost:6379/0",
-        # backend="redis://localhost:6379/1",
-        backend="redis://localhost:6379/0",
+        broker=REDIS_URL,
+        backend=RESULT_BACKEND,
         task_routes={
             "data_fetcher.get_engine_inputs": {"queue": "fetcher_queue"},
             'processing_engine.solve_problem': {'queue': 'processing_queue'},
