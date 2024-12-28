@@ -140,3 +140,28 @@ async def check_processing_engine_health(
         raise HTTPException(
             status_code=500, detail=f"Unexpected error: {str(e)}"
         ) from e
+
+
+@router.get("/check-storage-service-health")
+async def check_storage_service_health(
+    storage_service_url: str = Query(
+        ..., description="The URL of the storage-service service"
+    )
+):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{storage_service_url}/health")
+            response.raise_for_status()
+            return {
+                "status": "success",
+                "storage_service_status": response.json(),
+            }
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(
+            status_code=e.response.status_code,
+            detail=f"Storage Service health check failed: {e.response.text}",
+        ) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Unexpected error: {str(e)}"
+        ) from e
