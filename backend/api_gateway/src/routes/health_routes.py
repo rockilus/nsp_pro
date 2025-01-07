@@ -28,7 +28,7 @@ async def health_check() -> HealthCheck:
         health_status["database"].details = str(e)
 
     try:
-        authn_health_check()
+        await authn_health_check()
     except AuthnConnectionError as e:
         health_status["authn"].status = "error"
         health_status["authn"].details = str(e)

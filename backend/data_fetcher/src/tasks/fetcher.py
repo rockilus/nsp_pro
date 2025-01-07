@@ -6,6 +6,7 @@ from shared.schemas import Schedule, TaskServices
 from app import celery_app
 from config import config
 from db_operations.get_engine_inputs import get_engine_inputs
+from db_operations.setup_database import get_collections
 
 redis_client = redis.StrictRedis.from_url(config.redis_url)
 
@@ -21,7 +22,8 @@ def get_engine_inputs_task(self, data: dict) -> Dict:
         if "schedule" not in data:
             raise ValueError("schedule not found in data")
         schedule = Schedule.from_dict(data["schedule"])
-        engine_inputs = get_engine_inputs(schedule)
+        collections = get_collections()
+        engine_inputs = get_engine_inputs(schedule, collections)
         out = {"engine_inputs": engine_inputs.to_dict()}
         print("TASK COMPLETE - GET ENGINE INPUTS")
         return out

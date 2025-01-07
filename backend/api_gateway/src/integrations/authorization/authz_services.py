@@ -161,7 +161,6 @@ def permit_to_core_user_auth(user_read: UserRead) -> UserAuth:
 async def authz_health_check() -> None:
     try:
         await permit.api.tenants.list()
-        log_info("Permit health check OK")
     except Exception as e:
         log_info("Permit health check error, trying to reconnect: " + str(e))
         authz_connect(PDP_URL, PDP_API_KEY)

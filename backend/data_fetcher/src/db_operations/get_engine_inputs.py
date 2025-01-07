@@ -1,5 +1,6 @@
 import time
 
+from shared.database import DatabaseCollections
 from shared.schemas import EngineInputs, Schedule, ScheduleStatus
 
 from db_operations.assignment_services import get_fixed_assignments
@@ -7,15 +8,12 @@ from db_operations.create_shift import create_duty_recuperation_shifts
 from db_operations.fetch_data import fetch_workers_shifts_dim_attributes
 from db_operations.get_constraint_build import get_active_constraint_builds_by_ids
 from db_operations.get_request import get_requests_by_dates
-from db_operations.setup_database import (
-    assignment_db,
-    daily_shift_demand_db,
-    schedule_db,
-)
 
 
 # pylint: disable=too-many-locals, too-many-statements
-def get_engine_inputs(schedule: Schedule) -> EngineInputs:
+def get_engine_inputs(
+    schedule: Schedule, collections: DatabaseCollections
+) -> EngineInputs:
     start_time_db = time.time()
     (
         workers,
@@ -23,8 +21,8 @@ def get_engine_inputs(schedule: Schedule) -> EngineInputs:
         dimensions,
         dim_entries,
         attributes,
-    ) = fetch_workers_shifts_dim_attributes(schedule.team_id)
-    as_hist, as_wip_fixed = get_fixed_assignments(schedule)
+    ) = fetch_workers_shifts_dim_attributes(schedule.team_id, collections)
+    as_hist, as_wip_fixed = get_fixed_assignments(schedule, collections)
     cbs_augmented = get_active_constraint_builds_by_ids(
         schedule.constraint_build_ids,
         workers,
@@ -32,20 +30,23 @@ def get_engine_inputs(schedule: Schedule) -> EngineInputs:
         dimensions,
         dim_entries,
         attributes,
+        collections,
     )
-    recuperation_shifts_new = create_duty_recuperation_shifts(shifts)
+    recuperation_shifts_new = create_duty_recuperation_shifts(shifts, collections)
     shift_id_to_shift = {shift.id: shift for shift in shifts}
     for rec_shift in recuperation_shifts_new:
         shift_id_to_shift[rec_shift.id] = rec_shift
     shifts = list(shift_id_to_shift.values())
-    daily_shift_demands = daily_shift_demand_db.get_daily_shift_demands_by_schedule_id(
-        schedule.id
+    daily_shift_demands = (
+        collections.daily_shift_demand_db.get_daily_shift_demands_by_schedule_id(
+            schedule.id
+        )
     )
     requests = get_requests_by_dates(
-        schedule.start_date, schedule.end_date, workers, shifts
+        schedule.start_date, schedule.end_date, workers, shifts, collections
     )
-    team_schedules = schedule_db.get_schedules(schedule.team_id)
-    wip_assignments = assignment_db.get_assignments_by_schedule_ids(
+    team_schedules = collections.schedule_db.get_schedules(schedule.team_id)
+    wip_assignments = collections.assignment_db.get_assignments_by_schedule_ids(
         [s.id for s in team_schedules if s.status == ScheduleStatus.CAMPAIGN]
     )
     end_time_db = time.time()

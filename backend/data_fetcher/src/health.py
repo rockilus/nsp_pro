@@ -8,7 +8,10 @@ from shared.database.errors import DBConnectionError
 
 from app import celery_app
 from config import config
-from db_operations import db
+from db_operations import get_collections
+
+# from db_operations import db
+# from db_operations.setup_database import worker_db
 
 app = FastAPI()
 
@@ -61,7 +64,10 @@ async def health_check() -> HealthCheck:
             health_status["celery"].details = str(e)
 
         try:
-            db.check_mongo_health()
+            collections = get_collections()
+            collections.db.check_mongo_health()
+            workers = collections.worker_db.get_workers("667d626f02d5723648a0f1fc")
+            print(workers)
         except DBConnectionError as e:
             health_status["database"].status = "error"
             health_status["database"].details = str(e)
