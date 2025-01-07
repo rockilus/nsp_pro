@@ -4,6 +4,7 @@ import multiprocessing
 from uvicorn import Config, Server
 
 from config import config
+from db_operations import get_collections
 from tasks.saver import save_engine_outputs_task  # noqa: F401
 
 
@@ -25,6 +26,9 @@ if __name__ == "__main__":
     # Start the FastAPI server in a separate process
     fastapi_process = multiprocessing.Process(target=start_fastapi_server)
     fastapi_process.start()
+
+    # Initialize the database connection in the Celery worker process
+    collections = get_collections()
 
     # Start the Celery worker
     celery_app.worker_main(

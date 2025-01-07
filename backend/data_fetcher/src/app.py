@@ -25,4 +25,5 @@ celery_app.conf.update(
     broker_connection_retry_interval_start=0.2,  # Initial retry delay (seconds)
     broker_connection_retry_interval_max=10.0,  # Maximum retry delay (seconds)
     broker_connection_retry_interval_step=0.2,  # Incremental backoff factor
+    worker_cancel_long_running_tasks_on_connection_loss=True,
 )

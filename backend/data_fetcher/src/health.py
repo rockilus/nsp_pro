@@ -66,8 +66,10 @@ async def health_check() -> HealthCheck:
         try:
             collections = get_collections()
             collections.db.check_mongo_health()
-            workers = collections.worker_db.get_workers("667d626f02d5723648a0f1fc")
-            print(workers)
+            # workers = collections.worker_db.get_workers(
+            # "667d626f02d5723648a0f1fc"
+            # )
+            # print(workers)
         except DBConnectionError as e:
             health_status["database"].status = "error"
             health_status["database"].details = str(e)

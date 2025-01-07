@@ -1,15 +1,17 @@
 from typing import List
 
 from shared.augment import r_to_r_augmented
+from shared.database import DatabaseCollections
 from shared.schemas import Request, RequestAugmented, Shift, Worker
-
-from db_operations.setup_database import request_db
 
 
 def update_requests(
-    requests: List[Request], workers: List[Worker], shifts: List[Shift]
+    requests: List[Request],
+    workers: List[Worker],
+    shifts: List[Shift],
+    collections: DatabaseCollections,
 ) -> List[RequestAugmented]:
-    updated_requests = request_db.update_requests(requests)
+    updated_requests = collections.request_db.update_requests(requests)
     out = []
     for r in updated_requests:
         worker = next((w for w in workers if w.id == r.worker_id), None)
