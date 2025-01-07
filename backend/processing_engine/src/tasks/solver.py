@@ -1,12 +1,21 @@
 from typing import Dict
 
+import redis
 from shared.schemas import EngineInputs, TaskServices
 
 from app import celery_app
+from config import config
 from solve_service.solve_schedule import solve_schedule
 
+redis_client = redis.StrictRedis.from_url(config.redis_url)
 
-@celery_app.task(name="processing_engine.solve_problem", bind=True)
+
+@celery_app.task(
+    name="processing_engine.solve_problem",
+    bind=True,
+    max_retries=5,
+    default_retry_delay=10,
+)
 def solve_problem(self, data: Dict) -> Dict:
     try:
         if "engine_inputs" not in data:
@@ -27,6 +36,8 @@ def solve_problem(self, data: Dict) -> Dict:
         # )
         print("SENT TO STORAGE SERVICE")
         return out
+    except redis.ConnectionError as exc:
+        raise self.retry(exc=exc)
     except Exception as e:
         self.update_state(
             state="FAILURE",
