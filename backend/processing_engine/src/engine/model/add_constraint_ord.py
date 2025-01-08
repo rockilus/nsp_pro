@@ -30,7 +30,7 @@ class AddConstraintOrd(AddConstraint):
                 transition = [cstr_var.Not() for cstr_var in cstr_vars]
             else:
                 raise NotImplementedError(
-                    f"Sum constraint operator {constraint.operator} "
+                    f"Order constraint operator {constraint.operator} "
                     + "not implemented"
                 )
             self.model.AddBoolOr(transition)  # type: ignore # [CHECK IF OK]
@@ -54,7 +54,7 @@ class AddConstraintOrd(AddConstraint):
                 transition = [cstr_var.Not() for cstr_var in cstr_vars]
             else:
                 raise NotImplementedError(
-                    f"Sum constraint operator {constraint.operator} "
+                    f"Order constraint operator {constraint.operator} "
                     + "not implemented"
                 )
             trans_var = self.model.NewBoolVar(var_name)

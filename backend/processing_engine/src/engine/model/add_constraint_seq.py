@@ -42,7 +42,7 @@ class AddConstraintSeq(AddConstraint):
                 )
             else:
                 raise NotImplementedError(
-                    f"Sum constraint operator {constraint.operator} "
+                    f"Sequence constraint operator {constraint.operator} "
                     + "not implemented"
                 )
         # pylint: disable=R0801

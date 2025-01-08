@@ -1,5 +1,6 @@
 import asyncio
 import json
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict
 
 from celery.result import AsyncResult  # type: ignore
@@ -8,6 +9,7 @@ from shared.schemas import EngineOutputsAugmented, SolveDetailsStatus
 from starlette.responses import StreamingResponse
 
 from routes.schedule_routes import core_to_msg_schedule, core_to_msg_solution
+from scripts.setup_database import schedule_db
 from services.schedule_services import (
     update_schedule_solve_details_failure,
     update_schedule_solve_details_success,
@@ -26,6 +28,8 @@ celery_to_core_status_dict = {
     "SUCCESS": SolveDetailsStatus.SUCCESS,
 }
 
+EXPIRATION_TIME = timedelta(seconds=45)
+
 
 def celery_to_core_status(celery_status: str) -> int | None:
     status = celery_to_core_status_dict.get(celery_status, None)
@@ -33,31 +37,66 @@ def celery_to_core_status(celery_status: str) -> int | None:
 
 
 # POLLING ARCHITECTURE
+# pylint: disable=too-many-statements
 @router.get("/sse", response_class=Response)
 async def sse(request: Request) -> Callable:
 
+    # pylint: disable=too-many-branches
     async def event_stream(task_id: str | None = None, schedule_id: str | None = None):
         previous_status = None
+        print("task_id: ", task_id)
 
         try:
-            if task_id:
+            if task_id and schedule_id:
                 # Check the status of the task in Celery
                 async_result = AsyncResult(task_id, app=celery_app)
-
+                schedule = schedule_db.get_schedule_by_id(schedule_id)
+                if schedule.solve_details is None:
+                    event = "error"
+                    data_no_details = {
+                        "task_id": task_id,
+                        "status": SolveDetailsStatus.FAILURE.value,
+                        "message": "Schedule does not have solve details",
+                    }
+                    yield f"event: {event}\ndata: {json.dumps(data_no_details)}\n\n"
                 # Task status pending, started, or retry
                 # Send the status to the client each time it changes
+
                 while not async_result.ready():
-                    current_status = async_result.status
-                    if current_status != previous_status:
-                        event = "task_status"
-                        data_status: Dict[str, Any] = {
+                    now = datetime.now(tz=timezone.utc)
+                    if (
+                        now - schedule.solve_details.updated_at  # type: ignore
+                        > EXPIRATION_TIME
+                    ):
+                        print("Task expired")
+                        async_result.revoke()
+                        schedule.solve_details.status = (  # type: ignore
+                            SolveDetailsStatus.FAILURE
+                        )
+                        # type: ignore
+                        schedule.solve_details.updated_at = now  # type: ignore
+                        schedule = schedule_db.update_schedule(schedule)
+                        event = "error"
+                        data_timeout = {
                             "task_id": task_id,
-                            "status": celery_to_core_status(current_status),
-                            "message": f"Task is {current_status.lower()}",
+                            "status": SolveDetailsStatus.FAILURE.value,
+                            "message": "Task expired",
                         }
-                        yield f"event: {event}\ndata: {json.dumps(data_status)}\n\n"
-                        previous_status = current_status
-                    await asyncio.sleep(1)  # Polling interval
+                        yield f"event: {event}\ndata: {json.dumps(data_timeout)}\n\n"
+                    else:
+                        current_status = async_result.status
+                        if current_status != previous_status:
+                            event = "task_status"
+                            data_status: Dict[str, Any] = {
+                                "task_id": task_id,
+                                "status": celery_to_core_status(current_status),
+                                "message": f"Task is {current_status.lower()}",
+                            }
+                            yield f"event: {event}\ndata: {json.dumps(data_status)}\n\n"
+                            previous_status = current_status
+                        await asyncio.sleep(1)  # Polling interval
+                        async_result = AsyncResult(task_id, app=celery_app)
+                        print("async_result status: ", async_result.status)
 
                 # Task status success or failure
                 current_status = async_result.status

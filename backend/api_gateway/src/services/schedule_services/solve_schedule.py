@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from celery.result import AsyncResult  # type: ignore
 from shared.schemas import Schedule, SolveDetails, SolveDetailsStatus
@@ -6,6 +6,8 @@ from shared.schemas import Schedule, SolveDetails, SolveDetailsStatus
 from scripts.setup_database import schedule_db
 from task_queue_service import submit_solve_problem_task
 from task_queue_service.celery_app import celery_app
+
+EXPIRATION_TIME = timedelta(seconds=45)
 
 
 def solve_schedule(schedule_id: str) -> Schedule:
@@ -16,8 +18,22 @@ def solve_schedule(schedule_id: str) -> Schedule:
         SolveDetailsStatus.RETRY,
     ]:
         async_result = AsyncResult(schedule.solve_details.task_id, app=celery_app)
+
+        string = f"Task {schedule.solve_details.task_id} is {async_result.status}"
+        print(string)
         if not async_result.ready():
-            raise ValueError("Schedule is already being solved")
+            if (
+                datetime.now(tz=timezone.utc) - schedule.solve_details.updated_at
+                > EXPIRATION_TIME
+            ):
+                async_result.revoke()
+                # schedule.solve_details.status = SolveDetailsStatus.FAILURE
+                # schedule.solve_details.updated_at = datetime.now(
+                #     tz=timezone.utc
+                # )
+                # schedule = schedule_db.update_schedule(schedule)
+            else:
+                raise ValueError(f"Schedule is already being solved: {string}")
     task_id = submit_solve_problem_task(schedule)
     schedule.solve_details = SolveDetails(
         task_id=task_id,

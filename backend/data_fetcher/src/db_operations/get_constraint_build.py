@@ -1,21 +1,28 @@
 from typing import List
 
 from shared.augment.cb_to_cb_augmented import cb_to_cb_augmented
-from shared.schemas import ConstraintBuildAugmented
-
-from db_operations.setup_database import constraint_build_db
+from shared.database import DatabaseCollections
+from shared.schemas import (
+    Attribute,
+    ConstraintBuildAugmented,
+    Dimension,
+    DimEntry,
+    Shift,
+    Worker,
+)
 
 
 # pylint: disable=too-many-arguments
 def get_active_constraint_builds_by_ids(
     constraint_build_ids: List[str],
-    workers,
-    shifts,
-    dimensions,
-    dim_entries,
-    attributes,
+    workers: List[Worker],
+    shifts: List[Shift],
+    dimensions: List[Dimension],
+    dim_entries: List[DimEntry],
+    attributes: List[Attribute],
+    collections: DatabaseCollections,
 ) -> List[ConstraintBuildAugmented]:
-    constraint_builds = constraint_build_db.get_constraint_builds_by_ids(
+    constraint_builds = collections.constraint_build_db.get_constraint_builds_by_ids(
         constraint_build_ids
     )
     cbs_augmented = [
