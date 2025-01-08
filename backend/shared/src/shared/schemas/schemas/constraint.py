@@ -83,8 +83,16 @@ class Block:
         out = asdict(self)
         out["name"] = self.name.value
         out["type"] = self.type.value
-        if isinstance(self.value, ShiftWorkerOption):
-            out["value"] = self.value.to_dict()
+        print(self.value)
+        print("is list: ", isinstance(self.value, list))
+        if isinstance(self.value, list):
+            print(
+                "are SWO: ",
+                all(isinstance(v, ShiftWorkerOption) for v in self.value),
+            )
+        if isinstance(self.value, list):
+            if all(isinstance(v, ShiftWorkerOption) for v in self.value):
+                out["value"] = [v.to_dict() for v in self.value]
         return out
 
     @classmethod

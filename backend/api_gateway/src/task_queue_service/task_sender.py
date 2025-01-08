@@ -5,7 +5,7 @@ from shared.schemas import Schedule
 
 from task_queue_service.celery_app import celery_app
 
-EXPIRATION_TIME = timedelta(minutes=2)
+EXPIRATION_TIME = timedelta(seconds=45)
 
 
 @celery_app.task(name="api_gateway.trigger_workflow")

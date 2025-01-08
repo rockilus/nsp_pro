@@ -42,7 +42,7 @@ export const toSolveDetailsT = (data: any): SolveDetailsT => {
 export const fromSolveDetailsT = (data: SolveDetailsT): any => {
   return {
     ...data,
-    updated_at: data.updatedAt.unix(),
+    updatedAt: data.updatedAt.unix(),
   };
 };
 
