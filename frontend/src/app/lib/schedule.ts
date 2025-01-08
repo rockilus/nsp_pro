@@ -35,7 +35,14 @@ const apiUrlSchedule = API_URL + "/schedules";
 export const toSolveDetailsT = (data: any): SolveDetailsT => {
   return {
     ...data,
-    updated_at: dayjs.unix(data.updated_at).utc(),
+    updatedAt: dayjs.unix(data.updatedAt).utc(),
+  };
+};
+
+export const fromSolveDetailsT = (data: SolveDetailsT): any => {
+  return {
+    ...data,
+    updated_at: data.updatedAt.unix(),
   };
 };
 
@@ -47,6 +54,20 @@ export const toScheduleT = (data: any): ScheduleT => {
     solveDetails: data.solveDetails ? toSolveDetailsT(data.solveDetails) : null,
     missingCoverageDates: data.missingCoverageDates.map((timeStamp: number) =>
       dayjs.unix(timeStamp).utc()
+    ),
+  };
+};
+
+export const fromScheduleT = (data: ScheduleT): any => {
+  return {
+    ...data,
+    startDate: data.startDate.unix(),
+    endDate: data.endDate.unix(),
+    solveDetails: data.solveDetails
+      ? fromSolveDetailsT(data.solveDetails)
+      : null,
+    missingCoverageDates: data.missingCoverageDates.map((date: dayjs.Dayjs) =>
+      date.unix()
     ),
   };
 };
@@ -157,7 +178,7 @@ export async function updateSchedule(schedule: ScheduleT) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(schedule),
+    body: JSON.stringify(fromScheduleT(schedule)),
   };
   try {
     const response = await fetch(

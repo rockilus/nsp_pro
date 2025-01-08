@@ -95,7 +95,6 @@ export default function ScheduleTab({
   const [solveStatus, setSolveStatus] = useState<
     SolveDetailsStatus | null | "error"
   >(null);
-  console.log("solveStatus", solveStatus);
 
   const hasConnectedRef = useRef(false);
 

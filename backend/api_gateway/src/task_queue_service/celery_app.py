@@ -4,8 +4,6 @@ from utils.env_config import REDIS_URL, RESULT_BACKEND
 
 
 def create_celery_app() -> Celery:
-    print("REDIS_URL: ", REDIS_URL)
-    print("RESULT_BACKEND: ", RESULT_BACKEND)
     app = Celery(
         broker=REDIS_URL,
         backend=RESULT_BACKEND,
