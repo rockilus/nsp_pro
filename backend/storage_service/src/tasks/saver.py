@@ -30,7 +30,7 @@ def save_engine_outputs_task(self, data: dict) -> Dict:
             engine_inputs, engine_outputs, self.request.id, collections
         )
         out = {"eo_augmented": eo_augmented.to_dict()}
-        print("TASK COMPLETE - SAVED ENGINE OUTPUTS")
+        print("TASK COMPLETE - SAVED ENGINE OUTPUTS: ", self.request.id)
         return out
     except redis.ConnectionError as exc:
         raise self.retry(exc=exc)

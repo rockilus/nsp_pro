@@ -4,6 +4,8 @@ from utils.env_config import REDIS_URL, RESULT_BACKEND
 
 
 def create_celery_app() -> Celery:
+    print("REDIS_URL: ", REDIS_URL)
+    print("RESULT_BACKEND: ", RESULT_BACKEND)
     app = Celery(
         broker=REDIS_URL,
         backend=RESULT_BACKEND,
@@ -19,6 +21,13 @@ def create_celery_app() -> Celery:
         result_serializer="json",
         timezone="UTC",
         enable_utc=True,
+        broker_connection_retry=True,
+        broker_connection_max_retries=None,
+        broker_connection_retry_on_startup=True,
+        broker_connection_retry_interval_start=0.2,
+        broker_connection_retry_interval_max=10.0,
+        broker_connection_retry_interval_step=0.2,
+        worker_cancel_long_running_tasks_on_connection_loss=True,
     )
     return app
 

@@ -42,10 +42,9 @@ def celery_to_core_status(celery_status: str) -> int | None:
 async def sse(request: Request) -> Callable:
 
     # pylint: disable=too-many-branches
-    async def event_stream(
-        task_id: str | None = None, schedule_id: str | None = None
-    ):
+    async def event_stream(task_id: str | None = None, schedule_id: str | None = None):
         previous_status = None
+        print("task_id: ", task_id)
 
         try:
             if task_id and schedule_id:
@@ -90,9 +89,7 @@ async def sse(request: Request) -> Callable:
                             event = "task_status"
                             data_status: Dict[str, Any] = {
                                 "task_id": task_id,
-                                "status": celery_to_core_status(
-                                    current_status
-                                ),
+                                "status": celery_to_core_status(current_status),
                                 "message": f"Task is {current_status.lower()}",
                             }
                             yield f"event: {event}\ndata: {json.dumps(data_status)}\n\n"
@@ -120,9 +117,7 @@ async def sse(request: Request) -> Callable:
                             error=str(async_result.result),
                             task_id=task_id,
                         )
-                        data["schedule"] = core_to_msg_schedule(
-                            schedule
-                        ).model_dump()
+                        data["schedule"] = core_to_msg_schedule(schedule).model_dump()
                     # task_meta = async_result.info
                     # if task_meta and "schedule_id" in task_meta:
                     # schedule_id = task_meta["schedule_id"]
