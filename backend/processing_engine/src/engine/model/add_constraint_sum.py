@@ -1,10 +1,11 @@
 from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
+from shared.schemas import ConstraintOperator as ConstraintOperatorCore
 
 from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import build_var_name_constraint, get_nested_value
-from engine.types import ConstraintOperator, ConstraintSum, ObjectiveCategory
+from engine.types import ConstraintSum, ObjectiveCategory
 from utils.constants import Constants
 
 
@@ -48,17 +49,17 @@ class AddConstraintSum(AddConstraint):
         hard_to_soft: bool,
     ) -> None:
         if constraint.hard and not hard_to_soft:
-            if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+            if constraint.operator == ConstraintOperatorCore.LESS_THAN_OR_EQUAL:
                 sum_var = self.model.NewIntVar(
                     0, constraint.target_value * Constants.NUM_MINUTES_HOUR, ""
                 )
-            elif constraint.operator == ConstraintOperator.EQUAL:
+            elif constraint.operator == ConstraintOperatorCore.EQUAL:
                 sum_var = self.model.NewIntVar(
                     constraint.target_value * Constants.NUM_MINUTES_HOUR,
                     constraint.target_value * Constants.NUM_MINUTES_HOUR,
                     "",
                 )
-            elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+            elif constraint.operator == ConstraintOperatorCore.GREATER_THAN_OR_EQUAL:
                 sum_var = self.model.NewIntVar(
                     constraint.target_value * Constants.NUM_MINUTES_HOUR,
                     len(cstr_vars)
@@ -86,7 +87,7 @@ class AddConstraintSum(AddConstraint):
             var_name = build_var_name_constraint(
                 constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
             )
-            if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+            if constraint.operator == ConstraintOperatorCore.LESS_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(
                     -constraint.target_value * Constants.NUM_MINUTES_HOUR,
                     len(cstr_vars)
@@ -109,7 +110,7 @@ class AddConstraintSum(AddConstraint):
                 self.model.AddMaxEquality(excess, [delta, 0])
                 self.obj.int_vars.append(excess)
                 self.obj.int_coeffs.append(penalty)
-            elif constraint.operator == ConstraintOperator.EQUAL:
+            elif constraint.operator == ConstraintOperatorCore.EQUAL:
                 delta = self.model.NewIntVar(
                     -constraint.target_value * Constants.NUM_MINUTES_HOUR,
                     len(cstr_vars)
@@ -132,7 +133,7 @@ class AddConstraintSum(AddConstraint):
                 self.model.AddAbsEquality(excess, delta)
                 self.obj.int_vars.append(excess)
                 self.obj.int_coeffs.append(penalty)
-            elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+            elif constraint.operator == ConstraintOperatorCore.GREATER_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(
                     -len(cstr_vars)
                     * Constants.NUM_HOURS_DAY
@@ -163,15 +164,15 @@ class AddConstraintSum(AddConstraint):
         hard_to_soft: bool,
     ) -> None:
         if constraint.hard and not hard_to_soft:
-            if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+            if constraint.operator == ConstraintOperatorCore.LESS_THAN_OR_EQUAL:
                 sum_var = self.model.NewIntVar(0, constraint.target_value, "")
-            elif constraint.operator == ConstraintOperator.EQUAL:
+            elif constraint.operator == ConstraintOperatorCore.EQUAL:
                 sum_var = self.model.NewIntVar(
                     constraint.target_value,
                     constraint.target_value,
                     "",
                 )
-            elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+            elif constraint.operator == ConstraintOperatorCore.GREATER_THAN_OR_EQUAL:
                 sum_var = self.model.NewIntVar(
                     constraint.target_value, len(cstr_vars), ""
                 )
@@ -194,7 +195,7 @@ class AddConstraintSum(AddConstraint):
             var_name = build_var_name_constraint(
                 constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
             )
-            if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+            if constraint.operator == ConstraintOperatorCore.LESS_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
                 self.model.Add(delta == sum(cstr_vars) - constraint.target_value)
                 excess = self.model.NewIntVar(
@@ -205,7 +206,7 @@ class AddConstraintSum(AddConstraint):
                 self.model.AddMaxEquality(excess, [delta, 0])
                 self.obj.int_vars.append(excess)
                 self.obj.int_coeffs.append(penalty)
-            elif constraint.operator == ConstraintOperator.EQUAL:
+            elif constraint.operator == ConstraintOperatorCore.EQUAL:
                 delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
                 self.model.Add(delta == sum(cstr_vars) - constraint.target_value)
                 excess = self.model.NewIntVar(
@@ -216,7 +217,7 @@ class AddConstraintSum(AddConstraint):
                 self.model.AddAbsEquality(excess, delta)
                 self.obj.int_vars.append(excess)
                 self.obj.int_coeffs.append(penalty)
-            elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+            elif constraint.operator == ConstraintOperatorCore.GREATER_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
                 self.model.Add(delta == constraint.target_value - sum(cstr_vars))
                 excess = self.model.NewIntVar(

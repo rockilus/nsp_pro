@@ -1,13 +1,12 @@
 from datetime import timedelta
 from typing import List
 
+from shared.database import DatabaseCollections
 from shared.schemas import Shift, ShiftLeaveType, ShiftRestType, ShiftType
-
-from db_operations.setup_database import shift_db
 
 
 def create_duty_recuperation_shifts(
-    shifts: List[Shift],
+    shifts: List[Shift], collections: DatabaseCollections
 ) -> List[Shift]:
     drs_new = []
     drs_updated = []
@@ -28,7 +27,9 @@ def create_duty_recuperation_shifts(
         if dr_existing:
             if shift.shift_type != ShiftType.DUTY:
                 if not dr_existing.deleted:
-                    drs_deleted.append(shift_db.logical_delete_shift(dr_existing.id))
+                    drs_deleted.append(
+                        collections.shift_db.logical_delete_shift(dr_existing.id)
+                    )
                 continue
             if (
                 dr_existing.start_time == dr_start_time
@@ -60,7 +61,7 @@ def create_duty_recuperation_shifts(
         )
         drs_new.append(dr)
     return (
-        shift_db.create_shifts(drs_new)
-        + shift_db.update_shifts(drs_updated)
+        collections.shift_db.create_shifts(drs_new)
+        + collections.shift_db.update_shifts(drs_updated)
         + drs_deleted
     )

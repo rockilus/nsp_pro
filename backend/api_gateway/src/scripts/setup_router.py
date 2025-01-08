@@ -33,7 +33,7 @@ from routes import (
     router_user,
     router_worker,
 )
-from utils.env_config import API_DOMAIN, API_PORT, ORIGINS, UVICORN_RELOAD
+from utils.env_config import API_DOMAIN, API_PORT, ENVIRONMENT, ORIGINS, UVICORN_RELOAD
 
 app = FastAPI()
 
@@ -49,7 +49,8 @@ app.add_middleware(
     allow_headers=["Content-Type"] + authn_get_cors_headers(),
     # allow_headers=["*"] + authn_get_cors_headers(),
 )
-app.add_middleware(BaseHTTPMiddleware, dispatch=log_middleware)
+if ENVIRONMENT == "development":
+    app.add_middleware(BaseHTTPMiddleware, dispatch=log_middleware)
 
 
 app.include_router(router_assignment)

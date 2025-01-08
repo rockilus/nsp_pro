@@ -1,9 +1,8 @@
 from datetime import date
 from typing import List
 
+from shared.database import DatabaseCollections
 from shared.schemas import Request, Shift, Worker
-
-from db_operations.setup_database import request_db
 
 
 def get_requests_by_dates(
@@ -11,8 +10,11 @@ def get_requests_by_dates(
     end_date: date,
     workers: List[Worker],
     shifts: List[Shift],
+    collections: DatabaseCollections,
 ) -> List[Request]:
-    requests = request_db.get_requests_by_dates(start_date, end_date, workers)
+    requests = collections.request_db.get_requests_by_dates(
+        start_date, end_date, workers
+    )
     out = []
     for r in requests:
         worker = next((w for w in workers if w.id == r.worker_id), None)

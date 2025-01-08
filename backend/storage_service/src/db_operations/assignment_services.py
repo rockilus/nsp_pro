@@ -1,16 +1,16 @@
 from typing import List
 
+from shared.database import DatabaseCollections
 from shared.schemas import Assignment, Schedule
-
-from db_operations.setup_database import assignment_db
 
 
 def save_assignments(
     assignments: List[Assignment],
     schedule: Schedule,
     fixed_assignments: List[Assignment],
+    collections: DatabaseCollections,
 ) -> List[Assignment]:
-    assignment_db.delete_assignments_by_schedule_id(schedule.id)
+    collections.assignment_db.delete_assignments_by_schedule_id(schedule.id)
     if not assignments:
         return []
     for assignment in assignments:
@@ -22,5 +22,5 @@ def save_assignments(
             ):
                 assignment.fixed = True
                 break
-    out = assignment_db.create_assignments(assignments)
+    out = collections.assignment_db.create_assignments(assignments)
     return out
