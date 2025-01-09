@@ -229,10 +229,13 @@ def core_to_doc_shift(dataclass_obj: Shift) -> ShiftDocument:
         log_info("Failed to get team by id")
         handle_get_document_error(e)
     try:
+        # pylint: disable=R0801
         s_doc = ShiftDocument(
             id=dataclass_obj.id,
             team=team,
             name=dataclass_obj.name,
+            acronym=dataclass_obj.acronym,
+            acronym_custom=dataclass_obj.acronym_custom,
             start_time=dataclass_obj.start_time.timestamp(),
             end_time=dataclass_obj.end_time.timestamp(),
             staffing=[
@@ -294,6 +297,8 @@ def core_to_doc_shifts(
             id=str(ObjectId()) if creating else dataclass_obj.id,
             team=teams.get(dataclass_obj.team_id),
             name=dataclass_obj.name,
+            acronym=dataclass_obj.acronym,
+            acronym_custom=dataclass_obj.acronym_custom,
             start_time=dataclass_obj.start_time.timestamp(),
             end_time=dataclass_obj.end_time.timestamp(),
             staffing=[
@@ -326,6 +331,8 @@ def doc_to_core_shift(doc_obj: ShiftDocument) -> Shift:
             id=doc_obj.id,
             team_id=doc_obj.team.id,
             name=str(doc_obj.name) if doc_obj.name is not None else "",
+            acronym=(str(doc_obj.acronym) if doc_obj.acronym is not None else ""),
+            acronym_custom=doc_obj.acronym_custom,
             start_time=datetime.fromtimestamp(doc_obj.start_time, timezone.utc),
             end_time=datetime.fromtimestamp(doc_obj.end_time, timezone.utc),
             staffing=[doc_to_core_staffing(s) for s in doc_obj.staffing],
