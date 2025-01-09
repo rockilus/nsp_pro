@@ -16,12 +16,15 @@ class Staffing(EmbeddedDocument):
     staffing = IntField(required=True)
 
 
+# pylint: disable=R0801
 class Shift(Document):
     meta = {"collection": "shifts"}
 
     id = StringField(primary_key=True, required=True)
     team = ReferenceField("Team", required=True)
     name = StringField(required=True)
+    acronym = StringField(required=True)
+    acronym_custom = BooleanField(required=True)
     start_time = FloatField(required=True)
     end_time = FloatField(required=True)
     staffing = EmbeddedDocumentListField(Staffing)

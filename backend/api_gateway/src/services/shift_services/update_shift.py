@@ -1,14 +1,22 @@
 from shared.schemas import Shift, ShiftLeaveType, ShiftRestType
 
 from scripts.setup_database import shift_db
+from services.worker_services.update_worker import generate_acronym
 
 
-def update_shift(new_shift: Shift) -> Shift:
-    shift = shift_db.get_shift_by_id(new_shift.id)
-    if shift is None:
+def update_shift(shift_updated: Shift) -> Shift:
+    shift_existing = shift_db.get_shift_by_id(shift_updated.id)
+    if shift_existing is None:
         raise ValueError("Shift does not exist")
-    if shift.rest_type == ShiftRestType.OFF:
+    if shift_existing.rest_type == ShiftRestType.OFF:
         raise ValueError("Cannot update the default rest shift")
-    if shift.leave_type != ShiftLeaveType.NONE:
+    if shift_existing.leave_type != ShiftLeaveType.NONE:
         raise ValueError("Cannot update a leave shift")
-    return shift_db.update_shift(new_shift)
+    if shift_updated.acronym != shift_existing.acronym:
+        shift_updated.acronym_custom = True
+    if shift_updated.name != shift_existing.name and not shift_updated.acronym_custom:
+        shifts = shift_db.get_shifts_not_deleted(shift_updated.team_id)
+        acronyms = [s.acronym for s in shifts if s.id != shift_updated.id]
+        shift_updated.acronym = generate_acronym(shift_updated.name, acronyms)
+    shift_saved = shift_db.update_shift(shift_updated)
+    return shift_saved

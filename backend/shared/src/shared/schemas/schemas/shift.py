@@ -45,12 +45,14 @@ class Staffing:
     staffing: int
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, R0801
 @dataclass
 class Shift:
     id: str
     team_id: str
     name: str
+    acronym: str
+    acronym_custom: bool
     start_time: datetime
     end_time: datetime
     staffing: List[Staffing]
@@ -72,12 +74,15 @@ class Shift:
         # pylint: disable=R0801
         return out
 
+    # pylint: disable=R0801
     @classmethod
     def from_dict(cls, data: Dict) -> "Shift":
         return cls(
             id=data["id"],
             team_id=data["team_id"],
             name=data["name"],
+            acronym=data["acronym"],
+            acronym_custom=data["acronym_custom"],
             start_time=datetime.fromtimestamp(data["start_time"], tz=timezone.utc),
             end_time=datetime.fromtimestamp(data["end_time"], tz=timezone.utc),
             staffing=[Staffing(**s) for s in data["staffing"]],

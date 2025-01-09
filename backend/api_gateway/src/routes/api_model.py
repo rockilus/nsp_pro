@@ -70,6 +70,8 @@ class ShiftMessage(BaseModel):
     id: str
     teamId: str
     name: str
+    acronym: str
+    acronymCustom: bool
     startTime: float
     endTime: float
     staffing: List[StaffingMessage]

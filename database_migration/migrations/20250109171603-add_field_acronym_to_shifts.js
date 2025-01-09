@@ -1,7 +1,7 @@
 module.exports = {
   async up(db, client) {
-    // Fetch all workers
-    const workers = await db.collection('workers').find().toArray();
+    // Fetch all shifts
+    const shifts = await db.collection('shifts').find().toArray();
 
     // Function to generate acronym
     function generateAcronym(inputString, existingAcronyms) {
@@ -26,26 +26,26 @@ module.exports = {
       }
     }
 
-    // Group workers by team
-    const workersByTeam = workers.reduce((acc, worker) => {
-      if (!acc[worker.team]) {
-        acc[worker.team] = [];
+    // Group shifts by team
+    const shiftsByTeam = shifts.reduce((acc, shift) => {
+      if (!acc[shift.team]) {
+        acc[shift.team] = [];
       }
-      acc[worker.team].push(worker);
+      acc[shift.team].push(shift);
       return acc;
     }, {});
 
-    // Update each worker with the new fields
-    for (const team in workersByTeam) {
-      const teamWorkers = workersByTeam[team];
-      const existingAcronyms = teamWorkers.map(worker => worker.acronym).filter(Boolean);
+    // Update each shift with the new fields
+    for (const team in shiftsByTeam) {
+      const teamShifts = shiftsByTeam[team];
+      const existingAcronyms = teamShifts.map(shift => shift.acronym).filter(Boolean);
 
-      for (const worker of teamWorkers) {
-        const acronym = generateAcronym(worker.name, existingAcronyms);
+      for (const shift of teamShifts) {
+        const acronym = generateAcronym(shift.name, existingAcronyms);
         existingAcronyms.push(acronym); // Add the new acronym to the list to avoid duplicates
 
-        await db.collection('workers').updateOne(
-          { _id: worker._id },
+        await db.collection('shifts').updateOne(
+          { _id: shift._id },
           { $set: { acronym: acronym, acronym_custom: false } }
         );
       }
@@ -53,8 +53,8 @@ module.exports = {
   },
 
   async down(db, client) {
-    // Remove the fields acronym and acronym_custom from the workers collection
-    await db.collection('workers').updateMany(
+    // Remove the fields acronym and acronym_custom from the shifts collection
+    await db.collection('shifts').updateMany(
       {},
       { $unset: { acronym: "", acronym_custom: "" } }
     );
