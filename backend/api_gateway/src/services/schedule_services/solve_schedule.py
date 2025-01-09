@@ -7,7 +7,7 @@ from scripts.setup_database import schedule_db
 from task_queue_service import submit_solve_problem_task
 from task_queue_service.celery_app import celery_app
 
-EXPIRATION_TIME = timedelta(seconds=45)
+EXPIRATION_TIME = timedelta(minutes=2)
 
 
 def solve_schedule(schedule_id: str) -> Schedule:

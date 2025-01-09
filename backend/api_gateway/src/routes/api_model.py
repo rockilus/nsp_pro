@@ -229,6 +229,7 @@ class SolveDetailsMessage(BaseModel):
     taskId: str
     status: int
     updatedAt: float
+    result: Dict | None
 
 
 class ScheduleMessage(BaseModel):
