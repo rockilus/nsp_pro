@@ -15,6 +15,8 @@ class Worker(Document):
     id = StringField(primary_key=True, required=True)
     team = ReferenceField("Team", required=True)
     name = StringField(required=True)
+    acronym = StringField(required=True)
+    acronym_custom = BooleanField(required=True)
     employment_start_date = FloatField(required=True)
     employment_end_date = FloatField()
     weekly_hours = IntField(required=True)

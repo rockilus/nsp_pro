@@ -163,6 +163,8 @@ def core_to_doc_worker(dataclass_obj: Worker) -> WorkerDocument:
             id=dataclass_obj.id,
             team=team,
             name=dataclass_obj.name,
+            acronym=dataclass_obj.acronym,
+            acronym_custom=dataclass_obj.acronym_custom,
             employment_start_date=datetime.combine(
                 dataclass_obj.employment_start_date, time.min, timezone.utc
             ).timestamp(),
@@ -237,6 +239,8 @@ def doc_to_core_worker(doc_obj: WorkerDocument) -> Worker:
             id=doc_obj.id,
             team_id=str(doc_obj.team.id),
             name=str(doc_obj.name) if doc_obj.name is not None else "",
+            acronym=(str(doc_obj.acronym) if doc_obj.acronym is not None else ""),
+            acronym_custom=doc_obj.acronym_custom,
             employment_start_date=datetime.fromtimestamp(
                 doc_obj.employment_start_date, timezone.utc
             ).date(),
