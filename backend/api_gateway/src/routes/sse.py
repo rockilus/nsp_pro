@@ -28,7 +28,7 @@ celery_to_core_status_dict = {
     "SUCCESS": SolveDetailsStatus.SUCCESS,
 }
 
-EXPIRATION_TIME = timedelta(seconds=45)
+EXPIRATION_TIME = timedelta(minutes=2)
 
 
 def celery_to_core_status(celery_status: str) -> int | None:
