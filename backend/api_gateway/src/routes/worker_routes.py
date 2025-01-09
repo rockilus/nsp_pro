@@ -22,6 +22,7 @@ from routes.attribute_routes import core_to_msg_attribute
 from scripts.setup_database import attribute_db, worker_db
 from services.worker_services import create_worker as create_worker_service
 from services.worker_services import delete_worker as delete_worker_service
+from services.worker_services import update_worker as update_worker_service
 
 router = APIRouter()
 
@@ -106,7 +107,7 @@ async def update_worker(
         ):
             raise NotAuthorizedError("You do not have permission to update a worker")
         w_data = msg_to_core_worker(worker)
-        updated_worker = worker_db.update_worker(w_data)
+        updated_worker = update_worker_service(w_data)
         attributes = attribute_db.get_attributes_by_owner_id(updated_worker.id)
         response = core_to_msg_worker_and_attributes(updated_worker, attributes)
     except Exception as e:

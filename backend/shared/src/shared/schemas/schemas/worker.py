@@ -9,6 +9,8 @@ class Worker:
     id: str
     team_id: str
     name: str
+    acronym: str
+    acronym_custom: bool
     employment_start_date: date
     employment_end_date: date | None
     weekly_hours: int  # in hours, contract
@@ -38,6 +40,8 @@ class Worker:
             id=data["id"],
             team_id=data["team_id"],
             name=data["name"],
+            acronym=data["acronym"],
+            acronym_custom=data["acronym_custom"],
             employment_start_date=datetime.fromtimestamp(
                 data["employment_start_date"], timezone.utc
             ).date(),
