@@ -48,6 +48,8 @@ def create_duty_recuperation_shifts(
             id="",
             team_id=shift.team_id,
             name="Duty recuperation",
+            acronym="DR",
+            acronym_custom=False,
             start_time=dr_start_time,
             end_time=dr_end_time,
             staffing=[],

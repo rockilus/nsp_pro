@@ -4,6 +4,7 @@ import TableCell from "@mui/material/TableCell";
 // Components
 import ShiftFieldCellColor from "./shift-field-cell-color";
 import ShiftFieldCellName from "./shift-field-cell-name";
+import ShiftFieldCellAcronym from "./shift-field-cell-acronym";
 import ShiftFieldCellDuty from "./shift-field-cell-duty";
 import ShiftFieldCellRecuperation from "./shift-field-cell-recuperation";
 import ShiftFieldCellStartTime from "./shift-field-cell-start-time";
@@ -37,6 +38,14 @@ export default function ShiftFieldCell({
       lng={lng}
       shift={shift}
       editing={editing[shift.id] === "name"}
+      setEditing={setEditing}
+      handleUpdateShift={handleUpdateShift}
+    />
+  ) : shiftField === "acronym" ? (
+    <ShiftFieldCellAcronym
+      lng={lng}
+      shift={shift}
+      editing={editing[shift.id] === "acronym"}
       setEditing={setEditing}
       handleUpdateShift={handleUpdateShift}
     />
