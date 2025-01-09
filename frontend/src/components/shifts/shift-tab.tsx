@@ -87,6 +87,8 @@ export default function ShiftTab({
       id: "",
       teamId: selectedTeamId,
       name: "",
+      acronym: "",
+      acronymCustom: false,
       startTime: roundTime(dayjs.utc()),
       endTime: roundTime(dayjs.utc()),
       staffing: [

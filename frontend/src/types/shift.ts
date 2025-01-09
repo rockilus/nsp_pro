@@ -46,6 +46,8 @@ export type ShiftT = {
   id: string;
   teamId: string;
   name: string;
+  acronym: string;
+  acronymCustom: boolean;
   startTime: dayjs.Dayjs;
   endTime: dayjs.Dayjs;
   staffing: StaffingT[];
