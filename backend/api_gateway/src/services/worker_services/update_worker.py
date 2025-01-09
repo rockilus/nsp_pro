@@ -13,12 +13,17 @@ def update_worker(worker_updated: Worker) -> Worker:
     ):
         workers = worker_db.get_workers_not_deleted(worker_updated.team_id)
         acronyms = [w.acronym for w in workers]
-        worker_updated.acronym = generate_acronym(worker_updated.name, acronyms)
+        worker_updated.acronym = generate_acronym(
+            worker_updated.name, acronyms
+        )
     worker_saved = worker_db.update_worker(worker_updated)
     return worker_saved
 
 
 def generate_acronym(input_string: str, existing_acronyms: list) -> str:
+    if not input_string.strip():
+        return ''
+
     words = input_string.split()
 
     # Generate the initial acronym (first letter of each word, John Smith -> JS)
