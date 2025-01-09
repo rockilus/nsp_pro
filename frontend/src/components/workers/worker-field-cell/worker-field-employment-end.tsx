@@ -78,6 +78,7 @@ export default function WorkerFieldEmploymentEnd({
 
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
+      if (!editing) return;
       if (cellRef.current && !cellRef.current.contains(event.target as Node)) {
         if (datePickerOpen) {
           return;
@@ -86,11 +87,12 @@ export default function WorkerFieldEmploymentEnd({
         }
       }
     },
-    [cellRef, valueState, datePickerOpen, handleEditConfirm]
+    [cellRef, valueState, datePickerOpen, editing, handleEditConfirm]
   );
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
+      if (!editing) return;
       if (event.key === "Enter") {
         handleEditConfirm(valueState);
       } else if (event.key === "Escape") {
@@ -99,7 +101,7 @@ export default function WorkerFieldEmploymentEnd({
         setEditing({});
       }
     },
-    [worker, valueState, handleEditConfirm, setEditing]
+    [worker, valueState, editing, handleEditConfirm, setEditing]
   );
 
   useEffect(() => {
@@ -110,7 +112,7 @@ export default function WorkerFieldEmploymentEnd({
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleClickOutside, handleKeyDown]);
+  }, [handleClickOutside, handleKeyDown, editing]);
 
   return (
     <TableCell component="th" scope="row" sx={{ paddingY: 0 }}>

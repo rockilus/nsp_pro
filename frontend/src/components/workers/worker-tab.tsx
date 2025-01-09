@@ -39,8 +39,7 @@ import { WorkerT } from "../../types/worker";
 import { DimensionT, DimEntryT } from "../../types/dimension";
 import { AttributeT } from "../../types/attribute";
 import { SpecialtyT } from "../../types/team";
-
-import Session from "supertokens-auth-react/recipe/session";
+import { log } from "console";
 
 dayjs.extend(utc);
 
@@ -99,6 +98,8 @@ export default function WorkerTab({
   };
 
   const handleUpdateWorker = async (worker: WorkerT) => {
+    console.log("Worker to update:", worker);
+
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
