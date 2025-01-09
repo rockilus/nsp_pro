@@ -62,7 +62,7 @@ def build_engine_work_loads(
             periods_monthly,
             ws_to_dates,
             shift_duties,
-            [8 for _ in workers_not_deleted],
+            [1000 for _ in workers_not_deleted],
             0,
         ),
     )
@@ -147,7 +147,8 @@ def build_engine_work_time_worker(
         # Calculate the adjusted target
         num_days_in_period = len(period)
         adjusted_target = math.ceil(
-            (period_target_minutes / Constants.NUM_DAYS_WEEK) * num_days_in_period
+            (period_target_minutes / Constants.NUM_DAYS_WEEK)
+            * num_days_in_period
         )
 
         ws_assignments: List[Tuple[str, str, str]] = []
@@ -158,10 +159,18 @@ def build_engine_work_time_worker(
                 + ws_to_dates[(worker.id, s.id)].dates_campaign
             )
             ws_assignments.extend(
-                [(worker.id, d.isoformat(), s.id) for d in period if d in dates_ws]
+                [
+                    (worker.id, d.isoformat(), s.id)
+                    for d in period
+                    if d in dates_ws
+                ]
             )
             ws_durations.extend(
-                [shift_id_to_duration_dict[s.id] for d in period if d in dates_ws]
+                [
+                    shift_id_to_duration_dict[s.id]
+                    for d in period
+                    if d in dates_ws
+                ]
             )
         if len(ws_assignments) == 0:
             continue
@@ -188,9 +197,13 @@ def build_engine_nb_duties_worker(
         if num_days_in_period == 0:
             continue
         first_day = period[0]
-        num_days_in_month = calendar.monthrange(first_day.year, first_day.month)[1]
+        num_days_in_month = calendar.monthrange(
+            first_day.year, first_day.month
+        )[1]
 
-        adjusted_target = math.ceil((target / num_days_in_month) * num_days_in_period)
+        adjusted_target = math.ceil(
+            (target / num_days_in_month) * num_days_in_period
+        )
 
         ws_assignments: List[Tuple[str, str, str]] = []
         for s in shift_duties:
@@ -199,7 +212,11 @@ def build_engine_nb_duties_worker(
                 + ws_to_dates[(worker.id, s.id)].dates_campaign
             )
             ws_assignments.extend(
-                [(worker.id, d.isoformat(), s.id) for d in period if d in dates_ws]
+                [
+                    (worker.id, d.isoformat(), s.id)
+                    for d in period
+                    if d in dates_ws
+                ]
             )
         if len(ws_assignments) == 0:
             continue

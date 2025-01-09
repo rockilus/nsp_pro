@@ -23,6 +23,8 @@ def build_engine_variables(
 
         for d in worker_ids_to_worker_dates[w.id].dates_campaign:
             for s in shifts_not_deleted:
+                if s.id == "67800f1abc89660c3ced3ec6":
+                    print("Shift ID: ", s.id)
                 assignment_vars.append((w.id, d.isoformat(), s.id))
                 s_duration = shift_id_to_duration_dict[s.id]
                 s_start_time = int(
@@ -34,13 +36,14 @@ def build_engine_variables(
                 day_diff = (s.end_time.date() - s.start_time.date()).days
                 s_end_time = int(
                     (
-                        s.end_time.replace(year=d.year, month=d.month, day=d.day)
-                        + timedelta(day_diff)
+                        s.end_time.replace(
+                            year=d.year, month=d.month, day=d.day
+                        )
+                        + timedelta(days=day_diff)
                     ).timestamp()
                     // Constants.NUM_SECONDS_MINUTE
                     - 1
                 )
-
                 shift_interval_vars.append(
                     (
                         s_start_time,
