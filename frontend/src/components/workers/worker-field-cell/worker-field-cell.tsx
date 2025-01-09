@@ -3,6 +3,7 @@ import React, { Dispatch, SetStateAction } from "react";
 import TableCell from "@mui/material/TableCell";
 // Components
 import WorkerFieldCellName from "./worker-field-cell-name";
+import WorkerFieldCellAcronym from "./worker-field-cell-acronym";
 import WorkerFieldCellWeeklyHours from "./worker-field-cell-weekly-hours";
 import WorkerFieldCellAnnualLeave from "./worker-field-cell-annual-leave";
 import WorkerFieldCellDutiesPerMonth from "./worker-field-cell-duties-per-month";
@@ -35,6 +36,13 @@ export default function WorkerFieldCell({
     <WorkerFieldCellName
       worker={worker}
       editing={editing[worker.id] === "name"}
+      setEditing={setEditing}
+      handleUpdateWorker={handleUpdateWorker}
+    />
+  ) : workerField === "acronym" ? (
+    <WorkerFieldCellAcronym
+      worker={worker}
+      editing={editing[worker.id] === "acronym"}
       setEditing={setEditing}
       handleUpdateWorker={handleUpdateWorker}
     />
