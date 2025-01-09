@@ -61,6 +61,7 @@ export default function WorkerTab({
 
   const DefaultWorkerFields: Record<string, string>[] = [
     { name: "name", label: t("name") },
+    { name: "acronym", label: t("acronym") },
     { name: "employmentStartDate", label: t("employment_start_date") },
     { name: "employmentEndDate", label: t("employment_end_date") },
     { name: "specialties", label: t("specialties") },
@@ -82,6 +83,8 @@ export default function WorkerTab({
       id: "",
       teamId: selectedTeamId,
       name: "",
+      acronym: "",
+      acronymCustom: false,
       employmentStartDate: dayjs.utc(),
       employmentEndDate: null,
       weeklyHours: 39,

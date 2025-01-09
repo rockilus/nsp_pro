@@ -6,6 +6,8 @@ export type WorkerT = {
   id: string;
   teamId: string;
   name: string;
+  acronym: string;
+  acronymCustom: boolean;
   employmentStartDate: dayjs.Dayjs;
   employmentEndDate: dayjs.Dayjs | null;
   weeklyHours: number;
