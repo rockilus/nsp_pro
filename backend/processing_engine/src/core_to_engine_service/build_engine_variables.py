@@ -36,9 +36,7 @@ def build_engine_variables(
                 day_diff = (s.end_time.date() - s.start_time.date()).days
                 s_end_time = int(
                     (
-                        s.end_time.replace(
-                            year=d.year, month=d.month, day=d.day
-                        )
+                        s.end_time.replace(year=d.year, month=d.month, day=d.day)
                         + timedelta(days=day_diff)
                     ).timestamp()
                     // Constants.NUM_SECONDS_MINUTE

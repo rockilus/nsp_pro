@@ -1,20 +1,26 @@
 from datetime import date, datetime, timedelta
+from typing import Dict, List
 
 import pytest
 from shared.schemas import (
+    Assignment,
+    Attribute,
+    ConstraintBuildAugmented,
     DailyShiftDemand,
+    Dimension,
+    DimEntry,
+    DSDSourceType,
+    Request,
     Schedule,
-    Shift,
-    ShiftType,
-    Worker,
-    Staffing,
-    ShiftLeaveType,
-    ShiftRestType,
     ScheduleSolveStatus,
     ScheduleStatus,
-    DSDSourceType,
+    Shift,
+    ShiftLeaveType,
+    ShiftRestType,
+    ShiftType,
+    Staffing,
+    Worker,
 )
-
 
 # Test data sample definition:
 # Schedule:
@@ -35,9 +41,9 @@ from shared.schemas import (
 
 
 @pytest.fixture
-def sample_data():
+def sample_data() -> Dict:
     schedule = Schedule(
-        id="sch1",
+        id="sch0",
         team_id="t0",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 31),
@@ -231,13 +237,13 @@ def sample_data():
             )
             current_date += timedelta(days=1)
 
-    dimensions = []
-    dim_entries = []
-    attributes = []
-    fixed_assignments = []
-    cbs_augmented = []
-    requests = []
-    wip_assignments = []
+    dimensions: List[Dimension] = []
+    dim_entries: List[DimEntry] = []
+    attributes: List[Attribute] = []
+    fixed_assignments: List[Assignment] = []
+    cbs_augmented: List[ConstraintBuildAugmented] = []
+    requests: List[Request] = []
+    wip_assignments: List[Assignment] = []
 
     return {
         "workers": workers,

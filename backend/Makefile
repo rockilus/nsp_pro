@@ -115,7 +115,8 @@ processing_engine_check:
 	poetry run flake8 src && \
 	poetry run black --check src && \
 	poetry run pylint src && \
-	poetry run mypy src
+	poetry run mypy src && \
+	poetry run pytest
 
 # Run checks in storage_service
 storage_service_check:
