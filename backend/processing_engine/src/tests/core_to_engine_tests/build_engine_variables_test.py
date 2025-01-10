@@ -1,0 +1,245 @@
+from datetime import date, timedelta
+from typing import Dict, List
+
+from shared.schemas import Shift, Worker
+
+from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
+from core_to_engine_service.build_engine_variables import build_engine_variables
+from core_to_engine_service.core_to_engine_inputs import (
+    _build_shift_id_to_duration_dict,
+)
+from engine import Variables as VariablesEngine
+
+# pylint: disable=unused-import
+from tests.test_data import sample_data  # noqa: F401
+
+
+class TestBuildEngineVariables:
+    # pylint: disable=redefined-outer-name, too-many-locals
+    def test_build_engine_variables(self, sample_data: Dict) -> None:  # noqa: F811
+        workers = sample_data["workers"]
+        shifts = sample_data["shifts"]
+        schedule = sample_data["schedule"]
+        fixed_assignments = sample_data["fixed_assignments"]
+
+        # Build necessary inputs
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, fixed_assignments, dates_campaign
+        )
+        shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
+        shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
+
+        # Call the method under test
+        variables = build_engine_variables(
+            workers,
+            worker_ids_to_worker_dates,
+            shifts,
+            shifts_not_deleted,
+            shift_id_to_duration_dict,
+        )
+
+        # Verify the output
+        assert isinstance(variables, VariablesEngine)
+        assert len(variables.assignments) > 0
+        assert len(variables.shift_intervals) > 0
+
+        # Verify that all combinations of worker ids, dates, and shifts are included
+        expected_assignments = [
+            (worker.id, date.isoformat(), shift.id)
+            for worker in workers
+            for date in worker_ids_to_worker_dates[worker.id].dates_campaign
+            for shift in shifts_not_deleted
+        ]
+        assert sorted(variables.assignments) == sorted(expected_assignments)
+
+        # Verify that shift intervals are correctly built
+        for interval in variables.shift_intervals:
+            start_time, duration, end_time, assignment = interval
+            worker_id, date_str, shift_id = assignment
+            shift = next((shift for shift in shifts if shift.id == shift_id), None)
+            assert shift is not None
+            date_obj = date.fromisoformat(date_str)
+            expected_start_time = int(
+                shift.start_time.replace(
+                    year=date_obj.year, month=date_obj.month, day=date_obj.day
+                ).timestamp()
+                // 60
+            )
+            day_diff = (shift.end_time.date() - shift.start_time.date()).days
+            expected_end_time = int(
+                (
+                    shift.end_time.replace(
+                        year=date_obj.year,
+                        month=date_obj.month,
+                        day=date_obj.day,
+                    )
+                    + timedelta(days=day_diff)
+                ).timestamp()
+                // 60
+                - 1
+            )
+            expected_duration = shift_id_to_duration_dict[shift_id]
+            assert start_time == expected_start_time
+            assert end_time == expected_end_time
+            assert duration == expected_duration
+            assert (worker_id, date_str, shift_id) in variables.assignments
+
+    # pylint: disable=redefined-outer-name
+    def test_empty_workers(self, sample_data: Dict) -> None:  # noqa: F811
+        workers: List[Worker] = []
+        shifts = sample_data["shifts"]
+        schedule = sample_data["schedule"]
+        fixed_assignments = sample_data["fixed_assignments"]
+
+        # Build necessary inputs
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, fixed_assignments, dates_campaign
+        )
+        shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
+        shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
+
+        # Call the method under test
+        variables = build_engine_variables(
+            workers,
+            worker_ids_to_worker_dates,
+            shifts,
+            shifts_not_deleted,
+            shift_id_to_duration_dict,
+        )
+
+        # Verify the output
+        assert isinstance(variables, VariablesEngine)
+        assert len(variables.assignments) == 0
+        assert len(variables.shift_intervals) == 0
+
+    # pylint: disable=redefined-outer-name
+    def test_empty_shifts(self, sample_data: Dict) -> None:  # noqa: F811
+        workers = sample_data["workers"]
+        shifts: List[Shift] = []
+        schedule = sample_data["schedule"]
+        fixed_assignments = sample_data["fixed_assignments"]
+
+        # Build necessary inputs
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, fixed_assignments, dates_campaign
+        )
+        shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
+        shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
+
+        # Call the method under test
+        variables = build_engine_variables(
+            workers,
+            worker_ids_to_worker_dates,
+            shifts,
+            shifts_not_deleted,
+            shift_id_to_duration_dict,
+        )
+
+        # Verify the output
+        assert isinstance(variables, VariablesEngine)
+        assert len(variables.assignments) == 0
+        assert len(variables.shift_intervals) == 0
+
+    # pylint: disable=redefined-outer-name
+    def test_worker_with_employment_end_date(
+        self, sample_data: Dict  # noqa: F811
+    ) -> None:
+        workers = sample_data["workers"]
+        workers[0].employment_end_date = date(2025, 1, 15)
+        shifts = sample_data["shifts"]
+        schedule = sample_data["schedule"]
+        fixed_assignments = sample_data["fixed_assignments"]
+
+        # Build necessary inputs
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, fixed_assignments, dates_campaign
+        )
+        shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
+        shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
+
+        # Call the method under test
+        variables = build_engine_variables(
+            workers,
+            worker_ids_to_worker_dates,
+            shifts,
+            shifts_not_deleted,
+            shift_id_to_duration_dict,
+        )
+
+        # Verify the output
+        assert isinstance(variables, VariablesEngine)
+        assert len(variables.assignments) > 0
+        assert len(variables.shift_intervals) > 0
+
+        # Verify that assignments and intervals respect the employment end date
+        for assignment in variables.assignments:
+            worker_id, date_str, _ = assignment
+            assert worker_id != "w0" or date.fromisoformat(date_str) <= date(
+                2025, 1, 15
+            )
+
+        for interval in variables.shift_intervals:
+            _, _, _, assignment = interval
+            worker_id, date_str, _ = assignment
+            assert worker_id != "w0" or date.fromisoformat(date_str) <= date(
+                2025, 1, 15
+            )
+
+    # pylint: disable=redefined-outer-name
+    def test_deleted_worker(self, sample_data: Dict) -> None:  # noqa: F811
+        workers = sample_data["workers"]
+        workers[0].deleted = True
+        shifts = sample_data["shifts"]
+        schedule = sample_data["schedule"]
+        fixed_assignments = sample_data["fixed_assignments"]
+
+        # Build necessary inputs
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, fixed_assignments, dates_campaign
+        )
+        shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
+        shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
+
+        # Call the method under test
+        variables = build_engine_variables(
+            workers,
+            worker_ids_to_worker_dates,
+            shifts,
+            shifts_not_deleted,
+            shift_id_to_duration_dict,
+        )
+
+        # Verify the output
+        assert isinstance(variables, VariablesEngine)
+        assert len(variables.assignments) > 0
+        assert len(variables.shift_intervals) > 0
+
+        # Verify that assignments and intervals do not include the deleted worker
+        for assignment in variables.assignments:
+            worker_id, _, _ = assignment
+            assert worker_id != "w0"
+
+        for interval in variables.shift_intervals:
+            _, _, _, assignment = interval
+            worker_id, _, _ = assignment
+            assert worker_id != "w0"
