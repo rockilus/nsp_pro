@@ -62,7 +62,7 @@ def build_engine_work_loads(
             periods_monthly,
             ws_to_dates,
             shift_duties,
-            [8 for _ in workers_not_deleted],
+            [1000 for _ in workers_not_deleted],
             0,
         ),
     )
