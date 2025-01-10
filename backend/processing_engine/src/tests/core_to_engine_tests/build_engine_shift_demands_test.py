@@ -1,0 +1,239 @@
+from datetime import date, timedelta
+from typing import Dict, List
+
+from shared.schemas import Shift, Worker
+
+from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
+from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
+from engine import ShiftDemand as ShiftDemandEngine
+
+# pylint: disable=unused-import
+from tests.test_data import sample_data  # noqa: F401
+
+
+class TestBuildEngineShiftDemands:
+    # pylint: disable=redefined-outer-name
+    def test_build_engine_shift_demands(self, sample_data: Dict) -> None:  # noqa: F811
+        workers = sample_data["workers"]
+        shifts = sample_data["shifts"]
+        schedule = sample_data["schedule"]
+        daily_shift_demands = sample_data["daily_shift_demands"]
+        fixed_assignments = sample_data["fixed_assignments"]
+
+        # Build necessary inputs
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        workers_not_deleted = [worker for worker in workers if not worker.deleted]
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, fixed_assignments, dates_campaign
+        )
+        shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
+
+        # Call the method under test
+        shift_demands = build_engine_shift_demands(
+            workers_not_deleted,
+            dates_campaign,
+            worker_ids_to_worker_dates,
+            shifts_not_deleted,
+            daily_shift_demands,
+        )
+
+        # Verify the output
+        assert isinstance(shift_demands, list)
+        assert all(isinstance(sd, ShiftDemandEngine) for sd in shift_demands)
+
+    # pylint: disable=redefined-outer-name, R0801
+    def test_empty_workers(self, sample_data: Dict) -> None:  # noqa: F811
+        workers: List[Worker] = []
+        shifts = sample_data["shifts"]
+        schedule = sample_data["schedule"]
+        daily_shift_demands = sample_data["daily_shift_demands"]
+        fixed_assignments = sample_data["fixed_assignments"]
+
+        # Build necessary inputs
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, fixed_assignments, dates_campaign
+        )
+        shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
+
+        # Call the method under test
+        shift_demands = build_engine_shift_demands(
+            workers,
+            dates_campaign,
+            worker_ids_to_worker_dates,
+            shifts_not_deleted,
+            daily_shift_demands,
+        )
+
+        # Verify the output
+        assert isinstance(shift_demands, list)
+        for sd in shift_demands:
+            assert isinstance(sd, ShiftDemandEngine)
+            assert sd.assignments == []
+            assert sd.assignments_specialty == []
+
+    # pylint: disable=redefined-outer-name
+    def test_empty_shifts(self, sample_data: Dict) -> None:  # noqa: F811
+        workers = sample_data["workers"]
+        shifts: List[Shift] = []
+        schedule = sample_data["schedule"]
+        daily_shift_demands = sample_data["daily_shift_demands"]
+        fixed_assignments = sample_data["fixed_assignments"]
+
+        # Build necessary inputs
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        workers_not_deleted = [worker for worker in workers if not worker.deleted]
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, fixed_assignments, dates_campaign
+        )
+
+        # Call the method under test
+        shift_demands = build_engine_shift_demands(
+            workers_not_deleted,
+            dates_campaign,
+            worker_ids_to_worker_dates,
+            shifts,
+            daily_shift_demands,
+        )
+
+        # Verify the output
+        assert isinstance(shift_demands, list)
+        for sd in shift_demands:
+            assert isinstance(sd, ShiftDemandEngine)
+            assert sd.assignments == []
+            assert sd.assignments_specialty == []
+
+    # pylint: disable=redefined-outer-name, too-many-locals
+    def test_shift_demands_assignments(self, sample_data: Dict) -> None:  # noqa: F811
+        workers = sample_data["workers"]
+        shifts = sample_data["shifts"]
+        schedule = sample_data["schedule"]
+        daily_shift_demands = sample_data["daily_shift_demands"]
+        fixed_assignments = sample_data["fixed_assignments"]
+
+        # Build necessary inputs
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        workers_not_deleted = [worker for worker in workers if not worker.deleted]
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, fixed_assignments, dates_campaign
+        )
+        shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
+
+        # Call the method under test
+        shift_demands = build_engine_shift_demands(
+            workers_not_deleted,
+            dates_campaign,
+            worker_ids_to_worker_dates,
+            shifts_not_deleted,
+            daily_shift_demands,
+        )
+
+        # Verify the output
+        assert isinstance(shift_demands, list)
+        for sd in shift_demands:
+            assert isinstance(sd, ShiftDemandEngine)
+            assert len(sd.assignments_specialty) == 0
+            workers_not_deleted_ids = [w.id for w in workers_not_deleted]
+            for w_id, date_str, shift_id in sd.assignments:
+                sd_date = date.fromisoformat(date_str)
+                assert any(
+                    dsd.date == sd_date and dsd.shift_id == shift_id and dsd.count > 0
+                    for dsd in daily_shift_demands
+                )
+                assert w_id in workers_not_deleted_ids
+                dsds_source = [
+                    dsd
+                    for dsd in daily_shift_demands
+                    if dsd.date == sd_date and dsd.shift_id == shift_id
+                ]
+                assert len(dsds_source) > 0
+                shift_ref = next(
+                    (s for s in shifts_not_deleted if s.id == shift_id), None
+                )
+                assert shift_ref is not None
+                total_count = sum(dsd.count for dsd in dsds_source)
+                staffing = sum(
+                    s.staffing for s in shift_ref.staffing if s.specialty_id is None
+                )
+                assert sd.target == total_count * staffing
+
+    # pylint: disable=redefined-outer-name, too-many-locals
+    def test_shift_demands_assignments_specilty(
+        self, sample_data: Dict  # noqa: F811
+    ) -> None:
+        workers = sample_data["workers"]
+        workers[0].specialty_ids = ["spe1"]
+        shifts = sample_data["shifts"]
+        shifts[0].staffing[0].specialty_id = "spe1"
+        schedule = sample_data["schedule"]
+        daily_shift_demands = sample_data["daily_shift_demands"]
+        fixed_assignments = sample_data["fixed_assignments"]
+
+        # Build necessary inputs
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        workers_not_deleted = [worker for worker in workers if not worker.deleted]
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, fixed_assignments, dates_campaign
+        )
+        shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
+
+        # Call the method under test
+        shift_demands = build_engine_shift_demands(
+            workers_not_deleted,
+            dates_campaign,
+            worker_ids_to_worker_dates,
+            shifts_not_deleted,
+            daily_shift_demands,
+        )
+
+        sds_specialty = [sd for sd in shift_demands if sd.assignments_specialty]
+
+        # Verify the output
+        assert isinstance(shift_demands, list)
+        for sd in sds_specialty:
+            assert isinstance(sd, ShiftDemandEngine)
+            assert len(sd.assignments_specialty) > 0
+            w_spe1_id = workers[0].id
+            for (
+                w_id,
+                date_str,
+                shift_id,
+                specialty_id,
+            ) in sd.assignments_specialty:
+                sd_date = date.fromisoformat(date_str)
+                assert any(
+                    dsd.date == sd_date and dsd.shift_id == shift_id and dsd.count > 0
+                    for dsd in daily_shift_demands
+                )
+                assert w_id == w_spe1_id
+                assert specialty_id == "spe1"
+                dsds_source = [
+                    dsd
+                    for dsd in daily_shift_demands
+                    if dsd.date == sd_date and dsd.shift_id == shift_id
+                ]
+                assert len(dsds_source) > 0
+                shift_ref = next(
+                    (s for s in shifts_not_deleted if s.id == shift_id), None
+                )
+                assert shift_ref is not None
+                total_count = sum(dsd.count for dsd in dsds_source)
+                staffing = sum(
+                    s.staffing for s in shift_ref.staffing if s.specialty_id == "spe1"
+                )
+                assert sd.target == total_count * staffing
