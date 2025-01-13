@@ -21,12 +21,13 @@ class Output:
             objective_value = self.model.solver.ObjectiveValue()
             breaches = self.build_constraint_breaches()
             return Outputs(
+                self.model.model,
                 is_solution,
                 assignments,
                 objective_value,  # type: ignore # [CHECK IF OK]
                 breaches,
             )
-        return Outputs(is_solution, [], 0, [])
+        return Outputs(self.model.model, is_solution, [], 0, [])
 
     def build_solution(self) -> List[Assignment]:
         assignments = []
@@ -39,6 +40,14 @@ class Output:
                         variable[2],
                     )
                 )
+
+        for var_spe, bool_var_spe in self.model.assignment_wdss.items():
+            var_gen = self.model.variables[(var_spe[0], var_spe[1], var_spe[2])]
+            if self.model.solver.BooleanValue(
+                bool_var_spe
+            ) and not self.model.solver.BooleanValue(var_gen):
+                print("Spe var implication failed")
+
         return assignments
 
     def build_constraint_breaches(self) -> List[Breach]:

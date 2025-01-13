@@ -76,7 +76,7 @@ class TestBuildEngineShiftDemands:
         for sd in shift_demands:
             assert isinstance(sd, ShiftDemandEngine)
             assert sd.assignments == []
-            assert sd.assignments_specialty == []
+            assert sd.assignments_specialties == []
 
     # pylint: disable=redefined-outer-name
     def test_empty_shifts(self, sample_data: Dict) -> None:  # noqa: F811
@@ -110,7 +110,7 @@ class TestBuildEngineShiftDemands:
         for sd in shift_demands:
             assert isinstance(sd, ShiftDemandEngine)
             assert sd.assignments == []
-            assert sd.assignments_specialty == []
+            assert sd.assignments_specialties == []
 
     # pylint: disable=redefined-outer-name, too-many-locals
     def test_shift_demands_assignments(self, sample_data: Dict) -> None:  # noqa: F811
@@ -144,7 +144,7 @@ class TestBuildEngineShiftDemands:
         assert isinstance(shift_demands, list)
         for sd in shift_demands:
             assert isinstance(sd, ShiftDemandEngine)
-            assert len(sd.assignments_specialty) == 0
+            assert len(sd.assignments_specialties) == 0
             workers_not_deleted_ids = [w.id for w in workers_not_deleted]
             for w_id, date_str, shift_id in sd.assignments:
                 sd_date = date.fromisoformat(date_str)
@@ -201,20 +201,20 @@ class TestBuildEngineShiftDemands:
             daily_shift_demands,
         )
 
-        sds_specialty = [sd for sd in shift_demands if sd.assignments_specialty]
+        sds_specialty = [sd for sd in shift_demands if sd.assignments_specialties]
 
         # Verify the output
         assert isinstance(shift_demands, list)
         for sd in sds_specialty:
             assert isinstance(sd, ShiftDemandEngine)
-            assert len(sd.assignments_specialty) > 0
+            assert len(sd.assignments_specialties) > 0
             w_spe1_id = workers[0].id
             for (
                 w_id,
                 date_str,
                 shift_id,
                 specialty_id,
-            ) in sd.assignments_specialty:
+            ) in sd.assignments_specialties:
                 sd_date = date.fromisoformat(date_str)
                 assert any(
                     dsd.date == sd_date and dsd.shift_id == shift_id and dsd.count > 0
