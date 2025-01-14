@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import date
 from enum import Enum
 from typing import Dict, List, Tuple
@@ -122,6 +122,9 @@ class Variables:
         ]
     ]
 
+    def to_dict(self):
+        return asdict(self)
+
 
 @dataclass
 class WorkTime:
@@ -174,6 +177,12 @@ class Inputs:
     worker_shift_filters: List[Tuple[str, str, str]]
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
+
+    def to_dict(self):
+        out = asdict(self)
+        out["fixed_values"] = {str(k): v for k, v in self.fixed_values.items()}
+        out["sol_hint"] = {str(k): v for k, v in self.sol_hint.items()}
+        return out
 
 
 ##############################

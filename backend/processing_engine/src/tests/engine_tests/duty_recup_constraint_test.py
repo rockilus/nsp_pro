@@ -1,4 +1,3 @@
-import random
 from datetime import timedelta
 from typing import Dict
 
@@ -13,31 +12,18 @@ from tests.test_data import test_data_set
 class TestDutyRecupConstraint:
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set)
-    def test_duty_recup_one_duty_no_specialty(self, sample_data: Dict) -> None:
-        target_random = random.randint(1, 5)
-
+    def test_duty_recup_duty_no_specialty(self, sample_data: Dict) -> None:
         shifts = sample_data["shifts"]
         shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
+        shifts_recup = [s for s in shifts if s.rest_type == ShiftRestType.RECUPERATION]
+        shift_ids_duty = [shift.id for shift in shifts_duty]
+        shift_ids_recup = [shift.id for shift in shifts_recup]
         # print("SAMPLE DATA: ", sample_data)
         print("SHIFTS:", shifts)
-        shift_target = shifts_duty[0]
-        shift_id_target = shift_target.id
-        shift_recup = next(
-            (
-                shift
-                for shift in shifts
-                if shift.rest_type == ShiftRestType.RECUPERATION
-                and shift.recuperation_duty_id == shift_id_target
-            ),
-            None,
-        )
-        assert shift_recup is not None
-        shift_id_recup = shift_recup.id
-        sample_data["shifts"] = [shift_target, shift_recup]
+        sample_data["shifts"] = shifts_duty + shifts_recup
 
         dsds = sample_data["daily_shift_demands"]
-        dsds_duty = [dsd for dsd in dsds if dsd.shift_id == shift_id_target]
-        dsds_duty[0].count = target_random
+        dsds_duty = [dsd for dsd in dsds if dsd.shift_id in shift_ids_duty]
         sample_data["daily_shift_demands"] = dsds_duty
 
         outputs = engine_solve(sample_data)
@@ -50,13 +36,13 @@ class TestDutyRecupConstraint:
 
         shift_ids_assigned = [a.shift_id for a in outputs.assignments]
         assert sorted(set(shift_ids_assigned)) == sorted(
-            set([shift_id_target, shift_id_recup])
+            set(shift_ids_duty + shift_ids_recup)
         )
 
         # Check duty shift assigned
         for d in dates:
             for shift in shifts:
-                if shift.id == shift_id_target:
+                if shift.id in shift_ids_duty:
                     shift_staffing = sum(s.staffing for s in shift.staffing)
                     count_target = sum(
                         dsd.count * shift_staffing
@@ -73,15 +59,20 @@ class TestDutyRecupConstraint:
 
         # Check recup shift assigned
         assignments_duty = [
-            a for a in outputs.assignments if a.shift_id == shift_id_target
+            a for a in outputs.assignments if a.shift_id in shift_ids_duty
         ]
         for a in assignments_duty:
+            shift_recup = next(
+                (s for s in shifts if s.recuperation_duty_id == a.shift_id),
+                None,
+            )
+            assert shift_recup is not None
             assignment_recup = next(
                 (
                     a_recup
                     for a_recup in outputs.assignments
                     if a_recup.worker_id == a.worker_id
-                    and a_recup.shift_id == shift_id_recup
+                    and a_recup.shift_id == shift_recup.id
                     and a_recup.date == a.date
                 ),
                 None,

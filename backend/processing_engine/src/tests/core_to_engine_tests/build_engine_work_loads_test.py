@@ -1,3 +1,4 @@
+import calendar
 import math
 from datetime import date, timedelta
 from typing import Dict, List
@@ -456,6 +457,15 @@ class TestBuildEngineWorkLoads:
                     assert t_max == target_adj_max
 
             for j, month in enumerate(periods_monthly):
+                num_days_in_period = len(month)
+                if num_days_in_period == 0:
+                    continue
+                first_day = month[0]
+                num_days_in_month = calendar.monthrange(
+                    first_day.year, first_day.month
+                )[1]
+                coef_adj = (1 / num_days_in_month) * num_days_in_period
+
                 nb_desired = work_loads.monthly_nb_duties_desired.targets[i][j]
                 nb_max = work_loads.monthly_nb_duties_max.targets[i][j]
                 for k, _ in enumerate(shift_duties * len(month)):
@@ -477,5 +487,7 @@ class TestBuildEngineWorkLoads:
                         None,
                     )
                     assert worker is not None
-                    assert nb_desired == worker.duties_per_month
-                    assert nb_max == 1000
+                    if nb_desired != worker.duties_per_month:
+                        print("stop")
+                    assert nb_desired == math.ceil(worker.duties_per_month * coef_adj)
+                    assert nb_max == math.ceil(1000 * coef_adj)

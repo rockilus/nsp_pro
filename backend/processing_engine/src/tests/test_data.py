@@ -484,8 +484,8 @@ def sample_data_astrid_case() -> Dict:
     schedule = Schedule(
         id="sch0",
         team_id="t0",
-        start_date=date(2025, 1, 1),
-        end_date=date(2025, 1, 31),
+        start_date=date(2025, 1, 13),
+        end_date=date(2025, 2, 16),
         solve_details=None,
         solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
@@ -501,7 +501,7 @@ def sample_data_astrid_case() -> Dict:
             name=f"Worker {i}",
             acronym=f"W{i}",
             acronym_custom=False,
-            employment_start_date=date(2025, 1, 1),
+            employment_start_date=date(2025, 1, 9),
             employment_end_date=None,
             weekly_hours=39,
             weekly_hours_desired=39,
@@ -516,13 +516,13 @@ def sample_data_astrid_case() -> Dict:
     shifts = [
         # Duty shifts
         Shift(
-            id="s0",
+            id="s_d_0",
             team_id="t0",
             name="NG1",
             acronym="D24",
             acronym_custom=False,
-            start_time=datetime(2025, 1, 1, 18, 30),
-            end_time=datetime(2025, 1, 2, 8, 30),
+            start_time=datetime(2025, 1, 9, 18, 30),
+            end_time=datetime(2025, 1, 10, 8, 30),
             staffing=[Staffing(specialty_id=None, staffing=1)],
             color="red",
             shift_type=ShiftType.DUTY,
@@ -532,9 +532,26 @@ def sample_data_astrid_case() -> Dict:
             recuperation_duty_id=None,
             deleted=False,
         ),
+        Shift(
+            id="s_d_1",
+            team_id="t0",
+            name="NG2",
+            acronym="D24",
+            acronym_custom=False,
+            start_time=datetime(2025, 1, 1, 18, 30),
+            end_time=datetime(2025, 1, 2, 0, 0),
+            staffing=[Staffing(specialty_id=None, staffing=1)],
+            color="red",
+            shift_type=ShiftType.DUTY,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=12,
+            recuperation_duty_id=None,
+            deleted=False,
+        ),
         # Rest shifts
         Shift(
-            id="s1",
+            id="s_rd_0",
             team_id="t0",
             name="Recup NG1",
             acronym="R24",
@@ -547,14 +564,31 @@ def sample_data_astrid_case() -> Dict:
             rest_type=ShiftRestType.RECUPERATION,
             leave_type=ShiftLeaveType.NONE,
             recuperation_time=0,
-            recuperation_duty_id="s0",
+            recuperation_duty_id="s_d_0",
+            deleted=False,
+        ),
+        Shift(
+            id="s_rd_1",
+            team_id="t0",
+            name="Recup NG1",
+            acronym="R24",
+            acronym_custom=False,
+            start_time=datetime(2025, 1, 1, 0, 0),
+            end_time=datetime(2025, 1, 2, 12, 0),
+            staffing=[],
+            color="yellow",
+            shift_type=ShiftType.REST,
+            rest_type=ShiftRestType.RECUPERATION,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=0,
+            recuperation_duty_id="s_d_1",
             deleted=False,
         ),
     ]
 
     daily_shift_demands = []
     # Create daily shift demands for every day for shifts s0
-    for shift_id in ["s0"]:
+    for shift_id in ["s_d_0", "s_d_1"]:
         current_date = schedule.start_date
         while current_date <= schedule.end_date:
             daily_shift_demands.append(

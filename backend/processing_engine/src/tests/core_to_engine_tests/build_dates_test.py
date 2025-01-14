@@ -38,6 +38,8 @@ class TestBuildDates:
     @pytest.mark.parametrize("sample_data", test_data_set)
     def test_build_dates_with_fixed_assignments(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
+        date_a_0 = schedule.start_date + timedelta(days=-1)
+        date_a_1 = schedule.start_date + timedelta(days=-2)
         fixed_assignments = [
             Assignment(
                 id="a0",
@@ -45,7 +47,7 @@ class TestBuildDates:
                 schedule_id="sch0",
                 worker_id="w0",
                 shift_id="s0",
-                date=date(2024, 12, 31),
+                date=date_a_0,
                 fixed=True,
             ),
             Assignment(
@@ -54,7 +56,7 @@ class TestBuildDates:
                 schedule_id="sch0",
                 worker_id="w1",
                 shift_id="s1",
-                date=date(2024, 12, 30),
+                date=date_a_1,
                 fixed=True,
             ),
         ]
@@ -62,8 +64,8 @@ class TestBuildDates:
         dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
 
         # Verify the historical dates
-        expected_dates_hist = [date(2024, 12, 30), date(2024, 12, 31)]
-        assert dates_hist == expected_dates_hist
+        expected_dates_hist = [date_a_0, date_a_1]
+        assert sorted(dates_hist) == sorted(expected_dates_hist)
 
         # Verify the campaign dates
         expected_dates_campaign = [

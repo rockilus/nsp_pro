@@ -835,3 +835,34 @@ class TestCoverage:
                 assert (
                     count_actual_spe_2 + nb_worker_q_1_2_for_spe_1 == count_target_spe_2
                 )
+
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_expected_assignments_all(self, sample_data: Dict) -> None:
+        shifts = sample_data["shifts"]
+        dsds = sample_data["daily_shift_demands"]
+
+        outputs = engine_solve(sample_data)
+
+        schedule = sample_data["schedule"]
+        dates = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+
+        for d in dates:
+            for shift in [
+                s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+            ]:
+                shift_staffing = sum(s.staffing for s in shift.staffing)
+                count_target = sum(
+                    dsd.count * shift_staffing
+                    for dsd in dsds
+                    if dsd.date == d and dsd.shift_id == shift.id
+                )
+                count_actual = sum(
+                    1
+                    for a in outputs.assignments
+                    if a.date == d and a.shift_id == shift.id
+                )
+
+                assert count_actual == count_target
