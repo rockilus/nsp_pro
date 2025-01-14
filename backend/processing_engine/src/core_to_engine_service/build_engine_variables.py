@@ -24,6 +24,8 @@ def build_engine_variables(
 
         for d in worker_ids_to_worker_dates[w.id].dates_campaign:
             for s in shifts_not_deleted:
+                if s.recuperation_duty_id == "677fc4dfd56a66f7d7adeb35":
+                    print("stop")
                 assignment_vars.append((w.id, d.isoformat(), s.id))
                 day_diff_start = 0
                 if s.rest_type == ShiftRestType.RECUPERATION:
@@ -42,7 +44,7 @@ def build_engine_variables(
                             + f"shift {s.recuperation_duty_id} is not found."
                         )
                     day_diff_start = (
-                        s.start_time.date() - s_duty.start_time.date()
+                        s_duty.end_time.date() - s_duty.start_time.date()
                     ).days
                 s_duration = shift_id_to_duration_dict[s.id]
                 s_start_time = int(

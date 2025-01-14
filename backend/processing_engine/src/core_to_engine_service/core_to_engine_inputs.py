@@ -161,6 +161,7 @@ def core_to_engine_inputs(
             workers_not_deleted,
             worker_ids_to_worker_dates,
             shifts,
+            daily_shift_demands,
             fixed_assignments,
             requests,
         ),
