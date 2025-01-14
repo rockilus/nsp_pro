@@ -2,18 +2,18 @@ import calendar
 from datetime import date, timedelta
 from typing import Dict, List
 
+import pytest
+
 from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
-
-# pylint: disable=unused-import
-from tests.test_data import sample_data  # noqa: F401
+from tests.test_data import test_data_set
 
 
 class TestBuildPeriods:
-    # pylint: disable=redefined-outer-name
-    def test_build_periods_weekly(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_periods_weekly(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -42,8 +42,8 @@ class TestBuildPeriods:
             current_date = end_of_week + timedelta(days=1)
         assert periods_weekly == expected_periods
 
-    # pylint: disable=redefined-outer-name
-    def test_build_periods_monthly(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_periods_monthly(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -75,10 +75,8 @@ class TestBuildPeriods:
             current_date = end_of_month + timedelta(days=1)
         assert periods_monthly == expected_periods
 
-    # pylint: disable=redefined-outer-name
-    def test_build_periods_weekly_with_hist(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_periods_weekly_with_hist(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -109,10 +107,8 @@ class TestBuildPeriods:
             current_date = end_of_week + timedelta(days=1)
         assert periods_weekly == expected_periods
 
-    # pylint: disable=redefined-outer-name
-    def test_build_periods_monthly_with_hist(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_periods_monthly_with_hist(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         schedule.start_date = date(2025, 1, 3)
         dates_campaign = [
