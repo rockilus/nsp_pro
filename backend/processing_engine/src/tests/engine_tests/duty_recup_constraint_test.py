@@ -2,24 +2,24 @@ import random
 from datetime import timedelta
 from typing import Dict
 
+import pytest
 from shared.schemas import ShiftRestType, ShiftType
 
 from tests.engine_tests.engine_solve import engine_solve
-
-# pylint: disable=unused-import
-from tests.test_data import sample_data  # noqa: F401
+from tests.test_data import test_data_set
 
 
 # pylint: disable=R0801
 class TestDutyRecupConstraint:
-    # pylint: disable=redefined-outer-name, too-many-locals
-    def test_duty_recup_one_duty_no_specialty(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    # pylint: disable=too-many-locals
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_duty_recup_one_duty_no_specialty(self, sample_data: Dict) -> None:
         target_random = random.randint(1, 5)
 
         shifts = sample_data["shifts"]
         shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
+        # print("SAMPLE DATA: ", sample_data)
+        print("SHIFTS:", shifts)
         shift_target = shifts_duty[0]
         shift_id_target = shift_target.id
         shift_recup = next(
@@ -88,10 +88,8 @@ class TestDutyRecupConstraint:
             )
             assert assignment_recup is not None
 
-    # pylint: disable=redefined-outer-name
-    def test_duty_recup_two_duty_no_specialty(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_duty_recup_two_duty_no_specialty(self, sample_data: Dict) -> None:
         shifts = sample_data["shifts"]
         shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
         shift_ids_target = [shift.id for shift in shifts_duty]

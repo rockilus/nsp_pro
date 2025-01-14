@@ -579,6 +579,8 @@ def sample_data_astrid_case() -> Dict:
     requests: List[Request] = []
     wip_assignments: List[Assignment] = []
 
+    print("SHIFTS IN SAMPLE DATA: ", shifts)
+
     return {
         "workers": workers,
         "shifts": shifts,
