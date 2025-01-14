@@ -42,9 +42,7 @@ def build_engine_shift_demands(
                 if specialty_id is None:
                     continue
                 workers_qualified = [
-                    w
-                    for w in workers_not_deleted
-                    if specialty_id in w.specialty_ids
+                    w for w in workers_not_deleted if specialty_id in w.specialty_ids
                 ]
                 assignments_specialty.append(
                     [

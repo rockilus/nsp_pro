@@ -209,31 +209,39 @@ class TestBuildEngineShiftDemands:
             assert isinstance(sd, ShiftDemandEngine)
             assert len(sd.assignments_specialties) > 0
             w_spe1_id = workers[0].id
-            for (
-                w_id,
-                date_str,
-                shift_id,
-                specialty_id,
-            ) in sd.assignments_specialties:
-                sd_date = date.fromisoformat(date_str)
-                assert any(
-                    dsd.date == sd_date and dsd.shift_id == shift_id and dsd.count > 0
-                    for dsd in daily_shift_demands
-                )
-                assert w_id == w_spe1_id
-                assert specialty_id == "spe1"
-                dsds_source = [
-                    dsd
-                    for dsd in daily_shift_demands
-                    if dsd.date == sd_date and dsd.shift_id == shift_id
-                ]
-                assert len(dsds_source) > 0
-                shift_ref = next(
-                    (s for s in shifts_not_deleted if s.id == shift_id), None
-                )
-                assert shift_ref is not None
-                total_count = sum(dsd.count for dsd in dsds_source)
-                staffing = sum(
-                    s.staffing for s in shift_ref.staffing if s.specialty_id == "spe1"
-                )
-                assert sd.target == total_count * staffing
+            for assignments_specialty, target_specialty in zip(
+                sd.assignments_specialties, sd.target_specialties
+            ):
+                for (
+                    w_id,
+                    date_str,
+                    shift_id,
+                    specialty_id,
+                ) in assignments_specialty:
+                    sd_date = date.fromisoformat(date_str)
+                    assert any(
+                        dsd.date == sd_date
+                        and dsd.shift_id == shift_id
+                        and dsd.count > 0
+                        for dsd in daily_shift_demands
+                    )
+                    assert w_id == w_spe1_id
+                    assert specialty_id == "spe1"
+                    dsds_source = [
+                        dsd
+                        for dsd in daily_shift_demands
+                        if dsd.date == sd_date and dsd.shift_id == shift_id
+                    ]
+                    assert len(dsds_source) > 0
+                    shift_ref = next(
+                        (s for s in shifts_not_deleted if s.id == shift_id),
+                        None,
+                    )
+                    assert shift_ref is not None
+                    total_count = sum(dsd.count for dsd in dsds_source)
+                    staffing = sum(
+                        s.staffing
+                        for s in shift_ref.staffing
+                        if s.specialty_id == "spe1"
+                    )
+                    assert target_specialty == total_count * staffing
