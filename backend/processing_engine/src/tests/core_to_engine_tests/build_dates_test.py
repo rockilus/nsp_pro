@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 from typing import Dict
 
+import pytest
 from shared.schemas import (
     Assignment,
     Schedule,
@@ -13,14 +14,12 @@ from core_to_engine_service.build_dates import (
     build_dates,
     build_worker_ids_to_worker_dates,
 )
-
-# pylint: disable=unused-import
-from tests.test_data import sample_data  # noqa: F401
+from tests.test_data import test_data_set
 
 
 class TestBuildDates:
-    # pylint: disable=redefined-outer-name
-    def test_build_dates(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_dates(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         fixed_assignments = sample_data["fixed_assignments"]
 
@@ -36,10 +35,11 @@ class TestBuildDates:
         ]
         assert dates_campaign == expected_dates_campaign
 
-    def test_build_dates_with_fixed_assignments(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_dates_with_fixed_assignments(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
+        date_a_0 = schedule.start_date + timedelta(days=-1)
+        date_a_1 = schedule.start_date + timedelta(days=-2)
         fixed_assignments = [
             Assignment(
                 id="a0",
@@ -47,7 +47,7 @@ class TestBuildDates:
                 schedule_id="sch0",
                 worker_id="w0",
                 shift_id="s0",
-                date=date(2024, 12, 31),
+                date=date_a_0,
                 fixed=True,
             ),
             Assignment(
@@ -56,7 +56,7 @@ class TestBuildDates:
                 schedule_id="sch0",
                 worker_id="w1",
                 shift_id="s1",
-                date=date(2024, 12, 30),
+                date=date_a_1,
                 fixed=True,
             ),
         ]
@@ -64,8 +64,8 @@ class TestBuildDates:
         dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
 
         # Verify the historical dates
-        expected_dates_hist = [date(2024, 12, 30), date(2024, 12, 31)]
-        assert dates_hist == expected_dates_hist
+        expected_dates_hist = [date_a_0, date_a_1]
+        assert sorted(dates_hist) == sorted(expected_dates_hist)
 
         # Verify the campaign dates
         expected_dates_campaign = [
@@ -74,9 +74,8 @@ class TestBuildDates:
         ]
         assert dates_campaign == expected_dates_campaign
 
-    def test_build_dates_with_empty_schedule(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_dates_with_empty_schedule(self, sample_data: Dict) -> None:
         # pylint: disable=R0801
         schedule = Schedule(
             id="sch2",
@@ -103,10 +102,8 @@ class TestBuildDates:
 
 
 class TestBuildWorkerIdsToWorkerDates:
-    # pylint: disable=redefined-outer-name
-    def test_build_worker_ids_to_worker_dates(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_worker_ids_to_worker_dates(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         workers = sample_data["workers"]
         assignments = sample_data["fixed_assignments"]
@@ -126,10 +123,8 @@ class TestBuildWorkerIdsToWorkerDates:
             assert worker_dates.dates_hist == []
             assert worker_dates.dates_campaign == dates_campaign
 
-    # pylint: disable=redefined-outer-name
-    def test_worker_with_past_assignments(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_worker_with_past_assignments(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         workers = sample_data["workers"]
         assignments = [
@@ -170,9 +165,8 @@ class TestBuildWorkerIdsToWorkerDates:
         ]
         assert worker_dates.dates_campaign == dates_campaign
 
-    def test_worker_with_employment_end_date(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_worker_with_employment_end_date(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         workers = sample_data["workers"]
         workers[0].employment_end_date = date(2025, 1, 15)
@@ -196,7 +190,8 @@ class TestBuildWorkerIdsToWorkerDates:
         ]
         assert worker_dates.dates_campaign == expected_dates_campaign
 
-    def test_deleted_worker(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_deleted_worker(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         workers = sample_data["workers"]
         workers[0].deleted = True

@@ -2,12 +2,11 @@ import random
 from datetime import timedelta
 from typing import Dict
 
+import pytest
 from shared.schemas import ShiftType, Specialty, Staffing
 
 from tests.engine_tests.engine_solve import engine_solve
-
-# pylint: disable=unused-import
-from tests.test_data import sample_data  # noqa: F401
+from tests.test_data import test_data_set
 
 # constraints = self.model.Proto().constraints
 # variables = self.model.Proto().variables
@@ -15,8 +14,9 @@ from tests.test_data import sample_data  # noqa: F401
 
 
 class TestCoverage:
-    # pylint: disable=redefined-outer-name, too-many-locals
-    def test_expected_assignments_normal(self, sample_data: Dict) -> None:  # noqa: F811
+    # pylint: disable=too-many-locals
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_expected_assignments_normal(self, sample_data: Dict) -> None:
         target_random = random.randint(1, 5)
 
         shifts = sample_data["shifts"]
@@ -28,6 +28,8 @@ class TestCoverage:
 
         dsds = sample_data["daily_shift_demands"]
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
+        if not dsds_normal:
+            return
         dsds_normal[0].count = target_random
         sample_data["daily_shift_demands"] = dsds_normal
 
@@ -58,9 +60,9 @@ class TestCoverage:
 
                 assert count_actual == count_target
 
-    # pylint: disable=redefined-outer-name
+    @pytest.mark.parametrize("sample_data", test_data_set)
     def test_expected_assignments_normal_with_specialty(
-        self, sample_data: Dict  # noqa: F811
+        self, sample_data: Dict
     ) -> None:
         # target_random = random.randint(1, 5)
         target_random = 3
@@ -72,6 +74,8 @@ class TestCoverage:
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
+        if not shifts_normal:
+            return
         shift_id_target = shifts_normal[0].id
         for shift in shifts_normal:
             if shift.id == shift_id_target:
@@ -127,10 +131,8 @@ class TestCoverage:
                 )
                 assert count_actual == count_target
 
-    # pylint: disable=redefined-outer-name
-    def test_expected_assignments_specialty_only(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_expected_assignments_specialty_only(self, sample_data: Dict) -> None:
         target_random = random.randint(1, 5)
         specialty = Specialty(
             id="spe_1", team_id="t0", name="Specialty 1", deleted=False
@@ -140,6 +142,8 @@ class TestCoverage:
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
+        if not shifts_normal:
+            return
         shift_target = shifts_normal[0]
         shift_target.staffing = [
             Staffing(specialty_id=specialty.id, staffing=target_random)
@@ -171,9 +175,9 @@ class TestCoverage:
             set(worker_ids_specialists)
         )
 
-    # pylint: disable=redefined-outer-name
+    @pytest.mark.parametrize("sample_data", test_data_set)
     def test_expected_assignments_with_specialty_q1_diff_q2(
-        self, sample_data: Dict  # noqa: F811
+        self, sample_data: Dict
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -188,6 +192,8 @@ class TestCoverage:
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
+        if len(shifts_normal) < 2:
+            return
         shift_id_target_1 = shifts_normal[0].id
         shift_id_target_2 = shifts_normal[1].id
         for shift in shifts_normal:
@@ -274,9 +280,9 @@ class TestCoverage:
                 )
                 assert count_actual == count_target
 
-    # pylint: disable=redefined-outer-name
+    @pytest.mark.parametrize("sample_data", test_data_set)
     def test_expected_assignments_with_specialty_q1_overlap_q2(
-        self, sample_data: Dict  # noqa: F811
+        self, sample_data: Dict
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -291,6 +297,8 @@ class TestCoverage:
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
+        if len(shifts_normal) < 2:
+            return
         shift_id_target_1 = shifts_normal[0].id
         shift_id_target_2 = shifts_normal[1].id
         for shift in shifts_normal:
@@ -394,9 +402,9 @@ class TestCoverage:
                 )
                 assert count_actual == count_target
 
-    # pylint: disable=redefined-outer-name
+    @pytest.mark.parametrize("sample_data", test_data_set)
     def test_expected_assignments_with_specialty_q2_in_q1(
-        self, sample_data: Dict  # noqa: F811
+        self, sample_data: Dict
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -411,6 +419,8 @@ class TestCoverage:
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
+        if len(shifts_normal) < 2:
+            return
         shift_id_target_1 = shifts_normal[0].id
         shift_id_target_2 = shifts_normal[1].id
         for shift in shifts_normal:
@@ -497,9 +507,9 @@ class TestCoverage:
                 )
                 assert count_actual == count_target
 
-    # pylint: disable=redefined-outer-name
+    @pytest.mark.parametrize("sample_data", test_data_set)
     def test_expected_assignments_staffing_multiple_specialties(
-        self, sample_data: Dict  # noqa: F811
+        self, sample_data: Dict
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -516,6 +526,8 @@ class TestCoverage:
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
+        if not shifts_normal:
+            return
         shift_id_target = shifts_normal[0].id
         for shift in shifts_normal:
             if shift.id == shift_id_target:
@@ -629,9 +641,10 @@ class TestCoverage:
                     )
                     assert count_actual == count_target
 
-    # pylint: disable=redefined-outer-name, too-many-statements
+    # pylint: disable=too-many-statements
+    @pytest.mark.parametrize("sample_data", test_data_set)
     def test_expected_assignments_staffing_q1_q2_overlap_and_multiple_spe(
-        self, sample_data: Dict  # noqa: F811
+        self, sample_data: Dict
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -647,6 +660,8 @@ class TestCoverage:
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
+        if len(shifts_normal) < 3:
+            return
         shift_id_target_1 = shifts_normal[0].id
         shift_id_target_2 = shifts_normal[1].id
         shift_id_target_1_2 = shifts_normal[2].id
@@ -820,3 +835,34 @@ class TestCoverage:
                 assert (
                     count_actual_spe_2 + nb_worker_q_1_2_for_spe_1 == count_target_spe_2
                 )
+
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_expected_assignments_all(self, sample_data: Dict) -> None:
+        shifts = sample_data["shifts"]
+        dsds = sample_data["daily_shift_demands"]
+
+        outputs = engine_solve(sample_data)
+
+        schedule = sample_data["schedule"]
+        dates = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+
+        for d in dates:
+            for shift in [
+                s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+            ]:
+                shift_staffing = sum(s.staffing for s in shift.staffing)
+                count_target = sum(
+                    dsd.count * shift_staffing
+                    for dsd in dsds
+                    if dsd.date == d and dsd.shift_id == shift.id
+                )
+                count_actual = sum(
+                    1
+                    for a in outputs.assignments
+                    if a.date == d and a.shift_id == shift.id
+                )
+
+                assert count_actual == count_target

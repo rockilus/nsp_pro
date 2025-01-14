@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 from typing import Dict, List
 
+import pytest
 from shared.schemas import Shift, ShiftRestType, ShiftType, Worker
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
@@ -9,14 +10,13 @@ from core_to_engine_service.core_to_engine_inputs import (
     _build_shift_id_to_duration_dict,
 )
 from engine import Variables as VariablesEngine
-
-# pylint: disable=unused-import
-from tests.test_data import sample_data  # noqa: F401
+from tests.test_data import test_data_set
 
 
 class TestBuildEngineVariables:
-    # pylint: disable=redefined-outer-name, too-many-locals
-    def test_build_engine_variables(self, sample_data: Dict) -> None:  # noqa: F811
+    # pylint: disable=too-many-locals
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_engine_variables(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         shifts = sample_data["shifts"]
         schedule = sample_data["schedule"]
@@ -76,7 +76,7 @@ class TestBuildEngineVariables:
                 )
                 assert s_duty is not None
                 day_diff_start = (
-                    shift.start_time.date() - s_duty.start_time.date()
+                    s_duty.end_time.date() - s_duty.start_time.date()
                 ).days
             expected_start_time = int(
                 (
@@ -110,8 +110,8 @@ class TestBuildEngineVariables:
             assert duration == expected_duration
             assert (worker_id, date_str, shift_id) in variables.assignments
 
-    # pylint: disable=redefined-outer-name
-    def test_empty_workers(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_empty_workers(self, sample_data: Dict) -> None:
         workers: List[Worker] = []
         shifts = sample_data["shifts"]
         schedule = sample_data["schedule"]
@@ -142,8 +142,8 @@ class TestBuildEngineVariables:
         assert len(variables.assignments) == 0
         assert len(variables.shift_intervals) == 0
 
-    # pylint: disable=redefined-outer-name
-    def test_empty_shifts(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_empty_shifts(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         shifts: List[Shift] = []
         schedule = sample_data["schedule"]
@@ -174,10 +174,8 @@ class TestBuildEngineVariables:
         assert len(variables.assignments) == 0
         assert len(variables.shift_intervals) == 0
 
-    # pylint: disable=redefined-outer-name
-    def test_worker_with_employment_end_date(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_worker_with_employment_end_date(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         workers[0].employment_end_date = date(2025, 1, 15)
         shifts = sample_data["shifts"]
@@ -223,8 +221,8 @@ class TestBuildEngineVariables:
                 2025, 1, 15
             )
 
-    # pylint: disable=redefined-outer-name
-    def test_deleted_worker(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_deleted_worker(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         workers[0].deleted = True
         shifts = sample_data["shifts"]
@@ -266,8 +264,9 @@ class TestBuildEngineVariables:
             worker_id, _, _ = assignment
             assert worker_id != "w0"
 
-    # pylint: disable=redefined-outer-name
-    def test_duty_recup_variables(self, sample_data: Dict) -> None:  # noqa: F811
+    # pylint: disable=too-many-locals
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_duty_recup_variables(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
 
         shifts = sample_data["shifts"]

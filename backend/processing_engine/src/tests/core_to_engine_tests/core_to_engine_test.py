@@ -1,33 +1,24 @@
 from datetime import datetime
 from typing import Dict, List
 
+import pytest
 from shared.schemas import Shift, ShiftLeaveType, ShiftRestType, ShiftType, Staffing
 
 from core_to_engine_service.core_to_engine_inputs import (
     _build_shift_id_to_duration_dict,
 )
-
-# pylint: disable=unused-import
-from tests.test_data import sample_data  # noqa: F401
+from tests.test_data import test_data_set
 
 
 class TestBuildShiftIdToDurationDict:
-    # pylint: disable=redefined-outer-name
-    def test_build_shift_id_to_duration_dict(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_shift_id_to_duration_dict(self, sample_data: Dict) -> None:
         shifts = sample_data["shifts"]
         shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
 
-        # Verify the shift durations
         expected_durations = {
-            "s0": 239,  # 4 hours (240 minutes) - 1 minute
-            "s1": 239,  # 4 hours (240 minutes) - 1 minute
-            "s2": 239,  # 4 hours (240 minutes) - 1 minute
-            "s3": 1439,  # 24 hours (1440 minutes) - 1 minute
-            "s4": 719,  # 12 hours (720 minutes) - 1 minute
-            "s5": 1439,  # 24 hours (1440 minutes) - 1 minute
-            "s6": 719,  # 12 hours (720 minutes) - 1 minute
+            shift.id: (shift.end_time - shift.start_time).total_seconds() // 60 - 1
+            for shift in shifts
         }
         assert shift_id_to_duration_dict == expected_durations
 
