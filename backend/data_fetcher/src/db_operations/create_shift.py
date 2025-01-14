@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 from shared.database import DatabaseCollections
@@ -22,7 +22,14 @@ def create_duty_recuperation_shifts(
             ),
             None,
         )
-        dr_start_time = shift.end_time
+        dr_start_time = datetime(
+            shift.start_time.year,
+            shift.start_time.month,
+            shift.start_time.day,
+            shift.end_time.hour,
+            shift.end_time.minute,
+            tzinfo=timezone.utc,
+        )
         dr_end_time = dr_start_time + timedelta(hours=shift.recuperation_time)
         if dr_existing:
             if shift.shift_type != ShiftType.DUTY:

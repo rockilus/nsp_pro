@@ -18,22 +18,32 @@ def solve_schedule(schedule_id: str) -> Schedule:
         SolveDetailsStatus.RETRY,
     ]:
         async_result = AsyncResult(schedule.solve_details.task_id, app=celery_app)
+        # test_status = async_result.status
+        # test_task_id = schedule.solve_details.task_id
 
-        string = f"Task {schedule.solve_details.task_id} is {async_result.status}"
-        print(string)
-        if not async_result.ready():
-            if (
-                datetime.now(tz=timezone.utc) - schedule.solve_details.updated_at
-                > EXPIRATION_TIME
-            ):
-                async_result.revoke()
-                # schedule.solve_details.status = SolveDetailsStatus.FAILURE
-                # schedule.solve_details.updated_at = datetime.now(
-                #     tz=timezone.utc
-                # )
-                # schedule = schedule_db.update_schedule(schedule)
-            else:
-                raise ValueError(f"Schedule is already being solved: {string}")
+        try:
+            string = f"Task {schedule.solve_details.task_id} is {async_result.status}"
+            print(string)
+            if not async_result.ready():
+                if (
+                    datetime.now(tz=timezone.utc) - schedule.solve_details.updated_at
+                    > EXPIRATION_TIME
+                ):
+                    async_result.revoke()
+                    # schedule.solve_details.status = SolveDetailsStatus.FAILURE
+                    # schedule.solve_details.updated_at = datetime.now(
+                    #     tz=timezone.utc
+                    # )
+                    # schedule = schedule_db.update_schedule(schedule)
+                else:
+                    raise ValueError(f"Schedule is already being solved: {string}")
+        except Exception as e:
+            print(e)
+            raise ValueError(
+                f"Error with task {schedule.solve_details.task_id} and "
+                + "async_result:",
+                e,
+            ) from e
     task_id = submit_solve_problem_task(schedule)
     schedule.solve_details = SolveDetails(
         task_id=task_id,

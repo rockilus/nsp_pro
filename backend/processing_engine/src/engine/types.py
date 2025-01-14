@@ -13,8 +13,9 @@ from ortools.sat.python import cp_model  # type: ignore
 @dataclass
 class ShiftDemand:
     assignments: List[Tuple[str, str, str]]
-    assignments_specialty: List[Tuple[str, str, str, str]]
+    assignments_specialties: List[List[Tuple[str, str, str, str]]]
     target: int
+    target_specialties: List[int]
 
 
 @dataclass
@@ -204,6 +205,7 @@ class Breach:
 
 @dataclass
 class Outputs:
+    model: cp_model.CpModel
     is_solution: bool
     assignments: List[Assignment]
     objective_value: int
