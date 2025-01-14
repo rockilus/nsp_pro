@@ -2,18 +2,18 @@ import calendar
 from datetime import date, timedelta
 from typing import Dict, List
 
+import pytest
+
 from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
-
-# pylint: disable=unused-import
-from tests.test_data import sample_data  # noqa: F401
+from tests.test_data import test_data_set
 
 
 class TestBuildPeriods:
-    # pylint: disable=redefined-outer-name
-    def test_build_periods_weekly(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_periods_weekly(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -42,8 +42,8 @@ class TestBuildPeriods:
             current_date = end_of_week + timedelta(days=1)
         assert periods_weekly == expected_periods
 
-    # pylint: disable=redefined-outer-name
-    def test_build_periods_monthly(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_periods_monthly(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -75,16 +75,16 @@ class TestBuildPeriods:
             current_date = end_of_month + timedelta(days=1)
         assert periods_monthly == expected_periods
 
-    # pylint: disable=redefined-outer-name
-    def test_build_periods_weekly_with_hist(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_periods_weekly_with_hist(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist = [date(2024, 12, 30), date(2024, 12, 31)]
+        date_hist_1 = schedule.start_date - timedelta(days=1)
+        date_hist_2 = schedule.start_date - timedelta(days=2)
+        dates_hist = [date_hist_1, date_hist_2]
 
         # Call the method under test
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
@@ -96,7 +96,20 @@ class TestBuildPeriods:
 
         # Verify that the periods are correctly built
         expected_periods = []
-        current_date = min(dates_hist + dates_campaign)
+
+        min_date_campaign = min(dates_campaign)
+        current_date = min(dates_campaign)
+        if current_date.weekday() != 0:
+            start_of_week = min_date_campaign - timedelta(
+                days=min_date_campaign.weekday()
+            )
+            d = start_of_week
+            while d <= min_date_campaign:
+                if d in dates_hist:
+                    current_date = d
+                    break
+                d += timedelta(days=1)
+
         while current_date <= schedule.end_date:
             start_of_week = current_date - timedelta(days=current_date.weekday())
             end_of_week = start_of_week + timedelta(days=6)
@@ -107,12 +120,12 @@ class TestBuildPeriods:
             ]
             expected_periods.append(sorted(set(week_dates)))
             current_date = end_of_week + timedelta(days=1)
+        if periods_weekly != expected_periods:
+            print("stop")
         assert periods_weekly == expected_periods
 
-    # pylint: disable=redefined-outer-name
-    def test_build_periods_monthly_with_hist(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_periods_monthly_with_hist(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         schedule.start_date = date(2025, 1, 3)
         dates_campaign = [

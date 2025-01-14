@@ -1,7 +1,9 @@
+import calendar
 import math
 from datetime import date, timedelta
 from typing import Dict, List
 
+import pytest
 from shared.schemas import Shift, ShiftType, Worker
 
 from core_to_engine_service.build_dates import build_ws_ids_to_dates
@@ -14,16 +16,15 @@ from core_to_engine_service.core_to_engine_inputs import (
     _build_shift_id_to_duration_dict,
 )
 from engine import WorkLoads as WorkLoadsEngine
-
-# pylint: disable=unused-import
-from tests.test_data import sample_data  # noqa: F401
+from tests.test_data import test_data_set
 from utils.constants import Constants
 
 
 # pylint: disable=R0801
 class TestBuildEngineWorkLoads:
-    # pylint: disable=redefined-outer-name, too-many-locals
-    def test_build_engine_work_loads(self, sample_data: Dict) -> None:  # noqa: F811
+    # pylint: disable=too-many-locals
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_build_engine_work_loads(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         shifts = sample_data["shifts"]
         schedule = sample_data["schedule"]
@@ -86,8 +87,8 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted
         )
 
-    # pylint: disable=redefined-outer-name
-    def test_empty_workers(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_empty_workers(self, sample_data: Dict) -> None:
         workers: List[Worker] = []
         shifts = sample_data["shifts"]
         schedule = sample_data["schedule"]
@@ -138,8 +139,8 @@ class TestBuildEngineWorkLoads:
         assert len(work_loads.monthly_nb_duties_desired.assignments) == 0
         assert len(work_loads.monthly_nb_duties_max.assignments) == 0
 
-    # pylint: disable=redefined-outer-name
-    def test_empty_shifts(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_empty_shifts(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         shifts: List[Shift] = []
         schedule = sample_data["schedule"]
@@ -202,10 +203,8 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted
         )
 
-    # pylint: disable=redefined-outer-name
-    def test_worker_with_employment_end_date(
-        self, sample_data: Dict  # noqa: F811
-    ) -> None:
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_worker_with_employment_end_date(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         workers[0].employment_end_date = date(2025, 1, 15)
         shifts = sample_data["shifts"]
@@ -284,8 +283,8 @@ class TestBuildEngineWorkLoads:
                 2025, 1, 15
             )
 
-    # pylint: disable=redefined-outer-name
-    def test_deleted_worker(self, sample_data: Dict) -> None:  # noqa: F811
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_deleted_worker(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         workers[0].deleted = True
         shifts = sample_data["shifts"]
@@ -359,8 +358,9 @@ class TestBuildEngineWorkLoads:
                     assert w_id_desired != "w0"
                     assert w_id_max != "w0"
 
-    # pylint: disable=redefined-outer-name, too-many-statements
-    def test_work_loads_content(self, sample_data: Dict) -> None:  # noqa: F811
+    # pylint: disable=too-many-statements
+    @pytest.mark.parametrize("sample_data", test_data_set)
+    def test_work_loads_content(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         shifts = sample_data["shifts"]
         schedule = sample_data["schedule"]
@@ -457,6 +457,15 @@ class TestBuildEngineWorkLoads:
                     assert t_max == target_adj_max
 
             for j, month in enumerate(periods_monthly):
+                num_days_in_period = len(month)
+                if num_days_in_period == 0:
+                    continue
+                first_day = month[0]
+                num_days_in_month = calendar.monthrange(
+                    first_day.year, first_day.month
+                )[1]
+                coef_adj = (1 / num_days_in_month) * num_days_in_period
+
                 nb_desired = work_loads.monthly_nb_duties_desired.targets[i][j]
                 nb_max = work_loads.monthly_nb_duties_max.targets[i][j]
                 for k, _ in enumerate(shift_duties * len(month)):
@@ -478,5 +487,7 @@ class TestBuildEngineWorkLoads:
                         None,
                     )
                     assert worker is not None
-                    assert nb_desired == worker.duties_per_month
-                    assert nb_max == 1000
+                    if nb_desired != worker.duties_per_month:
+                        print("stop")
+                    assert nb_desired == math.ceil(worker.duties_per_month * coef_adj)
+                    assert nb_max == math.ceil(1000 * coef_adj)

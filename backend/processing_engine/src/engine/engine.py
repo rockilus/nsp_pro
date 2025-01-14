@@ -22,6 +22,13 @@ class Engine:
         model = Model(model_config)
         start_time = time.time()
         # model.set_up_model(inputs)
+
+        # Save inputs to a JSON file
+        # inputs_file_path = os.path.join(current_path, "inputs.json")
+        # with open(inputs_file_path, "w", encoding="utf-8") as inputs_file:
+        #     json.dump(inputs.to_dict(), inputs_file, indent=4)
+        # print(f"Inputs saved to {inputs_file_path}")
+
         model.sequential_solve(inputs)
         end_time = time.time()
         print("Time to set up model: ", end_time - start_time)
