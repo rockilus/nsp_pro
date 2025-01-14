@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import Dict, List
 
-from shared.schemas import Shift, Worker
+from shared.schemas import Shift, ShiftRestType, ShiftType, Worker
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_engine_variables import build_engine_variables
@@ -63,13 +63,35 @@ class TestBuildEngineVariables:
             shift = next((shift for shift in shifts if shift.id == shift_id), None)
             assert shift is not None
             date_obj = date.fromisoformat(date_str)
+            day_diff_start = 0
+            if shift.rest_type == ShiftRestType.RECUPERATION:
+                s_duty = next(
+                    (
+                        s
+                        for s in shifts_not_deleted
+                        if s.shift_type == ShiftType.DUTY
+                        and s.id == shift.recuperation_duty_id
+                    ),
+                    None,
+                )
+                assert s_duty is not None
+                day_diff_start = (
+                    shift.start_time.date() - s_duty.start_time.date()
+                ).days
             expected_start_time = int(
-                shift.start_time.replace(
-                    year=date_obj.year, month=date_obj.month, day=date_obj.day
+                (
+                    shift.start_time.replace(
+                        year=date_obj.year,
+                        month=date_obj.month,
+                        day=date_obj.day,
+                    )
+                    + timedelta(days=day_diff_start)
                 ).timestamp()
                 // 60
             )
-            day_diff = (shift.end_time.date() - shift.start_time.date()).days
+            day_diff = (
+                shift.end_time.date() - shift.start_time.date()
+            ).days + day_diff_start
             expected_end_time = int(
                 (
                     shift.end_time.replace(
@@ -243,3 +265,78 @@ class TestBuildEngineVariables:
             _, _, _, assignment = interval
             worker_id, _, _ = assignment
             assert worker_id != "w0"
+
+    # pylint: disable=redefined-outer-name
+    def test_duty_recup_variables(self, sample_data: Dict) -> None:  # noqa: F811
+        workers = sample_data["workers"]
+
+        shifts = sample_data["shifts"]
+        shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
+        shift_target = shifts_duty[0]
+        shift_id_target = shift_target.id
+        shift_recup = next(
+            (
+                shift
+                for shift in shifts
+                if shift.rest_type == ShiftRestType.RECUPERATION
+                and shift.recuperation_duty_id == shift_id_target
+            ),
+            None,
+        )
+        assert shift_recup is not None
+        shift_id_recup = shift_recup.id
+        shifts_test = [shift_target, shift_recup]
+        sample_data["shifts"] = shifts_test
+
+        schedule = sample_data["schedule"]
+        fixed_assignments = sample_data["fixed_assignments"]
+
+        # Build necessary inputs
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, fixed_assignments, dates_campaign
+        )
+        shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
+
+        # Call the method under test
+        variables = build_engine_variables(
+            workers,
+            worker_ids_to_worker_dates,
+            shifts,
+            shifts_test,
+            shift_id_to_duration_dict,
+        )
+
+        # Verify the output
+        assert isinstance(variables, VariablesEngine)
+        assert len(variables.assignments) > 0
+        assert len(variables.shift_intervals) > 0
+
+        # Verify that all combinations of worker ids, dates, and shifts are included
+        expected_assignments = [
+            (worker.id, date.isoformat(), shift.id)
+            for worker in workers
+            for date in worker_ids_to_worker_dates[worker.id].dates_campaign
+            for shift in shifts_test
+        ]
+        assert sorted(variables.assignments) == sorted(expected_assignments)
+
+        # Verify that shift intervals are correctly built
+        for interval in variables.shift_intervals:
+            _, _, end_time, assignment = interval
+            worker_id, date_str, shift_id = assignment
+            if shift_id == shift_id_target:
+                vi_recup = next(
+                    (
+                        vi
+                        for vi in variables.shift_intervals
+                        if vi[3] == (worker_id, date_str, shift_id_recup)
+                    ),
+                    None,
+                )
+                assert vi_recup is not None
+                start_time_recup, _, _, _ = vi_recup
+                assert start_time_recup == end_time + 1
