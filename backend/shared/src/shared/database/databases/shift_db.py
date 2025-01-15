@@ -123,6 +123,15 @@ class ShiftDB:
             handle_get_document_error(e)
         return doc_to_core_shift(shift)
 
+    def get_shifts_by_ids(self, shift_ids: List[str]) -> List[Shift]:
+        try:
+            # pylint: disable=no-member
+            shifts = ShiftDocument.objects(id__in=shift_ids)  # type: ignore
+        except Exception as e:
+            log_info("Failed to get shifts by ids from database")
+            handle_get_document_error(e)
+        return [doc_to_core_shift(s) for s in list(shifts)]
+
     def update_shift(self, shift: Shift) -> Shift:
         s_doc = core_to_doc_shift(shift)
         try:
