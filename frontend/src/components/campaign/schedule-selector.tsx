@@ -7,6 +7,7 @@ import Chip from "@mui/material/Chip";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import useStatusLabel from "../data-display/get-status-label";
+import WorkTimeTable from "./work-time-table";
 // Styles
 import "./schedule-selector.css";
 import "../../styles/text-styles.css";
@@ -47,72 +48,81 @@ export default function ScheduleSelector({
   return (
     <div className="campaign-info-container">
       <span className="title">{t("campaign")}</span>
-      <div className="campaign-info">
-        <div className="campaign-info-row">
-          <div className="row-label-container">
-            <span className="row-label">{t("start")}</span>
+      <div className="campaign-and-work-time">
+        <div className="campaign-info">
+          <div className="campaign-info-row">
+            <div className="row-label-container">
+              <span className="row-label">{t("start")}</span>
+            </div>
+            <div className="row-value-container">
+              {
+                <DatePicker
+                  className="custom-date-picker"
+                  minDate={minDate}
+                  value={scheduleCampaign.startDate}
+                  onChange={(newValue) => {
+                    if (!newValue) return;
+                    handleUpdateSchedule({
+                      ...scheduleCampaign,
+                      startDate: dayjs.utc(newValue),
+                      endDate: newValue.isAfter(scheduleCampaign.endDate)
+                        ? newValue
+                        : scheduleCampaign.endDate,
+                    });
+                  }}
+                />
+              }
+            </div>
           </div>
-          <div className="row-value-container">
-            {
-              <DatePicker
-                className="custom-date-picker"
-                minDate={minDate}
-                value={scheduleCampaign.startDate}
-                onChange={(newValue) => {
-                  if (!newValue) return;
-                  handleUpdateSchedule({
-                    ...scheduleCampaign,
-                    startDate: dayjs.utc(newValue),
-                    endDate: newValue.isAfter(scheduleCampaign.endDate)
-                      ? newValue
-                      : scheduleCampaign.endDate,
-                  });
-                }}
-              />
-            }
+          <div className="campaign-info-row">
+            <div className="row-label-container">
+              <span className="row-label">{t("end")}</span>
+            </div>
+            <div className="row-value-container">
+              {
+                <DatePicker
+                  className="custom-date-picker"
+                  minDate={scheduleCampaign.startDate}
+                  value={scheduleCampaign.endDate}
+                  onChange={(newValue) => {
+                    if (!newValue) return;
+                    handleUpdateSchedule({
+                      ...scheduleCampaign,
+                      endDate: dayjs.utc(newValue),
+                    });
+                  }}
+                />
+              }
+            </div>
+          </div>
+          <div className="campaign-info-row">
+            <div className="row-label-container">
+              <span className="row-label">{t("status")}</span>
+            </div>
+            <div className="row-value-container">
+              {
+                <Chip
+                  className="status-chip"
+                  label={getStatusLabel(scheduleCampaign.solveStatus)}
+                  color={
+                    (SolveStatusColors[scheduleCampaign.solveStatus] as
+                      | "default"
+                      | "success"
+                      | "error"
+                      | "warning") || "default"
+                  }
+                />
+              }
+            </div>
           </div>
         </div>
-        <div className="campaign-info-row">
-          <div className="row-label-container">
-            <span className="row-label">{t("end")}</span>
-          </div>
-          <div className="row-value-container">
-            {
-              <DatePicker
-                className="custom-date-picker"
-                minDate={scheduleCampaign.startDate}
-                value={scheduleCampaign.endDate}
-                onChange={(newValue) => {
-                  if (!newValue) return;
-                  handleUpdateSchedule({
-                    ...scheduleCampaign,
-                    endDate: dayjs.utc(newValue),
-                  });
-                }}
-              />
-            }
-          </div>
-        </div>
-        <div className="campaign-info-row">
-          <div className="row-label-container">
-            <span className="row-label">{t("status")}</span>
-          </div>
-          <div className="row-value-container">
-            {
-              <Chip
-                className="status-chip"
-                label={getStatusLabel(scheduleCampaign.solveStatus)}
-                color={
-                  (SolveStatusColors[scheduleCampaign.solveStatus] as
-                    | "default"
-                    | "success"
-                    | "error"
-                    | "warning") || "default"
-                }
-              />
-            }
-          </div>
-        </div>
+        <WorkTimeTable
+          data={{
+            duties: { h: 150, count: 10 },
+            other: { h: 120, count: 20 },
+            workers: { h: 270, count: 30 },
+          }}
+        />
       </div>
     </div>
   );

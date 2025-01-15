@@ -5,6 +5,12 @@
   width: 100%;
 }
 
+.campaign-and-work-time {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
 .campaign-info {
   display: flex;
   flex-direction: column;

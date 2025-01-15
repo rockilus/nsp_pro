@@ -1,0 +1,47 @@
+.work-time-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.column-header {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #3c4043;
+  border: 1px solid #ddd;
+}
+
+.column-subheader {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #3c4043;
+  border: 1px solid #ddd;
+}
+
+.row-header {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #3c4043;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.cell-content {
+  font-size: 0.875rem;
+  color: #3c4043;
+  border: 1px solid #ddd;
+}
+
+.work-time-table td {
+  /* border: 1px solid #ddd; */
+  padding: 8px;
+  text-align: center;
+}
+
+.work-time-table .light-red {
+  background-color: #ffcccc;
+}
+
+.column-separator {
+  border-top: none;
+  border-bottom: none;
+}
