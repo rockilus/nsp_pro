@@ -48,7 +48,11 @@ export default function WorkerRowHeaderCell({
     const workerTotalWorkTimeActual = assignmentsWorker.reduce(
       (acc, assignment) => {
         const shift = shiftMap[assignment.shiftId];
-        if (shift) {
+        if (
+          shift &&
+          (shift.shiftType === ShiftType.NORMAL ||
+            shift.shiftType === ShiftType.DUTY)
+        ) {
           const duration = shift.endTime.diff(shift.startTime, "hour", true);
           return acc + duration;
         }

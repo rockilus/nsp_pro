@@ -2,6 +2,8 @@
 
 // Components
 import UserProfileTab from "../../../../components/user-profile/user-profile-tab";
+// Styles
+import "../../../../styles/page.css";
 
 export default function Page({
   params: { lng },
@@ -10,5 +12,9 @@ export default function Page({
     lng: string;
   };
 }) {
-  return <UserProfileTab lng={lng} />;
+  return (
+    <div className="page-layout">
+      <UserProfileTab lng={lng} />
+    </div>
+  );
 }

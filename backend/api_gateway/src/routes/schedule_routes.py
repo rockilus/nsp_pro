@@ -18,6 +18,7 @@ from shared.schemas import (
     Shift,
     SolveDetails,
     SolveDetailsStatus,
+    WorkTimeTable,
 )
 from shared.schemas.errors import handle_create_schema_object_error
 
@@ -38,15 +39,16 @@ from routes.api_model import (
     ShiftMessage,
     SolutionMessage,
     SolveDetailsMessage,
+    WorkTimeTableMessage,
 )
 from routes.assignment_routes import core_to_msg_assignment
 from routes.breach_routes import core_to_msg_breach
 from routes.request_routes import core_to_msg_request_augmented
 from routes.shift_routes import core_to_msg_shift_and_attributes
 from scripts.setup_database import assignment_db, breach_db, schedule_db
+from services.schedule_services import build_worktime_data, get_schedule_campaign
 from services.schedule_services import solve_schedule as solve_schedule_service
 from services.schedule_services import validate_schedule as validate_schedule_service
-from services.schedule_services.get_schedule_wip import get_schedule_campaign
 from utils import event_manager
 
 router = APIRouter()
@@ -89,6 +91,27 @@ async def get_schedules(
         response = [core_to_msg_schedule(s) for s in schedules]
     except Exception as e:
         log_info("Failed to get schedules")
+        handle_routes_errors(e)
+    return response
+
+
+@router.get("/schedules/{schedule_id}/work-time-table/teams/{team_id}")
+async def get_work_time_table(
+    schedule_id: str,
+    team_id: str,
+    session: SessionContainerType = Depends(authn_verify_session()),
+) -> WorkTimeTableMessage:
+    try:
+        if not await authz_check(
+            session.get_user_id(), "read-schedules", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to read a work time table",
+            )
+        work_time_table = build_worktime_data(schedule_id)
+        response = core_to_msd_work_time_table(work_time_table)
+    except Exception as e:
+        log_info("Failed to get work time table")
         handle_routes_errors(e)
     return response
 
@@ -301,6 +324,22 @@ def core_to_msg_solution(
         log_info("Failed to convert Solution to SolutionMessage")
         handle_message_errors(e)
     return s_msg
+
+
+def core_to_msd_work_time_table(wtt: WorkTimeTable) -> WorkTimeTableMessage:
+    try:
+        data = asdict(wtt)
+    except Exception as e:
+        log_info("Failed to convert WorkTimeTable to dictionary")
+        raise MessageTypeError(str(e)) from e
+    as_dict = humps.camelize(data)
+    validator = TypeAdapter(WorkTimeTableMessage)
+    try:
+        wtt_msg = validator.validate_python(as_dict)
+    except Exception as e:
+        log_info("Failed to convert WorkTimeTable to WorkTimeTableMessage")
+        handle_message_errors(e)
+    return wtt_msg
 
 
 # message to core

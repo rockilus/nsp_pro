@@ -1,5 +1,5 @@
 # pylint: disable=R0801
-from shared.schemas import ShiftLeaveType, ShiftRestType
+from shared.schemas import ShiftLeaveType, ShiftRestType, ShiftType
 
 from scripts.setup_database import (
     breach_db,
@@ -22,6 +22,8 @@ def delete_shift(shift_id: str) -> None:
     shift_demand_db.delete_shift_demands_by_shift_id(shift_id)
     daily_shift_demand_db.delete_daily_shift_demands_by_shift_id(shift_id)
     shift_db.logical_delete_shift(shift_id)
+    if shift.shift_type == ShiftType.DUTY:
+        shift_db.logical_delete_shift_recup(shift_id)
     # delete_shift_from_objective_breach(shift_id)
     # assignment_db.delete_assignments_by_shift_id(shift_id)
     # request_db.delete_requests_by_shift_id(shift_id)

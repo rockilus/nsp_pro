@@ -94,7 +94,7 @@ export default function ShiftCell({
         }
       >
         <span className={`worker-name-cell ${assignmentFixed ? "fix" : ""}`}>
-          {worker.name}
+          {worker.acronym}
         </span>
       </div>
     );

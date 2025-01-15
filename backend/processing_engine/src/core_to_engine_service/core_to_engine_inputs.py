@@ -11,6 +11,7 @@ from shared.schemas import (
     Request,
     Schedule,
     Shift,
+    ShiftRestType,
     ShiftType,
     Worker,
 )
@@ -64,8 +65,16 @@ def core_to_engine_inputs(
     )
 
     # Shifts
-    shifts_not_deleted = [s for s in shifts if not s.deleted]
-    shift_not_deleted_ids = [s.id for s in shifts if not s.deleted]
+    shifts_not_deleted = [
+        s
+        for s in shifts
+        if not s.deleted
+        and (
+            s.rest_type != ShiftRestType.RECUPERATION
+            or any(d.id == s.recuperation_duty_id and not d.deleted for d in shifts)
+        )
+    ]
+    shift_not_deleted_ids = [s.id for s in shifts_not_deleted]
     shifts_work = [
         s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
     ]

@@ -94,7 +94,7 @@ export default function WorkerCell({
         }
       >
         <span className={`shift-name-cell ${assignmentFixed ? "fix" : ""}`}>
-          {shift.name}
+          {shift.acronym}
         </span>
         <div className="shift-times-container">
           <span className="shift-times-cell">
