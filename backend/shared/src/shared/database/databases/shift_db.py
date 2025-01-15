@@ -186,6 +186,20 @@ class ShiftDB:
             handle_save_document_error(e)
         return doc_to_core_shift(s_doc)
 
+    def logical_delete_shift_recup(self, shift_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            s_docs = ShiftDocument.objects(recuperation_duty=shift_id)  # type: ignore
+        except Exception as e:
+            log_info("Failed to get shift by id to logical delete from database")
+            handle_get_document_error(e)
+        try:
+            for s_doc in s_docs:
+                s_doc.update(set__deleted=True)
+        except Exception as e:
+            log_info("Failed to logical delete shift from database")
+            handle_save_document_error(e)
+
 
 # Mappers
 # core to document
