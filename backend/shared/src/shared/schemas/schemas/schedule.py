@@ -200,6 +200,20 @@ class Schedule:
         )
 
 
+@dataclass
+class WorkTimeTableData:
+    hours: int
+    count: int
+
+
+@dataclass
+class WorkTimeTable:
+    duties: WorkTimeTableData
+    others: WorkTimeTableData
+    workers: WorkTimeTableData
+    nb_weeks: float
+
+
 # @dataclass
 # class Worker:
 #     id: str

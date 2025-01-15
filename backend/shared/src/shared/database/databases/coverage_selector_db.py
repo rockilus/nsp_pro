@@ -94,6 +94,22 @@ class CoverageSelectorDB:
             log_info("Failed to delete coverage selector from database")
             handle_delete_document_error(e)
 
+    def delete_coverage_selectors_by_coverage_id(self, coverage_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            cov_selects = CoverageSelectorDocument.objects.filter(  # type: ignore
+                coverage=coverage_id
+            )
+        except Exception as e:
+            log_info("Failed to get coverage selectors by coverage id to delete")
+            handle_get_document_error(e)
+        for cs in list(cov_selects):
+            try:
+                cs.delete()
+            except Exception as e:
+                log_info("Failed to delete coverage selector from database")
+                handle_delete_document_error(e)
+
 
 # Mappers
 # core to document

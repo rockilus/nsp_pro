@@ -143,3 +143,15 @@ export type ExportOptionsT = {
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
 };
+
+export type WorkTimeTableDataT = {
+  hours: number;
+  count: number;
+};
+
+export type WorkTimeTableT = {
+  duties: WorkTimeTableDataT;
+  others: WorkTimeTableDataT;
+  workers: WorkTimeTableDataT;
+  nbWeeks: number;
+};

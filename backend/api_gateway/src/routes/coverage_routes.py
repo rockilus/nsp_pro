@@ -17,7 +17,8 @@ from errors import (
 from integrations.authentication import SessionContainerType, authn_verify_session
 from integrations.authorization import authz_check
 from routes.api_model import CoverageMessage
-from scripts.setup_database import coverage_db, shift_demand_db
+from scripts.setup_database import coverage_db
+from services.coverage_services import delete_coverage as delete_coverage_service
 
 router = APIRouter()
 
@@ -92,8 +93,7 @@ async def delete_coverage(
             session.get_user_id(), "delete-coverage", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to delete a coverage")
-        shift_demand_db.delete_shift_demands_by_coverage_id(coverage_id)
-        coverage_db.delete_coverage(coverage_id)
+        delete_coverage_service(coverage_id)
     except Exception as e:
         log_info("Failed to delete coverage")
         handle_routes_errors(e)

@@ -54,6 +54,8 @@ from shared.schemas.schemas.schedule import (
     SolveDetails,
     SolveDetailsStatus,
     Variable,
+    WorkTimeTable,
+    WorkTimeTableData,
 )
 from shared.schemas.schemas.shift import (
     Shift,
@@ -121,6 +123,8 @@ __all__ = [
     "ScheduleStatus",
     "SolveDetails",
     "Variable",
+    "WorkTimeTable",
+    "WorkTimeTableData",
     "Shift",
     "ShiftLeaveType",
     "ShiftRestType",

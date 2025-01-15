@@ -7,6 +7,8 @@ import { useTeamStore } from "../../../../providers/team-store-provider";
 import { getSelectedTeamId } from "../../../lib/team";
 // Components
 import CoverageTab from "../../../../components/coverages/coverage-tab";
+// Styles
+import "../../../../styles/page.css";
 
 export default function Page({
   params: { lng },
@@ -29,5 +31,9 @@ export default function Page({
     fetchTeamId();
   }, [selectedTeamId, setSelectedTeamId]);
 
-  return <CoverageTab lng={lng} selectedTeamId={selectedTeamId} />;
+  return (
+    <div className="page-layout">
+      <CoverageTab lng={lng} selectedTeamId={selectedTeamId} />
+    </div>
+  );
 }

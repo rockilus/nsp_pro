@@ -21,6 +21,8 @@ import {
   ExportOptionsT,
   SolveDetailsT,
   SolveDetailsStatus,
+  WorkTimeTableDataT,
+  WorkTimeTableT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import { StatsOptionsT } from "../../types/stats";
@@ -169,6 +171,33 @@ export async function getSchedules(teamId: string) {
   } catch (error) {
     console.error("Failed to fetch schedule:", error);
     throw new Error("Failed to fetch schedule, please try again later");
+  }
+}
+
+export async function getWorkTimeTable(scheduleId: string, teamId: string) {
+  noStore();
+  const options: RequestInit = {
+    method: "GET",
+    credentials: "include" as RequestCredentials,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const response = await fetch(
+      `${apiUrlSchedule}/${scheduleId}/work-time-table/teams/${teamId}`,
+      options
+    );
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        "Failed to fetch work time table: " + responseData.detail
+      );
+    }
+    return responseData as WorkTimeTableT;
+  } catch (error) {
+    console.error("Failed to fetch work time table:", error);
+    throw new Error("Failed to fetch work time table, please try again later");
   }
 }
 

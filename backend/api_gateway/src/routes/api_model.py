@@ -255,6 +255,18 @@ class SolutionMessage(BaseModel):
     shiftsRecupNew: List[ShiftMessage]
 
 
+class WorkTimeTableDataMessage(BaseModel):
+    hours: int
+    count: int
+
+
+class WorkTimeTableMessage(BaseModel):
+    duties: WorkTimeTableDataMessage
+    others: WorkTimeTableDataMessage
+    workers: WorkTimeTableDataMessage
+    nbWeeks: float
+
+
 # Stats
 class StatsHeaderMessage(BaseModel):
     id: str

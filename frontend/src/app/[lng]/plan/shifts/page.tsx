@@ -7,6 +7,8 @@ import { useTeamStore } from "../../../../providers/team-store-provider";
 import { getSelectedTeamId } from "../../../lib/team";
 // Components
 import ShiftTab from "../../../../components/shifts/shift-tab";
+// Styles
+import "../../../../styles/page.css";
 
 export default function Page({
   params: { lng },
@@ -29,5 +31,9 @@ export default function Page({
     fetchTeamId();
   }, [selectedTeamId, setSelectedTeamId]);
 
-  return <ShiftTab lng={lng} selectedTeamId={selectedTeamId} />;
+  return (
+    <div className="page-layout">
+      <ShiftTab lng={lng} selectedTeamId={selectedTeamId} />
+    </div>
+  );
 }

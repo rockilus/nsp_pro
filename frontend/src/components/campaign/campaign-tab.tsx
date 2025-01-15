@@ -15,13 +15,17 @@ import {
   updateCoverageSelector,
   deleteCoverageSelector,
 } from "../../app/lib/campaign";
-import { addSchedule, updateSchedule } from "../../app/lib/schedule";
+import {
+  addSchedule,
+  updateSchedule,
+  getWorkTimeTable,
+} from "../../app/lib/schedule";
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
 import { CoverageSelectorT } from "../../types/campaign";
 import { CoverageT } from "../../types/coverage";
-import { ScheduleT } from "../../types/schedule";
+import { ScheduleT, WorkTimeTableT } from "../../types/schedule";
 import { ConstraintT } from "../../types/constraint";
 
 export default function CampaignTab({
@@ -43,6 +47,9 @@ export default function CampaignTab({
   const [coverageSelectors, setCoverageSelectors] = useState<
     CoverageSelectorT[]
   >([]);
+  const [workTimeTable, setWorkTimeTable] = useState<WorkTimeTableT | null>(
+    null
+  );
 
   //////////////////////////
   // Schedule Actions
@@ -54,11 +61,21 @@ export default function CampaignTab({
     }
     const newSchedule = await addSchedule(selectedTeamId);
     setScheduleCampaign(newSchedule);
+    const newWorkTimeTable = await getWorkTimeTable(
+      newSchedule.id,
+      selectedTeamId
+    );
+    setWorkTimeTable(newWorkTimeTable);
   };
 
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
     const newSchedule = await updateSchedule(schedule);
     setScheduleCampaign(newSchedule);
+    const newWorkTimeTable = await getWorkTimeTable(
+      newSchedule.id,
+      newSchedule.teamId
+    );
+    setWorkTimeTable(newWorkTimeTable);
   };
 
   //////////////////////////
@@ -76,6 +93,11 @@ export default function CampaignTab({
       selectedTeamId
     );
     setCoverageSelectors([...coverageSelectors, newCoverageSelector]);
+    const newWorkTimeTable = await getWorkTimeTable(
+      newCoverageSelector.scheduleId,
+      selectedTeamId
+    );
+    setWorkTimeTable(newWorkTimeTable);
   };
 
   const handleUpdateCoverageSelector = async (
@@ -95,6 +117,11 @@ export default function CampaignTab({
           : coverageSelector
       )
     );
+    const newWorkTimeTable = await getWorkTimeTable(
+      newCoverageSelector.scheduleId,
+      selectedTeamId
+    );
+    setWorkTimeTable(newWorkTimeTable);
   };
 
   const handleDeleteCoverageSelector = async (coverageSelectorId: string) => {
@@ -107,6 +134,13 @@ export default function CampaignTab({
         (coverageSelector) => coverageSelector.id !== coverageSelectorId
       )
     );
+    if (scheduleCampaign) {
+      const newWorkTimeTable = await getWorkTimeTable(
+        scheduleCampaign.id,
+        selectedTeamId
+      );
+      setWorkTimeTable(newWorkTimeTable);
+    }
   };
 
   useEffect(() => {
@@ -137,9 +171,21 @@ export default function CampaignTab({
       }
       setIsLoading(false);
     };
-
     fetchCampaignTabData();
   }, [selectedTeamId]);
+
+  useEffect(() => {
+    if (scheduleCampaign && selectedTeamId && !workTimeTable) {
+      const fetchWorkTimeTable = async () => {
+        const newWorkTimeTable = await getWorkTimeTable(
+          scheduleCampaign.id,
+          selectedTeamId
+        );
+        setWorkTimeTable(newWorkTimeTable);
+      };
+      fetchWorkTimeTable();
+    }
+  }, [scheduleCampaign, selectedTeamId, workTimeTable]);
 
   return (
     <div className="tab-container">
@@ -151,6 +197,7 @@ export default function CampaignTab({
             lng={lng}
             scheduleCampaign={scheduleCampaign}
             schedulesValidated={schedulesValidated}
+            workTimeTable={workTimeTable}
             handleUpdateSchedule={handleUpdateSchedule}
           />
           <div className="divider" />

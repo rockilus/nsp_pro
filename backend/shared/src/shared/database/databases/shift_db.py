@@ -123,6 +123,15 @@ class ShiftDB:
             handle_get_document_error(e)
         return doc_to_core_shift(shift)
 
+    def get_shifts_by_ids(self, shift_ids: List[str]) -> List[Shift]:
+        try:
+            # pylint: disable=no-member
+            shifts = ShiftDocument.objects(id__in=shift_ids)  # type: ignore
+        except Exception as e:
+            log_info("Failed to get shifts by ids from database")
+            handle_get_document_error(e)
+        return [doc_to_core_shift(s) for s in list(shifts)]
+
     def update_shift(self, shift: Shift) -> Shift:
         s_doc = core_to_doc_shift(shift)
         try:
@@ -176,6 +185,20 @@ class ShiftDB:
             log_info("Failed to logical delete shift from database")
             handle_save_document_error(e)
         return doc_to_core_shift(s_doc)
+
+    def logical_delete_shift_recup(self, shift_id: str) -> None:
+        try:
+            # pylint: disable=no-member
+            s_docs = ShiftDocument.objects(recuperation_duty=shift_id)  # type: ignore
+        except Exception as e:
+            log_info("Failed to get shift by id to logical delete from database")
+            handle_get_document_error(e)
+        try:
+            for s_doc in s_docs:
+                s_doc.update(set__deleted=True)
+        except Exception as e:
+            log_info("Failed to logical delete shift from database")
+            handle_save_document_error(e)
 
 
 # Mappers
