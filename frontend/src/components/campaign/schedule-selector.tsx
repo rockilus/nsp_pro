@@ -12,7 +12,7 @@ import WorkTimeTable from "./work-time-table";
 import "./schedule-selector.css";
 import "../../styles/text-styles.css";
 // Types
-import { ScheduleT } from "../../types/schedule";
+import { ScheduleT, WorkTimeTableT } from "../../types/schedule";
 //Constants
 import { SolveStatusColors } from "../../constants/constants";
 
@@ -22,11 +22,13 @@ export default function ScheduleSelector({
   lng,
   scheduleCampaign,
   schedulesValidated,
+  workTimeTable,
   handleUpdateSchedule,
 }: {
   lng: string;
   scheduleCampaign: ScheduleT;
   schedulesValidated: ScheduleT[];
+  workTimeTable: WorkTimeTableT | null;
   handleUpdateSchedule: (schedule: ScheduleT) => void;
 }) {
   const { t } = useTranslation(lng, "campaign-page");
@@ -116,13 +118,7 @@ export default function ScheduleSelector({
             </div>
           </div>
         </div>
-        <WorkTimeTable
-          data={{
-            duties: { h: 150, count: 10 },
-            other: { h: 120, count: 20 },
-            workers: { h: 270, count: 30 },
-          }}
-        />
+        {workTimeTable && <WorkTimeTable data={workTimeTable} />}
       </div>
     </div>
   );

@@ -211,6 +211,7 @@ class WorkTimeTable:
     duties: WorkTimeTableData
     others: WorkTimeTableData
     workers: WorkTimeTableData
+    nb_weeks: float
 
 
 # @dataclass

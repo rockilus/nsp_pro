@@ -264,6 +264,7 @@ class WorkTimeTableMessage(BaseModel):
     duties: WorkTimeTableDataMessage
     others: WorkTimeTableDataMessage
     workers: WorkTimeTableDataMessage
+    nbWeeks: float
 
 
 # Stats

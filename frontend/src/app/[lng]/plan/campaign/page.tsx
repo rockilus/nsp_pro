@@ -12,6 +12,8 @@ import { useTeamStore } from "../../../../providers/team-store-provider";
 import { getSelectedTeamId } from "../../../lib/team";
 // Components
 import CampaignTab from "../../../../components/campaign/campaign-tab";
+// Styles
+import "../../../../styles/page.css";
 
 export default function Page({
   params: { lng },
@@ -35,11 +37,13 @@ export default function Page({
   }, [selectedTeamId, setSelectedTeamId]);
 
   return (
-    <LocalizationProvider
-      dateAdapter={AdapterDayjs}
-      adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
-    >
-      <CampaignTab lng={lng} selectedTeamId={selectedTeamId} />
-    </LocalizationProvider>
+    <div className="page-layout">
+      <LocalizationProvider
+        dateAdapter={AdapterDayjs}
+        adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
+      >
+        <CampaignTab lng={lng} selectedTeamId={selectedTeamId} />
+      </LocalizationProvider>
+    </div>
   );
 }

@@ -153,4 +153,5 @@ export type WorkTimeTableT = {
   duties: WorkTimeTableDataT;
   others: WorkTimeTableDataT;
   workers: WorkTimeTableDataT;
+  nbWeeks: number;
 };

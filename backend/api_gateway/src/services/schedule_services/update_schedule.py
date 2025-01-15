@@ -148,4 +148,9 @@ def build_worktime_data(schedule_id: str) -> WorkTimeTable:
         ),
     )
 
-    return WorkTimeTable(workers=workers_data, duties=duties_data, others=others_data)
+    return WorkTimeTable(
+        workers=workers_data,
+        duties=duties_data,
+        others=others_data,
+        nb_weeks=nb_weeks,
+    )

@@ -1,91 +1,200 @@
 import React from "react";
+// Styles
 import "./work-time-table.css";
+// Types
+import { WorkTimeTableT } from "../../types/schedule";
+import { log } from "console";
 
 interface WorkTimeTableProps {
-  data: {
-    duties: { h: number; count: number };
-    other: { h: number; count: number };
-    workers: { h: number; count: number };
-  };
+  data: WorkTimeTableT;
 }
 
-const WorkTimeTable: React.FC<WorkTimeTableProps> = () =>
-  // { data }
-  {
-    const data = {
-      duties: { h: 150, count: 10 },
-      other: { h: 120, count: 20 },
-      workers: { h: 270, count: 30 },
-    };
+const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ data }) => {
+  const { duties, others, workers, nbWeeks } = data;
 
-    const { duties, other, workers } = data;
-
-    return (
-      <table className="work-time-table">
-        <thead>
-          <tr>
-            <th></th>
-            <th className="column-header" colSpan={2}>
-              Duties
-            </th>
-            <th></th>
-            <th className="column-header" colSpan={2}>
-              Other
-            </th>
-            <th></th>
-            <th className="column-header" colSpan={2}>
-              Total
-            </th>
-          </tr>
-          <tr>
-            <th></th>
-            <th className="column-subheader">h</th>
-            <th className="column-subheader">#</th>
-            <th className="column-separator"></th>
-            <th className="column-subheader">h</th>
-            <th className="column-subheader">#</th>
-            <th className="column-separator"></th>
-            <th className="column-subheader">h</th>
-            <th className="column-subheader">#</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th className="row-header">Shifts</th>
-            <td className="cell-content">{duties.h}</td>
-            <td className="cell-content">{duties.count}</td>
-            <td className="column-separator"></td>
-            <td className="cell-content">{other.h}</td>
-            <td className="cell-content">{other.count}</td>
-            <td className="column-separator"></td>
-            <td className="cell-content">{duties.h + other.h}</td>
-            <td className="cell-content">{duties.count + other.count}</td>
-          </tr>
-          <tr>
-            <th className="row-header">Workers</th>
-            <td className="cell-content">{workers.h}</td>
-            <td className="cell-content">{workers.count}</td>
-            <td></td>
-            <td className="cell-content">{workers.h - duties.h}</td>
-            <td className="cell-content">{workers.count}</td>
-            <td></td>
-            <td className="cell-content">{workers.h}</td>
-            <td className="cell-content">{workers.h}</td>
-          </tr>
-          <tr>
-            <th className="row-header">Worker/week</th>
-            <td className="cell-content">{duties.h}</td>
-            <td className="cell-content">{duties.count}</td>
-            <td></td>
-            <td className="cell-content">{other.h}</td>
-            <td className="cell-content">{other.count}</td>
-            <td></td>
-            <td className="cell-content">{duties.h + other.h}</td>
-            <td className="cell-content">{duties.count + other.count}</td>
-          </tr>
-        </tbody>
-      </table>
-    );
+  const formatNumber = (num: number) => {
+    return num === 0 ? "-" : num.toLocaleString();
   };
+
+  const convertToPerWeek = (x: number, nbDeci: number) => {
+    const perWeek = (x / nbWeeks).toFixed(nbDeci);
+    return formatNumber(parseFloat(perWeek));
+  };
+
+  const workerHoursForOthers = Math.max(workers.hours - duties.hours, 0);
+
+  const dutiesCellsClassName = `cell-content ${
+    duties.hours > workers.hours && "light-red"
+  }`;
+  const othersCellsClassName = `cell-content ${
+    others.hours > workerHoursForOthers && "light-red"
+  }`;
+  const totalCellsClassName = `cell-content ${
+    duties.hours + others.hours > workers.hours && "light-red"
+  }`;
+
+  return (
+    <table className="work-time-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th colSpan={2}>
+            <div className="column-header">Duties</div>
+          </th>
+          <th></th>
+          <th colSpan={2}>
+            <div className="column-header">Others</div>
+          </th>
+          <th></th>
+          <th colSpan={2}>
+            <div className="column-header">Total</div>
+          </th>
+        </tr>
+        <tr>
+          <th></th>
+          <th>
+            <div className="column-subheader">h</div>
+          </th>
+          <th>
+            <div className="column-subheader">#</div>
+          </th>
+          <th className="column-separator"></th>
+          <th>
+            <div className="column-subheader">h</div>
+          </th>
+          <th>
+            <div className="column-subheader">#</div>
+          </th>
+          <th className="column-separator"></th>
+          <th>
+            <div className="column-subheader">h</div>
+          </th>
+          <th>
+            <div className="column-subheader">#</div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>
+            <div className="row-header">Shifts</div>
+          </th>
+          <td>
+            <div className={dutiesCellsClassName}>
+              {formatNumber(duties.hours)}
+            </div>
+          </td>
+          <td>
+            <div className={dutiesCellsClassName}>
+              {formatNumber(duties.count)}
+            </div>
+          </td>
+          <td className="column-separator"></td>
+          <td>
+            <div className={othersCellsClassName}>
+              {formatNumber(others.hours)}
+            </div>
+          </td>
+          <td>
+            <div className={othersCellsClassName}>
+              {formatNumber(others.count)}
+            </div>
+          </td>
+          <td className="column-separator"></td>
+          <td>
+            <div className={totalCellsClassName}>
+              {formatNumber(duties.hours + others.hours)}
+            </div>
+          </td>
+          <td>
+            <div className={totalCellsClassName}>
+              {formatNumber(duties.count + others.count)}
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <th>
+            <div className="row-header">Workers</div>
+          </th>
+          <td>
+            <div className={dutiesCellsClassName}>
+              {formatNumber(workers.hours)}
+            </div>
+          </td>
+          <td>
+            <div className={dutiesCellsClassName}>
+              {formatNumber(workers.count)}
+            </div>
+          </td>
+          <td></td>
+          <td>
+            <div className={othersCellsClassName}>
+              {formatNumber(workerHoursForOthers)}
+            </div>
+          </td>
+          <td>
+            <div className={othersCellsClassName}>
+              {formatNumber(workers.count)}
+            </div>
+          </td>
+          <td></td>
+          <td>
+            <div className={totalCellsClassName}>
+              {formatNumber(workers.hours)}
+            </div>
+          </td>
+          <td>
+            <div className={totalCellsClassName}>
+              {formatNumber(workers.count)}
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <th>
+            <div className="row-header">Worker/week</div>
+          </th>
+          <td>
+            <div className={dutiesCellsClassName}>
+              {convertToPerWeek(duties.hours / workers.count, 0)}
+            </div>
+          </td>
+          <td>
+            <div className={dutiesCellsClassName}>
+              {convertToPerWeek(duties.count / workers.count, 1)}
+            </div>
+          </td>
+          <td></td>
+          <td>
+            <div className={othersCellsClassName}>
+              {convertToPerWeek(others.hours / workers.count, 0)}
+            </div>
+          </td>
+          <td>
+            <div className={othersCellsClassName}>
+              {convertToPerWeek(others.count / workers.count, 1)}
+            </div>
+          </td>
+          <td></td>
+          <td>
+            <div className={totalCellsClassName}>
+              {convertToPerWeek(
+                (duties.hours + others.hours) / workers.count,
+                0
+              )}
+            </div>
+          </td>
+          <td>
+            <div className={totalCellsClassName}>
+              {convertToPerWeek(
+                (duties.count + others.count) / workers.count,
+                1
+              )}
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  );
+};
 
 export default WorkTimeTable;
