@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "../../app/i18n/client";
 // Styles
 import "./work-time-table.css";
 // Types
@@ -6,10 +7,13 @@ import { WorkTimeTableT } from "../../types/schedule";
 import { log } from "console";
 
 interface WorkTimeTableProps {
+  lng: string;
   data: WorkTimeTableT;
 }
 
-const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ data }) => {
+const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ lng, data }) => {
+  const { t } = useTranslation(lng, "campaign-page");
+
   const { duties, others, workers, nbWeeks } = data;
 
   const formatNumber = (num: number) => {
@@ -39,35 +43,35 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ data }) => {
         <tr>
           <th></th>
           <th colSpan={2}>
-            <div className="column-header">Duties</div>
+            <div className="column-header">{t("duties")}</div>
           </th>
           <th></th>
           <th colSpan={2}>
-            <div className="column-header">Others</div>
+            <div className="column-header">{t("others")}</div>
           </th>
           <th></th>
           <th colSpan={2}>
-            <div className="column-header">Total</div>
+            <div className="column-header">{t("total")}</div>
           </th>
         </tr>
         <tr>
           <th></th>
           <th>
-            <div className="column-subheader">h</div>
+            <div className="column-subheader">{t("h")}</div>
           </th>
           <th>
             <div className="column-subheader">#</div>
           </th>
           <th className="column-separator"></th>
           <th>
-            <div className="column-subheader">h</div>
+            <div className="column-subheader">{t("h")}</div>
           </th>
           <th>
             <div className="column-subheader">#</div>
           </th>
           <th className="column-separator"></th>
           <th>
-            <div className="column-subheader">h</div>
+            <div className="column-subheader">{t("h")}</div>
           </th>
           <th>
             <div className="column-subheader">#</div>
@@ -77,7 +81,7 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ data }) => {
       <tbody>
         <tr>
           <th>
-            <div className="row-header">Shifts</div>
+            <div className="row-header">{t("shifts")}</div>
           </th>
           <td>
             <div className={dutiesCellsClassName}>
@@ -114,7 +118,7 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ data }) => {
         </tr>
         <tr>
           <th>
-            <div className="row-header">Workers</div>
+            <div className="row-header">{t("workers")}</div>
           </th>
           <td>
             <div className={dutiesCellsClassName}>
@@ -151,7 +155,7 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ data }) => {
         </tr>
         <tr>
           <th>
-            <div className="row-header">Worker/week</div>
+            <div className="row-header">{t("per_worker_per_week")}</div>
           </th>
           <td>
             <div className={dutiesCellsClassName}>
