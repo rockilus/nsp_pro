@@ -1,0 +1,244 @@
+from datetime import timedelta
+from typing import Dict, List
+
+import pytest
+from shared.schemas import Request, RequestStatus, Schedule, Shift, Worker
+
+from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
+from core_to_engine_service.build_engine_requests import build_engine_requests
+from engine import Request as RequestEngine
+from tests.test_data import test_data_set_3
+
+
+# pylint: disable=R0801
+class TestBuildRequests:
+    @pytest.mark.parametrize("sample_data", test_data_set_3)
+    def test_build_request_one_day_positive_hard(self, sample_data: Dict) -> None:
+        shifts: List[Shift] = sample_data["shifts"]
+        target_shift = shifts[0]
+
+        workers: List[Worker] = sample_data["workers"]
+        target_worker = workers[0]
+
+        schedule: Schedule = sample_data["schedule"]
+
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, [], dates_campaign
+        )
+
+        requests = [
+            Request(
+                id="",
+                team_id="",
+                worker_id=target_worker.id,
+                start_date=schedule.start_date,
+                end_date=schedule.start_date,
+                shift_id=target_shift.id,
+                negative=False,
+                hard=True,
+                status=RequestStatus.PENDING,
+            )
+        ]
+
+        output = build_engine_requests(
+            [w.id for w in workers],
+            worker_ids_to_worker_dates,
+            [s.id for s in shifts],
+            requests,
+        )
+
+        assert isinstance(output, list)
+        assert all(isinstance(request, RequestEngine) for request in output)
+        assert len(output) == 1
+        assert output[0] == RequestEngine(
+            id="",
+            assignments=[
+                (
+                    target_worker.id,
+                    schedule.start_date.isoformat(),
+                    target_shift.id,
+                )
+            ],
+            negative=False,
+            hard=True,
+        )
+
+    @pytest.mark.parametrize("sample_data", test_data_set_3)
+    def test_build_request_one_day_positive_soft(self, sample_data: Dict) -> None:
+        shifts: List[Shift] = sample_data["shifts"]
+        target_shift = shifts[0]
+
+        workers: List[Worker] = sample_data["workers"]
+        target_worker = workers[0]
+
+        schedule: Schedule = sample_data["schedule"]
+
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, [], dates_campaign
+        )
+
+        requests = [
+            Request(
+                id="",
+                team_id="",
+                worker_id=target_worker.id,
+                start_date=schedule.start_date,
+                end_date=schedule.start_date,
+                shift_id=target_shift.id,
+                negative=False,
+                hard=False,
+                status=RequestStatus.PENDING,
+            )
+        ]
+
+        output = build_engine_requests(
+            [w.id for w in workers],
+            worker_ids_to_worker_dates,
+            [s.id for s in shifts],
+            requests,
+        )
+
+        assert isinstance(output, list)
+        assert all(isinstance(request, RequestEngine) for request in output)
+        assert len(output) == 1
+        assert output[0] == RequestEngine(
+            id="",
+            assignments=[
+                (
+                    target_worker.id,
+                    schedule.start_date.isoformat(),
+                    target_shift.id,
+                )
+            ],
+            negative=False,
+            hard=False,
+        )
+
+    @pytest.mark.parametrize("sample_data", test_data_set_3)
+    def test_build_request_one_day_negative_hard(self, sample_data: Dict) -> None:
+        shifts: List[Shift] = sample_data["shifts"]
+        target_shift = shifts[0]
+
+        workers: List[Worker] = sample_data["workers"]
+        target_worker = workers[0]
+
+        schedule: Schedule = sample_data["schedule"]
+
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, [], dates_campaign
+        )
+
+        requests = [
+            Request(
+                id="",
+                team_id="",
+                worker_id=target_worker.id,
+                start_date=schedule.start_date,
+                end_date=schedule.start_date,
+                shift_id=target_shift.id,
+                negative=True,
+                hard=True,
+                status=RequestStatus.PENDING,
+            )
+        ]
+
+        output = build_engine_requests(
+            [w.id for w in workers],
+            worker_ids_to_worker_dates,
+            [s.id for s in shifts],
+            requests,
+        )
+
+        assert isinstance(output, list)
+        assert all(isinstance(request, RequestEngine) for request in output)
+        assert len(output) == 1
+        assert output[0] == RequestEngine(
+            id="",
+            assignments=[
+                (
+                    target_worker.id,
+                    schedule.start_date.isoformat(),
+                    target_shift.id,
+                )
+            ],
+            negative=True,
+            hard=True,
+        )
+
+    @pytest.mark.parametrize("sample_data", test_data_set_3)
+    def test_build_request_date_range_positive_hard(self, sample_data: Dict) -> None:
+        shifts: List[Shift] = sample_data["shifts"]
+        target_shift = shifts[0]
+        if target_shift.shift_type == "DUTY":
+            target_shift.shift_type = "NORMAL"
+            shifts_updated = [s for s in shifts if s.id != target_shift.id] + [
+                target_shift
+            ]
+            sample_data["shifts"] = shifts_updated
+
+        workers: List[Worker] = sample_data["workers"]
+        target_worker = workers[0]
+
+        schedule: Schedule = sample_data["schedule"]
+
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+
+        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+            schedule, workers, [], dates_campaign
+        )
+
+        requests = [
+            Request(
+                id="",
+                team_id="",
+                worker_id=target_worker.id,
+                start_date=schedule.start_date,
+                end_date=schedule.end_date,
+                shift_id=target_shift.id,
+                negative=False,
+                hard=True,
+                status=RequestStatus.PENDING,
+            )
+        ]
+
+        output = build_engine_requests(
+            [w.id for w in workers],
+            worker_ids_to_worker_dates,
+            [s.id for s in sample_data["shifts"]],
+            requests,
+        )
+
+        assert isinstance(output, list)
+        assert all(isinstance(request, RequestEngine) for request in output)
+        assert len(output) == 1
+        assert output[0] == RequestEngine(
+            id="",
+            assignments=[
+                (
+                    target_worker.id,
+                    d.isoformat(),
+                    target_shift.id,
+                )
+                for d in dates_campaign
+            ],
+            negative=False,
+            hard=True,
+        )

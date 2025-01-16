@@ -5,18 +5,17 @@ import pytest
 from shared.schemas import QuickStaffing, Schedule, Shift, ShiftType, Worker
 
 from tests.engine_tests.engine_solve import engine_solve
-from tests.test_data import test_data_set_1
+from tests.test_data import test_data_set_2
 
 
 # pylint: disable=too-few-public-methods, R0801
 class TestConstraintSumQuickStaffing:
-    @pytest.mark.parametrize("sample_data", test_data_set_1)
+    @pytest.mark.parametrize("sample_data", test_data_set_2)
     def test_build_quick_staffing_constraints(self, sample_data: Dict) -> None:
         target = random.randint(1, 3)
 
         shifts: List[Shift] = sample_data["shifts"]
         target_shift = shifts[0]
-        print("SHIFTS", shifts)
 
         workers: List[Worker] = sample_data["workers"]
         target_worker = workers[0]
@@ -43,7 +42,7 @@ class TestConstraintSumQuickStaffing:
             == target
         )
 
-    @pytest.mark.parametrize("sample_data", test_data_set_1)
+    @pytest.mark.parametrize("sample_data", test_data_set_2)
     def test_build_quick_staffing_constraints_no_staffing(
         self, sample_data: Dict
     ) -> None:
