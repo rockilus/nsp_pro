@@ -11,6 +11,7 @@ import WorkTimeTable from "./work-time-table";
 // Styles
 import "./schedule-selector.css";
 import "../../styles/text-styles.css";
+
 // Types
 import { ScheduleT, WorkTimeTableT } from "../../types/schedule";
 //Constants
@@ -49,9 +50,9 @@ export default function ScheduleSelector({
 
   return (
     <div className="campaign-info-container">
-      <span className="title">{t("campaign")}</span>
       <div className="campaign-and-work-time">
         <div className="campaign-info">
+          <span className="title">{t("campaign")}</span>
           <div className="campaign-info-row">
             <div className="row-label-container">
               <span className="row-label">{t("start")}</span>
@@ -118,7 +119,13 @@ export default function ScheduleSelector({
             </div>
           </div>
         </div>
-        {workTimeTable && <WorkTimeTable data={workTimeTable} />}
+
+        {workTimeTable && (
+          <div>
+            <span className="title">{t("supply_and_demand")}</span>
+            <WorkTimeTable lng={lng} data={workTimeTable} />
+          </div>
+        )}
       </div>
     </div>
   );
