@@ -5,13 +5,13 @@ import pytest
 from shared.schemas import ShiftRestType, ShiftType
 
 from tests.engine_tests.engine_solve import engine_solve
-from tests.test_data import test_data_set
+from tests.test_data import test_data_set_0
 
 
 # pylint: disable=R0801
 class TestDutyRecupConstraint:
     # pylint: disable=too-many-locals
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_duty_recup_duty_no_specialty(self, sample_data: Dict) -> None:
         shifts = sample_data["shifts"]
         shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
@@ -79,7 +79,7 @@ class TestDutyRecupConstraint:
             )
             assert assignment_recup is not None
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_duty_recup_two_duty_no_specialty(self, sample_data: Dict) -> None:
         shifts = sample_data["shifts"]
         shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]

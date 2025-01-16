@@ -7,11 +7,11 @@ from shared.schemas import Shift, Worker
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
 from engine import ShiftDemand as ShiftDemandEngine
-from tests.test_data import test_data_set
+from tests.test_data import test_data_set_0
 
 
 class TestBuildEngineShiftDemands:
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_build_engine_shift_demands(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         shifts = sample_data["shifts"]
@@ -44,7 +44,7 @@ class TestBuildEngineShiftDemands:
         assert all(isinstance(sd, ShiftDemandEngine) for sd in shift_demands)
 
     # pylint: disable=R0801
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_empty_workers(self, sample_data: Dict) -> None:
         workers: List[Worker] = []
         shifts = sample_data["shifts"]
@@ -78,7 +78,7 @@ class TestBuildEngineShiftDemands:
             assert sd.assignments == []
             assert sd.assignments_specialties == []
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_empty_shifts(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         shifts: List[Shift] = []
@@ -113,7 +113,7 @@ class TestBuildEngineShiftDemands:
             assert sd.assignments_specialties == []
 
     # pylint: disable=too-many-locals
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_shift_demands_assignments(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         shifts = sample_data["shifts"]
@@ -171,7 +171,7 @@ class TestBuildEngineShiftDemands:
                 assert sd.target == total_count * staffing
 
     # pylint: disable=too-many-locals
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_shift_demands_assignments_specilty(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         workers[0].specialty_ids = ["spe1"]
