@@ -8,11 +8,11 @@ from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
-from tests.test_data import test_data_set
+from tests.test_data import test_data_set_0
 
 
 class TestBuildPeriods:
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_build_periods_weekly(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         dates_campaign = [
@@ -42,7 +42,7 @@ class TestBuildPeriods:
             current_date = end_of_week + timedelta(days=1)
         assert periods_weekly == expected_periods
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_build_periods_monthly(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         dates_campaign = [
@@ -75,7 +75,7 @@ class TestBuildPeriods:
             current_date = end_of_month + timedelta(days=1)
         assert periods_monthly == expected_periods
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_build_periods_weekly_with_hist(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         dates_campaign = [
@@ -124,7 +124,7 @@ class TestBuildPeriods:
             print("stop")
         assert periods_weekly == expected_periods
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_build_periods_monthly_with_hist(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         schedule.start_date = date(2025, 1, 3)

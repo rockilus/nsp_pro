@@ -82,7 +82,7 @@ def _build_quick_staffing_constraints(
                 target_unit="shift",
                 constraint_variables=constraints_vars,
                 active=True,
-                hard=False,
+                hard=True,
                 priority="high",
                 schedule_id=schedule.id,
                 constraint_build_id="",

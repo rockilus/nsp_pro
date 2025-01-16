@@ -7,11 +7,11 @@ from shared.schemas import Shift, ShiftLeaveType, ShiftRestType, ShiftType, Staf
 from core_to_engine_service.core_to_engine_inputs import (
     _build_shift_id_to_duration_dict,
 )
-from tests.test_data import test_data_set
+from tests.test_data import test_data_set_0
 
 
 class TestBuildShiftIdToDurationDict:
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_build_shift_id_to_duration_dict(self, sample_data: Dict) -> None:
         shifts = sample_data["shifts"]
         shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)

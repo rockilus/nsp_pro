@@ -6,7 +6,7 @@ import pytest
 from shared.schemas import ShiftType, Specialty, Staffing
 
 from tests.engine_tests.engine_solve import engine_solve
-from tests.test_data import test_data_set
+from tests.test_data import test_data_set_0
 
 # constraints = self.model.Proto().constraints
 # variables = self.model.Proto().variables
@@ -15,7 +15,7 @@ from tests.test_data import test_data_set
 
 class TestCoverage:
     # pylint: disable=too-many-locals
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_expected_assignments_normal(self, sample_data: Dict) -> None:
         target_random = random.randint(1, 5)
 
@@ -60,7 +60,7 @@ class TestCoverage:
 
                 assert count_actual == count_target
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_expected_assignments_normal_with_specialty(
         self, sample_data: Dict
     ) -> None:
@@ -131,7 +131,7 @@ class TestCoverage:
                 )
                 assert count_actual == count_target
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_expected_assignments_specialty_only(self, sample_data: Dict) -> None:
         target_random = random.randint(1, 5)
         specialty = Specialty(
@@ -175,7 +175,7 @@ class TestCoverage:
             set(worker_ids_specialists)
         )
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_expected_assignments_with_specialty_q1_diff_q2(
         self, sample_data: Dict
     ) -> None:
@@ -280,7 +280,7 @@ class TestCoverage:
                 )
                 assert count_actual == count_target
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_expected_assignments_with_specialty_q1_overlap_q2(
         self, sample_data: Dict
     ) -> None:
@@ -402,7 +402,7 @@ class TestCoverage:
                 )
                 assert count_actual == count_target
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_expected_assignments_with_specialty_q2_in_q1(
         self, sample_data: Dict
     ) -> None:
@@ -507,7 +507,7 @@ class TestCoverage:
                 )
                 assert count_actual == count_target
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_expected_assignments_staffing_multiple_specialties(
         self, sample_data: Dict
     ) -> None:
@@ -642,7 +642,7 @@ class TestCoverage:
                     assert count_actual == count_target
 
     # pylint: disable=too-many-statements
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_expected_assignments_staffing_q1_q2_overlap_and_multiple_spe(
         self, sample_data: Dict
     ) -> None:
@@ -836,7 +836,7 @@ class TestCoverage:
                     count_actual_spe_2 + nb_worker_q_1_2_for_spe_1 == count_target_spe_2
                 )
 
-    @pytest.mark.parametrize("sample_data", test_data_set)
+    @pytest.mark.parametrize("sample_data", test_data_set_0)
     def test_expected_assignments_all(self, sample_data: Dict) -> None:
         shifts = sample_data["shifts"]
         dsds = sample_data["daily_shift_demands"]

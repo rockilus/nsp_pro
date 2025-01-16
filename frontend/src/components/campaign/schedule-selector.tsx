@@ -118,7 +118,13 @@ export default function ScheduleSelector({
             </div>
           </div>
         </div>
-        {workTimeTable && <WorkTimeTable data={workTimeTable} />}
+
+        {workTimeTable && (
+          <div>
+            <span className="title">{t("campaign")}</span>
+            <WorkTimeTable data={workTimeTable} />
+          </div>
+        )}
       </div>
     </div>
   );
