@@ -229,6 +229,7 @@ class Model:
         self.model = cp_model.CpModel()
         self.variables = {}
         self.intervals = {}
+        self.assignment_wdss = {}
         self.obj = Objective()
         self.status = 0
         self.bt = BenchmarkTimes()

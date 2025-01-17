@@ -16,14 +16,14 @@ from core_to_engine_service.core_to_engine_inputs import (
     _build_shift_id_to_duration_dict,
 )
 from engine import WorkLoads as WorkLoadsEngine
-from tests.test_data import test_data_set_0
+from tests.test_data import test_data_set_1
 from utils.constants import Constants
 
 
 # pylint: disable=R0801
 class TestBuildEngineWorkLoads:
     # pylint: disable=too-many-locals
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_build_engine_work_loads(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         shifts = sample_data["shifts"]
@@ -87,7 +87,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted
         )
 
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_workers(self, sample_data: Dict) -> None:
         workers: List[Worker] = []
         shifts = sample_data["shifts"]
@@ -139,7 +139,7 @@ class TestBuildEngineWorkLoads:
         assert len(work_loads.monthly_nb_duties_desired.assignments) == 0
         assert len(work_loads.monthly_nb_duties_max.assignments) == 0
 
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_shifts(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         shifts: List[Shift] = []
@@ -203,7 +203,7 @@ class TestBuildEngineWorkLoads:
             workers_not_deleted
         )
 
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_worker_with_employment_end_date(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         workers[0].employment_end_date = date(2025, 1, 15)
@@ -283,7 +283,7 @@ class TestBuildEngineWorkLoads:
                 2025, 1, 15
             )
 
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_deleted_worker(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         workers[0].deleted = True
@@ -359,7 +359,7 @@ class TestBuildEngineWorkLoads:
                     assert w_id_max != "w0"
 
     # pylint: disable=too-many-statements
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_work_loads_content(self, sample_data: Dict) -> None:
         workers = sample_data["workers"]
         shifts = sample_data["shifts"]
