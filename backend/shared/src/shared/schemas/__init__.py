@@ -58,6 +58,7 @@ from shared.schemas.schemas.schedule import (
     WorkTimeTableData,
 )
 from shared.schemas.schemas.shift import (
+    LinkShift,
     Shift,
     ShiftLeaveType,
     ShiftRestType,
@@ -125,6 +126,7 @@ __all__ = [
     "Variable",
     "WorkTimeTable",
     "WorkTimeTableData",
+    "LinkShift",
     "Shift",
     "ShiftLeaveType",
     "ShiftRestType",

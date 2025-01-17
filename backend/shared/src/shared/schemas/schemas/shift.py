@@ -94,3 +94,21 @@ class Shift:
             recuperation_duty_id=data["recuperation_duty_id"],
             deleted=data["deleted"],
         )
+
+
+@dataclass
+class LinkShift:
+    id: str
+    team_id: str
+    shift_ids: List[str]
+
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "LinkShift":
+        return cls(
+            id=data["id"],
+            team_id=data["team_id"],
+            shift_ids=data["shift_ids"],
+        )
