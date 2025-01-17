@@ -4,8 +4,10 @@ from typing import Dict, List
 
 import pytest
 from shared.schemas import (
+    Breach,
     DailyShiftDemand,
     DSDSourceType,
+    EngineInputs,
     Request,
     RequestStatus,
     Schedule,
@@ -18,16 +20,18 @@ from shared.schemas import (
 )
 
 from engine import Assignment, Outputs
-from tests.engine_tests.engine_solve import engine_solve
+from engine_to_core_service.build_breaches import _parse_breaches_engine
+from tests.engine_tests.engine_solve import engine_solve, engine_solve_engine_inputs
+
+# pylint: disable=unused-import
+from tests.test_data import sample_data_benoit_case_fixture  # noqa: F401
 from tests.test_data import test_data_set_2
 
 
 # pylint: disable=too-few-public-methods, R0801
 class TestRequest:
     @pytest.mark.parametrize("sample_data", test_data_set_2)
-    def test_build_request_one_day_positive_hard(
-        self, sample_data: Dict
-    ) -> None:
+    def test_request_one_day_positive_hard(self, sample_data: Dict) -> None:
         shifts: List[Shift] = sample_data["shifts"]
         target_shift = shifts[0]
 
@@ -69,9 +73,7 @@ class TestRequest:
         assert a_target is not None
 
     @pytest.mark.parametrize("sample_data", test_data_set_2)
-    def test_build_request_one_day_positive_soft(
-        self, sample_data: Dict
-    ) -> None:
+    def test_request_one_day_positive_soft(self, sample_data: Dict) -> None:
         shifts: List[Shift] = sample_data["shifts"]
         target_shift = shifts[0]
 
@@ -113,9 +115,7 @@ class TestRequest:
         assert a_target is not None
 
     @pytest.mark.parametrize("sample_data", test_data_set_2)
-    def test_build_request_one_day_negative_hard(
-        self, sample_data: Dict
-    ) -> None:
+    def test_request_one_day_negative_hard(self, sample_data: Dict) -> None:
         shifts: List[Shift] = sample_data["shifts"]
         target_shift = shifts[0]
 
@@ -157,9 +157,7 @@ class TestRequest:
         assert a_target is None
 
     @pytest.mark.parametrize("sample_data", test_data_set_2)
-    def test_build_request_date_range_positive_hard(
-        self, sample_data: Dict
-    ) -> None:
+    def test_request_date_range_positive_hard(self, sample_data: Dict) -> None:
         schedule: Schedule = sample_data["schedule"]
 
         dates_campaign = [
@@ -235,3 +233,40 @@ class TestRequest:
                 None,
             )
             assert a_target is not None
+
+    # pylint: disable=redefined-outer-name
+    def test_all_requests(
+        self, sample_data_benoit_case_fixture: EngineInputs  # noqa: F811
+    ) -> None:
+        outputs = engine_solve_engine_inputs(sample_data_benoit_case_fixture)
+
+        assert outputs is not None
+
+        assignments = outputs.assignments
+        breaches: List[Breach] = _parse_breaches_engine(
+            sample_data_benoit_case_fixture.schedule, outputs.breaches
+        )
+        for r in sample_data_benoit_case_fixture.requests:
+            as_request = [
+                a
+                for a in assignments
+                if a.worker_id == r.worker_id
+                and a.date >= r.start_date
+                and a.date <= r.end_date
+                and a.shift_id == r.shift_id
+            ]
+            breach = next(
+                (b for b in breaches if b.objective_id == r.id),
+                None,
+            )
+            if r.negative:
+                if breach is None:
+                    assert len(as_request) == 0
+                else:
+                    assert len(as_request) > 0
+            else:
+                nb_days = (r.end_date - r.start_date).days + 1
+                if breach is None:
+                    assert len(as_request) == nb_days
+                else:
+                    assert len(as_request) < nb_days

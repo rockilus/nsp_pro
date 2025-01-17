@@ -1,6 +1,9 @@
+import json
+import os
 from datetime import date, datetime, timedelta
 from typing import Dict, List
 
+import pytest
 from shared.schemas import (
     Assignment,
     Attribute,
@@ -9,6 +12,7 @@ from shared.schemas import (
     Dimension,
     DimEntry,
     DSDSourceType,
+    EngineInputs,
     Request,
     Schedule,
     ScheduleSolveStatus,
@@ -393,8 +397,6 @@ def sample_data_astrid_case() -> Dict:
     requests: List[Request] = []
     wip_assignments: List[Assignment] = []
 
-    print("SHIFTS IN SAMPLE DATA: ", shifts)
-
     return {
         "workers": workers,
         "shifts": shifts,
@@ -407,6 +409,48 @@ def sample_data_astrid_case() -> Dict:
         "daily_shift_demands": daily_shift_demands,
         "requests": requests,
         "wip_assignments": wip_assignments,
+    }
+
+
+def load_json_from_file(filename: str) -> Dict:
+    current_folder = os.path.dirname(__file__)
+    file_path = os.path.join(current_folder, filename)
+    with open(file_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+    return data
+
+
+def load_engine_inputs_from_file(filename: str) -> EngineInputs:
+    data_dict = load_json_from_file(filename)
+    return EngineInputs.from_dict(data_dict)
+
+
+@pytest.fixture
+def sample_data_benoit_case_fixture() -> EngineInputs:
+    engine_inputs = load_engine_inputs_from_file("test_data/250117_benoit_case.json")
+    # engine_inputs.requests = [
+    #     r for r in engine_inputs.requests if r.id != "67893e204c7443695ec41f2b"
+    # ]
+    return engine_inputs
+
+
+def sample_data_benoit_case() -> Dict:
+    engine_inputs = load_engine_inputs_from_file("test_data/250117_benoit_case.json")
+    engine_inputs.requests = [
+        r for r in engine_inputs.requests if r.id != "67893e204c7443695ec41f2b"
+    ]
+    return {
+        "workers": engine_inputs.workers,
+        "shifts": engine_inputs.shifts,
+        "schedule": engine_inputs.schedule,
+        "dimensions": engine_inputs.dimensions,
+        "dim_entries": engine_inputs.dim_entries,
+        "attributes": engine_inputs.attributes,
+        "fixed_assignments": engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+        "cbs_augmented": engine_inputs.cbs_augmented,
+        "daily_shift_demands": engine_inputs.daily_shift_demands,
+        "requests": engine_inputs.requests,
+        "wip_assignments": engine_inputs.wip_assignments,
     }
 
 
