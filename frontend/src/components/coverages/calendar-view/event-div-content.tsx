@@ -56,7 +56,7 @@ export default function EventDivContent({
               marginBottom: textBottomMargin,
             }}
           >
-            {shift.name}
+            {shift.acronym}
           </Typography>
           <Typography
             variant="caption"
