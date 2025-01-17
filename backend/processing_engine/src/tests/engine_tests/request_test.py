@@ -24,22 +24,27 @@ from engine_to_core_service.build_breaches import _parse_breaches_engine
 from tests.engine_tests.engine_solve import engine_solve, engine_solve_engine_inputs
 
 # pylint: disable=unused-import
-from tests.test_data import sample_data_benoit_case_fixture  # noqa: F401
-from tests.test_data import test_data_set_2
+from tests.test_data import (  # noqa: F401
+    sample_data_benoit_case_fixture,
+    sample_data_fixture,
+    test_data_set_2,
+)
 
 
 # pylint: disable=too-few-public-methods, R0801
 class TestRequest:
-    @pytest.mark.parametrize("sample_data", test_data_set_2)
-    def test_request_one_day_positive_hard(self, sample_data: Dict) -> None:
-        shifts: List[Shift] = sample_data["shifts"]
+    # pylint: disable=redefined-outer-name
+    def test_request_one_day_positive_hard(
+        self, sample_data_fixture: EngineInputs  # noqa: F811
+    ) -> None:
+        shifts: List[Shift] = sample_data_fixture.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data["workers"]
+        workers: List[Worker] = sample_data_fixture.workers
         target_worker_index = random.randint(0, len(workers) - 1)
         target_worker = workers[target_worker_index]
 
-        schedule: Schedule = sample_data["schedule"]
+        schedule: Schedule = sample_data_fixture.schedule
 
         requests = [
             Request(
@@ -55,9 +60,9 @@ class TestRequest:
             )
         ]
 
-        sample_data["requests"] = requests
+        sample_data_fixture.requests = requests
 
-        outputs: Outputs = engine_solve(sample_data)
+        outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
 
         assignments: List[Assignment] = outputs.assignments
         a_target = next(
@@ -72,16 +77,18 @@ class TestRequest:
         )
         assert a_target is not None
 
-    @pytest.mark.parametrize("sample_data", test_data_set_2)
-    def test_request_one_day_positive_soft(self, sample_data: Dict) -> None:
-        shifts: List[Shift] = sample_data["shifts"]
+    # pylint: disable=redefined-outer-name
+    def test_request_one_day_positive_soft(
+        self, sample_data_fixture: EngineInputs  # noqa: F811
+    ) -> None:
+        shifts: List[Shift] = sample_data_fixture.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data["workers"]
+        workers: List[Worker] = sample_data_fixture.workers
         target_worker_index = random.randint(0, len(workers) - 1)
         target_worker = workers[target_worker_index]
 
-        schedule: Schedule = sample_data["schedule"]
+        schedule: Schedule = sample_data_fixture.schedule
 
         requests = [
             Request(
@@ -97,9 +104,9 @@ class TestRequest:
             )
         ]
 
-        sample_data["requests"] = requests
+        sample_data_fixture.requests = requests
 
-        outputs: Outputs = engine_solve(sample_data)
+        outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
 
         assignments: List[Assignment] = outputs.assignments
         a_target = next(
