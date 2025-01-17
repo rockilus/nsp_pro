@@ -48,6 +48,17 @@ class LinkShiftDB:
             handle_get_document_error(e)
         return doc_to_core_link_shift(ls_doc)
 
+    def get_link_shifts_by_shift_id(self, shift_id: str) -> List[LinkShift]:
+        try:
+            # pylint: disable=no-member
+            ls_docs = LinkShiftDocument.objects.filter(shifts__in=[shift_id])  # type: ignore        except Exception as e:
+            log_info("Failed to get link_shifts by shift_id from database")
+            handle_get_document_error(e)
+        except Exception as e:
+            log_info("Failed to get link_shifts by shift_id from database")
+            handle_get_document_error(e)
+        return [doc_to_core_link_shift(ls) for ls in list(ls_docs)]
+
     def update_link_shift(self, link_shift: LinkShift) -> LinkShift:
         ls_doc = core_to_doc_link_shift(link_shift)
         try:
