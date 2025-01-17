@@ -14,11 +14,11 @@ from core_to_engine_service.build_dates import (
     build_dates,
     build_worker_ids_to_worker_dates,
 )
-from tests.test_data import test_data_set_0
+from tests.test_data import test_data_set_1
 
 
 class TestBuildDates:
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_build_dates(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         fixed_assignments = sample_data["fixed_assignments"]
@@ -35,7 +35,7 @@ class TestBuildDates:
         ]
         assert dates_campaign == expected_dates_campaign
 
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_build_dates_with_fixed_assignments(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         date_a_0 = schedule.start_date + timedelta(days=-1)
@@ -74,7 +74,7 @@ class TestBuildDates:
         ]
         assert dates_campaign == expected_dates_campaign
 
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_build_dates_with_empty_schedule(self, sample_data: Dict) -> None:
         # pylint: disable=R0801
         schedule = Schedule(
@@ -102,7 +102,7 @@ class TestBuildDates:
 
 
 class TestBuildWorkerIdsToWorkerDates:
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_build_worker_ids_to_worker_dates(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         workers = sample_data["workers"]
@@ -123,7 +123,7 @@ class TestBuildWorkerIdsToWorkerDates:
             assert worker_dates.dates_hist == []
             assert worker_dates.dates_campaign == dates_campaign
 
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_worker_with_past_assignments(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         workers = sample_data["workers"]
@@ -165,7 +165,7 @@ class TestBuildWorkerIdsToWorkerDates:
         ]
         assert worker_dates.dates_campaign == dates_campaign
 
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_worker_with_employment_end_date(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         workers = sample_data["workers"]
@@ -190,7 +190,7 @@ class TestBuildWorkerIdsToWorkerDates:
         ]
         assert worker_dates.dates_campaign == expected_dates_campaign
 
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_deleted_worker(self, sample_data: Dict) -> None:
         schedule = sample_data["schedule"]
         workers = sample_data["workers"]

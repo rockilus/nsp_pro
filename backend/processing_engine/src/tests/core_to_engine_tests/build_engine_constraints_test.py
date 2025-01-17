@@ -17,12 +17,12 @@ from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_engine_constraints import (
     _build_quick_staffing_constraints,
 )
-from tests.test_data import test_data_set_0
+from tests.test_data import test_data_set_1
 
 
 # pylint: disable=too-few-public-methods
 class TestBuildQuickStaffingConstraints:
-    @pytest.mark.parametrize("sample_data", test_data_set_0)
+    @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_build_quick_staffing_constraints(self, sample_data: Dict) -> None:
         target = random.randint(1, 3)
 
