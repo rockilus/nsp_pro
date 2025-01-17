@@ -22,7 +22,8 @@ def update_link_shift_upon_shift_update(shift: Shift) -> None:
     for ls in ls_shift:
         if shift.id in ls.shift_ids:
             ls_others = [ls_o for ls_o in link_shifts if ls_o.id != ls.id]
-            valid = validate_link_shift(ls, shifts, ls_others)
+            shifts_ls = [s for s in shifts if s.id in ls.shift_ids]
+            valid = validate_link_shift(ls, shifts_ls, ls_others)
             if valid:
                 link_shift_db.update_link_shift(ls)
             else:
@@ -31,7 +32,14 @@ def update_link_shift_upon_shift_update(shift: Shift) -> None:
 
 def update_link_shift_upon_shift_delete(shift: Shift) -> None:
     ls_shift = link_shift_db.get_link_shifts_by_shift_id(shift.id)
-    shifts_ids = list(set(shift_id for ls in ls_shift for shift_id in ls.shift_ids))
+    shifts_ids = list(
+        set(
+            shift_id
+            for ls in ls_shift
+            for shift_id in ls.shift_ids
+            if shift_id != shift.id
+        )
+    )
     shifts = shift_db.get_shifts_by_ids(shifts_ids)
     link_shifts = link_shift_db.get_link_shifts(shift.team_id)
     for ls in link_shifts:
@@ -39,7 +47,8 @@ def update_link_shift_upon_shift_delete(shift: Shift) -> None:
     for ls in ls_shift:
         ls_others = [ls_o for ls_o in link_shifts if ls_o.id != ls.id]
         ls.shift_ids.remove(shift.id)
-        valid = validate_link_shift(ls, shifts, ls_others)
+        shifts_ls = [s for s in shifts if s.id in ls.shift_ids]
+        valid = validate_link_shift(ls, shifts_ls, ls_others)
         if valid:
             link_shift_db.update_link_shift(ls)
         else:

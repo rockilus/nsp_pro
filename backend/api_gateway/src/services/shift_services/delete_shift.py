@@ -8,6 +8,9 @@ from scripts.setup_database import (
     shift_db,
     shift_demand_db,
 )
+from services.link_shift_services.update_link_shift import (
+    update_link_shift_upon_shift_delete,
+)
 
 
 def delete_shift(shift_id: str) -> None:
@@ -18,6 +21,7 @@ def delete_shift(shift_id: str) -> None:
         raise ValueError("Cannot delete the default rest shift")
     if shift.leave_type != ShiftLeaveType.NONE:
         raise ValueError("Cannot delete a leave shift")
+    update_link_shift_upon_shift_delete(shift)
     delete_shift_from_schedule_quick_staffing(shift_id)
     shift_demand_db.delete_shift_demands_by_shift_id(shift_id)
     daily_shift_demand_db.delete_daily_shift_demands_by_shift_id(shift_id)

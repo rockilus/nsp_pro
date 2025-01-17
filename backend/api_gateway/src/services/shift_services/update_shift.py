@@ -1,6 +1,9 @@
 from shared.schemas import Shift, ShiftLeaveType, ShiftRestType
 
 from scripts.setup_database import shift_db
+from services.link_shift_services.update_link_shift import (
+    update_link_shift_upon_shift_update,
+)
 from services.worker_services.update_worker import generate_acronym
 
 
@@ -19,4 +22,9 @@ def update_shift(shift_updated: Shift) -> Shift:
         acronyms = [s.acronym for s in shifts if s.id != shift_updated.id]
         shift_updated.acronym = generate_acronym(shift_updated.name, acronyms)
     shift_saved = shift_db.update_shift(shift_updated)
+    if (
+        shift_saved.start_time != shift_existing.start_time
+        or shift_saved.end_time != shift_existing.end_time
+    ):
+        update_link_shift_upon_shift_update(shift_saved)
     return shift_saved
