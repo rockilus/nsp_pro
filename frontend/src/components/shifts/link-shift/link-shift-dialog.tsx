@@ -3,18 +3,19 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
-import Button from "@mui/material/Button";
-import { styled } from "@mui/material/styles";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
+import { styled } from "@mui/material/styles";
 // Components
 import AddLinkShift from "./add-link-shift";
 import LinkShiftList from "./link-shift-list";
+import TableAddButton from "../../buttons/table-add-button";
 // Styles
 import "../../../styles/text-styles.css";
+import "./link-shift-dialog.css";
 // Types
 import { LinkShiftT, ShiftT } from "../../../types/shift";
 
@@ -61,9 +62,13 @@ export default function LinkShiftDialog({
 
   return (
     <React.Fragment>
-      <Button variant="outlined" onClick={handleClickOpen}>
-        {t("link_shifts")}
-      </Button>
+      <div className="ls-button-container">
+        <TableAddButton
+          text={t("link_shifts")}
+          handleClick={handleClickOpen}
+          showIcon={false}
+        />
+      </div>
       <BootstrapDialog
         onClose={handleClose}
         aria-labelledby="customized-dialog-title"
