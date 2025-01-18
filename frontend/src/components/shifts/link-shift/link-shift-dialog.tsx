@@ -85,6 +85,7 @@ export default function LinkShiftDialog({
             lng={lng}
             teamId={teamId}
             shifts={shifts}
+            linkShifts={linkShifts}
             shiftSelected1={shiftSelected1}
             shiftSelected2={shiftSelected2}
             setShiftSelected1={setShiftSelected1}

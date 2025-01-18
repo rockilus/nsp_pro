@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // MUI
@@ -8,6 +8,10 @@ import Dialog from "@mui/material/Dialog";
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
+import { Typography, Box } from "@mui/material";
+
+// Components
+import { validateLinkShift } from "./validate-link-shift";
 // Styles
 import "./add-link-shift.css";
 // Types
@@ -15,19 +19,11 @@ import { LinkShiftT, ShiftT, ShiftType } from "../../../types/shift";
 
 dayjs.extend(utc);
 
-const BootstrapDialog = styled(Dialog)(({ theme }) => ({
-  "& .MuiDialogContent-root": {
-    padding: theme.spacing(2),
-  },
-  "& .MuiDialogActions-root": {
-    padding: theme.spacing(1),
-  },
-}));
-
 export default function AddLinkShift({
   lng,
   teamId,
   shifts,
+  linkShifts,
   shiftSelected1,
   shiftSelected2,
   setShiftSelected1,
@@ -37,12 +33,17 @@ export default function AddLinkShift({
   lng: string;
   teamId: string;
   shifts: ShiftT[];
+  linkShifts: LinkShiftT[];
   shiftSelected1: ShiftT | null;
   shiftSelected2: ShiftT | null;
   setShiftSelected1: (shift: ShiftT | null) => void;
   setShiftSelected2: (shift: ShiftT | null) => void;
   handleAddLinkShift: (linkShift: LinkShiftT) => void;
 }) {
+  const [validationMessage, setValidationMessage] = useState<string | null>(
+    null
+  );
+
   const handleShift1Change = (event: SelectChangeEvent) => {
     const shiftSelected = shifts.find(
       (shift) => shift.id === event.target.value
@@ -52,6 +53,7 @@ export default function AddLinkShift({
     }
     setShiftSelected1(shiftSelected);
     setShiftSelected2(null);
+    setValidationMessage(null);
   };
 
   const handleShift2Change = (event: SelectChangeEvent) => {
@@ -62,17 +64,30 @@ export default function AddLinkShift({
       return;
     }
     setShiftSelected2(shiftSelected);
+    setValidationMessage(null);
   };
 
   const handleCreateLinkShift = () => {
     if (!shiftSelected1 || !shiftSelected2) {
+      setValidationMessage("Select two shifts to link.");
       return;
     }
-    handleAddLinkShift({
+    const newLinkShift = {
       id: "",
       teamId: teamId,
       shiftIds: [shiftSelected1.id, shiftSelected2.id],
-    });
+    };
+    const validationResult = validateLinkShift(
+      newLinkShift,
+      shifts.filter((s) => newLinkShift.shiftIds.includes(s.id)),
+      linkShifts
+    );
+    if (!validationResult.isValid) {
+      setValidationMessage(validationResult.validationMessage);
+      return;
+    }
+
+    handleAddLinkShift(newLinkShift);
     setShiftSelected1(null);
     setShiftSelected2(null);
   };
@@ -191,6 +206,13 @@ export default function AddLinkShift({
           Link
         </Button>
       </div>
+      {validationMessage ? (
+        <div className="validation-message-container">
+          <span className="validation-message">{validationMessage}</span>
+        </div>
+      ) : (
+        <div className="validation-message-container" />
+      )}
     </React.Fragment>
   );
 }
