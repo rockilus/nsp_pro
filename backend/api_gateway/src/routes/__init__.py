@@ -11,6 +11,7 @@ from routes.dim_entry_routes import router as router_dim_entry
 from routes.dimension_routes import router as router_dimension
 from routes.export_routes import router as router_export
 from routes.health_routes import router as router_health
+from routes.link_shift_routes import router as router_link_shift
 from routes.request_routes import router as router_request
 from routes.schedule_routes import router as router_schedule
 from routes.shift_demand_routes import router as router_shift_demand
@@ -36,6 +37,7 @@ __all__ = [
     "router_dimension",
     "router_export",
     "router_health",
+    "router_link_shift",
     "router_request",
     "router_schedule",
     "router_shift_demand",

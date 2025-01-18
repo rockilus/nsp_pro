@@ -24,6 +24,7 @@ import {
   deleteDimEntry,
 } from "../../app/lib/dim-entry";
 import { updateAttribute } from "../../app/lib/attribute";
+import { addLinkShift, deleteLinkShift } from "../../app/lib/link-shift";
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
@@ -32,6 +33,7 @@ import {
   ShiftLeaveType,
   ShiftType,
   ShiftRestType,
+  LinkShiftT,
 } from "../../types/shift";
 import { DimEntryT, DimensionT } from "../../types/dimension";
 import { AttributeT } from "../../types/attribute";
@@ -53,6 +55,7 @@ export default function ShiftTab({
   const [dimensions, setDimensions] = useState<DimensionT[]>([]);
   const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
+  const [linkShifts, setLinkShifts] = useState<LinkShiftT[]>([]);
 
   const DefaultWorkShiftFields: Record<string, string>[] = [
     { name: "color", label: t("color") },
@@ -264,6 +267,25 @@ export default function ShiftTab({
     );
   };
 
+  //////////////////////////
+  // LinkShift Actions
+  //////////////////////////
+
+  const handleAddLinkShift = async (linkShift: LinkShiftT) => {
+    const newLinkShift = await addLinkShift(linkShift);
+    setLinkShifts([...linkShifts, newLinkShift]);
+  };
+
+  const handleDeleteLinkShift = async (linkShiftId: string) => {
+    if (!selectedTeamId) {
+      throw new Error("Team not selected");
+    }
+    await deleteLinkShift(linkShiftId, selectedTeamId);
+    setLinkShifts(
+      linkShifts.filter((linkShift) => linkShift.id !== linkShiftId)
+    );
+  };
+
   useEffect(() => {
     const fetchShiftsTabData = async () => {
       setIsLoading(true);
@@ -273,11 +295,13 @@ export default function ShiftTab({
           dimensions: fetchedDimensions,
           dimEntries: fetchedDimEntries,
           specialties: fetchedSpecialties,
+          linkShifts: fetchedLinkShifts,
         } = await getShiftsTabData(selectedTeamId);
         setShifts(fetchedShifts);
         setDimensions(fetchedDimensions);
         setDimEntries(fetchedDimEntries);
         setSpecialties(fetchedSpecialties);
+        setLinkShifts(fetchedLinkShifts);
         setIsLoading(false);
       }
     };
@@ -299,6 +323,7 @@ export default function ShiftTab({
               dimEntries={dimEntries}
               shifts={shifts}
               specialties={specialties}
+              linkShifts={linkShifts}
               defaultShiftFields={DefaultWorkShiftFields}
               handleAddShift={handleAddShift}
               handleUpdateShift={handleUpdateShift}
@@ -310,6 +335,8 @@ export default function ShiftTab({
               handleUpdateDimEntry={handleUpdateDimEntry}
               handleDeleteDimEntry={handleDeleteDimEntry}
               handleUpdateAttribute={handleUpdateAttribute}
+              handleAddLinkShift={handleAddLinkShift}
+              handleDeleteLinkShift={handleDeleteLinkShift}
             />
             <div className="divider" />
             <ShiftTable
@@ -320,6 +347,7 @@ export default function ShiftTab({
               dimEntries={dimEntries}
               shifts={shifts}
               specialties={[]}
+              linkShifts={[]}
               defaultShiftFields={DefaultRestShiftFields}
               handleAddShift={handleAddShift}
               handleUpdateShift={handleUpdateShift}
@@ -331,6 +359,8 @@ export default function ShiftTab({
               handleUpdateDimEntry={handleUpdateDimEntry}
               handleDeleteDimEntry={handleDeleteDimEntry}
               handleUpdateAttribute={handleUpdateAttribute}
+              handleAddLinkShift={handleAddLinkShift}
+              handleDeleteLinkShift={handleDeleteLinkShift}
             />
           </div>
         )

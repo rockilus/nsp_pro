@@ -4,10 +4,12 @@ import utc from "dayjs/plugin/utc";
 // Actions
 import { getDimensions } from "./dimension";
 import { getSpecialties } from "./specialty";
+import { getLinkShifts } from "./link-shift";
 // Types
 import { ShiftT } from "../../types/shift";
 // Env Vars
 import { API_URL } from "./env";
+import { get } from "http";
 
 dayjs.extend(utc);
 
@@ -185,12 +187,14 @@ export async function getShiftsTabData(teamId: string) {
       getShifts(teamId),
       getDimensions(teamId),
       getSpecialties(teamId),
+      getLinkShifts(teamId),
     ]);
     return {
       shifts: shiftsTabData[0],
       dimensions: shiftsTabData[1].dimensions,
       dimEntries: shiftsTabData[1].dimEntries,
       specialties: shiftsTabData[2],
+      linkShifts: shiftsTabData[3],
     };
   } catch (error) {
     console.error("Failed to fetch shifts tab data:", error);

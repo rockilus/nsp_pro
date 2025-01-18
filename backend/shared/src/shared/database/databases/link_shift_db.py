@@ -51,9 +51,9 @@ class LinkShiftDB:
     def get_link_shifts_by_shift_id(self, shift_id: str) -> List[LinkShift]:
         try:
             # pylint: disable=no-member
-            ls_docs = LinkShiftDocument.objects.filter(shifts__in=[shift_id])  # type: ignore        except Exception as e:
-            log_info("Failed to get link_shifts by shift_id from database")
-            handle_get_document_error(e)
+            ls_docs = LinkShiftDocument.objects.filter(  # type: ignore
+                shifts__in=[shift_id]
+            )
         except Exception as e:
             log_info("Failed to get link_shifts by shift_id from database")
             handle_get_document_error(e)

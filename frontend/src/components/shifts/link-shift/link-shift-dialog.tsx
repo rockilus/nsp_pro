@@ -1,0 +1,103 @@
+import React, { useState } from "react";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+// MUI
+import Button from "@mui/material/Button";
+import { styled } from "@mui/material/styles";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+// Components
+import AddLinkShift from "./add-link-shift";
+import LinkShiftList from "./link-shift-list";
+// Types
+import { LinkShiftT, ShiftT } from "../../../types/shift";
+
+dayjs.extend(utc);
+
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  "& .MuiDialogContent-root": {
+    padding: theme.spacing(2),
+  },
+  "& .MuiDialogActions-root": {
+    padding: theme.spacing(1),
+  },
+}));
+
+export default function LinkShiftDialog({
+  lng,
+  teamId,
+  shifts,
+  linkShifts,
+  handleAddLinkShift,
+  handleDeleteLinkShift,
+}: {
+  lng: string;
+  teamId: string;
+  shifts: ShiftT[];
+  linkShifts: LinkShiftT[];
+  handleAddLinkShift: (linkShift: LinkShiftT) => void;
+  handleDeleteLinkShift: (linkShiftId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [shiftSelected1, setShiftSelected1] = useState<ShiftT | null>(null);
+  const [shiftSelected2, setShiftSelected2] = useState<ShiftT | null>(null);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+    setShiftSelected1(null);
+    setShiftSelected2(null);
+  };
+
+  return (
+    <React.Fragment>
+      <Button variant="outlined" onClick={handleClickOpen}>
+        Link shifts
+      </Button>
+      <BootstrapDialog
+        onClose={handleClose}
+        aria-labelledby="customized-dialog-title"
+        open={open}
+        sx={{ "& .MuiDialog-paper": { maxWidth: "700px" } }}
+      >
+        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+          <span>Link shifts</span>
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleClose}
+          sx={(theme) => ({
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: theme.palette.grey[500],
+          })}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent dividers>
+          <AddLinkShift
+            lng={lng}
+            teamId={teamId}
+            shifts={shifts}
+            shiftSelected1={shiftSelected1}
+            shiftSelected2={shiftSelected2}
+            setShiftSelected1={setShiftSelected1}
+            setShiftSelected2={setShiftSelected2}
+            handleAddLinkShift={handleAddLinkShift}
+          />
+          <LinkShiftList
+            linkShifts={linkShifts}
+            shifts={shifts}
+            handleDeleteLinkShift={handleDeleteLinkShift}
+          />
+        </DialogContent>
+      </BootstrapDialog>
+    </React.Fragment>
+  );
+}
