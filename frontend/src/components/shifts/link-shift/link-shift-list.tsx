@@ -1,6 +1,5 @@
 import React from "react";
 // MUI
-import { Box, Button, Typography } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
 import { styled } from "@mui/material/styles";
@@ -12,6 +13,8 @@ import CloseIcon from "@mui/icons-material/Close";
 // Components
 import AddLinkShift from "./add-link-shift";
 import LinkShiftList from "./link-shift-list";
+// Styles
+import "../../../styles/text-styles.css";
 // Types
 import { LinkShiftT, ShiftT } from "../../../types/shift";
 
@@ -41,6 +44,8 @@ export default function LinkShiftDialog({
   handleAddLinkShift: (linkShift: LinkShiftT) => void;
   handleDeleteLinkShift: (linkShiftId: string) => void;
 }) {
+  const { t } = useTranslation(lng, "shift-page");
+
   const [open, setOpen] = useState(false);
   const [shiftSelected1, setShiftSelected1] = useState<ShiftT | null>(null);
   const [shiftSelected2, setShiftSelected2] = useState<ShiftT | null>(null);
@@ -57,7 +62,7 @@ export default function LinkShiftDialog({
   return (
     <React.Fragment>
       <Button variant="outlined" onClick={handleClickOpen}>
-        Link shifts
+        {t("link_shifts")}
       </Button>
       <BootstrapDialog
         onClose={handleClose}
@@ -66,7 +71,7 @@ export default function LinkShiftDialog({
         sx={{ "& .MuiDialog-paper": { maxWidth: "700px" } }}
       >
         <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-          <span>Link shifts</span>
+          <span className="title">{t("link_shifts")}</span>
         </DialogTitle>
         <IconButton
           aria-label="close"

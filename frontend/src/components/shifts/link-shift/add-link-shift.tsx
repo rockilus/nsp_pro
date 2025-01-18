@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
-import { styled } from "@mui/material/styles";
-import Dialog from "@mui/material/Dialog";
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
-import { Typography, Box } from "@mui/material";
-
 // Components
 import { validateLinkShift } from "./validate-link-shift";
 // Styles
@@ -40,9 +37,19 @@ export default function AddLinkShift({
   setShiftSelected2: (shift: ShiftT | null) => void;
   handleAddLinkShift: (linkShift: LinkShiftT) => void;
 }) {
+  const { t } = useTranslation(lng, "shift-page");
+
   const [validationMessage, setValidationMessage] = useState<string | null>(
     null
   );
+
+  const validateMessageTranslation = {
+    missing_shift: t("message_missing_shift"),
+    duplicate_shift: t("message_duplicate_shift"),
+    shift_not_found: t("message_shift_not_found"),
+    shifts_overlap: t("message_shifts_overlap"),
+    shifts_already_linked: t("message_shifts_already_linked"),
+  };
 
   const handleShift1Change = (event: SelectChangeEvent) => {
     const shiftSelected = shifts.find(
@@ -69,7 +76,7 @@ export default function AddLinkShift({
 
   const handleCreateLinkShift = () => {
     if (!shiftSelected1 || !shiftSelected2) {
-      setValidationMessage("Select two shifts to link.");
+      setValidationMessage(validateMessageTranslation.missing_shift);
       return;
     }
     const newLinkShift = {
@@ -83,7 +90,11 @@ export default function AddLinkShift({
       linkShifts
     );
     if (!validationResult.isValid) {
-      setValidationMessage(validationResult.validationMessage);
+      setValidationMessage(
+        validateMessageTranslation[
+          validationResult.validationMessage as keyof typeof validateMessageTranslation
+        ] || t("message_unknown_error")
+      );
       return;
     }
 
@@ -132,7 +143,6 @@ export default function AddLinkShift({
   const renderShift1Select = () => (
     <React.Fragment>
       <div className="ls-select-shift">
-        {/* <span className="ls-select-title">Select Shift 1:</span> */}
         <Select
           value={shiftSelected1 ? shiftSelected1.id : ""}
           onChange={handleShift1Change}
@@ -141,7 +151,7 @@ export default function AddLinkShift({
           sx={{ width: "230px" }}
         >
           <MenuItem value="" disabled>
-            Select a shift
+            {t("select_a_shift")}
           </MenuItem>
           {shiftsForShift1.map((shift) => (
             <MenuItem key={shift.id} value={shift.id}>
@@ -165,7 +175,6 @@ export default function AddLinkShift({
   const renderShift2Select = () => (
     <React.Fragment>
       <div className="ls-select-shift">
-        {/* <span className="ls-select-title">Select Shift 2:</span> */}
         <Select
           value={shiftSelected2 ? shiftSelected2.id : ""}
           onChange={handleShift2Change}
@@ -175,7 +184,7 @@ export default function AddLinkShift({
           disabled={!shiftSelected1}
         >
           <MenuItem value="" disabled>
-            Select a shift
+            {t("select_a_shift")}
           </MenuItem>
           {shiftsForShift2.map((shift) => (
             <MenuItem key={shift.id} value={shift.id}>
@@ -203,7 +212,7 @@ export default function AddLinkShift({
         <SyncAltIcon sx={{ marginX: 1, fontSize: 16, color: "grey" }} />
         {renderShift2Select()}
         <Button variant="contained" onClick={handleCreateLinkShift}>
-          Link
+          {t("link")}
         </Button>
       </div>
       {validationMessage ? (
