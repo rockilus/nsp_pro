@@ -8,17 +8,22 @@ def validate_link_shift(
     ls_candiate: LinkShift, shifts_ls: List[Shift], ls_others: List[LinkShift]
 ) -> bool:
     if len(ls_candiate.shift_ids) < 2:
-        raise ValueError("LinkShift must contain at least two shifts.")
+        # raise ValueError("LinkShift must contain at least two shifts.")
+        return False
     if len(ls_candiate.shift_ids) != len(set(ls_candiate.shift_ids)):
-        raise ValueError("Duplicate shift IDs found in link_shift.shift_ids.")
+        # raise ValueError("Duplicate shift IDs found in link_shift.shift_ids.")
+        return False
     if len(shifts_ls) != len(ls_candiate.shift_ids):
-        raise ValueError("Shifts not found.")
+        # raise ValueError("Shifts not found.")
+        return False
     overlap = shifts_overlap(shifts_ls)
     if overlap:
-        raise ValueError("Shifts overlap.")
+        # raise ValueError("Shifts overlap.")
+        return False
     for ls in ls_others:
         if set(ls.shift_ids) == set(ls_candiate.shift_ids):
-            raise ValueError("LinkShift already exists.")
+            # raise ValueError("LinkShift already exists.")
+            return False
     return True
 
 

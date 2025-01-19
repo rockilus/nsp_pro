@@ -138,14 +138,16 @@ export default function ShiftTable({
           )}
         </div>
         <div className="shift-actions-container">
-          <LinkShiftDialog
-            lng={lng}
-            teamId={selectedTeamId}
-            shifts={shifts}
-            linkShifts={linkShifts}
-            handleAddLinkShift={handleAddLinkShift}
-            handleDeleteLinkShift={handleDeleteLinkShift}
-          />
+          {!isRest && (
+            <LinkShiftDialog
+              lng={lng}
+              teamId={selectedTeamId}
+              shifts={shifts}
+              linkShifts={linkShifts}
+              handleAddLinkShift={handleAddLinkShift}
+              handleDeleteLinkShift={handleDeleteLinkShift}
+            />
+          )}
           <PopoverRHS
             title={t("new_property")}
             buttonContent={<TableAddButton text={t("property")} />}

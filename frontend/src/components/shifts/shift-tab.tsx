@@ -118,18 +118,55 @@ export default function ShiftTab({
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    const updatedShift = await updateShift(shift);
+    const {
+      shiftUpdated: updatedShift,
+      linkShiftsUpdated,
+      linkShiftsIdsDeleted,
+    } = await updateShift(shift);
     setShifts((prevShifts) =>
       prevShifts.map((w) => (w.id === updatedShift.id ? updatedShift : w))
     );
+    setLinkShifts((prevLinkShifts) => {
+      const filteredLinkShifts = prevLinkShifts.filter(
+        (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id)
+      );
+      const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
+        const lsUpdated = linkShiftsUpdated.find(
+          (ls) => ls.id === linkShift.id
+        );
+        return lsUpdated ? lsUpdated : linkShift;
+      });
+      const newLinkShifts = linkShiftsUpdated.filter(
+        (linkShift) => !filteredLinkShifts.some((ls) => ls.id === linkShift.id)
+      );
+      return replacedLinkShifts.concat(newLinkShifts);
+    });
   };
 
   const handleDeleteShift = async (shiftId: string) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }
-    await deleteShift(shiftId, selectedTeamId);
+    const { linkShiftsUpdated, linkShiftsIdsDeleted } = await deleteShift(
+      shiftId,
+      selectedTeamId
+    );
     setShifts(shifts.filter((shift) => shift.id !== shiftId));
+    setLinkShifts((prevLinkShifts) => {
+      const filteredLinkShifts = prevLinkShifts.filter(
+        (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id)
+      );
+      const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
+        const lsUpdated = linkShiftsUpdated.find(
+          (ls) => ls.id === linkShift.id
+        );
+        return lsUpdated ? lsUpdated : linkShift;
+      });
+      const newLinkShifts = linkShiftsUpdated.filter(
+        (linkShift) => !filteredLinkShifts.some((ls) => ls.id === linkShift.id)
+      );
+      return replacedLinkShifts.concat(newLinkShifts);
+    });
   };
 
   //////////////////////////

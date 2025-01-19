@@ -6,10 +6,9 @@ import { getDimensions } from "./dimension";
 import { getSpecialties } from "./specialty";
 import { getLinkShifts } from "./link-shift";
 // Types
-import { ShiftT } from "../../types/shift";
+import { ShiftT, LinkShiftT } from "../../types/shift";
 // Env Vars
 import { API_URL } from "./env";
-import { get } from "http";
 
 dayjs.extend(utc);
 
@@ -148,7 +147,15 @@ export async function updateShift(updatedShift: ShiftT) {
     if (!response.ok) {
       throw new Error("Failed to update shift: " + responseData.detail);
     }
-    return toShiftT(responseData) as ShiftT;
+    return {
+      shiftUpdated: toShiftT(responseData.shift) as ShiftT,
+      linkShiftsUpdated: responseData.linkShifts.updated
+        ? (responseData.linkShifts.updated as LinkShiftT[])
+        : [],
+      linkShiftsIdsDeleted: responseData.linkShifts.deleted
+        ? responseData.linkShifts.deleted
+        : [],
+    };
   } catch (error) {
     console.error("Failed to update shift:", error);
     throw new Error("Failed to update shift, please try again later");
@@ -171,6 +178,14 @@ export async function deleteShift(shiftId: string, teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to delete shift: " + responseData.detail);
     }
+    return {
+      linkShiftsUpdated: responseData.linkShifts.updated
+        ? (responseData.linkShifts.updated as LinkShiftT[])
+        : [],
+      linkShiftsIdsDeleted: responseData.linkShifts.deleted
+        ? responseData.linkShifts.deleted
+        : [],
+    };
   } catch (error) {
     console.error("Failed to delete shift:", error);
     throw new Error("Failed to delete shift, please try again later");
