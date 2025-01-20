@@ -35,6 +35,7 @@ export default function BreachList({
         category: ObjectiveCategory.DUTIES_PER_MONTH,
         label: t("duties_per_month"),
       },
+      { category: ObjectiveCategory.LINK_SHIFT, label: t("link_shift") },
     ];
 
   const [selectedCategories, setSelectedCategories] = useState<
@@ -62,8 +63,6 @@ export default function BreachList({
       });
     }
   };
-
-  console.log(selectedCategories);
 
   return (
     <div className="breach-lhs-tab-container">
