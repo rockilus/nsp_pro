@@ -170,6 +170,7 @@ def core_to_engine_inputs(
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             link_shifts,
+            daily_shift_demands,
         ),
         worker_shift_filters=build_worker_shift_filters(
             workers, worker_ids_to_worker_dates, shifts, dimensions, attributes

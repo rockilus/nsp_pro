@@ -45,6 +45,7 @@ class TestBuildDutyRecupPairs:
             schedule, workers, fixed_assignments, dates_campaign
         )
         shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
+        dsds = sample_data_fixture.daily_shift_demands
 
         # Call the method under test
         ls_pairs = build_link_shift_pairs(
@@ -52,6 +53,7 @@ class TestBuildDutyRecupPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             link_shifts,
+            dsds,
         )
 
         # Verify the output
@@ -82,7 +84,10 @@ class TestBuildDutyRecupPairs:
                 for _, d, _ in [a_1, a_2]
             )
         )
-        assert dates_in_pairs == sorted(dates_campaign)
+        dsds_dates = sorted(
+            set(dsd.date for dsd in dsds if dsd.shift_id in ["s0", "s1"])
+        )
+        assert dates_in_pairs == dsds_dates
 
     # pylint: disable=redefined-outer-name
     def test_empty_workers(
@@ -123,6 +128,7 @@ class TestBuildDutyRecupPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             link_shifts,
+            sample_data_fixture.daily_shift_demands,
         )
 
         # Verify the output
@@ -167,6 +173,7 @@ class TestBuildDutyRecupPairs:
             worker_ids_to_worker_dates,
             [],
             link_shifts,
+            sample_data_fixture.daily_shift_demands,
         )
 
         # Verify the output
@@ -215,6 +222,7 @@ class TestBuildDutyRecupPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             link_shifts,
+            sample_data_fixture.daily_shift_demands,
         )
 
         # Verify the output
@@ -255,6 +263,7 @@ class TestBuildDutyRecupPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             link_shifts,
+            sample_data_fixture.daily_shift_demands,
         )
 
         # Verify the output
