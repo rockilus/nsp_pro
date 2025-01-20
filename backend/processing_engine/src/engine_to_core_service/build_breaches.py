@@ -13,6 +13,7 @@ from shared.schemas import (
     ConstraintSeq,
     ConstraintSum,
     DailyShiftDemand,
+    LinkShift,
     ObjectiveCategory,
     Request,
     Schedule,
@@ -31,6 +32,7 @@ def build_breaches(
     schedule: Schedule,
     workers: List[Worker],
     shifts: List[Shift],
+    link_shifts: List[LinkShift],
     daily_shift_demands: List[DailyShiftDemand],
     assignments: List[Assignment],
     constraints: Constraints,
@@ -42,6 +44,7 @@ def build_breaches(
         breach.description = _build_breach_description(
             workers,
             shifts,
+            link_shifts,
             assignments,
             constraints,
             requests,
@@ -84,6 +87,7 @@ def _parse_breaches_engine(
 def _build_breach_description(
     workers: List[Worker],
     shifts: List[Shift],
+    link_shifts: List[LinkShift],
     assignments: List[Assignment],
     constraints: Constraints,
     requests: List[Request],
@@ -149,6 +153,14 @@ def _build_breach_description(
             workers,
             shifts,
             assignments,
+            breach,
+        )
+    if breach.objective_category == ObjectiveCategory.LINK_SHIFT:
+        return _build_description_link_shift_breach(
+            workers,
+            shifts,
+            assignments,
+            link_shifts,
             breach,
         )
     return f"{breach.objective_category} constraint not implemented yet"
@@ -450,6 +462,51 @@ def _build_description_breach_nb_duties(
         str(count_actual),
         "on month",
         f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}",
+    ]
+    return " ".join(string_list)
+
+
+def _build_description_link_shift_breach(
+    workers: List[Worker],
+    shifts: List[Shift],
+    assignments: List[Assignment],
+    link_shifts: List[LinkShift],
+    breach: Breach,
+) -> str:
+    link_shift = next((ls for ls in link_shifts if ls.id == breach.objective_id), None)
+    if link_shift is None:
+        return "Unknown link shift"
+    shift_0 = next((s for s in shifts if s.id == link_shift.shift_ids[0]), None)
+    shift_1 = next((s for s in shifts if s.id == link_shift.shift_ids[1]), None)
+    if shift_0 is None or shift_1 is None:
+        return "Unknown linked shifts"
+    date_breach = breach.variables[0].date
+    as_shift_0 = next(
+        (a for a in assignments if a.date == date_breach and a.shift_id == shift_0.id),
+        None,
+    )
+    as_shift_1 = next(
+        (a for a in assignments if a.date == date_breach and a.shift_id == shift_1.id),
+        None,
+    )
+    if as_shift_0 is None or as_shift_1 is None:
+        return "Unknown assignments"
+    worker_0 = next((w for w in workers if w.id == as_shift_0.worker_id), None)
+    worker_1 = next((w for w in workers if w.id == as_shift_1.worker_id), None)
+    if worker_0 is None or worker_1 is None:
+        return "Unknown workers"
+
+    string_list = [
+        "Linked shifts",
+        shift_0.name,
+        "and",
+        shift_1.name,
+        "done by",
+        worker_0.name,
+        "and",
+        worker_1.name,
+        "respectively on",
+        date_breach.strftime("%b %d"),
     ]
     return " ".join(string_list)
 
