@@ -69,6 +69,19 @@ def _parse_breaches_engine(
             (v[0], date.fromisoformat(v[1]), v[2])
             for v in [v.split("_") for v in var_name.cstr_vars]
         ]
+        if var_name.objective_category == 6:
+            ls_id = var_name.objective_id
+            date_breach = variables[0][1]
+            breach_exist = next(
+                (
+                    b
+                    for b in out
+                    if b.objective_id == ls_id and b.variables[0].date == date_breach
+                ),
+                None,
+            )
+            if breach_exist is not None:
+                continue
         out.append(
             Breach(
                 id="",

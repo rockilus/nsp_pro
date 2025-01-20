@@ -17,9 +17,7 @@ def solve_schedule(schedule_id: str) -> Schedule:
         SolveDetailsStatus.STARTED,
         SolveDetailsStatus.RETRY,
     ]:
-        async_result = AsyncResult(
-            schedule.solve_details.task_id, app=celery_app
-        )
+        async_result = AsyncResult(schedule.solve_details.task_id, app=celery_app)
         # test_status = async_result.status
         # test_task_id = schedule.solve_details.task_id
 
@@ -31,7 +29,9 @@ def solve_schedule(schedule_id: str) -> Schedule:
 
         if async_result_ok:
             try:
-                string = f"Task {schedule.solve_details.task_id} is {async_result.status}"
+                string = (
+                    f"Task {schedule.solve_details.task_id} is {async_result.status}"
+                )
                 print(string)
                 if not async_result.ready():
                     if (
@@ -46,9 +46,7 @@ def solve_schedule(schedule_id: str) -> Schedule:
                         # )
                         # schedule = schedule_db.update_schedule(schedule)
                     else:
-                        raise ValueError(
-                            f"Schedule is already being solved: {string}"
-                        )
+                        raise ValueError(f"Schedule is already being solved: {string}")
             except Exception as e:
                 print(e)
                 raise ValueError(

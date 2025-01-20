@@ -192,7 +192,7 @@ class TestDutyRecupConstraint:
 
         # Check output contains expected breach
         breaches: List[Breach] = _parse_breaches_engine(schedule, outputs.breaches)
-        assert len(breaches) == 2
+        assert len(breaches) == 1
         breaches_expected = [
             Breach(
                 id="",
@@ -214,25 +214,25 @@ class TestDutyRecupConstraint:
                 description="",
                 hard_to_soft=None,
             ),
-            Breach(
-                id="",
-                schedule_id=schedule.id,
-                objective_id="ls_0",
-                objective_category=ObjectiveCategory.LINK_SHIFT,
-                variables=[
-                    Variable(
-                        worker_id=worker_target_1.id,
-                        date=date_target,
-                        shift_id=shift_target_0_id,
-                    ),
-                    Variable(
-                        worker_id=worker_target_1.id,
-                        date=date_target,
-                        shift_id=shift_target_1_id,
-                    ),
-                ],
-                description="",
-                hard_to_soft=None,
-            ),
+            # Breach(
+            #     id="",
+            #     schedule_id=schedule.id,
+            #     objective_id="ls_0",
+            #     objective_category=ObjectiveCategory.LINK_SHIFT,
+            #     variables=[
+            #         Variable(
+            #             worker_id=worker_target_1.id,
+            #             date=date_target,
+            #             shift_id=shift_target_0_id,
+            #         ),
+            #         Variable(
+            #             worker_id=worker_target_1.id,
+            #             date=date_target,
+            #             shift_id=shift_target_1_id,
+            #         ),
+            #     ],
+            #     description="",
+            #     hard_to_soft=None,
+            # ),
         ]
         assert breaches == breaches_expected
