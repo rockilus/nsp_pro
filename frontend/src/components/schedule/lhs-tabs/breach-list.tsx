@@ -46,6 +46,8 @@ export default function BreachList({
       .map((c) => c.category as ObjectiveCategory)
   );
 
+  console.log(breaches);
+
   const handleCategoryClick = (category: ObjectiveCategory | "all") => {
     if (category === "all") {
       setSelectedCategories(

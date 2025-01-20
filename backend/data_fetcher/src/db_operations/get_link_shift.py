@@ -11,9 +11,9 @@ def get_link_shifts(
     out: List[LinkShift] = []
     for ls in link_shifts:
         shifts_ls = [s for s in shifts if s.id in ls.shift_ids]
-        valid = ls.validate(shifts_ls, link_shifts)
+        valid = ls.validate(
+            shifts_ls, [ls_o for ls_o in link_shifts if ls_o.id != ls.id]
+        )
         if valid.is_valid:
             out.append(ls)
-        else:
-            collections.link_shift_db.delete_link_shift(ls.id)
     return out
