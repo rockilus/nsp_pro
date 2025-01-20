@@ -58,20 +58,29 @@ class TestBuildDutyRecupPairs:
         assert isinstance(ls_pairs, list)
         assert all(isinstance(pair, tuple) for pair in ls_pairs)
         assert all(
-            isinstance(pair[0], tuple) and isinstance(pair[1], tuple)
+            isinstance(pair[0], tuple)
+            and isinstance(pair[1], tuple)
+            and isinstance(pair[2], str)
             for pair in ls_pairs
         )
-        for pair in ls_pairs:
-            w_s0_id, d_s0, s0_id = pair[0]
-            w_s1_id, d_s1, s1_id = pair[1]
+        for a_1, a_2, ls_id in ls_pairs:
+            w_s0_id, d_s0, s0_id = a_1
+            w_s1_id, d_s1, s1_id = a_2
             assert w_s0_id == w_s1_id
             assert d_s0 == d_s1
             if s0_id == "s0":
                 assert s1_id == "s1"
-        w_ids_in_pairs = sorted(set(w_id for pair in ls_pairs for w_id, _, _ in pair))
+            assert ls_id == "ls_0"
+        w_ids_in_pairs = sorted(
+            set(w_id for a_1, a_2, _ in ls_pairs for w_id, _, _ in [a_1, a_2])
+        )
         assert w_ids_in_pairs == sorted(set(w.id for w in workers_not_deleted))
         dates_in_pairs = sorted(
-            set(date.fromisoformat(d) for pair in ls_pairs for _, d, _ in pair)
+            set(
+                date.fromisoformat(d)
+                for a_1, a_2, _ in ls_pairs
+                for _, d, _ in [a_1, a_2]
+            )
         )
         assert dates_in_pairs == sorted(dates_campaign)
 
