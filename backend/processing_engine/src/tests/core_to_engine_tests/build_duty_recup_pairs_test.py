@@ -1,8 +1,8 @@
 from datetime import date, timedelta
-from typing import Dict, List
+from typing import List
 
 import pytest
-from shared.schemas import Shift, ShiftType, Worker, WorkerDates
+from shared.schemas import EngineInputs, Shift, ShiftType, Worker, WorkerDates
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
@@ -13,11 +13,11 @@ from tests.test_data import test_data_set_1
 class TestBuildDutyRecupPairs:
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_duty_recup_pairs(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
-        shifts = sample_data["shifts"]
-        schedule = sample_data["schedule"]
-        fixed_assignments = sample_data["fixed_assignments"]
+    def test_build_duty_recup_pairs(self, sample_data: EngineInputs) -> None:
+        workers = sample_data.workers
+        shifts = sample_data.shifts
+        schedule = sample_data.schedule
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -69,11 +69,11 @@ class TestBuildDutyRecupPairs:
         assert dates_in_pairs == sorted(dates_campaign)
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_empty_workers(self, sample_data: Dict) -> None:
+    def test_empty_workers(self, sample_data: EngineInputs) -> None:
         workers: List[Worker] = []
-        shifts = sample_data["shifts"]
-        schedule = sample_data["schedule"]
-        fixed_assignments = sample_data["fixed_assignments"]
+        shifts = sample_data.shifts
+        schedule = sample_data.schedule
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -103,11 +103,11 @@ class TestBuildDutyRecupPairs:
         assert len(duty_recup_pairs) == 0
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_empty_shifts(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
+    def test_empty_shifts(self, sample_data: EngineInputs) -> None:
+        workers = sample_data.workers
         shifts: List[Shift] = []
-        schedule = sample_data["schedule"]
-        fixed_assignments = sample_data["fixed_assignments"]
+        schedule = sample_data.schedule
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -132,9 +132,9 @@ class TestBuildDutyRecupPairs:
         assert len(duty_recup_pairs) == 0
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_worker_with_no_dates(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
-        shifts = sample_data["shifts"]
+    def test_worker_with_no_dates(self, sample_data: EngineInputs) -> None:
+        workers = sample_data.workers
+        shifts = sample_data.shifts
 
         # Build necessary inputs
         workers_not_deleted = [worker for worker in workers if not worker.deleted]

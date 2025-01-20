@@ -1,0 +1,41 @@
+.add-link-shift-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 600px;
+}
+
+.ls-select-shift {
+  display: flex;
+  flex-direction: column;
+}
+
+.ls-shift-select-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 350px;
+}
+
+.ls-shift-name {
+  font-size: 0.9rem;
+  width: 150px;
+  text-align: left;
+}
+
+.ls-shift-times {
+  font-size: 0.7rem;
+  color: gray;
+  text-align: right;
+}
+
+.validation-message-container {
+  height: 20px;
+  width: 100%;
+}
+
+.validation-message {
+  color: #d32f2f;
+  font-size: 0.9rem;
+}

@@ -11,6 +11,7 @@ from shared.database.databases.daily_shift_demand_db import DailyShiftDemandDB
 from shared.database.databases.db import DB
 from shared.database.databases.dim_entry_db import DimEntryDB
 from shared.database.databases.dimension_db import DimensionDB
+from shared.database.databases.link_shift_db import LinkShiftDB
 from shared.database.databases.request_db import RequestDB
 from shared.database.databases.schedule_db import ScheduleDB
 from shared.database.databases.shift_db import ShiftDB
@@ -34,8 +35,9 @@ class DatabaseCollections:
     coverage_db: CoverageDB
     coverage_selector_db: CoverageSelectorDB
     daily_shift_demand_db: DailyShiftDemandDB
-    dimension_db: DimensionDB
     dim_entry_db: DimEntryDB
+    dimension_db: DimensionDB
+    link_shift_db: LinkShiftDB
     request_db: RequestDB
     schedule_db: ScheduleDB
     shift_db: ShiftDB
@@ -56,8 +58,9 @@ class DatabaseCollections:
         self.coverage_db = CoverageDB(db)
         self.coverage_selector_db = CoverageSelectorDB(db)
         self.daily_shift_demand_db = DailyShiftDemandDB(db)
-        self.dimension_db = DimensionDB(db)
         self.dim_entry_db = DimEntryDB(db)
+        self.dimension_db = DimensionDB(db)
+        self.link_shift_db = LinkShiftDB(db)
         self.request_db = RequestDB(db)
         self.schedule_db = ScheduleDB(db)
         self.shift_db = ShiftDB(db)

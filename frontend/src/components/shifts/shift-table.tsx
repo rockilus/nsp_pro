@@ -25,12 +25,19 @@ import {
   filterRestShifts,
   filterRestShiftsNonDefault,
 } from "./shift-utils/shift-utils";
+import LinkShiftDialog from "./link-shift/link-shift-dialog";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "../../styles/text-styles.css";
 import "../../styles/table-styles.css";
+import "./shift-table.css";
 // Types
-import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../types/shift";
+import {
+  ShiftT,
+  ShiftLeaveType,
+  ShiftRestType,
+  LinkShiftT,
+} from "../../types/shift";
 import { DimensionType } from "../../types/dimension";
 import { DimensionEntryType } from "../../types/dimension";
 import { DimEntryT } from "../../types/dimension";
@@ -49,6 +56,7 @@ export default function ShiftTable({
   dimEntries,
   shifts,
   specialties,
+  linkShifts,
   defaultShiftFields,
   handleAddShift,
   handleUpdateShift,
@@ -60,6 +68,8 @@ export default function ShiftTable({
   handleUpdateDimEntry,
   handleDeleteDimEntry,
   handleUpdateAttribute,
+  handleAddLinkShift,
+  handleDeleteLinkShift,
 }: {
   lng: string;
   selectedTeamId: string;
@@ -68,6 +78,7 @@ export default function ShiftTable({
   dimEntries: DimEntryT[];
   shifts: ShiftT[];
   specialties: SpecialtyT[];
+  linkShifts: LinkShiftT[];
   defaultShiftFields: Record<string, string>[];
   handleAddShift: (isRest: boolean) => void;
   handleUpdateShift: (updatedShift: ShiftT) => void;
@@ -82,6 +93,8 @@ export default function ShiftTable({
   handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
   handleDeleteDimEntry: (dimEntryId: string) => void;
   handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
+  handleAddLinkShift: (linkShift: LinkShiftT) => void;
+  handleDeleteLinkShift: (linkShiftId: string) => void;
 }) {
   const { t } = useTranslation(lng, "shift-page");
 
@@ -124,26 +137,38 @@ export default function ShiftTable({
             </ToggleButton>
           )}
         </div>
-        <PopoverRHS
-          title={t("new_property")}
-          buttonContent={<TableAddButton text={t("property")} />}
-          content={
-            <NewDimensionForm
+        <div className="shift-actions-container">
+          {!isRest && (
+            <LinkShiftDialog
               lng={lng}
-              selectedTeamId={selectedTeamId}
-              dimensionType={
-                isRest ? DimensionType.REST_SHIFT : DimensionType.SHIFT
-              }
-              dimensions={dimensions}
-              dimEntries={dimEntries}
-              setOpenParent={setPopoverRhsOpen}
-              handleAddDimension={handleAddDimension}
-              handleUpdateDimension={handleUpdateDimension}
+              teamId={selectedTeamId}
+              shifts={shifts}
+              linkShifts={linkShifts}
+              handleAddLinkShift={handleAddLinkShift}
+              handleDeleteLinkShift={handleDeleteLinkShift}
             />
-          }
-          open={popoverRhsOpen}
-          setOpen={setPopoverRhsOpen}
-        />
+          )}
+          <PopoverRHS
+            title={t("new_property")}
+            buttonContent={<TableAddButton text={t("property")} />}
+            content={
+              <NewDimensionForm
+                lng={lng}
+                selectedTeamId={selectedTeamId}
+                dimensionType={
+                  isRest ? DimensionType.REST_SHIFT : DimensionType.SHIFT
+                }
+                dimensions={dimensions}
+                dimEntries={dimEntries}
+                setOpenParent={setPopoverRhsOpen}
+                handleAddDimension={handleAddDimension}
+                handleUpdateDimension={handleUpdateDimension}
+              />
+            }
+            open={popoverRhsOpen}
+            setOpen={setPopoverRhsOpen}
+          />
+        </div>
       </div>
       <TableContainer style={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">

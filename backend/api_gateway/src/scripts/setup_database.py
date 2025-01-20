@@ -17,6 +17,7 @@ coverage_selector_db = collections.coverage_selector_db
 daily_shift_demand_db = collections.daily_shift_demand_db
 dimension_db = collections.dimension_db
 dim_entry_db = collections.dim_entry_db
+link_shift_db = collections.link_shift_db
 request_db = collections.request_db
 schedule_db = collections.schedule_db
 shift_db = collections.shift_db

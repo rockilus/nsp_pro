@@ -5,7 +5,11 @@ from typing import Dict, List, Tuple
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint_factory import AddConstraintFactory
-from engine.model.utils.model_utils import build_var_name_work_time, get_nested_value
+from engine.model.utils.model_utils import (
+    build_var_name_link_shift,
+    build_var_name_work_time,
+    get_nested_value,
+)
 from engine.types import (
     BenchmarkTimes,
     Constraints,
@@ -194,6 +198,7 @@ class Model:
             inputs.shift_demands, coverage_hts
         )
         self.add_duty_recup_constraints(inputs.duty_recup_pairs, duty_recup_hts)
+        self.add_link_shift_constraints(inputs.link_shifts_pairs)
         self.add_work_time_constraints(
             inputs.work_loads.weekly_work_time_contractual, True, work_time_hts
         )
@@ -291,6 +296,23 @@ class Model:
                 self.model.AddAbsEquality(excess, delta)
                 self.obj.int_vars.append(excess)
                 self.obj.int_coeffs.append(100)
+
+    def add_link_shift_constraints(
+        self,
+        ls_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str]],
+    ) -> None:
+        for s1, s2, ls_id in ls_pairs:
+            s1_var = self.variables[s1]
+            s2_var = self.variables[s2]
+            var_name = build_var_name_link_shift(
+                [s1_var, s2_var], ObjectiveCategory.LINK_SHIFT, ls_id
+            )
+            delta = self.model.NewIntVar(-1, 1, "")
+            self.model.Add(delta == s1_var - s2_var)
+            excess = self.model.NewIntVar(0, 1, var_name)
+            self.model.AddAbsEquality(excess, delta)
+            self.obj.int_vars.append(excess)
+            self.obj.int_coeffs.append(1)
 
     def add_work_time_constraints(
         self, work_time: WorkTime, contract: bool, hard_to_soft: bool = False

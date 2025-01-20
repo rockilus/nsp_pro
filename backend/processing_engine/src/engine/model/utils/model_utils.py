@@ -76,6 +76,23 @@ def build_var_name_daily_shift_demand(
     )
 
 
+def build_var_name_link_shift(
+    cstr_vars: List[cp_model.IntVar],
+    category: ObjectiveCategory,
+    link_shift_id: str,
+) -> str:
+    return json.dumps(
+        asdict(
+            VarName(
+                objective_id=link_shift_id,
+                cstr_vars=[var.Name() for var in cstr_vars],
+                objective_category=category.value,
+                hard_to_soft=None,
+            )
+        )
+    )
+
+
 # def build_var_name_constraint(
 #     constraint: Constraint | Request | ShiftDemand | None,
 #     cstr_vars: List[cp_model.IntVar],

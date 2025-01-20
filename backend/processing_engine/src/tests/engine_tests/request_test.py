@@ -1,6 +1,6 @@
 import random
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import List
 
 import pytest
 from shared.schemas import (
@@ -21,7 +21,7 @@ from shared.schemas import (
 
 from engine import Assignment, Outputs
 from engine_to_core_service.build_breaches import _parse_breaches_engine
-from tests.engine_tests.engine_solve import engine_solve, engine_solve_engine_inputs
+from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 
 # pylint: disable=unused-import
 from tests.test_data import (  # noqa: F401
@@ -122,15 +122,15 @@ class TestRequest:
         assert a_target is not None
 
     @pytest.mark.parametrize("sample_data", test_data_set_2)
-    def test_request_one_day_negative_hard(self, sample_data: Dict) -> None:
-        shifts: List[Shift] = sample_data["shifts"]
+    def test_request_one_day_negative_hard(self, sample_data: EngineInputs) -> None:
+        shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data["workers"]
+        workers: List[Worker] = sample_data.workers
         target_worker_index = random.randint(0, len(workers) - 1)
         target_worker = workers[target_worker_index]
 
-        schedule: Schedule = sample_data["schedule"]
+        schedule: Schedule = sample_data.schedule
 
         requests = [
             Request(
@@ -146,9 +146,9 @@ class TestRequest:
             )
         ]
 
-        sample_data["requests"] = requests
+        sample_data.requests = requests
 
-        outputs: Outputs = engine_solve(sample_data)
+        outputs: Outputs = engine_solve_engine_inputs(sample_data)
 
         assignments: List[Assignment] = outputs.assignments
         a_target = next(
@@ -164,8 +164,8 @@ class TestRequest:
         assert a_target is None
 
     @pytest.mark.parametrize("sample_data", test_data_set_2)
-    def test_request_date_range_positive_hard(self, sample_data: Dict) -> None:
-        schedule: Schedule = sample_data["schedule"]
+    def test_request_date_range_positive_hard(self, sample_data: EngineInputs) -> None:
+        schedule: Schedule = sample_data.schedule
 
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -202,10 +202,10 @@ class TestRequest:
             )
             for d in dates_campaign
         ]
-        sample_data["shifts"].append(target_shift)
-        sample_data["daily_shift_demands"] += dsds_target_shift
+        sample_data.shifts.append(target_shift)
+        sample_data.daily_shift_demands += dsds_target_shift
 
-        workers: List[Worker] = sample_data["workers"]
+        workers: List[Worker] = sample_data.workers
         target_worker_index = random.randint(0, len(workers) - 1)
         target_worker = workers[target_worker_index]
 
@@ -223,9 +223,9 @@ class TestRequest:
             )
         ]
 
-        sample_data["requests"] = requests
+        sample_data.requests = requests
 
-        outputs: Outputs = engine_solve(sample_data)
+        outputs: Outputs = engine_solve_engine_inputs(sample_data)
 
         assignments: List[Assignment] = outputs.assignments
         for d in dates_campaign:

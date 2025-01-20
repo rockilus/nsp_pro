@@ -252,6 +252,7 @@ def sample_data_fixture() -> EngineInputs:
         workers=workers,
         shifts=shifts,
         shifts_recup_new=[],
+        link_shifts=[],
         dimensions=dimensions,
         dim_entries=dim_entries,
         attributes=attributes,
@@ -264,7 +265,7 @@ def sample_data_fixture() -> EngineInputs:
     )
 
 
-def sample_data() -> Dict:
+def sample_data() -> EngineInputs:
     schedule = Schedule(
         id="sch0",
         team_id="t0",
@@ -463,28 +464,30 @@ def sample_data() -> Dict:
     dimensions: List[Dimension] = []
     dim_entries: List[DimEntry] = []
     attributes: List[Attribute] = []
-    fixed_assignments: List[Assignment] = []
     cbs_augmented: List[ConstraintBuildAugmented] = []
     requests: List[Request] = []
     wip_assignments: List[Assignment] = []
 
-    return {
-        "workers": workers,
-        "shifts": shifts,
-        "schedule": schedule,
-        "dimensions": dimensions,
-        "dim_entries": dim_entries,
-        "attributes": attributes,
-        "fixed_assignments": fixed_assignments,
-        "cbs_augmented": cbs_augmented,
-        "daily_shift_demands": daily_shift_demands,
-        "requests": requests,
-        "wip_assignments": wip_assignments,
-    }
+    return EngineInputs(
+        schedule=schedule,
+        workers=workers,
+        shifts=shifts,
+        shifts_recup_new=[],
+        link_shifts=[],
+        dimensions=dimensions,
+        dim_entries=dim_entries,
+        attributes=attributes,
+        as_hist=[],
+        as_wip_fixed=[],
+        cbs_augmented=cbs_augmented,
+        daily_shift_demands=daily_shift_demands,
+        requests=requests,
+        wip_assignments=wip_assignments,
+    )
 
 
 # @pytest.fixture
-def sample_data_astrid_case() -> Dict:
+def sample_data_astrid_case() -> EngineInputs:
     schedule = Schedule(
         id="sch0",
         team_id="t0",
@@ -612,24 +615,26 @@ def sample_data_astrid_case() -> Dict:
     dimensions: List[Dimension] = []
     dim_entries: List[DimEntry] = []
     attributes: List[Attribute] = []
-    fixed_assignments: List[Assignment] = []
     cbs_augmented: List[ConstraintBuildAugmented] = []
     requests: List[Request] = []
     wip_assignments: List[Assignment] = []
 
-    return {
-        "workers": workers,
-        "shifts": shifts,
-        "schedule": schedule,
-        "dimensions": dimensions,
-        "dim_entries": dim_entries,
-        "attributes": attributes,
-        "fixed_assignments": fixed_assignments,
-        "cbs_augmented": cbs_augmented,
-        "daily_shift_demands": daily_shift_demands,
-        "requests": requests,
-        "wip_assignments": wip_assignments,
-    }
+    return EngineInputs(
+        schedule=schedule,
+        workers=workers,
+        shifts=shifts,
+        shifts_recup_new=[],
+        link_shifts=[],
+        dimensions=dimensions,
+        dim_entries=dim_entries,
+        attributes=attributes,
+        as_hist=[],
+        as_wip_fixed=[],
+        cbs_augmented=cbs_augmented,
+        daily_shift_demands=daily_shift_demands,
+        requests=requests,
+        wip_assignments=wip_assignments,
+    )
 
 
 def load_json_from_file(filename: str) -> Dict:
@@ -652,26 +657,6 @@ def sample_data_benoit_case_fixture() -> EngineInputs:
     #     r for r in engine_inputs.requests if r.id != "67893e204c7443695ec41f2b"
     # ]
     return engine_inputs
-
-
-def sample_data_benoit_case() -> Dict:
-    engine_inputs = load_engine_inputs_from_file("test_data/250117_benoit_case.json")
-    engine_inputs.requests = [
-        r for r in engine_inputs.requests if r.id != "67893e204c7443695ec41f2b"
-    ]
-    return {
-        "workers": engine_inputs.workers,
-        "shifts": engine_inputs.shifts,
-        "schedule": engine_inputs.schedule,
-        "dimensions": engine_inputs.dimensions,
-        "dim_entries": engine_inputs.dim_entries,
-        "attributes": engine_inputs.attributes,
-        "fixed_assignments": engine_inputs.as_hist + engine_inputs.as_wip_fixed,
-        "cbs_augmented": engine_inputs.cbs_augmented,
-        "daily_shift_demands": engine_inputs.daily_shift_demands,
-        "requests": engine_inputs.requests,
-        "wip_assignments": engine_inputs.wip_assignments,
-    }
 
 
 # pylint: disable=redefined-outer-name

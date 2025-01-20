@@ -8,6 +8,7 @@ from pydantic import TypeAdapter
 from shared.logger import log_info
 from shared.schemas import (
     Attribute,
+    LinkShift,
     Shift,
     ShiftLeaveType,
     ShiftRestType,
@@ -26,6 +27,7 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from routes.api_model import ShiftMessage, StaffingMessage
 from routes.attribute_routes import core_to_msg_attribute
+from routes.link_shift_routes import core_to_msg_link_shift
 from scripts.setup_database import attribute_db, shift_db
 from services.shift_services import create_shift as create_shift_service
 from services.shift_services import delete_shift as delete_shift_service
@@ -122,16 +124,19 @@ async def update_shift(
     team_id: str,
     shift: ShiftMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
-) -> ShiftMessage:
+) -> Dict:
     try:
         if not await authz_check(
             session.get_user_id(), "update-shift", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update shifts")
         shift_data = msg_to_core_to_shift(shift)
-        updated_shift = update_shift_service(shift_data)
+        updated_shift, ls_change = update_shift_service(shift_data)
         attributes = attribute_db.get_attributes_by_owner_id(updated_shift.id)
-        response = core_to_msg_shift_and_attributes(updated_shift, attributes)
+        response = {
+            "shift": core_to_msg_shift_and_attributes(updated_shift, attributes),
+            "linkShifts": core_to_msg_ls_change(ls_change),
+        }
     except Exception as e:
         log_info("Failed to update shift")
         handle_routes_errors(e)
@@ -149,11 +154,14 @@ async def delete_shift(
             session.get_user_id(), "delete-shift", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to delete shifts")
-        delete_shift_service(shift_id)
+        ls_change = delete_shift_service(shift_id)
     except Exception as e:
         log_info("Failed to delete shift")
         handle_routes_errors(e)
-    return {"message": "shift deleted"}
+    return {
+        "message": "shift deleted",
+        "linkShifts": core_to_msg_ls_change(ls_change),
+    }
 
 
 # Mappers
@@ -177,6 +185,19 @@ def core_to_msg_shift_and_attributes(
         log_info("Failed to convert Shift to ShiftMessage")
         handle_message_errors(e)
     return s_msg
+
+
+def core_to_msg_ls_change(ls_change: Dict[str, List[LinkShift | str]] | None) -> Dict:
+    if ls_change is None:
+        return {"udpated": [], "deleted": []}
+    return {
+        "updated": [
+            core_to_msg_link_shift(ls)
+            for ls in ls_change.get("updated", [])
+            if isinstance(ls, LinkShift)
+        ],
+        "deleted": ls_change.get("deleted", []),
+    }
 
 
 # message to core

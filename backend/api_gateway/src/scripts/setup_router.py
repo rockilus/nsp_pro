@@ -22,6 +22,7 @@ from routes import (
     router_dimension,
     router_export,
     router_health,
+    router_link_shift,
     router_request,
     router_schedule,
     router_shift,
@@ -65,6 +66,7 @@ app.include_router(router_dim_entry)
 app.include_router(router_dimension)
 app.include_router(router_export)
 app.include_router(router_health)
+app.include_router(router_link_shift)
 app.include_router(router_breach)
 app.include_router(router_request)
 app.include_router(router_schedule)

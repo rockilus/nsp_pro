@@ -1,0 +1,35 @@
+.link-shift-list-container {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 16px;
+  margin: 10px 0 10px 0;
+  width: 600px;
+  height: 400px;
+  overflow-y: auto;
+}
+
+.link-shift-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 10px 10px 10px;
+}
+
+.ls-item-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.ls-item-name {
+  font-size: 0.9rem;
+  width: 150px;
+  text-align: center;
+}
+
+.ls-item-times {
+  font-size: 0.7rem;
+  color: gray;
+  text-align: center;
+}

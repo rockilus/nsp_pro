@@ -1,11 +1,10 @@
 import random
 from datetime import timedelta
-from typing import Dict
 
 import pytest
-from shared.schemas import ShiftType, Specialty, Staffing
+from shared.schemas import EngineInputs, ShiftType, Specialty, Staffing
 
-from tests.engine_tests.engine_solve import engine_solve
+from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 from tests.test_data import test_data_set_1
 
 # constraints = self.model.Proto().constraints
@@ -16,26 +15,26 @@ from tests.test_data import test_data_set_1
 class TestCoverage:
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_expected_assignments_normal(self, sample_data: Dict) -> None:
+    def test_expected_assignments_normal(self, sample_data: EngineInputs) -> None:
         target_random = random.randint(1, 5)
 
-        shifts = sample_data["shifts"]
+        shifts = sample_data.shifts
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
         shift_ids_normal = [shift.id for shift in shifts_normal]
-        sample_data["shifts"] = shifts_normal
+        sample_data.shifts = shifts_normal
 
-        dsds = sample_data["daily_shift_demands"]
+        dsds = sample_data.daily_shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
         if not dsds_normal:
             return
         dsds_normal[0].count = target_random
-        sample_data["daily_shift_demands"] = dsds_normal
+        sample_data.daily_shift_demands = dsds_normal
 
-        outputs = engine_solve(sample_data)
+        outputs = engine_solve_engine_inputs(sample_data)
 
-        schedule = sample_data["schedule"]
+        schedule = sample_data.schedule
         dates = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -62,7 +61,7 @@ class TestCoverage:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_normal_with_specialty(
-        self, sample_data: Dict
+        self, sample_data: EngineInputs
     ) -> None:
         # target_random = random.randint(1, 5)
         target_random = 3
@@ -70,7 +69,7 @@ class TestCoverage:
             id="spe_1", team_id="t0", name="Specialty 1", deleted=False
         )
 
-        shifts = sample_data["shifts"]
+        shifts = sample_data.shifts
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
@@ -83,24 +82,24 @@ class TestCoverage:
                     Staffing(specialty_id=specialty.id, staffing=target_random)
                 ]
         shift_ids_normal = [shift.id for shift in shifts_normal]
-        sample_data["shifts"] = shifts_normal
+        sample_data.shifts = shifts_normal
 
-        dsds = sample_data["daily_shift_demands"]
+        dsds = sample_data.daily_shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data["daily_shift_demands"] = dsds_normal
+        sample_data.daily_shift_demands = dsds_normal
 
-        workers = sample_data["workers"]
+        workers = sample_data.workers
         target_num_specialists = 5
         for worker in workers[0:target_num_specialists]:
             worker.specialty_ids = [specialty.id]
         worker_ids_specialists = [
             worker.id for worker in workers[0:target_num_specialists]
         ]
-        sample_data["workers"] = workers
+        sample_data.workers = workers
 
-        outputs = engine_solve(sample_data)
+        outputs = engine_solve_engine_inputs(sample_data)
 
-        schedule = sample_data["schedule"]
+        schedule = sample_data.schedule
         dates = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -132,13 +131,15 @@ class TestCoverage:
                 assert count_actual == count_target
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_expected_assignments_specialty_only(self, sample_data: Dict) -> None:
+    def test_expected_assignments_specialty_only(
+        self, sample_data: EngineInputs
+    ) -> None:
         target_random = random.randint(1, 5)
         specialty = Specialty(
             id="spe_1", team_id="t0", name="Specialty 1", deleted=False
         )
 
-        shifts = sample_data["shifts"]
+        shifts = sample_data.shifts
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
@@ -148,22 +149,22 @@ class TestCoverage:
         shift_target.staffing = [
             Staffing(specialty_id=specialty.id, staffing=target_random)
         ]
-        sample_data["shifts"] = [shift_target]
+        sample_data.shifts = [shift_target]
 
-        dsds = sample_data["daily_shift_demands"]
+        dsds = sample_data.daily_shift_demands
         dsds_shift_target = [dsd for dsd in dsds if dsd.shift_id == shift_target.id]
-        sample_data["daily_shift_demands"] = dsds_shift_target
+        sample_data.daily_shift_demands = dsds_shift_target
 
-        workers = sample_data["workers"]
+        workers = sample_data.workers
         target_num_specialists = 5
         for worker in workers[0:target_num_specialists]:
             worker.specialty_ids = [specialty.id]
         worker_ids_specialists = [
             worker.id for worker in workers[0:target_num_specialists]
         ]
-        sample_data["workers"] = workers
+        sample_data.workers = workers
 
-        outputs = engine_solve(sample_data)
+        outputs = engine_solve_engine_inputs(sample_data)
 
         shift_ids_assigned = [a.shift_id for a in outputs.assignments]
         assert sorted(set(shift_ids_assigned)) == sorted(set([shift_target.id]))
@@ -177,7 +178,7 @@ class TestCoverage:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_with_specialty_q1_diff_q2(
-        self, sample_data: Dict
+        self, sample_data: EngineInputs
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -188,7 +189,7 @@ class TestCoverage:
             id="spe_2", team_id="t0", name="Specialty 2", deleted=False
         )
 
-        shifts = sample_data["shifts"]
+        shifts = sample_data.shifts
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
@@ -212,13 +213,13 @@ class TestCoverage:
                     )
                 ]
         shift_ids_normal = [shift.id for shift in shifts_normal]
-        sample_data["shifts"] = shifts_normal
+        sample_data.shifts = shifts_normal
 
-        dsds = sample_data["daily_shift_demands"]
+        dsds = sample_data.daily_shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data["daily_shift_demands"] = dsds_normal
+        sample_data.daily_shift_demands = dsds_normal
 
-        workers = sample_data["workers"]
+        workers = sample_data.workers
         target_num_specialists_spe_1 = 3
         target_num_specialists_spe_2 = 3
         for worker in workers[0:target_num_specialists_spe_1]:
@@ -238,11 +239,11 @@ class TestCoverage:
                 + target_num_specialists_spe_2
             ]
         ]
-        sample_data["workers"] = workers
+        sample_data.workers = workers
 
-        outputs = engine_solve(sample_data)
+        outputs = engine_solve_engine_inputs(sample_data)
 
-        schedule = sample_data["schedule"]
+        schedule = sample_data.schedule
         dates = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -282,7 +283,7 @@ class TestCoverage:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_with_specialty_q1_overlap_q2(
-        self, sample_data: Dict
+        self, sample_data: EngineInputs
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -293,7 +294,7 @@ class TestCoverage:
             id="spe_2", team_id="t0", name="Specialty 2", deleted=False
         )
 
-        shifts = sample_data["shifts"]
+        shifts = sample_data.shifts
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
@@ -317,13 +318,13 @@ class TestCoverage:
                     ),
                 ]
         shift_ids_normal = [shift.id for shift in shifts_normal]
-        sample_data["shifts"] = shifts_normal
+        sample_data.shifts = shifts_normal
 
-        dsds = sample_data["daily_shift_demands"]
+        dsds = sample_data.daily_shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data["daily_shift_demands"] = dsds_normal
+        sample_data.daily_shift_demands = dsds_normal
 
-        workers = sample_data["workers"]
+        workers = sample_data.workers
         target_num_qualified_spe_1 = target_random_spe_1 - 1
         target_num_qualified_spe_2 = target_random_spe_2 - 1
         target_num_qualified_spe_1_2 = 2
@@ -360,11 +361,11 @@ class TestCoverage:
                 + target_num_qualified_spe_1_2
             ]
         ]
-        sample_data["workers"] = workers
+        sample_data.workers = workers
 
-        outputs = engine_solve(sample_data)
+        outputs = engine_solve_engine_inputs(sample_data)
 
-        schedule = sample_data["schedule"]
+        schedule = sample_data.schedule
         dates = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -404,7 +405,7 @@ class TestCoverage:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_with_specialty_q2_in_q1(
-        self, sample_data: Dict
+        self, sample_data: EngineInputs
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -415,7 +416,7 @@ class TestCoverage:
             id="spe_2", team_id="t0", name="Specialty 2", deleted=False
         )
 
-        shifts = sample_data["shifts"]
+        shifts = sample_data.shifts
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
@@ -439,13 +440,13 @@ class TestCoverage:
                     ),
                 ]
         shift_ids_normal = [shift.id for shift in shifts_normal]
-        sample_data["shifts"] = shifts_normal
+        sample_data.shifts = shifts_normal
 
-        dsds = sample_data["daily_shift_demands"]
+        dsds = sample_data.daily_shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data["daily_shift_demands"] = dsds_normal
+        sample_data.daily_shift_demands = dsds_normal
 
-        workers = sample_data["workers"]
+        workers = sample_data.workers
         target_num_specialists_spe_1 = 3
         target_num_specialists_spe_1_2 = 3
         for worker in workers[0:target_num_specialists_spe_1]:
@@ -465,11 +466,11 @@ class TestCoverage:
                 + target_num_specialists_spe_1_2
             ]
         ]
-        sample_data["workers"] = workers
+        sample_data.workers = workers
 
-        outputs = engine_solve(sample_data)
+        outputs = engine_solve_engine_inputs(sample_data)
 
-        schedule = sample_data["schedule"]
+        schedule = sample_data.schedule
         dates = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -509,7 +510,7 @@ class TestCoverage:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_staffing_multiple_specialties(
-        self, sample_data: Dict
+        self, sample_data: EngineInputs
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -522,7 +523,7 @@ class TestCoverage:
             id="spe_2", team_id="t0", name="Specialty 2", deleted=False
         )
 
-        shifts = sample_data["shifts"]
+        shifts = sample_data.shifts
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
@@ -542,13 +543,13 @@ class TestCoverage:
                     ),
                 ]
         shift_ids_normal = [shift.id for shift in shifts_normal]
-        sample_data["shifts"] = shifts_normal
+        sample_data.shifts = shifts_normal
 
-        dsds = sample_data["daily_shift_demands"]
+        dsds = sample_data.daily_shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data["daily_shift_demands"] = dsds_normal
+        sample_data.daily_shift_demands = dsds_normal
 
-        workers = sample_data["workers"]
+        workers = sample_data.workers
         target_num_qualified_spe_1 = target_random_spe_1
         target_num_qualified_spe_2 = target_random_spe_2
         for worker in workers[0:target_num_qualified_spe_1]:
@@ -568,11 +569,11 @@ class TestCoverage:
                 + target_num_qualified_spe_2
             ]
         ]
-        sample_data["workers"] = workers
+        sample_data.workers = workers
 
-        outputs = engine_solve(sample_data)
+        outputs = engine_solve_engine_inputs(sample_data)
 
-        schedule = sample_data["schedule"]
+        schedule = sample_data.schedule
         dates = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -644,7 +645,7 @@ class TestCoverage:
     # pylint: disable=too-many-statements
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_staffing_q1_q2_overlap_and_multiple_spe(
-        self, sample_data: Dict
+        self, sample_data: EngineInputs
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -656,7 +657,7 @@ class TestCoverage:
             id="spe_2", team_id="t0", name="Specialty 2", deleted=False
         )
 
-        shifts = sample_data["shifts"]
+        shifts = sample_data.shifts
         shifts_normal = [
             shift for shift in shifts if shift.shift_type == ShiftType.NORMAL
         ]
@@ -692,13 +693,13 @@ class TestCoverage:
                     ),
                 ]
         shift_ids_normal = [shift.id for shift in shifts_normal]
-        sample_data["shifts"] = shifts_normal
+        sample_data.shifts = shifts_normal
 
-        dsds = sample_data["daily_shift_demands"]
+        dsds = sample_data.daily_shift_demands
         dsds_normal = [dsd for dsd in dsds if dsd.shift_id in shift_ids_normal]
-        sample_data["daily_shift_demands"] = dsds_normal
+        sample_data.daily_shift_demands = dsds_normal
 
-        workers = sample_data["workers"]
+        workers = sample_data.workers
         target_num_qualified_spe_1 = target_random_spe_1
         target_num_qualified_spe_2 = target_random_spe_2
         target_num_qualified_spe_1_2 = target_random_spe_1_2
@@ -735,11 +736,11 @@ class TestCoverage:
                 + target_num_qualified_spe_1_2
             ]
         ]
-        sample_data["workers"] = workers
+        sample_data.workers = workers
 
-        outputs = engine_solve(sample_data)
+        outputs = engine_solve_engine_inputs(sample_data)
 
-        schedule = sample_data["schedule"]
+        schedule = sample_data.schedule
         dates = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -837,13 +838,13 @@ class TestCoverage:
                 )
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_expected_assignments_all(self, sample_data: Dict) -> None:
-        shifts = sample_data["shifts"]
-        dsds = sample_data["daily_shift_demands"]
+    def test_expected_assignments_all(self, sample_data: EngineInputs) -> None:
+        shifts = sample_data.shifts
+        dsds = sample_data.daily_shift_demands
 
-        outputs = engine_solve(sample_data)
+        outputs = engine_solve_engine_inputs(sample_data)
 
-        schedule = sample_data["schedule"]
+        schedule = sample_data.schedule
         dates = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
