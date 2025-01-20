@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import Dict, List
+from typing import List
 
 import pytest
 from shared.schemas import EngineInputs, Shift, Worker
@@ -15,12 +15,12 @@ from tests.test_data import test_data_set_1
 
 class TestBuildEngineShiftDemands:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_engine_shift_demands(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
-        shifts = sample_data["shifts"]
-        schedule = sample_data["schedule"]
-        daily_shift_demands = sample_data["daily_shift_demands"]
-        fixed_assignments = sample_data["fixed_assignments"]
+    def test_build_engine_shift_demands(self, sample_data: EngineInputs) -> None:
+        workers = sample_data.workers
+        shifts = sample_data.shifts
+        schedule = sample_data.schedule
+        daily_shift_demands = sample_data.daily_shift_demands
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -48,12 +48,12 @@ class TestBuildEngineShiftDemands:
 
     # pylint: disable=R0801
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_empty_workers(self, sample_data: Dict) -> None:
+    def test_empty_workers(self, sample_data: EngineInputs) -> None:
         workers: List[Worker] = []
-        shifts = sample_data["shifts"]
-        schedule = sample_data["schedule"]
-        daily_shift_demands = sample_data["daily_shift_demands"]
-        fixed_assignments = sample_data["fixed_assignments"]
+        shifts = sample_data.shifts
+        schedule = sample_data.schedule
+        daily_shift_demands = sample_data.daily_shift_demands
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -82,12 +82,12 @@ class TestBuildEngineShiftDemands:
             assert sd.assignments_specialties == []
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_empty_shifts(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
+    def test_empty_shifts(self, sample_data: EngineInputs) -> None:
+        workers = sample_data.workers
         shifts: List[Shift] = []
-        schedule = sample_data["schedule"]
-        daily_shift_demands = sample_data["daily_shift_demands"]
-        fixed_assignments = sample_data["fixed_assignments"]
+        schedule = sample_data.schedule
+        daily_shift_demands = sample_data.daily_shift_demands
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -117,12 +117,12 @@ class TestBuildEngineShiftDemands:
 
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_shift_demands_assignments(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
-        shifts = sample_data["shifts"]
-        schedule = sample_data["schedule"]
-        daily_shift_demands = sample_data["daily_shift_demands"]
-        fixed_assignments = sample_data["fixed_assignments"]
+    def test_shift_demands_assignments(self, sample_data: EngineInputs) -> None:
+        workers = sample_data.workers
+        shifts = sample_data.shifts
+        schedule = sample_data.schedule
+        daily_shift_demands = sample_data.daily_shift_demands
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -175,14 +175,16 @@ class TestBuildEngineShiftDemands:
 
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_shift_demands_assignments_specialty(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
+    def test_shift_demands_assignments_specialty(
+        self, sample_data: EngineInputs
+    ) -> None:
+        workers = sample_data.workers
         workers[0].specialty_ids = ["spe1"]
-        shifts = sample_data["shifts"]
+        shifts = sample_data.shifts
         shifts[0].staffing[0].specialty_id = "spe1"
-        schedule = sample_data["schedule"]
-        daily_shift_demands = sample_data["daily_shift_demands"]
-        fixed_assignments = sample_data["fixed_assignments"]
+        schedule = sample_data.schedule
+        daily_shift_demands = sample_data.daily_shift_demands
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [

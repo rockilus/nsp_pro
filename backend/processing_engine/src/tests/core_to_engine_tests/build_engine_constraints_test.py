@@ -1,12 +1,13 @@
 import random
 from datetime import timedelta
-from typing import Dict, List
+from typing import List
 
 import pytest
 from shared.schemas import (
     ConstraintOperator,
     ConstraintSum,
     ConstraintType,
+    EngineInputs,
     QuickStaffing,
     Schedule,
     Shift,
@@ -23,16 +24,16 @@ from tests.test_data import test_data_set_1
 # pylint: disable=too-few-public-methods
 class TestBuildQuickStaffingConstraints:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_quick_staffing_constraints(self, sample_data: Dict) -> None:
+    def test_build_quick_staffing_constraints(self, sample_data: EngineInputs) -> None:
         target = random.randint(1, 3)
 
-        shifts: List[Shift] = sample_data["shifts"]
+        shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data["workers"]
+        workers: List[Worker] = sample_data.workers
         target_worker = workers[0]
 
-        schedule: Schedule = sample_data["schedule"]
+        schedule: Schedule = sample_data.schedule
         target_qs = QuickStaffing(
             shift_id=target_shift.id,
             worker_id=target_worker.id,

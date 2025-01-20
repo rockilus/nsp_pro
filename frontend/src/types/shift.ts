@@ -60,3 +60,9 @@ export type ShiftT = {
   deleted: boolean;
   attributes: AttributeT[];
 };
+
+export type LinkShiftT = {
+  id: string;
+  teamId: string;
+  shiftIds: string[];
+};

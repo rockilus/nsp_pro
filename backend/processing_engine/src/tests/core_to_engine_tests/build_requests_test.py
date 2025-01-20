@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import List
 
 import pytest
 from shared.schemas import (
     DailyShiftDemand,
     DSDSourceType,
+    EngineInputs,
     Request,
     RequestStatus,
     Schedule,
@@ -25,14 +26,16 @@ from tests.test_data import test_data_set_3
 # pylint: disable=R0801
 class TestBuildRequests:
     @pytest.mark.parametrize("sample_data", test_data_set_3)
-    def test_build_request_one_day_positive_hard(self, sample_data: Dict) -> None:
-        shifts: List[Shift] = sample_data["shifts"]
+    def test_build_request_one_day_positive_hard(
+        self, sample_data: EngineInputs
+    ) -> None:
+        shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data["workers"]
+        workers: List[Worker] = sample_data.workers
         target_worker = workers[0]
 
-        schedule: Schedule = sample_data["schedule"]
+        schedule: Schedule = sample_data.schedule
 
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -81,14 +84,16 @@ class TestBuildRequests:
         )
 
     @pytest.mark.parametrize("sample_data", test_data_set_3)
-    def test_build_request_one_day_positive_soft(self, sample_data: Dict) -> None:
-        shifts: List[Shift] = sample_data["shifts"]
+    def test_build_request_one_day_positive_soft(
+        self, sample_data: EngineInputs
+    ) -> None:
+        shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data["workers"]
+        workers: List[Worker] = sample_data.workers
         target_worker = workers[0]
 
-        schedule: Schedule = sample_data["schedule"]
+        schedule: Schedule = sample_data.schedule
 
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -137,14 +142,16 @@ class TestBuildRequests:
         )
 
     @pytest.mark.parametrize("sample_data", test_data_set_3)
-    def test_build_request_one_day_negative_hard(self, sample_data: Dict) -> None:
-        shifts: List[Shift] = sample_data["shifts"]
+    def test_build_request_one_day_negative_hard(
+        self, sample_data: EngineInputs
+    ) -> None:
+        shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data["workers"]
+        workers: List[Worker] = sample_data.workers
         target_worker = workers[0]
 
-        schedule: Schedule = sample_data["schedule"]
+        schedule: Schedule = sample_data.schedule
 
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -193,8 +200,10 @@ class TestBuildRequests:
         )
 
     @pytest.mark.parametrize("sample_data", test_data_set_3)
-    def test_build_request_date_range_positive_hard(self, sample_data: Dict) -> None:
-        schedule: Schedule = sample_data["schedule"]
+    def test_build_request_date_range_positive_hard(
+        self, sample_data: EngineInputs
+    ) -> None:
+        schedule: Schedule = sample_data.schedule
 
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -231,10 +240,10 @@ class TestBuildRequests:
             )
             for d in dates_campaign
         ]
-        sample_data["shifts"].append(target_shift)
-        sample_data["daily_shift_demands"] += dsds_target_shift
+        sample_data.shifts.append(target_shift)
+        sample_data.daily_shift_demands += dsds_target_shift
 
-        workers: List[Worker] = sample_data["workers"]
+        workers: List[Worker] = sample_data.workers
         target_worker = workers[0]
 
         worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
@@ -258,7 +267,7 @@ class TestBuildRequests:
         output = build_engine_requests(
             [w.id for w in workers],
             worker_ids_to_worker_dates,
-            [s.id for s in sample_data["shifts"]],
+            [s.id for s in sample_data.shifts],
             requests,
         )
 

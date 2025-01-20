@@ -35,6 +35,7 @@ export default function BreachList({
         category: ObjectiveCategory.DUTIES_PER_MONTH,
         label: t("duties_per_month"),
       },
+      { category: ObjectiveCategory.LINK_SHIFT, label: t("link_shift") },
     ];
 
   const [selectedCategories, setSelectedCategories] = useState<
@@ -44,6 +45,8 @@ export default function BreachList({
       .filter((c) => c.category !== "all")
       .map((c) => c.category as ObjectiveCategory)
   );
+
+  console.log(breaches);
 
   const handleCategoryClick = (category: ObjectiveCategory | "all") => {
     if (category === "all") {
@@ -62,8 +65,6 @@ export default function BreachList({
       });
     }
   };
-
-  console.log(selectedCategories);
 
   return (
     <div className="breach-lhs-tab-container">

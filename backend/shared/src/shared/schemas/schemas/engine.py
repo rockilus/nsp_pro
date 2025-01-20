@@ -7,7 +7,7 @@ from shared.schemas.schemas.coverage import DailyShiftDemand
 from shared.schemas.schemas.dimension import Dimension, DimEntry
 from shared.schemas.schemas.request import Request, RequestAugmented
 from shared.schemas.schemas.schedule import Assignment, Breach, Schedule
-from shared.schemas.schemas.shift import Shift
+from shared.schemas.schemas.shift import LinkShift, Shift
 from shared.schemas.schemas.worker import Worker
 
 
@@ -18,6 +18,7 @@ class EngineInputs:
     workers: List[Worker]
     shifts: List[Shift]
     shifts_recup_new: List[Shift]
+    link_shifts: List[LinkShift]
     dimensions: List[Dimension]
     dim_entries: List[DimEntry]
     attributes: List[Attribute]
@@ -34,6 +35,7 @@ class EngineInputs:
             "workers": [worker.to_dict() for worker in self.workers],
             "shifts": [shift.to_dict() for shift in self.shifts],
             "shifts_recup_new": [shift.to_dict() for shift in self.shifts_recup_new],
+            "link_shifts": [link_shift.to_dict() for link_shift in self.link_shifts],
             "dimensions": [dim.to_dict() for dim in self.dimensions],
             "dim_entries": [entry.to_dict() for entry in self.dim_entries],
             "attributes": [attr.to_dict() for attr in self.attributes],
@@ -60,6 +62,7 @@ class EngineInputs:
             shifts_recup_new=[
                 Shift.from_dict(shift) for shift in data["shifts_recup_new"]
             ],
+            link_shifts=[LinkShift.from_dict(link) for link in data["link_shifts"]],
             dimensions=[Dimension.from_dict(dim) for dim in data["dimensions"]],
             dim_entries=[DimEntry.from_dict(entry) for entry in data["dim_entries"]],
             attributes=[Attribute.from_dict(attr) for attr in data["attributes"]],

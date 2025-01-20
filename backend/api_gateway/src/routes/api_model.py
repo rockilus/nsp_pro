@@ -85,6 +85,12 @@ class ShiftMessage(BaseModel):
     attributes: List[AttributeMessage]
 
 
+class LinkShiftMessage(BaseModel):
+    id: str
+    teamId: str
+    shiftIds: List[str]
+
+
 # Coverage
 class ShiftDemandMessage(BaseModel):
     id: str
