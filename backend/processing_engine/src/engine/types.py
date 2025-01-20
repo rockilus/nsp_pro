@@ -174,6 +174,7 @@ class Inputs:
     requests: List[Request]
     constraints: Constraints
     duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
+    link_shifts_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
     worker_shift_filters: List[Tuple[str, str, str]]
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]

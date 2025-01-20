@@ -8,6 +8,7 @@ from shared.schemas import (
     DailyShiftDemand,
     Dimension,
     DimEntry,
+    LinkShift,
     Request,
     Schedule,
     Shift,
@@ -35,6 +36,7 @@ from core_to_engine_service.build_engine_shift_demands import build_engine_shift
 from core_to_engine_service.build_engine_sol_hint import core_to_engine_sol_hint
 from core_to_engine_service.build_engine_variables import build_engine_variables
 from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
+from core_to_engine_service.build_link_shift_pairs import build_link_shift_pairs
 from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
@@ -48,6 +50,7 @@ def core_to_engine_inputs(
     schedule: Schedule,
     workers: List[Worker],
     shifts: List[Shift],
+    link_shifts: List[LinkShift],
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
@@ -161,6 +164,12 @@ def core_to_engine_inputs(
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             shift_duties_not_deleted,
+        ),
+        link_shifts_pairs=build_link_shift_pairs(
+            workers_not_deleted,
+            worker_ids_to_worker_dates,
+            shifts_not_deleted,
+            link_shifts,
         ),
         worker_shift_filters=build_worker_shift_filters(
             workers, worker_ids_to_worker_dates, shifts, dimensions, attributes

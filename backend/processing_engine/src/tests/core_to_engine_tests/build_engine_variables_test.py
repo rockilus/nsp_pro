@@ -1,8 +1,8 @@
 from datetime import date, timedelta
-from typing import Dict, List
+from typing import List
 
 import pytest
-from shared.schemas import Shift, ShiftRestType, ShiftType, Worker
+from shared.schemas import EngineInputs, Shift, ShiftRestType, ShiftType, Worker
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_engine_variables import build_engine_variables
@@ -16,11 +16,11 @@ from tests.test_data import test_data_set_1
 class TestBuildEngineVariables:
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_engine_variables(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
-        shifts = sample_data["shifts"]
-        schedule = sample_data["schedule"]
-        fixed_assignments = sample_data["fixed_assignments"]
+    def test_build_engine_variables(self, sample_data: EngineInputs) -> None:
+        workers = sample_data.workers
+        shifts = sample_data.shifts
+        schedule = sample_data.schedule
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -111,11 +111,11 @@ class TestBuildEngineVariables:
             assert (worker_id, date_str, shift_id) in variables.assignments
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_empty_workers(self, sample_data: Dict) -> None:
+    def test_empty_workers(self, sample_data: EngineInputs) -> None:
         workers: List[Worker] = []
-        shifts = sample_data["shifts"]
-        schedule = sample_data["schedule"]
-        fixed_assignments = sample_data["fixed_assignments"]
+        shifts = sample_data.shifts
+        schedule = sample_data.schedule
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -143,11 +143,11 @@ class TestBuildEngineVariables:
         assert len(variables.shift_intervals) == 0
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_empty_shifts(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
+    def test_empty_shifts(self, sample_data: EngineInputs) -> None:
+        workers = sample_data.workers
         shifts: List[Shift] = []
-        schedule = sample_data["schedule"]
-        fixed_assignments = sample_data["fixed_assignments"]
+        schedule = sample_data.schedule
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -175,12 +175,12 @@ class TestBuildEngineVariables:
         assert len(variables.shift_intervals) == 0
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_worker_with_employment_end_date(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
+    def test_worker_with_employment_end_date(self, sample_data: EngineInputs) -> None:
+        workers = sample_data.workers
         workers[0].employment_end_date = date(2025, 1, 15)
-        shifts = sample_data["shifts"]
-        schedule = sample_data["schedule"]
-        fixed_assignments = sample_data["fixed_assignments"]
+        shifts = sample_data.shifts
+        schedule = sample_data.schedule
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -222,12 +222,12 @@ class TestBuildEngineVariables:
             )
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_deleted_worker(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
+    def test_deleted_worker(self, sample_data: EngineInputs) -> None:
+        workers = sample_data.workers
         workers[0].deleted = True
-        shifts = sample_data["shifts"]
-        schedule = sample_data["schedule"]
-        fixed_assignments = sample_data["fixed_assignments"]
+        shifts = sample_data.shifts
+        schedule = sample_data.schedule
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -266,10 +266,10 @@ class TestBuildEngineVariables:
 
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_duty_recup_variables(self, sample_data: Dict) -> None:
-        workers = sample_data["workers"]
+    def test_duty_recup_variables(self, sample_data: EngineInputs) -> None:
+        workers = sample_data.workers
 
-        shifts = sample_data["shifts"]
+        shifts = sample_data.shifts
         shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
         shift_target = shifts_duty[0]
         shift_id_target = shift_target.id
@@ -285,10 +285,10 @@ class TestBuildEngineVariables:
         assert shift_recup is not None
         shift_id_recup = shift_recup.id
         shifts_test = [shift_target, shift_recup]
-        sample_data["shifts"] = shifts_test
+        sample_data.shifts = shifts_test
 
-        schedule = sample_data["schedule"]
-        fixed_assignments = sample_data["fixed_assignments"]
+        schedule = sample_data.schedule
+        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 
         # Build necessary inputs
         dates_campaign = [

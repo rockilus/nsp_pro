@@ -1,10 +1,9 @@
 from datetime import timedelta
-from typing import Dict
 
 import pytest
-from shared.schemas import ShiftRestType, ShiftType
+from shared.schemas import EngineInputs, ShiftRestType, ShiftType
 
-from tests.engine_tests.engine_solve import engine_solve
+from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 from tests.test_data import test_data_set_1
 
 
@@ -12,23 +11,21 @@ from tests.test_data import test_data_set_1
 class TestDutyRecupConstraint:
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_duty_recup_duty_no_specialty(self, sample_data: Dict) -> None:
-        shifts = sample_data["shifts"]
+    def test_duty_recup_duty_no_specialty(self, sample_data: EngineInputs) -> None:
+        shifts = sample_data.shifts
         shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
         shifts_recup = [s for s in shifts if s.rest_type == ShiftRestType.RECUPERATION]
         shift_ids_duty = [shift.id for shift in shifts_duty]
         shift_ids_recup = [shift.id for shift in shifts_recup]
-        # print("SAMPLE DATA: ", sample_data)
-        print("SHIFTS:", shifts)
-        sample_data["shifts"] = shifts_duty + shifts_recup
+        sample_data.shifts = shifts_duty + shifts_recup
 
-        dsds = sample_data["daily_shift_demands"]
+        dsds = sample_data.daily_shift_demands
         dsds_duty = [dsd for dsd in dsds if dsd.shift_id in shift_ids_duty]
-        sample_data["daily_shift_demands"] = dsds_duty
+        sample_data.daily_shift_demands = dsds_duty
 
-        outputs = engine_solve(sample_data)
+        outputs = engine_solve_engine_inputs(sample_data)
 
-        schedule = sample_data["schedule"]
+        schedule = sample_data.schedule
         dates = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -80,22 +77,22 @@ class TestDutyRecupConstraint:
             assert assignment_recup is not None
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_duty_recup_two_duty_no_specialty(self, sample_data: Dict) -> None:
-        shifts = sample_data["shifts"]
+    def test_duty_recup_two_duty_no_specialty(self, sample_data: EngineInputs) -> None:
+        shifts = sample_data.shifts
         shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
         shift_ids_target = [shift.id for shift in shifts_duty]
         shifts_recup = [s for s in shifts if s.recuperation_duty_id in shift_ids_target]
         assert len(shifts_duty) == len(shifts_recup)
         shift_ids_recup = [shift.id for shift in shifts_recup]
-        sample_data["shifts"] = shifts_duty + shifts_recup
+        sample_data.shifts = shifts_duty + shifts_recup
 
-        dsds = sample_data["daily_shift_demands"]
+        dsds = sample_data.daily_shift_demands
         dsds_duty = [dsd for dsd in dsds if dsd.shift_id in shift_ids_target]
-        sample_data["daily_shift_demands"] = dsds_duty
+        sample_data.daily_shift_demands = dsds_duty
 
-        outputs = engine_solve(sample_data)
+        outputs = engine_solve_engine_inputs(sample_data)
 
-        schedule = sample_data["schedule"]
+        schedule = sample_data.schedule
         dates = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)

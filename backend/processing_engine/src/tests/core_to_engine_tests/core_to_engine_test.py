@@ -1,8 +1,15 @@
 from datetime import datetime
-from typing import Dict, List
+from typing import List
 
 import pytest
-from shared.schemas import Shift, ShiftLeaveType, ShiftRestType, ShiftType, Staffing
+from shared.schemas import (
+    EngineInputs,
+    Shift,
+    ShiftLeaveType,
+    ShiftRestType,
+    ShiftType,
+    Staffing,
+)
 
 from core_to_engine_service.core_to_engine_inputs import (
     _build_shift_id_to_duration_dict,
@@ -12,8 +19,8 @@ from tests.test_data import test_data_set_1
 
 class TestBuildShiftIdToDurationDict:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_shift_id_to_duration_dict(self, sample_data: Dict) -> None:
-        shifts = sample_data["shifts"]
+    def test_build_shift_id_to_duration_dict(self, sample_data: EngineInputs) -> None:
+        shifts = sample_data.shifts
         shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
 
         expected_durations = {

@@ -83,7 +83,9 @@ class Shift:
             name=data["name"],
             acronym=data["acronym"],
             acronym_custom=data["acronym_custom"],
-            start_time=datetime.fromtimestamp(data["start_time"], tz=timezone.utc),
+            start_time=datetime.fromtimestamp(
+                data["start_time"], tz=timezone.utc
+            ),
             end_time=datetime.fromtimestamp(data["end_time"], tz=timezone.utc),
             staffing=[Staffing(**s) for s in data["staffing"]],
             color=data["color"],
@@ -122,10 +124,10 @@ class LinkShift:
     def validate(
         self, shifts_ls: List[Shift], ls_others: List["LinkShift"]
     ) -> ValidationResult:
-        if len(self.shift_ids) < 2:
+        if len(self.shift_ids) != 2:
             return ValidationResult(
                 is_valid=False,
-                message="LinkShift must contain at least two shifts.",
+                message="LinkShift must contain at two shifts.",
             )
         if len(self.shift_ids) != len(set(self.shift_ids)):
             return ValidationResult(
@@ -133,7 +135,9 @@ class LinkShift:
                 message="Duplicate shift IDs found in link_shift.shift_ids.",
             )
         if len(shifts_ls) != len(self.shift_ids):
-            return ValidationResult(is_valid=False, message="Shifts not found.")
+            return ValidationResult(
+                is_valid=False, message="Shifts not found."
+            )
         if self.shifts_overlap(shifts_ls):
             return ValidationResult(is_valid=False, message="Shifts overlap.")
         for ls in ls_others:
@@ -152,15 +156,15 @@ class LinkShift:
 
                 s1_diff_days = (shift1.end_time - shift1.start_time).days
                 s1_start = datetime.combine(date_ref, shift1.start_time.time())
-                s1_end = datetime.combine(date_ref, shift1.end_time.time()) + timedelta(
-                    days=s1_diff_days
-                )
+                s1_end = datetime.combine(
+                    date_ref, shift1.end_time.time()
+                ) + timedelta(days=s1_diff_days)
 
                 s2_diff_days = (shift2.end_time - shift2.start_time).days
                 s2_start = datetime.combine(date_ref, shift2.start_time.time())
-                s2_end = datetime.combine(date_ref, shift2.end_time.time()) + timedelta(
-                    days=s2_diff_days
-                )
+                s2_end = datetime.combine(
+                    date_ref, shift2.end_time.time()
+                ) + timedelta(days=s2_diff_days)
 
                 if s1_start < s2_end and s1_end > s2_start:
                     return True
