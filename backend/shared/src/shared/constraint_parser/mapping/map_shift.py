@@ -11,6 +11,7 @@ from shared.schemas import (
     Shift,
     ShiftType,
     ShiftWorkerOption,
+    SWOIdTypes,
     VarShiftSelectorOptions,
 )
 
@@ -126,12 +127,12 @@ class MapShift:
             return []
         out = []
         for value in values:
-            if value.id_type == "shift":
+            if value.id_type == SWOIdTypes.SHIFT:
                 if not self.check_shift_id(value.id):
                     raise ValueError(f"Shift {value.name} with id {value.id} not found")
                 out.append(value.id)
             # pylint: disable=R0801
-            elif value.id_type == "dimension":
+            elif value.id_type == SWOIdTypes.DIMENSION:
                 target_ids = self.get_target_ids_dimension(value, missing_properties)
                 if target_ids:
                     out += target_ids
