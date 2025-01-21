@@ -17,6 +17,13 @@ export const toAssignmentT = (data: any): AssignmentT => {
   };
 };
 
+export const fromAssignmentT = (data: AssignmentT): any => {
+  return {
+    ...data,
+    date: data.date.unix(),
+  };
+};
+
 //////////////////////////
 // Assignment //
 //////////////////////////
@@ -64,7 +71,7 @@ export async function updateAssignment(
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(assignment),
+    body: JSON.stringify(fromAssignmentT(assignment)),
   };
   try {
     const response = await fetch(
