@@ -1,3 +1,7 @@
+.quick-add-container {
+  width: 300px;
+}
+
 .shift-list-item {
   display: flex;
   flex-direction: column;
