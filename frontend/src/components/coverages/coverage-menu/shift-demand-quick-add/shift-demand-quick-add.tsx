@@ -119,7 +119,7 @@ export default function ShiftDemandQuickAdd({
   }, [shiftDemands, selectedCoverage]);
 
   return (
-    <div className="coverage-selector-container">
+    <div className="quick-add-container">
       <span className="title">{t("quick_add")}</span>
       {shifts.map((shift) => (
         <div key={shift.id} className="shift-list-item">
