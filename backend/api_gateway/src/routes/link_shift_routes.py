@@ -32,7 +32,11 @@ async def create_link_shift(
 ) -> LinkShiftMessage:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-link-shift", "team", team_id
+            # session.get_user_id(), "create-link-shift", "team", team_id
+            session.get_user_id(),
+            "create-shift",
+            "team",
+            team_id,
         ):
             raise NotAuthorizedError(
                 "You do not have permission to create a link shift"
@@ -53,7 +57,11 @@ async def get_link_shifts(
 ) -> List[LinkShiftMessage]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-link-shifts", "team", team_id
+            # session.get_user_id(), "read-link-shifts", "team", team_id
+            session.get_user_id(),
+            "read-shifts",
+            "team",
+            team_id,
         ):
             raise NotAuthorizedError("You do not have permission to get link shifts")
         link_shifts = link_shift_db.get_link_shifts(team_id)
@@ -72,7 +80,11 @@ async def update_link_shift(
 ) -> LinkShiftMessage:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-link-shift", "team", team_id
+            # session.get_user_id(), "update-link-shift", "team", team_id
+            session.get_user_id(),
+            "update-shift",
+            "team",
+            team_id,
         ):
             raise NotAuthorizedError(
                 "You do not have permission to update a link shift"
@@ -94,7 +106,11 @@ async def delete_link_shift(
 ) -> Dict:
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-link-shift", "team", team_id
+            # session.get_user_id(), "delete-link-shift", "team", team_id
+            session.get_user_id(),
+            "delete-shift",
+            "team",
+            team_id,
         ):
             raise NotAuthorizedError(
                 "You do not have permission to delete a link shift"
