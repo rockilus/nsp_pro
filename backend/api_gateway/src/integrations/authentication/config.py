@@ -10,7 +10,7 @@ from supertokens_python.recipe.emailpassword import InputFormField
 
 from integrations.authentication.authn_emails import (
     custom_email_deliver,
-    custom_emailverification_delivery,
+    custom_email_verification_delivery,
 )
 from integrations.authentication.override_func import override_emailpassword_apis
 from utils.env_config import (
@@ -39,7 +39,7 @@ framework = "fastapi"
 recipe_list = [
     emailverification.init(
         mode="REQUIRED",
-        email_delivery=EmailDeliveryConfig(override=custom_emailverification_delivery),
+        email_delivery=EmailDeliveryConfig(override=custom_email_verification_delivery),
     ),
     session.init(cookie_domain=ST_COOKIE_DOMAIN),
     emailpassword.init(
