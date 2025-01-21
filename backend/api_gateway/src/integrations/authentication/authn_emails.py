@@ -46,7 +46,7 @@ def custom_email_deliver(
     return original_implementation
 
 
-def custom_emailverification_delivery(
+def custom_email_verification_delivery(
     original_implementation: EVEmailDeliveryOverrideInput,
 ) -> EVEmailDeliveryOverrideInput:
     # original_send_email = original_implementation.send_email

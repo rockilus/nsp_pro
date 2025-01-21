@@ -54,6 +54,7 @@ export async function getSSRSessionHelper(): Promise<{
 }> {
   const accessToken = getAccessToken();
   const hasToken = !!accessToken;
+
   try {
     if (accessToken) {
       const decoded = await verifyToken(accessToken);
@@ -103,6 +104,7 @@ export async function HomePage() {
        * This means that the user is not logged in. If you want to display some other UI in this
        * case, you can do so here.
        */
+      // console.log("redirecting to /auth from HomePage");
       return redirect("/auth");
     }
 
