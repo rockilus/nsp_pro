@@ -197,7 +197,9 @@ def core_to_doc_workers(
         team.id: team
         for team in TeamDocument.objects.filter(id__in=team_ids)  # type: ignore
     }
-    specialty_ids = list(set(doc.specialty_ids for doc in dataclass_objs))
+    specialty_ids = list(
+        set(spe_id for doc in dataclass_objs for spe_id in doc.specialty_ids)
+    )
     # pylint: disable=no-member
     specialties = {
         specialty.id: specialty
@@ -211,6 +213,8 @@ def core_to_doc_workers(
             id=str(ObjectId()) if creating else dataclass_obj.id,
             team=teams.get(dataclass_obj.team_id),
             name=dataclass_obj.name,
+            acronym=dataclass_obj.acronym,
+            acronym_custom=dataclass_obj.acronym_custom,
             employment_start_date=datetime.combine(
                 dataclass_obj.employment_start_date, time.min, timezone.utc
             ).timestamp(),
