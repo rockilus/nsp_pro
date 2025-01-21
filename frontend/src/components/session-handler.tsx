@@ -22,7 +22,7 @@ const SessionHandler = async ({ children }: { children: React.ReactNode }) => {
   // `accessTokenPayload` will be undefined if it the session does not exist or has expired
   if (accessTokenPayload === undefined) {
     if (!hasToken) {
-      console.log("redirecting to /auth");
+      // console.log("redirecting to /auth from SessionHandler");
 
       /**
        * This means that the user is not logged in. If you want to display some other UI in this

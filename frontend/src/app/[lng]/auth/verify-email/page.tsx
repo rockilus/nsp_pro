@@ -18,7 +18,7 @@ export default function Page({
   const rid = searchParams.get("rid");
   const emailSent = searchParams.get("emailSent");
 
-  if (rid === "emailverification" && token !== null) {
+  if (token !== null) {
     return <ConsumeEmailVerification lng={lng} />;
   } else {
     return <VerifyEmail lng={lng} />;

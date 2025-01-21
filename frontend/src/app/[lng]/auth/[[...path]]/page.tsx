@@ -14,10 +14,10 @@ export default async function AuthPage({
   };
 }) {
   const { accessTokenPayload, hasToken, error } = await getSSRSessionHelper();
-  console.log("checking authentication in AuthPage:", hasToken);
+  // console.log("checking authentication in AuthPage:", hasToken);
 
   if (hasToken) {
-    console.log("redirecting to /");
+    // console.log("redirecting to / from AuthPage");
 
     // if (hasToken && emailVerified) {
     return redirect(PostSignInRoute);
