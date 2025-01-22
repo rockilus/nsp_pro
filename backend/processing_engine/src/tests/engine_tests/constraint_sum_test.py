@@ -12,7 +12,7 @@ from shared.schemas import (
 )
 
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
-from tests.test_data import test_data_set_2
+from tests.sample_data import test_data_set_2
 
 
 # pylint: disable=too-few-public-methods, R0801

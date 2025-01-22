@@ -15,7 +15,7 @@ from engine_to_core_service.build_breaches import _parse_breaches_engine
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 
 # pylint: disable=unused-import
-from tests.test_data import sample_data_fixture  # noqa: F401
+from tests.sample_data import sample_data_fixture  # noqa: F401
 
 
 # pylint: disable=R0801

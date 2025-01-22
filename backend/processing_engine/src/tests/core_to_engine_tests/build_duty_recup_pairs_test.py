@@ -6,7 +6,7 @@ from shared.schemas import EngineInputs, Shift, ShiftType, Worker, WorkerDates
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
-from tests.test_data import test_data_set_1
+from tests.sample_data import test_data_set_1
 
 
 # pylint: disable=R0801

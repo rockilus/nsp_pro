@@ -20,7 +20,7 @@ from shared.schemas import (
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_engine_requests import build_engine_requests
 from engine import Request as RequestEngine
-from tests.test_data import test_data_set_3
+from tests.sample_data import test_data_set_3
 
 
 # pylint: disable=R0801

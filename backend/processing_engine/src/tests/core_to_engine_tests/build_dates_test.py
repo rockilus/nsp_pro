@@ -14,7 +14,7 @@ from core_to_engine_service.build_dates import (
     build_dates,
     build_worker_ids_to_worker_dates,
 )
-from tests.test_data import test_data_set_1
+from tests.sample_data import test_data_set_1
 
 
 class TestBuildDates:

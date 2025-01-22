@@ -43,6 +43,7 @@ from shared.schemas import (
 # WipAssignments: 0
 
 
+# pylint: disable=R0801
 @pytest.fixture
 def sample_data_fixture() -> EngineInputs:
     schedule = Schedule(

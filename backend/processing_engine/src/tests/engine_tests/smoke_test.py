@@ -5,7 +5,7 @@ from engine import Outputs
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 
 # pylint: disable=unused-import
-from tests.test_data import sample_data_benoit_case_fixture  # noqa: F401
+from tests.sample_data import sample_data_benoit_case_fixture  # noqa: F401
 
 
 # pylint: disable=redefined-outer-name
