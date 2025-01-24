@@ -1,10 +1,11 @@
 from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
+from shared.schemas import ConstraintOperator, ConstraintOrd
 
 from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import build_var_name_constraint
-from engine.types import ConstraintOperator, ConstraintOrd, ObjectiveCategory
+from engine.types import ObjectiveCategory
 
 
 # pylint: disable=too-few-public-methods

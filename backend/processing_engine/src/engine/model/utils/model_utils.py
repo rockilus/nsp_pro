@@ -3,8 +3,9 @@ from dataclasses import asdict
 from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
+from shared.schemas import Constraint
 
-from engine.types import Constraint, ObjectiveCategory, Request, VarName
+from engine.types import ObjectiveCategory, Request, VarName
 
 # def get_average_nb_shifts_per_worker(
 #     coverage: List[ShiftDemand],

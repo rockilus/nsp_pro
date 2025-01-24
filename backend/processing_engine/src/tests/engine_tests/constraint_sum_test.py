@@ -21,7 +21,6 @@ from shared.schemas import (
     Worker,
 )
 
-from engine import ConstraintSum as ConstraintSumEngine
 from engine import Inputs as InputsEngine
 from engine import Outputs
 from engine_to_core_service.build_breaches import _parse_breaches_engine
@@ -205,9 +204,9 @@ class TestConstraintSum:
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
         assert len(inputs.constraints.sum) == 1
-        assert isinstance(inputs.constraints.sum[0], ConstraintSumEngine)
+        assert isinstance(inputs.constraints.sum[0], ConstraintSum)
 
-        constraint: ConstraintSumEngine = inputs.constraints.sum[0]
+        constraint: ConstraintSum = inputs.constraints.sum[0]
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
