@@ -565,6 +565,162 @@ test_data = [
             constraint_build_id="c_seq_0",
         ),
     ),
+    # "text": "John should work exactly 2 consecutive Morning Shift.",
+    (
+        ConstraintBuildAugmented(
+            id="c_seq_1",
+            team_id="t0",
+            constraint_type=ConstraintType.SEQ,
+            template_id="0",
+            language="en",
+            blocks=[
+                Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="w0",
+                            id_type=SWOIdTypes.WORKER,
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="should work",
+                ),
+                Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="exactly",
+                ),
+                Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=2,
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="consecutive",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="Morning Shift",
+                            id="s0",
+                            id_type=SWOIdTypes.SHIFT,
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        )
+                    ],
+                ),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+            missing_attributes=[],
+        ),
+        ConstraintSeq(
+            id="c_seq_1",
+            constraint_type=ConstraintType.SEQ,
+            operator=ConstraintOperator.EQUAL,
+            target_value=2,
+            target_unit="",
+            constraint_variables=[
+                [("w0", d.isoformat(), "s0") for d in dates_campaign]
+            ],
+            active=True,
+            hard=True,
+            priority="medium",
+            schedule_id="sch0",
+            constraint_build_id="c_seq_1",
+        ),
+    ),
+    # "text": "John should work at least 2 consecutive Morning Shift.",
+    (
+        ConstraintBuildAugmented(
+            id="c_seq_2",
+            team_id="t0",
+            constraint_type=ConstraintType.SEQ,
+            template_id="0",
+            language="en",
+            blocks=[
+                Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="w0",
+                            id_type=SWOIdTypes.WORKER,
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="should work",
+                ),
+                Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="at least",
+                ),
+                Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=2,
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="consecutive",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="Morning Shift",
+                            id="s0",
+                            id_type=SWOIdTypes.SHIFT,
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        )
+                    ],
+                ),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+            missing_attributes=[],
+        ),
+        ConstraintSeq(
+            id="c_seq_2",
+            constraint_type=ConstraintType.SEQ,
+            operator=ConstraintOperator.GREATER_THAN_OR_EQUAL,
+            target_value=2,
+            target_unit="",
+            constraint_variables=[
+                [("w0", d.isoformat(), "s0") for d in dates_campaign]
+            ],
+            active=True,
+            hard=True,
+            priority="medium",
+            schedule_id="sch0",
+            constraint_build_id="c_seq_2",
+        ),
+    ),
     # All workers, all shifts
     # "text": "All workers should work at most 2 consecutive all shifts.",
     (
@@ -1880,6 +2036,13 @@ def constraint_with_expected_output(request):
     params=[td for td in test_data if td[0].constraint_type == ConstraintType.SUM]
 )
 def constraint_sum_with_expected_output(request):
+    return request.param
+
+
+@pytest.fixture(
+    params=[td for td in test_data if td[0].constraint_type == ConstraintType.SEQ]
+)
+def constraint_seq_with_expected_output(request):
     return request.param
 
 
