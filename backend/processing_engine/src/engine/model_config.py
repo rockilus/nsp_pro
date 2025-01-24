@@ -19,7 +19,7 @@ model_config = ModelConfig(
             eve=Penalty(hard=1, soft=1),
             fai=Penalty(hard=1, soft=1),
             fil=Penalty(hard=1, soft=1),
-            ord=Penalty(hard=1, soft=2),
+            ord=Penalty(hard=1, soft=1),
             seq=Penalty(hard=1, soft=1),
             sum=Penalty(hard=10, soft=1),
         ),
