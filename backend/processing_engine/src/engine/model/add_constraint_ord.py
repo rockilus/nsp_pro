@@ -3,7 +3,7 @@ from typing import List
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import build_var_name_constraint, get_nested_value
+from engine.model.utils.model_utils import build_var_name_constraint
 from engine.types import ConstraintOperator, ConstraintOrd, ObjectiveCategory
 
 
@@ -36,14 +36,10 @@ class AddConstraintOrd(AddConstraint):
             self.model.AddBoolOr(transition)  # type: ignore # [CHECK IF OK]
         # pylint: disable=R0801
         else:
-            penalty = get_nested_value(
-                self.model_config,
-                [
-                    "penalties",
-                    "user_constraint",
-                    "ord",
-                    "hard" if constraint.hard else "soft",
-                ],
+            penalty = (
+                self.model_config.penalties.user_constraint.ord.hard
+                if constraint.hard
+                else self.model_config.penalties.user_constraint.ord.soft
             )
             var_name = build_var_name_constraint(
                 constraint, cstr_vars, ObjectiveCategory.CONSTRAINT

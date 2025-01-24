@@ -3,7 +3,7 @@ from typing import List
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import build_var_name_constraint, get_nested_value
+from engine.model.utils.model_utils import build_var_name_constraint
 from engine.types import ConstraintFil, ObjectiveCategory
 
 
@@ -25,14 +25,10 @@ class AddConstraintFil(AddConstraint):
             self.model.Add(cstr_var == 0)
         # pylint: disable=R0801
         else:
-            penalty = get_nested_value(
-                self.model_config,
-                [
-                    "penalties",
-                    "user_constraint",
-                    "fil",
-                    "hard" if constraint.hard else "soft",
-                ],
+            penalty = (
+                self.model_config.penalties.user_constraint.fil.hard
+                if constraint.hard
+                else self.model_config.penalties.user_constraint.fil.soft
             )
             cstr_vars: List[cp_model.IntVar] = [cstr_var]
             var_name = build_var_name_constraint(

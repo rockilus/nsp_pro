@@ -263,3 +263,60 @@ class BenchmarkTimes:
 # status 2: FEASIBLE
 # status 3: INFEASIBLE
 # status 4: OPTIMAL
+
+
+##############################
+# Model Config
+##############################
+
+
+@dataclass
+class Penalty:
+    hard: int
+    soft: int
+
+
+@dataclass
+class SystemConstraintPenalty:
+    eve: Penalty
+    fai: Penalty
+
+
+@dataclass
+class UserConstraintPenalty:
+    eve: Penalty
+    fai: Penalty
+    fil: Penalty
+    ord: Penalty
+    seq: Penalty
+    sum: Penalty
+
+
+@dataclass
+class CoveragePenalty:
+    hard: int
+
+
+@dataclass
+class RequestPenalty:
+    hard: int
+    soft: int
+
+
+@dataclass
+class Penalties:
+    system_constraint: SystemConstraintPenalty
+    user_constraint: UserConstraintPenalty
+    coverage: CoveragePenalty
+    request: RequestPenalty
+
+
+@dataclass
+class SolverParams:
+    max_time_in_seconds: int
+
+
+@dataclass
+class ModelConfig:
+    penalties: Penalties
+    solver_params: SolverParams

@@ -1,6 +1,6 @@
 # pylint: disable=too-many-lines
 from datetime import date, datetime, timedelta
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 import pytest
 from shared.schemas import (
@@ -14,6 +14,7 @@ from shared.schemas import (
     ConstraintFil,
     ConstraintOperator,
     ConstraintOrd,
+    Constraints,
     ConstraintSeq,
     ConstraintSum,
     ConstraintType,
@@ -37,7 +38,10 @@ from shared.schemas import (
     Worker,
 )
 
+from core_to_engine_service import core_to_engine_inputs
 from core_to_engine_service.build_periods import build_periods_weekly
+from engine import Inputs as InputsEngine
+from engine.engine import Engine, Outputs
 
 
 # pylint: disable=R0801
@@ -486,7 +490,7 @@ test_data = [
     # "text": "John should work at most 2 consecutive Morning Shift.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_seq_0",
             team_id="t0",
             constraint_type=ConstraintType.SEQ,
             template_id="0",
@@ -558,14 +562,14 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_seq_0",
         ),
     ),
     # All workers, all shifts
     # "text": "All workers should work at most 2 consecutive all shifts.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_seq_1",
             team_id="t0",
             constraint_type=ConstraintType.SEQ,
             template_id="0",
@@ -639,7 +643,7 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_seq_1",
         ),
     ),
     # # Boolean property workers, boolean property shifts
@@ -723,7 +727,7 @@ test_data = [
     # "text": "60+ should work at most 2 consecutive not intense.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_seq_2",
             team_id="t0",
             constraint_type=ConstraintType.SEQ,
             template_id="0",
@@ -797,7 +801,7 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_seq_2",
         ),
     ),
     # Non boolean property worker, non boolean property shift
@@ -878,10 +882,10 @@ test_data = [
     #     ),
     # ),
     # Sum
-    # "text": "John should work at least 1 Morning Shift per week.",
+    # "text": "John should work at least 3 Morning Shift per week.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_sum_0",
             team_id="t0",
             constraint_type=ConstraintType.SUM,
             template_id="1",
@@ -909,6 +913,84 @@ test_data = [
                     name=BlockNameOptions.OPERATOR,
                     type=BlockTypeOptions.STRING,
                     value="at least",
+                ),
+                Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=3,
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="Morning Shift",
+                            id="s0",
+                            id_type=SWOIdTypes.SHIFT,
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        )
+                    ],
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="per week",
+                ),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+            missing_attributes=[],
+        ),
+        ConstraintSum(
+            id="",
+            constraint_type=ConstraintType.SUM,
+            operator=ConstraintOperator.GREATER_THAN_OR_EQUAL,
+            target_value=3,
+            target_unit="",
+            constraint_variables=[
+                [("w0", d.isoformat(), "s0") for d in week] for week in periods_weekly
+            ],
+            active=True,
+            hard=True,
+            priority="medium",
+            schedule_id="sch0",
+            constraint_build_id="c_sum_0",
+        ),
+    ),
+    # "text": "John should work at most 1 Morning Shift per week.",
+    (
+        ConstraintBuildAugmented(
+            id="c_sum_1",
+            team_id="t0",
+            constraint_type=ConstraintType.SUM,
+            template_id="1",
+            language="en",
+            blocks=[
+                Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="w0",
+                            id_type=SWOIdTypes.WORKER,
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="should work",
+                ),
+                Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="at most",
                 ),
                 Block(
                     name=BlockNameOptions.NUMBER,
@@ -943,7 +1025,7 @@ test_data = [
         ConstraintSum(
             id="",
             constraint_type=ConstraintType.SUM,
-            operator=ConstraintOperator.GREATER_THAN_OR_EQUAL,
+            operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=1,
             target_unit="",
             constraint_variables=[
@@ -953,14 +1035,92 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_sum_1",
+        ),
+    ),
+    # "text": "John should work exactly 2 Morning Shift per week.",
+    (
+        ConstraintBuildAugmented(
+            id="c_sum_2",
+            team_id="t0",
+            constraint_type=ConstraintType.SUM,
+            template_id="1",
+            language="en",
+            blocks=[
+                Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="John",
+                            id="w0",
+                            id_type=SWOIdTypes.WORKER,
+                            is_bool_dim=False,
+                            category_name="Workers",
+                        )
+                    ],
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="should work",
+                ),
+                Block(
+                    name=BlockNameOptions.OPERATOR,
+                    type=BlockTypeOptions.STRING,
+                    value="exactly",
+                ),
+                Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=2,
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="Morning Shift",
+                            id="s0",
+                            id_type=SWOIdTypes.SHIFT,
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        )
+                    ],
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="per week",
+                ),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+            missing_attributes=[],
+        ),
+        ConstraintSum(
+            id="",
+            constraint_type=ConstraintType.SUM,
+            operator=ConstraintOperator.EQUAL,
+            target_value=2,
+            target_unit="",
+            constraint_variables=[
+                [("w0", d.isoformat(), "s0") for d in week] for week in periods_weekly
+            ],
+            active=True,
+            hard=True,
+            priority="medium",
+            schedule_id="sch0",
+            constraint_build_id="c_sum_2",
         ),
     ),
     # Order
     # "text": "No Morning Shift 1 day after Night Shift for john.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_ord_0",
             team_id="t0",
             constraint_type=ConstraintType.ORD,
             template_id="2",
@@ -1057,13 +1217,13 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_ord_0",
         ),
     ),
     # "text": "If Morning Shift then Night Shift 1 day after for john.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_ord_1",
             team_id="t0",
             constraint_type=ConstraintType.ORD,
             template_id="3",
@@ -1165,13 +1325,13 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_ord_1",
         ),
     ),
     # "text": "If Morning Shift on saturday then Afternoon Shift 2 day after for john.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_ord_2",
             team_id="t0",
             constraint_type=ConstraintType.ORD,
             template_id="4",
@@ -1284,14 +1444,14 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_ord_2",
         ),
     ),
     # "text": "If Shift Morning on saturday then Afternoon Shift 2 day before
     # for john.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_ord_3",
             team_id="t0",
             constraint_type=ConstraintType.ORD,
             template_id="4",
@@ -1404,14 +1564,14 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_ord_3",
         ),
     ),
     # Filter
     # "text": "John should only work Morning Shift.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_fil_0",
             team_id="t0",
             constraint_type=ConstraintType.FIL,
             template_id="5",
@@ -1476,13 +1636,13 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_fil_0",
         ),
     ),
     # "text": "John should not work Morning Shift.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_fil_1",
             team_id="0",
             constraint_type=ConstraintType.FIL,
             template_id="5",
@@ -1542,14 +1702,14 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_fil_1",
         ),
     ),
     # Evenness
     # "text": "Morning Shift on sunday should be evenly spread in time for John.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_eve_0",
             team_id="t0",
             constraint_type=ConstraintType.EVE,
             template_id="6",
@@ -1616,14 +1776,14 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_eve_0",
         ),
     ),
     # Fairness
     # "text": "Morning Shift on sunday should be fairly spread across all workers.",
     (
         ConstraintBuildAugmented(
-            id="",
+            id="c_fai_0",
             team_id="0",
             constraint_type=ConstraintType.FAI,
             template_id="7",
@@ -1695,7 +1855,7 @@ test_data = [
             hard=True,
             priority="medium",
             schedule_id="sch0",
-            constraint_build_id="",
+            constraint_build_id="c_fai_0",
         ),
     ),
 ]
@@ -1714,3 +1874,69 @@ def generate_test_name(
 @pytest.fixture(params=test_data)
 def constraint_with_expected_output(request):
     return request.param
+
+
+@pytest.fixture(
+    params=[td for td in test_data if td[0].constraint_type == ConstraintType.SUM]
+)
+def constraint_sum_with_expected_output(request):
+    return request.param
+
+
+@pytest.fixture
+def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputs], Outputs]:
+    def _run_engine_solve_from_engine_inputs(
+        engine_inputs: EngineInputs,
+    ) -> Outputs:
+        inputs_engine, _ = core_to_engine_inputs(
+            engine_inputs.schedule,
+            engine_inputs.workers,
+            engine_inputs.shifts,
+            engine_inputs.link_shifts,
+            engine_inputs.dimensions,
+            engine_inputs.dim_entries,
+            engine_inputs.attributes,
+            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs.cbs_augmented,
+            engine_inputs.daily_shift_demands,
+            engine_inputs.requests,
+            engine_inputs.wip_assignments,
+        )
+        engine = Engine()
+        return engine.solve(inputs_engine)
+
+    return _run_engine_solve_from_engine_inputs
+
+
+@pytest.fixture
+def run_core_to_engine_inputs() -> (
+    Callable[[EngineInputs], Tuple[InputsEngine, Constraints]]
+):
+    def _run_core_to_engine_inputs(
+        engine_inputs: EngineInputs,
+    ) -> Tuple[InputsEngine, Constraints]:
+        return core_to_engine_inputs(
+            engine_inputs.schedule,
+            engine_inputs.workers,
+            engine_inputs.shifts,
+            engine_inputs.link_shifts,
+            engine_inputs.dimensions,
+            engine_inputs.dim_entries,
+            engine_inputs.attributes,
+            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs.cbs_augmented,
+            engine_inputs.daily_shift_demands,
+            engine_inputs.requests,
+            engine_inputs.wip_assignments,
+        )
+
+    return _run_core_to_engine_inputs
+
+
+@pytest.fixture
+def run_engine_solve() -> Callable[[InputsEngine], Outputs]:
+    def _run_engine_solve(inputs_engine: InputsEngine) -> Outputs:
+        engine = Engine()
+        return engine.solve(inputs_engine)
+
+    return _run_engine_solve

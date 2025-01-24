@@ -3,11 +3,7 @@ from typing import List
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import (
-    build_var_name_constraint,
-    build_var_name_seq,
-    get_nested_value,
-)
+from engine.model.utils.model_utils import build_var_name_constraint, build_var_name_seq
 from engine.types import ConstraintOperator, ConstraintSeq, ObjectiveCategory
 
 
@@ -47,14 +43,10 @@ class AddConstraintSeq(AddConstraint):
                 )
         # pylint: disable=R0801
         else:
-            penalty = get_nested_value(
-                self.model_config,
-                [
-                    "penalties",
-                    "user_constraint",
-                    "seq",
-                    "hard" if constraint.hard else "soft",
-                ],
+            penalty = (
+                self.model_config.penalties.user_constraint.seq.hard
+                if constraint.hard
+                else self.model_config.penalties.user_constraint.seq.soft
             )
             if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                 self._add_constraint_seq_less_than_or_equal_soft_to_model(

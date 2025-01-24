@@ -1,6 +1,6 @@
 import json
 from dataclasses import asdict
-from typing import Any, List
+from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
 
@@ -155,12 +155,3 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
 #         for shift_demand in coverage
 #         if shift_demand.nb_times_shift > 0  # QUICK FIX TO CHANGE XXX
 #     )
-
-
-def get_nested_value(d: dict, keys: list) -> Any:
-    for key in keys:
-        if key in d:
-            d = d[key]
-        else:
-            raise KeyError(f"Key {key} does not exist in the dictionary.")
-    return d

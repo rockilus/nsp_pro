@@ -8,12 +8,12 @@ from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import (
     build_var_name_link_shift,
     build_var_name_work_time,
-    get_nested_value,
 )
 from engine.types import (
     BenchmarkTimes,
     Constraints,
     Inputs,
+    ModelConfig,
     NbDuties,
     Objective,
     ObjectiveCategory,
@@ -26,7 +26,7 @@ from utils.constants import Constants
 # pylint: disable=too-many-public-methods
 class Model:
     # pylint: disable=too-many-instance-attributes, too-many-arguments
-    def __init__(self, model_config: Dict) -> None:
+    def __init__(self, model_config: ModelConfig) -> None:
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple[str, str, str], cp_model.IntVar] = {}
         self.intervals: Dict[Tuple[str, str, str], cp_model.IntervalVar] = {}
@@ -459,8 +459,8 @@ class Model:
         # params = "max_time_in_seconds:20.0"
         # if params:
         #     text_format.Parse(params, self.solver.parameters)
-        self.solver.parameters.max_time_in_seconds = get_nested_value(
-            self.model_config, ["solver_params", "max_time_in_seconds"]
+        self.solver.parameters.max_time_in_seconds = (
+            self.model_config.solver_params.max_time_in_seconds
         )
         # self.solver.parameters.log_search_progress = True
         self.status = self.solver.Solve(  # type: ignore # [CHECK IF OK]

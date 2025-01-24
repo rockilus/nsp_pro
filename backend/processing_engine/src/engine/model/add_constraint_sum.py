@@ -4,7 +4,7 @@ from ortools.sat.python import cp_model  # type: ignore
 from shared.schemas import ConstraintOperator as ConstraintOperatorCore
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import build_var_name_constraint, get_nested_value
+from engine.model.utils.model_utils import build_var_name_constraint
 from engine.types import ConstraintSum, ObjectiveCategory
 from utils.constants import Constants
 
@@ -75,14 +75,10 @@ class AddConstraintSum(AddConstraint):
             self.model.Add(sum_var == sum(v * d for v, d in zip(cstr_vars, cstr_durs)))
         # pylint: disable=R0801
         else:
-            penalty = get_nested_value(
-                self.model_config,
-                [
-                    "penalties",
-                    "user_constraint",
-                    "sum",
-                    "hard" if constraint.hard else "soft",
-                ],
+            penalty = (
+                self.model_config.penalties.user_constraint.sum.hard
+                if constraint.hard
+                else self.model_config.penalties.user_constraint.sum.soft
             )
             var_name = build_var_name_constraint(
                 constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
@@ -183,14 +179,10 @@ class AddConstraintSum(AddConstraint):
                 )
             self.model.Add(sum_var == sum(cstr_vars))
         else:
-            penalty = get_nested_value(
-                self.model_config,
-                [
-                    "penalties",
-                    "user_constraint",
-                    "sum",
-                    "hard" if constraint.hard else "soft",
-                ],
+            penalty = (
+                self.model_config.penalties.user_constraint.sum.hard
+                if constraint.hard
+                else self.model_config.penalties.user_constraint.sum.soft
             )
             var_name = build_var_name_constraint(
                 constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
