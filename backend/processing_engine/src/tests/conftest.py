@@ -1880,8 +1880,6 @@ def constraint_with_expected_output(request):
     params=[td for td in test_data if td[0].constraint_type == ConstraintType.SUM]
 )
 def constraint_sum_with_expected_output(request):
-    print("REQUEST.PARAM")
-    print(request.param)
     return request.param
 
 
