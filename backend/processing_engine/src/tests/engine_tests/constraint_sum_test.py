@@ -153,8 +153,9 @@ class TestConstraintSum:
         run_engine_solve_from_engine_inputs: Callable[[EngineInputs], Outputs],
     ) -> None:
         cba, constraint = constraint_sum_with_expected_output
-        cba.hard = False
-        engine_inputs.cbs_augmented = [cba]
+        cba_soft = deepcopy(cba)
+        cba_soft.hard = False
+        engine_inputs.cbs_augmented = [cba_soft]
 
         out = run_engine_solve_from_engine_inputs(engine_inputs)
 
@@ -210,6 +211,7 @@ class TestConstraintSum:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
+
         if constraint.operator in [
             ConstraintOperator.LESS_THAN_OR_EQUAL,
             ConstraintOperator.EQUAL,

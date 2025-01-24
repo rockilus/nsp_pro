@@ -1,5 +1,3 @@
-# import json
-# import os
 import time
 
 from engine.model.model import Model
@@ -16,14 +14,6 @@ from engine.types import Inputs, Outputs
 class Engine:
     # pylint: disable=too-few-public-methods
     def solve(self, inputs: Inputs) -> Outputs:
-        # current_path = os.path.dirname(os.path.realpath(__file__))
-        # model_config_file_path = os.path.join(
-        #     current_path, "model_config.json"
-        # )
-        # with open(
-        #     model_config_file_path, "r", encoding="utf-8"
-        # ) as model_config_file:
-        #     model_config = json.load(model_config_file)
         model = Model(model_config)
         start_time = time.time()
         # model.set_up_model(inputs)
