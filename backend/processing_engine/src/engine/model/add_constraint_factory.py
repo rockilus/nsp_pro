@@ -9,7 +9,7 @@ from engine.model.add_constraint_seq import AddConstraintSeq
 from engine.model.add_constraint_sum import AddConstraintSum
 from engine.model.add_coverage import AddCoverage
 from engine.model.add_request import AddRequest
-from engine.types import Objective
+from engine.types import ModelConfig, Objective
 
 
 # pylint: disable=too-few-public-methods
@@ -21,7 +21,7 @@ class AddConstraintFactory:
         variables: Dict[Tuple[str, str, str], cp_model.IntVar],
         assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar],
         obj: Objective,
-        model_config: Dict,
+        model_config: ModelConfig,
     ):
         self.add_constraint_sum = AddConstraintSum(
             model, variables, assignment_wdss, obj, model_config

@@ -41,14 +41,7 @@ class MapDay:
         if selector == VarDaySelectorOptions.ALL:
             return self.dates_campaign
         if selector == VarDaySelectorOptions.WEEK_DAY_INDEX:
-            return [
-                self.dates_campaign[i]
-                for i in range(
-                    target,
-                    len(self.dates_campaign),
-                    NUM_DAYS_WEEK,
-                )
-            ]
+            return [d for d in self.dates_campaign if d.weekday() == target]
         raise NotImplementedError(f"Day selector {selector} " + "not implemented")
 
     def get_coords_days_ord(
@@ -69,6 +62,8 @@ class MapDay:
                 d_vars.append((dates_constraint[i], dates_constraint[i + interval]))
             return d_vars
         start = target if (target + interval >= 0) else target + NUM_DAYS_WEEK
+        d_constraints_weekday_0 = dates_constraint[0].weekday()
+        start = (start - d_constraints_weekday_0) % NUM_DAYS_WEEK
         for i in range(
             start,
             len(dates_constraint) - max(interval, 0),

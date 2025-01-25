@@ -14,7 +14,7 @@ from shared.schemas import (
 from core_to_engine_service.core_to_engine_inputs import (
     _build_shift_id_to_duration_dict,
 )
-from tests.test_data import test_data_set_1
+from tests.sample_data import test_data_set_1
 
 
 class TestBuildShiftIdToDurationDict:

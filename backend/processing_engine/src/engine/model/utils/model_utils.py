@@ -1,10 +1,11 @@
 import json
 from dataclasses import asdict
-from typing import Any, List
+from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
+from shared.schemas import Constraint
 
-from engine.types import Constraint, ObjectiveCategory, Request, VarName
+from engine.types import ObjectiveCategory, Request, VarName
 
 # def get_average_nb_shifts_per_worker(
 #     coverage: List[ShiftDemand],
@@ -155,12 +156,3 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
 #         for shift_demand in coverage
 #         if shift_demand.nb_times_shift > 0  # QUICK FIX TO CHANGE XXX
 #     )
-
-
-def get_nested_value(d: dict, keys: list) -> Any:
-    for key in keys:
-        if key in d:
-            d = d[key]
-        else:
-            raise KeyError(f"Key {key} does not exist in the dictionary.")
-    return d

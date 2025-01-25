@@ -1,5 +1,6 @@
+from shared.schemas import ConstraintFai
+
 from engine.model.add_constraint import AddConstraint
-from engine.types import ConstraintFai
 
 # from ortools.sat.python import cp_model  # type: ignore
 

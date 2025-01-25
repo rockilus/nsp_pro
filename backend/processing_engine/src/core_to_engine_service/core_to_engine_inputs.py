@@ -26,10 +26,7 @@ from core_to_engine_service.build_dim_to_attr_value_to_owner import (
     build_dim_to_attr_value_to_owner,
 )
 from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
-from core_to_engine_service.build_engine_constraints import (
-    build_engine_constraints,
-    core_to_engine_constraints,
-)
+from core_to_engine_service.build_engine_constraints import build_engine_constraints
 from core_to_engine_service.build_engine_fixed_values import core_to_engine_fixed_values
 from core_to_engine_service.build_engine_requests import build_engine_requests
 from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
@@ -158,7 +155,7 @@ def core_to_engine_inputs(
             shift_not_deleted_ids,
             requests,
         ),
-        constraints=core_to_engine_constraints(constraints),
+        constraints=constraints,
         duty_recup_pairs=build_duty_recup_pairs(
             workers_not_deleted,
             worker_ids_to_worker_dates,
