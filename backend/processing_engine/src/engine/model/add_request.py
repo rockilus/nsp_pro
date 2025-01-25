@@ -2,8 +2,8 @@ from typing import Dict, List, Tuple
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.model.utils.model_utils import build_var_name_constraint, get_nested_value
-from engine.types import Objective, ObjectiveCategory, Request
+from engine.model.utils.model_utils import build_var_name_constraint
+from engine.types import ModelConfig, Objective, ObjectiveCategory, Request
 
 
 # pylint: disable=too-few-public-methods
@@ -13,7 +13,7 @@ class AddRequest:
         model: cp_model.CpModel,
         variables: Dict[Tuple[str, str, str], cp_model.IntVar],
         obj: Objective,
-        model_config: Dict,
+        model_config: ModelConfig,
     ) -> None:
         self.model = model
         self.variables = variables
@@ -29,9 +29,10 @@ class AddRequest:
                 if r.hard and not hard_to_soft:
                     self.model.Add(var == 0 if r.negative else var == 1)
                     continue
-                penalty = get_nested_value(
-                    self.model_config,
-                    ["penalties", "request", "hard" if r.hard else "soft"],
+                penalty = (
+                    self.model_config.penalties.request.hard
+                    if r.hard
+                    else self.model_config.penalties.request.soft
                 )
                 cstr_vars: List[cp_model.IntVar | cp_model._NotBooleanVariable] = [var]
                 if any(

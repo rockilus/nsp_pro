@@ -18,7 +18,7 @@ from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_engine_constraints import (
     _build_quick_staffing_constraints,
 )
-from tests.test_data import test_data_set_1
+from tests.sample_data import test_data_set_1
 
 
 # pylint: disable=too-few-public-methods

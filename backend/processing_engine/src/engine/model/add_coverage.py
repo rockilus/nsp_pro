@@ -3,10 +3,7 @@ from typing import Dict, List, Tuple
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import (
-    build_var_name_daily_shift_demand,
-    get_nested_value,
-)
+from engine.model.utils.model_utils import build_var_name_daily_shift_demand
 from engine.types import ObjectiveCategory, ShiftDemand
 
 
@@ -14,10 +11,7 @@ from engine.types import ObjectiveCategory, ShiftDemand
 class AddCoverage(AddConstraint):
     # pylint: disable=too-many-locals
     def add_coverage(self, shift_demands: List[ShiftDemand], hard_to_soft: bool):
-        penalty = get_nested_value(
-            self.model_config,
-            ["penalties", "coverage", "hard"],
-        )
+        penalty = self.model_config.penalties.coverage.hard
         for shift_demand in shift_demands:
             if shift_demand.assignments:
                 c_variables: List[cp_model.IntVar] = [

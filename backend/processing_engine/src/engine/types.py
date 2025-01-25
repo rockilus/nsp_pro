@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Dict, List, Tuple
 
 from ortools.sat.python import cp_model  # type: ignore
+from shared.schemas import Constraints
 
 ##############################
 # Inputs
@@ -31,83 +32,6 @@ class Assignment:
     worker_id: str
     date: date
     shift_id: str
-
-
-# pylint: disable=R0801
-class ConstraintType(Enum):
-    SUM = 0
-    SEQ = 1
-    ORD = 2
-    FIL = 3
-    FAI = 4
-    EVE = 5
-
-
-class ConstraintOperator(Enum):
-    LESS_THAN = 0
-    LESS_THAN_OR_EQUAL = 1
-    EQUAL = 2
-    GREATER_THAN_OR_EQUAL = 3
-    GREATER_THAN = 4
-    YES = 5
-    NO = 6
-
-
-# pylint: disable=R0801
-@dataclass
-class Constraint:
-    id: str
-    constraint_type: ConstraintType
-    operator: ConstraintOperator | None
-    target_value: int
-    target_unit: str  # worker, shift, day, hour
-    active: bool
-    hard: bool
-    priority: str
-    schedule_id: str
-    constraint_build_id: str
-
-
-# for each worker, list for each target shifts on the target period
-@dataclass
-class ConstraintSum(Constraint):
-    constraint_variables: List[List[Tuple[str, str, str]]]
-
-
-# for each worker and shift, list for days over which target periods are covered
-@dataclass
-class ConstraintSeq(Constraint):
-    constraint_variables: List[List[Tuple[str, str, str]]]
-
-
-# for each worker, tuple for d_ref/s_ref and d_rel/s_rel, for all combinations
-@dataclass
-class ConstraintOrd(Constraint):
-    shift_reference_ids: List[str]
-    shift_relative_ids: List[str]
-    interval: int
-    constraint_variables: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
-
-
-# list of variables to set to 0
-@dataclass
-class ConstraintFil(Constraint):
-    constraint_variables: List[Tuple[str, str, str]]
-
-
-# for each worker, for all target days and shifts
-@dataclass
-class ConstraintFai(Constraint):
-    constraint_variables: List[List[Tuple[str, str, str]]]
-
-
-@dataclass
-class Constraints:
-    sum: List[ConstraintSum]
-    seq: List[ConstraintSeq]
-    ord: List[ConstraintOrd]
-    fil: List[ConstraintFil]
-    fai: List[ConstraintFai]
 
 
 @dataclass
@@ -263,3 +187,60 @@ class BenchmarkTimes:
 # status 2: FEASIBLE
 # status 3: INFEASIBLE
 # status 4: OPTIMAL
+
+
+##############################
+# Model Config
+##############################
+
+
+@dataclass
+class Penalty:
+    hard: int
+    soft: int
+
+
+@dataclass
+class SystemConstraintPenalty:
+    eve: Penalty
+    fai: Penalty
+
+
+@dataclass
+class UserConstraintPenalty:
+    eve: Penalty
+    fai: Penalty
+    fil: Penalty
+    ord: Penalty
+    seq: Penalty
+    sum: Penalty
+
+
+@dataclass
+class CoveragePenalty:
+    hard: int
+
+
+@dataclass
+class RequestPenalty:
+    hard: int
+    soft: int
+
+
+@dataclass
+class Penalties:
+    system_constraint: SystemConstraintPenalty
+    user_constraint: UserConstraintPenalty
+    coverage: CoveragePenalty
+    request: RequestPenalty
+
+
+@dataclass
+class SolverParams:
+    max_time_in_seconds: int
+
+
+@dataclass
+class ModelConfig:
+    penalties: Penalties
+    solver_params: SolverParams

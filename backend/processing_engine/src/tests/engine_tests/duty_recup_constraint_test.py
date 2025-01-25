@@ -4,7 +4,7 @@ import pytest
 from shared.schemas import EngineInputs, ShiftRestType, ShiftType
 
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
-from tests.test_data import test_data_set_1
+from tests.sample_data import test_data_set_1
 
 
 # pylint: disable=R0801

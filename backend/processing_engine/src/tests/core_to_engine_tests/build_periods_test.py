@@ -9,7 +9,7 @@ from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
-from tests.test_data import test_data_set_1
+from tests.sample_data import test_data_set_1
 
 
 class TestBuildPeriods:

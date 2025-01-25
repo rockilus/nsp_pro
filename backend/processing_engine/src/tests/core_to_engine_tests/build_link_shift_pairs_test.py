@@ -7,11 +7,11 @@ from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_link_shift_pairs import build_link_shift_pairs
 
 # pylint: disable=unused-import
-from tests.test_data import sample_data_fixture  # noqa: F401
+from tests.sample_data import sample_data_fixture  # noqa: F401
 
 
 # pylint: disable=R0801
-class TestBuildDutyRecupPairs:
+class TestBuildLinkShiftPairs:
     # pylint: disable=redefined-outer-name, too-many-locals
     def test_build_link_shift_pairs(
         self, sample_data_fixture: EngineInputs  # noqa: F811

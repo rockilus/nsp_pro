@@ -2,7 +2,7 @@ from typing import Dict, Tuple
 
 from ortools.sat.python import cp_model  # type: ignore
 
-from engine.types import Objective
+from engine.types import ModelConfig, Objective
 
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes
@@ -14,7 +14,7 @@ class AddConstraint:
         variables: Dict[Tuple[str, str, str], cp_model.IntVar],
         assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar],
         obj: Objective,
-        model_config: Dict,
+        model_config: ModelConfig,
     ) -> None:
         self.model = model
         self.variables = variables

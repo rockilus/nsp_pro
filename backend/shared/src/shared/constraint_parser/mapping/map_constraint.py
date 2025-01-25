@@ -87,7 +87,7 @@ class MapConstaint:
                 + self.worker_ids_to_worker_dates[w.id].dates_campaign
             )
             for period in coord_days:
-                period = list(set(period).intersection(dates_worker_set))
+                period = sorted(list(set(period).intersection(dates_worker_set)))
                 constraint_vars = []
                 for s in coord_shifts:
                     constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
@@ -123,7 +123,9 @@ class MapConstaint:
             )
             for s in coord_shifts:
                 constraint_vars = []
-                dates_cstr = list(set(coord_days).intersection(dates_worker_set))
+                dates_cstr = sorted(
+                    list(set(coord_days).intersection(dates_worker_set))
+                )
                 for d in dates_cstr:
                     constraint_vars.append((w.id, d.isoformat(), s.id))
                 constraints_vars.append(constraint_vars)
@@ -197,7 +199,8 @@ class MapConstaint:
         constraints_vars: List[Tuple[str, str, str]] = []
         for w in coord_workers:
             dates_worker_set = set(self.worker_ids_to_worker_dates[w.id].dates_campaign)
-            dates_cstr = list(set(coord_days).intersection(dates_worker_set))
+
+            dates_cstr = sorted(list(set(coord_days).intersection(dates_worker_set)))
             for d in dates_cstr:
                 for s in coord_shifts:
                     constraints_vars.append((w.id, d.isoformat(), s.id))
@@ -282,7 +285,7 @@ class MapConstaint:
                 + self.worker_ids_to_worker_dates[w.id].dates_campaign
             )
             for period in coord_days:
-                period = list(set(period).intersection(dates_worker_set))
+                period = sorted(list(set(period).intersection(dates_worker_set)))
                 constraint_vars = []
                 for s in coord_shifts:
                     constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]

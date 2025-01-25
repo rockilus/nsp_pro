@@ -9,8 +9,8 @@ from core_to_engine_service.build_engine_shift_demands import build_engine_shift
 from engine import ShiftDemand as ShiftDemandEngine
 
 # pylint: disable=unused-import
-from tests.test_data import sample_data_benoit_case_fixture  # noqa: F401
-from tests.test_data import test_data_set_1
+from tests.sample_data import sample_data_benoit_case_fixture  # noqa: F401
+from tests.sample_data import test_data_set_1
 
 
 class TestBuildEngineShiftDemands:
