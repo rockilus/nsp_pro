@@ -17,6 +17,7 @@ from engine.types import (
     NbDuties,
     Objective,
     ObjectiveCategory,
+    SolveStrategy,
     Variables,
     WorkTime,
 )
@@ -47,6 +48,27 @@ class Model:
             self.assignment_wdss,
             self.obj,
             self.model_config,
+        )
+
+    def solve_campaign(self, inputs: Inputs) -> None:
+        if self.model_config.solver_params.solve_strategy == SolveStrategy.SEQUENTIAL:
+            self.sequential_solve(inputs)
+        elif (
+            self.model_config.solver_params.solve_strategy == SolveStrategy.HARD_TO_SOFT
+        ):
+            self.solve_hard_to_soft(inputs)
+
+    def solve_hard_to_soft(self, inputs: Inputs) -> None:
+        self.solve_model_hts_custom(
+            inputs,
+            coverage_hts=True,
+            worker_shift_filter_hts=True,
+            duty_recup_hts=True,
+            nb_duty_hts=True,
+            work_time_desired_hts=True,
+            constraint_hts=True,
+            request_hts=True,
+            work_time_hts=True,
         )
 
     # pylint: disable=too-many-return-statements
@@ -189,14 +211,20 @@ class Model:
         constraint_hts: bool,
     ) -> None:
         self.build_variables(inputs.variables)
-        self.set_fixed_variables(inputs.fixed_values)
+
+        # Starting point:
         self.add_solution_hint(inputs.sol_hint)
+
+        # Hard constraints:
+        self.set_fixed_variables(inputs.fixed_values)
         self.no_interval_overlap(inputs.no_overlap_shift_intervals)
-        self.add_work_time_constraints(inputs.work_loads.weekly_work_time_max, False)
-        self.add_nb_duties_constraints(inputs.work_loads.monthly_nb_duties_max)
+
+        # Soft constraints:
         self.add_constraint_factory.add_coverage.add_coverage(
             inputs.shift_demands, coverage_hts
         )
+        self.add_work_time_constraints(inputs.work_loads.weekly_work_time_max, False)
+        self.add_nb_duties_constraints(inputs.work_loads.monthly_nb_duties_max)
         self.add_duty_recup_constraints(inputs.duty_recup_pairs, duty_recup_hts)
         self.add_link_shift_constraints(inputs.link_shifts_pairs)
         self.add_work_time_constraints(

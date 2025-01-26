@@ -17,6 +17,7 @@ class ShiftDemand:
     assignments_specialties: List[List[Tuple[str, str, str, str]]]
     target: int
     target_specialties: List[int]
+    is_duty: bool
 
 
 @dataclass
@@ -218,7 +219,8 @@ class UserConstraintPenalty:
 
 @dataclass
 class CoveragePenalty:
-    hard: int
+    duty: int
+    normal: int
 
 
 @dataclass
@@ -235,9 +237,15 @@ class Penalties:
     request: RequestPenalty
 
 
+class SolveStrategy(Enum):
+    HARD_TO_SOFT = 0
+    SEQUENTIAL = 1
+
+
 @dataclass
 class SolverParams:
     max_time_in_seconds: int
+    solve_strategy: SolveStrategy
 
 
 @dataclass

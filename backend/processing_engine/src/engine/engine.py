@@ -24,7 +24,7 @@ class Engine:
         #     json.dump(inputs.to_dict(), inputs_file, indent=4)
         # print(f"Inputs saved to {inputs_file_path}")
 
-        model.sequential_solve(inputs)
+        model.solve_campaign(inputs)
         end_time = time.time()
         print("Time to set up model: ", end_time - start_time)
         # model.solve()
