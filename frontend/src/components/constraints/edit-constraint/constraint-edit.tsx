@@ -36,7 +36,7 @@ export default function ConstraintEdit({
     templateBlock: TemplateBlockT
   ): string | number | string[] | ShiftWorkerOptionT[] => {
     if (templateBlock.type === BlockTypeOptions.STRING) {
-      return templateBlock.placeholder;
+      return "";
     } else if (templateBlock.type === BlockTypeOptions.SHIFT_WORKER_OPTION) {
       return [];
     } else {
