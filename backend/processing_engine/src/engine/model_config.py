@@ -13,6 +13,7 @@ from engine.types import (
 model_config = ModelConfig(
     penalties=Penalties(
         system_constraint=SystemConstraintPenalty(
+            duty_recup=100,
             eve=Penalty(hard=1, soft=1),
             fai=Penalty(hard=1, soft=1),
         ),
@@ -43,7 +44,9 @@ HARD CONSTRAINTS:
 
 SOFT CONSTRAINTS:
 - Duty coverage
+  - Obj impact per shift demand per day = penalty * delta
 - Duty recuperation
+    - Obj impact per missing recuperation = penalty
 - Non duty coverage
 - Linked shifts
 - Worker-shift filters

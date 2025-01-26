@@ -63,7 +63,6 @@ def build_var_name_work_time(
 def build_var_name_daily_shift_demand(
     cstr_vars: List[cp_model.IntVar],
     category: ObjectiveCategory,
-    hard_to_soft: bool,
 ) -> str:
     return json.dumps(
         asdict(
@@ -71,7 +70,7 @@ def build_var_name_daily_shift_demand(
                 objective_id=None,
                 cstr_vars=[var.Name() for var in cstr_vars],
                 objective_category=category.value,
-                hard_to_soft=hard_to_soft,
+                hard_to_soft=None,
             )
         )
     )

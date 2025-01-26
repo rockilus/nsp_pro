@@ -6,6 +6,7 @@ from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import (
+    build_var_name_daily_shift_demand,
     build_var_name_link_shift,
     build_var_name_work_time,
 )
@@ -223,9 +224,9 @@ class Model:
         self.add_constraint_factory.add_coverage.add_coverage(
             inputs.shift_demands, coverage_hts
         )
+        self.add_duty_recup_constraints(inputs.duty_recup_pairs, duty_recup_hts)
         self.add_work_time_constraints(inputs.work_loads.weekly_work_time_max, False)
         self.add_nb_duties_constraints(inputs.work_loads.monthly_nb_duties_max)
-        self.add_duty_recup_constraints(inputs.duty_recup_pairs, duty_recup_hts)
         self.add_link_shift_constraints(inputs.link_shifts_pairs)
         self.add_work_time_constraints(
             inputs.work_loads.weekly_work_time_contractual, True, work_time_hts
@@ -314,16 +315,16 @@ class Model:
             if not hard_to_soft:
                 self.model.Add(duty_var == recup_var)
             else:
-                # var_name = build_var_name_constraint(
-                #     None, [duty_var, recup_var], "recuperation"
-                # )
-                var_name = ""
+                penalty = self.model_config.penalties.system_constraint.duty_recup
+                var_name = build_var_name_daily_shift_demand(
+                    [duty_var, recup_var], ObjectiveCategory.DUTY_RECUP
+                )
                 delta = self.model.NewIntVar(-1, 1, "")
                 self.model.Add(delta == duty_var - recup_var)
                 excess = self.model.NewIntVar(0, 1, var_name)
                 self.model.AddAbsEquality(excess, delta)
                 self.obj.int_vars.append(excess)
-                self.obj.int_coeffs.append(100)
+                self.obj.int_coeffs.append(penalty)
 
     def add_link_shift_constraints(
         self,
