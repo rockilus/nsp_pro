@@ -11,8 +11,8 @@ from engine.types import ObjectiveCategory, ShiftDemand
 class AddCoverage(AddConstraint):
     # pylint: disable=too-many-locals
     def add_coverage(self, shift_demands: List[ShiftDemand], hard_to_soft: bool):
-        p_duty = self.model_config.penalties.coverage.duty
-        p_normal = self.model_config.penalties.coverage.normal
+        p_duty = self.model_config.penalties.system_constraint.coverage.duty
+        p_normal = self.model_config.penalties.system_constraint.coverage.normal
         for shift_demand in shift_demands:
             if shift_demand.assignments:
                 c_variables: List[cp_model.IntVar] = [

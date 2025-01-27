@@ -51,6 +51,12 @@ class Variables:
         return asdict(self)
 
 
+class WorkTimePenalty(Enum):
+    CONTRACT = 0
+    DESIRED = 1
+    MAX = 2
+
+
 @dataclass
 class WorkTime:
     # for each worker, a list of assignments for the target periods
@@ -62,7 +68,12 @@ class WorkTime:
     # for each assignment, the duration of the shift
     # (size workers x periods x shifts * period length)
     durations: List[List[List[int]]]
-    penalty: int
+    penalty: WorkTimePenalty
+
+
+class NbDutiesPenalty(Enum):
+    DESIRED = 0
+    MAX = 1
 
 
 @dataclass
@@ -75,7 +86,7 @@ class NbDuties:
     targets: List[List[int]]
     # for each assignment, the duration of the shift
     # (size workers x periods x shifts * period length)
-    penalty: int
+    penalty: NbDutiesPenalty
 
 
 @dataclass
@@ -203,10 +214,22 @@ class Penalty:
 
 
 @dataclass
+class CoveragePenalty:
+    duty: int
+    normal: int
+
+
+@dataclass
 class SystemConstraintPenalty:
+    coverage: CoveragePenalty
     duty_recup: int
-    eve: Penalty
-    fai: Penalty
+    worker_shift_filter: int
+    link_shift: int
+    weekly_worktime_max: int
+    weekly_worktime_desired: int
+    weekly_worktime_contract: int
+    monthly_duties_max: int
+    monthly_duties_desired: int
 
 
 @dataclass
@@ -217,26 +240,13 @@ class UserConstraintPenalty:
     ord: Penalty
     seq: Penalty
     sum: Penalty
-
-
-@dataclass
-class CoveragePenalty:
-    duty: int
-    normal: int
-
-
-@dataclass
-class RequestPenalty:
-    hard: int
-    soft: int
+    request: Penalty
 
 
 @dataclass
 class Penalties:
     system_constraint: SystemConstraintPenalty
     user_constraint: UserConstraintPenalty
-    coverage: CoveragePenalty
-    request: RequestPenalty
 
 
 class SolveStrategy(Enum):

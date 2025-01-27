@@ -16,11 +16,13 @@ from engine.types import (
     Inputs,
     ModelConfig,
     NbDuties,
+    NbDutiesPenalty,
     Objective,
     ObjectiveCategory,
     SolveStrategy,
     Variables,
     WorkTime,
+    WorkTimePenalty,
 )
 from utils.constants import Constants
 
@@ -63,8 +65,8 @@ class Model:
         self.solve_model_hts_custom(
             inputs,
             coverage_hts=True,
-            worker_shift_filter_hts=True,
-            duty_recup_hts=True,
+            worker_shift_filter_hts=False,
+            duty_recup_hts=False,
             nb_duty_hts=True,
             work_time_desired_hts=True,
             constraint_hts=True,
@@ -220,14 +222,21 @@ class Model:
         self.set_fixed_variables(inputs.fixed_values)
         self.no_interval_overlap(inputs.no_overlap_shift_intervals)
 
-        # Soft constraints:
+        # Hard to soft constraints:
+        self.add_worker_shift_filter_constraints(
+            inputs.worker_shift_filters, worker_shift_filter_hts
+        )
+        self.add_duty_recup_constraints(inputs.duty_recup_pairs, duty_recup_hts)
         self.add_constraint_factory.add_coverage.add_coverage(
             inputs.shift_demands, coverage_hts
         )
-        self.add_duty_recup_constraints(inputs.duty_recup_pairs, duty_recup_hts)
+        self.add_constraint_factory.add_request.add_requests(
+            inputs.requests, request_hts
+        )
+        self.add_custom_constraints(inputs.constraints, constraint_hts)
+        self.add_link_shift_constraints(inputs.link_shifts_pairs)
         self.add_work_time_constraints(inputs.work_loads.weekly_work_time_max, False)
         self.add_nb_duties_constraints(inputs.work_loads.monthly_nb_duties_max)
-        self.add_link_shift_constraints(inputs.link_shifts_pairs)
         self.add_work_time_constraints(
             inputs.work_loads.weekly_work_time_contractual, True, work_time_hts
         )
@@ -239,13 +248,6 @@ class Model:
         self.add_nb_duties_constraints(
             inputs.work_loads.monthly_nb_duties_desired, nb_duty_hts
         )
-        self.add_worker_shift_filter_constraints(
-            inputs.worker_shift_filters, worker_shift_filter_hts
-        )
-        self.add_constraint_factory.add_request.add_requests(
-            inputs.requests, request_hts
-        )
-        self.add_custom_constraints(inputs.constraints, constraint_hts)
         self.add_objective()
         self.solve()
         self.print_model_metadata(
@@ -309,13 +311,13 @@ class Model:
         duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]],
         hard_to_soft: bool,
     ) -> None:
+        penalty = self.model_config.penalties.system_constraint.duty_recup
         for duty, recup in duty_recup_pairs:
             duty_var = self.variables[duty]
             recup_var = self.variables[recup]
             if not hard_to_soft:
                 self.model.Add(duty_var == recup_var)
             else:
-                penalty = self.model_config.penalties.system_constraint.duty_recup
                 var_name = build_var_name_daily_shift_demand(
                     [duty_var, recup_var], ObjectiveCategory.DUTY_RECUP
                 )
@@ -330,6 +332,7 @@ class Model:
         self,
         ls_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str]],
     ) -> None:
+        penalty = self.model_config.penalties.system_constraint.link_shift
         for s1, s2, ls_id in ls_pairs:
             s1_var = self.variables[s1]
             s2_var = self.variables[s2]
@@ -341,11 +344,20 @@ class Model:
             excess = self.model.NewIntVar(0, 1, var_name)
             self.model.AddAbsEquality(excess, delta)
             self.obj.int_vars.append(excess)
-            self.obj.int_coeffs.append(1)
+            self.obj.int_coeffs.append(penalty)
 
     def add_work_time_constraints(
         self, work_time: WorkTime, contract: bool, hard_to_soft: bool = False
     ) -> None:
+        penalty = (
+            self.model_config.penalties.system_constraint.weekly_worktime_contract
+            if work_time.penalty == WorkTimePenalty.CONTRACT
+            else (
+                self.model_config.penalties.system_constraint.weekly_worktime_desired
+                if work_time.penalty == WorkTimePenalty.DESIRED
+                else self.model_config.penalties.system_constraint.weekly_worktime_max
+            )
+        )
         for w_assignments, w_targets, w_durations in zip(
             work_time.assignments,
             work_time.targets,
@@ -390,11 +402,16 @@ class Model:
                     )
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(work_time.penalty)
+                    self.obj.int_coeffs.append(penalty)
 
     def add_nb_duties_constraints(
         self, nb_duties: NbDuties, hard_to_soft: bool = False
     ) -> None:
+        penalty = (
+            self.model_config.penalties.system_constraint.monthly_duties_desired
+            if nb_duties.penalty == NbDutiesPenalty.DESIRED
+            else self.model_config.penalties.system_constraint.monthly_duties_max
+        )
         for w_assignments, w_targets in zip(
             nb_duties.assignments,
             nb_duties.targets,
@@ -424,13 +441,14 @@ class Model:
                     )
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(nb_duties.penalty)
+                    self.obj.int_coeffs.append(penalty)
 
     def add_worker_shift_filter_constraints(
         self,
         worker_shift_filters: List[Tuple[str, str, str]],
         hard_to_soft: bool,
     ) -> None:
+        penalty = self.model_config.penalties.system_constraint.worker_shift_filter
         for a in worker_shift_filters:
             cstr_var = self.variables[a]
             if not hard_to_soft:
@@ -447,7 +465,7 @@ class Model:
                 cstr_vars.append(lit)
                 self.model.AddBoolOr(cstr_vars)
                 self.obj.bool_vars.append(lit)
-                self.obj.bool_coeffs.append(100)
+                self.obj.bool_coeffs.append(penalty)
 
     def add_custom_constraints(
         self, constraints: Constraints, hard_to_soft: bool
