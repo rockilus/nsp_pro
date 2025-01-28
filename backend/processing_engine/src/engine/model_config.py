@@ -33,7 +33,7 @@ model_config = ModelConfig(
         ),
     ),
     solver_params=SolverParams(
-        max_time_in_seconds=90, solve_strategy=SolveStrategy.HARD_TO_SOFT
+        max_time_in_seconds=30, solve_strategy=SolveStrategy.HARD_TO_SOFT
     ),
 )
 
