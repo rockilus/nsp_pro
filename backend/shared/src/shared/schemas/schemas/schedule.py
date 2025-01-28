@@ -64,6 +64,7 @@ class ObjectiveCategory(Enum):
     WORK_TIME_DESIRED = 4
     DUTIES_PER_MONTH = 5
     LINK_SHIFT = 6
+    DUTY_RECUP = 7
 
 
 # pylint: disable=R0801

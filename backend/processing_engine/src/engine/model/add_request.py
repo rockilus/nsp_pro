@@ -30,9 +30,9 @@ class AddRequest:
                     self.model.Add(var == 0 if r.negative else var == 1)
                     continue
                 penalty = (
-                    self.model_config.penalties.request.hard
+                    self.model_config.penalties.user_constraint.request.hard
                     if r.hard
-                    else self.model_config.penalties.request.soft
+                    else self.model_config.penalties.user_constraint.request.soft
                 )
                 cstr_vars: List[cp_model.IntVar | cp_model._NotBooleanVariable] = [var]
                 if any(
