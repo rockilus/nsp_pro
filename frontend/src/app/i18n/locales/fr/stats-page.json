@@ -11,6 +11,7 @@
     "get_stats": "Obtenir les stats",
     "no_custom_stats": "Vous n'avez pas de stats personnalisées. Sélectionnez une autre 'Stats' dans les options de stats et commencez à ajouter des stats personnalisées.",
     "no_stats_selected": "Sélectionnez vos options de stats et cliquez sur le bouton 'Obtenir les stats'.",
+    "not": "Pas",
     "select_one_or_more": "Sélectionnez un ou plusieurs",
     "select_shift": "Sélectionnez une tâche",
     "shifts": "Tâches",

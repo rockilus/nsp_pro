@@ -62,7 +62,9 @@ export default function BlockDisplayShiftWorkerOption({
               block.value
                 .map((item) =>
                   typeof item === "object" && "name" in item
-                    ? translateOptionName(getShiftWorkerOptionDisplayName(item))
+                    ? translateOptionName(
+                        getShiftWorkerOptionDisplayName(item, t("not"))
+                      )
                     : ""
                 )
                 .join(", ")

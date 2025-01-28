@@ -111,19 +111,21 @@ export default function BlockEditShiftWorkerOption({
       options: ShiftWorkerOptionT[]
     ): ShiftWorkerOptionT[] => {
       const selectedArray: string[] = selectedOptions.map((item) =>
-        getShiftWorkerOptionDisplayName(item)
+        getShiftWorkerOptionDisplayName(item, t("not"))
       );
       return searchQuery === ""
         ? options.filter(
             (option) =>
-              !selectedArray.includes(getShiftWorkerOptionDisplayName(option))
+              !selectedArray.includes(
+                getShiftWorkerOptionDisplayName(option, t("not"))
+              )
           )
         : options.filter(
             (option) =>
               !selectedArray.includes(
-                getShiftWorkerOptionDisplayName(option)
+                getShiftWorkerOptionDisplayName(option, t("not"))
               ) &&
-              getShiftWorkerOptionDisplayName(option)
+              getShiftWorkerOptionDisplayName(option, t("not"))
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase())
           );
@@ -346,7 +348,7 @@ export default function BlockEditShiftWorkerOption({
             <Chip
               key={index}
               label={translateOptionName(
-                getShiftWorkerOptionDisplayName(option)
+                getShiftWorkerOptionDisplayName(option, t("not"))
               )}
               onDelete={() => handleDeleteFromSelected(option)}
               deleteIcon={
@@ -431,7 +433,7 @@ export default function BlockEditShiftWorkerOption({
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText
                             primary={translateOptionName(
-                              getShiftWorkerOptionDisplayName(option)
+                              getShiftWorkerOptionDisplayName(option, t("not"))
                             )}
                             style={{ color: ConstraintDefaultColors.shade3 }}
                           />
