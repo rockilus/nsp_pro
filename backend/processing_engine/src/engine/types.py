@@ -17,6 +17,7 @@ class ShiftDemand:
     assignments_specialties: List[List[Tuple[str, str, str, str]]]
     target: int
     target_specialties: List[int]
+    is_duty: bool
 
 
 @dataclass
@@ -50,6 +51,12 @@ class Variables:
         return asdict(self)
 
 
+class WorkTimePenalty(Enum):
+    CONTRACT = 0
+    DESIRED = 1
+    MAX = 2
+
+
 @dataclass
 class WorkTime:
     # for each worker, a list of assignments for the target periods
@@ -61,7 +68,12 @@ class WorkTime:
     # for each assignment, the duration of the shift
     # (size workers x periods x shifts * period length)
     durations: List[List[List[int]]]
-    penalty: int
+    penalty: WorkTimePenalty
+
+
+class NbDutiesPenalty(Enum):
+    DESIRED = 0
+    MAX = 1
 
 
 @dataclass
@@ -74,7 +86,7 @@ class NbDuties:
     targets: List[List[int]]
     # for each assignment, the duration of the shift
     # (size workers x periods x shifts * period length)
-    penalty: int
+    penalty: NbDutiesPenalty
 
 
 @dataclass
@@ -121,6 +133,7 @@ class ObjectiveCategory(Enum):
     WORK_TIME_WEEK_DESIRED = 4
     DUTIES_PER_MONTH = 5
     LINK_SHIFT = 6
+    DUTY_RECUP = 7
 
 
 # pylint: disable=R0801
@@ -201,9 +214,22 @@ class Penalty:
 
 
 @dataclass
+class CoveragePenalty:
+    duty: int
+    normal: int
+
+
+@dataclass
 class SystemConstraintPenalty:
-    eve: Penalty
-    fai: Penalty
+    coverage: CoveragePenalty
+    duty_recup: int
+    worker_shift_filter: int
+    link_shift: int
+    weekly_worktime_max: int
+    weekly_worktime_desired: int
+    weekly_worktime_contract: int
+    monthly_duties_max: int
+    monthly_duties_desired: int
 
 
 @dataclass
@@ -214,30 +240,24 @@ class UserConstraintPenalty:
     ord: Penalty
     seq: Penalty
     sum: Penalty
-
-
-@dataclass
-class CoveragePenalty:
-    hard: int
-
-
-@dataclass
-class RequestPenalty:
-    hard: int
-    soft: int
+    request: Penalty
 
 
 @dataclass
 class Penalties:
     system_constraint: SystemConstraintPenalty
     user_constraint: UserConstraintPenalty
-    coverage: CoveragePenalty
-    request: RequestPenalty
+
+
+class SolveStrategy(Enum):
+    HARD_TO_SOFT = 0
+    SEQUENTIAL = 1
 
 
 @dataclass
 class SolverParams:
     max_time_in_seconds: int
+    solve_strategy: SolveStrategy
 
 
 @dataclass

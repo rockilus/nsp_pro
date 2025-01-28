@@ -5,6 +5,7 @@ from engine.types import (
     Constraints,
     Inputs,
     NbDuties,
+    NbDutiesPenalty,
     Outputs,
     Request,
     ShiftDemand,
@@ -12,6 +13,7 @@ from engine.types import (
     VarName,
     WorkLoads,
     WorkTime,
+    WorkTimePenalty,
 )
 
 __all__ = [
@@ -21,11 +23,13 @@ __all__ = [
     "Engine",
     "Inputs",
     "NbDuties",
+    "NbDutiesPenalty",
     "Request",
     "ShiftDemand",
     "Outputs",
     "Variables",
     "VarName",
-    "WorkTime",
     "WorkLoads",
+    "WorkTime",
+    "WorkTimePenalty",
 ]

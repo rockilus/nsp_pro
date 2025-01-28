@@ -6,8 +6,10 @@ from typing import Dict, List, Tuple
 from shared.schemas import Shift, Worker, WorkerDates
 
 from engine import NbDuties as NbDutiesEngine
+from engine import NbDutiesPenalty as NbDutiesPenaltyEngine
 from engine import WorkLoads as WorkLoadsEngine
 from engine import WorkTime as WorkTimeEngine
+from engine import WorkTimePenalty as WorkTimePenaltyEngine
 from utils.constants import Constants
 
 
@@ -29,7 +31,7 @@ def build_engine_work_loads(
             shifts_work,
             shift_id_to_duration_dict,
             [w.weekly_hours for w in workers_not_deleted],
-            100,
+            WorkTimePenaltyEngine.CONTRACT,
         ),
         weekly_work_time_desired=_build_engine_work_time(
             workers_not_deleted,
@@ -38,7 +40,7 @@ def build_engine_work_loads(
             shifts_work,
             shift_id_to_duration_dict,
             [w.weekly_hours_desired for w in workers_not_deleted],
-            50,
+            WorkTimePenaltyEngine.DESIRED,
         ),
         weekly_work_time_max=_build_engine_work_time(
             workers_not_deleted,
@@ -47,7 +49,7 @@ def build_engine_work_loads(
             shifts_work,
             shift_id_to_duration_dict,
             [80 for _ in workers_not_deleted],
-            0,
+            WorkTimePenaltyEngine.MAX,
         ),
         monthly_nb_duties_desired=_build_engine_nb_duties(
             workers_not_deleted,
@@ -55,7 +57,7 @@ def build_engine_work_loads(
             ws_to_dates,
             shift_duties,
             [w.duties_per_month for w in workers_not_deleted],
-            100,
+            NbDutiesPenaltyEngine.DESIRED,
         ),
         monthly_nb_duties_max=_build_engine_nb_duties(
             workers_not_deleted,
@@ -63,7 +65,7 @@ def build_engine_work_loads(
             ws_to_dates,
             shift_duties,
             [1000 for _ in workers_not_deleted],
-            0,
+            NbDutiesPenaltyEngine.MAX,
         ),
     )
 
@@ -76,7 +78,7 @@ def _build_engine_work_time(
     shifts_work: List[Shift],
     shift_id_to_duration_dict: Dict[str, int],
     worker_to_target_list: List[int],
-    penalty: int,
+    penalty: WorkTimePenaltyEngine,
 ) -> WorkTimeEngine:
     assignments: List[List[List[Tuple[str, str, str]]]] = []
     targets: List[List[int]] = []
@@ -108,7 +110,7 @@ def _build_engine_nb_duties(
     ws_to_dates: Dict[Tuple[str, str], WorkerDates],
     shift_duties: List[Shift],
     worker_to_target_list: List[int],
-    penalty: int,
+    penalty: NbDutiesPenaltyEngine,
 ) -> NbDutiesEngine:
     assignments: List[List[List[Tuple[str, str, str]]]] = []
     targets: List[List[int]] = []

@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Dict, List, Tuple
 
-from shared.schemas import DailyShiftDemand, Shift, Worker, WorkerDates
+from shared.schemas import DailyShiftDemand, Shift, ShiftType, Worker, WorkerDates
 
 from engine import ShiftDemand as ShiftDemandEngine
 
@@ -63,6 +63,7 @@ def build_engine_shift_demands(
                     assignments_specialties=assignments_specialty,
                     target=target,
                     target_specialties=target_specialty,
+                    is_duty=shift.shift_type == ShiftType.DUTY,
                 )
             )
     return out

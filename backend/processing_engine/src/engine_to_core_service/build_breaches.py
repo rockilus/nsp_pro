@@ -176,6 +176,8 @@ def _build_breach_description(
             link_shifts,
             breach,
         )
+    if breach.objective_category == ObjectiveCategory.DUTY_RECUP:
+        return _build_description_duty_recup_breach(workers, shifts, breach)
     return f"{breach.objective_category} constraint not implemented yet"
 
 
@@ -564,3 +566,26 @@ def _build_daily_shift_demand_breaches(
                     )
                 )
     return out
+
+
+def _build_description_duty_recup_breach(
+    workers: List[Worker],
+    shifts: List[Shift],
+    breach: Breach,
+) -> str:
+    duty_var = breach.variables[0]
+    s_duty = next((s for s in shifts if s.id == duty_var.shift_id), None)
+    if s_duty is None:
+        return "Unknown duty shift"
+    w_duty = next((w for w in workers if w.id == duty_var.worker_id), None)
+    if w_duty is None:
+        return "Unknown worker"
+    string_list = [
+        "No recuperation after",
+        s_duty.name,
+        "for",
+        w_duty.name,
+        "on",
+        duty_var.date.strftime("%b %d"),
+    ]
+    return " ".join(string_list)
