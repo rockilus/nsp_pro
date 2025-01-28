@@ -32,8 +32,16 @@ def translate_worker_block_value(value: str, language: str) -> str:
 
 def translate_shift_block_value(value: str, language: str) -> str:
     translations = {
-        "es": {"all shifts": "todos los turnos"},
-        "fr": {"all shifts": "toutes les tâches"},
+        "es": {
+            "all shifts": "todos los turnos",
+            "duties": "guardias",
+            "not duties": "no guardias",
+        },
+        "fr": {
+            "all shifts": "toutes les tâches",
+            "duties": "gardes",
+            "not duties": "non gardes",
+        },
     }
 
     if language in translations:
@@ -164,6 +172,10 @@ def get_shift_worker_option_display_name(
         shift = next((s for s in shifts if s.id == option.id), None)
         if shift:
             return shift.name
+    elif option.id_type == SWOIdTypes.DUTY:
+        if option.name:
+            return translate_shift_block_value("duties", lng)
+        return translate_shift_block_value("not duties", lng)
     elif option.id_type == SWOIdTypes.DIMENSION:
         if not option.is_bool_dim:
             if not isinstance(option.name, str):

@@ -12,7 +12,7 @@ from shared.schemas.schemas.constraint import (
     SWOIdTypes,
 )
 from shared.schemas.schemas.dimension import Dimension, DimensionEntryType, DimEntry
-from shared.schemas.schemas.shift import Shift
+from shared.schemas.schemas.shift import Shift, ShiftType
 from shared.schemas.schemas.team import Specialty
 from shared.schemas.schemas.worker import Worker
 
@@ -114,7 +114,7 @@ def build_missing_attributes_and_active(
     return mps, active
 
 
-# pylint: disable=too-many-branches
+# pylint: disable=too-many-branches, too-many-statements
 def build_missing_attributes_and_active_owner(
     owner_type: AttributeOwnerType,
     block: Block,
@@ -194,6 +194,7 @@ def build_missing_attributes_and_active_owner(
             mps.append(new_mp)
         active = active or new_active
 
+    new_active = False
     swo_spe_ids = list(
         set(
             swo.id  # type: ignore
@@ -203,8 +204,6 @@ def build_missing_attributes_and_active_owner(
     )
     if any(spe_id is None for spe_id in swo_spe_ids):
         raise ValueError("Specialty id is missing")
-
-    new_active = False
     for spe_id in swo_spe_ids:
         specialty = next((spe for spe in specialties if spe.id == spe_id), None)
         if specialty is None:
@@ -221,6 +220,31 @@ def build_missing_attributes_and_active_owner(
             )
             continue
         new_active = True
+    active = active or new_active
+
+    swos_duty = [
+        swo for swo in block.value if swo.id_type == SWOIdTypes.DUTY  # type: ignore
+    ]
+    if not all(isinstance(swo.name, bool) for swo in swos_duty):  # type: ignore
+        raise ValueError("Duty name is not a boolean in SWO")
+    new_active = False
+    for swo in swos_duty:
+        if swo.name is True:  # type: ignore
+            if any(
+                owner
+                for owner in owners
+                if owner.shift_type == ShiftType.DUTY  # type: ignore
+                and not owner.deleted
+            ):
+                new_active = True
+        else:
+            if any(
+                owner
+                for owner in owners
+                if owner.shift_type == ShiftType.NORMAL  # type: ignore
+                and not owner.deleted
+            ):
+                new_active = True
     active = active or new_active
     return mps, active
 

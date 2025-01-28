@@ -6,10 +6,10 @@ from shared.schemas import (
     Dimension,
     DimensionEntryType,
     DimensionType,
-    ShiftType,
     DimEntry,
     Shift,
     ShiftRestType,
+    ShiftType,
     ShiftWorkerOption,
     Specialty,
     SWOIdTypes,
@@ -17,15 +17,9 @@ from shared.schemas import (
     Worker,
 )
 
-from constraint_templates.build_templates_list_en import (
-    build_templates_list_en,
-)
-from constraint_templates.build_templates_list_es import (
-    build_templates_list_es,
-)
-from constraint_templates.build_templates_list_fr import (
-    build_templates_list_fr,
-)
+from constraint_templates.build_templates_list_en import build_templates_list_en
+from constraint_templates.build_templates_list_es import build_templates_list_es
+from constraint_templates.build_templates_list_fr import build_templates_list_fr
 
 # WARNING: IMPORTING DBs HERE CREATED ERROR WITH PYTEST
 
@@ -110,9 +104,7 @@ def build_options(
             ),
             is_bool_dim=False,
             category_name=(
-                "Workers"
-                if owner_type == AttributeOwnerType.WORKER
-                else "Shifts"
+                "Workers" if owner_type == AttributeOwnerType.WORKER else "Shifts"
             ),
         )
         for o in owners
@@ -128,11 +120,19 @@ def build_options(
             )
             for s in specialties
         ]
+    if owner_type == AttributeOwnerType.SHIFT:
+        out += [
+            ShiftWorkerOption(
+                name="",
+                id="",
+                id_type=SWOIdTypes.DUTY,
+                is_bool_dim=True,
+                category_name="Duties",
+            )
+        ]
     for dimension in dimensions:
         dim_attributes = (
-            dim_to_attributes[dimension.id]
-            if dimension.id in dim_to_attributes
-            else []
+            dim_to_attributes[dimension.id] if dimension.id in dim_to_attributes else []
         )
         if dimension.entry_type == DimensionEntryType.BOOL and not any(
             option.id == dimension.id for option in out
@@ -147,9 +147,7 @@ def build_options(
                 )
             )
         elif dimension.entry_type == DimensionEntryType.DIM_ENTRIES:
-            dim_des = [
-                de for de in dim_entries if de.dimension_id == dimension.id
-            ]
+            dim_des = [de for de in dim_entries if de.dimension_id == dimension.id]
             out += [
                 ShiftWorkerOption(
                     name=de.name,

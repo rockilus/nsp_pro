@@ -49,6 +49,10 @@ export default function BlockDisplayShiftWorkerOption({
         return t("all_workers");
       case "all shifts":
         return t("all_shifts");
+      case "Duties":
+        return t("duties");
+      case `${t("not")} duties`:
+        return `${t("not")} ${t("duties").toLocaleLowerCase()}`;
       default:
         return name;
     }
