@@ -27,7 +27,7 @@ model_config = ModelConfig(
             fai=Penalty(hard=100, soft=10),
             fil=Penalty(hard=100, soft=10),
             ord=Penalty(hard=100, soft=10),
-            seq=Penalty(hard=100, soft=10),
+            seq=Penalty(hard=150, soft=10),
             sum=Penalty(hard=100, soft=10),
             request=Penalty(hard=100, soft=10),
         ),
