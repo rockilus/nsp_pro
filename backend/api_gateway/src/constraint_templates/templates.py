@@ -9,20 +9,15 @@ from shared.schemas import (
     DimEntry,
     Shift,
     ShiftWorkerOption,
+    Specialty,
     SWOIdTypes,
     Template,
     Worker,
 )
 
-from constraint_templates.build_templates_list_en import (
-    build_templates_list_en,
-)
-from constraint_templates.build_templates_list_es import (
-    build_templates_list_es,
-)
-from constraint_templates.build_templates_list_fr import (
-    build_templates_list_fr,
-)
+from constraint_templates.build_templates_list_en import build_templates_list_en
+from constraint_templates.build_templates_list_es import build_templates_list_es
+from constraint_templates.build_templates_list_fr import build_templates_list_fr
 
 # WARNING: IMPORTING DBs HERE CREATED ERROR WITH PYTEST
 
@@ -34,6 +29,7 @@ def build_templates(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
+    specialties: List[Specialty],
     lng: str,
 ) -> List[Template]:
     dim_to_attributes: Dict[str, List[Attribute]] = {}
@@ -49,6 +45,7 @@ def build_templates(
         [d for d in dimensions if d.dim_types == [DimensionType.WORKER]],
         dim_entries,
         dim_to_attributes,
+        specialties,
     )
     shift_options = build_options(
         AttributeOwnerType.SHIFT,
@@ -63,6 +60,7 @@ def build_templates(
         ],
         dim_entries,
         dim_to_attributes,
+        [],
     )
     return build_templates_list(worker_options, shift_options, lng)
 
@@ -73,6 +71,7 @@ def build_options(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     dim_to_attributes: Dict[str, List[Attribute]],
+    specialties: List[Specialty],
 ) -> List[ShiftWorkerOption]:
     out: List[ShiftWorkerOption] = [
         ShiftWorkerOption(
@@ -97,18 +96,25 @@ def build_options(
             ),
             is_bool_dim=False,
             category_name=(
-                "Workers"
-                if owner_type == AttributeOwnerType.WORKER
-                else "Shifts"
+                "Workers" if owner_type == AttributeOwnerType.WORKER else "Shifts"
             ),
         )
         for o in owners
     ]
+    if owner_type == AttributeOwnerType.WORKER:
+        out += [
+            ShiftWorkerOption(
+                name=s.name,
+                id=s.id,
+                id_type=SWOIdTypes.SPECIALTY,
+                is_bool_dim=False,
+                category_name="Specialties",
+            )
+            for s in specialties
+        ]
     for dimension in dimensions:
         dim_attributes = (
-            dim_to_attributes[dimension.id]
-            if dimension.id in dim_to_attributes
-            else []
+            dim_to_attributes[dimension.id] if dimension.id in dim_to_attributes else []
         )
         if dimension.entry_type == DimensionEntryType.BOOL and not any(
             option.id == dimension.id for option in out
@@ -123,9 +129,7 @@ def build_options(
                 )
             )
         elif dimension.entry_type == DimensionEntryType.DIM_ENTRIES:
-            dim_des = [
-                de for de in dim_entries if de.dimension_id == dimension.id
-            ]
+            dim_des = [de for de in dim_entries if de.dimension_id == dimension.id]
             out += [
                 ShiftWorkerOption(
                     name=de.name,

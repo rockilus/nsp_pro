@@ -59,6 +59,8 @@ export default function BlockEditShiftWorkerOption({
         return t("shifts");
       case "All":
         return t("all");
+      case "Specialties":
+        return t("specialties");
       default:
         return label;
     }

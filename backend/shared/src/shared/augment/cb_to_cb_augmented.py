@@ -13,6 +13,7 @@ from shared.schemas.schemas.constraint import (
 )
 from shared.schemas.schemas.dimension import Dimension, DimensionEntryType, DimEntry
 from shared.schemas.schemas.shift import Shift
+from shared.schemas.schemas.team import Specialty
 from shared.schemas.schemas.worker import Worker
 
 
@@ -24,16 +25,24 @@ def cb_to_cb_augmented(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
+    specialties: List[Specialty],
 ) -> ConstraintBuildAugmented:
     text = blocks_to_string(
         cb.blocks,
         workers,
         shifts,
         dimensions,
+        specialties,
         cb.language,
     )
     missing_attributes, active = build_missing_attributes_and_active(
-        cb.blocks, workers, shifts, dimensions, dim_entries, attributes
+        cb.blocks,
+        workers,
+        shifts,
+        dimensions,
+        dim_entries,
+        attributes,
+        specialties,
     )
     return ConstraintBuildAugmented(
         id=cb.id,
@@ -58,6 +67,7 @@ def build_missing_attributes_and_active(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
+    specialties: List[Specialty],
 ) -> Tuple[List[MissingAttribute], bool]:
     mps: List[MissingAttribute] = []
     active_worker = False
@@ -73,6 +83,7 @@ def build_missing_attributes_and_active(
                 dimensions,
                 dim_entries,
                 attributes,
+                specialties,
             )
             mps += new_mps
             active_worker = active_worker or new_active_worker
@@ -88,6 +99,7 @@ def build_missing_attributes_and_active(
                 dimensions,
                 dim_entries,
                 attributes,
+                [],
             )
             mps += new_mps
             if block.name == BlockNameOptions.SHIFT:
@@ -102,6 +114,7 @@ def build_missing_attributes_and_active(
     return mps, active
 
 
+# pylint: disable=too-many-branches
 def build_missing_attributes_and_active_owner(
     owner_type: AttributeOwnerType,
     block: Block,
@@ -109,6 +122,7 @@ def build_missing_attributes_and_active_owner(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
+    specialties: List[Specialty],
 ) -> Tuple[List[MissingAttribute], bool]:
     mps: List[MissingAttribute] = []
     active = False
@@ -179,6 +193,35 @@ def build_missing_attributes_and_active_owner(
         if new_mp is not None:
             mps.append(new_mp)
         active = active or new_active
+
+    swo_spe_ids = list(
+        set(
+            swo.id  # type: ignore
+            for swo in block.value
+            if swo.id_type == SWOIdTypes.SPECIALTY  # type: ignore
+        )
+    )
+    if any(spe_id is None for spe_id in swo_spe_ids):
+        raise ValueError("Specialty id is missing")
+
+    new_active = False
+    for spe_id in swo_spe_ids:
+        specialty = next((spe for spe in specialties if spe.id == spe_id), None)
+        if specialty is None:
+            raise ValueError("Specialty not found")
+        if specialty.deleted:
+            mps.append(
+                MissingAttribute(
+                    dimension_id=specialty.id,
+                    is_bool=False,
+                    dim_name=specialty.name,
+                    category=owner_type,
+                    attribute_values=[specialty.name],
+                )
+            )
+            continue
+        new_active = True
+    active = active or new_active
     return mps, active
 
 

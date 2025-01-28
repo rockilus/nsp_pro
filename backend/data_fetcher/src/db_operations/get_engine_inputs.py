@@ -5,7 +5,7 @@ from shared.schemas import EngineInputs, Schedule, ScheduleStatus
 
 from db_operations.assignment_services import get_fixed_assignments
 from db_operations.create_shift import create_duty_recuperation_shifts
-from db_operations.fetch_data import fetch_workers_shifts_dim_attributes
+from db_operations.fetch_data import fetch_workers_shifts_dim_attributes_spe
 from db_operations.get_constraint_build import get_active_constraint_builds_by_ids
 from db_operations.get_link_shift import get_link_shifts
 from db_operations.get_request import get_requests_by_dates
@@ -16,13 +16,9 @@ def get_engine_inputs(
     schedule: Schedule, collections: DatabaseCollections
 ) -> EngineInputs:
     start_time_db = time.time()
-    (
-        workers,
-        shifts,
-        dimensions,
-        dim_entries,
-        attributes,
-    ) = fetch_workers_shifts_dim_attributes(schedule.team_id, collections)
+    (workers, shifts, dimensions, dim_entries, attributes, specialties) = (
+        fetch_workers_shifts_dim_attributes_spe(schedule.team_id, collections)
+    )
     as_hist, as_wip_fixed = get_fixed_assignments(schedule, collections)
     cbs_augmented = get_active_constraint_builds_by_ids(
         schedule.constraint_build_ids,
@@ -31,6 +27,7 @@ def get_engine_inputs(
         dimensions,
         dim_entries,
         attributes,
+        specialties,
         collections,
     )
     recuperation_shifts_new = create_duty_recuperation_shifts(shifts, collections)

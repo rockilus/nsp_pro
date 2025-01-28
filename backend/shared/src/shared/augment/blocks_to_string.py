@@ -1,15 +1,16 @@
 from typing import List
 
-from shared.schemas.schemas.constraint import (
+from shared.schemas import (
     Block,
     BlockNameOptions,
     BlockTypeOptions,
+    Dimension,
+    Shift,
     ShiftWorkerOption,
+    Specialty,
     SWOIdTypes,
+    Worker,
 )
-from shared.schemas.schemas.dimension import Dimension
-from shared.schemas.schemas.shift import Shift
-from shared.schemas.schemas.worker import Worker
 
 
 def translate_worker_block_value(value: str, language: str) -> str:
@@ -145,12 +146,20 @@ def get_shift_worker_option_display_name(
     workers: List[Worker],
     shifts: List[Shift],
     dimensions: List[Dimension],
+    specialities: List[Specialty],
     lng: str,
 ) -> str:
     if option.id_type == SWOIdTypes.WORKER:
         worker = next((w for w in workers if w.id == option.id), None)
         if worker:
             return worker.name
+    elif option.id_type == SWOIdTypes.SPECIALTY:
+        specialty = next(
+            (s for s in specialities if s.id == option.id),
+            None,
+        )
+        if specialty:
+            return specialty.name
     elif option.id_type == SWOIdTypes.SHIFT:
         shift = next((s for s in shifts if s.id == option.id), None)
         if shift:
@@ -185,6 +194,7 @@ def blocks_to_string(
     workers: List[Worker],
     shifts: List[Shift],
     dimensions: List[Dimension],
+    specialties: List[Specialty],
     language: str,
 ) -> str:
     values = []
@@ -196,6 +206,7 @@ def blocks_to_string(
                     workers,
                     shifts,
                     dimensions,
+                    specialties,
                     language,
                 )
             )
@@ -219,6 +230,7 @@ def block_to_string_shift_worker_option(
     workers: List[Worker],
     shifts: List[Shift],
     dimensions: List[Dimension],
+    specialities: List[Specialty],
     lng: str,
 ) -> str:
     if not isinstance(block.value, list):
@@ -231,6 +243,7 @@ def block_to_string_shift_worker_option(
             workers,
             shifts,
             dimensions,
+            specialities,
             lng,
         )
         for v in block.value

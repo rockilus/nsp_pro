@@ -32,4 +32,5 @@ def get_shift_options(team_id: str) -> List[ShiftWorkerOption]:
         dimensions,
         dim_entries,
         dim_to_attributes,
+        [],
     )

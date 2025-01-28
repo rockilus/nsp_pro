@@ -81,8 +81,15 @@ export default function ConstraintEdit({
   const validateConstraint = (): boolean => {
     const updatedErrors: number[] = [];
     if (template) {
+      console.log("constraintState", constraintState);
+
       template.blocks.map((block, index) => {
         const value = constraintState.blocks[index].value;
+        console.log("index", index);
+        console.log("value", value);
+        if (block.name === BlockNameOptions.TEXT) {
+          return;
+        }
         if (
           block.type === BlockTypeOptions.SHIFT_WORKER_OPTION ||
           block.type === BlockTypeOptions.LIST
@@ -100,6 +107,8 @@ export default function ConstraintEdit({
         }
       });
       setErrors(updatedErrors);
+      console.log("updatedErrors", updatedErrors);
+
       return updatedErrors.length === 0;
     } else {
       return false;
@@ -112,7 +121,12 @@ export default function ConstraintEdit({
   };
 
   const handleSaveConstraint = () => {
+    console.log("handleSaveConstraint");
+
     const valid = validateConstraint();
+    console.log("valid", valid);
+    console.log("errors", errors);
+
     if (!valid) {
       return;
     }
