@@ -53,11 +53,11 @@ export default function BlockEditShiftWorkerOption({
 
   const translateSectionLabel = (label: string) => {
     switch (label) {
-      case "workers":
+      case "Workers":
         return t("workers");
-      case "shifts":
+      case "Shifts":
         return t("shifts");
-      case "all":
+      case "All":
         return t("all");
       default:
         return label;
