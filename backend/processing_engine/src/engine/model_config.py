@@ -27,13 +27,13 @@ model_config = ModelConfig(
             fai=Penalty(hard=100, soft=10),
             fil=Penalty(hard=100, soft=10),
             ord=Penalty(hard=100, soft=10),
-            seq=Penalty(hard=150, soft=10),
+            seq=Penalty(hard=100, soft=10),
             sum=Penalty(hard=100, soft=10),
             request=Penalty(hard=100, soft=10),
         ),
     ),
     solver_params=SolverParams(
-        max_time_in_seconds=30, solve_strategy=SolveStrategy.HARD_TO_SOFT
+        max_time_in_seconds=45, solve_strategy=SolveStrategy.HARD_TO_SOFT
     ),
 )
 
