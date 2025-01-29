@@ -28,12 +28,14 @@ class SWOIdTypes(Enum):
     WORKER = 1
     SHIFT = 2
     DIMENSION = 3
+    SPECIALTY = 4
+    DUTY = 5
 
 
 @dataclass
 class ShiftWorkerOption:
     name: str | bool  # value shown in the dropdown in the ui
-    id: str  # id of the shift, worker or dimension
+    id: str  # id of the shift, worker, dimension, specialty
     id_type: SWOIdTypes
     is_bool_dim: bool
     category_name: str  # workers, shifts, all, or the name of the dimension

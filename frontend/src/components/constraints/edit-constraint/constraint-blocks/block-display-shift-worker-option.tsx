@@ -20,10 +20,15 @@ import {
   TemplateBlockT,
   BlockT,
   ShiftWorkerOptionT,
+  SWOIdTypes,
 } from "../../../../types/constraint";
+import { WorkerT } from "../../../../types/worker";
+import { ShiftT } from "../../../../types/shift";
 
 export default function BlockDisplayShiftWorkerOption({
   lng,
+  workers,
+  shifts,
   index,
   block,
   templateBlock,
@@ -32,6 +37,8 @@ export default function BlockDisplayShiftWorkerOption({
   handleRemoveError,
 }: {
   lng: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
   index: number;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
@@ -49,25 +56,51 @@ export default function BlockDisplayShiftWorkerOption({
         return t("all_workers");
       case "all shifts":
         return t("all_shifts");
+      case "Duties":
+        return t("duties");
+      case `${t("not")} duties`:
+        return `${t("not")} ${t("duties").toLocaleLowerCase()}`;
       default:
         return name;
     }
   };
 
+  const swoDisplayString = (swo: ShiftWorkerOptionT): string => {
+    if (swo.idType === SWOIdTypes.WORKER) {
+      const worker = workers.find((w) => w.id === swo.id);
+      if (worker) {
+        return worker.name;
+      }
+    } else if (swo.idType === SWOIdTypes.SHIFT) {
+      const shift = shifts.find((s) => s.id === swo.id);
+      if (shift) {
+        return shift.name;
+      }
+    } else {
+      return translateOptionName(
+        getShiftWorkerOptionDisplayName(swo, t("not"))
+      );
+    }
+    return "";
+  };
+
   const blockDisplay = () => {
+    const blockNames = [];
+    if (block && Array.isArray(block.value) && block.value.length !== 0) {
+      for (let i = 0; i < block.value.length; i++) {
+        const swo = block.value[i] as ShiftWorkerOptionT;
+        blockNames.push(swoDisplayString(swo));
+      }
+    } else {
+      blockNames.push(
+        blockDisplayPlaceholder(templateBlock.placeholder, error)
+      );
+    }
+    const displayString = blockNames.join(", ");
+
     return (
       <div>
-        {block && Array.isArray(block.value) && block.value.length !== 0
-          ? blockDislayValue(
-              block.value
-                .map((item) =>
-                  typeof item === "object" && "name" in item
-                    ? translateOptionName(getShiftWorkerOptionDisplayName(item))
-                    : ""
-                )
-                .join(", ")
-            )
-          : blockDisplayPlaceholder(templateBlock.placeholder, error)}
+        {blockDislayValue(displayString)}
         {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name), error)}
       </div>
     );
@@ -94,6 +127,7 @@ export default function BlockDisplayShiftWorkerOption({
           handleClose={handleClose}
           translateOptionName={translateOptionName}
           handleRemoveError={handleRemoveError}
+          swoDisplayString={swoDisplayString}
         />
       }
       open={open}

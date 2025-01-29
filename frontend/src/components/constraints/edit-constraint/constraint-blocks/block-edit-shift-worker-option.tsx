@@ -23,11 +23,15 @@ import {
   ShiftWorkerOptionT,
   SWOIdTypes,
 } from "../../../../types/constraint";
+import { WorkerT } from "../../../../types/worker";
+import { ShiftT } from "../../../../types/shift";
 // Constants
 import { ConstraintDefaultColors } from "../../../../constants/constants";
 
 export default function BlockEditShiftWorkerOption({
   lng,
+  // workers,
+  // shifts,
   index,
   block,
   templateBlock,
@@ -37,8 +41,11 @@ export default function BlockEditShiftWorkerOption({
   handleClose,
   translateOptionName,
   handleRemoveError,
+  swoDisplayString,
 }: {
   lng: string;
+  // workers: WorkerT[];
+  // shifts: ShiftT[];
   index: number;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
@@ -48,17 +55,22 @@ export default function BlockEditShiftWorkerOption({
   handleClose: () => void;
   translateOptionName: (name: string) => string;
   handleRemoveError: (index: number) => void;
+  swoDisplayString: (swo: ShiftWorkerOptionT) => string;
 }) {
   const { t } = useTranslation(lng, "constraint-page");
 
   const translateSectionLabel = (label: string) => {
     switch (label) {
-      case "workers":
+      case "Workers":
         return t("workers");
-      case "shifts":
+      case "Shifts":
         return t("shifts");
-      case "all":
+      case "All":
         return t("all");
+      case "Specialties":
+        return t("specialties");
+      case "Duties":
+        return t("duties");
       default:
         return label;
     }
@@ -111,19 +123,23 @@ export default function BlockEditShiftWorkerOption({
       options: ShiftWorkerOptionT[]
     ): ShiftWorkerOptionT[] => {
       const selectedArray: string[] = selectedOptions.map((item) =>
-        getShiftWorkerOptionDisplayName(item)
+        swoDisplayString(item)
       );
+      console.log("selectedArray", selectedArray);
+
       return searchQuery === ""
         ? options.filter(
             (option) =>
-              !selectedArray.includes(getShiftWorkerOptionDisplayName(option))
+              !selectedArray.includes(
+                getShiftWorkerOptionDisplayName(option, t("not"))
+              )
           )
         : options.filter(
             (option) =>
               !selectedArray.includes(
-                getShiftWorkerOptionDisplayName(option)
+                getShiftWorkerOptionDisplayName(option, t("not"))
               ) &&
-              getShiftWorkerOptionDisplayName(option)
+              getShiftWorkerOptionDisplayName(option, t("not"))
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase())
           );
@@ -345,9 +361,7 @@ export default function BlockEditShiftWorkerOption({
           {valueState.map((option, index) => (
             <Chip
               key={index}
-              label={translateOptionName(
-                getShiftWorkerOptionDisplayName(option)
-              )}
+              label={swoDisplayString(option)}
               onDelete={() => handleDeleteFromSelected(option)}
               deleteIcon={
                 <ClearIcon
@@ -431,7 +445,7 @@ export default function BlockEditShiftWorkerOption({
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText
                             primary={translateOptionName(
-                              getShiftWorkerOptionDisplayName(option)
+                              getShiftWorkerOptionDisplayName(option, t("not"))
                             )}
                             style={{ color: ConstraintDefaultColors.shade3 }}
                           />

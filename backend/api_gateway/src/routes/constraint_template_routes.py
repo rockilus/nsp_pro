@@ -20,7 +20,7 @@ from integrations.authorization import authz_check
 from routes.api_model import TemplateMessage
 from scripts.setup_database import user_db
 from services.data_fetching_services import (
-    fetch_workers_not_d_shifts_not_d_dim_not_d_attributes,
+    fetch_workers_not_d_shifts_not_d_dim_not_d_attributes_spes,
 )
 
 router = APIRouter()
@@ -44,15 +44,17 @@ async def get_constraint_templates(
         if user is None:
             raise UserNotFoundError(f"User with id {user_id} not found")
         # pylint: disable=R0801
-        (
+        (workers, shifts, dimensions, dim_entries, attributes, specialties) = (
+            fetch_workers_not_d_shifts_not_d_dim_not_d_attributes_spes(team_id)
+        )
+        templates = build_templates(
             workers,
             shifts,
             dimensions,
             dim_entries,
             attributes,
-        ) = fetch_workers_not_d_shifts_not_d_dim_not_d_attributes(team_id)
-        templates = build_templates(
-            workers, shifts, dimensions, dim_entries, attributes, user.language
+            specialties,
+            user.language,
         )
         response = [core_to_msg_constraint_template(ct) for ct in templates]
     except Exception as e:

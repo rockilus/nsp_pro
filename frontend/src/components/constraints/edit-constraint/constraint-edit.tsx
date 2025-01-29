@@ -15,15 +15,21 @@ import {
   BlockNameOptions,
   BlockTypeOptions,
 } from "../../../types/constraint";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
 
 export default function ConstraintEdit({
   lng,
+  workers,
+  shifts,
   constraint,
   template,
   handleAddConstraint,
   handleUpdateConstraint,
 }: {
   lng: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
   constraint: ConstraintT;
   template: TemplateT | null;
   handleAddConstraint: (constraint: ConstraintT) => void;
@@ -36,7 +42,11 @@ export default function ConstraintEdit({
     templateBlock: TemplateBlockT
   ): string | number | string[] | ShiftWorkerOptionT[] => {
     if (templateBlock.type === BlockTypeOptions.STRING) {
-      return "";
+      if (templateBlock.name === BlockNameOptions.TEXT) {
+        return templateBlock.placeholder;
+      } else {
+        return "";
+      }
     } else if (templateBlock.type === BlockTypeOptions.SHIFT_WORKER_OPTION) {
       return [];
     } else {
@@ -81,8 +91,15 @@ export default function ConstraintEdit({
   const validateConstraint = (): boolean => {
     const updatedErrors: number[] = [];
     if (template) {
+      console.log("constraintState", constraintState);
+
       template.blocks.map((block, index) => {
         const value = constraintState.blocks[index].value;
+        console.log("index", index);
+        console.log("value", value);
+        if (block.name === BlockNameOptions.TEXT) {
+          return;
+        }
         if (
           block.type === BlockTypeOptions.SHIFT_WORKER_OPTION ||
           block.type === BlockTypeOptions.LIST
@@ -100,6 +117,8 @@ export default function ConstraintEdit({
         }
       });
       setErrors(updatedErrors);
+      console.log("updatedErrors", updatedErrors);
+
       return updatedErrors.length === 0;
     } else {
       return false;
@@ -112,7 +131,12 @@ export default function ConstraintEdit({
   };
 
   const handleSaveConstraint = () => {
+    console.log("handleSaveConstraint");
+
     const valid = validateConstraint();
+    console.log("valid", valid);
+    console.log("errors", errors);
+
     if (!valid) {
       return;
     }
@@ -171,6 +195,8 @@ export default function ConstraintEdit({
           >
             <BlockDisplay
               lng={lng}
+              workers={workers}
+              shifts={shifts}
               index={index}
               block={findBlockByName(templateBlock.name)}
               templateBlock={templateBlock}

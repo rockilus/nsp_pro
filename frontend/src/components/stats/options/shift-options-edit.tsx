@@ -37,19 +37,21 @@ export default function ShiftOptionsEdit({
       options: ShiftWorkerOptionT[]
     ): ShiftWorkerOptionT[] => {
       const selectedArray: string[] = selectedOptions.map((item) =>
-        getShiftWorkerOptionDisplayName(item)
+        getShiftWorkerOptionDisplayName(item, t("not"))
       );
       return searchQuery === ""
         ? options.filter(
             (option) =>
-              !selectedArray.includes(getShiftWorkerOptionDisplayName(option))
+              !selectedArray.includes(
+                getShiftWorkerOptionDisplayName(option, t("not"))
+              )
           )
         : options.filter(
             (option) =>
               !selectedArray.includes(
-                getShiftWorkerOptionDisplayName(option)
+                getShiftWorkerOptionDisplayName(option, t("not"))
               ) &&
-              getShiftWorkerOptionDisplayName(option)
+              getShiftWorkerOptionDisplayName(option, t("not"))
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase())
           );
@@ -334,7 +336,10 @@ export default function ShiftOptionsEdit({
                       >
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText
-                            primary={getShiftWorkerOptionDisplayName(option)}
+                            primary={getShiftWorkerOptionDisplayName(
+                              option,
+                              t("not")
+                            )}
                             style={{ color: ConstraintDefaultColors.shade3 }}
                           />
                         </ListItem>

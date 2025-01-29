@@ -10,9 +10,13 @@ import "../../../styles/text-styles.css";
 import "../constraint-tab.css";
 // Types
 import { ConstraintT, TemplateT } from "../../../types/constraint";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
 
 export default function ConstraintList({
   lng,
+  workers,
+  shifts,
   constraints,
   constraintTemplates,
   handleOpenAddConstraint,
@@ -21,6 +25,8 @@ export default function ConstraintList({
   handleDeleteConstraint,
 }: {
   lng: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
   constraints: ConstraintT[];
   constraintTemplates: TemplateT[];
   handleOpenAddConstraint: () => void;
@@ -53,6 +59,8 @@ export default function ConstraintList({
           <ConstraintListItem
             key={constraint.id}
             lng={lng}
+            workers={workers}
+            shifts={shifts}
             constraint={constraint}
             constraintTemplate={findTemplateById(constraint.templateId)}
             handleAddConstraint={handleAddConstraint}

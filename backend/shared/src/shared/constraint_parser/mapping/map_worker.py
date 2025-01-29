@@ -36,6 +36,10 @@ class MapWorker:
                 )
                 if target_ids:
                     worker_ids += target_ids
+            elif value.id_type == SWOIdTypes.SPECIALTY:
+                worker_ids += [
+                    w.id for w in self.workers if value.id in w.specialty_ids
+                ]
         if not worker_ids:
             raise ValueError("No workers found")
         worker_ids = sorted(list(set(worker_ids)))

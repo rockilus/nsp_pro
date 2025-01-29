@@ -168,6 +168,7 @@ def build_work_shift_indexes(
         dimensions,
         dim_entries,
         attributes,
+        [],
     )
     selected_shifts_ids = parse_selected_shifts(
         selected_shifts, missing_attributes, shifts, shift_dim_dict

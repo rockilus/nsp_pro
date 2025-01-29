@@ -12,9 +12,13 @@ import "../constraint-tab.css";
 import "./new-constraint.css";
 // Types
 import { TemplateT, ConstraintT } from "../../../types/constraint";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
 
 export default function NewConstraint({
   lng,
+  workers,
+  shifts,
   selectedTeamId,
   templates,
   handleCloseAddConstraint,
@@ -22,6 +26,8 @@ export default function NewConstraint({
   handleUpdateConstraint,
 }: {
   lng: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
   selectedTeamId: string;
   templates: TemplateT[];
   handleCloseAddConstraint: () => void;
@@ -50,6 +56,8 @@ export default function NewConstraint({
         {selectedTemplate ? (
           <ConstraintEdit
             lng={lng}
+            workers={workers}
+            shifts={shifts}
             constraint={{
               id: "",
               teamId: selectedTeamId,

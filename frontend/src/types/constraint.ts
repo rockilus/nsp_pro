@@ -1,13 +1,12 @@
-
 // Types
 import { AttributeOwnerType } from "./attribute";
-
 
 export enum SWOIdTypes {
   NONE = 0,
   WORKER = 1,
   SHIFT = 2,
   DIMENSION = 3,
+  SPECIALTY = 4,
 }
 
 export type ShiftWorkerOptionT = {
