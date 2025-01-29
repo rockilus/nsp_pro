@@ -52,7 +52,7 @@ export default function ShiftRowHeaderCell({
           }`}
         ></div>
         <div className="shift-row-header-cell-left">
-          <span className="shift-name">{shift.acronym}</span>
+          <span className="shift-name">{`${shift.name} - ${shift.acronym}`}</span>
           {scheduleCampaign && (
             <span
               className={`shift-stats-total ${
