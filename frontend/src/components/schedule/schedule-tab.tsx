@@ -51,10 +51,10 @@ import {
   ExportOptionsT,
   ScheduleStatus,
   SolveDetailsStatus,
+  LHSTabContentT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import { StatsT } from "../../types/stats";
-import { set } from "zod";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -561,45 +561,57 @@ export default function ScheduleTab({
     }
   }, [scheduleCampaign, connectSSE]);
 
-  const lhsTabContent = {
-    Breaches: <BreachList lng={lng} breaches={breaches} />,
-    "Quick staffing": scheduleCampaign ? (
-      <QuickStaffingTable
-        lng={lng}
-        shifts={shifts.filter((s) => !s.deleted)}
-        workers={workers.filter((w) => !w.deleted)}
-        assignments={assignments}
-        schedule={scheduleCampaign as ScheduleT}
-        handleUpdateSchedule={handleUpdateSchedule}
-      />
-    ) : null,
-    "Quick stats": stats ? (
-      <QuickStatsTable
-        lng={lng}
-        shifts={shifts.filter((s) => !s.deleted)}
-        workers={workers.filter((w) => !w.deleted)}
-        stats={stats}
-        selectedQuickStatsTimeFrame={selectedQuickStatsTimeFrame}
-        handleChangeStatsTimeFrame={handleChangeStatsTimeFrame}
-      />
-    ) : null,
-    "Selected assignment": selectedCell ? (
-      <AssignmentOptions
-        lng={lng}
-        workers={workers.filter((w) => !w.deleted)}
-        shifts={shifts.filter((s) => !s.deleted)}
-        schedules={[
-          ...(scheduleCampaign ? [scheduleCampaign] : []),
-          ...schedulesValidated,
-        ]}
-        assignments={assignments}
-        selectedCell={selectedCell}
-        selectedDisplay={selectedDisplay}
-        setSelectedCell={setSelectedCell}
-        handleUpdateAssignment={handleUpdateAssignment}
-      />
-    ) : null,
-  };
+  const lhsTabContent: LHSTabContentT[] = [
+    {
+      name: t("breaches"),
+      content: <BreachList lng={lng} breaches={breaches} />,
+    },
+    {
+      name: t("quick_staffing"),
+      content: scheduleCampaign ? (
+        <QuickStaffingTable
+          lng={lng}
+          shifts={shifts.filter((s) => !s.deleted)}
+          workers={workers.filter((w) => !w.deleted)}
+          assignments={assignments}
+          schedule={scheduleCampaign as ScheduleT}
+          handleUpdateSchedule={handleUpdateSchedule}
+        />
+      ) : null,
+    },
+    {
+      name: t("quick_stats"),
+      content: stats ? (
+        <QuickStatsTable
+          lng={lng}
+          shifts={shifts.filter((s) => !s.deleted)}
+          workers={workers.filter((w) => !w.deleted)}
+          stats={stats}
+          selectedQuickStatsTimeFrame={selectedQuickStatsTimeFrame}
+          handleChangeStatsTimeFrame={handleChangeStatsTimeFrame}
+        />
+      ) : null,
+    },
+    {
+      name: t("selection"),
+      content: selectedCell ? (
+        <AssignmentOptions
+          lng={lng}
+          workers={workers.filter((w) => !w.deleted)}
+          shifts={shifts.filter((s) => !s.deleted)}
+          schedules={[
+            ...(scheduleCampaign ? [scheduleCampaign] : []),
+            ...schedulesValidated,
+          ]}
+          assignments={assignments}
+          selectedCell={selectedCell}
+          selectedDisplay={selectedDisplay}
+          setSelectedCell={setSelectedCell}
+          handleUpdateAssignment={handleUpdateAssignment}
+        />
+      ) : null,
+    },
+  ];
 
   return (
     <div className="tab-container-ultrawide">

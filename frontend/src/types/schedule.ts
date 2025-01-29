@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import dayjs from "dayjs";
 // Types
 import { ShiftT } from "./shift";
@@ -155,4 +156,9 @@ export type WorkTimeTableT = {
   others: WorkTimeTableDataT;
   workers: WorkTimeTableDataT;
   nbWeeks: number;
+};
+
+export type LHSTabContentT = {
+  name: string;
+  content: ReactNode | null;
 };
