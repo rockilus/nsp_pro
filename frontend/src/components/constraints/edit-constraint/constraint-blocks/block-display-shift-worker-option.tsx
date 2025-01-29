@@ -86,21 +86,20 @@ export default function BlockDisplayShiftWorkerOption({
 
   const blockDisplay = () => {
     const blockNames = [];
+    let displayString = null;
     if (block && Array.isArray(block.value) && block.value.length !== 0) {
       for (let i = 0; i < block.value.length; i++) {
         const swo = block.value[i] as ShiftWorkerOptionT;
         blockNames.push(swoDisplayString(swo));
       }
-    } else {
-      blockNames.push(
-        blockDisplayPlaceholder(templateBlock.placeholder, error)
-      );
+      displayString = blockNames.join(", ");
     }
-    const displayString = blockNames.join(", ");
 
     return (
       <div>
-        {blockDislayValue(displayString)}
+        {displayString
+          ? blockDislayValue(displayString)
+          : blockDisplayPlaceholder(templateBlock.placeholder, error)}
         {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name), error)}
       </div>
     );

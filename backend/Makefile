@@ -90,6 +90,13 @@ check: \
 	storage_service_check \
 	shared_check
 
+check_no_test: \
+	api_gateway_check \
+	data_fetcher_check \
+	processing_engine_check_no_test \
+	storage_service_check \
+	shared_check
+
 # Run checks in api_gateway
 api_gateway_check:
 	@echo "Running checks in api_gateway..."
@@ -117,6 +124,14 @@ processing_engine_check:
 	poetry run pylint src && \
 	poetry run mypy src && \
 	poetry run pytest
+
+processing_engine_check_no_test:
+	@echo "Running checks in processing_engine..."
+	@cd processing_engine && \
+	poetry run flake8 src && \
+	poetry run black --check src && \
+	poetry run pylint src && \
+	poetry run mypy src
 
 # Run checks in storage_service
 storage_service_check:
