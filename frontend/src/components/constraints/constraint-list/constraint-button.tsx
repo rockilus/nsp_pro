@@ -6,9 +6,13 @@ import Menu from "@mui/material/Menu";
 import ConstraintEdit from "../edit-constraint/constraint-edit";
 // Types
 import { ConstraintT, TemplateT } from "../../../types/constraint";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
 
 export default function ConstraintButton({
   lng,
+  workers,
+  shifts,
   buttonElement,
   constraint,
   constraintTemplate,
@@ -16,6 +20,8 @@ export default function ConstraintButton({
   handleUpdateConstraint,
 }: {
   lng: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
   buttonElement: React.ReactNode;
   constraint: ConstraintT;
   constraintTemplate: TemplateT | null;
@@ -55,6 +61,8 @@ export default function ConstraintButton({
       >
         <ConstraintEdit
           lng={lng}
+          workers={workers}
+          shifts={shifts}
           constraint={constraint}
           template={constraintTemplate}
           handleAddConstraint={handleAddConstraint}

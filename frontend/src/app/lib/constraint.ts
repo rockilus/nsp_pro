@@ -1,8 +1,12 @@
 import { unstable_noStore as noStore } from "next/cache";
+// Actions
+import { getWorkers } from "./worker";
+import { getShifts } from "./shift";
 // Types
 import { ConstraintT, TemplateT } from "../../types/constraint";
 // Env Vars
 import { API_URL } from "./env";
+import { get } from "http";
 
 const apiUrlConstraints = API_URL + "/constraints";
 const apiUrlTemplates = API_URL + "/constraint-templates";
@@ -145,10 +149,14 @@ export async function getConstraintsTabData(teamId: string) {
     const constraintsTabData = await Promise.all([
       getTemplates(teamId),
       getConstraints(teamId),
+      getWorkers(teamId),
+      getShifts(teamId),
     ]);
     return {
       templates: constraintsTabData[0],
       constraints: constraintsTabData[1],
+      workers: constraintsTabData[2],
+      shifts: constraintsTabData[3],
     };
   } catch (error) {
     console.error("Failed to fetch constraints tab data:", error);

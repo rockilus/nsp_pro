@@ -15,6 +15,8 @@ import {
 import "../../styles/tab-container-styles.css";
 // Types
 import { ConstraintT, TemplateT } from "../../types/constraint";
+import { WorkerT } from "../../types/worker";
+import { ShiftT } from "../../types/shift";
 
 export default function ConstraintTab({
   lng,
@@ -27,6 +29,8 @@ export default function ConstraintTab({
   const [templates, setTemplates] = useState<TemplateT[]>([]);
   const [constraints, setConstraints] = useState<ConstraintT[]>([]);
   const [addingConstraint, setAddingConstraint] = useState<boolean>(false);
+  const [workers, setWorkers] = useState<WorkerT[]>([]);
+  const [shifts, setShifts] = useState<ShiftT[]>([]);
 
   const handleOpenAddConstraint = () => {
     setAddingConstraint(true);
@@ -71,10 +75,18 @@ export default function ConstraintTab({
         const {
           templates: fetchedTemplates,
           constraints: fetchedConstraints,
-        }: { templates: TemplateT[]; constraints: ConstraintT[] } =
-          await getConstraintsTabData(selectedTeamId);
+          workers: fetchedWorkers,
+          shifts: fetchedShifts,
+        }: {
+          templates: TemplateT[];
+          constraints: ConstraintT[];
+          workers: WorkerT[];
+          shifts: ShiftT[];
+        } = await getConstraintsTabData(selectedTeamId);
         setTemplates(fetchedTemplates);
         setConstraints(fetchedConstraints);
+        setWorkers(fetchedWorkers);
+        setShifts(fetchedShifts);
       }
       setIsLoading(false);
     };
@@ -92,6 +104,8 @@ export default function ConstraintTab({
               <div>
                 <NewConstraint
                   lng={lng}
+                  workers={workers}
+                  shifts={shifts}
                   selectedTeamId={selectedTeamId}
                   templates={templates}
                   handleCloseAddConstraint={handleCloseAddConstraint}
@@ -103,6 +117,8 @@ export default function ConstraintTab({
             )}
             <ConstraintList
               lng={lng}
+              workers={workers}
+              shifts={shifts}
               constraints={constraints}
               constraintTemplates={templates}
               handleOpenAddConstraint={handleOpenAddConstraint}

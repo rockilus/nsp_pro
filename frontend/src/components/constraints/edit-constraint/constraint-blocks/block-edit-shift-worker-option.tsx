@@ -23,11 +23,15 @@ import {
   ShiftWorkerOptionT,
   SWOIdTypes,
 } from "../../../../types/constraint";
+import { WorkerT } from "../../../../types/worker";
+import { ShiftT } from "../../../../types/shift";
 // Constants
 import { ConstraintDefaultColors } from "../../../../constants/constants";
 
 export default function BlockEditShiftWorkerOption({
   lng,
+  // workers,
+  // shifts,
   index,
   block,
   templateBlock,
@@ -37,8 +41,11 @@ export default function BlockEditShiftWorkerOption({
   handleClose,
   translateOptionName,
   handleRemoveError,
+  swoDisplayString,
 }: {
   lng: string;
+  // workers: WorkerT[];
+  // shifts: ShiftT[];
   index: number;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
@@ -48,6 +55,7 @@ export default function BlockEditShiftWorkerOption({
   handleClose: () => void;
   translateOptionName: (name: string) => string;
   handleRemoveError: (index: number) => void;
+  swoDisplayString: (swo: ShiftWorkerOptionT) => string;
 }) {
   const { t } = useTranslation(lng, "constraint-page");
 
@@ -115,8 +123,10 @@ export default function BlockEditShiftWorkerOption({
       options: ShiftWorkerOptionT[]
     ): ShiftWorkerOptionT[] => {
       const selectedArray: string[] = selectedOptions.map((item) =>
-        getShiftWorkerOptionDisplayName(item, t("not"))
+        swoDisplayString(item)
       );
+      console.log("selectedArray", selectedArray);
+
       return searchQuery === ""
         ? options.filter(
             (option) =>
@@ -351,9 +361,7 @@ export default function BlockEditShiftWorkerOption({
           {valueState.map((option, index) => (
             <Chip
               key={index}
-              label={translateOptionName(
-                getShiftWorkerOptionDisplayName(option, t("not"))
-              )}
+              label={swoDisplayString(option)}
               onDelete={() => handleDeleteFromSelected(option)}
               deleteIcon={
                 <ClearIcon

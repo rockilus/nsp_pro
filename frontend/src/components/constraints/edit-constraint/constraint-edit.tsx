@@ -15,15 +15,21 @@ import {
   BlockNameOptions,
   BlockTypeOptions,
 } from "../../../types/constraint";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
 
 export default function ConstraintEdit({
   lng,
+  workers,
+  shifts,
   constraint,
   template,
   handleAddConstraint,
   handleUpdateConstraint,
 }: {
   lng: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
   constraint: ConstraintT;
   template: TemplateT | null;
   handleAddConstraint: (constraint: ConstraintT) => void;
@@ -189,6 +195,8 @@ export default function ConstraintEdit({
           >
             <BlockDisplay
               lng={lng}
+              workers={workers}
+              shifts={shifts}
               index={index}
               block={findBlockByName(templateBlock.name)}
               templateBlock={templateBlock}
