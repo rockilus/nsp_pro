@@ -84,8 +84,8 @@ class MapShift:
             cstr_operator,
         )
         if cstr_operator == ConstraintOperator.NO:
-            return [s for s in self.shifts if s.id in shift_ids]
-        return [s for s in self.shifts if s.id not in shift_ids]
+            return [s for s in self.shifts if s.id in shift_ids and not s.deleted]
+        return [s for s in self.shifts if s.id not in shift_ids and not s.deleted]
 
     def get_selector(
         self, values: List[ShiftWorkerOption], cstr_type: ConstraintType | None
@@ -131,6 +131,19 @@ class MapShift:
                 if not self.check_shift_id(value.id):
                     raise ValueError(f"Shift {value.name} with id {value.id} not found")
                 out.append(value.id)
+            elif value.id_type == SWOIdTypes.DUTY:
+                if value.name is True:
+                    out += [
+                        s.id
+                        for s in self.shifts
+                        if s.shift_type == ShiftType.DUTY and not s.deleted
+                    ]
+                elif value.name is False:
+                    out += [
+                        s.id
+                        for s in self.shifts
+                        if s.shift_type == ShiftType.NORMAL and not s.deleted
+                    ]
             # pylint: disable=R0801
             elif value.id_type == SWOIdTypes.DIMENSION:
                 target_ids = self.get_target_ids_dimension(value, missing_properties)

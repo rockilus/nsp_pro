@@ -8,7 +8,10 @@ from shared.schemas import (
     DimensionType,
     DimEntry,
     Shift,
+    ShiftRestType,
+    ShiftType,
     ShiftWorkerOption,
+    Specialty,
     SWOIdTypes,
     Template,
     Worker,
@@ -28,6 +31,7 @@ def build_templates(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
+    specialties: List[Specialty],
     lng: str,
 ) -> List[Template]:
     dim_to_attributes: Dict[str, List[Attribute]] = {}
@@ -43,10 +47,17 @@ def build_templates(
         [d for d in dimensions if d.dim_types == [DimensionType.WORKER]],
         dim_entries,
         dim_to_attributes,
+        specialties,
     )
+    shifts_constraint = [
+        s
+        for s in shifts
+        if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+        or s.rest_type == ShiftRestType.OFF
+    ]
     shift_options = build_options(
         AttributeOwnerType.SHIFT,
-        shifts,
+        shifts_constraint,
         [
             d
             for d in dimensions
@@ -57,6 +68,7 @@ def build_templates(
         ],
         dim_entries,
         dim_to_attributes,
+        [],
     )
     return build_templates_list(worker_options, shift_options, lng)
 
@@ -67,6 +79,7 @@ def build_options(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     dim_to_attributes: Dict[str, List[Attribute]],
+    specialties: List[Specialty],
 ) -> List[ShiftWorkerOption]:
     out: List[ShiftWorkerOption] = [
         ShiftWorkerOption(
@@ -96,11 +109,34 @@ def build_options(
         )
         for o in owners
     ]
+    if owner_type == AttributeOwnerType.WORKER:
+        out += [
+            ShiftWorkerOption(
+                name=s.name,
+                id=s.id,
+                id_type=SWOIdTypes.SPECIALTY,
+                is_bool_dim=False,
+                category_name="Specialties",
+            )
+            for s in specialties
+        ]
+    if owner_type == AttributeOwnerType.SHIFT:
+        out += [
+            ShiftWorkerOption(
+                name="",
+                id="",
+                id_type=SWOIdTypes.DUTY,
+                is_bool_dim=True,
+                category_name="Duties",
+            )
+        ]
     for dimension in dimensions:
         dim_attributes = (
             dim_to_attributes[dimension.id] if dimension.id in dim_to_attributes else []
         )
-        if dimension.entry_type == DimensionEntryType.BOOL:
+        if dimension.entry_type == DimensionEntryType.BOOL and not any(
+            option.id == dimension.id for option in out
+        ):
             out.append(
                 ShiftWorkerOption(
                     name="",

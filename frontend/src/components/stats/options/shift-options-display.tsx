@@ -38,7 +38,7 @@ export default function ShiftOptionsDisplay({
               selectedShifts
                 .map((item) =>
                   typeof item === "object" && "name" in item
-                    ? getShiftWorkerOptionDisplayName(item)
+                    ? getShiftWorkerOptionDisplayName(item, t("not"))
                     : ""
                 )
                 .join(", ")

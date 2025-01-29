@@ -1,10 +1,10 @@
 from typing import List, Tuple
 
 from shared.database import DatabaseCollections
-from shared.schemas import Attribute, Dimension, DimEntry, Shift, Worker
+from shared.schemas import Attribute, Dimension, DimEntry, Shift, Specialty, Worker
 
 
-def fetch_workers_shifts_dim_attributes(
+def fetch_workers_shifts_dim_attributes_spe(
     team_id: str, collections: DatabaseCollections
 ) -> Tuple[
     List[Worker],
@@ -12,6 +12,7 @@ def fetch_workers_shifts_dim_attributes(
     List[Dimension],
     List[DimEntry],
     List[Attribute],
+    List[Specialty],
 ]:
     workers = collections.worker_db.get_workers(team_id)
     shifts = collections.shift_db.get_shifts(team_id)
@@ -22,4 +23,5 @@ def fetch_workers_shifts_dim_attributes(
     attributes = collections.attribute_db.get_attributes_by_owner_ids(
         [s.id for s in shifts] + [w.id for w in workers]
     )
-    return workers, shifts, dimensions, dim_entries, attributes
+    specialties = collections.specialty_db.get_specialties_by_team_id(team_id)
+    return workers, shifts, dimensions, dim_entries, attributes, specialties

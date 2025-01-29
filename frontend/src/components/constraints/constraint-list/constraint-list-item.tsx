@@ -19,9 +19,13 @@ import {
   ConstraintColorActiveText,
   ConstraintColorInactiveText,
 } from "../../../constants/constants";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
 
 export default function ConstraintListItem({
   lng,
+  workers,
+  shifts,
   constraint,
   constraintTemplate,
   handleAddConstraint,
@@ -29,6 +33,8 @@ export default function ConstraintListItem({
   handleDeleteConstraint,
 }: {
   lng: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
   constraint: ConstraintT;
   constraintTemplate: TemplateT | null;
   handleAddConstraint: (constraint: ConstraintT) => void;
@@ -89,6 +95,8 @@ export default function ConstraintListItem({
           <Box sx={{ display: "flex", flexDirection: "row" }}>
             <ConstraintButton
               lng={lng}
+              workers={workers}
+              shifts={shifts}
               buttonElement={editButton()}
               constraint={constraint}
               constraintTemplate={constraintTemplate}

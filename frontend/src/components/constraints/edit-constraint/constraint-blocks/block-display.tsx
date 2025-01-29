@@ -14,9 +14,13 @@ import {
   BlockNameOptions,
   BlockTypeOptions,
 } from "../../../../types/constraint";
+import { WorkerT } from "../../../../types/worker";
+import { ShiftT } from "../../../../types/shift";
 
 export default function BlockDisplay({
   lng,
+  workers,
+  shifts,
   index,
   block,
   templateBlock,
@@ -25,6 +29,8 @@ export default function BlockDisplay({
   handleRemoveError,
 }: {
   lng: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
   index: number;
   block: BlockT | null;
   templateBlock: TemplateBlockT;
@@ -39,6 +45,8 @@ export default function BlockDisplay({
       ) : templateBlock.type === BlockTypeOptions.SHIFT_WORKER_OPTION ? (
         <BlockDisplayShiftWorkerOption
           lng={lng}
+          workers={workers}
+          shifts={shifts}
           index={index}
           block={block}
           templateBlock={templateBlock}
