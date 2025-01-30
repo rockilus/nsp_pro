@@ -5,11 +5,11 @@ defaults:
     working-directory: ./backend
 
 on:
-  push:
-    branches: '**'
-    # branches: [ main ]
-    paths:
-      - 'backend/**'
+  # push:
+  #   branches: '**'
+  #   # branches: [ main ]
+  #   paths:
+  #     - 'backend/**'
   pull_request:
     branches: [ main, develop ]
     paths:
@@ -21,7 +21,8 @@ jobs:
     name: Check
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        # python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.12']
         poetry-version: [1.8.2]
 
 

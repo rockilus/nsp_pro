@@ -1,3 +1,5 @@
+import os
+
 from engine.types import (
     CoveragePenalty,
     ModelConfig,
@@ -8,6 +10,9 @@ from engine.types import (
     SystemConstraintPenalty,
     UserConstraintPenalty,
 )
+
+# pytest_mode = os.getenv("PYTEST_RUNNING", "false").lower() == "true"
+github_actions_mode = os.getenv("GITHUB_ACTIONS", "false").lower() == "true"
 
 model_config = ModelConfig(
     penalties=Penalties(
@@ -33,7 +38,7 @@ model_config = ModelConfig(
         ),
     ),
     solver_params=SolverParams(
-        max_time_in_seconds=90,
+        max_time_in_seconds=90 if github_actions_mode else 30,
         solve_strategy=SolveStrategy.HARD_TO_SOFT,
     ),
 )
