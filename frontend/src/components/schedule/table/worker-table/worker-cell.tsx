@@ -7,7 +7,7 @@ import TableCell from "@mui/material/TableCell";
 // Styles
 import "./worker-cell.css";
 // Types
-import { ShiftT, ShiftType } from "../../../../types/shift";
+import { ShiftT, ShiftType, ShiftRestType } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
 import {
   AssignmentT,
@@ -72,6 +72,15 @@ export default function WorkerCell({
         requests.some(
           (r) => !r.hard && r.status === RequestStatus.REJECTED && r.active
         ));
+
+    let shiftNameDisplayed = shift.acronym;
+    if (shift.restType === ShiftRestType.RECUPERATION) {
+      const shiftDuty = shifts.find((s) => s.id === shift.recuperationDutyId);
+      if (shiftDuty) {
+        shiftNameDisplayed = `RC-${shiftDuty.acronym}`;
+      }
+    }
+
     return (
       <div
         className={`assignment-div-container ${
@@ -94,7 +103,7 @@ export default function WorkerCell({
         }
       >
         <span className={`shift-name-cell ${assignmentFixed ? "fix" : ""}`}>
-          {shift.acronym}
+          {shiftNameDisplayed}
         </span>
         <div className="shift-times-container">
           <span className="shift-times-cell">
