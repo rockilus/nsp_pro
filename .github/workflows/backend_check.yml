@@ -5,11 +5,11 @@ defaults:
     working-directory: ./backend
 
 on:
-  push:
-    branches: '**'
-    # branches: [ main ]
-    paths:
-      - 'backend/**'
+  # push:
+  #   branches: '**'
+  #   # branches: [ main ]
+  #   paths:
+  #     - 'backend/**'
   pull_request:
     branches: [ main, develop ]
     paths:

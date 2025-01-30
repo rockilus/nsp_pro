@@ -42,16 +42,7 @@ class AddRequest:
                 var_name = build_var_name_constraint(
                     r, c_variables, ObjectiveCategory.REQUEST
                 )
-                # var_request_ok = self.model.NewBoolVar(var_name)
-                # self.model.Add(
-                #     var_request_ok == (sum(c_variables) == 0)
-                #     if r.negative
-                #     else var_request_ok == (sum(c_variables) == c_var_len)
-                # )
-
                 lit = self.model.NewBoolVar(var_name)
-                # cstr_vars = [var_request_ok, lit]
-                # self.model.AddBoolOr(cstr_vars)
                 if r.negative:
                     # (x or y) => p
                     # model.AddImplication(x, p)
@@ -61,11 +52,6 @@ class AddRequest:
                 else:
                     for var in c_variables:
                         self.model.AddImplication(var.Not(), lit)
-                    # a and b and c => d
-                    # model.Add(d == 1).OnlyEnforceIf([a, b, c])
-                    # self.model.Add(lit == 1).OnlyEnforceIf(
-                    #     [c.Not() for c in c_variables]
-                    # )
                 self.obj.bool_vars.append(lit)
                 self.obj.bool_coeffs.append(penalty)
 
