@@ -20,22 +20,46 @@ export default function WorkerFieldCellWeeklyHoursDesired({
   const [valueState, setValueState] = useState<number | "">(
     worker.weeklyHoursDesired
   );
+  const [error, setError] = useState<string | null>(null);
 
-  const handleEditConfirm = async () => {
+  const handleEdit = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const newValue = e.target.value === "" ? "" : Number(e.target.value);
+    if (newValue !== "" && newValue < worker.weeklyHours) {
+      setError(`Desired hours can't be lower than ${worker.weeklyHours}`);
+    } else {
+      setError(null);
+    }
+    setValueState(newValue);
+  };
+
+  const handleEditConfirm = async (usedOnBlur: boolean = false) => {
+    if (typeof valueState === "number" && valueState < worker.weeklyHours) {
+      setError(`Desired hours can't be lower than ${worker.weeklyHours}`);
+      if (usedOnBlur) {
+        setValueState(worker.weeklyHoursDesired);
+        setEditing({});
+        setError(null);
+      }
+      return;
+    }
+    setError(null);
     if (valueState !== worker.weeklyHoursDesired && valueState !== "") {
       handleUpdateWorker({
         ...worker,
         weeklyHoursDesired: valueState,
       });
+      setEditing({});
     } else if (valueState === "") {
       setValueState(worker.weeklyHoursDesired);
     }
-    setEditing({});
   };
 
   const handleEditCancel = () => {
     setEditing({});
     setValueState(worker.weeklyHoursDesired);
+    setError(null);
   };
 
   return (
@@ -51,10 +75,8 @@ export default function WorkerFieldCellWeeklyHoursDesired({
           type="number"
           name="Weekly hours desired"
           value={valueState}
-          onChange={(e) =>
-            setValueState(e.target.value === "" ? "" : Number(e.target.value))
-          }
-          onBlur={handleEditConfirm}
+          onChange={handleEdit}
+          onBlur={() => handleEditConfirm(true)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               handleEditConfirm();
@@ -63,6 +85,7 @@ export default function WorkerFieldCellWeeklyHoursDesired({
             }
           }}
           autoFocus
+          error={!!error}
         />
       ) : (
         <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>

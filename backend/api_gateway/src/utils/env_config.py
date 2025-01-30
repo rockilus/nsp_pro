@@ -74,6 +74,7 @@ UVICORN_RELOAD: bool = bool(get_env_variable("UVICORN_RELOAD"))
 # Redis config
 REDIS_URL: str = get_env_variable("REDIS_URL")
 RESULT_BACKEND: str = get_env_variable("RESULT_BACKEND")
+TASK_EXIPRATION: int = int(get_env_variable("TASK_EXIPRATION"))
 
 
 print("ST_COOKIE_DOMAIN", ST_COOKIE_DOMAIN)

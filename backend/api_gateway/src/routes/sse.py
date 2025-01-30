@@ -15,6 +15,7 @@ from services.schedule_services import (
     update_schedule_solve_details_success,
 )
 from task_queue_service.celery_app import celery_app
+from utils.env_config import TASK_EXIPRATION
 
 # from utils import event_manager
 
@@ -27,8 +28,6 @@ celery_to_core_status_dict = {
     "FAILURE": SolveDetailsStatus.FAILURE,
     "SUCCESS": SolveDetailsStatus.SUCCESS,
 }
-
-EXPIRATION_TIME = timedelta(minutes=2)
 
 
 def celery_to_core_status(celery_status: str) -> int | None:
@@ -66,7 +65,7 @@ async def sse(request: Request) -> Callable:
                     now = datetime.now(tz=timezone.utc)
                     if (
                         now - schedule.solve_details.updated_at  # type: ignore
-                        > EXPIRATION_TIME
+                        > timedelta(seconds=TASK_EXIPRATION)
                     ):
                         print("Task expired")
                         async_result.revoke()

@@ -3,10 +3,7 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
-import AdjustIcon from "@mui/icons-material/Adjust";
 import AddIcon from "@mui/icons-material/Add";
-import Box from "@mui/material/Box";
-import ClearIcon from "@mui/icons-material/Clear";
 import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -16,7 +13,8 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
+// Styles
+import "./quick-staffing.css";
 // Types
 import { ShiftT, ShiftType } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -122,24 +120,8 @@ export default function QuickStaffingTable({
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignSelf: "flex-start",
-        width: "100%",
-        margin: "10px 10px 5px 5px",
-      }}
-    >
-      <span
-        style={{
-          fontSize: "1rem",
-          fontWeight: 600,
-          color: "#3C4043",
-        }}
-      >
-        {t("quick_staffing")}
-      </span>
+    <div className="quick-staffing-container">
+      <span className="quick-staffing-title">{t("quick_staffing")}</span>
       <TableContainer component={Paper} style={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -149,14 +131,10 @@ export default function QuickStaffingTable({
                   position: "sticky",
                   left: 0,
                   padding: 0,
+                  background: "#FCFCFC",
                 }}
               >
-                <div
-                  style={{
-                    width: "50px",
-                    padding: "10px",
-                  }}
-                ></div>
+                <div className="qs-row-header-container"></div>
               </TableCell>
               {shifts
                 .filter(
@@ -166,30 +144,17 @@ export default function QuickStaffingTable({
                 )
                 .map((shift, shiftIndex) => (
                   <TableCell key={shiftIndex} sx={{ padding: 0 }}>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <Typography
-                        sx={{
-                          fontSize: "0.75rem",
-                          textAlign: "center",
-                          fontWeight: "bold",
-                          writingMode: "vertical-rl",
-                        }}
-                      >
-                        {shift.name}
-                      </Typography>
+                    <div className="qs-column-header-container">
+                      <span className="qs-column-header-text">
+                        {shift.acronym}
+                      </span>
                     </div>
                   </TableCell>
                 ))}
-              <TableCell>
-                <Typography
-                  sx={{
-                    fontSize: "0.75rem",
-                    textAlign: "center",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {t("total")}
-                </Typography>
+              <TableCell sx={{ padding: 0, background: "#FCFCFC" }}>
+                <div className="qs-column-header-container">
+                  <span className="qs-column-header-text">{t("total")}</span>
+                </div>
               </TableCell>
             </TableRow>
           </TableHead>
@@ -204,21 +169,8 @@ export default function QuickStaffingTable({
                     padding: 0,
                   }}
                 >
-                  <div
-                    style={{
-                      width: "50px",
-                      padding: "10px",
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontSize: "0.75rem",
-                        textAlign: "left",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {worker.name}
-                    </Typography>
+                  <div className="qs-row-header-container">
+                    <span className="qs-row-header-text">{worker.acronym}</span>
                   </div>
                 </TableCell>
                 {shifts
@@ -246,135 +198,42 @@ export default function QuickStaffingTable({
                           padding: 0,
                         }}
                       >
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "center",
-                              width: "50px",
-                            }}
-                          >
-                            <Typography
-                              sx={{
-                                fontSize: "0.8rem",
-                                color: quickStaffing
+                        <div className="qs-cell-container">
+                          <div className="qs-cell-staffing-container">
+                            <span
+                              className={`qs-cell-staffing-text ${
+                                quickStaffing
                                   ? quickStaffing.target === staffing
-                                    ? "green"
-                                    : "red"
-                                  : "black",
-                                textAlign: "center",
-                                width: "20px",
-                                height: "15px",
-                                fontWeight: "bold",
-                              }}
-                            >
-                              {staffing}
-                            </Typography>
-                          </div>
-                          {quickStaffing ? (
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                // alignContent: "center",
-                                // justifyContent: "center",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "row",
-                                  //   alignContent: "center",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <IconButton
-                                  onClick={() =>
-                                    handleUpdateQuickStaffing(
-                                      worker.id,
-                                      shift.id,
-                                      quickStaffing.target - 1
-                                    )
-                                  }
-                                  sx={{
-                                    width: "15px",
-                                    height: "15px",
-                                    padding: 0,
-                                  }}
-                                >
-                                  <RemoveIcon sx={{ height: "10px" }} />
-                                </IconButton>
-                                <Typography
-                                  sx={{
-                                    fontSize: "0.75rem",
-                                    color: "grey.500",
-                                    textAlign: "center",
-                                    width: "20px",
-                                    height: "15px",
-                                  }}
-                                >
-                                  {quickStaffing.target}
-                                </Typography>
-
-                                <IconButton
-                                  onClick={() =>
-                                    handleUpdateQuickStaffing(
-                                      worker.id,
-                                      shift.id,
-                                      quickStaffing.target + 1
-                                    )
-                                  }
-                                  sx={{
-                                    width: "15px",
-                                    height: "15px",
-                                    padding: 0,
-                                  }}
-                                >
-                                  <AddIcon sx={{ height: "10px" }} />
-                                </IconButton>
-                              </div>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <IconButton
-                                  onClick={() =>
-                                    handleDeleteQuickStaffing(
-                                      worker.id,
-                                      shift.id
-                                    )
-                                  }
-                                  sx={{
-                                    width: "15px",
-                                    height: "15px",
-                                    padding: 0,
-                                  }}
-                                >
-                                  <ClearIcon sx={{ height: "10px" }} />
-                                </IconButton>
-                              </div>
-                            </div>
-                          ) : (
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "center",
-                              }}
-                            >
-                              <IconButton
-                                onClick={() =>
+                                    ? "qs-staffing-at-target"
+                                    : "qs-staffing-diff-target"
+                                  : ""
+                              }`}
+                              onClick={() => {
+                                if (quickStaffing) {
+                                  handleDeleteQuickStaffing(
+                                    worker.id,
+                                    shift.id
+                                  );
+                                } else {
                                   handleCreateQuickStaffing(
                                     worker.id,
                                     shift.id,
                                     staffing
+                                  );
+                                }
+                              }}
+                            >
+                              {staffing}
+                            </span>
+                          </div>
+                          {quickStaffing && (
+                            <div className="qs-set-target-container">
+                              <IconButton
+                                onClick={() =>
+                                  handleUpdateQuickStaffing(
+                                    worker.id,
+                                    shift.id,
+                                    quickStaffing.target - 1
                                   )
                                 }
                                 sx={{
@@ -383,7 +242,26 @@ export default function QuickStaffingTable({
                                   padding: 0,
                                 }}
                               >
-                                <AdjustIcon sx={{ height: "10px" }} />
+                                <RemoveIcon sx={{ height: "10px" }} />
+                              </IconButton>
+                              <span className="qs-target-text">
+                                {quickStaffing.target}
+                              </span>
+                              <IconButton
+                                onClick={() =>
+                                  handleUpdateQuickStaffing(
+                                    worker.id,
+                                    shift.id,
+                                    quickStaffing.target + 1
+                                  )
+                                }
+                                sx={{
+                                  width: "15px",
+                                  height: "15px",
+                                  padding: 0,
+                                }}
+                              >
+                                <AddIcon sx={{ height: "10px" }} />
                               </IconButton>
                             </div>
                           )}
@@ -391,20 +269,18 @@ export default function QuickStaffingTable({
                       </TableCell>
                     );
                   })}
-                <TableCell sx={{ background: "#FCFCFC" }}>
-                  <Typography
-                    sx={{
-                      fontSize: "0.75rem",
-                      textAlign: "center",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {countAssignments({
-                      startDate: schedule.startDate,
-                      endDate: schedule.endDate,
-                      workerId: worker.id,
-                    })}
-                  </Typography>
+                <TableCell sx={{ background: "#FCFCFC", padding: 0 }}>
+                  <div className="qs-cell-container">
+                    <div className="qs-cell-staffing-container">
+                      <span className="qs-cell-staffing-text">
+                        {countAssignments({
+                          startDate: schedule.startDate,
+                          endDate: schedule.endDate,
+                          workerId: worker.id,
+                        })}
+                      </span>
+                    </div>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -417,21 +293,8 @@ export default function QuickStaffingTable({
                   padding: 0,
                 }}
               >
-                <div
-                  style={{
-                    width: "50px",
-                    padding: "10px",
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontSize: "0.75rem",
-                      textAlign: "left",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {t("total")}
-                  </Typography>
+                <div className="qs-row-header-container">
+                  <span className="qs-row-header-text">{t("total")}</span>
                 </div>
               </TableCell>
               {shifts
@@ -455,31 +318,27 @@ export default function QuickStaffingTable({
                         background: "#FCFCFC",
                       }}
                     >
-                      <Typography
-                        sx={{
-                          fontSize: "0.75rem",
-                          textAlign: "center",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {staffing}
-                      </Typography>
+                      <div className="qs-cell-container">
+                        <div className="qs-cell-staffing-container">
+                          <span className="qs-cell-staffing-text">
+                            {staffing}
+                          </span>
+                        </div>
+                      </div>
                     </TableCell>
                   );
                 })}
-              <TableCell sx={{ background: "#FCFCFC" }}>
-                <Typography
-                  sx={{
-                    fontSize: "0.75rem",
-                    textAlign: "center",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {countAssignments({
-                    startDate: schedule.startDate,
-                    endDate: schedule.endDate,
-                  })}
-                </Typography>
+              <TableCell sx={{ background: "#FCFCFC", padding: 0 }}>
+                <div className="qs-cell-container">
+                  <div className="qs-cell-staffing-container">
+                    <span className="qs-cell-staffing-text">
+                      {countAssignments({
+                        startDate: schedule.startDate,
+                        endDate: schedule.endDate,
+                      })}
+                    </span>
+                  </div>
+                </div>
               </TableCell>
             </TableRow>
           </TableBody>

@@ -19,6 +19,9 @@ from integrations.authentication import SessionContainerType, authn_verify_sessi
 from integrations.authorization import authz_check
 from routes.api_model import CoverageSelectorMessage
 from scripts.setup_database import coverage_selector_db
+from services.coverage_selector_services import (
+    update_coverage_selector as update_coverage_selector_service,
+)
 
 router = APIRouter()
 
@@ -88,7 +91,7 @@ async def update_coverage_selector(
                 status_code=404, detail="CoverageSelector does not exist"
             )
         coverage_selector_data = msg_to_core_coverage_selector(coverage_selector_api)
-        updated_coverage_selector = coverage_selector_db.update_coverage_selector(
+        updated_coverage_selector = update_coverage_selector_service(
             coverage_selector_data
         )
         response = core_to_msg_coverage_selector(updated_coverage_selector)

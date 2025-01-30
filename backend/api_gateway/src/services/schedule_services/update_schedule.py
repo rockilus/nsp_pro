@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from typing import Dict
+from typing import Dict, List, Tuple
 
 from shared.schemas import (
+    CoverageSelector,
     Schedule,
     ShiftType,
     SolveDetails,
@@ -18,6 +19,28 @@ from scripts.setup_database import (
     shift_demand_db,
     worker_db,
 )
+
+
+def update_schedule(
+    schedule: Schedule,
+) -> Tuple[Schedule, List[CoverageSelector]]:
+    schedule_current = schedule_db.get_schedule_by_id(schedule.id)
+    schedule_updated = schedule_db.update_schedule(schedule)
+    css_updated: List[CoverageSelector] = []
+    if (
+        schedule_current.start_date != schedule.start_date
+        or schedule_current.end_date != schedule.end_date
+    ):
+        css_full_period = (
+            coverage_selector_db.get_coverage_selectors_by_schedule_id_full_period(
+                schedule.id
+            )
+        )
+        for cs in css_full_period:
+            cs.start_date = schedule.start_date
+            cs.end_date = schedule.end_date
+        css_updated = coverage_selector_db.update_coverage_selectors(css_full_period)
+    return schedule_updated, css_updated
 
 
 def update_schedule_solve_details_failure(

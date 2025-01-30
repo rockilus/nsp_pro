@@ -125,7 +125,6 @@ export default function BlockEditShiftWorkerOption({
       const selectedArray: string[] = selectedOptions.map((item) =>
         swoDisplayString(item)
       );
-      console.log("selectedArray", selectedArray);
 
       return searchQuery === ""
         ? options.filter(

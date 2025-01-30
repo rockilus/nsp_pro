@@ -1,34 +1,38 @@
 import React, { useState } from "react";
+// Styles
 import "./lhs-tab.css";
-// Components
+// Types
+import { LHSTabContentT } from "../../../types/schedule";
 
 const LHSTab = ({
   tabContent,
   selectedTab,
   toggleTab,
 }: {
-  tabContent: { [key: string]: React.ReactNode };
+  tabContent: LHSTabContentT[];
   selectedTab: string | null;
   toggleTab: (tabName: string) => void;
 }) => {
+  const selectedTabContent = tabContent.find((tab) => tab.name === selectedTab);
+
   return (
     <div className={`lhs-tab-container ${selectedTab ? "open" : "closed"}`}>
       <div className={`drawer ${selectedTab ? "open" : "closed"}`}>
         <div className="drawer-content">
-          {selectedTab ? tabContent[selectedTab] : null}
+          {selectedTabContent ? selectedTabContent.content : null}
         </div>
       </div>
       <div className="main-content">
         <div className={`buttons-container ${selectedTab ? "open" : "closed"}`}>
-          {Object.keys(tabContent).map((tabName) => (
+          {tabContent.map((lhsTabContent) => (
             <button
-              key={tabName}
+              key={lhsTabContent.name}
               className={`tab-button ${
-                selectedTab === tabName ? "selected" : ""
+                selectedTab === lhsTabContent.name ? "selected" : ""
               }`}
-              onClick={() => toggleTab(tabName)}
+              onClick={() => toggleTab(lhsTabContent.name)}
             >
-              {tabName}
+              {lhsTabContent.name}
             </button>
           ))}
         </div>

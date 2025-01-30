@@ -16,9 +16,6 @@ from shared.database.models.coverage_selector import (
 )
 from shared.database.models.schedule import Schedule as ScheduleDocument
 from shared.logger.logger import log_info
-from shared.schemas.errors.schema_error_handlers import (
-    handle_create_schema_object_error,
-)
 from shared.schemas.schemas.coverage import CoverageSelector
 
 
@@ -62,6 +59,19 @@ class CoverageSelectorDB:
             handle_get_document_error(e)
         return doc_to_core_coverage_selector(coverage_selector)
 
+    def get_coverage_selectors_by_schedule_id_full_period(
+        self, schedule_id: str
+    ) -> List[CoverageSelector]:
+        try:
+            # pylint: disable=no-member
+            coverage_selectors = CoverageSelectorDocument.objects.filter(
+                schedule=schedule_id, full_period=True
+            )  # type: ignore
+        except Exception as e:
+            log_info("Failed to get coverage selectors by schedule id and full period")
+            handle_get_document_error(e)
+        return [doc_to_core_coverage_selector(cs) for cs in list(coverage_selectors)]
+
     def update_coverage_selector(
         self, coverage_selector: CoverageSelector
     ) -> CoverageSelector:
@@ -78,6 +88,18 @@ class CoverageSelectorDB:
             log_info("Failed to update coverage selector in database")
             handle_save_document_error(e)
         return doc_to_core_coverage_selector(cs_saved)
+
+    def update_coverage_selectors(
+        self, coverage_selectors: List[CoverageSelector]
+    ) -> List[CoverageSelector]:
+        cs_docs = core_to_doc_coverage_selectors(coverage_selectors)
+        try:
+            for cs_doc in cs_docs:
+                cs_doc.save()
+        except Exception as e:
+            log_info("Failed to update coverage selectors in database")
+            handle_save_document_error(e)
+        return [doc_to_core_coverage_selector(cs) for cs in list(cs_docs)]
 
     def delete_coverage_selector(self, coverage_selector_id: str) -> None:
         try:
@@ -150,20 +172,73 @@ def core_to_doc_coverage_selector(
     return cs_doc
 
 
+# pylint: disable=R0801
+def core_to_doc_coverage_selectors(
+    dataclass_objs: List[CoverageSelector],
+) -> List[CoverageSelectorDocument]:
+    schedule_ids = list(set(doc.schedule_id for doc in dataclass_objs))
+    # pylint: disable=no-member
+    schedules = {
+        schedule.id: schedule
+        for schedule in ScheduleDocument.objects.filter(  # type: ignore
+            id__in=schedule_ids
+        )
+    }
+    coverage_ids = list(
+        set(doc.coverage_id for doc in dataclass_objs if doc.coverage_id != "")
+    )
+    coverages = {
+        coverage.id: coverage
+        for coverage in CoverageDocument.objects.filter(  # type: ignore
+            id__in=coverage_ids
+        )
+    }
+    out = []
+    for dataclass_obj in dataclass_objs:
+        cs_doc = CoverageSelectorDocument(
+            id=dataclass_obj.id,
+            schedule=schedules.get(dataclass_obj.schedule_id),
+            full_period=dataclass_obj.full_period,
+            start_date=dataclass_obj.start_date,
+            end_date=dataclass_obj.end_date,
+            # pylint: disable=possibly-used-before-assignment
+            coverage=(
+                coverages.get(dataclass_obj.coverage_id)
+                if dataclass_obj.coverage_id != ""
+                else None
+            ),
+        )
+        out.append(cs_doc)
+    return out
+
+
 # document to core
 def doc_to_core_coverage_selector(
     doc_obj: CoverageSelectorDocument,
 ) -> CoverageSelector:
-    try:
-        coverage_selector = CoverageSelector(
-            id=doc_obj.id,
-            schedule_id=doc_obj.schedule.id,
-            full_period=doc_obj.full_period,
-            start_date=doc_obj.start_date.date(),
-            end_date=doc_obj.end_date.date(),
-            coverage_id=str(doc_obj.coverage.id) if doc_obj.coverage else "",
-        )
-    except Exception as e:
-        log_info("Failed to convert CoverageSelectorDocument to CoverageSelector")
-        handle_create_schema_object_error(e)
-    return coverage_selector
+    doc_dict = doc_obj.to_mongo().to_dict()
+    doc_dict["id"] = doc_dict["_id"]
+    doc_dict["schedule_id"] = doc_dict["schedule"]
+    doc_dict["start_date"] = doc_dict["start_date"].date()
+    doc_dict["end_date"] = doc_dict["end_date"].date()
+    doc_dict["coverage_id"] = doc_dict.get("coverage", None)
+    doc_dict.pop("_id")
+    doc_dict.pop("schedule")
+    doc_dict.pop("coverage")
+    return CoverageSelector(**doc_dict)
+
+    # try:
+    #     coverage_selector = CoverageSelector(
+    #         id=doc_obj.id,
+    #         schedule_id=doc_obj.schedule.id,
+    #         full_period=doc_obj.full_period,
+    #         start_date=doc_obj.start_date.date(),
+    #         end_date=doc_obj.end_date.date(),
+    #         coverage_id=str(doc_obj.coverage.id) if doc_obj.coverage else "",
+    #     )
+    # except Exception as e:
+    #     log_info(
+    #         "Failed to convert CoverageSelectorDocument to CoverageSelector"
+    #     )
+    #     handle_create_schema_object_error(e)
+    # return coverage_selector

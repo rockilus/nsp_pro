@@ -12,7 +12,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import ToggleButton from "@mui/material/ToggleButton";
+// import ToggleButton from "@mui/material/ToggleButton";
 // Components
 import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
 import PopoverRHS from "../inputs/popover-rhs";
@@ -121,7 +121,7 @@ export default function ShiftTable({
           <span className="title">
             {isRest ? t("rest_shifts") : t("shifts")}
           </span>
-          {isRest && (
+          {/* {isRest && (
             <ToggleButton
               value="breaches"
               sx={{
@@ -135,7 +135,7 @@ export default function ShiftTable({
             >
               {t("show_default_shifts")}
             </ToggleButton>
-          )}
+          )} */}
         </div>
         <div className="shift-actions-container">
           {!isRest && (
