@@ -56,6 +56,7 @@ export default function ScheduleNavBar({
       }}
     >
       <TimeViewSelector
+        lng={lng}
         currentPeriodStart={currentPeriodStart}
         currentPeriodEnd={currentPeriodEnd}
         selectedTimeView={selectedTimeView}
