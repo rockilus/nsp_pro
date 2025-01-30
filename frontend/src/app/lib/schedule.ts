@@ -12,7 +12,7 @@ import {
   getDailyShiftDemands,
   toDailyShiftDemandT,
 } from "./daily-shift-demand";
-
+import { toCoverageSelectorT } from "./campaign";
 // Types
 import {
   ScheduleT,
@@ -27,6 +27,7 @@ import {
 import { RequestT } from "../../types/request";
 import { StatsOptionsT } from "../../types/stats";
 import { ShiftT } from "../../types/shift";
+import { CoverageSelectorT } from "../../types/campaign";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -218,7 +219,12 @@ export async function updateSchedule(schedule: ScheduleT) {
     if (!response.ok) {
       throw new Error("Failed to update schedule: " + responseData.detail);
     }
-    return toScheduleT(responseData) as ScheduleT;
+    return {
+      schedule: toScheduleT(responseData[0]),
+      coverageSelectors: responseData[1].map(
+        toCoverageSelectorT
+      ) as CoverageSelectorT[],
+    };
   } catch (error) {
     console.error("Failed to update schedule:", error);
     throw new Error("Failed to update schedule, please try again later");

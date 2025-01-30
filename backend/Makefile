@@ -123,6 +123,7 @@ processing_engine_check:
 	poetry run black --check src && \
 	poetry run pylint src && \
 	poetry run mypy src && \
+	export PYTEST_RUNNING="true" && \
 	poetry run pytest
 
 processing_engine_check_no_test:

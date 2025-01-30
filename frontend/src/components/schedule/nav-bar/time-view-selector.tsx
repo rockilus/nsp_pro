@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
@@ -8,6 +9,7 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 dayjs.extend(utc);
 
 export default function TimeViewSelector({
+  lng,
   currentPeriodStart,
   currentPeriodEnd,
   selectedTimeView,
@@ -16,6 +18,7 @@ export default function TimeViewSelector({
   handleNextPeriod,
   handleChangeSelectedTimeView,
 }: {
+  lng: string;
   currentPeriodStart: dayjs.Dayjs;
   currentPeriodEnd: dayjs.Dayjs;
   selectedTimeView: string;
@@ -24,6 +27,8 @@ export default function TimeViewSelector({
   handleNextPeriod: () => void;
   handleChangeSelectedTimeView: (newSelectedTimeView: string) => void;
 }) {
+  const { t } = useTranslation(lng, "schedule-page");
+
   const [isHoveredToday, setIsHoveredToday] = useState<boolean>(false);
   const [isHoveredPrevious, setIsHoveredPrevious] = useState<boolean>(false);
   const [isHoveredNext, setIsHoveredNext] = useState<boolean>(false);
@@ -57,7 +62,7 @@ export default function TimeViewSelector({
         onMouseEnter={() => setIsHoveredToday(true)}
         onMouseLeave={() => setIsHoveredToday(false)}
       >
-        Today
+        {t("today")}
       </button>
       <button
         onClick={handlePreviousPeriod}
@@ -120,8 +125,8 @@ export default function TimeViewSelector({
         onMouseEnter={() => setIsHoveredTimeSelect(true)}
         onMouseLeave={() => setIsHoveredTimeSelect(false)}
       >
-        <option value="week">Week</option>
-        <option value="month">Month</option>
+        <option value="week">{t("week")}</option>
+        <option value="month">{t("month")}</option>
       </select>
     </div>
   );

@@ -6,8 +6,7 @@ from shared.schemas import Schedule, SolveDetails, SolveDetailsStatus
 from scripts.setup_database import schedule_db
 from task_queue_service import submit_solve_problem_task
 from task_queue_service.celery_app import celery_app
-
-EXPIRATION_TIME = timedelta(minutes=2)
+from utils.env_config import TASK_EXIPRATION
 
 
 def solve_schedule(schedule_id: str) -> Schedule:
@@ -34,10 +33,10 @@ def solve_schedule(schedule_id: str) -> Schedule:
                 )
                 print(string)
                 if not async_result.ready():
-                    if (
-                        datetime.now(tz=timezone.utc)
-                        - schedule.solve_details.updated_at
-                        > EXPIRATION_TIME
+                    if datetime.now(
+                        tz=timezone.utc
+                    ) - schedule.solve_details.updated_at > timedelta(
+                        seconds=TASK_EXIPRATION
                     ):
                         async_result.revoke()
                         # schedule.solve_details.status = SolveDetailsStatus.FAILURE

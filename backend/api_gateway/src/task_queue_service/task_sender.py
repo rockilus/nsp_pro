@@ -4,8 +4,7 @@ from celery import chain, signature  # type: ignore
 from shared.schemas import Schedule
 
 from task_queue_service.celery_app import celery_app
-
-EXPIRATION_TIME = timedelta(minutes=2)
+from utils.env_config import TASK_EXIPRATION
 
 
 @celery_app.task(name="api_gateway.trigger_workflow")
@@ -16,6 +15,8 @@ def submit_solve_problem_task(schedule: Schedule) -> str:
         signature("processing_engine.solve_problem"),
         signature("storage_service.save_engine_outputs"),
     )
-    result = task_chain.apply_async(expires=EXPIRATION_TIME.total_seconds())
+    result = task_chain.apply_async(
+        expires=timedelta(seconds=TASK_EXIPRATION).total_seconds()
+    )
     print(f"Task submitted: {result.id}")
     return result.id

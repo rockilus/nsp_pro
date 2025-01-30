@@ -100,7 +100,7 @@ export default function WorkerRowHeaderCell({
       }}
     >
       <div className="worker-row-header-cell-container">
-        <span className="worker-name">{worker.acronym}</span>
+        <span className="worker-name">{`${worker.name} (${worker.acronym})`}</span>
         {scheduleCampaign && (
           <div className="worker-stats-item">
             <div

@@ -15,7 +15,7 @@ dayjs.extend(utc);
 
 const apiUrlCoverageSelectors = API_URL + "/coverage-selectors";
 
-const toCoverageSelectorT = (data: any): CoverageSelectorT => {
+export const toCoverageSelectorT = (data: any): CoverageSelectorT => {
   return {
     ...data,
     startDate: dayjs.utc(data.startDate),

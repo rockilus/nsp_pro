@@ -93,7 +93,9 @@ export const orderRestShifts = (shifts: ShiftT[]): ShiftT[] => {
 export const filterRestShifts = (shifts: ShiftT[]): ShiftT[] => {
   return orderRestShifts(
     shifts.filter(
-      (s) => s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE
+      (s) =>
+        (s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE) &&
+        s.restType !== ShiftRestType.RECUPERATION
     )
   );
 };
@@ -103,7 +105,8 @@ export const filterRestShiftsNonDefault = (shifts: ShiftT[]): ShiftT[] => {
     (s) =>
       (s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE) &&
       s.leaveType === ShiftLeaveType.NONE &&
-      s.restType !== ShiftRestType.OFF
+      s.restType !== ShiftRestType.OFF &&
+      s.restType !== ShiftRestType.RECUPERATION
   );
 };
 
