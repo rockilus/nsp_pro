@@ -20,7 +20,6 @@ class AppConfig(BaseSettings):
     api_domain: str = Field(..., description="API domain")
     api_port: int = Field(..., description="API port")
     uvicorn_reload: bool = Field(..., description="Enable Uvicorn auto-reload feature")
-    max_solver_time: int = Field(90, description="Maximum solver time in seconds")
 
     # pylint: disable=too-few-public-methods
     class Config:
@@ -54,9 +53,9 @@ def initialize_environment() -> AppConfig:
     environment = os.getenv(
         "ENVIRONMENT", "development"
     ).lower()  # Default to development
-    pytest_mode = os.getenv("PYTEST_RUNNING", "false").lower() == "true"
+    # pytest_mode = os.getenv("PYTEST_RUNNING", "false").lower() == "true"
 
-    if environment == "production" and not pytest_mode:
+    if environment == "production":
         print("Running in production mode.")
 
         region = "eu-west-3"
