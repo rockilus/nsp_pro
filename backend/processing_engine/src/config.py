@@ -20,6 +20,7 @@ class AppConfig(BaseSettings):
     api_domain: str = Field(..., description="API domain")
     api_port: int = Field(..., description="API port")
     uvicorn_reload: bool = Field(..., description="Enable Uvicorn auto-reload feature")
+    max_solver_time: int = Field(90, description="Maximum solver time in seconds")
 
     # pylint: disable=too-few-public-methods
     class Config:
@@ -53,8 +54,9 @@ def initialize_environment() -> AppConfig:
     environment = os.getenv(
         "ENVIRONMENT", "development"
     ).lower()  # Default to development
+    pytest_mode = os.getenv("PYTEST_RUNNING", "false").lower() == "true"
 
-    if environment == "production":
+    if environment == "production" and not pytest_mode:
         print("Running in production mode.")
 
         region = "eu-west-3"
@@ -74,9 +76,13 @@ def initialize_environment() -> AppConfig:
             # Retrieve .env file from S3
             bucket_name = "nsp-pro-bucket"
             file_key = ".data_fetcher.env"  # Replace with the key of your .env file
-            env_file_path = download_env_file_from_s3(
-                bucket_name, file_key, region_name=region
-            )
+            try:
+                env_file_path = download_env_file_from_s3(
+                    bucket_name, file_key, region_name=region
+                )
+            except Exception as e:
+                print("Error downloading .env file from S3:", e)
+                raise
             if env_file_path is not None:
                 # Tell Pydantic to use the .env file
                 AppConfig.Config.env_file = env_file_path

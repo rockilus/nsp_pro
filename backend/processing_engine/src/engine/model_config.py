@@ -1,3 +1,4 @@
+from config import config
 from engine.types import (
     CoveragePenalty,
     ModelConfig,
@@ -33,7 +34,8 @@ model_config = ModelConfig(
         ),
     ),
     solver_params=SolverParams(
-        max_time_in_seconds=30, solve_strategy=SolveStrategy.HARD_TO_SOFT
+        max_time_in_seconds=config.max_solver_time,
+        solve_strategy=SolveStrategy.HARD_TO_SOFT,
     ),
 )
 

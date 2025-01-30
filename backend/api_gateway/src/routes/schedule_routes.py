@@ -1,6 +1,6 @@
 from dataclasses import asdict
 from datetime import datetime, time, timezone
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import humps
 from fastapi import APIRouter, Depends
@@ -33,6 +33,7 @@ from integrations.authorization import authz_check
 from routes.api_model import (
     AssignmentMessage,
     BreachMessage,
+    CoverageSelectorMessage,
     QuickStaffingMessage,
     RequestMessage,
     ScheduleMessage,
@@ -43,11 +44,13 @@ from routes.api_model import (
 )
 from routes.assignment_routes import core_to_msg_assignment
 from routes.breach_routes import core_to_msg_breach
+from routes.coverage_selector_routes import core_to_msg_coverage_selector
 from routes.request_routes import core_to_msg_request_augmented
 from routes.shift_routes import core_to_msg_shift_and_attributes
 from scripts.setup_database import assignment_db, breach_db, schedule_db
 from services.schedule_services import build_worktime_data, get_schedule_campaign
 from services.schedule_services import solve_schedule as solve_schedule_service
+from services.schedule_services import update_schedule as update_schedule_service
 from services.schedule_services import validate_schedule as validate_schedule_service
 from utils import event_manager
 
@@ -186,7 +189,7 @@ async def update_schedule(
     team_id: str,
     schedule_api: ScheduleMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
-) -> ScheduleMessage:
+) -> Tuple[ScheduleMessage, List[CoverageSelectorMessage]]:
     try:
         if not await authz_check(
             session.get_user_id(), "update-schedule", "team", team_id
@@ -195,8 +198,11 @@ async def update_schedule(
                 "You do not have permission to update a schedule",
             )
         schedule_data = msg_to_core_schedule(schedule_api)
-        updated_schedule = schedule_db.update_schedule(schedule_data)
-        response = core_to_msg_schedule(updated_schedule)
+        schedule_updated, css_updated = update_schedule_service(schedule_data)
+        response = (
+            core_to_msg_schedule(schedule_updated),
+            [core_to_msg_coverage_selector(cs) for cs in css_updated],
+        )
     except Exception as e:
         log_info("Failed to update schedule")
         handle_routes_errors(e)

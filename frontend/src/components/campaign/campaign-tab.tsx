@@ -69,8 +69,15 @@ export default function CampaignTab({
   };
 
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
-    const newSchedule = await updateSchedule(schedule);
+    const { schedule: newSchedule, coverageSelectors: newCoverageSelectors } =
+      await updateSchedule(schedule);
     setScheduleCampaign(newSchedule);
+    setCoverageSelectors((prevCSs) =>
+      prevCSs.map((cs) => {
+        const newCS = newCoverageSelectors.find((newCS) => newCS.id === cs.id);
+        return newCS ? newCS : cs;
+      })
+    );
     const newWorkTimeTable = await getWorkTimeTable(
       newSchedule.id,
       newSchedule.teamId
