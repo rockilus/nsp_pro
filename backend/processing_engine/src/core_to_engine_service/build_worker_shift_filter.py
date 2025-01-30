@@ -40,9 +40,13 @@ def build_worker_shift_filters(
 
     # Step 2: Build attribute mappings
     # Worker attributes: worker_id -> dimension_id -> dim_entry_ids
-    worker_attrs: Dict[str, Dict[str, Set[str]]] = defaultdict(lambda: defaultdict(set))
+    worker_attrs: Dict[str, Dict[str, Set[str]]] = defaultdict(
+        lambda: defaultdict(set)
+    )
     # Shift attributes: shift_id -> dimension_id -> dim_entry_ids
-    shift_attrs: Dict[str, Dict[str, Set[str]]] = defaultdict(lambda: defaultdict(set))
+    shift_attrs: Dict[str, Dict[str, Set[str]]] = defaultdict(
+        lambda: defaultdict(set)
+    )
 
     for attr in attributes:
         if attr.owner_type == AttributeOwnerType.WORKER:
@@ -53,7 +57,9 @@ def build_worker_shift_filters(
                 shift_attrs[attr.owner_id][attr.dimension_id].add(de_id)
 
     # Map to group workers by their invalid_shift_ids
-    all_worker_ids: Set[str] = {worker.id for worker in workers if not worker.deleted}
+    all_worker_ids: Set[str] = {
+        worker.id for worker in workers if not worker.deleted
+    }
 
     # Step 3: Build worker shift filters
     for dimension in shared_dimensions:
@@ -86,14 +92,19 @@ def build_worker_shift_filters(
                     attr_value_to_shift_ids[de_id].add(shift_id)
 
         for worker in workers:
-            if worker.id in worker_attrs and dimension_id in worker_attrs[worker.id]:
-                worker_attr_dim_entry_ids = worker_attrs.get(worker.id, {}).get(
-                    dimension_id, set()
-                )
+            if (
+                worker.id in worker_attrs
+                and dimension_id in worker_attrs[worker.id]
+            ):
+                worker_attr_dim_entry_ids = worker_attrs.get(
+                    worker.id, {}
+                ).get(dimension_id, set())
 
                 valid_shift_ids = set()
                 for de_id in worker_attr_dim_entry_ids:
-                    valid_shift_ids.update(attr_value_to_shift_ids.get(de_id, set()))
+                    valid_shift_ids.update(
+                        attr_value_to_shift_ids.get(de_id, set())
+                    )
 
                 # Shifts that do not have the same attribute value
                 invalid_shift_ids = relevant_shift_ids - valid_shift_ids
@@ -119,15 +130,20 @@ def build_worker_shift_filters(
                 for de_id in attr_dim_entry_ids:
                     attr_value_to_worker_ids[de_id].add(worker_id)
 
-        for shift in shifts:
-            if shift.id in shift_attrs and dimension_id in shift_attrs[shift.id]:
+        for shift in [s for s in shifts if not s.deleted]:  # [TO REVIEW]
+            if (
+                shift.id in shift_attrs
+                and dimension_id in shift_attrs[shift.id]
+            ):
                 shift_attr_dim_entry_ids = shift_attrs.get(shift.id, {}).get(
                     dimension_id, set()
                 )
 
                 valid_worker_ids = set()
                 for de_id in shift_attr_dim_entry_ids:
-                    valid_worker_ids.update(attr_value_to_worker_ids.get(de_id, set()))
+                    valid_worker_ids.update(
+                        attr_value_to_worker_ids.get(de_id, set())
+                    )
 
                 # Shifts that do not have the same attribute value
                 invalid_worker_ids = all_worker_ids - valid_worker_ids

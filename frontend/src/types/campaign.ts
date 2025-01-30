@@ -6,5 +6,5 @@ export type CoverageSelectorT = {
   fullPeriod: boolean;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
-  coverageId: string;
+  coverageId: string | null;
 };
