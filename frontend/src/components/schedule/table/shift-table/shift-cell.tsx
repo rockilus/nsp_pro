@@ -12,7 +12,7 @@ import { WorkerT } from "../../../../types/worker";
 import {
   AssignmentT,
   BreachT,
-  SelectedCellT,
+  AssignmentDataDictT,
   ScheduleT,
   ScheduleStatus,
 } from "../../../../types/schedule";
@@ -40,7 +40,7 @@ export default function ShiftCell({
   assignments: AssignmentT[];
   breaches: BreachT[];
   showBreaches: boolean;
-  handleCellSelection: (seletedCell: SelectedCellT) => void;
+  handleCellSelection: (seletedCell: AssignmentDataDictT) => void;
 }) {
   const AssignmentDiv = ({
     assignment,

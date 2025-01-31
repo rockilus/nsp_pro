@@ -98,8 +98,6 @@ export default function WorkerTab({
   };
 
   const handleUpdateWorker = async (worker: WorkerT) => {
-    console.log("Worker to update:", worker);
-
     if (!selectedTeamId) {
       throw new Error("Team not selected");
     }

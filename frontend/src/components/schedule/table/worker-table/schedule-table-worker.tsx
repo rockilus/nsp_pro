@@ -11,6 +11,7 @@ import TableHead from "@mui/material/TableHead";
 import DatesHeaderRow from "../shared/dates-header-row";
 import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
 import WorkerTableRow from "./worker-table-row";
+import { getAssignmentsDataByOwnerAndDate } from "./assignment-utils";
 // Types
 import { ShiftT } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
@@ -18,12 +19,13 @@ import {
   AssignmentT,
   BreachT,
   ScheduleT,
-  SelectedCellT,
+  AssignmentDataDictT,
   DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
 } from "../../../../types/schedule";
 import { RequestT } from "../../../../types/request";
+import { AttributeOwnerType } from "../../../../types/attribute";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -59,7 +61,7 @@ export default function ScheduleTableWorker({
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
-  handleCellSelection: (selectedCell: SelectedCellT) => void;
+  handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleDeleteDSD: (dsdId: string, teamId: string) => void;
@@ -69,6 +71,15 @@ export default function ScheduleTableWorker({
 
   const filteredWorkers = workers.filter((w) =>
     workerIdsInAssignments.has(w.id)
+  );
+
+  const workerIdDateToAssignData = getAssignmentsDataByOwnerAndDate(
+    AttributeOwnerType.WORKER,
+    assignments,
+    workers,
+    shifts,
+    breaches,
+    requests
   );
 
   return (
@@ -112,11 +123,10 @@ export default function ScheduleTableWorker({
               lng={lng}
               shifts={shifts}
               worker={worker}
-              requests={requests}
               assignments={assignments}
+              workerIdDateToAssignData={workerIdDateToAssignData}
               scheduleCampaign={scheduleCampaign}
               periodDates={periodDates}
-              breaches={breaches}
               showBreaches={showBreaches}
               handleCellSelection={handleCellSelection}
             />

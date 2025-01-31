@@ -12,7 +12,7 @@ import {
   AssignmentT,
   ScheduleT,
   BreachT,
-  SelectedCellT,
+  AssignmentDataDictT,
   DailyShiftDemandT,
   ScheduleStatus,
 } from "../../../../types/schedule";
@@ -39,7 +39,7 @@ export default function ShiftTableRow({
   scheduleCampaign: ScheduleT | null;
   breaches: BreachT[];
   showBreaches: boolean;
-  handleCellSelection: (selectedCell: SelectedCellT) => void;
+  handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
 }) {
   return (
     <TableRow>

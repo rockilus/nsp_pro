@@ -19,7 +19,7 @@ import {
   AssignmentT,
   ScheduleT,
   BreachT,
-  SelectedCellT,
+  AssignmentDataDictT,
   DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
@@ -60,7 +60,7 @@ export default function ScheduleTableShift({
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
-  handleCellSelection: (selectedCell: SelectedCellT) => void;
+  handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleDeleteDSD: (dsdId: string, teamId: string) => void;
