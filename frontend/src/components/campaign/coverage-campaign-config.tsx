@@ -76,10 +76,12 @@ export default function CoverageCampaignConfig({
             labelId="demo-simple-select-label"
             id="demo-simple-select"
             value={
-              coverages.find(
-                (coverage) => coverage.id === coverageSelector.coverageId
-              )
-                ? coverageSelector.coverageId
+              coverageSelector.coverageId
+                ? coverages.find(
+                    (coverage) => coverage.id === coverageSelector.coverageId
+                  )
+                  ? coverageSelector.coverageId
+                  : ""
                 : ""
             }
             onChange={(e) => handleUpdateCoverageId(e, coverageSelector)}

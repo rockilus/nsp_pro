@@ -14,7 +14,7 @@ import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 import {
   AssignmentT,
-  SelectedCellT,
+  AssignmentDataDictT,
   ObjectiveCategory,
   ScheduleT,
   ScheduleStatus,
@@ -37,9 +37,9 @@ export default function AssignmentOptions({
   shifts: ShiftT[];
   schedules: ScheduleT[];
   assignments: AssignmentT[];
-  selectedCell: SelectedCellT;
+  selectedCell: AssignmentDataDictT;
   selectedDisplay: string;
-  setSelectedCell: (selectedCell: SelectedCellT | null) => void;
+  setSelectedCell: (selectedCell: AssignmentDataDictT | null) => void;
   handleUpdateAssignment: (assignment: AssignmentT) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");

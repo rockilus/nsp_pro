@@ -50,10 +50,10 @@ export default function WorkerFieldCellWeeklyHoursDesired({
         ...worker,
         weeklyHoursDesired: valueState,
       });
-      setEditing({});
     } else if (valueState === "") {
       setValueState(worker.weeklyHoursDesired);
     }
+    setEditing({});
   };
 
   const handleEditCancel = () => {

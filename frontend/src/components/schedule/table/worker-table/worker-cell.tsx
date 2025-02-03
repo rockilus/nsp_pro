@@ -4,19 +4,20 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // MUI
 import TableCell from "@mui/material/TableCell";
+// Components
+import { generateOwnerIdDateKey } from "../shared/assignment-utils";
 // Styles
 import "./worker-cell.css";
 // Types
-import { ShiftT, ShiftType } from "../../../../types/shift";
+import { ShiftT, ShiftType, ShiftRestType } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
 import {
-  AssignmentT,
-  BreachT,
-  SelectedCellT,
   ScheduleT,
   ScheduleStatus,
+  AssignmentDictT,
+  AssignmentDataDictT,
 } from "../../../../types/schedule";
-import { RequestT, RequestStatus } from "../../../../types/request";
+import { RequestStatus } from "../../../../types/request";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -26,9 +27,7 @@ export default function WorkerCell({
   scheduleCampaign,
   worker,
   shifts,
-  requests,
-  assignments,
-  breaches,
+  workerIdDateToAssignData,
   showBreaches,
   handleCellSelection,
 }: {
@@ -36,42 +35,43 @@ export default function WorkerCell({
   scheduleCampaign: ScheduleT | null;
   worker: WorkerT;
   shifts: ShiftT[];
-  requests: RequestT[];
-  assignments: AssignmentT[];
-  breaches: BreachT[];
+  workerIdDateToAssignData: AssignmentDictT;
   showBreaches: boolean;
-  handleCellSelection: (seletedCell: SelectedCellT) => void;
+  handleCellSelection: (seletedCell: AssignmentDataDictT) => void;
 }) {
   const AssignmentDiv = ({
-    assignment,
-    shift,
-    breaches,
-    requests,
+    aDataDict,
     isLastAssignment,
   }: {
-    assignment: AssignmentT;
-    shift: ShiftT | null;
-    breaches: BreachT[];
-    requests: RequestT[];
+    aDataDict: AssignmentDataDictT;
     isLastAssignment: boolean;
   }) => {
-    if (!shift) return <div>No assignment</div>;
-
     const assignmentFixed =
       scheduleCampaign &&
-      assignment.scheduleId === scheduleCampaign.id &&
-      assignment.fixed;
+      aDataDict.assignment.scheduleId === scheduleCampaign.id &&
+      aDataDict.assignment.fixed;
     const breachHard =
-      breaches.some((b) => b.hardToSoft) ||
-      requests.some(
+      aDataDict.breaches.some((b) => b.hardToSoft) ||
+      aDataDict.requests.some(
         (r) => r.hard && r.status === RequestStatus.REJECTED && r.active
       );
     const breachSoft =
       !breachHard &&
-      (breaches.some((b) => !b.hardToSoft) ||
-        requests.some(
+      (aDataDict.breaches.some((b) => !b.hardToSoft) ||
+        aDataDict.requests.some(
           (r) => !r.hard && r.status === RequestStatus.REJECTED && r.active
         ));
+
+    let shiftNameDisplayed = aDataDict.shift.acronym;
+    if (aDataDict.shift.restType === ShiftRestType.RECUPERATION) {
+      const shiftDuty = shifts.find(
+        (s) => s.id === aDataDict.shift.recuperationDutyId
+      );
+      if (shiftDuty) {
+        shiftNameDisplayed = `RC-${shiftDuty.acronym}`;
+      }
+    }
+
     return (
       <div
         className={`assignment-div-container ${
@@ -83,32 +83,27 @@ export default function WorkerCell({
             ? "soft-breach"
             : ""
         }`}
-        onClick={() =>
-          handleCellSelection({
-            assignment: assignment,
-            worker: worker,
-            shift: shift,
-            requests: requests,
-            breaches: breaches,
-          })
-        }
+        onClick={() => handleCellSelection(aDataDict)}
       >
         <span className={`shift-name-cell ${assignmentFixed ? "fix" : ""}`}>
-          {shift.acronym}
+          {shiftNameDisplayed}
         </span>
         <div className="shift-times-container">
           <span className="shift-times-cell">
-            {shift.startTime.format("HH:mm")}
+            {aDataDict.shift.startTime.format("HH:mm")}
           </span>
           <span className="shift-times-cell">{" - "}</span>
           <span className="shift-times-cell">
-            {shift.endTime.format("HH:mm")}
-            {!shift.endTime.isSame(shift.startTime, "day") && <sup>+1</sup>}
+            {aDataDict.shift.endTime.format("HH:mm")}
+            {!aDataDict.shift.endTime.isSame(
+              aDataDict.shift.startTime,
+              "day"
+            ) && <sup>+1</sup>}
           </span>
         </div>
         <div
           className={`w-shift-type-marker ${
-            shift.shiftType === ShiftType.DUTY ? "duty" : "other"
+            aDataDict.shift.shiftType === ShiftType.DUTY ? "duty" : "other"
           }`}
         ></div>
       </div>
@@ -116,34 +111,18 @@ export default function WorkerCell({
   };
 
   const CellContent = ({}) => {
-    const assignmentsWorkerDate = assignments.filter(
-      (a) => a.workerId === worker.id && a.date.isSame(periodDate.date, "day")
-    );
+    const workerDateKey = generateOwnerIdDateKey(worker.id, periodDate.date);
+    const aDataDicts: AssignmentDataDictT[] =
+      workerIdDateToAssignData[workerDateKey] || [];
 
     return (
       <div className="cell-content-container">
-        {assignmentsWorkerDate.map((a, aIndex) => {
-          const shiftAssign = shifts.find((s) => s.id === a.shiftId) || null;
-          const breachesAssign = breaches.filter((b) =>
-            b.variables.find(
-              (v) => v.shiftId === a.shiftId && v.date.isSame(a.date, "day")
-            )
-          );
-          const requestsAssign = requests.filter(
-            (r) =>
-              r.shiftId === a.shiftId &&
-              r.startDate.isSameOrBefore(a.date, "day") &&
-              r.endDate.isSameOrAfter(a.date, "day")
-          );
-
+        {aDataDicts.map((aDataDict, addIndex) => {
           return (
             <AssignmentDiv
-              key={aIndex}
-              assignment={a}
-              shift={shiftAssign}
-              breaches={breachesAssign}
-              requests={requestsAssign}
-              isLastAssignment={aIndex === assignmentsWorkerDate.length - 1}
+              key={addIndex}
+              aDataDict={aDataDict}
+              isLastAssignment={addIndex === aDataDicts.length - 1}
             />
           );
         })}

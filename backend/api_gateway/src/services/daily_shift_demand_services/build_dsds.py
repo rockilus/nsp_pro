@@ -34,6 +34,8 @@ def build_daily_shift_demands(
         cov_to_sds[sd.coverage_id].append(sd)
 
     for cs in coverage_selectors:
+        if cs.coverage_id is None:
+            continue
         start_date = schedule.start_date if cs.full_period else cs.start_date
         end_date = schedule.end_date if cs.full_period else cs.end_date
         i_to_sds: Dict[int, List[ShiftDemand]] = {}
