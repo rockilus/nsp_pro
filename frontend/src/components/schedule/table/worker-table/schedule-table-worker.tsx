@@ -11,7 +11,8 @@ import TableHead from "@mui/material/TableHead";
 import DatesHeaderRow from "../shared/dates-header-row";
 import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
 import WorkerTableRow from "./worker-table-row";
-import { getAssignmentsDataByOwnerAndDate } from "./assignment-utils";
+import { getAssignmentsDataByOwnerAndDate } from "../shared/assignment-utils";
+import { getRelevantWorkers } from "./worker-table-utils";
 // Types
 import { ShiftT } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
@@ -67,10 +68,10 @@ export default function ScheduleTableWorker({
   handleDeleteDSD: (dsdId: string, teamId: string) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
-  const workerIdsInAssignments = new Set(assignments.map((a) => a.workerId));
-
-  const filteredWorkers = workers.filter((w) =>
-    workerIdsInAssignments.has(w.id)
+  const workersForHeader = getRelevantWorkers(
+    workers,
+    assignments,
+    scheduleCampaign
   );
 
   const workerIdDateToAssignData = getAssignmentsDataByOwnerAndDate(
@@ -117,7 +118,7 @@ export default function ScheduleTableWorker({
           />
         </TableHead>
         <TableBody>
-          {filteredWorkers.map((worker, workerIndex) => (
+          {workersForHeader.map((worker, workerIndex) => (
             <WorkerTableRow
               key={workerIndex}
               lng={lng}

@@ -12,6 +12,8 @@ import TableHead from "@mui/material/TableHead";
 import DatesHeaderRow from "../shared/dates-header-row";
 import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
 import ShiftTableRow from "./shift-table-row";
+import { getAssignmentsDataByOwnerAndDate } from "../shared/assignment-utils";
+import { getRelevantShifts } from "./shift-table-utils";
 // Types
 import { ShiftT, ShiftType } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
@@ -25,6 +27,7 @@ import {
   ScheduleStatus,
 } from "../../../../types/schedule";
 import { RequestT } from "../../../../types/request";
+import { AttributeOwnerType } from "../../../../types/attribute";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -66,37 +69,18 @@ export default function ScheduleTableShift({
   handleDeleteDSD: (dsdId: string, teamId: string) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
-  // Sorts an array of shifts with the following order:
-  // 1. Duty shifts (`ShiftType.DUTY`), ordered by start time.
-  // 2. All other shifts, ordered by start time.
-  const sortShifts = (shifts: ShiftT[]): ShiftT[] => {
-    return [...shifts].sort((a, b) => {
-      // Check if 'a' or 'b' is a Duty shift
-      const isA_Duty = a.shiftType === ShiftType.DUTY;
-      const isB_Duty = b.shiftType === ShiftType.DUTY;
-
-      if (isA_Duty && !isB_Duty) {
-        return -1; // 'a' comes before 'b'
-      }
-      if (!isA_Duty && isB_Duty) {
-        return 1; // 'b' comes before 'a'
-      }
-
-      // If both are Duty shifts or both are not, sort by startTime
-      if (a.startTime.isBefore(b.startTime)) {
-        return -1;
-      }
-      if (a.startTime.isAfter(b.startTime)) {
-        return 1;
-      }
-
-      return 0; // They are equal in terms of shiftType and startTime
-    });
-  };
-
-  const shiftIdsInAssignments = new Set(assignments.map((a) => a.shiftId));
-  const filteredOrderedShifts = sortShifts(
-    shifts.filter((s) => shiftIdsInAssignments.has(s.id))
+  const shiftsForHeader = getRelevantShifts(
+    shifts,
+    dailyShiftDemands,
+    assignments
+  );
+  const shiftIdDateToAssignData = getAssignmentsDataByOwnerAndDate(
+    AttributeOwnerType.SHIFT,
+    assignments,
+    workers,
+    shifts,
+    breaches,
+    requests
   );
 
   return (
@@ -134,27 +118,19 @@ export default function ScheduleTableShift({
           />
         </TableHead>
         <TableBody>
-          {filteredOrderedShifts
-            .filter(
-              (s) =>
-                s.shiftType === ShiftType.NORMAL ||
-                s.shiftType === ShiftType.DUTY
-            )
-            .map((shift, shiftIndex) => (
-              <ShiftTableRow
-                key={shiftIndex}
-                shift={shift}
-                workers={workers}
-                requests={requests}
-                assignments={assignments}
-                dailyShiftDemands={dailyShiftDemands}
-                periodDates={periodDates}
-                scheduleCampaign={scheduleCampaign}
-                breaches={breaches}
-                showBreaches={showBreaches}
-                handleCellSelection={handleCellSelection}
-              />
-            ))}
+          {shiftsForHeader.map((shift, shiftIndex) => (
+            <ShiftTableRow
+              key={shiftIndex}
+              shift={shift}
+              assignments={assignments}
+              dailyShiftDemands={dailyShiftDemands}
+              periodDates={periodDates}
+              scheduleCampaign={scheduleCampaign}
+              shiftIdDateToAssignData={shiftIdDateToAssignData}
+              showBreaches={showBreaches}
+              handleCellSelection={handleCellSelection}
+            />
+          ))}
         </TableBody>
       </Table>
     </TableContainer>

@@ -5,7 +5,7 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // MUI
 import TableCell from "@mui/material/TableCell";
 // Components
-import { generateOwnerIdDateKey } from "./assignment-utils";
+import { generateOwnerIdDateKey } from "../shared/assignment-utils";
 // Styles
 import "./worker-cell.css";
 // Types

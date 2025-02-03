@@ -4,6 +4,8 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // MUI
 import TableCell from "@mui/material/TableCell";
+// Components
+import { generateOwnerIdDateKey } from "../shared/assignment-utils";
 // Styles
 import "./shift-cell.css";
 // Types
@@ -15,6 +17,7 @@ import {
   AssignmentDataDictT,
   ScheduleT,
   ScheduleStatus,
+  AssignmentDictT,
 } from "../../../../types/schedule";
 import { RequestT, RequestStatus } from "../../../../types/request";
 
@@ -24,52 +27,38 @@ dayjs.extend(isSameOrBefore);
 export default function ShiftCell({
   periodDate,
   scheduleCampaign,
-  workers,
   shift,
-  requests,
-  assignments,
-  breaches,
+  shiftIdDateToAssignData,
   showBreaches,
   handleCellSelection,
 }: {
   periodDate: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null };
   scheduleCampaign: ScheduleT | null;
-  workers: WorkerT[];
   shift: ShiftT;
-  requests: RequestT[];
-  assignments: AssignmentT[];
-  breaches: BreachT[];
+  shiftIdDateToAssignData: AssignmentDictT;
   showBreaches: boolean;
   handleCellSelection: (seletedCell: AssignmentDataDictT) => void;
 }) {
   const AssignmentDiv = ({
-    assignment,
-    worker,
-    breaches,
-    requests,
+    aDataDict,
     isLastAssignment,
   }: {
-    assignment: AssignmentT;
-    worker: WorkerT | null;
-    breaches: BreachT[];
-    requests: RequestT[];
+    aDataDict: AssignmentDataDictT;
     isLastAssignment: boolean;
   }) => {
-    if (!worker) return <div>No assignment</div>;
-
     const assignmentFixed =
       scheduleCampaign &&
-      assignment.scheduleId === scheduleCampaign.id &&
-      assignment.fixed;
+      aDataDict.assignment.scheduleId === scheduleCampaign.id &&
+      aDataDict.assignment.fixed;
     const breachHard =
-      breaches.some((b) => b.hardToSoft) ||
-      requests.some(
+      aDataDict.breaches.some((b) => b.hardToSoft) ||
+      aDataDict.requests.some(
         (r) => r.hard && r.status === RequestStatus.REJECTED && r.active
       );
     const breachSoft =
       !breachHard &&
-      (breaches.some((b) => !b.hardToSoft) ||
-        requests.some(
+      (aDataDict.breaches.some((b) => !b.hardToSoft) ||
+        aDataDict.requests.some(
           (r) => !r.hard && r.status === RequestStatus.REJECTED && r.active
         ));
     return (
@@ -83,52 +72,28 @@ export default function ShiftCell({
             ? "soft-breach"
             : ""
         }`}
-        onClick={() =>
-          handleCellSelection({
-            assignment: assignment,
-            worker: worker,
-            shift: shift,
-            requests: requests,
-            breaches: breaches,
-          })
-        }
+        onClick={() => handleCellSelection(aDataDict)}
       >
         <span className={`worker-name-cell ${assignmentFixed ? "fix" : ""}`}>
-          {worker.acronym}
+          {aDataDict.worker.acronym}
         </span>
       </div>
     );
   };
 
   const CellContent = ({}) => {
-    const assignmentsShiftDate = assignments.filter(
-      (a) => a.shiftId === shift.id && a.date.isSame(periodDate.date, "day")
-    );
+    const shiftDateKey = generateOwnerIdDateKey(shift.id, periodDate.date);
+    const aDataDicts: AssignmentDataDictT[] =
+      shiftIdDateToAssignData[shiftDateKey] || [];
 
     return (
       <div className="cell-content-container">
-        {assignmentsShiftDate.map((a, aIndex) => {
-          const workerAssign = workers.find((w) => w.id === a.workerId) || null;
-          const breachesAssign = breaches.filter((b) =>
-            b.variables.find(
-              (v) => v.workerId === a.workerId && v.date.isSame(a.date, "day")
-            )
-          );
-          const requestsAssign = requests.filter(
-            (r) =>
-              r.workerId === a.workerId &&
-              r.startDate.isSameOrBefore(a.date, "day") &&
-              r.endDate.isSameOrAfter(a.date, "day")
-          );
-
+        {aDataDicts.map((aDataDict, addIndex) => {
           return (
             <AssignmentDiv
-              key={aIndex}
-              assignment={a}
-              worker={workerAssign}
-              breaches={breachesAssign}
-              requests={requestsAssign}
-              isLastAssignment={aIndex === assignmentsShiftDate.length - 1}
+              key={addIndex}
+              aDataDict={aDataDict}
+              isLastAssignment={addIndex === aDataDicts.length - 1}
             />
           );
         })}

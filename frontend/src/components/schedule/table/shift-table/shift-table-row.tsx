@@ -7,37 +7,31 @@ import ShiftRowHeaderCell from "./shift-row-header-cell";
 import ShiftCell from "./shift-cell";
 // Types
 import { ShiftT } from "../../../../types/shift";
-import { WorkerT } from "../../../../types/worker";
 import {
   AssignmentT,
   ScheduleT,
-  BreachT,
   AssignmentDataDictT,
   DailyShiftDemandT,
   ScheduleStatus,
+  AssignmentDictT,
 } from "../../../../types/schedule";
-import { RequestT } from "../../../../types/request";
 
 export default function ShiftTableRow({
   shift,
-  workers,
-  requests,
   assignments,
   dailyShiftDemands,
   periodDates,
   scheduleCampaign,
-  breaches,
+  shiftIdDateToAssignData,
   showBreaches,
   handleCellSelection,
 }: {
   shift: ShiftT;
-  workers: WorkerT[];
-  requests: RequestT[];
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
   periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
   scheduleCampaign: ScheduleT | null;
-  breaches: BreachT[];
+  shiftIdDateToAssignData: AssignmentDictT;
   showBreaches: boolean;
   handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
 }) {
@@ -54,11 +48,8 @@ export default function ShiftTableRow({
           key={dateIndex}
           periodDate={pDate}
           scheduleCampaign={scheduleCampaign}
-          workers={workers}
           shift={shift}
-          requests={requests}
-          assignments={assignments}
-          breaches={breaches}
+          shiftIdDateToAssignData={shiftIdDateToAssignData}
           showBreaches={showBreaches}
           handleCellSelection={handleCellSelection}
         />
