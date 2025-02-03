@@ -12,7 +12,13 @@ import Typography from "@mui/material/Typography";
 // Styles
 import "./stats-table.css";
 // Types
-import { StatsT, StatsValueT, StatsHeaderT } from "../../../types/stats";
+import {
+  StatsT,
+  StatsValueT,
+  StatsHeaderT,
+  HeaderUnitOptions,
+  StatsUnitOptions,
+} from "../../../types/stats";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 
@@ -32,7 +38,11 @@ export default function StatsTable({
   showingCustom: boolean;
   workers: WorkerT[];
   shifts: ShiftT[];
-  statsUnitOptions: Record<string, string>[];
+  statsUnitOptions: {
+    name: StatsUnitOptions;
+    label: string;
+    description: string;
+  }[];
   quickStats: boolean;
   handleAddHeader: (header: StatsHeaderT) => void;
   handleDeleteHeader: (headerId: string) => void;
@@ -44,7 +54,7 @@ export default function StatsTable({
   const borderStyle = "1px solid #E8E8E8";
 
   const handleAddDeleteHeaderToCustom = (statsHeader: StatsHeaderT) => {
-    if (statsHeader.inCustom) {
+    if (statsHeader.isFavorite) {
       handleDeleteHeader(statsHeader.id);
     } else {
       handleAddHeader(statsHeader);
@@ -136,7 +146,7 @@ export default function StatsTable({
                       quickStats ? "quick-stats" : ""
                     }`}
                   >
-                    {header.headerUnit === "shift"
+                    {header.headerUnit === HeaderUnitOptions.SHIFT
                       ? shifts.find((s) => s.id === header.value)?.name
                       : translateHeaderValue(header.value)}
                   </span>
@@ -175,7 +185,7 @@ export default function StatsTable({
                     >
                       <button
                         className={`custom-button ${
-                          header.inCustom ? "in-custom" : ""
+                          header.isFavorite ? "in-custom" : ""
                         }`}
                         onClick={() => handleAddDeleteHeaderToCustom(header)}
                       >

@@ -54,7 +54,12 @@ import {
   LHSTabContentT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
-import { StatsT } from "../../types/stats";
+import {
+  StatsT,
+  StatsTimeFrameOptions,
+  StatsUnitOptions,
+  HeaderUnitOptions,
+} from "../../types/stats";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -163,7 +168,7 @@ export default function ScheduleTab({
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
 
   const [selectedQuickStatsTimeFrame, setSelectedQuickStatsTimeFrame] =
-    useState<string>("campaign");
+    useState<StatsTimeFrameOptions>(StatsTimeFrameOptions.CAMPAING);
 
   const toggleTab = (tabName: string) => {
     if (selectedTab === tabName) {
@@ -349,7 +354,9 @@ export default function ScheduleTab({
   // Stats Actions
   //////////////////////////
 
-  const handleChangeStatsTimeFrame = async (timeFrame: string) => {
+  const handleChangeStatsTimeFrame = async (
+    timeFrame: StatsTimeFrameOptions
+  ) => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
@@ -357,8 +364,8 @@ export default function ScheduleTab({
       timeFrame,
       startDate: dayjs.utc().startOf("day").subtract(1, "year"),
       endDate: dayjs.utc().startOf("day"),
-      statsUnit: "custom",
-      headerUnit: "week",
+      statsUnit: StatsUnitOptions.FAVORITES,
+      headerUnit: HeaderUnitOptions.WEEK,
       selectedShifts: [],
     };
     const newStats = await getStats(newStatsOptions, selectedTeamId);

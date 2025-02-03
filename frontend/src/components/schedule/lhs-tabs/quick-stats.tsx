@@ -12,7 +12,7 @@ import "./quick-stats.css";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
-import { StatsT } from "../../../types/stats";
+import { StatsT, StatsTimeFrameOptions } from "../../../types/stats";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -29,8 +29,8 @@ export default function QuickStatsTable({
   shifts: ShiftT[];
   workers: WorkerT[];
   stats: StatsT;
-  selectedQuickStatsTimeFrame: string;
-  handleChangeStatsTimeFrame: (timeFrame: string) => void;
+  selectedQuickStatsTimeFrame: StatsTimeFrameOptions;
+  handleChangeStatsTimeFrame: (timeFrame: StatsTimeFrameOptions) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -61,7 +61,7 @@ export default function QuickStatsTable({
         aria-label="Platform"
       >
         <ToggleButton
-          value="campaign"
+          value={StatsTimeFrameOptions.CAMPAING}
           sx={{
             textTransform: "none",
             height: "30px",
@@ -71,7 +71,7 @@ export default function QuickStatsTable({
           {t("campaign")}
         </ToggleButton>
         <ToggleButton
-          value="last_12_months"
+          value={StatsTimeFrameOptions.LTM}
           sx={{
             textTransform: "none",
             height: "30px",

@@ -12,7 +12,12 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Styles
 import "./stats-nav-bar.css";
 // Types
-import { StatsOptionsT } from "../../../types/stats";
+import {
+  StatsOptionsT,
+  StatsTimeFrameOptions,
+  StatsUnitOptions,
+  HeaderUnitOptions,
+} from "../../../types/stats";
 import { ShiftWorkerOptionT, SWOIdTypes } from "../../../types/constraint";
 import { ScheduleT } from "../../../types/schedule";
 
@@ -39,11 +44,13 @@ export default function StatsNavBar({
   const endDateLTM = dayjs.utc().startOf("day");
 
   const [statsOptions, setStatsOptions] = useState<StatsOptionsT>({
-    timeFrame: scheduleCampaign ? "campaign" : "last_12_months",
+    timeFrame: scheduleCampaign
+      ? StatsTimeFrameOptions.CAMPAING
+      : StatsTimeFrameOptions.LTM,
     startDate: scheduleCampaign ? scheduleCampaign.startDate : startDateLTM,
     endDate: scheduleCampaign ? scheduleCampaign.endDate : endDateLTM,
-    statsUnit: "custom",
-    headerUnit: "weekday",
+    statsUnit: StatsUnitOptions.FAVORITES,
+    headerUnit: HeaderUnitOptions.WEEKDAY,
     selectedShifts: [
       {
         name: "all shifts",
@@ -55,31 +62,31 @@ export default function StatsNavBar({
     ],
   });
 
-  const timeFrameOptions: Record<string, string>[] = [
-    { name: "campaign", label: t("campaign") },
-    { name: "last_12_months", label: t("time_frame_ltm") },
-    { name: "custom", label: t("time_frame_custom") },
+  const timeFrameOptions: { name: StatsTimeFrameOptions; label: string }[] = [
+    { name: StatsTimeFrameOptions.CAMPAING, label: t("campaign") },
+    { name: StatsTimeFrameOptions.LTM, label: t("time_frame_ltm") },
+    { name: StatsTimeFrameOptions.CUSTOM, label: t("time_frame_custom") },
   ];
 
   const handleChangeStatsTimeFrame = (
     event: React.MouseEvent<HTMLElement, MouseEvent>,
-    value: string
+    value: StatsTimeFrameOptions | null
   ) => {
-    if (value && value !== statsOptions.timeFrame) {
+    if (value !== null && value !== statsOptions.timeFrame) {
       const newStartDate =
-        value === "campaign"
+        value === StatsTimeFrameOptions.CAMPAING
           ? scheduleCampaign
             ? scheduleCampaign.startDate
             : startDateLTM
-          : value === "last_12_months"
+          : value === StatsTimeFrameOptions.LTM
           ? startDateLTM
           : statsOptions.startDate;
       const newEndDate =
-        value === "campaign"
+        value === StatsTimeFrameOptions.CAMPAING
           ? scheduleCampaign
             ? scheduleCampaign.endDate
             : endDateLTM
-          : value === "last_12_months"
+          : value === StatsTimeFrameOptions.LTM
           ? endDateLTM
           : statsOptions.endDate;
       setStatsOptions((prevState) => ({
@@ -118,7 +125,7 @@ export default function StatsNavBar({
         <div>
           <DatePicker
             value={statsOptions.startDate}
-            disabled={statsOptions.timeFrame !== "custom"}
+            disabled={statsOptions.timeFrame !== StatsTimeFrameOptions.CUSTOM}
             onChange={(newValue) => {
               setStatsOptions((prevState) => ({
                 ...prevState,
@@ -138,7 +145,7 @@ export default function StatsNavBar({
           />
           <DatePicker
             value={statsOptions.endDate}
-            disabled={statsOptions.timeFrame !== "custom"}
+            disabled={statsOptions.timeFrame !== StatsTimeFrameOptions.CUSTOM}
             onChange={(newValue) => {
               setStatsOptions((prevState) => ({
                 ...prevState,
