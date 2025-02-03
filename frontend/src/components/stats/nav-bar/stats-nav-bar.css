@@ -1,0 +1,12 @@
+.stats-nav-bar-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 16px;
+}
+
+.stats-time-options-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}

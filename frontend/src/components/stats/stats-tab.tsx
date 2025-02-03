@@ -5,6 +5,7 @@ import { useTranslation } from "../../app/i18n/client";
 // Components
 import StatsTable from "./table/stats-table";
 import StatsOptions from "./options/stats-options";
+import StatsNavBar from "./nav-bar/stats-nav-bar";
 // Skeletons
 import CoveragesSkeleton from "../skeletons/coverages-skeleton";
 // Actions
@@ -22,6 +23,7 @@ import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import { StatsHeaderT, StatsT, StatsOptionsT } from "../../types/stats";
 import { ShiftWorkerOptionT } from "../../types/constraint";
+import { ScheduleT } from "../../types/schedule";
 
 dayjs.extend(utc);
 
@@ -36,6 +38,9 @@ export default function StatsTab({
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [stats, setStats] = useState<StatsT | null>(null);
+  const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
+    null
+  );
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
@@ -133,14 +138,17 @@ export default function StatsTab({
       setIsLoading(true);
       if (selectedTeamId) {
         const {
+          scheduleCampaign: fetchedScheduleCampaign,
           shifts: fetchedShifts,
           workers: fetchedWorkers,
           shiftOptions: fetchedShiftOptions,
         }: {
+          scheduleCampaign: ScheduleT | null;
           shifts: ShiftT[];
           workers: WorkerT[];
           shiftOptions: ShiftWorkerOptionT[];
         } = await getStatsTabData(selectedTeamId);
+        setScheduleCampaign(fetchedScheduleCampaign);
         setShifts(fetchedShifts);
         setWorkers(fetchedWorkers);
         setShiftOptions(fetchedShiftOptions);
@@ -155,15 +163,16 @@ export default function StatsTab({
       {isLoading ? (
         <CoveragesSkeleton />
       ) : (
-        <div className="tab-container-row">
-          <StatsOptions
+        <div className="tab-container-column">
+          <StatsNavBar lng={lng} scheduleCampaign={scheduleCampaign} />
+          {/* <StatsOptions
             lng={lng}
             statsShiftOptions={shiftOptions}
             statsUnitOptions={statsUnitOptions}
             setShowingCustom={setShowingCustom}
             handleGetStats={handleGetStats}
           />
-          <div className="divider-vertical" />
+          <div className="divider-vertical" /> */}
           <div className="stats-table-container">
             {stats ? (
               showingCustom && stats.statsHeaders.length === 0 ? (
