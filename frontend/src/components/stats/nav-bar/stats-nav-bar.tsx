@@ -117,6 +117,10 @@ export default function StatsNavBar({
                 height: "30px",
                 fontSize: "0.8rem",
               }}
+              disabled={
+                option.name === StatsTimeFrameOptions.CAMPAING &&
+                !scheduleCampaign
+              }
             >
               {option.label}
             </ToggleButton>

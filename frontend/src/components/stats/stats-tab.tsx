@@ -25,8 +25,10 @@ import {
   StatsT,
   StatsOptionsT,
   StatsUnitOptions,
+  StatsTimeFrameOptions,
+  HeaderUnitOptions,
 } from "../../types/stats";
-import { ShiftWorkerOptionT } from "../../types/constraint";
+import { ShiftWorkerOptionT, SWOIdTypes } from "../../types/constraint";
 import { ScheduleT } from "../../types/schedule";
 
 dayjs.extend(utc);
@@ -160,8 +162,33 @@ export default function StatsTab({
         setShifts(fetchedShifts);
         setWorkers(fetchedWorkers);
         setShiftOptions(fetchedShiftOptions);
+        setIsLoading(false);
+
+        const statsOptions: StatsOptionsT = {
+          timeFrame: fetchedScheduleCampaign
+            ? StatsTimeFrameOptions.CAMPAING
+            : StatsTimeFrameOptions.LTM,
+          startDate: fetchedScheduleCampaign
+            ? fetchedScheduleCampaign.startDate
+            : dayjs.utc().startOf("day").subtract(1, "year"),
+          endDate: fetchedScheduleCampaign
+            ? fetchedScheduleCampaign.endDate
+            : dayjs.utc().startOf("day"),
+          statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
+          headerUnit: HeaderUnitOptions.WEEKDAY,
+          selectedShifts: [
+            {
+              name: "all shifts",
+              id: "",
+              idType: SWOIdTypes.NONE,
+              isBoolDim: false,
+              categoryName: "All",
+            },
+          ],
+        };
+        const newStats = await getStats(statsOptions, selectedTeamId);
+        setStats(newStats);
       }
-      setIsLoading(false);
     };
     fetchStatsTabData();
   }, [selectedTeamId]);

@@ -57,8 +57,6 @@ from services.stats_services.np_to_core import (
     np_to_core_nb_times_shift,
 )
 
-# def build_default_stats(team_id: str) -> Stats:
-
 
 # pylint: disable=too-many-locals
 def build_stats(

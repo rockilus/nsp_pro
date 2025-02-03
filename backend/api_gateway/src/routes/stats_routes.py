@@ -80,26 +80,6 @@ async def get_shift_options(
     return response
 
 
-@router.post("/stats/default/teams/{team_id}")
-async def calculate_default_stats(
-    team_id: str,
-    options: StatsOptionsMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> StatsMessage:
-    try:
-        if not await authz_check(session.get_user_id(), "read-stats", "team", team_id):
-            raise NotAuthorizedError(
-                "You do not have permission to get stats options",
-            )
-        stats_options = msg_to_core_stats_options(options)
-        stats = build_stats(team_id, stats_options)
-        response = core_to_msg_stats(stats)
-    except Exception as e:
-        log_info("Failed to get stats options")
-        handle_routes_errors(e)
-    return response
-
-
 @router.post("/stats/teams/{team_id}")
 async def calculate_stats(
     team_id: str,
