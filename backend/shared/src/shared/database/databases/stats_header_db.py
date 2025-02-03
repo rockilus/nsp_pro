@@ -19,7 +19,7 @@ from shared.logger.logger import log_info
 from shared.schemas.errors.schema_error_handlers import (
     handle_create_schema_object_error,
 )
-from shared.schemas.schemas.stats import StatsHeader
+from shared.schemas.schemas.stats import StatsHeader, StatsUnitOptions
 
 
 class StatsHeaderDB:
@@ -132,8 +132,8 @@ def core_to_doc_stats_header(
     return StatsHeaderDocument(
         id=dataclass_obj.id,
         team=team,
-        stats_unit=dataclass_obj.stats_unit,
-        header_unit=dataclass_obj.header_unit,
+        stats_unit=dataclass_obj.stats_unit.value,
+        header_unit=dataclass_obj.header_unit.value,
         value=dataclass_obj.value,
         selected_shifts=[
             core_to_doc_shift_worker_option(ss) for ss in dataclass_obj.selected_shifts
@@ -146,6 +146,8 @@ def doc_to_core_stats_header(doc_obj: StatsHeaderDocument) -> StatsHeader:
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["team_id"] = doc_dict["team"]
+    doc_dict["stats_unit"] = StatsUnitOptions(doc_dict["stats_unit"])
+    doc_dict["header_unit"] = StatsUnitOptions(doc_dict["header_unit"])
     doc_dict["selected_shifts"] = [
         doc_to_core_shift_worker_option(ss) for ss in doc_obj.selected_shifts
     ]

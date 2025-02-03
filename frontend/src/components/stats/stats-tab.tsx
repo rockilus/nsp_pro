@@ -165,14 +165,14 @@ export default function StatsTab({
       ) : (
         <div className="tab-container-column">
           <StatsNavBar lng={lng} scheduleCampaign={scheduleCampaign} />
-          {/* <StatsOptions
+          <StatsOptions
             lng={lng}
             statsShiftOptions={shiftOptions}
             statsUnitOptions={statsUnitOptions}
             setShowingCustom={setShowingCustom}
             handleGetStats={handleGetStats}
           />
-          <div className="divider-vertical" /> */}
+          <div className="divider-vertical" />
           <div className="stats-table-container">
             {stats ? (
               showingCustom && stats.statsHeaders.length === 0 ? (

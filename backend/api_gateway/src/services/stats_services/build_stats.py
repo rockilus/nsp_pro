@@ -55,6 +55,8 @@ from services.stats_services.np_to_core import (
 )
 from utils.constants import Constants
 
+# def build_default_stats(team_id: str) -> Stats:
+
 
 # pylint: disable=too-many-locals
 def build_stats(
