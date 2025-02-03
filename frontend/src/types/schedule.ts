@@ -124,14 +124,6 @@ export type ValidateT = {
   assignments: AssignmentT[];
 };
 
-export type SelectedCellT = {
-  assignment: AssignmentT;
-  worker: WorkerT;
-  shift: ShiftT;
-  requests: RequestT[];
-  breaches: BreachT[];
-};
-
 // Excel export options
 export enum ExportPeriodOptions {
   CURRENT_SELECTION = 0,
@@ -161,4 +153,16 @@ export type WorkTimeTableT = {
 export type LHSTabContentT = {
   name: string;
   content: ReactNode | null;
+};
+
+export type AssignmentDataDictT = {
+  worker: WorkerT;
+  shift: ShiftT;
+  assignment: AssignmentT;
+  breaches: BreachT[];
+  requests: RequestT[];
+};
+
+export type AssignmentDictT = {
+  [key: string]: AssignmentDataDictT[];
 };

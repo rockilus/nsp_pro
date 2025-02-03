@@ -119,7 +119,7 @@ def build_worker_shift_filters(
                 for de_id in attr_dim_entry_ids:
                     attr_value_to_worker_ids[de_id].add(worker_id)
 
-        for shift in shifts:
+        for shift in [s for s in shifts if not s.deleted]:  # [TO REVIEW]
             if shift.id in shift_attrs and dimension_id in shift_attrs[shift.id]:
                 shift_attr_dim_entry_ids = shift_attrs.get(shift.id, {}).get(
                     dimension_id, set()

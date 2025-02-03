@@ -108,7 +108,7 @@ class CoverageMessage(BaseModel):
 class CoverageSelectorMessage(BaseModel):
     id: str
     scheduleId: str
-    coverageId: str
+    coverageId: str | None
     fullPeriod: bool
     startDate: date
     endDate: date

@@ -224,7 +224,8 @@ def doc_to_core_coverage_selector(
     doc_dict["coverage_id"] = doc_dict.get("coverage", None)
     doc_dict.pop("_id")
     doc_dict.pop("schedule")
-    doc_dict.pop("coverage")
+    if "coverage" in doc_dict:
+        doc_dict.pop("coverage")
     return CoverageSelector(**doc_dict)
 
     # try:

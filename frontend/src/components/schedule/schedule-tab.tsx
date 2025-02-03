@@ -46,7 +46,7 @@ import {
   ScheduleT,
   BreachT,
   AssignmentT,
-  SelectedCellT,
+  AssignmentDataDictT,
   DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
@@ -90,7 +90,9 @@ export default function ScheduleTab({
 
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
-  const [selectedCell, setSelectedCell] = useState<SelectedCellT | null>(null);
+  const [selectedCell, setSelectedCell] = useState<AssignmentDataDictT | null>(
+    null
+  );
 
   const [solveStatus, setSolveStatus] = useState<
     SolveDetailsStatus | null | "error"
@@ -171,7 +173,7 @@ export default function ScheduleTab({
     }
   };
 
-  const handleCellSelection = (selectedCell: SelectedCellT) => {
+  const handleCellSelection = (selectedCell: AssignmentDataDictT) => {
     setSelectedCell(selectedCell);
     setSelectedTab("Selected assignment");
   };
