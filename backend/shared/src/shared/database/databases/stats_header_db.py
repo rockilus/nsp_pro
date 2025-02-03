@@ -19,7 +19,11 @@ from shared.logger.logger import log_info
 from shared.schemas.errors.schema_error_handlers import (
     handle_create_schema_object_error,
 )
-from shared.schemas.schemas.stats import StatsHeader, StatsUnitOptions
+from shared.schemas.schemas.stats import (
+    HeaderUnitOptions,
+    StatsHeader,
+    StatsUnitOptions,
+)
 
 
 class StatsHeaderDB:
@@ -62,15 +66,15 @@ class StatsHeaderDB:
     def get_stats_headers_by_team_unit_shifts(
         self,
         team_id: str,
-        stats_unit: str,
-        header_unit: str,
+        stats_unit: StatsUnitOptions,
+        header_unit: HeaderUnitOptions,
     ) -> List[StatsHeader]:
         try:
             # pylint: disable=no-member
             stats_headers = StatsHeaderDocument.objects.filter(  # type: ignore
                 team=team_id,
-                stats_unit=stats_unit,
-                header_unit=header_unit,
+                stats_unit=stats_unit.value,
+                header_unit=header_unit.value,
                 # selected_shifts=selected_shifts,
             )
         except Exception as e:
