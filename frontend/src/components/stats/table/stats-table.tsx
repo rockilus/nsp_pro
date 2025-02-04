@@ -1,14 +1,12 @@
 import React from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
-import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
 // Styles
 import "./stats-table.css";
 // Types
@@ -18,14 +16,15 @@ import {
   StatsHeaderT,
   HeaderUnitOptions,
   StatsUnitOptions,
+  StatsOptionsT,
 } from "../../../types/stats";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 
 export default function StatsTable({
   lng,
+  statsOptions,
   stats,
-  showingCustom,
   workers,
   shifts,
   statsUnitOptions,
@@ -34,8 +33,8 @@ export default function StatsTable({
   handleDeleteHeader,
 }: {
   lng: string;
+  statsOptions: StatsOptionsT;
   stats: StatsT;
-  showingCustom: boolean;
   workers: WorkerT[];
   shifts: ShiftT[];
   statsUnitOptions: {
@@ -150,7 +149,7 @@ export default function StatsTable({
                       ? shifts.find((s) => s.id === header.value)?.name
                       : translateHeaderValue(header.value)}
                   </span>
-                  {showingCustom && (
+                  {statsOptions.showFavorites && (
                     <div className="column-header-custom-info">
                       <span
                         className={`column-header-stats-unit ${

@@ -12,7 +12,12 @@ import "./quick-stats.css";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
-import { StatsT, StatsTimeFrameOptions } from "../../../types/stats";
+import {
+  StatsT,
+  StatsTimeFrameOptions,
+  StatsUnitOptions,
+  HeaderUnitOptions,
+} from "../../../types/stats";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -83,8 +88,16 @@ export default function QuickStatsTable({
       </ToggleButtonGroup>
       <StatsTable
         lng={lng}
+        statsOptions={{
+          timeFrame: StatsTimeFrameOptions.CAMPAING,
+          startDate: dayjs(),
+          endDate: dayjs(),
+          statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
+          headerUnit: HeaderUnitOptions.WEEKDAY,
+          selectedShifts: [],
+          showFavorites: true,
+        }}
         stats={stats}
-        showingCustom={true}
         workers={workers}
         shifts={shifts}
         statsUnitOptions={[]}

@@ -3,7 +3,7 @@ import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 // Components
-import PopoverBoxAnchorElOver from "../../inputs/popover-box-anchor-el-over";
+import PopoverSelectShifts from "./popover-select-shifts";
 import { blockDislayValue } from "../../data-display/block-display";
 import ShiftOptionsEdit from "./shift-options-edit";
 // Utils
@@ -19,23 +19,27 @@ export default function ShiftOptionsDisplay({
   lng,
   selectedShifts,
   statsShiftOptions,
+  disabled,
   handleEditSelectedShifts,
 }: {
   lng: string;
   selectedShifts: ShiftWorkerOptionT[];
   statsShiftOptions: ShiftWorkerOptionT[];
+  disabled: boolean;
   handleEditSelectedShifts: (selectedShifts: ShiftWorkerOptionT[]) => void;
 }) {
   const { t } = useTranslation(lng, "stats-page");
 
   const [open, setOpen] = useState(false);
+  const [selectedShiftsState, setSelectedShiftsState] =
+    useState<ShiftWorkerOptionT[]>(selectedShifts);
 
   const blockDisplay = () => {
     return (
       <div>
-        {selectedShifts.length !== 0
+        {selectedShiftsState.length !== 0
           ? blockDislayValue(
-              selectedShifts
+              selectedShiftsState
                 .map((item) =>
                   typeof item === "object" && "name" in item
                     ? getShiftWorkerOptionDisplayName(item, t("not"))
@@ -48,27 +52,53 @@ export default function ShiftOptionsDisplay({
     );
   };
 
-  const handleClose = () => {
+  const handleConfirmEditSelectedShifts = () => {
+    if (disabled) {
+      return;
+    }
+    handleEditSelectedShifts(selectedShiftsState);
+    setOpen(false);
+  };
+
+  const handleEditSelectedShiftsState = (
+    selectedShifts: ShiftWorkerOptionT[]
+  ) => {
+    setSelectedShiftsState(selectedShifts);
+  };
+
+  const handleOpenPopover = () => {
+    if (disabled) {
+      return;
+    }
+    setOpen(true);
+  };
+
+  const handleClosePopover = () => {
+    if (disabled) {
+      return;
+    }
+    handleEditSelectedShifts(selectedShiftsState);
     setOpen(false);
   };
 
   return (
-    <Box sx={{ width: "160px" }}>
-      <PopoverBoxAnchorElOver
+    <Box>
+      <PopoverSelectShifts
         buttonContent={blockDisplay()}
         content={
           <ShiftOptionsEdit
             lng={lng}
-            selectedShifts={selectedShifts}
+            selectedShifts={selectedShiftsState}
             statsShiftOptions={groupByCategoryName(
               expandBoolDimOptions(statsShiftOptions)
             )}
-            handleEditSelectedShifts={handleEditSelectedShifts}
-            handleClose={handleClose}
+            handleConfirmEditSelectedShifts={handleConfirmEditSelectedShifts}
+            handleEditSelectedShiftsState={handleEditSelectedShiftsState}
           />
         }
         open={open}
-        setOpen={setOpen}
+        handleOpenPopover={handleOpenPopover}
+        handleClosePopover={handleClosePopover}
       />
     </Box>
   );

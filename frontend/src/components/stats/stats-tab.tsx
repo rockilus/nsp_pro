@@ -66,20 +66,14 @@ export default function StatsTab({
         categoryName: "All",
       },
     ],
+    showFavorites: false,
   });
-
-  const [showingCustom, setShowingCustom] = useState<boolean>(true);
 
   const statsUnitOptions: {
     name: StatsUnitOptions;
     label: string;
     description: string;
   }[] = [
-    // {
-    //   name: StatsUnitOptions.FAVORITES,
-    //   label: t("stats_unit_custom"),
-    //   description: t("stats_description_custom"),
-    // },
     {
       name: StatsUnitOptions.NB_DAYS_WORKED,
       label: t("stats_unit_nb_days_worked"),
@@ -207,6 +201,7 @@ export default function StatsTab({
               categoryName: "All",
             },
           ],
+          showFavorites: false,
         };
         const newStats = await getStats(newStatsOptions, selectedTeamId);
         setStatsOptions(newStatsOptions);
@@ -232,13 +227,13 @@ export default function StatsTab({
           />
           <div className="stats-table-container">
             {stats ? (
-              showingCustom && stats.statsHeaders.length === 0 ? (
+              statsOptions.showFavorites && stats.statsHeaders.length === 0 ? (
                 <span className="user-message">{t("no_custom_stats")}</span>
               ) : (
                 <StatsTable
                   lng={lng}
+                  statsOptions={statsOptions}
                   stats={stats}
-                  showingCustom={showingCustom}
                   workers={workers}
                   shifts={shifts}
                   statsUnitOptions={statsUnitOptions}

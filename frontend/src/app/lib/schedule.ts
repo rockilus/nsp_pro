@@ -299,9 +299,10 @@ export async function getScheduleTabData(teamId: string) {
       timeFrame: StatsTimeFrameOptions.CAMPAING,
       startDate: dayjs.utc().startOf("day").subtract(1, "year"),
       endDate: dayjs.utc().startOf("day"),
-      statsUnit: StatsUnitOptions.FAVORITES,
+      statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
       headerUnit: HeaderUnitOptions.WEEK,
       selectedShifts: [],
+      showFavorites: true,
     };
     const campaignTabData = await Promise.all([
       getAssignmentsByDates(teamId),
@@ -335,9 +336,10 @@ export async function getScheduleAssignmentsData(teamId: string) {
       timeFrame: StatsTimeFrameOptions.CAMPAING,
       startDate: dayjs.utc().startOf("day").subtract(1, "year"),
       endDate: dayjs.utc().startOf("day"),
-      statsUnit: StatsUnitOptions.FAVORITES,
+      statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
       headerUnit: HeaderUnitOptions.WEEK,
       selectedShifts: [],
+      showFavorites: true,
     };
     const campaignTabData = await Promise.all([
       getAssignmentsByDates(teamId),
@@ -365,9 +367,10 @@ export async function getScheduleLHSData(teamId: string) {
       timeFrame: StatsTimeFrameOptions.CAMPAING,
       startDate: dayjs.utc().startOf("day").subtract(1, "year"),
       endDate: dayjs.utc().startOf("day"),
-      statsUnit: StatsUnitOptions.FAVORITES,
+      statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
       headerUnit: HeaderUnitOptions.WEEK,
       selectedShifts: [],
+      showFavorites: true,
     };
     const campaignTabData = await Promise.all([
       getBreaches(teamId),

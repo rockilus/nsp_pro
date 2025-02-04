@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
@@ -22,7 +22,7 @@ import {
   StatsUnitOptions,
   HeaderUnitOptions,
 } from "../../../types/stats";
-import { ShiftWorkerOptionT, SWOIdTypes } from "../../../types/constraint";
+import { ShiftWorkerOptionT } from "../../../types/constraint";
 import { ScheduleT } from "../../../types/schedule";
 
 export default function StatsNavBar({
@@ -32,11 +32,7 @@ export default function StatsNavBar({
   statsUnitOptions,
   shiftOptions,
   handleUpdateStatsOptions,
-}: // statsShiftOptions,
-// statsUnitOptions,
-// setShowingCustom,
-// handleGetStats,
-{
+}: {
   lng: string;
   scheduleCampaign: ScheduleT | null;
   statsOptions: StatsOptionsT;
@@ -47,13 +43,8 @@ export default function StatsNavBar({
   }[];
   shiftOptions: ShiftWorkerOptionT[];
   handleUpdateStatsOptions: (statsOptions: StatsOptionsT) => void;
-  // shiftOptions: ShiftWorkerOptionT[];
-  // setShowingCustom: (showingCustom: boolean) => void;
-  // handleGetStats: (statsOptions: StatsOptionsT) => void;
 }) {
   const { t } = useTranslation(lng, "stats-page");
-
-  const [showFavorites, setShowFavorites] = useState<boolean>(false);
 
   const startDateLTM = dayjs.utc().startOf("day").subtract(1, "year");
   const endDateLTM = dayjs.utc().startOf("day");
@@ -153,6 +144,14 @@ export default function StatsNavBar({
     handleUpdateStatsOptions(newStatsOptions);
   };
 
+  const handleSwitchShowFavorites = () => {
+    const newStatsOptions = {
+      ...statsOptions,
+      showFavorites: !statsOptions.showFavorites,
+    };
+    handleUpdateStatsOptions(newStatsOptions);
+  };
+
   return (
     <div className="stats-nav-bar-container">
       <div className="stats-time-options-container">
@@ -169,8 +168,8 @@ export default function StatsNavBar({
               value={option.name}
               sx={{
                 textTransform: "none",
-                height: "30px",
-                fontSize: "0.8rem",
+                height: "35px",
+                fontSize: "0.9rem",
               }}
               disabled={
                 option.name === StatsTimeFrameOptions.CAMPAING &&
@@ -187,10 +186,10 @@ export default function StatsNavBar({
             disabled={statsOptions.timeFrame !== StatsTimeFrameOptions.CUSTOM}
             onChange={handleChangeStartDate}
             sx={{
-              width: "160px",
+              width: "135px",
               "& .MuiOutlinedInput-input": {
                 fontSize: "0.875rem",
-                height: "40px",
+                height: "35px",
                 paddingY: 0,
               },
             }}
@@ -200,32 +199,16 @@ export default function StatsNavBar({
             disabled={statsOptions.timeFrame !== StatsTimeFrameOptions.CUSTOM}
             onChange={handleChangeEndDate}
             sx={{
-              width: "160px",
+              width: "135px",
               "& .MuiOutlinedInput-input": {
                 fontSize: "0.875rem",
-                height: "40px",
+                height: "35px",
                 paddingY: 0,
               },
             }}
           />
         </div>
       </div>
-      <IconButton
-        onClick={() => setShowFavorites((prevState) => !prevState)}
-        sx={{
-          borderRadius: "50%",
-          backgroundColor: showFavorites
-            ? "rgba(255, 0, 0, 0.1)"
-            : "transparent",
-          "&:hover": {
-            backgroundColor: showFavorites
-              ? "rgba(255, 0, 0, 0.2)"
-              : "rgba(0, 0, 0, 0.1)",
-          },
-        }}
-      >
-        {showFavorites ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-      </IconButton>
       <FormControl>
         <Select
           labelId="demo-simple-select-label"
@@ -233,11 +216,12 @@ export default function StatsNavBar({
           value={statsOptions.statsUnit}
           onChange={handleChangeStatsUnit}
           sx={{
-            fontSize: "0.875rem",
-            height: "40px",
+            height: "35px",
+            fontSize: "0.9rem",
             width: "160px",
             paddingY: 0,
           }}
+          disabled={statsOptions.showFavorites}
         >
           {statsUnitOptions.map((option, index) => (
             <MenuItem key={index} value={option.name}>
@@ -253,11 +237,12 @@ export default function StatsNavBar({
           value={statsOptions.headerUnit}
           onChange={handleChangeHeaderUnit}
           sx={{
-            fontSize: "0.875rem",
-            height: "40px",
+            height: "35px",
+            fontSize: "0.9rem",
             width: "160px",
             paddingY: 0,
           }}
+          disabled={statsOptions.showFavorites}
         >
           {headerUnitOptions.map((option, index) => (
             <MenuItem key={index} value={option.name}>
@@ -265,13 +250,30 @@ export default function StatsNavBar({
             </MenuItem>
           ))}
         </Select>
-      </FormControl>{" "}
+      </FormControl>
       <ShiftOptionsDisplay
         lng={lng}
         selectedShifts={statsOptions.selectedShifts}
         statsShiftOptions={shiftOptions}
+        disabled={statsOptions.showFavorites}
         handleEditSelectedShifts={handleEditSelectedShifts}
       />
+      <IconButton
+        onClick={handleSwitchShowFavorites}
+        sx={{
+          borderRadius: "50%",
+          backgroundColor: statsOptions.showFavorites
+            ? "rgba(255, 0, 0, 0.1)"
+            : "transparent",
+          "&:hover": {
+            backgroundColor: statsOptions.showFavorites
+              ? "rgba(255, 0, 0, 0.2)"
+              : "rgba(0, 0, 0, 0.1)",
+          },
+        }}
+      >
+        {statsOptions.showFavorites ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+      </IconButton>
     </div>
   );
 }

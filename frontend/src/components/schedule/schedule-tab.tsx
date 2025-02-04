@@ -364,9 +364,10 @@ export default function ScheduleTab({
       timeFrame,
       startDate: dayjs.utc().startOf("day").subtract(1, "year"),
       endDate: dayjs.utc().startOf("day"),
-      statsUnit: StatsUnitOptions.FAVORITES,
+      statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
       headerUnit: HeaderUnitOptions.WEEK,
       selectedShifts: [],
+      showFavorites: true,
     };
     const newStats = await getStats(newStatsOptions, selectedTeamId);
     setStats(newStats);

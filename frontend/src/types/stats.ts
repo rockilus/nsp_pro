@@ -8,14 +8,14 @@ export enum StatsTimeFrameOptions {
 }
 
 export enum StatsUnitOptions {
-  FAVORITES = 0,
-  NB_DAYS_WORKED = 1,
-  TIME_WORKED = 2,
-  NB_SHIFTS_WORKED = 3,
-  NB_REST_DAYS = 4,
-  NB_REST_SHIFTS = 5,
-  NB_TIMES_SHIFT = 6,
-  NB_TIMES_REST = 7,
+  // FAVORITES = 0,
+  NB_DAYS_WORKED = 0,
+  TIME_WORKED = 1,
+  NB_SHIFTS_WORKED = 2,
+  NB_REST_DAYS = 3,
+  NB_REST_SHIFTS = 4,
+  NB_TIMES_SHIFT = 5,
+  NB_TIMES_REST = 6,
 }
 
 export enum HeaderUnitOptions {
@@ -55,4 +55,5 @@ export type StatsOptionsT = {
   statsUnit: StatsUnitOptions;
   headerUnit: HeaderUnitOptions;
   selectedShifts: ShiftWorkerOptionT[];
+  showFavorites: boolean;
 };

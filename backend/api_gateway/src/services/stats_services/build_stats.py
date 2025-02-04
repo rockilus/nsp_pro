@@ -89,7 +89,7 @@ def build_stats(
     attributes = attribute_db.get_attributes_by_owner_ids([s.id for s in shifts])
     shift_dim_dict = attribute_db.get_shifts_id_by_dim_and_attr()
     assignments = assignment_db.get_assignments_by_dates(team_id, start_date, end_date)
-    if stats_options.stats_unit == StatsUnitOptions.FAVORITES:
+    if stats_options.show_favorites is True:
         stats_headers = stats_header_db.get_stats_headers_by_team_id(team_id)
         return build_stats_favorites(
             team_id,

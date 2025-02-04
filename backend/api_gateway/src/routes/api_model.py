@@ -302,6 +302,7 @@ class StatsOptionsMessage(BaseModel):
     statsUnit: int
     headerUnit: int
     selectedShifts: List[ShiftWorkerOptionMessage]
+    showFavorites: bool
 
 
 # User

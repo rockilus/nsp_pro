@@ -13,14 +13,14 @@ class StatsTimeFrameOptions(Enum):
 
 
 class StatsUnitOptions(Enum):
-    FAVORITES = 0
-    NB_DAYS_WORKED = 1
-    TIME_WORKED = 2
-    NB_SHIFTS_WORKED = 3
-    NB_REST_DAYS = 4
-    NB_REST_SHIFTS = 5
-    NB_TIMES_SHIFT = 6
-    NB_TIMES_REST = 7
+    # FAVORITES = 0
+    NB_DAYS_WORKED = 0
+    TIME_WORKED = 1
+    NB_SHIFTS_WORKED = 2
+    NB_REST_DAYS = 3
+    NB_REST_SHIFTS = 4
+    NB_TIMES_SHIFT = 5
+    NB_TIMES_REST = 6
 
 
 class HeaderUnitOptions(Enum):
@@ -38,9 +38,7 @@ class StatsHeader:
     team_id: str
     stats_unit: StatsUnitOptions
     header_unit: HeaderUnitOptions
-    value: (
-        str  # weekday index, week number, month number, year number, shift_id
-    )
+    value: str  # weekday index, week number, month number, year number, shift_id
     selected_shifts: List[ShiftWorkerOption]
     is_favorite: bool
 
@@ -66,3 +64,4 @@ class StatsOptions:
     stats_unit: StatsUnitOptions
     header_unit: HeaderUnitOptions
     selected_shifts: List[ShiftWorkerOption]
+    show_favorites: bool
