@@ -51,6 +51,23 @@ export default function StatsTab({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
 
+  const [statsOptions, setStatsOptions] = useState<StatsOptionsT>({
+    timeFrame: StatsTimeFrameOptions.LTM,
+    startDate: dayjs.utc().startOf("day").subtract(1, "year"),
+    endDate: dayjs.utc().startOf("day"),
+    statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
+    headerUnit: HeaderUnitOptions.WEEKDAY,
+    selectedShifts: [
+      {
+        name: "all shifts",
+        id: "",
+        idType: SWOIdTypes.NONE,
+        isBoolDim: false,
+        categoryName: "All",
+      },
+    ],
+  });
+
   const [showingCustom, setShowingCustom] = useState<boolean>(true);
 
   const statsUnitOptions: {
@@ -58,11 +75,11 @@ export default function StatsTab({
     label: string;
     description: string;
   }[] = [
-    {
-      name: StatsUnitOptions.FAVORITES,
-      label: t("stats_unit_custom"),
-      description: t("stats_description_custom"),
-    },
+    // {
+    //   name: StatsUnitOptions.FAVORITES,
+    //   label: t("stats_unit_custom"),
+    //   description: t("stats_description_custom"),
+    // },
     {
       name: StatsUnitOptions.NB_DAYS_WORKED,
       label: t("stats_unit_nb_days_worked"),
@@ -101,7 +118,7 @@ export default function StatsTab({
   ];
 
   //////////////////////////
-  // Header Actions
+  // Stats Actions
   //////////////////////////
 
   const handleGetStats = async (statsOptions: StatsOptionsT) => {
@@ -110,6 +127,11 @@ export default function StatsTab({
     }
     const newStats = await getStats(statsOptions, selectedTeamId);
     setStats(newStats);
+  };
+
+  const handleUpdateStatsOptions = (newStatsOptions: StatsOptionsT) => {
+    setStatsOptions(newStatsOptions);
+    handleGetStats(newStatsOptions);
   };
 
   //////////////////////////
@@ -164,7 +186,7 @@ export default function StatsTab({
         setShiftOptions(fetchedShiftOptions);
         setIsLoading(false);
 
-        const statsOptions: StatsOptionsT = {
+        const newStatsOptions: StatsOptionsT = {
           timeFrame: fetchedScheduleCampaign
             ? StatsTimeFrameOptions.CAMPAING
             : StatsTimeFrameOptions.LTM,
@@ -186,7 +208,8 @@ export default function StatsTab({
             },
           ],
         };
-        const newStats = await getStats(statsOptions, selectedTeamId);
+        const newStats = await getStats(newStatsOptions, selectedTeamId);
+        setStatsOptions(newStatsOptions);
         setStats(newStats);
       }
     };
@@ -199,15 +222,14 @@ export default function StatsTab({
         <CoveragesSkeleton />
       ) : (
         <div className="tab-container-column">
-          <StatsNavBar lng={lng} scheduleCampaign={scheduleCampaign} />
-          {/* <StatsOptions
+          <StatsNavBar
             lng={lng}
-            statsShiftOptions={shiftOptions}
+            scheduleCampaign={scheduleCampaign}
+            statsOptions={statsOptions}
             statsUnitOptions={statsUnitOptions}
-            setShowingCustom={setShowingCustom}
-            handleGetStats={handleGetStats}
+            shiftOptions={shiftOptions}
+            handleUpdateStatsOptions={handleUpdateStatsOptions}
           />
-          <div className="divider-vertical" /> */}
           <div className="stats-table-container">
             {stats ? (
               showingCustom && stats.statsHeaders.length === 0 ? (

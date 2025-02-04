@@ -7,8 +7,12 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import IconButton from "@mui/material/IconButton";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import FormControl from "@mui/material/FormControl";
+import MenuItem from "@mui/material/MenuItem";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
+import ShiftOptionsDisplay from "./shift-options-display";
 // Styles
 import "./stats-nav-bar.css";
 // Types
@@ -24,6 +28,10 @@ import { ScheduleT } from "../../../types/schedule";
 export default function StatsNavBar({
   lng,
   scheduleCampaign,
+  statsOptions,
+  statsUnitOptions,
+  shiftOptions,
+  handleUpdateStatsOptions,
 }: // statsShiftOptions,
 // statsUnitOptions,
 // setShowingCustom,
@@ -31,8 +39,15 @@ export default function StatsNavBar({
 {
   lng: string;
   scheduleCampaign: ScheduleT | null;
-  // statsShiftOptions: ShiftWorkerOptionT[];
-  // statsUnitOptions: Record<string, string>[];
+  statsOptions: StatsOptionsT;
+  statsUnitOptions: {
+    name: StatsUnitOptions;
+    label: string;
+    description: string;
+  }[];
+  shiftOptions: ShiftWorkerOptionT[];
+  handleUpdateStatsOptions: (statsOptions: StatsOptionsT) => void;
+  // shiftOptions: ShiftWorkerOptionT[];
   // setShowingCustom: (showingCustom: boolean) => void;
   // handleGetStats: (statsOptions: StatsOptionsT) => void;
 }) {
@@ -43,29 +58,18 @@ export default function StatsNavBar({
   const startDateLTM = dayjs.utc().startOf("day").subtract(1, "year");
   const endDateLTM = dayjs.utc().startOf("day");
 
-  const [statsOptions, setStatsOptions] = useState<StatsOptionsT>({
-    timeFrame: scheduleCampaign
-      ? StatsTimeFrameOptions.CAMPAING
-      : StatsTimeFrameOptions.LTM,
-    startDate: scheduleCampaign ? scheduleCampaign.startDate : startDateLTM,
-    endDate: scheduleCampaign ? scheduleCampaign.endDate : endDateLTM,
-    statsUnit: StatsUnitOptions.FAVORITES,
-    headerUnit: HeaderUnitOptions.WEEKDAY,
-    selectedShifts: [
-      {
-        name: "all shifts",
-        id: "",
-        idType: SWOIdTypes.NONE,
-        isBoolDim: false,
-        categoryName: "All",
-      },
-    ],
-  });
-
   const timeFrameOptions: { name: StatsTimeFrameOptions; label: string }[] = [
     { name: StatsTimeFrameOptions.CAMPAING, label: t("campaign") },
     { name: StatsTimeFrameOptions.LTM, label: t("time_frame_ltm") },
     { name: StatsTimeFrameOptions.CUSTOM, label: t("time_frame_custom") },
+  ];
+
+  const headerUnitOptions: { name: HeaderUnitOptions; label: string }[] = [
+    { name: HeaderUnitOptions.WEEKDAY, label: t("frequency_weekday") },
+    { name: HeaderUnitOptions.WEEK, label: t("frequency_week") },
+    { name: HeaderUnitOptions.MONTH, label: t("frequency_month") },
+    { name: HeaderUnitOptions.YEAR, label: t("frequency_year") },
+    { name: HeaderUnitOptions.ALL, label: t("frequency_all") },
   ];
 
   const handleChangeStatsTimeFrame = (
@@ -89,13 +93,64 @@ export default function StatsNavBar({
           : value === StatsTimeFrameOptions.LTM
           ? endDateLTM
           : statsOptions.endDate;
-      setStatsOptions((prevState) => ({
-        ...prevState,
+      const newStatsOptions = {
+        ...statsOptions,
         timeFrame: value,
         startDate: newStartDate,
         endDate: newEndDate,
-      }));
+      };
+      handleUpdateStatsOptions(newStatsOptions);
     }
+  };
+
+  const handleChangeStartDate = (date: dayjs.Dayjs | null) => {
+    if (date) {
+      const newStatsOptions = {
+        ...statsOptions,
+        startDate: date,
+      };
+      handleUpdateStatsOptions(newStatsOptions);
+    }
+  };
+
+  const handleChangeEndDate = (date: dayjs.Dayjs | null) => {
+    if (date) {
+      const newStatsOptions = {
+        ...statsOptions,
+        endDate: date,
+      };
+      handleUpdateStatsOptions(newStatsOptions);
+    }
+  };
+
+  const handleChangeStatsUnit = (
+    event: SelectChangeEvent<StatsUnitOptions>
+  ) => {
+    const value = event.target.value as StatsUnitOptions;
+    const newStatsOptions = {
+      ...statsOptions,
+      statsUnit: value,
+    };
+    handleUpdateStatsOptions(newStatsOptions);
+  };
+
+  const handleChangeHeaderUnit = (
+    event: SelectChangeEvent<HeaderUnitOptions>
+  ) => {
+    const value = event.target.value as HeaderUnitOptions;
+    const newStatsOptions = {
+      ...statsOptions,
+      headerUnit: value,
+    };
+    handleUpdateStatsOptions(newStatsOptions);
+  };
+
+  const handleEditSelectedShifts = (selectedShifts: ShiftWorkerOptionT[]) => {
+    const newStatsOptions = {
+      ...statsOptions,
+      selectedShifts,
+    };
+    handleUpdateStatsOptions(newStatsOptions);
   };
 
   return (
@@ -130,14 +185,7 @@ export default function StatsNavBar({
           <DatePicker
             value={statsOptions.startDate}
             disabled={statsOptions.timeFrame !== StatsTimeFrameOptions.CUSTOM}
-            onChange={(newValue) => {
-              setStatsOptions((prevState) => ({
-                ...prevState,
-                startDate: newValue
-                  ? dayjs.utc(newValue).startOf("day")
-                  : dayjs.utc().startOf("day"),
-              }));
-            }}
+            onChange={handleChangeStartDate}
             sx={{
               width: "160px",
               "& .MuiOutlinedInput-input": {
@@ -150,14 +198,7 @@ export default function StatsNavBar({
           <DatePicker
             value={statsOptions.endDate}
             disabled={statsOptions.timeFrame !== StatsTimeFrameOptions.CUSTOM}
-            onChange={(newValue) => {
-              setStatsOptions((prevState) => ({
-                ...prevState,
-                endDate: newValue
-                  ? dayjs.utc(newValue).startOf("day")
-                  : dayjs.utc().startOf("day"),
-              }));
-            }}
+            onChange={handleChangeEndDate}
             sx={{
               width: "160px",
               "& .MuiOutlinedInput-input": {
@@ -185,6 +226,52 @@ export default function StatsNavBar({
       >
         {showFavorites ? <FavoriteIcon /> : <FavoriteBorderIcon />}
       </IconButton>
+      <FormControl>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={statsOptions.statsUnit}
+          onChange={handleChangeStatsUnit}
+          sx={{
+            fontSize: "0.875rem",
+            height: "40px",
+            width: "160px",
+            paddingY: 0,
+          }}
+        >
+          {statsUnitOptions.map((option, index) => (
+            <MenuItem key={index} value={option.name}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={statsOptions.headerUnit}
+          onChange={handleChangeHeaderUnit}
+          sx={{
+            fontSize: "0.875rem",
+            height: "40px",
+            width: "160px",
+            paddingY: 0,
+          }}
+        >
+          {headerUnitOptions.map((option, index) => (
+            <MenuItem key={index} value={option.name}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>{" "}
+      <ShiftOptionsDisplay
+        lng={lng}
+        selectedShifts={statsOptions.selectedShifts}
+        statsShiftOptions={shiftOptions}
+        handleEditSelectedShifts={handleEditSelectedShifts}
+      />
     </div>
   );
 }
