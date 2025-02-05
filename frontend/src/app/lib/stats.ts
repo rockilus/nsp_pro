@@ -2,9 +2,11 @@ import { unstable_noStore as noStore } from "next/cache";
 // Actions
 import { getWorkers } from "./worker";
 import { getShifts } from "./shift";
+import { getSchedules } from "./schedule";
 // Types
 import { StatsT, StatsHeaderT, StatsOptionsT } from "../../types/stats";
 import { ShiftWorkerOptionT } from "../../types/constraint";
+import { ScheduleT, ScheduleStatus } from "../../types/schedule";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -123,14 +125,19 @@ export async function getShiftOptions(teamId: string) {
 export async function getStatsTabData(teamId: string) {
   try {
     const statsTabData = await Promise.all([
+      getSchedules(teamId),
       getShifts(teamId),
       getWorkers(teamId),
       getShiftOptions(teamId),
     ]);
     return {
-      shifts: statsTabData[0],
-      workers: statsTabData[1],
-      shiftOptions: statsTabData[2],
+      scheduleCampaign:
+        statsTabData[0].find(
+          (schedule) => schedule.status === ScheduleStatus.CAMPAIGN
+        ) || null,
+      shifts: statsTabData[1],
+      workers: statsTabData[2],
+      shiftOptions: statsTabData[3],
     };
   } catch (error) {
     console.error("Failed to fetch stats tab data:", error);

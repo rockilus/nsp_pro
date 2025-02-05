@@ -19,7 +19,11 @@ from shared.logger.logger import log_info
 from shared.schemas.errors.schema_error_handlers import (
     handle_create_schema_object_error,
 )
-from shared.schemas.schemas.stats import StatsHeader
+from shared.schemas.schemas.stats import (
+    HeaderUnitOptions,
+    StatsHeader,
+    StatsUnitOptions,
+)
 
 
 class StatsHeaderDB:
@@ -62,15 +66,15 @@ class StatsHeaderDB:
     def get_stats_headers_by_team_unit_shifts(
         self,
         team_id: str,
-        stats_unit: str,
-        header_unit: str,
+        stats_unit: StatsUnitOptions,
+        header_unit: HeaderUnitOptions,
     ) -> List[StatsHeader]:
         try:
             # pylint: disable=no-member
             stats_headers = StatsHeaderDocument.objects.filter(  # type: ignore
                 team=team_id,
-                stats_unit=stats_unit,
-                header_unit=header_unit,
+                stats_unit=stats_unit.value,
+                header_unit=header_unit.value,
                 # selected_shifts=selected_shifts,
             )
         except Exception as e:
@@ -132,8 +136,8 @@ def core_to_doc_stats_header(
     return StatsHeaderDocument(
         id=dataclass_obj.id,
         team=team,
-        stats_unit=dataclass_obj.stats_unit,
-        header_unit=dataclass_obj.header_unit,
+        stats_unit=dataclass_obj.stats_unit.value,
+        header_unit=dataclass_obj.header_unit.value,
         value=dataclass_obj.value,
         selected_shifts=[
             core_to_doc_shift_worker_option(ss) for ss in dataclass_obj.selected_shifts
@@ -146,10 +150,12 @@ def doc_to_core_stats_header(doc_obj: StatsHeaderDocument) -> StatsHeader:
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["team_id"] = doc_dict["team"]
+    doc_dict["stats_unit"] = StatsUnitOptions(doc_dict["stats_unit"])
+    doc_dict["header_unit"] = HeaderUnitOptions(doc_dict["header_unit"])
     doc_dict["selected_shifts"] = [
         doc_to_core_shift_worker_option(ss) for ss in doc_obj.selected_shifts
     ]
-    doc_dict["in_custom"] = True
+    doc_dict["is_favorite"] = True
     doc_dict.pop("_id")
     doc_dict.pop("team")
     return StatsHeader(**doc_dict)

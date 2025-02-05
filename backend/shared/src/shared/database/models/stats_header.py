@@ -1,12 +1,14 @@
 from mongoengine import Document
 from mongoengine.fields import (
     EmbeddedDocumentField,
+    IntField,
     ListField,
     ReferenceField,
     StringField,
 )
 
 from shared.database.models.constraint_build import ShiftWorkerOption
+from shared.schemas.schemas.stats import HeaderUnitOptions, StatsUnitOptions
 
 
 class StatsHeader(Document):
@@ -14,22 +16,7 @@ class StatsHeader(Document):
 
     id = StringField(primary_key=True, required=True)
     team = ReferenceField("Team", required=True)
-    stats_unit = StringField(
-        required=True,
-        # pylint: disable = R0801
-        choices=[
-            "nb_days_worked",
-            "time_worked",
-            "nb_shifts_worked",
-            "nb_rest_days",
-            "nb_rest_shifts",
-            "nb_times_shift",
-            "nb_times_rest",
-        ],
-    )
-    header_unit = StringField(
-        required=True,
-        choices=["weekday", "week", "month", "year", "all", "shift"],
-    )
+    stats_unit = IntField(required=True, choices=[e.value for e in StatsUnitOptions])
+    header_unit = IntField(required=True, choices=[e.value for e in HeaderUnitOptions])
     value = StringField(required=True)
     selected_shifts = ListField(EmbeddedDocumentField(ShiftWorkerOption), required=True)

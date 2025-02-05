@@ -2,7 +2,14 @@ import calendar
 from typing import Dict, List, Tuple
 
 import numpy as np
-from shared.schemas import ShiftWorkerOption, Stats, StatsHeader, StatsValue
+from shared.schemas import (
+    HeaderUnitOptions,
+    ShiftWorkerOption,
+    Stats,
+    StatsHeader,
+    StatsUnitOptions,
+    StatsValue,
+)
 
 from utils.constants import Constants
 
@@ -14,7 +21,7 @@ def np_to_core_days_worked_per_weekday(
     dw_array: np.ndarray,
     i_to_worker: Dict[int, str],
     team_id: str,
-    stats_unit: Constants.STATS_UNIT_OPTIONS,
+    stats_unit: StatsUnitOptions,
     selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
@@ -25,7 +32,7 @@ def np_to_core_days_worked_per_weekday(
             (
                 sh
                 for sh in stats_headers_custom
-                if sh.header_unit == "weekday"
+                if sh.header_unit == HeaderUnitOptions.WEEKDAY
                 and sh.stats_unit == stats_unit
                 and sh.value == Constants.WEEK_DAYS[d].capitalize()
                 and sorted(sh.selected_shifts, key=lambda x: x.id)
@@ -41,10 +48,10 @@ def np_to_core_days_worked_per_weekday(
                     id=f"default_{d}",
                     team_id=team_id,
                     stats_unit=stats_unit,
-                    header_unit="weekday",
+                    header_unit=HeaderUnitOptions.WEEKDAY,
                     value=Constants.WEEK_DAYS[d].capitalize(),
                     selected_shifts=selected_shifts,
-                    in_custom=False,
+                    is_favorite=False,
                 )
             )
         stats_values.extend(
@@ -90,7 +97,7 @@ def np_to_core_days_worked_per_week(
     i_to_worker: Dict[int, str],
     year_week_nb_to_i: Dict[Tuple[int, int], int],
     team_id: str,
-    stats_unit: Constants.STATS_UNIT_OPTIONS,
+    stats_unit: StatsUnitOptions,
     selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
@@ -101,7 +108,7 @@ def np_to_core_days_worked_per_week(
             (
                 sh
                 for sh in stats_headers_custom
-                if sh.header_unit == "week"
+                if sh.header_unit == HeaderUnitOptions.WEEK
                 and sh.stats_unit == stats_unit
                 and sh.value == f"{ywnb[0]} W{ywnb[1]}"
                 and sorted(sh.selected_shifts, key=lambda x: x.id)
@@ -117,10 +124,10 @@ def np_to_core_days_worked_per_week(
                     id=f"default_{ywnb[0]}_W{ywnb[1]}",
                     team_id=team_id,
                     stats_unit=stats_unit,
-                    header_unit="week",
+                    header_unit=HeaderUnitOptions.WEEK,
                     value=f"{ywnb[0]} W{ywnb[1]}",
                     selected_shifts=selected_shifts,
-                    in_custom=False,
+                    is_favorite=False,
                 )
             )
         stats_values.extend(
@@ -171,7 +178,7 @@ def np_to_core_days_worked_per_month(
     i_to_worker: Dict[int, str],
     year_month_to_i: Dict[Tuple[int, int], int],
     team_id: str,
-    stats_unit: Constants.STATS_UNIT_OPTIONS,
+    stats_unit: StatsUnitOptions,
     selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
@@ -182,7 +189,7 @@ def np_to_core_days_worked_per_month(
             (
                 sh
                 for sh in stats_headers_custom
-                if sh.header_unit == "month"
+                if sh.header_unit == HeaderUnitOptions.MONTH
                 and sh.stats_unit == stats_unit
                 and sh.value == f"{calendar.month_name[ym[1]][:3]} {ym[0]}"
                 and sorted(sh.selected_shifts, key=lambda x: x.id)
@@ -198,10 +205,10 @@ def np_to_core_days_worked_per_month(
                     id=f"default_{calendar.month_name[ym[1]][:3]}_{ym[0]}",
                     team_id=team_id,
                     stats_unit=stats_unit,
-                    header_unit="month",
+                    header_unit=HeaderUnitOptions.MONTH,
                     value=f"{calendar.month_name[ym[1]][:3]} {ym[0]}",
                     selected_shifts=selected_shifts,
-                    in_custom=False,
+                    is_favorite=False,
                 )
             )
         stats_values.extend(
@@ -252,7 +259,7 @@ def np_to_core_days_worked_per_year(
     i_to_worker: Dict[int, str],
     year_to_i: Dict[int, int],
     team_id: str,
-    stats_unit: Constants.STATS_UNIT_OPTIONS,
+    stats_unit: StatsUnitOptions,
     selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
@@ -263,7 +270,7 @@ def np_to_core_days_worked_per_year(
             (
                 sh
                 for sh in stats_headers_custom
-                if sh.header_unit == "year"
+                if sh.header_unit == HeaderUnitOptions.YEAR
                 and sh.stats_unit == stats_unit
                 and sh.value == f"{y}"
                 and sorted(sh.selected_shifts, key=lambda x: x.id)
@@ -279,10 +286,10 @@ def np_to_core_days_worked_per_year(
                     id=f"default_{y}",
                     team_id=team_id,
                     stats_unit=stats_unit,
-                    header_unit="year",
+                    header_unit=HeaderUnitOptions.YEAR,
                     value=f"{y}",
                     selected_shifts=selected_shifts,
-                    in_custom=False,
+                    is_favorite=False,
                 )
             )
         stats_values.extend(
@@ -328,7 +335,7 @@ def np_to_core_days_worked_all(
     dw_array: np.ndarray,
     i_to_worker: Dict[int, str],
     team_id: str,
-    stats_unit: Constants.STATS_UNIT_OPTIONS,
+    stats_unit: StatsUnitOptions,
     selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
@@ -336,7 +343,7 @@ def np_to_core_days_worked_all(
         (
             sh
             for sh in stats_headers_custom
-            if sh.header_unit == "all"
+            if sh.header_unit == HeaderUnitOptions.ALL
             and sh.stats_unit == stats_unit
             and sh.value == "All"
             and sorted(sh.selected_shifts, key=lambda x: x.id)
@@ -352,10 +359,10 @@ def np_to_core_days_worked_all(
                 id="default_all",
                 team_id=team_id,
                 stats_unit=stats_unit,
-                header_unit="all",
+                header_unit=HeaderUnitOptions.ALL,
                 value="All",
                 selected_shifts=selected_shifts,
-                in_custom=False,
+                is_favorite=False,
             )
         ]
 
@@ -397,7 +404,7 @@ def np_to_core_nb_times_shift(
     i_to_worker: Dict[int, str],
     i_to_shift: Dict[int, str],
     team_id: str,
-    stats_unit: Constants.STATS_UNIT_OPTIONS,
+    stats_unit: StatsUnitOptions,
     selected_shifts: List[ShiftWorkerOption],
     stats_headers_custom: List[StatsHeader],
 ) -> Stats:
@@ -408,7 +415,7 @@ def np_to_core_nb_times_shift(
             (
                 sh
                 for sh in stats_headers_custom
-                if sh.header_unit == "shift"
+                if sh.header_unit == HeaderUnitOptions.SHIFT
                 and sh.stats_unit == stats_unit
                 and sh.value == s
                 and sorted(sh.selected_shifts, key=lambda x: x.id)
@@ -424,10 +431,10 @@ def np_to_core_nb_times_shift(
                     id=f"default_{s}",
                     team_id=team_id,
                     stats_unit=stats_unit,
-                    header_unit="shift",
+                    header_unit=HeaderUnitOptions.SHIFT,
                     value=s,
                     selected_shifts=selected_shifts,
-                    in_custom=False,
+                    is_favorite=False,
                 )
             )
         stats_values.extend(

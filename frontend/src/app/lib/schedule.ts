@@ -25,7 +25,12 @@ import {
   WorkTimeTableT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
-import { StatsOptionsT } from "../../types/stats";
+import {
+  StatsOptionsT,
+  StatsUnitOptions,
+  HeaderUnitOptions,
+  StatsTimeFrameOptions,
+} from "../../types/stats";
 import { ShiftT } from "../../types/shift";
 import { CoverageSelectorT } from "../../types/campaign";
 // Env Vars
@@ -291,12 +296,13 @@ export async function exportSchedule(
 export async function getScheduleTabData(teamId: string) {
   try {
     const statsOptions: StatsOptionsT = {
-      timeFrame: "campaign",
+      timeFrame: StatsTimeFrameOptions.CAMPAING,
       startDate: dayjs.utc().startOf("day").subtract(1, "year"),
       endDate: dayjs.utc().startOf("day"),
-      statsUnit: "custom",
-      headerUnit: "week",
+      statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
+      headerUnit: HeaderUnitOptions.WEEK,
       selectedShifts: [],
+      showFavorites: true,
     };
     const campaignTabData = await Promise.all([
       getAssignmentsByDates(teamId),
@@ -327,12 +333,13 @@ export async function getScheduleTabData(teamId: string) {
 export async function getScheduleAssignmentsData(teamId: string) {
   try {
     const statsOptions: StatsOptionsT = {
-      timeFrame: "campaign",
+      timeFrame: StatsTimeFrameOptions.CAMPAING,
       startDate: dayjs.utc().startOf("day").subtract(1, "year"),
       endDate: dayjs.utc().startOf("day"),
-      statsUnit: "custom",
-      headerUnit: "week",
+      statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
+      headerUnit: HeaderUnitOptions.WEEK,
       selectedShifts: [],
+      showFavorites: true,
     };
     const campaignTabData = await Promise.all([
       getAssignmentsByDates(teamId),
@@ -357,12 +364,13 @@ export async function getScheduleAssignmentsData(teamId: string) {
 export async function getScheduleLHSData(teamId: string) {
   try {
     const statsOptions: StatsOptionsT = {
-      timeFrame: "campaign",
+      timeFrame: StatsTimeFrameOptions.CAMPAING,
       startDate: dayjs.utc().startOf("day").subtract(1, "year"),
       endDate: dayjs.utc().startOf("day"),
-      statsUnit: "custom",
-      headerUnit: "week",
+      statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
+      headerUnit: HeaderUnitOptions.WEEK,
       selectedShifts: [],
+      showFavorites: true,
     };
     const campaignTabData = await Promise.all([
       getBreaches(teamId),

@@ -19,14 +19,14 @@ export default function ShiftOptionsEdit({
   lng,
   selectedShifts,
   statsShiftOptions,
-  handleEditSelectedShifts,
-  handleClose,
+  handleConfirmEditSelectedShifts,
+  handleEditSelectedShiftsState,
 }: {
   lng: string;
   selectedShifts: ShiftWorkerOptionT[];
   statsShiftOptions: { [key: string]: ShiftWorkerOptionT[] };
-  handleEditSelectedShifts: (selectedShifts: ShiftWorkerOptionT[]) => void;
-  handleClose: () => void;
+  handleConfirmEditSelectedShifts: () => void;
+  handleEditSelectedShiftsState: (selectedShifts: ShiftWorkerOptionT[]) => void;
 }) {
   const { t } = useTranslation(lng, "stats-page");
 
@@ -116,7 +116,7 @@ export default function ShiftOptionsEdit({
       const newValue = selectedShifts.filter(
         (option) => option !== optionToDelete
       );
-      handleEditSelectedShifts(newValue);
+      handleEditSelectedShiftsState(newValue);
       setFilteredOptions(
         filterOptions(searchQuery, newValue, statsShiftOptions)
       );
@@ -195,7 +195,7 @@ export default function ShiftOptionsEdit({
         }
       }
     } else if (event.key === "Escape") {
-      handleClose();
+      handleConfirmEditSelectedShifts();
     }
   };
 
@@ -208,7 +208,7 @@ export default function ShiftOptionsEdit({
       filteredOptions[newOptionKey].includes(newOption)
     ) {
       const newValue = [...selectedShifts, newOption];
-      handleEditSelectedShifts(newValue);
+      handleEditSelectedShiftsState(newValue);
       setFilteredOptions(filterOptions("", newValue, statsShiftOptions));
       setSearchQuery("");
     }

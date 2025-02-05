@@ -1,39 +1,53 @@
 import React from "react";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
-import Button from "@mui/material/Button";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import IconButton from "@mui/material/IconButton";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
 // Styles
 import "./stats-table.css";
 // Types
-import { StatsT, StatsValueT, StatsHeaderT } from "../../../types/stats";
+import {
+  StatsT,
+  StatsValueT,
+  StatsHeaderT,
+  HeaderUnitOptions,
+  StatsUnitOptions,
+  StatsOptionsT,
+} from "../../../types/stats";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 
 export default function StatsTable({
   lng,
+  statsOptions,
   stats,
-  showingCustom,
   workers,
   shifts,
   statsUnitOptions,
   quickStats,
+  isLoadingStats,
   handleAddHeader,
   handleDeleteHeader,
 }: {
   lng: string;
+  statsOptions: StatsOptionsT;
   stats: StatsT;
-  showingCustom: boolean;
   workers: WorkerT[];
   shifts: ShiftT[];
-  statsUnitOptions: Record<string, string>[];
+  statsUnitOptions: {
+    name: StatsUnitOptions;
+    label: string;
+    description: string;
+  }[];
   quickStats: boolean;
+  isLoadingStats: boolean;
   handleAddHeader: (header: StatsHeaderT) => void;
   handleDeleteHeader: (headerId: string) => void;
 }) {
@@ -44,35 +58,39 @@ export default function StatsTable({
   const borderStyle = "1px solid #E8E8E8";
 
   const handleAddDeleteHeaderToCustom = (statsHeader: StatsHeaderT) => {
-    if (statsHeader.inCustom) {
+    if (statsHeader.isFavorite) {
       handleDeleteHeader(statsHeader.id);
     } else {
       handleAddHeader(statsHeader);
     }
   };
 
-  // const translateHeaderValue = (name: string): string => {
-  //   const translations: Record<string, string> = {
-  //     Monday: "week_days.monday",
-  //     Tuesday: "week_days.tuesday",
-  //     Wednesday: "week_days.wednesday",
-  //     Thursday: "week_days.thursday",
-  //     Friday: "week_days.friday",
-  //     Saturday: "week_days.saturday",
-  //     Sunday: "week_days.sunday",
-  //   };
+  // Calculate the sum of statsValue.value for each workerId
+  const workerSums: { [workerId: string]: number } = stats.statsValues.reduce(
+    (acc, statsValue) => {
+      if (!acc[statsValue.workerId]) {
+        acc[statsValue.workerId] = 0;
+      }
+      acc[statsValue.workerId] += statsValue.value;
+      return acc;
+    },
+    {} as { [workerId: string]: number }
+  );
 
-  //   const weekPattern = /^(\d{4}) W(\d{1,2})$/;
-  //   const match = name.match(weekPattern);
+  // Calculate the total for each header column
+  const headerTotals: { [headerId: string]: number } =
+    stats.statsHeaders.reduce((acc, header) => {
+      acc[header.id] = stats.statsValues
+        .filter((statsValue) => statsValue.headerId === header.id)
+        .reduce((sum, statsValue) => sum + statsValue.value, 0);
+      return acc;
+    }, {} as { [headerId: string]: number });
 
-  //   if (match) {
-  //     const year = match[1];
-  //     const week = match[2];
-  //     return `${year} ${t("stats.week_short")}${week}`;
-  //   }
-
-  //   return translations[name] ? t(translations[name]) : name;
-  // };
+  // Calculate the overall total for the total column
+  const overallTotal = Object.values(workerSums).reduce(
+    (sum, value) => sum + value,
+    0
+  );
 
   const translateHeaderValue = (name: string): string => {
     const translations: Record<string, string> = {
@@ -122,25 +140,44 @@ export default function StatsTable({
     return translations[name] ? translations[name].substring(0, 3) : name;
   };
 
+  console.log("isLoadingStats", isLoadingStats);
+
   return (
-    <TableContainer sx={{ height: "calc(100vh - 130px)" }}>
+    <TableContainer
+      sx={{
+        height: "calc(100vh - 130px)",
+        backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
+      }}
+    >
       <Table stickyHeader sx={{ minWidth: 650 }}>
         <TableHead>
           <TableRow>
-            <TableCell sx={{ padding: 0 }}></TableCell>
+            <TableCell
+              sx={{
+                padding: 0,
+                backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
+              }}
+            ></TableCell>
             {stats.statsHeaders.map((header, headerIndex) => (
-              <TableCell key={headerIndex} align="center" sx={{ padding: 0 }}>
+              <TableCell
+                key={headerIndex}
+                align="center"
+                sx={{
+                  padding: 0,
+                  backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
+                }}
+              >
                 <div className="column-header-container">
                   <span
                     className={`column-header ${
                       quickStats ? "quick-stats" : ""
                     }`}
                   >
-                    {header.headerUnit === "shift"
+                    {header.headerUnit === HeaderUnitOptions.SHIFT
                       ? shifts.find((s) => s.id === header.value)?.name
                       : translateHeaderValue(header.value)}
                   </span>
-                  {showingCustom && (
+                  {statsOptions.showFavorites && (
                     <div className="column-header-custom-info">
                       <span
                         className={`column-header-stats-unit ${
@@ -173,19 +210,42 @@ export default function StatsTable({
                         alignItems: "center",
                       }}
                     >
-                      <button
-                        className={`custom-button ${
-                          header.inCustom ? "in-custom" : ""
-                        }`}
+                      <IconButton
                         onClick={() => handleAddDeleteHeaderToCustom(header)}
+                        sx={{
+                          borderRadius: "50%",
+                          color: header.isFavorite ? "red" : "#00000099",
+                          "&:hover": {
+                            backgroundColor: header.isFavorite
+                              ? "rgba(255, 0, 0, 0.2)"
+                              : "rgba(0, 0, 0, 0.1)",
+                          },
+                        }}
                       >
-                        {t("custom")}
-                      </button>
+                        {header.isFavorite ? (
+                          <FavoriteIcon fontSize="small" />
+                        ) : (
+                          <FavoriteBorderIcon fontSize="small" />
+                        )}
+                      </IconButton>
                     </div>
                   )}
                 </div>
               </TableCell>
             ))}
+            {!statsOptions.showFavorites && (
+              <TableCell
+                sx={{
+                  padding: 0,
+                  alignContent: "flex-start",
+                  backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
+                }}
+              >
+                <div className="column-header-container">
+                  <span className="column-header">{t("total")}</span>
+                </div>
+              </TableCell>
+            )}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -226,8 +286,41 @@ export default function StatsTable({
                   )
                 );
               })}
+              {!statsOptions.showFavorites && (
+                <TableCell align="center" sx={{ padding: 0 }}>
+                  <span className="row-value row-total">
+                    {workerSums[worker.id]}
+                  </span>
+                </TableCell>
+              )}
             </TableRow>
           ))}
+          <TableRow>
+            <TableCell
+              align="left"
+              sx={{ padding: 0, height: quickStats ? "25px" : "30px" }}
+            >
+              <span
+                className={`row-worker-name ${
+                  quickStats ? "quick-stats" : ""
+                } row-total`}
+              >
+                {t("total")}
+              </span>
+            </TableCell>
+            {stats.statsHeaders.map((header) => (
+              <TableCell key={header.id} align="center" sx={{ padding: 0 }}>
+                <span className="row-value row-total">
+                  {headerTotals[header.id]}
+                </span>
+              </TableCell>
+            ))}
+            {!statsOptions.showFavorites && (
+              <TableCell align="center" sx={{ padding: 0 }}>
+                <span className="row-value row-total">{overallTotal}</span>
+              </TableCell>
+            )}
+          </TableRow>
         </TableBody>
       </Table>
     </TableContainer>

@@ -12,6 +12,7 @@ export const blockDislayValue = (value: string | number) => {
         cursor: "pointer",
         fontWeight: "bold",
         color: ConstraintDefaultColors.shade3,
+        width: "100%",
       }}
     >
       {value}

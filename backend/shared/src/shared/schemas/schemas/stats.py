@@ -1,33 +1,46 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Literal
+from enum import Enum
+from typing import List
 
 from shared.schemas.schemas.constraint import ShiftWorkerOption
 
-STATS_TIME_FRAME_OPTIONS = Literal[
-    "last_12_months", "last_24_months", "last_36_months", "custom"
-]
-STATS_UNIT_OPTIONS = Literal[
-    "nb_days_worked",
-    "time_worked",
-    "nb_shifts_worked",
-    "nb_rest_days",
-    "nb_rest_shifts",
-    "nb_times_shift",
-    "nb_times_rest",
-]
-HEADER_UNIT_OPTIONS = Literal["weekday", "week", "month", "year", "all", "shift"]
+
+class StatsTimeFrameOptions(Enum):
+    CAMPAING = 0
+    LTM = 1
+    CUSTOM = 2
+
+
+class StatsUnitOptions(Enum):
+    # FAVORITES = 0
+    NB_DAYS_WORKED = 0
+    TIME_WORKED = 1
+    NB_SHIFTS_WORKED = 2
+    NB_REST_DAYS = 3
+    NB_REST_SHIFTS = 4
+    NB_TIMES_SHIFT = 5
+    NB_TIMES_REST = 6
+
+
+class HeaderUnitOptions(Enum):
+    WEEKDAY = 0
+    WEEK = 1
+    MONTH = 2
+    YEAR = 3
+    ALL = 4
+    SHIFT = 5
 
 
 @dataclass
 class StatsHeader:
     id: str
     team_id: str
-    stats_unit: STATS_UNIT_OPTIONS
-    header_unit: HEADER_UNIT_OPTIONS
+    stats_unit: StatsUnitOptions
+    header_unit: HeaderUnitOptions
     value: str  # weekday index, week number, month number, year number, shift_id
     selected_shifts: List[ShiftWorkerOption]
-    in_custom: bool
+    is_favorite: bool
 
 
 @dataclass
@@ -45,9 +58,10 @@ class Stats:
 
 @dataclass
 class StatsOptions:
-    time_frame: STATS_TIME_FRAME_OPTIONS
+    time_frame: StatsTimeFrameOptions
     start_date: date
     end_date: date
-    stats_unit: STATS_UNIT_OPTIONS
-    header_unit: HEADER_UNIT_OPTIONS
+    stats_unit: StatsUnitOptions
+    header_unit: HeaderUnitOptions
     selected_shifts: List[ShiftWorkerOption]
+    show_favorites: bool
