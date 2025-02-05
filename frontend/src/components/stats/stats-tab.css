@@ -1,8 +1,6 @@
-.user-message {
-  font-weight: 400;
-  font-size: 1rem;
-  color: rgba(0, 0, 0, 0.6);
-  font-style: italic;
+.container-schedule-selector-skeleton {
+  padding: 3px 16px;
+  height: 40px;
 }
 
 .stats-table-container {

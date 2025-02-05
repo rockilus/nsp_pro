@@ -32,6 +32,7 @@ export default function StatsTable({
   shifts,
   statsUnitOptions,
   quickStats,
+  isLoadingStats,
   handleAddHeader,
   handleDeleteHeader,
 }: {
@@ -46,6 +47,7 @@ export default function StatsTable({
     description: string;
   }[];
   quickStats: boolean;
+  isLoadingStats: boolean;
   handleAddHeader: (header: StatsHeaderT) => void;
   handleDeleteHeader: (headerId: string) => void;
 }) {
@@ -138,14 +140,33 @@ export default function StatsTable({
     return translations[name] ? translations[name].substring(0, 3) : name;
   };
 
+  console.log("isLoadingStats", isLoadingStats);
+
   return (
-    <TableContainer sx={{ height: "calc(100vh - 130px)" }}>
+    <TableContainer
+      sx={{
+        height: "calc(100vh - 130px)",
+        backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
+      }}
+    >
       <Table stickyHeader sx={{ minWidth: 650 }}>
         <TableHead>
           <TableRow>
-            <TableCell sx={{ padding: 0 }}></TableCell>
+            <TableCell
+              sx={{
+                padding: 0,
+                backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
+              }}
+            ></TableCell>
             {stats.statsHeaders.map((header, headerIndex) => (
-              <TableCell key={headerIndex} align="center" sx={{ padding: 0 }}>
+              <TableCell
+                key={headerIndex}
+                align="center"
+                sx={{
+                  padding: 0,
+                  backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
+                }}
+              >
                 <div className="column-header-container">
                   <span
                     className={`column-header ${
@@ -217,6 +238,7 @@ export default function StatsTable({
                 sx={{
                   padding: 0,
                   alignContent: "flex-start",
+                  backgroundColor: isLoadingStats ? "#f5f5f5" : "#ffffff",
                 }}
               >
                 <div className="column-header-container">

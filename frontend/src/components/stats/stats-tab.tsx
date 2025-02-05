@@ -6,7 +6,8 @@ import { useTranslation } from "../../app/i18n/client";
 import StatsTable from "./table/stats-table";
 import StatsNavBar from "./nav-bar/stats-nav-bar";
 // Skeletons
-import CoveragesSkeleton from "../skeletons/coverages-skeleton";
+import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
+import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
 import {
   getStatsTabData,
@@ -43,6 +44,7 @@ export default function StatsTab({
   const { t } = useTranslation(lng, "stats-page");
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoadingStats, setIsLoadingStats] = useState<boolean>(false);
   const [stats, setStats] = useState<StatsT | null>(null);
   const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
     null
@@ -123,9 +125,11 @@ export default function StatsTab({
     setStats(newStats);
   };
 
-  const handleUpdateStatsOptions = (newStatsOptions: StatsOptionsT) => {
+  const handleUpdateStatsOptions = async (newStatsOptions: StatsOptionsT) => {
+    setIsLoadingStats(true);
+    await handleGetStats(newStatsOptions);
     setStatsOptions(newStatsOptions);
-    handleGetStats(newStatsOptions);
+    setIsLoadingStats(false);
   };
 
   //////////////////////////
@@ -213,10 +217,12 @@ export default function StatsTab({
 
   return (
     <div className="tab-container-ultrawide">
-      {isLoading ? (
-        <CoveragesSkeleton />
-      ) : (
-        <div className="tab-container-column">
+      <div className="tab-container-column">
+        {isLoading ? (
+          <div className="container-schedule-selector-skeleton">
+            <ScheduleSelectorSkeleton />
+          </div>
+        ) : (
           <StatsNavBar
             lng={lng}
             scheduleCampaign={scheduleCampaign}
@@ -225,29 +231,26 @@ export default function StatsTab({
             shiftOptions={shiftOptions}
             handleUpdateStatsOptions={handleUpdateStatsOptions}
           />
-          <div className="stats-table-container">
-            {stats ? (
-              statsOptions.showFavorites && stats.statsHeaders.length === 0 ? (
-                <span className="user-message">{t("no_custom_stats")}</span>
-              ) : (
-                <StatsTable
-                  lng={lng}
-                  statsOptions={statsOptions}
-                  stats={stats}
-                  workers={workers}
-                  shifts={shifts}
-                  statsUnitOptions={statsUnitOptions}
-                  quickStats={false}
-                  handleAddHeader={handleAddHeader}
-                  handleDeleteHeader={handleDeleteHeader}
-                />
-              )
-            ) : (
-              <span className="user-message">{t("no_stats_selected")}</span>
-            )}
-          </div>
+        )}
+        <div className="stats-table-container">
+          {stats ? (
+            <StatsTable
+              lng={lng}
+              statsOptions={statsOptions}
+              stats={stats}
+              workers={workers}
+              shifts={shifts}
+              statsUnitOptions={statsUnitOptions}
+              quickStats={false}
+              isLoadingStats={isLoadingStats}
+              handleAddHeader={handleAddHeader}
+              handleDeleteHeader={handleDeleteHeader}
+            />
+          ) : (
+            <ScheduleTableSkeleton />
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

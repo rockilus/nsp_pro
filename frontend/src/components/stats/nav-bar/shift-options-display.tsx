@@ -4,7 +4,7 @@ import { useTranslation } from "../../../app/i18n/client";
 import Box from "@mui/material/Box";
 // Components
 import PopoverSelectShifts from "./popover-select-shifts";
-import { blockDislayValue } from "../../data-display/block-display";
+import { blockDislayValue } from "./block-display";
 import ShiftOptionsEdit from "./shift-options-edit";
 // Utils
 import {
@@ -45,7 +45,8 @@ export default function ShiftOptionsDisplay({
                     ? getShiftWorkerOptionDisplayName(item, t("not"))
                     : ""
                 )
-                .join(", ")
+                .join(", "),
+              disabled
             )
           : t("select_shift")}
       </div>
@@ -96,6 +97,7 @@ export default function ShiftOptionsDisplay({
         />
       }
       open={open}
+      disabled={disabled}
       handleOpenPopover={handleOpenPopover}
       handleClosePopover={handleClosePopover}
     />

@@ -1,0 +1,12 @@
+.field-value {
+  display: inline-block;
+  cursor: pointer;
+  font-weight: bold;
+  color: black;
+  width: 100%;
+}
+
+.field-value.disabled {
+  color: #ccc;
+  cursor: default;
+}

@@ -8,7 +8,7 @@
   position: relative;
 }
 
-.popover-select-shifts:hover {
+.popover-select-shifts:not(.disabled):hover {
   border-color: black;
 }
 

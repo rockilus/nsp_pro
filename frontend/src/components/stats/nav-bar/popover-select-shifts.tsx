@@ -8,12 +8,14 @@ export default function PopoverSelectShifts({
   buttonContent,
   content,
   open,
+  disabled,
   handleOpenPopover,
   handleClosePopover,
 }: {
   buttonContent: React.ReactNode;
   content: React.ReactNode;
   open: boolean;
+  disabled: boolean;
   handleOpenPopover: () => void;
   handleClosePopover: () => void;
 }) {
@@ -32,7 +34,7 @@ export default function PopoverSelectShifts({
   const id = open ? "simple-popover" : undefined;
 
   return (
-    <div className="popover-select-shifts">
+    <div className={`popover-select-shifts ${disabled ? "disabled" : ""}`}>
       <label className="popover-select-shifts-label">
         <span className="popover-select-shifts-text">Select Shifts</span>
       </label>

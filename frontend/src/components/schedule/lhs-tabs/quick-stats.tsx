@@ -102,6 +102,7 @@ export default function QuickStatsTable({
         shifts={shifts}
         statsUnitOptions={[]}
         quickStats={true}
+        isLoadingStats={false}
         handleAddHeader={() => {}}
         handleDeleteHeader={() => {}}
       />
