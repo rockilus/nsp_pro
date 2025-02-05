@@ -17,7 +17,10 @@ from shared.schemas import (
 from shared.schemas.errors import handle_create_schema_object_error
 
 from errors import NotAuthorizedError, handle_routes_errors
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from routes.api_model import (
     ShiftWorkerOptionMessage,
@@ -32,7 +35,9 @@ from routes.constraint_routes import (
 )
 from scripts.setup_database import stats_header_db
 from services.stats_services import build_stats
-from services.stats_services import get_shift_options as get_shift_options_service
+from services.stats_services import (
+    get_shift_options as get_shift_options_service,
+)
 
 router = APIRouter()
 
@@ -73,7 +78,9 @@ async def get_shift_options(
                 "You do not have permission to get stats options",
             )
         shift_options = get_shift_options_service(team_id)
-        response = [core_to_msg_shift_worker_option(so) for so in shift_options]
+        response = [
+            core_to_msg_shift_worker_option(so) for so in shift_options
+        ]
     except Exception as e:
         log_info("Failed to get stats options")
         handle_routes_errors(e)
@@ -87,7 +94,9 @@ async def calculate_stats(
     session: SessionContainerType = Depends(authn_verify_session()),
 ) -> StatsMessage:
     try:
-        if not await authz_check(session.get_user_id(), "read-stats", "team", team_id):
+        if not await authz_check(
+            session.get_user_id(), "read-stats", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )
@@ -132,7 +141,8 @@ def core_to_msg_stats_value(stats_value: StatsValue) -> StatsValueMessage:
 def core_to_msg_stats_header(stats_header: StatsHeader) -> StatsHeaderMessage:
     data = asdict(stats_header)
     data["selected_shifts"] = [
-        core_to_msg_shift_worker_option(v) for v in stats_header.selected_shifts
+        core_to_msg_shift_worker_option(v)
+        for v in stats_header.selected_shifts
     ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(StatsHeaderMessage)
@@ -144,8 +154,12 @@ def core_to_msg_stats(stats: Stats) -> StatsMessage:
         str,
         List[StatsHeaderMessage] | List[StatsValueMessage],
     ] = {}
-    data["stats_headers"] = [core_to_msg_stats_header(sh) for sh in stats.stats_headers]
-    data["stats_values"] = [core_to_msg_stats_value(sv) for sv in stats.stats_values]
+    data["stats_headers"] = [
+        core_to_msg_stats_header(sh) for sh in stats.stats_headers
+    ]
+    data["stats_values"] = [
+        core_to_msg_stats_value(sv) for sv in stats.stats_values
+    ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(StatsMessage)
     return validator.validate_python(as_dict)

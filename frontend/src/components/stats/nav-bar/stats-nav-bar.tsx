@@ -280,6 +280,7 @@ export default function StatsNavBar({
         onClick={handleSwitchShowFavorites}
         sx={{
           borderRadius: "50%",
+          color: statsOptions.showFavorites ? "red" : "#00000099",
           backgroundColor: statsOptions.showFavorites
             ? "rgba(255, 0, 0, 0.1)"
             : "transparent",

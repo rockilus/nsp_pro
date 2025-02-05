@@ -151,11 +151,11 @@ def doc_to_core_stats_header(doc_obj: StatsHeaderDocument) -> StatsHeader:
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["team_id"] = doc_dict["team"]
     doc_dict["stats_unit"] = StatsUnitOptions(doc_dict["stats_unit"])
-    doc_dict["header_unit"] = StatsUnitOptions(doc_dict["header_unit"])
+    doc_dict["header_unit"] = HeaderUnitOptions(doc_dict["header_unit"])
     doc_dict["selected_shifts"] = [
         doc_to_core_shift_worker_option(ss) for ss in doc_obj.selected_shifts
     ]
-    doc_dict["in_custom"] = True
+    doc_dict["is_favorite"] = True
     doc_dict.pop("_id")
     doc_dict.pop("team")
     return StatsHeader(**doc_dict)
