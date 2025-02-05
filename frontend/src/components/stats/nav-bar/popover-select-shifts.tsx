@@ -1,7 +1,8 @@
 import * as React from "react";
 // MUI
-import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
+// Styles
+import "./popover-select-shifts.css";
 
 export default function PopoverSelectShifts({
   buttonContent,
@@ -31,14 +32,13 @@ export default function PopoverSelectShifts({
   const id = open ? "simple-popover" : undefined;
 
   return (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        backgroundColor: "grey",
-      }}
-    >
-      <Box onClick={handleClick}>{buttonContent}</Box>
+    <div className="popover-select-shifts">
+      <label className="popover-select-shifts-label">
+        <span className="popover-select-shifts-text">Select Shifts</span>
+      </label>
+      <div className="popover-select-shifts-button" onClick={handleClick}>
+        {buttonContent}
+      </div>
       <Popover
         id={id}
         open={open}

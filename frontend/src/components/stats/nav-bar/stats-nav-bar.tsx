@@ -5,6 +5,7 @@ import { useTranslation } from "../../../app/i18n/client";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import IconButton from "@mui/material/IconButton";
+import InputLabel from "@mui/material/InputLabel";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
@@ -155,38 +156,41 @@ export default function StatsNavBar({
   return (
     <div className="stats-nav-bar-container">
       <div className="stats-time-options-container">
-        <ToggleButtonGroup
-          color="primary"
-          value={statsOptions.timeFrame}
-          exclusive
-          onChange={handleChangeStatsTimeFrame}
-          aria-label="Platform"
-        >
-          {timeFrameOptions.map((option) => (
-            <ToggleButton
-              key={option.name}
-              value={option.name}
-              sx={{
-                textTransform: "none",
-                height: "35px",
-                fontSize: "0.9rem",
-              }}
-              disabled={
-                option.name === StatsTimeFrameOptions.CAMPAING &&
-                !scheduleCampaign
-              }
-            >
-              {option.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-        <div>
+        <div className="stats-time-toggle">
+          <ToggleButtonGroup
+            color="primary"
+            value={statsOptions.timeFrame}
+            exclusive
+            onChange={handleChangeStatsTimeFrame}
+            aria-label="Platform"
+          >
+            {timeFrameOptions.map((option) => (
+              <ToggleButton
+                key={option.name}
+                value={option.name}
+                sx={{
+                  textTransform: "none",
+                  height: "35px",
+                  fontSize: "0.875rem",
+                }}
+                disabled={
+                  option.name === StatsTimeFrameOptions.CAMPAING &&
+                  !scheduleCampaign
+                }
+              >
+                {option.label}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        </div>
+        <div className="stats-time-picker">
           <DatePicker
             value={statsOptions.startDate}
             disabled={statsOptions.timeFrame !== StatsTimeFrameOptions.CUSTOM}
             onChange={handleChangeStartDate}
             sx={{
               width: "135px",
+              marginRight: "5px",
               "& .MuiOutlinedInput-input": {
                 fontSize: "0.875rem",
                 height: "35px",
@@ -209,55 +213,69 @@ export default function StatsNavBar({
           />
         </div>
       </div>
-      <FormControl>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={statsOptions.statsUnit}
-          onChange={handleChangeStatsUnit}
-          sx={{
-            height: "35px",
-            fontSize: "0.9rem",
-            width: "160px",
-            paddingY: 0,
-          }}
-          disabled={statsOptions.showFavorites}
-        >
-          {statsUnitOptions.map((option, index) => (
-            <MenuItem key={index} value={option.name}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <FormControl>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={statsOptions.headerUnit}
-          onChange={handleChangeHeaderUnit}
-          sx={{
-            height: "35px",
-            fontSize: "0.9rem",
-            width: "160px",
-            paddingY: 0,
-          }}
-          disabled={statsOptions.showFavorites}
-        >
-          {headerUnitOptions.map((option, index) => (
-            <MenuItem key={index} value={option.name}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <ShiftOptionsDisplay
-        lng={lng}
-        selectedShifts={statsOptions.selectedShifts}
-        statsShiftOptions={shiftOptions}
-        disabled={statsOptions.showFavorites}
-        handleEditSelectedShifts={handleEditSelectedShifts}
-      />
+      <div className="stats-options-container">
+        <div className="stats-unit-select-container">
+          <FormControl>
+            <InputLabel id="stats-unit-select-label">{t("stats")}</InputLabel>
+            <Select
+              labelId="stats-unit-select-label"
+              label={t("stats")}
+              id="demo-simple-select"
+              value={statsOptions.statsUnit}
+              onChange={handleChangeStatsUnit}
+              sx={{
+                height: "35px",
+                fontSize: "0.9rem",
+                width: "160px",
+                paddingY: 0,
+              }}
+              disabled={statsOptions.showFavorites}
+            >
+              {statsUnitOptions.map((option, index) => (
+                <MenuItem key={index} value={option.name}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
+        <div className="header-unit-select-container">
+          <FormControl>
+            <InputLabel id="header-unit-select-label">
+              {t("view_by")}
+            </InputLabel>
+            <Select
+              labelId="header-unit-select-label"
+              label={t("view_by")}
+              id="demo-simple-select"
+              value={statsOptions.headerUnit}
+              onChange={handleChangeHeaderUnit}
+              sx={{
+                height: "35px",
+                fontSize: "0.9rem",
+                width: "160px",
+                paddingY: 0,
+              }}
+              disabled={statsOptions.showFavorites}
+            >
+              {headerUnitOptions.map((option, index) => (
+                <MenuItem key={index} value={option.name}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
+        <div className="shift-options-display-container">
+          <ShiftOptionsDisplay
+            lng={lng}
+            selectedShifts={statsOptions.selectedShifts}
+            statsShiftOptions={shiftOptions}
+            disabled={statsOptions.showFavorites}
+            handleEditSelectedShifts={handleEditSelectedShifts}
+          />
+        </div>
+      </div>
       <IconButton
         onClick={handleSwitchShowFavorites}
         sx={{

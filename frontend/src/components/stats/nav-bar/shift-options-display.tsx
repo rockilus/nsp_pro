@@ -36,7 +36,7 @@ export default function ShiftOptionsDisplay({
 
   const blockDisplay = () => {
     return (
-      <div>
+      <div className="block-display">
         {selectedShiftsState.length !== 0
           ? blockDislayValue(
               selectedShiftsState
@@ -82,24 +82,22 @@ export default function ShiftOptionsDisplay({
   };
 
   return (
-    <Box>
-      <PopoverSelectShifts
-        buttonContent={blockDisplay()}
-        content={
-          <ShiftOptionsEdit
-            lng={lng}
-            selectedShifts={selectedShiftsState}
-            statsShiftOptions={groupByCategoryName(
-              expandBoolDimOptions(statsShiftOptions)
-            )}
-            handleConfirmEditSelectedShifts={handleConfirmEditSelectedShifts}
-            handleEditSelectedShiftsState={handleEditSelectedShiftsState}
-          />
-        }
-        open={open}
-        handleOpenPopover={handleOpenPopover}
-        handleClosePopover={handleClosePopover}
-      />
-    </Box>
+    <PopoverSelectShifts
+      buttonContent={blockDisplay()}
+      content={
+        <ShiftOptionsEdit
+          lng={lng}
+          selectedShifts={selectedShiftsState}
+          statsShiftOptions={groupByCategoryName(
+            expandBoolDimOptions(statsShiftOptions)
+          )}
+          handleConfirmEditSelectedShifts={handleConfirmEditSelectedShifts}
+          handleEditSelectedShiftsState={handleEditSelectedShiftsState}
+        />
+      }
+      open={open}
+      handleOpenPopover={handleOpenPopover}
+      handleClosePopover={handleClosePopover}
+    />
   );
 }
