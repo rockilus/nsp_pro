@@ -5,7 +5,15 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 from shared.logger import log_info
-from shared.schemas import Stats, StatsHeader, StatsOptions, StatsValue
+from shared.schemas import (
+    HeaderUnitOptions,
+    Stats,
+    StatsHeader,
+    StatsOptions,
+    StatsTimeFrameOptions,
+    StatsUnitOptions,
+    StatsValue,
+)
 from shared.schemas.errors import handle_create_schema_object_error
 
 from errors import NotAuthorizedError, handle_routes_errors
@@ -151,6 +159,9 @@ def msg_to_core_stats_options(
     data_snake["selected_shifts"] = [
         msg_to_core_shift_worker_option(v) for v in msg.selectedShifts
     ]
+    data_snake["time_frame"] = StatsTimeFrameOptions(msg.timeFrame)
+    data_snake["stats_unit"] = StatsUnitOptions(msg.statsUnit)
+    data_snake["header_unit"] = HeaderUnitOptions(msg.headerUnit)
     try:
         out = StatsOptions(**data_snake)
     except Exception as e:
@@ -164,6 +175,8 @@ def msg_to_core_stats_header(msg: StatsHeaderMessage) -> StatsHeader:
     data_snake["selected_shifts"] = [
         msg_to_core_shift_worker_option(v) for v in msg.selectedShifts
     ]
+    data_snake["stats_unit"] = StatsUnitOptions(msg.statsUnit)
+    data_snake["header_unit"] = HeaderUnitOptions(msg.headerUnit)
     try:
         stats_header = StatsHeader(**data_snake)
     except Exception as e:

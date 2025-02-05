@@ -34,10 +34,11 @@
     "stats_unit_nb_time_shift": "Nb fois tache",
     "stats_unit_time_worked": "Temps travaillé (h)",
     "time_frame": "Période",
-    "time_frame_ltm": "12 derniers mois",
+    "time_frame_ltm": "12 mois",
     "time_frame_24_months": "24 derniers mois",
     "time_frame_36_months": "36 derniers mois",
     "time_frame_custom": "Personnalisé",
+    "total": "Total",
     "view_by": "Voir par",
     "week_short": "S"
 }

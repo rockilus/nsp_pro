@@ -66,7 +66,15 @@ from shared.schemas.schemas.shift import (
     ShiftType,
     Staffing,
 )
-from shared.schemas.schemas.stats import Stats, StatsHeader, StatsOptions, StatsValue
+from shared.schemas.schemas.stats import (
+    HeaderUnitOptions,
+    Stats,
+    StatsHeader,
+    StatsOptions,
+    StatsTimeFrameOptions,
+    StatsUnitOptions,
+    StatsValue,
+)
 from shared.schemas.schemas.task import TaskServices
 from shared.schemas.schemas.team import Specialty, Team
 from shared.schemas.schemas.user import PasswordData, User, UserAuth, UserDashboard
@@ -134,7 +142,10 @@ __all__ = [
     "ShiftRestType",
     "ShiftType",
     "Staffing",
+    "HeaderUnitOptions",
     "StatsOptions",
+    "StatsTimeFrameOptions",
+    "StatsUnitOptions",
     "Stats",
     "StatsHeader",
     "StatsValue",

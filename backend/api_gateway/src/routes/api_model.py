@@ -277,11 +277,11 @@ class WorkTimeTableMessage(BaseModel):
 class StatsHeaderMessage(BaseModel):
     id: str
     teamId: str
-    statsUnit: str
-    headerUnit: str
+    statsUnit: int
+    headerUnit: int
     value: str
     selectedShifts: List[ShiftWorkerOptionMessage]
-    inCustom: bool
+    isFavorite: bool
 
 
 class StatsValueMessage(BaseModel):
@@ -296,12 +296,13 @@ class StatsMessage(BaseModel):
 
 
 class StatsOptionsMessage(BaseModel):
-    timeFrame: str
+    timeFrame: int
     startDate: date
     endDate: date
-    statsUnit: str
-    headerUnit: str
+    statsUnit: int
+    headerUnit: int
     selectedShifts: List[ShiftWorkerOptionMessage]
+    showFavorites: bool
 
 
 # User

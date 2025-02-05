@@ -1,0 +1,53 @@
+.stats-nav-bar-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 3px 16px;
+}
+
+.stats-time-options-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.stats-time-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.stats-time-picker {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.stats-options-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.stats-unit-select-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.header-unit-select-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.shift-options-display-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-right: 16px;
+}
