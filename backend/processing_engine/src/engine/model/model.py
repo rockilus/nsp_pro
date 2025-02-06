@@ -327,10 +327,9 @@ class Model:
 
     def add_link_shift_constraints(
         self,
-        ls_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str]],
+        ls_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]],
     ) -> None:
-        penalty = self.model_config.penalties.system_constraint.link_shift
-        for s1, s2, ls_id in ls_pairs:
+        for s1, s2, ls_id, penalty in ls_pairs:
             s1_var = self.variables[s1]
             s2_var = self.variables[s2]
             var_name = build_var_name_link_shift(
