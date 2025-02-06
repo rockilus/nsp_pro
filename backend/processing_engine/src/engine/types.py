@@ -99,7 +99,11 @@ class Inputs:
     shift_demands: List[ShiftDemand]
     requests: List[Request]
     constraints: Constraints
-    duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
+    duty_recup_pairs: List[
+        Tuple[
+            Tuple[str, str, str], Tuple[str, str, str], int
+        ]  # (a_duty, a_recup, penalty)
+    ]
     link_shifts_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str]]
     worker_shift_filters: List[Tuple[str, str, str]]
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]

@@ -306,11 +306,10 @@ class Model:
 
     def add_duty_recup_constraints(
         self,
-        duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]],
+        duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]],
         hard_to_soft: bool,
     ) -> None:
-        penalty = self.model_config.penalties.system_constraint.duty_recup
-        for duty, recup in duty_recup_pairs:
+        for duty, recup, penalty in duty_recup_pairs:
             duty_var = self.variables[duty]
             recup_var = self.variables[recup]
             if not hard_to_soft:

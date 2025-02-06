@@ -6,6 +6,7 @@ from shared.schemas import EngineInputs, Shift, ShiftType, Worker, WorkerDates
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
+from core_to_engine_service.penalties import penalties
 from tests.sample_data import test_data_set_1
 
 
@@ -50,22 +51,24 @@ class TestBuildDutyRecupPairs:
             isinstance(pair[0], tuple) and isinstance(pair[1], tuple)
             for pair in duty_recup_pairs
         )
+        w_ids_in_pairs_list = []
+        dates_in_pairs_list = []
         for pair in duty_recup_pairs:
             w_duty_id, d_duty, s_duty_id = pair[0]
             w_recup_id, d_recup, s_recup_id = pair[1]
+            penalty = pair[2]
             assert w_duty_id == w_recup_id
             assert d_duty == d_recup
+            assert penalty == penalties.system_constraint.duty_recup
             if s_duty_id == "s3":
                 assert s_recup_id == "s5"
             elif s_duty_id == "s4":
                 assert s_recup_id == "s6"
-        w_ids_in_pairs = sorted(
-            set(w_id for pair in duty_recup_pairs for w_id, _, _ in pair)
-        )
+            w_ids_in_pairs_list += [w_duty_id, w_recup_id]
+            dates_in_pairs_list += [d_duty, d_recup]
+        w_ids_in_pairs = sorted(set(w_ids_in_pairs_list))
         assert w_ids_in_pairs == sorted(set(w.id for w in workers_not_deleted))
-        dates_in_pairs = sorted(
-            set(date.fromisoformat(d) for pair in duty_recup_pairs for _, d, _ in pair)
-        )
+        dates_in_pairs = sorted(set(date.fromisoformat(d) for d in dates_in_pairs_list))
         assert dates_in_pairs == sorted(dates_campaign)
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
