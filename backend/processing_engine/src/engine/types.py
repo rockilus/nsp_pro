@@ -26,6 +26,7 @@ class Request:
     assignments: List[Tuple[str, str, str]]
     negative: bool
     hard: bool
+    penalty: int
 
 
 @dataclass

@@ -3,6 +3,7 @@ from typing import Dict, List
 
 from shared.schemas import Request, WorkerDates
 
+from core_to_engine_service.penalties import penalties
 from engine import Request as RequestEngine
 
 
@@ -36,6 +37,11 @@ def build_engine_requests(
                 ],
                 negative=r.negative,
                 hard=r.hard,
+                penalty=(
+                    penalties.user_constraint.request.hard
+                    if r.hard
+                    else penalties.user_constraint.request.soft
+                ),
             )
         )
     return out
