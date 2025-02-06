@@ -17,7 +17,7 @@ class ShiftDemand:
     assignments_specialties: List[List[Tuple[str, str, str, str]]]
     target: int
     target_specialties: List[int]
-    is_duty: bool
+    penalty: int
 
 
 @dataclass
