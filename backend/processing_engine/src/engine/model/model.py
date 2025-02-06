@@ -16,13 +16,11 @@ from engine.types import (
     Inputs,
     ModelConfig,
     NbDuties,
-    NbDutiesPenalty,
     Objective,
     ObjectiveCategory,
     SolveStrategy,
     Variables,
     WorkTime,
-    WorkTimePenalty,
 )
 from utils.constants import Constants
 
@@ -349,15 +347,6 @@ class Model:
     def add_work_time_constraints(
         self, work_time: WorkTime, contract: bool, hard_to_soft: bool = False
     ) -> None:
-        penalty = (
-            self.model_config.penalties.system_constraint.weekly_worktime_contract
-            if work_time.penalty == WorkTimePenalty.CONTRACT
-            else (
-                self.model_config.penalties.system_constraint.weekly_worktime_desired
-                if work_time.penalty == WorkTimePenalty.DESIRED
-                else self.model_config.penalties.system_constraint.weekly_worktime_max
-            )
-        )
         for w_assignments, w_targets, w_durations in zip(
             work_time.assignments,
             work_time.targets,
@@ -402,16 +391,11 @@ class Model:
                     )
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(penalty)
+                    self.obj.int_coeffs.append(work_time.penalty)
 
     def add_nb_duties_constraints(
         self, nb_duties: NbDuties, hard_to_soft: bool = False
     ) -> None:
-        penalty = (
-            self.model_config.penalties.system_constraint.monthly_duties_desired
-            if nb_duties.penalty == NbDutiesPenalty.DESIRED
-            else self.model_config.penalties.system_constraint.monthly_duties_max
-        )
         for w_assignments, w_targets in zip(
             nb_duties.assignments,
             nb_duties.targets,
@@ -441,7 +425,7 @@ class Model:
                     )
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(penalty)
+                    self.obj.int_coeffs.append(nb_duties.penalty)
 
     def add_worker_shift_filter_constraints(
         self,

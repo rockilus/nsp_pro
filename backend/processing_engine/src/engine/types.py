@@ -51,12 +51,6 @@ class Variables:
         return asdict(self)
 
 
-class WorkTimePenalty(Enum):
-    CONTRACT = 0
-    DESIRED = 1
-    MAX = 2
-
-
 @dataclass
 class WorkTime:
     # for each worker, a list of assignments for the target periods
@@ -68,12 +62,7 @@ class WorkTime:
     # for each assignment, the duration of the shift
     # (size workers x periods x shifts * period length)
     durations: List[List[List[int]]]
-    penalty: WorkTimePenalty
-
-
-class NbDutiesPenalty(Enum):
-    DESIRED = 0
-    MAX = 1
+    penalty: int
 
 
 @dataclass
@@ -86,7 +75,7 @@ class NbDuties:
     targets: List[List[int]]
     # for each assignment, the duration of the shift
     # (size workers x periods x shifts * period length)
-    penalty: NbDutiesPenalty
+    penalty: int
 
 
 @dataclass
