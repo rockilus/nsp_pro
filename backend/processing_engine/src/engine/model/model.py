@@ -427,11 +427,11 @@ class Model:
 
     def add_worker_shift_filter_constraints(
         self,
-        worker_shift_filters: List[Tuple[str, str, str]],
+        worker_shift_filters: Tuple[List[Tuple[str, str, str]], int],
         hard_to_soft: bool,
     ) -> None:
-        penalty = self.model_config.penalties.system_constraint.worker_shift_filter
-        for a in worker_shift_filters:
+        wsf_filter, penalty = worker_shift_filters
+        for a in wsf_filter:
             cstr_var = self.variables[a]
             if not hard_to_soft:
                 self.model.Add(cstr_var == 0)

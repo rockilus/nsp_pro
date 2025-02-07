@@ -109,7 +109,9 @@ class Inputs:
             Tuple[str, str, str], Tuple[str, str, str], str, int
         ]  # a_shift1, a_shift2, shift_link_id, penalty
     ]
-    worker_shift_filters: List[Tuple[str, str, str]]
+    worker_shift_filters: Tuple[
+        List[Tuple[str, str, str]], int
+    ]  # (List[assignments], penalty)
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
 
