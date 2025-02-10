@@ -28,11 +28,6 @@ class AddConstraintFil(AddConstraint):
             self.model.Add(sum(cstr_vars) == 0)
         # pylint: disable=R0801
         else:
-            penalty = (
-                self.model_config.penalties.user_constraint.fil.hard
-                if constraint.hard
-                else self.model_config.penalties.user_constraint.fil.soft
-            )
             var_name = build_var_name_constraint(
                 constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
             )
@@ -45,7 +40,7 @@ class AddConstraintFil(AddConstraint):
             )
             self.model.AddAbsEquality(excess, delta)
             self.obj.int_vars.append(excess)
-            self.obj.int_coeffs.append(penalty)
+            self.obj.int_coeffs.append(constraint.penalty)
 
     # def _add_constraint_fil_to_model(
     #     self,

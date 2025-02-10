@@ -18,6 +18,7 @@ from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_engine_constraints import (
     _build_quick_staffing_constraints,
 )
+from core_to_engine_service.penalties import penalties
 from tests.sample_data import test_data_set_1
 
 
@@ -72,6 +73,7 @@ class TestBuildQuickStaffingConstraints:
             active=True,
             hard=True,
             priority="high",
+            penalty=penalties.user_constraint.sum.hard,
             schedule_id=schedule.id,
             constraint_build_id="",
         )

@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple
 
 from shared.schemas import DailyShiftDemand, Shift, ShiftType, Worker, WorkerDates
 
+from core_to_engine_service.penalties import penalties
 from engine import ShiftDemand as ShiftDemandEngine
 
 
@@ -63,7 +64,11 @@ def build_engine_shift_demands(
                     assignments_specialties=assignments_specialty,
                     target=target,
                     target_specialties=target_specialty,
-                    is_duty=shift.shift_type == ShiftType.DUTY,
+                    penalty=(
+                        penalties.system_constraint.coverage.duty
+                        if shift.shift_type == ShiftType.DUTY
+                        else penalties.system_constraint.coverage.normal
+                    ),
                 )
             )
     return out

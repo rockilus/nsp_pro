@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.utils.model_utils import build_var_name_constraint
-from engine.types import ModelConfig, Objective, ObjectiveCategory, Request
+from engine.types import Objective, ObjectiveCategory, Request
 
 
 # pylint: disable=too-few-public-methods
@@ -13,12 +13,10 @@ class AddRequest:
         model: cp_model.CpModel,
         variables: Dict[Tuple[str, str, str], cp_model.IntVar],
         obj: Objective,
-        model_config: ModelConfig,
     ) -> None:
         self.model = model
         self.variables = variables
         self.obj = obj
-        self.model_config = model_config
 
     def add_requests(self, requests: List[Request], hard_to_soft: bool) -> None:
         for r in requests:
@@ -34,11 +32,6 @@ class AddRequest:
                     else sum(c_variables) == c_var_len
                 )
             else:
-                penalty = (
-                    self.model_config.penalties.user_constraint.request.hard
-                    if r.hard
-                    else self.model_config.penalties.user_constraint.request.soft
-                )
                 var_name = build_var_name_constraint(
                     r, c_variables, ObjectiveCategory.REQUEST
                 )
@@ -53,7 +46,7 @@ class AddRequest:
                     for var in c_variables:
                         self.model.AddImplication(var.Not(), lit)
                 self.obj.bool_vars.append(lit)
-                self.obj.bool_coeffs.append(penalty)
+                self.obj.bool_coeffs.append(r.penalty)
 
             # for var in c_variables:
             #     if r.hard and not hard_to_soft:

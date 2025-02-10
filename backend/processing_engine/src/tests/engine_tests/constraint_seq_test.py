@@ -16,9 +16,9 @@ from shared.schemas import (
     RequestStatus,
 )
 
+from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
-from engine.model_config import model_config
 from engine_to_core_service.build_breaches import _parse_breaches_engine
 
 
@@ -300,6 +300,7 @@ class TestConstraintSeq:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
+        constraint_soft.penalty = penalties.user_constraint.seq.soft
 
         if constraint.operator in [
             ConstraintOperator.LESS_THAN_OR_EQUAL,
@@ -418,7 +419,7 @@ class TestConstraintSeq:
 
         # # Check objective value
         obj_value = 0
-        penalty = model_config.penalties.user_constraint.seq.soft
+        penalty = penalties.user_constraint.seq.soft
         for breach in breaches:
             nb_a_period = sum(
                 1
@@ -501,7 +502,7 @@ class TestConstraintSeq:
         # Check objective value
         breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
         obj_value = 0
-        penalty = model_config.penalties.user_constraint.seq.hard
+        penalty = penalties.user_constraint.seq.hard
         for breach in breaches:
             nb_a_period = sum(
                 1

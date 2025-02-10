@@ -12,6 +12,8 @@ from shared.schemas import (
     WorkerDates,
 )
 
+from core_to_engine_service.penalties import penalties
+
 
 # pylint: disable=too-many-locals, too-many-branches
 def build_worker_shift_filters(
@@ -20,7 +22,7 @@ def build_worker_shift_filters(
     shifts: List[Shift],
     dimensions: List[Dimension],
     attributes: List[Attribute],
-) -> List[Tuple[str, str, str]]:
+) -> Tuple[List[Tuple[str, str, str]], int]:
     out: Set[Tuple[str, str, str]] = set()
 
     # Step 1: Identify shared dimensions
@@ -145,4 +147,4 @@ def build_worker_shift_filters(
 
     # Return the list of unique (worker_id, invalid_shift_id) and
     # (invalid_worker_id, shift_id) tuples
-    return list(out)
+    return list(out), penalties.system_constraint.worker_shift_filter

@@ -75,11 +75,6 @@ class AddConstraintSum(AddConstraint):
             self.model.Add(sum_var == sum(v * d for v, d in zip(cstr_vars, cstr_durs)))
         # pylint: disable=R0801
         else:
-            penalty = (
-                self.model_config.penalties.user_constraint.sum.hard
-                if constraint.hard
-                else self.model_config.penalties.user_constraint.sum.soft
-            )
             var_name = build_var_name_constraint(
                 constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
             )
@@ -105,7 +100,7 @@ class AddConstraintSum(AddConstraint):
                 )
                 self.model.AddMaxEquality(excess, [delta, 0])
                 self.obj.int_vars.append(excess)
-                self.obj.int_coeffs.append(penalty)
+                self.obj.int_coeffs.append(constraint.penalty)
             elif constraint.operator == ConstraintOperator.EQUAL:
                 delta = self.model.NewIntVar(
                     -constraint.target_value * Constants.NUM_MINUTES_HOUR,
@@ -128,7 +123,7 @@ class AddConstraintSum(AddConstraint):
                 )
                 self.model.AddAbsEquality(excess, delta)
                 self.obj.int_vars.append(excess)
-                self.obj.int_coeffs.append(penalty)
+                self.obj.int_coeffs.append(constraint.penalty)
             elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(
                     -len(cstr_vars)
@@ -151,7 +146,7 @@ class AddConstraintSum(AddConstraint):
                 )
                 self.model.AddMaxEquality(excess, [delta, 0])
                 self.obj.int_vars.append(excess)
-                self.obj.int_coeffs.append(penalty)
+                self.obj.int_coeffs.append(constraint.penalty)
 
     def _add_constraint_sum_other(
         self,
@@ -179,11 +174,6 @@ class AddConstraintSum(AddConstraint):
                 )
             self.model.Add(sum_var == sum(cstr_vars))
         else:
-            penalty = (
-                self.model_config.penalties.user_constraint.sum.hard
-                if constraint.hard
-                else self.model_config.penalties.user_constraint.sum.soft
-            )
             var_name = build_var_name_constraint(
                 constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
             )
@@ -197,7 +187,7 @@ class AddConstraintSum(AddConstraint):
                 )
                 self.model.AddMaxEquality(excess, [delta, 0])
                 self.obj.int_vars.append(excess)
-                self.obj.int_coeffs.append(penalty)
+                self.obj.int_coeffs.append(constraint.penalty)
             elif constraint.operator == ConstraintOperator.EQUAL:
                 delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
                 self.model.Add(delta == sum(cstr_vars) - constraint.target_value)
@@ -208,7 +198,7 @@ class AddConstraintSum(AddConstraint):
                 )
                 self.model.AddAbsEquality(excess, delta)
                 self.obj.int_vars.append(excess)
-                self.obj.int_coeffs.append(penalty)
+                self.obj.int_coeffs.append(constraint.penalty)
             elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                 delta = self.model.NewIntVar(-len(cstr_vars), len(cstr_vars), "")
                 self.model.Add(delta == constraint.target_value - sum(cstr_vars))
@@ -219,4 +209,4 @@ class AddConstraintSum(AddConstraint):
                 )
                 self.model.AddMaxEquality(excess, [delta, 0])
                 self.obj.int_vars.append(excess)
-                self.obj.int_coeffs.append(penalty)
+                self.obj.int_coeffs.append(constraint.penalty)

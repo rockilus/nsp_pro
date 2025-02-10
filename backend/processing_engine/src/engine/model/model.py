@@ -16,13 +16,11 @@ from engine.types import (
     Inputs,
     ModelConfig,
     NbDuties,
-    NbDutiesPenalty,
     Objective,
     ObjectiveCategory,
     SolveStrategy,
     Variables,
     WorkTime,
-    WorkTimePenalty,
 )
 from utils.constants import Constants
 
@@ -50,7 +48,6 @@ class Model:
             self.variables,
             self.assignment_wdss,
             self.obj,
-            self.model_config,
         )
 
     def solve_campaign(self, inputs: Inputs) -> None:
@@ -275,7 +272,6 @@ class Model:
             self.variables,
             self.assignment_wdss,
             self.obj,
-            self.model_config,
         )
 
     def build_variables(self, variables: Variables) -> None:
@@ -308,11 +304,10 @@ class Model:
 
     def add_duty_recup_constraints(
         self,
-        duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]],
+        duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]],
         hard_to_soft: bool,
     ) -> None:
-        penalty = self.model_config.penalties.system_constraint.duty_recup
-        for duty, recup in duty_recup_pairs:
+        for duty, recup, penalty in duty_recup_pairs:
             duty_var = self.variables[duty]
             recup_var = self.variables[recup]
             if not hard_to_soft:
@@ -330,10 +325,9 @@ class Model:
 
     def add_link_shift_constraints(
         self,
-        ls_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str]],
+        ls_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]],
     ) -> None:
-        penalty = self.model_config.penalties.system_constraint.link_shift
-        for s1, s2, ls_id in ls_pairs:
+        for s1, s2, ls_id, penalty in ls_pairs:
             s1_var = self.variables[s1]
             s2_var = self.variables[s2]
             var_name = build_var_name_link_shift(
@@ -349,15 +343,6 @@ class Model:
     def add_work_time_constraints(
         self, work_time: WorkTime, contract: bool, hard_to_soft: bool = False
     ) -> None:
-        penalty = (
-            self.model_config.penalties.system_constraint.weekly_worktime_contract
-            if work_time.penalty == WorkTimePenalty.CONTRACT
-            else (
-                self.model_config.penalties.system_constraint.weekly_worktime_desired
-                if work_time.penalty == WorkTimePenalty.DESIRED
-                else self.model_config.penalties.system_constraint.weekly_worktime_max
-            )
-        )
         for w_assignments, w_targets, w_durations in zip(
             work_time.assignments,
             work_time.targets,
@@ -402,16 +387,11 @@ class Model:
                     )
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(penalty)
+                    self.obj.int_coeffs.append(work_time.penalty)
 
     def add_nb_duties_constraints(
         self, nb_duties: NbDuties, hard_to_soft: bool = False
     ) -> None:
-        penalty = (
-            self.model_config.penalties.system_constraint.monthly_duties_desired
-            if nb_duties.penalty == NbDutiesPenalty.DESIRED
-            else self.model_config.penalties.system_constraint.monthly_duties_max
-        )
         for w_assignments, w_targets in zip(
             nb_duties.assignments,
             nb_duties.targets,
@@ -441,15 +421,15 @@ class Model:
                     )
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
-                    self.obj.int_coeffs.append(penalty)
+                    self.obj.int_coeffs.append(nb_duties.penalty)
 
     def add_worker_shift_filter_constraints(
         self,
-        worker_shift_filters: List[Tuple[str, str, str]],
+        worker_shift_filters: Tuple[List[Tuple[str, str, str]], int],
         hard_to_soft: bool,
     ) -> None:
-        penalty = self.model_config.penalties.system_constraint.worker_shift_filter
-        for a in worker_shift_filters:
+        wsf_filter, penalty = worker_shift_filters
+        for a in wsf_filter:
             cstr_var = self.variables[a]
             if not hard_to_soft:
                 self.model.Add(cstr_var == 0)

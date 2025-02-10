@@ -37,11 +37,6 @@ class AddConstraintOrd(AddConstraint):
             self.model.AddBoolOr(transition)  # type: ignore # [CHECK IF OK]
         # pylint: disable=R0801
         else:
-            penalty = (
-                self.model_config.penalties.user_constraint.ord.hard
-                if constraint.hard
-                else self.model_config.penalties.user_constraint.ord.soft
-            )
             var_name = build_var_name_constraint(
                 constraint, cstr_vars, ObjectiveCategory.CONSTRAINT
             )
@@ -58,4 +53,4 @@ class AddConstraintOrd(AddConstraint):
             transition.append(trans_var)
             self.model.AddBoolOr(transition)  # type: ignore # [CHECK IF OK]
             self.obj.bool_vars.append(trans_var)
-            self.obj.bool_coeffs.append(penalty)
+            self.obj.bool_coeffs.append(constraint.penalty)

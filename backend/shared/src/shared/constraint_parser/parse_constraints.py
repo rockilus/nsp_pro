@@ -6,6 +6,7 @@ from shared.schemas import (
     ConstraintBuildAugmented,
     Constraints,
     ConstraintType,
+    Penalties,
     Shift,
     Worker,
     WorkerDates,
@@ -25,6 +26,7 @@ def parse_constraints(
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
     shift_dim_dict: Dict,
+    penalties: Penalties,
 ) -> Constraints:
     map_constraint = MapConstaint(
         workers,
@@ -36,6 +38,7 @@ def parse_constraints(
         worker_ids_to_worker_dates,
         shifts,
         shift_dim_dict,
+        penalties,
     )
     return Constraints(
         sum=[

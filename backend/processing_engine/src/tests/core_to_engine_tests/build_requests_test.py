@@ -19,6 +19,7 @@ from shared.schemas import (
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_engine_requests import build_engine_requests
+from core_to_engine_service.penalties import penalties
 from engine import Request as RequestEngine
 from tests.sample_data import test_data_set_3
 
@@ -81,6 +82,7 @@ class TestBuildRequests:
             ],
             negative=False,
             hard=True,
+            penalty=penalties.user_constraint.request.hard,
         )
 
     @pytest.mark.parametrize("sample_data", test_data_set_3)
@@ -139,6 +141,7 @@ class TestBuildRequests:
             ],
             negative=False,
             hard=False,
+            penalty=penalties.user_constraint.request.soft,
         )
 
     @pytest.mark.parametrize("sample_data", test_data_set_3)
@@ -197,6 +200,7 @@ class TestBuildRequests:
             ],
             negative=True,
             hard=True,
+            penalty=penalties.user_constraint.request.hard,
         )
 
     @pytest.mark.parametrize("sample_data", test_data_set_3)
@@ -286,4 +290,5 @@ class TestBuildRequests:
             ],
             negative=False,
             hard=True,
+            penalty=penalties.user_constraint.request.hard,
         )
