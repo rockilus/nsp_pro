@@ -16,6 +16,7 @@ from shared.schemas import (
     ConstraintSeq,
     ConstraintSum,
     ConstraintType,
+    Penalties,
     Shift,
     Worker,
     WorkerDates,
@@ -35,6 +36,7 @@ class MapConstaint:
         worker_ids_to_worker_dates: Dict[str, WorkerDates],
         shifts: List[Shift],
         shift_dim_dict: Dict,
+        penalties: Penalties,
         shift_ids_in_coverage: List[str] | None = None,
     ) -> None:
         self.workers = workers
@@ -42,6 +44,7 @@ class MapConstaint:
         self.dates_campaign = dates_campaign
         self.worker_ids_to_worker_dates = worker_ids_to_worker_dates
         self.shifts = shifts
+        self.penalties = penalties
         self.map_worker = MapWorker(workers, worker_dim_dict)
         self.map_day = MapDay(
             dates_hist, dates_campaign, periods_weekly, periods_monthly
@@ -102,6 +105,11 @@ class MapConstaint:
             active=cba.active,
             hard=cba.hard,
             priority=cba.priority,
+            penalty=(
+                self.penalties.user_constraint.sum.hard
+                if cba.hard
+                else self.penalties.user_constraint.sum.soft
+            ),
             schedule_id=schedule_id,
             constraint_build_id=cba.id,
         )
@@ -140,6 +148,11 @@ class MapConstaint:
             active=cba.active,
             hard=cba.hard,
             priority=cba.priority,
+            penalty=(
+                self.penalties.user_constraint.seq.hard
+                if cba.hard
+                else self.penalties.user_constraint.seq.soft
+            ),
             schedule_id=schedule_id,
             constraint_build_id=cba.id,
         )
@@ -184,6 +197,11 @@ class MapConstaint:
             active=cba.active,
             hard=cba.hard,
             priority=cba.priority,
+            penalty=(
+                self.penalties.user_constraint.ord.hard
+                if cba.hard
+                else self.penalties.user_constraint.ord.soft
+            ),
             schedule_id=schedule_id,
             constraint_build_id=cba.id,
         )
@@ -215,6 +233,11 @@ class MapConstaint:
             active=cba.active,
             hard=cba.hard,
             priority=cba.priority,
+            penalty=(
+                self.penalties.user_constraint.fil.hard
+                if cba.hard
+                else self.penalties.user_constraint.fil.soft
+            ),
             schedule_id=schedule_id,
             constraint_build_id=cba.id,
         )
@@ -247,6 +270,11 @@ class MapConstaint:
             active=cba.active,
             hard=cba.hard,
             priority=cba.priority,
+            penalty=(
+                self.penalties.user_constraint.fai.hard
+                if cba.hard
+                else self.penalties.user_constraint.fai.soft
+            ),
             schedule_id=schedule_id,
             constraint_build_id=cba.id,
         )
@@ -301,6 +329,11 @@ class MapConstaint:
             active=cba.active,
             hard=cba.hard,
             priority=cba.priority,
+            penalty=(
+                self.penalties.user_constraint.eve.hard
+                if cba.hard
+                else self.penalties.user_constraint.eve.soft
+            ),
             schedule_id=schedule_id,
             constraint_build_id=cba.id,
         )

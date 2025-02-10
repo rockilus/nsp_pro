@@ -16,9 +16,9 @@ from shared.schemas import (
     ShiftType,
 )
 
+from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
-from engine.model_config import model_config
 from engine_to_core_service.build_breaches import _parse_breaches_engine
 
 
@@ -143,6 +143,7 @@ class TestConstraintFil:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
+        constraint_soft.penalty = penalties.user_constraint.fil.soft
 
         dates_campaign = [
             engine_inputs.schedule.start_date + timedelta(days=i)
@@ -184,6 +185,7 @@ class TestConstraintFil:
                 active=True,
                 hard=True,
                 priority="medium",
+                penalty=penalties.user_constraint.sum.hard,
                 schedule_id="sch0",
                 constraint_build_id="c_sum_0",
             )
@@ -230,7 +232,7 @@ class TestConstraintFil:
 
         # # Check objective value
         obj_value = 0
-        penalty = model_config.penalties.user_constraint.fil.soft
+        penalty = penalties.user_constraint.fil.soft
         for breach in breaches:
             nb_a_period = sum(
                 1
@@ -324,6 +326,7 @@ class TestConstraintFil:
                 active=True,
                 hard=True,
                 priority="medium",
+                penalty=penalties.user_constraint.sum.hard,
                 schedule_id="sch0",
                 constraint_build_id="c_sum_0",
             )
@@ -339,7 +342,7 @@ class TestConstraintFil:
         # # Check objective value
         breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
         obj_value = 0
-        penalty = model_config.penalties.user_constraint.fil.hard
+        penalty = penalties.user_constraint.fil.hard
         for breach in breaches:
             nb_a_period = sum(
                 1

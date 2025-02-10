@@ -16,9 +16,9 @@ from shared.schemas import (
     RequestStatus,
 )
 
+from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
-from engine.model_config import model_config
 from engine_to_core_service.build_breaches import _parse_breaches_engine
 
 
@@ -223,6 +223,7 @@ class TestConstraintOrd:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
+        constraint_soft.penalty = penalties.user_constraint.ord.soft
 
         if constraint.operator == ConstraintOperator.YES:
             constraint_soft.operator = ConstraintOperator.NO
@@ -293,7 +294,7 @@ class TestConstraintOrd:
             assert b_vars in constraint_soft.constraint_variables
 
         # # Check objective value
-        penalty = model_config.penalties.user_constraint.ord.soft
+        penalty = penalties.user_constraint.ord.soft
         assert out.objective_value == penalty * len(breaches)
 
     def test_constraint_ord_hard_hard_conflic_obj_value(
@@ -354,5 +355,5 @@ class TestConstraintOrd:
 
         # Check objective value
         breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
-        penalty = model_config.penalties.user_constraint.ord.hard
+        penalty = penalties.user_constraint.ord.hard
         assert out.objective_value == penalty * len(breaches)

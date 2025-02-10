@@ -1,4 +1,4 @@
-from engine import (
+from shared.schemas import (
     CoveragePenalty,
     Penalties,
     Penalty,

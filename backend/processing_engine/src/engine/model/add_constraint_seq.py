@@ -44,25 +44,20 @@ class AddConstraintSeq(AddConstraint):
                 )
         # pylint: disable=R0801
         else:
-            penalty = (
-                self.model_config.penalties.user_constraint.seq.hard
-                if constraint.hard
-                else self.model_config.penalties.user_constraint.seq.soft
-            )
             if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
                 self._add_constraint_seq_less_than_or_equal_soft_to_model(
-                    constraint, cstr_vars, penalty
+                    constraint, cstr_vars
                 )
             elif constraint.operator == ConstraintOperator.EQUAL:
                 self._add_constraint_seq_less_than_or_equal_soft_to_model(
-                    constraint, cstr_vars, penalty
+                    constraint, cstr_vars
                 )
                 self._add_constraint_seq_greater_than_or_equal_soft_to_model(
-                    constraint, cstr_vars, penalty
+                    constraint, cstr_vars
                 )
             elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
                 self._add_constraint_seq_greater_than_or_equal_soft_to_model(
-                    constraint, cstr_vars, penalty
+                    constraint, cstr_vars
                 )
 
     def _add_constraint_seq_less_than_or_equal_hard_to_model(
@@ -86,10 +81,7 @@ class AddConstraintSeq(AddConstraint):
                 )
 
     def _add_constraint_seq_less_than_or_equal_soft_to_model(
-        self,
-        constraint: ConstraintSeq,
-        cstr_vars: List[cp_model.IntVar],
-        penalty: int,
+        self, constraint: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
     ) -> None:
         # i = 0
         # for length in range(constraint.target_value + 1, len(cstr_vars) + 1):
@@ -120,15 +112,12 @@ class AddConstraintSeq(AddConstraint):
                 lit.Not()
             )
             self.obj.bool_vars.append(lit)
-            self.obj.bool_coeffs.append(penalty)
+            self.obj.bool_coeffs.append(constraint.penalty)
         #     i += 1
         # print("num iter less than", i)
 
     def _add_constraint_seq_greater_than_or_equal_soft_to_model(
-        self,
-        constraint: ConstraintSeq,
-        cstr_vars: List[cp_model.IntVar],
-        penalty: int,
+        self, constraint: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
     ) -> None:
         # i = 0
         for length in range(1, constraint.target_value):
@@ -141,7 +130,7 @@ class AddConstraintSeq(AddConstraint):
                 self.model.AddBoolOr(span)
                 self.obj.bool_vars.append(lit)
                 self.obj.bool_coeffs.append(
-                    penalty * (constraint.target_value - length)
+                    constraint.penalty * (constraint.target_value - length)
                 )
         #         i += 1
         # print("num iter greater than", i)

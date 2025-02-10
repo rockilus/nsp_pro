@@ -48,7 +48,6 @@ class Model:
             self.variables,
             self.assignment_wdss,
             self.obj,
-            self.model_config,
         )
 
     def solve_campaign(self, inputs: Inputs) -> None:
@@ -273,7 +272,6 @@ class Model:
             self.variables,
             self.assignment_wdss,
             self.obj,
-            self.model_config,
         )
 
     def build_variables(self, variables: Variables) -> None:

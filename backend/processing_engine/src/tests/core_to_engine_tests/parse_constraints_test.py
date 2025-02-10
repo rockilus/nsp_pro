@@ -25,6 +25,7 @@ from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
+from core_to_engine_service.penalties import penalties
 
 
 # pylint: disable=R0801, too-few-public-methods
@@ -69,6 +70,7 @@ class TestParseConstraints:
             worker_ids_to_worker_dates,
             engine_inputs.shifts,
             dim_to_attr_value_to_shift,
+            penalties,
         )
 
     def test_parse_constraints(
