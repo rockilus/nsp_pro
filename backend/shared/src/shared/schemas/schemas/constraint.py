@@ -233,6 +233,7 @@ class Constraint:
     active: bool
     hard: bool
     priority: str
+    penalty: int
     schedule_id: str
     constraint_build_id: str
 
@@ -294,3 +295,45 @@ class Template:
     text: str
     language: str
     blocks: List[TemplateBlock]
+
+
+@dataclass
+class Penalty:
+    hard: int
+    soft: int
+
+
+@dataclass
+class CoveragePenalty:
+    duty: int
+    normal: int
+
+
+@dataclass
+class SystemConstraintPenalty:
+    coverage: CoveragePenalty
+    duty_recup: int
+    worker_shift_filter: int
+    link_shift: int
+    weekly_worktime_max: int
+    weekly_worktime_desired: int
+    weekly_worktime_contract: int
+    monthly_duties_max: int
+    monthly_duties_desired: int
+
+
+@dataclass
+class UserConstraintPenalty:
+    eve: Penalty
+    fai: Penalty
+    fil: Penalty
+    ord: Penalty
+    seq: Penalty
+    sum: Penalty
+    request: Penalty
+
+
+@dataclass
+class Penalties:
+    system_constraint: SystemConstraintPenalty
+    user_constraint: UserConstraintPenalty

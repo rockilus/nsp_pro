@@ -14,6 +14,8 @@ from shared.schemas import (
     WorkerDates,
 )
 
+from core_to_engine_service.penalties import penalties
+
 
 # pylint: disable=too-many-arguments, R0801
 def build_engine_constraints(
@@ -41,6 +43,7 @@ def build_engine_constraints(
         worker_ids_to_worker_dates,
         shifts,
         dim_to_attr_value_to_shift,
+        penalties,
     )
     constraints.sum += _build_quick_staffing_constraints(
         schedule, workers, worker_ids_to_worker_dates, shifts
@@ -77,6 +80,7 @@ def _build_quick_staffing_constraints(
                 active=True,
                 hard=True,
                 priority="high",
+                penalty=penalties.user_constraint.sum.hard,
                 schedule_id=schedule.id,
                 constraint_build_id="",
             )

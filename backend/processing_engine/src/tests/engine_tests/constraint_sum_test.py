@@ -21,9 +21,9 @@ from shared.schemas import (
     Worker,
 )
 
+from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
-from engine.model_config import model_config
 from engine_to_core_service.build_breaches import _parse_breaches_engine
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 from tests.sample_data import test_data_set_2
@@ -212,6 +212,7 @@ class TestConstraintSum:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
+        constraint_soft.penalty = penalties.user_constraint.sum.soft
 
         if constraint.operator in [
             ConstraintOperator.LESS_THAN_OR_EQUAL,
@@ -265,7 +266,7 @@ class TestConstraintSum:
 
         # Check objective value
         obj_value = 0
-        penalty = model_config.penalties.user_constraint.sum.soft
+        penalty = penalties.user_constraint.sum.soft
         for breach in breaches:
             nb_a_period = sum(
                 1
@@ -334,7 +335,7 @@ class TestConstraintSum:
         # Check objective value
         breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
         obj_value = 0
-        penalty = model_config.penalties.user_constraint.sum.hard
+        penalty = penalties.user_constraint.sum.hard
         for breach in breaches:
             nb_a_period = sum(
                 1

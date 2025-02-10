@@ -9,7 +9,7 @@ from engine.model.add_constraint_seq import AddConstraintSeq
 from engine.model.add_constraint_sum import AddConstraintSum
 from engine.model.add_coverage import AddCoverage
 from engine.model.add_request import AddRequest
-from engine.types import ModelConfig, Objective
+from engine.types import Objective
 
 
 # pylint: disable=too-few-public-methods
@@ -21,24 +21,21 @@ class AddConstraintFactory:
         variables: Dict[Tuple[str, str, str], cp_model.IntVar],
         assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar],
         obj: Objective,
-        model_config: ModelConfig,
     ):
         self.add_constraint_sum = AddConstraintSum(
-            model, variables, assignment_wdss, obj, model_config
+            model, variables, assignment_wdss, obj
         )
         self.add_constraint_seq = AddConstraintSeq(
-            model, variables, assignment_wdss, obj, model_config
+            model, variables, assignment_wdss, obj
         )
         self.add_constraint_ord = AddConstraintOrd(
-            model, variables, assignment_wdss, obj, model_config
+            model, variables, assignment_wdss, obj
         )
         self.add_constraint_fil = AddConstraintFil(
-            model, variables, assignment_wdss, obj, model_config
+            model, variables, assignment_wdss, obj
         )
         self.add_constraint_fai = AddConstraintFai(
-            model, variables, assignment_wdss, obj, model_config
+            model, variables, assignment_wdss, obj
         )
-        self.add_coverage = AddCoverage(
-            model, variables, assignment_wdss, obj, model_config
-        )
-        self.add_request = AddRequest(model, variables, obj, model_config)
+        self.add_coverage = AddCoverage(model, variables, assignment_wdss, obj)
+        self.add_request = AddRequest(model, variables, obj)

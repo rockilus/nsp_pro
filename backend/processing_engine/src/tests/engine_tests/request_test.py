@@ -20,11 +20,11 @@ from shared.schemas import (
     Worker,
 )
 
+from core_to_engine_service.penalties import penalties
 from engine import Assignment
 from engine import Inputs as InputsEngine
 from engine import Outputs
 from engine import Request as RequestEngine
-from engine.model_config import model_config
 from engine_to_core_service.build_breaches import _parse_breaches_engine
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 
@@ -359,7 +359,7 @@ class TestRequest:
             assert all(v in request_soft_engine.assignments for v in b_vars)
 
         # # # Check objective value
-        penalty = model_config.penalties.user_constraint.request.soft
+        penalty = penalties.user_constraint.request.soft
         assert out.objective_value == penalty * len(breaches)
 
     def test_request_hard_hard_conflict(
@@ -411,5 +411,5 @@ class TestRequest:
 
         # Check objective value
         breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
-        penalty = model_config.penalties.user_constraint.request.hard
+        penalty = penalties.user_constraint.request.hard
         assert out.objective_value == penalty * len(breaches)

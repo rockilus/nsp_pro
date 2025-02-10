@@ -3,6 +3,8 @@ from typing import Dict, List, Tuple
 
 from shared.schemas import DailyShiftDemand, LinkShift, Shift, Worker, WorkerDates
 
+from core_to_engine_service.penalties import penalties
+
 
 def build_link_shift_pairs(
     workers_not_deleted: List[Worker],
@@ -10,8 +12,8 @@ def build_link_shift_pairs(
     shifts_not_deleted: List[Shift],
     link_shifts: List[LinkShift],
     daily_shift_demands: List[DailyShiftDemand],
-) -> List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str]]:
-    out: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str]] = []
+) -> List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]]:
+    out: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]] = []
 
     shift_demand_dates: Dict[str, List[date]] = {}
     for demand in daily_shift_demands:
@@ -36,6 +38,7 @@ def build_link_shift_pairs(
                     (w.id, d.isoformat(), ls.shift_ids[0]),
                     (w.id, d.isoformat(), ls.shift_ids[1]),
                     ls.id,
+                    penalties.system_constraint.link_shift,
                 )
                 for w in workers_not_deleted
                 for d in worker_ids_to_worker_dates[w.id].dates_campaign

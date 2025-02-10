@@ -5,6 +5,7 @@ from shared.schemas import EngineInputs, LinkShift, Shift, Worker, WorkerDates
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_link_shift_pairs import build_link_shift_pairs
+from core_to_engine_service.penalties import penalties
 
 # pylint: disable=unused-import
 from tests.sample_data import sample_data_fixture  # noqa: F401
@@ -65,7 +66,7 @@ class TestBuildLinkShiftPairs:
             and isinstance(pair[2], str)
             for pair in ls_pairs
         )
-        for a_1, a_2, ls_id in ls_pairs:
+        for a_1, a_2, ls_id, penalty in ls_pairs:
             w_s0_id, d_s0, s0_id = a_1
             w_s1_id, d_s1, s1_id = a_2
             assert w_s0_id == w_s1_id
@@ -73,14 +74,15 @@ class TestBuildLinkShiftPairs:
             if s0_id == "s0":
                 assert s1_id == "s1"
             assert ls_id == "ls_0"
+            assert penalty == penalties.system_constraint.link_shift
         w_ids_in_pairs = sorted(
-            set(w_id for a_1, a_2, _ in ls_pairs for w_id, _, _ in [a_1, a_2])
+            set(w_id for a_1, a_2, _, _ in ls_pairs for w_id, _, _ in [a_1, a_2])
         )
         assert w_ids_in_pairs == sorted(set(w.id for w in workers_not_deleted))
         dates_in_pairs = sorted(
             set(
                 date.fromisoformat(d)
-                for a_1, a_2, _ in ls_pairs
+                for a_1, a_2, _, _ in ls_pairs
                 for _, d, _ in [a_1, a_2]
             )
         )

@@ -17,7 +17,7 @@ class ShiftDemand:
     assignments_specialties: List[List[Tuple[str, str, str, str]]]
     target: int
     target_specialties: List[int]
-    is_duty: bool
+    penalty: int
 
 
 @dataclass
@@ -26,6 +26,7 @@ class Request:
     assignments: List[Tuple[str, str, str]]
     negative: bool
     hard: bool
+    penalty: int
 
 
 @dataclass
@@ -51,12 +52,6 @@ class Variables:
         return asdict(self)
 
 
-class WorkTimePenalty(Enum):
-    CONTRACT = 0
-    DESIRED = 1
-    MAX = 2
-
-
 @dataclass
 class WorkTime:
     # for each worker, a list of assignments for the target periods
@@ -68,12 +63,7 @@ class WorkTime:
     # for each assignment, the duration of the shift
     # (size workers x periods x shifts * period length)
     durations: List[List[List[int]]]
-    penalty: WorkTimePenalty
-
-
-class NbDutiesPenalty(Enum):
-    DESIRED = 0
-    MAX = 1
+    penalty: int
 
 
 @dataclass
@@ -86,7 +76,7 @@ class NbDuties:
     targets: List[List[int]]
     # for each assignment, the duration of the shift
     # (size workers x periods x shifts * period length)
-    penalty: NbDutiesPenalty
+    penalty: int
 
 
 @dataclass
@@ -109,9 +99,19 @@ class Inputs:
     shift_demands: List[ShiftDemand]
     requests: List[Request]
     constraints: Constraints
-    duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
-    link_shifts_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str]]
-    worker_shift_filters: List[Tuple[str, str, str]]
+    duty_recup_pairs: List[
+        Tuple[
+            Tuple[str, str, str], Tuple[str, str, str], int
+        ]  # (a_duty, a_recup, penalty)
+    ]
+    link_shifts_pairs: List[
+        Tuple[
+            Tuple[str, str, str], Tuple[str, str, str], str, int
+        ]  # a_shift1, a_shift2, shift_link_id, penalty
+    ]
+    worker_shift_filters: Tuple[
+        List[Tuple[str, str, str]], int
+    ]  # (List[assignments], penalty)
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
 
@@ -207,48 +207,6 @@ class BenchmarkTimes:
 ##############################
 
 
-@dataclass
-class Penalty:
-    hard: int
-    soft: int
-
-
-@dataclass
-class CoveragePenalty:
-    duty: int
-    normal: int
-
-
-@dataclass
-class SystemConstraintPenalty:
-    coverage: CoveragePenalty
-    duty_recup: int
-    worker_shift_filter: int
-    link_shift: int
-    weekly_worktime_max: int
-    weekly_worktime_desired: int
-    weekly_worktime_contract: int
-    monthly_duties_max: int
-    monthly_duties_desired: int
-
-
-@dataclass
-class UserConstraintPenalty:
-    eve: Penalty
-    fai: Penalty
-    fil: Penalty
-    ord: Penalty
-    seq: Penalty
-    sum: Penalty
-    request: Penalty
-
-
-@dataclass
-class Penalties:
-    system_constraint: SystemConstraintPenalty
-    user_constraint: UserConstraintPenalty
-
-
 class SolveStrategy(Enum):
     HARD_TO_SOFT = 0
     SEQUENTIAL = 1
@@ -262,5 +220,4 @@ class SolverParams:
 
 @dataclass
 class ModelConfig:
-    penalties: Penalties
     solver_params: SolverParams
