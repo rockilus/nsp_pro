@@ -58,9 +58,7 @@ def calculate_worker_work_times(
             adjusted_desired_time = math.ceil(
                 worker.weekly_hours_desired * Constants.NUM_MINUTES_HOUR * coefficient
             )
-            adjusted_max_time = math.ceil(
-                1000 * Constants.NUM_MINUTES_HOUR * coefficient
-            )
+            adjusted_max_time = math.ceil(80 * Constants.NUM_MINUTES_HOUR * coefficient)
 
             worker_work_times[worker.id]["contract"].append(adjusted_contract_time)
             worker_work_times[worker.id]["desired"].append(adjusted_desired_time)

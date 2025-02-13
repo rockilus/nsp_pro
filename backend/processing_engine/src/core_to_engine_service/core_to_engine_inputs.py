@@ -114,7 +114,6 @@ def core_to_engine_inputs(
         daily_shift_demands,
         periods_weekly,
     )
-    print(w_to_work_times)
 
     # Constraints:
     constraints = build_engine_constraints(
@@ -155,6 +154,7 @@ def core_to_engine_inputs(
             shifts_work,
             shift_duties,
             shift_id_to_duration_dict,
+            w_to_work_times,
         ),
         shift_demands=build_engine_shift_demands(
             workers_not_deleted,
