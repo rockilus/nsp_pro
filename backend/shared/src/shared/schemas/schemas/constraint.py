@@ -198,7 +198,9 @@ class ConstraintBuildAugmented(ConstraintBuild):
         out.update(
             {
                 "active": self.active,
-                "missing_attributes": [ma.to_dict() for ma in self.missing_attributes],
+                "missing_attributes": [
+                    ma.to_dict() for ma in self.missing_attributes
+                ],
                 "text": self.text,
             }
         )
@@ -217,7 +219,8 @@ class ConstraintBuildAugmented(ConstraintBuild):
             priority=data["priority"],
             active=data["active"],
             missing_attributes=[
-                MissingAttribute.from_dict(ma) for ma in data["missing_attributes"]
+                MissingAttribute.from_dict(ma)
+                for ma in data["missing_attributes"]
             ],
             text=data["text"],
         )
@@ -256,7 +259,9 @@ class ConstraintOrd(Constraint):
     shift_reference_ids: List[str]
     shift_relative_ids: List[str]
     interval: int
-    constraint_variables: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
+    constraint_variables: List[
+        Tuple[Tuple[str, str, str], Tuple[str, str, str]]
+    ]
 
 
 # list of variables to set to 0
@@ -310,7 +315,18 @@ class CoveragePenalty:
 
 
 @dataclass
-class SystemConstraintPenalty:
+class UserConstraintPenalty:
+    eve: Penalty
+    fai: Penalty
+    fil: Penalty
+    ord: Penalty
+    seq: Penalty
+    sum: Penalty
+    request: Penalty
+
+
+@dataclass
+class ConfigurationConstraintPenalty:
     coverage: CoveragePenalty
     duty_recup: int
     worker_shift_filter: int
@@ -323,17 +339,12 @@ class SystemConstraintPenalty:
 
 
 @dataclass
-class UserConstraintPenalty:
-    eve: Penalty
-    fai: Penalty
-    fil: Penalty
-    ord: Penalty
-    seq: Penalty
-    sum: Penalty
-    request: Penalty
+class SystemConstraintPenalty:
+    weekly_target_work_load: int
 
 
 @dataclass
 class Penalties:
-    system_constraint: SystemConstraintPenalty
     user_constraint: UserConstraintPenalty
+    configuration_constraint: ConfigurationConstraintPenalty
+    system_constraint: SystemConstraintPenalty

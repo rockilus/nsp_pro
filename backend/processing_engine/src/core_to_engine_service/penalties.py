@@ -1,4 +1,5 @@
 from shared.schemas import (
+    ConfigurationConstraintPenalty,
     CoveragePenalty,
     Penalties,
     Penalty,
@@ -8,7 +9,16 @@ from shared.schemas import (
 
 # pylint: disable=R0801
 penalties = Penalties(
-    system_constraint=SystemConstraintPenalty(
+    user_constraint=UserConstraintPenalty(
+        eve=Penalty(hard=100, soft=10),
+        fai=Penalty(hard=100, soft=10),
+        fil=Penalty(hard=100, soft=10),
+        ord=Penalty(hard=100, soft=10),
+        seq=Penalty(hard=100, soft=10),
+        sum=Penalty(hard=100, soft=10),
+        request=Penalty(hard=100, soft=10),
+    ),
+    configuration_constraint=ConfigurationConstraintPenalty(
         coverage=CoveragePenalty(duty=1000, normal=200),
         duty_recup=10000,
         worker_shift_filter=10000,
@@ -19,15 +29,7 @@ penalties = Penalties(
         monthly_duties_max=5,
         monthly_duties_desired=3,
     ),
-    user_constraint=UserConstraintPenalty(
-        eve=Penalty(hard=100, soft=10),
-        fai=Penalty(hard=100, soft=10),
-        fil=Penalty(hard=100, soft=10),
-        ord=Penalty(hard=100, soft=10),
-        seq=Penalty(hard=100, soft=10),
-        sum=Penalty(hard=100, soft=10),
-        request=Penalty(hard=100, soft=10),
-    ),
+    system_constraint=SystemConstraintPenalty(weekly_target_work_load=1),
 )
 
 

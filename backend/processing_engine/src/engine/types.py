@@ -7,6 +7,33 @@ from ortools.sat.python import cp_model  # type: ignore
 from shared.schemas import Constraints
 
 ##############################
+# Model Config
+##############################
+
+
+class SolveStrategy(Enum):
+    HARD_TO_SOFT = 0
+    SEQUENTIAL = 1
+
+
+@dataclass
+class SystemConstraints:
+    weekly_target_work_load: bool
+
+
+@dataclass
+class SolverParams:
+    max_time_in_seconds: int
+    solve_strategy: SolveStrategy
+
+
+@dataclass
+class ModelConfig:
+    solver_params: SolverParams
+    system_constraints: SystemConstraints
+
+
+##############################
 # Inputs
 ##############################
 
@@ -114,6 +141,7 @@ class Inputs:
     ]  # (List[assignments], penalty)
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
+    model_config: ModelConfig
 
     def to_dict(self):
         out = asdict(self)
@@ -200,24 +228,3 @@ class BenchmarkTimes:
 # status 2: FEASIBLE
 # status 3: INFEASIBLE
 # status 4: OPTIMAL
-
-
-##############################
-# Model Config
-##############################
-
-
-class SolveStrategy(Enum):
-    HARD_TO_SOFT = 0
-    SEQUENTIAL = 1
-
-
-@dataclass
-class SolverParams:
-    max_time_in_seconds: int
-    solve_strategy: SolveStrategy
-
-
-@dataclass
-class ModelConfig:
-    solver_params: SolverParams

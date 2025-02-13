@@ -32,7 +32,7 @@ def build_engine_work_loads(
             shift_id_to_duration_dict,
             w_to_work_times,
             "contract",
-            penalties.system_constraint.weekly_worktime_contract,
+            penalties.configuration_constraint.weekly_worktime_contract,
         ),
         weekly_work_time_desired=_build_engine_work_time(
             workers_not_deleted,
@@ -42,7 +42,7 @@ def build_engine_work_loads(
             shift_id_to_duration_dict,
             w_to_work_times,
             "desired",
-            penalties.system_constraint.weekly_worktime_desired,
+            penalties.configuration_constraint.weekly_worktime_desired,
         ),
         weekly_work_time_max=_build_engine_work_time(
             workers_not_deleted,
@@ -52,7 +52,7 @@ def build_engine_work_loads(
             shift_id_to_duration_dict,
             w_to_work_times,
             "max",
-            penalties.system_constraint.weekly_worktime_max,
+            penalties.configuration_constraint.weekly_worktime_max,
         ),
         monthly_nb_duties_desired=_build_engine_nb_duties(
             workers_not_deleted,
@@ -60,7 +60,7 @@ def build_engine_work_loads(
             ws_to_dates,
             shift_duties,
             [w.duties_per_month for w in workers_not_deleted],
-            penalties.system_constraint.monthly_duties_desired,
+            penalties.configuration_constraint.monthly_duties_desired,
         ),
         monthly_nb_duties_max=_build_engine_nb_duties(
             workers_not_deleted,
@@ -68,7 +68,7 @@ def build_engine_work_loads(
             ws_to_dates,
             shift_duties,
             [1000 for _ in workers_not_deleted],
-            penalties.system_constraint.monthly_duties_max,
+            penalties.configuration_constraint.monthly_duties_max,
         ),
     )
 

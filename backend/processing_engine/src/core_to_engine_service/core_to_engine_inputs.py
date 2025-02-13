@@ -42,6 +42,7 @@ from core_to_engine_service.build_worker_shift_filter import build_worker_shift_
 from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
 )
+from core_to_engine_service.model_config import model_config
 from engine import Inputs as InputsEngine
 
 
@@ -201,6 +202,7 @@ def core_to_engine_inputs(
             shift_not_deleted_ids,
             wip_assignments,
         ),
+        model_config=model_config,
     )
     return inputs, constraints
 

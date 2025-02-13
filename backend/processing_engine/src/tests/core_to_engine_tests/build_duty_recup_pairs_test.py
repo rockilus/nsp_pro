@@ -59,7 +59,7 @@ class TestBuildDutyRecupPairs:
             penalty = pair[2]
             assert w_duty_id == w_recup_id
             assert d_duty == d_recup
-            assert penalty == penalties.system_constraint.duty_recup
+            assert penalty == penalties.configuration_constraint.duty_recup
             if s_duty_id == "s3":
                 assert s_recup_id == "s5"
             elif s_duty_id == "s4":
