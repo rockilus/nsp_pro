@@ -115,17 +115,11 @@ class WorkLoads:
     monthly_nb_duties_max: NbDuties
 
 
-# pylint: disable=too-many-instance-attributes
 @dataclass
-class Inputs:
-    variables: Variables
-    no_overlap_shift_intervals: List[
-        List[Tuple[str, str, str]]
-    ]  # list of assignments for each worker
+class ConfigurationConstraints:
     work_loads: WorkLoads
     shift_demands: List[ShiftDemand]
     requests: List[Request]
-    constraints: Constraints
     duty_recup_pairs: List[
         Tuple[
             Tuple[str, str, str], Tuple[str, str, str], int
@@ -139,6 +133,17 @@ class Inputs:
     worker_shift_filters: Tuple[
         List[Tuple[str, str, str]], int
     ]  # (List[assignments], penalty)
+
+
+# pylint: disable=too-many-instance-attributes
+@dataclass
+class Inputs:
+    variables: Variables
+    no_overlap_shift_intervals: List[
+        List[Tuple[str, str, str]]
+    ]  # list of assignments for each worker
+    user_constraints: Constraints
+    configuration_constraints: ConfigurationConstraints
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
     model_config: ModelConfig

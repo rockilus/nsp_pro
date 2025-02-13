@@ -216,10 +216,10 @@ class TestConstraintOrd:
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
-        assert len(inputs.constraints.ord) == 1
-        assert isinstance(inputs.constraints.ord[0], ConstraintOrd)
+        assert len(inputs.user_constraints.ord) == 1
+        assert isinstance(inputs.user_constraints.ord[0], ConstraintOrd)
 
-        constraint: ConstraintOrd = inputs.constraints.ord[0]
+        constraint: ConstraintOrd = inputs.user_constraints.ord[0]
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
@@ -230,7 +230,7 @@ class TestConstraintOrd:
         elif constraint.operator == ConstraintOperator.NO:
             constraint_soft.operator = ConstraintOperator.YES
 
-        inputs.constraints.ord.append(constraint_soft)
+        inputs.user_constraints.ord.append(constraint_soft)
 
         out = run_engine_solve(inputs)
 
@@ -331,10 +331,10 @@ class TestConstraintOrd:
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
-        assert len(inputs.constraints.ord) == 1
-        assert isinstance(inputs.constraints.ord[0], ConstraintOrd)
+        assert len(inputs.user_constraints.ord) == 1
+        assert isinstance(inputs.user_constraints.ord[0], ConstraintOrd)
 
-        constraint: ConstraintOrd = inputs.constraints.ord[0]
+        constraint: ConstraintOrd = inputs.user_constraints.ord[0]
         constraint_hard_copy = deepcopy(constraint)
         constraint_hard_copy.id += "_copy"
         constraint_hard_copy.hard = True
@@ -349,7 +349,7 @@ class TestConstraintOrd:
             constraint_hard_copy.target_value = constraint.target_value - 1
             constraint_hard_copy.operator = ConstraintOperator.EQUAL
 
-        inputs.constraints.ord.append(constraint_hard_copy)
+        inputs.user_constraints.ord.append(constraint_hard_copy)
 
         out = run_engine_solve(inputs)
 

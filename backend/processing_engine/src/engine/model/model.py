@@ -221,29 +221,42 @@ class Model:
 
         # Hard to soft constraints:
         self.add_worker_shift_filter_constraints(
-            inputs.worker_shift_filters, worker_shift_filter_hts
+            inputs.configuration_constraints.worker_shift_filters,
+            worker_shift_filter_hts,
         )
-        self.add_duty_recup_constraints(inputs.duty_recup_pairs, duty_recup_hts)
+        self.add_duty_recup_constraints(
+            inputs.configuration_constraints.duty_recup_pairs, duty_recup_hts
+        )
         self.add_constraint_factory.add_coverage.add_coverage(
-            inputs.shift_demands, coverage_hts
+            inputs.configuration_constraints.shift_demands, coverage_hts
         )
         self.add_constraint_factory.add_request.add_requests(
-            inputs.requests, request_hts
+            inputs.configuration_constraints.requests, request_hts
         )
-        self.add_custom_constraints(inputs.constraints, constraint_hts)
-        self.add_link_shift_constraints(inputs.link_shifts_pairs)
-        self.add_work_time_constraints(inputs.work_loads.weekly_work_time_max, False)
-        self.add_nb_duties_constraints(inputs.work_loads.monthly_nb_duties_max)
-        self.add_work_time_constraints(
-            inputs.work_loads.weekly_work_time_contractual, True, work_time_hts
+        self.add_custom_constraints(inputs.user_constraints, constraint_hts)
+        self.add_link_shift_constraints(
+            inputs.configuration_constraints.link_shifts_pairs
         )
         self.add_work_time_constraints(
-            inputs.work_loads.weekly_work_time_desired,
+            inputs.configuration_constraints.work_loads.weekly_work_time_max,
+            False,
+        )
+        self.add_nb_duties_constraints(
+            inputs.configuration_constraints.work_loads.monthly_nb_duties_max
+        )
+        self.add_work_time_constraints(
+            inputs.configuration_constraints.work_loads.weekly_work_time_contractual,
+            True,
+            work_time_hts,
+        )
+        self.add_work_time_constraints(
+            inputs.configuration_constraints.work_loads.weekly_work_time_desired,
             False,
             work_time_desired_hts,
         )
         self.add_nb_duties_constraints(
-            inputs.work_loads.monthly_nb_duties_desired, nb_duty_hts
+            inputs.configuration_constraints.work_loads.monthly_nb_duties_desired,
+            nb_duty_hts,
         )
         self.add_objective()
         self.solve()

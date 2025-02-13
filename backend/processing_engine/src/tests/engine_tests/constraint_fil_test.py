@@ -131,10 +131,10 @@ class TestConstraintFil:
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
-        assert len(inputs.constraints.fil) == 1
-        assert isinstance(inputs.constraints.fil[0], ConstraintFil)
+        assert len(inputs.user_constraints.fil) == 1
+        assert isinstance(inputs.user_constraints.fil[0], ConstraintFil)
 
-        constraint: ConstraintFil = inputs.constraints.fil[0]
+        constraint: ConstraintFil = inputs.user_constraints.fil[0]
         worker_ids_cstr = list(set(var[0] for var in constraint.constraint_variables))
         shift_ids_cstr = list(set(var[2] for var in constraint.constraint_variables))
         shift_ids_cstr_soft = [
@@ -192,8 +192,8 @@ class TestConstraintFil:
             for w_id in worker_ids_cstr
         ]
 
-        inputs.constraints.fil.append(constraint_soft)
-        inputs.constraints.sum = constraints_work
+        inputs.user_constraints.fil.append(constraint_soft)
+        inputs.user_constraints.sum = constraints_work
 
         out = run_engine_solve(inputs)
 
@@ -273,10 +273,10 @@ class TestConstraintFil:
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
-        assert len(inputs.constraints.fil) == 1
-        assert isinstance(inputs.constraints.fil[0], ConstraintFil)
+        assert len(inputs.user_constraints.fil) == 1
+        assert isinstance(inputs.user_constraints.fil[0], ConstraintFil)
 
-        constraint: ConstraintFil = inputs.constraints.fil[0]
+        constraint: ConstraintFil = inputs.user_constraints.fil[0]
         worker_ids_cstr = list(set(var[0] for var in constraint.constraint_variables))
         shift_ids_cstr = list(set(var[2] for var in constraint.constraint_variables))
         shift_ids_cstr_hard = [
@@ -334,8 +334,8 @@ class TestConstraintFil:
             for i in range(2)
         ]
 
-        inputs.constraints.fil.append(constraint_hard)
-        inputs.constraints.sum = constraints_work
+        inputs.user_constraints.fil.append(constraint_hard)
+        inputs.user_constraints.sum = constraints_work
 
         out = run_engine_solve(inputs)
 

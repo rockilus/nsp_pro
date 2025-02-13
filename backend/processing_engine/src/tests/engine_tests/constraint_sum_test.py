@@ -205,10 +205,10 @@ class TestConstraintSum:
         engine_inputs.cbs_augmented = [cba]
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
-        assert len(inputs.constraints.sum) == 1
-        assert isinstance(inputs.constraints.sum[0], ConstraintSum)
+        assert len(inputs.user_constraints.sum) == 1
+        assert isinstance(inputs.user_constraints.sum[0], ConstraintSum)
 
-        constraint: ConstraintSum = inputs.constraints.sum[0]
+        constraint: ConstraintSum = inputs.user_constraints.sum[0]
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
@@ -224,7 +224,7 @@ class TestConstraintSum:
             constraint_soft.target_value = constraint.target_value - 1
             constraint_soft.operator = ConstraintOperator.EQUAL
 
-        inputs.constraints.sum.append(constraint_soft)
+        inputs.user_constraints.sum.append(constraint_soft)
 
         out = run_engine_solve(inputs)
 
@@ -310,10 +310,10 @@ class TestConstraintSum:
         engine_inputs.cbs_augmented = [cba]
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
-        assert len(inputs.constraints.sum) == 1
-        assert isinstance(inputs.constraints.sum[0], ConstraintSum)
+        assert len(inputs.user_constraints.sum) == 1
+        assert isinstance(inputs.user_constraints.sum[0], ConstraintSum)
 
-        constraint: ConstraintSum = inputs.constraints.sum[0]
+        constraint: ConstraintSum = inputs.user_constraints.sum[0]
         constraint_hard_copy = deepcopy(constraint)
         constraint_hard_copy.id += "_copy"
         constraint_hard_copy.hard = True
@@ -328,7 +328,7 @@ class TestConstraintSum:
             constraint_hard_copy.target_value = constraint.target_value - 1
             constraint_hard_copy.operator = ConstraintOperator.EQUAL
 
-        inputs.constraints.sum.append(constraint_hard_copy)
+        inputs.user_constraints.sum.append(constraint_hard_copy)
 
         out = run_engine_solve(inputs)
 

@@ -2,6 +2,7 @@ from engine.engine import Engine
 from engine.types import (
     Assignment,
     Breach,
+    ConfigurationConstraints,
     Constraints,
     Inputs,
     ModelConfig,
@@ -21,6 +22,7 @@ from engine.types import (
 __all__ = [
     "Assignment",
     "Breach",
+    "ConfigurationConstraints",
     "Constraints",
     "Engine",
     "Inputs",

@@ -43,6 +43,7 @@ from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
 )
 from core_to_engine_service.model_config import model_config
+from engine import ConfigurationConstraints
 from engine import Inputs as InputsEngine
 
 
@@ -147,45 +148,51 @@ def core_to_engine_inputs(
             ]
             for w_id in worker_not_deleted_ids
         ],
-        work_loads=build_engine_work_loads(
-            workers_not_deleted,
-            periods_weekly,
-            periods_monthly,
-            ws_to_dates,
-            shifts_work,
-            shift_duties,
-            shift_id_to_duration_dict,
-            w_to_work_times,
-        ),
-        shift_demands=build_engine_shift_demands(
-            workers_not_deleted,
-            dates_campaign,
-            worker_ids_to_worker_dates,
-            shifts_not_deleted,
-            daily_shift_demands,
-        ),
-        requests=build_engine_requests(
-            worker_not_deleted_ids,
-            worker_ids_to_worker_dates,
-            shift_not_deleted_ids,
-            requests,
-        ),
-        constraints=constraints,
-        duty_recup_pairs=build_duty_recup_pairs(
-            workers_not_deleted,
-            worker_ids_to_worker_dates,
-            shifts_not_deleted,
-            shift_duties_not_deleted,
-        ),
-        link_shifts_pairs=build_link_shift_pairs(
-            workers_not_deleted,
-            worker_ids_to_worker_dates,
-            shifts_not_deleted,
-            link_shifts,
-            daily_shift_demands,
-        ),
-        worker_shift_filters=build_worker_shift_filters(
-            workers, worker_ids_to_worker_dates, shifts, dimensions, attributes
+        user_constraints=constraints,
+        configuration_constraints=ConfigurationConstraints(
+            work_loads=build_engine_work_loads(
+                workers_not_deleted,
+                periods_weekly,
+                periods_monthly,
+                ws_to_dates,
+                shifts_work,
+                shift_duties,
+                shift_id_to_duration_dict,
+                w_to_work_times,
+            ),
+            shift_demands=build_engine_shift_demands(
+                workers_not_deleted,
+                dates_campaign,
+                worker_ids_to_worker_dates,
+                shifts_not_deleted,
+                daily_shift_demands,
+            ),
+            requests=build_engine_requests(
+                worker_not_deleted_ids,
+                worker_ids_to_worker_dates,
+                shift_not_deleted_ids,
+                requests,
+            ),
+            duty_recup_pairs=build_duty_recup_pairs(
+                workers_not_deleted,
+                worker_ids_to_worker_dates,
+                shifts_not_deleted,
+                shift_duties_not_deleted,
+            ),
+            link_shifts_pairs=build_link_shift_pairs(
+                workers_not_deleted,
+                worker_ids_to_worker_dates,
+                shifts_not_deleted,
+                link_shifts,
+                daily_shift_demands,
+            ),
+            worker_shift_filters=build_worker_shift_filters(
+                workers,
+                worker_ids_to_worker_dates,
+                shifts,
+                dimensions,
+                attributes,
+            ),
         ),
         fixed_values=core_to_engine_fixed_values(
             workers,

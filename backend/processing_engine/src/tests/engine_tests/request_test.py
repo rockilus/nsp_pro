@@ -316,13 +316,26 @@ class TestRequest:
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
-        assert len(inputs.requests) == 2
-        assert all(isinstance(r, RequestEngine) for r in inputs.requests)
+        assert len(inputs.configuration_constraints.requests) == 2
+        assert all(
+            isinstance(r, RequestEngine)
+            for r in inputs.configuration_constraints.requests
+        )
         request_hard_engine = next(
-            (r for r in inputs.requests if r.id == request_hard.id), None
+            (
+                r
+                for r in inputs.configuration_constraints.requests
+                if r.id == request_hard.id
+            ),
+            None,
         )
         request_soft_engine = next(
-            (r for r in inputs.requests if r.id == request_soft.id), None
+            (
+                r
+                for r in inputs.configuration_constraints.requests
+                if r.id == request_soft.id
+            ),
+            None,
         )
         assert request_hard_engine is not None
         assert request_soft_engine is not None
@@ -396,13 +409,26 @@ class TestRequest:
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
-        assert len(inputs.requests) == 2
-        assert all(isinstance(r, RequestEngine) for r in inputs.requests)
+        assert len(inputs.configuration_constraints.requests) == 2
+        assert all(
+            isinstance(r, RequestEngine)
+            for r in inputs.configuration_constraints.requests
+        )
         request_hard_1_engine = next(
-            (r for r in inputs.requests if r.id == request_hard_1.id), None
+            (
+                r
+                for r in inputs.configuration_constraints.requests
+                if r.id == request_hard_1.id
+            ),
+            None,
         )
         request_hard_2_engine = next(
-            (r for r in inputs.requests if r.id == request_hard_2.id), None
+            (
+                r
+                for r in inputs.configuration_constraints.requests
+                if r.id == request_hard_2.id
+            ),
+            None,
         )
         assert request_hard_1_engine is not None
         assert request_hard_2_engine is not None

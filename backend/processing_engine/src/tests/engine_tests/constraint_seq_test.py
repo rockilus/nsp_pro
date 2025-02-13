@@ -293,10 +293,10 @@ class TestConstraintSeq:
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
-        assert len(inputs.constraints.seq) == 1
-        assert isinstance(inputs.constraints.seq[0], ConstraintSeq)
+        assert len(inputs.user_constraints.seq) == 1
+        assert isinstance(inputs.user_constraints.seq[0], ConstraintSeq)
 
-        constraint: ConstraintSeq = inputs.constraints.seq[0]
+        constraint: ConstraintSeq = inputs.user_constraints.seq[0]
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
@@ -312,7 +312,7 @@ class TestConstraintSeq:
             constraint_soft.target_value = constraint.target_value - 1
             constraint_soft.operator = ConstraintOperator.EQUAL
 
-        inputs.constraints.seq.append(constraint_soft)
+        inputs.user_constraints.seq.append(constraint_soft)
 
         out = run_engine_solve(inputs)
 
@@ -477,10 +477,10 @@ class TestConstraintSeq:
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
-        assert len(inputs.constraints.seq) == 1
-        assert isinstance(inputs.constraints.seq[0], ConstraintSeq)
+        assert len(inputs.user_constraints.seq) == 1
+        assert isinstance(inputs.user_constraints.seq[0], ConstraintSeq)
 
-        constraint: ConstraintSeq = inputs.constraints.seq[0]
+        constraint: ConstraintSeq = inputs.user_constraints.seq[0]
         constraint_hard_copy = deepcopy(constraint)
         constraint_hard_copy.id += "_copy"
         constraint_hard_copy.hard = True
@@ -495,7 +495,7 @@ class TestConstraintSeq:
             constraint_hard_copy.target_value = constraint.target_value - 1
             constraint_hard_copy.operator = ConstraintOperator.EQUAL
 
-        inputs.constraints.seq.append(constraint_hard_copy)
+        inputs.user_constraints.seq.append(constraint_hard_copy)
 
         out = run_engine_solve(inputs)
 
