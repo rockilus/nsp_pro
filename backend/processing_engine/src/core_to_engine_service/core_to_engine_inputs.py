@@ -39,6 +39,9 @@ from core_to_engine_service.build_periods import (
     build_periods_weekly,
 )
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
+from core_to_engine_service.calculate_worker_work_times import (
+    calculate_worker_work_times,
+)
 from engine import Inputs as InputsEngine
 
 
@@ -101,6 +104,17 @@ def core_to_engine_inputs(
         fixed_assignments,
         dates_campaign,
     )
+
+    # Work times
+    w_to_work_times = calculate_worker_work_times(
+        schedule,
+        workers_not_deleted,
+        shifts_not_deleted,
+        requests,
+        daily_shift_demands,
+        periods_weekly,
+    )
+    print(w_to_work_times)
 
     # Constraints:
     constraints = build_engine_constraints(

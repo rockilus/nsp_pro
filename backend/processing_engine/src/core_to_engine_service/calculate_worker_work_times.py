@@ -9,12 +9,12 @@ from utils.constants import Constants
 
 # pylint: disable=too-many-locals, too-many-arguments
 def calculate_worker_work_times(
+    schedule: Schedule,
     workers: List[Worker],
-    shift_demands: List[DailyShiftDemand],
     shifts: List[Shift],
     requests: List[Request],
+    shift_demands: List[DailyShiftDemand],
     periods: List[List[date]],
-    schedule: Schedule,
 ) -> Dict[str, Dict[str, List[int]]]:
     worker_work_times: Dict[str, Dict[str, List[int]]] = {}
 
@@ -163,7 +163,9 @@ def calculate_total_work_time_minutes(
         if shift is None:
             continue
         if shift and shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]:
-            shift_duration = (shift.end_time - shift.start_time).total_seconds() / 60
+            shift_duration = (
+                shift.end_time - shift.start_time
+            ).total_seconds() / Constants.NUM_SECONDS_MINUTE
             total_work_time += shift_duration * dsd.count
 
     return int(total_work_time)
@@ -209,9 +211,7 @@ def calculate_proportional_times(
                 w_id_to_target_work_time_by_period[worker.id] = []
             w_id_to_target_work_time_by_period[worker.id].append(target_work_time)
 
-    return round_proportional_times(
-        w_id_to_target_work_time_by_period, period_index_to_required_work_time
-    )
+    return round_proportional_times(w_id_to_target_work_time_by_period)
 
 
 def sort_workers(
@@ -228,37 +228,42 @@ def sort_workers(
 
 
 def round_proportional_times(
-    proportional_times: Dict[str, List[float]],
-    period_work_times: Dict[int, int],
+    proportional_times: Dict[str, List[float]]
 ) -> Dict[str, List[int]]:
     rounded_times: Dict[str, List[int]] = {
         worker_id: [] for worker_id in proportional_times.keys()
     }
 
-    for period_index, total_work_time in period_work_times.items():
-        # Calculate the initial rounded times and the rounding error
-        period_rounded_times: Dict[str, int] = {
-            worker_id: round(proportional_times[worker_id][period_index])
-            for worker_id in proportional_times.keys()
-        }
-        total_rounded_time = sum(period_rounded_times.values())
-        rounding_error = total_work_time - total_rounded_time
+    if len(proportional_times.values()) > 0:
+        len_first_value = len(list(proportional_times.values())[0])
+        for i in range(len_first_value):
+            total_work_time = int(
+                sum(
+                    proportional_times[worker_id][i]
+                    for worker_id in proportional_times.keys()
+                )
+            )
+            # Calculate the initial rounded times and the rounding error
+            period_rounded_times: Dict[str, int] = {
+                worker_id: round(proportional_times[worker_id][i])
+                for worker_id in proportional_times.keys()
+            }
+            total_rounded_time = sum(period_rounded_times.values())
+            rounding_error = total_work_time - total_rounded_time
 
-        # Distribute the rounding error across the workers
-        sorted_workers = sort_workers(
-            period_index, proportional_times, period_rounded_times
-        )
+            # Distribute the rounding error across the workers
+            sorted_workers = sort_workers(i, proportional_times, period_rounded_times)
 
-        for i in range(abs(rounding_error)):
-            worker_id = sorted_workers[i % len(sorted_workers)]
-            if rounding_error > 0:
-                period_rounded_times[worker_id] += 1
-            elif rounding_error < 0:
-                period_rounded_times[worker_id] -= 1
+            for j in range(abs(rounding_error)):
+                worker_id = sorted_workers[j % len(sorted_workers)]
+                if rounding_error > 0:
+                    period_rounded_times[worker_id] += 1
+                elif rounding_error < 0:
+                    period_rounded_times[worker_id] -= 1
 
-        # Store the rounded times for the current period
-        for worker_id, rounded_time in period_rounded_times.items():
-            rounded_times[worker_id].append(rounded_time)
+            # Store the rounded times for the current period
+            for worker_id, rounded_time in period_rounded_times.items():
+                rounded_times[worker_id].append(rounded_time)
 
     return rounded_times
 
