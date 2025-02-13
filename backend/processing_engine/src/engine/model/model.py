@@ -220,6 +220,7 @@ class Model:
         self.no_interval_overlap(inputs.no_overlap_shift_intervals)
 
         # Hard to soft constraints:
+        # Configuration constraints:
         self.add_worker_shift_filter_constraints(
             inputs.configuration_constraints.worker_shift_filters,
             worker_shift_filter_hts,
@@ -233,7 +234,6 @@ class Model:
         self.add_constraint_factory.add_request.add_requests(
             inputs.configuration_constraints.requests, request_hts
         )
-        self.add_custom_constraints(inputs.user_constraints, constraint_hts)
         self.add_link_shift_constraints(
             inputs.configuration_constraints.link_shifts_pairs
         )
@@ -258,6 +258,15 @@ class Model:
             inputs.configuration_constraints.work_loads.monthly_nb_duties_desired,
             nb_duty_hts,
         )
+
+        # User constraints:
+        self.add_custom_constraints(inputs.user_constraints, constraint_hts)
+
+        # System constraints:
+        self.add_target_work_time_constraints(
+            inputs.system_constraints.weekly_target_work_time
+        )
+
         self.add_objective()
         self.solve()
         self.print_model_metadata(
@@ -401,6 +410,105 @@ class Model:
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(work_time.penalty)
+
+    def add_target_work_time_constraints(self, work_time: WorkTime) -> None:
+        if not self.model_config.system_constraints.weekly_target_work_time:
+            return
+        for w_assignments, w_targets, w_durations in zip(
+            work_time.assignments,
+            work_time.targets,
+            work_time.durations,
+        ):
+            for p_assignments, p_target, p_durations in zip(
+                w_assignments, w_targets, w_durations
+            ):
+                constraint_vars = [self.variables[a] for a in p_assignments]
+                var_name = "target_work_time"
+                delta = self.model.NewIntVar(
+                    -p_target,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    "",
+                )
+                self.model.Add(
+                    delta
+                    == sum(v * dur for v, dur in zip(constraint_vars, p_durations))
+                    - p_target
+                )
+
+                # WITHOUT TOLERANCE
+                excess = self.model.NewIntVar(
+                    0,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    var_name,
+                )
+                self.model.AddAbsEquality(excess, delta)
+                self.obj.int_vars.append(excess)
+                self.obj.int_coeffs.append(work_time.penalty)
+
+                # WITH TOLERANCE
+                # SEPARE EXCESS OVER AND UNDER
+                # tolerance = round(p_target * 0.1)
+
+                # # Define excess over upper bound
+                # excess_over = self.model.NewIntVar(
+                #     0,
+                #     len(constraint_vars)
+                #     * Constants.NUM_HOURS_DAY
+                #     * Constants.NUM_MINUTES_HOUR,
+                #     "",
+                # )
+                # self.model.Add(excess_over >= delta - tolerance)
+                # self.model.Add(excess_over >= 0)
+
+                # # Define excess below lower bound
+                # excess_under = self.model.NewIntVar(
+                #     0,
+                #     len(constraint_vars)
+                #     * Constants.NUM_HOURS_DAY
+                #     * Constants.NUM_MINUTES_HOUR,
+                #     "",
+                # )
+                # self.model.Add(excess_under >= -delta - tolerance)
+                # self.model.Add(excess_under >= 0)
+
+                # # Total excess penalty (only applies outside tolerance)
+                # excess = self.model.NewIntVar(
+                #     0,
+                #     len(constraint_vars)
+                #     * Constants.NUM_HOURS_DAY
+                #     * Constants.NUM_MINUTES_HOUR,
+                #     var_name,
+                # )
+                # self.model.Add(excess == excess_over + excess_under)
+
+                # # Apply penalty only to the excess
+                # self.obj.int_vars.append(excess)
+                # self.obj.int_coeffs.append(work_time.penalty)
+
+                # ONE EXCESS
+                # excess = self.model.NewIntVar(
+                #     0,
+                #     len(constraint_vars)
+                #     * Constants.NUM_HOURS_DAY
+                #     * Constants.NUM_MINUTES_HOUR,
+                #     var_name,
+                # )
+                # abs_delta = self.model.NewIntVar(
+                #     0,
+                #     len(constraint_vars)
+                #     * Constants.NUM_HOURS_DAY
+                #     * Constants.NUM_MINUTES_HOUR,
+                #     "",
+                # )
+                # self.model.AddAbsEquality(abs_delta, delta)
+
+                # self.model.AddMaxEquality(excess, [abs_delta - tolerance, 0])
+                # self.obj.int_vars.append(excess)
+                # self.obj.int_coeffs.append(work_time.penalty)
 
     def add_nb_duties_constraints(
         self, nb_duties: NbDuties, hard_to_soft: bool = False

@@ -2,7 +2,7 @@ from engine.engine import Engine
 from engine.types import (
     Assignment,
     Breach,
-    ConfigurationConstraints,
+    ConfigurationConstraintInputs,
     Constraints,
     Inputs,
     ModelConfig,
@@ -12,6 +12,7 @@ from engine.types import (
     ShiftDemand,
     SolverParams,
     SolveStrategy,
+    SystemConstraintInputs,
     SystemConstraints,
     Variables,
     VarName,
@@ -22,7 +23,7 @@ from engine.types import (
 __all__ = [
     "Assignment",
     "Breach",
-    "ConfigurationConstraints",
+    "ConfigurationConstraintInputs",
     "Constraints",
     "Engine",
     "Inputs",
@@ -33,6 +34,7 @@ __all__ = [
     "ShiftDemand",
     "SolverParams",
     "SolveStrategy",
+    "SystemConstraintInputs",
     "SystemConstraints",
     "Variables",
     "VarName",

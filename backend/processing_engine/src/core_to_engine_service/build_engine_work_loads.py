@@ -24,7 +24,7 @@ def build_engine_work_loads(
     w_to_work_times: Dict[str, Dict[str, List[int]]],
 ) -> WorkLoadsEngine:
     return WorkLoadsEngine(
-        weekly_work_time_contractual=_build_engine_work_time(
+        weekly_work_time_contractual=build_engine_work_time(
             workers_not_deleted,
             periods_weekly,
             ws_to_dates,
@@ -34,7 +34,7 @@ def build_engine_work_loads(
             "contract",
             penalties.configuration_constraint.weekly_worktime_contract,
         ),
-        weekly_work_time_desired=_build_engine_work_time(
+        weekly_work_time_desired=build_engine_work_time(
             workers_not_deleted,
             periods_weekly,
             ws_to_dates,
@@ -44,7 +44,7 @@ def build_engine_work_loads(
             "desired",
             penalties.configuration_constraint.weekly_worktime_desired,
         ),
-        weekly_work_time_max=_build_engine_work_time(
+        weekly_work_time_max=build_engine_work_time(
             workers_not_deleted,
             periods_weekly,
             ws_to_dates,
@@ -74,7 +74,7 @@ def build_engine_work_loads(
 
 
 # pylint: disable=too-many-arguments, too-many-locals
-def _build_engine_work_time(
+def build_engine_work_time(
     workers_not_deleted: List[Worker],
     periods: List[List[date]],
     ws_to_dates: Dict[Tuple[str, str], WorkerDates],

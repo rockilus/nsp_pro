@@ -18,7 +18,7 @@ class SolveStrategy(Enum):
 
 @dataclass
 class SystemConstraints:
-    weekly_target_work_load: bool
+    weekly_target_work_time: bool
 
 
 @dataclass
@@ -116,7 +116,7 @@ class WorkLoads:
 
 
 @dataclass
-class ConfigurationConstraints:
+class ConfigurationConstraintInputs:
     work_loads: WorkLoads
     shift_demands: List[ShiftDemand]
     requests: List[Request]
@@ -135,6 +135,11 @@ class ConfigurationConstraints:
     ]  # (List[assignments], penalty)
 
 
+@dataclass
+class SystemConstraintInputs:
+    weekly_target_work_time: WorkTime
+
+
 # pylint: disable=too-many-instance-attributes
 @dataclass
 class Inputs:
@@ -142,10 +147,11 @@ class Inputs:
     no_overlap_shift_intervals: List[
         List[Tuple[str, str, str]]
     ]  # list of assignments for each worker
-    user_constraints: Constraints
-    configuration_constraints: ConfigurationConstraints
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
+    user_constraints: Constraints
+    configuration_constraints: ConfigurationConstraintInputs
+    system_constraints: SystemConstraintInputs
     model_config: ModelConfig
 
     def to_dict(self):

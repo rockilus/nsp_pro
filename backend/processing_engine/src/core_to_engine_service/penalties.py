@@ -29,7 +29,7 @@ penalties = Penalties(
         monthly_duties_max=5,
         monthly_duties_desired=3,
     ),
-    system_constraint=SystemConstraintPenalty(weekly_target_work_load=1),
+    system_constraint=SystemConstraintPenalty(weekly_target_work_time=1),
 )
 
 

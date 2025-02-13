@@ -2,6 +2,7 @@ import json
 from datetime import date
 from typing import Dict, List
 
+from shared.logger import log_info
 from shared.schemas import (
     Assignment,
     Breach,
@@ -64,7 +65,11 @@ def _parse_breaches_engine(
 ) -> List[Breach]:
     out: List[Breach] = []
     for be in breaches_engine:
-        var_name = VarNameEngine(**json.loads(be.var_name))
+        try:
+            var_name = VarNameEngine(**json.loads(be.var_name))
+        except Exception as e:
+            log_info(f"Error parsing var_name: {e}")
+            continue
         variables = [
             (v[0], date.fromisoformat(v[1]), v[2])
             for v in [v.split("_") for v in var_name.cstr_vars]

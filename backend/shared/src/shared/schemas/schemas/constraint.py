@@ -340,7 +340,7 @@ class ConfigurationConstraintPenalty:
 
 @dataclass
 class SystemConstraintPenalty:
-    weekly_target_work_load: int
+    weekly_target_work_time: int
 
 
 @dataclass
