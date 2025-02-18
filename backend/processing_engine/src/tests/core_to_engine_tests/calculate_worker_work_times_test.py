@@ -188,7 +188,7 @@ class TestCalculateWorkerWorkTimes:
             engine_inputs.shifts,
             engine_inputs.requests,
             periods_weekly,
-            Constants.NUM_DAYS_WEEK,
+            [Constants.NUM_DAYS_WEEK for _ in periods_weekly],
         )
 
         # Verify the output
@@ -251,7 +251,7 @@ class TestCalculateWorkerWorkTimes:
             engine_inputs.shifts,
             engine_inputs.requests,
             periods_weekly,
-            Constants.NUM_DAYS_WEEK,
+            [Constants.NUM_DAYS_WEEK for _ in periods_weekly],
         )
 
         # Verify the output

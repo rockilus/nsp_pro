@@ -19,6 +19,9 @@ class SolveStrategy(Enum):
 @dataclass
 class SystemConstraints:
     weekly_target_work_time: bool
+    weekly_target_work_time_tolerance: float
+    monthly_target_nb_duties: bool
+    monthly_target_nb_duties_tolerance: float
 
 
 @dataclass
@@ -91,6 +94,7 @@ class WorkTime:
     # (size workers x periods x shifts * period length)
     durations: List[List[List[int]]]
     penalty: int
+    tolerance: float = 0.0
 
 
 @dataclass
@@ -104,6 +108,7 @@ class NbDuties:
     # for each assignment, the duration of the shift
     # (size workers x periods x shifts * period length)
     penalty: int
+    tolerance: float = 0.0
 
 
 @dataclass
@@ -138,6 +143,7 @@ class ConfigurationConstraintInputs:
 @dataclass
 class SystemConstraintInputs:
     weekly_target_work_time: WorkTime
+    monthly_target_nb_duties: NbDuties
 
 
 # pylint: disable=too-many-instance-attributes

@@ -12,6 +12,7 @@ from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
+from core_to_engine_service.calculate_worker_nb_duties import calculate_worker_nb_duties
 from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
 )
@@ -66,6 +67,14 @@ class TestBuildEngineWorkLoads:
             sample_data.daily_shift_demands,
             periods_weekly,
         )
+        w_to_nb_duties = calculate_worker_nb_duties(
+            schedule,
+            workers_not_deleted,
+            shifts_not_deleted,
+            sample_data.requests,
+            sample_data.daily_shift_demands,
+            periods_monthly,
+        )
 
         # Call the method under test
         work_loads = build_engine_work_loads(
@@ -77,6 +86,7 @@ class TestBuildEngineWorkLoads:
             shift_duties,
             shift_id_to_duration_dict,
             w_to_work_times,
+            w_to_nb_duties,
         )
 
         # Verify the output
@@ -139,6 +149,14 @@ class TestBuildEngineWorkLoads:
             sample_data.daily_shift_demands,
             periods_weekly,
         )
+        w_to_nb_duties = calculate_worker_nb_duties(
+            schedule,
+            workers_not_deleted,
+            shifts_not_deleted,
+            sample_data.requests,
+            sample_data.daily_shift_demands,
+            periods_monthly,
+        )
 
         # Call the method under test
         work_loads = build_engine_work_loads(
@@ -150,6 +168,7 @@ class TestBuildEngineWorkLoads:
             shift_duties,
             shift_id_to_duration_dict,
             w_to_work_times,
+            w_to_nb_duties,
         )
 
         # Verify the output
@@ -200,6 +219,14 @@ class TestBuildEngineWorkLoads:
             sample_data.daily_shift_demands,
             periods_weekly,
         )
+        w_to_nb_duties = calculate_worker_nb_duties(
+            schedule,
+            workers_not_deleted,
+            shifts_not_deleted,
+            sample_data.requests,
+            sample_data.daily_shift_demands,
+            periods_monthly,
+        )
 
         # Call the method under test
         work_loads = build_engine_work_loads(
@@ -211,6 +238,7 @@ class TestBuildEngineWorkLoads:
             shift_duties,
             shift_id_to_duration_dict,
             w_to_work_times,
+            w_to_nb_duties,
         )
 
         # Verify the output
@@ -274,6 +302,14 @@ class TestBuildEngineWorkLoads:
             sample_data.daily_shift_demands,
             periods_weekly,
         )
+        w_to_nb_duties = calculate_worker_nb_duties(
+            schedule,
+            workers_not_deleted,
+            shifts_not_deleted,
+            sample_data.requests,
+            sample_data.daily_shift_demands,
+            periods_monthly,
+        )
 
         # Call the method under test
         work_loads = build_engine_work_loads(
@@ -285,6 +321,7 @@ class TestBuildEngineWorkLoads:
             shift_duties,
             shift_id_to_duration_dict,
             w_to_work_times,
+            w_to_nb_duties,
         )
 
         # Verify the output
@@ -363,6 +400,14 @@ class TestBuildEngineWorkLoads:
             sample_data.daily_shift_demands,
             periods_weekly,
         )
+        w_to_nb_duties = calculate_worker_nb_duties(
+            schedule,
+            workers_not_deleted,
+            shifts_not_deleted,
+            sample_data.requests,
+            sample_data.daily_shift_demands,
+            periods_monthly,
+        )
 
         # Call the method under test
         work_loads = build_engine_work_loads(
@@ -374,6 +419,7 @@ class TestBuildEngineWorkLoads:
             shift_duties,
             shift_id_to_duration_dict,
             w_to_work_times,
+            w_to_nb_duties,
         )
 
         # Verify the output
@@ -447,6 +493,14 @@ class TestBuildEngineWorkLoads:
             sample_data.daily_shift_demands,
             periods_weekly,
         )
+        w_to_nb_duties = calculate_worker_nb_duties(
+            schedule,
+            workers_not_deleted,
+            shifts_not_deleted,
+            sample_data.requests,
+            sample_data.daily_shift_demands,
+            periods_monthly,
+        )
 
         # Call the method under test
         work_loads = build_engine_work_loads(
@@ -458,6 +512,7 @@ class TestBuildEngineWorkLoads:
             shift_duties,
             shift_id_to_duration_dict,
             w_to_work_times,
+            w_to_nb_duties,
         )
 
         # Verify the output
@@ -547,4 +602,4 @@ class TestBuildEngineWorkLoads:
                     if nb_desired != worker.duties_per_month:
                         print("stop")
                     assert nb_desired == math.ceil(worker.duties_per_month * coef_adj)
-                    assert nb_max == math.ceil(1000 * coef_adj)
+                    assert nb_max == math.ceil(80 * coef_adj)

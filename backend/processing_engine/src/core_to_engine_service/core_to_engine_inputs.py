@@ -33,6 +33,7 @@ from core_to_engine_service.build_engine_shift_demands import build_engine_shift
 from core_to_engine_service.build_engine_sol_hint import core_to_engine_sol_hint
 from core_to_engine_service.build_engine_variables import build_engine_variables
 from core_to_engine_service.build_engine_work_loads import (
+    build_engine_nb_duties,
     build_engine_work_loads,
     build_engine_work_time,
 )
@@ -42,6 +43,7 @@ from core_to_engine_service.build_periods import (
     build_periods_weekly,
 )
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
+from core_to_engine_service.calculate_worker_nb_duties import calculate_worker_nb_duties
 from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
 )
@@ -127,6 +129,14 @@ def core_to_engine_inputs(
         daily_shift_demands,
         periods_weekly,
     )
+    w_to_nb_duties = calculate_worker_nb_duties(
+        schedule,
+        workers_not_deleted,
+        shifts_not_deleted,
+        requests,
+        daily_shift_demands,
+        periods_monthly,
+    )
 
     # Constraints:
     constraints = build_engine_constraints(
@@ -185,6 +195,7 @@ def core_to_engine_inputs(
                 shift_duties,
                 shift_id_to_duration_dict,
                 w_to_work_times,
+                w_to_nb_duties,
             ),
             shift_demands=build_engine_shift_demands(
                 workers_not_deleted,
@@ -230,7 +241,18 @@ def core_to_engine_inputs(
                 w_to_work_times,
                 "target",
                 penalties.system_constraint.weekly_target_work_time,
-            )
+                model_config.system_constraints.weekly_target_work_time_tolerance,
+            ),
+            monthly_target_nb_duties=build_engine_nb_duties(
+                workers_not_deleted,
+                periods_monthly,
+                ws_to_dates,
+                shift_duties_not_deleted,
+                w_to_nb_duties,
+                "target",
+                penalties.system_constraint.monthly_target_nb_duties,
+                model_config.system_constraints.monthly_target_nb_duties_tolerance,
+            ),
         ),
         model_config=model_config,
     )

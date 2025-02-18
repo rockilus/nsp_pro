@@ -438,16 +438,16 @@ class Model:
                 )
 
                 # WITHOUT TOLERANCE
-                excess = self.model.NewIntVar(
-                    0,
-                    len(constraint_vars)
-                    * Constants.NUM_HOURS_DAY
-                    * Constants.NUM_MINUTES_HOUR,
-                    var_name,
-                )
-                self.model.AddAbsEquality(excess, delta)
-                self.obj.int_vars.append(excess)
-                self.obj.int_coeffs.append(work_time.penalty)
+                # excess = self.model.NewIntVar(
+                #     0,
+                #     len(constraint_vars)
+                #     * Constants.NUM_HOURS_DAY
+                #     * Constants.NUM_MINUTES_HOUR,
+                #     var_name,
+                # )
+                # self.model.AddAbsEquality(excess, delta)
+                # self.obj.int_vars.append(excess)
+                # self.obj.int_coeffs.append(work_time.penalty)
 
                 # WITH TOLERANCE
                 # SEPARE EXCESS OVER AND UNDER
@@ -490,26 +490,26 @@ class Model:
                 # self.obj.int_coeffs.append(work_time.penalty)
 
                 # ONE EXCESS
-                # tolerance = round(p_target * 0.1)
-                # excess = self.model.NewIntVar(
-                #     0,
-                #     len(constraint_vars)
-                #     * Constants.NUM_HOURS_DAY
-                #     * Constants.NUM_MINUTES_HOUR,
-                #     var_name,
-                # )
-                # abs_delta = self.model.NewIntVar(
-                #     0,
-                #     len(constraint_vars)
-                #     * Constants.NUM_HOURS_DAY
-                #     * Constants.NUM_MINUTES_HOUR,
-                #     "",
-                # )
-                # self.model.AddAbsEquality(abs_delta, delta)
+                tolerance = round(p_target * work_time.tolerance)
+                excess = self.model.NewIntVar(
+                    0,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    var_name,
+                )
+                abs_delta = self.model.NewIntVar(
+                    0,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    "",
+                )
+                self.model.AddAbsEquality(abs_delta, delta)
 
-                # self.model.AddMaxEquality(excess, [abs_delta - tolerance, 0])
-                # self.obj.int_vars.append(excess)
-                # self.obj.int_coeffs.append(work_time.penalty)
+                self.model.AddMaxEquality(excess, [abs_delta - tolerance, 0])
+                self.obj.int_vars.append(excess)
+                self.obj.int_coeffs.append(work_time.penalty)
 
     def add_nb_duties_constraints(
         self, nb_duties: NbDuties, hard_to_soft: bool = False

@@ -16,6 +16,12 @@ def calculate_worker_work_times(
     shift_demands: List[DailyShiftDemand],
     periods: List[List[date]],
 ) -> Dict[str, Dict[str, List[int]]]:
+    # [
+    # key: worker_id,
+    # value: {
+    #   key: [contract, desired, max, target],
+    #   value: [target time in minute for each period]}
+    # ]
     worker_work_times: Dict[str, Dict[str, List[int]]] = {}
 
     shift_leave_ids = [
@@ -29,7 +35,7 @@ def calculate_worker_work_times(
         shifts,
         requests_leave,
         periods,
-        Constants.NUM_DAYS_WEEK,
+        [Constants.NUM_DAYS_WEEK for _ in periods],
     )
 
     target_work_times = calculate_proportional_times(
@@ -76,13 +82,13 @@ def calculate_adjustment_coefficients(
     shifts: List[Shift],
     requests_leave: List[Request],
     periods: List[List[date]],
-    ref_period_length: int,
+    ref_period_lengths: List[int],
 ) -> Dict[str, List[float]]:
     w_id_to_coef: Dict[str, List[float]] = {}
 
     workers_empl_dates = build_employment_dates_dict(workers, schedule)
     for worker in workers:
-        for period in periods:
+        for i, period in enumerate(periods):
             worker_period = [d for d in period if d in workers_empl_dates[worker.id]]
 
             # Calculate the number of time off days in the period
@@ -93,11 +99,11 @@ def calculate_adjustment_coefficients(
             adjusted_length = max(0, len(worker_period) - time_off_days)
             if worker.id not in w_id_to_coef:
                 w_id_to_coef[worker.id] = []
-            if ref_period_length == 0:
+            if ref_period_lengths[i] == 0:
                 w_id_to_coef[worker.id].append(0)
             else:
                 w_id_to_coef[worker.id].append(
-                    max(0, min(1, adjusted_length / ref_period_length))
+                    max(0, min(1, adjusted_length / ref_period_lengths[i]))
                 )
 
     return w_id_to_coef
