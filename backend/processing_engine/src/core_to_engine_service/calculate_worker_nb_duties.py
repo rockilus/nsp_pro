@@ -39,7 +39,7 @@ def calculate_worker_nb_duties(
         shifts,
         requests_leave,
         periods,
-        get_days_in_months(periods),
+        get_nb_days_in_months(periods),
     )
 
     target_work_times = calculate_proportional_nb_duties(
@@ -118,7 +118,7 @@ def calculate_proportional_nb_duties(
     return round_proportional_times(w_id_to_target_nb_duties_by_period)
 
 
-def get_days_in_months(dates_list: List[List[date]]) -> List[int]:
+def get_nb_days_in_months(dates_list: List[List[date]]) -> List[int]:
     days_in_months = []
     for dates in dates_list:
         if dates:
