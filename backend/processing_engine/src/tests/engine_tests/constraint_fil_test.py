@@ -24,7 +24,7 @@ from engine_to_core_service.build_breaches import _parse_breaches_engine
 
 # pylint: disable=R0801
 class TestConstraintFil:
-    def test_constraint_ord_hard(
+    def test_constraint_fil_hard(
         self,
         engine_inputs: EngineInputs,
         constraint_fil_with_expected_output: Tuple[
@@ -63,7 +63,7 @@ class TestConstraintFil:
         else:
             assert False
 
-    def test_constraint_ord_soft(
+    def test_constraint_fil_soft(
         self,
         engine_inputs: EngineInputs,
         constraint_fil_with_expected_output: Tuple[
@@ -105,7 +105,7 @@ class TestConstraintFil:
             assert False
 
     # pylint: disable=too-many-locals
-    def test_constraint_ord_hard_soft_conflict(
+    def test_constraint_fil_hard_soft_conflict(
         self,
         engine_inputs: EngineInputs,
         constraint_fil_with_expected_output: Tuple[
@@ -247,7 +247,7 @@ class TestConstraintFil:
             obj_value += penalty * nb_a_period
         assert out.objective_value == obj_value
 
-    def test_constraint_ord_hard_hard_conflic_obj_value(
+    def test_constraint_fil_hard_hard_conflic_obj_value(
         self,
         engine_inputs: EngineInputs,
         constraint_fil_with_expected_output: Tuple[

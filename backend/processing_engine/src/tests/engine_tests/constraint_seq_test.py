@@ -291,6 +291,10 @@ class TestConstraintSeq:
         )
         engine_inputs.requests = [request]
 
+        for w in engine_inputs.workers:
+            w.weekly_hours = 80
+            w.weekly_hours_desired = 80
+
         inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
         assert len(inputs.user_constraints.seq) == 1

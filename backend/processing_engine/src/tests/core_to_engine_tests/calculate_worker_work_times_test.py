@@ -133,9 +133,14 @@ class TestCalculateWorkerWorkTimes:
                 shift = shift_dict.get(dsd.shift_id, None)
                 if shift is None:
                     continue
-                shift_duration = (
-                    shift.end_time - shift.start_time
-                ).total_seconds() / Constants.NUM_SECONDS_MINUTE
+                shift_duration = max(
+                    int(
+                        (shift.end_time - shift.start_time).total_seconds()
+                        / Constants.NUM_SECONDS_MINUTE
+                        - 1
+                    ),
+                    0,
+                )
                 work_time_period += shift_duration * dsd.count
             work_time_periods[i] = work_time_period
 

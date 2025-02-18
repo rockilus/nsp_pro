@@ -161,9 +161,14 @@ def calculate_total_work_time_minutes(
         if shift is None:
             continue
         if shift and shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]:
-            shift_duration = (
-                shift.end_time - shift.start_time
-            ).total_seconds() / Constants.NUM_SECONDS_MINUTE
+            shift_duration = max(
+                int(
+                    (shift.end_time - shift.start_time).total_seconds()
+                    / Constants.NUM_SECONDS_MINUTE
+                    - 1
+                ),
+                0,
+            )
             total_work_time += shift_duration * dsd.count
 
     return int(total_work_time)

@@ -112,6 +112,12 @@ def core_to_engine_inputs(
         dates_campaign,
     )
 
+    # Penalties
+    coefficient = (
+        len(workers_not_deleted) * len(shifts_not_deleted) * len(dates_campaign)
+    )
+    penalties.apply_coefficient(coefficient)
+
     # Work times
     w_to_work_times = calculate_worker_work_times(
         schedule,

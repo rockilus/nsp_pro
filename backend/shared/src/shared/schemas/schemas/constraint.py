@@ -198,9 +198,7 @@ class ConstraintBuildAugmented(ConstraintBuild):
         out.update(
             {
                 "active": self.active,
-                "missing_attributes": [
-                    ma.to_dict() for ma in self.missing_attributes
-                ],
+                "missing_attributes": [ma.to_dict() for ma in self.missing_attributes],
                 "text": self.text,
             }
         )
@@ -219,8 +217,7 @@ class ConstraintBuildAugmented(ConstraintBuild):
             priority=data["priority"],
             active=data["active"],
             missing_attributes=[
-                MissingAttribute.from_dict(ma)
-                for ma in data["missing_attributes"]
+                MissingAttribute.from_dict(ma) for ma in data["missing_attributes"]
             ],
             text=data["text"],
         )
@@ -259,9 +256,7 @@ class ConstraintOrd(Constraint):
     shift_reference_ids: List[str]
     shift_relative_ids: List[str]
     interval: int
-    constraint_variables: List[
-        Tuple[Tuple[str, str, str], Tuple[str, str, str]]
-    ]
+    constraint_variables: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
 
 
 # list of variables to set to 0
@@ -307,11 +302,19 @@ class Penalty:
     hard: int
     soft: int
 
+    def apply_coefficient(self, coefficient: int) -> None:
+        self.hard *= coefficient
+        self.soft *= coefficient
+
 
 @dataclass
 class CoveragePenalty:
     duty: int
     normal: int
+
+    def apply_coefficient(self, coefficient: int) -> None:
+        self.duty *= coefficient
+        self.normal *= coefficient
 
 
 @dataclass
@@ -323,6 +326,15 @@ class UserConstraintPenalty:
     seq: Penalty
     sum: Penalty
     request: Penalty
+
+    def apply_coefficient(self, coefficient: int) -> None:
+        self.eve.apply_coefficient(coefficient)
+        self.fai.apply_coefficient(coefficient)
+        self.fil.apply_coefficient(coefficient)
+        self.ord.apply_coefficient(coefficient)
+        self.seq.apply_coefficient(coefficient)
+        self.sum.apply_coefficient(coefficient)
+        self.request.apply_coefficient(coefficient)
 
 
 @dataclass
@@ -337,10 +349,21 @@ class ConfigurationConstraintPenalty:
     monthly_duties_max: int
     monthly_duties_desired: int
 
+    def apply_coefficient(self, coefficient: int) -> None:
+        self.coverage.apply_coefficient(coefficient)
+        self.duty_recup *= coefficient
+        self.worker_shift_filter *= coefficient
+        self.link_shift *= coefficient
+        self.monthly_duties_max *= coefficient
+        self.monthly_duties_desired *= coefficient
+
 
 @dataclass
 class SystemConstraintPenalty:
     weekly_target_work_time: int
+
+    def apply_coefficient(self, coefficient: int) -> None:
+        pass
 
 
 @dataclass
@@ -348,3 +371,12 @@ class Penalties:
     user_constraint: UserConstraintPenalty
     configuration_constraint: ConfigurationConstraintPenalty
     system_constraint: SystemConstraintPenalty
+    _coefficient_applied: bool = False
+
+    def apply_coefficient(self, coefficient: int) -> None:
+        if self._coefficient_applied:
+            return
+        self.user_constraint.apply_coefficient(coefficient)
+        self.configuration_constraint.apply_coefficient(coefficient)
+        self.system_constraint.apply_coefficient(coefficient)
+        self._coefficient_applied = True

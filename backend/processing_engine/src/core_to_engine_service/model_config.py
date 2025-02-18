@@ -2,8 +2,14 @@ import os
 
 from engine import ModelConfig, SolverParams, SolveStrategy, SystemConstraints
 
-pytest_mode = os.getenv("PYTEST_RUNNING", "false").lower() == "true"
+# for key, value in os.environ.items():
+#     print(f"{key}: {value}")
+
+pytest_mode = os.getenv("PYTEST_VERSION", "false").lower() != "false"
 github_actions_mode = os.getenv("GITHUB_ACTIONS", "false").lower() == "true"
+
+print(f"pytest_mode: {pytest_mode}")
+print(f"github_actions_mode: {github_actions_mode}")
 
 model_config = ModelConfig(
     solver_params=SolverParams(

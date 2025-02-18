@@ -490,6 +490,7 @@ class Model:
                 # self.obj.int_coeffs.append(work_time.penalty)
 
                 # ONE EXCESS
+                # tolerance = round(p_target * 0.1)
                 # excess = self.model.NewIntVar(
                 #     0,
                 #     len(constraint_vars)

@@ -729,7 +729,7 @@ test_data = [
     # "text": "All workers should work at most 2 consecutive all shifts.",
     (
         ConstraintBuildAugmented(
-            id="c_seq_1",
+            id="c_seq_3",
             team_id="t0",
             constraint_type=ConstraintType.SEQ,
             template_id="0",
@@ -789,7 +789,7 @@ test_data = [
             missing_attributes=[],
         ),
         ConstraintSeq(
-            id="c_seq_1",
+            id="c_seq_3",
             constraint_type=ConstraintType.SEQ,
             operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=2,
@@ -804,7 +804,7 @@ test_data = [
             priority="medium",
             penalty=penalties.user_constraint.seq.hard,
             schedule_id="sch0",
-            constraint_build_id="c_seq_1",
+            constraint_build_id="c_seq_3",
         ),
     ),
     # # Boolean property workers, boolean property shifts
@@ -888,7 +888,7 @@ test_data = [
     # "text": "60+ should work at most 2 consecutive not intense.",
     (
         ConstraintBuildAugmented(
-            id="c_seq_2",
+            id="c_seq_4",
             team_id="t0",
             constraint_type=ConstraintType.SEQ,
             template_id="0",
@@ -948,7 +948,7 @@ test_data = [
             missing_attributes=[],
         ),
         ConstraintSeq(
-            id="c_seq_2",
+            id="c_seq_4",
             constraint_type=ConstraintType.SEQ,
             operator=ConstraintOperator.LESS_THAN_OR_EQUAL,
             target_value=2,
@@ -963,7 +963,7 @@ test_data = [
             priority="medium",
             penalty=penalties.user_constraint.seq.hard,
             schedule_id="sch0",
-            constraint_build_id="c_seq_2",
+            constraint_build_id="c_seq_4",
         ),
     ),
     # Non boolean property worker, non boolean property shift
