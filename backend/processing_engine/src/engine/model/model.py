@@ -266,6 +266,9 @@ class Model:
         self.add_target_work_time_constraints(
             inputs.system_constraints.weekly_target_work_time
         )
+        self.add_target_nb_duties_constraints(
+            inputs.system_constraints.monthly_target_nb_duties
+        )
 
         self.add_objective()
         self.solve()
@@ -544,6 +547,46 @@ class Model:
                     self.model.AddMaxEquality(excess, [delta, 0])
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(nb_duties.penalty)
+
+    def add_target_nb_duties_constraints(self, nb_duties: NbDuties) -> None:
+        if not self.model_config.system_constraints.monthly_target_nb_duties:
+            return
+        for w_assignments, w_targets in zip(
+            nb_duties.assignments,
+            nb_duties.targets,
+        ):
+            for p_assignments, p_target in zip(w_assignments, w_targets):
+                constraint_vars = [self.variables[a] for a in p_assignments]
+                var_name = "target_nb_duties"
+                delta = self.model.NewIntVar(
+                    -p_target,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    "",
+                )
+                self.model.Add(delta == sum(v for v in constraint_vars) - p_target)
+
+                tolerance = round(p_target * nb_duties.tolerance)
+                excess = self.model.NewIntVar(
+                    0,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    var_name,
+                )
+                abs_delta = self.model.NewIntVar(
+                    0,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    "",
+                )
+                self.model.AddAbsEquality(abs_delta, delta)
+
+                self.model.AddMaxEquality(excess, [abs_delta - tolerance, 0])
+                self.obj.int_vars.append(excess)
+                self.obj.int_coeffs.append(nb_duties.penalty)
 
     def add_worker_shift_filter_constraints(
         self,

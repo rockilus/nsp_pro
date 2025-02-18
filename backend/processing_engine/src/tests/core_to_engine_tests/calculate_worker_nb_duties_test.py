@@ -12,9 +12,7 @@ from shared.schemas import (
     ShiftType,
 )
 
-from core_to_engine_service.build_periods import (
-    build_periods_monthly,
-)
+from core_to_engine_service.build_periods import build_periods_monthly
 from core_to_engine_service.calculate_worker_nb_duties import (
     calculate_worker_nb_duties,
     get_nb_days_in_months,
