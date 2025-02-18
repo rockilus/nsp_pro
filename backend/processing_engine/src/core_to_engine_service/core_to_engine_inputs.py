@@ -178,11 +178,15 @@ def core_to_engine_inputs(
             fixed_assignments,
             requests,
         ),
-        sol_hint=core_to_engine_sol_hint(
-            worker_not_deleted_ids,
-            worker_ids_to_worker_dates,
-            shift_not_deleted_ids,
-            wip_assignments,
+        sol_hint=(
+            core_to_engine_sol_hint(
+                worker_not_deleted_ids,
+                worker_ids_to_worker_dates,
+                shift_not_deleted_ids,
+                wip_assignments,
+            )
+            if wip_assignments
+            else {}
         ),
         user_constraints=constraints,
         configuration_constraints=ConfigurationConstraintInputs(

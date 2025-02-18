@@ -64,7 +64,9 @@ def calculate_worker_work_times(
             adjusted_desired_time = math.ceil(
                 worker.weekly_hours_desired * Constants.NUM_MINUTES_HOUR * coefficient
             )
-            adjusted_max_time = math.ceil(80 * Constants.NUM_MINUTES_HOUR * coefficient)
+            adjusted_max_time = math.ceil(
+                200 * Constants.NUM_MINUTES_HOUR * coefficient
+            )
 
             worker_work_times[worker.id]["contract"].append(adjusted_contract_time)
             worker_work_times[worker.id]["desired"].append(adjusted_desired_time)
@@ -246,7 +248,7 @@ def round_proportional_times(
     if len(proportional_times.values()) > 0:
         len_first_value = len(list(proportional_times.values())[0])
         for i in range(len_first_value):
-            total_work_time = int(
+            total_work_time = round(
                 sum(
                     proportional_times[worker_id][i]
                     for worker_id in proportional_times.keys()

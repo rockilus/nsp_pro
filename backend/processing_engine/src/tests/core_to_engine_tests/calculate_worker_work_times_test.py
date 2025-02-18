@@ -107,7 +107,7 @@ class TestCalculateWorkerWorkTimes:
                 w_to_desired_per_period[worker.id].append(expected_desired)
 
                 expected_max = math.ceil(
-                    80
+                    200
                     * Constants.NUM_MINUTES_HOUR
                     * len(period)
                     / Constants.NUM_DAYS_WEEK
@@ -284,7 +284,7 @@ class TestCalculateWorkerWorkTimes:
             "worker3": [12.3, 22.1, 32.2],
         }
         expected_rounded_times = {
-            "worker1": [10, 20, 31],
+            "worker1": [11, 20, 31],
             "worker2": [15, 26, 35],
             "worker3": [12, 22, 32],
         }

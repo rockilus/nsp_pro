@@ -559,7 +559,7 @@ class TestBuildEngineWorkLoads:
                         (target_period_desired_minutes / Constants.NUM_DAYS_WEEK)
                         * num_days_in_period
                     )
-                    target_period_max_minutes = 80 * Constants.NUM_MINUTES_HOUR
+                    target_period_max_minutes = 200 * Constants.NUM_MINUTES_HOUR
                     target_adj_max = math.ceil(
                         (target_period_max_minutes / Constants.NUM_DAYS_WEEK)
                         * num_days_in_period
