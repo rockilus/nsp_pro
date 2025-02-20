@@ -44,6 +44,9 @@ from core_to_engine_service.build_periods import (
 )
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
 from core_to_engine_service.calculate_worker_nb_duties import calculate_worker_nb_duties
+from core_to_engine_service.calculate_worker_special_days import (
+    build_duty_special_days_constraints,
+)
 from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
 )
@@ -256,6 +259,16 @@ def core_to_engine_inputs(
                 "target",
                 penalties.system_constraint.monthly_target_nb_duties,
                 model_config.system_constraints.monthly_target_nb_duties_tolerance,
+            ),
+            special_days_target_nb_duties=build_duty_special_days_constraints(
+                workers_not_deleted,
+                worker_ids_to_worker_dates,
+                dates_hist,
+                dates_campaign,
+                shifts,
+                requests,
+                daily_shift_demands,
+                fixed_assignments,
             ),
         ),
         model_config=model_config,

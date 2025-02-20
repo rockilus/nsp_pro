@@ -121,6 +121,13 @@ class WorkLoads:
 
 
 @dataclass
+class AssignmentsTargetConstraint:
+    assignments: List[Tuple[str, str, str]]
+    target: int
+    penalty: int
+
+
+@dataclass
 class ConfigurationConstraintInputs:
     work_loads: WorkLoads
     shift_demands: List[ShiftDemand]
@@ -144,6 +151,7 @@ class ConfigurationConstraintInputs:
 class SystemConstraintInputs:
     weekly_target_work_time: WorkTime
     monthly_target_nb_duties: NbDuties
+    special_days_target_nb_duties: List[AssignmentsTargetConstraint]
 
 
 # pylint: disable=too-many-instance-attributes
