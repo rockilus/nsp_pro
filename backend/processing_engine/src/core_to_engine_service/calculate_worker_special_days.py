@@ -42,20 +42,25 @@ def build_duty_special_days_constraints(
         daily_shift_demands,
         fixed_assignments,
     )
-    shift_duty_ids = [s.id for s in shifts if s.shift_type == ShiftType.DUTY]
+    shift_duty_not_del_ids = [
+        s.id for s in shifts if s.shift_type == ShiftType.DUTY and not s.deleted
+    ]
     return [
         AssignmentsTargetConstraint(
             assignments=[
-                (w_id, d, s) for d in special_day_dict["dates"] for s in shift_duty_ids
+                (w_id, d.isoformat(), s)
+                for d in sd_values["dates"]  # type: ignore
+                for s in shift_duty_not_del_ids
             ],
-            target=special_day_dict["target"],  # type: ignore
+            target=sd_values["target"],  # type: ignore
             penalty=penalties.system_constraint.special_days_target_nb_duties,
         )
-        for w_id, special_day_dict in w_to_special_days.items()
+        for w_id, special_days_dict in w_to_special_days.items()
+        for _, sd_values in special_days_dict.items()
     ]
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-locals
 def calculate_worker_speacial_days(
     workers: List[Worker],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
@@ -94,7 +99,7 @@ def calculate_worker_speacial_days(
     # campaign) and (ii) the required number of duties on special days in the
     # future (campaign)
     shift_duty_ids = [s.id for s in shifts if s.shift_type == ShiftType.DUTY]
-    special_day_nb_duties = {
+    special_day_nb_duties_ltm = {
         str(i): sum(
             1
             for a in fixed_assignments
@@ -108,6 +113,20 @@ def calculate_worker_speacial_days(
             if dsd.shift_id in shift_duty_ids and dsd.date in special_day_dates[str(i)]
         )
         for i in special_day_indexes
+    }
+    w_special_day_nb_duties_hist = {
+        w.id: {
+            str(i): sum(
+                1
+                for a in fixed_assignments
+                if a.worker_id == w.id
+                and a.date in special_day_dates[str(i)]
+                and a.date in dates_hist
+                and a.shift_id in shift_duty_ids
+            )
+            for i in special_day_indexes
+        }
+        for w in workers
     }
 
     # build a dictionary with key worker_id, and value a dict with for each
@@ -127,7 +146,8 @@ def calculate_worker_speacial_days(
     out = allocate_duties_on_special_days_to_workers(
         special_day_indexes,
         special_day_dates,
-        special_day_nb_duties,
+        special_day_nb_duties_ltm,
+        w_special_day_nb_duties_hist,
         worker_coefficients,
         worker_ids_to_worker_dates,
     )
@@ -212,14 +232,16 @@ def calculate_adjustment_coefficients(
 def allocate_duties_on_special_days_to_workers(
     special_day_indexes: List[int],
     special_day_dates: Dict[str, List[date]],
-    special_day_nb_duties: Dict[str, int],
+    special_day_nb_duties_ltm: Dict[str, int],
+    w_special_day_nb_duties_hist: Dict[str, Dict[str, int]],
     worker_coefficients: Dict[str, Dict[str, float]],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
 ) -> Dict[str, Dict[str, Dict[str, int | List[date]]]]:
     out: Dict[str, Dict[str, Dict[str, int | List[date]]]] = {}
     w_to_targets = {
         w_id: [
-            special_day_nb_duties[str(i)] * worker_coefficients[w_id][str(i)]
+            special_day_nb_duties_ltm[str(i)] * worker_coefficients[w_id][str(i)]
+            - w_special_day_nb_duties_hist[w_id][str(i)]
             for i in special_day_indexes
         ]
         for w_id in worker_coefficients
@@ -234,9 +256,7 @@ def allocate_duties_on_special_days_to_workers(
                 "dates": [
                     d
                     for d in special_day_dates[str(special_day_indexes[i])]
-                    if d
-                    in worker_ids_to_worker_dates[w_id].dates_hist
-                    + worker_ids_to_worker_dates[w_id].dates_campaign
+                    if d in worker_ids_to_worker_dates[w_id].dates_campaign
                 ],
             }
     return out

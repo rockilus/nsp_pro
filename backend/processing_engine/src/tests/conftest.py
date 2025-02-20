@@ -431,7 +431,7 @@ def daily_shift_demands_shifts_3n_2d(
 # EngineInputs
 # pylint: disable=too-many-arguments
 @pytest.fixture
-def engine_inputs(
+def engine_inputs_special_days(
     schedule,  # noqa: F811
     workers_10: List[Worker],  # noqa: F811
     shifts_3n_2d: List[Shift],  # noqa: F811

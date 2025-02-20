@@ -26,7 +26,7 @@ from engine_to_core_service.build_breaches import _parse_breaches_engine
 class TestConstraintFil:
     def test_constraint_fil_hard(
         self,
-        engine_inputs: EngineInputs,
+        engine_inputs_special_days: EngineInputs,
         constraint_fil_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -38,9 +38,9 @@ class TestConstraintFil:
         run_engine_solve_from_engine_inputs: Callable[[EngineInputs], Outputs],
     ) -> None:
         cba, constraint = constraint_fil_with_expected_output
-        engine_inputs.cbs_augmented = [cba]
+        engine_inputs_special_days.cbs_augmented = [cba]
 
-        out = run_engine_solve_from_engine_inputs(engine_inputs)
+        out = run_engine_solve_from_engine_inputs(engine_inputs_special_days)
 
         assignments = out.assignments
 
@@ -65,7 +65,7 @@ class TestConstraintFil:
 
     def test_constraint_fil_soft(
         self,
-        engine_inputs: EngineInputs,
+        engine_inputs_special_days: EngineInputs,
         constraint_fil_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -79,9 +79,9 @@ class TestConstraintFil:
         cba, constraint = constraint_fil_with_expected_output
         cba_soft = deepcopy(cba)
         cba_soft.hard = False
-        engine_inputs.cbs_augmented = [cba_soft]
+        engine_inputs_special_days.cbs_augmented = [cba_soft]
 
-        out = run_engine_solve_from_engine_inputs(engine_inputs)
+        out = run_engine_solve_from_engine_inputs(engine_inputs_special_days)
 
         assignments = out.assignments
 
@@ -107,7 +107,7 @@ class TestConstraintFil:
     # pylint: disable=too-many-locals
     def test_constraint_fil_hard_soft_conflict(
         self,
-        engine_inputs: EngineInputs,
+        engine_inputs_special_days: EngineInputs,
         constraint_fil_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -122,14 +122,14 @@ class TestConstraintFil:
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         cba, _ = constraint_fil_with_expected_output
-        engine_inputs.cbs_augmented = [cba]
+        engine_inputs_special_days.cbs_augmented = [cba]
         shift_work_ids = [
             s.id
-            for s in engine_inputs.shifts
+            for s in engine_inputs_special_days.shifts
             if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
         ]
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs)
+        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
 
         assert len(inputs.user_constraints.fil) == 1
         assert isinstance(inputs.user_constraints.fil[0], ConstraintFil)
@@ -146,10 +146,11 @@ class TestConstraintFil:
         constraint_soft.penalty = penalties.user_constraint.fil.soft
 
         dates_campaign = [
-            engine_inputs.schedule.start_date + timedelta(days=i)
+            engine_inputs_special_days.schedule.start_date + timedelta(days=i)
             for i in range(
                 (
-                    engine_inputs.schedule.end_date - engine_inputs.schedule.start_date
+                    engine_inputs_special_days.schedule.end_date
+                    - engine_inputs_special_days.schedule.start_date
                 ).days
                 + 1
             )
@@ -220,7 +221,9 @@ class TestConstraintFil:
             assert False
 
         # Check breach soft constraint
-        breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
+        breaches = _parse_breaches_engine(
+            engine_inputs_special_days.schedule, out.breaches
+        )
         assert len(breaches) == 1
         for breach in breaches:
             assert breach.objective_id == constraint_soft.id
@@ -249,7 +252,7 @@ class TestConstraintFil:
 
     def test_constraint_fil_hard_hard_conflic_obj_value(
         self,
-        engine_inputs: EngineInputs,
+        engine_inputs_special_days: EngineInputs,
         constraint_fil_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -264,14 +267,14 @@ class TestConstraintFil:
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         cba, _ = constraint_fil_with_expected_output
-        engine_inputs.cbs_augmented = [cba]
+        engine_inputs_special_days.cbs_augmented = [cba]
         shift_work_ids = [
             s.id
-            for s in engine_inputs.shifts
+            for s in engine_inputs_special_days.shifts
             if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
         ]
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs)
+        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
 
         assert len(inputs.user_constraints.fil) == 1
         assert isinstance(inputs.user_constraints.fil[0], ConstraintFil)
@@ -287,10 +290,11 @@ class TestConstraintFil:
         constraint_hard.hard = True
 
         dates_campaign = [
-            engine_inputs.schedule.start_date + timedelta(days=i)
+            engine_inputs_special_days.schedule.start_date + timedelta(days=i)
             for i in range(
                 (
-                    engine_inputs.schedule.end_date - engine_inputs.schedule.start_date
+                    engine_inputs_special_days.schedule.end_date
+                    - engine_inputs_special_days.schedule.start_date
                 ).days
                 + 1
             )
@@ -340,7 +344,9 @@ class TestConstraintFil:
         out = run_engine_solve(inputs)
 
         # # Check objective value
-        breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
+        breaches = _parse_breaches_engine(
+            engine_inputs_special_days.schedule, out.breaches
+        )
         obj_value = 0
         penalty = penalties.user_constraint.fil.hard
         for breach in breaches:

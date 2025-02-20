@@ -8,20 +8,20 @@ from core_to_engine_service.build_dim_to_attr_value_to_owner import (
 # pylint: disable=R0801, too-few-public-methods
 class TestBuildDimToAttrToOwner:
     def test_build_dim_to_attr_value_to_owner_workers(
-        self, engine_inputs: EngineInputs
+        self, engine_inputs_special_days: EngineInputs
     ) -> None:
         out = build_dim_to_attr_value_to_owner(
-            engine_inputs.workers,
-            engine_inputs.dimensions,
-            engine_inputs.dim_entries,
-            engine_inputs.attributes,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.dimensions,
+            engine_inputs_special_days.dim_entries,
+            engine_inputs_special_days.attributes,
         )
         assert out is not None
         assert isinstance(out, dict)
 
         dim_worker = [
             dim
-            for dim in engine_inputs.dimensions
+            for dim in engine_inputs_special_days.dimensions
             if dim.dim_types == [DimensionType.WORKER]
         ]
 
@@ -34,7 +34,7 @@ class TestBuildDimToAttrToOwner:
                     list(
                         set(
                             dim_entry.name
-                            for dim_entry in engine_inputs.dim_entries
+                            for dim_entry in engine_inputs_special_days.dim_entries
                             if dim_entry.dimension_id == dim.id
                         )
                     )
@@ -43,7 +43,7 @@ class TestBuildDimToAttrToOwner:
 
                 dim_entries = [
                     dim_entry
-                    for dim_entry in engine_inputs.dim_entries
+                    for dim_entry in engine_inputs_special_days.dim_entries
                     if dim_entry.dimension_id == dim.id
                 ]
                 for dim_entry in dim_entries:
@@ -51,7 +51,7 @@ class TestBuildDimToAttrToOwner:
                         list(
                             set(
                                 attr_value.owner_id
-                                for attr_value in engine_inputs.attributes
+                                for attr_value in engine_inputs_special_days.attributes
                                 if dim_entry.id in attr_value.dim_entry_ids
                             )
                         )
@@ -64,7 +64,7 @@ class TestBuildDimToAttrToOwner:
                         list(
                             set(
                                 attr_value.owner_id
-                                for attr_value in engine_inputs.attributes
+                                for attr_value in engine_inputs_special_days.attributes
                                 if attr_value.dimension_id == dim.id
                                 and bool_value == attr_value.value
                             )
@@ -73,13 +73,13 @@ class TestBuildDimToAttrToOwner:
                     assert sorted(list(out[dim.id][bool_value])) == worker_ids
 
     def test_build_dim_to_attr_value_to_owner_shifts(
-        self, engine_inputs: EngineInputs
+        self, engine_inputs_special_days: EngineInputs
     ) -> None:
         out = build_dim_to_attr_value_to_owner(
-            engine_inputs.shifts,
-            engine_inputs.dimensions,
-            engine_inputs.dim_entries,
-            engine_inputs.attributes,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.dimensions,
+            engine_inputs_special_days.dim_entries,
+            engine_inputs_special_days.attributes,
         )
         assert out is not None
         assert isinstance(out, dict)
@@ -88,7 +88,7 @@ class TestBuildDimToAttrToOwner:
             list(
                 set(
                     dim.id
-                    for dim in engine_inputs.dimensions
+                    for dim in engine_inputs_special_days.dimensions
                     if dim.dim_types == [DimensionType.SHIFT]
                 )
             )
@@ -97,7 +97,7 @@ class TestBuildDimToAttrToOwner:
 
         dim_shift = [
             dim
-            for dim in engine_inputs.dimensions
+            for dim in engine_inputs_special_days.dimensions
             if dim.dim_types == [DimensionType.SHIFT]
         ]
 
@@ -107,7 +107,7 @@ class TestBuildDimToAttrToOwner:
                     list(
                         set(
                             dim_entry.name
-                            for dim_entry in engine_inputs.dim_entries
+                            for dim_entry in engine_inputs_special_days.dim_entries
                             if dim_entry.dimension_id == dim.id
                         )
                     )
@@ -116,7 +116,7 @@ class TestBuildDimToAttrToOwner:
 
                 dim_entries = [
                     dim_entry
-                    for dim_entry in engine_inputs.dim_entries
+                    for dim_entry in engine_inputs_special_days.dim_entries
                     if dim_entry.dimension_id == dim.id
                 ]
                 for dim_entry in dim_entries:
@@ -124,7 +124,7 @@ class TestBuildDimToAttrToOwner:
                         list(
                             set(
                                 attr_value.owner_id
-                                for attr_value in engine_inputs.attributes
+                                for attr_value in engine_inputs_special_days.attributes
                                 if dim_entry.id in attr_value.dim_entry_ids
                             )
                         )
@@ -137,7 +137,7 @@ class TestBuildDimToAttrToOwner:
                         list(
                             set(
                                 attr_value.owner_id
-                                for attr_value in engine_inputs.attributes
+                                for attr_value in engine_inputs_special_days.attributes
                                 if attr_value.dimension_id == dim.id
                                 and bool_value == attr_value.value
                             )

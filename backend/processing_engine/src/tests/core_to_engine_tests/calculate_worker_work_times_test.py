@@ -24,9 +24,9 @@ from utils.constants import Constants
 # pylint: disable=R0801, too-few-public-methods
 class TestCalculateWorkerWorkTimes:
     def test_calculate_worker_work_times_output_format(
-        self, engine_inputs: EngineInputs
+        self, engine_inputs_special_days: EngineInputs
     ) -> None:
-        schedule = engine_inputs.schedule
+        schedule = engine_inputs_special_days.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -36,11 +36,11 @@ class TestCalculateWorkerWorkTimes:
         # Call the method under test
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         out = calculate_worker_work_times(
-            engine_inputs.schedule,
-            engine_inputs.workers,
-            engine_inputs.shifts,
-            engine_inputs.requests,
-            engine_inputs.daily_shift_demands,
+            engine_inputs_special_days.schedule,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.requests,
+            engine_inputs_special_days.daily_shift_demands,
             periods_weekly,
         )
 
@@ -63,9 +63,9 @@ class TestCalculateWorkerWorkTimes:
 
     # pylint: disable=too-many-locals
     def test_calculate_worker_work_times_output(
-        self, engine_inputs: EngineInputs
+        self, engine_inputs_special_days: EngineInputs
     ) -> None:
-        schedule = engine_inputs.schedule
+        schedule = engine_inputs_special_days.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -75,17 +75,17 @@ class TestCalculateWorkerWorkTimes:
         # Call the method under test
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         out = calculate_worker_work_times(
-            engine_inputs.schedule,
-            engine_inputs.workers,
-            engine_inputs.shifts,
-            engine_inputs.requests,
-            engine_inputs.daily_shift_demands,
+            engine_inputs_special_days.schedule,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.requests,
+            engine_inputs_special_days.daily_shift_demands,
             periods_weekly,
         )
 
         # Verify the output
         w_to_desired_per_period: Dict[str, List[int]] = {}
-        for worker in engine_inputs.workers:
+        for worker in engine_inputs_special_days.workers:
             for i, period in enumerate(periods_weekly):
                 expected_contract = math.ceil(
                     worker.weekly_hours
@@ -116,16 +116,16 @@ class TestCalculateWorkerWorkTimes:
 
         shift_work_ids = [
             s.id
-            for s in engine_inputs.shifts
+            for s in engine_inputs_special_days.shifts
             if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
         ]
-        shift_dict = {shift.id: shift for shift in engine_inputs.shifts}
+        shift_dict = {shift.id: shift for shift in engine_inputs_special_days.shifts}
 
         work_time_periods: Dict[int, float] = {}
         for i, period in enumerate(periods_weekly):
             dsds_period = [
                 dsd
-                for dsd in engine_inputs.daily_shift_demands
+                for dsd in engine_inputs_special_days.daily_shift_demands
                 if dsd.date in period and dsd.shift_id in shift_work_ids
             ]
             work_time_period = 0.0
@@ -145,7 +145,7 @@ class TestCalculateWorkerWorkTimes:
             work_time_periods[i] = work_time_period
 
         w_to_target_per_period: Dict[str, List[float]] = {}
-        for worker in engine_inputs.workers:
+        for worker in engine_inputs_special_days.workers:
             for i, period in enumerate(periods_weekly):
                 total_desired = sum(
                     w_desired_times[i]
@@ -164,7 +164,7 @@ class TestCalculateWorkerWorkTimes:
             w_to_target_per_period
         )
 
-        for worker in engine_inputs.workers:
+        for worker in engine_inputs_special_days.workers:
             for i, period in enumerate(periods_weekly):
                 assert (
                     out[worker.id]["target"][i]
@@ -172,9 +172,9 @@ class TestCalculateWorkerWorkTimes:
                 )
 
     def test_calculate_adjustment_coefficients_no_requests(
-        self, engine_inputs: EngineInputs
+        self, engine_inputs_special_days: EngineInputs
     ) -> None:
-        schedule = engine_inputs.schedule
+        schedule = engine_inputs_special_days.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -184,23 +184,23 @@ class TestCalculateWorkerWorkTimes:
 
         out = calculate_adjustment_coefficients(
             schedule,
-            engine_inputs.workers,
-            engine_inputs.shifts,
-            engine_inputs.requests,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.requests,
             periods_weekly,
             [Constants.NUM_DAYS_WEEK for _ in periods_weekly],
         )
 
         # Verify the output
-        for worker in engine_inputs.workers:
+        for worker in engine_inputs_special_days.workers:
             for i, period in enumerate(periods_weekly):
                 expected = len(period) / Constants.NUM_DAYS_WEEK
                 assert out[worker.id][i] == expected
 
     def test_calculate_adjustment_coefficients_with_requests(
-        self, engine_inputs: EngineInputs
+        self, engine_inputs_special_days: EngineInputs
     ) -> None:
-        schedule = engine_inputs.schedule
+        schedule = engine_inputs_special_days.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -226,9 +226,9 @@ class TestCalculateWorkerWorkTimes:
             deleted=False,
         )
 
-        engine_inputs.shifts.append(shift_leave)
+        engine_inputs_special_days.shifts.append(shift_leave)
 
-        worker_target_id = engine_inputs.workers[0].id
+        worker_target_id = engine_inputs_special_days.workers[0].id
         date_target = schedule.start_date
         shift_target_id = shift_leave.id
 
@@ -243,19 +243,19 @@ class TestCalculateWorkerWorkTimes:
             hard=True,
             status=RequestStatus.PENDING,
         )
-        engine_inputs.requests.append(request_leave)
+        engine_inputs_special_days.requests.append(request_leave)
 
         out = calculate_adjustment_coefficients(
             schedule,
-            engine_inputs.workers,
-            engine_inputs.shifts,
-            engine_inputs.requests,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.requests,
             periods_weekly,
             [Constants.NUM_DAYS_WEEK for _ in periods_weekly],
         )
 
         # Verify the output
-        for worker in engine_inputs.workers:
+        for worker in engine_inputs_special_days.workers:
             for i, period in enumerate(periods_weekly):
                 if worker.id == worker_target_id and date_target in period:
                     expected = (len(period) - 1) / Constants.NUM_DAYS_WEEK
