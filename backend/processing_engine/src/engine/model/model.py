@@ -13,6 +13,7 @@ from engine.model.utils.model_utils import (
 from engine.types import (
     BenchmarkTimes,
     Constraints,
+    GroupsAssignmentsTargetConstraint,
     Inputs,
     ModelConfig,
     NbDuties,
@@ -587,6 +588,45 @@ class Model:
                 self.model.AddMaxEquality(excess, [abs_delta - tolerance, 0])
                 self.obj.int_vars.append(excess)
                 self.obj.int_coeffs.append(nb_duties.penalty)
+
+    def add_special_days_constraints(
+        self, constraints: List[GroupsAssignmentsTargetConstraint]
+    ) -> None:
+        if not self.model_config.system_constraints.special_days_target_nb_duties:
+            return
+        for constraint in constraints:
+            excesses = []
+            for assignments, target in zip(constraint.assignments, constraint.targets):
+                constraint_vars = [self.variables[a] for a in assignments]
+                var_name = "special_days"
+                delta = self.model.NewIntVar(
+                    target,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    "",
+                )
+                self.model.Add(delta == sum(v for v in constraint_vars) - target)
+
+                excess = self.model.NewIntVar(
+                    0,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    var_name,
+                )
+                self.model.AddAbsEquality(excess, delta)
+                excesses.append(excess)
+            max_excess = self.model.NewIntVar(
+                0,
+                len(constraint_vars)
+                * Constants.NUM_HOURS_DAY
+                * Constants.NUM_MINUTES_HOUR,
+                "",
+            )
+            self.model.AddMaxEquality(max_excess, excesses)
+            self.obj.int_vars.append(max_excess)
+            self.obj.int_coeffs.append(constraint.penalty)
 
     def add_worker_shift_filter_constraints(
         self,

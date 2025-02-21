@@ -22,6 +22,7 @@ class SystemConstraints:
     weekly_target_work_time_tolerance: float
     monthly_target_nb_duties: bool
     monthly_target_nb_duties_tolerance: float
+    special_days_target_nb_duties: bool
 
 
 @dataclass
@@ -121,9 +122,9 @@ class WorkLoads:
 
 
 @dataclass
-class AssignmentsTargetConstraint:
-    assignments: List[Tuple[str, str, str]]
-    target: int
+class GroupsAssignmentsTargetConstraint:
+    assignments: List[List[Tuple[str, str, str]]]
+    targets: List[int]
     penalty: int
 
 
@@ -151,7 +152,7 @@ class ConfigurationConstraintInputs:
 class SystemConstraintInputs:
     weekly_target_work_time: WorkTime
     monthly_target_nb_duties: NbDuties
-    special_days_target_nb_duties: List[AssignmentsTargetConstraint]
+    special_days_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
 
 
 # pylint: disable=too-many-instance-attributes
