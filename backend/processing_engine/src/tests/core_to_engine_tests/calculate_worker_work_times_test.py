@@ -12,12 +12,17 @@ from shared.schemas import (
     ShiftType,
 )
 
+from core_to_engine_service.build_dates import build_ws_ids_to_dates
 from core_to_engine_service.build_periods import build_periods_weekly
 from core_to_engine_service.calculate_worker_work_times import (
+    build_work_time_constraints,
     calculate_adjustment_coefficients,
     calculate_worker_work_times,
     round_proportional_times,
 )
+from core_to_engine_service.model_config import model_config
+from core_to_engine_service.penalties import penalties
+from engine import GroupsAssignmentsDurationsTargetConstraint
 from utils.constants import Constants
 
 
@@ -332,3 +337,146 @@ class TestCalculateWorkerWorkTimes:
         }
         rounded_times = round_proportional_times(proportional_times)
         assert rounded_times == expected_rounded_times
+
+
+class TestBuildWorkTimeConstraints:
+    def test_build_duty_special_days_constraints_output_format(
+        self, engine_inputs_special_days: EngineInputs
+    ) -> None:
+        schedule = engine_inputs_special_days.schedule
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        dates_hist: List[date] = []
+
+        # Call the method under test
+        periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
+        w_to_work_times = calculate_worker_work_times(
+            engine_inputs_special_days.schedule,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.requests,
+            engine_inputs_special_days.daily_shift_demands,
+            periods_weekly,
+        )
+
+        shift_id_to_duration_dict = {
+            s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
+            for s in engine_inputs_special_days.shifts
+        }
+
+        ws_to_dates = build_ws_ids_to_dates(
+            schedule,
+            engine_inputs_special_days.workers,
+            [w for w in engine_inputs_special_days.workers if not w.deleted],
+            engine_inputs_special_days.shifts,
+            [s for s in engine_inputs_special_days.shifts if not s.deleted],
+            engine_inputs_special_days.as_hist
+            + engine_inputs_special_days.as_wip_fixed,
+            dates_campaign,
+        )
+
+        out = build_work_time_constraints(
+            periods_weekly,
+            w_to_work_times,
+            ws_to_dates,
+            [
+                s
+                for s in engine_inputs_special_days.shifts
+                if not s.deleted and s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+            ],
+            shift_id_to_duration_dict,
+        )
+
+        assert isinstance(out, list)
+        assert all(
+            isinstance(c, GroupsAssignmentsDurationsTargetConstraint) for c in out
+        )
+
+    # pylint: disable=too-many-locals
+    def test_build_duty_special_days_constraints_output(
+        self, engine_inputs_special_days: EngineInputs
+    ) -> None:
+        schedule = engine_inputs_special_days.schedule
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        dates_hist: List[date] = []
+
+        # Call the method under test
+        periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
+        w_to_work_times = calculate_worker_work_times(
+            engine_inputs_special_days.schedule,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.requests,
+            engine_inputs_special_days.daily_shift_demands,
+            periods_weekly,
+        )
+
+        shift_id_to_duration_dict = {
+            s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
+            for s in engine_inputs_special_days.shifts
+        }
+
+        ws_to_dates = build_ws_ids_to_dates(
+            schedule,
+            engine_inputs_special_days.workers,
+            [w for w in engine_inputs_special_days.workers if not w.deleted],
+            engine_inputs_special_days.shifts,
+            [s for s in engine_inputs_special_days.shifts if not s.deleted],
+            engine_inputs_special_days.as_hist
+            + engine_inputs_special_days.as_wip_fixed,
+            dates_campaign,
+        )
+
+        out = build_work_time_constraints(
+            periods_weekly,
+            w_to_work_times,
+            ws_to_dates,
+            [
+                s
+                for s in engine_inputs_special_days.shifts
+                if not s.deleted and s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+            ],
+            shift_id_to_duration_dict,
+        )
+
+        shift_work_not_del_ids = [
+            s.id
+            for s in engine_inputs_special_days.shifts
+            if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY] and not s.deleted
+        ]
+
+        p_index_to_period = dict(enumerate(periods_weekly))
+
+        for gadtc in out:
+            assert gadtc.penalty == penalties.system_constraint.weekly_target_work_time
+            assert (
+                gadtc.tolerance
+                == model_config.system_constraints.weekly_target_worktime_tolerance
+            )
+            dates_gadtc = list(
+                set(date.fromisoformat(a[1]) for ag in gadtc.assignments for a in ag)
+            )
+            for i, period in p_index_to_period.items():
+                if sorted(dates_gadtc) == sorted(period):
+                    p_index = i
+                    break
+            assert p_index is not None
+            assert all(d in p_index_to_period[p_index] for d in dates_gadtc)
+            shift_ids_gadtc = {a[2] for ag in gadtc.assignments for a in ag}
+            assert sorted(shift_ids_gadtc) == sorted(set(shift_work_not_del_ids))
+            for assignments, durations, target in zip(
+                gadtc.assignments, gadtc.durations, gadtc.targets
+            ):
+                w_id = assignments[0][0]
+                assert w_id in w_to_work_times
+                assert all(a[0] == w_id for a in assignments)
+                assert target == w_to_work_times[w_id]["target"][p_index]
+                assert all(
+                    d == shift_id_to_duration_dict[a[2]]
+                    for a, d in zip(assignments, durations)
+                )

@@ -277,6 +277,7 @@ class TestTargetWorkTimeConstraints:
         shift_duration_min = min(s_id_to_duration.values())
 
         delta_actual_total = 0
+        deltas: List[int] = []
         for w in engine_inputs_work_times.workers:
             assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
@@ -289,16 +290,19 @@ class TestTargetWorkTimeConstraints:
             delta_expected_2 = shift_duration_min - delta_expected_1
 
             delta_actual = abs(work_time_worker - w_target_time)
+            deltas.append(delta_actual)
 
             assert delta_actual in [delta_expected_1, delta_expected_2]
 
             delta_actual_total += delta_actual
 
-        assert len(out.breaches) == len(engine_inputs_work_times.workers)
+        assert len(out.breaches) == 1
         assert len(breaches) == 0
 
+        max_excess = max(*deltas, 0)
+
         objective_value_expected = (
-            penalties.system_constraint.weekly_target_work_time * delta_actual_total
+            penalties.system_constraint.weekly_target_work_time * max_excess
         )
 
         assert out.objective_value == objective_value_expected
@@ -511,7 +515,7 @@ class TestTargetWorkTimeConstraints:
             for s in engine_inputs_work_times.shifts
         }
 
-        delta_actual_total = 0
+        deltas = []
         for w in engine_inputs_work_times.workers:
             assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
@@ -523,14 +527,26 @@ class TestTargetWorkTimeConstraints:
                 assert work_time_worker == 0
 
             w_target_time = w_to_work_times[w.id]["target"][0]
-            delta_actual = abs(work_time_worker - w_target_time)
-            delta_actual_total += delta_actual
+            delta_actual = work_time_worker - w_target_time
+            deltas.append(delta_actual)
 
-        assert len(out.breaches) == len(engine_inputs_work_times.workers)
+        w_excluded_work_time = w_to_work_times[worker_excluded.id]["target"][0]
+        num_shifts = w_excluded_work_time // s_id_to_duration[shifts[0].id]
+        additional_shift_p_w = num_shifts // (len(workers) - 1)
+        additional_shift = num_shifts % (len(workers) - 1)
+        excess_expected = (additional_shift_p_w + additional_shift) * s_id_to_duration[
+            shifts[0].id
+        ]
+
+        max_excess = max(*deltas, 0)
+
+        assert max_excess == excess_expected
+
+        assert len(out.breaches) == 1
         assert len(breaches) == 0
 
         objective_value_expected = (
-            penalties.system_constraint.weekly_target_work_time * delta_actual_total
+            penalties.system_constraint.weekly_target_work_time * max_excess
         )
 
         assert out.objective_value == objective_value_expected
