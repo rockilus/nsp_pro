@@ -1,7 +1,6 @@
 import time
 
 from engine.model.model import Model
-from engine.model_config import model_config
 from engine.output import Output
 
 # from engine.save_benchmarks import save_benchmark_to_csv
@@ -14,7 +13,7 @@ from engine.types import Inputs, Outputs
 class Engine:
     # pylint: disable=too-few-public-methods
     def solve(self, inputs: Inputs) -> Outputs:
-        model = Model(model_config)
+        model = Model(inputs.model_config)
         start_time = time.time()
         # model.set_up_model(inputs)
 

@@ -26,7 +26,7 @@ from engine_to_core_service.build_breaches import _parse_breaches_engine
 class TestConstraintOrd:
     def test_constraint_ord_hard(
         self,
-        engine_inputs: EngineInputs,
+        engine_inputs_special_days: EngineInputs,
         constraint_ord_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -38,7 +38,7 @@ class TestConstraintOrd:
         run_engine_solve_from_engine_inputs: Callable[[EngineInputs], Outputs],
     ) -> None:
         cba, constraint = constraint_ord_with_expected_output
-        engine_inputs.cbs_augmented = [cba]
+        engine_inputs_special_days.cbs_augmented = [cba]
         request = Request(
             id="req_1",
             team_id="t0",
@@ -50,9 +50,9 @@ class TestConstraintOrd:
             hard=True,
             status=RequestStatus.PENDING,
         )
-        engine_inputs.requests = [request]
+        engine_inputs_special_days.requests = [request]
 
-        out = run_engine_solve_from_engine_inputs(engine_inputs)
+        out = run_engine_solve_from_engine_inputs(engine_inputs_special_days)
 
         if isinstance(constraint, ConstraintOrd):
             for var_ref, var_rel in constraint.constraint_variables:
@@ -103,7 +103,7 @@ class TestConstraintOrd:
 
     def test_constraint_ord_soft(
         self,
-        engine_inputs: EngineInputs,
+        engine_inputs_special_days: EngineInputs,
         constraint_ord_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -117,7 +117,7 @@ class TestConstraintOrd:
         cba, constraint = constraint_ord_with_expected_output
         cba_soft = deepcopy(cba)
         cba_soft.hard = False
-        engine_inputs.cbs_augmented = [cba_soft]
+        engine_inputs_special_days.cbs_augmented = [cba_soft]
 
         request = Request(
             id="req_1",
@@ -130,9 +130,9 @@ class TestConstraintOrd:
             hard=True,
             status=RequestStatus.PENDING,
         )
-        engine_inputs.requests = [request]
+        engine_inputs_special_days.requests = [request]
 
-        out = run_engine_solve_from_engine_inputs(engine_inputs)
+        out = run_engine_solve_from_engine_inputs(engine_inputs_special_days)
 
         if isinstance(constraint, ConstraintOrd):
             for var_ref, var_rel in constraint.constraint_variables:
@@ -184,7 +184,7 @@ class TestConstraintOrd:
     # pylint: disable=too-many-locals
     def test_constraint_ord_hard_soft_conflict(
         self,
-        engine_inputs: EngineInputs,
+        engine_inputs_special_days: EngineInputs,
         constraint_ord_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -199,7 +199,7 @@ class TestConstraintOrd:
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         cba, c_fixture = constraint_ord_with_expected_output
-        engine_inputs.cbs_augmented = [cba]
+        engine_inputs_special_days.cbs_augmented = [cba]
 
         request = Request(
             id="req_1",
@@ -212,14 +212,14 @@ class TestConstraintOrd:
             hard=True,
             status=RequestStatus.PENDING,
         )
-        engine_inputs.requests = [request]
+        engine_inputs_special_days.requests = [request]
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs)
+        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
 
-        assert len(inputs.constraints.ord) == 1
-        assert isinstance(inputs.constraints.ord[0], ConstraintOrd)
+        assert len(inputs.user_constraints.ord) == 1
+        assert isinstance(inputs.user_constraints.ord[0], ConstraintOrd)
 
-        constraint: ConstraintOrd = inputs.constraints.ord[0]
+        constraint: ConstraintOrd = inputs.user_constraints.ord[0]
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
@@ -230,7 +230,7 @@ class TestConstraintOrd:
         elif constraint.operator == ConstraintOperator.NO:
             constraint_soft.operator = ConstraintOperator.YES
 
-        inputs.constraints.ord.append(constraint_soft)
+        inputs.user_constraints.ord.append(constraint_soft)
 
         out = run_engine_solve(inputs)
 
@@ -283,7 +283,9 @@ class TestConstraintOrd:
             assert False
 
         # Check breach soft constraint
-        breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
+        breaches = _parse_breaches_engine(
+            engine_inputs_special_days.schedule, out.breaches
+        )
         assert len(breaches) == 1
         for breach in breaches:
             assert breach.objective_id == constraint_soft.id
@@ -299,7 +301,7 @@ class TestConstraintOrd:
 
     def test_constraint_ord_hard_hard_conflic_obj_value(
         self,
-        engine_inputs: EngineInputs,
+        engine_inputs_special_days: EngineInputs,
         constraint_ord_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -314,7 +316,7 @@ class TestConstraintOrd:
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         cba, c_fixture = constraint_ord_with_expected_output
-        engine_inputs.cbs_augmented = [cba]
+        engine_inputs_special_days.cbs_augmented = [cba]
 
         request = Request(
             id="req_1",
@@ -327,14 +329,14 @@ class TestConstraintOrd:
             hard=True,
             status=RequestStatus.PENDING,
         )
-        engine_inputs.requests = [request]
+        engine_inputs_special_days.requests = [request]
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs)
+        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
 
-        assert len(inputs.constraints.ord) == 1
-        assert isinstance(inputs.constraints.ord[0], ConstraintOrd)
+        assert len(inputs.user_constraints.ord) == 1
+        assert isinstance(inputs.user_constraints.ord[0], ConstraintOrd)
 
-        constraint: ConstraintOrd = inputs.constraints.ord[0]
+        constraint: ConstraintOrd = inputs.user_constraints.ord[0]
         constraint_hard_copy = deepcopy(constraint)
         constraint_hard_copy.id += "_copy"
         constraint_hard_copy.hard = True
@@ -349,11 +351,13 @@ class TestConstraintOrd:
             constraint_hard_copy.target_value = constraint.target_value - 1
             constraint_hard_copy.operator = ConstraintOperator.EQUAL
 
-        inputs.constraints.ord.append(constraint_hard_copy)
+        inputs.user_constraints.ord.append(constraint_hard_copy)
 
         out = run_engine_solve(inputs)
 
         # Check objective value
-        breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
+        breaches = _parse_breaches_engine(
+            engine_inputs_special_days.schedule, out.breaches
+        )
         penalty = penalties.user_constraint.ord.hard
         assert out.objective_value == penalty * len(breaches)
