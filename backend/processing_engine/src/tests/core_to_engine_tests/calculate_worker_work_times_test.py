@@ -340,7 +340,7 @@ class TestCalculateWorkerWorkTimes:
 
 
 class TestBuildWorkTimeConstraints:
-    def test_build_duty_special_days_constraints_output_format(
+    def test_build_work_times_constraints_output_format(
         self, engine_inputs_special_days: EngineInputs
     ) -> None:
         schedule = engine_inputs_special_days.schedule
@@ -395,7 +395,7 @@ class TestBuildWorkTimeConstraints:
         )
 
     # pylint: disable=too-many-locals
-    def test_build_duty_special_days_constraints_output(
+    def test_build_work_times_days_constraints_output(
         self, engine_inputs_special_days: EngineInputs
     ) -> None:
         schedule = engine_inputs_special_days.schedule

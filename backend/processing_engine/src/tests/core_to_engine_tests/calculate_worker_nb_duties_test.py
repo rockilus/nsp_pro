@@ -12,8 +12,10 @@ from shared.schemas import (
     ShiftType,
 )
 
+from core_to_engine_service.build_dates import build_ws_ids_to_dates
 from core_to_engine_service.build_periods import build_periods_monthly
 from core_to_engine_service.calculate_worker_nb_duties import (
+    build_nb_duties_constraints,
     calculate_worker_nb_duties,
     get_nb_days_in_months,
 )
@@ -21,6 +23,9 @@ from core_to_engine_service.calculate_worker_work_times import (
     calculate_adjustment_coefficients,
     round_proportional_times,
 )
+from core_to_engine_service.model_config import model_config
+from core_to_engine_service.penalties import penalties
+from engine import GroupsAssignmentsTargetConstraint
 
 
 # pylint: disable=R0801, too-few-public-methods
@@ -242,3 +247,124 @@ class TestCalculateWorkerNbDuties:
                 else:
                     expected = len(period) / ref_nb_days[i]
                 assert out[worker.id][i] == expected
+
+
+class TestBuildNbDutiesConstraints:
+    def test_build_nb_duties_constraints_output_format(
+        self, engine_inputs_special_days: EngineInputs
+    ) -> None:
+        schedule = engine_inputs_special_days.schedule
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        dates_hist: List[date] = []
+
+        periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
+        w_to_nb_duties = calculate_worker_nb_duties(
+            engine_inputs_special_days.schedule,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.requests,
+            engine_inputs_special_days.daily_shift_demands,
+            periods_monthly,
+        )
+
+        ws_to_dates = build_ws_ids_to_dates(
+            schedule,
+            engine_inputs_special_days.workers,
+            [w for w in engine_inputs_special_days.workers if not w.deleted],
+            engine_inputs_special_days.shifts,
+            [s for s in engine_inputs_special_days.shifts if not s.deleted],
+            engine_inputs_special_days.as_hist
+            + engine_inputs_special_days.as_wip_fixed,
+            dates_campaign,
+        )
+
+        out = build_nb_duties_constraints(
+            periods_monthly,
+            w_to_nb_duties,
+            ws_to_dates,
+            [
+                s
+                for s in engine_inputs_special_days.shifts
+                if not s.deleted and s.shift_type == ShiftType.DUTY
+            ],
+        )
+
+        assert isinstance(out, list)
+        assert all(isinstance(c, GroupsAssignmentsTargetConstraint) for c in out)
+
+    # pylint: disable=too-many-locals
+    def test_build_nb_duties_constraints_output(
+        self, engine_inputs_special_days: EngineInputs
+    ) -> None:
+        schedule = engine_inputs_special_days.schedule
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        dates_hist: List[date] = []
+
+        periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
+        w_to_nb_duties = calculate_worker_nb_duties(
+            engine_inputs_special_days.schedule,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.requests,
+            engine_inputs_special_days.daily_shift_demands,
+            periods_monthly,
+        )
+
+        ws_to_dates = build_ws_ids_to_dates(
+            schedule,
+            engine_inputs_special_days.workers,
+            [w for w in engine_inputs_special_days.workers if not w.deleted],
+            engine_inputs_special_days.shifts,
+            [s for s in engine_inputs_special_days.shifts if not s.deleted],
+            engine_inputs_special_days.as_hist
+            + engine_inputs_special_days.as_wip_fixed,
+            dates_campaign,
+        )
+
+        out = build_nb_duties_constraints(
+            periods_monthly,
+            w_to_nb_duties,
+            ws_to_dates,
+            [
+                s
+                for s in engine_inputs_special_days.shifts
+                if not s.deleted and s.shift_type == ShiftType.DUTY
+            ],
+        )
+
+        shift_duty_ids = [
+            s.id
+            for s in engine_inputs_special_days.shifts
+            if s.shift_type == ShiftType.DUTY and not s.deleted
+        ]
+
+        p_index_to_period = dict(enumerate(periods_monthly))
+
+        for gadtc in out:
+            assert gadtc.penalty == penalties.system_constraint.monthly_target_nb_duties
+            assert (
+                gadtc.tolerance
+                == model_config.system_constraints.mthly_target_nb_duty_tolerance
+            )
+            dates_gadtc = list(
+                set(date.fromisoformat(a[1]) for ag in gadtc.assignments for a in ag)
+            )
+            for i, period in p_index_to_period.items():
+                if sorted(dates_gadtc) == sorted(period):
+                    p_index = i
+                    break
+            assert p_index is not None
+            assert all(d in p_index_to_period[p_index] for d in dates_gadtc)
+            shift_ids_gadtc = {a[2] for ag in gadtc.assignments for a in ag}
+            assert sorted(shift_ids_gadtc) == sorted(set(shift_duty_ids))
+            for assignments, target in zip(gadtc.assignments, gadtc.targets):
+                w_id = assignments[0][0]
+                assert w_id in w_to_nb_duties
+                assert all(a[0] == w_id for a in assignments)
+                assert target == w_to_nb_duties[w_id]["target"][p_index]

@@ -493,45 +493,41 @@ class Model:
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(nb_duties.penalty)
 
-    def add_target_nb_duties_constraints(self, nb_duties: NbDuties) -> None:
+    def add_target_nb_duties_constraints(
+        self, constraints: List[GroupsAssignmentsTargetConstraint]
+    ) -> None:
         if not self.model_config.system_constraints.monthly_target_nb_duties:
             return
-        for w_assignments, w_targets in zip(
-            nb_duties.assignments,
-            nb_duties.targets,
-        ):
-            for p_assignments, p_target in zip(w_assignments, w_targets):
-                constraint_vars = [self.variables[a] for a in p_assignments]
-                var_name = "target_nb_duties"
-                delta = self.model.NewIntVar(
-                    -p_target,
-                    len(constraint_vars)
-                    * Constants.NUM_HOURS_DAY
-                    * Constants.NUM_MINUTES_HOUR,
-                    "",
-                )
-                self.model.Add(delta == sum(v for v in constraint_vars) - p_target)
-
-                tolerance = round(p_target * nb_duties.tolerance)
+        for constraint in constraints:
+            excesses = []
+            for assignments, target in zip(constraint.assignments, constraint.targets):
+                constraint_vars = [self.variables[a] for a in assignments]
                 excess = self.model.NewIntVar(
-                    0,
-                    len(constraint_vars)
-                    * Constants.NUM_HOURS_DAY
-                    * Constants.NUM_MINUTES_HOUR,
-                    var_name,
-                )
-                abs_delta = self.model.NewIntVar(
-                    0,
+                    -target,
                     len(constraint_vars)
                     * Constants.NUM_HOURS_DAY
                     * Constants.NUM_MINUTES_HOUR,
                     "",
                 )
-                self.model.AddAbsEquality(abs_delta, delta)
-
-                self.model.AddMaxEquality(excess, [abs_delta - tolerance, 0])
-                self.obj.int_vars.append(excess)
-                self.obj.int_coeffs.append(nb_duties.penalty)
+                self.model.AddMaxEquality(
+                    excess,
+                    [
+                        sum(v for v in constraint_vars) - target,
+                        0,
+                    ],
+                )
+                excesses.append(excess)
+            var_name = "target_nb_duties"
+            max_excess = self.model.NewIntVar(
+                0,
+                len(constraint_vars)
+                * Constants.NUM_HOURS_DAY
+                * Constants.NUM_MINUTES_HOUR,
+                var_name,
+            )
+            self.model.AddMaxEquality(max_excess, excesses)
+            self.obj.int_vars.append(max_excess)
+            self.obj.int_coeffs.append(constraint.penalty)
 
     def add_special_days_constraints(
         self, constraints: List[GroupsAssignmentsTargetConstraint]
