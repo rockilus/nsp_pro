@@ -74,7 +74,7 @@ class TestBuildLinkShiftPairs:
             if s0_id == "s0":
                 assert s1_id == "s1"
             assert ls_id == "ls_0"
-            assert penalty == penalties.system_constraint.link_shift
+            assert penalty == penalties.configuration_constraint.link_shift
         w_ids_in_pairs = sorted(
             set(w_id for a_1, a_2, _, _ in ls_pairs for w_id, _, _ in [a_1, a_2])
         )

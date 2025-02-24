@@ -38,7 +38,7 @@ def build_link_shift_pairs(
                     (w.id, d.isoformat(), ls.shift_ids[0]),
                     (w.id, d.isoformat(), ls.shift_ids[1]),
                     ls.id,
-                    penalties.system_constraint.link_shift,
+                    penalties.configuration_constraint.link_shift,
                 )
                 for w in workers_not_deleted
                 for d in worker_ids_to_worker_dates[w.id].dates_campaign

@@ -7,6 +7,37 @@ from ortools.sat.python import cp_model  # type: ignore
 from shared.schemas import Constraints
 
 ##############################
+# Model Config
+##############################
+
+
+class SolveStrategy(Enum):
+    HARD_TO_SOFT = 0
+    SEQUENTIAL = 1
+
+
+@dataclass
+class SystemConstraints:
+    weekly_target_work_time: bool
+    weekly_target_work_time_tolerance: float
+    monthly_target_nb_duties: bool
+    monthly_target_nb_duties_tolerance: float
+    special_days_target_nb_duties: bool
+
+
+@dataclass
+class SolverParams:
+    max_time_in_seconds: int
+    solve_strategy: SolveStrategy
+
+
+@dataclass
+class ModelConfig:
+    solver_params: SolverParams
+    system_constraints: SystemConstraints
+
+
+##############################
 # Inputs
 ##############################
 
@@ -64,6 +95,7 @@ class WorkTime:
     # (size workers x periods x shifts * period length)
     durations: List[List[List[int]]]
     penalty: int
+    tolerance: float = 0.0
 
 
 @dataclass
@@ -77,6 +109,7 @@ class NbDuties:
     # for each assignment, the duration of the shift
     # (size workers x periods x shifts * period length)
     penalty: int
+    tolerance: float = 0.0
 
 
 @dataclass
@@ -88,17 +121,18 @@ class WorkLoads:
     monthly_nb_duties_max: NbDuties
 
 
-# pylint: disable=too-many-instance-attributes
 @dataclass
-class Inputs:
-    variables: Variables
-    no_overlap_shift_intervals: List[
-        List[Tuple[str, str, str]]
-    ]  # list of assignments for each worker
+class GroupsAssignmentsTargetConstraint:
+    assignments: List[List[Tuple[str, str, str]]]
+    targets: List[int]
+    penalty: int
+
+
+@dataclass
+class ConfigurationConstraintInputs:
     work_loads: WorkLoads
     shift_demands: List[ShiftDemand]
     requests: List[Request]
-    constraints: Constraints
     duty_recup_pairs: List[
         Tuple[
             Tuple[str, str, str], Tuple[str, str, str], int
@@ -112,8 +146,28 @@ class Inputs:
     worker_shift_filters: Tuple[
         List[Tuple[str, str, str]], int
     ]  # (List[assignments], penalty)
+
+
+@dataclass
+class SystemConstraintInputs:
+    weekly_target_work_time: WorkTime
+    monthly_target_nb_duties: NbDuties
+    special_days_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
+
+
+# pylint: disable=too-many-instance-attributes
+@dataclass
+class Inputs:
+    variables: Variables
+    no_overlap_shift_intervals: List[
+        List[Tuple[str, str, str]]
+    ]  # list of assignments for each worker
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
+    user_constraints: Constraints
+    configuration_constraints: ConfigurationConstraintInputs
+    system_constraints: SystemConstraintInputs
+    model_config: ModelConfig
 
     def to_dict(self):
         out = asdict(self)
@@ -200,24 +254,3 @@ class BenchmarkTimes:
 # status 2: FEASIBLE
 # status 3: INFEASIBLE
 # status 4: OPTIMAL
-
-
-##############################
-# Model Config
-##############################
-
-
-class SolveStrategy(Enum):
-    HARD_TO_SOFT = 0
-    SEQUENTIAL = 1
-
-
-@dataclass
-class SolverParams:
-    max_time_in_seconds: int
-    solve_strategy: SolveStrategy
-
-
-@dataclass
-class ModelConfig:
-    solver_params: SolverParams

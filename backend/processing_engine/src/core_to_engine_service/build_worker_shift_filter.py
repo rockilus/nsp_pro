@@ -147,4 +147,4 @@ def build_worker_shift_filters(
 
     # Return the list of unique (worker_id, invalid_shift_id) and
     # (invalid_worker_id, shift_id) tuples
-    return list(out), penalties.system_constraint.worker_shift_filter
+    return list(out), penalties.configuration_constraint.worker_shift_filter

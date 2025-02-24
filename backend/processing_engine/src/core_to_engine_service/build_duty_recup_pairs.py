@@ -31,7 +31,7 @@ def build_duty_recup_pairs(
                     (
                         (w.id, d.isoformat(), shift.id),
                         (w.id, d.isoformat(), rec_shift.id),
-                        penalties.system_constraint.duty_recup,
+                        penalties.configuration_constraint.duty_recup,
                     )
                     for w in workers_not_deleted
                     for d in worker_ids_to_worker_dates[w.id].dates_campaign

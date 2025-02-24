@@ -32,50 +32,52 @@ from core_to_engine_service.penalties import penalties
 class TestParseConstraints:
     @pytest.fixture
     def run_parse_constraints(
-        self, engine_inputs: EngineInputs
+        self, engine_inputs_special_days: EngineInputs
     ) -> Callable[[EngineInputs], Constraints]:
         dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
-            engine_inputs.workers,
-            engine_inputs.dimensions,
-            engine_inputs.dim_entries,
-            engine_inputs.attributes,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.dimensions,
+            engine_inputs_special_days.dim_entries,
+            engine_inputs_special_days.attributes,
         )
         dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
-            engine_inputs.shifts,
-            engine_inputs.dimensions,
-            engine_inputs.dim_entries,
-            engine_inputs.attributes,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.dimensions,
+            engine_inputs_special_days.dim_entries,
+            engine_inputs_special_days.attributes,
         )
         dates_hist, dates_campaign = build_dates(
-            engine_inputs.schedule,
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs_special_days.schedule,
+            engine_inputs_special_days.as_hist
+            + engine_inputs_special_days.as_wip_fixed,
         )
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
         worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-            engine_inputs.schedule,
-            engine_inputs.workers,
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs_special_days.schedule,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.as_hist
+            + engine_inputs_special_days.as_wip_fixed,
             dates_campaign,
         )
         return lambda inputs: parse_constraints(  # type: ignore
-            engine_inputs.cbs_augmented,
-            engine_inputs.schedule.id,
-            engine_inputs.workers,
+            engine_inputs_special_days.cbs_augmented,
+            engine_inputs_special_days.schedule.id,
+            engine_inputs_special_days.workers,
             dim_to_attr_value_to_worker,
             dates_hist,
             dates_campaign,
             periods_weekly,
             periods_monthly,
             worker_ids_to_worker_dates,
-            engine_inputs.shifts,
+            engine_inputs_special_days.shifts,
             dim_to_attr_value_to_shift,
             penalties,
         )
 
     def test_parse_constraints(
         self,
-        engine_inputs: EngineInputs,
+        engine_inputs_special_days: EngineInputs,
         constraint_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -87,8 +89,8 @@ class TestParseConstraints:
         run_parse_constraints: Callable[[EngineInputs], Constraints],
     ) -> None:
         cba, expected_output = constraint_with_expected_output
-        engine_inputs.cbs_augmented = [cba]
-        out = run_parse_constraints(engine_inputs)
+        engine_inputs_special_days.cbs_augmented = [cba]
+        out = run_parse_constraints(engine_inputs_special_days)
         if cba.constraint_type == ConstraintType.SEQ:
             assert out.seq == [expected_output]
         elif cba.constraint_type in [ConstraintType.SUM, ConstraintType.EVE]:

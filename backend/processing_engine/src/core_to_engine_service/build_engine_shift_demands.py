@@ -65,9 +65,9 @@ def build_engine_shift_demands(
                     target=target,
                     target_specialties=target_specialty,
                     penalty=(
-                        penalties.system_constraint.coverage.duty
+                        penalties.configuration_constraint.coverage.duty
                         if shift.shift_type == ShiftType.DUTY
-                        else penalties.system_constraint.coverage.normal
+                        else penalties.configuration_constraint.coverage.normal
                     ),
                 )
             )

@@ -72,11 +72,11 @@ def save_benchmark_to_csv(
         "solution_fingerprint",
         "commit",
     ]
-    num_constraints_sum = len(inputs.constraints.sum)
-    num_constraints_seq = len(inputs.constraints.seq)
-    num_constraints_ord = len(inputs.constraints.ord)
-    num_constraints_fil = len(inputs.constraints.fil)
-    num_constraints_fai = len(inputs.constraints.fai)
+    num_constraints_sum = len(inputs.user_constraints.sum)
+    num_constraints_seq = len(inputs.user_constraints.seq)
+    num_constraints_ord = len(inputs.user_constraints.ord)
+    num_constraints_fil = len(inputs.user_constraints.fil)
+    num_constraints_fai = len(inputs.user_constraints.fai)
     num_constraints_total = (
         num_constraints_sum
         + num_constraints_seq
@@ -93,8 +93,8 @@ def save_benchmark_to_csv(
         "num_constraints_ord": num_constraints_ord,
         "num_constraints_fil": num_constraints_fil,
         "num_constraints_fai": num_constraints_fai,
-        "num_requests": len(inputs.requests),
-        "num_shift_demands": len(inputs.shift_demands),
+        "num_requests": len(inputs.configuration_constraints.requests),
+        "num_shift_demands": len(inputs.configuration_constraints.shift_demands),
         "total_time": model.bt.total_end - model.bt.total_start,
         "setup_time": model.bt.full_setup_end - model.bt.full_setup_start,
         "solve_time": model.solver.WallTime(),
