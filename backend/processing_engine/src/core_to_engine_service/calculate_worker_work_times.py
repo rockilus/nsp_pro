@@ -1,10 +1,103 @@
 import math
 from datetime import date, timedelta
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
-from shared.schemas import DailyShiftDemand, Request, Schedule, Shift, ShiftType, Worker
+from shared.schemas import (
+    DailyShiftDemand,
+    Request,
+    Schedule,
+    Shift,
+    ShiftType,
+    Worker,
+    WorkerDates,
+)
 
+from core_to_engine_service.model_config import model_config
+from core_to_engine_service.penalties import penalties
+from engine import GroupsAssignmentsDurationsTargetConstraint
 from utils.constants import Constants
+
+
+def build_work_time_constraints(
+    periods: List[List[date]],
+    w_to_work_times: Dict[str, Dict[str, List[int]]],
+    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
+    shifts_work: List[Shift],
+    shift_id_to_duration_dict: Dict[str, int],
+) -> List[GroupsAssignmentsDurationsTargetConstraint]:
+    #     len(periods)
+    # List[GroupsAssignmentsDurationsTargetConstraint]=
+    #         len(workers) x len(shifts work) * len(period)
+    #     assignments: List[List[Tuple[str, str, str]]]
+    #         len(workers) x len(shifts work) * len(period)
+    #     durations: List[List[Tuple[str, str, str]]]
+    #         len(workers)
+    #     targets: List[int]x
+    #     penalty: int
+    #     tolerance: int
+    p_index_to_period: Dict[int, List[date]] = dict(enumerate(periods))
+
+    p_index_to_gadtc: Dict[int, GroupsAssignmentsDurationsTargetConstraint] = {}
+    for w_id, work_times in w_to_work_times.items():
+        target_work_times = work_times["target"]
+        for i, period in p_index_to_period.items():
+            if len(period) == 0:
+                continue
+            if i not in p_index_to_gadtc:
+                p_index_to_gadtc[i] = GroupsAssignmentsDurationsTargetConstraint(
+                    assignments=[
+                        [
+                            (w_id, d.isoformat(), s.id)
+                            for d in period
+                            for s in shifts_work
+                            if d
+                            in ws_to_dates[(w_id, s.id)].dates_hist
+                            + ws_to_dates[(w_id, s.id)].dates_campaign
+                            and d in period
+                        ]
+                    ],
+                    durations=[
+                        [
+                            shift_id_to_duration_dict[s.id]
+                            for d in period
+                            for s in shifts_work
+                            if d
+                            in ws_to_dates[(w_id, s.id)].dates_hist
+                            + ws_to_dates[(w_id, s.id)].dates_campaign
+                            and d in period
+                        ]
+                    ],
+                    targets=[target_work_times[i]],
+                    penalty=penalties.system_constraint.weekly_target_work_time,
+                    tolerance=(
+                        model_config.system_constraints.weekly_target_worktime_tolerance
+                    ),
+                )
+            else:
+                p_index_to_gadtc[i].assignments.append(
+                    [
+                        (w_id, d.isoformat(), s.id)
+                        for d in period
+                        for s in shifts_work
+                        if d
+                        in ws_to_dates[(w_id, s.id)].dates_hist
+                        + ws_to_dates[(w_id, s.id)].dates_campaign
+                        and d in period
+                    ]
+                )
+                p_index_to_gadtc[i].durations.append(
+                    [
+                        shift_id_to_duration_dict[s.id]
+                        for d in period
+                        for s in shifts_work
+                        if d
+                        in ws_to_dates[(w_id, s.id)].dates_hist
+                        + ws_to_dates[(w_id, s.id)].dates_campaign
+                        and d in period
+                    ]
+                )
+                p_index_to_gadtc[i].targets.append(target_work_times[i])
+    return list(p_index_to_gadtc.values())
 
 
 # pylint: disable=too-many-locals, too-many-arguments
