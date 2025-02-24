@@ -35,7 +35,6 @@ from core_to_engine_service.build_engine_variables import build_engine_variables
 from core_to_engine_service.build_engine_work_loads import (
     build_engine_nb_duties,
     build_engine_work_loads,
-    build_engine_work_time,
 )
 from core_to_engine_service.build_link_shift_pairs import build_link_shift_pairs
 from core_to_engine_service.build_periods import (
@@ -48,6 +47,7 @@ from core_to_engine_service.calculate_worker_special_days import (
     build_duty_special_days_constraints,
 )
 from core_to_engine_service.calculate_worker_work_times import (
+    build_work_time_constraints,
     calculate_worker_work_times,
 )
 from core_to_engine_service.model_config import model_config
@@ -239,16 +239,12 @@ def core_to_engine_inputs(
             ),
         ),
         system_constraints=SystemConstraintInputs(
-            weekly_target_work_time=build_engine_work_time(
-                workers_not_deleted,
+            weekly_target_work_time=build_work_time_constraints(
                 periods_weekly,
+                w_to_work_times,
                 ws_to_dates,
                 shifts_work,
                 shift_id_to_duration_dict,
-                w_to_work_times,
-                "target",
-                penalties.system_constraint.weekly_target_work_time,
-                model_config.system_constraints.weekly_target_work_time_tolerance,
             ),
             monthly_target_nb_duties=build_engine_nb_duties(
                 workers_not_deleted,
