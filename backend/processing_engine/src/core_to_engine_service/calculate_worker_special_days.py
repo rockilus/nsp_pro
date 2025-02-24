@@ -27,6 +27,13 @@ def build_duty_special_days_constraints(
     daily_shift_demands: List[DailyShiftDemand],
     fixed_assignments: List[Assignment],
 ) -> List[GroupsAssignmentsTargetConstraint]:
+    #     len(number of special days)
+    # List[GroupsAssignmentsTargetConstraint]=
+    #         len(workers) x len(shifts duty) * len(special days dates in campaign)
+    #     assignments: List[List[Tuple[str, str, str]]]
+    #         len(workers)
+    #     targets: List[int]x
+    #     penalty: int
     w_to_special_days = calculate_worker_speacial_days(
         workers,
         worker_ids_to_worker_dates,

@@ -19,7 +19,7 @@ class SolveStrategy(Enum):
 @dataclass
 class SystemConstraints:
     weekly_target_work_time: bool
-    weekly_target_work_time_tolerance: float
+    weekly_target_worktime_tolerance: float
     monthly_target_nb_duties: bool
     monthly_target_nb_duties_tolerance: float
     special_days_target_nb_duties: bool
@@ -129,6 +129,15 @@ class GroupsAssignmentsTargetConstraint:
 
 
 @dataclass
+class GroupsAssignmentsDurationsTargetConstraint:
+    assignments: List[List[Tuple[str, str, str]]]
+    durations: List[List[int]]
+    targets: List[int]
+    penalty: int
+    tolerance: float = 0.0
+
+
+@dataclass
 class ConfigurationConstraintInputs:
     work_loads: WorkLoads
     shift_demands: List[ShiftDemand]
@@ -150,7 +159,7 @@ class ConfigurationConstraintInputs:
 
 @dataclass
 class SystemConstraintInputs:
-    weekly_target_work_time: WorkTime
+    weekly_target_work_time: List[GroupsAssignmentsDurationsTargetConstraint]
     monthly_target_nb_duties: NbDuties
     special_days_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
 
