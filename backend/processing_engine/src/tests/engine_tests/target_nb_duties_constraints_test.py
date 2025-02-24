@@ -593,23 +593,23 @@ class TestTargetWorkTimeConstraints:
             ]
 
             w_target_nb_duties = w_to_nb_duties[w.id]["target"][0]
-            delta = abs(len(assignments_duty_worker) - w_target_nb_duties)
+            delta = len(assignments_duty_worker) - w_target_nb_duties
 
             if w.id == worker_excluded.id:
                 assert len(assignments_duty_worker) == 0
-                assert delta == w_target_nb_duties
+                assert abs(delta) == w_target_nb_duties
 
             deltas.append(delta)
 
-        # assert max(deltas) == 1
+        max_excess = max(*deltas, 0)
 
-        breach_count_expected = len([delta for delta in deltas if delta > 0])
+        assert max_excess == 1
 
-        assert len(out.breaches) == breach_count_expected
+        assert len(out.breaches) == 1
         assert len(breaches) == 0
 
         objective_value_expected = (
-            penalties.system_constraint.monthly_target_nb_duties * sum(deltas)
+            penalties.system_constraint.monthly_target_nb_duties * max_excess
         )
 
         assert out.objective_value == objective_value_expected

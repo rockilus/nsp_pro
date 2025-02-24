@@ -21,7 +21,7 @@ model_config = ModelConfig(
         weekly_target_work_time=not test_mode,
         weekly_target_worktime_tolerance=0.1 if not test_mode else 0.0,
         monthly_target_nb_duties=not test_mode,
-        monthly_target_nb_duties_tolerance=0.2 if not test_mode else 0.0,
+        mthly_target_nb_duty_tolerance=0.2 if not test_mode else 0.0,
         special_days_target_nb_duties=not test_mode,
     ),
 )

@@ -1,14 +1,83 @@
 import calendar
 import math
 from datetime import date
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
-from shared.schemas import DailyShiftDemand, Request, Schedule, Shift, ShiftType, Worker
+from shared.schemas import (
+    DailyShiftDemand,
+    Request,
+    Schedule,
+    Shift,
+    ShiftType,
+    Worker,
+    WorkerDates,
+)
 
 from core_to_engine_service.calculate_worker_work_times import (
     calculate_adjustment_coefficients,
     round_proportional_times,
 )
+from core_to_engine_service.model_config import model_config
+from core_to_engine_service.penalties import penalties
+from engine import GroupsAssignmentsTargetConstraint
+
+
+# pylint: disable=too-many-arguments, R0801
+def build_nb_duties_constraints(
+    periods: List[List[date]],
+    w_to_nb_duties: Dict[str, Dict[str, List[int]]],
+    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
+    shifts_duty: List[Shift],
+) -> List[GroupsAssignmentsTargetConstraint]:
+    #     len(periods)
+    # List[GroupsAssignmentsTargetConstraint]=
+    #         len(workers) x len(shifts duty) * len(period)
+    #     assignments: List[List[Tuple[str, str, str]]]
+    #         len(workers)
+    #     targets: List[int]
+    #     penalty: int
+    #     tolerance: int
+    p_index_to_period: Dict[int, List[date]] = dict(enumerate(periods))
+
+    p_index_to_gadtc: Dict[int, GroupsAssignmentsTargetConstraint] = {}
+    for w_id, nb_duties in w_to_nb_duties.items():
+        target_work_times = nb_duties["target"]
+        for i, period in p_index_to_period.items():
+            if len(period) == 0:
+                continue
+            if i not in p_index_to_gadtc:
+                p_index_to_gadtc[i] = GroupsAssignmentsTargetConstraint(
+                    assignments=[
+                        [
+                            (w_id, d.isoformat(), s.id)
+                            for d in period
+                            for s in shifts_duty
+                            if d
+                            in ws_to_dates[(w_id, s.id)].dates_hist
+                            + ws_to_dates[(w_id, s.id)].dates_campaign
+                            and d in period
+                        ]
+                    ],
+                    targets=[target_work_times[i]],
+                    penalty=penalties.system_constraint.monthly_target_nb_duties,
+                    tolerance=(
+                        model_config.system_constraints.mthly_target_nb_duty_tolerance
+                    ),
+                )
+            else:
+                p_index_to_gadtc[i].assignments.append(
+                    [
+                        (w_id, d.isoformat(), s.id)
+                        for d in period
+                        for s in shifts_duty
+                        if d
+                        in ws_to_dates[(w_id, s.id)].dates_hist
+                        + ws_to_dates[(w_id, s.id)].dates_campaign
+                        and d in period
+                    ]
+                )
+                p_index_to_gadtc[i].targets.append(target_work_times[i])
+    return list(p_index_to_gadtc.values())
 
 
 # pylint: disable=too-many-locals, too-many-arguments, R0801
