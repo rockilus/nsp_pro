@@ -32,7 +32,7 @@ def build_work_time_constraints(
     #         len(workers) x len(shifts work) * len(period)
     #     durations: List[List[Tuple[str, str, str]]]
     #         len(workers)
-    #     targets: List[int]x
+    #     targets: List[int]
     #     penalty: int
     #     tolerance: int
     p_index_to_period: Dict[int, List[date]] = dict(enumerate(periods))

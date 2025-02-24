@@ -32,17 +32,17 @@ from core_to_engine_service.build_engine_requests import build_engine_requests
 from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
 from core_to_engine_service.build_engine_sol_hint import core_to_engine_sol_hint
 from core_to_engine_service.build_engine_variables import build_engine_variables
-from core_to_engine_service.build_engine_work_loads import (
-    build_engine_nb_duties,
-    build_engine_work_loads,
-)
+from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
 from core_to_engine_service.build_link_shift_pairs import build_link_shift_pairs
 from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
 from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
-from core_to_engine_service.calculate_worker_nb_duties import calculate_worker_nb_duties
+from core_to_engine_service.calculate_worker_nb_duties import (
+    build_nb_duties_constraints,
+    calculate_worker_nb_duties,
+)
 from core_to_engine_service.calculate_worker_special_days import (
     build_duty_special_days_constraints,
 )
@@ -246,15 +246,11 @@ def core_to_engine_inputs(
                 shifts_work,
                 shift_id_to_duration_dict,
             ),
-            monthly_target_nb_duties=build_engine_nb_duties(
-                workers_not_deleted,
+            monthly_target_nb_duties=build_nb_duties_constraints(
                 periods_monthly,
+                w_to_nb_duties,
                 ws_to_dates,
                 shift_duties_not_deleted,
-                w_to_nb_duties,
-                "target",
-                penalties.system_constraint.monthly_target_nb_duties,
-                model_config.system_constraints.monthly_target_nb_duties_tolerance,
             ),
             special_days_target_nb_duties=build_duty_special_days_constraints(
                 workers_not_deleted,

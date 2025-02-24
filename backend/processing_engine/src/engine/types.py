@@ -21,7 +21,7 @@ class SystemConstraints:
     weekly_target_work_time: bool
     weekly_target_worktime_tolerance: float
     monthly_target_nb_duties: bool
-    monthly_target_nb_duties_tolerance: float
+    mthly_target_nb_duty_tolerance: float
     special_days_target_nb_duties: bool
 
 
@@ -126,6 +126,7 @@ class GroupsAssignmentsTargetConstraint:
     assignments: List[List[Tuple[str, str, str]]]
     targets: List[int]
     penalty: int
+    tolerance: float = 0.0
 
 
 @dataclass
@@ -160,7 +161,7 @@ class ConfigurationConstraintInputs:
 @dataclass
 class SystemConstraintInputs:
     weekly_target_work_time: List[GroupsAssignmentsDurationsTargetConstraint]
-    monthly_target_nb_duties: NbDuties
+    monthly_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
     special_days_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
 
 
