@@ -371,7 +371,6 @@ class SystemConstraintPenalty:
 
     def apply_coefficient(self, coefficient: int) -> None:
         self.monthly_target_nb_duties *= coefficient
-        self.special_days_target_nb_duties *= coefficient
 
 
 @dataclass

@@ -929,75 +929,6 @@ class TestBuildDutySpecialDaysConstraints:
         assert isinstance(out, list)
         assert all(isinstance(c, GroupsAssignmentsTargetConstraint) for c in out)
 
-    # def test_build_duty_special_days_constraints_output(
-    #     self, engine_inputs_special_days: EngineInputs
-    # ) -> None:
-    #     dates_hist, dates_campaign = build_dates(
-    #         engine_inputs_special_days.schedule,
-    #         engine_inputs_special_days.as_hist
-    #         + engine_inputs_special_days.as_wip_fixed,
-    #     )
-
-    #     # Call the method under test
-    #     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-    #         engine_inputs_special_days.schedule,
-    #         engine_inputs_special_days.workers,
-    #         engine_inputs_special_days.as_hist
-    #         + engine_inputs_special_days.as_wip_fixed,
-    #         dates_campaign,
-    #     )
-    #     w_to_special_days = calculate_worker_speacial_days(
-    #         workers=engine_inputs_special_days.workers,
-    #         worker_ids_to_worker_dates=worker_ids_to_worker_dates,
-    #         dates_hist=dates_hist,
-    #         dates_campaign=dates_campaign,
-    #         shifts=engine_inputs_special_days.shifts,
-    #         requests=engine_inputs_special_days.requests,
-    #         daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
-    #         fixed_assignments=engine_inputs_special_days.as_hist
-    #         + engine_inputs_special_days.as_wip_fixed,
-    #     )
-
-    #     out = build_duty_special_days_constraints(
-    #         workers=engine_inputs_special_days.workers,
-    #         worker_ids_to_worker_dates=worker_ids_to_worker_dates,
-    #         dates_hist=dates_hist,
-    #         dates_campaign=dates_campaign,
-    #         shifts=engine_inputs_special_days.shifts,
-    #         requests=engine_inputs_special_days.requests,
-    #         daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
-    #         fixed_assignments=engine_inputs_special_days.as_hist
-    #         + engine_inputs_special_days.as_wip_fixed,
-    #     )
-
-    #     shift_duty_not_del_ids = [
-    #         s.id
-    #         for s in engine_inputs_special_days.shifts
-    #         if s.shift_type == ShiftType.DUTY and not s.deleted
-    #     ]
-
-    #     for w_id, special_days_dict in w_to_special_days.items():
-    #         for _, sd_data in special_days_dict.items():
-    #             a_expected = [
-    #                 (w_id, d.isoformat(), s)
-    #                 for d in sd_data["dates"]  # type: ignore
-    #                 for s in shift_duty_not_del_ids
-    #             ]
-    #             t_expected = sd_data["target"]
-    #             p_expected = (
-    #                 penalties.system_constraint.special_days_target_nb_duties
-    #             )
-    #             for constraint in out:
-    #                 if (
-    #                     constraint.assignments == a_expected
-    #                     and constraint.target == t_expected
-    #                     and constraint.penalty == p_expected
-    #                 ):
-    #                     out.remove(constraint)
-    #                     break
-
-    #     assert len(out) == 0
-
     def test_build_duty_special_days_constraints_output(
         self, engine_inputs_special_days: EngineInputs
     ) -> None:
@@ -1078,3 +1009,72 @@ class TestBuildDutySpecialDaysConstraints:
                 assert (
                     target == w_to_special_days[w_id][str(day_index_expected)]["target"]
                 )
+
+    # def test_build_duty_special_days_constraints_output(
+    #     self, engine_inputs_special_days: EngineInputs
+    # ) -> None:
+    #     dates_hist, dates_campaign = build_dates(
+    #         engine_inputs_special_days.schedule,
+    #         engine_inputs_special_days.as_hist
+    #         + engine_inputs_special_days.as_wip_fixed,
+    #     )
+
+    #     # Call the method under test
+    #     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
+    #         engine_inputs_special_days.schedule,
+    #         engine_inputs_special_days.workers,
+    #         engine_inputs_special_days.as_hist
+    #         + engine_inputs_special_days.as_wip_fixed,
+    #         dates_campaign,
+    #     )
+    #     w_to_special_days = calculate_worker_speacial_days(
+    #         workers=engine_inputs_special_days.workers,
+    #         worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+    #         dates_hist=dates_hist,
+    #         dates_campaign=dates_campaign,
+    #         shifts=engine_inputs_special_days.shifts,
+    #         requests=engine_inputs_special_days.requests,
+    #         daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
+    #         fixed_assignments=engine_inputs_special_days.as_hist
+    #         + engine_inputs_special_days.as_wip_fixed,
+    #     )
+
+    #     out = build_duty_special_days_constraints(
+    #         workers=engine_inputs_special_days.workers,
+    #         worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+    #         dates_hist=dates_hist,
+    #         dates_campaign=dates_campaign,
+    #         shifts=engine_inputs_special_days.shifts,
+    #         requests=engine_inputs_special_days.requests,
+    #         daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
+    #         fixed_assignments=engine_inputs_special_days.as_hist
+    #         + engine_inputs_special_days.as_wip_fixed,
+    #     )
+
+    #     shift_duty_not_del_ids = [
+    #         s.id
+    #         for s in engine_inputs_special_days.shifts
+    #         if s.shift_type == ShiftType.DUTY and not s.deleted
+    #     ]
+
+    #     for w_id, special_days_dict in w_to_special_days.items():
+    #         for _, sd_data in special_days_dict.items():
+    #             a_expected = [
+    #                 (w_id, d.isoformat(), s)
+    #                 for d in sd_data["dates"]  # type: ignore
+    #                 for s in shift_duty_not_del_ids
+    #             ]
+    #             t_expected = sd_data["target"]
+    #             p_expected = (
+    #                 penalties.system_constraint.special_days_target_nb_duties
+    #             )
+    #             for constraint in out:
+    #                 if (
+    #                     constraint.assignments == a_expected
+    #                     and constraint.target == t_expected
+    #                     and constraint.penalty == p_expected
+    #                 ):
+    #                     out.remove(constraint)
+    #                     break
+
+    #     assert len(out) == 0

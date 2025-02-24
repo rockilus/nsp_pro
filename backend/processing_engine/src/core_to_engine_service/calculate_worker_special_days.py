@@ -15,11 +15,6 @@ from core_to_engine_service.calculate_worker_work_times import round_proportiona
 from core_to_engine_service.penalties import penalties
 from engine import GroupsAssignmentsTargetConstraint
 
-# Count the number of duties on special days in the past (LTM including campaign)
-# Count the required number of duties on special days in the future
-# Count the number of day off on special days for each worker
-# Calculate target number of duties for each worker on LTM
-
 
 # pylint: disable=too-many-arguments
 def build_duty_special_days_constraints(
@@ -72,20 +67,6 @@ def build_duty_special_days_constraints(
                     sd_values["target"]  # type: ignore
                 )
     return list(sd_label_to_gatc.values())
-
-    # return [
-    #     GroupsAssignmentsTargetConstraint(
-    #         assignments=[
-    #             (w_id, d.isoformat(), s)
-    #             for d in sd_values["dates"]  # type: ignore
-    #             for s in shift_duty_not_del_ids
-    #         ],
-    #         target=sd_values["target"],  # type: ignore
-    #         penalty=penalties.system_constraint.special_days_target_nb_duties,
-    #     )
-    #     for w_id, special_days_dict in w_to_special_days.items()
-    #     for _, sd_values in special_days_dict.items()
-    # ]
 
 
 # pylint: disable=too-many-arguments, too-many-locals
