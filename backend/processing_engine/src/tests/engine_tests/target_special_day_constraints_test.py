@@ -33,11 +33,6 @@ from core_to_engine_service.calculate_worker_special_days import (
     build_duty_special_days_constraints,
     calculate_worker_speacial_days,
 )
-from core_to_engine_service.model_config import (
-    github_actions_mode,
-    pytest_mode,
-    test_mode,
-)
 from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
@@ -93,7 +88,9 @@ class TestSpecialDayConstraints:
                 acronym="NMS",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 1, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 3, 0, tzinfo=timezone.utc),  # 2 hours
+                end_time=datetime(
+                    2025, 1, 1, 3, 0, tzinfo=timezone.utc
+                ),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.NORMAL,
@@ -110,7 +107,9 @@ class TestSpecialDayConstraints:
                 acronym="MS",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc),  # 2 hours
+                end_time=datetime(
+                    2025, 1, 1, 10, 0, tzinfo=timezone.utc
+                ),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="blue",
                 shift_type=ShiftType.NORMAL,
@@ -127,7 +126,9 @@ class TestSpecialDayConstraints:
                 acronym="AS",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 13, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 15, 0, tzinfo=timezone.utc),  # 2 hours
+                end_time=datetime(
+                    2025, 1, 1, 15, 0, tzinfo=timezone.utc
+                ),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="green",
                 shift_type=ShiftType.NORMAL,
@@ -144,7 +145,9 @@ class TestSpecialDayConstraints:
                 acronym="NS",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 18, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 20, 0, tzinfo=timezone.utc),  # 2 hours
+                end_time=datetime(
+                    2025, 1, 1, 20, 0, tzinfo=timezone.utc
+                ),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.NORMAL,
@@ -163,7 +166,9 @@ class TestSpecialDayConstraints:
                 acronym="D1",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                end_time=datetime(
+                    2025, 1, 2, 8, 0, tzinfo=timezone.utc
+                ),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -180,7 +185,9 @@ class TestSpecialDayConstraints:
                 acronym="RC1",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                end_time=datetime(
+                    2025, 1, 2, 8, 0, tzinfo=timezone.utc
+                ),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -197,7 +204,9 @@ class TestSpecialDayConstraints:
                 acronym="D2",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                end_time=datetime(
+                    2025, 1, 2, 8, 0, tzinfo=timezone.utc
+                ),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -214,7 +223,9 @@ class TestSpecialDayConstraints:
                 acronym="RC2",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                end_time=datetime(
+                    2025, 1, 2, 8, 0, tzinfo=timezone.utc
+                ),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -231,7 +242,9 @@ class TestSpecialDayConstraints:
                 acronym="D3",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                end_time=datetime(
+                    2025, 1, 2, 8, 0, tzinfo=timezone.utc
+                ),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -248,7 +261,9 @@ class TestSpecialDayConstraints:
                 acronym="RC3",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                end_time=datetime(
+                    2025, 1, 2, 8, 0, tzinfo=timezone.utc
+                ),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -265,7 +280,9 @@ class TestSpecialDayConstraints:
                 acronym="D4",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                end_time=datetime(
+                    2025, 1, 2, 8, 0, tzinfo=timezone.utc
+                ),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -282,7 +299,9 @@ class TestSpecialDayConstraints:
                 acronym="RC4",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                end_time=datetime(
+                    2025, 1, 2, 8, 0, tzinfo=timezone.utc
+                ),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -301,7 +320,9 @@ class TestSpecialDayConstraints:
                 acronym="V",
                 acronym_custom=False,
                 start_time=datetime(2025, 1, 1, 0, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 0, 0, tzinfo=timezone.utc),  # 24 hours
+                end_time=datetime(
+                    2025, 1, 2, 0, 0, tzinfo=timezone.utc
+                ),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.LEAVE,
@@ -319,7 +340,9 @@ class TestSpecialDayConstraints:
         daily_shift_demands = []
         # Create daily shift demands for every day for all shifts
         for shift in [
-            s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+            s
+            for s in shifts
+            if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
         ]:
             current_date = schedule.start_date
             while current_date <= schedule.end_date:
@@ -363,7 +386,9 @@ class TestSpecialDayConstraints:
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
-        inputs.model_config.system_constraints.special_days_target_nb_duties = True
+        inputs.model_config.system_constraints.special_days_target_nb_duties = (
+            True
+        )
 
         out = run_engine_solve(inputs)
         assert out.objective_value == 0
@@ -440,7 +465,9 @@ class TestSpecialDayConstraints:
             ),
         ]
         dim_entries = [
-            DimEntry(id="de_loc", dimension_id="dim0", name="loc", deleted=False)
+            DimEntry(
+                id="de_loc", dimension_id="dim0", name="loc", deleted=False
+            )
         ]
         attributes = [
             Attribute(
@@ -469,12 +496,10 @@ class TestSpecialDayConstraints:
         engine_inputs_special_days.attributes = attributes
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
-        inputs.model_config.system_constraints.special_days_target_nb_duties = True
+        inputs.model_config.system_constraints.special_days_target_nb_duties = (
+            True
+        )
         inputs.model_config.system_constraints.monthly_target_nb_duties = False
-        print("INPUTS:", inputs.model_config)
-        print("GITHUB_ACTIONS_MODE:", github_actions_mode)
-        print("PYTEST_MODE:", pytest_mode)
-        print("TEST_MODE:", test_mode)
 
         out = run_engine_solve(inputs)
 
@@ -508,9 +533,13 @@ class TestSpecialDayConstraints:
         deltas: List[List[int]] = []
         for constraint in gatc:
             deltas_constraint: List[int] = []
-            for a_constraint, target in zip(constraint.assignments, constraint.targets):
+            for a_constraint, target in zip(
+                constraint.assignments, constraint.targets
+            ):
                 w_constraint = list({a[0] for a in a_constraint})
-                d_constraint = list({date.fromisoformat(a[1]) for a in a_constraint})
+                d_constraint = list(
+                    {date.fromisoformat(a[1]) for a in a_constraint}
+                )
                 s_constraint = list({a[2] for a in a_constraint})
                 assignments = [
                     a
