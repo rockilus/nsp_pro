@@ -40,6 +40,11 @@ def build_breaches(
     breaches_engine: List[BreachEngine],
 ) -> List[Breach]:
     breaches = _parse_breaches_engine(schedule, breaches_engine)
+    breaches = [
+        b
+        for b in breaches
+        if b.objective_category != ObjectiveCategory.DAILY_SHIFT_DEMAND
+    ]
     for breach in breaches:
         breach.description = _build_breach_description(
             workers,
@@ -74,7 +79,7 @@ def _parse_breaches_engine(
             (v[0], date.fromisoformat(v[1]), v[2])
             for v in [v.split("_") for v in var_name.cstr_vars]
         ]
-        if var_name.objective_category == 6:
+        if var_name.objective_category == ObjectiveCategory.LINK_SHIFT.value:
             ls_id = var_name.objective_id
             date_breach = variables[0][1]
             breach_exist = next(

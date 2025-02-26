@@ -370,6 +370,7 @@ class Model:
             self.obj.int_vars.append(excess)
             self.obj.int_coeffs.append(penalty)
 
+    # pylint: disable=too-many-locals
     def add_work_time_constraints(
         self, work_time: WorkTime, contract: bool, hard_to_soft: bool = False
     ) -> None:
@@ -396,18 +397,44 @@ class Model:
                             else ObjectiveCategory.WORK_TIME_WEEK_DESIRED
                         ),
                     )
-                    delta = self.model.NewIntVar(
-                        -p_target,
+
+                    weighted_sum = self.model.NewIntVar(
+                        0,
                         len(constraint_vars)
                         * Constants.NUM_HOURS_DAY
                         * Constants.NUM_MINUTES_HOUR,
                         "",
                     )
                     self.model.Add(
-                        delta
-                        == sum(v * dur for v, dur in zip(constraint_vars, p_durations))
-                        - p_target
+                        weighted_sum
+                        == sum(v * d for v, d in zip(constraint_vars, p_durations))
                     )
+                    weighted_sum_x100 = self.model.NewIntVar(
+                        0,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR
+                        * 100,
+                        "",
+                    )
+                    self.model.AddMultiplicationEquality(
+                        weighted_sum_x100, [weighted_sum, 100]
+                    )
+                    division_result = self.model.NewIntVar(
+                        0,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR,
+                        "",
+                    )
+                    if p_target == 0:
+                        self.model.Add(division_result == weighted_sum_x100)
+                    else:
+                        self.model.AddDivisionEquality(
+                            division_result,
+                            weighted_sum_x100,
+                            p_target,
+                        )
                     excess = self.model.NewIntVar(
                         0,
                         len(constraint_vars)
@@ -415,7 +442,10 @@ class Model:
                         * Constants.NUM_MINUTES_HOUR,
                         var_name,
                     )
-                    self.model.AddMaxEquality(excess, [delta, 0])
+                    self.model.AddMaxEquality(
+                        excess,
+                        [division_result - 100, 0],
+                    )
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(work_time.penalty)
 
@@ -432,6 +462,46 @@ class Model:
                 constraint.targets,
             ):
                 constraint_vars = [self.variables[a] for a in assignments]
+                tolerance_x100 = round(target * constraint.tolerance * 100)
+                weighted_sum = self.model.NewIntVar(
+                    0,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    "",
+                )
+                self.model.Add(
+                    weighted_sum
+                    == sum(v * d for v, d in zip(constraint_vars, durations))
+                )
+                weighted_sum_x100 = self.model.NewIntVar(
+                    0,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR
+                    * 100,
+                    "",
+                )
+                self.model.AddMultiplicationEquality(
+                    weighted_sum_x100, [weighted_sum, 100]
+                )
+                division_result = self.model.NewIntVar(
+                    -tolerance_x100,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    "",
+                )
+                if target == 0:
+                    self.model.Add(
+                        division_result == weighted_sum_x100 - tolerance_x100
+                    )
+                else:
+                    self.model.AddDivisionEquality(
+                        division_result,
+                        weighted_sum_x100 - tolerance_x100,
+                        target,
+                    )
                 excess = self.model.NewIntVar(
                     -target,
                     len(constraint_vars)
@@ -441,10 +511,7 @@ class Model:
                 )
                 self.model.AddMaxEquality(
                     excess,
-                    [
-                        sum(v * d for v, d in zip(constraint_vars, durations)) - target,
-                        0,
-                    ],
+                    [division_result - 100, 0],
                 )
                 excesses.append(excess)
             var_name = "target_work_time"
@@ -509,10 +576,11 @@ class Model:
                     * Constants.NUM_MINUTES_HOUR,
                     "",
                 )
+                tolerance = round(target * constraint.tolerance)
                 self.model.AddMaxEquality(
                     excess,
                     [
-                        sum(v for v in constraint_vars) - target,
+                        sum(v for v in constraint_vars) - target - tolerance,
                         0,
                     ],
                 )

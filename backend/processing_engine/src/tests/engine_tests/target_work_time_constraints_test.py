@@ -32,6 +32,7 @@ from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
 from engine_to_core_service.build_breaches import _parse_breaches_engine
+from utils.constants import Constants
 
 
 class TestTargetWorkTimeConstraints:
@@ -276,7 +277,6 @@ class TestTargetWorkTimeConstraints:
 
         shift_duration_min = min(s_id_to_duration.values())
 
-        delta_actual_total = 0
         deltas: List[int] = []
         for w in engine_inputs_work_times.workers:
             assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
@@ -286,15 +286,30 @@ class TestTargetWorkTimeConstraints:
                 work_time_worker += s_id_to_duration[a.shift_id]
 
             w_target_time = w_to_work_times[w.id]["target"][0]
-            delta_expected_1 = w_target_time % shift_duration_min
-            delta_expected_2 = shift_duration_min - delta_expected_1
+            delta_abs_1 = w_target_time % shift_duration_min
+            delta_abs_2 = shift_duration_min - delta_abs_1
+            delta_expected_1_pos = (
+                w_target_time + delta_abs_1
+            ) * 100 // w_target_time - 100
+            delta_expected_1_neg = (
+                w_target_time - delta_abs_1
+            ) * 100 // w_target_time - 100
+            delta_expected_2_pos = (
+                w_target_time + delta_abs_2
+            ) * 100 // w_target_time - 100
+            delta_expected_2_neg = (
+                w_target_time - delta_abs_2
+            ) * 100 // w_target_time - 100
 
-            delta_actual = abs(work_time_worker - w_target_time)
+            delta_actual = work_time_worker * 100 // w_target_time - 100
             deltas.append(delta_actual)
 
-            assert delta_actual in [delta_expected_1, delta_expected_2]
-
-            delta_actual_total += delta_actual
+            assert delta_actual in [
+                delta_expected_1_pos,
+                delta_expected_1_neg,
+                delta_expected_2_pos,
+                delta_expected_2_neg,
+            ]
 
         assert len(out.breaches) == 1
         assert len(breaches) == 0
@@ -379,7 +394,7 @@ class TestTargetWorkTimeConstraints:
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
-        engine_inputs_work_times.workers[0].weekly_hours = 0
+        engine_inputs_work_times.workers[0].weekly_hours = 30
         inputs, _ = run_core_to_engine_inputs(engine_inputs_work_times)
         inputs.model_config.system_constraints.weekly_target_work_time = True
 
@@ -425,7 +440,13 @@ class TestTargetWorkTimeConstraints:
 
             penalty_expected = (
                 penalties.configuration_constraint.weekly_worktime_contract
-                * max(work_time_worker - w.weekly_hours * 60, 0)
+                * max(
+                    work_time_worker
+                    * 100
+                    // (w.weekly_hours * Constants.NUM_MINUTES_HOUR)
+                    - 100,
+                    0,
+                )
             )
             objective_value_expected += penalty_expected
         assert out.objective_value == objective_value_expected
@@ -527,16 +548,19 @@ class TestTargetWorkTimeConstraints:
                 assert work_time_worker == 0
 
             w_target_time = w_to_work_times[w.id]["target"][0]
-            delta_actual = work_time_worker - w_target_time
+            delta_actual = work_time_worker * 100 // w_target_time - 100
             deltas.append(delta_actual)
 
         w_excluded_work_time = w_to_work_times[worker_excluded.id]["target"][0]
         num_shifts = w_excluded_work_time // s_id_to_duration[shifts[0].id]
         additional_shift_p_w = num_shifts // (len(workers) - 1)
         additional_shift = num_shifts % (len(workers) - 1)
-        excess_expected = (additional_shift_p_w + additional_shift) * s_id_to_duration[
-            shifts[0].id
-        ]
+        excess_time_expected = (
+            additional_shift_p_w + additional_shift
+        ) * s_id_to_duration[shifts[0].id]
+        excess_expected = (
+            w_excluded_work_time + excess_time_expected
+        ) * 100 // w_excluded_work_time - 100
 
         max_excess = max(*deltas, 0)
 
