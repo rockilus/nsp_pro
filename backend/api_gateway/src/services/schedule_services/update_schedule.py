@@ -3,13 +3,13 @@ from typing import Dict, List, Tuple
 
 from shared.schemas import (
     CoverageSelector,
+    DSDSourceType,
     Schedule,
     ShiftType,
     SolveDetails,
     SolveDetailsStatus,
     WorkTimeTable,
     WorkTimeTableData,
-    DSDSourceType,
 )
 
 from scripts.setup_database import (
@@ -32,15 +32,15 @@ def update_schedule(
         schedule_current.start_date != schedule.start_date
         or schedule_current.end_date != schedule.end_date
     ):
-        css_full_period = coverage_selector_db.get_coverage_selectors_by_schedule_id_full_period(
-            schedule.id
+        css_full_period = (
+            coverage_selector_db.get_coverage_selectors_by_schedule_id_full_period(
+                schedule.id
+            )
         )
         for cs in css_full_period:
             cs.start_date = schedule.start_date
             cs.end_date = schedule.end_date
-        css_updated = coverage_selector_db.update_coverage_selectors(
-            css_full_period
-        )
+        css_updated = coverage_selector_db.update_coverage_selectors(css_full_period)
     return schedule_updated, css_updated
 
 
@@ -78,16 +78,12 @@ def update_schedule_solve_details_success(
 def build_worktime_data(schedule_id: str) -> WorkTimeTable:
     schedule = schedule_db.get_schedule_by_id(schedule_id)
     workers = worker_db.get_workers_not_deleted(schedule.team_id)
-    coverage_selectors = coverage_selector_db.get_coverage_selectors(
-        schedule.id
-    )
+    coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule.id)
     shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
         coverage_selectors
     )
-    daily_shift_demands = (
-        daily_shift_demand_db.get_daily_shift_demands_by_schedule_id(
-            schedule.id
-        )
+    daily_shift_demands = daily_shift_demand_db.get_daily_shift_demands_by_schedule_id(
+        schedule.id
     )
 
     # Params
@@ -100,9 +96,7 @@ def build_worktime_data(schedule_id: str) -> WorkTimeTable:
 
     # Workers
     workers_data = WorkTimeTableData(
-        hours=round(
-            sum(worker.weekly_hours_desired for worker in workers) * nb_weeks
-        ),
+        hours=round(sum(worker.weekly_hours_desired for worker in workers) * nb_weeks),
         count=len(workers),
     )
 
@@ -114,9 +108,7 @@ def build_worktime_data(schedule_id: str) -> WorkTimeTable:
         dates_cs = dates_campaign
         if not cs.full_period:
             dates_cs = [
-                date
-                for date in dates_campaign
-                if cs.start_date <= date <= cs.end_date
+                date for date in dates_campaign if cs.start_date <= date <= cs.end_date
             ]
         for date in dates_cs:
             for shift_demand in shift_demands:
@@ -130,10 +122,7 @@ def build_worktime_data(schedule_id: str) -> WorkTimeTable:
 
     # in daily shift demands
     for dsd in daily_shift_demands:
-        if (
-            dsd.date in dates_campaign
-            and dsd.source_type != DSDSourceType.SHIFT_DEMAND
-        ):
+        if dsd.date in dates_campaign and dsd.source_type != DSDSourceType.SHIFT_DEMAND:
             if dsd.shift_id not in shift_count:
                 shift_count[dsd.shift_id] = 0
             shift_count[dsd.shift_id] += dsd.count
@@ -143,8 +132,7 @@ def build_worktime_data(schedule_id: str) -> WorkTimeTable:
     shifts_work_not_deleted = [
         shift
         for shift in shifts
-        if shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
-        and not shift.deleted
+        if shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY] and not shift.deleted
     ]
     shifts_duration = {
         shift.id: (shift.end_time - shift.start_time).total_seconds() / 3600

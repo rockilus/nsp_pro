@@ -79,15 +79,14 @@ def _parse_breaches_engine(
             (v[0], date.fromisoformat(v[1]), v[2])
             for v in [v.split("_") for v in var_name.cstr_vars]
         ]
-        if var_name.objective_category == 6:
+        if var_name.objective_category == ObjectiveCategory.LINK_SHIFT.value:
             ls_id = var_name.objective_id
             date_breach = variables[0][1]
             breach_exist = next(
                 (
                     b
                     for b in out
-                    if b.objective_id == ls_id
-                    and b.variables[0].date == date_breach
+                    if b.objective_id == ls_id and b.variables[0].date == date_breach
                 ),
                 None,
             )
@@ -98,9 +97,7 @@ def _parse_breaches_engine(
                 id="",
                 schedule_id=schedule.id,
                 objective_id=var_name.objective_id,
-                objective_category=ObjectiveCategory(
-                    var_name.objective_category
-                ),
+                objective_category=ObjectiveCategory(var_name.objective_category),
                 variables=[Variable(*v) for v in variables],
                 description="",
                 hard_to_soft=var_name.hard_to_soft,
@@ -124,9 +121,7 @@ def _build_breach_description(
             raise ValueError("Objective id is missing")
         constraint = _get_constraint_by_id(breach.objective_id, constraints)
         if constraint is None:
-            raise ValueError(
-                f"Constraint with id {breach.objective_id} not found"
-            )
+            raise ValueError(f"Constraint with id {breach.objective_id} not found")
         if isinstance(constraint, ConstraintSum):
             return _build_description_breach_constraint_sum(
                 workers,
@@ -199,12 +194,7 @@ def _build_breach_description(
 def _get_constraint_by_id(
     constraint_id: str, constraints: Constraints
 ) -> (
-    ConstraintSum
-    | ConstraintSeq
-    | ConstraintOrd
-    | ConstraintFil
-    | ConstraintFai
-    | None
+    ConstraintSum | ConstraintSeq | ConstraintOrd | ConstraintFil | ConstraintFai | None
 ):
     constraints_flat = (
         constraints.sum
@@ -236,9 +226,7 @@ def _build_description_breach_constraint_sum(
     count = sum(
         1
         for a in assignments
-        if a.worker_id in workers_id
-        and a.date in dates
-        and a.shift_id in shifts_id
+        if a.worker_id in workers_id and a.date in dates and a.shift_id in shifts_id
     )
     diff = count - constraint.target_value
     string_list = [
@@ -271,9 +259,7 @@ def _build_description_breach_constraint_seq(
     count = sum(
         1
         for a in assignments
-        if a.worker_id in workers_id
-        and a.date in dates
-        and a.shift_id in shifts_id
+        if a.worker_id in workers_id and a.date in dates and a.shift_id in shifts_id
     )
     diff = count - constraint.target_value
     string_list = [
@@ -311,16 +297,10 @@ def _build_description_breach_constraint_ord(
         breach.variables[1].date,
     )
     ws_breach = [w for w in workers if w.id in workers_id]
-    ss_reference = [
-        s for s in shifts if s.id in constraint.shift_reference_ids
-    ]
+    ss_reference = [s for s in shifts if s.id in constraint.shift_reference_ids]
     ss_relative = [s for s in shifts if s.id in constraint.shift_relative_ids]
     a_d_relative = next(
-        (
-            a
-            for a in assignments
-            if a.worker_id in workers_id and a.date == d_relative
-        ),
+        (a for a in assignments if a.worker_id in workers_id and a.date == d_relative),
         None,
     )
     if a_d_relative is None:
@@ -393,20 +373,14 @@ def _build_description_breach_request(
     breach: Breach,
 ) -> str:
     request = next((r for r in requests if r.id == breach.objective_id), None)
-    worker = next(
-        (w for w in workers if w.id == breach.variables[0].worker_id), None
-    )
+    worker = next((w for w in workers if w.id == breach.variables[0].worker_id), None)
     dates = list(set(v.date for v in breach.variables))
     start_date, end_date = min(dates), max(dates)
-    shift = next(
-        (s for s in shifts if s.id == breach.variables[0].shift_id), None
-    )
+    shift = next((s for s in shifts if s.id == breach.variables[0].shift_id), None)
     if request is None or worker is None or shift is None:
         return "Unknown request, worker or shift"
     shift_actual_ids = set(
-        a.shift_id
-        for a in assignments
-        if a.worker_id == worker.id and a.date in dates
+        a.shift_id for a in assignments if a.worker_id == worker.id and a.date in dates
     )
     shifts_assigned = [s for s in shifts if s.id in shift_actual_ids]
     shifts_breach_names = [s.name for s in shifts_assigned if s.id != shift.id]
@@ -449,12 +423,9 @@ def _build_description_breach_work_time(
         s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
     ]
     shift_id_to_duration_dict: Dict[str, float] = {
-        s.id: (s.end_time - s.start_time).total_seconds() // 3600
-        for s in shifts_work
+        s.id: (s.end_time - s.start_time).total_seconds() // 3600 for s in shifts_work
     }
-    worker = next(
-        (w for w in workers if w.id == breach.variables[0].worker_id), None
-    )
+    worker = next((w for w in workers if w.id == breach.variables[0].worker_id), None)
     dates = list(set(v.date for v in breach.variables))
     start_date, end_date = min(dates), max(dates)
     if worker is None:
@@ -497,9 +468,7 @@ def _build_description_breach_nb_duties(
     breach: Breach,
 ) -> str:
     shift_duty_ids = [s.id for s in shifts if s.shift_type == ShiftType.DUTY]
-    worker = next(
-        (w for w in workers if w.id == breach.variables[0].worker_id), None
-    )
+    worker = next((w for w in workers if w.id == breach.variables[0].worker_id), None)
     dates = list(set(v.date for v in breach.variables))
     start_date, end_date = min(dates), max(dates)
     if worker is None:
@@ -507,9 +476,7 @@ def _build_description_breach_nb_duties(
     as_duty = [
         a
         for a in assignments
-        if a.worker_id == worker.id
-        and a.date in dates
-        and a.shift_id in shift_duty_ids
+        if a.worker_id == worker.id and a.date in dates and a.shift_id in shift_duty_ids
     ]
     count_actual = len(as_duty)
     string_list = [
@@ -531,34 +498,20 @@ def _build_description_link_shift_breach(
     link_shifts: List[LinkShift],
     breach: Breach,
 ) -> str:
-    link_shift = next(
-        (ls for ls in link_shifts if ls.id == breach.objective_id), None
-    )
+    link_shift = next((ls for ls in link_shifts if ls.id == breach.objective_id), None)
     if link_shift is None:
         return "Unknown link shift"
-    shift_0 = next(
-        (s for s in shifts if s.id == link_shift.shift_ids[0]), None
-    )
-    shift_1 = next(
-        (s for s in shifts if s.id == link_shift.shift_ids[1]), None
-    )
+    shift_0 = next((s for s in shifts if s.id == link_shift.shift_ids[0]), None)
+    shift_1 = next((s for s in shifts if s.id == link_shift.shift_ids[1]), None)
     if shift_0 is None or shift_1 is None:
         return "Unknown linked shifts"
     date_breach = breach.variables[0].date
     as_shift_0 = next(
-        (
-            a
-            for a in assignments
-            if a.date == date_breach and a.shift_id == shift_0.id
-        ),
+        (a for a in assignments if a.date == date_breach and a.shift_id == shift_0.id),
         None,
     )
     as_shift_1 = next(
-        (
-            a
-            for a in assignments
-            if a.date == date_breach and a.shift_id == shift_1.id
-        ),
+        (a for a in assignments if a.date == date_breach and a.shift_id == shift_1.id),
         None,
     )
     if as_shift_0 is None or as_shift_1 is None:
@@ -590,9 +543,7 @@ def _build_daily_shift_demand_breaches(
     assignments: List[Assignment],
 ) -> List[Breach]:
     out: List[Breach] = []
-    for s in [
-        s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
-    ]:
+    for s in [s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]]:
         dsds = [dsd for dsd in daily_shift_demands if dsd.shift_id == s.id]
         dates_dsds = list(set(dsd.date for dsd in dsds))
         for d in dates_dsds:

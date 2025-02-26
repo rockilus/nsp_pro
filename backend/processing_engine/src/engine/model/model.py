@@ -34,9 +34,9 @@ class Model:
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple[str, str, str], cp_model.IntVar] = {}
         self.intervals: Dict[Tuple[str, str, str], cp_model.IntervalVar] = {}
-        self.assignment_wdss: Dict[
-            Tuple[str, str, str, str], cp_model.IntVar
-        ] = {}  # worker, day, shift, specialty
+        self.assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar] = (
+            {}
+        )  # worker, day, shift, specialty
         self.model_config = model_config
 
         self.obj = Objective()
@@ -53,14 +53,10 @@ class Model:
         )
 
     def solve_campaign(self, inputs: Inputs) -> None:
-        if (
-            self.model_config.solver_params.solve_strategy
-            == SolveStrategy.SEQUENTIAL
-        ):
+        if self.model_config.solver_params.solve_strategy == SolveStrategy.SEQUENTIAL:
             self.sequential_solve(inputs)
         elif (
-            self.model_config.solver_params.solve_strategy
-            == SolveStrategy.HARD_TO_SOFT
+            self.model_config.solver_params.solve_strategy == SolveStrategy.HARD_TO_SOFT
         ):
             self.solve_hard_to_soft(inputs)
 
@@ -326,9 +322,7 @@ class Model:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
 
-    def add_solution_hint(
-        self, solution_hint: Dict[Tuple[str, str, str], int]
-    ) -> None:
+    def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
         for k, v in solution_hint.items():
             self.model.AddHint(self.variables[k], v)
 
@@ -340,9 +334,7 @@ class Model:
 
     def add_duty_recup_constraints(
         self,
-        duty_recup_pairs: List[
-            Tuple[Tuple[str, str, str], Tuple[str, str, str], int]
-        ],
+        duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]],
         hard_to_soft: bool,
     ) -> None:
         for duty, recup, penalty in duty_recup_pairs:
@@ -363,9 +355,7 @@ class Model:
 
     def add_link_shift_constraints(
         self,
-        ls_pairs: List[
-            Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]
-        ],
+        ls_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]],
     ) -> None:
         for s1, s2, ls_id, penalty in ls_pairs:
             s1_var = self.variables[s1]
@@ -380,6 +370,7 @@ class Model:
             self.obj.int_vars.append(excess)
             self.obj.int_coeffs.append(penalty)
 
+    # pylint: disable=too-many-locals
     def add_work_time_constraints(
         self, work_time: WorkTime, contract: bool, hard_to_soft: bool = False
     ) -> None:
@@ -394,10 +385,7 @@ class Model:
                 constraint_vars = [self.variables[a] for a in p_assignments]
                 if not hard_to_soft:
                     self.model.Add(
-                        sum(
-                            v * dur
-                            for v, dur in zip(constraint_vars, p_durations)
-                        )
+                        sum(v * dur for v, dur in zip(constraint_vars, p_durations))
                         <= p_target
                     )
                 else:
@@ -409,21 +397,44 @@ class Model:
                             else ObjectiveCategory.WORK_TIME_WEEK_DESIRED
                         ),
                     )
-                    delta = self.model.NewIntVar(
-                        -p_target,
+
+                    weighted_sum = self.model.NewIntVar(
+                        0,
                         len(constraint_vars)
                         * Constants.NUM_HOURS_DAY
                         * Constants.NUM_MINUTES_HOUR,
                         "",
                     )
                     self.model.Add(
-                        delta
-                        == sum(
-                            v * dur
-                            for v, dur in zip(constraint_vars, p_durations)
-                        )
-                        - p_target
+                        weighted_sum
+                        == sum(v * d for v, d in zip(constraint_vars, p_durations))
                     )
+                    weighted_sum_x100 = self.model.NewIntVar(
+                        0,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR
+                        * 100,
+                        "",
+                    )
+                    self.model.AddMultiplicationEquality(
+                        weighted_sum_x100, [weighted_sum, 100]
+                    )
+                    division_result = self.model.NewIntVar(
+                        0,
+                        len(constraint_vars)
+                        * Constants.NUM_HOURS_DAY
+                        * Constants.NUM_MINUTES_HOUR,
+                        "",
+                    )
+                    if p_target == 0:
+                        self.model.Add(division_result == weighted_sum_x100)
+                    else:
+                        self.model.AddDivisionEquality(
+                            division_result,
+                            weighted_sum_x100,
+                            p_target,
+                        )
                     excess = self.model.NewIntVar(
                         0,
                         len(constraint_vars)
@@ -431,7 +442,10 @@ class Model:
                         * Constants.NUM_MINUTES_HOUR,
                         var_name,
                     )
-                    self.model.AddMaxEquality(excess, [delta, 0])
+                    self.model.AddMaxEquality(
+                        excess,
+                        [division_result - 100, 0],
+                    )
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(work_time.penalty)
 
@@ -478,9 +492,16 @@ class Model:
                     * Constants.NUM_MINUTES_HOUR,
                     "",
                 )
-                self.model.AddDivisionEquality(
-                    division_result, weighted_sum_x100 - tolerance_x100, target
-                )
+                if target == 0:
+                    self.model.Add(
+                        division_result == weighted_sum_x100 - tolerance_x100
+                    )
+                else:
+                    self.model.AddDivisionEquality(
+                        division_result,
+                        weighted_sum_x100 - tolerance_x100,
+                        target,
+                    )
                 excess = self.model.NewIntVar(
                     -target,
                     len(constraint_vars)
@@ -527,9 +548,7 @@ class Model:
                         * Constants.NUM_MINUTES_HOUR,
                         "",
                     )
-                    self.model.Add(
-                        delta == sum(v for v in constraint_vars) - p_target
-                    )
+                    self.model.Add(delta == sum(v for v in constraint_vars) - p_target)
                     excess = self.model.NewIntVar(
                         0,
                         len(constraint_vars)
@@ -548,9 +567,7 @@ class Model:
             return
         for constraint in constraints:
             excesses = []
-            for assignments, target in zip(
-                constraint.assignments, constraint.targets
-            ):
+            for assignments, target in zip(constraint.assignments, constraint.targets):
                 constraint_vars = [self.variables[a] for a in assignments]
                 excess = self.model.NewIntVar(
                     -target,
@@ -583,15 +600,11 @@ class Model:
     def add_special_days_constraints(
         self, constraints: List[GroupsAssignmentsTargetConstraint]
     ) -> None:
-        if (
-            not self.model_config.system_constraints.special_days_target_nb_duties
-        ):
+        if not self.model_config.system_constraints.special_days_target_nb_duties:
             return
         for constraint in constraints:
             excesses = []
-            for assignments, target in zip(
-                constraint.assignments, constraint.targets
-            ):
+            for assignments, target in zip(constraint.assignments, constraint.targets):
                 constraint_vars = [self.variables[a] for a in assignments]
                 excess = self.model.NewIntVar(
                     -target,
@@ -631,9 +644,9 @@ class Model:
                 #     None, [cstr_var], "worker_shift_filter"
                 # )
                 var_name = ""
-                cstr_vars: List[
-                    cp_model.IntVar | cp_model._NotBooleanVariable
-                ] = [cstr_var.Not()]
+                cstr_vars: List[cp_model.IntVar | cp_model._NotBooleanVariable] = [
+                    cstr_var.Not()
+                ]
                 lit = self.model.NewBoolVar(var_name)
                 cstr_vars.append(lit)
                 self.model.AddBoolOr(cstr_vars)
@@ -660,9 +673,7 @@ class Model:
                 c_fil, hard_to_soft
             )
         for c_fai in constraints.fai:
-            self.add_constraint_factory.add_constraint_fai.add_constraint(
-                c_fai
-            )
+            self.add_constraint_factory.add_constraint_fai.add_constraint(c_fai)
 
     def add_objective(self) -> None:
         self.model.Minimize(

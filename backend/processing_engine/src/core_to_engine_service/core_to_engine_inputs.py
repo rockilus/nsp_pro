@@ -25,38 +25,20 @@ from core_to_engine_service.build_dates import (
 from core_to_engine_service.build_dim_to_attr_value_to_owner import (
     build_dim_to_attr_value_to_owner,
 )
-from core_to_engine_service.build_duty_recup_pairs import (
-    build_duty_recup_pairs,
-)
-from core_to_engine_service.build_engine_constraints import (
-    build_engine_constraints,
-)
-from core_to_engine_service.build_engine_fixed_values import (
-    core_to_engine_fixed_values,
-)
+from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
+from core_to_engine_service.build_engine_constraints import build_engine_constraints
+from core_to_engine_service.build_engine_fixed_values import core_to_engine_fixed_values
 from core_to_engine_service.build_engine_requests import build_engine_requests
-from core_to_engine_service.build_engine_shift_demands import (
-    build_engine_shift_demands,
-)
-from core_to_engine_service.build_engine_sol_hint import (
-    core_to_engine_sol_hint,
-)
-from core_to_engine_service.build_engine_variables import (
-    build_engine_variables,
-)
-from core_to_engine_service.build_engine_work_loads import (
-    build_engine_work_loads,
-)
-from core_to_engine_service.build_link_shift_pairs import (
-    build_link_shift_pairs,
-)
+from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
+from core_to_engine_service.build_engine_sol_hint import core_to_engine_sol_hint
+from core_to_engine_service.build_engine_variables import build_engine_variables
+from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
+from core_to_engine_service.build_link_shift_pairs import build_link_shift_pairs
 from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
-from core_to_engine_service.build_worker_shift_filter import (
-    build_worker_shift_filters,
-)
+from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
 from core_to_engine_service.calculate_worker_nb_duties import (
     build_nb_duties_constraints,
     calculate_worker_nb_duties,
@@ -69,7 +51,6 @@ from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
 )
 from core_to_engine_service.model_config import model_config
-from core_to_engine_service.penalties import penalties
 from engine import ConfigurationConstraintInputs
 from engine import Inputs as InputsEngine
 from engine import SystemConstraintInputs
@@ -104,10 +85,7 @@ def core_to_engine_inputs(
         if not s.deleted
         and (
             s.rest_type != ShiftRestType.RECUPERATION
-            or any(
-                d.id == s.recuperation_duty_id and not d.deleted
-                for d in shifts
-            )
+            or any(d.id == s.recuperation_duty_id and not d.deleted for d in shifts)
         )
     ]
     shift_not_deleted_ids = [s.id for s in shifts_not_deleted]
@@ -138,14 +116,6 @@ def core_to_engine_inputs(
         dates_campaign,
     )
 
-    # Penalties
-    coefficient = (
-        len(workers_not_deleted)
-        * len(shifts_not_deleted)
-        * len(dates_campaign)
-    )
-    # penalties.apply_coefficient(coefficient)
-
     # Work times
     w_to_work_times = calculate_worker_work_times(
         schedule,
@@ -155,14 +125,6 @@ def core_to_engine_inputs(
         daily_shift_demands,
         periods_weekly,
     )
-    work_time_demand = sum(
-        d for w_id in w_to_work_times for d in w_to_work_times[w_id]["target"]
-    )
-    work_time_supply = sum(
-        d for w_id in w_to_work_times for d in w_to_work_times[w_id]["desired"]
-    )
-    target_work_time_active = work_time_supply > work_time_demand
-    # target_work_time_active = False
 
     w_to_nb_duties = calculate_worker_nb_duties(
         schedule,
@@ -279,9 +241,6 @@ def core_to_engine_inputs(
                     shifts_work,
                     shift_id_to_duration_dict,
                 )
-                if model_config.system_constraints.weekly_target_work_time
-                and target_work_time_active
-                else []
             ),
             monthly_target_nb_duties=build_nb_duties_constraints(
                 periods_monthly,
@@ -307,6 +266,5 @@ def core_to_engine_inputs(
 
 def _build_shift_id_to_duration_dict(shifts: List[Shift]) -> Dict[str, int]:
     return {
-        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
-        for s in shifts
+        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1) for s in shifts
     }
