@@ -2,9 +2,8 @@ from datetime import date
 from typing import Dict, List, Tuple
 
 from shared.logger import log_info
-from shared.schemas import Shift, Worker, WorkerDates
+from shared.schemas import Penalties, Shift, Worker, WorkerDates
 
-from core_to_engine_service.penalties import penalties
 from engine import NbDuties as NbDutiesEngine
 from engine import WorkLoads as WorkLoadsEngine
 from engine import WorkTime as WorkTimeEngine
@@ -21,6 +20,7 @@ def build_engine_work_loads(
     shift_id_to_duration_dict: Dict[str, int],
     w_to_work_times: Dict[str, Dict[str, List[int]]],
     w_to_nb_duties: Dict[str, Dict[str, List[int]]],
+    penalties: Penalties,
 ) -> WorkLoadsEngine:
     return WorkLoadsEngine(
         weekly_work_time_contractual=build_engine_work_time(

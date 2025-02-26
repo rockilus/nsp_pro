@@ -3,7 +3,7 @@ from typing import List
 
 from shared.schemas import (
     Breach,
-    EngineInputs,
+    EngineInputsAugmented,
     LinkShift,
     ObjectiveCategory,
     Request,
@@ -21,7 +21,9 @@ from tests.sample_data import sample_data_fixture  # noqa: F401
 # pylint: disable=R0801
 class TestDutyRecupConstraint:
     # pylint: disable=redefined-outer-name, too-many-locals
-    def test_link_shift(self, sample_data_fixture: EngineInputs) -> None:  # noqa: F811
+    def test_link_shift(
+        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+    ) -> None:  # noqa: F811
         shifts = sample_data_fixture.shifts
         shift_target_1 = next((shift for shift in shifts if shift.id == "s0"), None)
         shift_target_2 = next((shift for shift in shifts if shift.id == "s1"), None)
@@ -80,7 +82,7 @@ class TestDutyRecupConstraint:
 
     # pylint: disable=redefined-outer-name
     def test_link_shift_conflict(
-        self, sample_data_fixture: EngineInputs  # noqa: F811
+        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts

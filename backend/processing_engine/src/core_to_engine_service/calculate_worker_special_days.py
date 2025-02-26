@@ -12,11 +12,11 @@ from shared.schemas import (
 )
 
 from core_to_engine_service.calculate_worker_work_times import round_proportional_times
-from core_to_engine_service.penalties import penalties
 from engine import GroupsAssignmentsTargetConstraint
 
 
 # pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
 def build_duty_special_days_constraints(
     workers: List[Worker],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
@@ -26,6 +26,7 @@ def build_duty_special_days_constraints(
     requests: List[Request],
     daily_shift_demands: List[DailyShiftDemand],
     fixed_assignments: List[Assignment],
+    penalty: int,
 ) -> List[GroupsAssignmentsTargetConstraint]:
     #     len(number of special days)
     # List[GroupsAssignmentsTargetConstraint]=
@@ -60,7 +61,7 @@ def build_duty_special_days_constraints(
                         ]
                     ],
                     targets=[sd_values["target"]],  # type: ignore
-                    penalty=penalties.system_constraint.special_days_target_nb_duties,
+                    penalty=penalty,
                 )
             else:
                 sd_label_to_gatc[sd_label].assignments.append(

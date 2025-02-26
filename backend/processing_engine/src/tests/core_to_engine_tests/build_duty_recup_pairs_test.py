@@ -2,11 +2,10 @@ from datetime import date, timedelta
 from typing import List
 
 import pytest
-from shared.schemas import EngineInputs, Shift, ShiftType, Worker, WorkerDates
+from shared.schemas import EngineInputsAugmented, Shift, ShiftType, Worker, WorkerDates
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
-from core_to_engine_service.penalties import penalties
 from tests.sample_data import test_data_set_1
 
 
@@ -14,7 +13,10 @@ from tests.sample_data import test_data_set_1
 class TestBuildDutyRecupPairs:
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_duty_recup_pairs(self, sample_data: EngineInputs) -> None:
+    def test_build_duty_recup_pairs(
+        self,
+        sample_data: EngineInputsAugmented,
+    ) -> None:
         workers = sample_data.workers
         shifts = sample_data.shifts
         schedule = sample_data.schedule
@@ -42,6 +44,7 @@ class TestBuildDutyRecupPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             shift_duties_not_deleted,
+            sample_data.penalties.configuration_constraint.duty_recup,
         )
 
         # Verify the output
@@ -59,7 +62,7 @@ class TestBuildDutyRecupPairs:
             penalty = pair[2]
             assert w_duty_id == w_recup_id
             assert d_duty == d_recup
-            assert penalty == penalties.configuration_constraint.duty_recup
+            assert penalty == sample_data.penalties.configuration_constraint.duty_recup
             if s_duty_id == "s3":
                 assert s_recup_id == "s5"
             elif s_duty_id == "s4":
@@ -72,7 +75,10 @@ class TestBuildDutyRecupPairs:
         assert dates_in_pairs == sorted(dates_campaign)
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_empty_workers(self, sample_data: EngineInputs) -> None:
+    def test_empty_workers(
+        self,
+        sample_data: EngineInputsAugmented,
+    ) -> None:
         workers: List[Worker] = []
         shifts = sample_data.shifts
         schedule = sample_data.schedule
@@ -99,6 +105,7 @@ class TestBuildDutyRecupPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             shift_duties_not_deleted,
+            sample_data.penalties.configuration_constraint.duty_recup,
         )
 
         # Verify the output
@@ -106,7 +113,10 @@ class TestBuildDutyRecupPairs:
         assert len(duty_recup_pairs) == 0
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_empty_shifts(self, sample_data: EngineInputs) -> None:
+    def test_empty_shifts(
+        self,
+        sample_data: EngineInputsAugmented,
+    ) -> None:
         workers = sample_data.workers
         shifts: List[Shift] = []
         schedule = sample_data.schedule
@@ -128,6 +138,7 @@ class TestBuildDutyRecupPairs:
             worker_ids_to_worker_dates,
             shifts,
             [],
+            sample_data.penalties.configuration_constraint.duty_recup,
         )
 
         # Verify the output
@@ -135,7 +146,10 @@ class TestBuildDutyRecupPairs:
         assert len(duty_recup_pairs) == 0
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_worker_with_no_dates(self, sample_data: EngineInputs) -> None:
+    def test_worker_with_no_dates(
+        self,
+        sample_data: EngineInputsAugmented,
+    ) -> None:
         workers = sample_data.workers
         shifts = sample_data.shifts
 
@@ -158,6 +172,7 @@ class TestBuildDutyRecupPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             shift_duties_not_deleted,
+            sample_data.penalties.configuration_constraint.duty_recup,
         )
 
         # Verify the output

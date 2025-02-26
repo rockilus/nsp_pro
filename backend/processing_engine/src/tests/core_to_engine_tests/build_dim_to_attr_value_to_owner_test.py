@@ -1,4 +1,4 @@
-from shared.schemas import DimensionEntryType, DimensionType, EngineInputs
+from shared.schemas import DimensionEntryType, DimensionType, EngineInputsAugmented
 
 from core_to_engine_service.build_dim_to_attr_value_to_owner import (
     build_dim_to_attr_value_to_owner,
@@ -8,7 +8,7 @@ from core_to_engine_service.build_dim_to_attr_value_to_owner import (
 # pylint: disable=R0801, too-few-public-methods
 class TestBuildDimToAttrToOwner:
     def test_build_dim_to_attr_value_to_owner_workers(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         out = build_dim_to_attr_value_to_owner(
             engine_inputs_special_days.workers,
@@ -73,7 +73,7 @@ class TestBuildDimToAttrToOwner:
                     assert sorted(list(out[dim.id][bool_value])) == worker_ids
 
     def test_build_dim_to_attr_value_to_owner_shifts(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         out = build_dim_to_attr_value_to_owner(
             engine_inputs_special_days.shifts,

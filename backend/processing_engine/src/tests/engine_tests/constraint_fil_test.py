@@ -12,11 +12,10 @@ from shared.schemas import (
     ConstraintSeq,
     ConstraintSum,
     ConstraintType,
-    EngineInputs,
+    EngineInputsAugmented,
     ShiftType,
 )
 
-from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
 from engine_to_core_service.build_breaches import _parse_breaches_engine
@@ -26,7 +25,7 @@ from engine_to_core_service.build_breaches import _parse_breaches_engine
 class TestConstraintFil:
     def test_constraint_fil_hard(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_fil_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -35,7 +34,7 @@ class TestConstraintFil:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputs], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_fil_with_expected_output
         engine_inputs_special_days.cbs_augmented = [cba]
@@ -65,7 +64,7 @@ class TestConstraintFil:
 
     def test_constraint_fil_soft(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_fil_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -74,7 +73,7 @@ class TestConstraintFil:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputs], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_fil_with_expected_output
         cba_soft = deepcopy(cba)
@@ -104,10 +103,10 @@ class TestConstraintFil:
         else:
             assert False
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals, too-many-arguments
     def test_constraint_fil_hard_soft_conflict(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_fil_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -117,7 +116,7 @@ class TestConstraintFil:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -143,7 +142,9 @@ class TestConstraintFil:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
-        constraint_soft.penalty = penalties.user_constraint.fil.soft
+        constraint_soft.penalty = (
+            engine_inputs_special_days.penalties.user_constraint.fil.soft
+        )
 
         dates_campaign = [
             engine_inputs_special_days.schedule.start_date + timedelta(days=i)
@@ -186,7 +187,7 @@ class TestConstraintFil:
                 active=True,
                 hard=True,
                 priority="medium",
-                penalty=penalties.user_constraint.sum.hard,
+                penalty=engine_inputs_special_days.penalties.user_constraint.sum.hard,
                 schedule_id="sch0",
                 constraint_build_id="c_sum_0",
             )
@@ -235,7 +236,7 @@ class TestConstraintFil:
 
         # # Check objective value
         obj_value = 0
-        penalty = penalties.user_constraint.fil.soft
+        penalty = engine_inputs_special_days.penalties.user_constraint.fil.soft
         for breach in breaches:
             nb_a_period = sum(
                 1
@@ -250,9 +251,10 @@ class TestConstraintFil:
             obj_value += penalty * nb_a_period
         assert out.objective_value == obj_value
 
+    # pylint: disable=too-many-arguments
     def test_constraint_fil_hard_hard_conflic_obj_value(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_fil_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -262,7 +264,7 @@ class TestConstraintFil:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -330,7 +332,7 @@ class TestConstraintFil:
                 active=True,
                 hard=True,
                 priority="medium",
-                penalty=penalties.user_constraint.sum.hard,
+                penalty=engine_inputs_special_days.penalties.user_constraint.sum.hard,
                 schedule_id="sch0",
                 constraint_build_id="c_sum_0",
             )
@@ -348,7 +350,7 @@ class TestConstraintFil:
             engine_inputs_special_days.schedule, out.breaches
         )
         obj_value = 0
-        penalty = penalties.user_constraint.fil.hard
+        penalty = engine_inputs_special_days.penalties.user_constraint.fil.hard
         for breach in breaches:
             nb_a_period = sum(
                 1

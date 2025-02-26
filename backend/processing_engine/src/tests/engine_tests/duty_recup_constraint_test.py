@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 import pytest
-from shared.schemas import EngineInputs, ShiftRestType, ShiftType
+from shared.schemas import EngineInputsAugmented, ShiftRestType, ShiftType
 
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 from tests.sample_data import test_data_set_1
@@ -11,7 +11,9 @@ from tests.sample_data import test_data_set_1
 class TestDutyRecupConstraint:
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_duty_recup_duty_no_specialty(self, sample_data: EngineInputs) -> None:
+    def test_duty_recup_duty_no_specialty(
+        self, sample_data: EngineInputsAugmented
+    ) -> None:
         shifts = sample_data.shifts
         shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
         shifts_recup = [s for s in shifts if s.rest_type == ShiftRestType.RECUPERATION]
@@ -77,7 +79,9 @@ class TestDutyRecupConstraint:
             assert assignment_recup is not None
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_duty_recup_two_duty_no_specialty(self, sample_data: EngineInputs) -> None:
+    def test_duty_recup_two_duty_no_specialty(
+        self, sample_data: EngineInputsAugmented
+    ) -> None:
         shifts = sample_data.shifts
         shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
         shift_ids_target = [shift.id for shift in shifts_duty]

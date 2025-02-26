@@ -5,7 +5,7 @@ import pytest
 from shared.schemas import (
     DailyShiftDemand,
     DSDSourceType,
-    EngineInputs,
+    EngineInputsAugmented,
     Request,
     RequestStatus,
     Schedule,
@@ -19,7 +19,6 @@ from shared.schemas import (
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_engine_requests import build_engine_requests
-from core_to_engine_service.penalties import penalties
 from engine import Request as RequestEngine
 from tests.sample_data import test_data_set_3
 
@@ -28,7 +27,8 @@ from tests.sample_data import test_data_set_3
 class TestBuildRequests:
     @pytest.mark.parametrize("sample_data", test_data_set_3)
     def test_build_request_one_day_positive_hard(
-        self, sample_data: EngineInputs
+        self,
+        sample_data: EngineInputsAugmented,
     ) -> None:
         shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
@@ -66,6 +66,7 @@ class TestBuildRequests:
             worker_ids_to_worker_dates,
             [s.id for s in shifts],
             requests,
+            sample_data.penalties.user_constraint.request,
         )
 
         assert isinstance(output, list)
@@ -82,12 +83,13 @@ class TestBuildRequests:
             ],
             negative=False,
             hard=True,
-            penalty=penalties.user_constraint.request.hard,
+            penalty=sample_data.penalties.user_constraint.request.hard,
         )
 
     @pytest.mark.parametrize("sample_data", test_data_set_3)
     def test_build_request_one_day_positive_soft(
-        self, sample_data: EngineInputs
+        self,
+        sample_data: EngineInputsAugmented,
     ) -> None:
         shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
@@ -125,6 +127,7 @@ class TestBuildRequests:
             worker_ids_to_worker_dates,
             [s.id for s in shifts],
             requests,
+            sample_data.penalties.user_constraint.request,
         )
 
         assert isinstance(output, list)
@@ -141,12 +144,12 @@ class TestBuildRequests:
             ],
             negative=False,
             hard=False,
-            penalty=penalties.user_constraint.request.soft,
+            penalty=sample_data.penalties.user_constraint.request.soft,
         )
 
     @pytest.mark.parametrize("sample_data", test_data_set_3)
     def test_build_request_one_day_negative_hard(
-        self, sample_data: EngineInputs
+        self, sample_data: EngineInputsAugmented
     ) -> None:
         shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
@@ -184,6 +187,7 @@ class TestBuildRequests:
             worker_ids_to_worker_dates,
             [s.id for s in shifts],
             requests,
+            sample_data.penalties.user_constraint.request,
         )
 
         assert isinstance(output, list)
@@ -200,12 +204,12 @@ class TestBuildRequests:
             ],
             negative=True,
             hard=True,
-            penalty=penalties.user_constraint.request.hard,
+            penalty=sample_data.penalties.user_constraint.request.hard,
         )
 
     @pytest.mark.parametrize("sample_data", test_data_set_3)
     def test_build_request_date_range_positive_hard(
-        self, sample_data: EngineInputs
+        self, sample_data: EngineInputsAugmented
     ) -> None:
         schedule: Schedule = sample_data.schedule
 
@@ -273,6 +277,7 @@ class TestBuildRequests:
             worker_ids_to_worker_dates,
             [s.id for s in sample_data.shifts],
             requests,
+            sample_data.penalties.user_constraint.request,
         )
 
         assert isinstance(output, list)
@@ -290,5 +295,5 @@ class TestBuildRequests:
             ],
             negative=False,
             hard=True,
-            penalty=penalties.user_constraint.request.hard,
+            penalty=sample_data.penalties.user_constraint.request.hard,
         )

@@ -11,12 +11,11 @@ from shared.schemas import (
     Constraints,
     ConstraintSeq,
     ConstraintSum,
-    EngineInputs,
+    EngineInputsAugmented,
     Request,
     RequestStatus,
 )
 
-from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
 from engine_to_core_service.build_breaches import _parse_breaches_engine
@@ -26,7 +25,7 @@ from engine_to_core_service.build_breaches import _parse_breaches_engine
 class TestConstraintOrd:
     def test_constraint_ord_hard(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_ord_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -35,7 +34,7 @@ class TestConstraintOrd:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputs], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_ord_with_expected_output
         engine_inputs_special_days.cbs_augmented = [cba]
@@ -103,7 +102,7 @@ class TestConstraintOrd:
 
     def test_constraint_ord_soft(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_ord_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -112,7 +111,7 @@ class TestConstraintOrd:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputs], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_ord_with_expected_output
         cba_soft = deepcopy(cba)
@@ -181,10 +180,10 @@ class TestConstraintOrd:
         else:
             assert False
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals, too-many-arguments
     def test_constraint_ord_hard_soft_conflict(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_ord_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -194,7 +193,7 @@ class TestConstraintOrd:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -223,7 +222,9 @@ class TestConstraintOrd:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
-        constraint_soft.penalty = penalties.user_constraint.ord.soft
+        constraint_soft.penalty = (
+            engine_inputs_special_days.penalties.user_constraint.ord.soft
+        )
 
         if constraint.operator == ConstraintOperator.YES:
             constraint_soft.operator = ConstraintOperator.NO
@@ -296,12 +297,13 @@ class TestConstraintOrd:
             assert b_vars in constraint_soft.constraint_variables
 
         # # Check objective value
-        penalty = penalties.user_constraint.ord.soft
+        penalty = engine_inputs_special_days.penalties.user_constraint.ord.soft
         assert out.objective_value == penalty * len(breaches)
 
+    # pylint: disable=too-many-arguments
     def test_constraint_ord_hard_hard_conflic_obj_value(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_ord_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -311,7 +313,7 @@ class TestConstraintOrd:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -359,5 +361,5 @@ class TestConstraintOrd:
         breaches = _parse_breaches_engine(
             engine_inputs_special_days.schedule, out.breaches
         )
-        penalty = penalties.user_constraint.ord.hard
+        penalty = engine_inputs_special_days.penalties.user_constraint.ord.hard
         assert out.objective_value == penalty * len(breaches)

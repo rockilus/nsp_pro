@@ -6,7 +6,9 @@ from shared.schemas import (
     Assignment,
     DailyShiftDemand,
     DSDSourceType,
-    EngineInputs,
+    EngineInputsAugmented,
+    ModelConfig,
+    Penalties,
     Request,
     RequestStatus,
     Schedule,
@@ -30,13 +32,14 @@ from core_to_engine_service.calculate_worker_special_days import (
     calculate_worker_speacial_days,
 )
 from core_to_engine_service.calculate_worker_work_times import round_proportional_times
-from core_to_engine_service.penalties import penalties
 from engine import GroupsAssignmentsTargetConstraint
 
 
 # pylint: disable=R0801
 @pytest.fixture
-def engine_inputs_special_days() -> EngineInputs:
+def engine_inputs_special_days(
+    penalties_fix: Penalties, model_config_fix: ModelConfig
+) -> EngineInputsAugmented:
     schedule = Schedule(
         id="sch0",
         team_id="t0",
@@ -326,7 +329,7 @@ def engine_inputs_special_days() -> EngineInputs:
             )
             current_date += timedelta(days=1)
 
-    return EngineInputs(
+    return EngineInputsAugmented(
         schedule=schedule,
         workers=workers,
         shifts=shifts,
@@ -341,6 +344,8 @@ def engine_inputs_special_days() -> EngineInputs:
         daily_shift_demands=daily_shift_demands,
         requests=[],
         wip_assignments=[],
+        penalties=penalties_fix,
+        model_config=model_config_fix,
     )
 
 
@@ -348,7 +353,7 @@ def engine_inputs_special_days() -> EngineInputs:
 class TestCalculateWorkerSpecialDays:
 
     def test_calculate_worker_special_days_output_format(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
@@ -409,7 +414,7 @@ class TestCalculateWorkerSpecialDays:
 
     # pylint: disable=too-many-locals
     def test_calculate_worker_special_days_output(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
@@ -482,7 +487,7 @@ class TestCalculateWorkerSpecialDays:
                 assert out[worker.id][str(special_day)]["dates"] == dates_expected
 
     def test_calculate_worker_special_days_leave_request_campaign(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
@@ -532,7 +537,7 @@ class TestCalculateWorkerSpecialDays:
         assert out[worker_target_id]["3"]["dates"] == dates_target
 
     def test_calculate_worker_special_days_worker_start_date(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
@@ -580,7 +585,7 @@ class TestCalculateWorkerSpecialDays:
             ]
 
     def test_calculate_worker_special_days_worker_end_date(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
@@ -629,7 +634,7 @@ class TestCalculateWorkerSpecialDays:
 
     # pylint: disable=too-many-locals
     def test_calculate_worker_special_days_assignments_hist(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         worker_target_id = engine_inputs_special_days.workers[0].id
         date_hist_start = date(2024, 12, 1)
@@ -750,7 +755,7 @@ class TestCalculateWorkerSpecialDays:
                 assert out[worker.id][str(special_day)]["dates"] == dates_expected
 
     def test_calculate_worker_special_days_assignments_hist_with_leave(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         worker_target_id = engine_inputs_special_days.workers[0].id
         date_hist_start = date(2024, 12, 1)
@@ -898,7 +903,7 @@ class TestCalculateWorkerSpecialDays:
 
 class TestBuildDutySpecialDaysConstraints:
     def test_build_duty_special_days_constraints_output_format(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
@@ -924,13 +929,17 @@ class TestBuildDutySpecialDaysConstraints:
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
+            # fmt: off
+            penalty=engine_inputs_special_days.penalties.system_constraint
+            .special_days_target_nb_duties,
+            # fmt: on
         )
 
         assert isinstance(out, list)
         assert all(isinstance(c, GroupsAssignmentsTargetConstraint) for c in out)
 
     def test_build_duty_special_days_constraints_output(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
@@ -968,6 +977,10 @@ class TestBuildDutySpecialDaysConstraints:
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
+            # fmt: off
+            penalty=engine_inputs_special_days.penalties.system_constraint
+            .special_days_target_nb_duties,
+            # fmt: on
         )
 
         shift_duty_not_del_ids = [
@@ -979,7 +992,10 @@ class TestBuildDutySpecialDaysConstraints:
         for gatc in out:
             assert (
                 gatc.penalty
-                == penalties.system_constraint.special_days_target_nb_duties
+                # fmt: off
+                == engine_inputs_special_days.penalties.system_constraint
+                .special_days_target_nb_duties
+                # fmt: on
             )
             day_index_expected = date.fromisoformat(gatc.assignments[0][0][1]).weekday()
             assert all(

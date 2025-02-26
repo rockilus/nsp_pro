@@ -17,8 +17,6 @@ from core_to_engine_service.calculate_worker_work_times import (
     calculate_adjustment_coefficients,
     round_proportional_times,
 )
-from core_to_engine_service.model_config import model_config
-from core_to_engine_service.penalties import penalties
 from engine import GroupsAssignmentsTargetConstraint
 
 
@@ -28,6 +26,8 @@ def build_nb_duties_constraints(
     w_to_nb_duties: Dict[str, Dict[str, List[int]]],
     ws_to_dates: Dict[Tuple[str, str], WorkerDates],
     shifts_duty: List[Shift],
+    penalty: int,
+    tolerance: float,
 ) -> List[GroupsAssignmentsTargetConstraint]:
     #     len(periods)
     # List[GroupsAssignmentsTargetConstraint]=
@@ -59,10 +59,8 @@ def build_nb_duties_constraints(
                         ]
                     ],
                     targets=[target_work_times[i]],
-                    penalty=penalties.system_constraint.monthly_target_nb_duties,
-                    tolerance=(
-                        model_config.system_constraints.mthly_target_nb_duty_tolerance
-                    ),
+                    penalty=penalty,
+                    tolerance=tolerance,
                 )
             else:
                 p_index_to_gadtc[i].assignments.append(

@@ -13,7 +13,7 @@ from shared.schemas import (
     Constraints,
     ConstraintSeq,
     ConstraintSum,
-    EngineInputs,
+    EngineInputsAugmented,
     QuickStaffing,
     Schedule,
     Shift,
@@ -21,7 +21,6 @@ from shared.schemas import (
     Worker,
 )
 
-from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
 from engine_to_core_service.build_breaches import _parse_breaches_engine
@@ -32,7 +31,9 @@ from tests.sample_data import test_data_set_2
 # pylint: disable=too-few-public-methods, R0801
 class TestConstraintSumQuickStaffing:
     @pytest.mark.parametrize("sample_data", test_data_set_2)
-    def test_build_quick_staffing_constraints(self, sample_data: EngineInputs) -> None:
+    def test_build_quick_staffing_constraints(
+        self, sample_data: EngineInputsAugmented
+    ) -> None:
         target = random.randint(1, 3)
 
         shifts: List[Shift] = sample_data.shifts
@@ -65,7 +66,7 @@ class TestConstraintSumQuickStaffing:
 
     @pytest.mark.parametrize("sample_data", test_data_set_2)
     def test_build_quick_staffing_constraints_no_staffing(
-        self, sample_data: EngineInputs
+        self, sample_data: EngineInputsAugmented
     ) -> None:
         shifts: List[Shift] = sample_data.shifts
         workers: List[Worker] = sample_data.workers
@@ -100,7 +101,7 @@ class TestConstraintSumQuickStaffing:
 class TestConstraintSum:
     def test_constraint_sum_hard(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_sum_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -109,7 +110,7 @@ class TestConstraintSum:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputs], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_sum_with_expected_output
         engine_inputs_special_days.cbs_augmented = [cba]
@@ -142,7 +143,7 @@ class TestConstraintSum:
 
     def test_constraint_sum_soft(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_sum_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -151,7 +152,7 @@ class TestConstraintSum:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputs], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_sum_with_expected_output
         cba_soft = deepcopy(cba)
@@ -184,10 +185,10 @@ class TestConstraintSum:
         else:
             assert False
 
-    # pylint: disable=too-many-locals, too-many-branches
+    # pylint: disable=too-many-locals, too-many-branches, too-many-arguments
     def test_constraint_sum_hard_soft_conflict(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_sum_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -197,7 +198,7 @@ class TestConstraintSum:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -212,7 +213,9 @@ class TestConstraintSum:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
-        constraint_soft.penalty = penalties.user_constraint.sum.soft
+        constraint_soft.penalty = (
+            engine_inputs_special_days.penalties.user_constraint.sum.soft
+        )
 
         if constraint.operator in [
             ConstraintOperator.LESS_THAN_OR_EQUAL,
@@ -268,7 +271,7 @@ class TestConstraintSum:
 
         # Check objective value
         obj_value = 0
-        penalty = penalties.user_constraint.sum.soft
+        penalty = engine_inputs_special_days.penalties.user_constraint.sum.soft
         for breach in breaches:
             nb_a_period = sum(
                 1
@@ -294,7 +297,7 @@ class TestConstraintSum:
 
     def test_constraint_sum_hard_hard_conflic_obj_value(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_sum_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -304,7 +307,7 @@ class TestConstraintSum:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -339,7 +342,7 @@ class TestConstraintSum:
             engine_inputs_special_days.schedule, out.breaches
         )
         obj_value = 0
-        penalty = penalties.user_constraint.sum.hard
+        penalty = engine_inputs_special_days.penalties.user_constraint.sum.hard
         for breach in breaches:
             nb_a_period = sum(
                 1

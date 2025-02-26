@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Dict, List
 
 from shared.schemas import (
-    EngineInputs,
+    EngineInputsAugmented,
     Request,
     RequestStatus,
     Shift,
@@ -23,15 +23,13 @@ from core_to_engine_service.calculate_worker_work_times import (
     calculate_adjustment_coefficients,
     round_proportional_times,
 )
-from core_to_engine_service.model_config import model_config
-from core_to_engine_service.penalties import penalties
 from engine import GroupsAssignmentsTargetConstraint
 
 
 # pylint: disable=R0801, too-few-public-methods
 class TestCalculateWorkerNbDuties:
     def test_calculate_worker_nb_duties_output_format(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -75,7 +73,7 @@ class TestCalculateWorkerNbDuties:
 
     # pylint: disable=too-many-locals
     def test_calculate_worker_nb_duties_output(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -155,7 +153,7 @@ class TestCalculateWorkerNbDuties:
                 )
 
     def test_calculate_adjustment_coefficients_no_requests(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -182,7 +180,7 @@ class TestCalculateWorkerNbDuties:
                 assert out[worker.id][i] == expected
 
     def test_calculate_adjustment_coefficients_with_requests(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -251,7 +249,7 @@ class TestCalculateWorkerNbDuties:
 
 class TestBuildNbDutiesConstraints:
     def test_build_nb_duties_constraints_output_format(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -290,6 +288,12 @@ class TestBuildNbDutiesConstraints:
                 for s in engine_inputs_special_days.shifts
                 if not s.deleted and s.shift_type == ShiftType.DUTY
             ],
+            # fmt: off
+            engine_inputs_special_days.penalties.system_constraint
+            .monthly_target_nb_duties,
+            engine_inputs_special_days.model_config.system_constraints
+            .mthly_target_nb_duty_tolerance,
+            # fmt: on
         )
 
         assert isinstance(out, list)
@@ -297,7 +301,7 @@ class TestBuildNbDutiesConstraints:
 
     # pylint: disable=too-many-locals
     def test_build_nb_duties_constraints_output(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -336,6 +340,12 @@ class TestBuildNbDutiesConstraints:
                 for s in engine_inputs_special_days.shifts
                 if not s.deleted and s.shift_type == ShiftType.DUTY
             ],
+            # fmt: off
+            engine_inputs_special_days.penalties.system_constraint
+            .monthly_target_nb_duties,
+            engine_inputs_special_days.model_config.system_constraints
+            .mthly_target_nb_duty_tolerance,
+            # fmt: on
         )
 
         shift_duty_ids = [
@@ -347,10 +357,19 @@ class TestBuildNbDutiesConstraints:
         p_index_to_period = dict(enumerate(periods_monthly))
 
         for gadtc in out:
-            assert gadtc.penalty == penalties.system_constraint.monthly_target_nb_duties
+            assert (
+                gadtc.penalty
+                # fmt: off
+                == engine_inputs_special_days.penalties.system_constraint
+                .monthly_target_nb_duties
+                # fmt: on
+            )
             assert (
                 gadtc.tolerance
-                == model_config.system_constraints.mthly_target_nb_duty_tolerance
+                # fmt: off
+                == engine_inputs_special_days.model_config.system_constraints
+                .mthly_target_nb_duty_tolerance
+                # fmt: on
             )
             dates_gadtc = list(
                 set(date.fromisoformat(a[1]) for ag in gadtc.assignments for a in ag)

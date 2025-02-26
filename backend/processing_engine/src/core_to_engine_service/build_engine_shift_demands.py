@@ -1,19 +1,26 @@
 from datetime import date
 from typing import Dict, List, Tuple
 
-from shared.schemas import DailyShiftDemand, Shift, ShiftType, Worker, WorkerDates
+from shared.schemas import (
+    CoveragePenalty,
+    DailyShiftDemand,
+    Shift,
+    ShiftType,
+    Worker,
+    WorkerDates,
+)
 
-from core_to_engine_service.penalties import penalties
 from engine import ShiftDemand as ShiftDemandEngine
 
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, too-many-arguments
 def build_engine_shift_demands(
     workers_not_deleted: List[Worker],
     dates_campaing: List[date],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts_not_deleted: List[Shift],
     daily_shift_demands: List[DailyShiftDemand],
+    c_penalty: CoveragePenalty,
 ) -> List[ShiftDemandEngine]:
     out: List[ShiftDemandEngine] = []
     for shift in shifts_not_deleted:
@@ -65,9 +72,9 @@ def build_engine_shift_demands(
                     target=target,
                     target_specialties=target_specialty,
                     penalty=(
-                        penalties.configuration_constraint.coverage.duty
+                        c_penalty.duty
                         if shift.shift_type == ShiftType.DUTY
-                        else penalties.configuration_constraint.coverage.normal
+                        else c_penalty.normal
                     ),
                 )
             )

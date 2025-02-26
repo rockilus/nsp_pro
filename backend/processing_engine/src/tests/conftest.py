@@ -24,7 +24,9 @@ from shared.schemas import (
     DimensionType,
     DimEntry,
     DSDSourceType,
-    EngineInputs,
+    EngineInputsAugmented,
+    ModelConfig,
+    Penalties,
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
@@ -40,9 +42,10 @@ from shared.schemas import (
 
 from core_to_engine_service import core_to_engine_inputs
 from core_to_engine_service.build_periods import build_periods_weekly
-from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine.engine import Engine, Outputs
+from solve_service.model_config import model_config
+from solve_service.penalties import penalties
 
 
 # pylint: disable=R0801
@@ -428,6 +431,16 @@ def daily_shift_demands_shifts_3n_2d(
     return daily_shift_demands
 
 
+@pytest.fixture
+def penalties_fix() -> Penalties:
+    return penalties
+
+
+@pytest.fixture
+def model_config_fix() -> ModelConfig:
+    return model_config
+
+
 # EngineInputs
 # pylint: disable=too-many-arguments
 @pytest.fixture
@@ -439,8 +452,10 @@ def engine_inputs_special_days(
     dim_entries: List[DimEntry],  # noqa: F811
     attributes: List[Attribute],  # noqa: F811
     daily_shift_demands_shifts_3n_2d: List[DailyShiftDemand],  # noqa: F811
-) -> EngineInputs:
-    return EngineInputs(
+    penalties_fix: Penalties,  # noqa: F811
+    model_config_fix: ModelConfig,  # noqa: F811
+) -> EngineInputsAugmented:
+    return EngineInputsAugmented(
         schedule=schedule,
         workers=workers_10,
         shifts=shifts_3n_2d,
@@ -455,6 +470,8 @@ def engine_inputs_special_days(
         daily_shift_demands=daily_shift_demands_shifts_3n_2d,
         requests=[],
         wip_assignments=[],
+        penalties=penalties_fix,
+        model_config=model_config_fix,
     )
 
 
@@ -2078,9 +2095,9 @@ def constraint_fil_with_expected_output(request):
 
 
 @pytest.fixture
-def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputs], Outputs]:
+def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputsAugmented], Outputs]:
     def _run_engine_solve_from_engine_inputs(
-        engine_inputs: EngineInputs,
+        engine_inputs: EngineInputsAugmented,
     ) -> Outputs:
         inputs_engine, _ = core_to_engine_inputs(
             engine_inputs.schedule,
@@ -2095,6 +2112,8 @@ def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputs], Outputs]:
             engine_inputs.daily_shift_demands,
             engine_inputs.requests,
             engine_inputs.wip_assignments,
+            engine_inputs.penalties,
+            engine_inputs.model_config,
         )
         engine = Engine()
         return engine.solve(inputs_engine)
@@ -2104,10 +2123,10 @@ def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputs], Outputs]:
 
 @pytest.fixture
 def run_core_to_engine_inputs() -> (
-    Callable[[EngineInputs], Tuple[InputsEngine, Constraints]]
+    Callable[[EngineInputsAugmented], Tuple[InputsEngine, Constraints]]
 ):
     def _run_core_to_engine_inputs(
-        engine_inputs: EngineInputs,
+        engine_inputs: EngineInputsAugmented,
     ) -> Tuple[InputsEngine, Constraints]:
         return core_to_engine_inputs(
             engine_inputs.schedule,
@@ -2122,6 +2141,8 @@ def run_core_to_engine_inputs() -> (
             engine_inputs.daily_shift_demands,
             engine_inputs.requests,
             engine_inputs.wip_assignments,
+            engine_inputs.penalties,
+            engine_inputs.model_config,
         )
 
     return _run_core_to_engine_inputs
