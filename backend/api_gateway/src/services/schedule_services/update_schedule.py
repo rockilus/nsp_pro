@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple
 
 from shared.schemas import (
     CoverageSelector,
+    DSDSourceType,
     Schedule,
     ShiftType,
     SolveDetails,
@@ -86,9 +87,7 @@ def build_worktime_data(schedule_id: str) -> WorkTimeTable:
     )
 
     # Params
-    nb_weeks = (schedule.end_date - schedule.start_date).total_seconds() / (
-        7 * 24 * 3600
-    )
+    nb_weeks = ((schedule.end_date - schedule.start_date).days + 1) / 7
 
     dates_campaign = [
         schedule.start_date + timedelta(days=i)
@@ -122,11 +121,11 @@ def build_worktime_data(schedule_id: str) -> WorkTimeTable:
                     shift_count[shift_demand.shift_id] += 1
 
     # in daily shift demands
-    for daily_shift_demand in daily_shift_demands:
-        if daily_shift_demand.date in dates_campaign:
-            if daily_shift_demand.shift_id not in shift_count:
-                shift_count[daily_shift_demand.shift_id] = 0
-            shift_count[daily_shift_demand.shift_id] += 1
+    for dsd in daily_shift_demands:
+        if dsd.date in dates_campaign and dsd.source_type != DSDSourceType.SHIFT_DEMAND:
+            if dsd.shift_id not in shift_count:
+                shift_count[dsd.shift_id] = 0
+            shift_count[dsd.shift_id] += dsd.count
 
     # Shifts
     shifts = shift_db.get_shifts_by_ids(list(shift_count.keys()))

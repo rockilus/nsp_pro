@@ -51,7 +51,6 @@ from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
 )
 from core_to_engine_service.model_config import model_config
-from core_to_engine_service.penalties import penalties
 from engine import ConfigurationConstraintInputs
 from engine import Inputs as InputsEngine
 from engine import SystemConstraintInputs
@@ -117,12 +116,6 @@ def core_to_engine_inputs(
         dates_campaign,
     )
 
-    # Penalties
-    coefficient = (
-        len(workers_not_deleted) * len(shifts_not_deleted) * len(dates_campaign)
-    )
-    penalties.apply_coefficient(coefficient)
-
     # Work times
     w_to_work_times = calculate_worker_work_times(
         schedule,
@@ -132,6 +125,7 @@ def core_to_engine_inputs(
         daily_shift_demands,
         periods_weekly,
     )
+
     w_to_nb_duties = calculate_worker_nb_duties(
         schedule,
         workers_not_deleted,
@@ -239,12 +233,14 @@ def core_to_engine_inputs(
             ),
         ),
         system_constraints=SystemConstraintInputs(
-            weekly_target_work_time=build_work_time_constraints(
-                periods_weekly,
-                w_to_work_times,
-                ws_to_dates,
-                shifts_work,
-                shift_id_to_duration_dict,
+            weekly_target_work_time=(
+                build_work_time_constraints(
+                    periods_weekly,
+                    w_to_work_times,
+                    ws_to_dates,
+                    shifts_work,
+                    shift_id_to_duration_dict,
+                )
             ),
             monthly_target_nb_duties=build_nb_duties_constraints(
                 periods_monthly,

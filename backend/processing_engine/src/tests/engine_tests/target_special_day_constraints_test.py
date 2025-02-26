@@ -359,6 +359,7 @@ class TestSpecialDayConstraints:
     ) -> None:
         inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
         inputs.model_config.system_constraints.special_days_target_nb_duties = True
+        inputs.model_config.system_constraints.monthly_target_nb_duties = False
 
         out = run_engine_solve(inputs)
         assert out.objective_value == 0
