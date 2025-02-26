@@ -10,7 +10,9 @@ from engine.types import ObjectiveCategory, ShiftDemand
 # pylint: disable=too-few-public-methods
 class AddCoverage(AddConstraint):
     # pylint: disable=too-many-locals
-    def add_coverage(self, shift_demands: List[ShiftDemand], hard_to_soft: bool):
+    def add_coverage(
+        self, shift_demands: List[ShiftDemand], hard_to_soft: bool
+    ):
         for shift_demand in shift_demands:
             if shift_demand.assignments:
                 c_variables: List[cp_model.IntVar] = [
@@ -23,7 +25,9 @@ class AddCoverage(AddConstraint):
                         c_variables, ObjectiveCategory.DAILY_SHIFT_DEMAND
                     )
                     delta = self.model.NewIntVar(-100, 100, "")
-                    self.model.Add(delta == sum(c_variables) - shift_demand.target)
+                    self.model.Add(
+                        delta == sum(c_variables) - shift_demand.target
+                    )
                     excess = self.model.NewIntVar(-100, 100, var_name)
                     self.model.AddAbsEquality(excess, delta)
                     self.obj.int_vars.append(excess)
@@ -38,10 +42,12 @@ class AddCoverage(AddConstraint):
                 for a_specialty in assignments_specialty:
                     # Create specialty variables
                     if a_specialty not in self.assignment_wdss:
-                        self.assignment_wdss[a_specialty] = self.model.NewBoolVar(
-                            "assign_spe_"
-                            + f"{a_specialty[0]}_{a_specialty[1]}_{a_specialty[2]}_"
-                            + f"{a_specialty[3]}"
+                        self.assignment_wdss[a_specialty] = (
+                            self.model.NewBoolVar(
+                                "assign_spe_"
+                                + f"{a_specialty[0]}_{a_specialty[1]}_{a_specialty[2]}_"
+                                + f"{a_specialty[3]}"
+                            )
                         )
                     c_variables_gen.append(
                         self.variables[
@@ -61,10 +67,13 @@ class AddCoverage(AddConstraint):
                     self.model.Add(sum(c_variables_spe) == target_specialty)
                 else:
                     var_name = build_var_name_daily_shift_demand(
-                        c_variables_gen, ObjectiveCategory.DAILY_SHIFT_DEMAND
+                        c_variables_gen,
+                        ObjectiveCategory.DAILY_SHIFT_DEMAND_SPE,
                     )
                     delta = self.model.NewIntVar(-100, 100, "")
-                    self.model.Add(delta == sum(c_variables_spe) - target_specialty)
+                    self.model.Add(
+                        delta == sum(c_variables_spe) - target_specialty
+                    )
                     excess = self.model.NewIntVar(-100, 100, var_name)
                     self.model.AddAbsEquality(excess, delta)
                     self.obj.int_vars.append(excess)

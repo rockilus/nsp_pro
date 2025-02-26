@@ -51,7 +51,9 @@ class TestCalculateWorkerWorkTimes:
 
         assert isinstance(out, dict)
         assert all(isinstance(v, dict) for v in out.values())
-        assert all(isinstance(vv, list) for v in out.values() for vv in v.values())
+        assert all(
+            isinstance(vv, list) for v in out.values() for vv in v.values()
+        )
         assert all(
             isinstance(vvv, int)
             for v in out.values()
@@ -124,7 +126,9 @@ class TestCalculateWorkerWorkTimes:
             for s in engine_inputs_special_days.shifts
             if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
         ]
-        shift_dict = {shift.id: shift for shift in engine_inputs_special_days.shifts}
+        shift_dict = {
+            shift.id: shift for shift in engine_inputs_special_days.shifts
+        }
 
         work_time_periods: Dict[int, float] = {}
         for i, period in enumerate(periods_weekly):
@@ -338,6 +342,85 @@ class TestCalculateWorkerWorkTimes:
         rounded_times = round_proportional_times(proportional_times)
         assert rounded_times == expected_rounded_times
 
+    def test_calculate_worker_work_times_totals(
+        self, engine_inputs_special_days: EngineInputs
+    ) -> None:
+        schedule = engine_inputs_special_days.schedule
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        dates_hist: List[date] = []
+
+        # Call the method under test
+        periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
+        out = calculate_worker_work_times(
+            engine_inputs_special_days.schedule,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.requests,
+            engine_inputs_special_days.daily_shift_demands,
+            periods_weekly,
+        )
+
+        w_coef = calculate_adjustment_coefficients(
+            schedule,
+            engine_inputs_special_days.workers,
+            engine_inputs_special_days.shifts,
+            engine_inputs_special_days.requests,
+            periods_weekly,
+            [Constants.NUM_DAYS_WEEK for _ in periods_weekly],
+        )
+
+        workers = engine_inputs_special_days.workers
+        shifts = engine_inputs_special_days.shifts
+        contract_total_expected = sum(
+            math.ceil(
+                w.weekly_hours * Constants.NUM_MINUTES_HOUR * w_coef[w.id][i]
+            )
+            for w in workers
+            for i, _ in enumerate(periods_weekly)
+        )
+        constract_total_actual = sum(
+            out[w.id]["contract"][i]
+            for w in workers
+            for i, _ in enumerate(periods_weekly)
+        )
+        assert contract_total_expected == constract_total_actual
+
+        desired_total_expected = sum(
+            math.ceil(
+                w.weekly_hours_desired
+                * Constants.NUM_MINUTES_HOUR
+                * w_coef[w.id][i]
+            )
+            for w in workers
+            for i, _ in enumerate(periods_weekly)
+        )
+        desired_total_actual = sum(
+            out[w.id]["desired"][i]
+            for w in workers
+            for i, _ in enumerate(periods_weekly)
+        )
+        assert desired_total_expected == desired_total_actual
+
+        s_id_to_duration = {
+            s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
+            for s in shifts
+        }
+        target_total_expected = 0
+        for dsd in engine_inputs_special_days.daily_shift_demands:
+            if dsd.shift_id in s_id_to_duration:
+                target_total_expected += (
+                    dsd.count * s_id_to_duration[dsd.shift_id]
+                )
+        target_total_actual = sum(
+            out[w.id]["target"][i]
+            for w in workers
+            for i, _ in enumerate(periods_weekly)
+        )
+        assert target_total_expected == target_total_actual
+
 
 class TestBuildWorkTimeConstraints:
     def test_build_work_times_constraints_output_format(
@@ -384,14 +467,16 @@ class TestBuildWorkTimeConstraints:
             [
                 s
                 for s in engine_inputs_special_days.shifts
-                if not s.deleted and s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+                if not s.deleted
+                and s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
             ],
             shift_id_to_duration_dict,
         )
 
         assert isinstance(out, list)
         assert all(
-            isinstance(c, GroupsAssignmentsDurationsTargetConstraint) for c in out
+            isinstance(c, GroupsAssignmentsDurationsTargetConstraint)
+            for c in out
         )
 
     # pylint: disable=too-many-locals
@@ -439,7 +524,8 @@ class TestBuildWorkTimeConstraints:
             [
                 s
                 for s in engine_inputs_special_days.shifts
-                if not s.deleted and s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+                if not s.deleted
+                and s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
             ],
             shift_id_to_duration_dict,
         )
@@ -447,19 +533,27 @@ class TestBuildWorkTimeConstraints:
         shift_work_not_del_ids = [
             s.id
             for s in engine_inputs_special_days.shifts
-            if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY] and not s.deleted
+            if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+            and not s.deleted
         ]
 
         p_index_to_period = dict(enumerate(periods_weekly))
 
         for gadtc in out:
-            assert gadtc.penalty == penalties.system_constraint.weekly_target_work_time
+            assert (
+                gadtc.penalty
+                == penalties.system_constraint.weekly_target_work_time
+            )
             assert (
                 gadtc.tolerance
                 == model_config.system_constraints.weekly_target_worktime_tolerance
             )
             dates_gadtc = list(
-                set(date.fromisoformat(a[1]) for ag in gadtc.assignments for a in ag)
+                set(
+                    date.fromisoformat(a[1])
+                    for ag in gadtc.assignments
+                    for a in ag
+                )
             )
             for i, period in p_index_to_period.items():
                 if sorted(dates_gadtc) == sorted(period):
@@ -468,7 +562,9 @@ class TestBuildWorkTimeConstraints:
             assert p_index is not None
             assert all(d in p_index_to_period[p_index] for d in dates_gadtc)
             shift_ids_gadtc = {a[2] for ag in gadtc.assignments for a in ag}
-            assert sorted(shift_ids_gadtc) == sorted(set(shift_work_not_del_ids))
+            assert sorted(shift_ids_gadtc) == sorted(
+                set(shift_work_not_del_ids)
+            )
             for assignments, durations, target in zip(
                 gadtc.assignments, gadtc.durations, gadtc.targets
             ):

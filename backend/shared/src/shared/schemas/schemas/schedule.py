@@ -143,7 +143,9 @@ class SolveDetails:
         return cls(
             task_id=data["task_id"],
             status=SolveDetailsStatus(data["status"]),
-            updated_at=datetime.fromtimestamp(data["updated_at"], tz=timezone.utc),
+            updated_at=datetime.fromtimestamp(
+                data["updated_at"], tz=timezone.utc
+            ),
             result=data["result"],
         )
 
@@ -184,8 +186,12 @@ class Schedule:
         return cls(
             id=data["id"],
             team_id=data["team_id"],
-            start_date=datetime.fromtimestamp(data["start_date"], timezone.utc).date(),
-            end_date=datetime.fromtimestamp(data["end_date"], timezone.utc).date(),
+            start_date=datetime.fromtimestamp(
+                data["start_date"], timezone.utc
+            ).date(),
+            end_date=datetime.fromtimestamp(
+                data["end_date"], timezone.utc
+            ).date(),
             solve_details=(
                 SolveDetails.from_dict(data["solve_details"])
                 if data.get("solve_details", None) is not None
@@ -198,7 +204,9 @@ class Schedule:
                 for ts in data["missing_coverage_dates"]
             ],
             constraint_build_ids=data["constraint_build_ids"],
-            quick_staffings=[QuickStaffing(**qs) for qs in data["quick_staffings"]],
+            quick_staffings=[
+                QuickStaffing(**qs) for qs in data["quick_staffings"]
+            ],
         )
 
 

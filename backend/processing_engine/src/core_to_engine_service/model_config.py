@@ -14,12 +14,12 @@ print(f"github_actions_mode: {github_actions_mode}")
 
 model_config = ModelConfig(
     solver_params=SolverParams(
-        max_time_in_seconds=90 if github_actions_mode else 30,
+        max_time_in_seconds=90 if github_actions_mode else 90,
         solve_strategy=SolveStrategy.HARD_TO_SOFT,
     ),
     system_constraints=SystemConstraints(
         weekly_target_work_time=not test_mode,
-        weekly_target_worktime_tolerance=0.1 if not test_mode else 0.0,
+        weekly_target_worktime_tolerance=0.2 if not test_mode else 0.0,
         monthly_target_nb_duties=not test_mode,
         mthly_target_nb_duty_tolerance=0.2 if not test_mode else 0.0,
         special_days_target_nb_duties=not test_mode,
