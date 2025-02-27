@@ -20,7 +20,7 @@ print(f"github_actions_mode: {github_actions_mode}")
 
 model_config = ModelConfig(
     solver_params=SolverParams(
-        max_time_in_seconds=90 if github_actions_mode else 30,
+        max_time_in_seconds=90 if github_actions_mode else 60,
         solve_strategy=SolveStrategy.HARD_TO_SOFT,
     ),
     configuration_constraints=ConfigurationConstraints(work_loads=False),
