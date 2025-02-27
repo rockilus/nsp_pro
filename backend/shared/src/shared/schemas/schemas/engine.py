@@ -38,6 +38,7 @@ class ConfigurationConstraints:
 @dataclass
 class SolverParams:
     max_time_in_seconds: int
+    num_search_workers: int
     solve_strategy: SolveStrategy
 
 
