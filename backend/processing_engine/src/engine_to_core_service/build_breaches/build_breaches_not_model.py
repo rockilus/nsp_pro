@@ -33,7 +33,19 @@ def build_breaches_not_model(
         processing_cache.shift_id_to_duration,
         assignments,
     )
+    out += build_nb_duty_breaches(
+        schedule,
+        workers,
+        shifts,
+        assignments,
+        processing_cache,
+    )
     return out
+
+
+#########################
+# Work time breaches
+#########################
 
 
 # pylint: disable=too-many-arguments, too-many-locals, R0801
@@ -129,19 +141,114 @@ def calc_work_times_actual(
     for w_id in w_not_deleted_ids:
         w_to_wt_actual[w_id] = []
         for period in periods:
-            wt_actual = 0
-            for d in period:
-                as_w = [
-                    a
-                    for a in assignments
-                    if a.worker_id == w_id
-                    and a.date == d
-                    and a.shift_id in shift_work_ids
-                ]
-                wt_actual += sum(shift_id_to_duration_dict[a.shift_id] for a in as_w)
+            as_w = [
+                a
+                for a in assignments
+                if a.worker_id == w_id
+                and a.date in period
+                and a.shift_id in shift_work_ids
+            ]
+            wt_actual = sum(shift_id_to_duration_dict[a.shift_id] for a in as_w)
             w_to_wt_actual[w_id].append(wt_actual)
     return w_to_wt_actual
 
 
 def convert_minutes_to_hours(minutes: int) -> float:
     return round(minutes / Constants.NUM_MINUTES_HOUR)
+
+
+#########################
+# Nb duty breaches
+#########################
+
+
+def build_nb_duty_breaches(
+    schedule: Schedule,
+    workers: List[Worker],
+    shifts: List[Shift],
+    assignments: List[Assignment],
+    processing_cache: ProcessingCache,
+) -> List[Breach]:
+    # Calculate nb duty actual for each period
+    shift_duty_ids = [s.id for s in shifts if s.shift_type == ShiftType.DUTY]
+
+    w_to_nb_duty_actual = calc_nb_duty_actual(
+        workers,
+        shift_duty_ids,
+        processing_cache.periods_weekly,
+        assignments,
+    )
+
+    # Compare to nb duty expected and create breach when actual > expected
+    i_to_period: Dict[int, List[date]] = dict(
+        enumerate(processing_cache.periods_weekly)
+    )
+
+    out: List[Breach] = []
+    for w_id, nb_duty_expected in processing_cache.w_to_nb_duties.items():
+        nb_duty_actual = w_to_nb_duty_actual.get(w_id, None)
+        if nb_duty_actual is None:
+            continue
+        for category, nds_expected in nb_duty_expected.items():
+            if category != "desired":
+                continue
+            for i, (nd_actual, nd_expected) in enumerate(
+                zip(nb_duty_actual, nds_expected)
+            ):
+                if nd_actual > nd_expected:
+                    period = i_to_period[i]
+                    period_start, period_end = period[0], period[-1]
+                    worker = next((w for w in workers if w.id == w_id), None)
+                    if worker is None:
+                        continue
+
+                    string_list = [
+                        worker.name,
+                        "open to work",
+                        f"{str(nd_expected)} duties/month",
+                        "but works",
+                        str(nd_actual),
+                        "on month",
+                        f"{period_start.strftime('%b %d')} - "
+                        + f"{period_end.strftime('%b %d')}",
+                    ]
+
+                    out.append(
+                        Breach(
+                            id="",
+                            schedule_id=schedule.id,
+                            objective_id=None,
+                            objective_category=ObjectiveCategory.DUTIES_PER_MONTH,
+                            variables=[
+                                Variable(worker_id=w_id, date=d, shift_id=s_id)
+                                for d in period
+                                for s_id in shift_duty_ids
+                            ],
+                            description=" ".join(string_list),
+                            hard_to_soft=None,
+                        )
+                    )
+    return out
+
+
+def calc_nb_duty_actual(
+    workers: List[Worker],
+    shift_duty_ids: List[str],
+    periods: List[List[date]],
+    assignments: List[Assignment],
+) -> Dict[str, List[int]]:
+    w_not_deleted_ids = [w.id for w in workers if not w.deleted]
+
+    out: Dict[str, List[int]] = {}
+    for w_id in w_not_deleted_ids:
+        out[w_id] = []
+        for period in periods:
+            as_w = [
+                a
+                for a in assignments
+                if a.worker_id == w_id
+                and a.date in period
+                and a.shift_id in shift_duty_ids
+            ]
+            out[w_id].append(len(as_w))
+    return out
