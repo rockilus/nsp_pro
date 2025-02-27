@@ -28,7 +28,7 @@ from engine import VarName as VarNameEngine
 
 
 # pylint: disable=too-many-arguments
-def build_breaches(
+def build_breaches_model(
     schedule: Schedule,
     workers: List[Worker],
     shifts: List[Shift],
@@ -609,91 +609,3 @@ def _build_description_duty_recup_breach(
 #     variables: List[Variable]
 #     description: str
 #     hard_to_soft: bool | None
-
-
-# pylint: disable=too-many-locals
-def build_work_time_breaches(
-    schedule: Schedule,
-    workers: List[Worker],
-    shifts: List[Shift],
-    periods: List[List[date]],
-    w_to_work_times: Dict[str, Dict[str, List[int]]],
-    shift_id_to_duration_dict: Dict[str, int],
-    assignments: List[Assignment],
-) -> List[Breach]:
-    # Calculate work time actual for each period
-    w_not_deleted_ids = [w.id for w in workers if not w.deleted]
-    shift_work_ids = [
-        s.id for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
-    ]
-    i_to_period: Dict[int, List[date]] = dict(enumerate(periods))
-
-    w_to_wt_actual: Dict[str, List[int]] = {}
-    for w_id in w_not_deleted_ids:
-        w_to_wt_actual[w_id] = []
-        for period in periods:
-            wt_actual = 0
-            for d in period:
-                as_w = [
-                    a
-                    for a in assignments
-                    if a.worker_id == w_id
-                    and a.date == d
-                    and a.shift_id in shift_work_ids
-                ]
-                wt_actual += sum(shift_id_to_duration_dict[a.shift_id] for a in as_w)
-            w_to_wt_actual[w_id].append(wt_actual)
-
-    # Compare to work time expected and create breach when actual > expected
-    out: List[Breach] = []
-    for w_id, w_work_times in w_to_work_times.items():
-        wts_actual = w_to_wt_actual.get(w_id, None)
-        if wts_actual is None:
-            continue
-        for category, wts_expected in w_work_times.items():
-            if category not in ["desired", "contract"]:
-                continue
-            obj_category = (
-                ObjectiveCategory.WORK_TIME_DESIRED
-                if category == "desired"
-                else ObjectiveCategory.WORK_TIME_CONTRACT
-            )
-            for i, (wt_actual, wt_expected) in enumerate(zip(wts_actual, wts_expected)):
-                if wt_actual > wt_expected:
-                    period = i_to_period[i]
-                    period_start, period_end = period[0], period[-1]
-                    worker = next((w for w in workers if w.id == w_id), None)
-                    if worker is None:
-                        continue
-
-                    string_list = [
-                        worker.name,
-                        (
-                            "open to work"
-                            if obj_category == ObjectiveCategory.WORK_TIME_DESIRED
-                            else "contracted"
-                        ),
-                        f"{str(wt_expected)}h/week",
-                        "but works",
-                        f"{str(wt_actual)}h",
-                        "on week",
-                        f"{period_start.strftime('%b %d')} - "
-                        + f"{period_end.strftime('%b %d')}",
-                    ]
-
-                    out.append(
-                        Breach(
-                            id="",
-                            schedule_id=schedule.id,
-                            objective_id=None,
-                            objective_category=obj_category,
-                            variables=[
-                                Variable(worker_id=w_id, date=d, shift_id=s_id)
-                                for d in period
-                                for s_id in shift_work_ids
-                            ],
-                            description=" ".join(string_list),
-                            hard_to_soft=None,
-                        )
-                    )
-    return out

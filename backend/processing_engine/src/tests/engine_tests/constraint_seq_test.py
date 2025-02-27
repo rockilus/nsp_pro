@@ -8,7 +8,6 @@ from shared.schemas import (
     ConstraintFil,
     ConstraintOperator,
     ConstraintOrd,
-    Constraints,
     ConstraintSeq,
     ConstraintSum,
     EngineInputsAugmented,
@@ -17,8 +16,10 @@ from shared.schemas import (
 )
 
 from engine import Inputs as InputsEngine
-from engine import Outputs
-from engine_to_core_service.build_breaches import _parse_breaches_engine
+from engine import Outputs, ProcessingCache
+from engine_to_core_service.build_breaches.build_breaches_model import (
+    _parse_breaches_engine,
+)
 
 
 class TestConstraintSeq:
@@ -271,7 +272,7 @@ class TestConstraintSeq:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -460,7 +461,7 @@ class TestConstraintSeq:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:

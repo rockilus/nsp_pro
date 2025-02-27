@@ -5,7 +5,6 @@ from typing import Callable, List, Tuple
 import pytest
 from shared.schemas import (
     Breach,
-    Constraints,
     DailyShiftDemand,
     DSDSourceType,
     EngineInputsAugmented,
@@ -22,9 +21,11 @@ from shared.schemas import (
 
 from engine import Assignment
 from engine import Inputs as InputsEngine
-from engine import Outputs
+from engine import Outputs, ProcessingCache
 from engine import Request as RequestEngine
-from engine_to_core_service.build_breaches import _parse_breaches_engine
+from engine_to_core_service.build_breaches.build_breaches_model import (
+    _parse_breaches_engine,
+)
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 
 # pylint: disable=unused-import
@@ -290,7 +291,7 @@ class TestRequest:
         self,
         engine_inputs: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -383,7 +384,7 @@ class TestRequest:
         self,
         engine_inputs: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:

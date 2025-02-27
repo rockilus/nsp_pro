@@ -6,7 +6,6 @@ import pytest
 from shared.schemas import (
     Attribute,
     AttributeOwnerType,
-    Constraints,
     DailyShiftDemand,
     Dimension,
     DimensionEntryType,
@@ -30,8 +29,10 @@ from shared.schemas import (
 from core_to_engine_service.build_periods import build_periods_monthly
 from core_to_engine_service.calculate_worker_nb_duties import calculate_worker_nb_duties
 from engine import Inputs as InputsEngine
-from engine import Outputs
-from engine_to_core_service.build_breaches import _parse_breaches_engine
+from engine import Outputs, ProcessingCache
+from engine_to_core_service.build_breaches.build_breaches_model import (
+    _parse_breaches_engine,
+)
 
 
 class TestTargetWorkTimeConstraints:
@@ -337,7 +338,7 @@ class TestTargetWorkTimeConstraints:
         self,
         engine_inputs_nb_duties: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -390,7 +391,7 @@ class TestTargetWorkTimeConstraints:
         self,
         engine_inputs_nb_duties: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -446,7 +447,7 @@ class TestTargetWorkTimeConstraints:
         self,
         engine_inputs_nb_duties: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -509,7 +510,7 @@ class TestTargetWorkTimeConstraints:
         self,
         engine_inputs_nb_duties: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:

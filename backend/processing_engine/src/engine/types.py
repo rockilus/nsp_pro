@@ -234,3 +234,18 @@ class BenchmarkTimes:
 # status 2: FEASIBLE
 # status 3: INFEASIBLE
 # status 4: OPTIMAL
+
+
+##############################
+# Annex
+##############################
+
+
+@dataclass
+class ProcessingCache:
+    constraints: Constraints
+    periods_weekly: List[List[date]]
+    periods_monthly: List[List[date]]
+    w_to_work_times: Dict[str, Dict[str, List[int]]]
+    w_to_nb_duties: Dict[str, Dict[str, List[int]]]
+    shift_id_to_duration: Dict[str, int]
