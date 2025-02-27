@@ -37,8 +37,9 @@ def build_breaches_not_model(
         schedule,
         workers,
         shifts,
+        processing_cache.periods_monthly,
+        processing_cache.w_to_nb_duties,
         assignments,
-        processing_cache,
     )
     return out
 
@@ -166,8 +167,9 @@ def build_nb_duty_breaches(
     schedule: Schedule,
     workers: List[Worker],
     shifts: List[Shift],
+    periods: List[List[date]],
+    w_to_nb_duties: Dict[str, Dict[str, List[int]]],
     assignments: List[Assignment],
-    processing_cache: ProcessingCache,
 ) -> List[Breach]:
     # Calculate nb duty actual for each period
     shift_duty_ids = [s.id for s in shifts if s.shift_type == ShiftType.DUTY]
@@ -175,17 +177,15 @@ def build_nb_duty_breaches(
     w_to_nb_duty_actual = calc_nb_duty_actual(
         workers,
         shift_duty_ids,
-        processing_cache.periods_weekly,
+        periods,
         assignments,
     )
 
     # Compare to nb duty expected and create breach when actual > expected
-    i_to_period: Dict[int, List[date]] = dict(
-        enumerate(processing_cache.periods_weekly)
-    )
+    i_to_period: Dict[int, List[date]] = dict(enumerate(periods))
 
     out: List[Breach] = []
-    for w_id, nb_duty_expected in processing_cache.w_to_nb_duties.items():
+    for w_id, nb_duty_expected in w_to_nb_duties.items():
         nb_duty_actual = w_to_nb_duty_actual.get(w_id, None)
         if nb_duty_actual is None:
             continue

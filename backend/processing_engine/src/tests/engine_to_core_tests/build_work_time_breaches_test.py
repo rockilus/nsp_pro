@@ -294,14 +294,17 @@ class TestTargetWorkTimeConstraints:
                         for d in period
                         for s_id in s_work_ids
                     ]
-                    breach = next(
-                        (b for b in out if b.variables == var_expected),
-                        None,
-                    )
+                    breach = None
+                    for i, b in enumerate(out):
+                        if b.variables == var_expected:
+                            breach = b
+                            break
                     assert breach is not None
                     assert (
                         breach.objective_category == ObjectiveCategory.WORK_TIME_DESIRED
                     )
+                    del out[i]
+        assert len(out) == 0
 
     # pylint: disable=too-many-locals
     def test_build_work_time_breaches_contract_breach(
@@ -386,7 +389,7 @@ class TestTargetWorkTimeConstraints:
         i_to_period = dict(enumerate(periods_weekly))
 
         for w_id, work_times in w_to_work_times.items():
-            work_times_desired = work_times["desired"]
+            work_times_desired = work_times["contract"]
             work_times_actual = w_to_wt_actual.get(w_id, None)
             assert work_times_actual is not None
             for i, (wt_actual, wt_desired) in enumerate(
@@ -403,12 +406,15 @@ class TestTargetWorkTimeConstraints:
                         for d in period
                         for s_id in s_work_ids
                     ]
-                    breach = next(
-                        (b for b in out if b.variables == var_expected),
-                        None,
-                    )
+                    breach = None
+                    for i, b in enumerate(out):
+                        if b.variables == var_expected:
+                            breach = b
+                            break
                     assert breach is not None
                     assert (
                         breach.objective_category
                         == ObjectiveCategory.WORK_TIME_CONTRACT
                     )
+                    del out[i]
+        assert len(out) == 0
