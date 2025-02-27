@@ -11,12 +11,11 @@ from shared.schemas import (
     Constraints,
     ConstraintSeq,
     ConstraintSum,
-    EngineInputs,
+    EngineInputsAugmented,
     Request,
     RequestStatus,
 )
 
-from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
 from engine_to_core_service.build_breaches import _parse_breaches_engine
@@ -26,7 +25,7 @@ class TestConstraintSeq:
     # pylint: disable=too-many-branches
     def test_constraint_seq_hard(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_seq_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -35,7 +34,7 @@ class TestConstraintSeq:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputs], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_seq_with_expected_output
         engine_inputs_special_days.cbs_augmented = [cba]
@@ -142,7 +141,7 @@ class TestConstraintSeq:
     # pylint: disable=too-many-locals, too-many-branches
     def test_constraint_seq_soft(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_seq_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -151,7 +150,7 @@ class TestConstraintSeq:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputs], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_seq_with_expected_output
         cba_soft = deepcopy(cba)
@@ -258,10 +257,11 @@ class TestConstraintSeq:
         else:
             assert False
 
-    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    # pylint: disable=too-many-locals, too-many-branches, too-many-statements,
+    # pylint: disable=too-many-arguments
     def test_constraint_seq_hard_soft_conflict(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_seq_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -271,7 +271,7 @@ class TestConstraintSeq:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -304,7 +304,9 @@ class TestConstraintSeq:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
-        constraint_soft.penalty = penalties.user_constraint.seq.soft
+        constraint_soft.penalty = (
+            engine_inputs_special_days.penalties.user_constraint.seq.soft
+        )
 
         if constraint.operator in [
             ConstraintOperator.LESS_THAN_OR_EQUAL,
@@ -425,7 +427,7 @@ class TestConstraintSeq:
 
         # # Check objective value
         obj_value = 0
-        penalty = penalties.user_constraint.seq.soft
+        penalty = engine_inputs_special_days.penalties.user_constraint.seq.soft
         for breach in breaches:
             nb_a_period = sum(
                 1
@@ -449,9 +451,10 @@ class TestConstraintSeq:
                 )
         assert out.objective_value == obj_value
 
+    # pylint: disable=too-many-arguments
     def test_constraint_seq_hard_hard_conflic_obj_value(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_seq_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -461,7 +464,7 @@ class TestConstraintSeq:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -510,7 +513,7 @@ class TestConstraintSeq:
             engine_inputs_special_days.schedule, out.breaches
         )
         obj_value = 0
-        penalty = penalties.user_constraint.seq.hard
+        penalty = engine_inputs_special_days.penalties.user_constraint.seq.hard
         for breach in breaches:
             nb_a_period = sum(
                 1

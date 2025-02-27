@@ -7,7 +7,7 @@ from shared.schemas import (
     ConstraintOperator,
     ConstraintSum,
     ConstraintType,
-    EngineInputs,
+    EngineInputsAugmented,
     QuickStaffing,
     Schedule,
     Shift,
@@ -18,14 +18,16 @@ from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_engine_constraints import (
     _build_quick_staffing_constraints,
 )
-from core_to_engine_service.penalties import penalties
 from tests.sample_data import test_data_set_1
 
 
 # pylint: disable=too-few-public-methods
 class TestBuildQuickStaffingConstraints:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_quick_staffing_constraints(self, sample_data: EngineInputs) -> None:
+    def test_build_quick_staffing_constraints(
+        self,
+        sample_data: EngineInputsAugmented,
+    ) -> None:
         target = random.randint(1, 3)
 
         shifts: List[Shift] = sample_data.shifts
@@ -52,7 +54,11 @@ class TestBuildQuickStaffingConstraints:
         )
 
         constraints = _build_quick_staffing_constraints(
-            schedule, workers, worker_ids_to_worker_dates, shifts
+            schedule,
+            workers,
+            worker_ids_to_worker_dates,
+            shifts,
+            sample_data.penalties.user_constraint.sum.hard,
         )
 
         assert isinstance(constraints, list)
@@ -73,7 +79,7 @@ class TestBuildQuickStaffingConstraints:
             active=True,
             hard=True,
             priority="high",
-            penalty=penalties.user_constraint.sum.hard,
+            penalty=sample_data.penalties.user_constraint.sum.hard,
             schedule_id=schedule.id,
             constraint_build_id="",
         )

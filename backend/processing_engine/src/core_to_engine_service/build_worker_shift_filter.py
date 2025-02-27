@@ -12,16 +12,15 @@ from shared.schemas import (
     WorkerDates,
 )
 
-from core_to_engine_service.penalties import penalties
 
-
-# pylint: disable=too-many-locals, too-many-branches
+# pylint: disable=too-many-locals, too-many-branches, too-many-arguments
 def build_worker_shift_filters(
     workers: List[Worker],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
     dimensions: List[Dimension],
     attributes: List[Attribute],
+    penalty: int,
 ) -> Tuple[List[Tuple[str, str, str]], int]:
     out: Set[Tuple[str, str, str]] = set()
 
@@ -147,4 +146,4 @@ def build_worker_shift_filters(
 
     # Return the list of unique (worker_id, invalid_shift_id) and
     # (invalid_worker_id, shift_id) tuples
-    return list(out), penalties.configuration_constraint.worker_shift_filter
+    return list(out), penalty

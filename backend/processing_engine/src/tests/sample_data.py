@@ -13,6 +13,7 @@ from shared.schemas import (
     DimEntry,
     DSDSourceType,
     EngineInputs,
+    EngineInputsAugmented,
     Request,
     Schedule,
     ScheduleSolveStatus,
@@ -24,6 +25,9 @@ from shared.schemas import (
     Staffing,
     Worker,
 )
+
+from solve_service.model_config import model_config
+from solve_service.penalties import penalties
 
 # Test data sample definition:
 # Schedule:
@@ -45,7 +49,7 @@ from shared.schemas import (
 
 # pylint: disable=R0801
 @pytest.fixture
-def sample_data_fixture() -> EngineInputs:
+def sample_data_fixture() -> EngineInputsAugmented:
     schedule = Schedule(
         id="sch0",
         team_id="t0",
@@ -248,7 +252,7 @@ def sample_data_fixture() -> EngineInputs:
     requests: List[Request] = []
     wip_assignments: List[Assignment] = []
 
-    return EngineInputs(
+    return EngineInputsAugmented(
         schedule=schedule,
         workers=workers,
         shifts=shifts,
@@ -263,10 +267,12 @@ def sample_data_fixture() -> EngineInputs:
         daily_shift_demands=daily_shift_demands,
         requests=requests,
         wip_assignments=wip_assignments,
+        penalties=penalties,
+        model_config=model_config,
     )
 
 
-def sample_data() -> EngineInputs:
+def sample_data() -> EngineInputsAugmented:
     schedule = Schedule(
         id="sch0",
         team_id="t0",
@@ -469,7 +475,7 @@ def sample_data() -> EngineInputs:
     requests: List[Request] = []
     wip_assignments: List[Assignment] = []
 
-    return EngineInputs(
+    return EngineInputsAugmented(
         schedule=schedule,
         workers=workers,
         shifts=shifts,
@@ -484,11 +490,13 @@ def sample_data() -> EngineInputs:
         daily_shift_demands=daily_shift_demands,
         requests=requests,
         wip_assignments=wip_assignments,
+        penalties=penalties,
+        model_config=model_config,
     )
 
 
 # @pytest.fixture
-def sample_data_astrid_case() -> EngineInputs:
+def sample_data_astrid_case() -> EngineInputsAugmented:
     schedule = Schedule(
         id="sch0",
         team_id="t0",
@@ -620,7 +628,7 @@ def sample_data_astrid_case() -> EngineInputs:
     requests: List[Request] = []
     wip_assignments: List[Assignment] = []
 
-    return EngineInputs(
+    return EngineInputsAugmented(
         schedule=schedule,
         workers=workers,
         shifts=shifts,
@@ -635,6 +643,8 @@ def sample_data_astrid_case() -> EngineInputs:
         daily_shift_demands=daily_shift_demands,
         requests=requests,
         wip_assignments=wip_assignments,
+        penalties=penalties,
+        model_config=model_config,
     )
 
 
@@ -646,13 +656,31 @@ def load_json_from_file(filename: str) -> Dict:
     return data
 
 
-def load_engine_inputs_from_file(filename: str) -> EngineInputs:
+def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
     data_dict = load_json_from_file(filename)
-    return EngineInputs.from_dict(data_dict)
+    ei = EngineInputs.from_dict(data_dict)
+    return EngineInputsAugmented(
+        schedule=ei.schedule,
+        workers=ei.workers,
+        shifts=ei.shifts,
+        shifts_recup_new=ei.shifts_recup_new,
+        link_shifts=ei.link_shifts,
+        dimensions=ei.dimensions,
+        dim_entries=ei.dim_entries,
+        attributes=ei.attributes,
+        as_hist=ei.as_hist,
+        as_wip_fixed=ei.as_wip_fixed,
+        cbs_augmented=ei.cbs_augmented,
+        daily_shift_demands=ei.daily_shift_demands,
+        requests=ei.requests,
+        wip_assignments=ei.wip_assignments,
+        penalties=penalties,
+        model_config=model_config,
+    )
 
 
 @pytest.fixture
-def sample_data_benoit_case_fixture() -> EngineInputs:
+def sample_data_benoit_case_fixture() -> EngineInputsAugmented:
     engine_inputs = load_engine_inputs_from_file("test_data/250117_benoit_case.json")
     # engine_inputs.requests = [
     #     r for r in engine_inputs.requests if r.id != "67893e204c7443695ec41f2b"

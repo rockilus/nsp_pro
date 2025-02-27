@@ -11,7 +11,7 @@ from shared.schemas import (
     ConstraintSeq,
     ConstraintSum,
     ConstraintType,
-    EngineInputs,
+    EngineInputsAugmented,
 )
 
 from core_to_engine_service.build_dates import (
@@ -25,15 +25,14 @@ from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
-from core_to_engine_service.penalties import penalties
 
 
 # pylint: disable=R0801, too-few-public-methods
 class TestParseConstraints:
     @pytest.fixture
     def run_parse_constraints(
-        self, engine_inputs_special_days: EngineInputs
-    ) -> Callable[[EngineInputs], Constraints]:
+        self, engine_inputs_special_days: EngineInputsAugmented
+    ) -> Callable[[EngineInputsAugmented], Constraints]:
         dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
             engine_inputs_special_days.workers,
             engine_inputs_special_days.dimensions,
@@ -72,12 +71,12 @@ class TestParseConstraints:
             worker_ids_to_worker_dates,
             engine_inputs_special_days.shifts,
             dim_to_attr_value_to_shift,
-            penalties,
+            engine_inputs_special_days.penalties,
         )
 
     def test_parse_constraints(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         constraint_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -86,7 +85,7 @@ class TestParseConstraints:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_parse_constraints: Callable[[EngineInputs], Constraints],
+        run_parse_constraints: Callable[[EngineInputsAugmented], Constraints],
     ) -> None:
         cba, expected_output = constraint_with_expected_output
         engine_inputs_special_days.cbs_augmented = [cba]

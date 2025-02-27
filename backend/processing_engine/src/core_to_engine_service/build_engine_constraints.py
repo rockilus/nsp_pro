@@ -8,13 +8,12 @@ from shared.schemas import (
     Constraints,
     ConstraintSum,
     ConstraintType,
+    Penalties,
     Schedule,
     Shift,
     Worker,
     WorkerDates,
 )
-
-from core_to_engine_service.penalties import penalties
 
 
 # pylint: disable=too-many-arguments, R0801
@@ -30,6 +29,7 @@ def build_engine_constraints(
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
     dim_to_attr_value_to_shift: Dict,
+    penalties: Penalties,
 ) -> Constraints:
     constraints = parse_constraints(
         cbs_augmented,
@@ -46,7 +46,11 @@ def build_engine_constraints(
         penalties,
     )
     constraints.sum += _build_quick_staffing_constraints(
-        schedule, workers, worker_ids_to_worker_dates, shifts
+        schedule,
+        workers,
+        worker_ids_to_worker_dates,
+        shifts,
+        penalties.user_constraint.sum.hard,
     )
     return constraints
 
@@ -56,6 +60,7 @@ def _build_quick_staffing_constraints(
     workers: List[Worker],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts: List[Shift],
+    penalty: int,
 ) -> List[ConstraintSum]:
     out: List[ConstraintSum] = []
     for qs in schedule.quick_staffings:
@@ -80,7 +85,7 @@ def _build_quick_staffing_constraints(
                 active=True,
                 hard=True,
                 priority="high",
-                penalty=penalties.user_constraint.sum.hard,
+                penalty=penalty,
                 schedule_id=schedule.id,
                 constraint_build_id="",
             )

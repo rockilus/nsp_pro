@@ -7,6 +7,8 @@ from shared.schemas import EngineInputs, EngineOutputs
 from core_to_engine_service import core_to_engine_inputs
 from engine import Engine
 from engine_to_core_service import engine_to_core
+from solve_service.model_config import model_config
+from solve_service.penalties import penalties
 
 
 # pylint: disable=too-many-locals
@@ -31,6 +33,8 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
         engine_inputs.daily_shift_demands,
         engine_inputs.requests,
         engine_inputs.wip_assignments,
+        penalties,
+        model_config,
     )
     end_time_core_to_engine = time.time()
     start_time_engine = time.time()

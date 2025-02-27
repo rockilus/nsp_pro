@@ -8,7 +8,7 @@ from shared.schemas import (
     Constraints,
     DailyShiftDemand,
     DSDSourceType,
-    EngineInputs,
+    EngineInputsAugmented,
     Request,
     RequestStatus,
     Schedule,
@@ -20,7 +20,6 @@ from shared.schemas import (
     Worker,
 )
 
-from core_to_engine_service.penalties import penalties
 from engine import Assignment
 from engine import Inputs as InputsEngine
 from engine import Outputs
@@ -38,7 +37,7 @@ from tests.sample_data import test_data_set_2
 class TestRequest:
     # pylint: disable=redefined-outer-name
     def test_request_one_day_positive_hard(
-        self, sample_data_fixture: EngineInputs  # noqa: F811
+        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
     ) -> None:
         shifts: List[Shift] = sample_data_fixture.shifts
         target_shift = shifts[0]
@@ -82,7 +81,7 @@ class TestRequest:
 
     # pylint: disable=redefined-outer-name
     def test_request_one_day_positive_soft(
-        self, sample_data_fixture: EngineInputs  # noqa: F811
+        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
     ) -> None:
         shifts: List[Shift] = sample_data_fixture.shifts
         target_shift = shifts[0]
@@ -125,7 +124,9 @@ class TestRequest:
         assert a_target is not None
 
     @pytest.mark.parametrize("sample_data", test_data_set_2)
-    def test_request_one_day_negative_hard(self, sample_data: EngineInputs) -> None:
+    def test_request_one_day_negative_hard(
+        self, sample_data: EngineInputsAugmented
+    ) -> None:
         shifts: List[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
@@ -167,7 +168,9 @@ class TestRequest:
         assert a_target is None
 
     @pytest.mark.parametrize("sample_data", test_data_set_2)
-    def test_request_date_range_positive_hard(self, sample_data: EngineInputs) -> None:
+    def test_request_date_range_positive_hard(
+        self, sample_data: EngineInputsAugmented
+    ) -> None:
         schedule: Schedule = sample_data.schedule
 
         dates_campaign = [
@@ -246,7 +249,8 @@ class TestRequest:
 
     # pylint: disable=redefined-outer-name
     def test_all_requests(
-        self, sample_data_benoit_case_fixture: EngineInputs  # noqa: F811
+        self,
+        sample_data_benoit_case_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         outputs = engine_solve_engine_inputs(sample_data_benoit_case_fixture)
 
@@ -284,9 +288,9 @@ class TestRequest:
     # pylint: disable=too-many-locals
     def test_request_hard_soft_conflict(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -374,14 +378,14 @@ class TestRequest:
             assert all(v in request_soft_engine.assignments for v in b_vars)
 
         # # # Check objective value
-        penalty = penalties.user_constraint.request.soft
+        penalty = engine_inputs_special_days.penalties.user_constraint.request.soft
         assert out.objective_value == penalty * len(breaches)
 
     def test_request_hard_hard_conflict(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -441,5 +445,5 @@ class TestRequest:
         breaches = _parse_breaches_engine(
             engine_inputs_special_days.schedule, out.breaches
         )
-        penalty = penalties.user_constraint.request.hard
+        penalty = engine_inputs_special_days.penalties.user_constraint.request.hard
         assert out.objective_value == penalty * len(breaches)

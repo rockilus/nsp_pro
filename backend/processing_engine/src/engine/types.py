@@ -4,38 +4,7 @@ from enum import Enum
 from typing import Dict, List, Tuple
 
 from ortools.sat.python import cp_model  # type: ignore
-from shared.schemas import Constraints
-
-##############################
-# Model Config
-##############################
-
-
-class SolveStrategy(Enum):
-    HARD_TO_SOFT = 0
-    SEQUENTIAL = 1
-
-
-@dataclass
-class SystemConstraints:
-    weekly_target_work_time: bool
-    weekly_target_worktime_tolerance: float
-    monthly_target_nb_duties: bool
-    mthly_target_nb_duty_tolerance: float
-    special_days_target_nb_duties: bool
-
-
-@dataclass
-class SolverParams:
-    max_time_in_seconds: int
-    solve_strategy: SolveStrategy
-
-
-@dataclass
-class ModelConfig:
-    solver_params: SolverParams
-    system_constraints: SystemConstraints
-
+from shared.schemas import Constraints, ModelConfig
 
 ##############################
 # Inputs

@@ -1,14 +1,50 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import Dict, List
 
 from shared.schemas.schemas.attribute import Attribute
-from shared.schemas.schemas.constraint import ConstraintBuildAugmented
+from shared.schemas.schemas.constraint import ConstraintBuildAugmented, Penalties
 from shared.schemas.schemas.coverage import DailyShiftDemand
 from shared.schemas.schemas.dimension import Dimension, DimEntry
 from shared.schemas.schemas.request import Request, RequestAugmented
 from shared.schemas.schemas.schedule import Assignment, Breach, Schedule
 from shared.schemas.schemas.shift import LinkShift, Shift
 from shared.schemas.schemas.worker import Worker
+
+##############################
+# Model Config
+##############################
+
+
+class SolveStrategy(Enum):
+    HARD_TO_SOFT = 0
+    SEQUENTIAL = 1
+
+
+@dataclass
+class SystemConstraints:
+    weekly_target_work_time: bool
+    weekly_target_worktime_tolerance: float
+    monthly_target_nb_duties: bool
+    mthly_target_nb_duty_tolerance: float
+    special_days_target_nb_duties: bool
+
+
+@dataclass
+class SolverParams:
+    max_time_in_seconds: int
+    solve_strategy: SolveStrategy
+
+
+@dataclass
+class ModelConfig:
+    solver_params: SolverParams
+    system_constraints: SystemConstraints
+
+
+##############################
+# Inputs
+##############################
 
 
 # pylint: disable=too-many-instance-attributes
@@ -86,6 +122,12 @@ class EngineInputs:
                 for assignment in data["wip_assignments"]
             ],
         )
+
+
+@dataclass
+class EngineInputsAugmented(EngineInputs):
+    penalties: Penalties
+    model_config: ModelConfig
 
 
 @dataclass
