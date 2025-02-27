@@ -10,6 +10,11 @@ from pydantic_settings import BaseSettings
 
 # Step 1: Define your Pydantic Config Class
 class AppConfig(BaseSettings):
+    environment: str = Field(
+        "development",
+        description="Environment in which the application is running",
+        pattern=r"^(development|production)$",
+    )
     redis_url: str = Field(..., description="Redis connection URL")
     result_backend: str = Field(..., description="Redis URL for result backend")
     log_level: str = Field(
@@ -53,14 +58,17 @@ def initialize_environment() -> AppConfig:
     environment = os.getenv(
         "ENVIRONMENT", "development"
     ).lower()  # Default to development
-    # pytest_mode = os.getenv("PYTEST_RUNNING", "false").lower() == "true"
+    pytest_mode = os.getenv("PYTEST_VERSION", "false").lower() != "false"
 
-    if environment == "production":
+    print(f"Environment: {environment}")
+
+    if environment == "production" and not pytest_mode:
         print("Running in production mode.")
 
         region = "eu-west-3"
 
         required_env_vars = [
+            "ENVIRONMENT",
             "API_DOMAIN",
             "API_PORT",
             "UVICORN_RELOAD",

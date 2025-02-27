@@ -8,6 +8,8 @@ from shared.schemas import (
     SystemConstraints,
 )
 
+from config import config
+
 # for key, value in os.environ.items():
 #     print(f"{key}: {value}")
 
@@ -15,12 +17,21 @@ pytest_mode = os.getenv("PYTEST_VERSION", "false").lower() != "false"
 github_actions_mode = os.getenv("GITHUB_ACTIONS", "false").lower() == "true"
 test_mode = pytest_mode or github_actions_mode
 
+print(f"environment: {config.environment}")
 print(f"pytest_mode: {pytest_mode}")
 print(f"github_actions_mode: {github_actions_mode}")
 
+cpu_count = os.cpu_count() or 1
+
+num_search_workers = 2
+if pytest_mode or config.environment == "development":
+    num_search_workers = cpu_count
+print(f"num_search_workers: {num_search_workers}")
+
 model_config = ModelConfig(
     solver_params=SolverParams(
-        max_time_in_seconds=90 if github_actions_mode else 60,
+        max_time_in_seconds=60 if github_actions_mode else 30,
+        num_search_workers=num_search_workers,
         solve_strategy=SolveStrategy.HARD_TO_SOFT,
     ),
     configuration_constraints=ConfigurationConstraints(work_loads=False),
