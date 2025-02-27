@@ -444,7 +444,7 @@ def model_config_fix() -> ModelConfig:
 # EngineInputs
 # pylint: disable=too-many-arguments
 @pytest.fixture
-def engine_inputs_special_days(
+def engine_inputs(
     schedule,  # noqa: F811
     workers_10: List[Worker],  # noqa: F811
     shifts_3n_2d: List[Shift],  # noqa: F811

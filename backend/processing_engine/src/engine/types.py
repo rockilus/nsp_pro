@@ -109,7 +109,7 @@ class GroupsAssignmentsDurationsTargetConstraint:
 
 @dataclass
 class ConfigurationConstraintInputs:
-    work_loads: WorkLoads
+    work_loads: WorkLoads | None
     shift_demands: List[ShiftDemand]
     requests: List[Request]
     duty_recup_pairs: List[

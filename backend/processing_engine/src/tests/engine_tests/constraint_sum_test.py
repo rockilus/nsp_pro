@@ -101,7 +101,7 @@ class TestConstraintSumQuickStaffing:
 class TestConstraintSum:
     def test_constraint_sum_hard(
         self,
-        engine_inputs_special_days: EngineInputsAugmented,
+        engine_inputs: EngineInputsAugmented,
         constraint_sum_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -113,9 +113,9 @@ class TestConstraintSum:
         run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_sum_with_expected_output
-        engine_inputs_special_days.cbs_augmented = [cba]
+        engine_inputs.cbs_augmented = [cba]
 
-        out = run_engine_solve_from_engine_inputs(engine_inputs_special_days)
+        out = run_engine_solve_from_engine_inputs(engine_inputs)
 
         if isinstance(constraint, ConstraintSum):
             for cstr_vars in constraint.constraint_variables:
@@ -143,7 +143,7 @@ class TestConstraintSum:
 
     def test_constraint_sum_soft(
         self,
-        engine_inputs_special_days: EngineInputsAugmented,
+        engine_inputs: EngineInputsAugmented,
         constraint_sum_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -157,9 +157,9 @@ class TestConstraintSum:
         cba, constraint = constraint_sum_with_expected_output
         cba_soft = deepcopy(cba)
         cba_soft.hard = False
-        engine_inputs_special_days.cbs_augmented = [cba_soft]
+        engine_inputs.cbs_augmented = [cba_soft]
 
-        out = run_engine_solve_from_engine_inputs(engine_inputs_special_days)
+        out = run_engine_solve_from_engine_inputs(engine_inputs)
 
         if isinstance(constraint, ConstraintSum):
             for cstr_vars in constraint.constraint_variables:
@@ -188,7 +188,7 @@ class TestConstraintSum:
     # pylint: disable=too-many-locals, too-many-branches, too-many-arguments
     def test_constraint_sum_hard_soft_conflict(
         self,
-        engine_inputs_special_days: EngineInputsAugmented,
+        engine_inputs: EngineInputsAugmented,
         constraint_sum_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -203,8 +203,8 @@ class TestConstraintSum:
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         cba, constraint_hard = constraint_sum_with_expected_output
-        engine_inputs_special_days.cbs_augmented = [cba]
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
+        engine_inputs.cbs_augmented = [cba]
+        inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
         assert len(inputs.user_constraints.sum) == 1
         assert isinstance(inputs.user_constraints.sum[0], ConstraintSum)
@@ -213,9 +213,7 @@ class TestConstraintSum:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
-        constraint_soft.penalty = (
-            engine_inputs_special_days.penalties.user_constraint.sum.soft
-        )
+        constraint_soft.penalty = engine_inputs.penalties.user_constraint.sum.soft
 
         if constraint.operator in [
             ConstraintOperator.LESS_THAN_OR_EQUAL,
@@ -257,9 +255,7 @@ class TestConstraintSum:
             assert False
 
         # Check breach soft constraint
-        breaches = _parse_breaches_engine(
-            engine_inputs_special_days.schedule, out.breaches
-        )
+        breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
         assert len(breaches) == len(constraint_soft.constraint_variables)
         for breach in breaches:
             assert breach.objective_id == constraint_soft.id
@@ -271,7 +267,7 @@ class TestConstraintSum:
 
         # Check objective value
         obj_value = 0
-        penalty = engine_inputs_special_days.penalties.user_constraint.sum.soft
+        penalty = engine_inputs.penalties.user_constraint.sum.soft
         for breach in breaches:
             nb_a_period = sum(
                 1
@@ -297,7 +293,7 @@ class TestConstraintSum:
 
     def test_constraint_sum_hard_hard_conflic_obj_value(
         self,
-        engine_inputs_special_days: EngineInputsAugmented,
+        engine_inputs: EngineInputsAugmented,
         constraint_sum_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -312,8 +308,8 @@ class TestConstraintSum:
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         cba, _ = constraint_sum_with_expected_output
-        engine_inputs_special_days.cbs_augmented = [cba]
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
+        engine_inputs.cbs_augmented = [cba]
+        inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
         assert len(inputs.user_constraints.sum) == 1
         assert isinstance(inputs.user_constraints.sum[0], ConstraintSum)
@@ -338,11 +334,9 @@ class TestConstraintSum:
         out = run_engine_solve(inputs)
 
         # Check objective value
-        breaches = _parse_breaches_engine(
-            engine_inputs_special_days.schedule, out.breaches
-        )
+        breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
         obj_value = 0
-        penalty = engine_inputs_special_days.penalties.user_constraint.sum.hard
+        penalty = engine_inputs.penalties.user_constraint.sum.hard
         for breach in breaches:
             nb_a_period = sum(
                 1

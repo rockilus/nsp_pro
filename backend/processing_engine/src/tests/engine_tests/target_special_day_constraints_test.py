@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines
+from copy import deepcopy
 from datetime import date, datetime, timedelta, timezone
 from typing import Callable, List, Tuple
 
@@ -335,6 +336,9 @@ class TestSpecialDayConstraints:
                 )
                 current_date += timedelta(days=1)
 
+        mc_copy = deepcopy(model_config_fix)
+        mc_copy.system_constraints.special_days_target_nb_duties = True
+
         return EngineInputsAugmented(
             schedule=schedule,
             workers=workers,
@@ -351,7 +355,7 @@ class TestSpecialDayConstraints:
             requests=[],
             wip_assignments=[],
             penalties=penalties_fix,
-            model_config=model_config_fix,
+            model_config=mc_copy,
         )
 
     def test_target_special_day_constraints(
@@ -363,8 +367,6 @@ class TestSpecialDayConstraints:
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
-        inputs.model_config.system_constraints.special_days_target_nb_duties = True
-        inputs.model_config.system_constraints.monthly_target_nb_duties = False
 
         out = run_engine_solve(inputs)
         assert out.objective_value == 0
@@ -470,8 +472,6 @@ class TestSpecialDayConstraints:
         engine_inputs_special_days.attributes = attributes
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
-        inputs.model_config.system_constraints.special_days_target_nb_duties = True
-        inputs.model_config.system_constraints.monthly_target_nb_duties = False
 
         out = run_engine_solve(inputs)
 

@@ -288,7 +288,7 @@ class TestRequest:
     # pylint: disable=too-many-locals
     def test_request_hard_soft_conflict(
         self,
-        engine_inputs_special_days: EngineInputsAugmented,
+        engine_inputs: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
             [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
@@ -297,10 +297,10 @@ class TestRequest:
         request_hard = Request(
             id="req_hard",
             team_id="t0",
-            shift_id=engine_inputs_special_days.shifts[0].id,
-            worker_id=engine_inputs_special_days.workers[0].id,
-            start_date=engine_inputs_special_days.schedule.start_date,
-            end_date=engine_inputs_special_days.schedule.start_date,
+            shift_id=engine_inputs.shifts[0].id,
+            worker_id=engine_inputs.workers[0].id,
+            start_date=engine_inputs.schedule.start_date,
+            end_date=engine_inputs.schedule.start_date,
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
@@ -308,17 +308,17 @@ class TestRequest:
         request_soft = Request(
             id="req_soft",
             team_id="t0",
-            shift_id=engine_inputs_special_days.shifts[0].id,
-            worker_id=engine_inputs_special_days.workers[0].id,
-            start_date=engine_inputs_special_days.schedule.start_date,
-            end_date=engine_inputs_special_days.schedule.start_date,
+            shift_id=engine_inputs.shifts[0].id,
+            worker_id=engine_inputs.workers[0].id,
+            start_date=engine_inputs.schedule.start_date,
+            end_date=engine_inputs.schedule.start_date,
             negative=True,
             hard=False,
             status=RequestStatus.PENDING,
         )
-        engine_inputs_special_days.requests = [request_hard, request_soft]
+        engine_inputs.requests = [request_hard, request_soft]
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
+        inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
         assert len(inputs.configuration_constraints.requests) == 2
         assert all(
@@ -365,9 +365,7 @@ class TestRequest:
                 )
 
         # Check breach soft constraint
-        breaches = _parse_breaches_engine(
-            engine_inputs_special_days.schedule, out.breaches
-        )
+        breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
         assert len(breaches) == 1
         for breach in breaches:
             assert breach.objective_id == request_soft.id
@@ -378,12 +376,12 @@ class TestRequest:
             assert all(v in request_soft_engine.assignments for v in b_vars)
 
         # # # Check objective value
-        penalty = engine_inputs_special_days.penalties.user_constraint.request.soft
+        penalty = engine_inputs.penalties.user_constraint.request.soft
         assert out.objective_value == penalty * len(breaches)
 
     def test_request_hard_hard_conflict(
         self,
-        engine_inputs_special_days: EngineInputsAugmented,
+        engine_inputs: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
             [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
@@ -392,10 +390,10 @@ class TestRequest:
         request_hard_1 = Request(
             id="req_hard_1",
             team_id="t0",
-            shift_id=engine_inputs_special_days.shifts[0].id,
-            worker_id=engine_inputs_special_days.workers[0].id,
-            start_date=engine_inputs_special_days.schedule.start_date,
-            end_date=engine_inputs_special_days.schedule.start_date,
+            shift_id=engine_inputs.shifts[0].id,
+            worker_id=engine_inputs.workers[0].id,
+            start_date=engine_inputs.schedule.start_date,
+            end_date=engine_inputs.schedule.start_date,
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
@@ -403,17 +401,17 @@ class TestRequest:
         request_hard_2 = Request(
             id="req_hard_2",
             team_id="t0",
-            shift_id=engine_inputs_special_days.shifts[0].id,
-            worker_id=engine_inputs_special_days.workers[0].id,
-            start_date=engine_inputs_special_days.schedule.start_date,
-            end_date=engine_inputs_special_days.schedule.start_date,
+            shift_id=engine_inputs.shifts[0].id,
+            worker_id=engine_inputs.workers[0].id,
+            start_date=engine_inputs.schedule.start_date,
+            end_date=engine_inputs.schedule.start_date,
             negative=True,
             hard=True,
             status=RequestStatus.PENDING,
         )
-        engine_inputs_special_days.requests = [request_hard_1, request_hard_2]
+        engine_inputs.requests = [request_hard_1, request_hard_2]
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
+        inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
         assert len(inputs.configuration_constraints.requests) == 2
         assert all(
@@ -442,8 +440,6 @@ class TestRequest:
         out = run_engine_solve(inputs)
 
         # Check objective value
-        breaches = _parse_breaches_engine(
-            engine_inputs_special_days.schedule, out.breaches
-        )
-        penalty = engine_inputs_special_days.penalties.user_constraint.request.hard
+        breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
+        penalty = engine_inputs.penalties.user_constraint.request.hard
         assert out.objective_value == penalty * len(breaches)

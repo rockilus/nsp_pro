@@ -239,27 +239,31 @@ class Model:
         self.add_link_shift_constraints(
             inputs.configuration_constraints.link_shifts_pairs
         )
-        self.add_work_time_constraints(
-            inputs.configuration_constraints.work_loads.weekly_work_time_max,
-            False,
-        )
-        self.add_nb_duties_constraints(
-            inputs.configuration_constraints.work_loads.monthly_nb_duties_max
-        )
-        self.add_work_time_constraints(
-            inputs.configuration_constraints.work_loads.weekly_work_time_contractual,
-            True,
-            work_time_hts,
-        )
-        self.add_work_time_constraints(
-            inputs.configuration_constraints.work_loads.weekly_work_time_desired,
-            False,
-            work_time_desired_hts,
-        )
-        self.add_nb_duties_constraints(
-            inputs.configuration_constraints.work_loads.monthly_nb_duties_desired,
-            nb_duty_hts,
-        )
+        if inputs.configuration_constraints.work_loads is not None:
+            self.add_work_time_constraints(
+                inputs.configuration_constraints.work_loads.weekly_work_time_max,
+                False,
+            )
+            self.add_nb_duties_constraints(
+                inputs.configuration_constraints.work_loads.monthly_nb_duties_max
+            )
+            self.add_work_time_constraints(
+                # fmt: off
+                inputs.configuration_constraints.work_loads
+                .weekly_work_time_contractual,
+                # fmt: on
+                True,
+                work_time_hts,
+            )
+            self.add_work_time_constraints(
+                inputs.configuration_constraints.work_loads.weekly_work_time_desired,
+                False,
+                work_time_desired_hts,
+            )
+            self.add_nb_duties_constraints(
+                inputs.configuration_constraints.work_loads.monthly_nb_duties_desired,
+                nb_duty_hts,
+            )
 
         # User constraints:
         self.add_custom_constraints(inputs.user_constraints, constraint_hts)
@@ -452,8 +456,6 @@ class Model:
     def add_target_work_time_constraints(
         self, constraints: List[GroupsAssignmentsDurationsTargetConstraint]
     ) -> None:
-        if not self.model_config.system_constraints.weekly_target_work_time:
-            return
         for constraint in constraints:
             excesses = []
             for assignments, durations, target in zip(
@@ -563,8 +565,6 @@ class Model:
     def add_target_nb_duties_constraints(
         self, constraints: List[GroupsAssignmentsTargetConstraint]
     ) -> None:
-        if not self.model_config.system_constraints.monthly_target_nb_duties:
-            return
         for constraint in constraints:
             excesses = []
             for assignments, target in zip(constraint.assignments, constraint.targets):
@@ -600,8 +600,6 @@ class Model:
     def add_special_days_constraints(
         self, constraints: List[GroupsAssignmentsTargetConstraint]
     ) -> None:
-        if not self.model_config.system_constraints.special_days_target_nb_duties:
-            return
         for constraint in constraints:
             excesses = []
             for assignments, target in zip(constraint.assignments, constraint.targets):

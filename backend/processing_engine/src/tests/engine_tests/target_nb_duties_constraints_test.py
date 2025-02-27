@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import date, datetime, timedelta
 from typing import Callable, List, Tuple
 
@@ -36,7 +37,7 @@ from engine_to_core_service.build_breaches import _parse_breaches_engine
 class TestTargetWorkTimeConstraints:
     # pylint: disable=R0801
     @pytest.fixture
-    def engine_inputs_work_times(
+    def engine_inputs_nb_duties(
         self, penalties_fix: Penalties, model_config_fix: ModelConfig
     ) -> EngineInputsAugmented:
         schedule = Schedule(
@@ -309,6 +310,9 @@ class TestTargetWorkTimeConstraints:
                 )
                 current_date += timedelta(days=1)
 
+        mc_copy = deepcopy(model_config_fix)
+        mc_copy.system_constraints.monthly_target_nb_duties = True
+
         return EngineInputsAugmented(
             schedule=schedule,
             workers=workers,
@@ -325,13 +329,13 @@ class TestTargetWorkTimeConstraints:
             requests=[],
             wip_assignments=[],
             penalties=penalties_fix,
-            model_config=model_config_fix,
+            model_config=mc_copy,
         )
 
     # pylint: disable=too-many-locals, R0801
     def test_target_nb_duties_constraints_perfect_match(
         self,
-        engine_inputs_work_times: EngineInputsAugmented,
+        engine_inputs_nb_duties: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
             [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
@@ -340,12 +344,11 @@ class TestTargetWorkTimeConstraints:
         # 16 workers
         # 4 duty shifts, or 112 duty shifts per month
         # 7 per worker per month
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_work_times)
-        inputs.model_config.system_constraints.monthly_target_nb_duties = True
+        inputs, _ = run_core_to_engine_inputs(engine_inputs_nb_duties)
 
         out = run_engine_solve(inputs)
 
-        schedule = engine_inputs_work_times.schedule
+        schedule = engine_inputs_nb_duties.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -354,15 +357,15 @@ class TestTargetWorkTimeConstraints:
 
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
         w_to_nb_duties = calculate_worker_nb_duties(
-            engine_inputs_work_times.schedule,
-            engine_inputs_work_times.workers,
-            engine_inputs_work_times.shifts,
-            engine_inputs_work_times.requests,
-            engine_inputs_work_times.daily_shift_demands,
+            engine_inputs_nb_duties.schedule,
+            engine_inputs_nb_duties.workers,
+            engine_inputs_nb_duties.shifts,
+            engine_inputs_nb_duties.requests,
+            engine_inputs_nb_duties.daily_shift_demands,
             periods_monthly,
         )
         breaches = _parse_breaches_engine(
-            engine_inputs_work_times.schedule, out.breaches
+            engine_inputs_nb_duties.schedule, out.breaches
         )
 
         assert out.objective_value == 0
@@ -370,11 +373,11 @@ class TestTargetWorkTimeConstraints:
 
         shifts_duty_ids = [
             s.id
-            for s in engine_inputs_work_times.shifts
+            for s in engine_inputs_nb_duties.shifts
             if s.shift_type == ShiftType.DUTY
         ]
 
-        for w in engine_inputs_work_times.workers:
+        for w in engine_inputs_nb_duties.workers:
             assignments_duty_worker = [
                 a
                 for a in out.assignments
@@ -385,7 +388,7 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_nb_duties_constraints_no_perfect_match(
         self,
-        engine_inputs_work_times: EngineInputsAugmented,
+        engine_inputs_nb_duties: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
             [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
@@ -394,14 +397,13 @@ class TestTargetWorkTimeConstraints:
         # 12 workers
         # 4 duty shifts, or 112 duty shifts per month
         # 9.3 per worker per month
-        engine_inputs_work_times.workers = engine_inputs_work_times.workers[:12]
+        engine_inputs_nb_duties.workers = engine_inputs_nb_duties.workers[:12]
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_work_times)
-        inputs.model_config.system_constraints.monthly_target_nb_duties = True
+        inputs, _ = run_core_to_engine_inputs(engine_inputs_nb_duties)
 
         out = run_engine_solve(inputs)
 
-        schedule = engine_inputs_work_times.schedule
+        schedule = engine_inputs_nb_duties.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -410,15 +412,15 @@ class TestTargetWorkTimeConstraints:
 
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
         w_to_nb_duties = calculate_worker_nb_duties(
-            engine_inputs_work_times.schedule,
-            engine_inputs_work_times.workers,
-            engine_inputs_work_times.shifts,
-            engine_inputs_work_times.requests,
-            engine_inputs_work_times.daily_shift_demands,
+            engine_inputs_nb_duties.schedule,
+            engine_inputs_nb_duties.workers,
+            engine_inputs_nb_duties.shifts,
+            engine_inputs_nb_duties.requests,
+            engine_inputs_nb_duties.daily_shift_demands,
             periods_monthly,
         )
         breaches = _parse_breaches_engine(
-            engine_inputs_work_times.schedule, out.breaches
+            engine_inputs_nb_duties.schedule, out.breaches
         )
 
         assert out.objective_value == 0
@@ -426,11 +428,11 @@ class TestTargetWorkTimeConstraints:
 
         shifts_duty_ids = [
             s.id
-            for s in engine_inputs_work_times.shifts
+            for s in engine_inputs_nb_duties.shifts
             if s.shift_type == ShiftType.DUTY
         ]
 
-        for w in engine_inputs_work_times.workers:
+        for w in engine_inputs_nb_duties.workers:
             assignments_duty_worker = [
                 a
                 for a in out.assignments
@@ -442,7 +444,7 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_nb_duties_constraints_different_desires(
         self,
-        engine_inputs_work_times: EngineInputsAugmented,
+        engine_inputs_nb_duties: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
             [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
@@ -453,19 +455,19 @@ class TestTargetWorkTimeConstraints:
         # 4 duty shifts, or 112 duty shifts per month
         # 9.3 per worker per month for the 12 workers, 0 for the 4 workers
 
-        workers = engine_inputs_work_times.workers
+        workers = engine_inputs_nb_duties.workers
         for i in range(12):
             workers[i].duties_per_month = 80
         for i in range(12, 16):
             workers[i].duties_per_month = 0
-        engine_inputs_work_times.workers = workers
+        engine_inputs_nb_duties.workers = workers
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_work_times)
-        inputs.model_config.system_constraints.monthly_target_nb_duties = True
+        engine_inputs_nb_duties.model_config.configuration_constraints.work_loads = True
+        inputs, _ = run_core_to_engine_inputs(engine_inputs_nb_duties)
 
         out = run_engine_solve(inputs)
 
-        schedule = engine_inputs_work_times.schedule
+        schedule = engine_inputs_nb_duties.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -474,15 +476,15 @@ class TestTargetWorkTimeConstraints:
 
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
         w_to_work_times = calculate_worker_nb_duties(
-            engine_inputs_work_times.schedule,
-            engine_inputs_work_times.workers,
-            engine_inputs_work_times.shifts,
-            engine_inputs_work_times.requests,
-            engine_inputs_work_times.daily_shift_demands,
+            engine_inputs_nb_duties.schedule,
+            engine_inputs_nb_duties.workers,
+            engine_inputs_nb_duties.shifts,
+            engine_inputs_nb_duties.requests,
+            engine_inputs_nb_duties.daily_shift_demands,
             periods_monthly,
         )
         breaches = _parse_breaches_engine(
-            engine_inputs_work_times.schedule, out.breaches
+            engine_inputs_nb_duties.schedule, out.breaches
         )
 
         assert out.objective_value == 0
@@ -490,11 +492,11 @@ class TestTargetWorkTimeConstraints:
 
         shift_duty_ids = [
             s.id
-            for s in engine_inputs_work_times.shifts
+            for s in engine_inputs_nb_duties.shifts
             if s.shift_type == ShiftType.DUTY
         ]
 
-        for w in engine_inputs_work_times.workers:
+        for w in engine_inputs_nb_duties.workers:
             assignments_duty_worker = [
                 a
                 for a in out.assignments
@@ -505,7 +507,7 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_nb_duties_constraints_w0_filtered_out(
         self,
-        engine_inputs_work_times: EngineInputsAugmented,
+        engine_inputs_nb_duties: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
             [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
@@ -514,8 +516,8 @@ class TestTargetWorkTimeConstraints:
         # 16 workers, one filtered out of all shifts
         # 4 duty shifts, or 112 duty shifts per month
         # 7.5 per worker per month
-        workers = engine_inputs_work_times.workers
-        shifts = engine_inputs_work_times.shifts
+        workers = engine_inputs_nb_duties.workers
+        shifts = engine_inputs_nb_duties.shifts
 
         worker_excluded = workers[0]
 
@@ -554,16 +556,15 @@ class TestTargetWorkTimeConstraints:
             for i, s in enumerate(shifts)
         ]
 
-        engine_inputs_work_times.dimensions = dimensions
-        engine_inputs_work_times.dim_entries = dim_entries
-        engine_inputs_work_times.attributes = attributes
+        engine_inputs_nb_duties.dimensions = dimensions
+        engine_inputs_nb_duties.dim_entries = dim_entries
+        engine_inputs_nb_duties.attributes = attributes
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_work_times)
-        inputs.model_config.system_constraints.monthly_target_nb_duties = True
+        inputs, _ = run_core_to_engine_inputs(engine_inputs_nb_duties)
 
         out = run_engine_solve(inputs)
 
-        schedule = engine_inputs_work_times.schedule
+        schedule = engine_inputs_nb_duties.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -572,25 +573,25 @@ class TestTargetWorkTimeConstraints:
 
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
         w_to_nb_duties = calculate_worker_nb_duties(
-            engine_inputs_work_times.schedule,
-            engine_inputs_work_times.workers,
-            engine_inputs_work_times.shifts,
-            engine_inputs_work_times.requests,
-            engine_inputs_work_times.daily_shift_demands,
+            engine_inputs_nb_duties.schedule,
+            engine_inputs_nb_duties.workers,
+            engine_inputs_nb_duties.shifts,
+            engine_inputs_nb_duties.requests,
+            engine_inputs_nb_duties.daily_shift_demands,
             periods_monthly,
         )
         breaches = _parse_breaches_engine(
-            engine_inputs_work_times.schedule, out.breaches
+            engine_inputs_nb_duties.schedule, out.breaches
         )
 
         shift_duty_ids = [
             s.id
-            for s in engine_inputs_work_times.shifts
+            for s in engine_inputs_nb_duties.shifts
             if s.shift_type == ShiftType.DUTY
         ]
 
         deltas = []
-        for w in engine_inputs_work_times.workers:
+        for w in engine_inputs_nb_duties.workers:
             assignments_duty_worker = [
                 a
                 for a in out.assignments
@@ -615,7 +616,7 @@ class TestTargetWorkTimeConstraints:
 
         objective_value_expected = (
             # fmt: off
-            engine_inputs_work_times.penalties.system_constraint
+            engine_inputs_nb_duties.penalties.system_constraint
             .monthly_target_nb_duties
             # fmt: on
             * max_excess
