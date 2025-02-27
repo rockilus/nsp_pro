@@ -59,10 +59,12 @@ def initialize_environment() -> AppConfig:
         "ENVIRONMENT", "development"
     ).lower()  # Default to development
     pytest_mode = os.getenv("PYTEST_VERSION", "false").lower() != "false"
+    github_actions_mode = os.getenv("GITHUB_ACTIONS", "false").lower() == "true"
+    test_mode = pytest_mode or github_actions_mode
 
     print(f"Environment: {environment}")
 
-    if environment == "production" and not pytest_mode:
+    if environment == "production" and not test_mode:
         print("Running in production mode.")
 
         region = "eu-west-3"
