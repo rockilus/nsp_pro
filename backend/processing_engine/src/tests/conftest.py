@@ -14,7 +14,6 @@ from shared.schemas import (
     ConstraintFil,
     ConstraintOperator,
     ConstraintOrd,
-    Constraints,
     ConstraintSeq,
     ConstraintSum,
     ConstraintType,
@@ -43,6 +42,7 @@ from shared.schemas import (
 from core_to_engine_service import core_to_engine_inputs
 from core_to_engine_service.build_periods import build_periods_weekly
 from engine import Inputs as InputsEngine
+from engine import ProcessingCache
 from engine.engine import Engine, Outputs
 from solve_service.model_config import model_config
 from solve_service.penalties import penalties
@@ -444,7 +444,7 @@ def model_config_fix() -> ModelConfig:
 # EngineInputs
 # pylint: disable=too-many-arguments
 @pytest.fixture
-def engine_inputs_special_days(
+def engine_inputs(
     schedule,  # noqa: F811
     workers_10: List[Worker],  # noqa: F811
     shifts_3n_2d: List[Shift],  # noqa: F811
@@ -2123,11 +2123,11 @@ def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputsAugmented], O
 
 @pytest.fixture
 def run_core_to_engine_inputs() -> (
-    Callable[[EngineInputsAugmented], Tuple[InputsEngine, Constraints]]
+    Callable[[EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]]
 ):
     def _run_core_to_engine_inputs(
         engine_inputs: EngineInputsAugmented,
-    ) -> Tuple[InputsEngine, Constraints]:
+    ) -> Tuple[InputsEngine, ProcessingCache]:
         return core_to_engine_inputs(
             engine_inputs.schedule,
             engine_inputs.workers,

@@ -44,6 +44,7 @@ from shared.schemas.schemas.dimension import (
     DimEntry,
 )
 from shared.schemas.schemas.engine import (
+    ConfigurationConstraints,
     EngineInputs,
     EngineInputsAugmented,
     EngineOutputs,
@@ -134,6 +135,7 @@ __all__ = [
     "DimensionEntryType",
     "DimensionType",
     "DimEntry",
+    "ConfigurationConstraints",
     "EngineInputs",
     "EngineInputsAugmented",
     "EngineOutputs",

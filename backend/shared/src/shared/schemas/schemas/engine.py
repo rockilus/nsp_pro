@@ -31,6 +31,11 @@ class SystemConstraints:
 
 
 @dataclass
+class ConfigurationConstraints:
+    work_loads: bool
+
+
+@dataclass
 class SolverParams:
     max_time_in_seconds: int
     solve_strategy: SolveStrategy
@@ -40,6 +45,7 @@ class SolverParams:
 class ModelConfig:
     solver_params: SolverParams
     system_constraints: SystemConstraints
+    configuration_constraints: ConfigurationConstraints
 
 
 ##############################
@@ -128,6 +134,11 @@ class EngineInputs:
 class EngineInputsAugmented(EngineInputs):
     penalties: Penalties
     model_config: ModelConfig
+
+
+##############################
+# Outputs
+##############################
 
 
 @dataclass

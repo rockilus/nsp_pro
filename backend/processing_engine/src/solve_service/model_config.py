@@ -1,6 +1,12 @@
 import os
 
-from shared.schemas import ModelConfig, SolverParams, SolveStrategy, SystemConstraints
+from shared.schemas import (
+    ConfigurationConstraints,
+    ModelConfig,
+    SolverParams,
+    SolveStrategy,
+    SystemConstraints,
+)
 
 # for key, value in os.environ.items():
 #     print(f"{key}: {value}")
@@ -14,9 +20,10 @@ print(f"github_actions_mode: {github_actions_mode}")
 
 model_config = ModelConfig(
     solver_params=SolverParams(
-        max_time_in_seconds=90 if github_actions_mode else 30,
+        max_time_in_seconds=90 if github_actions_mode else 60,
         solve_strategy=SolveStrategy.HARD_TO_SOFT,
     ),
+    configuration_constraints=ConfigurationConstraints(work_loads=False),
     system_constraints=SystemConstraints(
         weekly_target_work_time=not test_mode,
         weekly_target_worktime_tolerance=0.2 if not test_mode else 0.0,
