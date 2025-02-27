@@ -28,7 +28,7 @@ from engine import VarName as VarNameEngine
 
 
 # pylint: disable=too-many-arguments
-def build_breaches(
+def build_breaches_model(
     schedule: Schedule,
     workers: List[Worker],
     shifts: List[Shift],
@@ -599,3 +599,13 @@ def _build_description_duty_recup_breach(
         duty_var.date.strftime("%b %d"),
     ]
     return " ".join(string_list)
+
+
+# class Breach:
+#     id: str
+#     schedule_id: str
+#     objective_id: str | None
+#     objective_category: ObjectiveCategory
+#     variables: List[Variable]
+#     description: str
+#     hard_to_soft: bool | None

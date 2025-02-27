@@ -8,7 +8,6 @@ from shared.schemas import (
     ConstraintFil,
     ConstraintOperator,
     ConstraintOrd,
-    Constraints,
     ConstraintSeq,
     ConstraintSum,
     EngineInputsAugmented,
@@ -17,15 +16,17 @@ from shared.schemas import (
 )
 
 from engine import Inputs as InputsEngine
-from engine import Outputs
-from engine_to_core_service.build_breaches import _parse_breaches_engine
+from engine import Outputs, ProcessingCache
+from engine_to_core_service.build_breaches.build_breaches_model import (
+    _parse_breaches_engine,
+)
 
 
 class TestConstraintSeq:
     # pylint: disable=too-many-branches
     def test_constraint_seq_hard(
         self,
-        engine_inputs_special_days: EngineInputsAugmented,
+        engine_inputs: EngineInputsAugmented,
         constraint_seq_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -37,7 +38,7 @@ class TestConstraintSeq:
         run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_seq_with_expected_output
-        engine_inputs_special_days.cbs_augmented = [cba]
+        engine_inputs.cbs_augmented = [cba]
         request = Request(
             id="req_1",
             team_id="t0",
@@ -49,9 +50,9 @@ class TestConstraintSeq:
             hard=True,
             status=RequestStatus.PENDING,
         )
-        engine_inputs_special_days.requests = [request]
+        engine_inputs.requests = [request]
 
-        out = run_engine_solve_from_engine_inputs(engine_inputs_special_days)
+        out = run_engine_solve_from_engine_inputs(engine_inputs)
 
         # pylint: disable=too-many-nested-blocks
         if isinstance(constraint, ConstraintSeq):
@@ -141,7 +142,7 @@ class TestConstraintSeq:
     # pylint: disable=too-many-locals, too-many-branches
     def test_constraint_seq_soft(
         self,
-        engine_inputs_special_days: EngineInputsAugmented,
+        engine_inputs: EngineInputsAugmented,
         constraint_seq_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -155,7 +156,7 @@ class TestConstraintSeq:
         cba, constraint = constraint_seq_with_expected_output
         cba_soft = deepcopy(cba)
         cba_soft.hard = False
-        engine_inputs_special_days.cbs_augmented = [cba_soft]
+        engine_inputs.cbs_augmented = [cba_soft]
 
         request = Request(
             id="req_1",
@@ -168,9 +169,9 @@ class TestConstraintSeq:
             hard=True,
             status=RequestStatus.PENDING,
         )
-        engine_inputs_special_days.requests = [request]
+        engine_inputs.requests = [request]
 
-        out = run_engine_solve_from_engine_inputs(engine_inputs_special_days)
+        out = run_engine_solve_from_engine_inputs(engine_inputs)
 
         # pylint: disable=too-many-nested-blocks
         if isinstance(constraint, ConstraintSeq):
@@ -261,7 +262,7 @@ class TestConstraintSeq:
     # pylint: disable=too-many-arguments
     def test_constraint_seq_hard_soft_conflict(
         self,
-        engine_inputs_special_days: EngineInputsAugmented,
+        engine_inputs: EngineInputsAugmented,
         constraint_seq_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -271,12 +272,12 @@ class TestConstraintSeq:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         cba, c_fixture = constraint_seq_with_expected_output
-        engine_inputs_special_days.cbs_augmented = [cba]
+        engine_inputs.cbs_augmented = [cba]
 
         request = Request(
             id="req_1",
@@ -289,13 +290,13 @@ class TestConstraintSeq:
             hard=True,
             status=RequestStatus.PENDING,
         )
-        engine_inputs_special_days.requests = [request]
+        engine_inputs.requests = [request]
 
-        for w in engine_inputs_special_days.workers:
+        for w in engine_inputs.workers:
             w.weekly_hours = 80
             w.weekly_hours_desired = 80
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
+        inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
         assert len(inputs.user_constraints.seq) == 1
         assert isinstance(inputs.user_constraints.seq[0], ConstraintSeq)
@@ -304,9 +305,7 @@ class TestConstraintSeq:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
-        constraint_soft.penalty = (
-            engine_inputs_special_days.penalties.user_constraint.seq.soft
-        )
+        constraint_soft.penalty = engine_inputs.penalties.user_constraint.seq.soft
 
         if constraint.operator in [
             ConstraintOperator.LESS_THAN_OR_EQUAL,
@@ -409,9 +408,7 @@ class TestConstraintSeq:
             assert False
 
         # Check breach soft constraint
-        breaches = _parse_breaches_engine(
-            engine_inputs_special_days.schedule, out.breaches
-        )
+        breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
         if constraint_soft.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
             assert len(breaches) == 1
         for breach in breaches:
@@ -427,7 +424,7 @@ class TestConstraintSeq:
 
         # # Check objective value
         obj_value = 0
-        penalty = engine_inputs_special_days.penalties.user_constraint.seq.soft
+        penalty = engine_inputs.penalties.user_constraint.seq.soft
         for breach in breaches:
             nb_a_period = sum(
                 1
@@ -454,7 +451,7 @@ class TestConstraintSeq:
     # pylint: disable=too-many-arguments
     def test_constraint_seq_hard_hard_conflic_obj_value(
         self,
-        engine_inputs_special_days: EngineInputsAugmented,
+        engine_inputs: EngineInputsAugmented,
         constraint_seq_with_expected_output: Tuple[
             ConstraintBuildAugmented,
             ConstraintFai
@@ -464,12 +461,12 @@ class TestConstraintSeq:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         cba, c_fixture = constraint_seq_with_expected_output
-        engine_inputs_special_days.cbs_augmented = [cba]
+        engine_inputs.cbs_augmented = [cba]
 
         request = Request(
             id="req_1",
@@ -482,9 +479,9 @@ class TestConstraintSeq:
             hard=True,
             status=RequestStatus.PENDING,
         )
-        engine_inputs_special_days.requests = [request]
+        engine_inputs.requests = [request]
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
+        inputs, _ = run_core_to_engine_inputs(engine_inputs)
 
         assert len(inputs.user_constraints.seq) == 1
         assert isinstance(inputs.user_constraints.seq[0], ConstraintSeq)
@@ -509,11 +506,9 @@ class TestConstraintSeq:
         out = run_engine_solve(inputs)
 
         # Check objective value
-        breaches = _parse_breaches_engine(
-            engine_inputs_special_days.schedule, out.breaches
-        )
+        breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
         obj_value = 0
-        penalty = engine_inputs_special_days.penalties.user_constraint.seq.hard
+        penalty = engine_inputs.penalties.user_constraint.seq.hard
         for breach in breaches:
             nb_a_period = sum(
                 1

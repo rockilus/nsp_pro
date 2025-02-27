@@ -1,20 +1,15 @@
-# pylint: disable=too-many-lines
 from copy import deepcopy
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 from typing import Callable, List, Tuple
 
 import pytest
 from shared.schemas import (
-    Attribute,
-    AttributeOwnerType,
+    Breach,
     DailyShiftDemand,
-    Dimension,
-    DimensionEntryType,
-    DimensionType,
-    DimEntry,
     DSDSourceType,
     EngineInputsAugmented,
     ModelConfig,
+    ObjectiveCategory,
     Penalties,
     Schedule,
     ScheduleSolveStatus,
@@ -24,35 +19,35 @@ from shared.schemas import (
     ShiftRestType,
     ShiftType,
     Staffing,
+    Variable,
     Worker,
 )
 
-from core_to_engine_service.build_dates import (
-    build_dates,
-    build_worker_ids_to_worker_dates,
-)
-from core_to_engine_service.calculate_worker_special_days import (
-    build_duty_special_days_constraints,
-    calculate_worker_speacial_days,
-)
+from core_to_engine_service.build_periods import build_periods_monthly
+from core_to_engine_service.calculate_worker_nb_duties import calculate_worker_nb_duties
 from engine import Inputs as InputsEngine
 from engine import Outputs, ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
 )
+from engine_to_core_service.build_breaches.build_breaches_not_model import (
+    build_nb_duty_breaches,
+    calc_nb_duty_actual,
+)
+from engine_to_core_service.build_campaign_assignments import build_campaign_assignments
 
 
-class TestSpecialDayConstraints:
+class TestTargetWorkTimeConstraints:
     # pylint: disable=R0801
     @pytest.fixture
-    def engine_inputs_special_days(
+    def ei_nb_duties(
         self, penalties_fix: Penalties, model_config_fix: ModelConfig
     ) -> EngineInputsAugmented:
         schedule = Schedule(
             id="sch0",
             team_id="t0",
-            start_date=date(2025, 1, 1),
-            end_date=date(2025, 3, 31),
+            start_date=date(2025, 2, 1),
+            end_date=date(2025, 2, 28),
             solve_details=None,
             solve_status=ScheduleSolveStatus.NOT_SOLVED,
             status=ScheduleStatus.CAMPAIGN,
@@ -92,8 +87,8 @@ class TestSpecialDayConstraints:
                 name="Night Morning Shift",
                 acronym="NMS",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 1, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 3, 0, tzinfo=timezone.utc),  # 2 hours
+                start_time=datetime(2025, 1, 1, 1, 0),
+                end_time=datetime(2025, 1, 1, 3, 0),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.NORMAL,
@@ -109,8 +104,8 @@ class TestSpecialDayConstraints:
                 name="Morning Shift",
                 acronym="MS",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc),  # 2 hours
+                start_time=datetime(2025, 1, 1, 8, 0),
+                end_time=datetime(2025, 1, 1, 10, 0),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="blue",
                 shift_type=ShiftType.NORMAL,
@@ -126,8 +121,8 @@ class TestSpecialDayConstraints:
                 name="Afternoon Shift",
                 acronym="AS",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 13, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 15, 0, tzinfo=timezone.utc),  # 2 hours
+                start_time=datetime(2025, 1, 1, 13, 0),
+                end_time=datetime(2025, 1, 1, 15, 0),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="green",
                 shift_type=ShiftType.NORMAL,
@@ -143,8 +138,8 @@ class TestSpecialDayConstraints:
                 name="Night Shift",
                 acronym="NS",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 18, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 20, 0, tzinfo=timezone.utc),  # 2 hours
+                start_time=datetime(2025, 1, 1, 18, 0),
+                end_time=datetime(2025, 1, 1, 20, 0),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.NORMAL,
@@ -162,8 +157,8 @@ class TestSpecialDayConstraints:
                 name="Duty 1",
                 acronym="D1",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0),
+                end_time=datetime(2025, 1, 2, 8, 0),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -179,8 +174,8 @@ class TestSpecialDayConstraints:
                 name="RC Duty 1",
                 acronym="RC1",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0),
+                end_time=datetime(2025, 1, 2, 8, 0),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -196,8 +191,8 @@ class TestSpecialDayConstraints:
                 name="Duty 2",
                 acronym="D2",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0),
+                end_time=datetime(2025, 1, 2, 8, 0),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -213,8 +208,8 @@ class TestSpecialDayConstraints:
                 name="RC Duty 2",
                 acronym="RC2",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0),
+                end_time=datetime(2025, 1, 2, 8, 0),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -230,8 +225,8 @@ class TestSpecialDayConstraints:
                 name="Duty 3",
                 acronym="D3",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0),
+                end_time=datetime(2025, 1, 2, 8, 0),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -247,8 +242,8 @@ class TestSpecialDayConstraints:
                 name="RC Duty 3",
                 acronym="RC3",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0),
+                end_time=datetime(2025, 1, 2, 8, 0),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -264,8 +259,8 @@ class TestSpecialDayConstraints:
                 name="Duty 4",
                 acronym="D4",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0),
+                end_time=datetime(2025, 1, 2, 8, 0),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -281,8 +276,8 @@ class TestSpecialDayConstraints:
                 name="RC Duty 4",
                 acronym="RC4",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0),
+                end_time=datetime(2025, 1, 2, 8, 0),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -293,26 +288,7 @@ class TestSpecialDayConstraints:
                 deleted=False,
             ),
         ]
-        shifts_leave = [
-            Shift(
-                id="s_leave",
-                team_id="t0",
-                name="Vacation",
-                acronym="V",
-                acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 0, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 0, 0, tzinfo=timezone.utc),  # 24 hours
-                staffing=[],
-                color="purple",
-                shift_type=ShiftType.LEAVE,
-                rest_type=ShiftRestType.NONE,
-                leave_type=ShiftLeaveType.VACATION,
-                recuperation_time=0,
-                recuperation_duty_id=None,
-                deleted=False,
-            ),
-        ]
-        shifts = shifts_normal + shifts_duty + shifts_leave
+        shifts = shifts_normal + shifts_duty
         # shifts = shifts_normal
         # shifts = shifts_duty
 
@@ -338,7 +314,7 @@ class TestSpecialDayConstraints:
                 current_date += timedelta(days=1)
 
         mc_copy = deepcopy(model_config_fix)
-        mc_copy.system_constraints.special_days_target_nb_duties = True
+        mc_copy.system_constraints.monthly_target_nb_duties = True
 
         return EngineInputsAugmented(
             schedule=schedule,
@@ -359,192 +335,103 @@ class TestSpecialDayConstraints:
             model_config=mc_copy,
         )
 
-    def test_target_special_day_constraints(
-        self,
-        engine_inputs_special_days: EngineInputsAugmented,
-        run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
-        ],
-        run_engine_solve: Callable[[InputsEngine], Outputs],
-    ) -> None:
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
-
-        out = run_engine_solve(inputs)
-        assert out.objective_value == 0
-
-        dates_hist, dates_campaign = build_dates(
-            engine_inputs_special_days.schedule,
-            engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
-        )
-
-        # Call the method under test
-        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-            engine_inputs_special_days.schedule,
-            engine_inputs_special_days.workers,
-            engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
-            dates_campaign,
-        )
-
-        w_to_sd = calculate_worker_speacial_days(
-            workers=engine_inputs_special_days.workers,
-            worker_ids_to_worker_dates=worker_ids_to_worker_dates,
-            dates_hist=dates_hist,
-            dates_campaign=dates_campaign,
-            shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
-            daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
-            fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
-        )
-
-        shift_duty_ids = [
-            s.id
-            for s in engine_inputs_special_days.shifts
-            if s.shift_type == ShiftType.DUTY
-        ]
-
-        for w_id, sd in w_to_sd.items():
-            for _, sd_data in sd.items():
-                assignments = [
-                    a
-                    for a in out.assignments
-                    if a.worker_id == w_id
-                    and a.date in sd_data["dates"]  # type: ignore
-                    and a.shift_id in shift_duty_ids
-                ]
-                assert len(assignments) == sd_data["target"]
-
     # pylint: disable=too-many-locals
-    def test_target_special_day_constraints_w0_filtered_out(
+    def test_target_nb_duties_constraints_different_desires(
         self,
-        engine_inputs_special_days: EngineInputsAugmented,
+        ei_nb_duties: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
             [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
-        # 16 workers, one filtered out of all shifts
+        # 16 workers
+        # 12 workers desire 80, 4 workers desires 0
         # 4 duty shifts, or 112 duty shifts per month
-        # 7.5 per worker per month
-        workers = engine_inputs_special_days.workers
-        shifts = engine_inputs_special_days.shifts
+        # 9.3 per worker per month for the 12 workers, 0 for the 4 workers
 
-        worker_excluded = workers[0]
+        workers = ei_nb_duties.workers
+        for i in range(12):
+            workers[i].duties_per_month = 5
+        for i in range(12, 16):
+            workers[i].duties_per_month = 0
+        ei_nb_duties.workers = workers
 
-        dimensions = [
-            Dimension(
-                id="dim0",
-                team_id="t0",
-                dim_types=[DimensionType.WORKER, DimensionType.SHIFT],
-                name="location",
-                entry_type=DimensionEntryType.DIM_ENTRIES,
-                deleted=False,
-            ),
+        inputs, _ = run_core_to_engine_inputs(ei_nb_duties)
+
+        engine_out = run_engine_solve(inputs)
+
+        schedule = ei_nb_duties.schedule
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dim_entries = [
-            DimEntry(id="de_loc", dimension_id="dim0", name="loc", deleted=False)
-        ]
-        attributes = [
-            Attribute(
-                id=f"aw_loc_{i}",
-                value="",
-                owner_type=AttributeOwnerType.WORKER,
-                owner_id=w.id,
-                dimension_id="dim0",
-                dim_entry_ids=["de_loc"],
-            )
-            for i, w in enumerate(workers[1:])
-        ] + [
-            Attribute(
-                id=f"as_loc_{i}",
-                value="",
-                owner_type=AttributeOwnerType.SHIFT,
-                owner_id=s.id,
-                dimension_id="dim0",
-                dim_entry_ids=["de_loc"],
-            )
-            for i, s in enumerate(shifts)
-        ]
+        dates_hist: List[date] = []
+        assignments = build_campaign_assignments(schedule, engine_out.assignments)
 
-        engine_inputs_special_days.dimensions = dimensions
-        engine_inputs_special_days.dim_entries = dim_entries
-        engine_inputs_special_days.attributes = attributes
-
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
-
-        out = run_engine_solve(inputs)
-
-        dates_hist, dates_campaign = build_dates(
-            engine_inputs_special_days.schedule,
-            engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+        periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
+        w_to_nb_duties = calculate_worker_nb_duties(
+            ei_nb_duties.schedule,
+            ei_nb_duties.workers,
+            ei_nb_duties.shifts,
+            ei_nb_duties.requests,
+            ei_nb_duties.daily_shift_demands,
+            periods_monthly,
         )
+        breaches = _parse_breaches_engine(ei_nb_duties.schedule, engine_out.breaches)
 
-        # Call the method under test
-        worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-            engine_inputs_special_days.schedule,
-            engine_inputs_special_days.workers,
-            engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
-            dates_campaign,
-        )
-
-        gatc = build_duty_special_days_constraints(
-            workers=engine_inputs_special_days.workers,
-            worker_ids_to_worker_dates=worker_ids_to_worker_dates,
-            dates_hist=dates_hist,
-            dates_campaign=dates_campaign,
-            shifts=engine_inputs_special_days.shifts,
-            requests=engine_inputs_special_days.requests,
-            daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
-            fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
-            # fmt: off
-            penalty=engine_inputs_special_days.penalties.system_constraint
-            .special_days_target_nb_duties,
-            # fmt: on
-        )
-
-        deltas: List[List[int]] = []
-        for constraint in gatc:
-            deltas_constraint: List[int] = []
-            for a_constraint, target in zip(constraint.assignments, constraint.targets):
-                w_constraint = list({a[0] for a in a_constraint})
-                d_constraint = list({date.fromisoformat(a[1]) for a in a_constraint})
-                s_constraint = list({a[2] for a in a_constraint})
-                assignments = [
-                    a
-                    for a in out.assignments
-                    if a.worker_id in w_constraint
-                    and a.date in d_constraint
-                    and a.shift_id in s_constraint
-                ]
-                if w_constraint[0] == worker_excluded.id:
-                    assert len(assignments) == 0
-                delta = len(assignments) - target
-                deltas_constraint.append(delta)
-            deltas.append(deltas_constraint)
-
-        for deltas_constraint in deltas:
-            assert max(deltas_constraint) == 1
-
-        breach_count_expected = len(deltas)
-
-        breaches = _parse_breaches_engine(
-            engine_inputs_special_days.schedule, out.breaches
-        )
-
-        assert len(out.breaches) == breach_count_expected
+        assert engine_out.objective_value == 0
         assert len(breaches) == 0
 
-        objective_value_expected = (
-            # fmt: off
-            engine_inputs_special_days.penalties.system_constraint
-            .special_days_target_nb_duties
-            # fmt: on
-            * breach_count_expected
+        shift_duty_ids = [
+            s.id for s in ei_nb_duties.shifts if s.shift_type == ShiftType.DUTY
+        ]
+
+        out = build_nb_duty_breaches(
+            ei_nb_duties.schedule,
+            ei_nb_duties.workers,
+            ei_nb_duties.shifts,
+            periods_monthly,
+            w_to_nb_duties,
+            assignments,
         )
 
-        assert out.objective_value == objective_value_expected
+        assert all(isinstance(b, Breach) for b in out), "Not all elements are breaches"
+
+        w_to_nd_actual = calc_nb_duty_actual(
+            ei_nb_duties.workers,
+            shift_duty_ids,
+            periods_monthly,
+            assignments,
+        )
+
+        i_to_period = dict(enumerate(periods_monthly))
+
+        for w_id, nb_duties in w_to_nb_duties.items():
+            nb_duties_desired = nb_duties["desired"]
+            nb_duties_actual = w_to_nd_actual.get(w_id, None)
+            assert nb_duties_actual is not None
+            for i, (nd_actual, nd_desired) in enumerate(
+                zip(nb_duties_actual, nb_duties_desired)
+            ):
+                if nd_actual > nd_desired:
+                    period = i_to_period[i]
+                    var_expected = [
+                        Variable(
+                            worker_id=w_id,
+                            date=d,
+                            shift_id=s_id,
+                        )
+                        for d in period
+                        for s_id in shift_duty_ids
+                    ]
+                    breach = None
+                    for i, b in enumerate(out):
+                        if b.variables == var_expected:
+                            breach = b
+                            break
+                    assert breach is not None
+                    assert (
+                        breach.objective_category == ObjectiveCategory.DUTIES_PER_MONTH
+                    )
+                    del out[i]
+        assert len(out) == 0

@@ -20,7 +20,7 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
     # print(f"Inputs saved to {inputs_file_path}")
 
     start_time_core_to_engine = time.time()
-    inputs, constraints = core_to_engine_inputs(
+    inputs, processing_cache = core_to_engine_inputs(
         engine_inputs.schedule,
         engine_inputs.workers,
         engine_inputs.shifts,
@@ -50,8 +50,8 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
         engine_inputs.link_shifts,
         engine_inputs.daily_shift_demands,
         engine_inputs.requests,
-        constraints,
         engine_inputs.as_hist,
+        processing_cache,
     )
     end_time_engine_to_core = time.time()
     # time stats

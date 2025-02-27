@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import date, datetime, timedelta
 from typing import Callable, List, Tuple
 
@@ -5,7 +6,6 @@ import pytest
 from shared.schemas import (
     Attribute,
     AttributeOwnerType,
-    Constraints,
     DailyShiftDemand,
     Dimension,
     DimensionEntryType,
@@ -31,14 +31,16 @@ from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
 )
 from engine import Inputs as InputsEngine
-from engine import Outputs
-from engine_to_core_service.build_breaches import _parse_breaches_engine
+from engine import Outputs, ProcessingCache
+from engine_to_core_service.build_breaches.build_breaches_model import (
+    _parse_breaches_engine,
+)
 from utils.constants import Constants
 
 
 class TestTargetWorkTimeConstraints:
     @pytest.fixture
-    def engine_inputs_work_times(
+    def ei_work_times(
         self, penalties_fix: Penalties, model_config_fix: ModelConfig
     ) -> EngineInputsAugmented:
         schedule = Schedule(
@@ -167,6 +169,9 @@ class TestTargetWorkTimeConstraints:
                 )
                 current_date += timedelta(days=1)
 
+        mc_copy = deepcopy(model_config_fix)
+        mc_copy.system_constraints.weekly_target_work_time = True
+
         return EngineInputsAugmented(
             schedule=schedule,
             workers=workers,
@@ -183,24 +188,23 @@ class TestTargetWorkTimeConstraints:
             requests=[],
             wip_assignments=[],
             penalties=penalties_fix,
-            model_config=model_config_fix,
+            model_config=mc_copy,
         )
 
     # pylint: disable=too-many-locals, R0801
     def test_target_work_time_constraints_perfect_match(
         self,
-        engine_inputs_work_times: EngineInputsAugmented,
+        ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_work_times)
-        inputs.model_config.system_constraints.weekly_target_work_time = True
+        inputs, _ = run_core_to_engine_inputs(ei_work_times)
 
         out = run_engine_solve(inputs)
 
-        schedule = engine_inputs_work_times.schedule
+        schedule = ei_work_times.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -209,26 +213,24 @@ class TestTargetWorkTimeConstraints:
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         w_to_work_times = calculate_worker_work_times(
-            engine_inputs_work_times.schedule,
-            engine_inputs_work_times.workers,
-            engine_inputs_work_times.shifts,
-            engine_inputs_work_times.requests,
-            engine_inputs_work_times.daily_shift_demands,
+            ei_work_times.schedule,
+            ei_work_times.workers,
+            ei_work_times.shifts,
+            ei_work_times.requests,
+            ei_work_times.daily_shift_demands,
             periods_weekly,
         )
-        breaches = _parse_breaches_engine(
-            engine_inputs_work_times.schedule, out.breaches
-        )
+        breaches = _parse_breaches_engine(ei_work_times.schedule, out.breaches)
 
         assert out.objective_value == 0
         assert len(breaches) == 0
 
         s_id_to_duration = {
             s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
-            for s in engine_inputs_work_times.shifts
+            for s in ei_work_times.shifts
         }
 
-        for w in engine_inputs_work_times.workers:
+        for w in ei_work_times.workers:
             assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
             work_time_worker = 0
@@ -239,23 +241,22 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_work_time_constraints_no_perfect_match(
         self,
-        engine_inputs_work_times: EngineInputsAugmented,
+        ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         # 3 workers
         # 4 shifts of 5h each, or 140h per week
         # 46.7h per worker per week, or 9.3 shifts per worker per week
-        engine_inputs_work_times.workers = engine_inputs_work_times.workers[:3]
+        ei_work_times.workers = ei_work_times.workers[:3]
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_work_times)
-        inputs.model_config.system_constraints.weekly_target_work_time = True
+        inputs, _ = run_core_to_engine_inputs(ei_work_times)
 
         out = run_engine_solve(inputs)
 
-        schedule = engine_inputs_work_times.schedule
+        schedule = ei_work_times.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -264,26 +265,24 @@ class TestTargetWorkTimeConstraints:
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         w_to_work_times = calculate_worker_work_times(
-            engine_inputs_work_times.schedule,
-            engine_inputs_work_times.workers,
-            engine_inputs_work_times.shifts,
-            engine_inputs_work_times.requests,
-            engine_inputs_work_times.daily_shift_demands,
+            ei_work_times.schedule,
+            ei_work_times.workers,
+            ei_work_times.shifts,
+            ei_work_times.requests,
+            ei_work_times.daily_shift_demands,
             periods_weekly,
         )
-        breaches = _parse_breaches_engine(
-            engine_inputs_work_times.schedule, out.breaches
-        )
+        breaches = _parse_breaches_engine(ei_work_times.schedule, out.breaches)
 
         s_id_to_duration = {
             s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
-            for s in engine_inputs_work_times.shifts
+            for s in ei_work_times.shifts
         }
 
         shift_duration_min = min(s_id_to_duration.values())
 
         deltas: List[int] = []
-        for w in engine_inputs_work_times.workers:
+        for w in ei_work_times.workers:
             assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
             work_time_worker = 0
@@ -322,7 +321,7 @@ class TestTargetWorkTimeConstraints:
         max_excess = max(*deltas, 0)
 
         objective_value_expected = (
-            engine_inputs_work_times.penalties.system_constraint.weekly_target_work_time
+            ei_work_times.penalties.system_constraint.weekly_target_work_time
             * max_excess
         )
 
@@ -330,9 +329,9 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_work_time_constraints_perfect_match_different_desires(
         self,
-        engine_inputs_work_times: EngineInputsAugmented,
+        ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -341,21 +340,21 @@ class TestTargetWorkTimeConstraints:
         # 2 workers and 0% to the others
         # 4 shifts of 5h each, or 140h per week
         # 70h for 2 workers, 0 for 2 workers
-        workers = engine_inputs_work_times.workers
+        workers = ei_work_times.workers
         for i in range(2):
             workers[i].weekly_hours = 80
             workers[i].weekly_hours_desired = 80
         for i in range(2, 4):
             workers[i].weekly_hours = 0
             workers[i].weekly_hours_desired = 0
-        engine_inputs_work_times.workers = workers
+        ei_work_times.workers = workers
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_work_times)
-        inputs.model_config.system_constraints.weekly_target_work_time = True
+        ei_work_times.model_config.configuration_constraints.work_loads = True
+        inputs, _ = run_core_to_engine_inputs(ei_work_times)
 
         out = run_engine_solve(inputs)
 
-        schedule = engine_inputs_work_times.schedule
+        schedule = ei_work_times.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -364,26 +363,24 @@ class TestTargetWorkTimeConstraints:
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         w_to_work_times = calculate_worker_work_times(
-            engine_inputs_work_times.schedule,
-            engine_inputs_work_times.workers,
-            engine_inputs_work_times.shifts,
-            engine_inputs_work_times.requests,
-            engine_inputs_work_times.daily_shift_demands,
+            ei_work_times.schedule,
+            ei_work_times.workers,
+            ei_work_times.shifts,
+            ei_work_times.requests,
+            ei_work_times.daily_shift_demands,
             periods_weekly,
         )
-        breaches = _parse_breaches_engine(
-            engine_inputs_work_times.schedule, out.breaches
-        )
+        breaches = _parse_breaches_engine(ei_work_times.schedule, out.breaches)
 
         assert out.objective_value == 0
         assert len(breaches) == 0
 
         s_id_to_duration = {
             s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
-            for s in engine_inputs_work_times.shifts
+            for s in ei_work_times.shifts
         }
 
-        for w in engine_inputs_work_times.workers:
+        for w in ei_work_times.workers:
             assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
             work_time_worker = 0
@@ -394,19 +391,20 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_work_time_constraints_contract_below_desired(
         self,
-        engine_inputs_work_times: EngineInputsAugmented,
+        ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
-        engine_inputs_work_times.workers[0].weekly_hours = 30
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_work_times)
-        inputs.model_config.system_constraints.weekly_target_work_time = True
+        ei_work_times.workers[0].weekly_hours = 30
+        ei_work_times.model_config.system_constraints.weekly_target_work_time = True
+        ei_work_times.model_config.configuration_constraints.work_loads = True
+        inputs, _ = run_core_to_engine_inputs(ei_work_times)
 
         out = run_engine_solve(inputs)
 
-        schedule = engine_inputs_work_times.schedule
+        schedule = ei_work_times.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -415,26 +413,24 @@ class TestTargetWorkTimeConstraints:
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         w_to_work_times = calculate_worker_work_times(
-            engine_inputs_work_times.schedule,
-            engine_inputs_work_times.workers,
-            engine_inputs_work_times.shifts,
-            engine_inputs_work_times.requests,
-            engine_inputs_work_times.daily_shift_demands,
+            ei_work_times.schedule,
+            ei_work_times.workers,
+            ei_work_times.shifts,
+            ei_work_times.requests,
+            ei_work_times.daily_shift_demands,
             periods_weekly,
         )
-        breaches = _parse_breaches_engine(
-            engine_inputs_work_times.schedule, out.breaches
-        )
+        breaches = _parse_breaches_engine(ei_work_times.schedule, out.breaches)
 
         assert len(breaches) == 1
 
         s_id_to_duration = {
             s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
-            for s in engine_inputs_work_times.shifts
+            for s in ei_work_times.shifts
         }
 
         objective_value_expected = 0
-        for w in engine_inputs_work_times.workers:
+        for w in ei_work_times.workers:
             assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
             work_time_worker = 0
@@ -446,7 +442,7 @@ class TestTargetWorkTimeConstraints:
 
             penalty_expected = (
                 # fmt: off
-                engine_inputs_work_times.penalties.configuration_constraint
+                ei_work_times.penalties.configuration_constraint
                 .weekly_worktime_contract
                 # fmt: on
                 * max(
@@ -462,17 +458,17 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_work_time_constraints_w0_filtered_out(
         self,
-        engine_inputs_work_times: EngineInputsAugmented,
+        ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         # 4 workers, one filtered out of all shifts
         # 4 shifts of 5h each, or 140h per week
         # 46.7h per worker per week, or 9.3 shifts per worker per week
-        workers = engine_inputs_work_times.workers
-        shifts = engine_inputs_work_times.shifts
+        workers = ei_work_times.workers
+        shifts = ei_work_times.shifts
 
         worker_excluded = workers[0]
 
@@ -511,16 +507,15 @@ class TestTargetWorkTimeConstraints:
             for i, s in enumerate(shifts)
         ]
 
-        engine_inputs_work_times.dimensions = dimensions
-        engine_inputs_work_times.dim_entries = dim_entries
-        engine_inputs_work_times.attributes = attributes
+        ei_work_times.dimensions = dimensions
+        ei_work_times.dim_entries = dim_entries
+        ei_work_times.attributes = attributes
 
-        inputs, _ = run_core_to_engine_inputs(engine_inputs_work_times)
-        inputs.model_config.system_constraints.weekly_target_work_time = True
+        inputs, _ = run_core_to_engine_inputs(ei_work_times)
 
         out = run_engine_solve(inputs)
 
-        schedule = engine_inputs_work_times.schedule
+        schedule = ei_work_times.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -529,24 +524,22 @@ class TestTargetWorkTimeConstraints:
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         w_to_work_times = calculate_worker_work_times(
-            engine_inputs_work_times.schedule,
-            engine_inputs_work_times.workers,
-            engine_inputs_work_times.shifts,
-            engine_inputs_work_times.requests,
-            engine_inputs_work_times.daily_shift_demands,
+            ei_work_times.schedule,
+            ei_work_times.workers,
+            ei_work_times.shifts,
+            ei_work_times.requests,
+            ei_work_times.daily_shift_demands,
             periods_weekly,
         )
-        breaches = _parse_breaches_engine(
-            engine_inputs_work_times.schedule, out.breaches
-        )
+        breaches = _parse_breaches_engine(ei_work_times.schedule, out.breaches)
 
         s_id_to_duration = {
             s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
-            for s in engine_inputs_work_times.shifts
+            for s in ei_work_times.shifts
         }
 
         deltas = []
-        for w in engine_inputs_work_times.workers:
+        for w in ei_work_times.workers:
             assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
             work_time_worker = 0
@@ -579,7 +572,7 @@ class TestTargetWorkTimeConstraints:
         assert len(breaches) == 0
 
         objective_value_expected = (
-            engine_inputs_work_times.penalties.system_constraint.weekly_target_work_time
+            ei_work_times.penalties.system_constraint.weekly_target_work_time
             * max_excess
         )
 

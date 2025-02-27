@@ -11,7 +11,9 @@ from shared.schemas import (
     Variable,
 )
 
-from engine_to_core_service.build_breaches import _parse_breaches_engine
+from engine_to_core_service.build_breaches.build_breaches_model import (
+    _parse_breaches_engine,
+)
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 
 # pylint: disable=unused-import
