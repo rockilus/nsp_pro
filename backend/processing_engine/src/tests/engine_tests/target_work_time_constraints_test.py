@@ -12,7 +12,9 @@ from shared.schemas import (
     DimensionType,
     DimEntry,
     DSDSourceType,
-    EngineInputs,
+    EngineInputsAugmented,
+    ModelConfig,
+    Penalties,
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
@@ -28,7 +30,6 @@ from core_to_engine_service.build_periods import build_periods_weekly
 from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
 )
-from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
 from engine_to_core_service.build_breaches import _parse_breaches_engine
@@ -37,7 +38,9 @@ from utils.constants import Constants
 
 class TestTargetWorkTimeConstraints:
     @pytest.fixture
-    def engine_inputs_work_times(self) -> EngineInputs:
+    def engine_inputs_work_times(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> EngineInputsAugmented:
         schedule = Schedule(
             id="sch0",
             team_id="t0",
@@ -164,7 +167,7 @@ class TestTargetWorkTimeConstraints:
                 )
                 current_date += timedelta(days=1)
 
-        return EngineInputs(
+        return EngineInputsAugmented(
             schedule=schedule,
             workers=workers,
             shifts=shifts,
@@ -179,14 +182,16 @@ class TestTargetWorkTimeConstraints:
             daily_shift_demands=daily_shift_demands,
             requests=[],
             wip_assignments=[],
+            penalties=penalties_fix,
+            model_config=model_config_fix,
         )
 
     # pylint: disable=too-many-locals, R0801
     def test_target_work_time_constraints_perfect_match(
         self,
-        engine_inputs_work_times: EngineInputs,
+        engine_inputs_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -234,9 +239,9 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_work_time_constraints_no_perfect_match(
         self,
-        engine_inputs_work_times: EngineInputs,
+        engine_inputs_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -317,16 +322,17 @@ class TestTargetWorkTimeConstraints:
         max_excess = max(*deltas, 0)
 
         objective_value_expected = (
-            penalties.system_constraint.weekly_target_work_time * max_excess
+            engine_inputs_work_times.penalties.system_constraint.weekly_target_work_time
+            * max_excess
         )
 
         assert out.objective_value == objective_value_expected
 
     def test_target_work_time_constraints_perfect_match_different_desires(
         self,
-        engine_inputs_work_times: EngineInputs,
+        engine_inputs_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -388,9 +394,9 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_work_time_constraints_contract_below_desired(
         self,
-        engine_inputs_work_times: EngineInputs,
+        engine_inputs_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -439,7 +445,10 @@ class TestTargetWorkTimeConstraints:
             assert work_time_worker == w_target_time
 
             penalty_expected = (
-                penalties.configuration_constraint.weekly_worktime_contract
+                # fmt: off
+                engine_inputs_work_times.penalties.configuration_constraint
+                .weekly_worktime_contract
+                # fmt: on
                 * max(
                     work_time_worker
                     * 100
@@ -453,9 +462,9 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_work_time_constraints_w0_filtered_out(
         self,
-        engine_inputs_work_times: EngineInputs,
+        engine_inputs_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -570,7 +579,8 @@ class TestTargetWorkTimeConstraints:
         assert len(breaches) == 0
 
         objective_value_expected = (
-            penalties.system_constraint.weekly_target_work_time * max_excess
+            engine_inputs_work_times.penalties.system_constraint.weekly_target_work_time
+            * max_excess
         )
 
         assert out.objective_value == objective_value_expected

@@ -1,5 +1,5 @@
 import pytest
-from shared.schemas import EngineInputs
+from shared.schemas import EngineInputsAugmented
 
 from engine import Outputs
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
@@ -10,7 +10,7 @@ from tests.sample_data import sample_data_benoit_case_fixture  # noqa: F401
 
 # pylint: disable=redefined-outer-name
 def test_engine_solve_smoke(
-    sample_data_benoit_case_fixture: EngineInputs,  # noqa: F811
+    sample_data_benoit_case_fixture: EngineInputsAugmented,  # noqa: F811
 ) -> None:
     try:
         outputs: Outputs = engine_solve_engine_inputs(sample_data_benoit_case_fixture)

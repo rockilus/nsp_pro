@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from typing import List
 
 import pytest
-from shared.schemas import EngineInputs, Shift, ShiftType, Worker
+from shared.schemas import EngineInputsAugmented, Shift, ShiftType, Worker
 
 from core_to_engine_service.build_dates import build_ws_ids_to_dates
 from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
@@ -28,7 +28,7 @@ from utils.constants import Constants
 class TestBuildEngineWorkLoads:
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_engine_work_loads(self, sample_data: EngineInputs) -> None:
+    def test_build_engine_work_loads(self, sample_data: EngineInputsAugmented) -> None:
         workers = sample_data.workers
         shifts = sample_data.shifts
         schedule = sample_data.schedule
@@ -87,6 +87,7 @@ class TestBuildEngineWorkLoads:
             shift_id_to_duration_dict,
             w_to_work_times,
             w_to_nb_duties,
+            sample_data.penalties,
         )
 
         # Verify the output
@@ -110,7 +111,7 @@ class TestBuildEngineWorkLoads:
         )
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_empty_workers(self, sample_data: EngineInputs) -> None:
+    def test_empty_workers(self, sample_data: EngineInputsAugmented) -> None:
         workers: List[Worker] = []
         shifts = sample_data.shifts
         schedule = sample_data.schedule
@@ -169,6 +170,7 @@ class TestBuildEngineWorkLoads:
             shift_id_to_duration_dict,
             w_to_work_times,
             w_to_nb_duties,
+            sample_data.penalties,
         )
 
         # Verify the output
@@ -180,7 +182,7 @@ class TestBuildEngineWorkLoads:
         assert len(work_loads.monthly_nb_duties_max.assignments) == 0
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_empty_shifts(self, sample_data: EngineInputs) -> None:
+    def test_empty_shifts(self, sample_data: EngineInputsAugmented) -> None:
         workers = sample_data.workers
         shifts: List[Shift] = []
         schedule = sample_data.schedule
@@ -239,6 +241,7 @@ class TestBuildEngineWorkLoads:
             shift_id_to_duration_dict,
             w_to_work_times,
             w_to_nb_duties,
+            sample_data.penalties,
         )
 
         # Verify the output
@@ -262,7 +265,9 @@ class TestBuildEngineWorkLoads:
         )
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_worker_with_employment_end_date(self, sample_data: EngineInputs) -> None:
+    def test_worker_with_employment_end_date(
+        self, sample_data: EngineInputsAugmented
+    ) -> None:
         workers = sample_data.workers
         workers[0].employment_end_date = date(2025, 1, 15)
         shifts = sample_data.shifts
@@ -322,6 +327,7 @@ class TestBuildEngineWorkLoads:
             shift_id_to_duration_dict,
             w_to_work_times,
             w_to_nb_duties,
+            sample_data.penalties,
         )
 
         # Verify the output
@@ -360,7 +366,7 @@ class TestBuildEngineWorkLoads:
             )
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_deleted_worker(self, sample_data: EngineInputs) -> None:
+    def test_deleted_worker(self, sample_data: EngineInputsAugmented) -> None:
         workers = sample_data.workers
         workers[0].deleted = True
         shifts = sample_data.shifts
@@ -420,6 +426,7 @@ class TestBuildEngineWorkLoads:
             shift_id_to_duration_dict,
             w_to_work_times,
             w_to_nb_duties,
+            sample_data.penalties,
         )
 
         # Verify the output
@@ -454,7 +461,7 @@ class TestBuildEngineWorkLoads:
 
     # pylint: disable=too-many-statements
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_work_loads_content(self, sample_data: EngineInputs) -> None:
+    def test_work_loads_content(self, sample_data: EngineInputsAugmented) -> None:
         workers = sample_data.workers
         shifts = sample_data.shifts
         schedule = sample_data.schedule
@@ -513,6 +520,7 @@ class TestBuildEngineWorkLoads:
             shift_id_to_duration_dict,
             w_to_work_times,
             w_to_nb_duties,
+            sample_data.penalties,
         )
 
         # Verify the output

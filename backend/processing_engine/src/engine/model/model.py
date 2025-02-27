@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple
 
 # from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
+from shared.schemas import SolveStrategy
 
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.utils.model_utils import (
@@ -20,7 +21,6 @@ from engine.types import (
     NbDuties,
     Objective,
     ObjectiveCategory,
-    SolveStrategy,
     Variables,
     WorkTime,
 )

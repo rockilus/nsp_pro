@@ -9,6 +9,8 @@ from shared.schemas import (
     Dimension,
     DimEntry,
     LinkShift,
+    ModelConfig,
+    Penalties,
     Request,
     Schedule,
     Shift,
@@ -50,7 +52,6 @@ from core_to_engine_service.calculate_worker_work_times import (
     build_work_time_constraints,
     calculate_worker_work_times,
 )
-from core_to_engine_service.model_config import model_config
 from engine import ConfigurationConstraintInputs
 from engine import Inputs as InputsEngine
 from engine import SystemConstraintInputs
@@ -70,6 +71,8 @@ def core_to_engine_inputs(
     daily_shift_demands: List[DailyShiftDemand],
     requests: List[Request],
     wip_assignments: List[Assignment],
+    penalties: Penalties,
+    model_config: ModelConfig,
 ) -> Tuple[InputsEngine, Constraints]:
     # Workers
     workers_not_deleted = [w for w in workers if not w.deleted]
@@ -148,6 +151,7 @@ def core_to_engine_inputs(
         worker_ids_to_worker_dates,
         shifts,
         dim_to_attr_value_to_shift,
+        penalties,
     )
 
     inputs = InputsEngine(
@@ -197,6 +201,7 @@ def core_to_engine_inputs(
                 shift_id_to_duration_dict,
                 w_to_work_times,
                 w_to_nb_duties,
+                penalties,
             ),
             shift_demands=build_engine_shift_demands(
                 workers_not_deleted,
@@ -204,18 +209,21 @@ def core_to_engine_inputs(
                 worker_ids_to_worker_dates,
                 shifts_not_deleted,
                 daily_shift_demands,
+                penalties.configuration_constraint.coverage,
             ),
             requests=build_engine_requests(
                 worker_not_deleted_ids,
                 worker_ids_to_worker_dates,
                 shift_not_deleted_ids,
                 requests,
+                penalties.user_constraint.request,
             ),
             duty_recup_pairs=build_duty_recup_pairs(
                 workers_not_deleted,
                 worker_ids_to_worker_dates,
                 shifts_not_deleted,
                 shift_duties_not_deleted,
+                penalties.configuration_constraint.duty_recup,
             ),
             link_shifts_pairs=build_link_shift_pairs(
                 workers_not_deleted,
@@ -223,6 +231,7 @@ def core_to_engine_inputs(
                 shifts_not_deleted,
                 link_shifts,
                 daily_shift_demands,
+                penalties.configuration_constraint.link_shift,
             ),
             worker_shift_filters=build_worker_shift_filters(
                 workers,
@@ -230,6 +239,7 @@ def core_to_engine_inputs(
                 shifts,
                 dimensions,
                 attributes,
+                penalties.configuration_constraint.worker_shift_filter,
             ),
         ),
         system_constraints=SystemConstraintInputs(
@@ -240,6 +250,8 @@ def core_to_engine_inputs(
                     ws_to_dates,
                     shifts_work,
                     shift_id_to_duration_dict,
+                    penalties.system_constraint.weekly_target_work_time,
+                    model_config.system_constraints.weekly_target_worktime_tolerance,
                 )
             ),
             monthly_target_nb_duties=build_nb_duties_constraints(
@@ -247,6 +259,8 @@ def core_to_engine_inputs(
                 w_to_nb_duties,
                 ws_to_dates,
                 shift_duties_not_deleted,
+                penalties.system_constraint.monthly_target_nb_duties,
+                model_config.system_constraints.mthly_target_nb_duty_tolerance,
             ),
             special_days_target_nb_duties=build_duty_special_days_constraints(
                 workers_not_deleted,
@@ -257,6 +271,7 @@ def core_to_engine_inputs(
                 requests,
                 daily_shift_demands,
                 fixed_assignments,
+                penalties.system_constraint.special_days_target_nb_duties,
             ),
         ),
         model_config=model_config,

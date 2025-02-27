@@ -12,18 +12,19 @@ from shared.schemas import (
     WorkerDates,
 )
 
-from core_to_engine_service.model_config import model_config
-from core_to_engine_service.penalties import penalties
 from engine import GroupsAssignmentsDurationsTargetConstraint
 from utils.constants import Constants
 
 
+# pylint: disable=too-many-arguments
 def build_work_time_constraints(
     periods: List[List[date]],
     w_to_work_times: Dict[str, Dict[str, List[int]]],
     ws_to_dates: Dict[Tuple[str, str], WorkerDates],
     shifts_work: List[Shift],
     shift_id_to_duration_dict: Dict[str, int],
+    penalty: int,
+    tolerance: float,
 ) -> List[GroupsAssignmentsDurationsTargetConstraint]:
     #     len(periods)
     # List[GroupsAssignmentsDurationsTargetConstraint]=
@@ -68,10 +69,8 @@ def build_work_time_constraints(
                         ]
                     ],
                     targets=[target_work_times[i]],
-                    penalty=penalties.system_constraint.weekly_target_work_time,
-                    tolerance=(
-                        model_config.system_constraints.weekly_target_worktime_tolerance
-                    ),
+                    penalty=penalty,
+                    tolerance=tolerance,
                 )
             else:
                 p_index_to_gadtc[i].assignments.append(

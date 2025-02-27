@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from typing import List
 
 import pytest
-from shared.schemas import EngineInputs
+from shared.schemas import EngineInputsAugmented
 
 from core_to_engine_service.build_periods import (
     build_periods_monthly,
@@ -14,7 +14,7 @@ from tests.sample_data import test_data_set_1
 
 class TestBuildPeriods:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_periods_weekly(self, sample_data: EngineInputs) -> None:
+    def test_build_periods_weekly(self, sample_data: EngineInputsAugmented) -> None:
         schedule = sample_data.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -44,7 +44,7 @@ class TestBuildPeriods:
         assert periods_weekly == expected_periods
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_periods_monthly(self, sample_data: EngineInputs) -> None:
+    def test_build_periods_monthly(self, sample_data: EngineInputsAugmented) -> None:
         schedule = sample_data.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -77,7 +77,9 @@ class TestBuildPeriods:
         assert periods_monthly == expected_periods
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_periods_weekly_with_hist(self, sample_data: EngineInputs) -> None:
+    def test_build_periods_weekly_with_hist(
+        self, sample_data: EngineInputsAugmented
+    ) -> None:
         schedule = sample_data.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
@@ -126,7 +128,9 @@ class TestBuildPeriods:
         assert periods_weekly == expected_periods
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_periods_monthly_with_hist(self, sample_data: EngineInputs) -> None:
+    def test_build_periods_monthly_with_hist(
+        self, sample_data: EngineInputsAugmented
+    ) -> None:
         schedule = sample_data.schedule
         schedule.start_date = date(2025, 1, 3)
         dates_campaign = [

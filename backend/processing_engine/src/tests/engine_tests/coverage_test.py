@@ -2,7 +2,7 @@ import random
 from datetime import timedelta
 
 import pytest
-from shared.schemas import EngineInputs, ShiftType, Specialty, Staffing
+from shared.schemas import EngineInputsAugmented, ShiftType, Specialty, Staffing
 
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 from tests.sample_data import test_data_set_1
@@ -15,7 +15,9 @@ from tests.sample_data import test_data_set_1
 class TestCoverage:
     # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_expected_assignments_normal(self, sample_data: EngineInputs) -> None:
+    def test_expected_assignments_normal(
+        self, sample_data: EngineInputsAugmented
+    ) -> None:
         target_random = random.randint(1, 5)
 
         shifts = sample_data.shifts
@@ -61,7 +63,7 @@ class TestCoverage:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_normal_with_specialty(
-        self, sample_data: EngineInputs
+        self, sample_data: EngineInputsAugmented
     ) -> None:
         # target_random = random.randint(1, 5)
         target_random = 3
@@ -132,7 +134,7 @@ class TestCoverage:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_specialty_only(
-        self, sample_data: EngineInputs
+        self, sample_data: EngineInputsAugmented
     ) -> None:
         target_random = random.randint(1, 5)
         specialty = Specialty(
@@ -178,7 +180,7 @@ class TestCoverage:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_with_specialty_q1_diff_q2(
-        self, sample_data: EngineInputs
+        self, sample_data: EngineInputsAugmented
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -283,7 +285,7 @@ class TestCoverage:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_with_specialty_q1_overlap_q2(
-        self, sample_data: EngineInputs
+        self, sample_data: EngineInputsAugmented
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -405,7 +407,7 @@ class TestCoverage:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_with_specialty_q2_in_q1(
-        self, sample_data: EngineInputs
+        self, sample_data: EngineInputsAugmented
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -510,7 +512,7 @@ class TestCoverage:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_staffing_multiple_specialties(
-        self, sample_data: EngineInputs
+        self, sample_data: EngineInputsAugmented
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -645,7 +647,7 @@ class TestCoverage:
     # pylint: disable=too-many-statements
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_staffing_q1_q2_overlap_and_multiple_spe(
-        self, sample_data: EngineInputs
+        self, sample_data: EngineInputsAugmented
     ) -> None:
         target_random_spe_1 = random.randint(1, 3)
         target_random_spe_2 = random.randint(1, 3)
@@ -838,7 +840,7 @@ class TestCoverage:
                 )
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_expected_assignments_all(self, sample_data: EngineInputs) -> None:
+    def test_expected_assignments_all(self, sample_data: EngineInputsAugmented) -> None:
         shifts = sample_data.shifts
         dsds = sample_data.daily_shift_demands
 

@@ -1,11 +1,10 @@
 from datetime import date, timedelta
 from typing import List
 
-from shared.schemas import EngineInputs, LinkShift, Shift, Worker, WorkerDates
+from shared.schemas import EngineInputsAugmented, LinkShift, Shift, Worker, WorkerDates
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
 from core_to_engine_service.build_link_shift_pairs import build_link_shift_pairs
-from core_to_engine_service.penalties import penalties
 
 # pylint: disable=unused-import
 from tests.sample_data import sample_data_fixture  # noqa: F401
@@ -15,7 +14,7 @@ from tests.sample_data import sample_data_fixture  # noqa: F401
 class TestBuildLinkShiftPairs:
     # pylint: disable=redefined-outer-name, too-many-locals
     def test_build_link_shift_pairs(
-        self, sample_data_fixture: EngineInputs  # noqa: F811
+        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts
@@ -55,6 +54,7 @@ class TestBuildLinkShiftPairs:
             shifts_not_deleted,
             link_shifts,
             dsds,
+            sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 
         # Verify the output
@@ -74,7 +74,10 @@ class TestBuildLinkShiftPairs:
             if s0_id == "s0":
                 assert s1_id == "s1"
             assert ls_id == "ls_0"
-            assert penalty == penalties.configuration_constraint.link_shift
+            assert (
+                penalty
+                == sample_data_fixture.penalties.configuration_constraint.link_shift
+            )
         w_ids_in_pairs = sorted(
             set(w_id for a_1, a_2, _, _ in ls_pairs for w_id, _, _ in [a_1, a_2])
         )
@@ -93,7 +96,7 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_empty_workers(
-        self, sample_data_fixture: EngineInputs  # noqa: F811
+        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
     ) -> None:
         workers: List[Worker] = []
         shifts = sample_data_fixture.shifts
@@ -131,6 +134,7 @@ class TestBuildLinkShiftPairs:
             shifts_not_deleted,
             link_shifts,
             sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 
         # Verify the output
@@ -139,7 +143,7 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_empty_shifts(
-        self, sample_data_fixture: EngineInputs  # noqa: F811
+        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts: List[Shift] = sample_data_fixture.shifts
@@ -176,6 +180,7 @@ class TestBuildLinkShiftPairs:
             [],
             link_shifts,
             sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 
         # Verify the output
@@ -184,7 +189,7 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_deleted_shift(
-        self, sample_data_fixture: EngineInputs  # noqa: F811
+        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts
@@ -225,6 +230,7 @@ class TestBuildLinkShiftPairs:
             shifts_not_deleted,
             link_shifts,
             sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 
         # Verify the output
@@ -233,7 +239,7 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_worker_with_no_dates(
-        self, sample_data_fixture: EngineInputs  # noqa: F811
+        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts
@@ -266,6 +272,7 @@ class TestBuildLinkShiftPairs:
             shifts_not_deleted,
             link_shifts,
             sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 
         # Verify the output

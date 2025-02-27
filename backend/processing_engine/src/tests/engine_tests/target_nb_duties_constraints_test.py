@@ -12,7 +12,9 @@ from shared.schemas import (
     DimensionType,
     DimEntry,
     DSDSourceType,
-    EngineInputs,
+    EngineInputsAugmented,
+    ModelConfig,
+    Penalties,
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
@@ -26,7 +28,6 @@ from shared.schemas import (
 
 from core_to_engine_service.build_periods import build_periods_monthly
 from core_to_engine_service.calculate_worker_nb_duties import calculate_worker_nb_duties
-from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
 from engine_to_core_service.build_breaches import _parse_breaches_engine
@@ -35,7 +36,9 @@ from engine_to_core_service.build_breaches import _parse_breaches_engine
 class TestTargetWorkTimeConstraints:
     # pylint: disable=R0801
     @pytest.fixture
-    def engine_inputs_work_times(self) -> EngineInputs:
+    def engine_inputs_work_times(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> EngineInputsAugmented:
         schedule = Schedule(
             id="sch0",
             team_id="t0",
@@ -306,7 +309,7 @@ class TestTargetWorkTimeConstraints:
                 )
                 current_date += timedelta(days=1)
 
-        return EngineInputs(
+        return EngineInputsAugmented(
             schedule=schedule,
             workers=workers,
             shifts=shifts,
@@ -321,14 +324,16 @@ class TestTargetWorkTimeConstraints:
             daily_shift_demands=daily_shift_demands,
             requests=[],
             wip_assignments=[],
+            penalties=penalties_fix,
+            model_config=model_config_fix,
         )
 
     # pylint: disable=too-many-locals, R0801
     def test_target_nb_duties_constraints_perfect_match(
         self,
-        engine_inputs_work_times: EngineInputs,
+        engine_inputs_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -380,9 +385,9 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_nb_duties_constraints_no_perfect_match(
         self,
-        engine_inputs_work_times: EngineInputs,
+        engine_inputs_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -437,9 +442,9 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_nb_duties_constraints_different_desires(
         self,
-        engine_inputs_work_times: EngineInputs,
+        engine_inputs_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -500,9 +505,9 @@ class TestTargetWorkTimeConstraints:
 
     def test_target_nb_duties_constraints_w0_filtered_out(
         self,
-        engine_inputs_work_times: EngineInputs,
+        engine_inputs_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -609,7 +614,11 @@ class TestTargetWorkTimeConstraints:
         assert len(breaches) == 0
 
         objective_value_expected = (
-            penalties.system_constraint.monthly_target_nb_duties * max_excess
+            # fmt: off
+            engine_inputs_work_times.penalties.system_constraint
+            .monthly_target_nb_duties
+            # fmt: on
+            * max_excess
         )
 
         assert out.objective_value == objective_value_expected

@@ -3,15 +3,15 @@ from typing import Dict, List, Tuple
 
 from shared.schemas import DailyShiftDemand, LinkShift, Shift, Worker, WorkerDates
 
-from core_to_engine_service.penalties import penalties
 
-
+# pylint: disable=too-many-arguments
 def build_link_shift_pairs(
     workers_not_deleted: List[Worker],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shifts_not_deleted: List[Shift],
     link_shifts: List[LinkShift],
     daily_shift_demands: List[DailyShiftDemand],
+    penalty: int,
 ) -> List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]]:
     out: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]] = []
 
@@ -38,7 +38,7 @@ def build_link_shift_pairs(
                     (w.id, d.isoformat(), ls.shift_ids[0]),
                     (w.id, d.isoformat(), ls.shift_ids[1]),
                     ls.id,
-                    penalties.configuration_constraint.link_shift,
+                    penalty,
                 )
                 for w in workers_not_deleted
                 for d in worker_ids_to_worker_dates[w.id].dates_campaign

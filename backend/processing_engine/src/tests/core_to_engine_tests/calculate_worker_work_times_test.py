@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Dict, List
 
 from shared.schemas import (
-    EngineInputs,
+    EngineInputsAugmented,
     Request,
     RequestStatus,
     Shift,
@@ -20,8 +20,6 @@ from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
     round_proportional_times,
 )
-from core_to_engine_service.model_config import model_config
-from core_to_engine_service.penalties import penalties
 from engine import GroupsAssignmentsDurationsTargetConstraint
 from utils.constants import Constants
 
@@ -29,7 +27,7 @@ from utils.constants import Constants
 # pylint: disable=R0801, too-few-public-methods
 class TestCalculateWorkerWorkTimes:
     def test_calculate_worker_work_times_output_format(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -68,7 +66,7 @@ class TestCalculateWorkerWorkTimes:
 
     # pylint: disable=too-many-locals
     def test_calculate_worker_work_times_output(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -177,7 +175,7 @@ class TestCalculateWorkerWorkTimes:
                 )
 
     def test_calculate_adjustment_coefficients_no_requests(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -203,7 +201,7 @@ class TestCalculateWorkerWorkTimes:
                 assert out[worker.id][i] == expected
 
     def test_calculate_adjustment_coefficients_with_requests(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -339,7 +337,7 @@ class TestCalculateWorkerWorkTimes:
         assert rounded_times == expected_rounded_times
 
     def test_calculate_worker_work_times_totals(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -414,7 +412,7 @@ class TestCalculateWorkerWorkTimes:
 
 class TestBuildWorkTimeConstraints:
     def test_build_work_times_constraints_output_format(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -460,6 +458,12 @@ class TestBuildWorkTimeConstraints:
                 if not s.deleted and s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
             ],
             shift_id_to_duration_dict,
+            # fmt: off
+            engine_inputs_special_days.penalties.system_constraint
+            .weekly_target_work_time,
+            engine_inputs_special_days.model_config.system_constraints
+            .weekly_target_worktime_tolerance,
+            # fmt: on
         )
 
         assert isinstance(out, list)
@@ -469,7 +473,7 @@ class TestBuildWorkTimeConstraints:
 
     # pylint: disable=too-many-locals
     def test_build_work_times_days_constraints_output(
-        self, engine_inputs_special_days: EngineInputs
+        self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
         schedule = engine_inputs_special_days.schedule
         dates_campaign = [
@@ -515,6 +519,12 @@ class TestBuildWorkTimeConstraints:
                 if not s.deleted and s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
             ],
             shift_id_to_duration_dict,
+            # fmt: off
+            engine_inputs_special_days.penalties.system_constraint
+            .weekly_target_work_time,
+            engine_inputs_special_days.model_config.system_constraints
+            .weekly_target_worktime_tolerance,
+            # fmt: on
         )
 
         shift_work_not_del_ids = [
@@ -526,10 +536,19 @@ class TestBuildWorkTimeConstraints:
         p_index_to_period = dict(enumerate(periods_weekly))
 
         for gadtc in out:
-            assert gadtc.penalty == penalties.system_constraint.weekly_target_work_time
+            assert (
+                gadtc.penalty
+                # fmt: off
+                == engine_inputs_special_days.penalties.system_constraint
+                .weekly_target_work_time
+                # fmt: on
+            )
             assert (
                 gadtc.tolerance
-                == model_config.system_constraints.weekly_target_worktime_tolerance
+                # fmt: off
+                == engine_inputs_special_days.model_config.system_constraints
+                .weekly_target_worktime_tolerance
+                # fmt: on
             )
             dates_gadtc = list(
                 set(date.fromisoformat(a[1]) for ag in gadtc.assignments for a in ag)

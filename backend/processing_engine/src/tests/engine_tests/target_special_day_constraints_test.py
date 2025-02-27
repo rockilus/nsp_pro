@@ -13,7 +13,9 @@ from shared.schemas import (
     DimensionType,
     DimEntry,
     DSDSourceType,
-    EngineInputs,
+    EngineInputsAugmented,
+    ModelConfig,
+    Penalties,
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
@@ -33,7 +35,6 @@ from core_to_engine_service.calculate_worker_special_days import (
     build_duty_special_days_constraints,
     calculate_worker_speacial_days,
 )
-from core_to_engine_service.penalties import penalties
 from engine import Inputs as InputsEngine
 from engine import Outputs
 from engine_to_core_service.build_breaches import _parse_breaches_engine
@@ -42,7 +43,9 @@ from engine_to_core_service.build_breaches import _parse_breaches_engine
 class TestSpecialDayConstraints:
     # pylint: disable=R0801
     @pytest.fixture
-    def engine_inputs_special_days(self) -> EngineInputs:
+    def engine_inputs_special_days(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> EngineInputsAugmented:
         schedule = Schedule(
             id="sch0",
             team_id="t0",
@@ -332,7 +335,7 @@ class TestSpecialDayConstraints:
                 )
                 current_date += timedelta(days=1)
 
-        return EngineInputs(
+        return EngineInputsAugmented(
             schedule=schedule,
             workers=workers,
             shifts=shifts,
@@ -347,13 +350,15 @@ class TestSpecialDayConstraints:
             daily_shift_demands=daily_shift_demands,
             requests=[],
             wip_assignments=[],
+            penalties=penalties_fix,
+            model_config=model_config_fix,
         )
 
     def test_target_special_day_constraints(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -411,9 +416,9 @@ class TestSpecialDayConstraints:
     # pylint: disable=too-many-locals
     def test_target_special_day_constraints_w0_filtered_out(
         self,
-        engine_inputs_special_days: EngineInputs,
+        engine_inputs_special_days: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputs], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -495,6 +500,10 @@ class TestSpecialDayConstraints:
             daily_shift_demands=engine_inputs_special_days.daily_shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_wip_fixed,
+            # fmt: off
+            penalty=engine_inputs_special_days.penalties.system_constraint
+            .special_days_target_nb_duties,
+            # fmt: on
         )
 
         deltas: List[List[int]] = []
@@ -530,7 +539,10 @@ class TestSpecialDayConstraints:
         assert len(breaches) == 0
 
         objective_value_expected = (
-            penalties.system_constraint.special_days_target_nb_duties
+            # fmt: off
+            engine_inputs_special_days.penalties.system_constraint
+            .special_days_target_nb_duties
+            # fmt: on
             * breach_count_expected
         )
 

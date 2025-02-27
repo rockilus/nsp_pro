@@ -1,6 +1,6 @@
 import os
 
-from engine import ModelConfig, SolverParams, SolveStrategy, SystemConstraints
+from shared.schemas import ModelConfig, SolverParams, SolveStrategy, SystemConstraints
 
 # for key, value in os.environ.items():
 #     print(f"{key}: {value}")

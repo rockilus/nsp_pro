@@ -3,7 +3,7 @@ from typing import List
 
 import pytest
 from shared.schemas import (
-    EngineInputs,
+    EngineInputsAugmented,
     Shift,
     ShiftLeaveType,
     ShiftRestType,
@@ -19,7 +19,9 @@ from tests.sample_data import test_data_set_1
 
 class TestBuildShiftIdToDurationDict:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_build_shift_id_to_duration_dict(self, sample_data: EngineInputs) -> None:
+    def test_build_shift_id_to_duration_dict(
+        self, sample_data: EngineInputsAugmented
+    ) -> None:
         shifts = sample_data.shifts
         shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
 

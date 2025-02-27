@@ -1,11 +1,13 @@
-from shared.schemas import EngineInputs
+from shared.schemas import EngineInputsAugmented
 
 from core_to_engine_service import core_to_engine_inputs
 from engine.engine import Engine, Outputs
 
 
 # pylint: disable=R0801
-def engine_solve_engine_inputs(engine_inputs: EngineInputs) -> Outputs:
+def engine_solve_engine_inputs(
+    engine_inputs: EngineInputsAugmented,
+) -> Outputs:
     inputs, _ = core_to_engine_inputs(
         engine_inputs.schedule,
         engine_inputs.workers,
@@ -19,6 +21,8 @@ def engine_solve_engine_inputs(engine_inputs: EngineInputs) -> Outputs:
         engine_inputs.daily_shift_demands,
         engine_inputs.requests,
         engine_inputs.wip_assignments,
+        engine_inputs.penalties,
+        engine_inputs.model_config,
     )
     engine = Engine()
     return engine.solve(inputs)

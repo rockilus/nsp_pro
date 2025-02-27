@@ -1,9 +1,8 @@
 from datetime import timedelta
 from typing import Dict, List
 
-from shared.schemas import Request, WorkerDates
+from shared.schemas import Penalty, Request, WorkerDates
 
-from core_to_engine_service.penalties import penalties
 from engine import Request as RequestEngine
 
 
@@ -12,6 +11,7 @@ def build_engine_requests(
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shift_not_deleted_ids: List[str],
     requests: List[Request],
+    r_penalty: Penalty,
 ) -> List[RequestEngine]:
     out = []
     for r in requests:
@@ -37,11 +37,7 @@ def build_engine_requests(
                 ],
                 negative=r.negative,
                 hard=r.hard,
-                penalty=(
-                    penalties.user_constraint.request.hard
-                    if r.hard
-                    else penalties.user_constraint.request.soft
-                ),
+                penalty=(r_penalty.hard if r.hard else r_penalty.soft),
             )
         )
     return out
