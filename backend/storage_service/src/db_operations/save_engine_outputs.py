@@ -12,6 +12,7 @@ from shared.schemas import (
 
 from db_operations.assignment_services import save_assignments
 from db_operations.save_breaches import save_breaches
+from db_operations.save_model_output import save_model_output
 from db_operations.update_requests import update_requests
 
 
@@ -45,6 +46,7 @@ def save_engine_outputs(
     breaches_saved = save_breaches(
         engine_outputs.schedule, engine_outputs.breaches, collections
     )
+    _ = save_model_output(engine_outputs.model_output, collections)
     end_time_update_db = time.time()
     # time stats
     total_time_update_db = end_time_update_db - start_time_update_db
