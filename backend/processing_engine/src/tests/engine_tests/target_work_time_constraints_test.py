@@ -251,7 +251,6 @@ class TestTargetWorkTimeConstraints:
         # 4 shifts of 5h each, or 140h per week
         # 46.7h per worker per week, or 9.3 shifts per worker per week
         ei_work_times.workers = ei_work_times.workers[:3]
-        ei_work_times.model_config.solver_params.max_time_in_seconds = 40
 
         inputs, _ = run_core_to_engine_inputs(ei_work_times)
 

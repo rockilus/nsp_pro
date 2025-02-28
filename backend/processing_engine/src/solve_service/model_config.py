@@ -29,9 +29,27 @@ if (pytest_mode and environment == "production") or (
     num_search_workers = cpu_count
 print(f"num_search_workers: {num_search_workers}")
 
+
+def get_max_time_in_seconds(test_mode, github_actions_mode, environment):
+    if test_mode:
+        if not github_actions_mode:
+            return 3
+        else:
+            return 5
+    else:
+        if environment == "development":
+            return 30
+        elif environment == "production":
+            return 45
+    return 30
+
+
 model_config = ModelConfig(
     solver_params=SolverParams(
-        max_time_in_seconds=5 if test_mode else 30,
+        # max_time_in_seconds=5 if test_mode else 30,
+        max_time_in_seconds=get_max_time_in_seconds(
+            test_mode, github_actions_mode, environment
+        ),
         num_search_workers=num_search_workers,
         limit_number_solution=None,
         solve_strategy=SolveStrategy.HARD_TO_SOFT,

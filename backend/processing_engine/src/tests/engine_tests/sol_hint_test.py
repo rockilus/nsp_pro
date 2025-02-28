@@ -178,7 +178,7 @@ class TestTargetWorkTimeConstraints:
             model_config=mc_copy,
         )
 
-    def test_target_work_time_constraints_no_perfect_match(
+    def test_solution_hint(
         self,
         ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
