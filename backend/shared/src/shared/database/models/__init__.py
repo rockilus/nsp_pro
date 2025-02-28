@@ -11,6 +11,7 @@ from shared.database.models.coverage import Coverage
 from shared.database.models.coverage_selector import CoverageSelector
 from shared.database.models.daily_shift_demand import DailyShiftDemand
 from shared.database.models.dimension import Dimension, DimEntry
+from shared.database.models.model_output import ModelOutput
 from shared.database.models.request import Request
 from shared.database.models.schedule import QuickStaffing, Schedule, SolveDetailsStatus
 from shared.database.models.shift import Shift, Staffing
@@ -34,6 +35,7 @@ __all__ = [
     "DailyShiftDemand",
     "Dimension",
     "DimEntry",
+    "ModelOutput",
     "Request",
     "QuickStaffing",
     "Schedule",
