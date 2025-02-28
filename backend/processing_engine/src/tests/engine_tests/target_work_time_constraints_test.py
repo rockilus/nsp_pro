@@ -231,9 +231,7 @@ class TestTargetWorkTimeConstraints:
         }
 
         for w in ei_work_times.workers:
-            assignments_worker = [
-                a for a in out.assignments if a.worker_id == w.id
-            ]
+            assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
             work_time_worker = 0
             for a in assignments_worker:
@@ -287,9 +285,7 @@ class TestTargetWorkTimeConstraints:
 
         deltas: List[int] = []
         for w in ei_work_times.workers:
-            assignments_worker = [
-                a for a in out.assignments if a.worker_id == w.id
-            ]
+            assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
             work_time_worker = 0
             for a in assignments_worker:
@@ -387,9 +383,7 @@ class TestTargetWorkTimeConstraints:
         }
 
         for w in ei_work_times.workers:
-            assignments_worker = [
-                a for a in out.assignments if a.worker_id == w.id
-            ]
+            assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
             work_time_worker = 0
             for a in assignments_worker:
@@ -406,9 +400,7 @@ class TestTargetWorkTimeConstraints:
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         ei_work_times.workers[0].weekly_hours = 30
-        ei_work_times.model_config.system_constraints.weekly_target_work_time = (
-            True
-        )
+        ei_work_times.model_config.system_constraints.weekly_target_work_time = True
         ei_work_times.model_config.configuration_constraints.work_loads = True
         inputs, _ = run_core_to_engine_inputs(ei_work_times)
 
@@ -441,9 +433,7 @@ class TestTargetWorkTimeConstraints:
 
         objective_value_expected = 0
         for w in ei_work_times.workers:
-            assignments_worker = [
-                a for a in out.assignments if a.worker_id == w.id
-            ]
+            assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
             work_time_worker = 0
             for a in assignments_worker:
@@ -495,9 +485,7 @@ class TestTargetWorkTimeConstraints:
             ),
         ]
         dim_entries = [
-            DimEntry(
-                id="de_loc", dimension_id="dim0", name="loc", deleted=False
-            )
+            DimEntry(id="de_loc", dimension_id="dim0", name="loc", deleted=False)
         ]
         attributes = [
             Attribute(
@@ -554,9 +542,7 @@ class TestTargetWorkTimeConstraints:
 
         deltas = []
         for w in ei_work_times.workers:
-            assignments_worker = [
-                a for a in out.assignments if a.worker_id == w.id
-            ]
+            assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
             work_time_worker = 0
             for a in assignments_worker:
