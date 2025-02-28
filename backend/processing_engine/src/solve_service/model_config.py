@@ -30,17 +30,15 @@ if (pytest_mode and environment == "production") or (
 print(f"num_search_workers: {num_search_workers}")
 
 
-def get_max_time_in_seconds(test_mode, github_actions_mode, environment):
-    if test_mode:
-        if not github_actions_mode:
+def get_max_time_in_seconds(is_test: bool, in_github: bool, cur_env: str) -> int:
+    if is_test:
+        if not in_github:
             return 3
-        else:
-            return 5
-    else:
-        if environment == "development":
-            return 30
-        elif environment == "production":
-            return 45
+        return 5
+    if cur_env == "development":
+        return 30
+    if cur_env == "production":
+        return 45
     return 30
 
 
