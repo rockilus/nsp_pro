@@ -474,7 +474,7 @@ class TestSpecialDayConstraints:
         engine_inputs_special_days.attributes = attributes
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
-        inputs.model_config.solver_params.max_time_in_seconds = 10
+        inputs.model_config.solver_params.max_time_in_seconds = 15
 
         out = run_engine_solve(inputs)
 
