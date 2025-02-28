@@ -36,7 +36,7 @@ def get_max_time_in_seconds(is_test: bool, in_github: bool, cur_env: str) -> int
             return 3
         return 5
     if cur_env == "development":
-        return 30
+        return 60
     if cur_env == "production":
         return 45
     return 30

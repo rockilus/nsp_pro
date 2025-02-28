@@ -1,3 +1,4 @@
+import ast
 from datetime import datetime, timezone
 
 from bson import ObjectId
@@ -35,10 +36,12 @@ class ModelOutputDB:
             model_output = ModelOutputDocument.objects.get(  # type: ignore
                 schedule=schedule_id
             )
+        except ModelOutputDocument.DoesNotExist:
+            return None
         except Exception as e:
             log_info("Failed to get model_output from database")
             handle_get_document_error(e)
-        return doc_to_core_model_output(model_output)
+        return doc_to_core_model_output(model_output) if model_output else None
 
     def update_model_output(self, model_output: ModelOutput) -> ModelOutput:
         mo_doc = core_to_doc_model_output(model_output)
@@ -89,8 +92,8 @@ def core_to_doc_model_output(
             id=dataclass_obj.id,
             schedule=schedule,
             status=dataclass_obj.status.value,
-            var_sol=dataclass_obj.var_sol,
-            var_spe_sol=dataclass_obj.var_spe_sol,
+            var_sol={str(k): v for k, v in dataclass_obj.var_sol.items()},
+            var_spe_sol={str(k): v for k, v in dataclass_obj.var_spe_sol.items()},
             objective_value=dataclass_obj.objective_value,
             wall_time=dataclass_obj.wall_time,
             output_time=dataclass_obj.output_time.timestamp(),
@@ -107,9 +110,15 @@ def doc_to_core_model_output(doc_obj: ModelOutputDocument) -> ModelOutput:
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["schedule_id"] = doc_dict["schedule"]
     doc_dict["status"] = ModelOutputStatus(doc_dict["status"])
+    doc_dict["var_sol"] = {
+        ast.literal_eval(k): v for k, v in doc_dict["var_sol"].items()
+    }
+    doc_dict["var_spe_sol"] = {
+        ast.literal_eval(k): v for k, v in doc_dict["var_spe_sol"].items()
+    }
     doc_dict["output_time"] = datetime.fromtimestamp(
         doc_dict["output_time"], timezone.utc
-    ).date()
+    )
     doc_dict.pop("_id")
     doc_dict.pop("schedule")
     return ModelOutput(**doc_dict)
