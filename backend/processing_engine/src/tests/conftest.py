@@ -469,7 +469,7 @@ def engine_inputs(
         cbs_augmented=[],
         daily_shift_demands=daily_shift_demands_shifts_3n_2d,
         requests=[],
-        wip_assignments=[],
+        model_output=None,
         penalties=penalties_fix,
         model_config=model_config_fix,
     )
@@ -2111,7 +2111,7 @@ def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputsAugmented], O
             engine_inputs.cbs_augmented,
             engine_inputs.daily_shift_demands,
             engine_inputs.requests,
-            engine_inputs.wip_assignments,
+            engine_inputs.model_output,
             engine_inputs.penalties,
             engine_inputs.model_config,
         )
@@ -2140,7 +2140,7 @@ def run_core_to_engine_inputs() -> (
             engine_inputs.cbs_augmented,
             engine_inputs.daily_shift_demands,
             engine_inputs.requests,
-            engine_inputs.wip_assignments,
+            engine_inputs.model_output,
             engine_inputs.penalties,
             engine_inputs.model_config,
         )

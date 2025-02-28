@@ -53,6 +53,15 @@ class Variables:
 
 
 @dataclass
+class SolHint:
+    var_sol: Dict[Tuple[str, str, str], int]
+    var_spe_sol: Dict[Tuple[str, str, str, str], int]
+
+    def to_dict(self):
+        return asdict(self)
+
+
+@dataclass
 class WorkTime:
     # for each worker, a list of assignments for the target periods
     # (size workers x periods x shifts * period length])
@@ -142,7 +151,7 @@ class Inputs:
         List[Tuple[str, str, str]]
     ]  # list of assignments for each worker
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
-    sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
+    sol_hint: SolHint
     user_constraints: Constraints
     configuration_constraints: ConfigurationConstraintInputs
     system_constraints: SystemConstraintInputs
@@ -151,7 +160,7 @@ class Inputs:
     def to_dict(self):
         out = asdict(self)
         out["fixed_values"] = {str(k): v for k, v in self.fixed_values.items()}
-        out["sol_hint"] = {str(k): v for k, v in self.sol_hint.items()}
+        out["sol_hint"] = self.sol_hint.to_dict()
         return out
 
 
@@ -194,6 +203,8 @@ class Outputs:
     breaches: List[Breach]
     var_sol: Dict[Tuple[str, str, str], int]
     var_spe_sol: Dict[Tuple[str, str, str, str], int]
+    status: int
+    wall_time: float
 
 
 ##############################

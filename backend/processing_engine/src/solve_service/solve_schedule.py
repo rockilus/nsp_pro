@@ -32,7 +32,7 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
         engine_inputs.cbs_augmented,
         engine_inputs.daily_shift_demands,
         engine_inputs.requests,
-        engine_inputs.wip_assignments,
+        engine_inputs.model_output,
         penalties,
         model_config,
     )
@@ -42,7 +42,7 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
     outputs = engine.solve(inputs)
     end_time_engine = time.time()
     start_time_engine_to_core = time.time()
-    schedule, a_campaign, breaches, updated_requests = engine_to_core(
+    schedule, a_campaign, breaches, updated_requests, model_output = engine_to_core(
         engine_inputs.schedule,
         outputs,
         engine_inputs.workers,
@@ -66,4 +66,5 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
         assignments=a_campaign,
         breaches=breaches,
         requests=updated_requests,
+        model_output=model_output,
     )

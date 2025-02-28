@@ -5,7 +5,6 @@ from typing import Dict, List
 
 import pytest
 from shared.schemas import (
-    Assignment,
     Attribute,
     ConstraintBuildAugmented,
     DailyShiftDemand,
@@ -250,7 +249,6 @@ def sample_data_fixture() -> EngineInputsAugmented:
     attributes: List[Attribute] = []
     cbs_augmented: List[ConstraintBuildAugmented] = []
     requests: List[Request] = []
-    wip_assignments: List[Assignment] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
@@ -266,7 +264,7 @@ def sample_data_fixture() -> EngineInputsAugmented:
         cbs_augmented=cbs_augmented,
         daily_shift_demands=daily_shift_demands,
         requests=requests,
-        wip_assignments=wip_assignments,
+        model_output=None,
         penalties=penalties,
         model_config=model_config,
     )
@@ -473,7 +471,6 @@ def sample_data() -> EngineInputsAugmented:
     attributes: List[Attribute] = []
     cbs_augmented: List[ConstraintBuildAugmented] = []
     requests: List[Request] = []
-    wip_assignments: List[Assignment] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
@@ -489,7 +486,7 @@ def sample_data() -> EngineInputsAugmented:
         cbs_augmented=cbs_augmented,
         daily_shift_demands=daily_shift_demands,
         requests=requests,
-        wip_assignments=wip_assignments,
+        model_output=None,
         penalties=penalties,
         model_config=model_config,
     )
@@ -626,7 +623,6 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
     attributes: List[Attribute] = []
     cbs_augmented: List[ConstraintBuildAugmented] = []
     requests: List[Request] = []
-    wip_assignments: List[Assignment] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
@@ -642,7 +638,7 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
         cbs_augmented=cbs_augmented,
         daily_shift_demands=daily_shift_demands,
         requests=requests,
-        wip_assignments=wip_assignments,
+        model_output=None,
         penalties=penalties,
         model_config=model_config,
     )
@@ -673,7 +669,7 @@ def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
         cbs_augmented=ei.cbs_augmented,
         daily_shift_demands=ei.daily_shift_demands,
         requests=ei.requests,
-        wip_assignments=ei.wip_assignments,
+        model_output=ei.model_output,
         penalties=penalties,
         model_config=model_config,
     )

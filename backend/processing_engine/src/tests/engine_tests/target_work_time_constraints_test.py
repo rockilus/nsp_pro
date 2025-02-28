@@ -186,7 +186,7 @@ class TestTargetWorkTimeConstraints:
             cbs_augmented=[],
             daily_shift_demands=daily_shift_demands,
             requests=[],
-            wip_assignments=[],
+            model_output=None,
             penalties=penalties_fix,
             model_config=mc_copy,
         )

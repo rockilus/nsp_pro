@@ -215,7 +215,7 @@ class Model:
         self.build_variables(inputs.variables)
 
         # Starting point:
-        self.add_solution_hint(inputs.sol_hint)
+        self.add_solution_hint(inputs.sol_hint.var_sol, inputs.sol_hint.var_spe_sol)
 
         # Hard constraints:
         self.set_fixed_variables(inputs.fixed_values)
@@ -326,9 +326,15 @@ class Model:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
 
-    def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
-        for k, v in solution_hint.items():
-            self.model.AddHint(self.variables[k], v)
+    def add_solution_hint(
+        self,
+        var_sol: Dict[Tuple[str, str, str], int],
+        var_spe_sol: Dict[Tuple[str, str, str, str], int],
+    ) -> None:
+        for k, v in var_sol.items():
+            if k in self.variables:
+                self.model.AddHint(self.variables[k], v)
+        self.add_constraint_factory.var_spe_sol = var_spe_sol
 
     def no_interval_overlap(
         self, no_overlap_shift_intervals: List[List[Tuple[str, str, str]]]

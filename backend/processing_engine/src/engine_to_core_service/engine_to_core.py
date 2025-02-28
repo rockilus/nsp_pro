@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List, Tuple
 
 from shared.schemas import (
@@ -5,6 +6,8 @@ from shared.schemas import (
     Breach,
     DailyShiftDemand,
     LinkShift,
+    ModelOutput,
+    ModelOutputStatus,
     Request,
     Schedule,
     Shift,
@@ -32,7 +35,7 @@ def engine_to_core(
     requests: List[Request],
     as_hist: List[Assignment],
     processing_cache: ProcessingCache,
-) -> Tuple[Schedule, List[Assignment], List[Breach], List[Request]]:
+) -> Tuple[Schedule, List[Assignment], List[Breach], List[Request], ModelOutput]:
     as_campaign = build_campaign_assignments(schedule, outputs.assignments)
     assignments = as_hist + as_campaign
     breaches = build_breaches(
@@ -48,9 +51,20 @@ def engine_to_core(
     )
     schedule = update_schedule_status(schedule, outputs.is_solution, breaches)
     requests = update_requests_and_build_request_breaches(assignments, requests)
+    model_output = ModelOutput(
+        id="",
+        schedule_id=schedule.id,
+        status=ModelOutputStatus(outputs.status),
+        var_sol=outputs.var_sol,
+        var_spe_sol=outputs.var_spe_sol,
+        objective_value=outputs.objective_value,
+        wall_time=outputs.wall_time,
+        output_time=datetime.now(timezone.utc),
+    )
     return (
         schedule,
         as_campaign,
         breaches,
         requests,
+        model_output,
     )

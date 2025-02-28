@@ -36,6 +36,8 @@ class Output:
                 breaches=breaches,
                 var_sol=var_sol,
                 var_spe_sol=var_spe_sol,
+                status=self.model.status,
+                wall_time=self.model.solver.WallTime(),
             )
         return Outputs(
             model=self.model.model,
@@ -45,6 +47,8 @@ class Output:
             breaches=[],
             var_sol={},
             var_spe_sol={},
+            status=self.model.status,
+            wall_time=self.model.solver.WallTime(),
         )
 
     def build_solution(self) -> List[Assignment]:

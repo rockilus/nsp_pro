@@ -21,7 +21,7 @@ from shared.schemas import (
 )
 
 from engine import Inputs as InputsEngine
-from engine import Outputs, ProcessingCache
+from engine import Outputs, ProcessingCache, SolHint
 
 
 # pylint: disable=R0801
@@ -173,7 +173,7 @@ class TestTargetWorkTimeConstraints:
             cbs_augmented=[],
             daily_shift_demands=daily_shift_demands,
             requests=[],
-            wip_assignments=[],
+            model_output=None,
             penalties=penalties_fix,
             model_config=mc_copy,
         )
@@ -197,7 +197,9 @@ class TestTargetWorkTimeConstraints:
         # ei_work_times.wip_assignments = out_1.assignments
         ei_work_times.model_config.solver_params.limit_number_solution = 1
         inputs_2, _ = run_core_to_engine_inputs(ei_work_times)
-        inputs_2.sol_hint = out_1.var_sol
+        inputs_2.sol_hint = SolHint(
+            var_sol=out_1.var_sol, var_spe_sol=out_1.var_spe_sol
+        )
         out_2 = run_engine_solve(inputs_2)
 
         # Check that the second run has a solution with objective value lower than
