@@ -192,6 +192,8 @@ class Outputs:
     assignments: List[Assignment]
     objective_value: int
     breaches: List[Breach]
+    var_sol: Dict[Tuple[str, str, str], int]
+    var_spe_sol: Dict[Tuple[str, str, str, str], int]
 
 
 ##############################

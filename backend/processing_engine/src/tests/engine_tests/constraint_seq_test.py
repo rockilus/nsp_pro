@@ -502,6 +502,7 @@ class TestConstraintSeq:
             constraint_hard_copy.operator = ConstraintOperator.EQUAL
 
         inputs.user_constraints.seq.append(constraint_hard_copy)
+        inputs.model_config.solver_params.max_time_in_seconds = 10
 
         out = run_engine_solve(inputs)
 

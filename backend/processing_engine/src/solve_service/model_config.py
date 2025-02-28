@@ -31,8 +31,9 @@ print(f"num_search_workers: {num_search_workers}")
 
 model_config = ModelConfig(
     solver_params=SolverParams(
-        max_time_in_seconds=70 if github_actions_mode else 30,
+        max_time_in_seconds=5 if test_mode else 30,
         num_search_workers=num_search_workers,
+        limit_number_solution=None,
         solve_strategy=SolveStrategy.HARD_TO_SOFT,
     ),
     configuration_constraints=ConfigurationConstraints(work_loads=False),

@@ -39,6 +39,7 @@ class ConfigurationConstraints:
 class SolverParams:
     max_time_in_seconds: int
     num_search_workers: int
+    limit_number_solution: int | None
     solve_strategy: SolveStrategy
 
 

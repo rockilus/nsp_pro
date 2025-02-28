@@ -20,14 +20,32 @@ class Output:
             assignments = self.build_solution()
             objective_value = self.model.solver.ObjectiveValue()
             breaches = self.build_constraint_breaches()
+            var_sol = {
+                n: 1 if self.model.solver.BooleanValue(v) else 0
+                for n, v in self.model.variables.items()
+            }
+            var_spe_sol = {
+                n: 1 if self.model.solver.BooleanValue(v) else 0
+                for n, v in self.model.assignment_wdss.items()
+            }
             return Outputs(
-                self.model.model,
-                is_solution,
-                assignments,
-                objective_value,  # type: ignore # [CHECK IF OK]
-                breaches,
+                model=self.model.model,
+                is_solution=is_solution,
+                assignments=assignments,
+                objective_value=objective_value,  # type: ignore # [CHECK IF OK]
+                breaches=breaches,
+                var_sol=var_sol,
+                var_spe_sol=var_spe_sol,
             )
-        return Outputs(self.model.model, is_solution, [], 0, [])
+        return Outputs(
+            model=self.model.model,
+            is_solution=is_solution,
+            assignments=[],
+            objective_value=0,
+            breaches=[],
+            var_sol={},
+            var_spe_sol={},
+        )
 
     def build_solution(self) -> List[Assignment]:
         assignments = []

@@ -6,6 +6,7 @@ from ortools.sat.python import cp_model  # type: ignore
 from shared.schemas import SolveStrategy
 
 from engine.model.add_constraint_factory import AddConstraintFactory
+from engine.model.solver_solution_callback import SolverSolutionCallback
 from engine.model.utils.model_utils import (
     build_var_name_daily_shift_demand,
     build_var_name_link_shift,
@@ -41,7 +42,6 @@ class Model:
 
         self.obj = Objective()
         self.solver = cp_model.CpSolver()
-        self.solution_printer = cp_model.ObjectiveSolutionPrinter()
         self.status = 0
         self.bt = BenchmarkTimes()
 
@@ -690,20 +690,21 @@ class Model:
         # params = "max_time_in_seconds:20.0"
         # if params:
         #     text_format.Parse(params, self.solver.parameters)
+
+        # solution_printer = cp_model.ObjectiveSolutionPrinter()
+        solution_printer = SolverSolutionCallback(
+            limit=self.model_config.solver_params.limit_number_solution
+        )
         self.solver.parameters.max_time_in_seconds = (
             self.model_config.solver_params.max_time_in_seconds
         )
         # Set the number of search workers (threads)
-        print(
-            "SOLVER NUM WORKERS",
-            self.model_config.solver_params.num_search_workers,
-        )
         self.solver.parameters.num_search_workers = (
             self.model_config.solver_params.num_search_workers
         )
         # self.solver.parameters.log_search_progress = True
         self.status = self.solver.Solve(  # type: ignore # [CHECK IF OK]
-            self.model, self.solution_printer
+            self.model, solution_printer
         )
         # self.bt.total_end = time.time()
 
