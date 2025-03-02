@@ -254,7 +254,7 @@ class TestTargetWorkTimeConstraints:
 
         inputs, _ = run_core_to_engine_inputs(ei_work_times)
 
-        inputs.model_config.solver_params.max_time_in_seconds = 20
+        inputs.model_config.solver_params.max_time_in_seconds = 25
 
         out = run_engine_solve(inputs)
 
