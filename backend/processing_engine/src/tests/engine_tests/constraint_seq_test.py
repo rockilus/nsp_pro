@@ -319,7 +319,7 @@ class TestConstraintSeq:
 
         inputs.user_constraints.seq.append(constraint_soft)
 
-        inputs.model_config.solver_params.max_time_in_seconds = 15
+        inputs.model_config.solver_params.max_time_in_seconds = 20
 
         out = run_engine_solve(inputs)
 

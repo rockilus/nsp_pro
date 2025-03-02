@@ -201,6 +201,8 @@ class TestTargetWorkTimeConstraints:
         )
         out_2 = run_engine_solve(inputs_2)
 
+        print(inputs_2.model_setup)
+
         # Check that the second run has a solution with objective value lower than
         # or equal to the first run
         assert out_2.objective_value <= out_1.objective_value
