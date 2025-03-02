@@ -194,10 +194,9 @@ class TestTargetWorkTimeConstraints:
 
         # Use solution from first run as hint for second run, and stop after
         # first solution
-        # ei_work_times.wip_assignments = out_1.assignments
-        ei_work_times.model_config.solver_params.limit_number_solution = 1
+        ei_work_times.model_config.custom_solver_params.limit_number_solution = 1
         inputs_2, _ = run_core_to_engine_inputs(ei_work_times)
-        inputs_2.sol_hint = SolHint(
+        inputs_2.model_setup.sol_hint = SolHint(
             var_sol=out_1.var_sol, var_spe_sol=out_1.var_spe_sol
         )
         out_2 = run_engine_solve(inputs_2)
@@ -205,6 +204,44 @@ class TestTargetWorkTimeConstraints:
         # Check that the second run has a solution with objective value lower than
         # or equal to the first run
         assert out_2.objective_value <= out_1.objective_value
+
+    # def test_solution_hint_benoit_case(
+    #     self,
+    #     benoit_case_250301: EngineInputsAugmented,
+    #     run_core_to_engine_inputs: Callable[
+    #         [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+    #     ],
+    #     run_engine_solve: Callable[[InputsEngine], Outputs],
+    # ) -> None:
+    #     # Problem with no solution with objective value 0, and that requires
+    #     # some iterations to solve
+    #     inputs_1, _ = run_core_to_engine_inputs(benoit_case_250301)
+
+    #     inputs_1.sol_hint = SolHint(var_sol={}, var_spe_sol={})
+    #     # inputs_1.sol_hint.var_spe_sol = {}
+
+    #     inputs_1.model_config.solver_params.max_time_in_seconds = 120
+
+    #     out_1 = run_engine_solve(inputs_1)
+
+    #     # Use solution from first run as hint for second run, and stop after
+    #     # first solution
+    #     benoit_case_250301.model_config.solver_params.limit_number_solution = 1
+    #     inputs_2, _ = run_core_to_engine_inputs(benoit_case_250301)
+
+    #     inputs_2.sol_hint = SolHint(
+    #         var_sol=out_1.var_sol,
+    #         # var_spe_sol=out_1.var_spe_sol,
+    #         var_spe_sol={},
+    #     )
+
+    #     inputs_2.model_config.solver_params.max_time_in_seconds = 60
+
+    #     out_2 = run_engine_solve(inputs_2)
+
+    #     # Check that the second run has a solution with objective value lower than
+    #     # or equal to the first run
+    #     assert out_2.objective_value <= out_1.objective_value
 
 
 # from ortools.sat.python import cp_model

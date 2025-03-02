@@ -2,7 +2,9 @@ import os
 
 from shared.schemas import (
     ConfigurationConstraints,
+    CustomSolverParams,
     ModelConfig,
+    ModelSetup,
     SolverParams,
     SolveStrategy,
     SystemConstraints,
@@ -49,9 +51,12 @@ model_config = ModelConfig(
             test_mode, github_actions_mode, environment
         ),
         num_search_workers=num_search_workers,
-        limit_number_solution=None,
-        solve_strategy=SolveStrategy.HARD_TO_SOFT,
+        log_search_progress=False,
     ),
+    custom_solver_params=CustomSolverParams(
+        limit_number_solution=None, solve_strategy=SolveStrategy.HARD_TO_SOFT
+    ),
+    model_setup=ModelSetup(sol_hint=False),
     configuration_constraints=ConfigurationConstraints(work_loads=False),
     system_constraints=SystemConstraints(
         weekly_target_work_time=not test_mode,

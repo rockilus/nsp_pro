@@ -53,10 +53,14 @@ class Model:
         )
 
     def solve_campaign(self, inputs: Inputs) -> None:
-        if self.model_config.solver_params.solve_strategy == SolveStrategy.SEQUENTIAL:
+        if (
+            self.model_config.custom_solver_params.solve_strategy
+            == SolveStrategy.SEQUENTIAL
+        ):
             self.sequential_solve(inputs)
         elif (
-            self.model_config.solver_params.solve_strategy == SolveStrategy.HARD_TO_SOFT
+            self.model_config.custom_solver_params.solve_strategy
+            == SolveStrategy.HARD_TO_SOFT
         ):
             self.solve_hard_to_soft(inputs)
 
@@ -212,14 +216,17 @@ class Model:
         request_hts: bool,
         constraint_hts: bool,
     ) -> None:
-        self.build_variables(inputs.variables)
+        self.build_variables(inputs.model_setup.variables)
 
         # Starting point:
-        self.add_solution_hint(inputs.sol_hint.var_sol, inputs.sol_hint.var_spe_sol)
+        self.add_solution_hint(
+            inputs.model_setup.sol_hint.var_sol,
+            inputs.model_setup.sol_hint.var_spe_sol,
+        )
 
         # Hard constraints:
-        self.set_fixed_variables(inputs.fixed_values)
-        self.no_interval_overlap(inputs.no_overlap_shift_intervals)
+        self.set_fixed_variables(inputs.model_setup.fixed_values)
+        self.no_interval_overlap(inputs.model_setup.no_overlap_shift_intervals)
 
         # Hard to soft constraints:
         # Configuration constraints:
@@ -699,7 +706,7 @@ class Model:
 
         # solution_printer = cp_model.ObjectiveSolutionPrinter()
         solution_printer = SolverSolutionCallback(
-            limit=self.model_config.solver_params.limit_number_solution
+            limit=self.model_config.custom_solver_params.limit_number_solution
         )
         self.solver.parameters.max_time_in_seconds = (
             self.model_config.solver_params.max_time_in_seconds
@@ -708,7 +715,9 @@ class Model:
         self.solver.parameters.num_search_workers = (
             self.model_config.solver_params.num_search_workers
         )
-        # self.solver.parameters.log_search_progress = True
+        self.solver.parameters.log_search_progress = (
+            self.model_config.solver_params.log_search_progress
+        )
         self.status = self.solver.Solve(  # type: ignore # [CHECK IF OK]
             self.model, solution_printer
         )

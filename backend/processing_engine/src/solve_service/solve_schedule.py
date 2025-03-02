@@ -1,5 +1,5 @@
-# import json
-# import os
+import json
+import os
 import time
 
 from shared.schemas import EngineInputs, EngineOutputs
@@ -13,11 +13,11 @@ from solve_service.penalties import penalties
 
 # pylint: disable=too-many-locals
 def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
-    # current_path = os.path.dirname(os.path.realpath(__file__))
-    # inputs_file_path = os.path.join(current_path, "engine_inputs.json")
-    # with open(inputs_file_path, "w", encoding="utf-8") as inputs_file:
-    #     json.dump(engine_inputs.to_dict(), inputs_file, indent=4)
-    # print(f"Inputs saved to {inputs_file_path}")
+    current_path = os.path.dirname(os.path.realpath(__file__))
+    inputs_file_path = os.path.join(current_path, "engine_inputs.json")
+    with open(inputs_file_path, "w", encoding="utf-8") as inputs_file:
+        json.dump(engine_inputs.to_dict(), inputs_file, indent=4)
+    print(f"Inputs saved to {inputs_file_path}")
 
     start_time_core_to_engine = time.time()
     inputs, processing_cache = core_to_engine_inputs(

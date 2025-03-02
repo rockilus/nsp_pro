@@ -143,15 +143,26 @@ class SystemConstraintInputs:
     special_days_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
 
 
-# pylint: disable=too-many-instance-attributes
 @dataclass
-class Inputs:
+class ModelSetup:
     variables: Variables
     no_overlap_shift_intervals: List[
         List[Tuple[str, str, str]]
     ]  # list of assignments for each worker
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
     sol_hint: SolHint
+
+    def to_dict(self):
+        out = asdict(self)
+        out["fixed_values"] = {str(k): v for k, v in self.fixed_values.items()}
+        out["sol_hint"] = self.sol_hint.to_dict()
+        return out
+
+
+# pylint: disable=too-many-instance-attributes
+@dataclass
+class Inputs:
+    model_setup: ModelSetup
     user_constraints: Constraints
     configuration_constraints: ConfigurationConstraintInputs
     system_constraints: SystemConstraintInputs
@@ -159,8 +170,7 @@ class Inputs:
 
     def to_dict(self):
         out = asdict(self)
-        out["fixed_values"] = {str(k): v for k, v in self.fixed_values.items()}
-        out["sol_hint"] = self.sol_hint.to_dict()
+        out["model_setup"] = self.model_setup.to_dict()
         return out
 
 
