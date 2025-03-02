@@ -56,16 +56,9 @@ from shared.schemas.schemas.engine import (
     SolveStrategy,
     SystemConstraints,
 )
-from shared.schemas.schemas.export_options import (
-    ExportOptions,
-    ExportPeriodOptions,
-)
+from shared.schemas.schemas.export_options import ExportOptions, ExportPeriodOptions
 from shared.schemas.schemas.model_output import ModelOutput, ModelOutputStatus
-from shared.schemas.schemas.request import (
-    Request,
-    RequestAugmented,
-    RequestStatus,
-)
+from shared.schemas.schemas.request import Request, RequestAugmented, RequestStatus
 from shared.schemas.schemas.schedule import (
     Assignment,
     Breach,
@@ -99,12 +92,7 @@ from shared.schemas.schemas.stats import (
 )
 from shared.schemas.schemas.task import TaskServices
 from shared.schemas.schemas.team import Specialty, Team
-from shared.schemas.schemas.user import (
-    PasswordData,
-    User,
-    UserAuth,
-    UserDashboard,
-)
+from shared.schemas.schemas.user import PasswordData, User, UserAuth, UserDashboard
 from shared.schemas.schemas.worker import Worker, WorkerDates
 
 # pylint: disable=R0801
