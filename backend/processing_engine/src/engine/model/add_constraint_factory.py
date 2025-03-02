@@ -21,7 +21,9 @@ class AddConstraintFactory:
         variables: Dict[Tuple[str, str, str], cp_model.IntVar],
         assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar],
         obj: Objective,
+        var_spe_sol: Dict[Tuple[str, str, str, str], int] | None = None,
     ):
+        self.var_spe_sol = var_spe_sol
         self.add_constraint_sum = AddConstraintSum(
             model, variables, assignment_wdss, obj
         )

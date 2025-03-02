@@ -1,5 +1,5 @@
-# import json
-# import os
+import json
+import os
 import time
 
 from shared.schemas import EngineInputs, EngineOutputs
@@ -13,11 +13,11 @@ from solve_service.penalties import penalties
 
 # pylint: disable=too-many-locals
 def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
-    # current_path = os.path.dirname(os.path.realpath(__file__))
-    # inputs_file_path = os.path.join(current_path, "engine_inputs.json")
-    # with open(inputs_file_path, "w", encoding="utf-8") as inputs_file:
-    #     json.dump(engine_inputs.to_dict(), inputs_file, indent=4)
-    # print(f"Inputs saved to {inputs_file_path}")
+    current_path = os.path.dirname(os.path.realpath(__file__))
+    inputs_file_path = os.path.join(current_path, "engine_inputs.json")
+    with open(inputs_file_path, "w", encoding="utf-8") as inputs_file:
+        json.dump(engine_inputs.to_dict(), inputs_file, indent=4)
+    print(f"Inputs saved to {inputs_file_path}")
 
     start_time_core_to_engine = time.time()
     inputs, processing_cache = core_to_engine_inputs(
@@ -32,7 +32,7 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
         engine_inputs.cbs_augmented,
         engine_inputs.daily_shift_demands,
         engine_inputs.requests,
-        engine_inputs.wip_assignments,
+        engine_inputs.model_output,
         penalties,
         model_config,
     )
@@ -42,7 +42,7 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
     outputs = engine.solve(inputs)
     end_time_engine = time.time()
     start_time_engine_to_core = time.time()
-    schedule, a_campaign, breaches, updated_requests = engine_to_core(
+    schedule, a_campaign, breaches, updated_requests, model_output = engine_to_core(
         engine_inputs.schedule,
         outputs,
         engine_inputs.workers,
@@ -66,4 +66,5 @@ def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
         assignments=a_campaign,
         breaches=breaches,
         requests=updated_requests,
+        model_output=model_output,
     )

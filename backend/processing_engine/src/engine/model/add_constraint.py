@@ -14,8 +14,10 @@ class AddConstraint:
         variables: Dict[Tuple[str, str, str], cp_model.IntVar],
         assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar],
         obj: Objective,
+        var_spe_sol: Dict[Tuple[str, str, str, str], int] | None = None,
     ) -> None:
         self.model = model
         self.variables = variables
         self.assignment_wdss = assignment_wdss
         self.obj = obj
+        self.var_spe_sol = var_spe_sol

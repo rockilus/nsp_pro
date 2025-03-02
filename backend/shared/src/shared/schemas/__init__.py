@@ -45,16 +45,19 @@ from shared.schemas.schemas.dimension import (
 )
 from shared.schemas.schemas.engine import (
     ConfigurationConstraints,
+    CustomSolverParams,
     EngineInputs,
     EngineInputsAugmented,
     EngineOutputs,
     EngineOutputsAugmented,
     ModelConfig,
+    ModelSetup,
     SolverParams,
     SolveStrategy,
     SystemConstraints,
 )
 from shared.schemas.schemas.export_options import ExportOptions, ExportPeriodOptions
+from shared.schemas.schemas.model_output import ModelOutput, ModelOutputStatus
 from shared.schemas.schemas.request import Request, RequestAugmented, RequestStatus
 from shared.schemas.schemas.schedule import (
     Assignment,
@@ -136,16 +139,20 @@ __all__ = [
     "DimensionType",
     "DimEntry",
     "ConfigurationConstraints",
+    "CustomSolverParams",
     "EngineInputs",
     "EngineInputsAugmented",
     "EngineOutputs",
     "EngineOutputsAugmented",
     "ModelConfig",
+    "ModelSetup",
     "SolverParams",
     "SolveStrategy",
     "SystemConstraints",
     "ExportOptions",
     "ExportPeriodOptions",
+    "ModelOutput",
+    "ModelOutputStatus",
     "Request",
     "RequestAugmented",
     "RequestStatus",

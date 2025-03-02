@@ -2,7 +2,9 @@ import os
 
 from shared.schemas import (
     ConfigurationConstraints,
+    CustomSolverParams,
     ModelConfig,
+    ModelSetup,
     SolverParams,
     SolveStrategy,
     SystemConstraints,
@@ -29,12 +31,32 @@ if (pytest_mode and environment == "production") or (
     num_search_workers = cpu_count
 print(f"num_search_workers: {num_search_workers}")
 
+
+def get_max_time_in_seconds(is_test: bool, in_github: bool, cur_env: str) -> int:
+    if is_test:
+        if not in_github:
+            return 3
+        return 5
+    if cur_env == "development":
+        return 60
+    if cur_env == "production":
+        return 45
+    return 30
+
+
 model_config = ModelConfig(
     solver_params=SolverParams(
-        max_time_in_seconds=70 if github_actions_mode else 30,
+        # max_time_in_seconds=5 if test_mode else 30,
+        max_time_in_seconds=get_max_time_in_seconds(
+            test_mode, github_actions_mode, environment
+        ),
         num_search_workers=num_search_workers,
-        solve_strategy=SolveStrategy.HARD_TO_SOFT,
+        log_search_progress=False,
     ),
+    custom_solver_params=CustomSolverParams(
+        limit_number_solution=None, solve_strategy=SolveStrategy.HARD_TO_SOFT
+    ),
+    model_setup=ModelSetup(sol_hint=False),
     configuration_constraints=ConfigurationConstraints(work_loads=False),
     system_constraints=SystemConstraints(
         weekly_target_work_time=not test_mode,

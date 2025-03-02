@@ -20,7 +20,7 @@ def engine_solve_engine_inputs(
         engine_inputs.cbs_augmented,
         engine_inputs.daily_shift_demands,
         engine_inputs.requests,
-        engine_inputs.wip_assignments,
+        engine_inputs.model_output,
         engine_inputs.penalties,
         engine_inputs.model_config,
     )

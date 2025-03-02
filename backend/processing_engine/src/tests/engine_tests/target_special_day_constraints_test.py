@@ -354,7 +354,7 @@ class TestSpecialDayConstraints:
             cbs_augmented=[],
             daily_shift_demands=daily_shift_demands,
             requests=[],
-            wip_assignments=[],
+            model_output=None,
             penalties=penalties_fix,
             model_config=mc_copy,
         )
@@ -368,6 +368,8 @@ class TestSpecialDayConstraints:
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
         inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
+
+        inputs.model_config.solver_params.max_time_in_seconds = 15
 
         out = run_engine_solve(inputs)
         assert out.objective_value == 0
@@ -473,6 +475,7 @@ class TestSpecialDayConstraints:
         engine_inputs_special_days.attributes = attributes
 
         inputs, _ = run_core_to_engine_inputs(engine_inputs_special_days)
+        inputs.model_config.solver_params.max_time_in_seconds = 15
 
         out = run_engine_solve(inputs)
 

@@ -53,6 +53,15 @@ class Variables:
 
 
 @dataclass
+class SolHint:
+    var_sol: Dict[Tuple[str, str, str], int]
+    var_spe_sol: Dict[Tuple[str, str, str, str], int]
+
+    def to_dict(self):
+        return asdict(self)
+
+
+@dataclass
 class WorkTime:
     # for each worker, a list of assignments for the target periods
     # (size workers x periods x shifts * period length])
@@ -134,15 +143,26 @@ class SystemConstraintInputs:
     special_days_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
 
 
-# pylint: disable=too-many-instance-attributes
 @dataclass
-class Inputs:
+class ModelSetup:
     variables: Variables
     no_overlap_shift_intervals: List[
         List[Tuple[str, str, str]]
     ]  # list of assignments for each worker
     fixed_values: Dict[Tuple[str, str, str], int]  # List[Assignment]
-    sol_hint: Dict[Tuple[str, str, str], int]  # List[Assignment]
+    sol_hint: SolHint
+
+    def to_dict(self):
+        out = asdict(self)
+        out["fixed_values"] = {str(k): v for k, v in self.fixed_values.items()}
+        out["sol_hint"] = self.sol_hint.to_dict()
+        return out
+
+
+# pylint: disable=too-many-instance-attributes
+@dataclass
+class Inputs:
+    model_setup: ModelSetup
     user_constraints: Constraints
     configuration_constraints: ConfigurationConstraintInputs
     system_constraints: SystemConstraintInputs
@@ -150,8 +170,7 @@ class Inputs:
 
     def to_dict(self):
         out = asdict(self)
-        out["fixed_values"] = {str(k): v for k, v in self.fixed_values.items()}
-        out["sol_hint"] = {str(k): v for k, v in self.sol_hint.items()}
+        out["model_setup"] = self.model_setup.to_dict()
         return out
 
 
@@ -192,6 +211,10 @@ class Outputs:
     assignments: List[Assignment]
     objective_value: int
     breaches: List[Breach]
+    var_sol: Dict[Tuple[str, str, str], int]
+    var_spe_sol: Dict[Tuple[str, str, str, str], int]
+    status: int
+    wall_time: float
 
 
 ##############################

@@ -6,6 +6,7 @@ from shared.schemas.schemas.attribute import Attribute
 from shared.schemas.schemas.constraint import ConstraintBuildAugmented, Penalties
 from shared.schemas.schemas.coverage import DailyShiftDemand
 from shared.schemas.schemas.dimension import Dimension, DimEntry
+from shared.schemas.schemas.model_output import ModelOutput
 from shared.schemas.schemas.request import Request, RequestAugmented
 from shared.schemas.schemas.schedule import Assignment, Breach, Schedule
 from shared.schemas.schemas.shift import LinkShift, Shift
@@ -39,12 +40,25 @@ class ConfigurationConstraints:
 class SolverParams:
     max_time_in_seconds: int
     num_search_workers: int
+    log_search_progress: bool
+
+
+@dataclass
+class CustomSolverParams:
+    limit_number_solution: int | None
     solve_strategy: SolveStrategy
+
+
+@dataclass
+class ModelSetup:
+    sol_hint: bool
 
 
 @dataclass
 class ModelConfig:
     solver_params: SolverParams
+    custom_solver_params: CustomSolverParams
+    model_setup: ModelSetup
     system_constraints: SystemConstraints
     configuration_constraints: ConfigurationConstraints
 
@@ -70,7 +84,7 @@ class EngineInputs:
     cbs_augmented: List[ConstraintBuildAugmented]
     daily_shift_demands: List[DailyShiftDemand]
     requests: List[Request]
-    wip_assignments: List[Assignment]
+    model_output: ModelOutput | None
 
     def to_dict(self) -> Dict:
         return {
@@ -91,9 +105,9 @@ class EngineInputs:
                 demand.to_dict() for demand in self.daily_shift_demands
             ],
             "requests": [request.to_dict() for request in self.requests],
-            "wip_assignments": [
-                assignment.to_dict() for assignment in self.wip_assignments
-            ],
+            "model_output": (
+                self.model_output.to_dict() if self.model_output else None
+            ),
         }
 
     @classmethod
@@ -124,10 +138,11 @@ class EngineInputs:
                 for demand in data["daily_shift_demands"]
             ],
             requests=[Request.from_dict(request) for request in data["requests"]],
-            wip_assignments=[
-                Assignment.from_dict(assignment)
-                for assignment in data["wip_assignments"]
-            ],
+            model_output=(
+                ModelOutput.from_dict(data["model_output"])
+                if data["model_output"]
+                else None
+            ),
         )
 
 
@@ -148,6 +163,7 @@ class EngineOutputs:
     assignments: List[Assignment]
     breaches: List[Breach]
     requests: List[Request]
+    model_output: ModelOutput
 
     def to_dict(self) -> Dict:
         return {
@@ -155,6 +171,7 @@ class EngineOutputs:
             "assignments": [assignment.to_dict() for assignment in self.assignments],
             "breaches": [breach.to_dict() for breach in self.breaches],
             "requests": [request.to_dict() for request in self.requests],
+            "model_output": self.model_output.to_dict(),
         }
 
     @classmethod
@@ -166,6 +183,7 @@ class EngineOutputs:
             ],
             breaches=[Breach.from_dict(breach) for breach in data["breaches"]],
             requests=[Request.from_dict(request) for request in data["requests"]],
+            model_output=ModelOutput.from_dict(data["model_output"]),
         )
 
 

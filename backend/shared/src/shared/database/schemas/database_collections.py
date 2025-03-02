@@ -12,6 +12,7 @@ from shared.database.databases.db import DB
 from shared.database.databases.dim_entry_db import DimEntryDB
 from shared.database.databases.dimension_db import DimensionDB
 from shared.database.databases.link_shift_db import LinkShiftDB
+from shared.database.databases.model_output_db import ModelOutputDB
 from shared.database.databases.request_db import RequestDB
 from shared.database.databases.schedule_db import ScheduleDB
 from shared.database.databases.shift_db import ShiftDB
@@ -38,6 +39,7 @@ class DatabaseCollections:
     dim_entry_db: DimEntryDB
     dimension_db: DimensionDB
     link_shift_db: LinkShiftDB
+    model_output_db: ModelOutputDB
     request_db: RequestDB
     schedule_db: ScheduleDB
     shift_db: ShiftDB
@@ -61,6 +63,7 @@ class DatabaseCollections:
         self.dim_entry_db = DimEntryDB(db)
         self.dimension_db = DimensionDB(db)
         self.link_shift_db = LinkShiftDB(db)
+        self.model_output_db = ModelOutputDB(db)
         self.request_db = RequestDB(db)
         self.schedule_db = ScheduleDB(db)
         self.shift_db = ShiftDB(db)
