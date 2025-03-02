@@ -1,7 +1,7 @@
 import time
 
 from shared.database import DatabaseCollections
-from shared.schemas import EngineInputs, Schedule, ScheduleStatus
+from shared.schemas import EngineInputs, Schedule
 
 from db_operations.assignment_services import get_fixed_assignments
 from db_operations.create_shift import create_duty_recuperation_shifts
@@ -44,10 +44,7 @@ def get_engine_inputs(
     requests = get_requests_by_dates(
         schedule.start_date, schedule.end_date, workers, shifts, collections
     )
-    team_schedules = collections.schedule_db.get_schedules(schedule.team_id)
-    wip_assignments = collections.assignment_db.get_assignments_by_schedule_ids(
-        [s.id for s in team_schedules if s.status == ScheduleStatus.CAMPAIGN]
-    )
+    model_output = collections.model_output_db.get_model_output(schedule.id)
     end_time_db = time.time()
     engine_inputs = EngineInputs(
         schedule=schedule,
@@ -63,7 +60,7 @@ def get_engine_inputs(
         cbs_augmented=cbs_augmented,
         daily_shift_demands=daily_shift_demands,
         requests=requests,
-        wip_assignments=wip_assignments,
+        model_output=model_output,
     )
     total_time_db = end_time_db - start_time_db
     print(f"db time:              {total_time_db:.2f}s")

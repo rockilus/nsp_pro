@@ -186,7 +186,7 @@ class TestTargetWorkTimeConstraints:
             cbs_augmented=[],
             daily_shift_demands=daily_shift_demands,
             requests=[],
-            wip_assignments=[],
+            model_output=None,
             penalties=penalties_fix,
             model_config=mc_copy,
         )
@@ -253,6 +253,8 @@ class TestTargetWorkTimeConstraints:
         ei_work_times.workers = ei_work_times.workers[:3]
 
         inputs, _ = run_core_to_engine_inputs(ei_work_times)
+
+        inputs.model_config.solver_params.max_time_in_seconds = 30
 
         out = run_engine_solve(inputs)
 

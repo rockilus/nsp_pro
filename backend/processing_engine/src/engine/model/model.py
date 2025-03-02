@@ -6,6 +6,7 @@ from ortools.sat.python import cp_model  # type: ignore
 from shared.schemas import SolveStrategy
 
 from engine.model.add_constraint_factory import AddConstraintFactory
+from engine.model.solver_solution_callback import SolverSolutionCallback
 from engine.model.utils.model_utils import (
     build_var_name_daily_shift_demand,
     build_var_name_link_shift,
@@ -41,7 +42,6 @@ class Model:
 
         self.obj = Objective()
         self.solver = cp_model.CpSolver()
-        self.solution_printer = cp_model.ObjectiveSolutionPrinter()
         self.status = 0
         self.bt = BenchmarkTimes()
 
@@ -53,10 +53,14 @@ class Model:
         )
 
     def solve_campaign(self, inputs: Inputs) -> None:
-        if self.model_config.solver_params.solve_strategy == SolveStrategy.SEQUENTIAL:
+        if (
+            self.model_config.custom_solver_params.solve_strategy
+            == SolveStrategy.SEQUENTIAL
+        ):
             self.sequential_solve(inputs)
         elif (
-            self.model_config.solver_params.solve_strategy == SolveStrategy.HARD_TO_SOFT
+            self.model_config.custom_solver_params.solve_strategy
+            == SolveStrategy.HARD_TO_SOFT
         ):
             self.solve_hard_to_soft(inputs)
 
@@ -212,14 +216,17 @@ class Model:
         request_hts: bool,
         constraint_hts: bool,
     ) -> None:
-        self.build_variables(inputs.variables)
+        self.build_variables(inputs.model_setup.variables)
 
         # Starting point:
-        self.add_solution_hint(inputs.sol_hint)
+        self.add_solution_hint(
+            inputs.model_setup.sol_hint.var_sol,
+            inputs.model_setup.sol_hint.var_spe_sol,
+        )
 
         # Hard constraints:
-        self.set_fixed_variables(inputs.fixed_values)
-        self.no_interval_overlap(inputs.no_overlap_shift_intervals)
+        self.set_fixed_variables(inputs.model_setup.fixed_values)
+        self.no_interval_overlap(inputs.model_setup.no_overlap_shift_intervals)
 
         # Hard to soft constraints:
         # Configuration constraints:
@@ -326,9 +333,15 @@ class Model:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
 
-    def add_solution_hint(self, solution_hint: Dict[Tuple[str, str, str], int]) -> None:
-        for k, v in solution_hint.items():
-            self.model.AddHint(self.variables[k], v)
+    def add_solution_hint(
+        self,
+        var_sol: Dict[Tuple[str, str, str], int],
+        var_spe_sol: Dict[Tuple[str, str, str, str], int],
+    ) -> None:
+        for k, v in var_sol.items():
+            if k in self.variables:
+                self.model.AddHint(self.variables[k], v)
+        self.add_constraint_factory.var_spe_sol = var_spe_sol
 
     def no_interval_overlap(
         self, no_overlap_shift_intervals: List[List[Tuple[str, str, str]]]
@@ -690,20 +703,23 @@ class Model:
         # params = "max_time_in_seconds:20.0"
         # if params:
         #     text_format.Parse(params, self.solver.parameters)
+
+        # solution_printer = cp_model.ObjectiveSolutionPrinter()
+        solution_printer = SolverSolutionCallback(
+            limit=self.model_config.custom_solver_params.limit_number_solution
+        )
         self.solver.parameters.max_time_in_seconds = (
             self.model_config.solver_params.max_time_in_seconds
         )
         # Set the number of search workers (threads)
-        print(
-            "SOLVER NUM WORKERS",
-            self.model_config.solver_params.num_search_workers,
-        )
         self.solver.parameters.num_search_workers = (
             self.model_config.solver_params.num_search_workers
         )
-        # self.solver.parameters.log_search_progress = True
+        self.solver.parameters.log_search_progress = (
+            self.model_config.solver_params.log_search_progress
+        )
         self.status = self.solver.Solve(  # type: ignore # [CHECK IF OK]
-            self.model, self.solution_printer
+            self.model, solution_printer
         )
         # self.bt.total_end = time.time()
 

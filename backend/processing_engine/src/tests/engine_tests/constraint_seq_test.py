@@ -319,6 +319,8 @@ class TestConstraintSeq:
 
         inputs.user_constraints.seq.append(constraint_soft)
 
+        inputs.model_config.solver_params.max_time_in_seconds = 40
+
         out = run_engine_solve(inputs)
 
         # Check assignments hard constraint
@@ -502,6 +504,7 @@ class TestConstraintSeq:
             constraint_hard_copy.operator = ConstraintOperator.EQUAL
 
         inputs.user_constraints.seq.append(constraint_hard_copy)
+        inputs.model_config.solver_params.max_time_in_seconds = 10
 
         out = run_engine_solve(inputs)
 

@@ -9,6 +9,7 @@ from shared.schemas import (
     DimEntry,
     LinkShift,
     ModelConfig,
+    ModelOutput,
     Penalties,
     Request,
     Schedule,
@@ -31,7 +32,6 @@ from core_to_engine_service.build_engine_constraints import build_engine_constra
 from core_to_engine_service.build_engine_fixed_values import core_to_engine_fixed_values
 from core_to_engine_service.build_engine_requests import build_engine_requests
 from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
-from core_to_engine_service.build_engine_sol_hint import core_to_engine_sol_hint
 from core_to_engine_service.build_engine_variables import build_engine_variables
 from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
 from core_to_engine_service.build_link_shift_pairs import build_link_shift_pairs
@@ -53,7 +53,8 @@ from core_to_engine_service.calculate_worker_work_times import (
 )
 from engine import ConfigurationConstraintInputs
 from engine import Inputs as InputsEngine
-from engine import ProcessingCache, SystemConstraintInputs
+from engine import ModelSetup as ModelSetupEngine
+from engine import ProcessingCache, SolHint, SystemConstraintInputs
 
 
 # pylint: disable=too-many-arguments, too-many-locals, R0801
@@ -69,7 +70,7 @@ def core_to_engine_inputs(
     cbs_augmented: List[ConstraintBuildAugmented],
     daily_shift_demands: List[DailyShiftDemand],
     requests: List[Request],
-    wip_assignments: List[Assignment],
+    model_output: ModelOutput | None,
     penalties: Penalties,
     model_config: ModelConfig,
 ) -> Tuple[InputsEngine, ProcessingCache]:
@@ -154,39 +155,43 @@ def core_to_engine_inputs(
     )
 
     inputs = InputsEngine(
-        variables=build_engine_variables(
-            workers,
-            worker_ids_to_worker_dates,
-            shifts,
-            shifts_not_deleted,
-            shift_id_to_duration_dict,
-        ),
-        no_overlap_shift_intervals=[
-            [
-                (w_id, d.isoformat(), s_id)
-                for d in worker_ids_to_worker_dates[w_id].dates_campaign
-                for s_id in shift_not_deleted_ids
-            ]
-            for w_id in worker_not_deleted_ids
-        ],
-        fixed_values=core_to_engine_fixed_values(
-            workers,
-            workers_not_deleted,
-            worker_ids_to_worker_dates,
-            shifts,
-            daily_shift_demands,
-            fixed_assignments,
-            requests,
-        ),
-        sol_hint=(
-            core_to_engine_sol_hint(
-                worker_not_deleted_ids,
+        ModelSetupEngine(
+            variables=build_engine_variables(
+                workers,
                 worker_ids_to_worker_dates,
-                shift_not_deleted_ids,
-                wip_assignments,
-            )
-            if wip_assignments
-            else {}
+                shifts,
+                shifts_not_deleted,
+                shift_id_to_duration_dict,
+            ),
+            no_overlap_shift_intervals=[
+                [
+                    (w_id, d.isoformat(), s_id)
+                    for d in worker_ids_to_worker_dates[w_id].dates_campaign
+                    for s_id in shift_not_deleted_ids
+                ]
+                for w_id in worker_not_deleted_ids
+            ],
+            fixed_values=core_to_engine_fixed_values(
+                workers,
+                workers_not_deleted,
+                worker_ids_to_worker_dates,
+                shifts,
+                daily_shift_demands,
+                fixed_assignments,
+                requests,
+            ),
+            sol_hint=SolHint(
+                var_sol=(
+                    model_output.var_sol
+                    if model_output and model_config.model_setup.sol_hint
+                    else {}
+                ),
+                var_spe_sol=(
+                    model_output.var_spe_sol
+                    if model_output and model_config.model_setup.sol_hint
+                    else {}
+                ),
+            ),
         ),
         user_constraints=constraints,
         configuration_constraints=ConfigurationConstraintInputs(

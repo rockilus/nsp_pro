@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines
+from copy import deepcopy
 from datetime import date, datetime, timedelta
 from typing import Callable, List, Tuple
 
@@ -23,6 +24,7 @@ from shared.schemas import (
     DimensionType,
     DimEntry,
     DSDSourceType,
+    EngineInputs,
     EngineInputsAugmented,
     ModelConfig,
     Penalties,
@@ -46,6 +48,7 @@ from engine import ProcessingCache
 from engine.engine import Engine, Outputs
 from solve_service.model_config import model_config
 from solve_service.penalties import penalties
+from tests.utils import engine_inputs_to_engine_inputs_augmented, load_json_from_file
 
 
 # pylint: disable=R0801
@@ -469,7 +472,7 @@ def engine_inputs(
         cbs_augmented=[],
         daily_shift_demands=daily_shift_demands_shifts_3n_2d,
         requests=[],
-        wip_assignments=[],
+        model_output=None,
         penalties=penalties_fix,
         model_config=model_config_fix,
     )
@@ -2111,7 +2114,7 @@ def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputsAugmented], O
             engine_inputs.cbs_augmented,
             engine_inputs.daily_shift_demands,
             engine_inputs.requests,
-            engine_inputs.wip_assignments,
+            engine_inputs.model_output,
             engine_inputs.penalties,
             engine_inputs.model_config,
         )
@@ -2140,7 +2143,7 @@ def run_core_to_engine_inputs() -> (
             engine_inputs.cbs_augmented,
             engine_inputs.daily_shift_demands,
             engine_inputs.requests,
-            engine_inputs.wip_assignments,
+            engine_inputs.model_output,
             engine_inputs.penalties,
             engine_inputs.model_config,
         )
@@ -2155,3 +2158,23 @@ def run_engine_solve() -> Callable[[InputsEngine], Outputs]:
         return engine.solve(inputs_engine)
 
     return _run_engine_solve
+
+
+@pytest.fixture
+def benoit_case_250301(
+    penalties_fix: Penalties, model_config_fix: ModelConfig
+) -> EngineInputsAugmented:
+    ei_dict = load_json_from_file("test_data/250301_benoit_case.json")
+    engine_inputs = EngineInputs.from_dict(ei_dict)
+
+    model_config_copy = deepcopy(model_config_fix)
+
+    model_config_copy.system_constraints.weekly_target_work_time = True
+    model_config_copy.system_constraints.weekly_target_worktime_tolerance = 0.2
+    model_config_copy.system_constraints.monthly_target_nb_duties = True
+    model_config_copy.system_constraints.mthly_target_nb_duty_tolerance = 0.2
+    model_config_copy.system_constraints.special_days_target_nb_duties = True
+
+    return engine_inputs_to_engine_inputs_augmented(
+        engine_inputs, penalties_fix, model_config_copy
+    )

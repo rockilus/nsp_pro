@@ -10,7 +10,11 @@ from engine.types import ObjectiveCategory, ShiftDemand
 # pylint: disable=too-few-public-methods
 class AddCoverage(AddConstraint):
     # pylint: disable=too-many-locals
-    def add_coverage(self, shift_demands: List[ShiftDemand], hard_to_soft: bool):
+    def add_coverage(
+        self,
+        shift_demands: List[ShiftDemand],
+        hard_to_soft: bool,
+    ) -> None:
         for shift_demand in shift_demands:
             if shift_demand.assignments:
                 c_variables: List[cp_model.IntVar] = [
@@ -71,6 +75,8 @@ class AddCoverage(AddConstraint):
                     self.obj.int_vars.append(excess)
                     self.obj.int_coeffs.append(shift_demand.penalty)
         self.add_worker_shift_constraints()
+        if self.var_spe_sol is not None:
+            self.add_spe_sol_hint(self.var_spe_sol)
 
     def add_worker_shift_constraints(self) -> None:
         # Group variables by (worker_id, iso_date, shift_id)
@@ -91,3 +97,10 @@ class AddCoverage(AddConstraint):
             if len(vars_group) > 1:
                 self.model.Add(sum(vars_group) <= 1)
                 print(f"Added constraint: sum({vars_group}) <= 1 for {key}")
+
+    def add_spe_sol_hint(
+        self, var_spe_sol: Dict[Tuple[str, str, str, str], int]
+    ) -> None:
+        for k, v in var_spe_sol.items():
+            if k in self.assignment_wdss:
+                self.model.AddHint(self.assignment_wdss[k], v)
