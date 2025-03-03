@@ -18,6 +18,9 @@
 #     Staffing,
 #     Worker,
 # )
+# from typing import Callable, Tuple
+# from engine import Outputs, ProcessingCache, SolHint
+# from engine import Inputs as InputsEngine
 
 
 # # pylint: disable=R0801
@@ -215,25 +218,27 @@
 #     # some iterations to solve
 #     inputs_1, _ = run_core_to_engine_inputs(benoit_case_250301)
 
-#     inputs_1.sol_hint = SolHint(var_sol={}, var_spe_sol={})
+#     inputs_1.model_setup.sol_hint = SolHint(var_sol={}, var_spe_sol={})
 #     # inputs_1.sol_hint.var_spe_sol = {}
 
-#     inputs_1.model_config.solver_params.max_time_in_seconds = 120
+#     inputs_1.model_config.solver_params.max_time_in_seconds = 30
 
 #     out_1 = run_engine_solve(inputs_1)
 
 #     # Use solution from first run as hint for second run, and stop after
 #     # first solution
-#     benoit_case_250301.model_config.solver_params.limit_number_solution = 1
+#     benoit_case_250301.model_config.custom_solver_params.limit_number_solution = (
+#         1
+#     )
 #     inputs_2, _ = run_core_to_engine_inputs(benoit_case_250301)
 
-#     inputs_2.sol_hint = SolHint(
+#     inputs_2.model_setup.sol_hint = SolHint(
 #         var_sol=out_1.var_sol,
-#         # var_spe_sol=out_1.var_spe_sol,
-#         var_spe_sol={},
+#         var_spe_sol=out_1.var_spe_sol,
+#         # var_spe_sol={},
 #     )
 
-#     inputs_2.model_config.solver_params.max_time_in_seconds = 60
+#     inputs_2.model_config.solver_params.max_time_in_seconds = 30
 
 #     out_2 = run_engine_solve(inputs_2)
 
