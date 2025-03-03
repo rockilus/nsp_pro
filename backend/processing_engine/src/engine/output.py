@@ -1,10 +1,11 @@
+import re
 from datetime import date
-from typing import List
+from typing import Any, Dict, List
 
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.model import Model
-from engine.types import Assignment, Breach, Outputs
+from engine.types import Assignment, Breach, Outputs, SolverRun
 
 
 class Output:
@@ -28,6 +29,11 @@ class Output:
                 n: 1 if self.model.solver.BooleanValue(v) else 0
                 for n, v in self.model.assignment_wdss.items()
             }
+            solver_run = self.parse_response_stats(
+                self.model.solver.ResponseStats(),
+                self.model.model_config.solver_params.to_dict(),
+                self.model.log_output,
+            )
             return Outputs(
                 model=self.model.model,
                 is_solution=is_solution,
@@ -38,6 +44,7 @@ class Output:
                 var_spe_sol=var_spe_sol,
                 status=self.model.status,
                 wall_time=self.model.solver.WallTime(),
+                solver_run=solver_run,
             )
         return Outputs(
             model=self.model.model,
@@ -49,6 +56,7 @@ class Output:
             var_spe_sol={},
             status=self.model.status,
             wall_time=self.model.solver.WallTime(),
+            solver_run=solver_run,
         )
 
     def build_solution(self) -> List[Assignment]:
@@ -64,7 +72,9 @@ class Output:
                 )
 
         for var_spe, bool_var_spe in self.model.assignment_wdss.items():
-            var_gen = self.model.variables[(var_spe[0], var_spe[1], var_spe[2])]
+            var_gen = self.model.variables[
+                (var_spe[0], var_spe[1], var_spe[2])
+            ]
             if self.model.solver.BooleanValue(
                 bool_var_spe
             ) and not self.model.solver.BooleanValue(var_gen):
@@ -96,3 +106,70 @@ class Output:
                     )
                 )
         return out
+
+    @staticmethod
+    def parse_response_stats(
+        response_stats_str: str, params: Dict[str, str], log_output: str
+    ) -> SolverRun:
+        # Regular expression pattern for extracting key-value pairs
+        pattern = re.compile(r"(\w+): (.+)")
+
+        # Dictionary to store extracted values
+        extracted_values: Dict[str, Any] = {}
+
+        for match in pattern.finditer(response_stats_str):
+            key = match.group(1)
+            value = match.group(2).strip()
+
+            # Convert types based on known attributes
+            # pylint: disable=R0801
+            if key in {
+                "objective",
+                "best_bound",
+                "integers",
+                "booleans",
+                "conflicts",
+                "branches",
+                "propagations",
+                "integer_propagations",
+                "restarts",
+                "lp_iterations",
+            }:
+                extracted_values[key] = int(value)
+            elif key in {
+                "walltime",
+                "usertime",
+                "deterministic_time",
+                "gap_integral",
+            }:
+                extracted_values[key] = float(value)
+            else:
+                extracted_values[key] = (
+                    value  # Keep as string for status & fingerprint
+                )
+
+        # Create SolverRun instance
+        return SolverRun(
+            params=params,
+            log_output=log_output,
+            status=str(extracted_values.get("status", "")),
+            objective=extracted_values.get("objective", 0),
+            best_bound=extracted_values.get("best_bound", 0),
+            integers=extracted_values.get("integers", 0),
+            booleans=extracted_values.get("booleans", 0),
+            conflicts=extracted_values.get("conflicts", 0),
+            branches=extracted_values.get("branches", 0),
+            propagations=extracted_values.get("propagations", 0),
+            integer_propagations=extracted_values.get(
+                "integer_propagations", 0
+            ),
+            restarts=extracted_values.get("restarts", 0),
+            lp_iterations=extracted_values.get("lp_iterations", 0),
+            walltime=extracted_values.get("walltime", 0.0),
+            usertime=extracted_values.get("usertime", 0.0),
+            deterministic_time=extracted_values.get("deterministic_time", 0.0),
+            gap_integral=extracted_values.get("gap_integral", 0.0),
+            solution_fingerprint=str(
+                extracted_values.get("solution_fingerprint", "")
+            ),
+        )
