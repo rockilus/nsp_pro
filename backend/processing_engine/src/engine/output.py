@@ -1,5 +1,5 @@
 import re
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Any, Dict, List
 
 from ortools.sat.python import cp_model  # type: ignore
@@ -17,6 +17,11 @@ class Output:
             cp_model.OPTIMAL,
             cp_model.FEASIBLE,
         )
+        solver_run = self.parse_response_stats(
+            self.model.solver.ResponseStats(),
+            self.model.model_config.solver_params.to_dict(),
+            self.model.log_output,
+        )
         if is_solution:
             assignments = self.build_solution()
             objective_value = self.model.solver.ObjectiveValue()
@@ -29,11 +34,6 @@ class Output:
                 n: 1 if self.model.solver.BooleanValue(v) else 0
                 for n, v in self.model.assignment_wdss.items()
             }
-            solver_run = self.parse_response_stats(
-                self.model.solver.ResponseStats(),
-                self.model.model_config.solver_params.to_dict(),
-                self.model.log_output,
-            )
             return Outputs(
                 model=self.model.model,
                 is_solution=is_solution,
@@ -146,8 +146,7 @@ class Output:
 
         # Create SolverRun instance
         return SolverRun(
-            params=params,
-            log_output=log_output,
+            run_timestamp=datetime.now(timezone.utc).timestamp(),
             status=str(extracted_values.get("status", "")),
             objective=extracted_values.get("objective", 0),
             best_bound=extracted_values.get("best_bound", 0),
@@ -164,4 +163,6 @@ class Output:
             deterministic_time=extracted_values.get("deterministic_time", 0.0),
             gap_integral=extracted_values.get("gap_integral", 0.0),
             solution_fingerprint=str(extracted_values.get("solution_fingerprint", "")),
+            params=params,
+            log_output=log_output,
         )

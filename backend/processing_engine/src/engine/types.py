@@ -206,8 +206,7 @@ class Breach:
 
 @dataclass
 class SolverRun:
-    params: Dict[str, str]
-    log_output: str
+    run_timestamp: float
     status: str
     objective: int
     best_bound: int
@@ -224,6 +223,8 @@ class SolverRun:
     deterministic_time: float
     gap_integral: float
     solution_fingerprint: str
+    params: Dict[str, str]
+    log_output: str
 
 
 @dataclass

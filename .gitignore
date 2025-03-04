@@ -23,7 +23,7 @@ __pycache__/
 .next/
 node_modules/
 dist/
-backend/src/engine/saved/*
-
+backend/src/processing_engine/engine/saved/
+backend/processing_engine/src/solver_parameter_tuning/parameter_test_output
 # Environments
 venv_nsp

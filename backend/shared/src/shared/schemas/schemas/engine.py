@@ -36,6 +36,10 @@ class ConfigurationConstraints:
     work_loads: bool
 
 
+# List of parameters:
+# https://github.com/google/or-tools/blob/stable/ortools/sat/sat_parameters.proto
+
+
 # pylint: disable=too-many-instance-attributes
 @dataclass
 class SolverParams:
@@ -274,3 +278,49 @@ class EngineOutputsAugmented:
                 Shift.from_dict(shift) for shift in data["shifts_recup_new"]
             ],
         )
+
+
+# Ortools cp_model sobsolvers parameter:
+# https://github.com/google/or-tools/blob/dd85ab7a037091450284d7ae15853efc6d5807a4/ortools/sat/cp_model_search.cc
+
+# problem subsolvers: [
+#   core,
+#   default_lp,
+#   fixed,
+#   lb_tree_search,
+#   max_lp,
+#   no_lp,
+#   probing,
+#   pseudo_costs,
+#   quick_restart,
+#   quick_restart_no_lp,
+#   reduced_costs
+# ]
+# first solution subsolvers: [
+#   fj(2),
+#   fs_random,
+#   fs_random_no_lp,
+#   fs_random_quick_restart_no_lp
+# ]
+# interleaved subsolvers: [
+# feasibility_pump,
+# graph_arc_lns,
+# graph_cst_lns,
+# graph_dec_lns,
+# graph_var_lns,
+# lb_relax_lns,
+# ls,
+# ls_lin,
+# rins/rens,
+# rnd_cst_lns,
+# rnd_var_lns,
+# scheduling_intervals_lns,
+# scheduling_precedences_lns,
+# scheduling_resource_windows_lns,
+# scheduling_time_window_lns
+# ]
+# helper subsolvers: [
+# neighborhood_helper,
+# synchronization_agent,
+# update_gap_integral
+# ]

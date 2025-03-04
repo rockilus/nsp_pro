@@ -2058,7 +2058,7 @@ def generate_test_name(
     val: Tuple[
         ConstraintBuildAugmented,
         ConstraintFai | ConstraintFil | ConstraintOrd | ConstraintSeq | ConstraintSum,
-    ]
+    ],
 ):
     constraint, _ = val
     return constraint.id
