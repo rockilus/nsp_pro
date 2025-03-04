@@ -2,13 +2,19 @@ import copy
 import json
 import os
 from dataclasses import asdict
-from typing import Dict, List
+from typing import Callable, Dict, List, Tuple
 
-from shared.schemas import EngineInputs, SolverParams
+from shared.schemas import (
+    EngineInputs,
+    EngineInputsAugmented,
+    ModelConfig,
+    Penalties,
+    SolverParams,
+)
 
 from engine import Engine
 from engine import Inputs as InputsEngine
-from engine import SolverRun
+from engine import ProcessingCache, SolverRun
 
 
 def test_solver_parameters(
@@ -67,11 +73,15 @@ def test_solver_parameters(
             test_name = f"{param_name}_{value}"
 
             # Run the solver
-            run_result = run_solver_with_params(inputs, engine, test_params, test_name)
+            run_result = run_solver_with_params(
+                inputs, engine, test_params, test_name
+            )
             results[test_name] = run_result
 
             # Save the results
-            save_run_results(run_result, os.path.join(output_dir, f"{test_name}.json"))
+            save_run_results(
+                run_result, os.path.join(output_dir, f"{test_name}.json")
+            )
 
     # Generate a summary report
     # generate_summary_report(results, output_dir)
@@ -192,32 +202,25 @@ def save_run_results(run: SolverRun, filepath: str):
 #         )
 
 
-def build_base_engine_inputs() -> EngineInputs:
-    current_folder = os.path.dirname(__file__)
-    file_path = os.path.join(current_folder, "test_data/250301_benoit_case.json")
+def build_base_engine_inputs(file_path: str) -> EngineInputs:
     with open(file_path, "r", encoding="utf-8") as file:
         data = json.load(file)
     return EngineInputs.from_dict(data)
 
 
-# if __name__ == "__main__":
-#     engine_inputs = build_base_engine_inputs()
-#     inp, _ = core_to_engine_inputs(
-#         engine_inputs.schedule,
-#         engine_inputs.workers,
-#         engine_inputs.shifts,
-#         engine_inputs.link_shifts,
-#         engine_inputs.dimensions,
-#         engine_inputs.dim_entries,
-#         engine_inputs.attributes,
-#         engine_inputs.as_hist + engine_inputs.as_wip_fixed,
-#         engine_inputs.cbs_augmented,
-#         engine_inputs.daily_shift_demands,
-#         engine_inputs.requests,
-#         engine_inputs.model_output,
-#         penalties,
-#         model_config,
-#     )
-#     eng = Engine()
-
-#     test_solver_parameters(inp, eng)
+def run_parameter_tests(
+    core_to_engine_inputs_func: Callable[
+        [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+    ],
+    engine: Engine,
+    penalties: Penalties,
+    model_config: ModelConfig,
+    file_path_test_data: str,
+) -> None:
+    engine_inputs = build_base_engine_inputs(file_path_test_data)
+    ei_augmented = EngineInputsAugmented.from_engine_inputs(
+        engine_inputs, penalties, model_config
+    )
+    inputs, _ = core_to_engine_inputs_func(ei_augmented)
+    print("Running parameter tests...")
+    test_solver_parameters(inputs, engine)

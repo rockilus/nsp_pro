@@ -1,23 +1,6 @@
 from typing import Dict, List, Tuple
 
-from shared.schemas import (
-    Assignment,
-    Attribute,
-    ConstraintBuildAugmented,
-    DailyShiftDemand,
-    Dimension,
-    DimEntry,
-    LinkShift,
-    ModelConfig,
-    ModelOutput,
-    Penalties,
-    Request,
-    Schedule,
-    Shift,
-    ShiftRestType,
-    ShiftType,
-    Worker,
-)
+from shared.schemas import EngineInputsAugmented, Shift, ShiftRestType, ShiftType
 
 from core_to_engine_service.build_dates import (
     build_dates,
@@ -59,61 +42,66 @@ from engine import ProcessingCache, SolHint, SystemConstraintInputs
 
 # pylint: disable=too-many-arguments, too-many-locals, R0801
 def core_to_engine_inputs(
-    schedule: Schedule,
-    workers: List[Worker],
-    shifts: List[Shift],
-    link_shifts: List[LinkShift],
-    dimensions: List[Dimension],
-    dim_entries: List[DimEntry],
-    attributes: List[Attribute],
-    fixed_assignments: List[Assignment],
-    cbs_augmented: List[ConstraintBuildAugmented],
-    daily_shift_demands: List[DailyShiftDemand],
-    requests: List[Request],
-    model_output: ModelOutput | None,
-    penalties: Penalties,
-    model_config: ModelConfig,
+    engine_inputs: EngineInputsAugmented,
 ) -> Tuple[InputsEngine, ProcessingCache]:
     # Workers
-    workers_not_deleted = [w for w in workers if not w.deleted]
-    worker_not_deleted_ids = [w.id for w in workers if not w.deleted]
+    workers_not_deleted = [w for w in engine_inputs.workers if not w.deleted]
+    worker_not_deleted_ids = [w.id for w in engine_inputs.workers if not w.deleted]
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
-        workers, dimensions, dim_entries, attributes
+        engine_inputs.workers,
+        engine_inputs.dimensions,
+        engine_inputs.dim_entries,
+        engine_inputs.attributes,
     )
 
     # Shifts
     shifts_not_deleted = [
         s
-        for s in shifts
+        for s in engine_inputs.shifts
         if not s.deleted
         and (
             s.rest_type != ShiftRestType.RECUPERATION
-            or any(d.id == s.recuperation_duty_id and not d.deleted for d in shifts)
+            or any(
+                d.id == s.recuperation_duty_id and not d.deleted
+                for d in engine_inputs.shifts
+            )
         )
     ]
     shift_not_deleted_ids = [s.id for s in shifts_not_deleted]
     shifts_work = [
-        s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+        s
+        for s in engine_inputs.shifts
+        if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
     ]
-    shift_duties = [s for s in shifts if s.shift_type == ShiftType.DUTY]
+    shift_duties = [s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY]
     shift_duties_not_deleted = [s for s in shift_duties if not s.deleted]
-    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
+    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(engine_inputs.shifts)
     dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
-        shifts, dimensions, dim_entries, attributes
+        engine_inputs.shifts,
+        engine_inputs.dimensions,
+        engine_inputs.dim_entries,
+        engine_inputs.attributes,
     )
 
     # Dates
-    dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
+    fixed_assignments = engine_inputs.as_hist + engine_inputs.as_wip_fixed
+    dates_hist, dates_campaign = build_dates(
+        engine_inputs.schedule,
+        fixed_assignments,
+    )
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-        schedule, workers, fixed_assignments, dates_campaign
+        engine_inputs.schedule,
+        engine_inputs.workers,
+        fixed_assignments,
+        dates_campaign,
     )
     ws_to_dates = build_ws_ids_to_dates(
-        schedule,
-        workers,
+        engine_inputs.schedule,
+        engine_inputs.workers,
         workers_not_deleted,
-        shifts,
+        engine_inputs.shifts,
         shifts_not_deleted,
         fixed_assignments,
         dates_campaign,
@@ -121,45 +109,45 @@ def core_to_engine_inputs(
 
     # Work times
     w_to_work_times = calculate_worker_work_times(
-        schedule,
+        engine_inputs.schedule,
         workers_not_deleted,
         shifts_not_deleted,
-        requests,
-        daily_shift_demands,
+        engine_inputs.requests,
+        engine_inputs.daily_shift_demands,
         periods_weekly,
     )
 
     w_to_nb_duties = calculate_worker_nb_duties(
-        schedule,
+        engine_inputs.schedule,
         workers_not_deleted,
         shifts_not_deleted,
-        requests,
-        daily_shift_demands,
+        engine_inputs.requests,
+        engine_inputs.daily_shift_demands,
         periods_monthly,
     )
 
     # Constraints:
     constraints = build_engine_constraints(
-        cbs_augmented,
-        schedule,
-        workers,
+        engine_inputs.cbs_augmented,
+        engine_inputs.schedule,
+        engine_inputs.workers,
         dim_to_attr_value_to_worker,
         dates_hist,
         dates_campaign,
         periods_weekly,
         periods_monthly,
         worker_ids_to_worker_dates,
-        shifts,
+        engine_inputs.shifts,
         dim_to_attr_value_to_shift,
-        penalties,
+        engine_inputs.penalties,
     )
 
     inputs = InputsEngine(
         ModelSetupEngine(
             variables=build_engine_variables(
-                workers,
+                engine_inputs.workers,
                 worker_ids_to_worker_dates,
-                shifts,
+                engine_inputs.shifts,
                 shifts_not_deleted,
                 shift_id_to_duration_dict,
             ),
@@ -172,23 +160,25 @@ def core_to_engine_inputs(
                 for w_id in worker_not_deleted_ids
             ],
             fixed_values=core_to_engine_fixed_values(
-                workers,
+                engine_inputs.workers,
                 workers_not_deleted,
                 worker_ids_to_worker_dates,
-                shifts,
-                daily_shift_demands,
+                engine_inputs.shifts,
+                engine_inputs.daily_shift_demands,
                 fixed_assignments,
-                requests,
+                engine_inputs.requests,
             ),
             sol_hint=SolHint(
                 var_sol=(
-                    model_output.var_sol
-                    if model_output and model_config.model_setup.sol_hint
+                    engine_inputs.model_output.var_sol
+                    if engine_inputs.model_output
+                    and engine_inputs.model_config.model_setup.sol_hint
                     else {}
                 ),
                 var_spe_sol=(
-                    model_output.var_spe_sol
-                    if model_output and model_config.model_setup.sol_hint
+                    engine_inputs.model_output.var_spe_sol
+                    if engine_inputs.model_output
+                    and engine_inputs.model_config.model_setup.sol_hint
                     else {}
                 ),
             ),
@@ -206,9 +196,9 @@ def core_to_engine_inputs(
                     shift_id_to_duration_dict,
                     w_to_work_times,
                     w_to_nb_duties,
-                    penalties,
+                    engine_inputs.penalties,
                 )
-                if model_config.configuration_constraints.work_loads
+                if engine_inputs.model_config.configuration_constraints.work_loads
                 else None
             ),
             shift_demands=build_engine_shift_demands(
@@ -216,38 +206,38 @@ def core_to_engine_inputs(
                 dates_campaign,
                 worker_ids_to_worker_dates,
                 shifts_not_deleted,
-                daily_shift_demands,
-                penalties.configuration_constraint.coverage,
+                engine_inputs.daily_shift_demands,
+                engine_inputs.penalties.configuration_constraint.coverage,
             ),
             requests=build_engine_requests(
                 worker_not_deleted_ids,
                 worker_ids_to_worker_dates,
                 shift_not_deleted_ids,
-                requests,
-                penalties.user_constraint.request,
+                engine_inputs.requests,
+                engine_inputs.penalties.user_constraint.request,
             ),
             duty_recup_pairs=build_duty_recup_pairs(
                 workers_not_deleted,
                 worker_ids_to_worker_dates,
                 shifts_not_deleted,
                 shift_duties_not_deleted,
-                penalties.configuration_constraint.duty_recup,
+                engine_inputs.penalties.configuration_constraint.duty_recup,
             ),
             link_shifts_pairs=build_link_shift_pairs(
                 workers_not_deleted,
                 worker_ids_to_worker_dates,
                 shifts_not_deleted,
-                link_shifts,
-                daily_shift_demands,
-                penalties.configuration_constraint.link_shift,
+                engine_inputs.link_shifts,
+                engine_inputs.daily_shift_demands,
+                engine_inputs.penalties.configuration_constraint.link_shift,
             ),
             worker_shift_filters=build_worker_shift_filters(
-                workers,
+                engine_inputs.workers,
                 worker_ids_to_worker_dates,
-                shifts,
-                dimensions,
-                attributes,
-                penalties.configuration_constraint.worker_shift_filter,
+                engine_inputs.shifts,
+                engine_inputs.dimensions,
+                engine_inputs.attributes,
+                engine_inputs.penalties.configuration_constraint.worker_shift_filter,
             ),
         ),
         system_constraints=SystemConstraintInputs(
@@ -258,10 +248,13 @@ def core_to_engine_inputs(
                     ws_to_dates,
                     shifts_work,
                     shift_id_to_duration_dict,
-                    penalties.system_constraint.weekly_target_work_time,
-                    model_config.system_constraints.weekly_target_worktime_tolerance,
+                    engine_inputs.penalties.system_constraint.weekly_target_work_time,
+                    # fmt: off
+                    engine_inputs.model_config.system_constraints
+                    .weekly_target_worktime_tolerance,
+                    # fmt: on
                 )
-                if model_config.system_constraints.weekly_target_work_time
+                if engine_inputs.model_config.system_constraints.weekly_target_work_time
                 else []
             ),
             monthly_target_nb_duties=(
@@ -270,10 +263,16 @@ def core_to_engine_inputs(
                     w_to_nb_duties,
                     ws_to_dates,
                     shift_duties_not_deleted,
-                    penalties.system_constraint.monthly_target_nb_duties,
-                    model_config.system_constraints.mthly_target_nb_duty_tolerance,
+                    engine_inputs.penalties.system_constraint.monthly_target_nb_duties,
+                    # fmt: off
+                    engine_inputs.model_config.system_constraints
+                    .mthly_target_nb_duty_tolerance,
+                    # fmt: on
                 )
-                if model_config.system_constraints.monthly_target_nb_duties
+                # fmt: off
+                if engine_inputs.model_config.system_constraints
+                .monthly_target_nb_duties
+                # fmt: on
                 else []
             ),
             special_days_target_nb_duties=(
@@ -282,17 +281,23 @@ def core_to_engine_inputs(
                     worker_ids_to_worker_dates,
                     dates_hist,
                     dates_campaign,
-                    shifts,
-                    requests,
-                    daily_shift_demands,
+                    engine_inputs.shifts,
+                    engine_inputs.requests,
+                    engine_inputs.daily_shift_demands,
                     fixed_assignments,
-                    penalties.system_constraint.special_days_target_nb_duties,
+                    # fmt: off
+                    engine_inputs.penalties.system_constraint
+                    .special_days_target_nb_duties,
+                    # fmt: on
                 )
-                if model_config.system_constraints.special_days_target_nb_duties
+                # fmt: off
+                if engine_inputs.model_config.system_constraints
+                .special_days_target_nb_duties
+                # fmt: on
                 else []
             ),
         ),
-        model_config=model_config,
+        model_config=engine_inputs.model_config,
     )
     return inputs, ProcessingCache(
         constraints=constraints,
