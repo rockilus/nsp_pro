@@ -54,6 +54,9 @@ def files_content_to_params_to_outputs(
     out: Dict[Tuple, Dict[str, str | List[Dict]]] = {}
     for file_content, case_name in zip(files_content, case_names):
         params = file_content.get("params", {})
+        for key in ["subsolvers", "ignore_subsolvers"]:
+            if key in params and params[key] is not None:
+                params[key] = ", ".join(params[key])
         outputs = {
             k: v for k, v in file_content.items() if k not in ["params", "log_output"]
         }
@@ -67,6 +70,7 @@ def files_content_to_params_to_outputs(
                 "outputs": [],
             }
         out[params_tuple]["outputs"].append(outputs)  # type: ignore
+
     return out
 
 
@@ -113,18 +117,26 @@ def create_params_outputs_table(
     rows = []
     row_labels = []
 
+    # Add label row
+    row_labels.append("Outputs")
+    rows.append([""] * len(params_to_outputs))
+
     # Add output rows
     for output in sorted(all_outputs):
         row_labels.append(output)
         rows.append(
             [
                 params_to_outputs[case]["outputs"].get(output, None)  # type: ignore
-                for case in params_to_outputs
+                for case in columns
             ]
         )
 
     # Add separator row
-    row_labels.append("---")
+    row_labels.append("")
+    rows.append([""] * len(params_to_outputs))
+
+    # Add label row
+    row_labels.append("Parameters")
     rows.append([""] * len(params_to_outputs))
 
     # Add parameter rows
@@ -133,7 +145,7 @@ def create_params_outputs_table(
         rows.append(
             [
                 params_to_outputs[case]["params"].get(param, None)  # type: ignore
-                for case in params_to_outputs
+                for case in columns
             ]
         )
 
@@ -149,6 +161,23 @@ def save_output_to_csv(df: pd.DataFrame, file_path: str) -> None:
 
 def save_output_to_xlsx(df: pd.DataFrame, file_path: str) -> None:
     df.to_excel(file_path, index=True, engine="xlsxwriter")
+
+
+def filter_files_by_params(directory: str, params_list: List[Dict]) -> List[Dict]:
+    files_content, _ = load_json_files(directory)
+    filtered_content = [
+        file_content
+        for file_content in files_content
+        if file_content.get("params") in params_list
+    ]
+    return filtered_content
+
+
+def save_log_output_to_txt(json_file_path: str, txt_file_path: str) -> None:
+    file_content = load_json_file(json_file_path)
+    log_output = file_content.get("log_output", "")
+    with open(txt_file_path, "w", encoding="utf-8") as txt_file:
+        txt_file.write(log_output)
 
 
 # if __name__ == "__main__":

@@ -52,6 +52,28 @@ model_config = ModelConfig(
         ),
         num_search_workers=num_search_workers,
         log_search_progress=False,
+        subsolvers=[
+            "core",
+            "default_lp",
+            "max_lp",
+            "quick_restart",
+        ],
+        ignore_subsolvers=[
+            # "scheduling_intervals_lns",  # remove
+            # "scheduling_precedences_lns",  # remove
+            "scheduling_resource_windows_lns",
+            "scheduling_time_window_lns",
+            "feasibility_pump",
+        ],
+        core_minimization_level=1,
+        cut_level=2,
+        feasibility_jump_var_perburbation_range_ratio=0.1,
+        linearization_level=0,
+        lns_initial_deterministic_limit=0.15,
+        max_presolve_iterations=1,
+        symmetry_detection_deterministic_time_limit=2,
+        use_symmetry_in_lp=True,
+        violation_ls_compound_move_probability=0.6,
     ),
     custom_solver_params=CustomSolverParams(
         limit_number_solution=None, solve_strategy=SolveStrategy.HARD_TO_SOFT
@@ -66,3 +88,29 @@ model_config = ModelConfig(
         special_days_target_nb_duties=not test_mode,
     ),
 )
+
+
+# SolverParams(
+#     # mutlithread
+#     ignore_subsolvers=[
+#         "scheduling_intervals_lns",
+#         "scheduling_precedences_lns",
+#         "scheduling_resource_windows_lns",
+#         "scheduling_time_window_lns",
+#         "rins/rens",
+#     ],
+#     # linear programming relaxation
+#     linearization_level=2,
+#     cut_level=2,
+#     # constraint programming parameters
+#     use_strong_propagation_in_disjunctive=True,
+#     violation_ls_compound_move_probability=0.3,  # to test
+#     feasibility_jump_var_perburbation_range_ratio=0.3,  # to test
+#     # lns parameters
+#     use_combined_no_overlap=True,
+#     lns_initial_deterministic_limit=0.15,
+#     lns_initial_difficulty=0.4,  # 0.6 - to test
+# )
+
+# to test: core, default_lp, quick restart
+# to test: core, default_lp, quick restart, max_lp

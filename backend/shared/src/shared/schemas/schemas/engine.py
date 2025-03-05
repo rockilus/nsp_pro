@@ -43,27 +43,43 @@ class ConfigurationConstraints:
 # pylint: disable=too-many-instance-attributes
 @dataclass
 class SolverParams:
-    max_time_in_seconds: int
-    num_search_workers: int = 1
+    # LIMITS
+    max_time_in_seconds: int = 30
+    num_search_workers: int = 0
     log_search_progress: bool = False
+    log_subsolver_statistics: bool = False
+
+    # MULTITHREAD
     subsolvers: List[str] | None = None
+    ignore_subsolvers: List[str] | None = None
+
+    # RESTART
+    # NO_RESTART = 0;
+    # Follow a Luby sequence times restart_period.
+    # LUBY_RESTART = 1;
+    # Moving average restart based on the decision level of conflicts.
+    # DL_MOVING_AVERAGE_RESTART = 2;
+    # Moving average restart based on the LBD of conflicts.
+    # LBD_MOVING_AVERAGE_RESTART = 3;
+    # Fixed period restart every restart period.
+    # FIXED_RESTART = 4;
+    restart_algorithms: List[str] | None = None
+    restart_period: int = 50
+
+    # LINEAR PROGRAMMING RELAXATION
     # 0: no LP relaxation
     # 1: only the linear constraint and full encoding are added
     # 2: also add all the Boolean constraints
     linearization_level: int = 1
+    # 0: turn off all cut.
+    # For now just one level. Most cuts are only used at linearization level >= 2.
+    cut_level: int = 1
+
+    # LNS PARAMETERS
+    lns_initial_difficulty: float = 0.5
+    lns_initial_deterministic_limit: float = 0.1
     use_lns_only: bool = False
-    interleave_search: bool = False
-    optimize_with_core: bool = False
-    # 1: use a simple heuristic to try to minimize an UNSAT core
-    # 2: use propagation to minimize the core but also identify literal in at
-    # most one relationship in this core.
-    core_minimization_level: int = 2
-    random_seed: int = 1
-    probing_deterministic_time_limit: float = 1.0
-    max_presolve_iterations: int = 3
-    cp_model_probing_level: int = 2
-    detect_table_with_cost: bool = False
-    diversify_lns_params: bool = False
+    use_combined_no_overlap: bool = False
     # 1: detect symmetries in presolve and try to fix Booleans
     # 2: also do some form of dynamic symmetry breaking during search
     # 3: also detect symmetries for very large models, which can be slow
@@ -71,6 +87,28 @@ class SolverParams:
     symmetry_level: int = 2
     use_symmetry_in_lp: bool = False
     symmetry_detection_deterministic_time_limit: int = 1
+
+    # CONSTRAINT PROGRAMMING PARAMETERS
+    use_strong_propagation_in_disjunctive: bool = False
+    violation_ls_compound_move_probability: float = 0.5
+    feasibility_jump_var_perburbation_range_ratio: float = 0.2
+    instantiate_all_variables: bool = True
+
+    # Max_SAT parameters
+    # 1: use a simple heuristic to try to minimize an UNSAT core.
+    # 2: use propagation to minimize the core but also identifyliteral in at
+    # most one relationship in this core.
+    core_minimization_level: int = 2
+
+    # NOT CATEGORIZED
+    interleave_search: bool = False
+    optimize_with_core: bool = False
+    random_seed: int = 1
+    probing_deterministic_time_limit: float = 1.0
+    max_presolve_iterations: int = 3
+    cp_model_probing_level: int = 2
+    detect_table_with_cost: bool = False
+    diversify_lns_params: bool = False
 
     def to_dict(self) -> Dict:
         return asdict(self)

@@ -1913,7 +1913,7 @@ crt = ["botocore[crt] (>=1.33.2,<2.0a.0)"]
 
 [[package]]
 name = "shared"
-version = "0.1.102"
+version = "0.1.106"
 description = ""
 optional = false
 python-versions = ">=3.10,<=3.13"
@@ -2197,7 +2197,18 @@ files = [
 [package.extras]
 dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 
+[[package]]
+name = "xlsxwriter"
+version = "3.2.2"
+description = "A Python module for creating Excel XLSX files."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "XlsxWriter-3.2.2-py3-none-any.whl", hash = "sha256:272ce861e7fa5e82a4a6ebc24511f2cb952fde3461f6c6e1a1e81d3272db1471"},
+    {file = "xlsxwriter-3.2.2.tar.gz", hash = "sha256:befc7f92578a85fed261639fb6cde1fd51b79c5e854040847dde59d4317077dc"},
+]
+
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<=3.13"
-content-hash = "888ade8ea34bdce9a059bd591a8b96433b8139893db9eae448885f5501a0c530"
+content-hash = "d254df8839cd0ae0289901a87c5f42459865e37f849c4dd057bd1958801c8c97"

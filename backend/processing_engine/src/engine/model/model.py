@@ -710,11 +710,38 @@ class Model:
         out.max_time_in_seconds = params.max_time_in_seconds
         out.num_search_workers = params.num_search_workers
         out.log_search_progress = params.log_search_progress
+        out.log_subsolver_statistics = params.log_subsolver_statistics
         if params.subsolvers:
             for subsolver in params.subsolvers:
                 out.subsolvers.append(subsolver)
+        if params.ignore_subsolvers:
+            for subsolver in params.ignore_subsolvers:
+                out.ignore_subsolvers.append(subsolver)
+        if params.restart_algorithms:
+            out.restart_algorithms.extend(params.restart_algorithms)
+        # out.restart_algorithms.extend(["LUBY_RESTART"])
+        out.restart_period = params.restart_period
         out.linearization_level = params.linearization_level
+        out.cut_level = params.cut_level
+        out.lns_initial_difficulty = params.lns_initial_difficulty
+        out.lns_initial_deterministic_limit = params.lns_initial_deterministic_limit
+        out.instantiate_all_variables = params.instantiate_all_variables
         out.use_lns_only = params.use_lns_only
+        out.use_combined_no_overlap = params.use_combined_no_overlap
+        out.symmetry_level = params.symmetry_level
+        out.symmetry_detection_deterministic_time_limit = (
+            params.symmetry_detection_deterministic_time_limit
+        )
+        out.use_symmetry_in_lp = params.use_symmetry_in_lp
+        out.use_strong_propagation_in_disjunctive = (
+            params.use_strong_propagation_in_disjunctive
+        )
+        out.violation_ls_compound_move_probability = (
+            params.violation_ls_compound_move_probability
+        )
+        out.feasibility_jump_var_perburbation_range_ratio = (
+            params.feasibility_jump_var_perburbation_range_ratio
+        )
         out.interleave_search = params.interleave_search
         out.optimize_with_core = params.optimize_with_core
         out.core_minimization_level = params.core_minimization_level
@@ -724,11 +751,6 @@ class Model:
         out.cp_model_probing_level = params.cp_model_probing_level
         out.detect_table_with_cost = params.detect_table_with_cost
         out.diversify_lns_params = params.diversify_lns_params
-        out.symmetry_level = params.symmetry_level
-        out.use_symmetry_in_lp = params.use_symmetry_in_lp
-        out.symmetry_detection_deterministic_time_limit = (
-            params.symmetry_detection_deterministic_time_limit
-        )
 
         return out
 
