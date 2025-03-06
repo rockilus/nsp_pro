@@ -54,7 +54,7 @@ def files_content_to_params_to_outputs(
     out: Dict[Tuple, Dict[str, str | List[Dict]]] = {}
     for file_content, case_name in zip(files_content, case_names):
         params = file_content.get("params", {})
-        for key in ["subsolvers", "ignore_subsolvers"]:
+        for key in ["subsolvers", "ignore_subsolvers", "restart_algorithms"]:
             if key in params and params[key] is not None:
                 params[key] = ", ".join(params[key])
         outputs = {

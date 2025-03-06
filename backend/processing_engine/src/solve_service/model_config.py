@@ -59,8 +59,8 @@ model_config = ModelConfig(
             "quick_restart",
         ],
         ignore_subsolvers=[
-            # "scheduling_intervals_lns",  # remove
-            # "scheduling_precedences_lns",  # remove
+            "scheduling_intervals_lns",  # remove
+            "scheduling_precedences_lns",  # remove
             "scheduling_resource_windows_lns",
             "scheduling_time_window_lns",
             "feasibility_pump",
@@ -74,6 +74,7 @@ model_config = ModelConfig(
         symmetry_detection_deterministic_time_limit=2,
         use_symmetry_in_lp=True,
         violation_ls_compound_move_probability=0.6,
+        restart_algorithms=["LUBY_RESTART"],
     ),
     custom_solver_params=CustomSolverParams(
         limit_number_solution=None, solve_strategy=SolveStrategy.HARD_TO_SOFT

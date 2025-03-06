@@ -25,6 +25,7 @@ if __name__ == "__main__":
         model_config=model_config,
         file_path_test_data=file_path_test_data,
         dir_path_output=dir_path_output,
-        num_runs=1,
+        num_runs=10,
         run_base_case=True,
+        run_param_tests=False,
     )

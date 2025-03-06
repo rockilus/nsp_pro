@@ -45,11 +45,21 @@ class ConfigurationConstraints:
 class SolverParams:
     # LIMITS
     max_time_in_seconds: int = 30
-    num_search_workers: int = 0
+    interleave_search: bool = False
+
+    # OTHER PARAMETERS
     log_search_progress: bool = False
     log_subsolver_statistics: bool = False
+    random_seed: int = 1
+
+    # PRESOLVE
+    probing_deterministic_time_limit: float = 1.0
+    max_presolve_iterations: int = 3
+    cp_model_probing_level: int = 2
+    detect_table_with_cost: bool = False
 
     # MULTITHREAD
+    num_search_workers: int = 0
     subsolvers: List[str] | None = None
     ignore_subsolvers: List[str] | None = None
 
@@ -93,22 +103,14 @@ class SolverParams:
     violation_ls_compound_move_probability: float = 0.5
     feasibility_jump_var_perburbation_range_ratio: float = 0.2
     instantiate_all_variables: bool = True
+    optimize_with_core: bool = False
+    diversify_lns_params: bool = False
 
     # Max_SAT parameters
     # 1: use a simple heuristic to try to minimize an UNSAT core.
     # 2: use propagation to minimize the core but also identifyliteral in at
     # most one relationship in this core.
     core_minimization_level: int = 2
-
-    # NOT CATEGORIZED
-    interleave_search: bool = False
-    optimize_with_core: bool = False
-    random_seed: int = 1
-    probing_deterministic_time_limit: float = 1.0
-    max_presolve_iterations: int = 3
-    cp_model_probing_level: int = 2
-    detect_table_with_cost: bool = False
-    diversify_lns_params: bool = False
 
     def to_dict(self) -> Dict:
         return asdict(self)
