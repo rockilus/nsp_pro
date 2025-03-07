@@ -3,7 +3,10 @@ from typing import Dict, List, Tuple
 
 # from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
-from shared.schemas import SolveStrategy
+
+# pylint: disable=no-name-in-module
+from ortools.sat.sat_parameters_pb2 import SatParameters  # type: ignore
+from shared.schemas import SolverParams, SolveStrategy
 
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.solver_solution_callback import SolverSolutionCallback
@@ -41,8 +44,10 @@ class Model:
         self.model_config = model_config
 
         self.obj = Objective()
+        # self.solution_callback: cp_model.CpSolverSolutionCallback | None = None
         self.solver = cp_model.CpSolver()
         self.status = 0
+        self.log_output = ""
         self.bt = BenchmarkTimes()
 
         self.add_constraint_factory = AddConstraintFactory(
@@ -699,28 +704,75 @@ class Model:
             )
         )
 
-    def solve(self) -> None:
-        # params = "max_time_in_seconds:20.0"
-        # if params:
-        #     text_format.Parse(params, self.solver.parameters)
+    def build_solver_params(self, params: SolverParams) -> SatParameters:
+        out = SatParameters()
 
+        out.max_time_in_seconds = params.max_time_in_seconds
+        out.num_search_workers = params.num_search_workers
+        out.log_search_progress = params.log_search_progress
+        out.log_subsolver_statistics = params.log_subsolver_statistics
+        if params.subsolvers:
+            for subsolver in params.subsolvers:
+                out.subsolvers.append(subsolver)
+        if params.ignore_subsolvers:
+            for subsolver in params.ignore_subsolvers:
+                out.ignore_subsolvers.append(subsolver)
+        if params.restart_algorithms:
+            out.restart_algorithms.extend(params.restart_algorithms)
+        # out.restart_algorithms.extend(["LUBY_RESTART"])
+        out.restart_period = params.restart_period
+        out.linearization_level = params.linearization_level
+        out.cut_level = params.cut_level
+        out.lns_initial_difficulty = params.lns_initial_difficulty
+        out.lns_initial_deterministic_limit = params.lns_initial_deterministic_limit
+        out.instantiate_all_variables = params.instantiate_all_variables
+        out.use_lns_only = params.use_lns_only
+        out.use_combined_no_overlap = params.use_combined_no_overlap
+        out.symmetry_level = params.symmetry_level
+        out.symmetry_detection_deterministic_time_limit = (
+            params.symmetry_detection_deterministic_time_limit
+        )
+        out.use_symmetry_in_lp = params.use_symmetry_in_lp
+        out.use_strong_propagation_in_disjunctive = (
+            params.use_strong_propagation_in_disjunctive
+        )
+        out.violation_ls_compound_move_probability = (
+            params.violation_ls_compound_move_probability
+        )
+        out.feasibility_jump_var_perburbation_range_ratio = (
+            params.feasibility_jump_var_perburbation_range_ratio
+        )
+        out.interleave_search = params.interleave_search
+        out.optimize_with_core = params.optimize_with_core
+        out.core_minimization_level = params.core_minimization_level
+        if params.random_seed is not None:
+            out.random_seed = params.random_seed
+        out.probing_deterministic_time_limit = params.probing_deterministic_time_limit
+        out.max_presolve_iterations = params.max_presolve_iterations
+        out.cp_model_probing_level = params.cp_model_probing_level
+        out.detect_table_with_cost = params.detect_table_with_cost
+        out.diversify_lns_params = params.diversify_lns_params
+
+        return out
+
+    def solve(self) -> None:
         # solution_printer = cp_model.ObjectiveSolutionPrinter()
-        solution_printer = SolverSolutionCallback(
+        solution_callback = SolverSolutionCallback(
             limit=self.model_config.custom_solver_params.limit_number_solution
         )
-        self.solver.parameters.max_time_in_seconds = (
-            self.model_config.solver_params.max_time_in_seconds
-        )
-        # Set the number of search workers (threads)
-        self.solver.parameters.num_search_workers = (
-            self.model_config.solver_params.num_search_workers
-        )
-        self.solver.parameters.log_search_progress = (
-            self.model_config.solver_params.log_search_progress
-        )
+        solver_params = self.build_solver_params(self.model_config.solver_params)
+        self.solver.parameters = solver_params
+
+        def log_callback(string: str) -> None:
+            self.log_output += string
+            self.log_output += "\n"
+
+        self.solver.log_callback = log_callback
+
         self.status = self.solver.Solve(  # type: ignore # [CHECK IF OK]
-            self.model, solution_printer
+            self.model, solution_callback
         )
+
         # self.bt.total_end = time.time()
 
     def print_model_metadata(

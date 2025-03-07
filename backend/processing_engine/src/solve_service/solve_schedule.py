@@ -1,8 +1,8 @@
-import json
-import os
+# import json
+# import os
 import time
 
-from shared.schemas import EngineInputs, EngineOutputs
+from shared.schemas import EngineInputs, EngineInputsAugmented, EngineOutputs
 
 from core_to_engine_service import core_to_engine_inputs
 from engine import Engine
@@ -13,29 +13,17 @@ from solve_service.penalties import penalties
 
 # pylint: disable=too-many-locals
 def solve_schedule(engine_inputs: EngineInputs) -> EngineOutputs:
-    current_path = os.path.dirname(os.path.realpath(__file__))
-    inputs_file_path = os.path.join(current_path, "engine_inputs.json")
-    with open(inputs_file_path, "w", encoding="utf-8") as inputs_file:
-        json.dump(engine_inputs.to_dict(), inputs_file, indent=4)
-    print(f"Inputs saved to {inputs_file_path}")
+    # current_path = os.path.dirname(os.path.realpath(__file__))
+    # inputs_file_path = os.path.join(current_path, "engine_inputs.json")
+    # with open(inputs_file_path, "w", encoding="utf-8") as inputs_file:
+    #     json.dump(engine_inputs.to_dict(), inputs_file, indent=4)
+    # print(f"Inputs saved to {inputs_file_path}")
 
     start_time_core_to_engine = time.time()
-    inputs, processing_cache = core_to_engine_inputs(
-        engine_inputs.schedule,
-        engine_inputs.workers,
-        engine_inputs.shifts,
-        engine_inputs.link_shifts,
-        engine_inputs.dimensions,
-        engine_inputs.dim_entries,
-        engine_inputs.attributes,
-        engine_inputs.as_hist + engine_inputs.as_wip_fixed,
-        engine_inputs.cbs_augmented,
-        engine_inputs.daily_shift_demands,
-        engine_inputs.requests,
-        engine_inputs.model_output,
-        penalties,
-        model_config,
+    ei_augmented = EngineInputsAugmented.from_engine_inputs(
+        engine_inputs, penalties, model_config
     )
+    inputs, processing_cache = core_to_engine_inputs(ei_augmented)
     end_time_core_to_engine = time.time()
     start_time_engine = time.time()
     engine = Engine()

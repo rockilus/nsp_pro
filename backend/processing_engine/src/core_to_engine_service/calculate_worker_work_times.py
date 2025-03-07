@@ -331,7 +331,7 @@ def sort_workers(
 
 
 def round_proportional_times(
-    proportional_times: Dict[str, List[float]]
+    proportional_times: Dict[str, List[float]],
 ) -> Dict[str, List[int]]:
     rounded_times: Dict[str, List[int]] = {
         worker_id: [] for worker_id in proportional_times.keys()

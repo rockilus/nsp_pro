@@ -2058,7 +2058,7 @@ def generate_test_name(
     val: Tuple[
         ConstraintBuildAugmented,
         ConstraintFai | ConstraintFil | ConstraintOrd | ConstraintSeq | ConstraintSum,
-    ]
+    ],
 ):
     constraint, _ = val
     return constraint.id
@@ -2102,22 +2102,7 @@ def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputsAugmented], O
     def _run_engine_solve_from_engine_inputs(
         engine_inputs: EngineInputsAugmented,
     ) -> Outputs:
-        inputs_engine, _ = core_to_engine_inputs(
-            engine_inputs.schedule,
-            engine_inputs.workers,
-            engine_inputs.shifts,
-            engine_inputs.link_shifts,
-            engine_inputs.dimensions,
-            engine_inputs.dim_entries,
-            engine_inputs.attributes,
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
-            engine_inputs.cbs_augmented,
-            engine_inputs.daily_shift_demands,
-            engine_inputs.requests,
-            engine_inputs.model_output,
-            engine_inputs.penalties,
-            engine_inputs.model_config,
-        )
+        inputs_engine, _ = core_to_engine_inputs(engine_inputs)
         engine = Engine()
         return engine.solve(inputs_engine)
 
@@ -2131,22 +2116,7 @@ def run_core_to_engine_inputs() -> (
     def _run_core_to_engine_inputs(
         engine_inputs: EngineInputsAugmented,
     ) -> Tuple[InputsEngine, ProcessingCache]:
-        return core_to_engine_inputs(
-            engine_inputs.schedule,
-            engine_inputs.workers,
-            engine_inputs.shifts,
-            engine_inputs.link_shifts,
-            engine_inputs.dimensions,
-            engine_inputs.dim_entries,
-            engine_inputs.attributes,
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
-            engine_inputs.cbs_augmented,
-            engine_inputs.daily_shift_demands,
-            engine_inputs.requests,
-            engine_inputs.model_output,
-            engine_inputs.penalties,
-            engine_inputs.model_config,
-        )
+        return core_to_engine_inputs(engine_inputs)
 
     return _run_core_to_engine_inputs
 

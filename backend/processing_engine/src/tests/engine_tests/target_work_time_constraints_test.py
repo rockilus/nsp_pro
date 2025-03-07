@@ -354,6 +354,8 @@ class TestTargetWorkTimeConstraints:
         ei_work_times.model_config.configuration_constraints.work_loads = True
         inputs, _ = run_core_to_engine_inputs(ei_work_times)
 
+        inputs.model_config.solver_params.max_time_in_seconds = 10
+
         out = run_engine_solve(inputs)
 
         schedule = ei_work_times.schedule

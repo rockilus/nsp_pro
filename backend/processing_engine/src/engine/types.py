@@ -205,6 +205,29 @@ class Breach:
 
 
 @dataclass
+class SolverRun:
+    run_timestamp: float
+    status: str
+    objective: int
+    best_bound: int
+    integers: int
+    booleans: int
+    conflicts: int
+    branches: int
+    propagations: int
+    integer_propagations: int
+    restarts: int
+    lp_iterations: int
+    walltime: float
+    usertime: float
+    deterministic_time: float
+    gap_integral: float
+    solution_fingerprint: str
+    params: Dict[str, str]
+    log_output: str
+
+
+@dataclass
 class Outputs:
     model: cp_model.CpModel
     is_solution: bool
@@ -215,6 +238,7 @@ class Outputs:
     var_spe_sol: Dict[Tuple[str, str, str, str], int]
     status: int
     wall_time: float
+    solver_run: SolverRun
 
 
 ##############################
