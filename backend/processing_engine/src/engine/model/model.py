@@ -745,7 +745,8 @@ class Model:
         out.interleave_search = params.interleave_search
         out.optimize_with_core = params.optimize_with_core
         out.core_minimization_level = params.core_minimization_level
-        out.random_seed = params.random_seed
+        if params.random_seed is not None:
+            out.random_seed = params.random_seed
         out.probing_deterministic_time_limit = params.probing_deterministic_time_limit
         out.max_presolve_iterations = params.max_presolve_iterations
         out.cp_model_probing_level = params.cp_model_probing_level

@@ -50,7 +50,7 @@ class SolverParams:
     # OTHER PARAMETERS
     log_search_progress: bool = False
     log_subsolver_statistics: bool = False
-    random_seed: int = 1
+    random_seed: int | None = None
 
     # PRESOLVE
     probing_deterministic_time_limit: float = 1.0
@@ -76,7 +76,7 @@ class SolverParams:
     restart_algorithms: List[str] | None = None
     restart_period: int = 50
 
-    # LINEAR PROGRAMMING RELAXATION
+    # LINEAR PROGRAMMING RELAXATION (1425)
     # 0: no LP relaxation
     # 1: only the linear constraint and full encoding are added
     # 2: also add all the Boolean constraints
@@ -85,18 +85,19 @@ class SolverParams:
     # For now just one level. Most cuts are only used at linearization level >= 2.
     cut_level: int = 1
 
-    # LNS PARAMETERS
-    lns_initial_difficulty: float = 0.5
-    lns_initial_deterministic_limit: float = 0.1
+    # LNS PARAMETERS (1267)
+    lns_initial_difficulty: float = 0.5  # to test
+    lns_initial_deterministic_limit: float = 0.1  # to test
     use_lns_only: bool = False
-    use_combined_no_overlap: bool = False
+    use_combined_no_overlap: bool = False  # solver returns UKNOWN status
     # 1: detect symmetries in presolve and try to fix Booleans
     # 2: also do some form of dynamic symmetry breaking during search
     # 3: also detect symmetries for very large models, which can be slow
     # 4: try to break as much symmetry as possible in presolve.
     symmetry_level: int = 2
-    use_symmetry_in_lp: bool = False
-    symmetry_detection_deterministic_time_limit: int = 1
+    use_symmetry_in_lp: bool = False  # to test
+    symmetry_detection_deterministic_time_limit: int = 1  # to test
+    diversify_lns_params: bool = False  # to test
 
     # CONSTRAINT PROGRAMMING PARAMETERS
     use_strong_propagation_in_disjunctive: bool = False
@@ -104,9 +105,8 @@ class SolverParams:
     feasibility_jump_var_perburbation_range_ratio: float = 0.2
     instantiate_all_variables: bool = True
     optimize_with_core: bool = False
-    diversify_lns_params: bool = False
 
-    # Max_SAT parameters
+    # MAX_SAT PARAMETERS
     # 1: use a simple heuristic to try to minimize an UNSAT core.
     # 2: use propagation to minimize the core but also identifyliteral in at
     # most one relationship in this core.

@@ -51,7 +51,19 @@ class SolverParameterTester:
     ) -> Dict[str, SolverRun]:
         results = {}
         base_params = self.inputs.model_config.solver_params
-        default_params = SolverParams()
+        default_params = SolverParams(
+            # fmt: off
+            max_time_in_seconds=self.inputs.model_config.solver_params
+            .max_time_in_seconds,
+            num_search_workers=self.inputs.model_config.solver_params
+            .num_search_workers,
+            log_search_progress=self.inputs.model_config.solver_params
+            .log_search_progress,
+            log_subsolver_statistics=self.inputs.model_config.solver_params
+            .log_subsolver_statistics,
+            # fmt: on
+            random_seed=self.inputs.model_config.solver_params.random_seed,
+        )
         test_cases = []
 
         if run_base_case:
@@ -66,7 +78,9 @@ class SolverParameterTester:
                     if getattr(base_params, param_name) != value:
                         test_params = SolverParams(**asdict(base_params))
                         setattr(test_params, param_name, value)
-                        test_name = f"{param_name}_{value}"
+                        test_name = (
+                            f"{param_name}_{value if value is not None else 'None'}"
+                        )
                         if param_name in [
                             "subsolvers",
                             "ignore_subsolvers",

@@ -46,12 +46,16 @@ def get_max_time_in_seconds(is_test: bool, in_github: bool, cur_env: str) -> int
 
 model_config = ModelConfig(
     solver_params=SolverParams(
+        # LIMITS
         # max_time_in_seconds=5 if test_mode else 30,
         max_time_in_seconds=get_max_time_in_seconds(
             test_mode, github_actions_mode, environment
         ),
-        num_search_workers=num_search_workers,
+        # OTHER PARAMETERS
         log_search_progress=False,
+        # MULTITHREAD
+        num_search_workers=num_search_workers,
+        # num_search_workers=1,
         subsolvers=[
             "core",
             "default_lp",
@@ -59,22 +63,26 @@ model_config = ModelConfig(
             "quick_restart",
         ],
         ignore_subsolvers=[
-            "scheduling_intervals_lns",  # remove
-            "scheduling_precedences_lns",  # remove
+            "scheduling_intervals_lns",
+            "scheduling_precedences_lns",
             "scheduling_resource_windows_lns",
             "scheduling_time_window_lns",
             "feasibility_pump",
         ],
-        core_minimization_level=1,
+        # PRESOLVE
+        cp_model_probing_level=3,
+        detect_table_with_cost=True,
         cut_level=2,
+        core_minimization_level=2,
         feasibility_jump_var_perburbation_range_ratio=0.1,
-        linearization_level=0,
-        lns_initial_deterministic_limit=0.15,
+        # linearization_level=0,
+        # lns_initial_deterministic_limit=0.15,
         max_presolve_iterations=1,
-        symmetry_detection_deterministic_time_limit=2,
-        use_symmetry_in_lp=True,
-        violation_ls_compound_move_probability=0.6,
+        symmetry_detection_deterministic_time_limit=5,
+        # use_symmetry_in_lp=True,
+        violation_ls_compound_move_probability=0.7,
         restart_algorithms=["LUBY_RESTART"],
+        diversify_lns_params=True,
     ),
     custom_solver_params=CustomSolverParams(
         limit_number_solution=None, solve_strategy=SolveStrategy.HARD_TO_SOFT
