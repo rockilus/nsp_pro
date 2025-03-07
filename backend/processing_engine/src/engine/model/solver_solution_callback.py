@@ -26,19 +26,20 @@ class SolverSolutionCallback(cp_model.CpSolverSolutionCallback):
     """Print intermediate solutions."""
 
     def __init__(self, limit: int | None = None) -> None:
-        cp_model.CpSolverSolutionCallback.__init__(self)
+        # cp_model.CpSolverSolutionCallback.__init__(self)
+        super().__init__()
         self.__solution_count = 0
         self.__solution_limit = limit
         self._start_time = time.time()
 
     def on_solution_callback(self) -> None:
         self.__solution_count += 1
-        current_time = time.time()
-        obj = self.objective_value
-        print(
-            f"Solution {self.__solution_count}, time = "
-            + f"{current_time - self._start_time:.2f} s, objective = {obj:.0f}"
-        )
+        # current_time = time.time()
+        # obj = self.objective_value
+        # print(
+        #     f"Solution {self.__solution_count}, time = "
+        #     + f"{current_time - self._start_time:.2f} s, objective = {obj:.0f}"
+        # )
         if (
             self.__solution_limit is not None
             and self.__solution_count >= self.__solution_limit

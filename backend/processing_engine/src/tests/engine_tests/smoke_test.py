@@ -1,7 +1,10 @@
+from typing import Callable, Tuple
+
 import pytest
 from shared.schemas import EngineInputsAugmented
 
-from engine import Outputs
+from engine import Inputs as InputsEngine
+from engine import Outputs, ProcessingCache
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 
 # pylint: disable=unused-import
@@ -17,3 +20,20 @@ def test_engine_solve_smoke(
         assert outputs is not None
     except Exception as e:
         pytest.fail(f"engine_solve raised an exception: {e}")
+
+
+def test_engine_solve_smoke_benoit_case_250301(
+    benoit_case_250301: EngineInputsAugmented,
+    run_core_to_engine_inputs: Callable[
+        [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+    ],
+    run_engine_solve: Callable[[InputsEngine], Outputs],
+) -> None:
+    inputs, _ = run_core_to_engine_inputs(benoit_case_250301)
+
+    inputs.model_config.solver_params.max_time_in_seconds = 30
+    inputs.model_config.solver_params.log_search_progress = True
+
+    out = run_engine_solve(inputs)
+
+    assert out is not None
