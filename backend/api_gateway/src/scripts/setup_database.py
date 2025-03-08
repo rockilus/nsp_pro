@@ -1,9 +1,14 @@
 from shared.database import setup_database
+from shared.database_pymongo.database import MongoDB
+from shared.database_pymongo.repositories.shift import ShiftRepository
 
 from utils.env_config import DB_URI
 
 # Set up the database and initialize collections
 collections = setup_database(DB_URI)
+MongoDB.connect(DB_URI, "test")
+shift_db = ShiftRepository()
+
 
 # Access the collections as needed
 db = collections.db
@@ -20,7 +25,7 @@ dim_entry_db = collections.dim_entry_db
 link_shift_db = collections.link_shift_db
 request_db = collections.request_db
 schedule_db = collections.schedule_db
-shift_db = collections.shift_db
+# shift_db = collections.shift_db
 shift_demand_db = collections.shift_demand_db
 specialty_db = collections.specialty_db
 stats_header_db = collections.stats_header_db
