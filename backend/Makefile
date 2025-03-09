@@ -146,7 +146,8 @@ shared_check:
 	poetry run flake8 src && \
 	poetry run black --check src && \
 	poetry run pylint src && \
-	poetry run mypy src
+	poetry run mypy src && \
+	poetry run pytest
 
 # Run all tests
 test: api_gateway_test processing_engine_test storage_service_test

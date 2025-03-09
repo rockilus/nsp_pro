@@ -1,0 +1,55 @@
+import re
+
+import pytest
+from pymongo.database import Database
+from pymongo.errors import ConnectionFailure
+
+from shared.database_pymongo.database import MongoDB
+
+
+@pytest.fixture(scope="module")
+def mongo_uri() -> str:
+    return "mongodb://localhost:27017"
+
+
+@pytest.fixture(scope="module")
+def db_name() -> str:
+    return "test_db"
+
+
+# pylint: disable=redefined-outer-name
+def test_connect(mongo_uri: str, db_name: str) -> None:
+    db: Database = MongoDB.connect(mongo_uri, db_name)
+    assert db.name == db_name
+    MongoDB.close()
+
+
+def test_get_database_without_connect() -> None:
+    with pytest.raises(
+        ValueError,
+        match=re.escape("No database connection. Call connect() first."),
+    ):
+        MongoDB.get_database()
+
+
+def test_get_database(mongo_uri: str, db_name: str) -> None:
+    MongoDB.connect(mongo_uri, db_name)
+    db: Database = MongoDB.get_database()
+    assert db.name == db_name
+    MongoDB.close()
+
+
+def test_close(mongo_uri: str, db_name: str) -> None:
+    MongoDB.connect(mongo_uri, db_name)
+    MongoDB.close()
+    with pytest.raises(
+        ValueError,
+        match=re.escape("No database connection. Call connect() first."),
+    ):
+        MongoDB.get_database()
+
+
+def test_invalid_uri() -> None:
+    with pytest.raises(ConnectionFailure):
+        db: Database = MongoDB.connect("mongodb://invalid_uri:27017", "test_db", 100)
+        db.list_collection_names()  # type: ignore

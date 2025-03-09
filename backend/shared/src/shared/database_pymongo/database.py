@@ -11,10 +11,12 @@ class MongoDB:
     _db: Optional[Database] = None
 
     @classmethod
-    def connect(cls, uri: str, db_name: str) -> Database:
+    def connect(
+        cls, uri: str, db_name: str, timeoutMS: Optional[int] = None
+    ) -> Database:
         """Connect to MongoDB and return database instance."""
         if cls._client is None:
-            new_client = MongoClient(uri)
+            new_client = MongoClient(uri, timeoutMS=timeoutMS)
             new_db = new_client[db_name]
             cls._client = new_client
             cls._db = new_db
