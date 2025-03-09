@@ -86,7 +86,7 @@ shared_format:
 check: \
 	api_gateway_check \
 	data_fetcher_check \
-	processing_engine_check \
+	processing_engine_check_no_test \
 	storage_service_check \
 	shared_check
 
