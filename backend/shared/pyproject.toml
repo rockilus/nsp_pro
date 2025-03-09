@@ -21,6 +21,7 @@ autoflake = "^2.3.1"
 fastapi = "^0.115.6"
 pylint = "^3.3.2"
 black = "^25.1.0"
+pytest = "^8.3.5"
 
 
 [build-system]

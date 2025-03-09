@@ -83,11 +83,14 @@ shared_format:
 	poetry run black src
 
 # Run all checks
-check: \
+# check: \
 	api_gateway_check \
 	data_fetcher_check \
-	processing_engine_check_no_test \
+	processing_engine_check \
 	storage_service_check \
+	shared_check
+
+check: \
 	shared_check
 
 check_no_test: \
