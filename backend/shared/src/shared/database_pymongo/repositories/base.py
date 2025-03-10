@@ -1,5 +1,6 @@
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
 
+from bson import ObjectId
 from pymongo.collection import Collection
 from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
@@ -21,12 +22,13 @@ class BaseRepository(Generic[T]):
     def create(self, schema: T) -> T:
         """Create a new document in the collection."""
         doc = schema.to_mongo()
+        doc.pop("_id", None)
         result: InsertOneResult = self.collection.insert_one(doc)
 
         if not result.acknowledged:
             raise Exception("Failed to create document")
 
-        schema.id = result.inserted_id
+        schema.id = str(result.inserted_id)
         return schema
 
     def create_many(self, schemas: List[T]) -> List[T]:
@@ -35,19 +37,21 @@ class BaseRepository(Generic[T]):
             return []
 
         docs = [schema.to_mongo() for schema in schemas]
+        for doc in docs:
+            doc.pop("_id", None)
         result = self.collection.insert_many(docs)
 
         if not result.acknowledged:
             raise Exception("Failed to create documents")
 
         for i, s_id in enumerate(result.inserted_ids):
-            schemas[i].id = s_id
+            schemas[i].id = str(s_id)
 
         return schemas
 
     def find_by_id(self, doc_id: str) -> Optional[T]:
         """Find a document by its ID."""
-        doc = self.collection.find_one({"_id": doc_id})
+        doc = self.collection.find_one({"_id": ObjectId(doc_id)})
         return self.schema_cls.from_mongo(doc) if doc else None
 
     def find_all(
@@ -75,7 +79,7 @@ class BaseRepository(Generic[T]):
             return self.find_by_id(doc_id)
 
         result: UpdateResult = self.collection.update_one(
-            {"_id": doc_id}, {"$set": update_data}
+            {"_id": ObjectId(doc_id)}, {"$set": update_data}
         )
 
         if not result.acknowledged:
@@ -85,7 +89,7 @@ class BaseRepository(Generic[T]):
 
     def delete(self, doc_id: str) -> bool:
         """Delete a document by its ID."""
-        result: DeleteResult = self.collection.delete_one({"_id": doc_id})
+        result: DeleteResult = self.collection.delete_one({"_id": ObjectId(doc_id)})
         return result.deleted_count > 0
 
     def count(self, doc_filter: Optional[Dict[str, Any]] = None) -> int:

@@ -1,107 +1,93 @@
-# import pytest
-# from pymongo import MongoClient
-# from pymongo.database import Database
+import os
+import subprocess
+import time
 
-# from shared.database_pymongo.config import Config
-# from shared.database_pymongo.database import MongoDB
-# from shared.database_pymongo.repositories.user import (
-#     UserRepository,
-# )
-# from shared.database_pymongo.repositories.shift import (
-#     ShiftRepository,
-# )
-# from shared.database_pymongo.schemas.user import UserCreateSchema
-# from shared.database_pymongo.schemas.shift import StaffingSchema
-# from shared.schemas.schemas.shift import (
-#     ShiftType,
-#     ShiftRestType,
-#     ShiftLeaveType,
-# )
+import pytest
+
+from shared.database_pymongo.database import MongoDB
 
 
+@pytest.fixture(scope="session")
+def mongodb_container():
+    """Provide MongoDB connection for testing."""
+    # Check if running in GitHub Actions
+    if "MONGO_URI" in os.environ:
+        # Use the GitHub Actions service connection
+        connection_string = os.environ["MONGO_URI"]
+
+        # Test connection
+        MongoDB.connect(connection_string, "test_db")
+        if not MongoDB.check_health():
+            raise ValueError("Failed to connect to MongoDB")
+
+        yield connection_string
+
+    else:
+        # Local development - start container
+        file_path_compose = os.path.join(
+            os.path.dirname(__file__), "docker-compose.yml"
+        )
+        command = [
+            "docker-compose",
+            "-f",
+            file_path_compose,
+            "up",
+            "-d",
+            "mongodb",
+        ]
+        try:
+            result = subprocess.run(
+                command,
+                # shell=True,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            print(result.stdout.decode("utf-8"))
+            # return result.stdout.decode('utf-8')
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(
+                f"Command '{command}' failed with error: {e.stderr.decode('utf-8')}"
+            ) from e
+
+        # Wait for MongoDB to be ready
+        connection_string = "mongodb://testuser:testpass@localhost:27017/"
+        max_retries = 5
+        for _ in range(max_retries):
+            MongoDB.connect(connection_string, "test_db")
+            if MongoDB.check_health():
+                break
+            time.sleep(2)
+
+        yield connection_string
+
+        # Cleanup
+        cleanup_command = ["docker-compose", "-f", file_path_compose, "down"]
+        try:
+            subprocess.run(cleanup_command, check=True)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(
+                f"Cleanup command '{cleanup_command}' "
+                + f"failed with error: {e.stderr.decode('utf-8')}"
+            ) from e
+
+
+# @pytest.fixture(scope="module")
+# def mongo_uri() -> str:
+#     return "mongodb://localhost:27017"
+
+
+# @pytest.fixture(scope="module")
+# def db_name() -> str:
+#     return "test_db"
+
+
+# # @pytest.fixture(scope="module")
 # @pytest.fixture(scope="session")
-# def mongo_client():
-#     """Create a MongoDB client for testing."""
-#     client = MongoClient(Config.TEST_MONGODB_URI)
-#     yield client
-#     client.close()
-
-
-# @pytest.fixture(scope="function")
-# def test_db(mongo_client):
-#     """Create a test database and collections."""
-#     db_name = Config.TEST_DATABASE_NAME
-#     db = mongo_client[db_name]
-
-#     # Clear existing test data
-#     mongo_client.drop_database(db_name)
-
-#     # Setup MongoDB class to use test database
-#     MongoDB._client = mongo_client
-#     MongoDB._db = db
-
-#     yield db
-
-#     # Clean up after test
-#     mongo_client.drop_database(db_name)
-#     MongoDB._client = None
-#     MongoDB._db = None
-
-
-# @pytest.fixture
-# def user_repository(test_db):
-#     """User repository fixture."""
-#     return UserRepository()
-
-
-# @pytest.fixture
-# def shift_repository(test_db):
-#     """Shift repository fixture."""
-#     return ShiftRepository()
-
-
-# @pytest.fixture
-# def sample_user():
-#     """Sample user data."""
-#     return UserCreateSchema(
-#         id="user_test_001",
-#         email="test@example.com",
-#         first_name="Test",
-#         last_name="User",
-#         language="en",
-#         workers=[],
-#     )
-
-
-# @pytest.fixture
-# def created_user(user_repository, sample_user):
-#     """Create a user in the database."""
-#     return user_repository.create_user(sample_user)
-
-
-# @pytest.fixture
-# def sample_shift():
-#     """Sample shift data."""
-#     return ShiftCreateSchema(
-#         id="shift_test_001",
-#         team="team_test_001",
-#         name="Morning Shift",
-#         acronym="MS",
-#         acronym_custom=False,
-#         start_time=8.0,
-#         end_time=16.0,
-#         staffing=[StaffingSchema(specialty="specialty_001", staffing=2)],
-#         color="#FF5733",
-#         shift_type=ShiftType.NORMAL,
-#         rest_type=ShiftRestType.PARTIAL,
-#         leave_type=ShiftLeaveType.NONE,
-#         recuperation_time=30,
-#         recuperation_duty=None,
-#         deleted=False,
-#     )
-
-
-# @pytest.fixture
-# def created_shift(shift_repository, sample_shift):
-#     """Create a shift in the database."""
-#     return shift_repository.create_shift(sample_shift)
+# def setup_database() -> Database:
+#     # Setup: Connect to the database and prepare data
+#     db = MongoDB.connect(mongo_uri, db_name)
+#     yield db  # Provide the fixture value
+#     # Teardown: Clean up the database
+#     db.drop_collection("shifts")
+#     MongoDB.close()

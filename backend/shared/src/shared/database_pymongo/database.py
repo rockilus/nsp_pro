@@ -2,6 +2,7 @@ from typing import Optional
 
 from pymongo import MongoClient
 from pymongo.database import Database
+from pymongo.errors import ConnectionFailure
 
 
 class MongoDB:
@@ -16,12 +17,17 @@ class MongoDB:
     ) -> Database:
         """Connect to MongoDB and return database instance."""
         if cls._client is None:
-            new_client = MongoClient(uri, timeoutMS=timeoutMS)
-            new_db = new_client[db_name]
-            cls._client = new_client
-            cls._db = new_db
-            # cls._client = MongoClient(uri)
-            # cls._db = cls._client[db_name]
+            try:
+                new_client = MongoClient(uri, timeoutMS=timeoutMS)
+                new_db = new_client[db_name]
+                cls._client = new_client
+                cls._db = new_db
+                # cls._client.list_database_names()
+                cls._client.admin.command("ping")
+            except ConnectionFailure as e:
+                cls._client = None
+                cls._db = None
+                raise e
         if cls._db is None:
             raise ValueError("Database connection failed.")
         return cls._db
@@ -40,6 +46,17 @@ class MongoDB:
             cls._client.close()  # type: ignore
             cls._client = None
             cls._db = None
+
+    @classmethod
+    def check_health(cls) -> bool:
+        """Check the health of the database connection."""
+        if cls._client is None:
+            raise ValueError("No database connection. Call connect() first.")
+        try:
+            cls._client.admin.command("ping")
+            return True
+        except Exception:
+            return False
 
 
 # class MongoDB:
