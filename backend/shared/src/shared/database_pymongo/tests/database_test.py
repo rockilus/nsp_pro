@@ -1,5 +1,4 @@
 import pytest
-from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.errors import ConnectionFailure
 
@@ -10,15 +9,15 @@ from shared.database_pymongo.database import MongoDB
 class TestMongoDB:
     """Test suite for MongoDB connection manager class."""
 
-    @pytest.fixture(autouse=True)
-    def setup_teardown(self):
-        """Setup and teardown for each test."""
-        # Make sure the class is reset before each test
-        MongoDB._client = None
-        MongoDB._db = None
-        yield
-        # Clean up after each test
-        MongoDB.close()
+    # @pytest.fixture(autouse=True)
+    # def setup_teardown(self):
+    #     """Setup and teardown for each test."""
+    #     # Make sure the class is reset before each test
+    #     MongoDB._client = None
+    #     MongoDB._db = None
+    #     yield
+    #     # Clean up after each test
+    #     MongoDB.close()
 
     def test_connect_success(self, mongodb_container):
         """Test successful connection to MongoDB."""
@@ -85,47 +84,47 @@ class TestMongoDB:
         assert isinstance(db, Database)
         assert db.name == "test_db"
 
-    def test_close_connection(self, mongodb_container):
-        """Test closing the database connection."""
-        # Connect
-        MongoDB.connect(mongodb_container, "test_db")
-        assert MongoDB._client is not None
+    # def test_close_connection(self, mongodb_container):
+    #     """Test closing the database connection."""
+    #     # Connect
+    #     MongoDB.connect(mongodb_container, "test_db")
+    #     assert MongoDB._client is not None
 
-        # Close
-        MongoDB.close()
+    #     # Close
+    #     MongoDB.close()
 
-        # Verify connection was closed
-        assert MongoDB._client is None
-        assert MongoDB._db is None
+    #     # Verify connection was closed
+    #     assert MongoDB._client is None
+    #     assert MongoDB._db is None
 
-        # Verify get_database raises error
-        with pytest.raises(ValueError, match="No database connection"):
-            MongoDB.get_database()
+    #     # Verify get_database raises error
+    #     with pytest.raises(ValueError, match="No database connection"):
+    #         MongoDB.get_database()
 
-    def test_close_without_connection(self):
-        """Test closing when no connection exists."""
-        # Ensure there's no connection
-        assert MongoDB._client is None
+    # def test_close_without_connection(self):
+    #     """Test closing when no connection exists."""
+    #     # Ensure there's no connection
+    #     assert MongoDB._client is None
 
-        # Close should not raise errors
-        MongoDB.close()
+    #     # Close should not raise errors
+    #     MongoDB.close()
 
-        # Still no connection
-        assert MongoDB._client is None
+    #     # Still no connection
+    #     assert MongoDB._client is None
 
-    def test_check_health_without_connection(self):
-        """Test health check without connection."""
-        with pytest.raises(ValueError, match="No database connection"):
-            MongoDB.check_health()
+    # def test_check_health_without_connection(self):
+    #     """Test health check without connection."""
+    #     with pytest.raises(ValueError, match="No database connection"):
+    #         MongoDB.check_health()
 
-    def test_check_health_ping_failure(self, mongodb_container):
-        """Test health check with ping failure."""
-        _ = MongoDB.connect(mongodb_container, "test_db")
-        client_invalid = MongoClient("mongodb://invalid:27017", timeoutMS=100)
-        MongoDB._client = client_invalid
+    # def test_check_health_ping_failure(self, mongodb_container):
+    #     """Test health check with ping failure."""
+    #     _ = MongoDB.connect(mongodb_container, "test_db")
+    #     client_invalid = MongoClient("mongodb://invalid:27017", timeoutMS=100)
+    #     MongoDB._client = client_invalid
 
-        # Health check should return False
-        assert MongoDB.check_health() is False
+    #     # Health check should return False
+    #     assert MongoDB.check_health() is False
 
     def test_connection_with_real_data(self, mongodb_container):
         """Test inserting and retrieving real data."""

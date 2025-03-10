@@ -69,23 +69,25 @@ class BaseRepository(Generic[T]):
 
         return [self.schema_cls.from_mongo(doc) for doc in cursor]
 
-    def update(self, doc_id: str, update_data: Dict[str, Any]) -> Optional[T]:
+    def update(self, schema: T) -> Optional[T]:
         """Update a document by its ID."""
-        # Remove None values from update data
-        update_data = {k: v for k, v in update_data.items() if v is not None}
+        if not schema.id:
+            raise ValueError("Document ID is required for update")
+        update_data = schema.to_mongo()
+        update_data.pop("_id", None)
 
         if not update_data:
             # No fields to update
-            return self.find_by_id(doc_id)
+            return self.find_by_id(schema.id)
 
         result: UpdateResult = self.collection.update_one(
-            {"_id": ObjectId(doc_id)}, {"$set": update_data}
+            {"_id": ObjectId(schema.id)}, {"$set": update_data}
         )
 
         if not result.acknowledged:
             raise Exception("Failed to update document")
 
-        return self.find_by_id(doc_id)
+        return self.find_by_id(schema.id)
 
     def delete(self, doc_id: str) -> bool:
         """Delete a document by its ID."""

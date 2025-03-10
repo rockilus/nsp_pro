@@ -1,5 +1,7 @@
 from typing import List
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.shift import ShiftSchema
 from shared.schemas.schemas.shift import Shift, ShiftType
@@ -82,20 +84,9 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
     def update_shift(self, shift: Shift) -> Shift:
         """Update a shift."""
         shift_schema = ShiftSchema.from_core(shift)
-
-        # Check if shift exists
-        existing = self.find_by_id(shift_schema.id)
-        if not existing:
-            raise Exception(f"Shift with id {shift_schema.id} does not exist")
-
-        # Update the shift
-        update_data = shift_schema.to_mongo()
-        result = self.collection.replace_one({"_id": shift_schema.id}, update_data)
-
-        if not result.acknowledged:
-            raise Exception("Failed to update shift")
-
-        return shift
+        shift_updated = self.update(shift_schema)
+        assert shift_updated is not None
+        return shift_updated.to_core()
 
     def update_shifts(self, shifts: List[Shift]) -> List[Shift]:
         """Update multiple shifts."""
@@ -111,14 +102,14 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
 
     def delete_shift(self, shift_id: str) -> None:
         """Delete a shift by its ID."""
-        result = self.collection.delete_one({"_id": shift_id})
-        if result.deleted_count == 0:
+        result = self.delete(shift_id)
+        if result is False:
             raise Exception(f"Shift with id {shift_id} not found or already deleted")
 
     def logical_delete_shift(self, shift_id: str) -> Shift:
         """Mark a shift as deleted."""
         result = self.collection.update_one(
-            {"_id": shift_id}, {"$set": {"deleted": True}}
+            {"_id": ObjectId(shift_id)}, {"$set": {"deleted": True}}
         )
 
         if result.matched_count == 0:

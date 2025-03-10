@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import Field, field_validator
+from pydantic import field_validator
 
 from shared.database_pymongo.schemas.base import BaseSchema, DocumentBaseSchema
 from shared.schemas.schemas.shift import (
@@ -35,7 +35,6 @@ class StaffingSchema(BaseSchema):
 class ShiftSchema(DocumentBaseSchema):
     """Shift schema for validation."""
 
-    id: str = Field(alias="_id")
     team: str  # Store team ID instead of reference
     name: str
     acronym: str
@@ -82,6 +81,7 @@ class ShiftSchema(DocumentBaseSchema):
 
     @classmethod
     def from_mongo(cls, data: Dict[str, Any]) -> "ShiftSchema":
+        data["id"] = str(data.pop("_id"))
         data["staffing"] = [
             StaffingSchema.from_mongo(staffing) for staffing in data["staffing"]
         ]
@@ -89,7 +89,7 @@ class ShiftSchema(DocumentBaseSchema):
 
     def to_core(self) -> Shift:
         return Shift(
-            id=self.id,
+            id=self.id or "",
             team_id=self.team,
             name=self.name,
             acronym=self.acronym,
@@ -109,7 +109,7 @@ class ShiftSchema(DocumentBaseSchema):
     @classmethod
     def from_core(cls, shift: Shift) -> "ShiftSchema":
         return cls(
-            _id=shift.id,
+            id=shift.id,
             team=shift.team_id,
             name=shift.name,
             acronym=shift.acronym,

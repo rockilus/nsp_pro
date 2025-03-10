@@ -143,7 +143,9 @@ class TestBaseRepository:
         created = self.repo.create(user)
 
         # Update user
-        updated = self.repo.update(created.id, {"name": "John Updated", "age": 31})
+        user.name = "John Updated"
+        user.age = 31
+        updated = self.repo.update(user)
 
         # Verify update
         assert updated is not None
@@ -155,13 +157,6 @@ class TestBaseRepository:
         from_db = self.repo.collection.find_one({"_id": ObjectId(created.id)})
         assert from_db["name"] == "John Updated"
         assert from_db["age"] == 31
-
-        # Test with None values (should be filtered out)
-        updated_again = self.repo.update(
-            created.id, {"email": "new@example.com", "age": None}
-        )
-        assert updated_again.email == "new@example.com"
-        assert updated_again.age == 31  # Should not be changed to None
 
     def test_delete(self):
         """Test deleting a document."""
