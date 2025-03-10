@@ -660,7 +660,7 @@ class Model:
                 #     None, [cstr_var], "worker_shift_filter"
                 # )
                 var_name = ""
-                cstr_vars: List[cp_model.IntVar | cp_model.NotBooleanVariable] = [
+                cstr_vars: List[cp_model.IntVar | cp_model._NotBooleanVariable] = [
                     cstr_var.Not()  # type: ignore
                 ]
                 lit = self.model.NewBoolVar(var_name)

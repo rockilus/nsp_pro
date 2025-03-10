@@ -144,7 +144,7 @@ class TestAssignmentRepository:
         assert results[0].team_id == "team1"
         assert results[1].team_id == "team1"
 
-    def test_get_assignments_by_schedules(self):
+    def test_get_assignments_by_schedule_ids(self):
         """Test getting assignments by schedules."""
         schedule_ids = ["schedule1", "schedule2"]
         assignments = [
@@ -173,7 +173,7 @@ class TestAssignmentRepository:
         assert results[0].schedule_id in ["schedule1", "schedule2"]
         assert results[1].schedule_id in ["schedule1", "schedule2"]
 
-    def test_get_assignment_by_worker_date_schedule(self):
+    def test_get_assignment_by_worker_id_date_schedule_id(self):
         """Test getting an assignment by worker, date, and schedule."""
         assignment = AssignmentSchema(
             team="team1",
