@@ -74,7 +74,7 @@ class SolveDetailsSchema(BaseSchema):
 class ScheduleSchema(DocumentBaseSchema):
     """Schedule schema for validation."""
 
-    team_id: str
+    team: str
     start_date: float
     end_date: float
     solve_details: Optional[SolveDetailsSchema] = None
@@ -120,7 +120,7 @@ class ScheduleSchema(DocumentBaseSchema):
     def to_core(self) -> Schedule:
         return Schedule(
             id=self.id or "",
-            team_id=self.team_id,
+            team_id=self.team,
             start_date=datetime.fromtimestamp(self.start_date, tz=timezone.utc).date(),
             end_date=datetime.fromtimestamp(self.end_date, tz=timezone.utc).date(),
             solve_details=(
@@ -140,7 +140,7 @@ class ScheduleSchema(DocumentBaseSchema):
     def from_core(cls, schedule: Schedule) -> "ScheduleSchema":
         return cls(
             id=schedule.id,
-            team_id=schedule.team_id,
+            team=schedule.team_id,
             start_date=datetime.combine(
                 schedule.start_date, time.min, timezone.utc
             ).timestamp(),

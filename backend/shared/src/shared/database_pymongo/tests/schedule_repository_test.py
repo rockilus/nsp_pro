@@ -53,12 +53,12 @@ class TestScheduleRepository:
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
-        assert saved_doc["team_id"] == "team1"
+        assert saved_doc["team"] == "team1"
 
     def test_get_schedule_by_id(self):
         """Test getting a schedule by ID."""
         schedule = ScheduleSchema(
-            team_id="team1",
+            team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
             solve_details=None,
@@ -79,7 +79,7 @@ class TestScheduleRepository:
     def test_update_schedule(self):
         """Test updating a schedule."""
         schedule = ScheduleSchema(
-            team_id="team1",
+            team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
             solve_details=None,
@@ -116,7 +116,7 @@ class TestScheduleRepository:
     def test_delete_schedule(self):
         """Test deleting a schedule."""
         schedule = ScheduleSchema(
-            team_id="team1",
+            team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
             solve_details=None,
@@ -136,7 +136,7 @@ class TestScheduleRepository:
         """Test getting all schedules for a team."""
         schedules = [
             ScheduleSchema(
-                team_id="team1",
+                team="team1",
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
                 solve_details=None,
@@ -147,7 +147,7 @@ class TestScheduleRepository:
                 quick_staffings=[],
             ),
             ScheduleSchema(
-                team_id="team1",
+                team="team1",
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
                 solve_details=None,
@@ -167,7 +167,7 @@ class TestScheduleRepository:
     def test_get_schedule_campaign(self):
         """Test getting the campaign schedule for a team."""
         schedule = ScheduleSchema(
-            team_id="team1",
+            team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
             solve_details=None,
@@ -187,7 +187,7 @@ class TestScheduleRepository:
     def test_get_schedule_campaign_by_constraint_build_id(self):
         """Test getting the campaign schedule by constraint build ID for a team."""
         schedule = ScheduleSchema(
-            team_id="team1",
+            team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
             solve_details=None,
@@ -208,7 +208,7 @@ class TestScheduleRepository:
         """Test getting all schedules before a specific date for a team."""
         schedules = [
             ScheduleSchema(
-                team_id="team1",
+                team="team1",
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
                 solve_details=None,
@@ -219,7 +219,7 @@ class TestScheduleRepository:
                 quick_staffings=[],
             ),
             ScheduleSchema(
-                team_id="team1",
+                team="team1",
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
                 solve_details=None,
@@ -243,7 +243,7 @@ class TestScheduleRepository:
         Test getting all schedules containing a specific shift ID in quick staffing.
         """
         schedule = ScheduleSchema(
-            team_id="team1",
+            team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
             solve_details=None,
@@ -267,7 +267,7 @@ class TestScheduleRepository:
         Test getting all schedules containing a specific worker ID in quick staffing.
         """
         schedule = ScheduleSchema(
-            team_id="team1",
+            team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
             solve_details=None,
