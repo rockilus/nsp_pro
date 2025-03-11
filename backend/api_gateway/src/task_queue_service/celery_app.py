@@ -8,9 +8,7 @@ def create_celery_app() -> Celery:
         broker=REDIS_URL,
         backend=RESULT_BACKEND,
         task_routes={
-            "data_fetcher.get_engine_inputs": {"queue": "fetcher_queue"},
-            'processing_engine.solve_problem': {'queue': 'processing_queue'},
-            'storage_service.save_engine_outputs': {'queue': 'storage_queue'},
+            "solve_service.solve_campaign": {"queue": "solve_queue"},
         },
     )
     app.conf.update(

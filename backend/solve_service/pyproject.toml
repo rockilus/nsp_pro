@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "solve-service"
+version = "0.1.0"
+description = ""
+authors = ["Felipe Kharaba"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.12,<=3.13"
+mypy = "^1.15.0"
+pylint = "^3.3.5"
+autoflake = "^2.3.1"
+isort = "^6.0.1"
+flake8 = "^7.1.2"
+celery = "^5.4.0"
+pydantic = "^2.10.6"
+redis = "^5.2.1"
+black = {extras = ["jupyter"], version = "^25.1.0"}
+shared = {path = "../shared"}
+boto3 = "^1.37.10"
+pydantic-settings = "^2.8.1"
+pytest = "^8.3.5"
+ortools = "^9.12.4544"
+ipykernel = "^6.29.5"
+pandas = "^2.2.3"
+pandas-stubs = "^2.2.3.250308"
+xlsxwriter = "^3.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
