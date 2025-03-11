@@ -1,0 +1,768 @@
+# from datetime import date, datetime
+# from typing import Callable, List
+
+# import pytest
+
+# from engine.tests.engine_constraint_eve_test import build_coverage
+# from engine.tests.engine_test import TestEngine
+
+# # pylint: disable=unused-import
+# from engine.tests.test_mode_fixture_test import set_test_mode  # noqa: F401
+# from engine.types.input_output_types import (
+#     Constraint,
+#     Inputs,
+#     Outputs,
+#     VarDay,
+#     VarShift,
+#     VarWorker,
+# )
+# from utils.constants import Constants
+
+
+# # pylint: disable=R0801, R0903
+# class TestConstraint:
+#     @pytest.fixture
+#     def constraint_fai_soft(self) -> Constraint:
+#         return Constraint(
+#             id="constraint_fai_soft",
+#             constraint_type="fai",
+#             operator="",
+#             target_value=0,
+#             target_unit="",
+#             worker_var=VarWorker(selector="all", target=[], num_eligible_workers=0),
+#             day_var=VarDay(
+#                 selector="all",
+#                 target=0,
+#                 start_date=date.today(),
+#                 end_date=date.today(),
+#                 interval=0,
+#             ),
+#             shift_var=VarShift(selector="all", target=[], reference=[], relative=[]),
+#             hard=False,
+#             hard_to_soft=False,
+#             penalty=2,
+#         )
+
+
+# class TestConstraintSoft(TestEngine, TestConstraint):
+#     def test_expected_assignment_worker_all_day_all_shift_all_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 56 shifts across 8 workers, i.e. 7 shifts per worker
+#         target_shifts = ["s0", "s1"]
+#         quantity = 2
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, target_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * len(inputs.variable_space.days)
+#             * len(target_shifts)
+#             // len(inputs.variable_space.workers)
+#         )
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w and a.shift_id in target_shifts
+#             )
+#             for w in inputs.variable_space.workers
+#         ]
+
+#         assert all(count == target_count for count in counts)
+
+#     def test_expected_assignment_worker_all_day_all_shift_all_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 28 shifts across 8 workers, i.e. 3.5 shifts per
+#         # worker. Objective is therefore to have 3 or 4 shifts per worker.
+#         target_shifts = ["s0", "s1"]
+#         quantity = 1
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, target_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * len(inputs.variable_space.days)
+#             * len(target_shifts)
+#             // len(inputs.variable_space.workers)
+#         )
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w and a.shift_id in target_shifts
+#             )
+#             for w in inputs.variable_space.workers
+#         ]
+
+#         assert all(abs(count - target_count) <= 1 for count in counts)
+
+#     def test_expected_objective_worker_all_day_all_shift_all_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 56 shifts across 8 workers, i.e. 7 shifts per worker
+#         target_shifts = ["s0", "s1"]
+#         quantity = 2
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, target_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+
+#         assert outputs.objective_value == 0
+
+#     def test_expected_objective_worker_all_day_all_shift_all_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         target_shifts = ["s0", "s1"]
+#         quantity = 1
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, target_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * len(inputs.variable_space.days)
+#             * len(target_shifts)
+#             // len(inputs.variable_space.workers)
+#         )
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w and a.shift_id in target_shifts
+#             )
+#             for w in inputs.variable_space.workers
+#         ]
+#         expected_objective = sum(
+#             (abs(count - target_count) + abs(count - target_count - 1))
+#             * constraint_fai_soft.penalty
+#             for count in counts
+#         )
+
+#         assert outputs.objective_value == expected_objective
+
+#     def test_expected_constraint_breaches_worker_all_day_all_shift_all_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         target_shifts = ["s0", "s1"]
+#         quantity = 1
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, target_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+
+#         expected_variables = [
+#             (w, d, s)
+#             for w in inputs.variable_space.workers
+#             for d in [
+#                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+#                 for d in inputs.variable_space.days
+#             ]
+#             for s in target_shifts
+#         ]
+
+#         # all constraint_breaches' variables are in expected_variables
+#         assert all(
+#             cb_variable in expected_variables
+#             for cb in outputs.constraint_breaches
+#             for cb_variable in cb.variables
+#         )
+#         # all expected_variables are in constraint_breaches' variables
+#         assert all(
+#             any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+#             for exp_variable in expected_variables
+#         )
+
+#     def test_expected_assignment_worker_all_day_all_shift_list_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 56 shifts across 8 workers, i.e. 7 shifts per worker
+#         coverage_shifts = ["s0", "s1", "s2"]
+#         quantity = 2
+#         constraint_fai_soft.shift_var.selector = "equal"
+#         constraint_fai_soft.shift_var.target = ["s0", "s1"]
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * len(inputs.variable_space.days)
+#             * len(constraint_fai_soft.shift_var.target)
+#             // len(inputs.variable_space.workers)
+#         )
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w
+#                 and a.shift_id in constraint_fai_soft.shift_var.target
+#             )
+#             for w in inputs.variable_space.workers
+#         ]
+
+#         assert all(count == target_count for count in counts)
+
+#     def test_expected_assignment_worker_all_day_all_shift_list_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 28 shifts across 8 workers, i.e. 3.5 shifts per
+#         # worker. Objective is therefore to have 3 or 4 shifts per worker.
+#         coverage_shifts = ["s0", "s1", "s2"]
+#         quantity = 1
+#         constraint_fai_soft.shift_var.selector = "equal"
+#         constraint_fai_soft.shift_var.target = ["s0", "s1"]
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * len(inputs.variable_space.days)
+#             * len(constraint_fai_soft.shift_var.target)
+#             // len(inputs.variable_space.workers)
+#         )
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w
+#                 and a.shift_id in constraint_fai_soft.shift_var.target
+#             )
+#             for w in inputs.variable_space.workers
+#         ]
+
+#         assert all(abs(count - target_count) <= 1 for count in counts)
+
+#     def test_expected_objective_worker_all_day_all_shift_list_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 56 shifts across 8 workers, i.e. 7 shifts per worker
+#         coverage_shifts = ["s0", "s1", "s2"]
+#         quantity = 2
+#         constraint_fai_soft.shift_var.selector = "equal"
+#         constraint_fai_soft.shift_var.target = ["s0", "s1"]
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+
+#         assert outputs.objective_value == 0
+
+#     def test_expected_objective_worker_all_day_all_shift_list_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         coverage_shifts = ["s0", "s1", "s2"]
+#         quantity = 1
+#         constraint_fai_soft.shift_var.selector = "equal"
+#         constraint_fai_soft.shift_var.target = ["s0", "s1"]
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * len(inputs.variable_space.days)
+#             * len(constraint_fai_soft.shift_var.target)
+#             // len(inputs.variable_space.workers)
+#         )
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w
+#                 and a.shift_id in constraint_fai_soft.shift_var.target
+#             )
+#             for w in inputs.variable_space.workers
+#         ]
+#         expected_objective = sum(
+#             (abs(count - target_count) + abs(count - target_count - 1))
+#             * constraint_fai_soft.penalty
+#             for count in counts
+#         )
+
+#         assert outputs.objective_value == expected_objective
+
+#     def test_expected_constraint_breaches_worker_all_day_all_shift_list_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         coverage_shifts = ["s0", "s1", "s2"]
+#         quantity = 1
+#         constraint_fai_soft.shift_var.selector = "equal"
+#         constraint_fai_soft.shift_var.target = ["s0", "s1"]
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+
+#         expected_variables = [
+#             (w, d, s)
+#             for w in inputs.variable_space.workers
+#             for d in [
+#                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+#                 for d in inputs.variable_space.days
+#             ]
+#             for s in constraint_fai_soft.shift_var.target
+#         ]
+
+#         # all constraint_breaches' variables are in expected_variables
+#         assert all(
+#             cb_variable in expected_variables
+#             for cb in outputs.constraint_breaches
+#             for cb_variable in cb.variables
+#         )
+#         # all expected_variables are in constraint_breaches' variables
+#         assert all(
+#             any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+#             for exp_variable in expected_variables
+#         )
+
+#     def test_expected_assignment_worker_list_day_all_shift_all_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 28 shifts across 4 workers, i.e. 7 shifts per worker
+#         coverage_shifts = ["s0", "s1"]
+#         quantity = 1
+#         constraint_fai_soft.worker_var.selector = "equal"
+#         constraint_fai_soft.worker_var.target = ["w0", "w1", "w2", "w3"]
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * len(inputs.variable_space.days)
+#             * len(coverage_shifts)
+#             // len(constraint_fai_soft.worker_var.target)
+#         )
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w and a.shift_id in coverage_shifts
+#             )
+#             for w in constraint_fai_soft.worker_var.target
+#         ]
+
+#         assert all(count == target_count for count in counts)
+
+#     def test_expected_assignment_worker_list_day_all_shift_all_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 28 shifts across 5 workers, i.e. 5.6 shifts per
+#         # worker. Objective is therefore to have 5 or 6 shifts per worker.
+#         coverage_shifts = ["s0", "s1"]
+#         quantity = 1
+#         constraint_fai_soft.worker_var.selector = "equal"
+#         constraint_fai_soft.worker_var.target = ["w0", "w1", "w2", "w3", "w4"]
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * len(inputs.variable_space.days)
+#             * len(coverage_shifts)
+#             // len(constraint_fai_soft.worker_var.target)
+#         )
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w and a.shift_id in coverage_shifts
+#             )
+#             for w in constraint_fai_soft.worker_var.target
+#         ]
+
+#         assert all(abs(count - target_count) <= 1 for count in counts)
+
+#     def test_expected_objective_worker_list_day_all_shift_all_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 28 shifts across 4 workers, i.e. 7 shifts per worker
+#         coverage_shifts = ["s0", "s1"]
+#         quantity = 1
+#         constraint_fai_soft.worker_var.selector = "equal"
+#         constraint_fai_soft.worker_var.target = ["w0", "w1", "w2", "w3"]
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+
+#         assert outputs.objective_value == 0
+
+#     def test_expected_objective_worker_list_day_all_shift_all_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 28 shifts across 5 workers, i.e. 5.6 shifts per
+#         # worker. Objective is therefore to have 5 or 6 shifts per worker.
+#         coverage_shifts = ["s0", "s1"]
+#         quantity = 1
+#         constraint_fai_soft.worker_var.selector = "equal"
+#         constraint_fai_soft.worker_var.target = ["w0", "w1", "w2", "w3", "w4"]
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * len(inputs.variable_space.days)
+#             * len(coverage_shifts)
+#             // len(constraint_fai_soft.worker_var.target)
+#         )
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w and a.shift_id in coverage_shifts
+#             )
+#             for w in constraint_fai_soft.worker_var.target
+#         ]
+#         expected_objective = sum(
+#             (abs(count - target_count) + abs(count - target_count - 1))
+#             * constraint_fai_soft.penalty
+#             for count in counts
+#         )
+
+#         assert outputs.objective_value == expected_objective
+
+#     def test_expected_constraint_breaches_worker_list_day_all_shift_all_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 28 shifts across 5 workers, i.e. 5.6 shifts per
+#         # worker. Objective is therefore to have 5 or 6 shifts per worker.
+#         coverage_shifts = ["s0", "s1"]
+#         quantity = 1
+#         constraint_fai_soft.worker_var.selector = "equal"
+#         constraint_fai_soft.worker_var.target = ["w0", "w1", "w2", "w3", "w4"]
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+
+#         expected_variables = [
+#             (w, d, s)
+#             for w in constraint_fai_soft.worker_var.target
+#             for d in [
+#                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+#                 for d in inputs.variable_space.days
+#             ]
+#             for s in coverage_shifts
+#         ]
+
+#         # all constraint_breaches' variables are in expected_variables
+#         assert all(
+#             cb_variable in expected_variables
+#             for cb in outputs.constraint_breaches
+#             for cb_variable in cb.variables
+#         )
+#         # all expected_variables are in constraint_breaches' variables
+#         assert all(
+#             any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+#             for exp_variable in expected_variables
+#         )
+
+#     def test_expected_assignment_worker_all_day_modulo_shift_all_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 8 shifts on Mondays across 8 workers, i.e. 1 shifts
+#         # per worker
+#         coverage_shifts = ["s0", "s1"]
+#         quantity = 2
+#         constraint_fai_soft.day_var.selector = "week_day_index"
+#         constraint_fai_soft.day_var.target = 0
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * count_days_with_index(
+#                 inputs.variable_space.days, constraint_fai_soft.day_var.target
+#             )
+#             * len(coverage_shifts)
+#             // len(inputs.variable_space.workers)
+#         )
+#         target_days = [
+#             day
+#             for day in [
+#                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+#                 for d in inputs.variable_space.days
+#             ]
+#             if day.weekday() == constraint_fai_soft.day_var.target
+#         ]
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w
+#                 and a.date in target_days
+#                 and a.shift_id in coverage_shifts
+#             )
+#             for w in inputs.variable_space.workers
+#         ]
+
+#         assert all(count == target_count for count in counts)
+
+#     def test_expected_assignment_worker_all_day_modulo_shift_all_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 12 shifts on Mondays across 8 workers, i.e. 1.5 shifts
+#         # per worker
+#         coverage_shifts = ["s0", "s1", "s2"]
+#         quantity = 2
+#         constraint_fai_soft.day_var.selector = "week_day_index"
+#         constraint_fai_soft.day_var.target = 0
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * count_days_with_index(
+#                 inputs.variable_space.days, constraint_fai_soft.day_var.target
+#             )
+#             * len(coverage_shifts)
+#             // len(inputs.variable_space.workers)
+#         )
+#         target_days = [
+#             day
+#             for day in [
+#                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+#                 for d in inputs.variable_space.days
+#             ]
+#             if day.weekday() == constraint_fai_soft.day_var.target
+#         ]
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w
+#                 and a.date in target_days
+#                 and a.shift_id in coverage_shifts
+#             )
+#             for w in inputs.variable_space.workers
+#         ]
+
+#         assert all(abs(count - target_count) <= 1 for count in counts)
+
+#     def test_expected_objective_worker_all_day_modulo_shift_all_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 8 shifts on Mondays across 8 workers, i.e. 1 shifts
+#         # per worker
+#         coverage_shifts = ["s0", "s1"]
+#         quantity = 2
+#         constraint_fai_soft.day_var.selector = "week_day_index"
+#         constraint_fai_soft.day_var.target = 0
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+
+#         assert outputs.objective_value == 0
+
+#     def test_expected_objective_worker_all_day_modulo_shift_all_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 12 shifts on Mondays across 8 workers, i.e. 1.5 shifts
+#         # per worker
+#         coverage_shifts = ["s0", "s1", "s2"]
+#         quantity = 2
+#         constraint_fai_soft.day_var.selector = "week_day_index"
+#         constraint_fai_soft.day_var.target = 0
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+#         assignments = outputs.assignments
+
+#         target_count = (
+#             quantity
+#             * count_days_with_index(
+#                 inputs.variable_space.days, constraint_fai_soft.day_var.target
+#             )
+#             * len(coverage_shifts)
+#             // len(inputs.variable_space.workers)
+#         )
+#         target_days = [
+#             day
+#             for day in [
+#                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+#                 for d in inputs.variable_space.days
+#             ]
+#             if day.weekday() == constraint_fai_soft.day_var.target
+#         ]
+#         counts = [
+#             sum(
+#                 1
+#                 for a in assignments
+#                 if a.worker_id == w
+#                 and a.date in target_days
+#                 and a.shift_id in coverage_shifts
+#             )
+#             for w in inputs.variable_space.workers
+#         ]
+#         expected_objective = sum(
+#             (abs(count - target_count) + abs(count - target_count - 1))
+#             * constraint_fai_soft.penalty
+#             for count in counts
+#         )
+
+#         assert outputs.objective_value == expected_objective
+
+#     def test_expected_constraint_breaches_worker_all_day_modulo_shift_all_non_perfect(
+#         self,
+#         inputs: Inputs,
+#         engine_solve: Callable[[Inputs], Outputs],
+#         constraint_fai_soft: Constraint,
+#     ) -> None:
+#         # Total demand of 12 shifts on Mondays across 8 workers, i.e. 1.5 shifts
+#         # per worker
+#         coverage_shifts = ["s0", "s1", "s2"]
+#         quantity = 2
+#         constraint_fai_soft.day_var.selector = "week_day_index"
+#         constraint_fai_soft.day_var.target = 0
+#         inputs.constraints = [constraint_fai_soft]
+#         inputs.coverage = build_coverage(
+#             inputs.variable_space.days, coverage_shifts, quantity
+#         )
+#         outputs = engine_solve(inputs)
+
+#         target_days = [
+#             day
+#             for day in [
+#                 datetime.strptime(d, Constants.ENGINE_STRING_DATE_FORMAT).date()
+#                 for d in inputs.variable_space.days
+#             ]
+#             if day.weekday() == constraint_fai_soft.day_var.target
+#         ]
+
+#         expected_variables = [
+#             (w, d, s)
+#             for w in inputs.variable_space.workers
+#             for d in target_days
+#             for s in coverage_shifts
+#         ]
+
+#         # all constraint_breaches' variables are in expected_variables
+#         assert all(
+#             cb_variable in expected_variables
+#             for cb in outputs.constraint_breaches
+#             for cb_variable in cb.variables
+#         )
+#         # all expected_variables are in constraint_breaches' variables
+#         assert all(
+#             any(exp_variable in cb.variables for cb in outputs.constraint_breaches)
+#             for exp_variable in expected_variables
+#         )
+
+
+# def count_days_with_index(days: List[str], day_index: int) -> int:
+#     count = 0
+#     for d_str in days:
+#         d = datetime.strptime(d_str, Constants.ENGINE_STRING_DATE_FORMAT).date()
+#         if d.weekday() == day_index:
+#             count += 1
+#     return count
