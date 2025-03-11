@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shared"
-version = "0.1.107"
+version = "0.1.114"
 description = ""
 authors = ["Felipe Kharaba"]
 readme = "README.md"
@@ -21,6 +21,8 @@ autoflake = "^2.3.1"
 fastapi = "^0.115.6"
 pylint = "^3.3.2"
 black = "^25.1.0"
+pytest = "^8.3.5"
+dotenv = "^0.9.9"
 
 
 [build-system]

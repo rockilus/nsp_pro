@@ -26,6 +26,15 @@ jobs:
         poetry-version: [1.8.2]
 
 
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: testuser
+          MONGO_INITDB_ROOT_PASSWORD: testpass
+
     steps:
     - uses: actions/checkout@v2
 
@@ -87,4 +96,6 @@ jobs:
     - name: Run checks
       run: make check
       working-directory: ./backend
+      env:
+        MONGO_URI: mongodb://testuser:testpass@localhost:27017/
   

@@ -1,8 +1,8 @@
 from mongoengine import Document, EmbeddedDocument
 from mongoengine.fields import (
-    DateTimeField,
     DictField,
     EmbeddedDocumentField,
+    FloatField,
     IntField,
     ListField,
     ReferenceField,
@@ -34,13 +34,13 @@ class Schedule(Document):
 
     id = StringField(primary_key=True, required=True)
     team = ReferenceField("Team", required=True)
-    start_date = DateTimeField(required=True)
-    end_date = DateTimeField(required=True)
+    start_date = FloatField(required=True)
+    end_date = FloatField(required=True)
     solve_details = EmbeddedDocumentField(SolveDetails)
     solve_status = IntField(
         required=True, choices=[e.value for e in ScheduleSolveStatus]
     )
     status = IntField(required=True, choices=[e.value for e in ScheduleStatus])
-    missing_coverage_dates = ListField(DateTimeField())
+    missing_coverage_dates = ListField(FloatField())
     constraint_builds = ListField(ReferenceField("ConstraintBuild"))
     quick_staffings = ListField(EmbeddedDocumentField(QuickStaffing))

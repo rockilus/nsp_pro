@@ -1,3 +1,4 @@
+import math
 from copy import deepcopy
 from datetime import date, datetime, timedelta
 from typing import Callable, List, Tuple
@@ -254,8 +255,6 @@ class TestTargetWorkTimeConstraints:
 
         inputs, _ = run_core_to_engine_inputs(ei_work_times)
 
-        inputs.model_config.solver_params.max_time_in_seconds = 35
-
         out = run_engine_solve(inputs)
 
         schedule = ei_work_times.schedule
@@ -300,12 +299,18 @@ class TestTargetWorkTimeConstraints:
             delta_expected_1_neg = (
                 w_target_time - delta_abs_1
             ) * 100 // w_target_time - 100
+            delta_expected_1_neg_x2 = math.floor(
+                ((w_target_time - delta_abs_1) * 100 / w_target_time - 100) * 2
+            )
             delta_expected_2_pos = (
                 w_target_time + delta_abs_2
             ) * 100 // w_target_time - 100
             delta_expected_2_neg = (
                 w_target_time - delta_abs_2
             ) * 100 // w_target_time - 100
+            delta_expected_2_neg_x2 = math.floor(
+                ((w_target_time - delta_abs_2) * 100 / w_target_time - 100) * 2
+            )
 
             delta_actual = work_time_worker * 100 // w_target_time - 100
             deltas.append(delta_actual)
@@ -315,6 +320,8 @@ class TestTargetWorkTimeConstraints:
                 delta_expected_1_neg,
                 delta_expected_2_pos,
                 delta_expected_2_neg,
+                delta_expected_1_neg_x2,
+                delta_expected_2_neg_x2,
             ]
 
         assert len(out.breaches) == 1
