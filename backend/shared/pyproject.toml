@@ -10,11 +10,10 @@ packages = [
 include = ["py.typed"]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<=3.13"
+python = ">=3.12,<=3.13"
 mongoengine = "^0.29.1"
 loguru = "^0.7.2"
 mongo-types = "^0.15.1"
-isort = "^5.13.2"
 mypy = "^1.13.0"
 flake8 = "^7.1.1"
 autoflake = "^2.3.1"
@@ -23,6 +22,7 @@ pylint = "^3.3.2"
 black = "^25.1.0"
 pytest = "^8.3.5"
 dotenv = "^0.9.9"
+isort = "^6.0.1"
 
 
 [build-system]

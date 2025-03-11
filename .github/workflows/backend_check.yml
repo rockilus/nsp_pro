@@ -64,8 +64,7 @@ jobs:
         path: |
           ~/.cache/pypoetry
           backend/api_gateway/.venv
-          backend/processing_engine/.venv
-          backend/storage_service/.venv
+          backend/solve_service/.venv
           backend/shared/.venv
         key: poetry-dependencies-${{ matrix.python-version }}-${{ matrix.poetry-version }}-0
 
@@ -81,17 +80,9 @@ jobs:
       run: poetry install
       working-directory: ./backend/api_gateway
 
-    - name: Install dependencies for data_fetcher
+    - name: Install dependencies for solve_service
       run: poetry install
-      working-directory: ./backend/data_fetcher
-  
-    - name: Install dependencies for processing_engine
-      run: poetry install
-      working-directory: ./backend/processing_engine
-  
-    - name: Install dependencies for storage_service
-      run: poetry install
-      working-directory: ./backend/storage_service
+      working-directory: ./backend/solve_service
   
     - name: Run checks
       run: make check
