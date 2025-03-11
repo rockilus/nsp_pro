@@ -26,5 +26,8 @@ dist/
 backend/src/processing_engine/engine/saved/
 backend/processing_engine/src/solver_parameter_tuning/parameter_test_output
 backend/processing_engine/src/solver_parameter_tuning/analysis_output
+backend/solve_service/src/engine/saved/
+backend/solve_service/src/solver_parameter_tuning/parameter_test_output
+backend/solve_service/src/solver_parameter_tuning/analysis_output
 # Environments
 venv_nsp

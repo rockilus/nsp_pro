@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
 WORKDIR /app
-COPY data_fetcher .
+COPY solve_service .
 COPY shared /shared
 
 RUN apt-get update && apt-get install -y \
@@ -17,8 +17,6 @@ RUN poetry build
 
 WORKDIR /app
 RUN poetry install
-
-EXPOSE 8000
 
 CMD ["poetry", "run", "python", "src/worker.py"]
 

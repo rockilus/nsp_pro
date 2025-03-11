@@ -96,3 +96,8 @@ venv/
 **/.env.docker
 **/.env.docker_compose
 **/.env.production
+
+# Custom folders to ignore
+.src/engine/saved/
+.src/solver_parameter_tuning/parameter_test_output
+.src/solver_parameter_tuning/analysis_output
