@@ -529,6 +529,19 @@ trio = ["trio (>=0.23)"]
 wmi = ["wmi (>=1.5.1)"]
 
 [[package]]
+name = "dotenv"
+version = "0.9.9"
+description = "Deprecated package"
+optional = false
+python-versions = "*"
+files = [
+    {file = "dotenv-0.9.9-py2.py3-none-any.whl", hash = "sha256:29cf74a087b31dafdb5a446b6d7e11cbce8ed2741540e2339c69fbef92c94ce9"},
+]
+
+[package.dependencies]
+python-dotenv = "*"
+
+[[package]]
 name = "exceptiongroup"
 version = "1.2.2"
 description = "Backport of PEP 654 (exception groups)"
@@ -1669,13 +1682,13 @@ zstd = ["zstandard"]
 
 [[package]]
 name = "pytest"
-version = "8.3.4"
+version = "8.3.5"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6"},
-    {file = "pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761"},
+    {file = "pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820"},
+    {file = "pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845"},
 ]
 
 [package.dependencies]
@@ -1913,7 +1926,7 @@ crt = ["botocore[crt] (>=1.33.2,<2.0a.0)"]
 
 [[package]]
 name = "shared"
-version = "0.1.107"
+version = "0.1.111"
 description = ""
 optional = false
 python-versions = ">=3.10,<=3.13"
@@ -1923,6 +1936,7 @@ develop = false
 [package.dependencies]
 autoflake = "^2.3.1"
 black = "^25.1.0"
+dotenv = "^0.9.9"
 fastapi = "^0.115.6"
 flake8 = "^7.1.1"
 isort = "^5.13.2"
@@ -1931,6 +1945,7 @@ mongo-types = "^0.15.1"
 mongoengine = "^0.29.1"
 mypy = "^1.13.0"
 pylint = "^3.3.2"
+pytest = "^8.3.5"
 
 [package.source]
 type = "directory"

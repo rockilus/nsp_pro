@@ -95,7 +95,7 @@ check_no_test: \
 	data_fetcher_check \
 	processing_engine_check_no_test \
 	storage_service_check \
-	shared_check
+	shared_check_no_test
 
 # Run checks in api_gateway
 api_gateway_check:
@@ -141,6 +141,15 @@ storage_service_check:
 
 # Run checks in shared
 shared_check:
+	@echo "Running checks in shared..."
+	@cd shared && \
+	poetry run flake8 src && \
+	poetry run black --check src && \
+	poetry run pylint src && \
+	poetry run mypy src && \
+	poetry run pytest
+
+shared_check_no_test:
 	@echo "Running checks in shared..."
 	@cd shared && \
 	poetry run flake8 src && \
