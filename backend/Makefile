@@ -83,14 +83,11 @@ shared_format:
 	poetry run black src
 
 # Run all checks
-# check: \
+check: \
 	api_gateway_check \
 	data_fetcher_check \
 	processing_engine_check \
 	storage_service_check \
-	shared_check
-
-check: \
 	shared_check
 
 check_no_test: \
@@ -98,7 +95,7 @@ check_no_test: \
 	data_fetcher_check \
 	processing_engine_check_no_test \
 	storage_service_check \
-	shared_check
+	shared_check_no_test
 
 # Run checks in api_gateway
 api_gateway_check:
@@ -151,6 +148,14 @@ shared_check:
 	poetry run pylint src && \
 	poetry run mypy src && \
 	poetry run pytest
+
+shared_check_no_test:
+	@echo "Running checks in shared..."
+	@cd shared && \
+	poetry run flake8 src && \
+	poetry run black --check src && \
+	poetry run pylint src && \
+	poetry run mypy src
 
 # Run all tests
 test: api_gateway_test processing_engine_test storage_service_test

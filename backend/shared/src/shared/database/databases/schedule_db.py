@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timezone
 from typing import List
 
 from bson import ObjectId
@@ -178,19 +178,16 @@ def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
         for shift in ShiftDocument.objects.filter(id__in=shift_ids)  # type: ignore
     }
 
+    # pylint: disable=R0801
     s_doc = ScheduleDocument(
         id=dataclass_obj.id,
         team=team,
-        start_date=datetime(
-            dataclass_obj.start_date.year,
-            dataclass_obj.start_date.month,
-            dataclass_obj.start_date.day,
-        ),
-        end_date=datetime(
-            dataclass_obj.end_date.year,
-            dataclass_obj.end_date.month,
-            dataclass_obj.end_date.day,
-        ),
+        start_date=datetime.combine(
+            dataclass_obj.start_date, time.min, timezone.utc
+        ).timestamp(),
+        end_date=datetime.combine(
+            dataclass_obj.end_date, time.min, timezone.utc
+        ).timestamp(),
         solve_details=(
             SolveDetailsDocument(
                 task_id=dataclass_obj.solve_details.task_id,
@@ -203,7 +200,10 @@ def core_to_doc_schedule(dataclass_obj: Schedule) -> ScheduleDocument:
         ),
         solve_status=dataclass_obj.solve_status.value,
         status=dataclass_obj.status.value,
-        missing_coverage_dates=dataclass_obj.missing_coverage_dates,
+        missing_coverage_dates=[
+            datetime.combine(dt, time.min, timezone.utc).timestamp()
+            for dt in dataclass_obj.missing_coverage_dates
+        ],
         constraint_builds=constraint_builds,
         quick_staffings=[
             QuickStaffingDocument(
@@ -243,8 +243,12 @@ def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
     doc_dict["team_id"] = doc_dict["team"]
-    doc_dict["start_date"] = doc_dict["start_date"].date()
-    doc_dict["end_date"] = doc_dict["end_date"].date()
+    doc_dict["start_date"] = datetime.fromtimestamp(
+        doc_dict["start_date"], timezone.utc
+    ).date()
+    doc_dict["end_date"] = datetime.fromtimestamp(
+        doc_dict["end_date"], timezone.utc
+    ).date()
     if "solve_details" in doc_dict:
         doc_dict["solve_details"] = (
             doc_to_core_solve_details(doc_obj.solve_details)
@@ -256,7 +260,8 @@ def doc_to_core_schedule(doc_obj: ScheduleDocument) -> Schedule:
     doc_dict["solve_status"] = ScheduleSolveStatus(doc_dict["solve_status"])
     doc_dict["status"] = ScheduleStatus(doc_dict["status"])
     doc_dict["missing_coverage_dates"] = [
-        d.date() for d in doc_dict["missing_coverage_dates"]
+        datetime.fromtimestamp(dt, tz=timezone.utc).date()
+        for dt in doc_dict["missing_coverage_dates"]
     ]
     doc_dict["constraint_build_ids"] = doc_dict["constraint_builds"]
     doc_dict["quick_staffings"] = [
