@@ -23,7 +23,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from routes.api_model import ShiftMessage, StaffingMessage
 from routes.attribute_routes import core_to_msg_attribute
@@ -187,7 +190,9 @@ def core_to_msg_shift_and_attributes(
     return s_msg
 
 
-def core_to_msg_ls_change(ls_change: Dict[str, List[LinkShift | str]] | None) -> Dict:
+def core_to_msg_ls_change(
+    ls_change: Dict[str, List[LinkShift | str]] | None,
+) -> Dict:
     if ls_change is None:
         return {"udpated": [], "deleted": []}
     return {

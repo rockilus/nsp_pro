@@ -152,56 +152,56 @@ class DailyShiftDemandDB:
     def delete_daily_shift_demands_by_schedule_id(self, schedule_id: str) -> None:
         try:
             # pylint: disable=no-member
-            dsd_docs = DailyShiftDemandDocument.objects.filter(  # type: ignore
+            DailyShiftDemandDocument.objects.filter(  # type: ignore
                 schedule=schedule_id
-            )
+            ).delete()
         except Exception as e:
             log_info("Failed to get daily shift demands by schedule id to delete")
             handle_get_document_error(e)
-        try:
-            for dsd_doc in dsd_docs:
-                dsd_doc.delete()
-        except Exception as e:
-            log_info("Failed to delete daily shift demands")
-            handle_delete_document_error(e)
+        # try:
+        #     for dsd_doc in dsd_docs:
+        #         dsd_doc.delete()
+        # except Exception as e:
+        #     log_info("Failed to delete daily shift demands")
+        #     handle_delete_document_error(e)
 
     def delete_dsds_by_schedule_id_and_source_shift_demand(
         self, schedule_id: str
     ) -> None:
         try:
             # pylint: disable=no-member
-            dsd_docs = DailyShiftDemandDocument.objects.filter(  # type: ignore
+            DailyShiftDemandDocument.objects.filter(  # type: ignore
                 schedule=schedule_id,
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
-            )
+            ).delete()
         except Exception as e:
             log_info(
                 "Failed to get daily shift demands by schedule id and source "
                 + "type to delete"
             )
             handle_get_document_error(e)
-        try:
-            for dsd_doc in dsd_docs:
-                dsd_doc.delete()
-        except Exception as e:
-            log_info("Failed to delete daily shift demands")
-            handle_delete_document_error(e)
+        # try:
+        #     for dsd_doc in dsd_docs:
+        #         dsd_doc.delete()
+        # except Exception as e:
+        #     log_info("Failed to delete daily shift demands")
+        #     handle_delete_document_error(e)
 
     def delete_daily_shift_demands_by_shift_id(self, shift_id: str) -> None:
         try:
             # pylint: disable=no-member
-            dsd_docs = DailyShiftDemandDocument.objects.filter(  # type: ignore
+            DailyShiftDemandDocument.objects.filter(  # type: ignore
                 shift=shift_id
-            )
+            ).delete()
         except Exception as e:
             log_info("Failed to get daily shift demands by shift id to delete")
             handle_get_document_error(e)
-        try:
-            for dsd_doc in dsd_docs:
-                dsd_doc.delete()
-        except Exception as e:
-            log_info("Failed to delete daily shift demands")
-            handle_delete_document_error(e)
+        # try:
+        #     for dsd_doc in dsd_docs:
+        #         dsd_doc.delete()
+        # except Exception as e:
+        #     log_info("Failed to delete daily shift demands")
+        #     handle_delete_document_error(e)
 
 
 # Mappers

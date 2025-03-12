@@ -19,7 +19,6 @@ import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
 import {
-  getScheduleTabData,
   solveSchedule,
   validateSchedule,
   updateSchedule,
@@ -31,6 +30,7 @@ import { updateAssignment } from "../../app/lib/assignment";
 import { getStats } from "../../app/lib/stats";
 import {
   addDailyShiftDemand,
+  getDailyShiftDemands,
   updateDailyShiftDemand,
   deleteDailyShiftDemand,
 } from "../../app/lib/daily-shift-demand";
@@ -60,6 +60,8 @@ import {
   StatsUnitOptions,
   HeaderUnitOptions,
 } from "../../types/stats";
+import { log } from "node:console";
+import { set } from "zod";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -489,59 +491,72 @@ export default function ScheduleTab({
   );
 
   useEffect(() => {
-    const fetchSchedule = async () => {
+    const fetchData = async () => {
       setIsLoadingSchedule(true);
-      if (selectedTeamId) {
-        const fetchedSchedule = await getSchedules(selectedTeamId);
-        setScheduleCampaign(
-          fetchedSchedule.find((s) => s.status === ScheduleStatus.CAMPAIGN) ||
-            null
-        );
-        setSchedulesValidated(
-          fetchedSchedule.filter((s) => s.status === ScheduleStatus.VALIDATED)
-        );
-        setIsLoadingSchedule(false);
-      }
-    };
-    fetchSchedule();
-  }, [selectedTeamId]);
-
-  useEffect(() => {
-    const fetchScheduleAssignmentsData = async () => {
       setIsLoadingAssignments(true);
-      if (selectedTeamId) {
-        const {
-          assignments: fetchedAssignments,
-          workers: fetchedWorkers,
-          shifts: fetchedShifts,
-          dailyShiftDemands: fetchedDailyShiftDemands,
-        } = await getScheduleAssignmentsData(selectedTeamId);
-        setAssignments(fetchedAssignments);
-        setWorkers(fetchedWorkers);
-        setShifts(fetchedShifts);
-        setDailyShiftDemands(fetchedDailyShiftDemands);
-        setIsLoadingAssignments(false);
-      }
-    };
-    fetchScheduleAssignmentsData();
-  }, [selectedTeamId]);
-
-  useEffect(() => {
-    const fetchScheduleLHSData = async () => {
       setIsLoadingLHS(true);
+
       if (selectedTeamId) {
-        const {
-          breaches: fetchedBreaches,
-          requests: fetchedRequests,
-          stats: fetchedStats,
-        } = await getScheduleLHSData(selectedTeamId);
-        setBreaches(fetchedBreaches);
-        setRequests(fetchedRequests);
-        setStats(fetchedStats);
-        setIsLoadingLHS(false);
+        console.log("fetchData useEffect started");
+        const startTime = dayjs();
+
+        try {
+          // Fetch schedules
+          const fetchedSchedule = await getSchedules(selectedTeamId);
+          setScheduleCampaign(
+            fetchedSchedule.find((s) => s.status === ScheduleStatus.CAMPAIGN) ||
+              null
+          );
+          setSchedulesValidated(
+            fetchedSchedule.filter((s) => s.status === ScheduleStatus.VALIDATED)
+          );
+          setIsLoadingSchedule(false);
+
+          // Fetch assignment data
+          const {
+            assignments: fetchedAssignments,
+            workers: fetchedWorkers,
+            shifts: fetchedShifts,
+            dailyShiftDemands: fetchedDailyShiftDemands,
+          } = await getScheduleAssignmentsData(selectedTeamId);
+          setAssignments(fetchedAssignments);
+          setWorkers(fetchedWorkers);
+          setShifts(fetchedShifts);
+          setDailyShiftDemands(fetchedDailyShiftDemands);
+
+          setIsLoadingAssignments(false);
+
+          // Fetch left-hand side bar data
+          const {
+            breaches: fetchedBreaches,
+            requests: fetchedRequests,
+            stats: fetchedStats,
+          } = await getScheduleLHSData(selectedTeamId);
+          setBreaches(fetchedBreaches);
+          setRequests(fetchedRequests);
+          setStats(fetchedStats);
+
+          setIsLoadingLHS(false);
+
+          const endTime = dayjs();
+          console.log("fetchData useEffect ended");
+          console.log(
+            `fetchData useEffect took ${endTime.diff(
+              startTime,
+              "millisecond"
+            )} ms`
+          );
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        } finally {
+          setIsLoadingSchedule(false);
+          setIsLoadingAssignments(false);
+          setIsLoadingLHS(false);
+        }
       }
     };
-    fetchScheduleLHSData();
+
+    fetchData();
   }, [selectedTeamId]);
 
   useEffect(() => {
