@@ -10,7 +10,10 @@ from shared.schemas.errors import handle_create_schema_object_error
 
 from errors import NotAuthorizedError  # MessageTypeError,
 from errors import handle_message_errors, handle_routes_errors
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from routes.api_model import TeamMessage
 from scripts.setup_database import team_db

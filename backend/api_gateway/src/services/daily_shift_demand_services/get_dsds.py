@@ -9,7 +9,9 @@ from scripts.setup_database import (
     shift_db,
     shift_demand_db,
 )
-from services.daily_shift_demand_services.build_dsds import build_daily_shift_demands
+from services.daily_shift_demand_services.build_dsds import (
+    build_daily_shift_demands,
+)
 
 
 def get_daily_shift_demands(
