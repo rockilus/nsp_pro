@@ -28,7 +28,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from routes.api_model import (
     AssignmentMessage,
@@ -48,7 +51,10 @@ from routes.coverage_selector_routes import core_to_msg_coverage_selector
 from routes.request_routes import core_to_msg_request_augmented
 from routes.shift_routes import core_to_msg_shift_and_attributes
 from scripts.setup_database import assignment_db, breach_db, schedule_db
-from services.schedule_services import build_worktime_data, get_schedule_campaign
+from services.schedule_services import (
+    build_worktime_data,
+    get_schedule_campaign,
+)
 from services.schedule_services import solve_schedule as solve_schedule_service
 from services.schedule_services import update_schedule as update_schedule_service
 from services.schedule_services import validate_schedule as validate_schedule_service
