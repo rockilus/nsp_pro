@@ -9,7 +9,7 @@ from shared.database.errors.document_error_handlers import (
 )
 from shared.database.models.user import User as UserDocument
 from shared.logger.logger import log_info
-from shared.schemas.schemas.user import User
+from shared.schemas.schemas.user import Language, User
 
 
 class UserDB:
@@ -101,7 +101,7 @@ def core_to_doc_user(dataclass_obj: User) -> UserDocument:
             first_name=dataclass_obj.first_name,
             last_name=dataclass_obj.last_name,
             workers=[],
-            language=dataclass_obj.language,
+            language=dataclass_obj.language.value,
             impersonating_user=impersonating_user,
         )
     except Exception as e:
@@ -114,6 +114,7 @@ def core_to_doc_user(dataclass_obj: User) -> UserDocument:
 def doc_to_core_user(doc_obj: UserDocument) -> User:
     doc_dict = doc_obj.to_mongo().to_dict()
     doc_dict["id"] = doc_dict["_id"]
+    doc_dict["language"] = Language(doc_dict["language"])
     doc_dict["impersonating_user_id"] = doc_dict.get("impersonating_user", None)
     doc_dict.pop("_id")
     if "impersonating_user" in doc_dict:
