@@ -25,7 +25,7 @@ class ShiftWorkerOptionSchema(BaseSchema):
         out = super().to_mongo()
         return ShiftWorkerOption(
             name=out["name"],
-            id=out["id"],
+            id=self.id,
             id_type=SWOIdTypes(out["id_type"]),
             is_bool_dim=out["is_bool_dim"],
             category_name=out["category_name"],
