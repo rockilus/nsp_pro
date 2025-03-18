@@ -8,7 +8,7 @@ from shared.schemas.schemas.team import Specialty
 class SpecialtySchema(DocumentBaseSchema):
     """Specialty schema for validation."""
 
-    team_id: ObjectId
+    team: ObjectId
     name: str
     deleted: bool = Field(
         default=False, description="Indicates if the specialty is deleted"
@@ -17,7 +17,7 @@ class SpecialtySchema(DocumentBaseSchema):
     def to_core(self) -> Specialty:
         return Specialty(
             id=str(self.id) or "",
-            team_id=str(self.team_id),
+            team_id=str(self.team),
             name=self.name,
             deleted=self.deleted,
         )
@@ -30,7 +30,7 @@ class SpecialtySchema(DocumentBaseSchema):
                 if specialty.id and ObjectId.is_valid(specialty.id)
                 else None
             ),
-            team_id=ObjectId(specialty.team_id),
+            team=ObjectId(specialty.team_id),
             name=specialty.name,
             deleted=specialty.deleted,
         )

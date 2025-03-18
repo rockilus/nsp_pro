@@ -1,33 +1,130 @@
 import os
+from typing import List, Dict, Any
 from bson import ObjectId
-from pymongo import MongoClient
+from pymongo import MongoClient, collection
 from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
 
 
+def check_if_already_converted(
+    documents: List[Dict[str, Any]], fields_to_convert: Dict[str, Any]
+) -> bool:
+    def check_fields(doc: Dict[str, Any], fields: Dict[str, Any]) -> bool:
+        for field in fields["fields"]:
+            if field in doc:
+                if isinstance(doc[field], list):
+                    if not all(
+                        isinstance(item, ObjectId) for item in doc[field]
+                    ):
+                        return False
+                elif not isinstance(doc[field], ObjectId):
+                    return False
+        if "embedded" in fields:
+            for embedded_field, embedded_fields in fields["embedded"].items():
+                if embedded_field in doc:
+                    if isinstance(doc[embedded_field], list):
+                        if not all(
+                            check_fields(item, embedded_fields)
+                            for item in doc[embedded_field]
+                        ):
+                            return False
+                    elif isinstance(doc[embedded_field], dict):
+                        if not check_fields(
+                            doc[embedded_field], embedded_fields
+                        ):
+                            return False
+        return True
+
+    return all(check_fields(doc, fields_to_convert) for doc in documents)
+
+
+def convert_document_to_objectid(
+    doc: Dict[str, Any], fields_to_convert: Dict[str, Any]
+) -> Dict[str, Any]:
+    new_doc = doc.copy()
+    try:
+        new_doc["_id"] = ObjectId(new_doc["_id"])
+    except Exception:
+        print(
+            f"Warning: Could not convert field '_id' in document {doc['_id']} to ObjectId"
+        )
+
+    def convert_fields(doc: Dict[str, Any], fields: Dict[str, Any]) -> None:
+        for field in fields["fields"]:
+            if field in doc:
+                if isinstance(doc[field], str):
+                    try:
+                        if ObjectId.is_valid(doc[field]):
+                            doc[field] = ObjectId(doc[field])
+                        else:
+                            raise ValueError("Invalid ObjectId")
+                    except Exception:
+                        print(
+                            f"Warning: Could not convert field '{field}' in document {doc} to ObjectId"
+                        )
+                elif isinstance(doc[field], list):
+                    try:
+                        doc[field] = [
+                            (
+                                ObjectId(item)
+                                if isinstance(item, str)
+                                and ObjectId.is_valid(item)
+                                else item
+                            )
+                            for item in doc[field]
+                        ]
+                    except Exception:
+                        print(
+                            f"Warning: Could not convert list field '{field}' in document {doc['_id']} to ObjectId"
+                        )
+        if "embedded" in fields:
+            for embedded_field, embedded_fields in fields["embedded"].items():
+                if embedded_field in doc:
+                    if isinstance(doc[embedded_field], list):
+                        for item in doc[embedded_field]:
+                            convert_fields(item, embedded_fields)
+                    elif isinstance(doc[embedded_field], dict):
+                        convert_fields(doc[embedded_field], embedded_fields)
+
+    convert_fields(new_doc, fields_to_convert)
+    return new_doc
+
+
+def check_document_count(
+    old_collection: collection.Collection,
+    new_collection: collection.Collection,
+) -> bool:
+    new_collection_count = new_collection.count_documents({})
+    old_collection_count = old_collection.count_documents({})
+    return new_collection_count == old_collection_count
+
+
+def replace_old_collection_with_new(
+    db: MongoClient, collection_name: str, new_collection_name: str
+) -> None:
+    if new_collection_name in db.list_collection_names():
+        db[collection_name].drop()
+        db[new_collection_name].rename(collection_name)
+        print(f"Replaced {collection_name} with {new_collection_name}")
+
+
 def convert_collections(
-    mongo_uri: str, db_name: str, collections_to_convert: dict
-):
+    mongo_uri: str,
+    db_name: str,
+    collections_to_convert: Dict[str, Dict[str, Any]],
+) -> None:
     client = MongoClient(mongo_uri)
     db = client[db_name]
 
     for collection_name, fields_to_convert in collections_to_convert.items():
+        if collection_name not in db.list_collection_names():
+            print(f"Collection {collection_name} does not exist.")
+            continue
+
         old_collection = db[collection_name]
         documents = list(old_collection.find())  # Perform the find call once
-        if all(
-            isinstance(doc["_id"], ObjectId)
-            and all(
-                isinstance(doc[field], ObjectId)
-                or (
-                    isinstance(doc[field], list)
-                    and all(isinstance(item, ObjectId) for item in doc[field])
-                )
-                for field in fields_to_convert
-                if field in doc
-            )
-            for doc in documents
-        ):
+        if check_if_already_converted(documents, fields_to_convert):
             print(
                 f"Collection {collection_name} already contains ObjectId fields."
             )
@@ -49,38 +146,7 @@ def convert_collections(
                 )
                 continue
 
-            new_doc = doc.copy()
-            try:
-                new_doc["_id"] = ObjectId(new_doc["_id"])
-            except Exception:
-                print(
-                    f"Warning: Could not convert field '{field}' in document {doc['_id']} to ObjectId"
-                )
-
-            for field in fields_to_convert:
-                if field in new_doc:
-                    if isinstance(new_doc[field], str):
-                        try:
-                            new_doc[field] = ObjectId(new_doc[field])
-                        except Exception:
-                            print(
-                                f"Warning: Could not convert field '{field}' in document {doc['_id']} to ObjectId"
-                            )
-                    elif isinstance(new_doc[field], list):
-                        try:
-                            new_doc[field] = [
-                                (
-                                    ObjectId(item)
-                                    if isinstance(item, str)
-                                    else item
-                                )
-                                for item in new_doc[field]
-                            ]
-                        except Exception:
-                            print(
-                                f"Warning: Could not convert list field '{field}' in document {doc['_id']} to ObjectId"
-                            )
-
+            new_doc = convert_document_to_objectid(doc, fields_to_convert)
             new_documents.append(new_doc)
 
         # Insert new documents into the new collection
@@ -91,17 +157,14 @@ def convert_collections(
             )
 
         # Check that all documents from the old collection are in the new one
-        new_collection_count = new_collection.count_documents({})
-        old_collection_count = old_collection.count_documents({})
-        if new_collection_count == old_collection_count:
+        if check_document_count(old_collection, new_collection):
             # Replace old collection with new one
-            if new_collection_name in db.list_collection_names():
-                db[collection_name].drop()
-                db[new_collection_name].rename(collection_name)
-                print(f"Replaced {collection_name} with {new_collection_name}")
+            replace_old_collection_with_new(
+                db, collection_name, new_collection_name
+            )
         else:
             print(
-                f"Error: Document count mismatch between {collection_name} ({old_collection_count}) and {new_collection_name} ({new_collection_count})"
+                f"Error: Document count mismatch between {collection_name} and {new_collection_name}"
             )
 
     print("Migration completed.")
@@ -117,7 +180,7 @@ if __name__ == "__main__":
             "embedded": {},
         },
         "attributes": {
-            "fields": ["owner", "dimension"],
+            "fields": ["owner", "dimension", "dim_entries"],
             "embedded": {},
         },
         "breaches": {
@@ -126,7 +189,7 @@ if __name__ == "__main__":
                 "variables": {"fields": ["worker", "shift"]},
             },
         },
-        "contraint_builds": {
+        "constraint_builds": {
             "fields": ["team"],
             "embedded": {
                 "blocks": {
@@ -151,12 +214,12 @@ if __name__ == "__main__":
             "fields": ["team", "schedule", "shift_demand", "shift"],
             "embedded": {},
         },
-        "dimensions": {
-            "fields": ["team"],
+        "dim_entries": {
+            "fields": ["dimension"],
             "embedded": {},
         },
-        "dimension_entries": {
-            "fields": ["dimension"],
+        "dimensions": {
+            "fields": ["team"],
             "embedded": {},
         },
         "link_shifts": {
@@ -191,13 +254,13 @@ if __name__ == "__main__":
             },
         },
         "specialties": {
-            "fields": ["team_id"],
+            "fields": ["team"],
             "embedded": {},
         },
         "stats_headers": {
             "fields": ["team"],
             "embedded": {
-                "selected_shifts": {"fields": ["id"], "embedded": {}}
+                # "selected_shifts": {"fields": ["id"], "embedded": {}}
             },
         },
         "teams": {

@@ -48,7 +48,7 @@ class TestSpecialtyRepository:
     def test_get_specialty_by_id(self):
         """Test getting a specialty by ID."""
         specialty = SpecialtySchema(
-            team_id=ObjectId(),
+            team=ObjectId(),
             name="Cardiology",
             deleted=False,
         )
@@ -63,7 +63,7 @@ class TestSpecialtyRepository:
     def test_update_specialty(self):
         """Test updating a specialty."""
         specialty = SpecialtySchema(
-            team_id=ObjectId(),
+            team=ObjectId(),
             name="Cardiology",
             deleted=False,
         )
@@ -86,7 +86,7 @@ class TestSpecialtyRepository:
     def test_delete_specialty(self):
         """Test deleting a specialty."""
         specialty = SpecialtySchema(
-            team_id=ObjectId(),
+            team=ObjectId(),
             name="Cardiology",
             deleted=False,
         )
@@ -99,7 +99,7 @@ class TestSpecialtyRepository:
     def test_logical_delete_specialty(self):
         """Test logically deleting a specialty."""
         specialty = SpecialtySchema(
-            team_id=ObjectId(),
+            team=ObjectId(),
             name="Cardiology",
             deleted=False,
         )
@@ -116,9 +116,9 @@ class TestSpecialtyRepository:
         """Test getting specialties by team ID."""
         team_oid = ObjectId()
         specialties = [
-            SpecialtySchema(team_id=team_oid, name="Cardiology", deleted=False),
-            SpecialtySchema(team_id=team_oid, name="Neurology", deleted=False),
-            SpecialtySchema(team_id=ObjectId(), name="Oncology", deleted=False),
+            SpecialtySchema(team=team_oid, name="Cardiology", deleted=False),
+            SpecialtySchema(team=team_oid, name="Neurology", deleted=False),
+            SpecialtySchema(team=ObjectId(), name="Oncology", deleted=False),
         ]
         self.repo.create_many(specialties)
 
@@ -131,13 +131,15 @@ class TestSpecialtyRepository:
         """Test getting non-deleted specialties by team ID."""
         team_oid = ObjectId()
         specialties = [
-            SpecialtySchema(team_id=team_oid, name="Cardiology", deleted=False),
-            SpecialtySchema(team_id=team_oid, name="Neurology", deleted=True),
-            SpecialtySchema(team_id=team_oid, name="Oncology", deleted=False),
+            SpecialtySchema(team=team_oid, name="Cardiology", deleted=False),
+            SpecialtySchema(team=team_oid, name="Neurology", deleted=True),
+            SpecialtySchema(team=team_oid, name="Oncology", deleted=False),
         ]
         self.repo.create_many(specialties)
 
-        result = self.repo.get_specialties_not_deleted_by_team_id(str(team_oid))
+        result = self.repo.get_specialties_not_deleted_by_team_id(
+            str(team_oid)
+        )
 
         assert len(result) == 2
         assert {s.name for s in result} == {"Cardiology", "Oncology"}
@@ -148,9 +150,9 @@ class TestSpecialtyRepository:
         team_2_oid = ObjectId()
         team_ids = [str(team_1_oid), str(team_2_oid)]
         specialties = [
-            SpecialtySchema(team_id=team_1_oid, name="Cardiology", deleted=False),
-            SpecialtySchema(team_id=ObjectId(), name="Neurology", deleted=False),
-            SpecialtySchema(team_id=team_2_oid, name="Oncology", deleted=False),
+            SpecialtySchema(team=team_1_oid, name="Cardiology", deleted=False),
+            SpecialtySchema(team=ObjectId(), name="Neurology", deleted=False),
+            SpecialtySchema(team=team_2_oid, name="Oncology", deleted=False),
         ]
         self.repo.create_many(specialties)
 
