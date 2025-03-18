@@ -33,7 +33,7 @@ class TestModelOutputRepository:
         """Test creating a model output."""
         model_output = ModelOutput(
             id=None,
-            schedule_id="schedule1",
+            schedule_id=str(ObjectId()),
             status=ModelOutputStatus.FEASIBLE,
             var_sol={("a", "b", "c"): 1},
             var_spe_sol={("a", "b", "c", "d"): 2},
@@ -45,18 +45,18 @@ class TestModelOutputRepository:
         result = self.repo.create_model_output(model_output)
 
         assert result.id is not None
-        assert result.schedule_id == "schedule1"
+        assert result.schedule_id == model_output.schedule_id
         assert result.status == ModelOutputStatus.FEASIBLE
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
-        assert saved_doc["schedule"] == "schedule1"
+        assert saved_doc["schedule"] == ObjectId(model_output.schedule_id)
         assert saved_doc["status"] == ModelOutputStatus.FEASIBLE.value
 
     def test_get_model_output(self):
         """Test getting a model output by schedule ID."""
         model_output = ModelOutputSchema(
-            schedule="schedule1",
+            schedule=ObjectId(),
             status=ModelOutputStatus.FEASIBLE.value,
             var_sol={str(("a", "b", "c")): 1},
             var_spe_sol={str(("a", "b", "c", "d")): 2},
@@ -66,16 +66,16 @@ class TestModelOutputRepository:
         )
         created = self.repo.create(model_output)
 
-        found = self.repo.get_model_output("schedule1")
+        found = self.repo.get_model_output(str(model_output.schedule))
 
         assert found is not None
-        assert found.id == created.id
-        assert found.schedule_id == "schedule1"
+        assert found.id == str(created.id)
+        assert found.schedule_id == str(model_output.schedule)
 
     def test_update_model_output(self):
         """Test updating a model output."""
         model_output = ModelOutputSchema(
-            schedule="schedule1",
+            schedule=ObjectId(),
             status=ModelOutputStatus.FEASIBLE.value,
             var_sol={str(("a", "b", "c")): 1},
             var_spe_sol={str(("a", "b", "c", "d")): 2},
@@ -86,8 +86,8 @@ class TestModelOutputRepository:
         created = self.repo.create(model_output)
 
         updated_model_output = ModelOutput(
-            id=created.id,
-            schedule_id="schedule1",
+            id=str(created.id),
+            schedule_id=str(ObjectId()),
             status=ModelOutputStatus.OPTIMAL,
             var_sol={("a", "b", "c"): 2},
             var_spe_sol={("a", "b", "c", "d"): 3},
@@ -108,7 +108,7 @@ class TestModelOutputRepository:
     def test_delete_model_output(self):
         """Test deleting a model output."""
         model_output = ModelOutputSchema(
-            schedule="schedule1",
+            schedule=ObjectId(),
             status=ModelOutputStatus.FEASIBLE.value,
             var_sol={str(("a", "b", "c")): 1},
             var_spe_sol={str(("a", "b", "c", "d")): 2},
@@ -120,4 +120,4 @@ class TestModelOutputRepository:
 
         self.repo.delete_model_output(created.id)
 
-        assert self.repo.collection.find_one({"_id": ObjectId(created.id)}) is None
+        assert self.repo.collection.find_one({"_id": created.id}) is None

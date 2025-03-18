@@ -1,6 +1,8 @@
 from datetime import date, datetime, timezone
 from typing import List, Optional
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.schedule import ScheduleSchema
 from shared.schemas.schemas.schedule import Schedule, ScheduleStatus
@@ -20,13 +22,16 @@ class ScheduleRepository(BaseRepository[ScheduleSchema]):
 
     def get_schedules(self, team_id: str) -> List[Schedule]:
         """Get all schedules for a team."""
-        schedules = self.find_all({"team": team_id})
+        schedules = self.find_all({"team": ObjectId(team_id)})
         return [schedule.to_core() for schedule in schedules]
 
     def get_schedule_campaign(self, team_id: str) -> Optional[Schedule]:
         """Get the campaign schedule for a team."""
         schedule = self.find_all(
-            {"team": team_id, "status": ScheduleStatus.CAMPAIGN.value},
+            {
+                "team": ObjectId(team_id),
+                "status": ScheduleStatus.CAMPAIGN.value,
+            },
             limit=1,
         )
         return schedule[0].to_core() if schedule else None
@@ -37,9 +42,9 @@ class ScheduleRepository(BaseRepository[ScheduleSchema]):
         """Get the campaign schedule by constraint build ID for a team."""
         schedule = self.find_all(
             {
-                "constraint_build_ids": cb_id,
+                "constraint_build_ids": ObjectId(cb_id),
                 "status": ScheduleStatus.CAMPAIGN.value,
-                "team": team_id,
+                "team": ObjectId(team_id),
             },
             limit=1,
         )
@@ -57,21 +62,23 @@ class ScheduleRepository(BaseRepository[ScheduleSchema]):
         s_timestamp = datetime.combine(
             s_date, datetime.min.time(), tzinfo=timezone.utc
         ).timestamp()
-        schedules = self.find_all({"end_date": {"$lt": s_timestamp}, "team": team_id})
+        schedules = self.find_all(
+            {"end_date": {"$lt": s_timestamp}, "team": ObjectId(team_id)}
+        )
         return [schedule.to_core() for schedule in schedules]
 
     def get_schedule_quick_staffing_contain_shift_id(
         self, shift_id: str
     ) -> List[Schedule]:
         """Get all schedules containing a specific shift ID in quick staffing."""
-        schedules = self.find_all({"quick_staffings.shift_id": shift_id})
+        schedules = self.find_all({"quick_staffings.shift_id": ObjectId(shift_id)})
         return [schedule.to_core() for schedule in schedules]
 
     def get_schedule_quick_staffing_contain_worker_id(
         self, worker_id: str
     ) -> List[Schedule]:
         """Get all schedules containing a specific worker ID in quick staffing."""
-        schedules = self.find_all({"quick_staffings.worker_id": worker_id})
+        schedules = self.find_all({"quick_staffings.worker_id": ObjectId(worker_id)})
         return [schedule.to_core() for schedule in schedules]
 
     def update_schedule(self, schedule: Schedule) -> Schedule:

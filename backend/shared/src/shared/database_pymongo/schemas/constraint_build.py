@@ -1,4 +1,6 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
+
+from bson import ObjectId
 
 from shared.database_pymongo.schemas.base import BaseSchema, DocumentBaseSchema
 from shared.schemas.schemas.constraint import (
@@ -16,7 +18,7 @@ class ShiftWorkerOptionSchema(BaseSchema):
     """ShiftWorkerOption embedded schema."""
 
     name: Any
-    id: str
+    id: ObjectId
     id_type: int
     is_bool_dim: bool
     category_name: str
@@ -25,7 +27,7 @@ class ShiftWorkerOptionSchema(BaseSchema):
         out = super().to_mongo()
         return ShiftWorkerOption(
             name=out["name"],
-            id=self.id,
+            id=str(self.id),
             id_type=SWOIdTypes(out["id_type"]),
             is_bool_dim=out["is_bool_dim"],
             category_name=out["category_name"],
@@ -35,7 +37,7 @@ class ShiftWorkerOptionSchema(BaseSchema):
     def from_core(cls, swo: ShiftWorkerOption) -> "ShiftWorkerOptionSchema":
         return cls(
             name=swo.name,
-            id=swo.id,
+            id=ObjectId(swo.id),
             id_type=swo.id_type.value,
             is_bool_dim=swo.is_bool_dim,
             category_name=swo.category_name,
@@ -89,7 +91,8 @@ class BlockSchema(BaseSchema):
 class ConstraintBuildSchema(DocumentBaseSchema):
     """ConstraintBuild schema for validation."""
 
-    team: str  # Store team ID instead of reference
+    id: Optional[ObjectId] = None
+    team: ObjectId  # Store team ID instead of reference
     constraint_type: int
     template_id: str
     language: str
@@ -104,14 +107,14 @@ class ConstraintBuildSchema(DocumentBaseSchema):
 
     @classmethod
     def from_mongo(cls, data: Dict[str, Any]) -> "ConstraintBuildSchema":
-        data["id"] = str(data.pop("_id"))
+        data["id"] = data.pop("_id")
         data["blocks"] = [BlockSchema.from_mongo(block) for block in data["blocks"]]
         return cls(**data)
 
     def to_core(self) -> ConstraintBuild:
         return ConstraintBuild(
-            id=self.id or "",
-            team_id=self.team,
+            id=str(self.id) or "",
+            team_id=str(self.team),
             constraint_type=ConstraintType(self.constraint_type),
             template_id=self.template_id,
             language=self.language,
@@ -123,8 +126,12 @@ class ConstraintBuildSchema(DocumentBaseSchema):
     @classmethod
     def from_core(cls, constraint_build: ConstraintBuild) -> "ConstraintBuildSchema":
         return cls(
-            id=constraint_build.id,
-            team=constraint_build.team_id,
+            id=(
+                ObjectId(constraint_build.id)
+                if constraint_build.id and ObjectId.is_valid(constraint_build.id)
+                else None
+            ),
+            team=ObjectId(constraint_build.team_id),
             constraint_type=constraint_build.constraint_type.value,
             template_id=constraint_build.template_id,
             language=constraint_build.language,

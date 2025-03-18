@@ -29,7 +29,7 @@ class DimensionRepository(BaseRepository[DimensionSchema]):
         """Get all non-deleted dimensions by type for a team."""
         dimensions = self.find_all(
             {
-                "team": team_id,
+                "team": ObjectId(team_id),
                 "dim_types": {"$in": [dt.value for dt in dim_type]},
                 "deleted": False,
             }
@@ -52,7 +52,7 @@ class DimensionRepository(BaseRepository[DimensionSchema]):
         """Get all dimensions by type and entry type for a team."""
         dimensions = self.find_all(
             {
-                "team": team_id,
+                "team": ObjectId(team_id),
                 "dim_types": {"$in": [dt.value for dt in dim_types]},
                 "entry_type": entry_type.value,
             }
@@ -61,12 +61,12 @@ class DimensionRepository(BaseRepository[DimensionSchema]):
 
     def get_dimensions(self, team_id: str) -> List[Dimension]:
         """Get all dimensions for a team."""
-        dimensions = self.find_all({"team": team_id})
+        dimensions = self.find_all({"team": ObjectId(team_id)})
         return [dimension.to_core() for dimension in dimensions]
 
     def get_dimensions_not_deleted(self, team_id: str) -> List[Dimension]:
         """Get all non-deleted dimensions for a team."""
-        dimensions = self.find_all({"team": team_id, "deleted": False})
+        dimensions = self.find_all({"team": ObjectId(team_id), "deleted": False})
         return [dimension.to_core() for dimension in dimensions]
 
     def update_dimension(self, dimension: Dimension) -> Dimension:

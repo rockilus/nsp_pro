@@ -1,5 +1,7 @@
 from typing import List
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.daily_shift_demand import (
     DailyShiftDemandSchema,
@@ -37,7 +39,7 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
 
     def get_daily_shift_demands(self, team_id: str) -> List[DailyShiftDemand]:
         """Get all daily shift demands for a team."""
-        dsds = self.find_all({"team": team_id})
+        dsds = self.find_all({"team": ObjectId(team_id)})
         return [dsd.to_core() for dsd in dsds]
 
     def get_daily_shift_demand_by_id(
@@ -55,7 +57,7 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
         self, schedule_id: str
     ) -> List[DailyShiftDemand]:
         """Get all daily shift demands for a schedule."""
-        dsds = self.find_all({"schedule": schedule_id})
+        dsds = self.find_all({"schedule": ObjectId(schedule_id)})
         return [dsd.to_core() for dsd in dsds]
 
     def get_daily_shift_demands_modified_by_schedule_id(
@@ -64,7 +66,7 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
         """Get all modified daily shift demands for a schedule."""
         dsds = self.find_all(
             {
-                "schedule": schedule_id,
+                "schedule": ObjectId(schedule_id),
                 "source_type": DSDSourceType.SHIFT_DEMAND_MODIFY.value,
             }
         )
@@ -74,7 +76,9 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
         self, shift_demand_id: List[str]
     ) -> List[DailyShiftDemand]:
         """Get all daily shift demands for a shift demand."""
-        dsds = self.find_all({"shift_demand": {"$in": shift_demand_id}})
+        dsds = self.find_all(
+            {"shift_demand": {"$in": [ObjectId(id) for id in shift_demand_id]}}
+        )
         return [dsd.to_core() for dsd in dsds]
 
     def update_daily_shift_demand(
@@ -97,7 +101,7 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
 
     def delete_daily_shift_demands_by_schedule_id(self, schedule_id: str) -> None:
         """Delete all daily shift demands for a schedule."""
-        self.collection.delete_many({"schedule": schedule_id})
+        self.collection.delete_many({"schedule": ObjectId(schedule_id)})
 
     def delete_dsds_by_schedule_id_and_source_shift_demand(
         self, schedule_id: str
@@ -108,11 +112,11 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
         """
         self.collection.delete_many(
             {
-                "schedule": schedule_id,
+                "schedule": ObjectId(schedule_id),
                 "source_type": DSDSourceType.SHIFT_DEMAND.value,
             }
         )
 
     def delete_daily_shift_demands_by_shift_id(self, shift_id: str) -> None:
         """Delete all daily shift demands for a shift."""
-        self.collection.delete_many({"shift": shift_id})
+        self.collection.delete_many({"shift": ObjectId(shift_id)})

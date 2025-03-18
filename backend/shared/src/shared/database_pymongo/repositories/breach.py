@@ -1,5 +1,7 @@
 from typing import List
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.breach import BreachSchema
 from shared.schemas.schemas.schedule import Breach
@@ -28,7 +30,9 @@ class BreachRepository(BaseRepository[BreachSchema]):
 
     def get_breaches(self, schedule_ids: List[str]) -> List[Breach]:
         """Get all breaches for given schedules."""
-        breaches = self.find_all({"schedule": {"$in": schedule_ids}})
+        breaches = self.find_all(
+            {"schedule": {"$in": [ObjectId(id) for id in schedule_ids]}}
+        )
         return [breach.to_core() for breach in breaches]
 
     def get_breach_by_id(self, breach_id: str) -> Breach:
@@ -40,17 +44,17 @@ class BreachRepository(BaseRepository[BreachSchema]):
 
     def get_breaches_by_schedule_id(self, schedule_id: str) -> List[Breach]:
         """Get all breaches for a specific schedule."""
-        breaches = self.find_all({"schedule": schedule_id})
+        breaches = self.find_all({"schedule": ObjectId(schedule_id)})
         return [breach.to_core() for breach in breaches]
 
     def get_breaches_by_worker_id(self, worker_id: str) -> List[Breach]:
         """Get all breaches for a specific worker."""
-        breaches = self.find_all({"variables.worker": worker_id})
+        breaches = self.find_all({"variables.worker": ObjectId(worker_id)})
         return [breach.to_core() for breach in breaches]
 
     def get_breaches_by_shift_id(self, shift_id: str) -> List[Breach]:
         """Get all breaches for a specific shift."""
-        breaches = self.find_all({"variables.shift": shift_id})
+        breaches = self.find_all({"variables.shift": ObjectId(shift_id)})
         return [breach.to_core() for breach in breaches]
 
     def update_breach(self, breach: Breach) -> Breach:
@@ -68,4 +72,4 @@ class BreachRepository(BaseRepository[BreachSchema]):
 
     def delete_breaches_by_schedule_id(self, schedule_id: str) -> None:
         """Delete all breaches for a specific schedule."""
-        self.collection.delete_many({"schedule": schedule_id})
+        self.collection.delete_many({"schedule": ObjectId(schedule_id)})

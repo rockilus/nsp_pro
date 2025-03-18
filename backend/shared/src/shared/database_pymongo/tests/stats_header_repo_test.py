@@ -36,14 +36,14 @@ class TestStatsHeaderRepository:
         """Test creating a stats header."""
         stats_header = StatsHeader(
             id=None,
-            team_id="team1",
+            team_id=str(ObjectId()),
             stats_unit=StatsUnitOptions.NB_DAYS_WORKED,
             header_unit=HeaderUnitOptions.WEEKDAY,
             value="1",
             selected_shifts=[
                 ShiftWorkerOption(
                     name="name",
-                    id="id",
+                    id=str(ObjectId()),
                     id_type=SWOIdTypes.SHIFT,
                     is_bool_dim=False,
                     category_name="category_name",
@@ -55,17 +55,18 @@ class TestStatsHeaderRepository:
         result = self.repo.create_stats_header(stats_header)
 
         assert result.id is not None
-        assert result.team_id == "team1"
+        assert result.team_id == stats_header.team_id
         assert result.stats_unit == StatsUnitOptions.NB_DAYS_WORKED
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
-        assert saved_doc["team"] == "team1"
+        assert saved_doc["team"] == ObjectId(stats_header.team_id)
 
     def test_get_stats_headers_by_team_id(self):
         """Test getting stats headers by team ID."""
+        team_oid = ObjectId()
         stats_header = StatsHeaderSchema(
-            team="team1",
+            team=team_oid,
             stats_unit=StatsUnitOptions.NB_DAYS_WORKED.value,
             header_unit=HeaderUnitOptions.WEEKDAY.value,
             value="1",
@@ -73,15 +74,16 @@ class TestStatsHeaderRepository:
         )
         created = self.repo.create(stats_header)
 
-        found = self.repo.get_stats_headers_by_team_id("team1")
+        found = self.repo.get_stats_headers_by_team_id(str(team_oid))
 
         assert len(found) == 1
-        assert found[0].id == created.id
+        assert found[0].id == str(created.id)
 
     def test_get_stats_headers_by_team_unit_shifts(self):
         """Test getting stats headers by team ID, stats unit, and header unit."""
+        team_oid = ObjectId()
         stats_header = StatsHeaderSchema(
-            team="team1",
+            team=team_oid,
             stats_unit=StatsUnitOptions.NB_DAYS_WORKED.value,
             header_unit=HeaderUnitOptions.WEEKDAY.value,
             value="1",
@@ -90,22 +92,26 @@ class TestStatsHeaderRepository:
         created = self.repo.create(stats_header)
 
         found = self.repo.get_stats_headers_by_team_unit_shifts(
-            "team1", StatsUnitOptions.NB_DAYS_WORKED, HeaderUnitOptions.WEEKDAY
+            str(team_oid),
+            StatsUnitOptions.NB_DAYS_WORKED,
+            HeaderUnitOptions.WEEKDAY,
         )
 
         assert len(found) == 1
-        assert found[0].id == created.id
+        assert found[0].id == str(created.id)
 
         # Test with no matching headers
         found_none = self.repo.get_stats_headers_by_team_unit_shifts(
-            "team1", StatsUnitOptions.TIME_WORKED, HeaderUnitOptions.MONTH
+            str(team_oid),
+            StatsUnitOptions.TIME_WORKED,
+            HeaderUnitOptions.MONTH,
         )
         assert len(found_none) == 0
 
     def test_update_stats_header(self):
         """Test updating a stats header."""
         stats_header = StatsHeaderSchema(
-            team="team1",
+            team=ObjectId(),
             stats_unit=StatsUnitOptions.NB_DAYS_WORKED.value,
             header_unit=HeaderUnitOptions.WEEKDAY.value,
             value="1",
@@ -114,15 +120,15 @@ class TestStatsHeaderRepository:
         created = self.repo.create(stats_header)
 
         updated_stats_header = StatsHeader(
-            id=created.id,
-            team_id="team1",
+            id=str(created.id),
+            team_id=str(ObjectId()),
             stats_unit=StatsUnitOptions.TIME_WORKED,
             header_unit=HeaderUnitOptions.MONTH,
             value="2",
             selected_shifts=[
                 ShiftWorkerOption(
                     name="name",
-                    id="id",
+                    id=str(ObjectId()),
                     id_type=SWOIdTypes.SHIFT,
                     is_bool_dim=False,
                     category_name="category_name",
@@ -136,13 +142,13 @@ class TestStatsHeaderRepository:
         assert result.stats_unit == StatsUnitOptions.TIME_WORKED
         assert result.header_unit == HeaderUnitOptions.MONTH
 
-        from_db = self.repo.collection.find_one({"_id": ObjectId(created.id)})
+        from_db = self.repo.collection.find_one({"_id": created.id})
         assert from_db["stats_unit"] == StatsUnitOptions.TIME_WORKED.value
 
     def test_delete_stats_header(self):
         """Test deleting a stats header."""
         stats_header = StatsHeaderSchema(
-            team="team1",
+            team=ObjectId(),
             stats_unit=StatsUnitOptions.NB_DAYS_WORKED.value,
             header_unit=HeaderUnitOptions.WEEKDAY.value,
             value="1",
@@ -150,6 +156,6 @@ class TestStatsHeaderRepository:
         )
         created = self.repo.create(stats_header)
 
-        self.repo.delete_stats_header(created.id)
+        self.repo.delete_stats_header(str(created.id))
 
-        assert self.repo.collection.find_one({"_id": ObjectId(created.id)}) is None
+        assert self.repo.collection.find_one({"_id": created.id}) is None

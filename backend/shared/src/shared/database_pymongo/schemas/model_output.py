@@ -2,6 +2,8 @@ import ast
 from datetime import datetime, timezone
 from typing import Dict
 
+from bson import ObjectId
+
 from shared.database_pymongo.schemas.base import DocumentBaseSchema
 from shared.schemas.schemas.model_output import ModelOutput, ModelOutputStatus
 
@@ -9,7 +11,7 @@ from shared.schemas.schemas.model_output import ModelOutput, ModelOutputStatus
 class ModelOutputSchema(DocumentBaseSchema):
     """ModelOutput schema for validation."""
 
-    schedule: str
+    schedule: ObjectId
     status: int
     var_sol: Dict[str, int]
     var_spe_sol: Dict[str, int]
@@ -19,8 +21,8 @@ class ModelOutputSchema(DocumentBaseSchema):
 
     def to_core(self) -> ModelOutput:
         return ModelOutput(
-            id=self.id or "",
-            schedule_id=self.schedule,
+            id=str(self.id) or "",
+            schedule_id=str(self.schedule),
             status=ModelOutputStatus(self.status),
             var_sol={ast.literal_eval(k): v for k, v in self.var_sol.items()},
             var_spe_sol={ast.literal_eval(k): v for k, v in self.var_spe_sol.items()},
@@ -32,8 +34,12 @@ class ModelOutputSchema(DocumentBaseSchema):
     @classmethod
     def from_core(cls, model_output: ModelOutput) -> "ModelOutputSchema":
         return cls(
-            id=model_output.id,
-            schedule=model_output.schedule_id,
+            id=(
+                ObjectId(model_output.id)
+                if model_output.id and ObjectId.is_valid(model_output.id)
+                else None
+            ),
+            schedule=ObjectId(model_output.schedule_id),
             status=model_output.status.value,
             var_sol={str(k): v for k, v in model_output.var_sol.items()},
             var_spe_sol={str(k): v for k, v in model_output.var_spe_sol.items()},

@@ -1,9 +1,10 @@
 from typing import Dict, List
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.shift_demand import ShiftDemandSchema
 from shared.schemas.schemas.coverage import (
-    CoverageSelector,
     ShiftDemand,
 )
 
@@ -42,14 +43,18 @@ class ShiftDemandRepository(BaseRepository[ShiftDemandSchema]):
         self, coverage_ids: List[str]
     ) -> List[ShiftDemand]:
         """Get shift demands by coverage IDs."""
-        shift_demands = self.find_all({"coverage": {"$in": coverage_ids}})
+        shift_demands = self.find_all(
+            {"coverage": {"$in": [ObjectId(id) for id in coverage_ids]}}
+        )
         return [sd.to_core() for sd in shift_demands]
 
     def get_cov_id_to_shift_demands_by_coverage_ids(
         self, coverage_ids: List[str]
     ) -> Dict[str, List[ShiftDemand]]:
         """Get a mapping of coverage IDs to shift demands."""
-        shift_demands = self.find_all({"coverage": {"$in": coverage_ids}})
+        shift_demands = self.find_all(
+            {"coverage": {"$in": [ObjectId(id) for id in coverage_ids]}}
+        )
         out: Dict[str, List[ShiftDemand]] = {c_id: [] for c_id in coverage_ids}
         for sd in shift_demands:
             core_sd = sd.to_core()
@@ -58,21 +63,6 @@ class ShiftDemandRepository(BaseRepository[ShiftDemandSchema]):
                 out[coverage_id] = []
             out[coverage_id].append(core_sd)
         return out
-
-    def get_shift_demands_by_coverage_selector(
-        self, coverage_selector: CoverageSelector
-    ) -> List[ShiftDemand]:
-        """Get shift demands by coverage selector."""
-        shift_demands = self.find_all({"coverage": coverage_selector.coverage_id})
-        return [sd.to_core() for sd in shift_demands]
-
-    def get_shift_demands_by_coverage_selectors(
-        self, coverage_selectors: List[CoverageSelector]
-    ) -> List[ShiftDemand]:
-        """Get shift demands by coverage selectors."""
-        coverage_ids = [cs.coverage_id for cs in coverage_selectors]
-        shift_demands = self.find_all({"coverage": {"$in": coverage_ids}})
-        return [sd.to_core() for sd in shift_demands]
 
     def update_shift_demand(self, shift_demand: ShiftDemand) -> ShiftDemand:
         """Update a shift demand."""
@@ -91,8 +81,8 @@ class ShiftDemandRepository(BaseRepository[ShiftDemandSchema]):
 
     def delete_shift_demands_by_coverage_id(self, coverage_id: str) -> None:
         """Delete shift demands by coverage ID."""
-        self.collection.delete_many({"coverage": coverage_id})
+        self.collection.delete_many({"coverage": ObjectId(coverage_id)})
 
     def delete_shift_demands_by_shift_id(self, shift_id: str) -> None:
         """Delete shift demands by shift ID."""
-        self.collection.delete_many({"shift": shift_id})
+        self.collection.delete_many({"shift": ObjectId(shift_id)})

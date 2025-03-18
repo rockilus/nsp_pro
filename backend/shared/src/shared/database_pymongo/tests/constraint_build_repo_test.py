@@ -40,7 +40,7 @@ class TestConstraintBuildRepository:
         """Test creating a constraint build."""
         constraint_build = ConstraintBuild(
             id=None,
-            team_id="team1",
+            team_id=str(ObjectId()),
             constraint_type=ConstraintType.SUM,
             template_id="template1",
             language="en",
@@ -58,18 +58,18 @@ class TestConstraintBuildRepository:
         result = self.repo.create_constraint_build(constraint_build)
 
         assert result.id is not None
-        assert result.team_id == "team1"
+        assert result.team_id == constraint_build.team_id
         assert result.constraint_type == ConstraintType.SUM
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
-        assert saved_doc["team"] == "team1"
+        assert saved_doc["team"] == ObjectId(constraint_build.team_id)
         assert saved_doc["constraint_type"] == ConstraintType.SUM.value
 
     def test_get_constraint_build_by_id(self):
         """Test getting a constraint build by ID."""
         constraint_build = ConstraintBuildSchema(
-            team="team1",
+            team=ObjectId(),
             constraint_type=ConstraintType.SUM.value,
             template_id="template1",
             language="en",
@@ -85,16 +85,16 @@ class TestConstraintBuildRepository:
         )
         created = self.repo.create(constraint_build)
 
-        found = self.repo.get_constraint_build_by_id(created.id)
+        found = self.repo.get_constraint_build_by_id(str(created.id))
 
         assert found is not None
-        assert found.id == created.id
-        assert found.team_id == "team1"
+        assert found.id == str(created.id)
+        assert found.team_id == str(created.team)
 
     def test_update_constraint_build(self):
         """Test updating a constraint build."""
         constraint_build = ConstraintBuildSchema(
-            team="team1",
+            team=ObjectId(),
             constraint_type=ConstraintType.SUM.value,
             template_id="template1",
             language="en",
@@ -111,8 +111,8 @@ class TestConstraintBuildRepository:
         created = self.repo.create(constraint_build)
 
         updated_constraint_build = ConstraintBuild(
-            id=created.id,
-            team_id="team1",
+            id=str(created.id),
+            team_id=str(ObjectId()),
             constraint_type=ConstraintType.ORD,
             template_id="template2",
             language="fr",
@@ -132,16 +132,18 @@ class TestConstraintBuildRepository:
         assert result.constraint_type == ConstraintType.ORD
         assert result.template_id == "template2"
         assert result.language == "fr"
+        assert result.team_id == updated_constraint_build.team_id
 
         from_db = self.repo.collection.find_one({"_id": ObjectId(created.id)})
         assert from_db["constraint_type"] == ConstraintType.ORD.value
         assert from_db["template_id"] == "template2"
         assert from_db["language"] == "fr"
+        assert from_db["team"] == ObjectId(updated_constraint_build.team_id)
 
     def test_delete_constraint_build(self):
         """Test deleting a constraint build."""
         constraint_build = ConstraintBuildSchema(
-            team="team1",
+            team=ObjectId(),
             constraint_type=ConstraintType.SUM.value,
             template_id="template1",
             language="en",
@@ -157,15 +159,16 @@ class TestConstraintBuildRepository:
         )
         created = self.repo.create(constraint_build)
 
-        self.repo.delete_constraint_build(created.id)
+        self.repo.delete_constraint_build(str(created.id))
 
         assert self.repo.collection.find_one({"_id": ObjectId(created.id)}) is None
 
     def test_get_constraint_builds(self):
         """Test getting all constraint builds for a team."""
+        team_oid = ObjectId()
         constraint_builds = [
             ConstraintBuildSchema(
-                team="team1",
+                team=team_oid,
                 constraint_type=ConstraintType.SUM.value,
                 template_id="template1",
                 language="en",
@@ -180,7 +183,7 @@ class TestConstraintBuildRepository:
                 priority="high",
             ),
             ConstraintBuildSchema(
-                team="team1",
+                team=team_oid,
                 constraint_type=ConstraintType.ORD.value,
                 template_id="template2",
                 language="fr",
@@ -197,17 +200,17 @@ class TestConstraintBuildRepository:
         ]
         self.repo.create_many(constraint_builds)
 
-        results = self.repo.get_constraint_builds("team1")
+        results = self.repo.get_constraint_builds(str(team_oid))
 
         assert len(results) == 2
-        assert results[0].team_id == "team1"
-        assert results[1].team_id == "team1"
+        assert results[0].team_id == str(team_oid)
+        assert results[1].team_id == str(team_oid)
 
     def test_get_constraint_builds_by_ids(self):
         """Test getting multiple constraint builds by their IDs."""
         constraint_builds = [
             ConstraintBuildSchema(
-                team="team1",
+                team=ObjectId(),
                 constraint_type=ConstraintType.SUM.value,
                 template_id="template1",
                 language="en",
@@ -222,7 +225,7 @@ class TestConstraintBuildRepository:
                 priority="high",
             ),
             ConstraintBuildSchema(
-                team="team1",
+                team=ObjectId(),
                 constraint_type=ConstraintType.ORD.value,
                 template_id="template2",
                 language="fr",
@@ -238,7 +241,7 @@ class TestConstraintBuildRepository:
             ),
         ]
         created = self.repo.create_many(constraint_builds)
-        ids = [cb.id for cb in created]
+        ids = [str(cb.id) for cb in created]
 
         results = self.repo.get_constraint_builds_by_ids(ids)
 

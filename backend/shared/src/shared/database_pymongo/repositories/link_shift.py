@@ -1,5 +1,7 @@
 from typing import List
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.link_shift import LinkShiftSchema
 from shared.schemas.schemas.shift import LinkShift
@@ -19,7 +21,7 @@ class LinkShiftRepository(BaseRepository[LinkShiftSchema]):
 
     def get_link_shifts(self, team_id: str) -> List[LinkShift]:
         """Get all link shifts for a team."""
-        link_shifts = self.find_all({"team": team_id})
+        link_shifts = self.find_all({"team": ObjectId(team_id)})
         return [link_shift.to_core() for link_shift in link_shifts]
 
     def get_link_shift_by_id(self, link_shift_id: str) -> LinkShift:
@@ -31,7 +33,7 @@ class LinkShiftRepository(BaseRepository[LinkShiftSchema]):
 
     def get_link_shifts_by_shift_id(self, shift_id: str) -> List[LinkShift]:
         """Get all link shifts associated with a specific shift ID."""
-        link_shifts = self.find_all({"shifts": {"$in": [shift_id]}})
+        link_shifts = self.find_all({"shifts": {"$in": [ObjectId(shift_id)]}})
         return [link_shift.to_core() for link_shift in link_shifts]
 
     def update_link_shift(self, link_shift: LinkShift) -> LinkShift:

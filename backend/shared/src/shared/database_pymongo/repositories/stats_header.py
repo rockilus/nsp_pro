@@ -1,5 +1,7 @@
 from typing import List
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.stats_header import StatsHeaderSchema
 from shared.schemas.schemas.stats import (
@@ -23,7 +25,7 @@ class StatsHeaderRepository(BaseRepository[StatsHeaderSchema]):
 
     def get_stats_headers_by_team_id(self, team_id: str) -> List[StatsHeader]:
         """Get all stats headers for a team."""
-        stats_headers = self.find_all({"team": team_id})
+        stats_headers = self.find_all({"team": ObjectId(team_id)})
         return [sh.to_core() for sh in stats_headers]
 
     def get_stats_headers_by_team_unit_shifts(
@@ -35,7 +37,7 @@ class StatsHeaderRepository(BaseRepository[StatsHeaderSchema]):
         """Get all stats headers for a team by unit and shifts."""
         stats_headers = self.find_all(
             {
-                "team": team_id,
+                "team": ObjectId(team_id),
                 "stats_unit": stats_unit.value,
                 "header_unit": header_unit.value,
             }

@@ -31,14 +31,14 @@ class TestBreachRepository:
         """Test creating a breach."""
         breach = Breach(
             id=None,
-            schedule_id="schedule1",
-            objective_id="objective1",
+            schedule_id=str(ObjectId()),
+            objective_id=str(ObjectId()),
             objective_category=ObjectiveCategory.CONSTRAINT,
             variables=[
                 Variable(
-                    worker_id="worker1",
+                    worker_id=str(ObjectId()),
                     date=datetime(2023, 1, 1).date(),
-                    shift_id="shift1",
+                    shift_id=str(ObjectId()),
                 )
             ],
             description="Test breach",
@@ -48,25 +48,25 @@ class TestBreachRepository:
         result = self.repo.create_breach(breach)
 
         assert result.id is not None
-        assert result.schedule_id == "schedule1"
-        assert result.objective_id == "objective1"
+        assert result.schedule_id == breach.schedule_id
+        assert result.objective_id == breach.objective_id
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
-        assert saved_doc["schedule"] == "schedule1"
-        assert saved_doc["objective_id"] == "objective1"
+        assert saved_doc["schedule"] == ObjectId(breach.schedule_id)
+        assert saved_doc["objective_id"] == ObjectId(breach.objective_id)
 
     def test_get_breach_by_id(self):
         """Test getting a breach by ID."""
         breach = BreachSchema(
-            schedule="schedule1",
-            objective_id="objective1",
+            schedule=ObjectId(),
+            objective_id=ObjectId(),
             objective_category=ObjectiveCategory.CONSTRAINT.value,
             variables=[
                 VariableSchema(
-                    worker="worker1",
+                    worker=ObjectId(),
                     date=datetime(2023, 1, 1, tzinfo=timezone.utc),
-                    shift="shift1",
+                    shift=ObjectId(),
                 )
             ],
             description="Test breach",
@@ -74,23 +74,23 @@ class TestBreachRepository:
         )
         created = self.repo.create(breach)
 
-        found = self.repo.get_breach_by_id(created.id)
+        found = self.repo.get_breach_by_id(str(created.id))
 
         assert found is not None
-        assert found.id == created.id
-        assert found.schedule_id == "schedule1"
+        assert found.id == str(created.id)
+        assert found.schedule_id == str(breach.schedule)
 
     def test_update_breach(self):
         """Test updating a breach."""
         breach = BreachSchema(
-            schedule="schedule1",
-            objective_id="objective1",
+            schedule=ObjectId(),
+            objective_id=ObjectId(),
             objective_category=ObjectiveCategory.CONSTRAINT.value,
             variables=[
                 VariableSchema(
-                    worker="worker1",
+                    worker=ObjectId(),
                     date=datetime(2023, 1, 1, tzinfo=timezone.utc),
-                    shift="shift1",
+                    shift=ObjectId(),
                 )
             ],
             description="Test breach",
@@ -99,15 +99,15 @@ class TestBreachRepository:
         created = self.repo.create(breach)
 
         updated_breach = Breach(
-            id=created.id,
-            schedule_id="schedule1",
-            objective_id="objective1",
+            id=str(created.id),
+            schedule_id=str(ObjectId()),
+            objective_id=str(ObjectId()),
             objective_category=ObjectiveCategory.REQUEST,
             variables=[
                 Variable(
-                    worker_id="worker1",
+                    worker_id=str(ObjectId()),
                     date=datetime(2023, 1, 1).date(),
-                    shift_id="shift1",
+                    shift_id=str(ObjectId()),
                 )
             ],
             description="Updated breach",
@@ -126,14 +126,14 @@ class TestBreachRepository:
     def test_delete_breach(self):
         """Test deleting a breach."""
         breach = BreachSchema(
-            schedule="schedule1",
-            objective_id="objective1",
+            schedule=ObjectId(),
+            objective_id=ObjectId(),
             objective_category=ObjectiveCategory.CONSTRAINT.value,
             variables=[
                 VariableSchema(
-                    worker="worker1",
+                    worker=ObjectId(),
                     date=datetime(2023, 1, 1, tzinfo=timezone.utc),
-                    shift="shift1",
+                    shift=ObjectId(),
                 )
             ],
             description="Test breach",
@@ -141,36 +141,37 @@ class TestBreachRepository:
         )
         created = self.repo.create(breach)
 
-        self.repo.delete_breach(created.id)
+        self.repo.delete_breach(str(created.id))
 
         assert self.repo.collection.find_one({"_id": ObjectId(created.id)}) is None
 
     def test_get_breaches_by_schedule_id(self):
         """Test getting breaches by schedule ID."""
+        schedule_oid = ObjectId()
         breaches = [
             BreachSchema(
-                schedule="schedule1",
-                objective_id="objective1",
+                schedule=schedule_oid,
+                objective_id=ObjectId(),
                 objective_category=ObjectiveCategory.CONSTRAINT.value,
                 variables=[
                     VariableSchema(
-                        worker="worker1",
+                        worker=ObjectId(),
                         date=datetime(2023, 1, 1, tzinfo=timezone.utc),
-                        shift="shift1",
+                        shift=ObjectId(),
                     )
                 ],
                 description="Test breach 1",
                 hard_to_soft=True,
             ),
             BreachSchema(
-                schedule="schedule1",
-                objective_id="objective2",
+                schedule=schedule_oid,
+                objective_id=ObjectId(),
                 objective_category=ObjectiveCategory.REQUEST.value,
                 variables=[
                     VariableSchema(
-                        worker="worker2",
+                        worker=ObjectId(),
                         date=datetime(2023, 1, 2, tzinfo=timezone.utc),
-                        shift="shift2",
+                        shift=ObjectId(),
                     )
                 ],
                 description="Test breach 2",
@@ -179,25 +180,25 @@ class TestBreachRepository:
         ]
         self.repo.create_many(breaches)
 
-        found_breaches = self.repo.get_breaches_by_schedule_id("schedule1")
+        found_breaches = self.repo.get_breaches_by_schedule_id(str(schedule_oid))
 
         assert len(found_breaches) == 2
-        assert found_breaches[0].schedule_id == "schedule1"
-        assert found_breaches[1].schedule_id == "schedule1"
+        assert found_breaches[0].schedule_id == str(schedule_oid)
+        assert found_breaches[1].schedule_id == str(schedule_oid)
 
     def test_create_breaches(self):
         """Test creating multiple breaches."""
         breaches = [
             Breach(
                 id=None,
-                schedule_id="schedule1",
-                objective_id="objective1",
+                schedule_id=str(ObjectId()),
+                objective_id=str(ObjectId()),
                 objective_category=ObjectiveCategory.CONSTRAINT,
                 variables=[
                     Variable(
-                        worker_id="worker1",
+                        worker_id=str(ObjectId()),
                         date=datetime(2023, 1, 1).date(),
-                        shift_id="shift1",
+                        shift_id=str(ObjectId()),
                     )
                 ],
                 description="Test breach 1",
@@ -205,14 +206,14 @@ class TestBreachRepository:
             ),
             Breach(
                 id=None,
-                schedule_id="schedule2",
-                objective_id="objective2",
+                schedule_id=str(ObjectId()),
+                objective_id=str(ObjectId()),
                 objective_category=ObjectiveCategory.REQUEST,
                 variables=[
                     Variable(
-                        worker_id="worker2",
+                        worker_id=str(ObjectId()),
                         date=datetime(2023, 1, 2).date(),
-                        shift_id="shift2",
+                        shift_id=str(ObjectId()),
                     )
                 ],
                 description="Test breach 2",
@@ -228,30 +229,33 @@ class TestBreachRepository:
 
     def test_get_breaches(self):
         """Test getting breaches by schedule IDs."""
+        schedule_1_oid = ObjectId()
+        schedule_2_oid = ObjectId()
+        schedule_ids = [str(schedule_1_oid), str(schedule_2_oid)]
         breaches = [
             BreachSchema(
-                schedule="schedule1",
-                objective_id="objective1",
+                schedule=schedule_1_oid,
+                objective_id=ObjectId(),
                 objective_category=ObjectiveCategory.CONSTRAINT.value,
                 variables=[
                     VariableSchema(
-                        worker="worker1",
+                        worker=ObjectId(),
                         date=datetime(2023, 1, 1, tzinfo=timezone.utc),
-                        shift="shift1",
+                        shift=ObjectId(),
                     )
                 ],
                 description="Test breach 1",
                 hard_to_soft=True,
             ),
             BreachSchema(
-                schedule="schedule2",
-                objective_id="objective2",
+                schedule=schedule_2_oid,
+                objective_id=ObjectId(),
                 objective_category=ObjectiveCategory.REQUEST.value,
                 variables=[
                     VariableSchema(
-                        worker="worker2",
+                        worker=ObjectId(),
                         date=datetime(2023, 1, 2, tzinfo=timezone.utc),
-                        shift="shift2",
+                        shift=ObjectId(),
                     )
                 ],
                 description="Test breach 2",
@@ -260,38 +264,39 @@ class TestBreachRepository:
         ]
         self.repo.create_many(breaches)
 
-        found_breaches = self.repo.get_breaches(["schedule1", "schedule2"])
+        found_breaches = self.repo.get_breaches(schedule_ids)
 
         assert len(found_breaches) == 2
-        assert found_breaches[0].schedule_id in ["schedule1", "schedule2"]
-        assert found_breaches[1].schedule_id in ["schedule1", "schedule2"]
+        assert found_breaches[0].schedule_id in schedule_ids
+        assert found_breaches[1].schedule_id in schedule_ids
 
     def test_get_breaches_by_worker_id(self):
         """Test getting breaches by worker ID."""
+        worker_oid = ObjectId()
         breaches = [
             BreachSchema(
-                schedule="schedule1",
-                objective_id="objective1",
+                schedule=ObjectId(),
+                objective_id=ObjectId(),
                 objective_category=ObjectiveCategory.CONSTRAINT.value,
                 variables=[
                     VariableSchema(
-                        worker="worker1",
+                        worker=worker_oid,
                         date=datetime(2023, 1, 1, tzinfo=timezone.utc),
-                        shift="shift1",
+                        shift=ObjectId(),
                     )
                 ],
                 description="Test breach 1",
                 hard_to_soft=True,
             ),
             BreachSchema(
-                schedule="schedule2",
-                objective_id="objective2",
+                schedule=ObjectId(),
+                objective_id=ObjectId(),
                 objective_category=ObjectiveCategory.REQUEST.value,
                 variables=[
                     VariableSchema(
-                        worker="worker1",
+                        worker=worker_oid,
                         date=datetime(2023, 1, 2, tzinfo=timezone.utc),
-                        shift="shift2",
+                        shift=ObjectId(),
                     )
                 ],
                 description="Test breach 2",
@@ -300,38 +305,39 @@ class TestBreachRepository:
         ]
         self.repo.create_many(breaches)
 
-        found_breaches = self.repo.get_breaches_by_worker_id("worker1")
+        found_breaches = self.repo.get_breaches_by_worker_id(str(worker_oid))
 
         assert len(found_breaches) == 2
-        assert found_breaches[0].variables[0].worker_id == "worker1"
-        assert found_breaches[1].variables[0].worker_id == "worker1"
+        assert found_breaches[0].variables[0].worker_id == str(worker_oid)
+        assert found_breaches[1].variables[0].worker_id == str(worker_oid)
 
     def test_get_breaches_by_shift_id(self):
         """Test getting breaches by shift ID."""
+        shift_oid = ObjectId()
         breaches = [
             BreachSchema(
-                schedule="schedule1",
-                objective_id="objective1",
+                schedule=ObjectId(),
+                objective_id=ObjectId(),
                 objective_category=ObjectiveCategory.CONSTRAINT.value,
                 variables=[
                     VariableSchema(
-                        worker="worker1",
+                        worker=ObjectId(),
                         date=datetime(2023, 1, 1, tzinfo=timezone.utc),
-                        shift="shift1",
+                        shift=shift_oid,
                     )
                 ],
                 description="Test breach 1",
                 hard_to_soft=True,
             ),
             BreachSchema(
-                schedule="schedule2",
-                objective_id="objective2",
+                schedule=ObjectId(),
+                objective_id=ObjectId(),
                 objective_category=ObjectiveCategory.REQUEST.value,
                 variables=[
                     VariableSchema(
-                        worker="worker2",
+                        worker=ObjectId(),
                         date=datetime(2023, 1, 2, tzinfo=timezone.utc),
-                        shift="shift1",
+                        shift=shift_oid,
                     )
                 ],
                 description="Test breach 2",
@@ -340,38 +346,39 @@ class TestBreachRepository:
         ]
         self.repo.create_many(breaches)
 
-        found_breaches = self.repo.get_breaches_by_shift_id("shift1")
+        found_breaches = self.repo.get_breaches_by_shift_id(str(shift_oid))
 
         assert len(found_breaches) == 2
-        assert found_breaches[0].variables[0].shift_id == "shift1"
-        assert found_breaches[1].variables[0].shift_id == "shift1"
+        assert found_breaches[0].variables[0].shift_id == str(shift_oid)
+        assert found_breaches[1].variables[0].shift_id == str(shift_oid)
 
     def test_delete_breaches_by_schedule_id(self):
         """Test deleting breaches by schedule ID."""
+        schedule_oid = ObjectId()
         breaches = [
             BreachSchema(
-                schedule="schedule1",
-                objective_id="objective1",
+                schedule=schedule_oid,
+                objective_id=ObjectId(),
                 objective_category=ObjectiveCategory.CONSTRAINT.value,
                 variables=[
                     VariableSchema(
-                        worker="worker1",
+                        worker=ObjectId(),
                         date=datetime(2023, 1, 1, tzinfo=timezone.utc),
-                        shift="shift1",
+                        shift=ObjectId(),
                     )
                 ],
                 description="Test breach 1",
                 hard_to_soft=True,
             ),
             BreachSchema(
-                schedule="schedule1",
-                objective_id="objective2",
+                schedule=schedule_oid,
+                objective_id=ObjectId(),
                 objective_category=ObjectiveCategory.REQUEST.value,
                 variables=[
                     VariableSchema(
-                        worker="worker2",
+                        worker=ObjectId(),
                         date=datetime(2023, 1, 2, tzinfo=timezone.utc),
-                        shift="shift2",
+                        shift=ObjectId(),
                     )
                 ],
                 description="Test breach 2",
@@ -380,7 +387,7 @@ class TestBreachRepository:
         ]
         self.repo.create_many(breaches)
 
-        self.repo.delete_breaches_by_schedule_id("schedule1")
+        self.repo.delete_breaches_by_schedule_id(str(schedule_oid))
 
-        found_breaches = self.repo.get_breaches_by_schedule_id("schedule1")
+        found_breaches = self.repo.get_breaches_by_schedule_id(str(schedule_oid))
         assert len(found_breaches) == 0

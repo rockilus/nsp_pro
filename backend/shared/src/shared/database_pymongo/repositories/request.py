@@ -1,5 +1,7 @@
 from typing import List
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.request import RequestSchema
 from shared.schemas.schemas.request import Request
@@ -17,9 +19,11 @@ class RequestRepository(BaseRepository[RequestSchema]):
         result = self.create(request_schema)
         return result.to_core()
 
-    def get_requests(self, workers: List[str]) -> List[Request]:
+    def get_requests(self, worker_ids: List[str]) -> List[Request]:
         """Get all requests for a list of workers."""
-        requests = self.find_all({"worker": {"$in": workers}})
+        requests = self.find_all(
+            {"worker": {"$in": [ObjectId(id) for id in worker_ids]}}
+        )
         return [request.to_core() for request in requests]
 
     def get_request_by_id(self, request_id: str) -> Request:
@@ -30,14 +34,14 @@ class RequestRepository(BaseRepository[RequestSchema]):
         return request.to_core()
 
     def get_requests_by_dates(
-        self, start_date: float, end_date: float, workers: List[str]
+        self, start_date: float, end_date: float, worker_ids: List[str]
     ) -> List[Request]:
         """Get all requests within a date range for a list of workers."""
         requests = self.find_all(
             {
                 "start_date": {"$gte": start_date},
                 "end_date": {"$lte": end_date},
-                "worker": {"$in": workers},
+                "worker": {"$in": [ObjectId(id) for id in worker_ids]},
             }
         )
         return [request.to_core() for request in requests]
@@ -71,8 +75,8 @@ class RequestRepository(BaseRepository[RequestSchema]):
 
     def delete_requests_by_worker_id(self, worker_id: str) -> None:
         """Delete all requests for a worker by worker ID."""
-        self.collection.delete_many({"worker": worker_id})
+        self.collection.delete_many({"worker": ObjectId(worker_id)})
 
     def delete_requests_by_shift_id(self, shift_id: str) -> None:
         """Delete all requests for a shift by shift ID."""
-        self.collection.delete_many({"shift": shift_id})
+        self.collection.delete_many({"shift": ObjectId(shift_id)})

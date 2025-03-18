@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from bson import ObjectId
+
 from shared.database_pymongo.schemas.base import DocumentBaseSchema
 from shared.schemas.schemas.config import Config as CoreConfig
 
@@ -14,7 +16,7 @@ class ConfigSchema(DocumentBaseSchema):
 
     def to_core(self) -> CoreConfig:
         return CoreConfig(
-            id=self.id or "",
+            id=str(self.id) or "",
             signup_emails_whitelist_enabled=self.signup_emails_whitelist_enabled,
             signup_emails_whitelist=self.signup_emails_whitelist,
             signup_emails_attempt=self.signup_emails_attempt,
@@ -23,7 +25,11 @@ class ConfigSchema(DocumentBaseSchema):
     @classmethod
     def from_core(cls, config: CoreConfig) -> "ConfigSchema":
         return cls(
-            id=config.id,
+            id=(
+                ObjectId(config.id)
+                if config.id and ObjectId.is_valid(config.id)
+                else None
+            ),
             signup_emails_whitelist_enabled=config.signup_emails_whitelist_enabled,
             signup_emails_whitelist=config.signup_emails_whitelist,
             signup_emails_attempt=config.signup_emails_attempt,

@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Mapping, Sequence
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.attribute import AttributeSchema
 from shared.schemas.schemas.attribute import Attribute
@@ -28,17 +30,19 @@ class AttributeRepository(BaseRepository[AttributeSchema]):
 
     def get_attributes_by_owner_id(self, owner_id: str) -> List[Attribute]:
         """Get all attributes for an owner."""
-        attributes = self.find_all({"owner": owner_id})
+        attributes = self.find_all({"owner": ObjectId(owner_id)})
         return [attr.to_core() for attr in attributes]
 
     def get_attributes_by_owner_ids(self, owner_ids: List[str]) -> List[Attribute]:
         """Get all attributes for multiple owners."""
-        attributes = self.find_all({"owner": {"$in": owner_ids}})
+        attributes = self.find_all(
+            {"owner": {"$in": [ObjectId(id) for id in owner_ids]}}
+        )
         return [attr.to_core() for attr in attributes]
 
     def get_attributes_by_dimension_id(self, dimension_id: str) -> List[Attribute]:
         """Get all attributes for a dimension."""
-        attributes = self.find_all({"dimension": dimension_id})
+        attributes = self.find_all({"dimension": ObjectId(dimension_id)})
         return [attr.to_core() for attr in attributes]
 
     def get_attribute_by_id(self, attribute_id: str) -> Attribute:
@@ -61,18 +65,18 @@ class AttributeRepository(BaseRepository[AttributeSchema]):
                     "shifts": {"$push": "$owner"},
                 }
             },
-            {
-                "$addFields": {
-                    "_id.dimension": {
-                        "$convert": {
-                            "input": "$_id.dimension",
-                            "to": "objectId",
-                            "onError": None,
-                            "onNull": None,
-                        }
-                    }
-                }
-            },
+            # {
+            #     "$addFields": {
+            #         "_id.dimension": {
+            #             "$convert": {
+            #                 "input": "$_id.dimension",
+            #                 "to": "objectId",
+            #                 "onError": None,
+            #                 "onNull": None,
+            #             }
+            #         }
+            #     }
+            # },
             {
                 "$lookup": {
                     "from": "dimensions",
@@ -113,7 +117,7 @@ class AttributeRepository(BaseRepository[AttributeSchema]):
 
     def get_attributes_by_dim_entry_id(self, dim_entry_id: str) -> List[Attribute]:
         """Get all attributes for a dimension entry."""
-        attributes = self.find_all({"dim_entries": {"$in": [dim_entry_id]}})
+        attributes = self.find_all({"dim_entries": {"$in": [ObjectId(dim_entry_id)]}})
         return [attr.to_core() for attr in attributes]
 
     def update_attribute(self, attribute: Attribute) -> Attribute:
@@ -137,8 +141,8 @@ class AttributeRepository(BaseRepository[AttributeSchema]):
 
     def delete_attributes_by_owner_id(self, owner_id: str) -> None:
         """Delete attributes by owner ID."""
-        self.collection.delete_many({"owner": owner_id})
+        self.collection.delete_many({"owner": ObjectId(owner_id)})
 
     def delete_attributes_by_dimension_id(self, dimension_id: str) -> None:
         """Delete attributes by dimension ID."""
-        self.collection.delete_many({"dimension": dimension_id})
+        self.collection.delete_many({"dimension": ObjectId(dimension_id)})

@@ -32,11 +32,11 @@ class TestRequestRepository:
         """Test creating a request."""
         request = Request(
             id=None,
-            team_id="team1",
-            worker_id="worker1",
+            team_id=str(ObjectId()),
+            worker_id=str(ObjectId()),
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
             end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).date(),
-            shift_id="shift1",
+            shift_id=str(ObjectId()),
             negative=False,
             hard=True,
             status=RequestStatus.PENDING,
@@ -45,22 +45,22 @@ class TestRequestRepository:
         result = self.repo.create_request(request)
 
         assert result.id is not None
-        assert result.team_id == "team1"
-        assert result.worker_id == "worker1"
+        assert result.team_id == request.team_id
+        assert result.worker_id == request.worker_id
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
-        assert saved_doc["team"] == "team1"
-        assert saved_doc["worker"] == "worker1"
+        assert saved_doc["team"] == ObjectId(request.team_id)
+        assert saved_doc["worker"] == ObjectId(request.worker_id)
 
     def test_get_request_by_id(self):
         """Test getting a request by ID."""
         request = RequestSchema(
-            team="team1",
-            worker="worker1",
+            team=ObjectId(),
+            worker=ObjectId(),
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-            shift="shift1",
+            shift=ObjectId(),
             negative=False,
             hard=True,
             status=RequestStatus.PENDING.value,
@@ -70,17 +70,17 @@ class TestRequestRepository:
         found = self.repo.get_request_by_id(created.id)
 
         assert found is not None
-        assert found.id == created.id
-        assert found.team_id == "team1"
+        assert found.id == str(created.id)
+        assert found.team_id == str(request.team)
 
     def test_update_request(self):
         """Test updating a request."""
         request = RequestSchema(
-            team="team1",
-            worker="worker1",
+            team=ObjectId(),
+            worker=ObjectId(),
             start_date=datetime(2023, 1, 1, 0, 0, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 2, 0, 0, tzinfo=timezone.utc).timestamp(),
-            shift="shift1",
+            shift=ObjectId(),
             negative=False,
             hard=True,
             status=RequestStatus.PENDING.value,
@@ -89,11 +89,11 @@ class TestRequestRepository:
 
         updated_request = Request(
             id=created.id,
-            team_id="team1",
-            worker_id="worker1",
+            team_id=str(ObjectId()),
+            worker_id=str(ObjectId()),
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
             end_date=datetime(2023, 1, 3, tzinfo=timezone.utc).date(),
-            shift_id="shift1",
+            shift_id=str(ObjectId()),
             negative=True,
             hard=False,
             status=RequestStatus.APPROVED,
@@ -105,18 +105,18 @@ class TestRequestRepository:
         assert result.negative is True
         assert result.status == RequestStatus.APPROVED
 
-        from_db = self.repo.collection.find_one({"_id": ObjectId(created.id)})
+        from_db = self.repo.collection.find_one({"_id": created.id})
         assert from_db["end_date"] == 1672704000.0
         assert from_db["negative"] is True
 
     def test_delete_request(self):
         """Test deleting a request."""
         request = RequestSchema(
-            team="team1",
-            worker="worker1",
+            team=ObjectId(),
+            worker=ObjectId(),
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-            shift="shift1",
+            shift=ObjectId(),
             negative=False,
             hard=True,
             status=RequestStatus.PENDING.value,
@@ -125,27 +125,27 @@ class TestRequestRepository:
 
         self.repo.delete_request(created.id)
 
-        assert self.repo.collection.find_one({"_id": ObjectId(created.id)}) is None
+        assert self.repo.collection.find_one({"_id": created.id}) is None
 
     def test_get_requests(self):
         """Test getting requests for workers."""
         requests = [
             RequestSchema(
-                team="team1",
-                worker="worker1",
+                team=ObjectId(),
+                worker=ObjectId(),
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=ObjectId(),
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
             ),
             RequestSchema(
-                team="team1",
-                worker="worker2",
+                team=ObjectId(),
+                worker=ObjectId(),
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=ObjectId(),
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
@@ -153,28 +153,28 @@ class TestRequestRepository:
         ]
         self.repo.create_many(requests)
 
-        found_requests = self.repo.get_requests(["worker1", "worker2"])
+        found_requests = self.repo.get_requests([str(r.worker) for r in requests])
         assert len(found_requests) == 2
 
     def test_get_requests_by_dates(self):
         """Test getting requests by date range."""
         requests = [
             RequestSchema(
-                team="team1",
-                worker="worker1",
+                team=ObjectId(),
+                worker=ObjectId(),
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=ObjectId(),
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
             ),
             RequestSchema(
-                team="team1",
-                worker="worker2",
+                team=ObjectId(),
+                worker=ObjectId(),
                 start_date=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 4, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=ObjectId(),
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
@@ -185,7 +185,7 @@ class TestRequestRepository:
         found_requests = self.repo.get_requests_by_dates(
             datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             datetime(2023, 1, 4, tzinfo=timezone.utc).timestamp(),
-            ["worker1", "worker2"],
+            [str(r.worker) for r in requests],
         )
         assert len(found_requests) == 2
 
@@ -193,21 +193,21 @@ class TestRequestRepository:
         """Test updating multiple requests."""
         requests = [
             RequestSchema(
-                team="team1",
-                worker="worker1",
+                team=ObjectId(),
+                worker=ObjectId(),
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=ObjectId(),
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
             ),
             RequestSchema(
-                team="team1",
-                worker="worker2",
+                team=ObjectId(),
+                worker=ObjectId(),
                 start_date=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 4, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=ObjectId(),
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
@@ -218,22 +218,22 @@ class TestRequestRepository:
         updated_requests = [
             Request(
                 id=created_requests[0].id,
-                team_id="team1",
-                worker_id="worker1",
+                team_id=str(ObjectId()),
+                worker_id=str(ObjectId()),
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
                 end_date=datetime(2023, 1, 3, tzinfo=timezone.utc).date(),
-                shift_id="shift1",
+                shift_id=str(ObjectId()),
                 negative=True,
                 hard=False,
                 status=RequestStatus.APPROVED,
             ),
             Request(
                 id=created_requests[1].id,
-                team_id="team1",
-                worker_id="worker2",
+                team_id=str(ObjectId()),
+                worker_id=str(ObjectId()),
                 start_date=datetime(2023, 1, 2, tzinfo=timezone.utc).date(),
                 end_date=datetime(2023, 1, 4, tzinfo=timezone.utc).date(),
-                shift_id="shift2",
+                shift_id=str(ObjectId()),
                 negative=True,
                 hard=False,
                 status=RequestStatus.APPROVED,
@@ -252,23 +252,24 @@ class TestRequestRepository:
 
     def test_delete_requests_by_worker_id(self):
         """Test deleting requests by worker ID."""
+        worker_oid = ObjectId()
         requests = [
             RequestSchema(
-                team="team1",
-                worker="worker1",
+                team=ObjectId(),
+                worker=worker_oid,
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=ObjectId(),
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
             ),
             RequestSchema(
-                team="team1",
-                worker="worker2",
+                team=ObjectId(),
+                worker=worker_oid,
                 start_date=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 4, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=ObjectId(),
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
@@ -276,29 +277,30 @@ class TestRequestRepository:
         ]
         self.repo.create_many(requests)
 
-        self.repo.delete_requests_by_worker_id("worker1")
+        self.repo.delete_requests_by_worker_id(str(worker_oid))
 
-        assert self.repo.collection.count_documents({"worker": "worker1"}) == 0
+        assert self.repo.collection.count_documents({"worker": worker_oid}) == 0
 
     def test_delete_requests_by_shift_id(self):
         """Test deleting requests by shift ID."""
+        shift_oid = ObjectId()
         requests = [
             RequestSchema(
-                team="team1",
-                worker="worker1",
+                team=ObjectId(),
+                worker=ObjectId(),
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=shift_oid,
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
             ),
             RequestSchema(
-                team="team1",
-                worker="worker2",
+                team=ObjectId(),
+                worker=ObjectId(),
                 start_date=datetime(2023, 1, 3, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 4, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=shift_oid,
                 negative=False,
                 hard=True,
                 status=RequestStatus.PENDING.value,
@@ -306,6 +308,6 @@ class TestRequestRepository:
         ]
         self.repo.create_many(requests)
 
-        self.repo.delete_requests_by_shift_id("shift1")
+        self.repo.delete_requests_by_shift_id(str(shift_oid))
 
-        assert self.repo.collection.count_documents({"shift": "shift1"}) == 0
+        assert self.repo.collection.count_documents({"shift": shift_oid}) == 0

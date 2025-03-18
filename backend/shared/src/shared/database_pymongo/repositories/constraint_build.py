@@ -25,7 +25,7 @@ class ConstraintBuildRepository(BaseRepository[ConstraintBuildSchema]):
 
     def get_constraint_builds(self, team_id: str) -> List[ConstraintBuild]:
         """Get all constraint builds for a team."""
-        constraint_builds = self.find_all({"team": team_id})
+        constraint_builds = self.find_all({"team": ObjectId(team_id)})
         return [cb.to_core() for cb in constraint_builds]
 
     def get_constraint_build_by_id(self, constraint_build_id: str) -> ConstraintBuild:

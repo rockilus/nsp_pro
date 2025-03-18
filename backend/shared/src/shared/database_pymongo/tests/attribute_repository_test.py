@@ -54,21 +54,21 @@ class TestAttributeRepository:
             id=None,
             value="test_value",
             owner_type=AttributeOwnerType.SHIFT,
-            owner_id="owner1",
-            dimension_id="dimension1",
-            dim_entry_ids=["entry1", "entry2"],
+            owner_id=str(ObjectId()),
+            dimension_id=str(ObjectId()),
+            dim_entry_ids=[str(ObjectId()), str(ObjectId())],
         )
 
         result = self.repo.create_attribute(attribute)
 
         assert result.id is not None
         assert result.value == "test_value"
-        assert result.owner_id == "owner1"
+        assert result.owner_id == attribute.owner_id
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
         assert saved_doc["value"] == "test_value"
-        assert saved_doc["owner"] == "owner1"
+        assert saved_doc["owner"] == ObjectId(attribute.owner_id)
 
     def test_create_attributes(self):
         """Test creating multiple attributes."""
@@ -77,17 +77,17 @@ class TestAttributeRepository:
                 id=None,
                 value="value1",
                 owner_type=AttributeOwnerType.SHIFT,
-                owner_id="owner1",
-                dimension_id="dimension1",
-                dim_entry_ids=["entry1"],
+                owner_id=ObjectId(),
+                dimension_id=ObjectId(),
+                dim_entry_ids=[str(ObjectId())],
             ),
             Attribute(
                 id=None,
                 value="value2",
                 owner_type=AttributeOwnerType.SHIFT,
-                owner_id="owner2",
-                dimension_id="dimension2",
-                dim_entry_ids=["entry2"],
+                owner_id=ObjectId(),
+                dimension_id=ObjectId(),
+                dim_entry_ids=[str(ObjectId())],
             ),
         ]
 
@@ -103,21 +103,22 @@ class TestAttributeRepository:
             AttributeSchema(
                 value="value1",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner="owner1",
-                dimension="dimension1",
-                dim_entries=["entry1"],
+                owner=ObjectId(),
+                dimension=ObjectId(),
+                dim_entries=[ObjectId()],
             ),
             AttributeSchema(
                 value="value2",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner="owner2",
-                dimension="dimension2",
-                dim_entries=["entry2"],
+                owner=ObjectId(),
+                dimension=ObjectId(),
+                dim_entries=[ObjectId()],
             ),
         ]
         self.repo.create_many(attributes)
 
-        found_attributes = self.repo.get_attributes_by_owner_ids(["owner1", "owner2"])
+        owner_ids = [str(attr.owner) for attr in attributes]
+        found_attributes = self.repo.get_attributes_by_owner_ids(owner_ids)
 
         assert len(found_attributes) == 2
         assert found_attributes[0].value == "value1"
@@ -125,11 +126,12 @@ class TestAttributeRepository:
 
     def test_get_shifts_id_by_dim_and_attr(self):
         """Test getting shifts by dimension and attribute."""
+        team_oid = ObjectId()
         # Create dimensions
         dimensions = [
             Dimension(
                 id=None,
-                team_id="team1",
+                team_id=str(team_oid),
                 dim_types=[DimensionType.SHIFT],
                 name="Dimension 1",
                 entry_type=DimensionEntryType.STR,
@@ -137,7 +139,7 @@ class TestAttributeRepository:
             ),
             Dimension(
                 id=None,
-                team_id="team1",
+                team_id=str(team_oid),
                 dim_types=[DimensionType.SHIFT],
                 name="Dimension 2",
                 entry_type=DimensionEntryType.STR,
@@ -153,13 +155,13 @@ class TestAttributeRepository:
         shifts = [
             Shift(
                 id=None,
-                team_id="team1",
+                team_id=str(team_oid),
                 name="Shift 1",
                 acronym="S1",
                 acronym_custom=False,
                 start_time=datetime(2023, 1, 1, 8, 0, tzinfo=timezone.utc),
                 end_time=datetime(2023, 1, 1, 16, 0, tzinfo=timezone.utc),
-                staffing=[Staffing(specialty_id="spec1", staffing=2)],
+                staffing=[Staffing(specialty_id=str(ObjectId()), staffing=2)],
                 color="#FF0000",
                 shift_type=ShiftType.NORMAL,
                 rest_type=ShiftRestType.NONE,
@@ -170,13 +172,13 @@ class TestAttributeRepository:
             ),
             Shift(
                 id=None,
-                team_id="team1",
+                team_id=str(team_oid),
                 name="Shift 2",
                 acronym="S2",
                 acronym_custom=False,
                 start_time=datetime(2023, 1, 1, 8, 0, tzinfo=timezone.utc),
                 end_time=datetime(2023, 1, 1, 16, 0, tzinfo=timezone.utc),
-                staffing=[Staffing(specialty_id="spec1", staffing=2)],
+                staffing=[Staffing(specialty_id=str(ObjectId()), staffing=2)],
                 color="#FF0000",
                 shift_type=ShiftType.NORMAL,
                 rest_type=ShiftRestType.NONE,
@@ -194,15 +196,15 @@ class TestAttributeRepository:
             AttributeSchema(
                 value="value1",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner=shift_ids[0],
-                dimension=target_dimension_id,
+                owner=ObjectId(shift_ids[0]),
+                dimension=ObjectId(target_dimension_id),
                 dim_entries=[],
             ),
             AttributeSchema(
                 value="value1",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner=shift_ids[1],
-                dimension=target_dimension_id,
+                owner=ObjectId(shift_ids[1]),
+                dimension=ObjectId(target_dimension_id),
                 dim_entries=[],
             ),
         ]
@@ -216,25 +218,26 @@ class TestAttributeRepository:
 
     def test_get_attributes_by_dim_entry_id(self):
         """Test getting attributes by dimension entry ID."""
+        dim_entry_oid = ObjectId()
         attributes = [
             AttributeSchema(
                 value="value1",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner="owner1",
-                dimension="dimension1",
-                dim_entries=["entry1"],
+                owner=ObjectId(),
+                dimension=ObjectId(),
+                dim_entries=[dim_entry_oid],
             ),
             AttributeSchema(
                 value="value2",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner="owner2",
-                dimension="dimension2",
-                dim_entries=["entry1"],
+                owner=ObjectId(),
+                dimension=ObjectId(),
+                dim_entries=[dim_entry_oid],
             ),
         ]
         self.repo.create_many(attributes)
 
-        found_attributes = self.repo.get_attributes_by_dim_entry_id("entry1")
+        found_attributes = self.repo.get_attributes_by_dim_entry_id(str(dim_entry_oid))
 
         assert len(found_attributes) == 2
         assert found_attributes[0].value == "value1"
@@ -245,9 +248,9 @@ class TestAttributeRepository:
         attribute = AttributeSchema(
             value="test_value",
             owner_type=AttributeOwnerType.SHIFT.value,
-            owner="owner1",
-            dimension="dimension1",
-            dim_entries=["entry1", "entry2"],
+            owner=ObjectId(),
+            dimension=ObjectId(),
+            dim_entries=[ObjectId(), ObjectId()],
         )
         created = self.repo.create(attribute)
 
@@ -255,9 +258,9 @@ class TestAttributeRepository:
             id=created.id,
             value="updated_value",
             owner_type=AttributeOwnerType.SHIFT,
-            owner_id="owner1",
-            dimension_id="dimension1",
-            dim_entry_ids=["entry1", "entry2"],
+            owner_id=created.owner,
+            dimension_id=created.dimension,
+            dim_entry_ids=created.dim_entries,
         )
 
         result = self.repo.update_attribute(updated_attribute)
@@ -273,16 +276,16 @@ class TestAttributeRepository:
             AttributeSchema(
                 value="value1",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner="owner1",
-                dimension="dimension1",
-                dim_entries=["entry1"],
+                owner=ObjectId(),
+                dimension=ObjectId(),
+                dim_entries=[ObjectId()],
             ),
             AttributeSchema(
                 value="value2",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner="owner2",
-                dimension="dimension2",
-                dim_entries=["entry2"],
+                owner=ObjectId(),
+                dimension=ObjectId(),
+                dim_entries=[ObjectId()],
             ),
         ]
         created_attributes = self.repo.create_many(attributes)
@@ -292,17 +295,17 @@ class TestAttributeRepository:
                 id=created_attributes[0].id,
                 value="updated_value1",
                 owner_type=AttributeOwnerType.SHIFT,
-                owner_id="owner1",
-                dimension_id="dimension1",
-                dim_entry_ids=["entry1"],
+                owner_id=created_attributes[0].owner,
+                dimension_id=created_attributes[0].dimension,
+                dim_entry_ids=created_attributes[0].dim_entries,
             ),
             Attribute(
                 id=created_attributes[1].id,
                 value="updated_value2",
                 owner_type=AttributeOwnerType.SHIFT,
-                owner_id="owner2",
-                dimension_id="dimension2",
-                dim_entry_ids=["entry2"],
+                owner_id=created_attributes[1].owner,
+                dimension_id=created_attributes[1].dimension,
+                dim_entry_ids=created_attributes[1].dim_entries,
             ),
         ]
 
@@ -317,13 +320,13 @@ class TestAttributeRepository:
         attribute = AttributeSchema(
             value="test_value",
             owner_type=AttributeOwnerType.SHIFT.value,
-            owner="owner1",
-            dimension="dimension1",
-            dim_entries=["entry1", "entry2"],
+            owner=ObjectId(),
+            dimension=ObjectId(),
+            dim_entries=[ObjectId(), ObjectId()],
         )
         created = self.repo.create(attribute)
 
-        self.repo.delete_attributes_by_owner_id("owner1")
+        self.repo.delete_attributes_by_owner_id(str(attribute.owner))
 
         assert self.repo.collection.find_one({"_id": ObjectId(created.id)}) is None
 
@@ -332,37 +335,38 @@ class TestAttributeRepository:
         attribute = AttributeSchema(
             value="test_value",
             owner_type=AttributeOwnerType.SHIFT.value,
-            owner="owner1",
-            dimension="dimension1",
-            dim_entries=["entry1", "entry2"],
+            owner=ObjectId(),
+            dimension=ObjectId(),
+            dim_entries=[ObjectId(), ObjectId()],
         )
         created = self.repo.create(attribute)
 
-        self.repo.delete_attributes_by_dimension_id("dimension1")
+        self.repo.delete_attributes_by_dimension_id(str(attribute.dimension))
 
         assert self.repo.collection.find_one({"_id": ObjectId(created.id)}) is None
 
     def test_get_attributes_by_owner_id(self):
         """Test getting attributes by owner ID."""
+        owner_oid = ObjectId()
         attributes = [
             AttributeSchema(
                 value="value1",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner="owner1",
-                dimension="dimension1",
-                dim_entries=["entry1"],
+                owner=owner_oid,
+                dimension=ObjectId(),
+                dim_entries=[ObjectId()],
             ),
             AttributeSchema(
                 value="value2",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner="owner1",
-                dimension="dimension2",
-                dim_entries=["entry2"],
+                owner=owner_oid,
+                dimension=ObjectId(),
+                dim_entries=[ObjectId()],
             ),
         ]
         self.repo.create_many(attributes)
 
-        found_attributes = self.repo.get_attributes_by_owner_id("owner1")
+        found_attributes = self.repo.get_attributes_by_owner_id(str(owner_oid))
 
         assert len(found_attributes) == 2
         assert found_attributes[0].value == "value1"
@@ -370,25 +374,26 @@ class TestAttributeRepository:
 
     def test_get_attributes_by_dimension_id(self):
         """Test getting attributes by dimension ID."""
+        dimension_oid = ObjectId()
         attributes = [
             AttributeSchema(
                 value="value1",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner="owner1",
-                dimension="dimension1",
-                dim_entries=["entry1"],
+                owner=ObjectId(),
+                dimension=dimension_oid,
+                dim_entries=[ObjectId()],
             ),
             AttributeSchema(
                 value="value2",
                 owner_type=AttributeOwnerType.SHIFT.value,
-                owner="owner2",
-                dimension="dimension1",
-                dim_entries=["entry2"],
+                owner=ObjectId(),
+                dimension=dimension_oid,
+                dim_entries=[ObjectId()],
             ),
         ]
         self.repo.create_many(attributes)
 
-        found_attributes = self.repo.get_attributes_by_dimension_id("dimension1")
+        found_attributes = self.repo.get_attributes_by_dimension_id(str(dimension_oid))
 
         assert len(found_attributes) == 2
         assert found_attributes[0].value == "value1"
@@ -399,14 +404,14 @@ class TestAttributeRepository:
         attribute = AttributeSchema(
             value="test_value",
             owner_type=AttributeOwnerType.SHIFT.value,
-            owner="owner1",
-            dimension="dimension1",
-            dim_entries=["entry1", "entry2"],
+            owner=ObjectId(),
+            dimension=ObjectId(),
+            dim_entries=[ObjectId(), ObjectId()],
         )
         created = self.repo.create(attribute)
 
-        found = self.repo.get_attribute_by_id(created.id)
+        found = self.repo.get_attribute_by_id(str(created.id))
 
         assert found is not None
-        assert found.id == created.id
+        assert found.id == str(created.id)
         assert found.value == "test_value"

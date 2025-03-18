@@ -64,10 +64,10 @@ class TestUserRepository:
         )
         created = self.repo.create(user)
 
-        found = self.repo.get_user_by_id(created.id)
+        found = self.repo.get_user_by_id(str(created.id))
 
         assert found is not None
-        assert found.id == created.id
+        assert found.id == str(created.id)
         assert found.email == "john@example.com"
 
     def test_get_user_by_email(self):
@@ -86,7 +86,7 @@ class TestUserRepository:
         found = self.repo.get_user_by_email("john@example.com")
 
         assert found is not None
-        assert found.id == created.id
+        assert found.id == str(created.id)
         assert found.email == "john@example.com"
 
     def test_update_user(self):
@@ -103,7 +103,7 @@ class TestUserRepository:
         created = self.repo.create(user)
 
         updated_user = User(
-            id=created.id,
+            id=str(created.id),
             email="john@example.com",
             first_name="John Updated",
             last_name="Doe",
@@ -117,7 +117,7 @@ class TestUserRepository:
 
         assert result.first_name == "John Updated"
 
-        from_db = self.repo.collection.find_one({"_id": ObjectId(created.id)})
+        from_db = self.repo.collection.find_one({"_id": created.id})
         assert from_db["first_name"] == "John Updated"
 
     def test_delete_user(self):
@@ -133,9 +133,9 @@ class TestUserRepository:
         )
         created = self.repo.create(user)
 
-        self.repo.delete_user(created.id)
+        self.repo.delete_user(str(created.id))
 
-        assert self.repo.collection.find_one({"_id": ObjectId(created.id)}) is None
+        assert self.repo.collection.find_one({"_id": created.id}) is None
 
     def test_get_users(self):
         """Test getting all users."""

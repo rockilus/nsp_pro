@@ -7,6 +7,7 @@ from shared.schemas import (
     DimensionEntryType,
     DimensionType,
     DimEntry,
+    Language,
     Shift,
     ShiftRestType,
     ShiftType,
@@ -17,9 +18,15 @@ from shared.schemas import (
     Worker,
 )
 
-from constraint_templates.build_templates_list_en import build_templates_list_en
-from constraint_templates.build_templates_list_es import build_templates_list_es
-from constraint_templates.build_templates_list_fr import build_templates_list_fr
+from constraint_templates.build_templates_list_en import (
+    build_templates_list_en,
+)
+from constraint_templates.build_templates_list_es import (
+    build_templates_list_es,
+)
+from constraint_templates.build_templates_list_fr import (
+    build_templates_list_fr,
+)
 
 # WARNING: IMPORTING DBs HERE CREATED ERROR WITH PYTEST
 
@@ -32,7 +39,7 @@ def build_templates(
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
     specialties: List[Specialty],
-    lng: str,
+    lng: Language,
 ) -> List[Template]:
     dim_to_attributes: Dict[str, List[Attribute]] = {}
     for a in attributes:
@@ -175,12 +182,12 @@ def build_options(
 def build_templates_list(
     worker_options: List[ShiftWorkerOption],
     shift_options: List[ShiftWorkerOption],
-    lang_code: str,
+    lang_code: Language,
 ) -> List[Template]:
-    if lang_code == "en":
+    if lang_code == Language.EN:
         return build_templates_list_en(worker_options, shift_options)
-    if lang_code == "fr":
+    if lang_code == Language.FR:
         return build_templates_list_fr(worker_options, shift_options)
-    if lang_code == "es":
+    if lang_code == Language.ES:
         return build_templates_list_es(worker_options, shift_options)
     raise ValueError(f"Language code {lang_code} not supported")

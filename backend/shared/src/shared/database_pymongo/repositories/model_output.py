@@ -1,5 +1,7 @@
 from typing import Optional
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.model_output import ModelOutputSchema
 from shared.schemas.schemas.model_output import ModelOutput
@@ -19,7 +21,7 @@ class ModelOutputRepository(BaseRepository[ModelOutputSchema]):
 
     def get_model_output(self, schedule_id: str) -> Optional[ModelOutput]:
         """Get a model output by schedule ID."""
-        model_output = self.collection.find_one({"schedule": schedule_id})
+        model_output = self.collection.find_one({"schedule": ObjectId(schedule_id)})
         return (
             ModelOutputSchema.from_mongo(model_output).to_core()
             if model_output

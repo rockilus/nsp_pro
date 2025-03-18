@@ -1,5 +1,7 @@
 from typing import List
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.coverage_selector import (
     CoverageSelectorSchema,
@@ -23,7 +25,7 @@ class CoverageSelectorRepository(BaseRepository[CoverageSelectorSchema]):
 
     def get_coverage_selectors(self, schedule_id: str) -> List[CoverageSelector]:
         """Get all coverage selectors for a schedule."""
-        selectors = self.find_all({"schedule": schedule_id})
+        selectors = self.find_all({"schedule": ObjectId(schedule_id)})
         return [selector.to_core() for selector in selectors]
 
     def get_coverage_selector_by_id(
@@ -41,7 +43,9 @@ class CoverageSelectorRepository(BaseRepository[CoverageSelectorSchema]):
         self, schedule_id: str
     ) -> List[CoverageSelector]:
         """Get all coverage selectors for a schedule with full period."""
-        selectors = self.find_all({"schedule": schedule_id, "full_period": True})
+        selectors = self.find_all(
+            {"schedule": ObjectId(schedule_id), "full_period": True}
+        )
         return [selector.to_core() for selector in selectors]
 
     def update_coverage_selector(
@@ -78,4 +82,4 @@ class CoverageSelectorRepository(BaseRepository[CoverageSelectorSchema]):
 
     def delete_coverage_selectors_by_coverage_id(self, coverage_id: str) -> None:
         """Delete all coverage selectors associated with a coverage ID."""
-        self.collection.delete_many({"coverage": coverage_id})
+        self.collection.delete_many({"coverage": ObjectId(coverage_id)})

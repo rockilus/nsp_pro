@@ -1,3 +1,5 @@
+from bson import ObjectId
+
 from shared.database_pymongo.schemas.base import DocumentBaseSchema
 from shared.schemas.schemas.coverage import Coverage
 
@@ -5,20 +7,24 @@ from shared.schemas.schemas.coverage import Coverage
 class CoverageSchema(DocumentBaseSchema):
     """Coverage schema for validation."""
 
-    team: str
+    team: ObjectId
     name: str
 
     def to_core(self) -> Coverage:
         return Coverage(
-            id=self.id or "",
-            team_id=self.team,
+            id=str(self.id) or "",
+            team_id=str(self.team),
             name=self.name,
         )
 
     @classmethod
     def from_core(cls, coverage: Coverage) -> "CoverageSchema":
         return cls(
-            id=coverage.id,
-            team=coverage.team_id,
+            id=(
+                ObjectId(coverage.id)
+                if coverage.id and ObjectId.is_valid(coverage.id)
+                else None
+            ),
+            team=ObjectId(coverage.team_id),
             name=coverage.name,
         )

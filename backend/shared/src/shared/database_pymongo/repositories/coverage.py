@@ -1,5 +1,7 @@
 from typing import List
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.coverage import CoverageSchema
 from shared.schemas.schemas.coverage import Coverage
@@ -19,7 +21,7 @@ class CoverageRepository(BaseRepository[CoverageSchema]):
 
     def get_coverages(self, team_id: str) -> List[Coverage]:
         """Get all coverages for a team."""
-        coverages = self.find_all({"team": team_id})
+        coverages = self.find_all({"team": ObjectId(team_id)})
         return [coverage.to_core() for coverage in coverages]
 
     def get_coverage_by_id(self, coverage_id: str) -> Coverage:

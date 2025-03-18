@@ -1,5 +1,7 @@
 from typing import List
 
+from bson import ObjectId
+
 from shared.database_pymongo.schemas.base import DocumentBaseSchema
 from shared.database_pymongo.schemas.constraint_build import (
     ShiftWorkerOptionSchema,
@@ -14,7 +16,7 @@ from shared.schemas.schemas.stats import (
 class StatsHeaderSchema(DocumentBaseSchema):
     """StatsHeader schema for validation."""
 
-    team: str  # Store team ID instead of reference
+    team: ObjectId  # Store team ID as ObjectId
     stats_unit: int
     header_unit: int
     value: str
@@ -27,7 +29,7 @@ class StatsHeaderSchema(DocumentBaseSchema):
 
     @classmethod
     def from_mongo(cls, data: dict) -> "StatsHeaderSchema":
-        data["id"] = str(data.pop("_id"))
+        data["id"] = data.pop("_id")
         data["selected_shifts"] = [
             ShiftWorkerOptionSchema.from_mongo(swo) for swo in data["selected_shifts"]
         ]
@@ -35,8 +37,8 @@ class StatsHeaderSchema(DocumentBaseSchema):
 
     def to_core(self) -> StatsHeader:
         return StatsHeader(
-            id=self.id or "",
-            team_id=self.team,
+            id=str(self.id) or "",
+            team_id=str(self.team),
             stats_unit=StatsUnitOptions(self.stats_unit),
             header_unit=HeaderUnitOptions(self.header_unit),
             value=self.value,
@@ -47,8 +49,12 @@ class StatsHeaderSchema(DocumentBaseSchema):
     @classmethod
     def from_core(cls, stats_header: StatsHeader) -> "StatsHeaderSchema":
         return cls(
-            id=stats_header.id,
-            team=stats_header.team_id,
+            id=(
+                ObjectId(stats_header.id)
+                if stats_header.id and ObjectId.is_valid(stats_header.id)
+                else None
+            ),
+            team=ObjectId(stats_header.team_id),
             stats_unit=stats_header.stats_unit.value,
             header_unit=stats_header.header_unit.value,
             value=stats_header.value,

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import pytest
 from bson import ObjectId
 
@@ -8,7 +6,7 @@ from shared.database_pymongo.repositories.shift_demand import (
     ShiftDemandRepository,
 )
 from shared.database_pymongo.schemas.shift_demand import ShiftDemandSchema
-from shared.schemas.schemas.coverage import CoverageSelector, ShiftDemand
+from shared.schemas.schemas.coverage import ShiftDemand
 
 
 class TestShiftDemandRepository:
@@ -34,79 +32,79 @@ class TestShiftDemandRepository:
         shift_demand = ShiftDemand(
             id=None,
             day_index=1,
-            shift_id="shift1",
-            coverage_id="coverage1",
+            shift_id=str(ObjectId()),
+            coverage_id=str(ObjectId()),
         )
 
         result = self.repo.create_shift_demand(shift_demand)
 
         assert result.id is not None
         assert result.day_index == 1
-        assert result.shift_id == "shift1"
-        assert result.coverage_id == "coverage1"
+        assert result.shift_id == shift_demand.shift_id
+        assert result.coverage_id == shift_demand.coverage_id
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
         assert saved_doc["day_index"] == 1
-        assert saved_doc["shift"] == "shift1"
-        assert saved_doc["coverage"] == "coverage1"
+        assert saved_doc["shift"] == ObjectId(shift_demand.shift_id)
+        assert saved_doc["coverage"] == ObjectId(shift_demand.coverage_id)
 
     def test_get_shift_demand_by_id(self):
         """Test getting a shift demand by ID."""
         shift_demand = ShiftDemandSchema(
             day_index=1,
-            shift="shift1",
-            coverage="coverage1",
+            shift=ObjectId(),
+            coverage=ObjectId(),
         )
         created = self.repo.create(shift_demand)
 
         found = self.repo.get_shift_demand_by_id(created.id)
 
         assert found is not None
-        assert found.id == created.id
+        assert found.id == str(created.id)
         assert found.day_index == 1
-        assert found.shift_id == "shift1"
-        assert found.coverage_id == "coverage1"
+        assert found.shift_id == str(shift_demand.shift)
+        assert found.coverage_id == str(shift_demand.coverage)
 
     def test_update_shift_demand(self):
         """Test updating a shift demand."""
         shift_demand = ShiftDemandSchema(
             day_index=1,
-            shift="shift1",
-            coverage="coverage1",
+            shift=ObjectId(),
+            coverage=ObjectId(),
         )
         created = self.repo.create(shift_demand)
 
         updated_shift_demand = ShiftDemand(
             id=created.id,
             day_index=2,
-            shift_id="shift2",
-            coverage_id="coverage2",
+            shift_id=str(ObjectId()),
+            coverage_id=str(ObjectId()),
         )
 
         result = self.repo.update_shift_demand(updated_shift_demand)
 
         assert result.day_index == 2
-        assert result.shift_id == "shift2"
-        assert result.coverage_id == "coverage2"
+        assert result.shift_id == updated_shift_demand.shift_id
+        assert result.coverage_id == updated_shift_demand.coverage_id
 
-        from_db = self.repo.collection.find_one({"_id": ObjectId(created.id)})
+        from_db = self.repo.collection.find_one({"_id": created.id})
         assert from_db["day_index"] == 2
-        assert from_db["shift"] == "shift2"
-        assert from_db["coverage"] == "coverage2"
+        assert from_db["shift"] == ObjectId(updated_shift_demand.shift_id)
+        assert from_db["coverage"] == ObjectId(updated_shift_demand.coverage_id)
 
     def test_delete_shift_demand(self):
         """Test deleting a shift demand."""
         shift_demand = ShiftDemandSchema(
             day_index=1,
-            shift="shift1",
-            coverage="coverage1",
+            shift=ObjectId(),
+            coverage=ObjectId(),
         )
         created = self.repo.create(shift_demand)
 
         self.repo.delete_shift_demand(created.id)
 
-        assert self.repo.collection.find_one({"_id": ObjectId(created.id)}) is None
+        assert self.repo.collection.find_one({"_id": created.id}) is None
 
     def test_create_shift_demands(self):
         """Test creating multiple shift demands."""
@@ -114,14 +112,14 @@ class TestShiftDemandRepository:
             ShiftDemand(
                 id=None,
                 day_index=1,
-                shift_id="shift1",
-                coverage_id="coverage1",
+                shift_id=str(ObjectId()),
+                coverage_id=str(ObjectId()),
             ),
             ShiftDemand(
                 id=None,
                 day_index=2,
-                shift_id="shift2",
-                coverage_id="coverage2",
+                shift_id=str(ObjectId()),
+                coverage_id=str(ObjectId()),
             ),
         ]
 
@@ -147,124 +145,73 @@ class TestShiftDemandRepository:
 
     def test_get_shift_demands_by_coverage_ids(self):
         """Test getting shift demands by coverage IDs."""
+        coverage_1_oid = ObjectId()
+        coverage_2_oid = ObjectId()
+        coverage_ids = [str(coverage_1_oid), str(coverage_2_oid)]
         shift_demand1 = ShiftDemandSchema(
-            day_index=1, shift="shift1", coverage="coverage1"
+            day_index=1, shift=ObjectId(), coverage=coverage_1_oid
         )
         shift_demand2 = ShiftDemandSchema(
-            day_index=2, shift="shift2", coverage="coverage2"
+            day_index=2, shift=ObjectId(), coverage=coverage_2_oid
         )
         self.repo.create(shift_demand1)
         self.repo.create(shift_demand2)
 
-        results = self.repo.get_shift_demands_by_coverage_ids(
-            ["coverage1", "coverage2"]
-        )
+        results = self.repo.get_shift_demands_by_coverage_ids(coverage_ids)
 
         assert len(results) == 2
-        assert results[0].coverage_id in ["coverage1", "coverage2"]
-        assert results[1].coverage_id in ["coverage1", "coverage2"]
+        assert results[0].coverage_id in coverage_ids
+        assert results[1].coverage_id in coverage_ids
 
     def test_get_cov_id_to_shift_demands_by_coverage_ids(self):
         """Test getting a mapping of coverage IDs to shift demands."""
+        coverage_1_oid = ObjectId()
+        coverage_2_oid = ObjectId()
+        coverage_ids = [str(coverage_1_oid), str(coverage_2_oid)]
         shift_demand1 = ShiftDemandSchema(
-            day_index=1, shift="shift1", coverage="coverage1"
+            day_index=1, shift=ObjectId(), coverage=coverage_1_oid
         )
         shift_demand2 = ShiftDemandSchema(
-            day_index=2, shift="shift2", coverage="coverage2"
+            day_index=2, shift=ObjectId(), coverage=coverage_2_oid
         )
         self.repo.create(shift_demand1)
         self.repo.create(shift_demand2)
 
-        result = self.repo.get_cov_id_to_shift_demands_by_coverage_ids(
-            ["coverage1", "coverage2"]
-        )
+        result = self.repo.get_cov_id_to_shift_demands_by_coverage_ids(coverage_ids)
 
-        assert "coverage1" in result
-        assert "coverage2" in result
-        assert len(result["coverage1"]) == 1
-        assert len(result["coverage2"]) == 1
-
-    def test_get_shift_demands_by_coverage_selector(self):
-        """Test getting shift demands by coverage selector."""
-        shift_demand = ShiftDemandSchema(
-            day_index=1, shift="shift1", coverage="coverage1"
-        )
-        self.repo.create(shift_demand)
-
-        coverage_selector = CoverageSelector(
-            id="selector1",
-            schedule_id="schedule1",
-            coverage_id="coverage1",
-            full_period=True,
-            start_date=datetime(2023, 1, 1).date(),
-            end_date=datetime(2023, 1, 7).date(),
-        )
-        results = self.repo.get_shift_demands_by_coverage_selector(coverage_selector)
-
-        assert len(results) == 1
-        assert results[0].coverage_id == "coverage1"
-
-    def test_get_shift_demands_by_coverage_selectors(self):
-        """Test getting shift demands by coverage selectors."""
-        shift_demand1 = ShiftDemandSchema(
-            day_index=1, shift="shift1", coverage="coverage1"
-        )
-        shift_demand2 = ShiftDemandSchema(
-            day_index=2, shift="shift2", coverage="coverage2"
-        )
-        self.repo.create(shift_demand1)
-        self.repo.create(shift_demand2)
-
-        coverage_selectors = [
-            CoverageSelector(
-                id="selector1",
-                schedule_id="schedule1",
-                coverage_id="coverage1",
-                full_period=True,
-                start_date=datetime(2023, 1, 1).date(),
-                end_date=datetime(2023, 1, 7).date(),
-            ),
-            CoverageSelector(
-                id="selector2",
-                schedule_id="schedule2",
-                coverage_id="coverage2",
-                full_period=True,
-                start_date=datetime(2023, 1, 1).date(),
-                end_date=datetime(2023, 1, 7).date(),
-            ),
-        ]
-        results = self.repo.get_shift_demands_by_coverage_selectors(coverage_selectors)
-
-        assert len(results) == 2
-        assert results[0].coverage_id in ["coverage1", "coverage2"]
-        assert results[1].coverage_id in ["coverage1", "coverage2"]
+        assert str(coverage_1_oid) in result
+        assert str(coverage_2_oid) in result
+        assert len(result[str(coverage_1_oid)]) == 1
+        assert len(result[str(coverage_2_oid)]) == 1
 
     def test_delete_shift_demands_by_coverage_id(self):
         """Test deleting shift demands by coverage ID."""
+        coverage_oid = ObjectId()
         shift_demand1 = ShiftDemandSchema(
-            day_index=1, shift="shift1", coverage="coverage1"
+            day_index=1, shift=ObjectId(), coverage=coverage_oid
         )
         shift_demand2 = ShiftDemandSchema(
-            day_index=2, shift="shift2", coverage="coverage1"
+            day_index=2, shift=ObjectId(), coverage=coverage_oid
         )
         self.repo.create(shift_demand1)
         self.repo.create(shift_demand2)
 
-        self.repo.delete_shift_demands_by_coverage_id("coverage1")
+        self.repo.delete_shift_demands_by_coverage_id(str(coverage_oid))
 
-        assert self.repo.collection.count_documents({"coverage": "coverage1"}) == 0
+        assert self.repo.collection.count_documents({"coverage": coverage_oid}) == 0
 
     def test_delete_shift_demands_by_shift_id(self):
         """Test deleting shift demands by shift ID."""
+        shift_oid = ObjectId()
         shift_demand1 = ShiftDemandSchema(
-            day_index=1, shift="shift1", coverage="coverage1"
+            day_index=1, shift=shift_oid, coverage=ObjectId()
         )
         shift_demand2 = ShiftDemandSchema(
-            day_index=2, shift="shift1", coverage="coverage2"
+            day_index=2, shift=shift_oid, coverage=ObjectId()
         )
         self.repo.create(shift_demand1)
         self.repo.create(shift_demand2)
 
-        self.repo.delete_shift_demands_by_shift_id("shift1")
+        self.repo.delete_shift_demands_by_shift_id(str(shift_oid))
 
-        assert self.repo.collection.count_documents({"shift": "shift1"}) == 0
+        assert self.repo.collection.count_documents({"shift": shift_oid}) == 0

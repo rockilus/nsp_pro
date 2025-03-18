@@ -1,5 +1,7 @@
 from datetime import datetime, time, timezone
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
+
+from bson import ObjectId
 
 from shared.database_pymongo.schemas.base import DocumentBaseSchema
 from shared.schemas.schemas.worker import Worker
@@ -8,7 +10,7 @@ from shared.schemas.schemas.worker import Worker
 class WorkerSchema(DocumentBaseSchema):
     """Worker schema for validation."""
 
-    team: str
+    team: ObjectId
     name: str
     acronym: str
     acronym_custom: bool
@@ -18,23 +20,14 @@ class WorkerSchema(DocumentBaseSchema):
     weekly_hours_desired: int
     duties_per_month: int
     annual_leave: int
-    specialties: List[str] = []
+    specialties: List[ObjectId] = []
     deleted: bool = False
-
-    def to_mongo(self) -> Dict[str, Any]:
-        out = super().to_mongo()
-        return out
-
-    @classmethod
-    def from_mongo(cls, data: Dict[str, Any]) -> "WorkerSchema":
-        data["id"] = str(data.pop("_id"))
-        return cls(**data)
 
     # pylint: disable=R0801
     def to_core(self) -> Worker:
         return Worker(
-            id=self.id or "",
-            team_id=self.team,
+            id=str(self.id) or "",
+            team_id=str(self.team),
             name=self.name,
             acronym=self.acronym,
             acronym_custom=self.acronym_custom,
@@ -50,15 +43,19 @@ class WorkerSchema(DocumentBaseSchema):
             weekly_hours_desired=self.weekly_hours_desired,
             duties_per_month=self.duties_per_month,
             annual_leave=self.annual_leave,
-            specialty_ids=self.specialties,
+            specialty_ids=[str(specialty) for specialty in self.specialties],
             deleted=self.deleted,
         )
 
     @classmethod
     def from_core(cls, worker: Worker) -> "WorkerSchema":
         return cls(
-            id=worker.id,
-            team=worker.team_id,
+            id=(
+                ObjectId(worker.id)
+                if worker.id and ObjectId.is_valid(worker.id)
+                else None
+            ),
+            team=ObjectId(worker.team_id),
             name=worker.name,
             acronym=worker.acronym,
             acronym_custom=worker.acronym_custom,
@@ -76,6 +73,6 @@ class WorkerSchema(DocumentBaseSchema):
             weekly_hours_desired=worker.weekly_hours_desired,
             duties_per_month=worker.duties_per_month,
             annual_leave=worker.annual_leave,
-            specialties=worker.specialty_ids,
+            specialties=[ObjectId(specialty) for specialty in worker.specialty_ids],
             deleted=worker.deleted,
         )

@@ -35,35 +35,35 @@ class TestDailyShiftDemandRepository:
         """Test creating a daily shift demand."""
         daily_shift_demand = DailyShiftDemand(
             id=None,
-            team_id="team1",
-            schedule_id="schedule1",
-            shift_demand_id="shift_demand1",
+            team_id=str(ObjectId()),
+            schedule_id=str(ObjectId()),
+            shift_demand_id=str(ObjectId()),
             source_type=DSDSourceType.SHIFT_DEMAND,
             date=datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
-            shift_id="shift1",
+            shift_id=str(ObjectId()),
             count=5,
         )
 
         result = self.repo.create_daily_shift_demand(daily_shift_demand)
 
         assert result.id is not None
-        assert result.team_id == "team1"
-        assert result.schedule_id == "schedule1"
+        assert result.team_id == daily_shift_demand.team_id
+        assert result.schedule_id == daily_shift_demand.schedule_id
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
-        assert saved_doc["team"] == "team1"
-        assert saved_doc["schedule"] == "schedule1"
+        assert saved_doc["team"] == ObjectId(daily_shift_demand.team_id)
+        assert saved_doc["schedule"] == ObjectId(daily_shift_demand.schedule_id)
 
     def test_get_daily_shift_demand_by_id(self):
         """Test getting a daily shift demand by ID."""
         daily_shift_demand = DailyShiftDemandSchema(
-            team="team1",
-            schedule="schedule1",
-            shift_demand="shift_demand1",
+            team=ObjectId(),
+            schedule=ObjectId(),
+            shift_demand=ObjectId(),
             source_type=DSDSourceType.SHIFT_DEMAND.value,
             date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-            shift="shift1",
+            shift=ObjectId(),
             count=5,
         )
         created = self.repo.create(daily_shift_demand)
@@ -71,30 +71,30 @@ class TestDailyShiftDemandRepository:
         found = self.repo.get_daily_shift_demand_by_id(created.id)
 
         assert found is not None
-        assert found.id == created.id
-        assert found.team_id == "team1"
+        assert found.id == str(created.id)
+        assert found.team_id == str(daily_shift_demand.team)
 
     def test_update_daily_shift_demand(self):
         """Test updating a daily shift demand."""
         daily_shift_demand = DailyShiftDemandSchema(
-            team="team1",
-            schedule="schedule1",
-            shift_demand="shift_demand1",
+            team=ObjectId(),
+            schedule=ObjectId(),
+            shift_demand=ObjectId(),
             source_type=DSDSourceType.SHIFT_DEMAND.value,
             date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-            shift="shift1",
+            shift=ObjectId(),
             count=5,
         )
         created = self.repo.create(daily_shift_demand)
 
         updated_demand = DailyShiftDemand(
             id=created.id,
-            team_id="team1",
-            schedule_id="schedule1",
-            shift_demand_id="shift_demand1",
+            team_id=str(ObjectId()),
+            schedule_id=str(ObjectId()),
+            shift_demand_id=str(ObjectId()),
             source_type=DSDSourceType.SHIFT_DEMAND_MODIFY,
             date=datetime(2023, 1, 2, tzinfo=timezone.utc).date(),
-            shift_id="shift1",
+            shift_id=str(ObjectId()),
             count=10,
         )
 
@@ -110,12 +110,12 @@ class TestDailyShiftDemandRepository:
     def test_delete_daily_shift_demand(self):
         """Test deleting a daily shift demand."""
         daily_shift_demand = DailyShiftDemandSchema(
-            team="team1",
-            schedule="schedule1",
-            shift_demand="shift_demand1",
+            team=ObjectId(),
+            schedule=ObjectId(),
+            shift_demand=ObjectId(),
             source_type=DSDSourceType.SHIFT_DEMAND.value,
             date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-            shift="shift1",
+            shift=ObjectId(),
             count=5,
         )
         created = self.repo.create(daily_shift_demand)
@@ -126,55 +126,57 @@ class TestDailyShiftDemandRepository:
 
     def test_get_daily_shift_demands(self):
         """Test getting all daily shift demands for a team."""
+        team_oid = ObjectId()
         demands = [
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand1",
+                team=team_oid,
+                schedule=ObjectId(),
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=ObjectId(),
                 count=5,
             ),
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand2",
+                team=team_oid,
+                schedule=ObjectId(),
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=ObjectId(),
                 count=3,
             ),
         ]
         self.repo.create_many(demands)
 
-        results = self.repo.get_daily_shift_demands("team1")
+        results = self.repo.get_daily_shift_demands(str(team_oid))
 
         assert len(results) == 2
-        assert results[0].team_id == "team1"
-        assert results[1].team_id == "team1"
+        assert results[0].team_id == str(team_oid)
+        assert results[1].team_id == str(team_oid)
 
     def test_create_daily_shift_demands(self):
         """Test creating multiple daily shift demands."""
+        team_oid = ObjectId()
         demands = [
             DailyShiftDemand(
                 id=None,
-                team_id="team1",
-                schedule_id="schedule1",
-                shift_demand_id="shift_demand1",
+                team_id=str(team_oid),
+                schedule_id=str(ObjectId()),
+                shift_demand_id=str(ObjectId()),
                 source_type=DSDSourceType.SHIFT_DEMAND,
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
-                shift_id="shift1",
+                shift_id=str(ObjectId()),
                 count=5,
             ),
             DailyShiftDemand(
                 id=None,
-                team_id="team1",
-                schedule_id="schedule1",
-                shift_demand_id="shift_demand2",
+                team_id=str(team_oid),
+                schedule_id=str(ObjectId()),
+                shift_demand_id=str(ObjectId()),
                 source_type=DSDSourceType.SHIFT_DEMAND,
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc).date(),
-                shift_id="shift2",
+                shift_id=str(ObjectId()),
                 count=3,
             ),
         ]
@@ -185,126 +187,132 @@ class TestDailyShiftDemandRepository:
         assert results[0].id is not None
         assert results[1].id is not None
 
-        saved_docs = list(self.repo.collection.find({"team": "team1"}))
+        saved_docs = list(self.repo.collection.find({"team": team_oid}))
         assert len(saved_docs) == 2
 
     def test_get_daily_shift_demands_by_schedule_id(self):
         """Test getting daily shift demands by schedule ID."""
+        schedule_oid = ObjectId()
         demands = [
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand1",
+                team=ObjectId(),
+                schedule=schedule_oid,
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=ObjectId(),
                 count=5,
             ),
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand2",
+                team=ObjectId(),
+                schedule=schedule_oid,
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=ObjectId(),
                 count=3,
             ),
         ]
         self.repo.create_many(demands)
 
-        results = self.repo.get_daily_shift_demands_by_schedule_id("schedule1")
+        results = self.repo.get_daily_shift_demands_by_schedule_id(str(schedule_oid))
 
         assert len(results) == 2
-        assert results[0].schedule_id == "schedule1"
-        assert results[1].schedule_id == "schedule1"
+        assert results[0].schedule_id == str(schedule_oid)
+        assert results[1].schedule_id == str(schedule_oid)
 
     def test_get_daily_shift_demands_modified_by_schedule_id(self):
         """Test getting modified daily shift demands by schedule ID."""
+        schedule_oid = ObjectId()
         demands = [
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand1",
+                team=ObjectId(),
+                schedule=schedule_oid,
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND_MODIFY.value,
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=ObjectId(),
                 count=5,
             ),
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand2",
+                team=ObjectId(),
+                schedule=schedule_oid,
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=ObjectId(),
                 count=3,
             ),
         ]
         self.repo.create_many(demands)
 
-        results = self.repo.get_daily_shift_demands_modified_by_schedule_id("schedule1")
+        results = self.repo.get_daily_shift_demands_modified_by_schedule_id(
+            str(schedule_oid)
+        )
 
         assert len(results) == 1
         assert results[0].source_type == DSDSourceType.SHIFT_DEMAND_MODIFY
 
     def test_get_daily_shift_demands_by_shift_demand_id(self):
         """Test getting daily shift demands by shift demand ID."""
+        shift_demand_oid = ObjectId()
         demands = [
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand1",
+                team=ObjectId(),
+                schedule=ObjectId(),
+                shift_demand=shift_demand_oid,
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=ObjectId(),
                 count=5,
             ),
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand2",
+                team=ObjectId(),
+                schedule=ObjectId(),
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=ObjectId(),
                 count=3,
             ),
         ]
         self.repo.create_many(demands)
 
         results = self.repo.get_daily_shift_demands_by_shift_demand_id(
-            ["shift_demand1"]
+            [str(shift_demand_oid)]
         )
 
         assert len(results) == 1
-        assert results[0].shift_demand_id == "shift_demand1"
+        assert results[0].shift_demand_id == str(shift_demand_oid)
 
     def test_delete_daily_shift_demands_by_schedule_id(self):
         """Test deleting daily shift demands by schedule ID."""
+        schedule_oid = ObjectId()
         demands = [
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand1",
+                team=ObjectId(),
+                schedule=schedule_oid,
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=ObjectId(),
                 count=5,
             ),
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand2",
+                team=ObjectId(),
+                schedule=schedule_oid,
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=ObjectId(),
                 count=3,
             ),
         ]
         self.repo.create_many(demands)
 
-        self.repo.delete_daily_shift_demands_by_schedule_id("schedule1")
+        self.repo.delete_daily_shift_demands_by_schedule_id(str(schedule_oid))
 
-        remaining_docs = list(self.repo.collection.find({"schedule": "schedule1"}))
+        remaining_docs = list(self.repo.collection.find({"schedule": schedule_oid}))
         assert len(remaining_docs) == 0
 
     def test_delete_dsds_by_schedule_id_and_source_shift_demand(self):
@@ -312,31 +320,32 @@ class TestDailyShiftDemandRepository:
         Test deleting daily shift demands by schedule ID and source type shift
         demand.
         """
+        schedule_oid = ObjectId()
         demands = [
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand1",
+                team=ObjectId(),
+                schedule=schedule_oid,
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=ObjectId(),
                 count=5,
             ),
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand2",
+                team=ObjectId(),
+                schedule=schedule_oid,
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND_MODIFY.value,
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=ObjectId(),
                 count=3,
             ),
         ]
         self.repo.create_many(demands)
 
-        self.repo.delete_dsds_by_schedule_id_and_source_shift_demand("schedule1")
+        self.repo.delete_dsds_by_schedule_id_and_source_shift_demand(str(schedule_oid))
 
-        remaining_docs = list(self.repo.collection.find({"schedule": "schedule1"}))
+        remaining_docs = list(self.repo.collection.find())
         assert len(remaining_docs) == 1
         assert (
             remaining_docs[0]["source_type"] == DSDSourceType.SHIFT_DEMAND_MODIFY.value
@@ -344,29 +353,30 @@ class TestDailyShiftDemandRepository:
 
     def test_delete_daily_shift_demands_by_shift_id(self):
         """Test deleting daily shift demands by shift ID."""
+        shift_oid = ObjectId()
         demands = [
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand1",
+                team=ObjectId(),
+                schedule=ObjectId(),
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-                shift="shift1",
+                shift=shift_oid,
                 count=5,
             ),
             DailyShiftDemandSchema(
-                team="team1",
-                schedule="schedule1",
-                shift_demand="shift_demand2",
+                team=ObjectId(),
+                schedule=ObjectId(),
+                shift_demand=ObjectId(),
                 source_type=DSDSourceType.SHIFT_DEMAND.value,
                 date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
-                shift="shift2",
+                shift=shift_oid,
                 count=3,
             ),
         ]
         self.repo.create_many(demands)
 
-        self.repo.delete_daily_shift_demands_by_shift_id("shift1")
+        self.repo.delete_daily_shift_demands_by_shift_id(str(shift_oid))
 
-        remaining_docs = list(self.repo.collection.find({"shift": "shift1"}))
+        remaining_docs = list(self.repo.collection.find({"shift": shift_oid}))
         assert len(remaining_docs) == 0

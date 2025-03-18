@@ -35,8 +35,8 @@ class TestCoverageSelectorRepository:
         """Test creating a coverage selector."""
         coverage_selector = CoverageSelector(
             id=None,
-            schedule_id="schedule1",
-            coverage_id="coverage1",
+            schedule_id=str(ObjectId()),
+            coverage_id=str(ObjectId()),
             full_period=True,
             start_date=datetime(2023, 1, 1).date(),
             end_date=datetime(2023, 12, 31).date(),
@@ -45,36 +45,37 @@ class TestCoverageSelectorRepository:
         result = self.repo.create_coverage_selector(coverage_selector)
 
         assert result.id is not None
-        assert result.schedule_id == "schedule1"
-        assert result.coverage_id == "coverage1"
+        assert result.schedule_id == coverage_selector.schedule_id
+        assert result.coverage_id == coverage_selector.coverage_id
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
-        assert saved_doc["schedule"] == "schedule1"
-        assert saved_doc["coverage"] == "coverage1"
+        assert saved_doc["schedule"] == ObjectId(coverage_selector.schedule_id)
+        assert saved_doc["coverage"] == ObjectId(coverage_selector.coverage_id)
 
     def test_get_coverage_selector_by_id(self):
         """Test getting a coverage selector by ID."""
         coverage_selector = CoverageSelectorSchema(
-            schedule="schedule1",
-            coverage="coverage1",
+            schedule=ObjectId(),
+            coverage=ObjectId(),
             full_period=True,
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
         )
         created = self.repo.create(coverage_selector)
 
-        found = self.repo.get_coverage_selector_by_id(created.id)
+        found = self.repo.get_coverage_selector_by_id(str(created.id))
 
         assert found is not None
-        assert found.id == created.id
-        assert found.schedule_id == "schedule1"
+        assert found.id == str(created.id)
+        assert found.schedule_id == str(coverage_selector.schedule)
+        assert found.coverage_id == str(coverage_selector.coverage)
 
     def test_update_coverage_selector(self):
         """Test updating a coverage selector."""
         coverage_selector = CoverageSelectorSchema(
-            schedule="schedule1",
-            coverage="coverage1",
+            schedule=ObjectId(),
+            coverage=ObjectId(),
             full_period=True,
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
@@ -82,9 +83,9 @@ class TestCoverageSelectorRepository:
         created = self.repo.create(coverage_selector)
 
         updated_coverage_selector = CoverageSelector(
-            id=created.id,
-            schedule_id="schedule1",
-            coverage_id="coverage2",
+            id=str(created.id),
+            schedule_id=str(ObjectId()),
+            coverage_id=str(ObjectId()),
             full_period=False,
             start_date=datetime(2023, 2, 1).date(),
             end_date=datetime(2023, 11, 30).date(),
@@ -92,18 +93,20 @@ class TestCoverageSelectorRepository:
 
         result = self.repo.update_coverage_selector(updated_coverage_selector)
 
-        assert result.coverage_id == "coverage2"
+        assert result.coverage_id == updated_coverage_selector.coverage_id
         assert result.full_period is False
+        assert result.schedule_id == updated_coverage_selector.schedule_id
 
         from_db = self.repo.collection.find_one({"_id": ObjectId(created.id)})
-        assert from_db["coverage"] == "coverage2"
+        assert from_db["coverage"] == ObjectId(updated_coverage_selector.coverage_id)
         assert from_db["full_period"] is False
+        assert from_db["schedule"] == ObjectId(updated_coverage_selector.schedule_id)
 
     def test_delete_coverage_selector(self):
         """Test deleting a coverage selector."""
         coverage_selector = CoverageSelectorSchema(
-            schedule="schedule1",
-            coverage="coverage1",
+            schedule=ObjectId(),
+            coverage=ObjectId(),
             full_period=True,
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
@@ -116,17 +119,18 @@ class TestCoverageSelectorRepository:
 
     def test_get_coverage_selectors(self):
         """Test getting all coverage selectors for a schedule."""
+        schedule_oid = ObjectId()
         coverage_selectors = [
             CoverageSelectorSchema(
-                schedule="schedule1",
-                coverage="coverage1",
+                schedule=schedule_oid,
+                coverage=ObjectId(),
                 full_period=True,
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
             ),
             CoverageSelectorSchema(
-                schedule="schedule1",
-                coverage="coverage2",
+                schedule=schedule_oid,
+                coverage=ObjectId(),
                 full_period=False,
                 start_date=datetime(2023, 2, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 11, 30, tzinfo=timezone.utc),
@@ -134,25 +138,26 @@ class TestCoverageSelectorRepository:
         ]
         self.repo.create_many(coverage_selectors)
 
-        results = self.repo.get_coverage_selectors("schedule1")
+        results = self.repo.get_coverage_selectors(str(schedule_oid))
 
         assert len(results) == 2
-        assert results[0].schedule_id == "schedule1"
-        assert results[1].schedule_id == "schedule1"
+        assert results[0].schedule_id == str(schedule_oid)
+        assert results[1].schedule_id == str(schedule_oid)
 
     def test_get_coverage_selectors_by_schedule_id_full_period(self):
         """Test getting all coverage selectors for a schedule with full period."""
+        schedule_oid = ObjectId()
         coverage_selectors = [
             CoverageSelectorSchema(
-                schedule="schedule1",
-                coverage="coverage1",
+                schedule=schedule_oid,
+                coverage=ObjectId(),
                 full_period=True,
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
             ),
             CoverageSelectorSchema(
-                schedule="schedule1",
-                coverage="coverage2",
+                schedule=ObjectId(),
+                coverage=ObjectId(),
                 full_period=False,
                 start_date=datetime(2023, 2, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 11, 30, tzinfo=timezone.utc),
@@ -161,7 +166,7 @@ class TestCoverageSelectorRepository:
         self.repo.create_many(coverage_selectors)
 
         results = self.repo.get_coverage_selectors_by_schedule_id_full_period(
-            "schedule1"
+            str(schedule_oid)
         )
 
         assert len(results) == 1
@@ -171,15 +176,15 @@ class TestCoverageSelectorRepository:
         """Test updating multiple coverage selectors."""
         coverage_selectors = [
             CoverageSelectorSchema(
-                schedule="schedule1",
-                coverage="coverage1",
+                schedule=ObjectId(),
+                coverage=ObjectId(),
                 full_period=True,
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
             ),
             CoverageSelectorSchema(
-                schedule="schedule1",
-                coverage="coverage2",
+                schedule=ObjectId(),
+                coverage=ObjectId(),
                 full_period=False,
                 start_date=datetime(2023, 2, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 11, 30, tzinfo=timezone.utc),
@@ -190,16 +195,16 @@ class TestCoverageSelectorRepository:
         updated_selectors = [
             CoverageSelector(
                 id=created_selectors[0].id,
-                schedule_id="schedule1",
-                coverage_id="updated_coverage1",
+                schedule_id=str(ObjectId()),
+                coverage_id=str(ObjectId()),
                 full_period=False,
                 start_date=datetime(2023, 3, 1).date(),
                 end_date=datetime(2023, 10, 31).date(),
             ),
             CoverageSelector(
                 id=created_selectors[1].id,
-                schedule_id="schedule1",
-                coverage_id="updated_coverage2",
+                schedule_id=str(ObjectId()),
+                coverage_id=str(ObjectId()),
                 full_period=True,
                 start_date=datetime(2023, 4, 1).date(),
                 end_date=datetime(2023, 9, 30).date(),
@@ -209,27 +214,28 @@ class TestCoverageSelectorRepository:
         results = self.repo.update_coverage_selectors(updated_selectors)
 
         assert len(results) == 2
-        assert results[0].coverage_id == "updated_coverage1"
-        assert results[1].coverage_id == "updated_coverage2"
+        assert results[0].coverage_id == updated_selectors[0].coverage_id
+        assert results[1].coverage_id == updated_selectors[1].coverage_id
 
         from_db_1 = self.repo.collection.find_one({"_id": ObjectId(results[0].id)})
         from_db_2 = self.repo.collection.find_one({"_id": ObjectId(results[1].id)})
-        assert from_db_1["coverage"] == "updated_coverage1"
-        assert from_db_2["coverage"] == "updated_coverage2"
+        assert from_db_1["coverage"] == ObjectId(updated_selectors[0].coverage_id)
+        assert from_db_2["coverage"] == ObjectId(updated_selectors[1].coverage_id)
 
     def test_delete_coverage_selectors_by_coverage_id(self):
         """Test deleting all coverage selectors associated with a coverage ID."""
+        coverage_oid = ObjectId()
         coverage_selectors = [
             CoverageSelectorSchema(
-                schedule="schedule1",
-                coverage="coverage1",
+                schedule=ObjectId(),
+                coverage=coverage_oid,
                 full_period=True,
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
             ),
             CoverageSelectorSchema(
-                schedule="schedule2",
-                coverage="coverage1",
+                schedule=ObjectId(),
+                coverage=coverage_oid,
                 full_period=False,
                 start_date=datetime(2023, 2, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 11, 30, tzinfo=timezone.utc),
@@ -237,6 +243,6 @@ class TestCoverageSelectorRepository:
         ]
         self.repo.create_many(coverage_selectors)
 
-        self.repo.delete_coverage_selectors_by_coverage_id("coverage1")
+        self.repo.delete_coverage_selectors_by_coverage_id(str(coverage_oid))
 
-        assert self.repo.collection.find_one({"coverage": "coverage1"}) is None
+        assert self.repo.collection.find_one({"coverage": coverage_oid}) is None

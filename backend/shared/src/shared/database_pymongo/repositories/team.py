@@ -38,7 +38,7 @@ class TeamRepository(BaseRepository[TeamSchema]):
 
     def get_teams_by_leader_id(self, leader_id: str) -> List[Team]:
         """Get all teams for a leader."""
-        teams = self.find_all({"team_leaders": leader_id})
+        teams = self.find_all({"team_leaders": ObjectId(leader_id)})
         return [team.to_core() for team in teams]
 
     def update_team(self, team: Team) -> Team:

@@ -29,7 +29,7 @@ class TestSpecialtyRepository:
         """Test creating a specialty."""
         specialty = Specialty(
             id=None,
-            team_id="team1",
+            team_id=str(ObjectId()),
             name="Cardiology",
             deleted=False,
         )
@@ -38,17 +38,17 @@ class TestSpecialtyRepository:
 
         assert result.id is not None
         assert result.name == "Cardiology"
-        assert result.team_id == "team1"
+        assert result.team_id == specialty.team_id
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
         assert saved_doc["name"] == "Cardiology"
-        assert saved_doc["team_id"] == "team1"
+        assert saved_doc["team_id"] == ObjectId(specialty.team_id)
 
     def test_get_specialty_by_id(self):
         """Test getting a specialty by ID."""
         specialty = SpecialtySchema(
-            team_id="team1",
+            team_id=ObjectId(),
             name="Cardiology",
             deleted=False,
         )
@@ -57,13 +57,13 @@ class TestSpecialtyRepository:
         found = self.repo.get_specialty_by_id(created.id)
 
         assert found is not None
-        assert found.id == created.id
+        assert found.id == str(created.id)
         assert found.name == "Cardiology"
 
     def test_update_specialty(self):
         """Test updating a specialty."""
         specialty = SpecialtySchema(
-            team_id="team1",
+            team_id=ObjectId(),
             name="Cardiology",
             deleted=False,
         )
@@ -71,7 +71,7 @@ class TestSpecialtyRepository:
 
         updated_specialty = Specialty(
             id=created.id,
-            team_id="team1",
+            team_id=str(ObjectId()),
             name="Updated Cardiology",
             deleted=False,
         )
@@ -80,13 +80,13 @@ class TestSpecialtyRepository:
 
         assert result.name == "Updated Cardiology"
 
-        from_db = self.repo.collection.find_one({"_id": ObjectId(created.id)})
+        from_db = self.repo.collection.find_one({"_id": created.id})
         assert from_db["name"] == "Updated Cardiology"
 
     def test_delete_specialty(self):
         """Test deleting a specialty."""
         specialty = SpecialtySchema(
-            team_id="team1",
+            team_id=ObjectId(),
             name="Cardiology",
             deleted=False,
         )
@@ -94,12 +94,12 @@ class TestSpecialtyRepository:
 
         self.repo.delete_specialty(created.id)
 
-        assert self.repo.collection.find_one({"_id": ObjectId(created.id)}) is None
+        assert self.repo.collection.find_one({"_id": created.id}) is None
 
     def test_logical_delete_specialty(self):
         """Test logically deleting a specialty."""
         specialty = SpecialtySchema(
-            team_id="team1",
+            team_id=ObjectId(),
             name="Cardiology",
             deleted=False,
         )
@@ -109,47 +109,52 @@ class TestSpecialtyRepository:
 
         assert result.deleted is True
 
-        from_db = self.repo.collection.find_one({"_id": ObjectId(created.id)})
+        from_db = self.repo.collection.find_one({"_id": created.id})
         assert from_db["deleted"] is True
 
     def test_get_specialties_by_team_id(self):
         """Test getting specialties by team ID."""
+        team_oid = ObjectId()
         specialties = [
-            SpecialtySchema(team_id="team1", name="Cardiology", deleted=False),
-            SpecialtySchema(team_id="team1", name="Neurology", deleted=False),
-            SpecialtySchema(team_id="team2", name="Oncology", deleted=False),
+            SpecialtySchema(team_id=team_oid, name="Cardiology", deleted=False),
+            SpecialtySchema(team_id=team_oid, name="Neurology", deleted=False),
+            SpecialtySchema(team_id=ObjectId(), name="Oncology", deleted=False),
         ]
         self.repo.create_many(specialties)
 
-        result = self.repo.get_specialties_by_team_id("team1")
+        result = self.repo.get_specialties_by_team_id(str(team_oid))
 
         assert len(result) == 2
         assert {s.name for s in result} == {"Cardiology", "Neurology"}
 
     def test_get_specialties_not_deleted_by_team_id(self):
         """Test getting non-deleted specialties by team ID."""
+        team_oid = ObjectId()
         specialties = [
-            SpecialtySchema(team_id="team1", name="Cardiology", deleted=False),
-            SpecialtySchema(team_id="team1", name="Neurology", deleted=True),
-            SpecialtySchema(team_id="team1", name="Oncology", deleted=False),
+            SpecialtySchema(team_id=team_oid, name="Cardiology", deleted=False),
+            SpecialtySchema(team_id=team_oid, name="Neurology", deleted=True),
+            SpecialtySchema(team_id=team_oid, name="Oncology", deleted=False),
         ]
         self.repo.create_many(specialties)
 
-        result = self.repo.get_specialties_not_deleted_by_team_id("team1")
+        result = self.repo.get_specialties_not_deleted_by_team_id(str(team_oid))
 
         assert len(result) == 2
         assert {s.name for s in result} == {"Cardiology", "Oncology"}
 
     def test_get_specialties_by_team_ids(self):
         """Test getting specialties by multiple team IDs."""
+        team_1_oid = ObjectId()
+        team_2_oid = ObjectId()
+        team_ids = [str(team_1_oid), str(team_2_oid)]
         specialties = [
-            SpecialtySchema(team_id="team1", name="Cardiology", deleted=False),
-            SpecialtySchema(team_id="team2", name="Neurology", deleted=False),
-            SpecialtySchema(team_id="team3", name="Oncology", deleted=False),
+            SpecialtySchema(team_id=team_1_oid, name="Cardiology", deleted=False),
+            SpecialtySchema(team_id=ObjectId(), name="Neurology", deleted=False),
+            SpecialtySchema(team_id=team_2_oid, name="Oncology", deleted=False),
         ]
         self.repo.create_many(specialties)
 
-        result = self.repo.get_specialties_by_team_ids(["team1", "team3"])
+        result = self.repo.get_specialties_by_team_ids(team_ids)
 
         assert len(result) == 2
         assert {s.name for s in result} == {"Cardiology", "Oncology"}
