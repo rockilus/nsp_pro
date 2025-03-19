@@ -137,9 +137,7 @@ class TestSpecialtyRepository:
         ]
         self.repo.create_many(specialties)
 
-        result = self.repo.get_specialties_not_deleted_by_team_id(
-            str(team_oid)
-        )
+        result = self.repo.get_specialties_not_deleted_by_team_id(str(team_oid))
 
         assert len(result) == 2
         assert {s.name for s in result} == {"Cardiology", "Oncology"}

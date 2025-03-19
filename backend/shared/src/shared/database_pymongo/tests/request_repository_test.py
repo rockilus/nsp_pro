@@ -183,8 +183,8 @@ class TestRequestRepository:
         self.repo.create_many(requests)
 
         found_requests = self.repo.get_requests_by_dates(
-            datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
-            datetime(2023, 1, 4, tzinfo=timezone.utc).timestamp(),
+            datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
+            datetime(2023, 1, 4, tzinfo=timezone.utc).date(),
             [str(r.worker) for r in requests],
         )
         assert len(found_requests) == 2

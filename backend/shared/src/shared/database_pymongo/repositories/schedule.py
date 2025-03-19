@@ -81,12 +81,11 @@ class ScheduleRepository(BaseRepository[ScheduleSchema]):
         schedules = self.find_all({"quick_staffings.worker_id": ObjectId(worker_id)})
         return [schedule.to_core() for schedule in schedules]
 
-    def update_schedule(self, schedule: Schedule) -> Schedule:
+    def update_schedule(self, schedule: Schedule) -> Optional[Schedule]:
         """Update a schedule."""
         schedule_schema = ScheduleSchema.from_core(schedule)
         schedule_updated = self.update(schedule_schema)
-        assert schedule_updated is not None
-        return schedule_updated.to_core()
+        return schedule_updated.to_core() if schedule_updated else None
 
     def delete_schedule(self, schedule_id: str) -> None:
         """Delete a schedule by its ID."""

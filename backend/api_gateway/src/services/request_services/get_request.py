@@ -9,7 +9,7 @@ from scripts.setup_database import request_db, shift_db, worker_db
 def get_requests(team_id: str) -> List[RequestAugmented]:
     workers = worker_db.get_workers(team_id)
     shifts = shift_db.get_shifts(team_id)
-    requests = request_db.get_requests(workers)
+    requests = request_db.get_requests([w.id for w in workers])
     rs_augmented = []
     for r in requests:
         worker = next((w for w in workers if w.id == r.worker_id), None)
@@ -20,7 +20,7 @@ def get_requests(team_id: str) -> List[RequestAugmented]:
 
 def get_requests_by_workers(workers: List[Worker]) -> List[RequestAugmented]:
     shifts = shift_db.get_shifts(workers[0].team_id)
-    requests = request_db.get_requests(workers)
+    requests = request_db.get_requests([w.id for w in workers])
     rs_augmented = []
     for r in requests:
         worker = next((w for w in workers if w.id == r.worker_id), None)

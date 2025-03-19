@@ -28,18 +28,18 @@ class SpecialtyRepository(BaseRepository[SpecialtySchema]):
 
     def get_specialties_by_team_id(self, team_id: str) -> List[Specialty]:
         """Get all specialties for a team."""
-        specialties = self.find_all({"team_id": ObjectId(team_id)})
+        specialties = self.find_all({"team": ObjectId(team_id)})
         return [specialty.to_core() for specialty in specialties]
 
     def get_specialties_not_deleted_by_team_id(self, team_id: str) -> List[Specialty]:
         """Get all non-deleted specialties for a team."""
-        specialties = self.find_all({"team_id": ObjectId(team_id), "deleted": False})
+        specialties = self.find_all({"team": ObjectId(team_id), "deleted": False})
         return [specialty.to_core() for specialty in specialties]
 
     def get_specialties_by_team_ids(self, team_ids: List[str]) -> List[Specialty]:
         """Get multiple specialties by their team IDs."""
         specialties = self.find_all(
-            {"team_id": {"$in": [ObjectId(team_id) for team_id in team_ids]}}
+            {"team": {"$in": [ObjectId(team_id) for team_id in team_ids]}}
         )
         return [specialty.to_core() for specialty in specialties]
 

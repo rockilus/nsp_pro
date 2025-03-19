@@ -1,3 +1,4 @@
+from datetime import date, datetime, timezone
 from typing import List
 
 from bson import ObjectId
@@ -34,13 +35,19 @@ class RequestRepository(BaseRepository[RequestSchema]):
         return request.to_core()
 
     def get_requests_by_dates(
-        self, start_date: float, end_date: float, worker_ids: List[str]
+        self, start_date: date, end_date: date, worker_ids: List[str]
     ) -> List[Request]:
         """Get all requests within a date range for a list of workers."""
+        start_timestamp = datetime.combine(
+            start_date, datetime.min.time(), timezone.utc
+        ).timestamp()
+        end_timestamp = datetime.combine(
+            end_date, datetime.min.time(), timezone.utc
+        ).timestamp()
         requests = self.find_all(
             {
-                "start_date": {"$gte": start_date},
-                "end_date": {"$lte": end_date},
+                "start_date": {"$gte": start_timestamp},
+                "end_date": {"$lte": end_timestamp},
                 "worker": {"$in": [ObjectId(id) for id in worker_ids]},
             }
         )

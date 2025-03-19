@@ -18,7 +18,7 @@ class ShiftWorkerOptionSchema(BaseSchema):
     """ShiftWorkerOption embedded schema."""
 
     name: Any
-    id: ObjectId
+    id: ObjectId | str
     id_type: int
     is_bool_dim: bool
     category_name: str
@@ -37,7 +37,7 @@ class ShiftWorkerOptionSchema(BaseSchema):
     def from_core(cls, swo: ShiftWorkerOption) -> "ShiftWorkerOptionSchema":
         return cls(
             name=swo.name,
-            id=ObjectId(swo.id),
+            id=ObjectId(swo.id) if ObjectId.is_valid(swo.id) else swo.id,
             id_type=swo.id_type.value,
             is_bool_dim=swo.is_bool_dim,
             category_name=swo.category_name,
