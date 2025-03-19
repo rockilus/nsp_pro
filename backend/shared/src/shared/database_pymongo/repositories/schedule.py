@@ -42,7 +42,7 @@ class ScheduleRepository(BaseRepository[ScheduleSchema]):
         """Get the campaign schedule by constraint build ID for a team."""
         schedule = self.find_all(
             {
-                "constraint_build_ids": ObjectId(cb_id),
+                "constraint_builds": ObjectId(cb_id),
                 "status": ScheduleStatus.CAMPAIGN.value,
                 "team": ObjectId(team_id),
             },

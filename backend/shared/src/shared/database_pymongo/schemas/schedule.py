@@ -82,7 +82,7 @@ class ScheduleSchema(DocumentBaseSchema):
     solve_status: int
     status: int
     missing_coverage_dates: List[float] = []
-    constraint_build_ids: List[ObjectId] = []
+    constraint_builds: List[ObjectId] = []
     quick_staffings: List[QuickStaffingSchema] = []
 
     @field_validator("solve_status")
@@ -133,7 +133,7 @@ class ScheduleSchema(DocumentBaseSchema):
                 datetime.fromtimestamp(dt, tz=timezone.utc).date()
                 for dt in self.missing_coverage_dates
             ],
-            constraint_build_ids=[str(cb_id) for cb_id in self.constraint_build_ids],
+            constraint_build_ids=[str(cb_id) for cb_id in self.constraint_builds],
             quick_staffings=[qs.to_core() for qs in self.quick_staffings],
         )
 
@@ -163,7 +163,7 @@ class ScheduleSchema(DocumentBaseSchema):
                 datetime.combine(dt, time.min, timezone.utc).timestamp()
                 for dt in schedule.missing_coverage_dates
             ],
-            constraint_build_ids=[
+            constraint_builds=[
                 ObjectId(cb_id) for cb_id in schedule.constraint_build_ids
             ],
             quick_staffings=[

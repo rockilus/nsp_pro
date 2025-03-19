@@ -1,8 +1,9 @@
 import time
 from datetime import datetime, timezone
 
-# from shared.database import DatabaseCollections
-from shared.database_pymongo.database_collections import DatabaseCollections
+from shared.database import DatabaseCollections
+
+# from shared.database_pymongo.database_collections import DatabaseCollections
 from shared.schemas import (
     EngineInputs,
     EngineOutputs,
@@ -38,6 +39,8 @@ def save_engine_outputs(
     )
 
     schedule_saved = collections.schedule_db.update_schedule(engine_outputs.schedule)
+    if not schedule_saved:
+        raise ValueError("Failed to save schedule")
     assignments_saved = save_assignments(
         engine_outputs.assignments,
         engine_outputs.schedule,

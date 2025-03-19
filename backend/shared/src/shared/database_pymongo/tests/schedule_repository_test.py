@@ -68,7 +68,7 @@ class TestScheduleRepository:
             solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
-            constraint_build_ids=[],
+            constraint_builds=[],
             quick_staffings=[],
         )
         created = self.repo.create(schedule)
@@ -89,7 +89,7 @@ class TestScheduleRepository:
             solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
-            constraint_build_ids=[],
+            constraint_builds=[],
             quick_staffings=[],
         )
         created = self.repo.create(schedule)
@@ -126,7 +126,7 @@ class TestScheduleRepository:
             solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
-            constraint_build_ids=[],
+            constraint_builds=[],
             quick_staffings=[],
         )
         created = self.repo.create(schedule)
@@ -147,7 +147,7 @@ class TestScheduleRepository:
                 solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
-                constraint_build_ids=[],
+                constraint_builds=[],
                 quick_staffings=[],
             ),
             ScheduleSchema(
@@ -158,7 +158,7 @@ class TestScheduleRepository:
                 solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
-                constraint_build_ids=[],
+                constraint_builds=[],
                 quick_staffings=[],
             ),
         ]
@@ -179,7 +179,7 @@ class TestScheduleRepository:
             solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
-            constraint_build_ids=[],
+            constraint_builds=[],
             quick_staffings=[],
         )
         self.repo.create(schedule)
@@ -201,7 +201,7 @@ class TestScheduleRepository:
             solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
-            constraint_build_ids=[cb_oid],
+            constraint_builds=[cb_oid],
             quick_staffings=[],
         )
         self.repo.create(schedule)
@@ -225,7 +225,7 @@ class TestScheduleRepository:
                 solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
-                constraint_build_ids=[],
+                constraint_builds=[],
                 quick_staffings=[],
             ),
             ScheduleSchema(
@@ -236,7 +236,7 @@ class TestScheduleRepository:
                 solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
-                constraint_build_ids=[],
+                constraint_builds=[],
                 quick_staffings=[],
             ),
         ]
@@ -261,7 +261,7 @@ class TestScheduleRepository:
             solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
-            constraint_build_ids=[],
+            constraint_builds=[],
             quick_staffings=[
                 QuickStaffingSchema(worker_id=ObjectId(), shift_id=shift_oid, target=1)
             ],
@@ -286,7 +286,7 @@ class TestScheduleRepository:
             solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
-            constraint_build_ids=[],
+            constraint_builds=[],
             quick_staffings=[
                 QuickStaffingSchema(worker_id=worker_oid, shift_id=ObjectId(), target=1)
             ],

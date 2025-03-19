@@ -65,6 +65,7 @@ class DatabaseCollections:
 
     def __init__(self, db_uri: str, db_name: str):
         MongoDB.connect(db_uri, db_name)
+        self.db = MongoDB
         self.assignment_db = AssignmentRepository()
         self.attribute_db = AttributeRepository()
         self.breach_db = BreachRepository()

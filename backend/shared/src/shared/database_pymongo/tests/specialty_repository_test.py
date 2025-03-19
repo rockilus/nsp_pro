@@ -43,7 +43,7 @@ class TestSpecialtyRepository:
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
         assert saved_doc["name"] == "Cardiology"
-        assert saved_doc["team_id"] == ObjectId(specialty.team_id)
+        assert saved_doc["team"] == ObjectId(specialty.team_id)
 
     def test_get_specialty_by_id(self):
         """Test getting a specialty by ID."""
