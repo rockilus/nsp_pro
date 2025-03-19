@@ -30,12 +30,12 @@ class WorkerRepository(BaseRepository[WorkerSchema]):
 
     def get_workers(self, team_id: str) -> List[Worker]:
         """Get all workers for a team."""
-        workers = self.find_all({"team": team_id})
+        workers = self.find_all({"team": ObjectId(team_id)})
         return [worker.to_core() for worker in workers]
 
     def get_workers_not_deleted(self, team_id: str) -> List[Worker]:
         """Get all non-deleted workers for a team."""
-        workers = self.find_all({"team": team_id, "deleted": False})
+        workers = self.find_all({"team": ObjectId(team_id), "deleted": False})
         return [worker.to_core() for worker in workers]
 
     def get_worker_by_id(self, worker_id: str) -> Worker:
@@ -47,7 +47,7 @@ class WorkerRepository(BaseRepository[WorkerSchema]):
 
     def get_workers_by_specialty_id(self, specialty_id: str) -> List[Worker]:
         """Get multiple workers by their specialty ID."""
-        workers = self.find_all({"specialties": {"$in": [specialty_id]}})
+        workers = self.find_all({"specialties": {"$in": [ObjectId(specialty_id)]}})
         return [worker.to_core() for worker in workers]
 
     def update_worker(self, worker: Worker) -> Worker:

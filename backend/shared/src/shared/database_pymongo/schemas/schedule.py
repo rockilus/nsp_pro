@@ -1,6 +1,7 @@
 from datetime import datetime, time, timezone
 from typing import Any, Dict, List, Optional
 
+from bson import ObjectId
 from pydantic import field_validator
 
 from shared.database_pymongo.schemas.base import BaseSchema, DocumentBaseSchema
@@ -17,22 +18,22 @@ from shared.schemas.schemas.schedule import (
 class QuickStaffingSchema(BaseSchema):
     """QuickStaffing embedded schema."""
 
-    worker_id: str
-    shift_id: str
+    worker_id: ObjectId
+    shift_id: ObjectId
     target: int
 
     def to_core(self) -> QuickStaffing:
         return QuickStaffing(
-            worker_id=self.worker_id,
-            shift_id=self.shift_id,
+            worker_id=str(self.worker_id),
+            shift_id=str(self.shift_id),
             target=self.target,
         )
 
     @classmethod
     def from_core(cls, quick_staffing: QuickStaffing) -> "QuickStaffingSchema":
         return cls(
-            worker_id=quick_staffing.worker_id,
-            shift_id=quick_staffing.shift_id,
+            worker_id=ObjectId(quick_staffing.worker_id),
+            shift_id=ObjectId(quick_staffing.shift_id),
             target=quick_staffing.target,
         )
 
@@ -74,14 +75,14 @@ class SolveDetailsSchema(BaseSchema):
 class ScheduleSchema(DocumentBaseSchema):
     """Schedule schema for validation."""
 
-    team: str
+    team: ObjectId
     start_date: float
     end_date: float
     solve_details: Optional[SolveDetailsSchema] = None
     solve_status: int
     status: int
     missing_coverage_dates: List[float] = []
-    constraint_build_ids: List[str] = []
+    constraint_builds: List[ObjectId] = []
     quick_staffings: List[QuickStaffingSchema] = []
 
     @field_validator("solve_status")
@@ -109,7 +110,7 @@ class ScheduleSchema(DocumentBaseSchema):
 
     @classmethod
     def from_mongo(cls, data: Dict[str, Any]) -> "ScheduleSchema":
-        data["id"] = str(data.pop("_id"))
+        data["id"] = data.pop("_id")
         if "solve_details" in data:
             data["solve_details"] = SolveDetailsSchema.from_mongo(data["solve_details"])
         data["quick_staffings"] = [
@@ -119,8 +120,8 @@ class ScheduleSchema(DocumentBaseSchema):
 
     def to_core(self) -> Schedule:
         return Schedule(
-            id=self.id or "",
-            team_id=self.team,
+            id=str(self.id) or "",
+            team_id=str(self.team),
             start_date=datetime.fromtimestamp(self.start_date, tz=timezone.utc).date(),
             end_date=datetime.fromtimestamp(self.end_date, tz=timezone.utc).date(),
             solve_details=(
@@ -132,15 +133,19 @@ class ScheduleSchema(DocumentBaseSchema):
                 datetime.fromtimestamp(dt, tz=timezone.utc).date()
                 for dt in self.missing_coverage_dates
             ],
-            constraint_build_ids=self.constraint_build_ids,
+            constraint_build_ids=[str(cb_id) for cb_id in self.constraint_builds],
             quick_staffings=[qs.to_core() for qs in self.quick_staffings],
         )
 
     @classmethod
     def from_core(cls, schedule: Schedule) -> "ScheduleSchema":
         return cls(
-            id=schedule.id,
-            team=schedule.team_id,
+            id=(
+                ObjectId(schedule.id)
+                if schedule.id and ObjectId.is_valid(schedule.id)
+                else None
+            ),
+            team=ObjectId(schedule.team_id),
             start_date=datetime.combine(
                 schedule.start_date, time.min, timezone.utc
             ).timestamp(),
@@ -158,7 +163,9 @@ class ScheduleSchema(DocumentBaseSchema):
                 datetime.combine(dt, time.min, timezone.utc).timestamp()
                 for dt in schedule.missing_coverage_dates
             ],
-            constraint_build_ids=schedule.constraint_build_ids,
+            constraint_builds=[
+                ObjectId(cb_id) for cb_id in schedule.constraint_build_ids
+            ],
             quick_staffings=[
                 QuickStaffingSchema.from_core(qs) for qs in schedule.quick_staffings
             ],

@@ -30,19 +30,19 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
 
     def get_shifts(self, team_id: str) -> List[Shift]:
         """Get all shifts for a team."""
-        shifts = self.find_all({"team": team_id})
+        shifts = self.find_all({"team": ObjectId(team_id)})
         return [shift.to_core() for shift in shifts]
 
     def get_shifts_not_deleted(self, team_id: str) -> List[Shift]:
         """Get all non-deleted shifts for a team."""
-        shifts = self.find_all({"team": team_id, "deleted": False})
+        shifts = self.find_all({"team": ObjectId(team_id), "deleted": False})
         return [shift.to_core() for shift in shifts]
 
     def get_work_shifts(self, team_id: str) -> List[Shift]:
         """Get all work shifts for a team."""
         shifts = self.find_all(
             {
-                "team": team_id,
+                "team": ObjectId(team_id),
                 "shift_type": {"$in": [ShiftType.NORMAL.value, ShiftType.DUTY.value]},
             }
         )
@@ -52,7 +52,7 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         """Get all non-deleted work shifts for a team."""
         shifts = self.find_all(
             {
-                "team": team_id,
+                "team": ObjectId(team_id),
                 "shift_type": {"$in": [ShiftType.NORMAL.value, ShiftType.DUTY.value]},
                 "deleted": False,
             }
@@ -63,7 +63,7 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         """Get all rest shifts for a team."""
         shifts = self.find_all(
             {
-                "team": team_id,
+                "team": ObjectId(team_id),
                 "shift_type": {"$in": [ShiftType.REST.value, ShiftType.LEAVE.value]},
             }
         )
@@ -78,7 +78,7 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
 
     def get_shifts_by_ids(self, shift_ids: List[str]) -> List[Shift]:
         """Get multiple shifts by their IDs."""
-        shifts = self.find_all({"_id": {"$in": shift_ids}})
+        shifts = self.find_all({"_id": {"$in": [ObjectId(id) for id in shift_ids]}})
         return [shift.to_core() for shift in shifts]
 
     def update_shift(self, shift: Shift) -> Shift:
@@ -124,5 +124,6 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
     def logical_delete_shift_recup(self, shift_id: str) -> None:
         """Mark all recuperation shifts associated with a duty shift as deleted."""
         self.collection.update_many(
-            {"recuperation_duty": shift_id}, {"$set": {"deleted": True}}
+            {"recuperation_duty": ObjectId(shift_id)},
+            {"$set": {"deleted": True}},
         )

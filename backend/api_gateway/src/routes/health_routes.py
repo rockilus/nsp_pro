@@ -22,7 +22,7 @@ async def health_check() -> HealthCheck:
     }
 
     try:
-        db.check_mongo_health()
+        db.check_health()
     except DBConnectionError as e:
         health_status["database"].status = "error"
         health_status["database"].details = str(e)

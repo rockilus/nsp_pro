@@ -28,7 +28,7 @@ class BaseRepository(Generic[T]):
         if not result.acknowledged:
             raise Exception("Failed to create document")
 
-        schema.id = str(result.inserted_id)
+        schema.id = result.inserted_id
         return schema
 
     def create_many(self, schemas: List[T]) -> List[T]:
@@ -45,7 +45,7 @@ class BaseRepository(Generic[T]):
             raise Exception("Failed to create documents")
 
         for i, s_id in enumerate(result.inserted_ids):
-            schemas[i].id = str(s_id)
+            schemas[i].id = s_id
 
         return schemas
 
@@ -78,16 +78,16 @@ class BaseRepository(Generic[T]):
 
         if not update_data:
             # No fields to update
-            return self.find_by_id(schema.id)
+            return self.find_by_id(str(schema.id))
 
         result: UpdateResult = self.collection.update_one(
-            {"_id": ObjectId(schema.id)}, {"$set": update_data}
+            {"_id": schema.id}, {"$set": update_data}
         )
 
         if not result.acknowledged:
             raise Exception("Failed to update document")
 
-        return self.find_by_id(schema.id)
+        return self.find_by_id(str(schema.id))
 
     def delete(self, doc_id: str) -> bool:
         """Delete a document by its ID."""

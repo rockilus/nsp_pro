@@ -1,6 +1,8 @@
 from datetime import date, datetime
 from typing import List, Union
 
+from bson import ObjectId
+
 from shared.database_pymongo.repositories.base import BaseRepository
 from shared.database_pymongo.schemas.assignment import AssignmentSchema
 from shared.schemas.schemas.schedule import Assignment
@@ -29,7 +31,7 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
 
     def get_assignments(self, team_id: str) -> List[Assignment]:
         """Get all assignments for a team."""
-        assignments = self.find_all({"team": team_id})
+        assignments = self.find_all({"team": ObjectId(team_id)})
         return [a.to_core() for a in assignments]
 
     def get_assignment_by_id(self, assignment_id: str) -> Assignment:
@@ -45,9 +47,9 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         """Get an assignment by worker, date, and schedule."""
         assignment = self.find_all(
             {
-                "worker": worker_id,
+                "worker": ObjectId(worker_id),
                 "date": datetime(a_date.year, a_date.month, a_date.day),
-                "schedule": schedule_id,
+                "schedule": ObjectId(schedule_id),
             }
         )
         return assignment[0].to_core() if assignment else None
@@ -58,7 +60,7 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         """Get all assignments for a team within a date range."""
         assignments = self.find_all(
             {
-                "team": team_id,
+                "team": ObjectId(team_id),
                 "date": {
                     "$gte": datetime(start_date.year, start_date.month, start_date.day),
                     "$lte": datetime(end_date.year, end_date.month, end_date.day),
@@ -69,21 +71,28 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
 
     def get_assignments_by_schedule_id(self, schedule_id: str) -> List[Assignment]:
         """Get all assignments for a specific schedule."""
-        assignments = self.find_all({"schedule": schedule_id})
+        assignments = self.find_all({"schedule": ObjectId(schedule_id)})
         return [a.to_core() for a in assignments]
 
     def get_assignments_by_schedule_ids(
         self, schedule_ids: List[str]
     ) -> List[Assignment]:
         """Get all assignments for a list of schedule IDs."""
-        assignments = self.find_all({"schedule": {"$in": schedule_ids}})
+        assignments = self.find_all(
+            {"schedule": {"$in": [ObjectId(i) for i in schedule_ids]}}
+        )
         return [a.to_core() for a in assignments]
 
     def get_assignments_fixed_by_schedule_ids(
         self, schedule_ids: List[str]
     ) -> List[Assignment]:
         """Get all fixed assignments for a list of schedule IDs."""
-        assignments = self.find_all({"fixed": True, "schedule": {"$in": schedule_ids}})
+        assignments = self.find_all(
+            {
+                "fixed": True,
+                "schedule": {"$in": [ObjectId(i) for i in schedule_ids]},
+            }
+        )
         return [a.to_core() for a in assignments]
 
     def update_assignment(self, assignment: Assignment) -> Assignment:
@@ -115,12 +124,12 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
 
     def delete_assignments_by_schedule_id(self, schedule_id: str) -> None:
         """Delete all assignments for a specific schedule."""
-        self.collection.delete_many({"schedule": schedule_id})
+        self.collection.delete_many({"schedule": ObjectId(schedule_id)})
 
     def delete_assignments_by_worker_id(self, worker_id: str) -> None:
         """Delete all assignments for a specific worker."""
-        self.collection.delete_many({"worker": worker_id})
+        self.collection.delete_many({"worker": ObjectId(worker_id)})
 
     def delete_assignments_by_shift_id(self, shift_id: str) -> None:
         """Delete all assignments for a specific shift."""
-        self.collection.delete_many({"shift": shift_id})
+        self.collection.delete_many({"shift": ObjectId(shift_id)})

@@ -46,6 +46,7 @@ class ConfigDB:
             handle_save_document_error(e)
         return doc_to_core_config(config_saved)
 
+    # pylint: disable=R0801
     def add_signup_email_attempt(self, email: str) -> Config:
         config = self.get_config()
         if config is None:

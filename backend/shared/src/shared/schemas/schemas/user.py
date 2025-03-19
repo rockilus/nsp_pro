@@ -1,8 +1,15 @@
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import List, Literal
 
 SUPPORTED_LANGUAGES_LITERAL = Literal["en", "es", "fr"]
+
+
+class Language(Enum):
+    EN = "en"
+    ES = "es"
+    FR = "fr"
 
 
 @dataclass
@@ -12,7 +19,7 @@ class User:
     first_name: str
     last_name: str
     workers: List[str]
-    language: SUPPORTED_LANGUAGES_LITERAL
+    language: Language
     sign_up_at: datetime
     impersonating_user_id: str | None
 

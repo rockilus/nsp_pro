@@ -24,8 +24,8 @@ def get_daily_shift_demands(
         coverage_selectors = coverage_selector_db.get_coverage_selectors(
             schedule_campaign.id
         )
-        shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
-            coverage_selectors
+        shift_demands = shift_demand_db.get_shift_demands_by_coverage_ids(
+            [c.coverage_id for c in coverage_selectors if c.coverage_id]
         )
         dsds_sd_modify = (
             daily_shift_demand_db.get_daily_shift_demands_modified_by_schedule_id(

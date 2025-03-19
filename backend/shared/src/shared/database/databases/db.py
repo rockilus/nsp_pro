@@ -20,7 +20,7 @@ class DB:
             log_info("Failed to connect to database mongoengine: " + str(e))
             raise DBConnectionError("Failed to connect to database mongoengine") from e
 
-    def check_mongo_health(self):
+    def check_health(self):
         try:
             database = mongoengine.get_db()
             database.command("ping")

@@ -79,8 +79,8 @@ def build_worktime_data(schedule_id: str) -> WorkTimeTable:
     schedule = schedule_db.get_schedule_by_id(schedule_id)
     workers = worker_db.get_workers_not_deleted(schedule.team_id)
     coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule.id)
-    shift_demands = shift_demand_db.get_shift_demands_by_coverage_selectors(
-        coverage_selectors
+    shift_demands = shift_demand_db.get_shift_demands_by_coverage_ids(
+        [cs.coverage_id for cs in coverage_selectors if cs.coverage_id]
     )
     daily_shift_demands = daily_shift_demand_db.get_daily_shift_demands_by_schedule_id(
         schedule.id

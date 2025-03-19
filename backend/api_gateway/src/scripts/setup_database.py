@@ -2,20 +2,17 @@ from shared.database import setup_database
 
 from utils.env_config import DB_URI
 
-# from shared.database_pymongo.database import MongoDB
-# from shared.database_pymongo.repositories.assignment import AssignmentRepository
-# from shared.database_pymongo.repositories.schedule import ScheduleRepository
-# from shared.database_pymongo.repositories.shift import ShiftRepository
-# from shared.database_pymongo.repositories.worker import WorkerRepository
+# from shared.database_pymongo_str_id.database_collections import (
+#     DatabaseCollections,
+# )
+# from shared.database_pymongo_str_id.database_collections import (
+#     DatabaseCollections,
+# )
 
 
 # Set up the database and initialize collections
 collections = setup_database(DB_URI)
-# MongoDB.connect(DB_URI, "test")
-# assignment_db = AssignmentRepository()
-# schedule_db = ScheduleRepository()
-# shift_db = ShiftRepository()
-# worker_db = WorkerRepository()
+# collections = DatabaseCollections(DB_URI, "test")
 
 
 # Access the collections as needed

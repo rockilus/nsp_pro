@@ -96,7 +96,7 @@ class AddCoverage(AddConstraint):
         for key, vars_group in grouped_vars.items():
             if len(vars_group) > 1:
                 self.model.Add(sum(vars_group) <= 1)
-                print(f"Added constraint: sum({vars_group}) <= 1 for {key}")
+                # print(f"Added constraint: sum({vars_group}) <= 1 for {key}")
 
     def add_spe_sol_hint(
         self, var_spe_sol: Dict[Tuple[str, str, str, str], int]

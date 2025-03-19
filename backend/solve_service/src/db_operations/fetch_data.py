@@ -1,7 +1,16 @@
 from typing import List, Tuple
 
 from shared.database import DatabaseCollections
-from shared.schemas import Attribute, Dimension, DimEntry, Shift, Specialty, Worker
+
+# from shared.database_pymongo.database_collections import DatabaseCollections
+from shared.schemas import (
+    Attribute,
+    Dimension,
+    DimEntry,
+    Shift,
+    Specialty,
+    Worker,
+)
 
 
 def fetch_workers_shifts_dim_attributes_spe(

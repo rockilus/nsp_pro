@@ -16,7 +16,10 @@ from shared.logger.logger import log_info
 from shared.schemas.errors.schema_error_handlers import (
     handle_create_schema_object_error,
 )
-from shared.schemas.schemas.coverage import Coverage, CoverageSelector, ShiftDemand
+from shared.schemas.schemas.coverage import (
+    Coverage,
+    ShiftDemand,
+)
 
 
 class ShiftDemandDB:
@@ -105,38 +108,6 @@ class ShiftDemandDB:
                 out[coverage_id] = []
             out[coverage_id].append(sd)
         return out
-
-    def get_shift_demands_by_coverage_selector(
-        self, coverage_selector: CoverageSelector
-    ) -> List[ShiftDemand]:
-        try:
-            # pylint: disable=no-member
-            shift_demands = ShiftDemandDocument.objects.filter(  # type: ignore
-                coverage=coverage_selector.coverage_id
-            )
-        except Exception as e:
-            log_info("Failed to get shift demands by coverage selector from database")
-            handle_get_document_error(e)
-        return [doc_to_core_shift_demand(sd) for sd in list(shift_demands)]
-
-    def get_shift_demands_by_coverage_selectors(
-        self, coverage_selectors: List[CoverageSelector]
-    ) -> List[ShiftDemand]:
-        coverage_ids = [cs.coverage_id for cs in coverage_selectors]
-        try:
-            # pylint: disable=no-member
-            sd_docs = ShiftDemandDocument.objects.filter(  # type: ignore
-                coverage__in=coverage_ids
-            )
-        except Exception as e:
-            log_info("Failed to get shift demands by coverage selectors from database")
-            handle_get_document_error(e)
-        try:
-            shift_demands = [doc_to_core_shift_demand(sd) for sd in list(sd_docs)]
-        except Exception as e:
-            log_info("Failed to convert ShiftDemandDocument to ShiftDemand")
-            handle_create_schema_object_error(e)
-        return shift_demands
 
     def update_shift_demand(self, shift_demand: ShiftDemand) -> ShiftDemand:
         sd_doc = core_to_doc_shift_demand(shift_demand)

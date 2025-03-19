@@ -89,6 +89,7 @@ class ConstraintBuildDB:
             handle_get_document_error(e)
         return [doc_to_core_constraint_build(cb) for cb in list(cb_docs)]
 
+    # pylint: disable=R0801
     def get_constraint_builds_by_worker_id(
         self, worker_id: str
     ) -> List[ConstraintBuild]:
