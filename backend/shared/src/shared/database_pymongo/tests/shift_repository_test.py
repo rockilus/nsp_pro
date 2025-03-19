@@ -37,13 +37,13 @@ class TestShiftRepository:
         """Test creating a shift."""
         shift = Shift(
             id=None,
-            team_id="team1",
+            team_id=str(ObjectId()),
             name="Morning Shift",
             acronym="MS",
             acronym_custom=False,
             start_time=datetime(2023, 1, 1, 8, 0, tzinfo=timezone.utc),
             end_time=datetime(2023, 1, 1, 16, 0, tzinfo=timezone.utc),
-            staffing=[Staffing(specialty_id="spec1", staffing=2)],
+            staffing=[Staffing(specialty_id=str(ObjectId()), staffing=2)],
             color="#FF0000",
             shift_type=ShiftType.NORMAL,
             rest_type=ShiftRestType.NONE,
@@ -57,23 +57,23 @@ class TestShiftRepository:
 
         assert result.id is not None
         assert result.name == "Morning Shift"
-        assert result.team_id == "team1"
+        assert result.team_id == shift.team_id
 
         saved_doc = self.repo.collection.find_one({"_id": ObjectId(result.id)})
         assert saved_doc is not None
         assert saved_doc["name"] == "Morning Shift"
-        assert saved_doc["team"] == "team1"
+        assert saved_doc["team"] == ObjectId(shift.team_id)
 
     def test_get_shift_by_id(self):
         """Test getting a shift by ID."""
         shift = ShiftSchema(
-            team="team1",
+            team=ObjectId(),
             name="Morning Shift",
             acronym="MS",
             acronym_custom=False,
             start_time=1672560000.0,
             end_time=1672588800.0,
-            staffing=[StaffingSchema(specialty="spec1", staffing=2)],
+            staffing=[StaffingSchema(specialty=ObjectId(), staffing=2)],
             color="#FF0000",
             shift_type=ShiftType.NORMAL.value,
             rest_type=ShiftRestType.NONE,
@@ -87,19 +87,19 @@ class TestShiftRepository:
         found = self.repo.get_shift_by_id(created.id)
 
         assert found is not None
-        assert found.id == created.id
+        assert found.id == str(created.id)
         assert found.name == "Morning Shift"
 
     def test_update_shift(self):
         """Test updating a shift."""
         shift = ShiftSchema(
-            team="team1",
+            team=ObjectId(),
             name="Morning Shift",
             acronym="MS",
             acronym_custom=False,
             start_time=1672560000.0,
             end_time=1672588800.0,
-            staffing=[StaffingSchema(specialty="spec1", staffing=2)],
+            staffing=[StaffingSchema(specialty=ObjectId(), staffing=2)],
             color="#FF0000",
             shift_type=ShiftType.NORMAL.value,
             rest_type=ShiftRestType.NONE,
@@ -112,13 +112,13 @@ class TestShiftRepository:
 
         updated_shift = Shift(
             id=created.id,
-            team_id="team1",
+            team_id=str(ObjectId()),
             name="Updated Shift",
             acronym="US",
             acronym_custom=True,
             start_time=datetime(2023, 1, 1, 9, 0, tzinfo=timezone.utc),
             end_time=datetime(2023, 1, 1, 17, 0, tzinfo=timezone.utc),
-            staffing=[Staffing(specialty_id="spec1", staffing=3)],
+            staffing=[Staffing(specialty_id=str(ObjectId()), staffing=3)],
             color="#00FF00",
             shift_type=ShiftType.DUTY,
             rest_type=ShiftRestType.NONE,
@@ -134,7 +134,7 @@ class TestShiftRepository:
         assert result.acronym == "US"
         assert result.staffing[0].staffing == 3
 
-        from_db = self.repo.collection.find_one({"_id": ObjectId(created.id)})
+        from_db = self.repo.collection.find_one({"_id": created.id})
         assert from_db["name"] == "Updated Shift"
         assert from_db["acronym"] == "US"
         assert from_db["staffing"][0]["staffing"] == 3
@@ -142,13 +142,13 @@ class TestShiftRepository:
     def test_delete_shift(self):
         """Test deleting a shift."""
         shift = ShiftSchema(
-            team="team1",
+            team=ObjectId(),
             name="Morning Shift",
             acronym="MS",
             acronym_custom=False,
             start_time=1672560000.0,
             end_time=1672588800.0,
-            staffing=[StaffingSchema(specialty="spec1", staffing=2)],
+            staffing=[StaffingSchema(specialty=ObjectId(), staffing=2)],
             color="#FF0000",
             shift_type=ShiftType.NORMAL.value,
             rest_type=ShiftRestType.NONE,
@@ -159,20 +159,20 @@ class TestShiftRepository:
         )
         created = self.repo.create(shift)
 
-        self.repo.delete_shift(created.id)
+        self.repo.delete_shift(str(created.id))
 
-        assert self.repo.collection.find_one({"_id": ObjectId(created.id)}) is None
+        assert self.repo.collection.find_one({"_id": created.id}) is None
 
     def test_logical_delete_shift(self):
         """Test logically deleting a shift."""
         shift = ShiftSchema(
-            team="team1",
+            team=ObjectId(),
             name="Morning Shift",
             acronym="MS",
             acronym_custom=False,
             start_time=1672560000.0,
             end_time=1672588800.0,
-            staffing=[StaffingSchema(specialty="spec1", staffing=2)],
+            staffing=[StaffingSchema(specialty=ObjectId(), staffing=2)],
             color="#FF0000",
             shift_type=ShiftType.NORMAL.value,
             rest_type=ShiftRestType.NONE,
@@ -183,9 +183,9 @@ class TestShiftRepository:
         )
         created = self.repo.create(shift)
 
-        result = self.repo.logical_delete_shift(created.id)
+        result = self.repo.logical_delete_shift(str(created.id))
 
         assert result.deleted is True
 
-        from_db = self.repo.collection.find_one({"_id": ObjectId(created.id)})
+        from_db = self.repo.collection.find_one({"_id": created.id})
         assert from_db["deleted"] is True

@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Any, Dict, Optional, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from bson import ObjectId
+from pydantic import BaseModel, ConfigDict
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -26,7 +27,7 @@ class BaseSchema(BaseModel):
 
         # Convert MongoDB '_id' to 'id' if it exists
         if "_id" in data and "id" not in data:
-            data["id"] = str(data.pop("_id"))
+            data["id"] = data.pop("_id")
 
         return cls(**data)
 
@@ -44,4 +45,4 @@ class BaseSchema(BaseModel):
 class DocumentBaseSchema(BaseSchema):
     """Base schema for document models."""
 
-    id: Optional[str] = Field(default=None, description="Document identifier")
+    id: Optional[ObjectId] = None

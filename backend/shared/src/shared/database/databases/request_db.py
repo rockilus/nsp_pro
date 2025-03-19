@@ -4,7 +4,6 @@ from typing import List
 from bson import ObjectId
 
 from shared.database.databases.db import DB
-from shared.database.databases.worker_db import core_to_doc_worker
 from shared.database.errors.document_error_handlers import (
     handle_create_document_error,
     handle_delete_document_error,
@@ -17,7 +16,6 @@ from shared.database.models.team import Team as TeamDocument
 from shared.database.models.worker import Worker as WorkerDocument
 from shared.logger.logger import log_info
 from shared.schemas.schemas.request import Request, RequestStatus
-from shared.schemas.schemas.worker import Worker
 
 
 class RequestDB:
@@ -35,11 +33,12 @@ class RequestDB:
             handle_save_document_error(e)
         return doc_to_core_request(r_saved)
 
-    def get_requests(self, workers: List[Worker]) -> List[Request]:
-        w_docs = [core_to_doc_worker(w) for w in workers]
+    def get_requests(self, worker_ids: List[str]) -> List[Request]:
         try:
             # pylint: disable=no-member
-            requests = RequestDocument.objects.filter(worker__in=w_docs)  # type: ignore
+            requests = RequestDocument.objects.filter(  # type: ignore
+                worker__in=worker_ids
+            )
         except Exception as e:
             log_info("Failed to get requests by workers from database")
             handle_get_document_error(e)
@@ -51,9 +50,8 @@ class RequestDB:
         return doc_to_core_request(request)
 
     def get_requests_by_dates(
-        self, start_date: date, end_date: date, workers: List[Worker]
+        self, start_date: date, end_date: date, worker_ids: List[str]
     ) -> List[Request]:
-        w_docs = [core_to_doc_worker(w) for w in workers]
         try:
             # pylint: disable=no-member
             requests = RequestDocument.objects.filter(  # type: ignore
@@ -63,7 +61,7 @@ class RequestDB:
                 end_date__lte=datetime.combine(
                     end_date, time.min, timezone.utc
                 ).timestamp(),
-                worker__in=w_docs,
+                worker__in=worker_ids,
             )
         except Exception as e:
             log_info("Failed to get requests by dates from database")

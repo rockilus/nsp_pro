@@ -77,6 +77,7 @@ class AttributeDB:
             handle_get_document_error(e)
         return [doc_to_core_attribute(a) for a in list(a_docs)]
 
+    # pylint: disable=R0801
     def get_attributes_by_dimension_id_for_not_deleted_shitfs(
         self, dimension_id: str
     ) -> List[Attribute]:
@@ -140,6 +141,7 @@ class AttributeDB:
             handle_get_document_error(e)
         return doc_to_core_attribute(a_doc) if a_doc else None
 
+    # pylint: disable=R0801
     def get_shifts_id_by_dim_and_attr(self) -> Dict:
         pipeline = [
             {"$unwind": "$value"},

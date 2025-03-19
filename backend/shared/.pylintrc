@@ -6,6 +6,7 @@ disable=
     C0116, # missing-function-docstring
     W0718, # broad-exception-caught
     W0719, # broad-exception-raised
+    R0801, # similar-modules
     R0917, # too-many-positional-arguments
 
 [design]
