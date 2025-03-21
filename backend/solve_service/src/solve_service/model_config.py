@@ -24,7 +24,7 @@ print(f"github_actions_mode: {github_actions_mode}")
 
 cpu_count = os.cpu_count() or 1
 
-num_search_workers = 1
+num_search_workers = 2
 if (pytest_mode and environment == "production") or (
     not pytest_mode and environment == "development"
 ):
