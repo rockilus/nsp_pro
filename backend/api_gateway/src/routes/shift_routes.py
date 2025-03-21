@@ -1,3 +1,4 @@
+import time as time_module
 from dataclasses import asdict
 from datetime import datetime, timezone
 from typing import Dict, List
@@ -109,6 +110,7 @@ async def get_all_shifts(
     try:
         if not await authz_check(session.get_user_id(), "read-shifts", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read shifts")
+        start_time = time_module.time()
         shifts = shift_db.get_shifts(team_id)
         attributes = [
             attribute_db.get_attributes_by_owner_id(shift.id) for shift in shifts
@@ -116,6 +118,9 @@ async def get_all_shifts(
         response = [
             core_to_msg_shift_and_attributes(s, sp) for s, sp in zip(shifts, attributes)
         ]
+        end_time = time_module.time()
+        time_taken = round(end_time - start_time)
+        print(f"Time taken to get shifts: {time_taken} seconds")
     except Exception as e:
         log_info("Failed to get shifts")
         handle_routes_errors(e)

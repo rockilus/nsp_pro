@@ -1,3 +1,4 @@
+import time
 from dataclasses import asdict
 from typing import Dict, List
 
@@ -96,9 +97,13 @@ async def calculate_stats(
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )
+        start_time = time.time()
         stats_options = msg_to_core_stats_options(options)
         stats = build_stats(team_id, stats_options)
         response = core_to_msg_stats(stats)
+        end_time = time.time()
+        time_taken = round(end_time - start_time)
+        print(f"Time taken to get stats: {time_taken} seconds")
     except Exception as e:
         log_info("Failed to get stats options")
         handle_routes_errors(e)

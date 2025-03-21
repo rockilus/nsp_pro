@@ -1,3 +1,4 @@
+import time as time_module
 from dataclasses import asdict
 from datetime import date, datetime, time, timezone
 from typing import Dict, List, Optional
@@ -15,7 +16,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from routes.api_model import AssignmentMessage
 from scripts.setup_database import assignment_db
@@ -59,6 +63,7 @@ async def get_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to get assignments",
             )
+        start_time = time_module.time()
         if start_date is None or end_date is None:
             assignments = assignment_db.get_assignments(team_id)
         else:
@@ -66,6 +71,9 @@ async def get_assignments(
                 team_id, start_date, end_date
             )
         response = [core_to_msg_assignment(a) for a in assignments]
+        end_time = time_module.time()
+        time_taken = round(end_time - start_time)
+        print(f"Time taken to get assignments: {time_taken} seconds")
     except Exception as e:
         log_info("Failed to get assignments")
         handle_routes_errors(e)
