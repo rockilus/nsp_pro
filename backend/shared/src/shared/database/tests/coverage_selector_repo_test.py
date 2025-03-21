@@ -39,6 +39,7 @@ class TestCoverageSelectorRepository:
             full_period=True,
             start_date=datetime(2023, 1, 1).date(),
             end_date=datetime(2023, 12, 31).date(),
+            last_modified=datetime.now(timezone.utc),
         )
 
         result = self.repo.create_coverage_selector(coverage_selector)
@@ -46,11 +47,13 @@ class TestCoverageSelectorRepository:
         assert result.id is not None
         assert result.schedule_id == "schedule1"
         assert result.coverage_id == "coverage1"
+        assert result.last_modified is not None
 
         saved_doc = self.repo.collection.find_one({"_id": result.id})
         assert saved_doc is not None
         assert saved_doc["schedule"] == "schedule1"
         assert saved_doc["coverage"] == "coverage1"
+        assert saved_doc["last_modified"] is not None
 
     def test_get_coverage_selector_by_id(self):
         """Test getting a coverage selector by ID."""
@@ -60,6 +63,7 @@ class TestCoverageSelectorRepository:
             full_period=True,
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
+            last_modified=datetime.now(timezone.utc).timestamp(),
         )
         created = self.repo.create(coverage_selector)
 
@@ -68,6 +72,7 @@ class TestCoverageSelectorRepository:
         assert found is not None
         assert found.id == created.id
         assert found.schedule_id == "schedule1"
+        assert found.last_modified is not None
 
     def test_update_coverage_selector(self):
         """Test updating a coverage selector."""
@@ -77,6 +82,7 @@ class TestCoverageSelectorRepository:
             full_period=True,
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
+            last_modified=datetime.now(timezone.utc).timestamp(),
         )
         created = self.repo.create(coverage_selector)
 
@@ -87,16 +93,19 @@ class TestCoverageSelectorRepository:
             full_period=False,
             start_date=datetime(2023, 2, 1).date(),
             end_date=datetime(2023, 11, 30).date(),
+            last_modified=datetime.now(timezone.utc),
         )
 
         result = self.repo.update_coverage_selector(updated_coverage_selector)
 
         assert result.coverage_id == "coverage2"
         assert result.full_period is False
+        assert result.last_modified is not None
 
         from_db = self.repo.collection.find_one({"_id": created.id})
         assert from_db["coverage"] == "coverage2"
         assert from_db["full_period"] is False
+        assert from_db["last_modified"] is not None
 
     def test_delete_coverage_selector(self):
         """Test deleting a coverage selector."""
@@ -106,6 +115,7 @@ class TestCoverageSelectorRepository:
             full_period=True,
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
             end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
+            last_modified=datetime.now(timezone.utc).timestamp(),
         )
         created = self.repo.create(coverage_selector)
 
@@ -122,6 +132,7 @@ class TestCoverageSelectorRepository:
                 full_period=True,
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
+                last_modified=datetime.now(timezone.utc).timestamp(),
             ),
             CoverageSelectorSchema(
                 schedule="schedule1",
@@ -129,6 +140,7 @@ class TestCoverageSelectorRepository:
                 full_period=False,
                 start_date=datetime(2023, 2, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 11, 30, tzinfo=timezone.utc),
+                last_modified=datetime.now(timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(coverage_selectors)
@@ -138,6 +150,8 @@ class TestCoverageSelectorRepository:
         assert len(results) == 2
         assert results[0].schedule_id == "schedule1"
         assert results[1].schedule_id == "schedule1"
+        assert results[0].last_modified is not None
+        assert results[1].last_modified is not None
 
     def test_get_coverage_selectors_by_schedule_id_full_period(self):
         """Test getting all coverage selectors for a schedule with full period."""
@@ -148,6 +162,7 @@ class TestCoverageSelectorRepository:
                 full_period=True,
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
+                last_modified=datetime.now(timezone.utc).timestamp(),
             ),
             CoverageSelectorSchema(
                 schedule="schedule1",
@@ -155,6 +170,7 @@ class TestCoverageSelectorRepository:
                 full_period=False,
                 start_date=datetime(2023, 2, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 11, 30, tzinfo=timezone.utc),
+                last_modified=datetime.now(timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(coverage_selectors)
@@ -165,6 +181,7 @@ class TestCoverageSelectorRepository:
 
         assert len(results) == 1
         assert results[0].full_period is True
+        assert results[0].last_modified is not None
 
     def test_update_coverage_selectors(self):
         """Test updating multiple coverage selectors."""
@@ -175,6 +192,7 @@ class TestCoverageSelectorRepository:
                 full_period=True,
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
+                last_modified=datetime.now(timezone.utc).timestamp(),
             ),
             CoverageSelectorSchema(
                 schedule="schedule1",
@@ -182,6 +200,7 @@ class TestCoverageSelectorRepository:
                 full_period=False,
                 start_date=datetime(2023, 2, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 11, 30, tzinfo=timezone.utc),
+                last_modified=datetime.now(timezone.utc).timestamp(),
             ),
         ]
         created_selectors = self.repo.create_many(coverage_selectors)
@@ -194,6 +213,7 @@ class TestCoverageSelectorRepository:
                 full_period=False,
                 start_date=datetime(2023, 3, 1).date(),
                 end_date=datetime(2023, 10, 31).date(),
+                last_modified=datetime.now(timezone.utc),
             ),
             CoverageSelector(
                 id=created_selectors[1].id,
@@ -202,6 +222,7 @@ class TestCoverageSelectorRepository:
                 full_period=True,
                 start_date=datetime(2023, 4, 1).date(),
                 end_date=datetime(2023, 9, 30).date(),
+                last_modified=datetime.now(timezone.utc),
             ),
         ]
 
@@ -210,11 +231,15 @@ class TestCoverageSelectorRepository:
         assert len(results) == 2
         assert results[0].coverage_id == "updated_coverage1"
         assert results[1].coverage_id == "updated_coverage2"
+        assert results[0].last_modified is not None
+        assert results[1].last_modified is not None
 
         from_db_1 = self.repo.collection.find_one({"_id": results[0].id})
         from_db_2 = self.repo.collection.find_one({"_id": results[1].id})
         assert from_db_1["coverage"] == "updated_coverage1"
         assert from_db_2["coverage"] == "updated_coverage2"
+        assert from_db_1["last_modified"] is not None
+        assert from_db_2["last_modified"] is not None
 
     def test_delete_coverage_selectors_by_coverage_id(self):
         """Test deleting all coverage selectors associated with a coverage ID."""
@@ -225,6 +250,7 @@ class TestCoverageSelectorRepository:
                 full_period=True,
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
+                last_modified=datetime.now(timezone.utc).timestamp(),
             ),
             CoverageSelectorSchema(
                 schedule="schedule2",
@@ -232,6 +258,7 @@ class TestCoverageSelectorRepository:
                 full_period=False,
                 start_date=datetime(2023, 2, 1, tzinfo=timezone.utc),
                 end_date=datetime(2023, 11, 30, tzinfo=timezone.utc),
+                last_modified=datetime.now(timezone.utc).timestamp(),
             ),
         ]
         self.repo.create_many(coverage_selectors)

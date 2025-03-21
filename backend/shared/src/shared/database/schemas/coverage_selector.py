@@ -13,6 +13,7 @@ class CoverageSelectorSchema(DocumentBaseSchema):
     full_period: bool
     start_date: datetime
     end_date: datetime
+    last_modified: float
 
     def to_core(self) -> CoreCoverageSelector:
         return CoreCoverageSelector(
@@ -22,6 +23,7 @@ class CoverageSelectorSchema(DocumentBaseSchema):
             full_period=self.full_period,
             start_date=self.start_date.date(),
             end_date=self.end_date.date(),
+            last_modified=datetime.fromtimestamp(self.last_modified, tz=timezone.utc),
         )
 
     @classmethod
@@ -43,4 +45,5 @@ class CoverageSelectorSchema(DocumentBaseSchema):
                 datetime.min.time(),
                 tzinfo=timezone.utc,
             ),
+            last_modified=coverage_selector.last_modified.timestamp(),
         )

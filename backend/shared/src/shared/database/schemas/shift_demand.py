@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from shared.database.schemas.base import DocumentBaseSchema
 from shared.schemas.schemas.coverage import ShiftDemand
 
@@ -8,6 +10,7 @@ class ShiftDemandSchema(DocumentBaseSchema):
     day_index: int
     shift: str
     coverage: str
+    last_modified: float
 
     def to_core(self) -> ShiftDemand:
         return ShiftDemand(
@@ -15,6 +18,7 @@ class ShiftDemandSchema(DocumentBaseSchema):
             day_index=self.day_index,
             shift_id=self.shift,
             coverage_id=self.coverage,
+            last_modified=datetime.fromtimestamp(self.last_modified, tz=timezone.utc),
         )
 
     @classmethod
@@ -24,4 +28,5 @@ class ShiftDemandSchema(DocumentBaseSchema):
             day_index=shift_demand.day_index,
             shift=shift_demand.shift_id,
             coverage=shift_demand.coverage_id,
+            last_modified=shift_demand.last_modified.timestamp(),
         )
