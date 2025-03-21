@@ -1,3 +1,4 @@
+import time as time_module
 from dataclasses import asdict
 from datetime import datetime, time, timezone
 from typing import List
@@ -15,7 +16,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from routes.api_model import RequestMessage
 from scripts.setup_database import request_db
@@ -56,8 +60,12 @@ async def get_requests(
             session.get_user_id(), "read-requests", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get requests")
+        start_time = time_module.time()
         requests = get_request_service(team_id)
         response = [core_to_msg_request_augmented(r) for r in requests]
+        end_time = time_module.time()
+        time_taken = round(end_time - start_time)
+        print(f"Time taken to get requests: {time_taken} seconds")
     except Exception as e:
         log_info("Failed to get requests")
         handle_routes_errors(e)

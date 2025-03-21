@@ -1,4 +1,7 @@
-from shared.database import DatabaseCollections, setup_database
+# from shared.database import DatabaseCollections, setup_database
+from shared.database_pymongo_str_id.database_collections import (
+    DatabaseCollections,
+)
 
 from config import config
 
@@ -9,8 +12,8 @@ from config import config
 
 
 def get_collections() -> DatabaseCollections:
-    return setup_database(config.db_uri)
-    # return DatabaseCollections(config.db_uri, "test")
+    # return setup_database(config.db_uri)
+    return DatabaseCollections(config.db_uri, "test")
 
 
 # # Set up the database and initialize collections

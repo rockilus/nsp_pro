@@ -1,3 +1,4 @@
+import time as time_module
 from dataclasses import asdict
 from datetime import datetime, time, timezone
 from typing import Dict, List
@@ -65,8 +66,12 @@ async def get_daily_shift_demands(
             raise NotAuthorizedError(
                 "You do not have permission to get daily_shift_demands",
             )
+        start_time = time_module.time()
         dsds = get_daily_shift_demands_service(team_id)
         response = [core_to_msg_daily_shift_demand(dsd) for dsd in dsds]
+        end_time = time_module.time()
+        time_taken = round(end_time - start_time)
+        print(f"Time taken to get dsds: {time_taken} seconds")
     except Exception as e:
         log_info("Failed to get daily_shift_demands")
         handle_routes_errors(e)

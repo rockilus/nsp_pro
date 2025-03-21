@@ -60,8 +60,6 @@ import {
   StatsUnitOptions,
   HeaderUnitOptions,
 } from "../../types/stats";
-import { log } from "node:console";
-import { set } from "zod";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);

@@ -1,3 +1,4 @@
+import time as time_module
 from dataclasses import asdict
 from datetime import datetime, time, timezone
 from typing import Dict, List
@@ -15,7 +16,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from routes.api_model import WorkerMessage
 from routes.attribute_routes import core_to_msg_attribute
@@ -81,6 +85,7 @@ async def get_all_workers(
             session.get_user_id(), "read-workers", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get workers")
+        start_time = time_module.time()
         workers = worker_db.get_workers(team_id)
         attributes = [
             attribute_db.get_attributes_by_owner_id(worker.id) for worker in workers
@@ -89,6 +94,9 @@ async def get_all_workers(
             core_to_msg_worker_and_attributes(w, wp)
             for w, wp in zip(workers, attributes)
         ]
+        end_time = time_module.time()
+        time_taken = round(end_time - start_time)
+        print(f"Time taken to get workers: {time_taken} seconds")
     except Exception as e:
         log_info("Failed to get workers")
         handle_routes_errors(e)

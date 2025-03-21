@@ -1,3 +1,4 @@
+import time as time_module
 from dataclasses import asdict
 from datetime import datetime, time, timezone
 from typing import Dict, List
@@ -15,7 +16,10 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from routes.api_model import BreachMessage, VariableMessage
 from scripts.setup_database import breach_db, schedule_db
@@ -35,11 +39,15 @@ async def get_objective_breaches(
             raise NotAuthorizedError(
                 "You do not have permission to get objective breaches",
             )
+        start_time = time_module.time()
         schedule_campaign = schedule_db.get_schedule_campaign(team_id)
         if not schedule_campaign:
             return []
         objective_breaches = breach_db.get_breaches_by_schedule_id(schedule_campaign.id)
         response = [core_to_msg_breach(a) for a in objective_breaches]
+        end_time = time_module.time()
+        time_taken = round(end_time - start_time)
+        print(f"Time taken to get breaches: {time_taken} seconds")
     except Exception as e:
         log_info("Failed to get objective breaches")
         handle_routes_errors(e)
