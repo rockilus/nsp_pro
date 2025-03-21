@@ -149,6 +149,7 @@ class SolveDetails:
         )
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class Schedule:
     id: str
@@ -161,6 +162,7 @@ class Schedule:
     missing_coverage_dates: List[date]
     constraint_build_ids: List[str]
     quick_staffings: List[QuickStaffing]
+    last_updated_dsds: datetime | None
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -178,6 +180,11 @@ class Schedule:
             datetime.combine(dt, time.min, tzinfo=timezone.utc).timestamp()
             for dt in self.missing_coverage_dates
         ]
+        out["last_updated_dsds"] = (
+            self.last_updated_dsds.timestamp()
+            if self.last_updated_dsds is not None
+            else None
+        )
         return out
 
     @classmethod
@@ -200,6 +207,11 @@ class Schedule:
             ],
             constraint_build_ids=data["constraint_build_ids"],
             quick_staffings=[QuickStaffing(**qs) for qs in data["quick_staffings"]],
+            last_updated_dsds=(
+                datetime.fromtimestamp(data["last_updated_dsds"], timezone.utc)
+                if data.get("last_updated_dsds", None) is not None
+                else None
+            ),
         )
 
 

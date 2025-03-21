@@ -1,12 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from typing import List
 
-# from shared.database import DatabaseCollections
-from shared.database_pymongo_str_id.database_collections import (
-    DatabaseCollections,
-)
+from shared.database.database_collections import DatabaseCollections
 
-# from shared.database_pymongo.database_collections import DatabaseCollections
 from shared.schemas import Shift, ShiftLeaveType, ShiftRestType, ShiftType
 
 
@@ -40,7 +36,9 @@ def create_duty_recuperation_shifts(
             if shift.shift_type != ShiftType.DUTY:
                 if not dr_existing.deleted:
                     drs_deleted.append(
-                        collections.shift_db.logical_delete_shift(dr_existing.id)
+                        collections.shift_db.logical_delete_shift(
+                            dr_existing.id
+                        )
                     )
                 continue
             if (

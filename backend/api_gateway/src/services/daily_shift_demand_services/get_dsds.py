@@ -24,13 +24,14 @@ def get_daily_shift_demands(
         coverage_selectors = coverage_selector_db.get_coverage_selectors(
             schedule_campaign.id
         )
-        shift_demands = shift_demand_db.get_shift_demands_by_coverage_ids(
-            [c.coverage_id for c in coverage_selectors if c.coverage_id]
+        coverage_ids = list(
+            set(c.coverage_id for c in coverage_selectors if c.coverage_id)
         )
-        dsds_sd_modify = (
-            daily_shift_demand_db.get_daily_shift_demands_modified_by_schedule_id(
-                schedule_campaign.id
-            )
+        shift_demands = shift_demand_db.get_shift_demands_by_coverage_ids(
+            coverage_ids
+        )
+        dsds_sd_modify = daily_shift_demand_db.get_daily_shift_demands_modified_by_schedule_id(
+            schedule_campaign.id
         )
         # Update daily shift demands from shift demands for wip schedule
         daily_shift_demand_db.delete_dsds_by_schedule_id_and_source_shift_demand(

@@ -2,12 +2,8 @@ from typing import List
 
 from shared.augment.cb_to_cb_augmented import cb_to_cb_augmented
 
-# from shared.database import DatabaseCollections
-from shared.database_pymongo_str_id.database_collections import (
-    DatabaseCollections,
-)
+from shared.database.database_collections import DatabaseCollections
 
-# from shared.database_pymongo.database_collections import DatabaseCollections
 from shared.schemas import (
     Attribute,
     ConstraintBuildAugmented,
@@ -30,8 +26,10 @@ def get_active_constraint_builds_by_ids(
     specialties: List[Specialty],
     collections: DatabaseCollections,
 ) -> List[ConstraintBuildAugmented]:
-    constraint_builds = collections.constraint_build_db.get_constraint_builds_by_ids(
-        constraint_build_ids
+    constraint_builds = (
+        collections.constraint_build_db.get_constraint_builds_by_ids(
+            constraint_build_ids
+        )
     )
     cbs_augmented = [
         cb_to_cb_augmented(
