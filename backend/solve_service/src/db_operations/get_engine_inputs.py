@@ -1,8 +1,9 @@
 import time
 
-from shared.database import DatabaseCollections
-
 # from shared.database_pymongo.database_collections import DatabaseCollections
+from shared.database_pymongo_str_id.database_collections import (
+    DatabaseCollections,
+)
 from shared.schemas import EngineInputs, Schedule
 
 from db_operations.assignment_services import get_fixed_assignments
@@ -13,6 +14,8 @@ from db_operations.get_constraint_build import (
 )
 from db_operations.get_link_shift import get_link_shifts
 from db_operations.get_request import get_requests_by_dates
+
+# from shared.database import DatabaseCollections
 
 
 # pylint: disable=too-many-locals, too-many-statements
