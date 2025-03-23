@@ -95,7 +95,9 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
                 + "or already deleted"
             )
 
-    def delete_daily_shift_demands_by_schedule_id(self, schedule_id: str) -> None:
+    def delete_daily_shift_demands_by_schedule_id(
+        self, schedule_id: str
+    ) -> None:
         """Delete all daily shift demands for a schedule."""
         self.collection.delete_many({"schedule": schedule_id})
 
@@ -152,4 +154,12 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
                 "source_type": DSDSourceType.SHIFT_DEMAND.value,
                 "$or": conditions,
             }
+        )
+
+    def delete_daily_shift_demands_by_coverage_selector_ids(
+        self, coverage_selector_ids: List[str]
+    ) -> None:
+        """Delete all daily shift demands for a list of coverage selectors."""
+        self.collection.delete_many(
+            {"coverage_selector": {"$in": coverage_selector_ids}}
         )

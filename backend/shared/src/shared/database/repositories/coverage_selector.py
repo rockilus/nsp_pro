@@ -21,7 +21,9 @@ class CoverageSelectorRepository(BaseRepository[CoverageSelectorSchema]):
         result = self.create(cs_schema)
         return result.to_core()
 
-    def get_coverage_selectors(self, schedule_id: str) -> List[CoverageSelector]:
+    def get_coverage_selectors(
+        self, schedule_id: str
+    ) -> List[CoverageSelector]:
         """Get all coverage selectors for a schedule."""
         selectors = self.find_all({"schedule": schedule_id})
         return [selector.to_core() for selector in selectors]
@@ -41,7 +43,16 @@ class CoverageSelectorRepository(BaseRepository[CoverageSelectorSchema]):
         self, schedule_id: str
     ) -> List[CoverageSelector]:
         """Get all coverage selectors for a schedule with full period."""
-        selectors = self.find_all({"schedule": schedule_id, "full_period": True})
+        selectors = self.find_all(
+            {"schedule": schedule_id, "full_period": True}
+        )
+        return [selector.to_core() for selector in selectors]
+
+    def get_coverage_selectors_by_coverage_id(
+        self, coverage_id: str
+    ) -> List[CoverageSelector]:
+        """Get all coverage selectors for a coverage ID."""
+        selectors = self.find_all({"coverage": coverage_id})
         return [selector.to_core() for selector in selectors]
 
     def update_coverage_selector(
@@ -76,6 +87,8 @@ class CoverageSelectorRepository(BaseRepository[CoverageSelectorSchema]):
                 + "already deleted"
             )
 
-    def delete_coverage_selectors_by_coverage_id(self, coverage_id: str) -> None:
+    def delete_coverage_selectors_by_coverage_id(
+        self, coverage_id: str
+    ) -> None:
         """Delete all coverage selectors associated with a coverage ID."""
         self.collection.delete_many({"coverage": coverage_id})

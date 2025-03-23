@@ -266,3 +266,41 @@ class TestCoverageSelectorRepository:
         self.repo.delete_coverage_selectors_by_coverage_id("coverage1")
 
         assert self.repo.collection.find_one({"coverage": "coverage1"}) is None
+
+    def test_get_coverage_selectors_by_coverage_id(self):
+        """Test getting all coverage selectors for a coverage ID."""
+        coverage_selectors = [
+            CoverageSelectorSchema(
+                schedule="schedule1",
+                coverage="coverage1",
+                full_period=True,
+                start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
+                last_modified=datetime.now(timezone.utc).timestamp(),
+            ),
+            CoverageSelectorSchema(
+                schedule="schedule2",
+                coverage="coverage1",
+                full_period=False,
+                start_date=datetime(2023, 2, 1, tzinfo=timezone.utc),
+                end_date=datetime(2023, 11, 30, tzinfo=timezone.utc),
+                last_modified=datetime.now(timezone.utc).timestamp(),
+            ),
+            CoverageSelectorSchema(
+                schedule="schedule3",
+                coverage="coverage2",
+                full_period=True,
+                start_date=datetime(2023, 3, 1, tzinfo=timezone.utc),
+                end_date=datetime(2023, 10, 31, tzinfo=timezone.utc),
+                last_modified=datetime.now(timezone.utc).timestamp(),
+            ),
+        ]
+        self.repo.create_many(coverage_selectors)
+
+        results = self.repo.get_coverage_selectors_by_coverage_id("coverage1")
+
+        assert len(results) == 2
+        assert results[0].coverage_id == "coverage1"
+        assert results[1].coverage_id == "coverage1"
+        assert results[0].last_modified is not None
+        assert results[1].last_modified is not None

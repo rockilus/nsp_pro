@@ -15,12 +15,18 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from routes.api_model import CoverageSelectorMessage
 from scripts.setup_database import coverage_selector_db
 from services.coverage_selector_services import (
     update_coverage_selector as update_coverage_selector_service,
+)
+from services.coverage_selector_services import (
+    delete_coverage_selector as delete_coverage_selector_service,
 )
 
 router = APIRouter()
@@ -61,8 +67,12 @@ async def get_coverage_selectors(
             raise NotAuthorizedError(
                 "You do not have permission to get coverage selectors"
             )
-        coverage_selectors = coverage_selector_db.get_coverage_selectors(schedule_id)
-        response = [core_to_msg_coverage_selector(w) for w in coverage_selectors]
+        coverage_selectors = coverage_selector_db.get_coverage_selectors(
+            schedule_id
+        )
+        response = [
+            core_to_msg_coverage_selector(w) for w in coverage_selectors
+        ]
     except Exception as e:
         log_info("Failed to get coverage selectors")
         handle_routes_errors(e)
@@ -83,14 +93,9 @@ async def update_coverage_selector(
             raise NotAuthorizedError(
                 "You do not have permission to update a coverage selector"
             )
-        existing_coverage_selector = coverage_selector_db.get_coverage_selector_by_id(
-            coverage_selector_id
+        coverage_selector_data = msg_to_core_coverage_selector(
+            coverage_selector_api
         )
-        if not existing_coverage_selector:
-            raise HTTPException(
-                status_code=404, detail="CoverageSelector does not exist"
-            )
-        coverage_selector_data = msg_to_core_coverage_selector(coverage_selector_api)
         updated_coverage_selector = update_coverage_selector_service(
             coverage_selector_data
         )
@@ -114,7 +119,7 @@ async def delete_coverage_selector(
             raise NotAuthorizedError(
                 "You do not have permission to delete a coverage selector"
             )
-        coverage_selector_db.delete_coverage_selector(coverage_selector_id)
+        delete_coverage_selector_service(coverage_selector_id)
     except Exception as e:
         log_info("Failed to delete coverage selector")
         handle_routes_errors(e)
@@ -136,7 +141,9 @@ def core_to_msg_coverage_selector(
     try:
         cs_msg = validator.validate_python(as_dict)
     except Exception as e:
-        log_info("Failed to convert CoverageSelector to CoverageSelectorMessage")
+        log_info(
+            "Failed to convert CoverageSelector to CoverageSelectorMessage"
+        )
         handle_message_errors(e)
     return cs_msg
 
@@ -155,6 +162,8 @@ def msg_to_core_coverage_selector(
     try:
         coverage_selector = CoverageSelector(**data_snake)
     except Exception as e:
-        log_info("Failed to create CoverageSelector from CoverageSelectorMessage")
+        log_info(
+            "Failed to create CoverageSelector from CoverageSelectorMessage"
+        )
         handle_create_schema_object_error(e)
     return coverage_selector
