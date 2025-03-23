@@ -322,9 +322,7 @@ class TestDailyShiftDemandRepository:
 
         self.repo.delete_daily_shift_demands_by_schedule_id("schedule1")
 
-        remaining_docs = list(
-            self.repo.collection.find({"schedule": "schedule1"})
-        )
+        remaining_docs = list(self.repo.collection.find({"schedule": "schedule1"}))
         assert len(remaining_docs) == 0
 
     def test_delete_dsds_by_schedule_id_and_source_shift_demand(self):
@@ -356,17 +354,12 @@ class TestDailyShiftDemandRepository:
         ]
         self.repo.create_many(demands)
 
-        self.repo.delete_dsds_by_schedule_id_and_source_shift_demand(
-            "schedule1"
-        )
+        self.repo.delete_dsds_by_schedule_id_and_source_shift_demand("schedule1")
 
-        remaining_docs = list(
-            self.repo.collection.find({"schedule": "schedule1"})
-        )
+        remaining_docs = list(self.repo.collection.find({"schedule": "schedule1"}))
         assert len(remaining_docs) == 1
         assert (
-            remaining_docs[0]["source_type"]
-            == DSDSourceType.DIRECT_REQUIREMENT.value
+            remaining_docs[0]["source_type"] == DSDSourceType.DIRECT_REQUIREMENT.value
         )
 
     def test_delete_daily_shift_demands_by_shift_id(self):
@@ -426,9 +419,7 @@ class TestDailyShiftDemandRepository:
         ]
         self.repo.create_many(demands)
 
-        self.repo.delete_daily_shift_demands_by_shift_demand_id(
-            "shift_demand1"
-        )
+        self.repo.delete_daily_shift_demands_by_shift_demand_id("shift_demand1")
 
         remaining_docs = list(
             self.repo.collection.find({"shift_demand": "shift_demand1"})
@@ -475,9 +466,7 @@ class TestDailyShiftDemandRepository:
             "schedule1", ["coverage_selector1"]
         )
 
-        remaining_docs = list(
-            self.repo.collection.find({"schedule": "schedule1"})
-        )
+        remaining_docs = list(self.repo.collection.find({"schedule": "schedule1"}))
         assert len(remaining_docs) == 1
         assert remaining_docs[0]["coverage_selector"] == "coverage_selector2"
 
@@ -516,9 +505,7 @@ class TestDailyShiftDemandRepository:
             "schedule1", [("coverage_selector1", "shift_demand1")]
         )
 
-        remaining_docs = list(
-            self.repo.collection.find({"schedule": "schedule1"})
-        )
+        remaining_docs = list(self.repo.collection.find({"schedule": "schedule1"}))
         assert len(remaining_docs) == 1
         assert remaining_docs[0]["shift_demand"] == "shift_demand2"
 
@@ -553,14 +540,10 @@ class TestDailyShiftDemandRepository:
         )
 
         remaining_docs = list(
-            self.repo.collection.find(
-                {"coverage_selector": "coverage_selector1"}
-            )
+            self.repo.collection.find({"coverage_selector": "coverage_selector1"})
         )
         assert len(remaining_docs) == 0
         remaining_docs = list(
-            self.repo.collection.find(
-                {"coverage_selector": "coverage_selector2"}
-            )
+            self.repo.collection.find({"coverage_selector": "coverage_selector2"})
         )
         assert len(remaining_docs) == 1

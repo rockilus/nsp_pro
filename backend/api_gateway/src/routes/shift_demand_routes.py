@@ -1,20 +1,24 @@
 from dataclasses import asdict
 from typing import List
-
+from datetime import datetime, timezone
 import humps
+from fastapi import APIRouter, Depends
+from pydantic import TypeAdapter
+from shared.logger import log_info
+from shared.schemas import ShiftDemand
+from shared.schemas.errors import handle_create_schema_object_error
+
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from fastapi import APIRouter, Depends
 from integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
 from integrations.authorization import authz_check
-from pydantic import TypeAdapter
 from routes.api_model import ShiftDemandMessage
 from scripts.setup_database import coverage_db, shift_demand_db
 from services.shift_demand_services import (
@@ -23,9 +27,6 @@ from services.shift_demand_services import (
 from services.shift_demand_services import (
     update_shift_demand as update_shift_demand_service,
 )
-from shared.logger import log_info
-from shared.schemas import ShiftDemand
-from shared.schemas.errors import handle_create_schema_object_error
 
 router = APIRouter()
 
@@ -122,6 +123,7 @@ def core_to_msg_shift_demand(shift_demand: ShiftDemand) -> ShiftDemandMessage:
     except Exception as e:
         log_info("Failed to convert ShiftDemand to dictionary")
         raise MessageTypeError(str(e)) from e
+    data["last_modified"] = shift_demand.last_modified.timestamp()
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ShiftDemandMessage)
     try:
@@ -135,6 +137,9 @@ def core_to_msg_shift_demand(shift_demand: ShiftDemand) -> ShiftDemandMessage:
 # message to core
 def msg_to_core_shift_demand(msg: ShiftDemandMessage) -> ShiftDemand:
     data_snake = humps.decamelize(msg.model_dump())
+    data_snake["last_modified"] = datetime.fromtimestamp(
+        data_snake["last_modified"], tz=timezone.utc
+    )
     try:
         shift_demand = ShiftDemand(**data_snake)
     except Exception as e:

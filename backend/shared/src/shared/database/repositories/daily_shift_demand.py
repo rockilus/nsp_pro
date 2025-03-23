@@ -95,9 +95,7 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
                 + "or already deleted"
             )
 
-    def delete_daily_shift_demands_by_schedule_id(
-        self, schedule_id: str
-    ) -> None:
+    def delete_daily_shift_demands_by_schedule_id(self, schedule_id: str) -> None:
         """Delete all daily shift demands for a schedule."""
         self.collection.delete_many({"schedule": schedule_id})
 

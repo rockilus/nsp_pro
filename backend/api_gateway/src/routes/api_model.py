@@ -97,6 +97,7 @@ class ShiftDemandMessage(BaseModel):
     dayIndex: int
     shiftId: str
     coverageId: str
+    lastModified: float
 
 
 class CoverageMessage(BaseModel):
@@ -112,6 +113,7 @@ class CoverageSelectorMessage(BaseModel):
     fullPeriod: bool
     startDate: date
     endDate: date
+    lastModified: float
 
 
 # Fixed Assignement
@@ -205,6 +207,7 @@ class DailyShiftDemandMessage(BaseModel):
     teamId: str
     scheduleId: str
     shiftDemandId: str | None
+    coverageSelectorId: str | None
     sourceType: int
     date: float
     shiftId: str
@@ -245,12 +248,14 @@ class ScheduleMessage(BaseModel):
     teamId: str
     startDate: float
     endDate: float
+    lastModifiedDates: float
     solveDetails: SolveDetailsMessage | None
     solveStatus: int
     status: int
     missingCoverageDates: List[float]
     constraintBuildIds: List[str]
     quickStaffings: List[QuickStaffingMessage]
+    lastUpdatedDsds: float | None
 
 
 class SolutionMessage(BaseModel):

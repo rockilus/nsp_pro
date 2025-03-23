@@ -1,8 +1,8 @@
 from scripts.setup_database import (
     coverage_db,
     coverage_selector_db,
-    shift_demand_db,
     daily_shift_demand_db,
+    shift_demand_db,
 )
 
 

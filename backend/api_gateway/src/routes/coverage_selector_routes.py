@@ -1,9 +1,9 @@
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List
 
 import humps
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 from shared.logger import log_info
 from shared.schemas import CoverageSelector
@@ -23,10 +23,10 @@ from integrations.authorization import authz_check
 from routes.api_model import CoverageSelectorMessage
 from scripts.setup_database import coverage_selector_db
 from services.coverage_selector_services import (
-    update_coverage_selector as update_coverage_selector_service,
+    delete_coverage_selector as delete_coverage_selector_service,
 )
 from services.coverage_selector_services import (
-    delete_coverage_selector as delete_coverage_selector_service,
+    update_coverage_selector as update_coverage_selector_service,
 )
 
 router = APIRouter()
@@ -81,7 +81,6 @@ async def get_coverage_selectors(
 
 @router.put("/coverage-selectors/{coverage_selector_id}/teams/{team_id}")
 async def update_coverage_selector(
-    coverage_selector_id: str,
     team_id: str,
     coverage_selector_api: CoverageSelectorMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
@@ -136,6 +135,7 @@ def core_to_msg_coverage_selector(
     except Exception as e:
         log_info("Failed to convert CoverageSelector to dictionary")
         raise MessageTypeError(str(e)) from e
+    data["last_modified"] = coverage_selector.last_modified.timestamp()
     as_dict = humps.camelize(data)
     validator = TypeAdapter(CoverageSelectorMessage)
     try:
@@ -158,6 +158,9 @@ def msg_to_core_coverage_selector(
     )
     data_snake["end_date"] = datetime.combine(
         data_snake["end_date"], datetime.min.time()
+    )
+    data_snake["last_modified"] = datetime.fromtimestamp(
+        data_snake["last_modified"], tz=timezone.utc
     )
     try:
         coverage_selector = CoverageSelector(**data_snake)
