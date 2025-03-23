@@ -50,9 +50,12 @@ from routes.breach_routes import core_to_msg_breach
 from routes.coverage_selector_routes import core_to_msg_coverage_selector
 from routes.request_routes import core_to_msg_request_augmented
 from routes.shift_routes import core_to_msg_shift_and_attributes
-from scripts.setup_database import assignment_db, breach_db, schedule_db
+from scripts.setup_database import schedule_db
 from services.schedule_services import (
     build_worktime_data,
+)
+from services.schedule_services import delete_schedule as delete_schedule_service
+from services.schedule_services import (
     get_schedule_campaign,
 )
 from services.schedule_services import solve_schedule as solve_schedule_service
@@ -228,9 +231,7 @@ async def delete_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to delete a schedule",
             )
-        assignment_db.delete_assignments_by_schedule_id(schedule_id)
-        breach_db.delete_breaches_by_schedule_id(schedule_id)
-        schedule_db.delete_schedule(schedule_id)
+        delete_schedule_service(schedule_id)
     except Exception as e:
         log_info("Failed to delete schedule")
         handle_routes_errors(e)
