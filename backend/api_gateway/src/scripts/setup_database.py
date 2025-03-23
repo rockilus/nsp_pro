@@ -2,7 +2,6 @@ from shared.database.database_collections import DatabaseCollections
 
 from utils.env_config import DB_URI
 
-
 # Set up the database and initialize collections
 collections = DatabaseCollections(DB_URI, "test")
 

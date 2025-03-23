@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List
 
 from shared.schemas import DailyShiftDemand
@@ -9,8 +10,8 @@ from scripts.setup_database import (
     shift_db,
     shift_demand_db,
 )
-from services.daily_shift_demand_services.build_dsds import (
-    build_daily_shift_demands,
+from services.daily_shift_demand_services.generate_dsds import (
+    generate_daily_shift_demands_for_schedule,
 )
 
 
@@ -21,31 +22,41 @@ def get_daily_shift_demands(
     schedule_campaign = schedule_db.get_schedule_campaign(team_id)
     if schedule_campaign:
         shifts_work_not_deleted = shift_db.get_work_shifts_not_deleted(team_id)
+        shift_work_not_deleted_ids = [s.id for s in shifts_work_not_deleted]
         coverage_selectors = coverage_selector_db.get_coverage_selectors(
             schedule_campaign.id
         )
         coverage_ids = list(
             set(c.coverage_id for c in coverage_selectors if c.coverage_id)
         )
-        shift_demands = shift_demand_db.get_shift_demands_by_coverage_ids(
-            coverage_ids
-        )
-        dsds_sd_modify = daily_shift_demand_db.get_daily_shift_demands_modified_by_schedule_id(
-            schedule_campaign.id
-        )
-        # Update daily shift demands from shift demands for wip schedule
-        daily_shift_demand_db.delete_dsds_by_schedule_id_and_source_shift_demand(
-            schedule_campaign.id
-        )
-        new_dsds = build_daily_shift_demands(
+        shift_demands = shift_demand_db.get_shift_demands_by_coverage_ids(coverage_ids)
+        shift_demands_shift_not_deleted = [
+            sd for sd in shift_demands if sd.shift_id in shift_work_not_deleted_ids
+        ]
+        dsds_new, update_info = generate_daily_shift_demands_for_schedule(
             schedule_campaign,
             coverage_selectors,
-            shift_demands,
-            shifts_work_not_deleted,
-            dsds_sd_modify,
+            shift_demands_shift_not_deleted,
         )
-        daily_shift_demand_db.create_daily_shift_demands(new_dsds)
 
+        if update_info.get("schedule", None):
+            daily_shift_demand_db.delete_dsds_by_schedule_id_and_source_shift_demand(
+                schedule_campaign.id
+            )
+        else:
+            cs_ids = list(update_info.get("coverage_selectors", []))
+            if cs_ids:
+                daily_shift_demand_db.delete_dsds_by_schedule_id_and_cs_ids(
+                    schedule_campaign.id, cs_ids
+                )
+            cs_sd_pairs = list(update_info.get("shift_demands", []))
+            if cs_sd_pairs:
+                daily_shift_demand_db.delete_dsds_by_schedule_id_and_cs_sd_pairs(
+                    schedule_campaign.id, cs_sd_pairs
+                )
+        daily_shift_demand_db.create_daily_shift_demands(dsds_new)
+        schedule_campaign.last_updated_dsds = datetime.now(timezone.utc)
+        schedule_db.update_schedule(schedule_campaign)
     # Get daily shift demands
     dsds = daily_shift_demand_db.get_daily_shift_demands(team_id)
     return dsds

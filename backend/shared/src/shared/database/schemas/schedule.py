@@ -80,6 +80,7 @@ class ScheduleSchema(DocumentBaseSchema):
     team: str
     start_date: float
     end_date: float
+    last_modified_dates: float
     solve_details: Optional[SolveDetailsSchema] = None
     solve_status: int
     status: int
@@ -127,6 +128,9 @@ class ScheduleSchema(DocumentBaseSchema):
             team_id=self.team,
             start_date=datetime.fromtimestamp(self.start_date, tz=timezone.utc).date(),
             end_date=datetime.fromtimestamp(self.end_date, tz=timezone.utc).date(),
+            last_modified_dates=datetime.fromtimestamp(
+                self.last_modified_dates, tz=timezone.utc
+            ),
             solve_details=(
                 self.solve_details.to_core() if self.solve_details else None
             ),
@@ -156,6 +160,7 @@ class ScheduleSchema(DocumentBaseSchema):
             end_date=datetime.combine(
                 schedule.end_date, time.min, timezone.utc
             ).timestamp(),
+            last_modified_dates=schedule.last_modified_dates.timestamp(),
             solve_details=(
                 SolveDetailsSchema.from_core(schedule.solve_details)
                 if schedule.solve_details

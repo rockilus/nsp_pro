@@ -1,7 +1,6 @@
 import httpx
 import redis
 from fastapi import APIRouter, HTTPException, Query, status
-from shared.database.errors import DBConnectionError
 
 from errors import AuthnConnectionError, AuthzConnectionError
 from integrations.authentication import authn_health_check
@@ -23,7 +22,7 @@ async def health_check() -> HealthCheck:
 
     try:
         db.check_health()
-    except DBConnectionError as e:
+    except Exception as e:
         health_status["database"].status = "error"
         health_status["database"].details = str(e)
 

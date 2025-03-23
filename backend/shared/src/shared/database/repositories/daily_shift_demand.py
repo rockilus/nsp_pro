@@ -58,14 +58,14 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
         dsds = self.find_all({"schedule": schedule_id})
         return [dsd.to_core() for dsd in dsds]
 
-    def get_daily_shift_demands_modified_by_schedule_id(
+    def get_daily_shift_demands_direct_requirement_by_schedule_id(
         self, schedule_id: str
     ) -> List[DailyShiftDemand]:
         """Get all modified daily shift demands for a schedule."""
         dsds = self.find_all(
             {
                 "schedule": schedule_id,
-                "source_type": DSDSourceType.SHIFT_DEMAND_MODIFY.value,
+                "source_type": DSDSourceType.DIRECT_REQUIREMENT.value,
             }
         )
         return [dsd.to_core() for dsd in dsds]
@@ -116,3 +116,40 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
     def delete_daily_shift_demands_by_shift_id(self, shift_id: str) -> None:
         """Delete all daily shift demands for a shift."""
         self.collection.delete_many({"shift": shift_id})
+
+    def delete_dsds_by_schedule_id_and_cs_ids(
+        self, schedule_id: str, coverage_selector_ids: List[str]
+    ) -> None:
+        """Delete all daily shift demands for a schedule and a list of coverage
+        selectors with source type ShiftDemand."""
+        self.collection.delete_many(
+            {
+                "schedule": schedule_id,
+                "coverage_selector": {"$in": coverage_selector_ids},
+                "source_type": DSDSourceType.SHIFT_DEMAND.value,
+            }
+        )
+
+    def delete_dsds_by_schedule_id_and_cs_sd_pairs(
+        self,
+        schedule_id: str,
+        cs_sd_pairs: List[tuple],
+    ) -> None:
+        """
+        Delete all daily shift demands for a schedule and pairs of coverage
+        selector and shift demand with source type ShiftDemand.
+        """
+        conditions = [
+            {
+                "coverage_selector": coverage_selector_id,
+                "shift_demand": shift_demand_id,
+            }
+            for coverage_selector_id, shift_demand_id in cs_sd_pairs
+        ]
+        self.collection.delete_many(
+            {
+                "schedule": schedule_id,
+                "source_type": DSDSourceType.SHIFT_DEMAND.value,
+                "$or": conditions,
+            }
+        )

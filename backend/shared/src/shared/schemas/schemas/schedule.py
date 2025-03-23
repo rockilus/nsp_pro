@@ -156,6 +156,7 @@ class Schedule:
     team_id: str
     start_date: date
     end_date: date
+    last_modified_dates: datetime
     solve_details: SolveDetails | None
     solve_status: ScheduleSolveStatus
     status: ScheduleStatus
@@ -172,6 +173,7 @@ class Schedule:
         out["end_date"] = datetime.combine(
             self.end_date, time.min, tzinfo=timezone.utc
         ).timestamp()
+        out["last_modified_dates"] = self.last_modified_dates.timestamp()
         if self.solve_details:
             out["solve_details"] = self.solve_details.to_dict()
         out["solve_status"] = self.solve_status.value
@@ -194,6 +196,9 @@ class Schedule:
             team_id=data["team_id"],
             start_date=datetime.fromtimestamp(data["start_date"], timezone.utc).date(),
             end_date=datetime.fromtimestamp(data["end_date"], timezone.utc).date(),
+            last_modified_dates=datetime.fromtimestamp(
+                data["last_modified_dates"], timezone.utc
+            ),
             solve_details=(
                 SolveDetails.from_dict(data["solve_details"])
                 if data.get("solve_details", None) is not None

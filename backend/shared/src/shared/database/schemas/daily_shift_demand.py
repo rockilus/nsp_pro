@@ -14,6 +14,7 @@ class DailyShiftDemandSchema(DocumentBaseSchema):
     team: str
     schedule: str
     shift_demand: Optional[str] = None
+    coverage_selector: Optional[str] = None
     source_type: int
     date: float
     shift: str
@@ -34,6 +35,7 @@ class DailyShiftDemandSchema(DocumentBaseSchema):
             team_id=self.team,
             schedule_id=self.schedule,
             shift_demand_id=self.shift_demand,
+            coverage_selector_id=self.coverage_selector,
             source_type=DSDSourceType(self.source_type),
             date=datetime.fromtimestamp(self.date, tz=timezone.utc).date(),
             shift_id=self.shift,
@@ -49,6 +51,7 @@ class DailyShiftDemandSchema(DocumentBaseSchema):
             team=daily_shift_demand.team_id,
             schedule=daily_shift_demand.schedule_id,
             shift_demand=daily_shift_demand.shift_demand_id,
+            coverage_selector=daily_shift_demand.coverage_selector_id,
             source_type=daily_shift_demand.source_type.value,
             date=datetime.combine(
                 daily_shift_demand.date,
