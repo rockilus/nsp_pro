@@ -400,6 +400,46 @@ class TestDailyShiftDemandRepository:
         remaining_docs = list(self.repo.collection.find({"shift": "shift1"}))
         assert len(remaining_docs) == 0
 
+    def test_delete_daily_shift_demands_by_shift_demand_id(self):
+        """Test deleting daily shift demands by shift demand ID."""
+        demands = [
+            DailyShiftDemandSchema(
+                team="team1",
+                schedule="schedule1",
+                shift_demand="shift_demand1",
+                coverage_selector="coverage_selector1",
+                source_type=DSDSourceType.SHIFT_DEMAND.value,
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                shift="shift1",
+                count=5,
+            ),
+            DailyShiftDemandSchema(
+                team="team1",
+                schedule="schedule1",
+                shift_demand="shift_demand2",
+                coverage_selector="coverage_selector2",
+                source_type=DSDSourceType.SHIFT_DEMAND.value,
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
+                shift="shift2",
+                count=3,
+            ),
+        ]
+        self.repo.create_many(demands)
+
+        self.repo.delete_daily_shift_demands_by_shift_demand_id(
+            "shift_demand1"
+        )
+
+        remaining_docs = list(
+            self.repo.collection.find({"shift_demand": "shift_demand1"})
+        )
+        assert len(remaining_docs) == 0
+
+        remaining_docs = list(
+            self.repo.collection.find({"shift_demand": "shift_demand2"})
+        )
+        assert len(remaining_docs) == 1
+
     def test_delete_daily_shift_demands_by_schedule_id_and_coverage_selector_ids(
         self,
     ):

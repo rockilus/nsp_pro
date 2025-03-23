@@ -163,3 +163,9 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
         self.collection.delete_many(
             {"coverage_selector": {"$in": coverage_selector_ids}}
         )
+
+    def delete_daily_shift_demands_by_shift_demand_id(
+        self, shift_demand_id: str
+    ) -> None:
+        """Delete all daily shift demands for a shift demand ID."""
+        self.collection.delete_many({"shift_demand": shift_demand_id})

@@ -2,22 +2,30 @@ from dataclasses import asdict
 from typing import List
 
 import humps
-from fastapi import APIRouter, Depends
-from pydantic import TypeAdapter
-from shared.logger import log_info
-from shared.schemas import ShiftDemand
-from shared.schemas.errors import handle_create_schema_object_error
-
 from errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from fastapi import APIRouter, Depends
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
+from pydantic import TypeAdapter
 from routes.api_model import ShiftDemandMessage
 from scripts.setup_database import coverage_db, shift_demand_db
+from services.shift_demand_services import (
+    delete_shift_demand as delete_shift_demand_service,
+)
+from services.shift_demand_services import (
+    update_shift_demand as update_shift_demand_service,
+)
+from shared.logger import log_info
+from shared.schemas import ShiftDemand
+from shared.schemas.errors import handle_create_schema_object_error
 
 router = APIRouter()
 
@@ -53,7 +61,9 @@ async def get_shift_demands(
         if not await authz_check(
             session.get_user_id(), "read-coverages", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to get shift demands")
+            raise NotAuthorizedError(
+                "You do not have permission to get shift demands"
+            )
         coverages = coverage_db.get_coverages(team_id)
         shift_demands = shift_demand_db.get_shift_demands_by_coverage_ids(
             [c.id for c in coverages]
@@ -79,7 +89,7 @@ async def update_shift_demand(
                 "You do not have permission to update a shift demand",
             )
         sd_data = msg_to_core_shift_demand(req)
-        shift_demand = shift_demand_db.update_shift_demand(sd_data)
+        shift_demand = update_shift_demand_service(sd_data)
         response = core_to_msg_shift_demand(shift_demand)
     except Exception as e:
         log_info("Failed to update shift demand")
@@ -96,9 +106,11 @@ async def delete_shift_demands(
     if not await authz_check(
         session.get_user_id(), "delete-shift-demand", "team", team_id
     ):
-        raise NotAuthorizedError("You do not have permission to delete a shift demand")
+        raise NotAuthorizedError(
+            "You do not have permission to delete a shift demand"
+        )
     for shift_demand_id in shift_demand_ids:
-        shift_demand_db.delete_shift_demand(shift_demand_id)
+        delete_shift_demand_service(shift_demand_id)
     return {"message": "Shift demand deleted successfully"}
 
 
