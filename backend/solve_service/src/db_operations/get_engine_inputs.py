@@ -32,16 +32,16 @@ def get_engine_inputs(
         specialties,
         collections,
     )
-    recuperation_shifts_new = create_duty_recuperation_shifts(
-        shifts, collections
-    )
+    recuperation_shifts_new = create_duty_recuperation_shifts(shifts, collections)
     shift_id_to_shift = {shift.id: shift for shift in shifts}
     for rec_shift in recuperation_shifts_new:
         shift_id_to_shift[rec_shift.id] = rec_shift
     shifts = list(shift_id_to_shift.values())
     link_shifts = get_link_shifts(schedule.team_id, shifts, collections)
-    daily_shift_demands = collections.daily_shift_demand_db.get_daily_shift_demands_by_schedule_id(
-        schedule.id
+    daily_shift_demands = (
+        collections.daily_shift_demand_db.get_daily_shift_demands_by_schedule_id(
+            schedule.id
+        )
     )
     requests = get_requests_by_dates(
         schedule.start_date, schedule.end_date, workers, shifts, collections

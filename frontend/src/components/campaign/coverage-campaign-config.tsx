@@ -213,6 +213,7 @@ export default function CoverageCampaignConfig({
               startDate: schedule.startDate,
               endDate: schedule.endDate,
               coverageId: "",
+              lastModified: dayjs.utc().unix(),
             })
           }
         >

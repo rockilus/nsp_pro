@@ -54,19 +54,13 @@ from scripts.setup_database import schedule_db
 from services.schedule_services import (
     build_worktime_data,
 )
-from services.schedule_services import (
-    delete_schedule as delete_schedule_service,
-)
+from services.schedule_services import delete_schedule as delete_schedule_service
 from services.schedule_services import (
     get_schedule_campaign,
 )
 from services.schedule_services import solve_schedule as solve_schedule_service
-from services.schedule_services import (
-    update_schedule as update_schedule_service,
-)
-from services.schedule_services import (
-    validate_schedule as validate_schedule_service,
-)
+from services.schedule_services import update_schedule as update_schedule_service
+from services.schedule_services import validate_schedule as validate_schedule_service
 from utils import event_manager
 
 router = APIRouter()
@@ -157,9 +151,7 @@ async def solve_schedule(
 
 
 @router.post("/schedules/{schedule_id}/notifify-solved/teams/{team_id}")
-async def notify_solved_schedule(
-    schedule_id: str, team_id: str, data: Dict
-) -> str:
+async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> str:
     try:
         if "eo_augmented" not in data:
             raise MessageTypeError("eo_augmented not in data")
@@ -180,9 +172,7 @@ async def notify_solved_schedule(
     return "Task ID"
 
 
-@router.post(
-    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
-)
+@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -309,9 +299,7 @@ def core_to_msg_schedule(schedule: Schedule) -> ScheduleMessage:
         core_to_msg_quick_staffing(qs) for qs in schedule.quick_staffings
     ]
     data["last_updated_dsds"] = (
-        schedule.last_updated_dsds.timestamp()
-        if schedule.last_updated_dsds
-        else None
+        schedule.last_updated_dsds.timestamp() if schedule.last_updated_dsds else None
     )
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ScheduleMessage)
@@ -408,12 +396,8 @@ def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
         data_snake["last_modified_dates"], timezone.utc
     )
     if msg.solveDetails:
-        data_snake["solve_details"] = msg_to_core_solve_details(
-            msg.solveDetails
-        )
-    data_snake["solve_status"] = ScheduleSolveStatus(
-        data_snake["solve_status"]
-    )
+        data_snake["solve_details"] = msg_to_core_solve_details(msg.solveDetails)
+    data_snake["solve_status"] = ScheduleSolveStatus(data_snake["solve_status"])
     data_snake["status"] = ScheduleStatus(data_snake["status"])
     data_snake["missing_coverage_dates"] = [
         datetime.fromtimestamp(d, timezone.utc).date()

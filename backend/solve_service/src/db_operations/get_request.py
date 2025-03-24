@@ -2,9 +2,7 @@ from datetime import date
 from typing import List
 
 from shared.augment import r_to_r_augmented
-
 from shared.database.database_collections import DatabaseCollections
-
 from shared.schemas import Request, RequestAugmented, Shift, Worker
 
 

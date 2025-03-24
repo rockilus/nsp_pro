@@ -1,6 +1,7 @@
 from dataclasses import asdict
-from typing import List
 from datetime import datetime, timezone
+from typing import List
+
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
@@ -62,9 +63,7 @@ async def get_shift_demands(
         if not await authz_check(
             session.get_user_id(), "read-coverages", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to get shift demands"
-            )
+            raise NotAuthorizedError("You do not have permission to get shift demands")
         coverages = coverage_db.get_coverages(team_id)
         shift_demands = shift_demand_db.get_shift_demands_by_coverage_ids(
             [c.id for c in coverages]
@@ -107,9 +106,7 @@ async def delete_shift_demands(
     if not await authz_check(
         session.get_user_id(), "delete-shift-demand", "team", team_id
     ):
-        raise NotAuthorizedError(
-            "You do not have permission to delete a shift demand"
-        )
+        raise NotAuthorizedError("You do not have permission to delete a shift demand")
     for shift_demand_id in shift_demand_ids:
         delete_shift_demand_service(shift_demand_id)
     return {"message": "Shift demand deleted successfully"}

@@ -1,14 +1,11 @@
 from shared.database.database_collections import DatabaseCollections
-
 from shared.schemas import ModelOutput
 
 
 def save_model_output(
     model_output: ModelOutput, collections: DatabaseCollections
 ) -> ModelOutput:
-    mo_existing = collections.model_output_db.get_model_output(
-        model_output.schedule_id
-    )
+    mo_existing = collections.model_output_db.get_model_output(model_output.schedule_id)
     if mo_existing is not None:
         model_output.id = mo_existing.id
         out = collections.model_output_db.update_model_output(model_output)

@@ -82,7 +82,8 @@ export default function DailyShiftDemandCell({
     }
     const dsdSchedule = dailyShiftDemands.find(
       (dsd) =>
-        dsd.shiftId === shift.id && dsd.sourceType === DSDSourceType.SCHEDULE
+        dsd.shiftId === shift.id &&
+        dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
     );
     if (dsdSchedule) {
       if (dsdSchedule.count > 1) {
@@ -99,14 +100,14 @@ export default function DailyShiftDemandCell({
           dsd.shiftId === shift.id &&
           [
             DSDSourceType.SHIFT_DEMAND,
-            DSDSourceType.SHIFT_DEMAND_MODIFY,
+            DSDSourceType.DIRECT_REQUIREMENT,
           ].includes(dsd.sourceType) &&
           dsd.count > 0
       );
       if (dsdShiftDemand) {
         handleUpdateDSD({
           ...dsdShiftDemand,
-          sourceType: DSDSourceType.SHIFT_DEMAND_MODIFY,
+          sourceType: DSDSourceType.DIRECT_REQUIREMENT,
           count: dsdShiftDemand.count - 1,
         });
       }
@@ -123,10 +124,9 @@ export default function DailyShiftDemandCell({
     const dsdShiftDemand = dailyShiftDemands.find(
       (dsd) =>
         dsd.shiftId === shift.id &&
-        [
-          DSDSourceType.SHIFT_DEMAND,
-          DSDSourceType.SHIFT_DEMAND_MODIFY,
-        ].includes(dsd.sourceType) &&
+        [DSDSourceType.SHIFT_DEMAND, DSDSourceType.DIRECT_REQUIREMENT].includes(
+          dsd.sourceType
+        ) &&
         dsd.count === 0
     );
     if (dsdShiftDemand) {
@@ -138,7 +138,8 @@ export default function DailyShiftDemandCell({
     } else {
       const dsdSchedule = dailyShiftDemands.find(
         (dsd) =>
-          dsd.shiftId === shift.id && dsd.sourceType === DSDSourceType.SCHEDULE
+          dsd.shiftId === shift.id &&
+          dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
       );
       if (dsdSchedule) {
         handleUpdateDSD({
@@ -151,7 +152,7 @@ export default function DailyShiftDemandCell({
           teamId: teamId,
           scheduleId: scheduleCampaign.id,
           shiftDemandId: null,
-          sourceType: DSDSourceType.SCHEDULE,
+          sourceType: DSDSourceType.DIRECT_REQUIREMENT,
           date: periodDate.date,
           shiftId: shift.id,
           count: 1,

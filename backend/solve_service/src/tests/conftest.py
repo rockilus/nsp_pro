@@ -48,7 +48,10 @@ from engine import ProcessingCache
 from engine.engine import Engine, Outputs
 from solve_service.model_config import model_config
 from solve_service.penalties import penalties
-from tests.utils import engine_inputs_to_engine_inputs_augmented, load_json_from_file
+from tests.utils import (
+    engine_inputs_to_engine_inputs_augmented,
+    load_json_from_file,
+)
 
 
 # pylint: disable=R0801
@@ -66,6 +69,8 @@ def schedule() -> Schedule:
         missing_coverage_dates=[],
         constraint_build_ids=[],
         quick_staffings=[],
+        last_modified_dates=datetime.now(),
+        last_updated_dsds=datetime.now(),
     )
 
 
@@ -409,6 +414,7 @@ def daily_shift_demands_shifts_3n_2d(
                         date=current_date,
                         shift_id=shift.id,
                         count=1,
+                        coverage_selector_id=None,
                     )
                 )
             current_date += timedelta(days=1)
@@ -427,6 +433,7 @@ def daily_shift_demands_shifts_3n_2d(
                     date=current_date,
                     shift_id=shift.id,
                     count=1,
+                    coverage_selector_id=None,
                 )
             )
             current_date += timedelta(days=1)

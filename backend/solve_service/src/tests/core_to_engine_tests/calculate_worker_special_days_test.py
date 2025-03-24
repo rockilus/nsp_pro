@@ -31,7 +31,9 @@ from core_to_engine_service.calculate_worker_special_days import (
     calculate_adjustment_coefficients,
     calculate_worker_speacial_days,
 )
-from core_to_engine_service.calculate_worker_work_times import round_proportional_times
+from core_to_engine_service.calculate_worker_work_times import (
+    round_proportional_times,
+)
 from engine import GroupsAssignmentsTargetConstraint
 
 
@@ -45,6 +47,8 @@ def engine_inputs_special_days(
         team_id="t0",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 3, 31),
+        last_modified_dates=datetime(2025, 1, 1, 0, 0),
+        last_updated_dsds=None,
         solve_details=None,
         solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
@@ -321,6 +325,7 @@ def engine_inputs_special_days(
                     team_id="t0",
                     schedule_id=schedule.id,
                     shift_demand_id=None,
+                    coverage_selector_id=None,
                     source_type=DSDSourceType.SHIFT_DEMAND,
                     date=current_date,
                     shift_id=shift.id,

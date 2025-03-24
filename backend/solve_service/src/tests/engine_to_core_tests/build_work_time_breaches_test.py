@@ -37,7 +37,9 @@ from engine_to_core_service.build_breaches.build_breaches_not_model import (
     build_work_time_breaches,
     calc_work_times_actual,
 )
-from engine_to_core_service.build_campaign_assignments import build_campaign_assignments
+from engine_to_core_service.build_campaign_assignments import (
+    build_campaign_assignments,
+)
 
 
 class TestTargetWorkTimeConstraints:
@@ -51,12 +53,14 @@ class TestTargetWorkTimeConstraints:
             team_id="t0",
             start_date=date(2025, 2, 10),
             end_date=date(2025, 3, 9),
+            last_modified_dates=datetime.now(),
             solve_details=None,
             solve_status=ScheduleSolveStatus.NOT_SOLVED,
             status=ScheduleStatus.CAMPAIGN,
             missing_coverage_dates=[],
             constraint_build_ids=[],
             quick_staffings=[],
+            last_updated_dsds=None,
         )
 
         # 4 workers
@@ -164,6 +168,7 @@ class TestTargetWorkTimeConstraints:
                         team_id="t0",
                         schedule_id=schedule.id,
                         shift_demand_id=None,
+                        coverage_selector_id=None,
                         source_type=DSDSourceType.SHIFT_DEMAND,
                         date=current_date,
                         shift_id=shift.id,

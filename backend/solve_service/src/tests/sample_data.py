@@ -54,6 +54,8 @@ def sample_data_fixture() -> EngineInputsAugmented:
         team_id="t0",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 31),
+        last_modified_dates=datetime(2025, 1, 1, 0, 0),
+        last_updated_dsds=None,
         solve_details=None,
         solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
@@ -218,6 +220,7 @@ def sample_data_fixture() -> EngineInputsAugmented:
                         team_id="t0",
                         schedule_id="sch1",
                         shift_demand_id=None,
+                        coverage_selector_id=None,  # Added argument
                         source_type=DSDSourceType.SHIFT_DEMAND,
                         date=current_date,
                         shift_id=shift_id,
@@ -236,6 +239,7 @@ def sample_data_fixture() -> EngineInputsAugmented:
                     team_id="t0",
                     schedule_id="sch1",
                     shift_demand_id=None,
+                    coverage_selector_id=None,  # Added argument
                     source_type=DSDSourceType.SHIFT_DEMAND,
                     date=current_date,
                     shift_id=shift_id,
@@ -276,6 +280,8 @@ def sample_data() -> EngineInputsAugmented:
         team_id="t0",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 31),
+        last_modified_dates=datetime(2025, 1, 1, 0, 0),
+        last_updated_dsds=None,
         solve_details=None,
         solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
@@ -440,6 +446,7 @@ def sample_data() -> EngineInputsAugmented:
                         team_id="t0",
                         schedule_id="sch1",
                         shift_demand_id=None,
+                        coverage_selector_id=None,  # Added argument
                         source_type=DSDSourceType.SHIFT_DEMAND,
                         date=current_date,
                         shift_id=shift_id,
@@ -458,6 +465,7 @@ def sample_data() -> EngineInputsAugmented:
                     team_id="t0",
                     schedule_id="sch1",
                     shift_demand_id=None,
+                    coverage_selector_id=None,  # Added argument
                     source_type=DSDSourceType.SHIFT_DEMAND,
                     date=current_date,
                     shift_id=shift_id,
@@ -499,6 +507,8 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
         team_id="t0",
         start_date=date(2025, 1, 13),
         end_date=date(2025, 2, 16),
+        last_modified_dates=datetime(2025, 1, 13, 0, 0),
+        last_updated_dsds=None,
         solve_details=None,
         solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
@@ -610,6 +620,7 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
                     team_id="t0",
                     schedule_id="sch1",
                     shift_demand_id=None,
+                    coverage_selector_id=None,  # Added argument
                     source_type=DSDSourceType.SHIFT_DEMAND,
                     date=current_date,
                     shift_id=shift_id,

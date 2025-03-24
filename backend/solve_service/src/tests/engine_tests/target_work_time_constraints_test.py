@@ -55,6 +55,8 @@ class TestTargetWorkTimeConstraints:
             missing_coverage_dates=[],
             constraint_build_ids=[],
             quick_staffings=[],
+            last_modified_dates=datetime(2025, 1, 1),
+            last_updated_dsds=None,
         )
 
         # 4 workers
@@ -162,6 +164,7 @@ class TestTargetWorkTimeConstraints:
                         team_id="t0",
                         schedule_id=schedule.id,
                         shift_demand_id=None,
+                        coverage_selector_id=None,
                         source_type=DSDSourceType.SHIFT_DEMAND,
                         date=current_date,
                         shift_id=shift.id,
