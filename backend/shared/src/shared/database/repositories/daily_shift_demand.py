@@ -1,9 +1,9 @@
 from typing import List
 
+from pymongo import UpdateOne
+
 from shared.database.repositories.base import BaseRepository
-from shared.database.schemas.daily_shift_demand import (
-    DailyShiftDemandSchema,
-)
+from shared.database.schemas.daily_shift_demand import DailyShiftDemandSchema
 from shared.schemas.schemas.coverage import DailyShiftDemand, DSDSourceType
 
 
@@ -85,6 +85,35 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
         dsd_updated = self.update(dsd_schema)
         assert dsd_updated is not None
         return dsd_updated.to_core()
+
+    def update_daily_shift_demands(
+        self, daily_shift_demands: List[DailyShiftDemand]
+    ) -> List[DailyShiftDemand]:
+        """Update multiple daily shift demands."""
+        if not daily_shift_demands:
+            return []
+
+        bulk_operations = []
+        for dsd in daily_shift_demands:
+            dsd_schema = DailyShiftDemandSchema.from_core(dsd)
+            update_data = dsd_schema.to_mongo()
+            update_data.pop("_id", None)
+            bulk_operations.append(
+                UpdateOne(
+                    {"_id": dsd_schema.id},
+                    {"$set": update_data},
+                    upsert=False,
+                )
+            )
+
+        result = self.collection.bulk_write(bulk_operations)
+
+        if not result.acknowledged:
+            raise Exception("Failed to update documents")
+
+        updated_ids = [dsd.id for dsd in daily_shift_demands]
+        updated_docs = self.find_all({"_id": {"$in": updated_ids}})
+        return [doc.to_core() for doc in updated_docs]
 
     def delete_daily_shift_demand(self, daily_shift_demand_id: str) -> None:
         """Delete a daily shift demand by its ID."""

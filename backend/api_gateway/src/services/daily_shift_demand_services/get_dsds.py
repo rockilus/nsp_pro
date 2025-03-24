@@ -13,6 +13,9 @@ from scripts.setup_database import (
 from services.daily_shift_demand_services.generate_dsds import (
     generate_daily_shift_demands_for_schedule,
 )
+from services.daily_shift_demand_services.update_dsds import (
+    remove_net_negative_daily_shift_demands,
+)
 
 
 def get_daily_shift_demands(
@@ -59,4 +62,7 @@ def get_daily_shift_demands(
         schedule_db.update_schedule(schedule_campaign)
     # Get daily shift demands
     dsds = daily_shift_demand_db.get_daily_shift_demands(team_id)
+    dsds, dsds_updated = remove_net_negative_daily_shift_demands(dsds)
+    if dsds_updated:
+        daily_shift_demand_db.update_daily_shift_demands(dsds_updated)
     return dsds

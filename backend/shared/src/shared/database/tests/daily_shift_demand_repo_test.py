@@ -547,3 +547,64 @@ class TestDailyShiftDemandRepository:
             self.repo.collection.find({"coverage_selector": "coverage_selector2"})
         )
         assert len(remaining_docs) == 1
+
+    def test_update_daily_shift_demands(self):
+        """Test updating multiple daily shift demands."""
+        demands = [
+            DailyShiftDemandSchema(
+                team="team1",
+                schedule="schedule1",
+                shift_demand="shift_demand1",
+                coverage_selector="coverage_selector1",
+                source_type=DSDSourceType.SHIFT_DEMAND.value,
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                shift="shift1",
+                count=5,
+            ),
+            DailyShiftDemandSchema(
+                team="team1",
+                schedule="schedule1",
+                shift_demand="shift_demand2",
+                coverage_selector="coverage_selector2",
+                source_type=DSDSourceType.SHIFT_DEMAND.value,
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
+                shift="shift2",
+                count=3,
+            ),
+        ]
+        created_demands = self.repo.create_many(demands)
+
+        updated_demands = [
+            DailyShiftDemand(
+                id=created_demands[0].id,
+                team_id="team1",
+                schedule_id="schedule1",
+                shift_demand_id="shift_demand1",
+                coverage_selector_id="coverage_selector1",
+                source_type=DSDSourceType.DIRECT_REQUIREMENT,
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
+                shift_id="shift1",
+                count=10,
+            ),
+            DailyShiftDemand(
+                id=created_demands[1].id,
+                team_id="team1",
+                schedule_id="schedule1",
+                shift_demand_id="shift_demand2",
+                coverage_selector_id="coverage_selector2",
+                source_type=DSDSourceType.DIRECT_REQUIREMENT,
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc).date(),
+                shift_id="shift2",
+                count=6,
+            ),
+        ]
+
+        results = self.repo.update_daily_shift_demands(updated_demands)
+
+        assert len(results) == 2
+        assert results[0].count == 10
+        assert results[1].count == 6
+
+        from_db = list(self.repo.collection.find({"team": "team1"}))
+        assert from_db[0]["count"] == 10
+        assert from_db[1]["count"] == 6
