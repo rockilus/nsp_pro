@@ -32,7 +32,7 @@ const LHSTab = ({
               }`}
               onClick={() => toggleTab(lhsTabContent.name)}
             >
-              {lhsTabContent.name}
+              {lhsTabContent.label}
             </button>
           ))}
         </div>

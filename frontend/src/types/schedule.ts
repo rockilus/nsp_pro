@@ -155,6 +155,7 @@ export type WorkTimeTableT = {
 
 export type LHSTabContentT = {
   name: string;
+  label: string;
   content: ReactNode | null;
 };
 

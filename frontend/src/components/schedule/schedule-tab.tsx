@@ -178,7 +178,7 @@ export default function ScheduleTab({
 
   const handleCellSelection = (selectedCell: AssignmentDataDictT) => {
     setSelectedCell(selectedCell);
-    setSelectedTab("Selected assignment");
+    setSelectedTab("selection");
   };
 
   //////////////////////////
@@ -485,8 +485,8 @@ export default function ScheduleTab({
       setIsLoadingLHS(true);
 
       if (selectedTeamId) {
-        console.log("fetchData useEffect started");
-        const startTime = dayjs();
+        // console.log("fetchData useEffect started");
+        // const startTime = dayjs();
 
         try {
           // Fetch schedules
@@ -526,14 +526,14 @@ export default function ScheduleTab({
 
           setIsLoadingLHS(false);
 
-          const endTime = dayjs();
-          console.log("fetchData useEffect ended");
-          console.log(
-            `fetchData useEffect took ${endTime.diff(
-              startTime,
-              "millisecond"
-            )} ms`
-          );
+          // const endTime = dayjs();
+          // console.log("fetchData useEffect ended");
+          // console.log(
+          //   `fetchData useEffect took ${endTime.diff(
+          //     startTime,
+          //     "millisecond"
+          //   )} ms`
+          // );
         } catch (error) {
           console.error("Error fetching data:", error);
         } finally {
@@ -576,11 +576,13 @@ export default function ScheduleTab({
 
   const lhsTabContent: LHSTabContentT[] = [
     {
-      name: t("breaches"),
+      name: "breaches",
+      label: t("breaches"),
       content: <BreachList lng={lng} breaches={breaches} />,
     },
     {
-      name: t("quick_staffing"),
+      name: "quick_staffing",
+      label: t("quick_staffing"),
       content: scheduleCampaign ? (
         <QuickStaffingTable
           lng={lng}
@@ -593,7 +595,8 @@ export default function ScheduleTab({
       ) : null,
     },
     {
-      name: t("quick_stats"),
+      name: "quick_stats",
+      label: t("quick_stats"),
       content: stats ? (
         <QuickStatsTable
           lng={lng}
@@ -606,7 +609,8 @@ export default function ScheduleTab({
       ) : null,
     },
     {
-      name: t("selection"),
+      name: "selection",
+      label: t("selection"),
       content: selectedCell ? (
         <AssignmentOptions
           lng={lng}
