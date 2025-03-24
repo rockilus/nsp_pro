@@ -340,23 +340,6 @@ files = [
 ]
 
 [[package]]
-name = "mongoengine"
-version = "0.29.1"
-description = "MongoEngine is a Python Object-Document Mapper for working with MongoDB."
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "mongoengine-0.29.1-py3-none-any.whl", hash = "sha256:9302ec407dd60f47f62cc07684d9f6cac87f1e93283c54203851788104d33df4"},
-    {file = "mongoengine-0.29.1.tar.gz", hash = "sha256:3b43abaf2d5f0b7d39efc2b7d9e78f4d4a5dc7ce92b9889ba81a5a9b8dee3cf3"},
-]
-
-[package.dependencies]
-pymongo = ">=3.4,<5.0"
-
-[package.extras]
-test = ["Pillow (>=7.0.0)", "blinker", "coverage", "pytest", "pytest-cov"]
-
-[[package]]
 name = "mypy"
 version = "1.15.0"
 description = "Optional static typing for Python"
@@ -908,4 +891,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<=3.13"
-content-hash = "cf900bdaa06db009aac11bafc75683480ad50323204037e1b5802d687c6263a4"
+content-hash = "6b8b67c69dc3aef6bfdc591df4fae33dd9a9b2120bd73bc0e22d58f32c3848f2"
