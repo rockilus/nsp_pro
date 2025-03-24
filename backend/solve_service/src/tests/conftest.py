@@ -2141,7 +2141,7 @@ def run_engine_solve() -> Callable[[InputsEngine], Outputs]:
 def benoit_case_250301(
     penalties_fix: Penalties, model_config_fix: ModelConfig
 ) -> EngineInputsAugmented:
-    ei_dict = load_json_from_file("test_data/250301_benoit_case.json")
+    ei_dict = load_json_from_file("test_data/250324_benoit_case.json")
     engine_inputs = EngineInputs.from_dict(ei_dict)
 
     model_config_copy = deepcopy(model_config_fix)
