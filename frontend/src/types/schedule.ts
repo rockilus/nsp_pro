@@ -27,6 +27,7 @@ export type DailyShiftDemandT = {
   teamId: string;
   scheduleId: string;
   shiftDemandId: string | null;
+  coverageSelectorId: string | null;
   sourceType: DSDSourceType;
   date: dayjs.Dayjs;
   shiftId: string;

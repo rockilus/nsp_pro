@@ -29,7 +29,6 @@ export default function DailyShiftDemandRow({
   periodDates,
   handleCreateDSD,
   handleUpdateDSD,
-  handleDeleteDSD,
 }: {
   lng: string;
   selectedDisplay: string;
@@ -41,7 +40,6 @@ export default function DailyShiftDemandRow({
   periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
-  handleDeleteDSD: (dsdId: string, teamId: string) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -113,7 +111,6 @@ export default function DailyShiftDemandRow({
             }
             handleCreateDSD={handleCreateDSD}
             handleUpdateDSD={handleUpdateDSD}
-            handleDeleteDSD={handleDeleteDSD}
           />
         );
       })}

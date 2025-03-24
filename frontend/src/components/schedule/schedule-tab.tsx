@@ -30,9 +30,7 @@ import { updateAssignment } from "../../app/lib/assignment";
 import { getStats } from "../../app/lib/stats";
 import {
   addDailyShiftDemand,
-  getDailyShiftDemands,
   updateDailyShiftDemand,
-  deleteDailyShiftDemand,
 } from "../../app/lib/daily-shift-demand";
 import { exportSchedule } from "../../app/lib/export-schedule";
 import { SSEManager } from "../../app/lib/sse";
@@ -250,14 +248,6 @@ export default function ScheduleTab({
         dsd.id === newDailyShiftDemand.id ? newDailyShiftDemand : dsd
       )
     );
-  };
-
-  const handleDeleteDSD = async (dsdId: string) => {
-    if (!selectedTeamId) {
-      throw new Error("No team selected");
-    }
-    await deleteDailyShiftDemand(dsdId, selectedTeamId);
-    setDailyShiftDemands(dailyShiftDemands.filter((dsd) => dsd.id !== dsdId));
   };
 
   //////////////////////////
@@ -706,7 +696,6 @@ export default function ScheduleTab({
               handleCellSelection={handleCellSelection}
               handleCreateDSD={handleCreateDSD}
               handleUpdateDSD={handleUpdateDSD}
-              handleDeleteDSD={handleDeleteDSD}
               handleExportSchedule={handleExportSchedule}
             />
           )}

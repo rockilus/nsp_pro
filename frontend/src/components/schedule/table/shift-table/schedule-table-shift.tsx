@@ -48,7 +48,6 @@ export default function ScheduleTableShift({
   handleCellSelection,
   handleCreateDSD,
   handleUpdateDSD,
-  handleDeleteDSD,
   handleExportSchedule,
 }: {
   lng: string;
@@ -66,7 +65,6 @@ export default function ScheduleTableShift({
   handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
-  handleDeleteDSD: (dsdId: string, teamId: string) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
   const shiftsForHeader = getRelevantShifts(
@@ -114,7 +112,6 @@ export default function ScheduleTableShift({
             periodDates={periodDates}
             handleCreateDSD={handleCreateDSD}
             handleUpdateDSD={handleUpdateDSD}
-            handleDeleteDSD={handleDeleteDSD}
           />
         </TableHead>
         <TableBody>
