@@ -50,9 +50,12 @@ from routes.breach_routes import core_to_msg_breach
 from routes.coverage_selector_routes import core_to_msg_coverage_selector
 from routes.request_routes import core_to_msg_request_augmented
 from routes.shift_routes import core_to_msg_shift_and_attributes
-from scripts.setup_database import assignment_db, breach_db, schedule_db
+from scripts.setup_database import schedule_db
 from services.schedule_services import (
     build_worktime_data,
+)
+from services.schedule_services import delete_schedule as delete_schedule_service
+from services.schedule_services import (
     get_schedule_campaign,
 )
 from services.schedule_services import solve_schedule as solve_schedule_service
@@ -228,9 +231,7 @@ async def delete_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to delete a schedule",
             )
-        assignment_db.delete_assignments_by_schedule_id(schedule_id)
-        breach_db.delete_breaches_by_schedule_id(schedule_id)
-        schedule_db.delete_schedule(schedule_id)
+        delete_schedule_service(schedule_id)
     except Exception as e:
         log_info("Failed to delete schedule")
         handle_routes_errors(e)
@@ -284,6 +285,7 @@ def core_to_msg_schedule(schedule: Schedule) -> ScheduleMessage:
     data["end_date"] = datetime.combine(
         schedule.end_date, time.min, timezone.utc
     ).timestamp()
+    data["last_modified_dates"] = schedule.last_modified_dates.timestamp()
     data["solve_details"] = (
         core_to_msg_solve_details(schedule.solve_details)
         if schedule.solve_details
@@ -296,6 +298,9 @@ def core_to_msg_schedule(schedule: Schedule) -> ScheduleMessage:
     data["quick_staffings"] = [
         core_to_msg_quick_staffing(qs) for qs in schedule.quick_staffings
     ]
+    data["last_updated_dsds"] = (
+        schedule.last_updated_dsds.timestamp() if schedule.last_updated_dsds else None
+    )
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ScheduleMessage)
     try:
@@ -387,6 +392,9 @@ def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake["end_date"] = datetime.fromtimestamp(
         data_snake["end_date"], timezone.utc
     ).date()
+    data_snake["last_modified_dates"] = datetime.fromtimestamp(
+        data_snake["last_modified_dates"], timezone.utc
+    )
     if msg.solveDetails:
         data_snake["solve_details"] = msg_to_core_solve_details(msg.solveDetails)
     data_snake["solve_status"] = ScheduleSolveStatus(data_snake["solve_status"])
@@ -398,6 +406,10 @@ def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
     data_snake["quick_staffings"] = [
         msg_to_core_quick_staffing(qs) for qs in msg.quickStaffings
     ]
+    if msg.lastUpdatedDsds:
+        data_snake["last_updated_dsds"] = datetime.fromtimestamp(
+            data_snake["last_updated_dsds"], timezone.utc
+        )
     try:
         schedule = Schedule(**data_snake)
     except Exception as e:

@@ -95,6 +95,7 @@ export default function ShiftDemandQuickAdd({
       coverageId: selectedCoverage.id,
       shiftId,
       dayIndex: index,
+      lastModified: dayjs.utc().unix(),
     }));
     const shiftDemandToDeleteIds = excessIndexes
       .map(

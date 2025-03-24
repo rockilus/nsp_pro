@@ -10,6 +10,7 @@ class ShiftDemand:
     day_index: int
     shift_id: str
     coverage_id: str
+    last_modified: datetime
 
     def __post_init__(self):
         if not 0 <= self.day_index <= 6:
@@ -18,8 +19,7 @@ class ShiftDemand:
 
 class DSDSourceType(Enum):
     SHIFT_DEMAND = 0
-    SHIFT_DEMAND_MODIFY = 1
-    SCHEDULE = 2
+    DIRECT_REQUIREMENT = 1
 
 
 @dataclass
@@ -28,6 +28,7 @@ class DailyShiftDemand:
     team_id: str
     schedule_id: str
     shift_demand_id: str | None
+    coverage_selector_id: str | None
     source_type: DSDSourceType
     date: date
     shift_id: str
@@ -49,6 +50,7 @@ class DailyShiftDemand:
             team_id=data["team_id"],
             schedule_id=data["schedule_id"],
             shift_demand_id=data["shift_demand_id"],
+            coverage_selector_id=data["coverage_selector_id"],
             source_type=DSDSourceType(data["source_type"]),
             date=datetime.fromtimestamp(data["date"], tz=timezone.utc).date(),
             shift_id=data["shift_id"],
@@ -71,3 +73,4 @@ class CoverageSelector:
     full_period: bool
     start_date: date
     end_date: date
+    last_modified: datetime

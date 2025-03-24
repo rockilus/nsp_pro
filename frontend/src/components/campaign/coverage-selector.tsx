@@ -214,6 +214,7 @@ export default function CoverageSelector({
               startDate: schedule.startDate,
               endDate: schedule.endDate,
               coverageId: null,
+              lastModified: dayjs.utc().unix(),
             })
           }
         >

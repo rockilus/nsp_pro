@@ -190,6 +190,7 @@ export default function WeeklyCalendar({
                       dayIndex: index,
                       shiftId: "",
                       coverageId: coverage.id,
+                      lastModified: dayjs.utc().unix(),
                     }}
                     shifts={shifts}
                     handleAddShiftDemands={handleAddShiftDemands}

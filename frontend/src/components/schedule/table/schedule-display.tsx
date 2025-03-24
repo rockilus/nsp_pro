@@ -36,7 +36,6 @@ export default function ScheduleDisplay({
   handleCellSelection,
   handleCreateDSD,
   handleUpdateDSD,
-  handleDeleteDSD,
   handleExportSchedule,
 }: {
   lng: string;
@@ -54,7 +53,6 @@ export default function ScheduleDisplay({
   handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
-  handleDeleteDSD: (dsdId: string, teamId: string) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
   const scheduleDisplays: { [key: string]: JSX.Element } = {
@@ -75,7 +73,6 @@ export default function ScheduleDisplay({
         handleCellSelection={handleCellSelection}
         handleCreateDSD={handleCreateDSD}
         handleUpdateDSD={handleUpdateDSD}
-        handleDeleteDSD={handleDeleteDSD}
         handleExportSchedule={handleExportSchedule}
       />
     ),
@@ -96,7 +93,6 @@ export default function ScheduleDisplay({
         handleCellSelection={handleCellSelection}
         handleCreateDSD={handleCreateDSD}
         handleUpdateDSD={handleUpdateDSD}
-        handleDeleteDSD={handleDeleteDSD}
         handleExportSchedule={handleExportSchedule}
       />
     ),

@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from datetime import datetime, timezone
 from typing import List
 
 import humps
@@ -14,10 +15,19 @@ from errors import (
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
+from integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
 from integrations.authorization import authz_check
 from routes.api_model import ShiftDemandMessage
 from scripts.setup_database import coverage_db, shift_demand_db
+from services.shift_demand_services import (
+    delete_shift_demand as delete_shift_demand_service,
+)
+from services.shift_demand_services import (
+    update_shift_demand as update_shift_demand_service,
+)
 
 router = APIRouter()
 
@@ -79,7 +89,7 @@ async def update_shift_demand(
                 "You do not have permission to update a shift demand",
             )
         sd_data = msg_to_core_shift_demand(req)
-        shift_demand = shift_demand_db.update_shift_demand(sd_data)
+        shift_demand = update_shift_demand_service(sd_data)
         response = core_to_msg_shift_demand(shift_demand)
     except Exception as e:
         log_info("Failed to update shift demand")
@@ -98,7 +108,7 @@ async def delete_shift_demands(
     ):
         raise NotAuthorizedError("You do not have permission to delete a shift demand")
     for shift_demand_id in shift_demand_ids:
-        shift_demand_db.delete_shift_demand(shift_demand_id)
+        delete_shift_demand_service(shift_demand_id)
     return {"message": "Shift demand deleted successfully"}
 
 
@@ -110,6 +120,7 @@ def core_to_msg_shift_demand(shift_demand: ShiftDemand) -> ShiftDemandMessage:
     except Exception as e:
         log_info("Failed to convert ShiftDemand to dictionary")
         raise MessageTypeError(str(e)) from e
+    data["last_modified"] = shift_demand.last_modified.timestamp()
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ShiftDemandMessage)
     try:
@@ -123,6 +134,9 @@ def core_to_msg_shift_demand(shift_demand: ShiftDemand) -> ShiftDemandMessage:
 # message to core
 def msg_to_core_shift_demand(msg: ShiftDemandMessage) -> ShiftDemand:
     data_snake = humps.decamelize(msg.model_dump())
+    data_snake["last_modified"] = datetime.fromtimestamp(
+        data_snake["last_modified"], tz=timezone.utc
+    )
     try:
         shift_demand = ShiftDemand(**data_snake)
     except Exception as e:

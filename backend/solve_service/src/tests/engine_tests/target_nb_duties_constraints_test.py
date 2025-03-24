@@ -27,7 +27,9 @@ from shared.schemas import (
 )
 
 from core_to_engine_service.build_periods import build_periods_monthly
-from core_to_engine_service.calculate_worker_nb_duties import calculate_worker_nb_duties
+from core_to_engine_service.calculate_worker_nb_duties import (
+    calculate_worker_nb_duties,
+)
 from engine import Inputs as InputsEngine
 from engine import Outputs, ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches_model import (
@@ -52,6 +54,8 @@ class TestTargetWorkTimeConstraints:
             missing_coverage_dates=[],
             constraint_build_ids=[],
             quick_staffings=[],
+            last_modified_dates=datetime.now(),
+            last_updated_dsds=None,
         )
 
         # 16 workers
@@ -307,6 +311,7 @@ class TestTargetWorkTimeConstraints:
                         date=current_date,
                         shift_id=shift.id,
                         count=1,
+                        coverage_selector_id=None,
                     )
                 )
                 current_date += timedelta(days=1)

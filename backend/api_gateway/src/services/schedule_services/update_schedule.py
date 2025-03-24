@@ -23,25 +23,25 @@ from scripts.setup_database import (
 
 
 def update_schedule(
-    schedule: Schedule,
+    schedule_new: Schedule,
 ) -> Tuple[Schedule, List[CoverageSelector]]:
-    schedule_current = schedule_db.get_schedule_by_id(schedule.id)
-    schedule_updated = schedule_db.update_schedule(schedule)
+    schedule_old = schedule_db.get_schedule_by_id(schedule_new.id)
     css_updated: List[CoverageSelector] = []
     if (
-        schedule_current.start_date != schedule.start_date
-        or schedule_current.end_date != schedule.end_date
+        schedule_old.start_date != schedule_new.start_date
+        or schedule_old.end_date != schedule_new.end_date
     ):
+        schedule_new.last_modified_dates = datetime.now(timezone.utc)
         css_full_period = (
             coverage_selector_db.get_coverage_selectors_by_schedule_id_full_period(
-                schedule.id
+                schedule_new.id
             )
         )
         for cs in css_full_period:
-            cs.start_date = schedule.start_date
-            cs.end_date = schedule.end_date
+            cs.start_date = schedule_new.start_date
+            cs.end_date = schedule_new.end_date
         css_updated = coverage_selector_db.update_coverage_selectors(css_full_period)
-    return schedule_updated, css_updated
+    return schedule_db.update_schedule(schedule_new), css_updated
 
 
 def update_schedule_solve_details_failure(

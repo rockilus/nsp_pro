@@ -245,6 +245,7 @@ class TestBuildRequests:
                 date=d,
                 shift_id=target_shift.id,
                 count=1,
+                coverage_selector_id=None,
             )
             for d in dates_campaign
         ]
