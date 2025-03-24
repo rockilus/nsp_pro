@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import List
 
 from shared.schemas import Schedule, ScheduleSolveStatus, ScheduleStatus
@@ -27,11 +27,13 @@ def get_schedule_campaign(schedules: List[Schedule], team_id: str) -> Schedule:
             team_id=team_id,
             start_date=start_date,
             end_date=end_date,
+            last_modified_dates=datetime.now(timezone.utc),
             solve_details=None,
             solve_status=ScheduleSolveStatus.NOT_SOLVED,
             status=ScheduleStatus.CAMPAIGN,
             missing_coverage_dates=[],
             constraint_build_ids=[cb.id for cb in cbs],
             quick_staffings=[],
+            last_updated_dsds=None,
         )
     )

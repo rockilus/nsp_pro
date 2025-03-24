@@ -1,20 +1,8 @@
-# from shared.database import setup_database
-from shared.database_pymongo_str_id.database_collections import (
-    DatabaseCollections,
-)
+from shared.database.database_collections import DatabaseCollections
 
 from utils.env_config import DB_URI
 
-# from shared.database_pymongo_str_id.database_collections import (
-#     DatabaseCollections,
-# )
-# from shared.database_pymongo_str_id.database_collections import (
-#     DatabaseCollections,
-# )
-
-
 # Set up the database and initialize collections
-# collections = setup_database(DB_URI)
 collections = DatabaseCollections(DB_URI, "test")
 
 

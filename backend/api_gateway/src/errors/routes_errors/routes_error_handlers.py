@@ -1,11 +1,4 @@
 from fastapi import HTTPException
-from shared.database.errors import (
-    DBConnectionError,
-    DocumentDoesNotExistError,
-    DocumentHasExtraFieldError,
-    DocumentMultipleFoundError,
-    DocumentNotUniqueError,
-)
 from shared.schemas.errors import SchemaTypeError, SchemaValueError
 
 from errors.authn_errors.authn_errors import (
@@ -39,15 +32,6 @@ def handle_routes_errors(error: Exception):
             status_code=403,
             detail=error.message,
         )
-    if isinstance(error, DocumentDoesNotExistError):
-        raise HTTPException(
-            status_code=404, detail="the requested resource could not be found"
-        )
-    if isinstance(error, DocumentNotUniqueError):
-        raise HTTPException(
-            status_code=409,
-            detail="the provided value already exists, please use a different value",
-        )
     if isinstance(error, SchemaValueError):
         raise HTTPException(
             status_code=422,
@@ -71,9 +55,6 @@ def handle_routes_errors(error: Exception):
             AuthzApiErrorError,
             AuthzContextError,
             AuthzKeyMissingKeyError,
-            DBConnectionError,
-            DocumentHasExtraFieldError,
-            DocumentMultipleFoundError,
             MessageTypeError,
             MessageValueError,
             MessageValidationError,

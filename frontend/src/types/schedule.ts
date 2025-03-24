@@ -19,8 +19,7 @@ export type AssignmentT = {
 // Daily Shift Demand
 export enum DSDSourceType {
   SHIFT_DEMAND = 0,
-  SHIFT_DEMAND_MODIFY = 1,
-  SCHEDULE = 2,
+  DIRECT_REQUIREMENT = 1,
 }
 
 export type DailyShiftDemandT = {
@@ -28,6 +27,7 @@ export type DailyShiftDemandT = {
   teamId: string;
   scheduleId: string;
   shiftDemandId: string | null;
+  coverageSelectorId: string | null;
   sourceType: DSDSourceType;
   date: dayjs.Dayjs;
   shiftId: string;
@@ -102,12 +102,14 @@ export type ScheduleT = {
   teamId: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
+  lastModifiedDates: number;
   solveDetails: SolveDetailsT | null;
   solveStatus: ScheduleSolveStatus;
   status: ScheduleStatus;
   missingCoverageDates: dayjs.Dayjs[];
   constraintBuildIds: string[];
   quickStaffings: QuickStaffingT[];
+  lastUpdatedDsds: number | null;
 };
 
 // Solution

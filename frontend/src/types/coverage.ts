@@ -7,6 +7,7 @@ export type ShiftDemandT = {
   dayIndex: number; // from 0 to 6
   shiftId: string;
   coverageId: string;
+  lastModified: number;
 };
 
 export type CoverageT = {
@@ -24,6 +25,7 @@ export type ShiftDemandCalendarT = {
   startTime: dayjs.Dayjs;
   endTime: dayjs.Dayjs;
   coverageId: string;
+  lastModified: number;
 };
 
 export type EventT = {

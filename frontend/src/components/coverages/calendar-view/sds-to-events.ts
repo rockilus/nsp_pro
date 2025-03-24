@@ -93,6 +93,7 @@ const shiftDemandCalendarToShiftDemand = (
     dayIndex: shiftDemand.dayIndex,
     shiftId: shiftDemand.shift.id,
     coverageId: shiftDemand.coverageId,
+    lastModified: shiftDemand.lastModified,
   };
 };
 

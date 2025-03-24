@@ -1,11 +1,6 @@
 from typing import List, Tuple
 
-# from shared.database import DatabaseCollections
-from shared.database_pymongo_str_id.database_collections import (
-    DatabaseCollections,
-)
-
-# from shared.database_pymongo.database_collections import DatabaseCollections
+from shared.database.database_collections import DatabaseCollections
 from shared.schemas import (
     Attribute,
     Dimension,

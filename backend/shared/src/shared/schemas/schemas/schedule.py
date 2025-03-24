@@ -149,18 +149,21 @@ class SolveDetails:
         )
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class Schedule:
     id: str
     team_id: str
     start_date: date
     end_date: date
+    last_modified_dates: datetime
     solve_details: SolveDetails | None
     solve_status: ScheduleSolveStatus
     status: ScheduleStatus
     missing_coverage_dates: List[date]
     constraint_build_ids: List[str]
     quick_staffings: List[QuickStaffing]
+    last_updated_dsds: datetime | None
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -170,6 +173,7 @@ class Schedule:
         out["end_date"] = datetime.combine(
             self.end_date, time.min, tzinfo=timezone.utc
         ).timestamp()
+        out["last_modified_dates"] = self.last_modified_dates.timestamp()
         if self.solve_details:
             out["solve_details"] = self.solve_details.to_dict()
         out["solve_status"] = self.solve_status.value
@@ -178,6 +182,11 @@ class Schedule:
             datetime.combine(dt, time.min, tzinfo=timezone.utc).timestamp()
             for dt in self.missing_coverage_dates
         ]
+        out["last_updated_dsds"] = (
+            self.last_updated_dsds.timestamp()
+            if self.last_updated_dsds is not None
+            else None
+        )
         return out
 
     @classmethod
@@ -187,6 +196,9 @@ class Schedule:
             team_id=data["team_id"],
             start_date=datetime.fromtimestamp(data["start_date"], timezone.utc).date(),
             end_date=datetime.fromtimestamp(data["end_date"], timezone.utc).date(),
+            last_modified_dates=datetime.fromtimestamp(
+                data["last_modified_dates"], timezone.utc
+            ),
             solve_details=(
                 SolveDetails.from_dict(data["solve_details"])
                 if data.get("solve_details", None) is not None
@@ -200,6 +212,11 @@ class Schedule:
             ],
             constraint_build_ids=data["constraint_build_ids"],
             quick_staffings=[QuickStaffing(**qs) for qs in data["quick_staffings"]],
+            last_updated_dsds=(
+                datetime.fromtimestamp(data["last_updated_dsds"], timezone.utc)
+                if data.get("last_updated_dsds", None) is not None
+                else None
+            ),
         )
 
 

@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from shared.schemas import (
@@ -92,6 +92,8 @@ class TestBuildDates:
             missing_coverage_dates=[],
             constraint_build_ids=[],
             quick_staffings=[],
+            last_modified_dates=datetime.now(timezone.utc),
+            last_updated_dsds=None,
         )
         fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
 

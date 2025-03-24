@@ -7,4 +7,5 @@ export type CoverageSelectorT = {
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
   coverageId: string | null;
+  lastModified: number;
 };

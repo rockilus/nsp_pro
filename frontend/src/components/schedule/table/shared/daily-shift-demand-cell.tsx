@@ -30,7 +30,6 @@ export default function DailyShiftDemandCell({
   counts,
   handleCreateDSD,
   handleUpdateDSD,
-  handleDeleteDSD,
 }: {
   lng: string;
   selectedDisplay: string;
@@ -53,7 +52,6 @@ export default function DailyShiftDemandCell({
   };
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
-  handleDeleteDSD: (dsdId: string, teamId: string) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -80,36 +78,42 @@ export default function DailyShiftDemandCell({
     ) {
       return;
     }
-    const dsdSchedule = dailyShiftDemands.find(
+    const dsdShiftDemand = dailyShiftDemands.find(
       (dsd) =>
-        dsd.shiftId === shift.id && dsd.sourceType === DSDSourceType.SCHEDULE
+        dsd.shiftId === shift.id &&
+        dsd.sourceType === DSDSourceType.SHIFT_DEMAND &&
+        dsd.count > 0
     );
-    if (dsdSchedule) {
-      if (dsdSchedule.count > 1) {
-        handleUpdateDSD({
-          ...dsdSchedule,
-          count: dsdSchedule.count - 1,
-        });
-      } else {
-        handleDeleteDSD(dsdSchedule.id, teamId);
-      }
+    const dsdDirectReq = dailyShiftDemands.find(
+      (dsd) =>
+        dsd.shiftId === shift.id &&
+        dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
+    );
+    const dsdIsGreaterThanZero =
+      (dsdShiftDemand ? dsdShiftDemand.count : 0) +
+        (dsdDirectReq ? dsdDirectReq.count : 0) >
+      0;
+    if (!dsdIsGreaterThanZero) {
+      return;
+    }
+    if (dsdDirectReq) {
+      handleUpdateDSD({
+        ...dsdDirectReq,
+        count: dsdDirectReq.count - 1,
+      });
     } else {
-      const dsdShiftDemand = dailyShiftDemands.find(
-        (dsd) =>
-          dsd.shiftId === shift.id &&
-          [
-            DSDSourceType.SHIFT_DEMAND,
-            DSDSourceType.SHIFT_DEMAND_MODIFY,
-          ].includes(dsd.sourceType) &&
-          dsd.count > 0
-      );
-      if (dsdShiftDemand) {
-        handleUpdateDSD({
-          ...dsdShiftDemand,
-          sourceType: DSDSourceType.SHIFT_DEMAND_MODIFY,
-          count: dsdShiftDemand.count - 1,
-        });
-      }
+      const newDsd: DailyShiftDemandT = {
+        id: "",
+        teamId: teamId,
+        scheduleId: scheduleCampaign.id,
+        shiftDemandId: null,
+        coverageSelectorId: null,
+        sourceType: DSDSourceType.DIRECT_REQUIREMENT,
+        date: periodDate.date,
+        shiftId: shift.id,
+        count: -1,
+      };
+      handleCreateDSD(newDsd);
     }
   };
 
@@ -120,43 +124,29 @@ export default function DailyShiftDemandCell({
     ) {
       return;
     }
-    const dsdShiftDemand = dailyShiftDemands.find(
+    const dsdDirectReq = dailyShiftDemands.find(
       (dsd) =>
         dsd.shiftId === shift.id &&
-        [
-          DSDSourceType.SHIFT_DEMAND,
-          DSDSourceType.SHIFT_DEMAND_MODIFY,
-        ].includes(dsd.sourceType) &&
-        dsd.count === 0
+        dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
     );
-    if (dsdShiftDemand) {
+    if (dsdDirectReq) {
       handleUpdateDSD({
-        ...dsdShiftDemand,
-        sourceType: DSDSourceType.SHIFT_DEMAND,
-        count: dsdShiftDemand.count + 1,
+        ...dsdDirectReq,
+        count: dsdDirectReq.count + 1,
       });
     } else {
-      const dsdSchedule = dailyShiftDemands.find(
-        (dsd) =>
-          dsd.shiftId === shift.id && dsd.sourceType === DSDSourceType.SCHEDULE
-      );
-      if (dsdSchedule) {
-        handleUpdateDSD({
-          ...dsdSchedule,
-          count: dsdSchedule.count + 1,
-        });
-      } else {
-        handleCreateDSD({
-          id: "",
-          teamId: teamId,
-          scheduleId: scheduleCampaign.id,
-          shiftDemandId: null,
-          sourceType: DSDSourceType.SCHEDULE,
-          date: periodDate.date,
-          shiftId: shift.id,
-          count: 1,
-        });
-      }
+      const newDsd: DailyShiftDemandT = {
+        id: "",
+        teamId: teamId,
+        scheduleId: scheduleCampaign.id,
+        shiftDemandId: null,
+        coverageSelectorId: null,
+        sourceType: DSDSourceType.DIRECT_REQUIREMENT,
+        date: periodDate.date,
+        shiftId: shift.id,
+        count: 1,
+      };
+      handleCreateDSD(newDsd);
     }
   };
 
