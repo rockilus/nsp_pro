@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shared"
-version = "0.1.145"
+version = "0.1.146"
 description = ""
 authors = ["Felipe Kharaba"]
 readme = "README.md"
@@ -10,7 +10,7 @@ packages = [
 include = ["py.typed"]
 
 [tool.poetry.dependencies]
-python = ">=3.12,<=3.13"
+python = ">=3.12,<=3.14"
 loguru = "^0.7.2"
 mongo-types = "^0.15.1"
 mypy = "^1.13.0"

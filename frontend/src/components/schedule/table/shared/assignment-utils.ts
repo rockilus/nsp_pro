@@ -9,7 +9,6 @@ import { WorkerT } from "../../../../types/worker";
 import { ShiftT, ShiftRestType } from "../../../../types/shift";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
-import { log } from "node:console";
 
 export const generateOwnerIdDateKey = (
   ownerId: string,
@@ -26,14 +25,6 @@ export const getAssignmentsDataByOwnerAndDate = (
   breaches: BreachT[],
   requests: RequestT[]
 ): AssignmentDictT => {
-  const startTime = dayjs();
-  console.log("Start getAssignmentsDataByOwnerAndDate");
-  console.log("Number of assignments: ", assignments.length);
-  console.log("Number of workers: ", workers.length);
-  console.log("Number of shifts: ", shifts.length);
-  console.log("Number of breaches: ", breaches.length);
-  console.log("Number of requests: ", requests.length);
-
   const assignmentDict: AssignmentDictT = {};
 
   // Precompute a map of breaches by shiftId and date
@@ -134,12 +125,6 @@ export const getAssignmentsDataByOwnerAndDate = (
       requests: associatedRequests,
     });
   });
-
-  const endTime = dayjs();
-  console.log(
-    "End getAssignmentsDataByOwnerAndDate",
-    endTime.diff(startTime, "ms")
-  );
 
   return assignmentDict;
 };
