@@ -27,6 +27,28 @@ export const getAssignmentsDataByOwnerAndDate = (
 ): AssignmentDictT => {
   const assignmentDict: AssignmentDictT = {};
 
+  // Precompute a map of breaches by shiftId and date
+  const breachMap = new Map<string, BreachT[]>();
+  breaches.forEach((breach) => {
+    breach.variables.forEach((variable) => {
+      const key = `${variable.shiftId}-${variable.date.format("YYYY-MM-DD")}`;
+      if (!breachMap.has(key)) {
+        breachMap.set(key, []);
+      }
+      breachMap.get(key)!.push(breach);
+    });
+  });
+
+  // Precompute a map of requests by shiftId and date range
+  const requestMap = new Map<string, RequestT[]>();
+  requests.forEach((request) => {
+    const key = request.shiftId;
+    if (!requestMap.has(key)) {
+      requestMap.set(key, []);
+    }
+    requestMap.get(key)!.push(request);
+  });
+
   assignments.forEach((assignment) => {
     const worker = workers.find((w) => w.id === assignment.workerId);
     const shift = shifts.find((s) => s.id === assignment.shiftId);
@@ -36,17 +58,28 @@ export const getAssignmentsDataByOwnerAndDate = (
       ownerType === AttributeOwnerType.WORKER ? worker.id : shift.id;
     const ownerDateKey = generateOwnerIdDateKey(ownerId, assignment.date);
 
-    const associatedBreaches = breaches.filter((breach) =>
-      breach.variables.some(
-        (variable) =>
-          variable.shiftId === shift.id &&
-          variable.date.isSame(assignment.date, "day")
-      )
-    );
+    // const associatedBreaches = breaches.filter((breach) =>
+    //   breach.variables.some(
+    //     (variable) =>
+    //       variable.shiftId === shift.id &&
+    //       variable.date.isSame(assignment.date, "day")
+    //   )
+    // );
 
-    const associatedRequests = requests.filter(
+    // const associatedRequests = requests.filter(
+    //   (request) =>
+    //     request.shiftId === shift.id &&
+    //     request.startDate.isSameOrBefore(assignment.date, "day") &&
+    //     request.endDate.isSameOrAfter(assignment.date, "day")
+    // );
+
+    // Get associated breaches using the precomputed map
+    const breachKey = `${shift.id}-${assignment.date.format("YYYY-MM-DD")}`;
+    const associatedBreaches = breachMap.get(breachKey) || [];
+
+    // Get associated requests using the precomputed map
+    const associatedRequests = (requestMap.get(shift.id) || []).filter(
       (request) =>
-        request.shiftId === shift.id &&
         request.startDate.isSameOrBefore(assignment.date, "day") &&
         request.endDate.isSameOrAfter(assignment.date, "day")
     );
