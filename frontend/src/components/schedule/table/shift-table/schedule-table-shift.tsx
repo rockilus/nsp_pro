@@ -15,7 +15,7 @@ import ShiftTableRow from "./shift-table-row";
 import { getAssignmentsDataByOwnerAndDate } from "../shared/assignment-utils";
 import { getRelevantShifts } from "./shift-table-utils";
 // Types
-import { ShiftT, ShiftType } from "../../../../types/shift";
+import { ShiftT } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
 import {
   AssignmentT,
@@ -67,11 +67,7 @@ export default function ScheduleTableShift({
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {
-  const shiftsForHeader = getRelevantShifts(
-    shifts,
-    dailyShiftDemands,
-    assignments
-  );
+  const shiftsForHeader = getRelevantShifts(shifts, assignments);
   const shiftIdDateToAssignData = getAssignmentsDataByOwnerAndDate(
     AttributeOwnerType.SHIFT,
     assignments,

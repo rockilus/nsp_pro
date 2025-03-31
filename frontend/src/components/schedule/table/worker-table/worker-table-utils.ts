@@ -9,7 +9,9 @@ export const getRelevantWorkers = (
   const workerIdsInAssignments = new Set(assignments.map((a) => a.workerId));
 
   if (!schedule) {
-    return workers.filter((worker) => workerIdsInAssignments.has(worker.id));
+    return workers.filter(
+      (worker) => workerIdsInAssignments.has(worker.id) || !worker.deleted
+    );
   }
 
   const relevantWorkers = workers.filter(
