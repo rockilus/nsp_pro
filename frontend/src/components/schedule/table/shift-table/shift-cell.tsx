@@ -3,6 +3,8 @@ import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // MUI
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import IconButton from "@mui/material/IconButton";
 import TableCell from "@mui/material/TableCell";
 // Components
 import { generateOwnerIdDateKey } from "../shared/assignment-utils";
@@ -103,13 +105,32 @@ export default function ShiftCell({
 
   return (
     <TableCell
+      className="cell-hover-container"
       sx={{
         align: "center",
         borderRight: "1px solid #e0e0e07d",
         padding: 0,
+        position: "relative",
       }}
     >
       <CellContent />
+      <IconButton
+        className="add-icon-button"
+        sx={{
+          position: "absolute",
+          bottom: -12, // Adjust spacing from the bottom
+          right: "50%",
+          transform: "translateX(50%)",
+          opacity: 0,
+          transition: "opacity 0.3s",
+          padding: 0,
+          zIndex: 10,
+          pointerEvents: "auto",
+        }}
+        onClick={() => console.log("Add button clicked")}
+      >
+        <AddCircleIcon />
+      </IconButton>
     </TableCell>
   );
 }

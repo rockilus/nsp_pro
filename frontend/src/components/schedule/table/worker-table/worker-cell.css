@@ -54,3 +54,8 @@
   font-weight: 300;
   color: #616161;
 }
+
+.cell-hover-container:hover .add-icon-button,
+.add-icon-button:hover {
+  opacity: 0.5;
+}
