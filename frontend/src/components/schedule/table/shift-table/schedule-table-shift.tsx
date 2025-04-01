@@ -49,6 +49,7 @@ export default function ScheduleTableShift({
   handleCreateDSD,
   handleUpdateDSD,
   handleExportSchedule,
+  handleOpenCreateAssignment,
 }: {
   lng: string;
   teamId: string;
@@ -66,6 +67,12 @@ export default function ScheduleTableShift({
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
+  handleOpenCreateAssignment: (
+    scheduleId: string,
+    worker: WorkerT | null,
+    shift: ShiftT | null,
+    date: dayjs.Dayjs | null
+  ) => void;
 }) {
   const shiftsForHeader = getRelevantShifts(shifts, assignments);
   const shiftIdDateToAssignData = getAssignmentsDataByOwnerAndDate(
@@ -122,6 +129,7 @@ export default function ScheduleTableShift({
               shiftIdDateToAssignData={shiftIdDateToAssignData}
               showBreaches={showBreaches}
               handleCellSelection={handleCellSelection}
+              handleOpenCreateAssignment={handleOpenCreateAssignment}
             />
           ))}
         </TableBody>

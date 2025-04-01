@@ -33,6 +33,7 @@ export default function ShiftCell({
   shiftIdDateToAssignData,
   showBreaches,
   handleCellSelection,
+  handleOpenCreateAssignment,
 }: {
   periodDate: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null };
   scheduleCampaign: ScheduleT | null;
@@ -40,6 +41,12 @@ export default function ShiftCell({
   shiftIdDateToAssignData: AssignmentDictT;
   showBreaches: boolean;
   handleCellSelection: (seletedCell: AssignmentDataDictT) => void;
+  handleOpenCreateAssignment: (
+    scheduleId: string,
+    worker: WorkerT | null,
+    shift: ShiftT | null,
+    date: dayjs.Dayjs | null
+  ) => void;
 }) {
   const AssignmentDiv = ({
     aDataDict,
@@ -127,7 +134,14 @@ export default function ShiftCell({
           zIndex: 10,
           pointerEvents: "auto",
         }}
-        onClick={() => console.log("Add button clicked")}
+        onClick={() =>
+          handleOpenCreateAssignment(
+            scheduleCampaign?.id || "",
+            null,
+            shift,
+            periodDate.date
+          )
+        }
       >
         <AddCircleIcon />
       </IconButton>

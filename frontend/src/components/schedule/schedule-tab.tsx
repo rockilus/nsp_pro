@@ -14,6 +14,7 @@ import QuickStatsTable from "./lhs-tabs/quick-stats";
 import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
+import CreateAssignment from "./lhs-tabs/create-assignment";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
@@ -26,7 +27,11 @@ import {
   getScheduleAssignmentsData,
   getScheduleLHSData,
 } from "../../app/lib/schedule";
-import { updateAssignment } from "../../app/lib/assignment";
+import {
+  addAssignment,
+  updateAssignment,
+  deleteAssignment,
+} from "../../app/lib/assignment";
 import { getStats } from "../../app/lib/stats";
 import {
   addDailyShiftDemand,
@@ -164,6 +169,12 @@ export default function ScheduleTab({
     );
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
+  const [createAssignmentData, setCreateAssignmentData] = useState<{
+    scheduleId: string;
+    worker: WorkerT | null;
+    shift: ShiftT | null;
+    date: dayjs.Dayjs | null;
+  } | null>(null);
 
   const [selectedQuickStatsTimeFrame, setSelectedQuickStatsTimeFrame] =
     useState<StatsTimeFrameOptions>(StatsTimeFrameOptions.CAMPAING);
@@ -254,6 +265,29 @@ export default function ScheduleTab({
   // Assignment Actions
   //////////////////////////
 
+  const handleOpenCreateAssignment = (
+    scheduleId: string,
+    worker: WorkerT | null,
+    shift: ShiftT | null,
+    date: dayjs.Dayjs | null
+  ) => {
+    setCreateAssignmentData({ scheduleId, worker, shift, date });
+    setSelectedTab("create_assignment");
+  };
+
+  const handleCloseCreateAssignment = () => {
+    setCreateAssignmentData(null);
+    setSelectedTab(null);
+  };
+
+  const handleCreateAssignment = async (assignment: AssignmentT) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    const newAssignment = await addAssignment(assignment);
+    setAssignments([...assignments, newAssignment]);
+  };
+
   const handleUpdateAssignment = async (assignment: AssignmentT) => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
@@ -262,6 +296,14 @@ export default function ScheduleTab({
     setAssignments(
       assignments.map((a) => (a.id === newAssignment.id ? newAssignment : a))
     );
+  };
+
+  const handleDeleteAssignment = async (assignmentId: string) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    await deleteAssignment(assignmentId, selectedTeamId);
+    setAssignments(assignments.filter((a) => a.id !== assignmentId));
   };
 
   const handleToday = async () => {
@@ -628,6 +670,24 @@ export default function ScheduleTab({
         />
       ) : null,
     },
+    {
+      name: "create_assignment",
+      label: "",
+      content: createAssignmentData ? (
+        <CreateAssignment
+          lng={lng}
+          teamId={selectedTeamId as string}
+          scheduleId={createAssignmentData.scheduleId}
+          workerSelected={createAssignmentData.worker}
+          dateSelected={createAssignmentData.date}
+          shiftSelected={createAssignmentData.shift}
+          workers={workers}
+          shifts={shifts}
+          onClose={handleCloseCreateAssignment}
+          handleCreateAssignment={handleCreateAssignment}
+        />
+      ) : null,
+    },
   ];
 
   return (
@@ -701,6 +761,7 @@ export default function ScheduleTab({
               handleCreateDSD={handleCreateDSD}
               handleUpdateDSD={handleUpdateDSD}
               handleExportSchedule={handleExportSchedule}
+              handleOpenCreateAssignment={handleOpenCreateAssignment}
             />
           )}
         </div>

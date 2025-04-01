@@ -27,6 +27,29 @@ export const fromAssignmentT = (data: AssignmentT): any => {
 //////////////////////////
 // Assignment //
 //////////////////////////
+export async function addAssignment(assignment: AssignmentT) {
+  const options: RequestInit = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(fromAssignmentT(assignment)),
+  };
+  try {
+    const response = await fetch(
+      `${apiUrlAssignment}/teams/${assignment.teamId}`,
+      options
+    );
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error("Failed to add assignment: " + responseData.detail);
+    }
+    return toAssignmentT(responseData) as AssignmentT;
+  } catch (error) {
+    console.error("Failed to add assignment:", error);
+    throw new Error("Failed to add assignment, please try again later");
+  }
+}
 
 export async function getAssignmentsByDates(
   teamId: string,
@@ -86,5 +109,26 @@ export async function updateAssignment(
   } catch (error) {
     console.error("Failed to update assignment:", error);
     throw new Error("Failed to update assignment, please try again later");
+  }
+}
+
+export async function deleteAssignment(assignmentId: string, teamId: string) {
+  const options: RequestInit = {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const response = await fetch(
+      `${apiUrlAssignment}/${assignmentId}/teams/${teamId}`,
+      options
+    );
+    if (!response.ok) {
+      throw new Error("Failed to delete assignment");
+    }
+  } catch (error) {
+    console.error("Failed to delete assignment:", error);
+    throw new Error("Failed to delete assignment, please try again later");
   }
 }

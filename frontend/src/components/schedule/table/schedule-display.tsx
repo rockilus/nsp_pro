@@ -37,6 +37,7 @@ export default function ScheduleDisplay({
   handleCreateDSD,
   handleUpdateDSD,
   handleExportSchedule,
+  handleOpenCreateAssignment,
 }: {
   lng: string;
   teamId: string;
@@ -54,6 +55,12 @@ export default function ScheduleDisplay({
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
+  handleOpenCreateAssignment: (
+    scheduleId: string,
+    worker: WorkerT | null,
+    shift: ShiftT | null,
+    date: dayjs.Dayjs | null
+  ) => void;
 }) {
   const scheduleDisplays: { [key: string]: JSX.Element } = {
     shift: (
@@ -74,6 +81,7 @@ export default function ScheduleDisplay({
         handleCreateDSD={handleCreateDSD}
         handleUpdateDSD={handleUpdateDSD}
         handleExportSchedule={handleExportSchedule}
+        handleOpenCreateAssignment={handleOpenCreateAssignment}
       />
     ),
     worker: (
@@ -94,6 +102,7 @@ export default function ScheduleDisplay({
         handleCreateDSD={handleCreateDSD}
         handleUpdateDSD={handleUpdateDSD}
         handleExportSchedule={handleExportSchedule}
+        handleOpenCreateAssignment={handleOpenCreateAssignment}
       />
     ),
   };

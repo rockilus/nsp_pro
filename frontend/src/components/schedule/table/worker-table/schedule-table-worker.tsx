@@ -48,6 +48,7 @@ export default function ScheduleTableWorker({
   handleCreateDSD,
   handleUpdateDSD,
   handleExportSchedule,
+  handleOpenCreateAssignment,
 }: {
   lng: string;
   teamId: string;
@@ -65,6 +66,12 @@ export default function ScheduleTableWorker({
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
+  handleOpenCreateAssignment: (
+    scheduleId: string,
+    worker: WorkerT | null,
+    shift: ShiftT | null,
+    date: dayjs.Dayjs | null
+  ) => void;
 }) {
   const workersForHeader = getRelevantWorkers(
     workers,
@@ -127,6 +134,7 @@ export default function ScheduleTableWorker({
               periodDates={periodDates}
               showBreaches={showBreaches}
               handleCellSelection={handleCellSelection}
+              handleOpenCreateAssignment={handleOpenCreateAssignment}
             />
           ))}
         </TableBody>

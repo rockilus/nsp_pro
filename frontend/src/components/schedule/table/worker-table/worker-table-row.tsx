@@ -30,6 +30,7 @@ export default function WorkerTableRow({
   periodDates,
   showBreaches,
   handleCellSelection,
+  handleOpenCreateAssignment,
 }: {
   lng: string;
   shifts: ShiftT[];
@@ -40,6 +41,12 @@ export default function WorkerTableRow({
   periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
   showBreaches: boolean;
   handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
+  handleOpenCreateAssignment: (
+    scheduleId: string,
+    worker: WorkerT | null,
+    shift: ShiftT | null,
+    date: dayjs.Dayjs | null
+  ) => void;
 }) {
   return (
     <TableRow>
@@ -60,6 +67,7 @@ export default function WorkerTableRow({
           workerIdDateToAssignData={workerIdDateToAssignData}
           showBreaches={showBreaches}
           handleCellSelection={handleCellSelection}
+          handleOpenCreateAssignment={handleOpenCreateAssignment}
         />
       ))}
     </TableRow>

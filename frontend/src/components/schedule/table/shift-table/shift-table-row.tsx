@@ -15,6 +15,7 @@ import {
   ScheduleStatus,
   AssignmentDictT,
 } from "../../../../types/schedule";
+import { WorkerT } from "../../../../types/worker";
 
 export default function ShiftTableRow({
   shift,
@@ -25,6 +26,7 @@ export default function ShiftTableRow({
   shiftIdDateToAssignData,
   showBreaches,
   handleCellSelection,
+  handleOpenCreateAssignment,
 }: {
   shift: ShiftT;
   assignments: AssignmentT[];
@@ -34,6 +36,12 @@ export default function ShiftTableRow({
   shiftIdDateToAssignData: AssignmentDictT;
   showBreaches: boolean;
   handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
+  handleOpenCreateAssignment: (
+    scheduleId: string,
+    worker: WorkerT | null,
+    shift: ShiftT | null,
+    date: dayjs.Dayjs | null
+  ) => void;
 }) {
   return (
     <TableRow>
@@ -52,6 +60,7 @@ export default function ShiftTableRow({
           shiftIdDateToAssignData={shiftIdDateToAssignData}
           showBreaches={showBreaches}
           handleCellSelection={handleCellSelection}
+          handleOpenCreateAssignment={handleOpenCreateAssignment}
         />
       ))}
     </TableRow>
