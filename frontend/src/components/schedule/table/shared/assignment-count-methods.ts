@@ -4,6 +4,7 @@ import {
   AssignmentT,
   DailyShiftDemandT,
   ScheduleStatus,
+  periodDateT,
 } from "../../../../types/schedule";
 import { ShiftT, ShiftType } from "../../../../types/shift";
 
@@ -11,7 +12,7 @@ export const countShifts = (
   shifts: ShiftT[],
   assignments: AssignmentT[],
   dsds: DailyShiftDemandT[],
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[]
+  periodDates: periodDateT[]
 ) => {
   const out: {
     [date: string]: {

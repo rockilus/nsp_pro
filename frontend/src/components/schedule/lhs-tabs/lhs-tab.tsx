@@ -24,17 +24,21 @@ const LHSTab = ({
       </div>
       <div className="main-content">
         <div className={`buttons-container ${selectedTab ? "open" : "closed"}`}>
-          {tabContent.map((lhsTabContent) => (
-            <button
-              key={lhsTabContent.name}
-              className={`tab-button ${
-                selectedTab === lhsTabContent.name ? "selected" : ""
-              }`}
-              onClick={() => toggleTab(lhsTabContent.name)}
-            >
-              {lhsTabContent.label}
-            </button>
-          ))}
+          {tabContent
+            .filter(
+              (lhsTabContent) => lhsTabContent.name !== "create_assignment"
+            )
+            .map((lhsTabContent) => (
+              <button
+                key={lhsTabContent.name}
+                className={`tab-button ${
+                  selectedTab === lhsTabContent.name ? "selected" : ""
+                }`}
+                onClick={() => toggleTab(lhsTabContent.name)}
+              >
+                {lhsTabContent.label}
+              </button>
+            ))}
         </div>
       </div>
     </div>

@@ -14,6 +14,7 @@ import QuickStatsTable from "./lhs-tabs/quick-stats";
 import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
+import CreateAssignment from "./lhs-tabs/create-assignment";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
@@ -26,7 +27,11 @@ import {
   getScheduleAssignmentsData,
   getScheduleLHSData,
 } from "../../app/lib/schedule";
-import { updateAssignment } from "../../app/lib/assignment";
+import {
+  addAssignment,
+  updateAssignment,
+  deleteAssignment,
+} from "../../app/lib/assignment";
 import { getStats } from "../../app/lib/stats";
 import {
   addDailyShiftDemand,
@@ -50,6 +55,7 @@ import {
   ScheduleStatus,
   SolveDetailsStatus,
   LHSTabContentT,
+  periodDateT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import {
@@ -103,14 +109,14 @@ export default function ScheduleTab({
 
   const hasConnectedRef = useRef(false);
 
-  const getDateScheduleStatus = useCallback(
+  const getScheduleFromDate = useCallback(
     (date: dayjs.Dayjs) => {
       if (scheduleCampaign) {
         if (
           date.isSameOrBefore(scheduleCampaign.endDate, "day") &&
           date.isSameOrAfter(scheduleCampaign.startDate, "day")
         ) {
-          return ScheduleStatus.CAMPAIGN;
+          return scheduleCampaign;
         }
       }
       const validatedSchedule = schedulesValidated.find(
@@ -119,7 +125,7 @@ export default function ScheduleTab({
           date.isSameOrAfter(s.startDate, "day")
       );
       if (validatedSchedule) {
-        return ScheduleStatus.VALIDATED;
+        return validatedSchedule;
       }
       return null;
     },
@@ -128,22 +134,21 @@ export default function ScheduleTab({
 
   const buildDates = useCallback(
     (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
-      const dates: {
-        date: dayjs.Dayjs;
-        scheduleStatus: ScheduleStatus | null;
-      }[] = [];
+      const dates: periodDateT[] = [];
       let currentDate = startDate;
 
       while (currentDate.isBefore(endDate)) {
+        const schedule = getScheduleFromDate(currentDate);
         dates.push({
           date: currentDate,
-          scheduleStatus: getDateScheduleStatus(currentDate),
+          scheduleId: schedule ? schedule.id : null,
+          scheduleStatus: schedule ? schedule.status : null,
         });
         currentDate = currentDate.add(1, "day");
       }
       return dates;
     },
-    [getDateScheduleStatus]
+    [getScheduleFromDate]
   );
 
   const [selectedTimeView, setSelectedTimeView] = useState<string>("week");
@@ -159,11 +164,15 @@ export default function ScheduleTab({
   const [periodEndDate, setPeriodEndDate] =
     useState<dayjs.Dayjs>(initialEndDate);
   const [periodDates, setPeriodDates] =
-    useState<{ date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[]>(
-      intialPeriodDates
-    );
+    useState<periodDateT[]>(intialPeriodDates);
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
+  const [createAssignmentData, setCreateAssignmentData] = useState<{
+    scheduleId: string | null;
+    worker: WorkerT | null;
+    shift: ShiftT | null;
+    date: dayjs.Dayjs | null;
+  } | null>(null);
 
   const [selectedQuickStatsTimeFrame, setSelectedQuickStatsTimeFrame] =
     useState<StatsTimeFrameOptions>(StatsTimeFrameOptions.CAMPAING);
@@ -254,6 +263,29 @@ export default function ScheduleTab({
   // Assignment Actions
   //////////////////////////
 
+  const handleOpenCreateAssignment = (
+    scheduleId: string | null,
+    worker: WorkerT | null,
+    shift: ShiftT | null,
+    date: dayjs.Dayjs | null
+  ) => {
+    setCreateAssignmentData({ scheduleId, worker, shift, date });
+    setSelectedTab("create_assignment");
+  };
+
+  const handleCloseCreateAssignment = () => {
+    setCreateAssignmentData(null);
+    setSelectedTab(null);
+  };
+
+  const handleCreateAssignment = async (assignment: AssignmentT) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    const newAssignment = await addAssignment(assignment);
+    setAssignments([...assignments, newAssignment]);
+  };
+
   const handleUpdateAssignment = async (assignment: AssignmentT) => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
@@ -262,6 +294,14 @@ export default function ScheduleTab({
     setAssignments(
       assignments.map((a) => (a.id === newAssignment.id ? newAssignment : a))
     );
+  };
+
+  const handleDeleteAssignment = async (assignmentId: string) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    await deleteAssignment(assignmentId, selectedTeamId);
+    setAssignments(assignments.filter((a) => a.id !== assignmentId));
   };
 
   const handleToday = async () => {
@@ -628,6 +668,24 @@ export default function ScheduleTab({
         />
       ) : null,
     },
+    {
+      name: "create_assignment",
+      label: "",
+      content: createAssignmentData ? (
+        <CreateAssignment
+          lng={lng}
+          teamId={selectedTeamId as string}
+          scheduleId={createAssignmentData.scheduleId}
+          workerSelected={createAssignmentData.worker}
+          dateSelected={createAssignmentData.date}
+          shiftSelected={createAssignmentData.shift}
+          workers={workers}
+          shifts={shifts}
+          onClose={handleCloseCreateAssignment}
+          handleCreateAssignment={handleCreateAssignment}
+        />
+      ) : null,
+    },
   ];
 
   return (
@@ -701,6 +759,7 @@ export default function ScheduleTab({
               handleCreateDSD={handleCreateDSD}
               handleUpdateDSD={handleUpdateDSD}
               handleExportSchedule={handleExportSchedule}
+              handleOpenCreateAssignment={handleOpenCreateAssignment}
             />
           )}
         </div>

@@ -177,7 +177,7 @@ export default function CoverageCampaignConfig({
                             endDate: dayjs.utc(newValue),
                           });
                         }}
-                      />{" "}
+                      />
                     </div>
                   </TableCell>
                   <TableCell component="th" scope="row" sx={{ padding: 0 }}>

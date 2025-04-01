@@ -25,6 +25,7 @@ import {
   DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
+  periodDateT,
 } from "../../../../types/schedule";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
@@ -49,6 +50,7 @@ export default function ScheduleTableShift({
   handleCreateDSD,
   handleUpdateDSD,
   handleExportSchedule,
+  handleOpenCreateAssignment,
 }: {
   lng: string;
   teamId: string;
@@ -58,7 +60,7 @@ export default function ScheduleTableShift({
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
   scheduleCampaign: ScheduleT | null;
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  periodDates: periodDateT[];
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
@@ -66,6 +68,12 @@ export default function ScheduleTableShift({
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
+  handleOpenCreateAssignment: (
+    scheduleId: string | null,
+    worker: WorkerT | null,
+    shift: ShiftT | null,
+    date: dayjs.Dayjs | null
+  ) => void;
 }) {
   const shiftsForHeader = getRelevantShifts(shifts, assignments);
   const shiftIdDateToAssignData = getAssignmentsDataByOwnerAndDate(
@@ -122,6 +130,7 @@ export default function ScheduleTableShift({
               shiftIdDateToAssignData={shiftIdDateToAssignData}
               showBreaches={showBreaches}
               handleCellSelection={handleCellSelection}
+              handleOpenCreateAssignment={handleOpenCreateAssignment}
             />
           ))}
         </TableBody>

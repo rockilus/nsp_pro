@@ -10,6 +10,7 @@ import {
   ExportOptionsT,
   ScheduleT,
   ScheduleStatus,
+  periodDateT,
 } from "../../../../types/schedule";
 
 export default function DatesHeaderRow({
@@ -19,7 +20,7 @@ export default function DatesHeaderRow({
   handleExportSchedule,
 }: {
   lng: string;
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {

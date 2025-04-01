@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
 from shared.schemas.schemas.schedule import Assignment
@@ -9,7 +9,7 @@ class AssignmentSchema(DocumentBaseSchema):
     """Assignment schema for validation."""
 
     team: str
-    schedule: str
+    schedule: Optional[str] = None
     worker: str
     date: datetime
     shift: str
@@ -28,7 +28,7 @@ class AssignmentSchema(DocumentBaseSchema):
         doc_dict = self.to_mongo()
         doc_dict["id"] = doc_dict.pop("_id")
         doc_dict["team_id"] = doc_dict.pop("team")
-        doc_dict["schedule_id"] = doc_dict.pop("schedule")
+        doc_dict["schedule_id"] = doc_dict.pop("schedule", None)
         doc_dict["worker_id"] = doc_dict.pop("worker")
         doc_dict["date"] = doc_dict["date"].date()
         doc_dict["shift_id"] = doc_dict.pop("shift")

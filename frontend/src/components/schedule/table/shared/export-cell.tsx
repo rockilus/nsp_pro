@@ -18,6 +18,7 @@ import {
   ExportPeriodOptions,
   ScheduleT,
   ScheduleStatus,
+  periodDateT,
 } from "../../../../types/schedule";
 
 dayjs.extend(utc);
@@ -29,7 +30,7 @@ export default function ExportCell({
   handleExportSchedule,
 }: {
   lng: string;
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
 }) {

@@ -13,6 +13,7 @@ import {
   DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
+  periodDateT,
 } from "../../../types/schedule";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -37,11 +38,12 @@ export default function ScheduleDisplay({
   handleCreateDSD,
   handleUpdateDSD,
   handleExportSchedule,
+  handleOpenCreateAssignment,
 }: {
   lng: string;
   teamId: string;
   scheduleCampaign: ScheduleT | null;
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  periodDates: periodDateT[];
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
   breaches: BreachT[];
@@ -54,6 +56,12 @@ export default function ScheduleDisplay({
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
+  handleOpenCreateAssignment: (
+    scheduleId: string | null,
+    worker: WorkerT | null,
+    shift: ShiftT | null,
+    date: dayjs.Dayjs | null
+  ) => void;
 }) {
   const scheduleDisplays: { [key: string]: JSX.Element } = {
     shift: (
@@ -74,6 +82,7 @@ export default function ScheduleDisplay({
         handleCreateDSD={handleCreateDSD}
         handleUpdateDSD={handleUpdateDSD}
         handleExportSchedule={handleExportSchedule}
+        handleOpenCreateAssignment={handleOpenCreateAssignment}
       />
     ),
     worker: (
@@ -94,6 +103,7 @@ export default function ScheduleDisplay({
         handleCreateDSD={handleCreateDSD}
         handleUpdateDSD={handleUpdateDSD}
         handleExportSchedule={handleExportSchedule}
+        handleOpenCreateAssignment={handleOpenCreateAssignment}
       />
     ),
   };

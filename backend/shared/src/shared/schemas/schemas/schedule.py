@@ -8,7 +8,7 @@ from typing import Dict, List
 class Assignment:
     id: str
     team_id: str
-    schedule_id: str
+    schedule_id: str | None
     worker_id: str
     date: date
     shift_id: str

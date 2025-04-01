@@ -9,7 +9,7 @@ import { RequestT } from "./request";
 export type AssignmentT = {
   id: string;
   teamId: string;
-  scheduleId: string;
+  scheduleId: string | null;
   workerId: string;
   date: dayjs.Dayjs;
   shiftId: string;
@@ -169,4 +169,10 @@ export type AssignmentDataDictT = {
 
 export type AssignmentDictT = {
   [key: string]: AssignmentDataDictT[];
+};
+
+export type periodDateT = {
+  date: dayjs.Dayjs;
+  scheduleId: string | null;
+  scheduleStatus: ScheduleStatus | null;
 };

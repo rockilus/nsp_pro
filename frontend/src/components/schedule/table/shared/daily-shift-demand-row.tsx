@@ -16,6 +16,7 @@ import {
   ScheduleT,
   DailyShiftDemandT,
   ScheduleStatus,
+  periodDateT,
 } from "../../../../types/schedule";
 
 export default function DailyShiftDemandRow({
@@ -37,7 +38,7 @@ export default function DailyShiftDemandRow({
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
   scheduleCampaign: ScheduleT | null;
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  periodDates: periodDateT[];
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
 }) {

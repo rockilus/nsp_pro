@@ -6,14 +6,14 @@ import TableCell from "@mui/material/TableCell";
 // Styles
 import "./date-header-cell.css";
 // Types
-import { ScheduleStatus } from "../../../../types/schedule";
+import { ScheduleStatus, periodDateT } from "../../../../types/schedule";
 
 dayjs.extend(utc);
 
 export default function DateHeaderCell({
   periodDate,
 }: {
-  periodDate: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null };
+  periodDate: periodDateT;
 }) {
   const today = dayjs.utc().startOf("day");
   const isToday = periodDate.date.isSame(today, "day");
