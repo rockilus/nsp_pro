@@ -55,6 +55,7 @@ import {
   ScheduleStatus,
   SolveDetailsStatus,
   LHSTabContentT,
+  periodDateT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import {
@@ -108,14 +109,14 @@ export default function ScheduleTab({
 
   const hasConnectedRef = useRef(false);
 
-  const getDateScheduleStatus = useCallback(
+  const getScheduleFromDate = useCallback(
     (date: dayjs.Dayjs) => {
       if (scheduleCampaign) {
         if (
           date.isSameOrBefore(scheduleCampaign.endDate, "day") &&
           date.isSameOrAfter(scheduleCampaign.startDate, "day")
         ) {
-          return ScheduleStatus.CAMPAIGN;
+          return scheduleCampaign;
         }
       }
       const validatedSchedule = schedulesValidated.find(
@@ -124,7 +125,7 @@ export default function ScheduleTab({
           date.isSameOrAfter(s.startDate, "day")
       );
       if (validatedSchedule) {
-        return ScheduleStatus.VALIDATED;
+        return validatedSchedule;
       }
       return null;
     },
@@ -133,22 +134,21 @@ export default function ScheduleTab({
 
   const buildDates = useCallback(
     (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
-      const dates: {
-        date: dayjs.Dayjs;
-        scheduleStatus: ScheduleStatus | null;
-      }[] = [];
+      const dates: periodDateT[] = [];
       let currentDate = startDate;
 
       while (currentDate.isBefore(endDate)) {
+        const schedule = getScheduleFromDate(currentDate);
         dates.push({
           date: currentDate,
-          scheduleStatus: getDateScheduleStatus(currentDate),
+          scheduleId: schedule ? schedule.id : null,
+          scheduleStatus: schedule ? schedule.status : null,
         });
         currentDate = currentDate.add(1, "day");
       }
       return dates;
     },
-    [getDateScheduleStatus]
+    [getScheduleFromDate]
   );
 
   const [selectedTimeView, setSelectedTimeView] = useState<string>("week");
@@ -164,13 +164,11 @@ export default function ScheduleTab({
   const [periodEndDate, setPeriodEndDate] =
     useState<dayjs.Dayjs>(initialEndDate);
   const [periodDates, setPeriodDates] =
-    useState<{ date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[]>(
-      intialPeriodDates
-    );
+    useState<periodDateT[]>(intialPeriodDates);
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
   const [createAssignmentData, setCreateAssignmentData] = useState<{
-    scheduleId: string;
+    scheduleId: string | null;
     worker: WorkerT | null;
     shift: ShiftT | null;
     date: dayjs.Dayjs | null;
@@ -266,7 +264,7 @@ export default function ScheduleTab({
   //////////////////////////
 
   const handleOpenCreateAssignment = (
-    scheduleId: string,
+    scheduleId: string | null,
     worker: WorkerT | null,
     shift: ShiftT | null,
     date: dayjs.Dayjs | null

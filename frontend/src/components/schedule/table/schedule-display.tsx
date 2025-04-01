@@ -13,6 +13,7 @@ import {
   DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
+  periodDateT,
 } from "../../../types/schedule";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -42,7 +43,7 @@ export default function ScheduleDisplay({
   lng: string;
   teamId: string;
   scheduleCampaign: ScheduleT | null;
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  periodDates: periodDateT[];
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
   breaches: BreachT[];
@@ -56,7 +57,7 @@ export default function ScheduleDisplay({
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (
-    scheduleId: string,
+    scheduleId: string | null,
     worker: WorkerT | null,
     shift: ShiftT | null,
     date: dayjs.Dayjs | null

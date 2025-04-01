@@ -25,6 +25,7 @@ import {
   DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
+  periodDateT,
 } from "../../../../types/schedule";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
@@ -59,7 +60,7 @@ export default function ScheduleTableShift({
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
   scheduleCampaign: ScheduleT | null;
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  periodDates: periodDateT[];
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
@@ -68,7 +69,7 @@ export default function ScheduleTableShift({
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (
-    scheduleId: string,
+    scheduleId: string | null,
     worker: WorkerT | null,
     shift: ShiftT | null,
     date: dayjs.Dayjs | null

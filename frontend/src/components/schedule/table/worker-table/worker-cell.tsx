@@ -18,6 +18,7 @@ import {
   ScheduleStatus,
   AssignmentDictT,
   AssignmentDataDictT,
+  periodDateT,
 } from "../../../../types/schedule";
 import { RequestStatus } from "../../../../types/request";
 
@@ -34,7 +35,7 @@ export default function WorkerCell({
   handleCellSelection,
   handleOpenCreateAssignment,
 }: {
-  periodDate: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null };
+  periodDate: periodDateT;
   scheduleCampaign: ScheduleT | null;
   worker: WorkerT;
   shifts: ShiftT[];
@@ -42,7 +43,7 @@ export default function WorkerCell({
   showBreaches: boolean;
   handleCellSelection: (seletedCell: AssignmentDataDictT) => void;
   handleOpenCreateAssignment: (
-    scheduleId: string,
+    scheduleId: string | null,
     worker: WorkerT | null,
     shift: ShiftT | null,
     date: dayjs.Dayjs | null
@@ -165,7 +166,7 @@ export default function WorkerCell({
         }}
         onClick={() =>
           handleOpenCreateAssignment(
-            scheduleCampaign?.id || "",
+            periodDate.scheduleId,
             worker,
             null,
             periodDate.date

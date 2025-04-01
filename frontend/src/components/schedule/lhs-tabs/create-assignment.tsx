@@ -18,7 +18,7 @@ dayjs.extend(utc);
 interface CreateAssignmentProps {
   lng: string;
   teamId: string;
-  scheduleId: string;
+  scheduleId: string | null;
   workerSelected: WorkerT | null;
   shiftSelected: ShiftT | null;
   workers: WorkerT[];
@@ -42,7 +42,7 @@ const CreateAssignment: React.FC<CreateAssignmentProps> = ({
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
 
-  console.log("dateSelected", dateSelected);
+  console.log("schedileId", scheduleId);
 
   const [worker, setWorker] = useState<WorkerT | null>(workerSelected);
   const [shift, setShift] = useState<ShiftT | null>(shiftSelected);

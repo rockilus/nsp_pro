@@ -14,6 +14,7 @@ import {
   DailyShiftDemandT,
   ScheduleStatus,
   AssignmentDictT,
+  periodDateT,
 } from "../../../../types/schedule";
 import { WorkerT } from "../../../../types/worker";
 
@@ -31,13 +32,13 @@ export default function ShiftTableRow({
   shift: ShiftT;
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
   shiftIdDateToAssignData: AssignmentDictT;
   showBreaches: boolean;
   handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
   handleOpenCreateAssignment: (
-    scheduleId: string,
+    scheduleId: string | null,
     worker: WorkerT | null,
     shift: ShiftT | null,
     date: dayjs.Dayjs | null

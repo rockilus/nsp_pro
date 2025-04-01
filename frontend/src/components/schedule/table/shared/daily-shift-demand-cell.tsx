@@ -14,6 +14,7 @@ import {
   DSDSourceType,
   ScheduleT,
   ScheduleStatus,
+  periodDateT,
 } from "../../../../types/schedule";
 import { ShiftT, ShiftType } from "../../../../types/shift";
 
@@ -35,7 +36,7 @@ export default function DailyShiftDemandCell({
   selectedDisplay: string;
   teamId: string;
   scheduleCampaign: ScheduleT | null;
-  periodDate: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null };
+  periodDate: periodDateT;
   dailyShiftDemands: DailyShiftDemandT[];
   shifts: ShiftT[];
   counts: {
