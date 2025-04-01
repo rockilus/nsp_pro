@@ -42,8 +42,6 @@ const CreateAssignment: React.FC<CreateAssignmentProps> = ({
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
 
-  console.log("schedileId", scheduleId);
-
   const [worker, setWorker] = useState<WorkerT | null>(workerSelected);
   const [shift, setShift] = useState<ShiftT | null>(shiftSelected);
   const [date, setDate] = useState<Dayjs | null>(dateSelected);

@@ -195,7 +195,7 @@ class TemplateMessage(BaseModel):
 class AssignmentMessage(BaseModel):
     id: str
     teamId: str
-    scheduleId: str
+    scheduleId: str | None
     workerId: str
     date: float
     shiftId: str
