@@ -10,7 +10,4 @@ def get_team_service(
     db_collections: DatabaseCollections = Depends(get_db_collections),
     shift_service: ShiftService = Depends(get_shift_service),
 ) -> TeamService:
-    """
-    Dependency to provide an instance of TeamService.
-    """
     return TeamService(db_collections, shift_service)

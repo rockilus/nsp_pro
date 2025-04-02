@@ -2,10 +2,10 @@ from fastapi import Depends
 from shared.database.database_collections import DatabaseCollections
 
 from src.dependencies.database import get_db_collections
-from src.services import ShiftService
+from src.services import AttributeService
 
 
-def get_shift_service(
+def get_attribute_service(
     db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> ShiftService:
-    return ShiftService(db_collections)
+) -> AttributeService:
+    return AttributeService(db_collections)
