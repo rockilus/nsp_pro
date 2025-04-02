@@ -10,10 +10,11 @@ from src.services import (
     request_services,
     schedule_services,
     stats_services,
-    team_services,
     user_services,
     worker_services,
 )
+from src.services.shift_service import ShiftService
+from src.services.team_service import TeamService
 
 __all__ = [
     "attribute_services",
@@ -27,7 +28,8 @@ __all__ = [
     "request_services",
     "schedule_services",
     "stats_services",
-    "team_services",
     "user_services",
     "worker_services",
+    "ShiftService",
+    "TeamService",
 ]

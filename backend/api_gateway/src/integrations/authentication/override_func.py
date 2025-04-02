@@ -17,6 +17,7 @@ from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.utils import find_first_occurrence_in_list
 
+from src.factories import get_team_service
 from src.integrations.authorization.authz_services import (
     authz_role_assignment_assign,
 )
@@ -24,7 +25,6 @@ from src.integrations.email_sender.verification_email import (
     send_signup_attempt_email,
 )
 from src.scripts.setup_database import config_db
-from src.services.team_services.team_services import create_team
 from src.services.user_services.user_sign_up import create_user
 from src.utils.constants import SUPPORTED_LANGUAGES_LIST
 
@@ -32,7 +32,7 @@ from src.utils.constants import SUPPORTED_LANGUAGES_LIST
 def override_emailpassword_apis(original_implementation: APIInterface):
     original_sign_up_post = original_implementation.sign_up_post
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments, too-many-locals
     async def sign_up_post(
         form_fields: List[FormField],
         tenant_id: str,
@@ -61,6 +61,8 @@ def override_emailpassword_apis(original_implementation: APIInterface):
         #     | SignUpPostNotAllowedResponse
         #     | GeneralErrorResponse,
         # ]:
+        team_service = get_team_service()
+
         email_form_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields
         )
@@ -133,7 +135,7 @@ def override_emailpassword_apis(original_implementation: APIInterface):
                         impersonating_user_id=None,
                     )
                 )
-                team = await create_team(
+                team = await team_service.create_team(
                     Team(id="", team_members=[user_id], team_leaders=[user_id])
                 )
                 print("user and team created in mongodb:", email)

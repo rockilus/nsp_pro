@@ -4,10 +4,12 @@ from typing import Dict, List
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas import Team
 from shared.schemas.errors import handle_create_schema_object_error
 
+from src.dependencies import get_db_collections, get_team_service
 from src.errors import NotAuthorizedError  # MessageTypeError,
 from src.errors import handle_message_errors, handle_routes_errors
 from src.integrations.authentication import (
@@ -16,8 +18,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import TeamMessage
-from src.scripts.setup_database import team_db
-from src.services.team_services import get_user_teams
+from src.services import TeamService
 
 router = APIRouter()
 
@@ -34,11 +35,12 @@ router = APIRouter()
 @router.get("/teams")
 async def get_teams(
     session: SessionContainerType = Depends(authn_verify_session()),
+    team_service: TeamService = Depends(get_team_service),
 ) -> List[TeamMessage]:
     start_time = time.time()
     try:
         start_time_get_teams = time.time()
-        teams = await get_user_teams(session.get_user_id())
+        teams = await team_service.get_user_teams(session.get_user_id())
         end_time_get_teams = time.time()
         start_time_convert = time.time()
         response = [core_to_msg_team(t) for t in teams]
@@ -59,10 +61,11 @@ async def get_teams(
 @router.get("/teams/selected-team-id")
 async def get_selected_team_id(
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> Dict[str, str]:
     try:
         user_id = session.get_user_id()
-        teams = team_db.get_teams_by_leader_id(user_id)
+        teams = db_collections.team_db.get_teams_by_leader_id(user_id)
         team_id = teams[0].id
         response = {"selectedTeamId": team_id}
     except Exception as e:
@@ -76,12 +79,13 @@ def update_team(
     team_id: str,
     team: TeamMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> TeamMessage:
     try:
         if not authz_check(session.get_user_id(), "update-team", "team", team_id):
             raise NotAuthorizedError("You do not have permission to update a team")
         team_data = msg_to_core_team(team)
-        updated_team = team_db.update_team(team_data)
+        updated_team = db_collections.team_db.update_team(team_data)
         response = core_to_msg_team(updated_team)
     except Exception as e:
         log_info("Failed to update team")

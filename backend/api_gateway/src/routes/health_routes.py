@@ -1,7 +1,9 @@
 import httpx
 import redis
-from fastapi import APIRouter, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from shared.database.database_collections import DatabaseCollections
 
+from src.dependencies import get_db_collections
 from src.errors import AuthnConnectionError, AuthzConnectionError
 from src.integrations.authentication import authn_health_check
 from src.integrations.authorization import authz_connect, authz_health_check
@@ -12,13 +14,14 @@ router = APIRouter()
 
 
 @router.get("/health", response_model=HealthCheck)
-async def health_check(request: Request) -> HealthCheck:
+async def health_check(
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> HealthCheck:
     health_status = {
         "database": ServiceStatus(status="ok", details=None),
         "authn": ServiceStatus(status="ok", details=None),
         "authz": ServiceStatus(status="ok", details=None),
     }
-    db_collections = request.app.state.db_collections
     try:
         db_collections.db.check_health()
     except Exception as e:
