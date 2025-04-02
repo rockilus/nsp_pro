@@ -3,17 +3,17 @@ from typing import List
 
 from shared.schemas import DailyShiftDemand
 
-from scripts.setup_database import (
+from src.scripts.setup_database import (
     coverage_selector_db,
     daily_shift_demand_db,
     schedule_db,
     shift_db,
     shift_demand_db,
 )
-from services.daily_shift_demand_services.generate_dsds import (
+from src.services.daily_shift_demand_services.generate_dsds import (
     generate_daily_shift_demands_for_schedule,
 )
-from services.daily_shift_demand_services.update_dsds import (
+from src.services.daily_shift_demand_services.update_dsds import (
     remove_net_negative_daily_shift_demands,
 )
 

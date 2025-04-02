@@ -1,4 +1,4 @@
-from scripts.setup_database import constraint_build_db, schedule_db
+from src.scripts.setup_database import constraint_build_db, schedule_db
 
 
 def delete_constraint_build(team_id: str, cb_id: str) -> None:

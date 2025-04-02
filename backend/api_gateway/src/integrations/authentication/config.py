@@ -1,5 +1,7 @@
 from supertokens_python import InputAppInfo, SupertokensConfig
-from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig,
+)
 from supertokens_python.recipe import (
     dashboard,
     emailpassword,
@@ -8,12 +10,14 @@ from supertokens_python.recipe import (
 )
 from supertokens_python.recipe.emailpassword import InputFormField
 
-from integrations.authentication.authn_emails import (
+from src.integrations.authentication.authn_emails import (
     custom_email_deliver,
     custom_email_verification_delivery,
 )
-from integrations.authentication.override_func import override_emailpassword_apis
-from utils.env_config import (
+from src.integrations.authentication.override_func import (
+    override_emailpassword_apis,
+)
+from src.utils.env_config import (
     API_URL,
     CLIENT_URL,
     ST_API_KEY,

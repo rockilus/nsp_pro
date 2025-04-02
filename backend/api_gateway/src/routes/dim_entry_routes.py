@@ -8,19 +8,22 @@ from shared.logger import log_info
 from shared.schemas import DimEntry
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import AttributeMessage, DimEntryMessage
-from routes.attribute_routes import core_to_msg_attribute
-from scripts.setup_database import dim_entry_db
-from services.dimension_services import create_dim_entry as create_dim_entry_service
-from services.dimension_services import delete_dim_entry as delete_dim_entry_service
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
+from src.integrations.authorization import authz_check
+from src.routes.api_model import AttributeMessage, DimEntryMessage
+from src.routes.attribute_routes import core_to_msg_attribute
+from src.scripts.setup_database import dim_entry_db
+from src.services.dimension_services import create_dim_entry as create_dim_entry_service
+from src.services.dimension_services import delete_dim_entry as delete_dim_entry_service
 
 router = APIRouter()
 

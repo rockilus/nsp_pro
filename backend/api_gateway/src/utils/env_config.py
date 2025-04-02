@@ -5,6 +5,7 @@ from urllib.parse import quote
 import boto3  # type: ignore
 
 
+# pylint: disable=R0801
 def get_env_variable(name: str, default_value: str | None = None) -> str:
     value = os.getenv(name)
     if value is None:

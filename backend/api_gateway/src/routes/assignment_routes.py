@@ -10,19 +10,19 @@ from shared.logger import log_info
 from shared.schemas import Assignment
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import AssignmentMessage
-from scripts.setup_database import assignment_db
+from src.integrations.authorization import authz_check
+from src.routes.api_model import AssignmentMessage
+from src.scripts.setup_database import assignment_db
 
 router = APIRouter()
 

@@ -3,14 +3,14 @@ from typing import Dict
 
 from shared.schemas import ShiftLeaveType, ShiftRestType, ShiftType
 
-from scripts.setup_database import (
+from src.scripts.setup_database import (
     breach_db,
     daily_shift_demand_db,
     schedule_db,
     shift_db,
     shift_demand_db,
 )
-from services.link_shift_services.update_link_shift import (
+from src.services.link_shift_services.update_link_shift import (
     update_link_shift_upon_shift_delete,
 )
 

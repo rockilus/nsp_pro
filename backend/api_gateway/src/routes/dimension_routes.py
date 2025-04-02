@@ -14,25 +14,31 @@ from shared.schemas import (
 )
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import (
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
+from src.integrations.authorization import authz_check
+from src.routes.api_model import (
     DimensionMessage,
     DimensionsAndDimEntriesMessage,
     DimEntryMessage,
     NewDimensionMessage,
 )
-from routes.dim_entry_routes import core_to_msg_dim_entry, msg_to_core_dim_entry
-from routes.shift_routes import core_to_msg_attribute
-from scripts.setup_database import dim_entry_db, dimension_db
-from services.dimension_services import create_dimension as create_dimension_service
-from services.dimension_services import delete_dimension as delete_dimension_service
+from src.routes.dim_entry_routes import (
+    core_to_msg_dim_entry,
+    msg_to_core_dim_entry,
+)
+from src.routes.shift_routes import core_to_msg_attribute
+from src.scripts.setup_database import dim_entry_db, dimension_db
+from src.services.dimension_services import create_dimension as create_dimension_service
+from src.services.dimension_services import delete_dimension as delete_dimension_service
 
 router = APIRouter()
 

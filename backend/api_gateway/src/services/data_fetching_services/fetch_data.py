@@ -1,8 +1,15 @@
 from typing import List, Tuple
 
-from shared.schemas import Attribute, Dimension, DimEntry, Shift, Specialty, Worker
+from shared.schemas import (
+    Attribute,
+    Dimension,
+    DimEntry,
+    Shift,
+    Specialty,
+    Worker,
+)
 
-from scripts.setup_database import (
+from src.scripts.setup_database import (
     attribute_db,
     dim_entry_db,
     dimension_db,

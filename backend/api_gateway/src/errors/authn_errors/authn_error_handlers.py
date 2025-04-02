@@ -1,6 +1,6 @@
 from supertokens_python.exceptions import GeneralError
 
-from errors.authn_errors.authn_errors import AuthnGeneralError
+from src.errors.authn_errors.authn_errors import AuthnGeneralError
 
 
 def handle_supertokens_errors(error: Exception):

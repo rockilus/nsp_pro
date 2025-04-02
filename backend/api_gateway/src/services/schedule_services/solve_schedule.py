@@ -3,10 +3,10 @@ from datetime import datetime, timedelta, timezone
 from celery.result import AsyncResult  # type: ignore
 from shared.schemas import Schedule, SolveDetails, SolveDetailsStatus
 
-from scripts.setup_database import schedule_db
-from task_queue_service import submit_solve_problem_task
-from task_queue_service.celery_app import celery_app
-from utils.env_config import TASK_EXIPRATION
+from src.scripts.setup_database import schedule_db
+from src.task_queue_service import submit_solve_problem_task
+from src.task_queue_service.celery_app import celery_app
+from src.utils.env_config import TASK_EXIPRATION
 
 
 def solve_schedule(schedule_id: str) -> Schedule:

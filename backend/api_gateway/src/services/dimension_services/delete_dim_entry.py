@@ -2,7 +2,7 @@ from typing import List
 
 from shared.schemas import Attribute
 
-from scripts.setup_database import attribute_db, dim_entry_db
+from src.scripts.setup_database import attribute_db, dim_entry_db
 
 
 def delete_dim_entry(dim_entry_id: str) -> List[Attribute]:

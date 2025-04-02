@@ -12,7 +12,7 @@ from shared.schemas import (
     ShiftType,
 )
 
-from scripts.setup_database import attribute_db, dimension_db, shift_db
+from src.scripts.setup_database import attribute_db, dimension_db, shift_db
 
 
 def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:
@@ -45,23 +45,18 @@ def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:
             )
         )
     attributes_saved = attribute_db.create_attributes(attributes)
+    if shift_created.shift_type == ShiftType.DUTY:
+        create_or_update_duty_recuperation_shift(shift_created)
     return shift_created, attributes_saved
 
 
-def create_duty_recuperation_shift(shift_duty: Shift) -> Shift | None:
+def create_or_update_duty_recuperation_shift(
+    shift_duty: Shift,
+) -> Shift | None:
     if shift_duty.shift_type != ShiftType.DUTY:
         return None
-    recup_existing = next(
-        (
-            s
-            for s in shifts
-            if s.shift_type == ShiftType.REST
-            and s.rest_type == ShiftRestType.RECUPERATION
-            and s.recuperation_duty_id == shift_duty.id
-        ),
-        None,
-    )
-    dr_start_time = datetime(
+    recup_existing = shift_db.get_recuperation_shift(shift_duty.id)
+    recup_start_time = datetime(
         shift_duty.start_time.year,
         shift_duty.start_time.month,
         shift_duty.start_time.day,
@@ -69,37 +64,26 @@ def create_duty_recuperation_shift(shift_duty: Shift) -> Shift | None:
         shift_duty.end_time.minute,
         tzinfo=timezone.utc,
     )
-    dr_end_time = dr_start_time + timedelta(hours=shift_duty.recuperation_time)
+    recup_end_time = recup_start_time + timedelta(hours=shift_duty.recuperation_time)
     if recup_existing:
-        if shift_duty.shift_type != ShiftType.DUTY:
-            if not recup_existing.deleted:
-                drs_deleted.append(
-                    collections.shift_db.logical_delete_shift(
-                        recup_existing.id
-                    )
-                )
-            continue
         if (
-            recup_existing.start_time == dr_start_time
-            and recup_existing.end_time == dr_end_time
+            recup_existing.start_time == recup_start_time
+            and recup_existing.end_time == recup_end_time
             and not recup_existing.deleted
         ):
-            continue
-        recup_existing.start_time = dr_start_time
-        recup_existing.end_time = dr_end_time
+            return recup_existing
+        recup_existing.start_time = recup_start_time
+        recup_existing.end_time = recup_end_time
         recup_existing.deleted = False
-        drs_updated.append(recup_existing)
-        continue
-    if shift_duty.shift_type != ShiftType.DUTY:
-        continue
-    dr = Shift(
+        return shift_db.update_shift(recup_existing)
+    recup_new = Shift(
         id="",
         team_id=shift_duty.team_id,
         name="Duty recuperation",
         acronym="DR",
         acronym_custom=False,
-        start_time=dr_start_time,
-        end_time=dr_end_time,
+        start_time=recup_start_time,
+        end_time=recup_end_time,
         staffing=[],
         color="#EDBB99",
         shift_type=ShiftType.REST,
@@ -109,6 +93,7 @@ def create_duty_recuperation_shift(shift_duty: Shift) -> Shift | None:
         recuperation_duty_id=shift_duty.id,
         deleted=False,
     )
+    return shift_db.create_shift(recup_new)
 
 
 def create_default_shifts(team_id: str) -> None:

@@ -3,7 +3,7 @@ from typing import List
 
 from shared.schemas import Schedule, ScheduleSolveStatus, ScheduleStatus
 
-from scripts.setup_database import constraint_build_db, schedule_db
+from src.scripts.setup_database import constraint_build_db, schedule_db
 
 
 def get_schedule_campaign(schedules: List[Schedule], team_id: str) -> Schedule:

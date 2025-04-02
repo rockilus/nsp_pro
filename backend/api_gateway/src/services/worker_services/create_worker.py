@@ -8,7 +8,7 @@ from shared.schemas import (
     Worker,
 )
 
-from scripts.setup_database import attribute_db, dimension_db, worker_db
+from src.scripts.setup_database import attribute_db, dimension_db, worker_db
 
 
 def create_worker(worker: Worker) -> Tuple[Worker, List[Attribute]]:

@@ -9,23 +9,23 @@ from shared.logger import log_info
 from shared.schemas import CoverageSelector
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import CoverageSelectorMessage
-from scripts.setup_database import coverage_selector_db
-from services.coverage_selector_services import (
+from src.integrations.authorization import authz_check
+from src.routes.api_model import CoverageSelectorMessage
+from src.scripts.setup_database import coverage_selector_db
+from src.services.coverage_selector_services import (
     delete_coverage_selector as delete_coverage_selector_service,
 )
-from services.coverage_selector_services import (
+from src.services.coverage_selector_services import (
     update_coverage_selector as update_coverage_selector_service,
 )
 

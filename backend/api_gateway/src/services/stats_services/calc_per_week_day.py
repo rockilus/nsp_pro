@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from utils.constants import Constants
+from src.utils.constants import NUM_DAYS_WEEK
 
 
 # Weekday
@@ -17,8 +17,8 @@ def calc_stats_per_weekday(
     weekdays = np.array([d.weekday() for d in dates])
 
     # Sum the shifts for each worker for each weekday
-    out = np.zeros((a_array.shape[0], Constants.NUM_DAYS_WEEK), dtype=int)
-    for i in range(Constants.NUM_DAYS_WEEK):
+    out = np.zeros((a_array.shape[0], NUM_DAYS_WEEK), dtype=int)
+    for i in range(NUM_DAYS_WEEK):
         # Get a mask of the dates that are on the current weekday
         mask = weekdays == i
 

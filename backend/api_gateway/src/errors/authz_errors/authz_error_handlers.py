@@ -1,7 +1,7 @@
 from permit import PermitConnectionError  # type: ignore
 from permit import PermitApiError, PermitContextError  # type: ignore
 
-from errors.authz_errors.authz_errors import (
+from src.errors.authz_errors.authz_errors import (
     AuthzApiErrorError,
     AuthzConnectionError,
     AuthzContextError,

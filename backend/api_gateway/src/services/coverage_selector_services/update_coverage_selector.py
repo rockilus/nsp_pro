@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from shared.schemas import CoverageSelector
 
-from scripts.setup_database import coverage_selector_db, schedule_db
+from src.scripts.setup_database import coverage_selector_db, schedule_db
 
 
 def update_coverage_selector(

@@ -1,7 +1,7 @@
 from shared.schemas import User
 
-from integrations.authorization import authz_user_sync
-from scripts.setup_database import user_db
+from src.integrations.authorization import authz_user_sync
+from src.scripts.setup_database import user_db
 
 
 async def create_user(user: User) -> User:

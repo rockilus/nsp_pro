@@ -10,23 +10,23 @@ from shared.logger import log_info
 from shared.schemas import Attribute, Worker
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import WorkerMessage
-from routes.attribute_routes import core_to_msg_attribute
-from scripts.setup_database import attribute_db, worker_db
-from services.worker_services import create_worker as create_worker_service
-from services.worker_services import delete_worker as delete_worker_service
-from services.worker_services import update_worker as update_worker_service
+from src.integrations.authorization import authz_check
+from src.routes.api_model import WorkerMessage
+from src.routes.attribute_routes import core_to_msg_attribute
+from src.scripts.setup_database import attribute_db, worker_db
+from src.services.worker_services import create_worker as create_worker_service
+from src.services.worker_services import delete_worker as delete_worker_service
+from src.services.worker_services import update_worker as update_worker_service
 
 router = APIRouter()
 

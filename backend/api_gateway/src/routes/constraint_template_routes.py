@@ -8,18 +8,21 @@ from shared.logger import log_info
 from shared.schemas import Template
 from shared.schemas.errors import UserNotFoundError
 
-from constraint_templates import build_templates
-from errors import (
+from src.constraint_templates import build_templates
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import TemplateMessage
-from scripts.setup_database import user_db
-from services.data_fetching_services import (
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
+from src.integrations.authorization import authz_check
+from src.routes.api_model import TemplateMessage
+from src.scripts.setup_database import user_db
+from src.services.data_fetching_services import (
     fetch_workers_not_d_shifts_not_d_dim_not_d_attributes_spes,
 )
 

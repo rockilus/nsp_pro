@@ -22,18 +22,18 @@ from shared.schemas import (
 )
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import (
+from src.integrations.authorization import authz_check
+from src.routes.api_model import (
     AssignmentMessage,
     BreachMessage,
     CoverageSelectorMessage,
@@ -45,23 +45,25 @@ from routes.api_model import (
     SolveDetailsMessage,
     WorkTimeTableMessage,
 )
-from routes.assignment_routes import core_to_msg_assignment
-from routes.breach_routes import core_to_msg_breach
-from routes.coverage_selector_routes import core_to_msg_coverage_selector
-from routes.request_routes import core_to_msg_request_augmented
-from routes.shift_routes import core_to_msg_shift_and_attributes
-from scripts.setup_database import schedule_db
-from services.schedule_services import (
+from src.routes.assignment_routes import core_to_msg_assignment
+from src.routes.breach_routes import core_to_msg_breach
+from src.routes.coverage_selector_routes import core_to_msg_coverage_selector
+from src.routes.request_routes import core_to_msg_request_augmented
+from src.routes.shift_routes import core_to_msg_shift_and_attributes
+from src.scripts.setup_database import schedule_db
+from src.services.schedule_services import (
     build_worktime_data,
 )
-from services.schedule_services import delete_schedule as delete_schedule_service
-from services.schedule_services import (
+from src.services.schedule_services import delete_schedule as delete_schedule_service
+from src.services.schedule_services import (
     get_schedule_campaign,
 )
-from services.schedule_services import solve_schedule as solve_schedule_service
-from services.schedule_services import update_schedule as update_schedule_service
-from services.schedule_services import validate_schedule as validate_schedule_service
-from utils import event_manager
+from src.services.schedule_services import solve_schedule as solve_schedule_service
+from src.services.schedule_services import update_schedule as update_schedule_service
+from src.services.schedule_services import (
+    validate_schedule as validate_schedule_service,
+)
+from src.utils import event_manager
 
 router = APIRouter()
 

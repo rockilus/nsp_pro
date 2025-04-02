@@ -1,7 +1,7 @@
-from services.coverage_selector_services.delete_coverage_selector import (
+from src.services.coverage_selector_services.delete_coverage_selector import (
     delete_coverage_selector,
 )
-from services.coverage_selector_services.update_coverage_selector import (
+from src.services.coverage_selector_services.update_coverage_selector import (
     update_coverage_selector,
 )
 

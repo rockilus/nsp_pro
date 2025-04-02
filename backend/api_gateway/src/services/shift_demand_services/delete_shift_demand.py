@@ -1,4 +1,4 @@
-from scripts.setup_database import daily_shift_demand_db, shift_demand_db
+from src.scripts.setup_database import daily_shift_demand_db, shift_demand_db
 
 
 def delete_shift_demand(shift_demand_id: str) -> None:

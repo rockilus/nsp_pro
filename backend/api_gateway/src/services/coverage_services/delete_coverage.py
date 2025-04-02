@@ -1,4 +1,4 @@
-from scripts.setup_database import (
+from src.scripts.setup_database import (
     coverage_db,
     coverage_selector_db,
     daily_shift_demand_db,

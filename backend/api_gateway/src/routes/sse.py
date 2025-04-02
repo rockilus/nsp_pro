@@ -8,16 +8,19 @@ from fastapi import APIRouter, Request, Response
 from shared.schemas import EngineOutputsAugmented, SolveDetailsStatus
 from starlette.responses import StreamingResponse
 
-from routes.schedule_routes import core_to_msg_schedule, core_to_msg_solution
-from scripts.setup_database import schedule_db
-from services.schedule_services import (
+from src.routes.schedule_routes import (
+    core_to_msg_schedule,
+    core_to_msg_solution,
+)
+from src.scripts.setup_database import schedule_db
+from src.services.schedule_services import (
     update_schedule_solve_details_failure,
     update_schedule_solve_details_success,
 )
-from task_queue_service.celery_app import celery_app
-from utils.env_config import TASK_EXIPRATION
+from src.task_queue_service.celery_app import celery_app
+from src.utils.env_config import TASK_EXIPRATION
 
-# from utils import event_manager
+# from src.utils import event_manager
 
 router = APIRouter()
 

@@ -9,7 +9,7 @@ from shared.schemas import (
     TemplateBlock,
 )
 
-from utils.constants import Constants
+from src.utils.constants import WEEK_DAYS
 
 
 def build_templates_list_en(
@@ -250,7 +250,7 @@ def build_templates_list_en(
                 TemplateBlock(
                     name=BlockNameOptions.WEEKDAY,
                     type=BlockTypeOptions.STRING,
-                    options=list(Constants.WEEK_DAYS),
+                    options=WEEK_DAYS,
                     placeholder="monday",
                 ),
                 TemplateBlock(
@@ -352,7 +352,7 @@ def build_templates_list_en(
                 TemplateBlock(
                     name=BlockNameOptions.WEEKDAY,
                     type=BlockTypeOptions.STRING,
-                    options=list(Constants.WEEK_DAYS),
+                    options=WEEK_DAYS,
                     placeholder="sunday",
                 ),
                 TemplateBlock(
@@ -391,7 +391,7 @@ def build_templates_list_en(
                 TemplateBlock(
                     name=BlockNameOptions.WEEKDAY,
                     type=BlockTypeOptions.STRING,
-                    options=list(Constants.WEEK_DAYS),
+                    options=WEEK_DAYS,
                     placeholder="sunday",
                 ),
                 TemplateBlock(

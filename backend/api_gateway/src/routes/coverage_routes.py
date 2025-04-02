@@ -8,17 +8,20 @@ from shared.logger import log_info
 from shared.schemas import Coverage
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import CoverageMessage
-from scripts.setup_database import coverage_db
-from services.coverage_services import delete_coverage as delete_coverage_service
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
+from src.integrations.authorization import authz_check
+from src.routes.api_model import CoverageMessage
+from src.scripts.setup_database import coverage_db
+from src.services.coverage_services import delete_coverage as delete_coverage_service
 
 router = APIRouter()
 

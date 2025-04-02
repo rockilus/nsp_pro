@@ -1,4 +1,4 @@
-from scripts.setup_database import attribute_db, dim_entry_db, dimension_db
+from src.scripts.setup_database import attribute_db, dim_entry_db, dimension_db
 
 
 def delete_dimension(sd_id: str) -> None:

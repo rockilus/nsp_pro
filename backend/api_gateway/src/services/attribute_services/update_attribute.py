@@ -1,7 +1,12 @@
 # pylint: disable=R0801
-from shared.schemas import Attribute, AttributeOwnerType, ShiftLeaveType, ShiftRestType
+from shared.schemas import (
+    Attribute,
+    AttributeOwnerType,
+    ShiftLeaveType,
+    ShiftRestType,
+)
 
-from scripts.setup_database import attribute_db, shift_db, worker_db
+from src.scripts.setup_database import attribute_db, shift_db, worker_db
 
 
 def create_or_update_attribute(attribute: Attribute) -> Attribute:

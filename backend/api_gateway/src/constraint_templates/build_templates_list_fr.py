@@ -9,7 +9,7 @@ from shared.schemas import (
     TemplateBlock,
 )
 
-from utils.constants import Constants
+from src.utils.constants import WEEK_DAYS
 
 
 # pylint: disable=R0801
@@ -252,7 +252,7 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name=BlockNameOptions.WEEKDAY,
                     type=BlockTypeOptions.STRING,
-                    options=list(Constants.WEEK_DAYS),
+                    options=WEEK_DAYS,
                     placeholder="samedi",
                 ),
                 TemplateBlock(
@@ -361,7 +361,7 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name=BlockNameOptions.WEEKDAY,
                     type=BlockTypeOptions.STRING,
-                    options=list(Constants.WEEK_DAYS),
+                    options=WEEK_DAYS,
                     placeholder="dimanche",
                 ),
                 TemplateBlock(
@@ -408,7 +408,7 @@ def build_templates_list_fr(
                 TemplateBlock(
                     name=BlockNameOptions.WEEKDAY,
                     type=BlockTypeOptions.STRING,
-                    options=list(Constants.WEEK_DAYS),
+                    options=WEEK_DAYS,
                     placeholder="dimanche",
                 ),
                 TemplateBlock(

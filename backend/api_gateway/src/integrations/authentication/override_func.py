@@ -2,7 +2,9 @@ from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
 from shared.schemas import Team, User
-from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID
+from supertokens_python.recipe.emailpassword.constants import (
+    FORM_FIELD_EMAIL_ID,
+)
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface,
     APIOptions,
@@ -15,12 +17,16 @@ from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.utils import find_first_occurrence_in_list
 
-from integrations.authorization.authz_services import authz_role_assignment_assign
-from integrations.email_sender.verification_email import send_signup_attempt_email
-from scripts.setup_database import config_db
-from services.team_services.team_services import create_team
-from services.user_services.user_sign_up import create_user
-from utils.constants import SUPPORTED_LANGUAGES_LIST
+from src.integrations.authorization.authz_services import (
+    authz_role_assignment_assign,
+)
+from src.integrations.email_sender.verification_email import (
+    send_signup_attempt_email,
+)
+from src.scripts.setup_database import config_db
+from src.services.team_services.team_services import create_team
+from src.services.user_services.user_sign_up import create_user
+from src.utils.constants import SUPPORTED_LANGUAGES_LIST
 
 
 def override_emailpassword_apis(original_implementation: APIInterface):

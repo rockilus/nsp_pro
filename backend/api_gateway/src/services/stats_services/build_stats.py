@@ -25,8 +25,8 @@ from shared.schemas import (
     Worker,
 )
 
-from errors import NoCampaignError
-from scripts.setup_database import (
+from src.errors import NoCampaignError
+from src.scripts.setup_database import (
     assignment_db,
     attribute_db,
     dim_entry_db,
@@ -36,19 +36,19 @@ from scripts.setup_database import (
     stats_header_db,
     worker_db,
 )
-from services.stats_services.buid_dates import build_dates
-from services.stats_services.calc_per_week_day import (
+from src.services.stats_services.buid_dates import build_dates
+from src.services.stats_services.calc_per_week_day import (
     calc_stats_all,
     calc_stats_per_month,
     calc_stats_per_week,
     calc_stats_per_weekday,
     calc_stats_per_year,
 )
-from services.stats_services.core_to_np import (
+from src.services.stats_services.core_to_np import (
     core_to_np_assignments_binary,
     core_to_np_assignments_worked_time,
 )
-from services.stats_services.np_to_core import (
+from src.services.stats_services.np_to_core import (
     np_to_core_days_worked_all,
     np_to_core_days_worked_per_month,
     np_to_core_days_worked_per_week,

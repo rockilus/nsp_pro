@@ -9,7 +9,7 @@ from shared.schemas import (
     DimEntry,
 )
 
-from scripts.setup_database import (
+from src.scripts.setup_database import (
     attribute_db,
     dim_entry_db,
     dimension_db,

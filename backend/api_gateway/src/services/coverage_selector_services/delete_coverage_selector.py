@@ -1,4 +1,7 @@
-from scripts.setup_database import coverage_selector_db, daily_shift_demand_db
+from src.scripts.setup_database import (
+    coverage_selector_db,
+    daily_shift_demand_db,
+)
 
 
 def delete_coverage_selector(coverage_selector_id: str) -> None:

@@ -3,7 +3,7 @@ from typing import List
 from shared.augment.r_to_r_augmented import r_to_r_augmented
 from shared.schemas import RequestAugmented, Worker
 
-from scripts.setup_database import request_db, shift_db, worker_db
+from src.scripts.setup_database import request_db, shift_db, worker_db
 
 
 def get_requests(team_id: str) -> List[RequestAugmented]:

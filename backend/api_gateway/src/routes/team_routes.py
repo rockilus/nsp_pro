@@ -8,16 +8,16 @@ from shared.logger import log_info
 from shared.schemas import Team
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import NotAuthorizedError  # MessageTypeError,
-from errors import handle_message_errors, handle_routes_errors
-from integrations.authentication import (
+from src.errors import NotAuthorizedError  # MessageTypeError,
+from src.errors import handle_message_errors, handle_routes_errors
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import TeamMessage
-from scripts.setup_database import team_db
-from services.team_services import get_user_teams
+from src.integrations.authorization import authz_check
+from src.routes.api_model import TeamMessage
+from src.scripts.setup_database import team_db
+from src.services.team_services import get_user_teams
 
 router = APIRouter()
 

@@ -2,11 +2,11 @@ from typing import Dict, List, Tuple
 
 from shared.schemas import LinkShift, Shift, ShiftLeaveType, ShiftRestType
 
-from scripts.setup_database import shift_db
-from services.link_shift_services.update_link_shift import (
+from src.scripts.setup_database import shift_db
+from src.services.link_shift_services.update_link_shift import (
     update_link_shift_upon_shift_update,
 )
-from services.worker_services.update_worker import generate_acronym
+from src.services.worker_services.update_worker import generate_acronym
 
 
 def update_shift(

@@ -1,6 +1,6 @@
 from shared.schemas import Schedule, ScheduleSolveStatus, ScheduleStatus
 
-from scripts.setup_database import schedule_db
+from src.scripts.setup_database import schedule_db
 
 
 def validate_schedule(schedule_id: str) -> Schedule:

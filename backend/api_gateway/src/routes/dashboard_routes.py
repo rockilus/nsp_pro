@@ -8,13 +8,13 @@ from pydantic import TypeAdapter
 from shared.logger import log_info
 from shared.schemas import UserAuth, UserDashboard
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
+from src.integrations.authentication import (
     SessionContainerType,
     authn_delete_user,
     authn_get_all_users,
@@ -23,16 +23,16 @@ from integrations.authentication import (
     authn_restore_admin_session,
     authn_verify_session,
 )
-from integrations.authorization import (
+from src.integrations.authorization import (
     authz_check,
     authz_delete_user,
     authz_get_all_users,
     authz_get_user,
 )
-from routes.api_model import UserAuthMessage, UserDashboardMessage
-from routes.user_routes import core_to_msg_user
-from scripts.setup_database import user_db
-from services.user_services import (
+from src.routes.api_model import UserAuthMessage, UserDashboardMessage
+from src.routes.user_routes import core_to_msg_user
+from src.scripts.setup_database import user_db
+from src.services.user_services import (
     build_user_dashboard,
     update_user_impersonating_user_id,
 )

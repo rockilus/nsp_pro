@@ -9,9 +9,9 @@ format: \
 api_gateway_format:
 	@echo "Formatting code in api_gateway..."
 	@cd api_gateway && \
-	poetry run isort src && \
-	poetry run autoflake --remove-all-unused-imports --in-place --recursive src && \
-	poetry run black src
+	poetry run isort . && \
+	poetry run autoflake --remove-all-unused-imports --in-place --recursive . && \
+	poetry run black .
 
 solve_service_format:
 	@echo "Formatting code in solve_service..."
@@ -34,7 +34,7 @@ check: \
 	shared_check
 
 check_no_test: \
-	api_gateway_check \
+	api_gateway_check_no_test \
 	solve_service_check_no_test \
 	shared_check_no_test
 
@@ -42,10 +42,19 @@ check_no_test: \
 api_gateway_check:
 	@echo "Running checks in api_gateway..."
 	@cd api_gateway && \
-	poetry run flake8 src && \
-	poetry run black --check src && \
-	poetry run pylint src && \
-	poetry run mypy src
+	poetry run flake8 . && \
+	poetry run black --check . && \
+	poetry run pylint . && \
+	poetry run mypy . && \
+	poetry run pytest
+
+api_gateway_check_no_test:
+	@echo "Running checks in api_gateway..."
+	@cd api_gateway && \
+	poetry run flake8 . && \
+	poetry run black --check . && \
+	poetry run pylint . && \
+	poetry run mypy .
 
 # Run checks in solve_service
 solve_service_check:

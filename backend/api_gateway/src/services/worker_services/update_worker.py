@@ -1,6 +1,6 @@
 from shared.schemas import Worker
 
-from scripts.setup_database import worker_db
+from src.scripts.setup_database import worker_db
 
 
 def update_worker(worker_updated: Worker) -> Worker:

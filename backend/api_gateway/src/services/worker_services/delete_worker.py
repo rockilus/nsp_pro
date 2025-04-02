@@ -1,4 +1,4 @@
-from scripts.setup_database import breach_db, schedule_db, worker_db
+from src.scripts.setup_database import breach_db, schedule_db, worker_db
 
 
 def delete_worker(worker_id: str) -> None:

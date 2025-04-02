@@ -1,7 +1,7 @@
 from shared.augment.r_to_r_augmented import r_to_r_augmented
 from shared.schemas import Request, RequestAugmented
 
-from scripts.setup_database import request_db, shift_db, worker_db
+from src.scripts.setup_database import request_db, shift_db, worker_db
 
 
 # pylint: disable=R0801

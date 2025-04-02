@@ -7,8 +7,13 @@ from shared.schemas import (
     ShiftWorkerOption,
 )
 
-from constraint_templates import build_options
-from scripts.setup_database import attribute_db, dim_entry_db, dimension_db, shift_db
+from src.constraint_templates import build_options
+from src.scripts.setup_database import (
+    attribute_db,
+    dim_entry_db,
+    dimension_db,
+    shift_db,
+)
 
 
 def get_shift_options(team_id: str) -> List[ShiftWorkerOption]:

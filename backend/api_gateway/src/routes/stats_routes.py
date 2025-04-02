@@ -17,28 +17,28 @@ from shared.schemas import (
 )
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import NotAuthorizedError, handle_routes_errors
-from integrations.authentication import (
+from src.errors import NotAuthorizedError, handle_routes_errors
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import (
+from src.integrations.authorization import authz_check
+from src.routes.api_model import (
     ShiftWorkerOptionMessage,
     StatsHeaderMessage,
     StatsMessage,
     StatsOptionsMessage,
     StatsValueMessage,
 )
-from routes.constraint_routes import (
+from src.routes.constraint_routes import (
     core_to_msg_shift_worker_option,
     msg_to_core_shift_worker_option,
 )
-from scripts.setup_database import stats_header_db
-from services.stats_services import (
+from src.scripts.setup_database import stats_header_db
+from src.services.stats_services import (
     build_stats,
 )
-from services.stats_services import get_shift_options as get_shift_options_service
+from src.services.stats_services import get_shift_options as get_shift_options_service
 
 router = APIRouter()
 

@@ -11,7 +11,7 @@ from shared.schemas import (
     StatsValue,
 )
 
-from utils.constants import Constants
+from src.utils.constants import NUM_DAYS_WEEK, WEEK_DAYS
 
 
 # Weekday
@@ -27,14 +27,14 @@ def np_to_core_days_worked_per_weekday(
 ) -> Stats:
     stats_headers = []
     stats_values = []
-    for d in range(Constants.NUM_DAYS_WEEK):
+    for d in range(NUM_DAYS_WEEK):
         existing_sh = next(
             (
                 sh
                 for sh in stats_headers_custom
                 if sh.header_unit == HeaderUnitOptions.WEEKDAY
                 and sh.stats_unit == stats_unit
-                and sh.value == Constants.WEEK_DAYS[d].capitalize()
+                and sh.value == WEEK_DAYS[d].capitalize()
                 and sorted(sh.selected_shifts, key=lambda x: x.id)
                 == sorted(selected_shifts, key=lambda x: x.id)
             ),
@@ -49,7 +49,7 @@ def np_to_core_days_worked_per_weekday(
                     team_id=team_id,
                     stats_unit=stats_unit,
                     header_unit=HeaderUnitOptions.WEEKDAY,
-                    value=Constants.WEEK_DAYS[d].capitalize(),
+                    value=WEEK_DAYS[d].capitalize(),
                     selected_shifts=selected_shifts,
                     is_favorite=False,
                 )

@@ -1,27 +1,26 @@
 import httpx
 import redis
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Request, status
 
-from errors import AuthnConnectionError, AuthzConnectionError
-from integrations.authentication import authn_health_check
-from integrations.authorization import authz_connect, authz_health_check
-from routes.api_model import HealthCheck, ServiceStatus
-from scripts.setup_database import db
-from utils.env_config import PDP_API_KEY
+from src.errors import AuthnConnectionError, AuthzConnectionError
+from src.integrations.authentication import authn_health_check
+from src.integrations.authorization import authz_connect, authz_health_check
+from src.routes.api_model import HealthCheck, ServiceStatus
+from src.utils.env_config import PDP_API_KEY
 
 router = APIRouter()
 
 
 @router.get("/health", response_model=HealthCheck)
-async def health_check() -> HealthCheck:
+async def health_check(request: Request) -> HealthCheck:
     health_status = {
         "database": ServiceStatus(status="ok", details=None),
         "authn": ServiceStatus(status="ok", details=None),
         "authz": ServiceStatus(status="ok", details=None),
     }
-
+    db_collections = request.app.state.db_collections
     try:
-        db.check_health()
+        db_collections.db.check_health()
     except Exception as e:
         health_status["database"].status = "error"
         health_status["database"].details = str(e)

@@ -1,4 +1,4 @@
-from integrations.authorization.authz_services import (
+from src.integrations.authorization.authz_services import (
     authz_check,
     authz_connect,
     authz_delete_user,

@@ -1,5 +1,4 @@
-from scripts.run_app import run_app
-from scripts.setup_database import (
+from src.scripts.setup_database import (
     assignment_db,
     attribute_db,
     breach_db,
@@ -24,7 +23,6 @@ __all__ = [
     "attribute_db",
     "breach_db",
     "constraint_build_db",
-    "run_app",
     "coverage_db",
     "coverage_selector_db",
     "daily_shift_demand_db",

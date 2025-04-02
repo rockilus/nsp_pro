@@ -8,19 +8,24 @@ from shared.logger import log_info
 from shared.schemas import PasswordData, User
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     PasswordsDoNotMatchError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import PasswordDataMessage, UserMessage
-from scripts.setup_database import user_db
-from services.user_services import change_user_password as change_user_password_service
-from services.user_services import update_user as update_user_service
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
+from src.integrations.authorization import authz_check
+from src.routes.api_model import PasswordDataMessage, UserMessage
+from src.scripts.setup_database import user_db
+from src.services.user_services import (
+    change_user_password as change_user_password_service,
+)
+from src.services.user_services import update_user as update_user_service
 
 router = APIRouter()
 

@@ -1,6 +1,6 @@
 from celery import Celery  # type: ignore
 
-from utils.env_config import REDIS_URL, RESULT_BACKEND
+from src.utils.env_config import REDIS_URL, RESULT_BACKEND
 
 
 def create_celery_app() -> Celery:

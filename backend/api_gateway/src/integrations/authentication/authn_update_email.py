@@ -1,9 +1,13 @@
-from supertokens_python.recipe.accountlinking.syncio import is_email_change_allowed
+from supertokens_python.recipe.accountlinking.syncio import (
+    is_email_change_allowed,
+)
 from supertokens_python.recipe.emailpassword.interfaces import (
     EmailAlreadyExistsError,
     UpdateEmailOrPasswordOkResult,
 )
-from supertokens_python.recipe.emailpassword.syncio import update_email_or_password
+from supertokens_python.recipe.emailpassword.syncio import (
+    update_email_or_password,
+)
 from supertokens_python.recipe.emailverification.syncio import (
     is_email_verified,
     send_email_verification_email,
@@ -11,7 +15,7 @@ from supertokens_python.recipe.emailverification.syncio import (
 from supertokens_python.syncio import get_user, list_users_by_account_info
 from supertokens_python.types import AccountInfo, RecipeUserId
 
-from errors import (
+from src.errors import (
     AuthnEmailAlreadyExistsError,
     AuthnEmailChangeNotAllowedError,
     AuthnUpdateEmailError,

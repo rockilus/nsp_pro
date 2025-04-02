@@ -18,13 +18,13 @@ from shared.schemas import (
     Worker,
 )
 
-from constraint_templates.build_templates_list_en import (
+from src.constraint_templates.build_templates_list_en import (
     build_templates_list_en,
 )
-from constraint_templates.build_templates_list_es import (
+from src.constraint_templates.build_templates_list_es import (
     build_templates_list_es,
 )
-from constraint_templates.build_templates_list_fr import (
+from src.constraint_templates.build_templates_list_fr import (
     build_templates_list_fr,
 )
 

@@ -10,7 +10,7 @@ from supertokens_python.recipe.emailpassword.syncio import (
 from supertokens_python.syncio import get_user
 from supertokens_python.types import RecipeUserId
 
-from errors import (
+from src.errors import (
     AuthnEmailNotFoundForUserError,
     AuthnPasswordChangeError,
     AuthnPasswordPolicyViolationError,

@@ -2,7 +2,7 @@ from typing import List
 
 from shared.schemas import Worker
 
-from scripts.setup_database import specialty_db, worker_db
+from src.scripts.setup_database import specialty_db, worker_db
 
 
 def delete_specialty(specialty_id: str) -> List[Worker]:

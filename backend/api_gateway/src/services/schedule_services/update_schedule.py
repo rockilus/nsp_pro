@@ -12,7 +12,7 @@ from shared.schemas import (
     WorkTimeTableData,
 )
 
-from scripts.setup_database import (
+from src.scripts.setup_database import (
     coverage_selector_db,
     daily_shift_demand_db,
     schedule_db,

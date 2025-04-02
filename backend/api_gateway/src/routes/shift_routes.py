@@ -18,24 +18,24 @@ from shared.schemas import (
 )
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import ShiftMessage, StaffingMessage
-from routes.attribute_routes import core_to_msg_attribute
-from routes.link_shift_routes import core_to_msg_link_shift
-from scripts.setup_database import attribute_db, shift_db
-from services.shift_services import create_shift as create_shift_service
-from services.shift_services import delete_shift as delete_shift_service
-from services.shift_services import update_shift as update_shift_service
+from src.integrations.authorization import authz_check
+from src.routes.api_model import ShiftMessage, StaffingMessage
+from src.routes.attribute_routes import core_to_msg_attribute
+from src.routes.link_shift_routes import core_to_msg_link_shift
+from src.scripts.setup_database import attribute_db, shift_db
+from src.services.shift_services import create_shift as create_shift_service
+from src.services.shift_services import delete_shift as delete_shift_service
+from src.services.shift_services import update_shift as update_shift_service
 
 router = APIRouter()
 

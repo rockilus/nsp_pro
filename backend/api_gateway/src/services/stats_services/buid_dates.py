@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 
 from shared.schemas import Schedule, StatsTimeFrameOptions
 
-from errors import NoCampaignError
+from src.errors import NoCampaignError
 
 
 # pylint: disable=too-many-return-statements

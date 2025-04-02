@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from shared.schemas import LinkShift, Shift
 
-from scripts.setup_database import link_shift_db, shift_db
+from src.scripts.setup_database import link_shift_db, shift_db
 
 
 def update_link_shift(link_shift: LinkShift) -> LinkShift:

@@ -1,6 +1,6 @@
 from shared.schemas import LinkShift
 
-from scripts.setup_database import link_shift_db, shift_db
+from src.scripts.setup_database import link_shift_db, shift_db
 
 
 def create_link_shift(link_shift: LinkShift) -> LinkShift:

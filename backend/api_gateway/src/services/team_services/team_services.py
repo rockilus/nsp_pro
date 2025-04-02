@@ -3,12 +3,12 @@ from typing import List
 
 from shared.schemas import Team
 
-from integrations.authorization import (
+from src.integrations.authorization import (
     authz_role_assignment_get_user_team_ids,
     authz_team_resource_instance_create,
 )
-from scripts.setup_database import team_db
-from services.shift_services import create_default_shifts
+from src.scripts.setup_database import team_db
+from src.services.shift_services import create_default_shifts
 
 
 async def create_team(team: Team) -> Team:

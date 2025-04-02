@@ -3,8 +3,8 @@ from datetime import timedelta
 from celery import signature  # type: ignore
 from shared.schemas import Schedule
 
-from task_queue_service.celery_app import celery_app
-from utils.env_config import TASK_EXIPRATION
+from src.task_queue_service.celery_app import celery_app
+from src.utils.env_config import TASK_EXIPRATION
 
 
 @celery_app.task(name="api_gateway.trigger_workflow")

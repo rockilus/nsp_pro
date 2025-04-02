@@ -9,23 +9,23 @@ from shared.logger import log_info
 from shared.schemas import ShiftDemand
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import ShiftDemandMessage
-from scripts.setup_database import coverage_db, shift_demand_db
-from services.shift_demand_services import (
+from src.integrations.authorization import authz_check
+from src.routes.api_model import ShiftDemandMessage
+from src.scripts.setup_database import coverage_db, shift_demand_db
+from src.services.shift_demand_services import (
     delete_shift_demand as delete_shift_demand_service,
 )
-from services.shift_demand_services import (
+from src.services.shift_demand_services import (
     update_shift_demand as update_shift_demand_service,
 )
 

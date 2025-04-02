@@ -10,22 +10,22 @@ from shared.logger import log_info
 from shared.schemas import Request, RequestAugmented, RequestStatus
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import RequestMessage
-from scripts.setup_database import request_db
-from services.request_services import create_request as create_request_service
-from services.request_services import get_requests as get_request_service
-from services.request_services import update_request as update_request_service
+from src.integrations.authorization import authz_check
+from src.routes.api_model import RequestMessage
+from src.scripts.setup_database import request_db
+from src.services.request_services import create_request as create_request_service
+from src.services.request_services import get_requests as get_request_service
+from src.services.request_services import update_request as update_request_service
 
 router = APIRouter()
 
