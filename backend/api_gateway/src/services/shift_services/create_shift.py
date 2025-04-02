@@ -48,6 +48,69 @@ def create_shift(shift: Shift) -> Tuple[Shift, List[Attribute]]:
     return shift_created, attributes_saved
 
 
+def create_duty_recuperation_shift(shift_duty: Shift) -> Shift | None:
+    if shift_duty.shift_type != ShiftType.DUTY:
+        return None
+    recup_existing = next(
+        (
+            s
+            for s in shifts
+            if s.shift_type == ShiftType.REST
+            and s.rest_type == ShiftRestType.RECUPERATION
+            and s.recuperation_duty_id == shift_duty.id
+        ),
+        None,
+    )
+    dr_start_time = datetime(
+        shift_duty.start_time.year,
+        shift_duty.start_time.month,
+        shift_duty.start_time.day,
+        shift_duty.end_time.hour,
+        shift_duty.end_time.minute,
+        tzinfo=timezone.utc,
+    )
+    dr_end_time = dr_start_time + timedelta(hours=shift_duty.recuperation_time)
+    if recup_existing:
+        if shift_duty.shift_type != ShiftType.DUTY:
+            if not recup_existing.deleted:
+                drs_deleted.append(
+                    collections.shift_db.logical_delete_shift(
+                        recup_existing.id
+                    )
+                )
+            continue
+        if (
+            recup_existing.start_time == dr_start_time
+            and recup_existing.end_time == dr_end_time
+            and not recup_existing.deleted
+        ):
+            continue
+        recup_existing.start_time = dr_start_time
+        recup_existing.end_time = dr_end_time
+        recup_existing.deleted = False
+        drs_updated.append(recup_existing)
+        continue
+    if shift_duty.shift_type != ShiftType.DUTY:
+        continue
+    dr = Shift(
+        id="",
+        team_id=shift_duty.team_id,
+        name="Duty recuperation",
+        acronym="DR",
+        acronym_custom=False,
+        start_time=dr_start_time,
+        end_time=dr_end_time,
+        staffing=[],
+        color="#EDBB99",
+        shift_type=ShiftType.REST,
+        rest_type=ShiftRestType.RECUPERATION,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=shift_duty.id,
+        deleted=False,
+    )
+
+
 def create_default_shifts(team_id: str) -> None:
     reference_date = datetime.now(timezone.utc)
     reference_date_start = reference_date.replace(
