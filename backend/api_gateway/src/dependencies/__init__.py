@@ -18,6 +18,7 @@ from src.dependencies.request_service import get_request_service
 from src.dependencies.shift_demand_service import get_shift_demand_service
 from src.dependencies.shift_service import get_shift_service
 from src.dependencies.specialty_service import get_specialty_service
+from src.dependencies.stats_service import get_stats_service
 from src.dependencies.team_service import get_team_service
 from src.dependencies.worker_service import get_worker_service
 
@@ -36,6 +37,7 @@ __all__ = [
     "get_shift_demand_service",
     "get_shift_service",
     "get_specialty_service",
+    "get_stats_service",
     "get_team_service",
     "get_worker_service",
 ]

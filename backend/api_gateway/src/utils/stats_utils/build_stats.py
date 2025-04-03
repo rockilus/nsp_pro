@@ -13,42 +13,27 @@ from shared.schemas import (
     Dimension,
     DimEntry,
     HeaderUnitOptions,
-    ScheduleStatus,
     Shift,
     ShiftType,
     ShiftWorkerOption,
     Stats,
     StatsHeader,
-    StatsOptions,
-    StatsTimeFrameOptions,
     StatsUnitOptions,
     Worker,
 )
 
-from src.errors import NoCampaignError
-from src.scripts.setup_database import (
-    assignment_db,
-    attribute_db,
-    dim_entry_db,
-    dimension_db,
-    schedule_db,
-    shift_db,
-    stats_header_db,
-    worker_db,
-)
-from src.services.stats_services.buid_dates import build_dates
-from src.services.stats_services.calc_per_week_day import (
+from src.utils.stats_utils.calc_per_week_day import (
     calc_stats_all,
     calc_stats_per_month,
     calc_stats_per_week,
     calc_stats_per_weekday,
     calc_stats_per_year,
 )
-from src.services.stats_services.core_to_np import (
+from src.utils.stats_utils.core_to_np import (
     core_to_np_assignments_binary,
     core_to_np_assignments_worked_time,
 )
-from src.services.stats_services.np_to_core import (
+from src.utils.stats_utils.np_to_core import (
     np_to_core_days_worked_all,
     np_to_core_days_worked_per_month,
     np_to_core_days_worked_per_week,
@@ -58,91 +43,7 @@ from src.services.stats_services.np_to_core import (
 )
 
 
-# pylint: disable=too-many-locals
-def build_stats(
-    team_id: str,
-    stats_options: StatsOptions,
-) -> Stats:
-    schedules = schedule_db.get_schedules(team_id)
-    schedule_campaign = next(
-        (s for s in schedules if s.status == ScheduleStatus.CAMPAIGN), None
-    )
-    if (
-        stats_options.time_frame == StatsTimeFrameOptions.CAMPAING
-        and not schedule_campaign
-    ):
-        return Stats([], [])
-    try:
-        start_date, end_date, date_to_i = build_dates(
-            stats_options.time_frame,
-            stats_options.start_date,
-            stats_options.end_date,
-            schedules,
-            schedule_campaign,
-        )
-    except NoCampaignError as e:
-        raise e
-    workers = worker_db.get_workers_not_deleted(team_id)
-    shifts = shift_db.get_shifts_not_deleted(team_id)
-    dimensions = dimension_db.get_dimensions(team_id)
-    dim_entries = dim_entry_db.get_dim_entries_by_dim_ids([d.id for d in dimensions])
-    attributes = attribute_db.get_attributes_by_owner_ids([s.id for s in shifts])
-    shift_dim_dict = attribute_db.get_shifts_id_by_dim_and_attr()
-    assignments = assignment_db.get_assignments_by_dates(team_id, start_date, end_date)
-    if stats_options.show_favorites is True:
-        stats_headers = stats_header_db.get_stats_headers_by_team_id(team_id)
-        return build_stats_favorites(
-            team_id,
-            workers,
-            date_to_i,
-            shifts,
-            dimensions,
-            dim_entries,
-            attributes,
-            shift_dim_dict,
-            assignments,
-            stats_headers,
-        )
-    stats_headers = stats_header_db.get_stats_headers_by_team_unit_shifts(
-        team_id, stats_options.stats_unit, stats_options.header_unit
-    )
-    # pylint: disable=R0801
-    (
-        worker_to_i,
-        work_shift_to_i,
-        rest_shift_to_i,
-        work_shift_to_duration,
-        i_to_worker,
-        i_to_work_shift,
-        i_to_rest_shift,
-    ) = build_work_shift_indexes(
-        workers,
-        shifts,
-        dimensions,
-        dim_entries,
-        attributes,
-        shift_dim_dict,
-        stats_options.selected_shifts,
-    )
-    return build_stats_for_stats_unit(
-        team_id,
-        stats_options.header_unit,
-        worker_to_i,
-        date_to_i,
-        work_shift_to_i,
-        rest_shift_to_i,
-        work_shift_to_duration,
-        i_to_worker,
-        i_to_work_shift,
-        i_to_rest_shift,
-        assignments,
-        stats_options.stats_unit,
-        stats_options.selected_shifts,
-        stats_headers,
-    )
-
-
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
 def build_work_shift_indexes(
     workers: List[Worker],
     shifts: List[Shift],
