@@ -2,7 +2,7 @@ from fastapi import Depends
 from shared.database.database_collections import DatabaseCollections
 
 from src.dependencies.database import get_db_collections
-from src.services import CoverageService
+from src.services.coverage_service import CoverageService
 
 
 def get_coverage_service(

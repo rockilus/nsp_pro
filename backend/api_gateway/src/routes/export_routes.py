@@ -16,7 +16,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import ExportOptionsMessage
-from src.services import ScheduleService
+from src.services.schedule_service import ScheduleService
 
 router = APIRouter()
 

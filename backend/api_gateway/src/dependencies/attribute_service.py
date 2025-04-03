@@ -2,7 +2,7 @@ from fastapi import Depends
 from shared.database.database_collections import DatabaseCollections
 
 from src.dependencies.database import get_db_collections
-from src.services import AttributeService
+from src.services.attribute_service import AttributeService
 
 
 def get_attribute_service(

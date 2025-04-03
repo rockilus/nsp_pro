@@ -23,7 +23,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import PasswordDataMessage, UserMessage
-from src.services import UserService
+from src.services.user_service import UserService
 
 router = APIRouter()
 

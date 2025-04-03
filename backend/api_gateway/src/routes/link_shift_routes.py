@@ -22,7 +22,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import LinkShiftMessage
-from src.services import LinkShiftService
+from src.services.link_shift_service import LinkShiftService
 
 router = APIRouter()
 

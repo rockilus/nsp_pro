@@ -23,7 +23,7 @@ from src.integrations.authentication import (
 from src.integrations.authorization import authz_check
 from src.routes.api_model import AttributeMessage, DimEntryMessage
 from src.routes.attribute_routes import core_to_msg_attribute
-from src.services import DimEntryService
+from src.services.dim_entry_service import DimEntryService
 
 router = APIRouter()
 

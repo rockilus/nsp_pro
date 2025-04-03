@@ -25,7 +25,7 @@ from src.integrations.authentication import (
 from src.integrations.authorization import authz_check
 from src.routes.api_model import WorkerMessage
 from src.routes.attribute_routes import core_to_msg_attribute
-from src.services import WorkerService
+from src.services.worker_service import WorkerService
 
 router = APIRouter()
 

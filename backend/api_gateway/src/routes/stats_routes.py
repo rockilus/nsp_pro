@@ -36,7 +36,7 @@ from src.routes.constraint_routes import (
     core_to_msg_shift_worker_option,
     msg_to_core_shift_worker_option,
 )
-from src.services import StatsService
+from src.services.stats_service import StatsService
 
 router = APIRouter()
 

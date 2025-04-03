@@ -38,7 +38,7 @@ from src.routes.dim_entry_routes import (
     msg_to_core_dim_entry,
 )
 from src.routes.shift_routes import core_to_msg_attribute
-from src.services import DimensionService
+from src.services.dimension_service import DimensionService
 
 router = APIRouter()
 

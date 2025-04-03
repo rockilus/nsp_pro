@@ -23,7 +23,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import CoverageSelectorMessage
-from src.services import CoverageSelectorService
+from src.services.coverage_selector_service import CoverageSelectorService
 
 router = APIRouter()
 

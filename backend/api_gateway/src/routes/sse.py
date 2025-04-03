@@ -15,7 +15,7 @@ from src.routes.schedule_routes import (
     core_to_msg_schedule,
     core_to_msg_solution,
 )
-from src.services import ScheduleService
+from src.services.schedule_service import ScheduleService
 from src.utils.env_config import TASK_EXIPRATION
 
 # from src.utils import event_manager

@@ -20,7 +20,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import AttributeMessage
-from src.services import AttributeService
+from src.services.attribute_service import AttributeService
 
 router = APIRouter()
 

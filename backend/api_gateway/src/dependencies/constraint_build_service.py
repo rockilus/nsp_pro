@@ -3,7 +3,8 @@ from shared.database.database_collections import DatabaseCollections
 
 from src.dependencies.data_fetching_service import get_data_fetching_service
 from src.dependencies.database import get_db_collections
-from src.services import ConstraintBuildService, DataFetchingService
+from src.services.constraint_build_service import ConstraintBuildService
+from src.services.data_fetching_service import DataFetchingService
 
 
 def get_constraint_build_service(

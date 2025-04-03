@@ -2,7 +2,7 @@ from fastapi import Depends
 from shared.database.database_collections import DatabaseCollections
 
 from src.dependencies.database import get_db_collections
-from src.services import DataFetchingService
+from src.services.data_fetching_service import DataFetchingService
 
 
 def get_data_fetching_service(

@@ -4,7 +4,7 @@ from shared.database.database_collections import DatabaseCollections
 from src.celery_tasks.celery_app import celery_app
 from src.celery_tasks.task_sender import submit_solve_problem_task
 from src.dependencies.database import get_db_collections
-from src.services import ScheduleService
+from src.services.schedule_service import ScheduleService
 
 
 def get_schedule_service(

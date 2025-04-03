@@ -24,7 +24,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import RequestMessage
-from src.services import RequestService
+from src.services.request_service import RequestService
 
 router = APIRouter()
 

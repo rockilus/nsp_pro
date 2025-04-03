@@ -33,7 +33,7 @@ from src.integrations.authorization import (
 )
 from src.routes.api_model import UserAuthMessage, UserDashboardMessage
 from src.routes.user_routes import core_to_msg_user
-from src.services import UserService
+from src.services.user_service import UserService
 from src.utils.user_utils import build_user_dashboard
 
 router = APIRouter()

@@ -36,7 +36,7 @@ from src.routes.api_model import (
     MissingAttributeMessage,
     ShiftWorkerOptionMessage,
 )
-from src.services import ConstraintBuildService
+from src.services.constraint_build_service import ConstraintBuildService
 
 router = APIRouter()
 

@@ -22,7 +22,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import TemplateMessage
-from src.services import DataFetchingService
+from src.services.data_fetching_service import DataFetchingService
 from src.utils.constraint_utils import build_templates
 
 router = APIRouter()

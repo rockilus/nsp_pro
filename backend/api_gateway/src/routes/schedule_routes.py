@@ -52,7 +52,7 @@ from src.routes.breach_routes import core_to_msg_breach
 from src.routes.coverage_selector_routes import core_to_msg_coverage_selector
 from src.routes.request_routes import core_to_msg_request_augmented
 from src.routes.shift_routes import core_to_msg_shift_and_attributes
-from src.services import ScheduleService
+from src.services.schedule_service import ScheduleService
 from src.utils import event_manager
 
 router = APIRouter()

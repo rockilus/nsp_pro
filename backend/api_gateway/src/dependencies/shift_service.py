@@ -3,7 +3,8 @@ from shared.database.database_collections import DatabaseCollections
 
 from src.dependencies.database import get_db_collections
 from src.dependencies.link_shift_service import get_link_shift_service
-from src.services import LinkShiftService, ShiftService
+from src.services.link_shift_service import LinkShiftService
+from src.services.shift_service import ShiftService
 
 
 def get_shift_service(

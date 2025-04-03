@@ -24,7 +24,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import DailyShiftDemandMessage
-from src.services import DailyShiftDemandService
+from src.services.daily_shift_demand_service import DailyShiftDemandService
 
 router = APIRouter()
 

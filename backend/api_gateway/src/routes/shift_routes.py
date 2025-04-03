@@ -34,7 +34,7 @@ from src.integrations.authorization import authz_check
 from src.routes.api_model import ShiftMessage, StaffingMessage
 from src.routes.attribute_routes import core_to_msg_attribute
 from src.routes.link_shift_routes import core_to_msg_link_shift
-from src.services import ShiftService
+from src.services.shift_service import ShiftService
 
 router = APIRouter()
 

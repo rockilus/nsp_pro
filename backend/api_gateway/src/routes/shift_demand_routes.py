@@ -23,7 +23,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import ShiftDemandMessage
-from src.services import ShiftDemandService
+from src.services.shift_demand_service import ShiftDemandService
 
 router = APIRouter()
 

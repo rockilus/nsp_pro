@@ -18,7 +18,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import TeamMessage
-from src.services import TeamService
+from src.services.team_service import TeamService
 
 router = APIRouter()
 

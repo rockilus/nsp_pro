@@ -2,7 +2,7 @@ from fastapi import Depends
 from shared.database.database_collections import DatabaseCollections
 
 from src.dependencies.database import get_db_collections
-from src.services import DimEntryService
+from src.services.dim_entry_service import DimEntryService
 
 
 def get_dim_entry_service(

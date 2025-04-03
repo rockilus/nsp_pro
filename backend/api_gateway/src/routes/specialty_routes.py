@@ -26,7 +26,7 @@ from src.integrations.authentication import (
 from src.integrations.authorization import authz_check
 from src.routes.api_model import SpecialtyMessage, WorkerMessage
 from src.routes.worker_routes import core_to_msg_worker_and_attributes
-from src.services import SpecialtyService
+from src.services.specialty_service import SpecialtyService
 
 router = APIRouter()
 
