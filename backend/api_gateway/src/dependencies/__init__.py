@@ -15,6 +15,7 @@ from src.dependencies.dim_entry_service import get_dim_entry_service
 from src.dependencies.dimension_service import get_dimension_service
 from src.dependencies.link_shift_service import get_link_shift_service
 from src.dependencies.request_service import get_request_service
+from src.dependencies.schedule_service import get_schedule_service
 from src.dependencies.shift_demand_service import get_shift_demand_service
 from src.dependencies.shift_service import get_shift_service
 from src.dependencies.specialty_service import get_specialty_service
@@ -35,6 +36,7 @@ __all__ = [
     "get_dimension_service",
     "get_link_shift_service",
     "get_request_service",
+    "get_schedule_service",
     "get_shift_demand_service",
     "get_shift_service",
     "get_specialty_service",

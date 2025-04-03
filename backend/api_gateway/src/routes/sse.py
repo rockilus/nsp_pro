@@ -4,20 +4,18 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict
 
 from celery.result import AsyncResult  # type: ignore
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, Depends, Request, Response
+from shared.database.database_collections import DatabaseCollections
 from shared.schemas import EngineOutputsAugmented, SolveDetailsStatus
 from starlette.responses import StreamingResponse
 
+from src.celery_tasks.celery_app import celery_app
+from src.dependencies import get_db_collections, get_schedule_service
 from src.routes.schedule_routes import (
     core_to_msg_schedule,
     core_to_msg_solution,
 )
-from src.scripts.setup_database import schedule_db
-from src.services.schedule_services import (
-    update_schedule_solve_details_failure,
-    update_schedule_solve_details_success,
-)
-from src.task_queue_service.celery_app import celery_app
+from src.services import ScheduleService
 from src.utils.env_config import TASK_EXIPRATION
 
 # from src.utils import event_manager
@@ -41,7 +39,11 @@ def celery_to_core_status(celery_status: str) -> int | None:
 # POLLING ARCHITECTURE
 # pylint: disable=too-many-statements
 @router.get("/sse", response_class=Response)
-async def sse(request: Request) -> Callable:
+async def sse(
+    request: Request,
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+    schedule_service: ScheduleService = Depends(get_schedule_service),
+) -> Callable:
 
     # pylint: disable=too-many-branches
     async def event_stream(task_id: str | None = None, schedule_id: str | None = None):
@@ -52,7 +54,7 @@ async def sse(request: Request) -> Callable:
             if task_id and schedule_id:
                 # Check the status of the task in Celery
                 async_result = AsyncResult(task_id, app=celery_app)
-                schedule = schedule_db.get_schedule_by_id(schedule_id)
+                schedule = db_collections.schedule_db.get_schedule_by_id(schedule_id)
                 if schedule.solve_details is None:
                     event = "error"
                     data_no_details = {
@@ -77,7 +79,7 @@ async def sse(request: Request) -> Callable:
                         )
                         # type: ignore
                         schedule.solve_details.updated_at = now  # type: ignore
-                        schedule = schedule_db.update_schedule(schedule)
+                        schedule = db_collections.schedule_db.update_schedule(schedule)
                         event = "error"
                         data_timeout = {
                             "task_id": task_id,
@@ -114,10 +116,12 @@ async def sse(request: Request) -> Callable:
                 # updated schedule to the client
                 if async_result.failed():
                     if schedule_id:
-                        schedule = update_schedule_solve_details_failure(
-                            schedule_id=schedule_id,
-                            error=str(async_result.result),
-                            task_id=task_id,
+                        schedule = (
+                            schedule_service.update_schedule_solve_details_failure(
+                                schedule_id=schedule_id,
+                                error=str(async_result.result),
+                                task_id=task_id,
+                            )
                         )
                         data["schedule"] = core_to_msg_schedule(schedule).model_dump()
                     # task_meta = async_result.info
@@ -148,10 +152,12 @@ async def sse(request: Request) -> Callable:
                         data["solution"] = solution_message.model_dump()
                     else:
                         if schedule_id:
-                            schedule = update_schedule_solve_details_success(
-                                schedule_id=schedule_id,
-                                task_id=task_id,
-                                result=async_result.result,
+                            schedule = (
+                                schedule_service.update_schedule_solve_details_success(
+                                    schedule_id=schedule_id,
+                                    task_id=task_id,
+                                    result=async_result.result,
+                                )
                             )
                             data["schedule"] = core_to_msg_schedule(
                                 schedule

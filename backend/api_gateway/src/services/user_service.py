@@ -1,5 +1,6 @@
 from typing import Any, Callable, Coroutine
 
+from shared.database.database_collections import DatabaseCollections
 from shared.schemas import PasswordData, User
 from shared.schemas.errors import UserNotFoundError
 
@@ -12,7 +13,7 @@ from src.utils.user_utils import is_valid_email
 class UserService(BaseService):
     def __init__(
         self,
-        collection,
+        collection: DatabaseCollections,
         authz_user_sync: Callable[[User], Coroutine[Any, Any, None]],
         authn_update_user_email: Callable[
             [str, RecipeUserIdType, str, str], Coroutine[Any, Any, None]

@@ -3,7 +3,7 @@ from datetime import timedelta
 from celery import signature  # type: ignore
 from shared.schemas import Schedule
 
-from src.task_queue_service.celery_app import celery_app
+from src.celery_tasks.celery_app import celery_app
 from src.utils.env_config import TASK_EXIPRATION
 
 
