@@ -52,7 +52,6 @@ from src.routes.breach_routes import core_to_msg_breach
 from src.routes.coverage_selector_routes import core_to_msg_coverage_selector
 from src.routes.request_routes import core_to_msg_request_augmented
 from src.routes.shift_routes import core_to_msg_shift_and_attributes
-from src.scripts.setup_database import schedule_db
 from src.services import ScheduleService
 from src.utils import event_manager
 
@@ -72,8 +71,7 @@ async def create_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to create a schedule",
             )
-        schedules = schedule_db.get_schedules(team_id)
-        schedule_wip = schedule_service.get_schedule_campaign(schedules, team_id)
+        schedule_wip = schedule_service.get_schedule_campaign(team_id)
         response = core_to_msg_schedule(schedule_wip)
     except Exception as e:
         log_info("Failed to create schedule")

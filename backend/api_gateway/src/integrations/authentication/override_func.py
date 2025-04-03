@@ -17,14 +17,13 @@ from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.utils import find_first_occurrence_in_list
 
-from src.factories import get_team_service, get_user_service
+from src.factories import get_database, get_team_service, get_user_service
 from src.integrations.authorization.authz_services import (
     authz_role_assignment_assign,
 )
 from src.integrations.email_sender.verification_email import (
     send_signup_attempt_email,
 )
-from src.scripts.setup_database import config_db
 from src.utils.constants import SUPPORTED_LANGUAGES_LIST
 
 
@@ -62,6 +61,7 @@ def override_emailpassword_apis(original_implementation: APIInterface):
         # ]:
         team_service = get_team_service()
         user_service = get_user_service()
+        db_collections = get_database()
 
         email_form_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields
@@ -80,14 +80,14 @@ def override_emailpassword_apis(original_implementation: APIInterface):
         if language not in SUPPORTED_LANGUAGES_LIST:
             # pylint: disable=broad-exception-raised
             raise Exception(f"Language {language} not supported")
-        config = config_db.get_config()
+        config = db_collections.config_db.get_config()
         if config is None:
             # pylint: disable=broad-exception-raised
             raise Exception("Config not found in database")
         if config.signup_emails_whitelist_enabled:
             if email not in config.signup_emails_whitelist:
                 if email not in config.signup_emails_attempt:
-                    config = config_db.add_signup_email_attempt(email)
+                    config = db_collections.config_db.add_signup_email_attempt(email)
                     send_signup_attempt_email(email)
                 print("SENDING CUSTOM RESPONSE")
                 api_options.response.set_status_code(200)

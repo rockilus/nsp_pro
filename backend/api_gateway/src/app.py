@@ -5,7 +5,6 @@ from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_middleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
-import src.scripts.setup_database  # noqa: F401
 from src.config import config
 
 # pylint: disable=unused-import

@@ -25,7 +25,6 @@ from src.integrations.authentication import (
 from src.integrations.authorization import authz_check
 from src.routes.api_model import WorkerMessage
 from src.routes.attribute_routes import core_to_msg_attribute
-from src.scripts.setup_database import attribute_db
 from src.services import WorkerService
 
 router = APIRouter()
@@ -113,6 +112,7 @@ async def update_worker(
     team_id: str,
     worker: WorkerMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
     worker_service: WorkerService = Depends(get_worker_service),
 ) -> WorkerMessage:
     try:
@@ -122,7 +122,9 @@ async def update_worker(
             raise NotAuthorizedError("You do not have permission to update a worker")
         w_data = msg_to_core_worker(worker)
         updated_worker = worker_service.update_worker(w_data)
-        attributes = attribute_db.get_attributes_by_owner_id(updated_worker.id)
+        attributes = db_collections.attribute_db.get_attributes_by_owner_id(
+            updated_worker.id
+        )
         response = core_to_msg_worker_and_attributes(updated_worker, attributes)
     except Exception as e:
         log_info("Failed to update worker")

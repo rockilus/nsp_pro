@@ -36,9 +36,8 @@ class ScheduleService(BaseService):
         self.celery_app = celery_app
         self.submit_solve_problem_task = submit_solve_problem_task
 
-    def get_schedule_campaign(
-        self, schedules: List[Schedule], team_id: str
-    ) -> Schedule:
+    def get_schedule_campaign(self, team_id: str) -> Schedule:
+        schedules = self.collection.schedule_db.get_schedules(team_id)
         schedule_campaign = next(
             (s for s in schedules if s.status == ScheduleStatus.CAMPAIGN), None
         )

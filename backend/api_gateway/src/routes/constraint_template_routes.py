@@ -4,11 +4,12 @@ from typing import List
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas import Template
 from shared.schemas.errors import UserNotFoundError
 
-from src.dependencies import get_data_fetching_service
+from src.dependencies import get_data_fetching_service, get_db_collections
 from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -21,7 +22,6 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import TemplateMessage
-from src.scripts.setup_database import user_db
 from src.services import DataFetchingService
 from src.utils.constraint_utils import build_templates
 
@@ -33,6 +33,7 @@ router = APIRouter()
 async def get_constraint_templates(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
     data_fetching_service: DataFetchingService = Depends(get_data_fetching_service),
 ) -> List[TemplateMessage]:
     try:
@@ -43,7 +44,7 @@ async def get_constraint_templates(
                 "You do not have permission to get constraint templates"
             )
         user_id = session.get_user_id()
-        user = user_db.get_user_by_id(user_id)
+        user = db_collections.user_db.get_user_by_id(user_id)
         if user is None:
             raise UserNotFoundError(f"User with id {user_id} not found")
         # pylint: disable=R0801
