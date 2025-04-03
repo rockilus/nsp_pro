@@ -11,9 +11,9 @@ from shared.schemas import (
     StatsTimeFrameOptions,
 )
 
-from src.constraint_templates import build_options
 from src.errors import NoCampaignError
 from src.services.base_service import BaseService
+from src.utils.constraint_utils import build_options
 from src.utils.stats_utils.build_dates import build_dates
 from src.utils.stats_utils.build_stats import (
     build_stats_favorites,

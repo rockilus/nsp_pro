@@ -3,10 +3,13 @@ from typing import Callable, Dict, List, Tuple
 
 from celery import Celery  # type: ignore
 from celery.result import AsyncResult  # type: ignore
+from openpyxl import Workbook
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas import (
     CoverageSelector,
     DSDSourceType,
+    ExportOptions,
+    ExportPeriodOptions,
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
@@ -17,8 +20,9 @@ from shared.schemas import (
     WorkTimeTableData,
 )
 
+from src.config import config
 from src.services.base_service import BaseService
-from src.utils.env_config import TASK_EXIPRATION
+from src.utils.excel_utils import core_to_excel_schedule
 
 
 class ScheduleService(BaseService):
@@ -96,7 +100,7 @@ class ScheduleService(BaseService):
                         if datetime.now(
                             tz=timezone.utc
                         ) - schedule.solve_details.updated_at > timedelta(
-                            seconds=TASK_EXIPRATION
+                            seconds=config.task_expiration
                         ):
                             async_result.revoke()
                             # schedule.solve_details.status = SolveDetailsStatus.FAILURE
@@ -318,3 +322,30 @@ class ScheduleService(BaseService):
             schedule_id
         )
         self.collection.schedule_db.delete_schedule(schedule_id)
+
+    def export_schedule_to_excel(
+        self, team_id: str, export_options: ExportOptions
+    ) -> Workbook:
+        workers = self.collection.worker_db.get_workers(team_id)
+        shifts = self.collection.shift_db.get_shifts(team_id)
+        if export_options.period_option == ExportPeriodOptions.ALL:
+            assignments = self.collection.assignment_db.get_assignments(team_id)
+            start_date = min(assignment.date for assignment in assignments)
+            end_date = max(assignment.date for assignment in assignments)
+            dates = [
+                start_date + timedelta(days=i)
+                for i in range((end_date - start_date).days + 1)
+            ]
+        else:
+            assignments = self.collection.assignment_db.get_assignments_by_dates(
+                team_id, export_options.start_date, export_options.end_date
+            )
+            dates = [
+                export_options.start_date + timedelta(days=i)
+                for i in range(
+                    (export_options.end_date - export_options.start_date).days + 1
+                )
+            ]
+        wb = core_to_excel_schedule(workers, shifts, assignments, dates)
+
+        return wb

@@ -1,4 +1,3 @@
-from src.services import export_services
 from src.services.attribute_service import AttributeService
 from src.services.constraint_build_service import ConstraintBuildService
 from src.services.coverage_selector_service import CoverageSelectorService
@@ -19,7 +18,6 @@ from src.services.user_service import UserService
 from src.services.worker_service import WorkerService
 
 __all__ = [
-    "export_services",
     "AttributeService",
     "ConstraintBuildService",
     "CoverageSelectorService",

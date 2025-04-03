@@ -18,20 +18,20 @@ from shared.schemas import (
     Worker,
 )
 
-from src.constraint_templates.build_templates_list_en import (
+from src.utils.constraint_utils.build_templates_list_en import (
     build_templates_list_en,
 )
-from src.constraint_templates.build_templates_list_es import (
+from src.utils.constraint_utils.build_templates_list_es import (
     build_templates_list_es,
 )
-from src.constraint_templates.build_templates_list_fr import (
+from src.utils.constraint_utils.build_templates_list_fr import (
     build_templates_list_fr,
 )
 
 # WARNING: IMPORTING DBs HERE CREATED ERROR WITH PYTEST
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-positional-arguments
 def build_templates(
     workers: List[Worker],
     shifts: List[Shift],

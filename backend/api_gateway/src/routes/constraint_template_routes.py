@@ -8,7 +8,6 @@ from shared.logger import log_info
 from shared.schemas import Template
 from shared.schemas.errors import UserNotFoundError
 
-from src.constraint_templates import build_templates
 from src.dependencies import get_data_fetching_service
 from src.errors import (
     MessageTypeError,
@@ -24,6 +23,7 @@ from src.integrations.authorization import authz_check
 from src.routes.api_model import TemplateMessage
 from src.scripts.setup_database import user_db
 from src.services import DataFetchingService
+from src.utils.constraint_utils import build_templates
 
 router = APIRouter()
 
