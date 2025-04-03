@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
@@ -252,3 +252,102 @@ class TestAssignmentRepository:
 
         remaining = self.repo.collection.find({"schedule": "schedule1"})
         assert remaining.retrieved == 0
+
+    def test_get_assignments_by_team_and_shifts_today_onward(self):
+        """Test getting assignments by team and shifts from today onward."""
+        today = date.today()
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(today.year, today.month, today.day, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(today.year, today.month, today.day, tzinfo=timezone.utc)
+                + timedelta(days=1),
+                shift="shift2",
+                fixed=True,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(today.year, today.month, today.day, tzinfo=timezone.utc)
+                + timedelta(days=-1),
+                shift="shift2",
+                fixed=True,
+            ),
+            AssignmentSchema(
+                team="team2",
+                worker="worker3",
+                schedule="schedule3",
+                date=datetime(today.year, today.month, today.day, tzinfo=timezone.utc),
+                shift="shift3",
+                fixed=False,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        shift_ids = ["shift1", "shift2"]
+        results = self.repo.get_assignments_by_team_and_shifts_today_onward(
+            "team1", shift_ids
+        )
+
+        assert len(results) == 2
+        assert all(result.team_id == "team1" for result in results)
+        assert all(result.shift_id in shift_ids for result in results)
+        assert all(result.date >= today for result in results)
+
+    def test_delete_assignments_by_team_and_shift_today_onward(self):
+        """Test deleting assignments by team and shift from today onward."""
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=today,
+                shift="shift1",
+                fixed=False,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=today + timedelta(days=1),
+                shift="shift1",
+                fixed=True,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker3",
+                schedule="schedule3",
+                date=today - timedelta(days=1),
+                shift="shift1",
+                fixed=False,
+            ),
+            AssignmentSchema(
+                team="team2",
+                worker="worker4",
+                schedule="schedule4",
+                date=today,
+                shift="shift1",
+                fixed=False,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        self.repo.delete_assignments_by_team_and_shift_today_onward("team1", "shift1")
+
+        remaining = list(
+            self.repo.collection.find({"team": "team1", "shift": "shift1"})
+        )
+        assert len(remaining) == 1
+        for a_doc in remaining:
+            assert a_doc["date"] < today

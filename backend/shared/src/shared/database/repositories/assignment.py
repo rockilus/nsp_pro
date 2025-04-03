@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import List, Union
 
 from shared.database.repositories.base import BaseRepository
@@ -86,6 +86,22 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         assignments = self.find_all({"fixed": True, "schedule": {"$in": schedule_ids}})
         return [a.to_core() for a in assignments]
 
+    def get_assignments_by_team_and_shifts_today_onward(
+        self, team_id: str, shift_ids: List[str]
+    ) -> List[Assignment]:
+        """Get all assignments for a team and list of shift IDs from today onward."""
+        today = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        assignments = self.find_all(
+            {
+                "team": team_id,
+                "shift": {"$in": shift_ids},
+                "date": {"$gte": today},
+            }
+        )
+        return [a.to_core() for a in assignments]
+
     def update_assignment(self, assignment: Assignment) -> Assignment:
         """Update an assignment."""
         assignment_schema = AssignmentSchema.from_core(assignment)
@@ -124,3 +140,18 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
     def delete_assignments_by_shift_id(self, shift_id: str) -> None:
         """Delete all assignments for a specific shift."""
         self.collection.delete_many({"shift": shift_id})
+
+    def delete_assignments_by_team_and_shift_today_onward(
+        self, team_id: str, shift_id: str
+    ) -> None:
+        """Delete all assignments from today onward for a specific team and shift."""
+        today = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        self.collection.delete_many(
+            {
+                "team": team_id,
+                "shift": shift_id,
+                "date": {"$gte": today},
+            }
+        )

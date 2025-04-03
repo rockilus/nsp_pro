@@ -13,6 +13,7 @@ from shared.schemas import (
     ShiftType,
 )
 
+from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
 from src.services.link_shift_service import LinkShiftService
 from src.utils.string_utils import generate_acronym
@@ -20,8 +21,14 @@ from src.utils.string_utils import generate_acronym
 
 # pylint: disable= R0801
 class ShiftService(BaseService):
-    def __init__(self, collection, link_shift_service: LinkShiftService):
+    def __init__(
+        self,
+        collection,
+        assignment_service: AssignmentService,
+        link_shift_service: LinkShiftService,
+    ):
         super().__init__(collection)
+        self.assignment_service = assignment_service
         self.link_shift_service = link_shift_service
 
     def create_shift(self, shift: Shift) -> Tuple[Shift, List[Attribute]]:
@@ -458,8 +465,12 @@ class ShiftService(BaseService):
             raise ValueError("Cannot update the default rest shift")
         if shift_existing.leave_type != ShiftLeaveType.NONE:
             raise ValueError("Cannot update a leave shift")
+        # If acronym changed, then set custom acronym to True
         if shift_updated.acronym != shift_existing.acronym:
             shift_updated.acronym_custom = True
+
+        # If name changed and acronym is not custom, then generate a new acronym
+        # based on the new name and existing acronyms
         if (
             shift_updated.name != shift_existing.name
             and not shift_updated.acronym_custom
@@ -470,6 +481,9 @@ class ShiftService(BaseService):
             acronyms = [s.acronym for s in shifts if s.id != shift_updated.id]
             shift_updated.acronym = generate_acronym(shift_updated.name, acronyms)
         shift_saved = self.collection.shift_db.update_shift(shift_updated)
+
+        # If shift start or end time changed, then update link shifts
+        # associated with the shift
         ls_change = None
         if (
             shift_saved.start_time != shift_existing.start_time
@@ -478,6 +492,40 @@ class ShiftService(BaseService):
             ls_change = self.link_shift_service.update_link_shift_upon_shift_update(
                 shift_saved
             )
+
+        # If shift type changed from normal to duty, then:
+        #   - create or update the recuperation shift
+        #   - assign the recuperation shift after all assignment of the shift
+        #     from today onwards
+        # If the shift type changed from duty to normal, then:
+        #   - delete the recuperation shift
+        #   - delete the assignments of the recuperation shift from today onwards
+        if (
+            shift_existing.shift_type == ShiftType.NORMAL
+            and shift_saved.shift_type == ShiftType.DUTY
+        ):
+            shift_recup = self.create_or_update_duty_recuperation_shift(shift_saved)
+            if shift_recup is not None:
+                self.assignment_service.create_recuperation_assignments(
+                    shift_duty_id=shift_saved.id,
+                    shift_recup_id=shift_recup.id,
+                    team_id=shift_saved.team_id,
+                )
+        elif (
+            shift_existing.shift_type == ShiftType.DUTY
+            and shift_saved.shift_type == ShiftType.NORMAL
+        ):
+            shift_recup = self.collection.shift_db.get_recuperation_shift(
+                shift_saved.id
+            )
+            if shift_recup is not None:
+                self.collection.shift_db.logical_delete_shift_recup(shift_existing.id)
+                # fmt: off
+                self.collection.assignment_db\
+                    .delete_assignments_by_team_and_shift_today_onward(
+                        team_id=shift_existing.team_id, shift_id=shift_recup.id
+                    )
+                # fmt: on
         return shift_saved, ls_change
 
     def delete_shift(self, shift_id: str) -> Dict:
