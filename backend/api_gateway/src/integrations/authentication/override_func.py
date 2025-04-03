@@ -17,7 +17,7 @@ from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.utils import find_first_occurrence_in_list
 
-from src.factories import get_team_service
+from src.factories import get_team_service, get_user_service
 from src.integrations.authorization.authz_services import (
     authz_role_assignment_assign,
 )
@@ -25,7 +25,6 @@ from src.integrations.email_sender.verification_email import (
     send_signup_attempt_email,
 )
 from src.scripts.setup_database import config_db
-from src.services.user_services.user_sign_up import create_user
 from src.utils.constants import SUPPORTED_LANGUAGES_LIST
 
 
@@ -62,6 +61,7 @@ def override_emailpassword_apis(original_implementation: APIInterface):
         #     | GeneralErrorResponse,
         # ]:
         team_service = get_team_service()
+        user_service = get_user_service()
 
         email_form_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields
@@ -123,7 +123,7 @@ def override_emailpassword_apis(original_implementation: APIInterface):
             email = result.user.emails[0]
             if result.user:
                 print("creating user and team in mongodb:", email)
-                await create_user(
+                await user_service.create_user(
                     User(
                         id=user_id,
                         email=email,

@@ -6,9 +6,6 @@ from src.services.team_service import TeamService
 
 
 def get_team_service(request: Request = Depends()) -> TeamService:
-    """
-    Factory function to create and return a TeamService instance.
-    """
-    db_collections = get_db_collections(request)  # Initialize DatabaseCollections
-    shift_service = get_shift_service()  # Initialize ShiftService
+    db_collections = get_db_collections(request)
+    shift_service = get_shift_service()
     return TeamService(db_collections, shift_service)

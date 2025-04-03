@@ -1,4 +1,4 @@
-from src.services import export_services, schedule_services, user_services
+from src.services import export_services, schedule_services
 from src.services.attribute_service import AttributeService
 from src.services.constraint_build_service import ConstraintBuildService
 from src.services.coverage_selector_service import CoverageSelectorService
@@ -14,12 +14,12 @@ from src.services.shift_service import ShiftService
 from src.services.specialty_service import SpecialtyService
 from src.services.stats_service import StatsService
 from src.services.team_service import TeamService
+from src.services.user_service import UserService
 from src.services.worker_service import WorkerService
 
 __all__ = [
     "export_services",
     "schedule_services",
-    "user_services",
     "AttributeService",
     "ConstraintBuildService",
     "CoverageSelectorService",
@@ -35,5 +35,6 @@ __all__ = [
     "SpecialtyService",
     "StatsService",
     "TeamService",
+    "UserService",
     "WorkerService",
 ]
