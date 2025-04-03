@@ -13,9 +13,6 @@ from src.services.shift_service import ShiftService
 
 class TeamService(BaseService):
     def __init__(self, collection, shift_service: ShiftService):
-        """
-        Initialize the TeamService with database collections and ShiftService.
-        """
         super().__init__(collection)
         self.shift_service = shift_service
 

@@ -6,10 +6,12 @@ from typing import List
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas import Request, RequestAugmented, RequestStatus
 from shared.schemas.errors import handle_create_schema_object_error
 
+from src.dependencies import get_db_collections, get_request_service
 from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -22,10 +24,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import RequestMessage
-from src.scripts.setup_database import request_db
-from src.services.request_services import create_request as create_request_service
-from src.services.request_services import get_requests as get_request_service
-from src.services.request_services import update_request as update_request_service
+from src.services import RequestService
 
 router = APIRouter()
 
@@ -35,6 +34,7 @@ async def create_request(
     team_id: str,
     req: RequestMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    request_service: RequestService = Depends(get_request_service),
 ) -> RequestMessage:
     try:
         if not await authz_check(
@@ -42,7 +42,7 @@ async def create_request(
         ):
             raise NotAuthorizedError("You do not have permission to create a request")
         r_data = msg_to_core_request(req)
-        request = create_request_service(r_data)
+        request = request_service.create_request(r_data)
         response = core_to_msg_request_augmented(request)
     except Exception as e:
         log_info("Failed to create request")
@@ -54,6 +54,7 @@ async def create_request(
 async def get_requests(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    request_service: RequestService = Depends(get_request_service),
 ) -> List[RequestMessage]:
     try:
         if not await authz_check(
@@ -61,7 +62,7 @@ async def get_requests(
         ):
             raise NotAuthorizedError("You do not have permission to get requests")
         start_time = time_module.time()
-        requests = get_request_service(team_id)
+        requests = request_service.get_requests(team_id)
         response = [core_to_msg_request_augmented(r) for r in requests]
         end_time = time_module.time()
         time_taken = round(end_time - start_time)
@@ -77,6 +78,7 @@ async def update_request(
     team_id: str,
     updated_request: RequestMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    request_service: RequestService = Depends(get_request_service),
 ):
     try:
         if not await authz_check(
@@ -84,7 +86,7 @@ async def update_request(
         ):
             raise NotAuthorizedError("You do not have permission to update a request")
         r_data = msg_to_core_request(updated_request)
-        request = update_request_service(r_data)
+        request = request_service.update_request(r_data)
         response = core_to_msg_request_augmented(request)
     except Exception as e:
         log_info("Failed to update request")
@@ -97,13 +99,16 @@ async def delete_request(
     request_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(
+        get_db_collections,
+    ),
 ):
     try:
         if not await authz_check(
             session.get_user_id(), "delete-request", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to delete a request")
-        request_db.delete_request(request_id)
+        db_collections.request_db.delete_request(request_id)
     except Exception as e:
         log_info("Failed to delete request")
         handle_routes_errors(e)

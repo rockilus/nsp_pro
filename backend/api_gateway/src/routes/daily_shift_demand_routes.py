@@ -6,10 +6,12 @@ from typing import Dict, List
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas import DailyShiftDemand, DSDSourceType
 from shared.schemas.errors import handle_create_schema_object_error
 
+from src.dependencies import get_daily_shift_demand_service, get_db_collections
 from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -22,10 +24,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import DailyShiftDemandMessage
-from src.scripts.setup_database import daily_shift_demand_db
-from src.services.daily_shift_demand_services import (
-    get_daily_shift_demands as get_daily_shift_demands_service,
-)
+from src.services import DailyShiftDemandService
 
 router = APIRouter()
 
@@ -36,6 +35,7 @@ async def create_daily_shift_demand(
     team_id: str,
     daily_shift_demand: DailyShiftDemandMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> DailyShiftDemandMessage:
     try:
         if not await authz_check(
@@ -45,7 +45,9 @@ async def create_daily_shift_demand(
                 "You do not have permission to create an daily_shift_demand",
             )
         dsd_data = msg_to_core_daily_shift_demand(daily_shift_demand)
-        dsd_created = daily_shift_demand_db.create_daily_shift_demand(dsd_data)
+        dsd_created = db_collections.daily_shift_demand_db.create_daily_shift_demand(
+            dsd_data
+        )
         response = core_to_msg_daily_shift_demand(dsd_created)
     except Exception as e:
         log_info("Failed to create daily_shift_demand")
@@ -58,6 +60,9 @@ async def create_daily_shift_demand(
 async def get_daily_shift_demands(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    daily_shift_demand_service: DailyShiftDemandService = Depends(
+        get_daily_shift_demand_service
+    ),
 ) -> List[DailyShiftDemandMessage]:
     try:
         if not await authz_check(
@@ -67,7 +72,7 @@ async def get_daily_shift_demands(
                 "You do not have permission to get daily_shift_demands",
             )
         start_time = time_module.time()
-        dsds = get_daily_shift_demands_service(team_id)
+        dsds = daily_shift_demand_service.get_daily_shift_demands(team_id)
         response = [core_to_msg_daily_shift_demand(dsd) for dsd in dsds]
         end_time = time_module.time()
         time_taken = round(end_time - start_time)
@@ -83,6 +88,7 @@ async def update_daily_shift_demand(
     team_id: str,
     daily_shift_demand: DailyShiftDemandMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> DailyShiftDemandMessage:
     try:
         if not await authz_check(
@@ -92,7 +98,9 @@ async def update_daily_shift_demand(
                 "You do not have permission to update an daily_shift_demand",
             )
         dsd_data = msg_to_core_daily_shift_demand(daily_shift_demand)
-        updated_dsd = daily_shift_demand_db.update_daily_shift_demand(dsd_data)
+        updated_dsd = db_collections.daily_shift_demand_db.update_daily_shift_demand(
+            dsd_data
+        )
         response = core_to_msg_daily_shift_demand(updated_dsd)
     except Exception as e:
         log_info("Failed to update daily_shift_demand")
@@ -106,6 +114,7 @@ async def delete_daily_shift_demand(
     daily_shift_demand_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> Dict:
     try:
         if not await authz_check(
@@ -114,7 +123,9 @@ async def delete_daily_shift_demand(
             raise NotAuthorizedError(
                 "You do not have permission to delete an daily_shift_demand",
             )
-        daily_shift_demand_db.delete_daily_shift_demand(daily_shift_demand_id)
+        db_collections.daily_shift_demand_db.delete_daily_shift_demand(
+            daily_shift_demand_id
+        )
     except Exception as e:
         log_info("Failed to delete daily_shift_demand")
         handle_routes_errors(e)

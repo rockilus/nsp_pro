@@ -14,15 +14,16 @@ from shared.schemas import (
 )
 
 from src.services.base_service import BaseService
-from src.services.link_shift_services.update_link_shift import (
-    update_link_shift_upon_shift_delete,
-    update_link_shift_upon_shift_update,
-)
-from src.services.worker_services.update_worker import generate_acronym
+from src.services.link_shift_service import LinkShiftService
+from src.utils.string_utils import generate_acronym
 
 
 # pylint: disable= R0801
 class ShiftService(BaseService):
+    def __init__(self, collection, link_shift_service: LinkShiftService):
+        super().__init__(collection)
+        self.link_shift_service = link_shift_service
+
     def create_shift(self, shift: Shift) -> Tuple[Shift, List[Attribute]]:
         if shift.rest_type == ShiftRestType.OFF:
             raise ValueError("Cannot create the default rest shift")
@@ -474,7 +475,9 @@ class ShiftService(BaseService):
             shift_saved.start_time != shift_existing.start_time
             or shift_saved.end_time != shift_existing.end_time
         ):
-            ls_change = update_link_shift_upon_shift_update(shift_saved)
+            ls_change = self.link_shift_service.update_link_shift_upon_shift_update(
+                shift_saved
+            )
         return shift_saved, ls_change
 
     def delete_shift(self, shift_id: str) -> Dict:
@@ -485,7 +488,7 @@ class ShiftService(BaseService):
             raise ValueError("Cannot delete the default rest shift")
         if shift.leave_type != ShiftLeaveType.NONE:
             raise ValueError("Cannot delete a leave shift")
-        ls_change = update_link_shift_upon_shift_delete(shift)
+        ls_change = self.link_shift_service.update_link_shift_upon_shift_delete(shift)
         self.delete_shift_from_schedule_quick_staffing(shift_id)
         self.collection.shift_demand_db.delete_shift_demands_by_shift_id(shift_id)
         self.collection.daily_shift_demand_db.delete_daily_shift_demands_by_shift_id(
