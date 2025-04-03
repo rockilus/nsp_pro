@@ -18,6 +18,7 @@ from shared.schemas import (
 )
 from shared.schemas.errors import handle_create_schema_object_error
 
+from src.dependencies import get_constraint_build_service
 from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -35,18 +36,7 @@ from src.routes.api_model import (
     MissingAttributeMessage,
     ShiftWorkerOptionMessage,
 )
-from src.services.constraint_build_services import (
-    create_constraint_build as create_constraint_build_service,
-)
-from src.services.constraint_build_services import (
-    delete_constraint_build as delete_constraint_build_service,
-)
-from src.services.constraint_build_services import (
-    get_constraint_builds as get_constraint_builds_service,
-)
-from src.services.constraint_build_services import (
-    update_constraint_build as update_constraint_build_service,
-)
+from src.services import ConstraintBuildService
 
 router = APIRouter()
 
@@ -56,6 +46,9 @@ async def create_constraint(
     team_id: str,
     req: ConstraintBuildMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    constraint_build_service: ConstraintBuildService = Depends(
+        get_constraint_build_service,
+    ),
 ) -> ConstraintBuildMessage:
     try:
         if not await authz_check(
@@ -65,7 +58,7 @@ async def create_constraint(
                 "You do not have permission to create a constraint"
             )
         cb_data = msg_to_core_constraint_build(req)
-        cb_augmented = create_constraint_build_service(cb_data)
+        cb_augmented = constraint_build_service.create_constraint_build(cb_data)
         response = core_to_msg_constraint_build_augmented(cb_augmented)
     except Exception as e:
         log_info("Failed to create constraint")
@@ -77,13 +70,16 @@ async def create_constraint(
 async def get_constraints(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    constraint_build_service: ConstraintBuildService = Depends(
+        get_constraint_build_service,
+    ),
 ) -> List[ConstraintBuildMessage]:
     try:
         if not await authz_check(
             session.get_user_id(), "read-constraints", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get constraints")
-        constraint_builds = get_constraint_builds_service(team_id)
+        constraint_builds = constraint_build_service.get_constraint_builds(team_id)
         response = [
             core_to_msg_constraint_build_augmented(cb) for cb in constraint_builds
         ]
@@ -98,6 +94,9 @@ async def update_constraint(
     team_id: str,
     updated_constraint_build: ConstraintBuildMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    constraint_build_service: ConstraintBuildService = Depends(
+        get_constraint_build_service,
+    ),
 ) -> ConstraintBuildMessage:
     try:
         if not await authz_check(
@@ -107,7 +106,7 @@ async def update_constraint(
                 "You do not have permission to update a constraint"
             )
         cb_data = msg_to_core_constraint_build(updated_constraint_build)
-        cb_updated = update_constraint_build_service(cb_data)
+        cb_updated = constraint_build_service.update_constraint_build(cb_data)
         response = core_to_msg_constraint_build_augmented(cb_updated)
     except Exception as e:
         log_info("Failed to update constraint")
@@ -120,6 +119,9 @@ async def delete_constraint(
     constraint_build_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    constraint_build_service: ConstraintBuildService = Depends(
+        get_constraint_build_service,
+    ),
 ):
     try:
         if not await authz_check(
@@ -128,7 +130,7 @@ async def delete_constraint(
             raise NotAuthorizedError(
                 "You do not have permission to delete a constraint"
             )
-        delete_constraint_build_service(team_id, constraint_build_id)
+        constraint_build_service.delete_constraint_build(team_id, constraint_build_id)
     except Exception as e:
         log_info("Failed to delete constraint")
         handle_routes_errors(e)

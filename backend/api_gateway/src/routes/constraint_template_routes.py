@@ -9,6 +9,7 @@ from shared.schemas import Template
 from shared.schemas.errors import UserNotFoundError
 
 from src.constraint_templates import build_templates
+from src.dependencies import get_data_fetching_service
 from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -22,9 +23,7 @@ from src.integrations.authentication import (
 from src.integrations.authorization import authz_check
 from src.routes.api_model import TemplateMessage
 from src.scripts.setup_database import user_db
-from src.services.data_fetching_services import (
-    fetch_workers_not_d_shifts_not_d_dim_not_d_attributes_spes,
-)
+from src.services import DataFetchingService
 
 router = APIRouter()
 
@@ -34,6 +33,7 @@ router = APIRouter()
 async def get_constraint_templates(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    data_fetching_service: DataFetchingService = Depends(get_data_fetching_service),
 ) -> List[TemplateMessage]:
     try:
         if not await authz_check(
@@ -48,7 +48,12 @@ async def get_constraint_templates(
             raise UserNotFoundError(f"User with id {user_id} not found")
         # pylint: disable=R0801
         (workers, shifts, dimensions, dim_entries, attributes, specialties) = (
-            fetch_workers_not_d_shifts_not_d_dim_not_d_attributes_spes(team_id)
+            # fmt: off
+            data_fetching_service
+            .fetch_workers_not_d_shifts_not_d_dim_not_d_attributes_spes(
+                team_id
+            )
+            # fmt: on
         )
         templates = build_templates(
             workers,
