@@ -5,8 +5,8 @@ from permit import Permit, PermitConnectionError, UserRead  # type: ignore
 from shared.logger import log_debug, log_info
 from shared.schemas import Team, User, UserAuth
 
+from src.config import config
 from src.errors import AuthzConnectionError, handle_permit_errors
-from src.utils.env_config import PDP_API_KEY, PDP_URL
 
 # Permit API doc:
 # https://api.permit.io/v2/redoc#tag/Users
@@ -24,7 +24,7 @@ def authz_connect(pdp_url: str, pdp_api_key: str) -> Permit:
         ) from err
 
 
-permit = authz_connect(PDP_URL, PDP_API_KEY)
+permit = authz_connect(config.pdp_url, config.pdp_api_key)
 
 
 async def authz_user_sync(user: User) -> None:
@@ -163,4 +163,4 @@ async def authz_health_check() -> None:
         await permit.api.tenants.list()
     except Exception as e:
         log_info("Permit health check error, trying to reconnect: " + str(e))
-        authz_connect(PDP_URL, PDP_API_KEY)
+        authz_connect(config.pdp_url, config.pdp_api_key)

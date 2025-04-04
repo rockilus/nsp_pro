@@ -1,12 +1,12 @@
 from celery import Celery  # type: ignore
 
-from src.utils.env_config import REDIS_URL, RESULT_BACKEND
+from src.config import config
 
 
 def create_celery_app() -> Celery:
     app = Celery(
-        broker=REDIS_URL,
-        backend=RESULT_BACKEND,
+        broker=config.redis_url,
+        backend=config.result_backend,
         task_routes={
             "solve_service.solve_campaign": {"queue": "solve_queue"},
         },

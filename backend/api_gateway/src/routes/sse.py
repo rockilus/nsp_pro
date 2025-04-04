@@ -10,13 +10,13 @@ from shared.schemas import EngineOutputsAugmented, SolveDetailsStatus
 from starlette.responses import StreamingResponse
 
 from src.celery_tasks.celery_app import celery_app
+from src.config import config
 from src.dependencies import get_db_collections, get_schedule_service
 from src.routes.schedule_routes import (
     core_to_msg_schedule,
     core_to_msg_solution,
 )
 from src.services.schedule_service import ScheduleService
-from src.utils.env_config import TASK_EXIPRATION
 
 # from src.utils import event_manager
 
@@ -70,7 +70,7 @@ async def sse(
                     now = datetime.now(tz=timezone.utc)
                     if (
                         now - schedule.solve_details.updated_at  # type: ignore
-                        > timedelta(seconds=TASK_EXIPRATION)
+                        > timedelta(seconds=config.task_expiration)
                     ):
                         print("Task expired")
                         async_result.revoke()
