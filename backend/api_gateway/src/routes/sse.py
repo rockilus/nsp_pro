@@ -147,7 +147,6 @@ async def sse(
                             eo_augmented.assignments,
                             eo_augmented.breaches,
                             eo_augmented.requests,
-                            eo_augmented.shifts_recup_new,
                         )
                         data["solution"] = solution_message.model_dump()
                     else:

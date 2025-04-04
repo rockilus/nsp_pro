@@ -58,5 +58,4 @@ def save_engine_outputs(
         assignments=assignments_saved,
         breaches=breaches_saved,
         requests=requests_aug_saved,
-        shifts_recup_new=engine_intputs.shifts_recup_new,
     )

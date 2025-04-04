@@ -338,7 +338,6 @@ def engine_inputs_special_days(
         schedule=schedule,
         workers=workers,
         shifts=shifts,
-        shifts_recup_new=[],
         link_shifts=[],
         dimensions=[],
         dim_entries=[],

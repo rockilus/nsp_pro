@@ -3,7 +3,6 @@ import { toAssignmentT } from "./assignment";
 import { toBreachT } from "./breach";
 import { toRequestT } from "./request";
 import { toScheduleT } from "./schedule";
-import { toShiftT } from "./shift";
 // Types
 import { SolveDetailsStatus } from "../../types/schedule";
 // Env Vars
@@ -64,13 +63,11 @@ export class SSEManager {
             const assignments = data.solution.assignments.map(toAssignmentT);
             const breaches = data.solution.breaches.map(toBreachT);
             const requests = data.solution.requests.map(toRequestT);
-            const shiftsRecupNew = data.solution.shiftsRecupNew.map(toShiftT);
             onOutputEventSuccessSolution({
               newSchedule: schedule,
               newAssignments: assignments,
               newBreaches: breaches,
               newRequests: requests,
-              newShifts: shiftsRecupNew,
             });
           } else if (data.schedule) {
             const schedule = toScheduleT(data.schedule);

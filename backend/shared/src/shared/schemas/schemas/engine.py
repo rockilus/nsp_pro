@@ -3,7 +3,10 @@ from enum import Enum
 from typing import Dict, List
 
 from shared.schemas.schemas.attribute import Attribute
-from shared.schemas.schemas.constraint import ConstraintBuildAugmented, Penalties
+from shared.schemas.schemas.constraint import (
+    ConstraintBuildAugmented,
+    Penalties,
+)
 from shared.schemas.schemas.coverage import DailyShiftDemand
 from shared.schemas.schemas.dimension import Dimension, DimEntry
 from shared.schemas.schemas.model_output import ModelOutput
@@ -147,7 +150,6 @@ class EngineInputs:
     schedule: Schedule
     workers: List[Worker]
     shifts: List[Shift]
-    shifts_recup_new: List[Shift]
     link_shifts: List[LinkShift]
     dimensions: List[Dimension]
     dim_entries: List[DimEntry]
@@ -164,7 +166,6 @@ class EngineInputs:
             "schedule": self.schedule.to_dict(),
             "workers": [worker.to_dict() for worker in self.workers],
             "shifts": [shift.to_dict() for shift in self.shifts],
-            "shifts_recup_new": [shift.to_dict() for shift in self.shifts_recup_new],
             "link_shifts": [link_shift.to_dict() for link_shift in self.link_shifts],
             "dimensions": [dim.to_dict() for dim in self.dimensions],
             "dim_entries": [entry.to_dict() for entry in self.dim_entries],
@@ -189,9 +190,6 @@ class EngineInputs:
             schedule=Schedule.from_dict(data["schedule"]),
             workers=[Worker.from_dict(worker) for worker in data["workers"]],
             shifts=[Shift.from_dict(shift) for shift in data["shifts"]],
-            shifts_recup_new=[
-                Shift.from_dict(shift) for shift in data["shifts_recup_new"]
-            ],
             link_shifts=[LinkShift.from_dict(link) for link in data["link_shifts"]],
             dimensions=[Dimension.from_dict(dim) for dim in data["dimensions"]],
             dim_entries=[DimEntry.from_dict(entry) for entry in data["dim_entries"]],
@@ -235,7 +233,6 @@ class EngineInputsAugmented(EngineInputs):
             schedule=engine_inputs.schedule,
             workers=engine_inputs.workers,
             shifts=engine_inputs.shifts,
-            shifts_recup_new=engine_inputs.shifts_recup_new,
             link_shifts=engine_inputs.link_shifts,
             dimensions=engine_inputs.dimensions,
             dim_entries=engine_inputs.dim_entries,
@@ -292,7 +289,6 @@ class EngineOutputsAugmented:
     assignments: List[Assignment]
     breaches: List[Breach]
     requests: List[RequestAugmented]
-    shifts_recup_new: List[Shift]
 
     def to_dict(self) -> Dict:
         return {
@@ -300,7 +296,6 @@ class EngineOutputsAugmented:
             "assignments": [assignment.to_dict() for assignment in self.assignments],
             "breaches": [breach.to_dict() for breach in self.breaches],
             "requests": [request.to_dict() for request in self.requests],
-            "shifts_recup_new": [shift.to_dict() for shift in self.shifts_recup_new],
         }
 
     @classmethod
@@ -313,9 +308,6 @@ class EngineOutputsAugmented:
             breaches=[Breach.from_dict(breach) for breach in data["breaches"]],
             requests=[
                 RequestAugmented.from_dict(request) for request in data["requests"]
-            ],
-            shifts_recup_new=[
-                Shift.from_dict(shift) for shift in data["shifts_recup_new"]
             ],
         )
 

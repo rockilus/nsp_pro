@@ -16,7 +16,6 @@ from shared.schemas import (
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
-    Shift,
     SolveDetails,
     SolveDetailsStatus,
     WorkTimeTable,
@@ -51,7 +50,6 @@ from src.routes.assignment_routes import core_to_msg_assignment
 from src.routes.breach_routes import core_to_msg_breach
 from src.routes.coverage_selector_routes import core_to_msg_coverage_selector
 from src.routes.request_routes import core_to_msg_request_augmented
-from src.routes.shift_routes import core_to_msg_shift_and_attributes
 from src.services.schedule_service import ScheduleService
 from src.utils import event_manager
 
@@ -160,7 +158,6 @@ async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> 
             eo_augmented.assignments,
             eo_augmented.breaches,
             eo_augmented.requests,
-            eo_augmented.shifts_recup_new,
         )
         # Broadcast the data to all SSE clients
         event_manager.broadcast(solution_message.model_dump())
@@ -324,7 +321,6 @@ def core_to_msg_solution(
     assignments: List[Assignment],
     objective_breaches: List[Breach],
     requests: List[RequestAugmented],
-    shifts_recup_new: List[Shift],
 ) -> SolutionMessage:
     data: Dict[
         str,
@@ -338,9 +334,6 @@ def core_to_msg_solution(
     data["assignments"] = [core_to_msg_assignment(a) for a in assignments]
     data["breaches"] = [core_to_msg_breach(ob) for ob in objective_breaches]
     data["requests"] = [core_to_msg_request_augmented(r) for r in requests]
-    data["shifts_recup_new"] = [
-        core_to_msg_shift_and_attributes(s, []) for s in shifts_recup_new
-    ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(SolutionMessage)
     try:

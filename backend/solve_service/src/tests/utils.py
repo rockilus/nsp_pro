@@ -2,7 +2,12 @@ import json
 import os
 from typing import Dict
 
-from shared.schemas import EngineInputs, EngineInputsAugmented, ModelConfig, Penalties
+from shared.schemas import (
+    EngineInputs,
+    EngineInputsAugmented,
+    ModelConfig,
+    Penalties,
+)
 
 
 def load_json_from_file(filename: str) -> Dict:
@@ -22,7 +27,6 @@ def engine_inputs_to_engine_inputs_augmented(
         schedule=engine_inputs.schedule,
         workers=engine_inputs.workers,
         shifts=engine_inputs.shifts,
-        shifts_recup_new=engine_inputs.shifts_recup_new,
         link_shifts=engine_inputs.link_shifts,
         dimensions=engine_inputs.dimensions,
         dim_entries=engine_inputs.dim_entries,
