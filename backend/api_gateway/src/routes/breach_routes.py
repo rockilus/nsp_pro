@@ -6,23 +6,24 @@ from typing import Dict, List
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas import Breach, ObjectiveCategory, Variable
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.dependencies import get_db_collections
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import BreachMessage, VariableMessage
-from scripts.setup_database import breach_db, schedule_db
+from src.integrations.authorization import authz_check
+from src.routes.api_model import BreachMessage, VariableMessage
 
 router = APIRouter()
 
@@ -31,6 +32,7 @@ router = APIRouter()
 async def get_objective_breaches(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[BreachMessage]:
     try:
         if not await authz_check(
@@ -40,10 +42,12 @@ async def get_objective_breaches(
                 "You do not have permission to get objective breaches",
             )
         start_time = time_module.time()
-        schedule_campaign = schedule_db.get_schedule_campaign(team_id)
+        schedule_campaign = db_collections.schedule_db.get_schedule_campaign(team_id)
         if not schedule_campaign:
             return []
-        objective_breaches = breach_db.get_breaches_by_schedule_id(schedule_campaign.id)
+        objective_breaches = db_collections.breach_db.get_breaches_by_schedule_id(
+            schedule_campaign.id
+        )
         response = [core_to_msg_breach(a) for a in objective_breaches]
         end_time = time_module.time()
         time_taken = round(end_time - start_time)
@@ -59,6 +63,7 @@ async def update_objective_breach(
     team_id: str,
     objective_breach_api: BreachMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> BreachMessage:
     try:
         if not await authz_check(
@@ -68,7 +73,9 @@ async def update_objective_breach(
                 "You do not have permission to update objective breaches",
             )
         objective_breach_data = msg_to_core_breach(objective_breach_api)
-        updated_objective_breach = breach_db.update_breach(objective_breach_data)
+        updated_objective_breach = db_collections.breach_db.update_breach(
+            objective_breach_data
+        )
         response = core_to_msg_breach(updated_objective_breach)
     except Exception as e:
         log_info("Failed to update objective breach")
@@ -81,6 +88,7 @@ async def delete_objective_breach(
     objective_breach_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> Dict:
     try:
         if not await authz_check(
@@ -89,7 +97,7 @@ async def delete_objective_breach(
             raise NotAuthorizedError(
                 "You do not have permission to delete objective breaches",
             )
-        breach_db.delete_breach(objective_breach_id)
+        db_collections.breach_db.delete_breach(objective_breach_id)
     except Exception as e:
         log_info("Failed to delete objective breach")
         handle_routes_errors(e)

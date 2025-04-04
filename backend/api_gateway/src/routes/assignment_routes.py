@@ -6,23 +6,24 @@ from typing import Dict, List, Optional
 import humps
 from fastapi import APIRouter, Depends, Query
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas import Assignment
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.dependencies import get_db_collections
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import AssignmentMessage
-from scripts.setup_database import assignment_db
+from src.integrations.authorization import authz_check
+from src.routes.api_model import AssignmentMessage
 
 router = APIRouter()
 
@@ -32,6 +33,7 @@ async def create_assignment(
     team_id: str,
     assignment: AssignmentMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> AssignmentMessage:
     try:
         if not await authz_check(
@@ -41,7 +43,7 @@ async def create_assignment(
                 "You do not have permission to create an assignment",
             )
         a_data = msg_to_core_assignment(assignment)
-        a_created = assignment_db.create_assignment(a_data)
+        a_created = db_collections.assignment_db.create_assignment(a_data)
         response = core_to_msg_assignment(a_created)
     except Exception as e:
         log_info("Failed to create assignment")
@@ -55,6 +57,7 @@ async def get_assignments(
     start_date: Optional[date] = Query(None, alias="start_date"),
     end_date: Optional[date] = Query(None, alias="end_date"),
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[AssignmentMessage]:
     try:
         if not await authz_check(
@@ -65,9 +68,9 @@ async def get_assignments(
             )
         start_time = time_module.time()
         if start_date is None or end_date is None:
-            assignments = assignment_db.get_assignments(team_id)
+            assignments = db_collections.assignment_db.get_assignments(team_id)
         else:
-            assignments = assignment_db.get_assignments_by_dates(
+            assignments = db_collections.assignment_db.get_assignments_by_dates(
                 team_id, start_date, end_date
             )
         response = [core_to_msg_assignment(a) for a in assignments]
@@ -85,6 +88,7 @@ async def update_assignment(
     team_id: str,
     assignment_api: AssignmentMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> AssignmentMessage:
     try:
         if not await authz_check(
@@ -94,7 +98,9 @@ async def update_assignment(
                 "You do not have permission to update an assignment",
             )
         assignment_data = msg_to_core_assignment(assignment_api)
-        updated_assignment = assignment_db.update_assignment(assignment_data)
+        updated_assignment = db_collections.assignment_db.update_assignment(
+            assignment_data
+        )
         response = core_to_msg_assignment(updated_assignment)
     except Exception as e:
         log_info("Failed to update assignment")
@@ -107,6 +113,7 @@ async def delete_assignment(
     assignment_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> Dict:
     try:
         if not await authz_check(
@@ -115,7 +122,7 @@ async def delete_assignment(
             raise NotAuthorizedError(
                 "You do not have permission to delete an assignment",
             )
-        assignment_db.delete_assignment(assignment_id)
+        db_collections.assignment_db.delete_assignment(assignment_id)
     except Exception as e:
         log_info("Failed to delete assignment")
         handle_routes_errors(e)

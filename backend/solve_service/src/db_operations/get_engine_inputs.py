@@ -4,7 +4,6 @@ from shared.database.database_collections import DatabaseCollections
 from shared.schemas import EngineInputs, Schedule
 
 from db_operations.assignment_services import get_fixed_assignments
-from db_operations.create_shift import create_duty_recuperation_shifts
 from db_operations.fetch_data import fetch_workers_shifts_dim_attributes_spe
 from db_operations.get_constraint_build import (
     get_active_constraint_builds_by_ids,
@@ -32,11 +31,6 @@ def get_engine_inputs(
         specialties,
         collections,
     )
-    recuperation_shifts_new = create_duty_recuperation_shifts(shifts, collections)
-    shift_id_to_shift = {shift.id: shift for shift in shifts}
-    for rec_shift in recuperation_shifts_new:
-        shift_id_to_shift[rec_shift.id] = rec_shift
-    shifts = list(shift_id_to_shift.values())
     link_shifts = get_link_shifts(schedule.team_id, shifts, collections)
     daily_shift_demands = (
         collections.daily_shift_demand_db.get_daily_shift_demands_by_schedule_id(
@@ -52,7 +46,6 @@ def get_engine_inputs(
         schedule=schedule,
         workers=workers,
         shifts=shifts,
-        shifts_recup_new=recuperation_shifts_new,
         link_shifts=link_shifts,
         dimensions=dimensions,
         dim_entries=dim_entries,

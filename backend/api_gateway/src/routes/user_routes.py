@@ -4,23 +4,26 @@ from typing import Dict
 import humps
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas import PasswordData, User
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.dependencies import get_db_collections, get_user_service
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     PasswordsDoNotMatchError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import PasswordDataMessage, UserMessage
-from scripts.setup_database import user_db
-from services.user_services import change_user_password as change_user_password_service
-from services.user_services import update_user as update_user_service
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
+from src.integrations.authorization import authz_check
+from src.routes.api_model import PasswordDataMessage, UserMessage
+from src.services.user_service import UserService
 
 router = APIRouter()
 
@@ -28,12 +31,13 @@ router = APIRouter()
 @router.get("/users/me")
 async def get_current_user(
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> UserMessage:
     try:
         user_id = session.get_user_id()
         if not await authz_check(user_id, "read", "user", user_id):
             raise NotAuthorizedError("You do not have permission to read the user")
-        user = user_db.get_user_by_id(user_id)
+        user = db_collections.user_db.get_user_by_id(user_id)
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
         response = core_to_msg_user(user)
@@ -48,6 +52,7 @@ async def update_user(
     user_id: str,
     user: UserMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    user_service: UserService = Depends(get_user_service),
 ) -> UserMessage:
     try:
         if not await authz_check(session.get_user_id(), "update", "user", user_id):
@@ -55,7 +60,7 @@ async def update_user(
         recipe_user_id = session.get_recipe_user_id()
         tenant_id = session.get_tenant_id()
         u_data = msg_to_core_user(user)
-        updated_user = await update_user_service(u_data, recipe_user_id, tenant_id)
+        updated_user = await user_service.update_user(u_data, recipe_user_id, tenant_id)
         response = core_to_msg_user(updated_user)
     except Exception as e:
         log_info("Failed to update user")
@@ -68,6 +73,7 @@ async def change_user_password(
     user_id: str,
     password_data: PasswordDataMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    user_service: UserService = Depends(get_user_service),
 ) -> Dict:
     try:
         if not await authz_check(
@@ -79,7 +85,9 @@ async def change_user_password(
         p_data = msg_to_core_password_data(password_data)
         if p_data.new_password != p_data.new_password_confirm:
             raise PasswordsDoNotMatchError("Passwords do not match")
-        await change_user_password_service(user_id, recipe_user_id, tenant_id, p_data)
+        await user_service.change_user_password(
+            user_id, recipe_user_id, tenant_id, p_data
+        )
         response = {"message": "Password updated successfully"}
     except Exception as e:
         log_info("Failed to update user password")

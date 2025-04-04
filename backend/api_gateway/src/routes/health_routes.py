@@ -1,27 +1,29 @@
 import httpx
 import redis
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from shared.database.database_collections import DatabaseCollections
 
-from errors import AuthnConnectionError, AuthzConnectionError
-from integrations.authentication import authn_health_check
-from integrations.authorization import authz_connect, authz_health_check
-from routes.api_model import HealthCheck, ServiceStatus
-from scripts.setup_database import db
-from utils.env_config import PDP_API_KEY
+from src.config import config
+from src.dependencies import get_db_collections
+from src.errors import AuthnConnectionError, AuthzConnectionError
+from src.integrations.authentication import authn_health_check
+from src.integrations.authorization import authz_connect, authz_health_check
+from src.routes.api_model import HealthCheck, ServiceStatus
 
 router = APIRouter()
 
 
 @router.get("/health", response_model=HealthCheck)
-async def health_check() -> HealthCheck:
+async def health_check(
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> HealthCheck:
     health_status = {
         "database": ServiceStatus(status="ok", details=None),
         "authn": ServiceStatus(status="ok", details=None),
         "authz": ServiceStatus(status="ok", details=None),
     }
-
     try:
-        db.check_health()
+        db_collections.db.check_health()
     except Exception as e:
         health_status["database"].status = "error"
         health_status["database"].details = str(e)
@@ -58,7 +60,7 @@ async def check_authz_health(
 ):
     try:
         print("Tenants request with pdp url: ", pdp_url)
-        permit = authz_connect(pdp_url, PDP_API_KEY)
+        permit = authz_connect(pdp_url, config.pdp_api_key)
         resource_instance = "team: 667d626f02d5723648a0f1fc"
         out = await permit.check(
             user="bb2a8dd2-240d-41fc-9920-9eb51948cb22",

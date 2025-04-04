@@ -7,16 +7,20 @@ from shared.logger import log_info
 from shared.schemas import Attribute, AttributeOwnerType
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.dependencies import get_attribute_service
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import AttributeMessage
-from services.attribute_services import create_or_update_attribute
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
+from src.integrations.authorization import authz_check
+from src.routes.api_model import AttributeMessage
+from src.services.attribute_service import AttributeService
 
 router = APIRouter()
 
@@ -26,6 +30,7 @@ async def update_attribute(
     team_id: str,
     attribute: AttributeMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    attribute_service: AttributeService = Depends(get_attribute_service),
 ) -> AttributeMessage:
     try:
         if not await authz_check(
@@ -33,7 +38,7 @@ async def update_attribute(
         ):
             raise NotAuthorizedError("You do not have permission to update attributes")
         sp_data = msg_to_core_attribute(attribute)
-        new_sp = create_or_update_attribute(sp_data)
+        new_sp = attribute_service.create_or_update_attribute(sp_data)
         response = core_to_msg_attribute(new_sp)
     except Exception as e:
         log_info("Failed to update attribute")

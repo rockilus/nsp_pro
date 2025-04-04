@@ -263,7 +263,6 @@ class SolutionMessage(BaseModel):
     assignments: List[AssignmentMessage]
     breaches: List[BreachMessage]
     requests: List[RequestMessage]
-    shiftsRecupNew: List[ShiftMessage]
 
 
 class WorkTimeTableDataMessage(BaseModel):

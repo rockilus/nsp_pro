@@ -4,23 +4,26 @@ from typing import List
 import humps
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas import DimEntry
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.dependencies import get_db_collections, get_dim_entry_service
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import AttributeMessage, DimEntryMessage
-from routes.attribute_routes import core_to_msg_attribute
-from scripts.setup_database import dim_entry_db
-from services.dimension_services import create_dim_entry as create_dim_entry_service
-from services.dimension_services import delete_dim_entry as delete_dim_entry_service
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
+from src.integrations.authorization import authz_check
+from src.routes.api_model import AttributeMessage, DimEntryMessage
+from src.routes.attribute_routes import core_to_msg_attribute
+from src.services.dim_entry_service import DimEntryService
 
 router = APIRouter()
 
@@ -30,6 +33,7 @@ async def create_dim_entry(
     team_id: str,
     dim_entry: DimEntryMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    dim_entry_service: DimEntryService = Depends(get_dim_entry_service),
 ) -> DimEntryMessage:
     try:
         if not await authz_check(
@@ -37,7 +41,7 @@ async def create_dim_entry(
         ):
             raise NotAuthorizedError("You do not have permission to create a dim entry")
         de_data = msg_to_core_dim_entry(dim_entry)
-        de_created = create_dim_entry_service(de_data)
+        de_created = dim_entry_service.create_dim_entry(de_data)
         response = core_to_msg_dim_entry(de_created)
     except Exception as e:
         log_info("Failed to create dim entry")
@@ -50,6 +54,9 @@ async def update_dim_entry(
     team_id: str,
     dim_entry: DimEntryMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(
+        get_db_collections,
+    ),
 ) -> DimEntryMessage:
     # pylint: disable=R0801
     try:
@@ -58,7 +65,7 @@ async def update_dim_entry(
         ):
             raise NotAuthorizedError("You do not have permission to update a dim_entry")
         de_data = msg_to_core_dim_entry(dim_entry)
-        updated_de = dim_entry_db.update_dim_entry(de_data)
+        updated_de = db_collections.dim_entry_db.update_dim_entry(de_data)
         response = core_to_msg_dim_entry(updated_de)
     except Exception as e:
         log_info("Failed to update dim entry")
@@ -71,6 +78,7 @@ async def delete_dim_entry(
     dim_entry_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    dim_entry_service: DimEntryService = Depends(get_dim_entry_service),
 ) -> List[AttributeMessage]:
     # pylint: disable=R0801
     try:
@@ -81,7 +89,7 @@ async def delete_dim_entry(
                 status_code=403,
                 detail="You do not have permission to delete a dim entry",
             )
-        sp_updated = delete_dim_entry_service(dim_entry_id)
+        sp_updated = dim_entry_service.delete_dim_entry(dim_entry_id)
     except Exception as e:
         log_info("Failed to delete dim entry")
         handle_routes_errors(e)

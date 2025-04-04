@@ -2,7 +2,7 @@ from typing import List
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.shift import ShiftSchema
-from shared.schemas.schemas.shift import Shift, ShiftType
+from shared.schemas.schemas.shift import Shift, ShiftRestType, ShiftType
 
 
 class ShiftRepository(BaseRepository[ShiftSchema]):
@@ -78,6 +78,17 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         """Get multiple shifts by their IDs."""
         shifts = self.find_all({"_id": {"$in": shift_ids}})
         return [shift.to_core() for shift in shifts]
+
+    def get_recuperation_shift(self, shift_id: str) -> Shift | None:
+        """Get the recuperation shift associated with a given shift ID."""
+        shift = self.collection.find_one(
+            {
+                "recuperation_duty": shift_id,
+                "shift_type": ShiftType.REST.value,
+                "rest_type": ShiftRestType.RECUPERATION.value,
+            }
+        )
+        return ShiftSchema.from_mongo(shift).to_core() if shift else None
 
     def update_shift(self, shift: Shift) -> Shift:
         """Update a shift."""

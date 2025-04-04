@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas import (
     Assignment,
@@ -15,25 +16,25 @@ from shared.schemas import (
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
-    Shift,
     SolveDetails,
     SolveDetailsStatus,
     WorkTimeTable,
 )
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.dependencies import get_db_collections, get_schedule_service
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
+from src.integrations.authentication import (
     SessionContainerType,
     authn_verify_session,
 )
-from integrations.authorization import authz_check
-from routes.api_model import (
+from src.integrations.authorization import authz_check
+from src.routes.api_model import (
     AssignmentMessage,
     BreachMessage,
     CoverageSelectorMessage,
@@ -45,23 +46,12 @@ from routes.api_model import (
     SolveDetailsMessage,
     WorkTimeTableMessage,
 )
-from routes.assignment_routes import core_to_msg_assignment
-from routes.breach_routes import core_to_msg_breach
-from routes.coverage_selector_routes import core_to_msg_coverage_selector
-from routes.request_routes import core_to_msg_request_augmented
-from routes.shift_routes import core_to_msg_shift_and_attributes
-from scripts.setup_database import schedule_db
-from services.schedule_services import (
-    build_worktime_data,
-)
-from services.schedule_services import delete_schedule as delete_schedule_service
-from services.schedule_services import (
-    get_schedule_campaign,
-)
-from services.schedule_services import solve_schedule as solve_schedule_service
-from services.schedule_services import update_schedule as update_schedule_service
-from services.schedule_services import validate_schedule as validate_schedule_service
-from utils import event_manager
+from src.routes.assignment_routes import core_to_msg_assignment
+from src.routes.breach_routes import core_to_msg_breach
+from src.routes.coverage_selector_routes import core_to_msg_coverage_selector
+from src.routes.request_routes import core_to_msg_request_augmented
+from src.services.schedule_service import ScheduleService
+from src.utils import event_manager
 
 router = APIRouter()
 
@@ -70,6 +60,7 @@ router = APIRouter()
 async def create_schedule(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    schedule_service: ScheduleService = Depends(get_schedule_service),
 ) -> ScheduleMessage:
     try:
         if not await authz_check(
@@ -78,8 +69,7 @@ async def create_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to create a schedule",
             )
-        schedules = schedule_db.get_schedules(team_id)
-        schedule_wip = get_schedule_campaign(schedules, team_id)
+        schedule_wip = schedule_service.get_schedule_campaign(team_id)
         response = core_to_msg_schedule(schedule_wip)
     except Exception as e:
         log_info("Failed to create schedule")
@@ -91,6 +81,7 @@ async def create_schedule(
 async def get_schedules(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ScheduleMessage]:
     try:
         if not await authz_check(
@@ -99,7 +90,7 @@ async def get_schedules(
             raise NotAuthorizedError(
                 "You do not have permission to get schedules",
             )
-        schedules = schedule_db.get_schedules(team_id)
+        schedules = db_collections.schedule_db.get_schedules(team_id)
         response = [core_to_msg_schedule(s) for s in schedules]
     except Exception as e:
         log_info("Failed to get schedules")
@@ -112,6 +103,9 @@ async def get_work_time_table(
     schedule_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    schedule_service: ScheduleService = Depends(
+        get_schedule_service,
+    ),
 ) -> WorkTimeTableMessage:
     try:
         if not await authz_check(
@@ -120,7 +114,7 @@ async def get_work_time_table(
             raise NotAuthorizedError(
                 "You do not have permission to read a work time table",
             )
-        work_time_table = build_worktime_data(schedule_id)
+        work_time_table = schedule_service.build_worktime_data(schedule_id)
         response = core_to_msd_work_time_table(work_time_table)
     except Exception as e:
         log_info("Failed to get work time table")
@@ -133,6 +127,9 @@ async def solve_schedule(
     schedule_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    schedule_service: ScheduleService = Depends(
+        get_schedule_service,
+    ),
 ) -> ScheduleMessage:
     # ) -> SolutionMessage:
     try:
@@ -142,7 +139,7 @@ async def solve_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to solve a schedule",
             )
-        schedule = solve_schedule_service(schedule_id)
+        schedule = schedule_service.solve_schedule(schedule_id)
         response = core_to_msg_schedule(schedule)
     except Exception as e:
         log_info("Failed to solve schedule")
@@ -161,7 +158,6 @@ async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> 
             eo_augmented.assignments,
             eo_augmented.breaches,
             eo_augmented.requests,
-            eo_augmented.shifts_recup_new,
         )
         # Broadcast the data to all SSE clients
         event_manager.broadcast(solution_message.model_dump())
@@ -177,6 +173,9 @@ async def validate_schedule(
     schedule_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    schedule_service: ScheduleService = Depends(
+        get_schedule_service,
+    ),
 ) -> ScheduleMessage:
     try:
         if not await authz_check(
@@ -185,7 +184,7 @@ async def validate_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to validate a schedule",
             )
-        schedule = validate_schedule_service(schedule_id)
+        schedule = schedule_service.validate_schedule(schedule_id)
         response = core_to_msg_schedule(schedule)
     except Exception as e:
         log_info("Failed to validate schedule")
@@ -198,6 +197,9 @@ async def update_schedule(
     team_id: str,
     schedule_api: ScheduleMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    schedule_service: ScheduleService = Depends(
+        get_schedule_service,
+    ),
 ) -> Tuple[ScheduleMessage, List[CoverageSelectorMessage]]:
     try:
         if not await authz_check(
@@ -207,7 +209,7 @@ async def update_schedule(
                 "You do not have permission to update a schedule",
             )
         schedule_data = msg_to_core_schedule(schedule_api)
-        schedule_updated, css_updated = update_schedule_service(schedule_data)
+        schedule_updated, css_updated = schedule_service.update_schedule(schedule_data)
         response = (
             core_to_msg_schedule(schedule_updated),
             [core_to_msg_coverage_selector(cs) for cs in css_updated],
@@ -223,6 +225,9 @@ async def delete_schedule(
     schedule_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    schedule_service: ScheduleService = Depends(
+        get_schedule_service,
+    ),
 ) -> Dict:
     try:
         if not await authz_check(
@@ -231,7 +236,7 @@ async def delete_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to delete a schedule",
             )
-        delete_schedule_service(schedule_id)
+        schedule_service.delete_schedule(schedule_id)
     except Exception as e:
         log_info("Failed to delete schedule")
         handle_routes_errors(e)
@@ -316,7 +321,6 @@ def core_to_msg_solution(
     assignments: List[Assignment],
     objective_breaches: List[Breach],
     requests: List[RequestAugmented],
-    shifts_recup_new: List[Shift],
 ) -> SolutionMessage:
     data: Dict[
         str,
@@ -330,9 +334,6 @@ def core_to_msg_solution(
     data["assignments"] = [core_to_msg_assignment(a) for a in assignments]
     data["breaches"] = [core_to_msg_breach(ob) for ob in objective_breaches]
     data["requests"] = [core_to_msg_request_augmented(r) for r in requests]
-    data["shifts_recup_new"] = [
-        core_to_msg_shift_and_attributes(s, []) for s in shifts_recup_new
-    ]
     as_dict = humps.camelize(data)
     validator = TypeAdapter(SolutionMessage)
     try:

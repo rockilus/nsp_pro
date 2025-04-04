@@ -4,22 +4,25 @@ from typing import Dict, List
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas import LinkShift
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.dependencies import get_db_collections, get_link_shift_service
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import LinkShiftMessage
-from scripts.setup_database import link_shift_db
-from services.link_shift_services import create_link_shift as create_link_shift_service
-from services.link_shift_services import update_link_shift as update_link_shift_service
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
+from src.integrations.authorization import authz_check
+from src.routes.api_model import LinkShiftMessage
+from src.services.link_shift_service import LinkShiftService
 
 router = APIRouter()
 
@@ -29,6 +32,9 @@ async def create_link_shift(
     team_id: str,
     link_shift: LinkShiftMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    link_shift_service: LinkShiftService = Depends(
+        get_link_shift_service,
+    ),
 ) -> LinkShiftMessage:
     try:
         if not await authz_check(
@@ -42,7 +48,7 @@ async def create_link_shift(
                 "You do not have permission to create a link shift"
             )
         ls_data = msg_to_core_link_shift(link_shift)
-        link_shift_created = create_link_shift_service(ls_data)
+        link_shift_created = link_shift_service.create_link_shift(ls_data)
         response = core_to_msg_link_shift(link_shift_created)
     except Exception as e:
         log_info("Failed to create link_shift")
@@ -54,6 +60,9 @@ async def create_link_shift(
 async def get_link_shifts(
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(
+        get_db_collections,
+    ),
 ) -> List[LinkShiftMessage]:
     try:
         if not await authz_check(
@@ -64,7 +73,7 @@ async def get_link_shifts(
             team_id,
         ):
             raise NotAuthorizedError("You do not have permission to get link shifts")
-        link_shifts = link_shift_db.get_link_shifts(team_id)
+        link_shifts = db_collections.link_shift_db.get_link_shifts(team_id)
         response = [core_to_msg_link_shift(ls) for ls in link_shifts]
     except Exception as e:
         log_info("Failed to get link shifts")
@@ -77,6 +86,9 @@ async def update_link_shift(
     team_id: str,
     link_shift: LinkShiftMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    link_shift_service: LinkShiftService = Depends(
+        get_link_shift_service,
+    ),
 ) -> LinkShiftMessage:
     try:
         if not await authz_check(
@@ -90,7 +102,7 @@ async def update_link_shift(
                 "You do not have permission to update a link shift"
             )
         ls_data = msg_to_core_link_shift(link_shift)
-        ls_updated = update_link_shift_service(ls_data)
+        ls_updated = link_shift_service.update_link_shift(ls_data)
         response = core_to_msg_link_shift(ls_updated)
     except Exception as e:
         log_info("Failed to update link shift")
@@ -103,6 +115,9 @@ async def delete_link_shift(
     link_shift_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(
+        get_db_collections,
+    ),
 ) -> Dict:
     try:
         if not await authz_check(
@@ -115,7 +130,7 @@ async def delete_link_shift(
             raise NotAuthorizedError(
                 "You do not have permission to delete a link shift"
             )
-        link_shift_db.delete_link_shift(link_shift_id)
+        db_collections.link_shift_db.delete_link_shift(link_shift_id)
     except Exception as e:
         log_info("Failed to delete link shift")
         handle_routes_errors(e)

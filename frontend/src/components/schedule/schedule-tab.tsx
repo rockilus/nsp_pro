@@ -437,13 +437,11 @@ export default function ScheduleTab({
         newAssignments,
         newBreaches,
         newRequests,
-        newShifts,
       }: {
         newSchedule: ScheduleT;
         newAssignments: AssignmentT[];
         newBreaches: BreachT[];
         newRequests: RequestT[];
-        newShifts: ShiftT[];
       }) => {
         console.log("Updating schedule data...");
 
@@ -455,11 +453,6 @@ export default function ScheduleTab({
         setBreaches(newBreaches);
         setRequests((prev) =>
           prev.map((r) => newRequests.find((nr) => nr.id === r.id) || r)
-        );
-        setShifts((prev) =>
-          prev
-            .filter((s) => !newShifts.find((ns) => ns.id === s.id))
-            .concat(newShifts)
         );
         setSolveStatus(SolveDetailsStatus.SUCCESS);
         // Disconnect from SSE after receiving the data

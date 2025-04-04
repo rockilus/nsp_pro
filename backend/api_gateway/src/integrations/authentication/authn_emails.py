@@ -18,11 +18,11 @@ from supertokens_python.recipe.emailverification.types import (
     EmailTemplateVars as EVEmailTemplateVars,
 )
 
-from integrations.email_sender.verification_email import (
+from src.factories import get_database
+from src.integrations.email_sender.verification_email import (
     send_reset_password_email,
     send_verification_email,
 )
-from scripts.setup_database import user_db
 
 
 def custom_email_deliver(
@@ -34,7 +34,8 @@ def custom_email_deliver(
     async def send_email(
         template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -> None:
-        user = user_db.get_user_by_id(template_vars.user.id)
+        db_collections = get_database()
+        user = db_collections.user_db.get_user_by_id(template_vars.user.id)
         if user is None:
             raise UserNotFoundError(f"User with id {template_vars.user.id} not found")
         send_reset_password_email(
@@ -55,7 +56,8 @@ def custom_email_verification_delivery(
     async def send_email(
         template_vars: EVEmailTemplateVars, user_context: Dict[str, Any]
     ) -> None:
-        user = user_db.get_user_by_id(template_vars.user.id)
+        db_collections = get_database()
+        user = db_collections.user_db.get_user_by_id(template_vars.user.id)
         if user is None:
             raise UserNotFoundError(f"User with id {template_vars.user.id} not found")
         send_verification_email(

@@ -469,7 +469,6 @@ def engine_inputs(
         schedule=schedule,
         workers=workers_10,
         shifts=shifts_3n_2d,
-        shifts_recup_new=[],
         link_shifts=[],
         dimensions=dimensions,
         dim_entries=dim_entries,

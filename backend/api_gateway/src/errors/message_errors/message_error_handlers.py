@@ -1,6 +1,6 @@
 from pydantic_core import ValidationError
 
-from errors.message_errors.message_errors import (
+from src.errors.message_errors.message_errors import (
     MessageTypeError,
     MessageValidationError,
     MessageValueError,

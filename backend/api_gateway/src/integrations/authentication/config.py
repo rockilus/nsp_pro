@@ -1,5 +1,7 @@
 from supertokens_python import InputAppInfo, SupertokensConfig
-from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig,
+)
 from supertokens_python.recipe import (
     dashboard,
     emailpassword,
@@ -8,30 +10,25 @@ from supertokens_python.recipe import (
 )
 from supertokens_python.recipe.emailpassword import InputFormField
 
-from integrations.authentication.authn_emails import (
+from src.config import config
+from src.integrations.authentication.authn_emails import (
     custom_email_deliver,
     custom_email_verification_delivery,
 )
-from integrations.authentication.override_func import override_emailpassword_apis
-from utils.env_config import (
-    API_URL,
-    CLIENT_URL,
-    ST_API_KEY,
-    ST_CONNECTION_URI,
-    ST_COOKIE_DOMAIN,
-    ST_DASHBOARD_ADMINS,
+from src.integrations.authentication.override_func import (
+    override_emailpassword_apis,
 )
 
 # this is the location of the SuperTokens core.
 supertokens_config = SupertokensConfig(
-    connection_uri=ST_CONNECTION_URI,
-    api_key=ST_API_KEY,
+    connection_uri=config.st_connection_uri,
+    api_key=config.st_api_key,
 )
 
 app_info = InputAppInfo(
     app_name="Supertokens",
-    api_domain=API_URL,
-    website_domain=CLIENT_URL,
+    api_domain=config.api_url,
+    website_domain=config.client_url,
 )
 
 framework = "fastapi"
@@ -41,7 +38,7 @@ recipe_list = [
         mode="REQUIRED",
         email_delivery=EmailDeliveryConfig(override=custom_email_verification_delivery),
     ),
-    session.init(cookie_domain=ST_COOKIE_DOMAIN),
+    session.init(cookie_domain=config.st_cookie_domain),
     emailpassword.init(
         override=emailpassword.InputOverrideConfig(
             apis=override_emailpassword_apis,
@@ -52,6 +49,6 @@ recipe_list = [
         ),
     ),
     dashboard.init(
-        admins=list(ST_DASHBOARD_ADMINS),
+        admins=config.st_dashboard_admins,
     ),
 ]

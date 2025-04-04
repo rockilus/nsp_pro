@@ -36,6 +36,8 @@ fastapi = "^0.115.6"
 shared = {path = "../shared"}
 black = "^25.1.0"
 isort = "^6.0.1"
+pytest-env = "^1.1.5"
+pydantic-settings = "^2.8.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.3.0"

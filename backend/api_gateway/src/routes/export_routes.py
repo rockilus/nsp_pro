@@ -8,11 +8,15 @@ from shared.logger import log_info
 from shared.schemas import ExportOptions, ExportPeriodOptions
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import NotAuthorizedError, handle_routes_errors
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import ExportOptionsMessage
-from services.export_services import export_schedule_to_excel
+from src.dependencies import get_schedule_service
+from src.errors import NotAuthorizedError, handle_routes_errors
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
+from src.integrations.authorization import authz_check
+from src.routes.api_model import ExportOptionsMessage
+from src.services.schedule_service import ScheduleService
 
 router = APIRouter()
 
@@ -23,6 +27,7 @@ async def export_schedule(
     team_id: str,
     export_options: ExportOptionsMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    schedule_service: ScheduleService = Depends(get_schedule_service),
 ) -> StreamingResponse:
     try:
         if not await authz_check(
@@ -32,7 +37,7 @@ async def export_schedule(
                 "You do not have permission to export a schedule",
             )
         data = msg_to_core_export_options(export_options)
-        workbook = export_schedule_to_excel(team_id, data)
+        workbook = schedule_service.export_schedule_to_excel(team_id, data)
 
         # Convert the workbook to a binary stream
         stream = BytesIO()

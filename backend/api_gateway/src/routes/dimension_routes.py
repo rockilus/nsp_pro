@@ -4,6 +4,7 @@ from typing import Dict, List
 import humps
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas import (
     Attribute,
@@ -14,25 +15,30 @@ from shared.schemas import (
 )
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.dependencies import get_db_collections, get_dimension_service
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import (
+from src.integrations.authentication import (
+    SessionContainerType,
+    authn_verify_session,
+)
+from src.integrations.authorization import authz_check
+from src.routes.api_model import (
     DimensionMessage,
     DimensionsAndDimEntriesMessage,
     DimEntryMessage,
     NewDimensionMessage,
 )
-from routes.dim_entry_routes import core_to_msg_dim_entry, msg_to_core_dim_entry
-from routes.shift_routes import core_to_msg_attribute
-from scripts.setup_database import dim_entry_db, dimension_db
-from services.dimension_services import create_dimension as create_dimension_service
-from services.dimension_services import delete_dimension as delete_dimension_service
+from src.routes.dim_entry_routes import (
+    core_to_msg_dim_entry,
+    msg_to_core_dim_entry,
+)
+from src.routes.shift_routes import core_to_msg_attribute
+from src.services.dimension_service import DimensionService
 
 router = APIRouter()
 
@@ -43,6 +49,9 @@ async def create_dimension(
     dimension: DimensionMessage,
     dim_entries: List[DimEntryMessage],
     session: SessionContainerType = Depends(authn_verify_session()),
+    dimension_service: DimensionService = Depends(
+        get_dimension_service,
+    ),
 ) -> NewDimensionMessage:
     try:
         if not await authz_check(
@@ -51,7 +60,9 @@ async def create_dimension(
             raise NotAuthorizedError("You do not have permission to create a dimension")
         d_data = msg_to_core_dimension(dimension)
         des_data = [msg_to_core_dim_entry(de) for de in dim_entries]
-        d_created, des_created, attributes = create_dimension_service(d_data, des_data)
+        d_created, des_created, attributes = dimension_service.create_dimension(
+            d_data, des_data
+        )
         response = core_to_msg_new_dimension(d_created, des_created, attributes)
     except Exception as e:
         log_info("Failed to create dimension")
@@ -64,6 +75,9 @@ async def get_dimensions(
     team_id: str,
     dim_types_query: List[str] = Query(None, alias="dim_types"),
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(
+        get_db_collections,
+    ),
 ) -> DimensionsAndDimEntriesMessage:
     try:
         if not await authz_check(
@@ -79,10 +93,12 @@ async def get_dimensions(
                 int(dt) for dtq in dim_types_query for dt in dtq.split(",")
             ]
             dt_data = [DimensionType(dt) for dt in dim_types_int]
-        dimensions = dimension_db.get_dimensions_by_dim_types_not_deleted(
-            dt_data, team_id
+        dimensions = (
+            db_collections.dimension_db.get_dimensions_by_dim_types_not_deleted(
+                dt_data, team_id
+            )
         )
-        dim_entries = dim_entry_db.get_dim_entries_by_dim_ids(
+        dim_entries = db_collections.dim_entry_db.get_dim_entries_by_dim_ids(
             [d.id for d in dimensions]
         )
         response = core_to_msg_dimensions_and_dim_entries(dimensions, dim_entries)
@@ -97,6 +113,9 @@ async def update_dimension(
     team_id: str,
     dimension: DimensionMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
+    db_collections: DatabaseCollections = Depends(
+        get_db_collections,
+    ),
 ) -> DimensionMessage:
     try:
         if not await authz_check(
@@ -104,7 +123,7 @@ async def update_dimension(
         ):
             raise NotAuthorizedError("You do not have permission to update a dimension")
         d_data = msg_to_core_dimension(dimension)
-        updated_dimension = dimension_db.update_dimension(d_data)
+        updated_dimension = db_collections.dimension_db.update_dimension(d_data)
         response = core_to_msg_dimension(updated_dimension)
     except Exception as e:
         log_info("Failed to update dimension")
@@ -117,6 +136,9 @@ async def delete_dimension(
     dimension_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
+    dimension_service: DimensionService = Depends(
+        get_dimension_service,
+    ),
 ) -> Dict:
     try:
         if not await authz_check(
@@ -126,7 +148,7 @@ async def delete_dimension(
                 status_code=403,
                 detail="You do not have permission to delete a dimension",
             )
-        delete_dimension_service(dimension_id)
+        dimension_service.delete_dimension(dimension_id)
     except Exception as e:
         log_info("Failed to delete dimension")
         handle_routes_errors(e)

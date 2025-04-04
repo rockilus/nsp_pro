@@ -1,4 +1,4 @@
-from integrations import authentication, authorization, email_sender
+from src.integrations import authentication, authorization, email_sender
 
 __all__ = [
     "authentication",

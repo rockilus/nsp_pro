@@ -1,0 +1,32 @@
+from celery import Celery  # type: ignore
+
+from src.config import config
+
+
+def create_celery_app() -> Celery:
+    app = Celery(
+        broker=config.redis_url,
+        backend=config.result_backend,
+        task_routes={
+            "solve_service.solve_campaign": {"queue": "solve_queue"},
+        },
+    )
+    app.conf.update(
+        task_serializer="json",
+        accept_content=["json"],
+        result_serializer="json",
+        timezone="UTC",
+        enable_utc=True,
+        broker_connection_retry=True,
+        broker_connection_max_retries=None,
+        broker_connection_retry_on_startup=True,
+        broker_connection_retry_interval_start=0.2,
+        broker_connection_retry_interval_max=10.0,
+        broker_connection_retry_interval_step=0.2,
+        worker_cancel_long_running_tasks_on_connection_loss=True,
+    )
+    return app
+
+
+# Initialize the Celery app
+celery_app = create_celery_app()

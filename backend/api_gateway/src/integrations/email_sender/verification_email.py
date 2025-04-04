@@ -1,11 +1,11 @@
 import boto3  # type: ignore
 from shared.schemas import User
 
-from utils.env_config import ENVIRONMENT
+from src.config import config
 
 
 def send_verification_email(user: User, email_verify_link: str) -> None:
-    if ENVIRONMENT == "development":
+    if config.environment == "development":
         session = boto3.Session(profile_name="felipe_kharaba_dev")
         credentials = session.get_credentials()
         client = boto3.client(
@@ -63,7 +63,7 @@ def send_verification_email(user: User, email_verify_link: str) -> None:
 
 
 def send_reset_password_email(user: User, reset_password_link: str) -> None:
-    if ENVIRONMENT == "development":
+    if config.environment == "development":
         session = boto3.Session(profile_name="felipe_kharaba_dev")
         credentials = session.get_credentials()
         client = boto3.client(
@@ -120,7 +120,7 @@ def send_reset_password_email(user: User, reset_password_link: str) -> None:
 
 
 def send_signup_attempt_email(email: str) -> None:
-    if ENVIRONMENT == "development":
+    if config.environment == "development":
         session = boto3.Session(profile_name="felipe_kharaba_dev")
         credentials = session.get_credentials()
         client = boto3.client(
