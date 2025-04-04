@@ -458,22 +458,22 @@ class ShiftService(BaseService):
     def update_shift(
         self, shift_new: Shift
     ) -> Tuple[Shift, Dict[str, List[LinkShift | str]] | None]:
-        shift_old = self._validate_shift_update(shift_new)
+        shift_old = self._validate_shift_update(shift_new.id)
         self._handle_acronym_update(shift_new, shift_old)
         shift_saved = self.collection.shift_db.update_shift(shift_new)
         ls_change = self._handle_link_shift_updates(shift_saved, shift_old)
         self._handle_duty_recuperation_shift_updates(shift_saved, shift_old)
         return shift_saved, ls_change
 
-    def _validate_shift_update(self, shift_new: Shift) -> Shift:
-        shift_old = self.collection.shift_db.get_shift_by_id(shift_new.id)
-        if shift_old is None:
+    def _validate_shift_update(self, shift_id: str) -> Shift:
+        shift = self.collection.shift_db.get_shift_by_id(shift_id)
+        if shift is None:
             raise ValueError("Shift does not exist")
-        if shift_old.rest_type == ShiftRestType.OFF:
-            raise ValueError("Cannot update the default rest shift")
-        if shift_old.leave_type != ShiftLeaveType.NONE:
-            raise ValueError("Cannot update a leave shift")
-        return shift_old
+        if shift.rest_type == ShiftRestType.OFF:
+            raise ValueError("Cannot update or delete the default rest shift")
+        if shift.leave_type != ShiftLeaveType.NONE:
+            raise ValueError("Cannot update or delete a leave shift")
+        return shift
 
     def _handle_acronym_update(self, shift_new: Shift, shift_old: Shift) -> None:
         # If acronym changed, then set custom acronym to True
@@ -520,7 +520,7 @@ class ShiftService(BaseService):
             shift_old.shift_type == ShiftType.DUTY
             and shift_saved.shift_type == ShiftType.NORMAL
         ):
-            self._handle_duty_to_normal_shift_update(shift_saved)
+            self._handle_delete_recup_shift_and_its_assignments(shift_saved)
         elif (
             shift_old.shift_type == ShiftType.DUTY
             and shift_saved.shift_type == ShiftType.DUTY
@@ -541,40 +541,34 @@ class ShiftService(BaseService):
                 team_id=shift_saved.team_id,
             )
 
-    def _handle_duty_to_normal_shift_update(self, shift_saved: Shift) -> None:
-        shift_recup = self.collection.shift_db.get_recuperation_shift(shift_saved.id)
+    def _handle_delete_recup_shift_and_its_assignments(self, shift_duty: Shift) -> None:
+        shift_recup = self.collection.shift_db.get_recuperation_shift(shift_duty.id)
         if shift_recup is not None:
-            self.collection.shift_db.logical_delete_shift_recup(shift_recup.id)
+            self.collection.shift_db.logical_delete_shift(shift_recup.id)
             # fmt: off
             self.collection.assignment_db\
                 .delete_assignments_by_team_and_shift_today_onward(
-                    team_id=shift_saved.team_id, shift_id=shift_recup.id
+                    team_id=shift_recup.team_id, shift_id=shift_recup.id
                 )
             # fmt: on
 
     def delete_shift(self, shift_id: str) -> Dict:
-        shift = self.collection.shift_db.get_shift_by_id(shift_id)
-        if shift is None:
-            raise ValueError("Shift does not exist")
-        if shift.rest_type == ShiftRestType.OFF:
-            raise ValueError("Cannot delete the default rest shift")
-        if shift.leave_type != ShiftLeaveType.NONE:
-            raise ValueError("Cannot delete a leave shift")
+        shift = self._validate_shift_update(shift_id)
         ls_change = self.link_shift_service.update_link_shift_upon_shift_delete(shift)
-        self.delete_shift_from_schedule_quick_staffing(shift_id)
+        self._delete_shift_from_schedule_quick_staffing(shift_id)
         self.collection.shift_demand_db.delete_shift_demands_by_shift_id(shift_id)
         self.collection.daily_shift_demand_db.delete_daily_shift_demands_by_shift_id(
             shift_id
         )
-        self.collection.shift_db.logical_delete_shift(shift_id)
         if shift.shift_type == ShiftType.DUTY:
-            self.collection.shift_db.logical_delete_shift_recup(shift_id)
-        # delete_shift_from_objective_breach(shift_id)
+            self._handle_delete_recup_shift_and_its_assignments(shift)
+        self.collection.shift_db.logical_delete_shift(shift_id)
+        # _delete_shift_from_objective_breach(shift_id)
         # assignment_db.delete_assignments_by_shift_id(shift_id)
         # request_db.delete_requests_by_shift_id(shift_id)
         return ls_change
 
-    def delete_shift_from_objective_breach(self, shift_id: str) -> None:
+    def _delete_shift_from_objective_breach(self, shift_id: str) -> None:
         obs = self.collection.breach_db.get_breaches_by_shift_id(shift_id)
         for ob in obs:
             new_vars = [v for v in ob.variables if v.shift_id != shift_id]
@@ -584,7 +578,7 @@ class ShiftService(BaseService):
             ob.variables = new_vars
             self.collection.breach_db.update_breach(ob)
 
-    def delete_shift_from_schedule_quick_staffing(self, shift_id: str) -> None:
+    def _delete_shift_from_schedule_quick_staffing(self, shift_id: str) -> None:
         schedules = (
             self.collection.schedule_db.get_schedule_quick_staffing_contain_shift_id(
                 shift_id

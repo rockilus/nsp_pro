@@ -1,6 +1,6 @@
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 from shared.schemas import Shift, ShiftLeaveType, ShiftRestType, ShiftType
@@ -25,7 +25,7 @@ def mock_assignment_service() -> MagicMock:
     return MagicMock(spec=AssignmentService)
 
 
-# pylint: disable=redefined-outer-name
+# pylint: disable=redefined-outer-name, protected-access
 @pytest.fixture
 def shift_service(
     mock_collection: MagicMock,
@@ -90,7 +90,8 @@ def test_create_or_update_duty_recuperation_shift_recup_exists_no_update(
         acronym="DR",
         acronym_custom=False,
         start_time=shift_duty.end_time,
-        end_time=shift_duty.end_time + timedelta(hours=shift_duty.recuperation_time),
+        end_time=shift_duty.end_time
+        + timedelta(hours=shift_duty.recuperation_time),
         staffing=[],
         color="#EDBB99",
         shift_type=ShiftType.REST,
@@ -100,7 +101,9 @@ def test_create_or_update_duty_recuperation_shift_recup_exists_no_update(
         recuperation_duty_id="1",
         deleted=False,
     )
-    mock_collection.shift_db.get_recuperation_shift.return_value = recup_existing
+    mock_collection.shift_db.get_recuperation_shift.return_value = (
+        recup_existing
+    )
 
     result = shift_service.create_or_update_duty_recuperation_shift(shift_duty)
     assert result == recup_existing
@@ -145,7 +148,9 @@ def test_create_or_update_duty_recuperation_shift_recup_exists_needs_update(
         recuperation_duty_id="1",
         deleted=True,
     )
-    mock_collection.shift_db.get_recuperation_shift.return_value = recup_existing
+    mock_collection.shift_db.get_recuperation_shift.return_value = (
+        recup_existing
+    )
     mock_collection.shift_db.update_shift.return_value = recup_existing
 
     result = shift_service.create_or_update_duty_recuperation_shift(shift_duty)
@@ -186,7 +191,8 @@ def test_create_or_update_duty_recuperation_shift_recup_does_not_exist(
         acronym="DR",
         acronym_custom=False,
         start_time=shift_duty.end_time,
-        end_time=shift_duty.end_time + timedelta(hours=shift_duty.recuperation_time),
+        end_time=shift_duty.end_time
+        + timedelta(hours=shift_duty.recuperation_time),
         staffing=[],
         color="#EDBB99",
         shift_type=ShiftType.REST,
@@ -353,14 +359,18 @@ def test_update_shift_duty_to_normal(
     )
     mock_collection.shift_db.get_shift_by_id.return_value = shift_old_mock
     mock_collection.shift_db.update_shift.return_value = shift_saved_mock
-    mock_collection.shift_db.get_recuperation_shift.return_value = shift_recup_mock
+    mock_collection.shift_db.get_recuperation_shift.return_value = (
+        shift_recup_mock
+    )
 
     result, _ = shift_service.update_shift(shift_new)
 
     shift_new_input.acronym = "NS"
     assert result == shift_new_input
-    mock_collection.shift_db.update_shift.assert_called_once_with(shift_new_input)
-    mock_collection.shift_db.logical_delete_shift_recup.assert_called_once_with(
+    mock_collection.shift_db.update_shift.assert_called_once_with(
+        shift_new_input
+    )
+    mock_collection.shift_db.logical_delete_shift.assert_called_once_with(
         shift_recup_mock.id
     )
     # fmt: off
@@ -420,7 +430,9 @@ def test_update_shift_acronym_change(
     assert result == shift_new
     assert shift_new.acronym_custom is True
     shift_new_input.acronym_custom = True
-    mock_collection.shift_db.update_shift.assert_called_once_with(shift_new_input)
+    mock_collection.shift_db.update_shift.assert_called_once_with(
+        shift_new_input
+    )
 
 
 def test_update_shift_name_change_acronym_change_false(
@@ -465,7 +477,9 @@ def test_update_shift_name_change_acronym_change_false(
     shift_saved_mock = deepcopy(shift_new)
     shift_saved_mock.acronym = "US"
     mock_collection.shift_db.get_shift_by_id.return_value = shift_old_mock
-    mock_collection.shift_db.get_shifts_not_deleted.return_value = [shift_old_mock]
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = [
+        shift_old_mock
+    ]
     mock_collection.shift_db.update_shift.return_value = shift_saved_mock
 
     result, _ = shift_service.update_shift(shift_new)
@@ -479,7 +493,9 @@ def test_update_shift_name_change_acronym_change_false(
     assert shift_new.acronym == "US"
     assert shift_new.acronym_custom is False
     shift_new_input.acronym = "US"
-    mock_collection.shift_db.update_shift.assert_called_once_with(shift_new_input)
+    mock_collection.shift_db.update_shift.assert_called_once_with(
+        shift_new_input
+    )
 
 
 def test_update_shift_name_change_acronym_change_true(
@@ -523,14 +539,18 @@ def test_update_shift_name_change_acronym_change_true(
     shift_new_input = deepcopy(shift_new)
     shift_saved_mock = deepcopy(shift_new)
     mock_collection.shift_db.get_shift_by_id.return_value = shift_old_mock
-    mock_collection.shift_db.get_shifts_not_deleted.return_value = [shift_old_mock]
+    mock_collection.shift_db.get_shifts_not_deleted.return_value = [
+        shift_old_mock
+    ]
     mock_collection.shift_db.update_shift.return_value = shift_saved_mock
 
     result, _ = shift_service.update_shift(shift_new)
 
     assert result == shift_new_input
     assert result.acronym_custom is True
-    mock_collection.shift_db.update_shift.assert_called_once_with(shift_new_input)
+    mock_collection.shift_db.update_shift.assert_called_once_with(
+        shift_new_input
+    )
 
 
 def test_update_shift_time_change_normal_shift(
@@ -584,7 +604,9 @@ def test_update_shift_time_change_normal_shift(
     result, _ = shift_service.update_shift(shift_new)
 
     assert result == shift_new_input
-    mock_collection.shift_db.update_shift.assert_called_once_with(shift_new_input)
+    mock_collection.shift_db.update_shift.assert_called_once_with(
+        shift_new_input
+    )
     mock_link_shift_service.update_link_shift_upon_shift_update.assert_called_once_with(
         shift_new_input
     )
@@ -667,7 +689,9 @@ def test_update_shift_time_change_duty_shift(
         mock_create_or_update.assert_called_once_with(shift_new)
 
         assert result == shift_new_input
-        mock_collection.shift_db.update_shift.assert_called_once_with(shift_new_input)
+        mock_collection.shift_db.update_shift.assert_called_once_with(
+            shift_new_input
+        )
         # fmt: off
         mock_link_shift_service.update_link_shift_upon_shift_update\
             .assert_called_once_with(shift_new_input)
@@ -751,5 +775,189 @@ def test_update_shift_recuperation_time_duty_shift(
         mock_create_or_update.assert_called_once_with(shift_new)
 
         assert result == shift_new_input
-        mock_collection.shift_db.update_shift.assert_called_once_with(shift_new_input)
+        mock_collection.shift_db.update_shift.assert_called_once_with(
+            shift_new_input
+        )
         mock_link_shift_service.update_link_shift_upon_shift_update.assert_not_called()
+
+
+def test_validate_shift_update_not_found(
+    shift_service: ShiftService, mock_collection: MagicMock
+) -> None:
+    mock_collection.shift_db.get_shift_by_id.return_value = None
+
+    with pytest.raises(ValueError, match="Shift does not exist"):
+        shift_service._validate_shift_update("nonexistent_shift_id")
+
+
+def test_validate_shift_update_default_rest(
+    shift_service: ShiftService, mock_collection: MagicMock
+) -> None:
+    shift = Shift(
+        id="1",
+        team_id="team1",
+        name="Off",
+        acronym="O",
+        acronym_custom=False,
+        start_time=datetime(2023, 10, 1, 0, 0, tzinfo=timezone.utc),
+        end_time=datetime(2023, 10, 2, 0, 0, tzinfo=timezone.utc),
+        staffing=[],
+        color="grey",
+        shift_type=ShiftType.REST,
+        rest_type=ShiftRestType.OFF,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+    mock_collection.shift_db.get_shift_by_id.return_value = shift
+
+    with pytest.raises(
+        ValueError, match="Cannot update or delete the default rest shift"
+    ):
+        shift_service._validate_shift_update(shift.id)
+
+
+def test_validate_shift_update_leave_shift(
+    shift_service: ShiftService, mock_collection: MagicMock
+) -> None:
+    shift = Shift(
+        id="1",
+        team_id="team1",
+        name="Vacation",
+        acronym="V",
+        acronym_custom=False,
+        start_time=datetime(2023, 10, 1, 0, 0, tzinfo=timezone.utc),
+        end_time=datetime(2023, 10, 2, 0, 0, tzinfo=timezone.utc),
+        staffing=[],
+        color="grey",
+        shift_type=ShiftType.LEAVE,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.VACATION,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+    mock_collection.shift_db.get_shift_by_id.return_value = shift
+
+    with pytest.raises(
+        ValueError, match="Cannot update or delete a leave shift"
+    ):
+        shift_service._validate_shift_update(shift.id)
+
+
+def test_delete_shift_normal_shift(
+    shift_service: ShiftService,
+    mock_collection: MagicMock,
+    mock_link_shift_service: MagicMock,
+) -> None:
+    shift = Shift(
+        id="1",
+        team_id="team1",
+        name="Normal Shift",
+        acronym="NS",
+        acronym_custom=False,
+        start_time=datetime(2023, 10, 1, 8, 0, tzinfo=timezone.utc),
+        end_time=datetime(2023, 10, 1, 16, 0, tzinfo=timezone.utc),
+        staffing=[],
+        color="#FFFFFF",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+    mock_collection.shift_db.get_shift_by_id.return_value = shift
+    mock_link_shift_service.update_link_shift_upon_shift_delete.return_value = {
+        "deleted": [],
+        "updated": [],
+    }
+
+    result = shift_service.delete_shift(shift.id)
+
+    assert result == {"deleted": [], "updated": []}
+    mock_link_shift_service.update_link_shift_upon_shift_delete.assert_called_once_with(
+        shift
+    )
+    # fmt: off
+    mock_collection.shift_demand_db.delete_shift_demands_by_shift_id\
+        .assert_called_once_with(shift.id)
+    mock_collection.daily_shift_demand_db.delete_daily_shift_demands_by_shift_id\
+        .assert_called_once_with(shift.id)
+    # fmt: on
+    mock_collection.shift_db.logical_delete_shift.assert_called_once_with(
+        shift.id
+    )
+
+
+def test_delete_shift_duty_shift(
+    shift_service: ShiftService,
+    mock_collection: MagicMock,
+    mock_link_shift_service: MagicMock,
+) -> None:
+    shift = Shift(
+        id="1",
+        team_id="team1",
+        name="Duty Shift",
+        acronym="DS",
+        acronym_custom=False,
+        start_time=datetime(2023, 10, 1, 8, 0, tzinfo=timezone.utc),
+        end_time=datetime(2023, 10, 1, 16, 0, tzinfo=timezone.utc),
+        staffing=[],
+        color="#FFFFFF",
+        shift_type=ShiftType.DUTY,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=8,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+    shift_recup = Shift(
+        id="2",
+        team_id="team1",
+        name="Duty recuperation",
+        acronym="DR",
+        acronym_custom=False,
+        start_time=shift.end_time,
+        end_time=shift.end_time + timedelta(hours=shift.recuperation_time),
+        staffing=[],
+        color="#EDBB99",
+        shift_type=ShiftType.REST,
+        rest_type=ShiftRestType.RECUPERATION,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id="1",
+        deleted=False,
+    )
+    mock_collection.shift_db.get_shift_by_id.return_value = shift
+    mock_collection.shift_db.get_recuperation_shift.return_value = shift_recup
+    mock_link_shift_service.update_link_shift_upon_shift_delete.return_value = {
+        "deleted": [],
+        "updated": [],
+    }
+
+    result = shift_service.delete_shift(shift.id)
+
+    assert result == {
+        "deleted": [],
+        "updated": [],
+    }
+    mock_link_shift_service.update_link_shift_upon_shift_delete.assert_called_once_with(
+        shift
+    )
+    # fmt: off
+    mock_collection.shift_demand_db.delete_shift_demands_by_shift_id\
+        .assert_called_once_with(shift.id)
+    mock_collection.daily_shift_demand_db\
+        .delete_daily_shift_demands_by_shift_id.assert_called_once_with(shift.id)
+    # fmt: on
+    mock_collection.shift_db.logical_delete_shift.assert_has_calls(
+        [call(shift_recup.id), call(shift.id)]
+    )
+    # fmt: off
+    mock_collection.assignment_db\
+        .delete_assignments_by_team_and_shift_today_onward.assert_called_once_with(
+            team_id=shift_recup.team_id, shift_id=shift_recup.id
+        )
+    # fmt: on
