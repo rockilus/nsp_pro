@@ -4,11 +4,16 @@ import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import FormControl from "@mui/material/FormControl";
+import LockOpenIcon from "@mui/icons-material/LockOpen";
+import LockOutlineIcon from "@mui/icons-material/LockOutlined";
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
+// Styles
+import "./assignment-options.css";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -87,34 +92,50 @@ export default function AssignmentOptions({
   }, [selectedCell, assignments, schedules]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignSelf: "flex-start",
-        width: "100%",
-        padding: "10px 10px 5px 10px",
-      }}
-    >
-      <span
-        style={{
-          fontSize: "1rem",
-          fontWeight: 600,
-          color: "#3C4043",
-        }}
-      >
-        {t("selection")}
-      </span>
-      <div style={{ marginTop: "10px" }}>
-        <span
-          style={{
-            fontSize: "0.8rem",
-            fontWeight: 600,
-            color: "#3C4043",
-          }}
-        >
-          {t("assignment")}
-        </span>
+    <div className="assignment-options-container">
+      <span className="assignment-options-title">{t("selection")}</span>
+      <div className="assignment-options-assignment-container">
+        <div className="assignment-options-assignment-title-container">
+          <span className="assignment-options-assignment-title">
+            {t("assignment")}
+          </span>
+          <Chip
+            icon={
+              selectedAssignment.fixed ? (
+                <LockOutlineIcon sx={{ fontSize: "0.8rem" }} />
+              ) : (
+                <LockOpenIcon sx={{ fontSize: "0.8rem" }} />
+              )
+            }
+            label={selectedAssignment.fixed ? t("locked") : t("unlocked")}
+            variant="outlined"
+            size="small"
+            sx={{
+              display: "flex",
+              justifyContent: "flex-start",
+              fontSize: "0.8rem",
+              fontWeight: 500,
+              cursor: "pointer",
+              width: "110px",
+              paddingLeft: "4px",
+              "& .MuiChip-icon": {
+                color: selectedAssignment.fixed ? "#d32f2f" : "#616161",
+              },
+              "& .MuiChip-label": {
+                color: selectedAssignment.fixed ? "#d32f2f" : "#616161",
+              },
+              "&:hover": {
+                backgroundColor: selectedAssignment.fixed
+                  ? "#ef5350"
+                  : "#f0f0f0",
+              },
+              "&.MuiChip-outlined": {
+                borderColor: selectedAssignment.fixed ? "#d32f2f" : "#e5e7eb",
+              },
+            }}
+            onClick={handleChangeAssignmentFixed}
+          />
+        </div>
         {selectedAssignment.fixed ||
         selectedAssignSchedule?.status !== ScheduleStatus.CAMPAIGN ? (
           <Box
