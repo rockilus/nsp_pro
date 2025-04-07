@@ -12,6 +12,9 @@ import LockOutlineIcon from "@mui/icons-material/LockOutlined";
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
+// Components
+import EditAssignment from "./edit-assignment";
+import LHSHEader from "./lhs-header";
 // Styles
 import "./assignment-options.css";
 // Types
@@ -34,8 +37,10 @@ export default function AssignmentOptions({
   assignments,
   selectedCell,
   selectedDisplay,
+  onClose,
   setSelectedCell,
   handleUpdateAssignment,
+  handleDeleteAssignment,
 }: {
   lng: string;
   workers: WorkerT[];
@@ -44,8 +49,10 @@ export default function AssignmentOptions({
   assignments: AssignmentT[];
   selectedCell: AssignmentDataDictT;
   selectedDisplay: string;
+  onClose: () => void;
   setSelectedCell: (selectedCell: AssignmentDataDictT | null) => void;
   handleUpdateAssignment: (assignment: AssignmentT) => void;
+  handleDeleteAssignment: (assignmentId: string) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -93,7 +100,7 @@ export default function AssignmentOptions({
 
   return (
     <div className="assignment-options-container">
-      <span className="assignment-options-title">{t("selection")}</span>
+      <LHSHEader lhsHeaderTitle={t("selection")} onClose={onClose} />
       <div className="assignment-options-assignment-container">
         <div className="assignment-options-assignment-title-container">
           <span className="assignment-options-assignment-title">
@@ -136,140 +143,20 @@ export default function AssignmentOptions({
             onClick={handleChangeAssignmentFixed}
           />
         </div>
-        {selectedAssignment.fixed ||
-        selectedAssignSchedule?.status !== ScheduleStatus.CAMPAIGN ? (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
-            }}
-          >
-            {selectedDisplay === "shift" && (
-              <Box>
-                <Typography
-                  align="left"
-                  sx={{
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  {`${selectedCell.shift.name} - 
-            ${selectedAssignment.date.format("D MMM YYYY")}:`}
-                </Typography>
-                <FormControl fullWidth>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={selectedAssignment.workerId}
-                    onChange={handleChangeAssignmentWorker}
-                    sx={{
-                      fontSize: "0.8rem",
-                      height: "25px",
-                      width: "100px",
-                      paddingY: 0,
-                    }}
-                  >
-                    {workers.map((worker, index) => (
-                      <MenuItem key={index} value={worker.id}>
-                        {worker.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-            )}
-            {selectedDisplay === "worker" && (
-              <Box>
-                <Typography
-                  align="left"
-                  sx={{
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  {`${selectedCell.worker.name} - 
-            ${selectedAssignment.date.format("D MMM YYYY")}:`}
-                </Typography>
-                <FormControl fullWidth>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={selectedAssignment.shiftId}
-                    onChange={handleChangeAssignmentShift}
-                    sx={{
-                      fontSize: "0.8rem",
-                      height: "25px",
-                      width: "100px",
-                      paddingY: 0,
-                    }}
-                  >
-                    {shifts.map((shift, index) => (
-                      <MenuItem key={index} value={shift.id}>
-                        {shift.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-            )}
-            {selectedAssignSchedule?.status === ScheduleStatus.CAMPAIGN && (
-              <Button
-                onClick={handleChangeAssignmentFixed}
-                sx={{
-                  borderRadius: 4,
-                  textTransform: "none",
-                  fontSize: "0.8rem",
-                  border: "1px solid",
-                  height: "20px",
-                  color: "grey.700",
-                  paddingY: 0,
-                  paddingX: 0,
-                }}
-              >
-                {t("unset")}
-              </Button>
-            )}
-          </Box>
-        ) : (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
-            }}
-          >
-            {selectedDisplay === "shift" && (
-              <Typography align="left" sx={{ fontSize: "0.8rem" }}>
-                {`${selectedCell.shift.name} - 
-            ${selectedAssignment.date.format("D MMM YYYY")}: ${
-                  selectedCell.worker.name
-                }`}
-              </Typography>
-            )}
-            {selectedDisplay === "worker" && (
-              <Typography align="left" sx={{ fontSize: "0.8rem" }}>
-                {`${selectedCell.worker.name} -
-            ${selectedAssignment.date.format("D MMM YYYY")}: ${
-                  selectedCell.shift.name
-                }`}
-              </Typography>
-            )}
-            <Button
-              onClick={handleChangeAssignmentFixed}
-              sx={{
-                borderRadius: "4px",
-                textTransform: "none",
-                fontSize: "0.8rem",
-                border: "1px solid rgb(229, 231, 235)",
-                height: "20px",
-                color: "grey.700",
-                paddingY: 0,
-                paddingX: 0,
-              }}
-            >
-              {t("set")}
-            </Button>
-          </Box>
-        )}
+        <EditAssignment
+          lng={lng}
+          teamId={selectedCell.assignment.teamId}
+          scheduleId={selectedCell.assignment.scheduleId}
+          workerSelectedId={selectedCell.assignment.workerId}
+          shiftSelectedId={selectedCell.assignment.shiftId}
+          workers={workers}
+          shifts={shifts}
+          dateSelected={selectedCell.assignment.date}
+          assignment={selectedCell.assignment}
+          isEditing={true}
+          handleUpdateAssignment={handleUpdateAssignment}
+          handleDeleteAssignment={handleDeleteAssignment}
+        />
       </div>
       {selectedAssignment.date.isAfter(dayjs.utc(dayjs().startOf("day"))) && (
         <div style={{ marginTop: "10px" }}>

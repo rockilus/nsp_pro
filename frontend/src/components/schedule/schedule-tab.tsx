@@ -15,6 +15,7 @@ import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
+import { getAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
@@ -56,6 +57,7 @@ import {
   SolveDetailsStatus,
   LHSTabContentT,
   periodDateT,
+  CreateAssignmentT,
 } from "../../types/schedule";
 import { RequestT } from "../../types/request";
 import {
@@ -64,6 +66,7 @@ import {
   StatsUnitOptions,
   HeaderUnitOptions,
 } from "../../types/stats";
+import { AttributeOwnerType } from "../../types/attribute";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -167,12 +170,8 @@ export default function ScheduleTab({
     useState<periodDateT[]>(intialPeriodDates);
 
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
-  const [createAssignmentData, setCreateAssignmentData] = useState<{
-    scheduleId: string | null;
-    worker: WorkerT | null;
-    shift: ShiftT | null;
-    date: dayjs.Dayjs | null;
-  } | null>(null);
+  const [createAssignmentData, setCreateAssignmentData] =
+    useState<CreateAssignmentT | null>(null);
 
   const [selectedQuickStatsTimeFrame, setSelectedQuickStatsTimeFrame] =
     useState<StatsTimeFrameOptions>(StatsTimeFrameOptions.CAMPAING);
@@ -264,18 +263,16 @@ export default function ScheduleTab({
   //////////////////////////
 
   const handleOpenCreateAssignment = (
-    scheduleId: string | null,
-    worker: WorkerT | null,
-    shift: ShiftT | null,
-    date: dayjs.Dayjs | null
+    createAssignmentData: CreateAssignmentT
   ) => {
-    setCreateAssignmentData({ scheduleId, worker, shift, date });
+    setCreateAssignmentData(createAssignmentData);
     setSelectedTab("create_assignment");
   };
 
-  const handleCloseCreateAssignment = () => {
+  const handleCloseLHS = () => {
     setCreateAssignmentData(null);
     setSelectedTab(null);
+    setSelectedCell(null);
   };
 
   const handleCreateAssignment = async (assignment: AssignmentT) => {
@@ -284,6 +281,18 @@ export default function ScheduleTab({
     }
     const newAssignment = await addAssignment(assignment);
     setAssignments([...assignments, newAssignment]);
+    setSelectedTab("selection");
+    const assignDict = getAssignmentsDataByOwnerAndDate(
+      AttributeOwnerType.WORKER,
+      [newAssignment],
+      workers,
+      shifts,
+      breaches,
+      requests
+    );
+    const newSelectedCell = Object.values(assignDict)[0][0];
+    setSelectedCell(newSelectedCell);
+    setCreateAssignmentData(null);
   };
 
   const handleUpdateAssignment = async (assignment: AssignmentT) => {
@@ -294,6 +303,18 @@ export default function ScheduleTab({
     setAssignments(
       assignments.map((a) => (a.id === newAssignment.id ? newAssignment : a))
     );
+    const assignDict = getAssignmentsDataByOwnerAndDate(
+      AttributeOwnerType.WORKER,
+      [newAssignment],
+      workers,
+      shifts,
+      breaches,
+      requests
+    );
+    const newSelectedCell = Object.values(assignDict)[0][0];
+    setSelectedCell(newSelectedCell);
+    setSelectedTab("selection");
+    setCreateAssignmentData(null);
   };
 
   const handleDeleteAssignment = async (assignmentId: string) => {
@@ -623,6 +644,7 @@ export default function ScheduleTab({
           workers={workers.filter((w) => !w.deleted)}
           assignments={assignments}
           schedule={scheduleCampaign as ScheduleT}
+          onClose={handleCloseLHS}
           handleUpdateSchedule={handleUpdateSchedule}
         />
       ) : null,
@@ -637,6 +659,7 @@ export default function ScheduleTab({
           workers={workers.filter((w) => !w.deleted)}
           stats={stats}
           selectedQuickStatsTimeFrame={selectedQuickStatsTimeFrame}
+          onClose={handleCloseLHS}
           handleChangeStatsTimeFrame={handleChangeStatsTimeFrame}
         />
       ) : null,
@@ -656,8 +679,10 @@ export default function ScheduleTab({
           assignments={assignments}
           selectedCell={selectedCell}
           selectedDisplay={selectedDisplay}
+          onClose={handleCloseLHS}
           setSelectedCell={setSelectedCell}
           handleUpdateAssignment={handleUpdateAssignment}
+          handleDeleteAssignment={handleDeleteAssignment}
         />
       ) : null,
     },
@@ -669,12 +694,12 @@ export default function ScheduleTab({
           lng={lng}
           teamId={selectedTeamId as string}
           scheduleId={createAssignmentData.scheduleId}
-          workerSelected={createAssignmentData.worker}
+          workerSelectedId={createAssignmentData.workerId}
+          shiftSelectedId={createAssignmentData.shiftId}
           dateSelected={createAssignmentData.date}
-          shiftSelected={createAssignmentData.shift}
           workers={workers}
           shifts={shifts}
-          onClose={handleCloseCreateAssignment}
+          onClose={handleCloseLHS}
           handleCreateAssignment={handleCreateAssignment}
         />
       ) : null,

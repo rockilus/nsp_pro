@@ -13,6 +13,8 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+// Components
+import LHSHEader from "./lhs-header";
 // Styles
 import "./quick-staffing.css";
 // Types
@@ -33,6 +35,7 @@ export default function QuickStaffingTable({
   workers,
   assignments,
   schedule,
+  onClose,
   handleUpdateSchedule,
 }: {
   lng: string;
@@ -40,6 +43,7 @@ export default function QuickStaffingTable({
   workers: WorkerT[];
   assignments: AssignmentT[];
   schedule: ScheduleT;
+  onClose: () => void;
   handleUpdateSchedule: (schedule: ScheduleT) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
@@ -121,7 +125,7 @@ export default function QuickStaffingTable({
 
   return (
     <div className="quick-staffing-container">
-      <span className="quick-staffing-title">{t("quick_staffing")}</span>
+      <LHSHEader lhsHeaderTitle={t("quick_staffing")} onClose={onClose} />
       <TableContainer component={Paper} style={{ width: "100%" }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
