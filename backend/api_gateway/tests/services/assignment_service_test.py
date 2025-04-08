@@ -349,3 +349,52 @@ def test_update_assignment_with_invalid_shift(
     # Call the method and assert it raises a ValueError
     with pytest.raises(ValueError, match="Invalid shift ID provided."):
         service.update_assignment(assignment_new)
+
+
+def test_delete_assignment_with_no_recuperation_assignments(
+    mock_service: Tuple[AssignmentService, MagicMock],
+) -> None:
+    service, mock_collection = mock_service
+
+    # Mock the assignment ID
+    assignment_id = "assignment_id"
+
+    # Mock the database response for deleting assignments
+    mock_collection.assignment_db.delete_assignments_by_reference_id.return_value = []
+
+    # Call the method
+    deleted_ids = service.delete_assignment(assignment_id)
+
+    # Assert the main assignment was deleted
+    mock_collection.assignment_db.delete_assignment.assert_called_once_with(
+        assignment_id
+    )
+
+    # Assert the deleted IDs list contains only the main assignment ID
+    assert deleted_ids == [assignment_id]
+
+
+def test_delete_assignment_with_recuperation_assignments(
+    mock_service: Tuple[AssignmentService, MagicMock],
+) -> None:
+    service, mock_collection = mock_service
+
+    # Mock the assignment ID
+    assignment_id = "assignment_id"
+
+    # Mock the database response for deleting recuperation assignments
+    recuperation_ids = ["recup_id_1", "recup_id_2"]
+    mock_collection.assignment_db.delete_assignments_by_reference_id.return_value = (
+        recuperation_ids
+    )
+
+    # Call the method
+    deleted_ids = service.delete_assignment(assignment_id)
+
+    # Assert the main assignment was deleted
+    mock_collection.assignment_db.delete_assignment.assert_called_once_with(
+        assignment_id
+    )
+
+    # Assert the deleted IDs list contains both recuperation and main assignment IDs
+    assert sorted(deleted_ids) == sorted(recuperation_ids)

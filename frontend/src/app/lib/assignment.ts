@@ -130,9 +130,11 @@ export async function deleteAssignment(assignmentId: string, teamId: string) {
       `${apiUrlAssignment}/${assignmentId}/teams/${teamId}`,
       options
     );
+    const responseData = await response.json();
     if (!response.ok) {
-      throw new Error("Failed to delete assignment");
+      throw new Error("Failed to delete assignment: " + responseData.detail);
     }
+    return { deletedIds: responseData.deleted_ids || [] };
   } catch (error) {
     console.error("Failed to delete assignment:", error);
     throw new Error("Failed to delete assignment, please try again later");

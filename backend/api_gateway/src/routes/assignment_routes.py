@@ -125,7 +125,7 @@ async def delete_assignment(
     assignment_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-    db_collections: DatabaseCollections = Depends(get_db_collections),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
 ) -> Dict:
     try:
         if not await authz_check(
@@ -134,11 +134,11 @@ async def delete_assignment(
             raise NotAuthorizedError(
                 "You do not have permission to delete an assignment",
             )
-        db_collections.assignment_db.delete_assignment(assignment_id)
+        deleted_ids = assignment_service.delete_assignment(assignment_id)
     except Exception as e:
         log_info("Failed to delete assignment")
         handle_routes_errors(e)
-    return {"message": "Assignment deleted"}
+    return {"message": "Assignment deleted", "deleted_ids": deleted_ids}
 
 
 # Mappers

@@ -155,3 +155,11 @@ class AssignmentService(BaseService):
             "recuperation_assignments": recuperation_assignments,
             "deleted_ids": deleted_ids,
         }
+
+    def delete_assignment(self, assignment_id: str) -> List[str]:
+        deleted_ids = self.collection.assignment_db.delete_assignments_by_reference_id(
+            reference_id=assignment_id
+        )
+        deleted_ids.append(assignment_id)
+        self.collection.assignment_db.delete_assignment(assignment_id)
+        return deleted_ids

@@ -341,8 +341,8 @@ export default function ScheduleTab({
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    await deleteAssignment(assignmentId, selectedTeamId);
-    setAssignments(assignments.filter((a) => a.id !== assignmentId));
+    const { deletedIds } = await deleteAssignment(assignmentId, selectedTeamId);
+    setAssignments(assignments.filter((a) => !deletedIds.includes(a.id)));
   };
 
   const handleToday = async () => {
