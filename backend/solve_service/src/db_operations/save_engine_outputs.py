@@ -43,6 +43,7 @@ def save_engine_outputs(
         engine_outputs.assignments,
         engine_outputs.schedule,
         engine_intputs.as_wip_fixed,
+        engine_intputs.shifts,
         collections,
     )
     breaches_saved = save_breaches(

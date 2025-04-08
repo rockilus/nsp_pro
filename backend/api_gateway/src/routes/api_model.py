@@ -200,6 +200,7 @@ class AssignmentMessage(BaseModel):
     date: float
     shiftId: str
     fixed: bool
+    referenceAssignmentId: str | None
 
 
 class DailyShiftDemandMessage(BaseModel):

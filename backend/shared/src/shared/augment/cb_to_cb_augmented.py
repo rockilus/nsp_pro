@@ -11,9 +11,10 @@ from shared.schemas.schemas.constraint import (
     ShiftWorkerOption,
     SWOIdTypes,
 )
-from shared.schemas.schemas.dimension import Dimension, DimensionEntryType, DimEntry
+from shared.schemas.schemas.dim_entry import DimEntry
+from shared.schemas.schemas.dimension import Dimension, DimensionEntryType
 from shared.schemas.schemas.shift import Shift, ShiftType
-from shared.schemas.schemas.team import Specialty
+from shared.schemas.schemas.specialty import Specialty
 from shared.schemas.schemas.worker import Worker
 
 

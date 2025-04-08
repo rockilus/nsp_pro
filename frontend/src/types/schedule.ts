@@ -14,6 +14,7 @@ export type AssignmentT = {
   date: dayjs.Dayjs;
   shiftId: string;
   fixed: boolean;
+  referenceAssignmentId: string | null;
 };
 
 // Daily Shift Demand
@@ -169,6 +170,13 @@ export type AssignmentDataDictT = {
 
 export type AssignmentDictT = {
   [key: string]: AssignmentDataDictT[];
+};
+
+export type CreateAssignmentT = {
+  scheduleId: string | null;
+  workerId: string | null;
+  shiftId: string | null;
+  date: dayjs.Dayjs | null;
 };
 
 export type periodDateT = {

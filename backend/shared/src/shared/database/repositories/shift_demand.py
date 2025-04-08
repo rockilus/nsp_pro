@@ -6,7 +6,7 @@ from shared.database.repositories.base import (
 from shared.database.schemas.shift_demand import (
     ShiftDemandSchema,
 )
-from shared.schemas.schemas.coverage import (
+from shared.schemas.schemas.shift_demand import (
     ShiftDemand,
 )
 

@@ -9,7 +9,10 @@ from shared.database.repositories.daily_shift_demand import (
 from shared.database.schemas.daily_shift_demand import (
     DailyShiftDemandSchema,
 )
-from shared.schemas.schemas.coverage import DailyShiftDemand, DSDSourceType
+from shared.schemas.schemas.daily_shift_demand import (
+    DailyShiftDemand,
+    DSDSourceType,
+)
 
 
 class TestDailyShiftDemandRepository:

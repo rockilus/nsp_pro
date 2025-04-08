@@ -11,7 +11,7 @@ from shared.logger import log_info
 from shared.schemas import Assignment
 from shared.schemas.errors import handle_create_schema_object_error
 
-from src.dependencies import get_db_collections
+from src.dependencies import get_assignment_service, get_db_collections
 from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -24,6 +24,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import AssignmentMessage
+from src.services.assignment_service import AssignmentService
 
 router = APIRouter()
 
@@ -33,8 +34,8 @@ async def create_assignment(
     team_id: str,
     assignment: AssignmentMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
-    db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> AssignmentMessage:
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+) -> List[AssignmentMessage]:
     try:
         if not await authz_check(
             session.get_user_id(), "create-assignment", "team", team_id
@@ -43,8 +44,8 @@ async def create_assignment(
                 "You do not have permission to create an assignment",
             )
         a_data = msg_to_core_assignment(assignment)
-        a_created = db_collections.assignment_db.create_assignment(a_data)
-        response = core_to_msg_assignment(a_created)
+        a_created = assignment_service.create_assignment(a_data)
+        response = [core_to_msg_assignment(a) for a in a_created]
     except Exception as e:
         log_info("Failed to create assignment")
         handle_routes_errors(e)
@@ -88,8 +89,8 @@ async def update_assignment(
     team_id: str,
     assignment_api: AssignmentMessage,
     session: SessionContainerType = Depends(authn_verify_session()),
-    db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> AssignmentMessage:
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+) -> Dict:
     try:
         if not await authz_check(
             session.get_user_id(), "update-assignment", "team", team_id
@@ -98,10 +99,21 @@ async def update_assignment(
                 "You do not have permission to update an assignment",
             )
         assignment_data = msg_to_core_assignment(assignment_api)
-        updated_assignment = db_collections.assignment_db.update_assignment(
-            assignment_data
-        )
-        response = core_to_msg_assignment(updated_assignment)
+        updated_assignment_data = assignment_service.update_assignment(assignment_data)
+        response = {
+            "updated_assignment": (
+                core_to_msg_assignment(
+                    updated_assignment_data.get("updated_assignment", None)
+                )
+                if updated_assignment_data.get("updated_assignment", None)
+                else None
+            ),
+            "recuperation_assignments": [
+                core_to_msg_assignment(a)
+                for a in updated_assignment_data.get("recuperation_assignments", [])
+            ],
+            "deleted_ids": updated_assignment_data.get("deleted_ids", []),
+        }
     except Exception as e:
         log_info("Failed to update assignment")
         handle_routes_errors(e)
@@ -113,7 +125,7 @@ async def delete_assignment(
     assignment_id: str,
     team_id: str,
     session: SessionContainerType = Depends(authn_verify_session()),
-    db_collections: DatabaseCollections = Depends(get_db_collections),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
 ) -> Dict:
     try:
         if not await authz_check(
@@ -122,11 +134,11 @@ async def delete_assignment(
             raise NotAuthorizedError(
                 "You do not have permission to delete an assignment",
             )
-        db_collections.assignment_db.delete_assignment(assignment_id)
+        deleted_ids = assignment_service.delete_assignment(assignment_id)
     except Exception as e:
         log_info("Failed to delete assignment")
         handle_routes_errors(e)
-    return {"message": "Assignment deleted"}
+    return {"message": "Assignment deleted", "deleted_ids": deleted_ids}
 
 
 # Mappers

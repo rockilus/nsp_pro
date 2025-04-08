@@ -21,6 +21,7 @@ import {
   ScheduleStatus,
   AssignmentDictT,
   periodDateT,
+  CreateAssignmentT,
 } from "../../../../types/schedule";
 import { RequestT, RequestStatus } from "../../../../types/request";
 
@@ -42,12 +43,7 @@ export default function ShiftCell({
   shiftIdDateToAssignData: AssignmentDictT;
   showBreaches: boolean;
   handleCellSelection: (seletedCell: AssignmentDataDictT) => void;
-  handleOpenCreateAssignment: (
-    scheduleId: string | null,
-    worker: WorkerT | null,
-    shift: ShiftT | null,
-    date: dayjs.Dayjs | null
-  ) => void;
+  handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   const AssignmentDiv = ({
     aDataDict,
@@ -136,12 +132,12 @@ export default function ShiftCell({
           pointerEvents: "auto",
         }}
         onClick={() =>
-          handleOpenCreateAssignment(
-            periodDate.scheduleId,
-            null,
-            shift,
-            periodDate.date
-          )
+          handleOpenCreateAssignment({
+            scheduleId: periodDate.scheduleId,
+            workerId: null,
+            shiftId: shift.id,
+            date: periodDate.date,
+          })
         }
       >
         <AddCircleIcon />

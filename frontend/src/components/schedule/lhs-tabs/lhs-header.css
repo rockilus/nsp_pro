@@ -1,0 +1,16 @@
+.lhs-header-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-left: 2;
+  margin-right: 2;
+  margin-bottom: 1;
+}
+
+.lhs-header-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3c4043;
+}

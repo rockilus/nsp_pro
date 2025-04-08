@@ -1,4 +1,6 @@
+from shared.schemas.schemas.assignment import Assignment
 from shared.schemas.schemas.attribute import Attribute, AttributeOwnerType
+from shared.schemas.schemas.breach import Breach, ObjectiveCategory, Variable
 from shared.schemas.schemas.config import Config
 from shared.schemas.schemas.constraint import (
     Block,
@@ -30,18 +32,17 @@ from shared.schemas.schemas.constraint import (
     VarShiftSelectorOptions,
     VarWorkerSelectorOptions,
 )
-from shared.schemas.schemas.coverage import (
-    Coverage,
-    CoverageSelector,
+from shared.schemas.schemas.coverage import Coverage
+from shared.schemas.schemas.coverage_selector import CoverageSelector
+from shared.schemas.schemas.daily_shift_demand import (
     DailyShiftDemand,
     DSDSourceType,
-    ShiftDemand,
 )
+from shared.schemas.schemas.dim_entry import DimEntry
 from shared.schemas.schemas.dimension import (
     Dimension,
     DimensionEntryType,
     DimensionType,
-    DimEntry,
 )
 from shared.schemas.schemas.engine import (
     ConfigurationConstraints,
@@ -60,6 +61,7 @@ from shared.schemas.schemas.export_options import (
     ExportOptions,
     ExportPeriodOptions,
 )
+from shared.schemas.schemas.link_shift import LinkShift
 from shared.schemas.schemas.model_output import ModelOutput, ModelOutputStatus
 from shared.schemas.schemas.request import (
     Request,
@@ -67,27 +69,24 @@ from shared.schemas.schemas.request import (
     RequestStatus,
 )
 from shared.schemas.schemas.schedule import (
-    Assignment,
-    Breach,
-    ObjectiveCategory,
     QuickStaffing,
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
     SolveDetails,
     SolveDetailsStatus,
-    Variable,
     WorkTimeTable,
     WorkTimeTableData,
 )
 from shared.schemas.schemas.shift import (
-    LinkShift,
     Shift,
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
     Staffing,
 )
+from shared.schemas.schemas.shift_demand import ShiftDemand
+from shared.schemas.schemas.specialty import Specialty
 from shared.schemas.schemas.stats import (
     HeaderUnitOptions,
     Stats,
@@ -98,7 +97,7 @@ from shared.schemas.schemas.stats import (
     StatsValue,
 )
 from shared.schemas.schemas.task import TaskServices
-from shared.schemas.schemas.team import Specialty, Team
+from shared.schemas.schemas.team import Team
 from shared.schemas.schemas.user import (
     Language,
     PasswordData,

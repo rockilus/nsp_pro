@@ -7,6 +7,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 // Components
 import StatsTable from "../../stats/table/stats-table";
+import LHSHEader from "./lhs-header";
 // Styles
 import "./quick-stats.css";
 // Types
@@ -28,6 +29,7 @@ export default function QuickStatsTable({
   workers,
   stats,
   selectedQuickStatsTimeFrame,
+  onClose,
   handleChangeStatsTimeFrame,
 }: {
   lng: string;
@@ -35,6 +37,7 @@ export default function QuickStatsTable({
   workers: WorkerT[];
   stats: StatsT;
   selectedQuickStatsTimeFrame: StatsTimeFrameOptions;
+  onClose: () => void;
   handleChangeStatsTimeFrame: (timeFrame: StatsTimeFrameOptions) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
@@ -49,15 +52,7 @@ export default function QuickStatsTable({
         margin: "10px 10px 5px 5px",
       }}
     >
-      <span
-        style={{
-          fontSize: "1rem",
-          fontWeight: 600,
-          color: "#3C4043",
-        }}
-      >
-        {t("quick_stats")}
-      </span>
+      <LHSHEader lhsHeaderTitle={t("quick_stats")} onClose={onClose} />
       <ToggleButtonGroup
         color="primary"
         value={selectedQuickStatsTimeFrame}

@@ -14,6 +14,7 @@ import {
   ExportOptionsT,
   ScheduleStatus,
   periodDateT,
+  CreateAssignmentT,
 } from "../../../types/schedule";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -56,12 +57,7 @@ export default function ScheduleDisplay({
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
-  handleOpenCreateAssignment: (
-    scheduleId: string | null,
-    worker: WorkerT | null,
-    shift: ShiftT | null,
-    date: dayjs.Dayjs | null
-  ) => void;
+  handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   const scheduleDisplays: { [key: string]: JSX.Element } = {
     shift: (

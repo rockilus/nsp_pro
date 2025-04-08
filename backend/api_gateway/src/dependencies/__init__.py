@@ -1,3 +1,4 @@
+from src.dependencies.assignment_service import get_assignment_service
 from src.dependencies.attribute_service import get_attribute_service
 from src.dependencies.constraint_build_service import (
     get_constraint_build_service,
@@ -25,6 +26,7 @@ from src.dependencies.user_service import get_user_service
 from src.dependencies.worker_service import get_worker_service
 
 __all__ = [
+    "get_assignment_service",
     "get_attribute_service",
     "get_constraint_build_service",
     "get_coverage_selector_service",

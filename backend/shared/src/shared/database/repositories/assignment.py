@@ -1,11 +1,12 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timezone
 from typing import List, Union
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.assignment import AssignmentSchema
-from shared.schemas.schemas.schedule import Assignment
+from shared.schemas.schemas.assignment import Assignment
 
 
+# pylint: disable=too-many-public-methods
 class AssignmentRepository(BaseRepository[AssignmentSchema]):
     """Repository for assignment documents using PyMongo."""
 
@@ -48,6 +49,20 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
                 "worker": worker_id,
                 "date": datetime(a_date.year, a_date.month, a_date.day),
                 "schedule": schedule_id,
+            }
+        )
+        return assignment[0].to_core() if assignment else None
+
+    def get_assignment_by_worker_shift_team_and_date(
+        self, worker_id: str, shift_id: str, team_id: str, a_date: date
+    ) -> Union[Assignment, None]:
+        """Get an assignment by worker ID, shift ID, team ID, and date."""
+        assignment = self.find_all(
+            {
+                "worker": worker_id,
+                "shift": shift_id,
+                "team": team_id,
+                "date": datetime(a_date.year, a_date.month, a_date.day),
             }
         )
         return assignment[0].to_core() if assignment else None
@@ -102,6 +117,11 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         )
         return [a.to_core() for a in assignments]
 
+    def get_assignments_by_reference_id(self, reference_id: str) -> List[Assignment]:
+        """Get assignments by their reference assignment ID."""
+        assignments = self.find_all({"reference_assignment_id": reference_id})
+        return [assignment.to_core() for assignment in assignments]
+
     def update_assignment(self, assignment: Assignment) -> Assignment:
         """Update an assignment."""
         assignment_schema = AssignmentSchema.from_core(assignment)
@@ -155,3 +175,44 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
                 "date": {"$gte": today},
             }
         )
+
+    def delete_assignments_by_team_worker_shift_and_date(
+        self, team_id: str, worker_id: str, shift_id: str, a_date: date
+    ) -> List[str]:
+        """Delete assignments for a given team ID, worker ID, shift ID, and date."""
+        start_of_day = datetime.combine(a_date, time.min, tzinfo=timezone.utc)
+        end_of_day = datetime.combine(a_date, time.max, tzinfo=timezone.utc)
+        # Find the matching assignments and get their IDs
+        matching_assignments = self.collection.find(
+            {
+                "team": team_id,
+                "worker": worker_id,
+                "shift": shift_id,
+                "date": {"$gte": start_of_day, "$lte": end_of_day},
+            },
+            {"_id": 1},  # Only retrieve the `_id` field
+        )
+        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+
+        # Delete the matching assignments
+        self.collection.delete_many(
+            {
+                "team": team_id,
+                "worker": worker_id,
+                "shift": shift_id,
+                "date": {"$gte": start_of_day, "$lte": end_of_day},
+            }
+        )
+
+        return deleted_ids
+
+    def delete_assignments_by_reference_id(self, reference_id: str) -> List[str]:
+        """Delete assignments by their reference assignment ID and return their IDs."""
+        matching_assignments = self.collection.find(
+            {"reference_assignment_id": reference_id}, {"_id": 1}
+        )
+        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+
+        self.collection.delete_many({"reference_assignment_id": reference_id})
+
+        return deleted_ids

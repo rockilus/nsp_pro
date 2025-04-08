@@ -4,7 +4,7 @@ from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.coverage_selector import (
     CoverageSelectorSchema,
 )
-from shared.schemas.schemas.coverage import CoverageSelector
+from shared.schemas.schemas.coverage_selector import CoverageSelector
 
 
 class CoverageSelectorRepository(BaseRepository[CoverageSelectorSchema]):

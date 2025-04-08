@@ -5,7 +5,7 @@ from shared.database.repositories.link_shift import (
     LinkShiftRepository,
 )
 from shared.database.schemas.link_shift import LinkShiftSchema
-from shared.schemas.schemas.shift import LinkShift
+from shared.schemas.schemas.link_shift import LinkShift
 
 
 class TestLinkShiftRepository:

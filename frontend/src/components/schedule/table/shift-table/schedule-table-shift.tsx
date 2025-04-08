@@ -26,6 +26,7 @@ import {
   ExportOptionsT,
   ScheduleStatus,
   periodDateT,
+  CreateAssignmentT,
 } from "../../../../types/schedule";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
@@ -68,12 +69,7 @@ export default function ScheduleTableShift({
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
-  handleOpenCreateAssignment: (
-    scheduleId: string | null,
-    worker: WorkerT | null,
-    shift: ShiftT | null,
-    date: dayjs.Dayjs | null
-  ) => void;
+  handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   const shiftsForHeader = getRelevantShifts(shifts, assignments);
   const shiftIdDateToAssignData = getAssignmentsDataByOwnerAndDate(

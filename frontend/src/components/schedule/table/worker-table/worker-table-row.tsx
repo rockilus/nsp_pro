@@ -16,6 +16,7 @@ import {
   ScheduleStatus,
   AssignmentDictT,
   periodDateT,
+  CreateAssignmentT,
 } from "../../../../types/schedule";
 
 dayjs.extend(isSameOrAfter);
@@ -42,12 +43,7 @@ export default function WorkerTableRow({
   periodDates: periodDateT[];
   showBreaches: boolean;
   handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
-  handleOpenCreateAssignment: (
-    scheduleId: string | null,
-    worker: WorkerT | null,
-    shift: ShiftT | null,
-    date: dayjs.Dayjs | null
-  ) => void;
+  handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   return (
     <TableRow>

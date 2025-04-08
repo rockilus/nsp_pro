@@ -2,7 +2,7 @@ from typing import List
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.link_shift import LinkShiftSchema
-from shared.schemas.schemas.shift import LinkShift
+from shared.schemas.schemas.link_shift import LinkShift
 
 
 class LinkShiftRepository(BaseRepository[LinkShiftSchema]):

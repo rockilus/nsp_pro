@@ -2,8 +2,8 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.coverage import DailyShiftDemand as CoreDailyShiftDemand
-from shared.schemas.schemas.coverage import (
+from shared.schemas.schemas.daily_shift_demand import (
+    DailyShiftDemand,
     DSDSourceType,
 )
 
@@ -29,8 +29,8 @@ class DailyShiftDemandSchema(DocumentBaseSchema):
         data["id"] = str(data.pop("_id"))
         return cls(**data)
 
-    def to_core(self) -> CoreDailyShiftDemand:
-        return CoreDailyShiftDemand(
+    def to_core(self) -> DailyShiftDemand:
+        return DailyShiftDemand(
             id=self.id or "",
             team_id=self.team,
             schedule_id=self.schedule,
@@ -44,7 +44,7 @@ class DailyShiftDemandSchema(DocumentBaseSchema):
 
     @classmethod
     def from_core(
-        cls, daily_shift_demand: CoreDailyShiftDemand
+        cls, daily_shift_demand: DailyShiftDemand
     ) -> "DailyShiftDemandSchema":
         return cls(
             id=daily_shift_demand.id,

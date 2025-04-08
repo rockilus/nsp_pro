@@ -2,17 +2,21 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Dict, List
 
+from shared.schemas.schemas.assignment import Assignment
 from shared.schemas.schemas.attribute import Attribute
+from shared.schemas.schemas.breach import Breach
 from shared.schemas.schemas.constraint import (
     ConstraintBuildAugmented,
     Penalties,
 )
-from shared.schemas.schemas.coverage import DailyShiftDemand
-from shared.schemas.schemas.dimension import Dimension, DimEntry
+from shared.schemas.schemas.daily_shift_demand import DailyShiftDemand
+from shared.schemas.schemas.dim_entry import DimEntry
+from shared.schemas.schemas.dimension import Dimension
+from shared.schemas.schemas.link_shift import LinkShift
 from shared.schemas.schemas.model_output import ModelOutput
 from shared.schemas.schemas.request import Request, RequestAugmented
-from shared.schemas.schemas.schedule import Assignment, Breach, Schedule
-from shared.schemas.schemas.shift import LinkShift, Shift
+from shared.schemas.schemas.schedule import Schedule
+from shared.schemas.schemas.shift import Shift
 from shared.schemas.schemas.worker import Worker
 
 ##############################
