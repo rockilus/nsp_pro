@@ -9,7 +9,7 @@ from shared.database.repositories.shift_demand import (
 from shared.database.schemas.shift_demand import (
     ShiftDemandSchema,
 )
-from shared.schemas.schemas.coverage import ShiftDemand
+from shared.schemas.schemas.shift_demand import ShiftDemand
 
 
 class TestShiftDemandRepository:

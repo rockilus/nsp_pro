@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.coverage import ShiftDemand
+from shared.schemas.schemas.shift_demand import ShiftDemand
 
 
 class ShiftDemandSchema(DocumentBaseSchema):

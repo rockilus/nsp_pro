@@ -2,7 +2,8 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Coverage:
+class Specialty:
     id: str
     team_id: str
     name: str
+    deleted: bool

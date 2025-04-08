@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.schedule import Assignment
+from shared.schemas.schemas.assignment import Assignment
 
 
 class AssignmentSchema(DocumentBaseSchema):

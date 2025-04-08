@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 
 import pytest
 
@@ -7,7 +7,7 @@ from shared.database.repositories.assignment import (
     AssignmentRepository,
 )
 from shared.database.schemas.assignment import AssignmentSchema
-from shared.schemas.schemas.schedule import Assignment
+from shared.schemas.schemas.assignment import Assignment
 
 
 class TestAssignmentRepository:
@@ -351,3 +351,164 @@ class TestAssignmentRepository:
         assert len(remaining) == 1
         for a_doc in remaining:
             assert a_doc["date"] < today
+
+    def test_delete_assignments_by_team_worker_shift_and_date(self):
+        """Test deleting assignments by team, worker, shift, and date."""
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=today,
+                shift="shift1",
+                fixed=False,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule2",
+                date=today + timedelta(days=1),
+                shift="shift1",
+                fixed=True,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule3",
+                date=today,
+                shift="shift1",
+                fixed=False,
+            ),
+            AssignmentSchema(
+                team="team2",
+                worker="worker1",
+                schedule="schedule4",
+                date=today,
+                shift="shift1",
+                fixed=False,
+            ),
+        ]
+        a_created = self.repo.create_many(assignments)
+
+        a_deleted_ids = self.repo.delete_assignments_by_team_worker_shift_and_date(
+            "team1", "worker1", "shift1", today.date()
+        )
+
+        assert len(a_deleted_ids) == 1
+        assert a_deleted_ids == [a_created[0].id]
+
+        remaining = list(
+            self.repo.collection.find(
+                {
+                    "team": "team1",
+                    "worker": "worker1",
+                    "shift": "shift1",
+                    "date": {
+                        "$gte": datetime.combine(
+                            today.date(), time.min, tzinfo=timezone.utc
+                        ),
+                        "$lte": datetime.combine(
+                            today.date(), time.max, tzinfo=timezone.utc
+                        ),
+                    },
+                }
+            )
+        )
+
+        assert len(remaining) == 0
+
+        # Ensure other assignments are not deleted
+        other_assignments = list(
+            self.repo.collection.find(
+                {
+                    "team": "team1",
+                    "worker": "worker1",
+                    "shift": "shift1",
+                    "date": {
+                        "$gte": datetime.combine(
+                            (today + timedelta(days=1)).date(),
+                            time.min,
+                            tzinfo=timezone.utc,
+                        ),
+                        "$lte": datetime.combine(
+                            (today + timedelta(days=1)).date(),
+                            time.max,
+                            tzinfo=timezone.utc,
+                        ),
+                    },
+                }
+            )
+        )
+        assert len(other_assignments) == 1
+
+        unrelated_assignments = list(
+            self.repo.collection.find(
+                {
+                    "team": "team1",
+                    "worker": "worker2",
+                    "shift": "shift1",
+                    "date": {
+                        "$gte": datetime.combine(
+                            today.date(), time.min, tzinfo=timezone.utc
+                        ),
+                        "$lte": datetime.combine(
+                            today.date(), time.max, tzinfo=timezone.utc
+                        ),
+                    },
+                }
+            )
+        )
+        assert len(unrelated_assignments) == 1
+
+        other_team_assignments = list(
+            self.repo.collection.find(
+                {
+                    "team": "team2",
+                    "worker": "worker1",
+                    "shift": "shift1",
+                    "date": {
+                        "$gte": datetime.combine(
+                            today.date(), time.min, tzinfo=timezone.utc
+                        ),
+                        "$lte": datetime.combine(
+                            today.date(), time.max, tzinfo=timezone.utc
+                        ),
+                    },
+                }
+            )
+        )
+        assert len(other_team_assignments) == 1
+
+    def test_get_assignment_by_worker_shift_team_and_date(self):
+        """Test getting an assignment by worker ID, shift ID, team ID, and date."""
+        assignment = AssignmentSchema(
+            team="team1",
+            worker="worker1",
+            schedule="schedule1",
+            date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+            shift="shift1",
+            fixed=False,
+        )
+        self.repo.create(assignment)
+
+        worker_id = "worker1"
+        shift_id = "shift1"
+        team_id = "team1"
+        a_date = date(2023, 1, 1)
+
+        result = self.repo.get_assignment_by_worker_shift_team_and_date(
+            worker_id, shift_id, team_id, a_date
+        )
+
+        assert result is not None
+        assert result.worker_id == worker_id
+        assert result.shift_id == shift_id
+        assert result.team_id == team_id
+        assert result.date == a_date
+
+        # Test for non-existing assignment
+        non_existing_result = self.repo.get_assignment_by_worker_shift_team_and_date(
+            "worker2", "shift2", "team2", date(2023, 1, 2)
+        )
+        assert non_existing_result is None

@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.coverage import CoverageSelector as CoreCoverageSelector
+from shared.schemas.schemas.coverage_selector import CoverageSelector
 
 
 class CoverageSelectorSchema(DocumentBaseSchema):
@@ -15,8 +15,8 @@ class CoverageSelectorSchema(DocumentBaseSchema):
     end_date: datetime
     last_modified: float
 
-    def to_core(self) -> CoreCoverageSelector:
-        return CoreCoverageSelector(
+    def to_core(self) -> CoverageSelector:
+        return CoverageSelector(
             id=self.id or "",
             schedule_id=self.schedule,
             coverage_id=self.coverage,
@@ -27,9 +27,7 @@ class CoverageSelectorSchema(DocumentBaseSchema):
         )
 
     @classmethod
-    def from_core(
-        cls, coverage_selector: CoreCoverageSelector
-    ) -> "CoverageSelectorSchema":
+    def from_core(cls, coverage_selector: CoverageSelector) -> "CoverageSelectorSchema":
         return cls(
             id=coverage_selector.id,
             schedule=coverage_selector.schedule_id,

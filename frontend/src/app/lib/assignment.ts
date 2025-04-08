@@ -44,7 +44,7 @@ export async function addAssignment(assignment: AssignmentT) {
     if (!response.ok) {
       throw new Error("Failed to add assignment: " + responseData.detail);
     }
-    return toAssignmentT(responseData) as AssignmentT;
+    return responseData.map(toAssignmentT) as AssignmentT[];
   } catch (error) {
     console.error("Failed to add assignment:", error);
     throw new Error("Failed to add assignment, please try again later");
@@ -105,7 +105,13 @@ export async function updateAssignment(
     if (!response.ok) {
       throw new Error("Failed to update assignment: " + responseData.detail);
     }
-    return toAssignmentT(responseData) as AssignmentT;
+    return {
+      updatedAssignment: toAssignmentT(responseData.updated_assignment),
+      recuperationAssignment: responseData.recuperation_assignment
+        ? toAssignmentT(responseData.recuperation_assignment)
+        : null,
+      deletedIds: responseData.deleted_ids || [],
+    };
   } catch (error) {
     console.error("Failed to update assignment:", error);
     throw new Error("Failed to update assignment, please try again later");

@@ -279,12 +279,12 @@ export default function ScheduleTab({
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const newAssignment = await addAssignment(assignment);
-    setAssignments([...assignments, newAssignment]);
+    const newAssignments = await addAssignment(assignment);
+    setAssignments([...assignments, ...newAssignments]);
     setSelectedTab("selection");
     const assignDict = getAssignmentsDataByOwnerAndDate(
       AttributeOwnerType.WORKER,
-      [newAssignment],
+      [newAssignments[0]], // Feed only the first assignment
       workers,
       shifts,
       breaches,
@@ -299,13 +299,30 @@ export default function ScheduleTab({
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const newAssignment = await updateAssignment(assignment, selectedTeamId);
-    setAssignments(
-      assignments.map((a) => (a.id === newAssignment.id ? newAssignment : a))
-    );
+    const { updatedAssignment, recuperationAssignment, deletedIds } =
+      await updateAssignment(assignment, selectedTeamId);
+
+    setAssignments((prev) => {
+      let updatedAssignments = prev.map((a) =>
+        a.id === updatedAssignment.id ? updatedAssignment : a
+      );
+
+      if (recuperationAssignment) {
+        updatedAssignments = [...updatedAssignments, recuperationAssignment];
+      }
+
+      if (deletedIds.length > 0) {
+        updatedAssignments = updatedAssignments.filter(
+          (a) => !deletedIds.includes(a.id)
+        );
+      }
+
+      return updatedAssignments;
+    });
+
     const assignDict = getAssignmentsDataByOwnerAndDate(
       AttributeOwnerType.WORKER,
-      [newAssignment],
+      [updatedAssignment],
       workers,
       shifts,
       breaches,
