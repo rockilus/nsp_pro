@@ -299,7 +299,7 @@ export default function ScheduleTab({
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const { updatedAssignment, recuperationAssignment, deletedIds } =
+    const { updatedAssignment, recuperationAssignments, deletedIds } =
       await updateAssignment(assignment, selectedTeamId);
 
     setAssignments((prev) => {
@@ -307,8 +307,11 @@ export default function ScheduleTab({
         a.id === updatedAssignment.id ? updatedAssignment : a
       );
 
-      if (recuperationAssignment) {
-        updatedAssignments = [...updatedAssignments, recuperationAssignment];
+      if (recuperationAssignments.length > 0) {
+        updatedAssignments = [
+          ...updatedAssignments,
+          ...recuperationAssignments,
+        ];
       }
 
       if (deletedIds.length > 0) {

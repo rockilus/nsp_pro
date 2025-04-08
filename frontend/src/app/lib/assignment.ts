@@ -107,9 +107,9 @@ export async function updateAssignment(
     }
     return {
       updatedAssignment: toAssignmentT(responseData.updated_assignment),
-      recuperationAssignment: responseData.recuperation_assignment
-        ? toAssignmentT(responseData.recuperation_assignment)
-        : null,
+      recuperationAssignments: responseData.recuperation_assignments
+        ? responseData.recuperation_assignments.map(toAssignmentT)
+        : [],
       deletedIds: responseData.deleted_ids || [],
     };
   } catch (error) {
