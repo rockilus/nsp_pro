@@ -99,6 +99,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
       date: date,
       shiftId: shiftId,
       fixed: true,
+      referenceAssignmentId: null,
     };
 
     try {

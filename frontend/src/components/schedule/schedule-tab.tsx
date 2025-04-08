@@ -343,6 +343,7 @@ export default function ScheduleTab({
     }
     const { deletedIds } = await deleteAssignment(assignmentId, selectedTeamId);
     setAssignments(assignments.filter((a) => !deletedIds.includes(a.id)));
+    setSelectedCell(null);
   };
 
   const handleToday = async () => {
@@ -687,7 +688,7 @@ export default function ScheduleTab({
     {
       name: "selection",
       label: t("selection"),
-      content: selectedCell ? (
+      content: (
         <AssignmentOptions
           lng={lng}
           workers={workers.filter((w) => !w.deleted)}
@@ -696,15 +697,12 @@ export default function ScheduleTab({
             ...(scheduleCampaign ? [scheduleCampaign] : []),
             ...schedulesValidated,
           ]}
-          assignments={assignments}
           selectedCell={selectedCell}
-          selectedDisplay={selectedDisplay}
           onClose={handleCloseLHS}
-          setSelectedCell={setSelectedCell}
           handleUpdateAssignment={handleUpdateAssignment}
           handleDeleteAssignment={handleDeleteAssignment}
         />
-      ) : null,
+      ),
     },
     {
       name: "create_assignment",

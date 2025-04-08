@@ -22,6 +22,7 @@
     "link_shift": "Tâche liée",
     "locked": "Verrouillé",
     "month": "Mois",
+    "no_assignment_selected_msg": "Aucune affectation sélectionnée",
     "no_breach": "Aucune enfreinte",
     "no_requests": "Aucune demande",
     "no_schedule_text": "Start a new campaign and solve it to get your schedule.",

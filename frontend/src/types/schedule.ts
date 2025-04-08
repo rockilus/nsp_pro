@@ -14,6 +14,7 @@ export type AssignmentT = {
   date: dayjs.Dayjs;
   shiftId: string;
   fixed: boolean;
+  referenceAssignmentId: string | null;
 };
 
 // Daily Shift Demand

@@ -27,3 +27,10 @@
   font-weight: 600;
   color: #3c4043;
 }
+
+.assignment-options-no-assignment-selected-msg {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #3c4043;
+  font-style: italic;
+}
