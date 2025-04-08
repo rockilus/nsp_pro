@@ -108,13 +108,10 @@ async def update_assignment(
                 if updated_assignment_data.get("updated_assignment", None)
                 else None
             ),
-            "recuperation_assignment": (
-                core_to_msg_assignment(
-                    updated_assignment_data.get("recuperation_assignment", None)
-                )
-                if updated_assignment_data.get("recuperation_assignment", None)
-                else None
-            ),
+            "recuperation_assignments": [
+                core_to_msg_assignment(a)
+                for a in updated_assignment_data.get("recuperation_assignments", [])
+            ],
             "deleted_ids": updated_assignment_data.get("deleted_ids", []),
         }
     except Exception as e:

@@ -6,6 +6,7 @@ from shared.database.schemas.assignment import AssignmentSchema
 from shared.schemas.schemas.assignment import Assignment
 
 
+# pylint: disable=too-many-public-methods
 class AssignmentRepository(BaseRepository[AssignmentSchema]):
     """Repository for assignment documents using PyMongo."""
 
@@ -116,6 +117,11 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         )
         return [a.to_core() for a in assignments]
 
+    def get_assignments_by_reference_id(self, reference_id: str) -> List[Assignment]:
+        """Get assignments by their reference assignment ID."""
+        assignments = self.find_all({"reference_assignment_id": reference_id})
+        return [assignment.to_core() for assignment in assignments]
+
     def update_assignment(self, assignment: Assignment) -> Assignment:
         """Update an assignment."""
         assignment_schema = AssignmentSchema.from_core(assignment)
@@ -197,5 +203,16 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
                 "date": {"$gte": start_of_day, "$lte": end_of_day},
             }
         )
+
+        return deleted_ids
+
+    def delete_assignments_by_reference_id(self, reference_id: str) -> List[str]:
+        """Delete assignments by their reference assignment ID and return their IDs."""
+        matching_assignments = self.collection.find(
+            {"reference_assignment_id": reference_id}, {"_id": 1}
+        )
+        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+
+        self.collection.delete_many({"reference_assignment_id": reference_id})
 
         return deleted_ids

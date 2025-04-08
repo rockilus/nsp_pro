@@ -3,8 +3,7 @@ from typing import Tuple
 from unittest.mock import MagicMock
 
 import pytest
-from shared.schemas.schemas.schedule import Assignment
-from shared.schemas.schemas.shift import ShiftType
+from shared.schemas import Assignment, ShiftType
 
 from src.services.assignment_service import AssignmentService
 
@@ -16,7 +15,7 @@ def mock_service() -> Tuple[AssignmentService, MagicMock]:
     return service, mock_collection
 
 
-# pylint: disable=redefined-outer-name
+# pylint: disable=redefined-outer-name, R0801
 def test_no_assignments(
     mock_service: Tuple[AssignmentService, MagicMock],
 ) -> None:
@@ -172,19 +171,31 @@ def test_create_assignment_with_duty_shift(
         fixed=False,
     )
 
+    # Mock the database response for saving assignments
+    mock_collection.assignment_db.create_assignment.side_effect = [
+        assignment_new,  # First call returns the main assignment
+        Assignment(
+            id="recup_assignment_id",
+            team_id=assignment_new.team_id,
+            schedule_id=assignment_new.schedule_id,
+            worker_id=assignment_new.worker_id,
+            date=assignment_new.date,
+            shift_id=shift_recup.id,
+            fixed=assignment_new.fixed,
+            reference_assignment_id=assignment_new.id,
+        ),  # Second call returns the recuperation assignment
+    ]
+
     # Call the method
-    service.create_assignment(assignment_new)
+    created_assignments = service.create_assignment(assignment_new)
 
     # Assert both assignments were created
-    mock_collection.assignment_db.create_assignments.assert_called_once()
-    created_assignments = mock_collection.assignment_db.create_assignments.call_args[0][
-        0
-    ]
     assert len(created_assignments) == 2
     assert created_assignments[0] == assignment_new
     assert created_assignments[1].shift_id == "recup_shift_id"
     assert created_assignments[1].worker_id == assignment_new.worker_id
     assert created_assignments[1].date == assignment_new.date
+    assert created_assignments[1].reference_assignment_id == assignment_new.id
 
 
 def test_create_assignment_with_invalid_shift(
@@ -235,7 +246,7 @@ def test_update_assignment_with_same_shift(
         result["updated_assignment"]
         == mock_collection.assignment_db.update_assignment.return_value
     )
-    assert result["recuperation_assignment"] is None
+    assert result["recuperation_assignments"] == []
     assert result["deleted_ids"] == []
 
 
@@ -277,8 +288,12 @@ def test_update_assignment_with_duty_shift(
     shift_recup_new.id = "recup_new_id"
 
     mock_collection.shift_db.get_recuperation_shift.side_effect = [
-        shift_recup_old,
         shift_recup_new,
+    ]
+
+    # Mock the deletion of old recuperation assignments
+    mock_collection.assignment_db.delete_assignments_by_reference_id.return_value = [
+        "deleted_recup_id"
     ]
 
     # Call the method
@@ -286,12 +301,9 @@ def test_update_assignment_with_duty_shift(
 
     # Assert the old recuperation assignment was deleted
     # fmt: off
-    mock_collection.assignment_db\
-        .delete_assignments_by_team_worker_shift_and_date.assert_called_once_with(
-            team_id=assignment_old.team_id,
-            worker_id=assignment_old.worker_id,
-            shift_id=shift_recup_old.id,
-            a_date=assignment_old.date,
+    mock_collection.assignment_db.delete_assignments_by_reference_id\
+        .assert_called_once_with(
+            reference_id=assignment_old.id
         )
     # fmt: on
 
@@ -311,17 +323,10 @@ def test_update_assignment_with_duty_shift(
         result["updated_assignment"]
         == mock_collection.assignment_db.update_assignment.return_value
     )
-    assert (
-        result["recuperation_assignment"]
-        == mock_collection.assignment_db.create_assignment.return_value
-    )
-    # fmt: off
-    assert (
-        result["deleted_ids"]
-        == mock_collection.assignment_db
-        .delete_assignments_by_team_worker_shift_and_date.return_value
-    )
-    # fmt: on
+    assert result["recuperation_assignments"] == [
+        mock_collection.assignment_db.create_assignment.return_value
+    ]
+    assert result["deleted_ids"] == ["deleted_recup_id"]
 
 
 def test_update_assignment_with_invalid_shift(

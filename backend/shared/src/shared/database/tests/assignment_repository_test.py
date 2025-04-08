@@ -512,3 +512,68 @@ class TestAssignmentRepository:
             "worker2", "shift2", "team2", date(2023, 1, 2)
         )
         assert non_existing_result is None
+
+    def test_get_assignments_by_reference_id(self):
+        """Test getting assignments by reference ID."""
+        reference_id = "ref123"
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                reference_assignment_id=reference_id,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                reference_assignment_id=reference_id,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        results = self.repo.get_assignments_by_reference_id(reference_id)
+
+        assert len(results) == 2
+        assert all(a.reference_assignment_id == reference_id for a in results)
+
+    def test_delete_assignments_by_reference_id(self):
+        """Test deleting assignments by reference ID."""
+        reference_id = "ref123"
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                reference_assignment_id=reference_id,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                reference_assignment_id=reference_id,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        deleted_ids = self.repo.delete_assignments_by_reference_id(reference_id)
+
+        assert len(deleted_ids) == 2
+        assert all(isinstance(id, str) for id in deleted_ids)
+
+        remaining = list(
+            self.repo.collection.find({"reference_assignment_id": reference_id})
+        )
+        assert len(remaining) == 0
