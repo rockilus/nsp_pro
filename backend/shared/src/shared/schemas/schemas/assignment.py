@@ -12,6 +12,7 @@ class Assignment:
     date: date
     shift_id: str
     fixed: bool
+    reference_assignment_id: str | None = None
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -29,5 +30,6 @@ class Assignment:
             worker_id=data["worker_id"],
             date=datetime.fromtimestamp(data["date"], tz=timezone.utc).date(),
             shift_id=data["shift_id"],
+            reference_assignment_id=data.get("reference_assignment_id", None),
             fixed=data["fixed"],
         )
