@@ -11,13 +11,13 @@ from shared.database.repositories.dimension import (
 )
 from shared.database.repositories.shift import ShiftRepository
 from shared.database.schemas.attribute import AttributeSchema
-from shared.schemas.schemas.attribute import Attribute, AttributeOwnerType
-from shared.schemas.schemas.dimension import (
+from shared.schemas.core.attribute import Attribute, AttributeOwnerType
+from shared.schemas.core.dimension import (
     Dimension,
     DimensionEntryType,
     DimensionType,
 )
-from shared.schemas.schemas.shift import (
+from shared.schemas.core.shift import (
     Shift,
     ShiftLeaveType,
     ShiftRestType,

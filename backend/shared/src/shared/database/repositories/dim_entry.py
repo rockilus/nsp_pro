@@ -2,7 +2,7 @@ from typing import List
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.dim_entry import DimEntrySchema
-from shared.schemas.schemas.dim_entry import DimEntry
+from shared.schemas.core.dim_entry import DimEntry
 
 
 class DimEntryRepository(BaseRepository[DimEntrySchema]):

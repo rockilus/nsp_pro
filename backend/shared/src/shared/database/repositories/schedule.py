@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.schedule import ScheduleSchema
-from shared.schemas.schemas.schedule import Schedule, ScheduleStatus
+from shared.schemas.core.schedule import Schedule, ScheduleStatus
 
 
 class ScheduleRepository(BaseRepository[ScheduleSchema]):

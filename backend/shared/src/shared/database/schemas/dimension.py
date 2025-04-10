@@ -1,7 +1,7 @@
 from typing import List
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.dimension import (
+from shared.schemas.core.dimension import (
     Dimension,
     DimensionEntryType,
     DimensionType,

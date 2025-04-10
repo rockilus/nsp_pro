@@ -3,7 +3,7 @@ from typing import List
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.request import RequestSchema
-from shared.schemas.schemas.request import Request
+from shared.schemas.core.request import Request
 
 
 class RequestRepository(BaseRepository[RequestSchema]):

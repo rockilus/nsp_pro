@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List
 
-from shared.schemas.schemas.shift import Shift
+from shared.schemas.core.shift import Shift
 
 
 @dataclass

@@ -192,7 +192,7 @@ class TemplateMessage(BaseModel):
 
 
 # Schedule
-class AssignmentMessage(BaseModel):
+class AssignmentDTO(BaseModel):
     id: str
     teamId: str
     scheduleId: str | None
@@ -203,7 +203,7 @@ class AssignmentMessage(BaseModel):
     referenceAssignmentId: str | None
 
 
-class DailyShiftDemandMessage(BaseModel):
+class DailyShiftDemandDTO(BaseModel):
     id: str
     teamId: str
     scheduleId: str
@@ -261,7 +261,7 @@ class ScheduleMessage(BaseModel):
 
 class SolutionMessage(BaseModel):
     schedule: ScheduleMessage
-    assignments: List[AssignmentMessage]
+    assignments: List[AssignmentDTO]
     breaches: List[BreachMessage]
     requests: List[RequestMessage]
 

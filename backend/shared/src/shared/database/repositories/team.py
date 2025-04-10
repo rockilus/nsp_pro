@@ -2,7 +2,7 @@ from typing import List
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.team import TeamSchema
-from shared.schemas.schemas.team import Team
+from shared.schemas.core.team import Team
 
 
 class TeamRepository(BaseRepository[TeamSchema]):

@@ -4,7 +4,7 @@ from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.constraint_build import (
     ConstraintBuildSchema,
 )
-from shared.schemas.schemas.constraint import ConstraintBuild
+from shared.schemas.core.constraint import ConstraintBuild
 
 
 class ConstraintBuildRepository(BaseRepository[ConstraintBuildSchema]):

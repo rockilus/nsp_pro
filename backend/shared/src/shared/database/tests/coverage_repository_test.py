@@ -5,7 +5,7 @@ from shared.database.repositories.coverage import (
     CoverageRepository,
 )
 from shared.database.schemas.coverage import CoverageSchema
-from shared.schemas.schemas.coverage import Coverage
+from shared.schemas.core.coverage import Coverage
 
 
 class TestCoverageRepository:

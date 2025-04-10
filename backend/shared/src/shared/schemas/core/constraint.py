@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Dict, List, Tuple
 
-from shared.schemas.schemas.attribute import AttributeOwnerType
+from shared.schemas.core.attribute import AttributeOwnerType
 
 
 class VarWorkerSelectorOptions(Enum):

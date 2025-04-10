@@ -3,7 +3,7 @@ from typing import List, Union
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.assignment import AssignmentSchema
-from shared.schemas.schemas.assignment import Assignment
+from shared.schemas.core.assignment import Assignment
 
 
 # pylint: disable=too-many-public-methods

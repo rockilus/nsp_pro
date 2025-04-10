@@ -23,7 +23,7 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.api_model import AssignmentMessage
+from src.routes.api_model import AssignmentDTO
 from src.services.assignment_service import AssignmentService
 
 router = APIRouter()
@@ -32,10 +32,10 @@ router = APIRouter()
 @router.post("/assignments/teams/{team_id}", status_code=201)
 async def create_assignment(
     team_id: str,
-    assignment: AssignmentMessage,
+    assignment: AssignmentDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-) -> List[AssignmentMessage]:
+) -> List[AssignmentDTO]:
     try:
         if not await authz_check(
             session.get_user_id(), "create-assignment", "team", team_id
@@ -59,7 +59,7 @@ async def get_assignments(
     end_date: Optional[date] = Query(None, alias="end_date"),
     session: SessionContainerType = Depends(authn_verify_session()),
     db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> List[AssignmentMessage]:
+) -> List[AssignmentDTO]:
     try:
         if not await authz_check(
             session.get_user_id(), "read-assignments", "team", team_id
@@ -71,8 +71,10 @@ async def get_assignments(
         if start_date is None or end_date is None:
             assignments = db_collections.assignment_db.get_assignments(team_id)
         else:
-            assignments = db_collections.assignment_db.get_assignments_by_dates(
-                team_id, start_date, end_date
+            assignments = (
+                db_collections.assignment_db.get_assignments_by_dates(
+                    team_id, start_date, end_date
+                )
             )
         response = [core_to_msg_assignment(a) for a in assignments]
         end_time = time_module.time()
@@ -87,7 +89,7 @@ async def get_assignments(
 @router.put("/assignments/{assignment_id}/teams/{team_id}")
 async def update_assignment(
     team_id: str,
-    assignment_api: AssignmentMessage,
+    assignment_api: AssignmentDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
     assignment_service: AssignmentService = Depends(get_assignment_service),
 ) -> Dict:
@@ -99,7 +101,9 @@ async def update_assignment(
                 "You do not have permission to update an assignment",
             )
         assignment_data = msg_to_core_assignment(assignment_api)
-        updated_assignment_data = assignment_service.update_assignment(assignment_data)
+        updated_assignment_data = assignment_service.update_assignment(
+            assignment_data
+        )
         response = {
             "updated_assignment": (
                 core_to_msg_assignment(
@@ -110,7 +114,9 @@ async def update_assignment(
             ),
             "recuperation_assignments": [
                 core_to_msg_assignment(a)
-                for a in updated_assignment_data.get("recuperation_assignments", [])
+                for a in updated_assignment_data.get(
+                    "recuperation_assignments", []
+                )
             ],
             "deleted_ids": updated_assignment_data.get("deleted_ids", []),
         }
@@ -143,7 +149,7 @@ async def delete_assignment(
 
 # Mappers
 # core to message
-def core_to_msg_assignment(assignment: Assignment) -> AssignmentMessage:
+def core_to_msg_assignment(assignment: Assignment) -> AssignmentDTO:
     try:
         data = asdict(assignment)
     except Exception as e:
@@ -153,7 +159,7 @@ def core_to_msg_assignment(assignment: Assignment) -> AssignmentMessage:
         assignment.date, time.min, tzinfo=timezone.utc
     ).timestamp()
     as_dict = humps.camelize(data)
-    validator = TypeAdapter(AssignmentMessage)
+    validator = TypeAdapter(AssignmentDTO)
     try:
         a_msg = validator.validate_python(as_dict)
     except Exception as e:
@@ -163,9 +169,11 @@ def core_to_msg_assignment(assignment: Assignment) -> AssignmentMessage:
 
 
 # message to core
-def msg_to_core_assignment(msg: AssignmentMessage) -> Assignment:
+def msg_to_core_assignment(msg: AssignmentDTO) -> Assignment:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["date"] = datetime.fromtimestamp(data_snake["date"], timezone.utc).date()
+    data_snake["date"] = datetime.fromtimestamp(
+        data_snake["date"], timezone.utc
+    ).date()
     try:
         assignment = Assignment(**data_snake)
     except Exception as e:

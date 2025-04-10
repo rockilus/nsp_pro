@@ -1,8 +1,8 @@
 from typing import List, Tuple
 
 from shared.augment.blocks_to_string import blocks_to_string
-from shared.schemas.schemas.attribute import Attribute, AttributeOwnerType
-from shared.schemas.schemas.constraint import (
+from shared.schemas.core.attribute import Attribute, AttributeOwnerType
+from shared.schemas.core.constraint import (
     Block,
     BlockNameOptions,
     ConstraintBuild,
@@ -11,11 +11,11 @@ from shared.schemas.schemas.constraint import (
     ShiftWorkerOption,
     SWOIdTypes,
 )
-from shared.schemas.schemas.dim_entry import DimEntry
-from shared.schemas.schemas.dimension import Dimension, DimensionEntryType
-from shared.schemas.schemas.shift import Shift, ShiftType
-from shared.schemas.schemas.specialty import Specialty
-from shared.schemas.schemas.worker import Worker
+from shared.schemas.core.dim_entry import DimEntry
+from shared.schemas.core.dimension import Dimension, DimensionEntryType
+from shared.schemas.core.shift import Shift, ShiftType
+from shared.schemas.core.specialty import Specialty
+from shared.schemas.core.worker import Worker
 
 
 # pylint: disable=too-many-arguments

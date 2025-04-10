@@ -3,7 +3,7 @@ from datetime import datetime, time, timezone
 from pydantic import field_validator
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.request import Request, RequestStatus
+from shared.schemas.core.request import Request, RequestStatus
 
 
 class RequestSchema(DocumentBaseSchema):

@@ -8,7 +8,7 @@ from shared.database.schemas.breach import (
     BreachSchema,
     VariableSchema,
 )
-from shared.schemas.schemas.breach import Breach, ObjectiveCategory, Variable
+from shared.schemas.core.breach import Breach, ObjectiveCategory, Variable
 
 
 class TestBreachRepository:

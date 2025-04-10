@@ -8,7 +8,7 @@ from shared.database.schemas.shift import (
     ShiftSchema,
     StaffingSchema,
 )
-from shared.schemas.schemas.shift import (
+from shared.schemas.core.shift import (
     Shift,
     ShiftLeaveType,
     ShiftRestType,

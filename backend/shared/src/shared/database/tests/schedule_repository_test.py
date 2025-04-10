@@ -10,7 +10,7 @@ from shared.database.schemas.schedule import (
     QuickStaffingSchema,
     ScheduleSchema,
 )
-from shared.schemas.schemas.schedule import (
+from shared.schemas.core.schedule import (
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,

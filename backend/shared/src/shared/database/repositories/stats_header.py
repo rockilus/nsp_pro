@@ -4,7 +4,7 @@ from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.stats_header import (
     StatsHeaderSchema,
 )
-from shared.schemas.schemas.stats import (
+from shared.schemas.core.stats import (
     HeaderUnitOptions,
     StatsHeader,
     StatsUnitOptions,

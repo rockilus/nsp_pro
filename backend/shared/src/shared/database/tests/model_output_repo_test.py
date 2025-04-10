@@ -9,7 +9,7 @@ from shared.database.repositories.model_output import (
 from shared.database.schemas.model_output import (
     ModelOutputSchema,
 )
-from shared.schemas.schemas.model_output import ModelOutput, ModelOutputStatus
+from shared.schemas.core.model_output import ModelOutput, ModelOutputStatus
 
 
 class TestModelOutputRepository:

@@ -1,5 +1,5 @@
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.coverage import Coverage
+from shared.schemas.core.coverage import Coverage
 
 
 class CoverageSchema(DocumentBaseSchema):

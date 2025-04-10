@@ -35,7 +35,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.routes.api_model import (
-    AssignmentMessage,
+    AssignmentDTO,
     BreachMessage,
     CoverageSelectorMessage,
     QuickStaffingMessage,
@@ -148,7 +148,9 @@ async def solve_schedule(
 
 
 @router.post("/schedules/{schedule_id}/notifify-solved/teams/{team_id}")
-async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> str:
+async def notify_solved_schedule(
+    schedule_id: str, team_id: str, data: Dict
+) -> str:
     try:
         if "eo_augmented" not in data:
             raise MessageTypeError("eo_augmented not in data")
@@ -168,7 +170,9 @@ async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> 
     return "Task ID"
 
 
-@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
+@router.post(
+    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
+)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -209,7 +213,9 @@ async def update_schedule(
                 "You do not have permission to update a schedule",
             )
         schedule_data = msg_to_core_schedule(schedule_api)
-        schedule_updated, css_updated = schedule_service.update_schedule(schedule_data)
+        schedule_updated, css_updated = schedule_service.update_schedule(
+            schedule_data
+        )
         response = (
             core_to_msg_schedule(schedule_updated),
             [core_to_msg_coverage_selector(cs) for cs in css_updated],
@@ -304,7 +310,9 @@ def core_to_msg_schedule(schedule: Schedule) -> ScheduleMessage:
         core_to_msg_quick_staffing(qs) for qs in schedule.quick_staffings
     ]
     data["last_updated_dsds"] = (
-        schedule.last_updated_dsds.timestamp() if schedule.last_updated_dsds else None
+        schedule.last_updated_dsds.timestamp()
+        if schedule.last_updated_dsds
+        else None
     )
     as_dict = humps.camelize(data)
     validator = TypeAdapter(ScheduleMessage)
@@ -325,7 +333,7 @@ def core_to_msg_solution(
     data: Dict[
         str,
         ScheduleMessage
-        | List[AssignmentMessage]
+        | List[AssignmentDTO]
         | List[BreachMessage]
         | List[RequestMessage]
         | List[ShiftMessage],
@@ -397,8 +405,12 @@ def msg_to_core_schedule(msg: ScheduleMessage) -> Schedule:
         data_snake["last_modified_dates"], timezone.utc
     )
     if msg.solveDetails:
-        data_snake["solve_details"] = msg_to_core_solve_details(msg.solveDetails)
-    data_snake["solve_status"] = ScheduleSolveStatus(data_snake["solve_status"])
+        data_snake["solve_details"] = msg_to_core_solve_details(
+            msg.solveDetails
+        )
+    data_snake["solve_status"] = ScheduleSolveStatus(
+        data_snake["solve_status"]
+    )
     data_snake["status"] = ScheduleStatus(data_snake["status"])
     data_snake["missing_coverage_dates"] = [
         datetime.fromtimestamp(d, timezone.utc).date()

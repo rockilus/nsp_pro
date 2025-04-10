@@ -23,7 +23,7 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.api_model import DailyShiftDemandMessage
+from src.routes.api_model import DailyShiftDemandDTO
 from src.services.daily_shift_demand_service import DailyShiftDemandService
 
 router = APIRouter()
@@ -33,10 +33,10 @@ router = APIRouter()
 @router.post("/daily-shift-demands/teams/{team_id}", status_code=201)
 async def create_daily_shift_demand(
     team_id: str,
-    daily_shift_demand: DailyShiftDemandMessage,
+    daily_shift_demand: DailyShiftDemandDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
     db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> DailyShiftDemandMessage:
+) -> DailyShiftDemandDTO:
     try:
         if not await authz_check(
             session.get_user_id(), "create-schedule", "team", team_id
@@ -45,8 +45,10 @@ async def create_daily_shift_demand(
                 "You do not have permission to create an daily_shift_demand",
             )
         dsd_data = msg_to_core_daily_shift_demand(daily_shift_demand)
-        dsd_created = db_collections.daily_shift_demand_db.create_daily_shift_demand(
-            dsd_data
+        dsd_created = (
+            db_collections.daily_shift_demand_db.create_daily_shift_demand(
+                dsd_data
+            )
         )
         response = core_to_msg_daily_shift_demand(dsd_created)
     except Exception as e:
@@ -63,7 +65,7 @@ async def get_daily_shift_demands(
     daily_shift_demand_service: DailyShiftDemandService = Depends(
         get_daily_shift_demand_service
     ),
-) -> List[DailyShiftDemandMessage]:
+) -> List[DailyShiftDemandDTO]:
     try:
         if not await authz_check(
             session.get_user_id(), "read-schedules", "team", team_id
@@ -86,10 +88,10 @@ async def get_daily_shift_demands(
 @router.put("/daily-shift-demands/{daily_shift_demand_id}/teams/{team_id}")
 async def update_daily_shift_demand(
     team_id: str,
-    daily_shift_demand: DailyShiftDemandMessage,
+    daily_shift_demand: DailyShiftDemandDTO,
     session: SessionContainerType = Depends(authn_verify_session()),
     db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> DailyShiftDemandMessage:
+) -> DailyShiftDemandDTO:
     try:
         if not await authz_check(
             session.get_user_id(), "update-schedule", "team", team_id
@@ -98,8 +100,10 @@ async def update_daily_shift_demand(
                 "You do not have permission to update an daily_shift_demand",
             )
         dsd_data = msg_to_core_daily_shift_demand(daily_shift_demand)
-        updated_dsd = db_collections.daily_shift_demand_db.update_daily_shift_demand(
-            dsd_data
+        updated_dsd = (
+            db_collections.daily_shift_demand_db.update_daily_shift_demand(
+                dsd_data
+            )
         )
         response = core_to_msg_daily_shift_demand(updated_dsd)
     except Exception as e:
@@ -136,7 +140,7 @@ async def delete_daily_shift_demand(
 # core to message
 def core_to_msg_daily_shift_demand(
     daily_shift_demand: DailyShiftDemand,
-) -> DailyShiftDemandMessage:
+) -> DailyShiftDemandDTO:
     try:
         data = asdict(daily_shift_demand)
     except Exception as e:
@@ -146,25 +150,31 @@ def core_to_msg_daily_shift_demand(
         daily_shift_demand.date, time.min, tzinfo=timezone.utc
     ).timestamp()
     as_dict = humps.camelize(data)
-    validator = TypeAdapter(DailyShiftDemandMessage)
+    validator = TypeAdapter(DailyShiftDemandDTO)
     try:
         a_msg = validator.validate_python(as_dict)
     except Exception as e:
-        log_info("Failed to convert DailyShiftDemand to DailyShiftDemandMessage")
+        log_info(
+            "Failed to convert DailyShiftDemand to DailyShiftDemandMessage"
+        )
         handle_message_errors(e)
     return a_msg
 
 
 # message to core
 def msg_to_core_daily_shift_demand(
-    msg: DailyShiftDemandMessage,
+    msg: DailyShiftDemandDTO,
 ) -> DailyShiftDemand:
     data_snake = humps.decamelize(msg.model_dump())
     data_snake["source_type"] = DSDSourceType(data_snake["source_type"])
-    data_snake["date"] = datetime.fromtimestamp(data_snake["date"], timezone.utc).date()
+    data_snake["date"] = datetime.fromtimestamp(
+        data_snake["date"], timezone.utc
+    ).date()
     try:
         daily_shift_demand = DailyShiftDemand(**data_snake)
     except Exception as e:
-        log_info("Failed to convert DailyShiftDemandMessage to DailyShiftDemand")
+        log_info(
+            "Failed to convert DailyShiftDemandMessage to DailyShiftDemand"
+        )
         handle_create_schema_object_error(e)
     return daily_shift_demand

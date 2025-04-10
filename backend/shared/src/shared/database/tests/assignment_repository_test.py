@@ -7,7 +7,7 @@ from shared.database.repositories.assignment import (
     AssignmentRepository,
 )
 from shared.database.schemas.assignment import AssignmentSchema
-from shared.schemas.schemas.assignment import Assignment
+from shared.schemas.core.assignment import Assignment
 
 
 class TestAssignmentRepository:

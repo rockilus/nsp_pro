@@ -46,3 +46,9 @@ export type RecurrenceExclusionT = {
   recurrenceRuleId: string;
   excludedDate: dayjs.Dayjs;
 };
+
+export enum UpdateScope {
+  SINGLE = 0,
+  FUTURE = 1,
+  ALL = 2,
+}

@@ -1,8 +1,8 @@
-from shared.schemas.schemas.assignment import Assignment
-from shared.schemas.schemas.attribute import Attribute, AttributeOwnerType
-from shared.schemas.schemas.breach import Breach, ObjectiveCategory, Variable
-from shared.schemas.schemas.config import Config
-from shared.schemas.schemas.constraint import (
+from shared.schemas.core.assignment import Assignment
+from shared.schemas.core.attribute import Attribute, AttributeOwnerType
+from shared.schemas.core.breach import Breach, ObjectiveCategory, Variable
+from shared.schemas.core.config import Config
+from shared.schemas.core.constraint import (
     Block,
     BlockNameOptions,
     BlockTypeOptions,
@@ -32,19 +32,19 @@ from shared.schemas.schemas.constraint import (
     VarShiftSelectorOptions,
     VarWorkerSelectorOptions,
 )
-from shared.schemas.schemas.coverage import Coverage
-from shared.schemas.schemas.coverage_selector import CoverageSelector
-from shared.schemas.schemas.daily_shift_demand import (
+from shared.schemas.core.coverage import Coverage
+from shared.schemas.core.coverage_selector import CoverageSelector
+from shared.schemas.core.daily_shift_demand import (
     DailyShiftDemand,
     DSDSourceType,
 )
-from shared.schemas.schemas.dim_entry import DimEntry
-from shared.schemas.schemas.dimension import (
+from shared.schemas.core.dim_entry import DimEntry
+from shared.schemas.core.dimension import (
     Dimension,
     DimensionEntryType,
     DimensionType,
 )
-from shared.schemas.schemas.engine import (
+from shared.schemas.core.engine import (
     ConfigurationConstraints,
     CustomSolverParams,
     EngineInputs,
@@ -57,18 +57,18 @@ from shared.schemas.schemas.engine import (
     SolveStrategy,
     SystemConstraints,
 )
-from shared.schemas.schemas.export_options import (
+from shared.schemas.core.export_options import (
     ExportOptions,
     ExportPeriodOptions,
 )
-from shared.schemas.schemas.link_shift import LinkShift
-from shared.schemas.schemas.model_output import ModelOutput, ModelOutputStatus
-from shared.schemas.schemas.request import (
+from shared.schemas.core.link_shift import LinkShift
+from shared.schemas.core.model_output import ModelOutput, ModelOutputStatus
+from shared.schemas.core.request import (
     Request,
     RequestAugmented,
     RequestStatus,
 )
-from shared.schemas.schemas.schedule import (
+from shared.schemas.core.schedule import (
     QuickStaffing,
     Schedule,
     ScheduleSolveStatus,
@@ -78,16 +78,16 @@ from shared.schemas.schemas.schedule import (
     WorkTimeTable,
     WorkTimeTableData,
 )
-from shared.schemas.schemas.shift import (
+from shared.schemas.core.shift import (
     Shift,
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
     Staffing,
 )
-from shared.schemas.schemas.shift_demand import ShiftDemand
-from shared.schemas.schemas.specialty import Specialty
-from shared.schemas.schemas.stats import (
+from shared.schemas.core.shift_demand import ShiftDemand
+from shared.schemas.core.specialty import Specialty
+from shared.schemas.core.stats import (
     HeaderUnitOptions,
     Stats,
     StatsHeader,
@@ -96,16 +96,16 @@ from shared.schemas.schemas.stats import (
     StatsUnitOptions,
     StatsValue,
 )
-from shared.schemas.schemas.task import TaskServices
-from shared.schemas.schemas.team import Team
-from shared.schemas.schemas.user import (
+from shared.schemas.core.task import TaskServices
+from shared.schemas.core.team import Team
+from shared.schemas.core.user import (
     Language,
     PasswordData,
     User,
     UserAuth,
     UserDashboard,
 )
-from shared.schemas.schemas.worker import Worker, WorkerDates
+from shared.schemas.core.worker import Worker, WorkerDates
 
 # pylint: disable=R0801
 __all__ = [

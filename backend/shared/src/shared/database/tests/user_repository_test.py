@@ -5,7 +5,7 @@ import pytest
 from shared.database.database import MongoDB
 from shared.database.repositories.user import UserRepository
 from shared.database.schemas.user import UserSchema
-from shared.schemas.schemas.user import Language, User
+from shared.schemas.core.user import Language, User
 
 
 class TestUserRepository:

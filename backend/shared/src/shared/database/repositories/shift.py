@@ -2,7 +2,7 @@ from typing import List
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.shift import ShiftSchema
-from shared.schemas.schemas.shift import Shift, ShiftRestType, ShiftType
+from shared.schemas.core.shift import Shift, ShiftRestType, ShiftType
 
 
 class ShiftRepository(BaseRepository[ShiftSchema]):

@@ -8,7 +8,7 @@ from shared.database.schemas.constraint_build import (
     BlockSchema,
     ConstraintBuildSchema,
 )
-from shared.schemas.schemas.constraint import (
+from shared.schemas.core.constraint import (
     Block,
     BlockNameOptions,
     BlockTypeOptions,

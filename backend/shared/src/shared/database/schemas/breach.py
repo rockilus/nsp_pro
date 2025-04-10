@@ -5,7 +5,7 @@ from shared.database.schemas.base import (
     BaseSchema,
     DocumentBaseSchema,
 )
-from shared.schemas.schemas.breach import Breach, ObjectiveCategory, Variable
+from shared.schemas.core.breach import Breach, ObjectiveCategory, Variable
 
 
 class VariableSchema(BaseSchema):

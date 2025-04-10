@@ -2,7 +2,7 @@ import pytest
 
 from shared.database.database import MongoDB
 from shared.database.repositories.config import ConfigRepository
-from shared.schemas.schemas.config import Config
+from shared.schemas.core.config import Config
 
 
 class TestConfigRepository:

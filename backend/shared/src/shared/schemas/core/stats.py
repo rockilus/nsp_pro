@@ -3,7 +3,7 @@ from datetime import date
 from enum import Enum
 from typing import List
 
-from shared.schemas.schemas.constraint import ShiftWorkerOption
+from shared.schemas.core.constraint import ShiftWorkerOption
 
 
 class StatsTimeFrameOptions(Enum):

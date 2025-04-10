@@ -7,7 +7,7 @@ from shared.database.schemas.base import (
     BaseSchema,
     DocumentBaseSchema,
 )
-from shared.schemas.schemas.schedule import (
+from shared.schemas.core.schedule import (
     QuickStaffing,
     Schedule,
     ScheduleSolveStatus,

@@ -1,7 +1,7 @@
 from typing import List
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.team import Team
+from shared.schemas.core.team import Team
 
 
 class TeamSchema(DocumentBaseSchema):

@@ -2,6 +2,11 @@ from dataclasses import asdict, dataclass
 from datetime import date, datetime, time, timezone
 from typing import Dict
 
+import humps
+from pydantic import TypeAdapter
+
+from shared.schemas.dto.assignment import AssignmentDTO
+
 
 @dataclass
 class Assignment:
@@ -33,3 +38,21 @@ class Assignment:
             reference_assignment_id=data.get("reference_assignment_id", None),
             fixed=data["fixed"],
         )
+
+    def to_dto(self) -> AssignmentDTO:
+        data = asdict(self)
+        data["date"] = datetime.combine(
+            self.date, time.min, tzinfo=timezone.utc
+        ).timestamp()
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(AssignmentDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: AssignmentDTO) -> "Assignment":
+        data_dict = data.model_dump()
+        data_dict["date"] = datetime.fromtimestamp(
+            data_dict["date"], tz=timezone.utc
+        ).date()
+        data_dict = humps.decamelize(data_dict)
+        return cls(**data_dict)

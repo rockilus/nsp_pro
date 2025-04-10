@@ -4,7 +4,7 @@ from shared.database.schemas.base import (
     BaseSchema,
     DocumentBaseSchema,
 )
-from shared.schemas.schemas.constraint import (
+from shared.schemas.core.constraint import (
     Block,
     BlockNameOptions,
     BlockTypeOptions,

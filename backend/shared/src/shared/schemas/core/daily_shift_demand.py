@@ -3,6 +3,11 @@ from datetime import date, datetime, time, timezone
 from enum import Enum
 from typing import Dict
 
+import humps
+from pydantic import TypeAdapter
+
+from shared.schemas.dto.daily_shift_demand import DailyShiftDemandDTO
+
 
 class DSDSourceType(Enum):
     SHIFT_DEMAND = 0
@@ -43,3 +48,22 @@ class DailyShiftDemand:
             shift_id=data["shift_id"],
             count=data["count"],
         )
+
+    def to_dto(self) -> DailyShiftDemandDTO:
+        data = asdict(self)
+        data["date"] = datetime.combine(
+            self.date, time.min, tzinfo=timezone.utc
+        ).timestamp()
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(DailyShiftDemandDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: DailyShiftDemandDTO) -> "DailyShiftDemand":
+        data_dict = data.model_dump()
+        data_dict["date"] = datetime.fromtimestamp(
+            data_dict["date"], tz=timezone.utc
+        ).date()
+        data_dict = humps.decamelize(data_dict)
+        data_dict["source_type"] = DSDSourceType(data_dict["source_type"])
+        return cls(**data_dict)
