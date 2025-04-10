@@ -25,6 +25,7 @@ interface RecurrenceEditProps {
   recurrenceRule?: RecurrenceRuleT;
   startDate: dayjs.Dayjs;
   teamId: string;
+  onClose: () => void; // Added onClose method
 }
 
 const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
@@ -34,6 +35,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   recurrenceRule,
   startDate,
   teamId,
+  onClose, // Destructure onClose from props
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -90,6 +92,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
 
   const handleCancel = () => {
     console.log("Recurrence editing cancelled");
+    onClose(); // Call the onClose method
   };
 
   const frequencyOptions = [

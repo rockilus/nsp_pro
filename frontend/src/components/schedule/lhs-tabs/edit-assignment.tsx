@@ -31,6 +31,7 @@ interface EditAssignmentProps {
   assignment?: AssignmentT;
   handleUpdateAssignment?: (assignment: AssignmentT) => void;
   handleDeleteAssignment?: (assignmentId: string) => void;
+  recurrenceRule?: RecurrenceRuleT | null;
 }
 
 const EditAssignment: React.FC<EditAssignmentProps> = ({
@@ -47,6 +48,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   assignment,
   handleUpdateAssignment,
   handleDeleteAssignment,
+  recurrenceRule,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -64,30 +66,20 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   const [shiftError, setShiftError] = useState(false);
   const [dateError, setDateError] = useState(false);
 
-  const [recurrenceRule, setRecurrenceRule] = useState<RecurrenceRuleT | null>(
-    null
-  );
+  const [recurrenceRuleState, setRecurrenceRuleState] =
+    useState<RecurrenceRuleT | null>(recurrenceRule ?? null);
+
+  const [showRecurrenceEdit, setShowRecurrenceEdit] = useState(false); // State to toggle recurrence edit visibility
 
   useEffect(() => {
     setWorkerId(workerSelectedId);
-    setWorkerError(false);
-    setShiftError(false);
-    setDateError(false);
-  }, [workerSelectedId]);
-
-  useEffect(() => {
     setShiftId(shiftSelectedId);
-    setWorkerError(false);
-    setShiftError(false);
-    setDateError(false);
-  }, [shiftSelectedId]);
-
-  useEffect(() => {
     setDate(dateSelected);
     setWorkerError(false);
     setShiftError(false);
     setDateError(false);
-  }, [dateSelected]);
+    setRecurrenceRuleState(recurrenceRule ?? null);
+  }, [workerSelectedId, shiftSelectedId, dateSelected, recurrenceRule]);
 
   const handleSubmit = async () => {
     if (!workerId) setWorkerError(true);
@@ -178,21 +170,32 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
               helperText: dateError ? t("edit-assignment.date-error") : "",
             },
           }}
-          sx={{
-            marginBottom: "10px",
-          }}
         />
-        <RecurrenceEdit
-          isEditing={true}
-          recurrenceType={RecurrenceType.ASSIGNMENT}
-          recurrenceRule={recurrenceRule || undefined}
-          startDate={date || dayjs()}
-          teamId={teamId}
-          lng={lng}
-          // onRecurrenceChange={(updatedRecurrence) =>
-          //   setRecurrenceRule(updatedRecurrence)
-          // }
-        />
+        {showRecurrenceEdit ? (
+          <>
+            <hr className="separator" />
+            <RecurrenceEdit
+              isEditing={true}
+              recurrenceType={RecurrenceType.ASSIGNMENT}
+              recurrenceRule={recurrenceRuleState || undefined}
+              startDate={date || dayjs()}
+              teamId={teamId}
+              lng={lng}
+              onClose={() => {
+                setShowRecurrenceEdit(false);
+                setRecurrenceRuleState(recurrenceRule ?? null);
+              }}
+            />
+            <hr className="separator" />
+          </>
+        ) : (
+          <button
+            className="recurrence-button"
+            onClick={() => setShowRecurrenceEdit(!showRecurrenceEdit)}
+          >
+            {recurrenceRule ? t("edit_recurrence") : t("add_recurrence")}
+          </button>
+        )}
         <span className="form-title">{t("shift")}</span>
         <Select
           className="edit-assignment-select"
