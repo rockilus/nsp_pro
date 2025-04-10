@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from shared.schemas import (
+from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
     Dimension,

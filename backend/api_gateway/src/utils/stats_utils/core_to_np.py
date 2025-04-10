@@ -2,7 +2,7 @@ from datetime import date
 from typing import Dict, List
 
 import numpy as np
-from shared.schemas import Assignment
+from shared.schemas.core import Assignment
 
 
 def core_to_np_assignments_binary(

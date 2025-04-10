@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Tuple
 
-from shared.schemas import (
+from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
     DimensionEntryType,

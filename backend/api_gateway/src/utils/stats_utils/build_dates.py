@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
-from shared.schemas import Schedule, StatsTimeFrameOptions
+from shared.schemas.core import Schedule, StatsTimeFrameOptions
 
 from src.errors import NoCampaignError
 

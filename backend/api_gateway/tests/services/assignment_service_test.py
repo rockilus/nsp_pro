@@ -3,7 +3,7 @@ from typing import Tuple
 from unittest.mock import MagicMock
 
 import pytest
-from shared.schemas import Assignment, ShiftType
+from shared.schemas.core import Assignment, ShiftType
 
 from src.services.assignment_service import AssignmentService
 

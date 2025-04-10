@@ -1,6 +1,6 @@
 from typing import List
 
-from shared.schemas import Attribute, DimEntry
+from shared.schemas.core import Attribute, DimEntry
 
 from src.services.base_service import BaseService
 

@@ -1,6 +1,6 @@
 from typing import List
 
-from shared.schemas import (
+from shared.schemas.core import (
     Block,
     BlockNameOptions,
     BlockTypeOptions,

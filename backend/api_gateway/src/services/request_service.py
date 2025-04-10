@@ -1,6 +1,6 @@
 from typing import List
 
-from shared.schemas import Request, RequestAugmented, Shift, Worker
+from shared.schemas.core import Request, RequestAugmented, Shift, Worker
 
 from src.services.base_service import BaseService
 

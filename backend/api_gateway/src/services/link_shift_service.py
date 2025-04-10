@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from shared.schemas import LinkShift, Shift
+from shared.schemas.core import LinkShift, Shift
 
 from src.services.base_service import BaseService
 

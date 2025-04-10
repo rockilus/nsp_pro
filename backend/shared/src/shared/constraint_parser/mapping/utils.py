@@ -1,6 +1,6 @@
 from typing import List
 
-from shared.schemas import Block, BlockNameOptions
+from shared.schemas.core import Block, BlockNameOptions
 
 
 def find_block_by_name(blocks: List[Block], name: BlockNameOptions) -> Block | None:

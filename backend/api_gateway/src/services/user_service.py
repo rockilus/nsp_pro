@@ -1,7 +1,7 @@
 from typing import Any, Callable, Coroutine
 
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import PasswordData, User
+from shared.schemas.core import PasswordData, User
 from shared.schemas.errors import UserNotFoundError
 
 from src.errors import AuthnUpdateEmailError

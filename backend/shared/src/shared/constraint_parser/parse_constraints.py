@@ -2,7 +2,7 @@ from datetime import date
 from typing import Dict, List
 
 from shared.constraint_parser.mapping.map_constraint import MapConstaint
-from shared.schemas import (
+from shared.schemas.core import (
     ConstraintBuildAugmented,
     Constraints,
     ConstraintType,

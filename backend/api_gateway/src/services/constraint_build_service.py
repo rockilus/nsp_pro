@@ -1,7 +1,7 @@
 from typing import List
 
 from shared.augment.cb_to_cb_augmented import cb_to_cb_augmented
-from shared.schemas import ConstraintBuild, ConstraintBuildAugmented
+from shared.schemas.core import ConstraintBuild, ConstraintBuildAugmented
 
 from src.services.base_service import BaseService
 from src.services.data_fetching_service import DataFetchingService

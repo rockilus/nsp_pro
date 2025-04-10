@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
-from shared.schemas import (
+from shared.schemas.core import (
     CoverageSelector,
     DailyShiftDemand,
     DSDSourceType,

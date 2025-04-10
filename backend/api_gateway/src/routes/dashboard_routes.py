@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas import UserAuth, UserDashboard
+from shared.schemas.core import UserAuth, UserDashboard
 
 from src.dependencies import get_db_collections, get_user_service
 from src.errors import (

@@ -6,16 +6,16 @@ from typing import Any, Callable, Dict
 from celery.result import AsyncResult  # type: ignore
 from fastapi import APIRouter, Depends, Request, Response
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import EngineOutputsAugmented, SolveDetailsStatus
+from shared.schemas.core import (
+    EngineOutputsAugmented,
+    Solution,
+    SolveDetailsStatus,
+)
 from starlette.responses import StreamingResponse
 
 from src.celery_tasks.celery_app import celery_app
 from src.config import config
 from src.dependencies import get_db_collections, get_schedule_service
-from src.routes.schedule_routes import (
-    core_to_msg_schedule,
-    core_to_msg_solution,
-)
 from src.services.schedule_service import ScheduleService
 
 # from src.utils import event_manager
@@ -123,7 +123,7 @@ async def sse(
                                 task_id=task_id,
                             )
                         )
-                        data["schedule"] = core_to_msg_schedule(schedule).model_dump()
+                        data["schedule"] = schedule.to_dto().model_dump()
                     # task_meta = async_result.info
                     # if task_meta and "schedule_id" in task_meta:
                     # schedule_id = task_meta["schedule_id"]
@@ -142,13 +142,13 @@ async def sse(
                             async_result.result["eo_augmented"]
                         )
                         # pylint: disable=R0801
-                        solution_message = core_to_msg_solution(
-                            eo_augmented.schedule,
-                            eo_augmented.assignments,
-                            eo_augmented.breaches,
-                            eo_augmented.requests,
+                        solution = Solution(
+                            schedule=eo_augmented.schedule,
+                            assignments=eo_augmented.assignments,
+                            breaches=eo_augmented.breaches,
+                            requests=eo_augmented.requests,
                         )
-                        data["solution"] = solution_message.model_dump()
+                        data["solution"] = solution.to_dto().model_dump()
                     else:
                         if schedule_id:
                             schedule = (
@@ -158,9 +158,7 @@ async def sse(
                                     result=async_result.result,
                                 )
                             )
-                            data["schedule"] = core_to_msg_schedule(
-                                schedule
-                            ).model_dump()
+                            data["schedule"] = schedule.to_dto().model_dump()
                         data["message"] = "Task succeeded"
                     data["message"] = "Task succeeded"
                 yield f"event: {event}\ndata: {json.dumps(data)}\n\n"

@@ -2,7 +2,7 @@ import calendar
 from typing import Dict, List, Tuple
 
 import numpy as np
-from shared.schemas import (
+from shared.schemas.core import (
     HeaderUnitOptions,
     ShiftWorkerOption,
     Stats,

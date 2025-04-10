@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from shared.schemas import ShiftDemand
+from shared.schemas.core import ShiftDemand
 
 from src.services.base_service import BaseService
 

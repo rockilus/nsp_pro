@@ -125,20 +125,6 @@ class FixedAssignmentMessage(BaseModel):
     status: str
 
 
-# Request
-class RequestMessage(BaseModel):
-    id: str
-    teamId: str
-    workerId: str
-    startDate: float
-    endDate: float
-    shiftId: str
-    negative: bool
-    hard: bool
-    status: int
-    active: bool
-
-
 # Constraint
 class ShiftWorkerOptionMessage(BaseModel):
     name: str | bool
@@ -192,80 +178,6 @@ class TemplateMessage(BaseModel):
 
 
 # Schedule
-class AssignmentDTO(BaseModel):
-    id: str
-    teamId: str
-    scheduleId: str | None
-    workerId: str
-    date: float
-    shiftId: str
-    fixed: bool
-    referenceAssignmentId: str | None
-
-
-class DailyShiftDemandDTO(BaseModel):
-    id: str
-    teamId: str
-    scheduleId: str
-    shiftDemandId: str | None
-    coverageSelectorId: str | None
-    sourceType: int
-    date: float
-    shiftId: str
-    count: int
-
-
-class VariableMessage(BaseModel):
-    workerId: str | None
-    date: float
-    shiftId: str
-
-
-class BreachMessage(BaseModel):
-    id: str
-    scheduleId: str
-    objectiveId: str | None
-    objectiveCategory: int
-    variables: List[VariableMessage]
-    description: str
-    hardToSoft: bool | None
-
-
-class QuickStaffingMessage(BaseModel):
-    workerId: str
-    shiftId: str
-    target: int
-
-
-class SolveDetailsMessage(BaseModel):
-    taskId: str
-    status: int
-    updatedAt: float
-    result: Dict | None
-
-
-class ScheduleMessage(BaseModel):
-    id: str
-    teamId: str
-    startDate: float
-    endDate: float
-    lastModifiedDates: float
-    solveDetails: SolveDetailsMessage | None
-    solveStatus: int
-    status: int
-    missingCoverageDates: List[float]
-    constraintBuildIds: List[str]
-    quickStaffings: List[QuickStaffingMessage]
-    lastUpdatedDsds: float | None
-
-
-class SolutionMessage(BaseModel):
-    schedule: ScheduleMessage
-    assignments: List[AssignmentDTO]
-    breaches: List[BreachMessage]
-    requests: List[RequestMessage]
-
-
 class WorkTimeTableDataMessage(BaseModel):
     hours: int
     count: int

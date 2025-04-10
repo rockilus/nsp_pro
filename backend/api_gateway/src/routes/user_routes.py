@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas import PasswordData, User
+from shared.schemas.core import PasswordData, User
 from shared.schemas.errors import handle_create_schema_object_error
 
 from src.dependencies import get_db_collections, get_user_service

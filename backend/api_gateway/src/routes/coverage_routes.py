@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas import Coverage
+from shared.schemas.core import Coverage
 from shared.schemas.errors import handle_create_schema_object_error
 
 from src.dependencies import get_coverage_service, get_db_collections

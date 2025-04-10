@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, call, patch
 
 import pytest
-from shared.schemas import Shift, ShiftLeaveType, ShiftRestType, ShiftType
+from shared.schemas.core import Shift, ShiftLeaveType, ShiftRestType, ShiftType
 
 from src.services.assignment_service import AssignmentService
 from src.services.link_shift_service import LinkShiftService

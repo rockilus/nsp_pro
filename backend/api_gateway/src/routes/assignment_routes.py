@@ -8,7 +8,10 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas import Assignment
+from shared.schemas.core import Assignment
+
+# from src.routes.api_model import AssignmentDTO
+from shared.schemas.dto import AssignmentDTO
 from shared.schemas.errors import handle_create_schema_object_error
 
 from src.dependencies import get_assignment_service, get_db_collections
@@ -23,7 +26,6 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.api_model import AssignmentDTO
 from src.services.assignment_service import AssignmentService
 
 router = APIRouter()
@@ -43,9 +45,9 @@ async def create_assignment(
             raise NotAuthorizedError(
                 "You do not have permission to create an assignment",
             )
-        a_data = msg_to_core_assignment(assignment)
+        a_data = Assignment.from_dto(assignment)
         a_created = assignment_service.create_assignment(a_data)
-        response = [core_to_msg_assignment(a) for a in a_created]
+        response = [a.to_dto() for a in a_created]
     except Exception as e:
         log_info("Failed to create assignment")
         handle_routes_errors(e)
@@ -71,12 +73,10 @@ async def get_assignments(
         if start_date is None or end_date is None:
             assignments = db_collections.assignment_db.get_assignments(team_id)
         else:
-            assignments = (
-                db_collections.assignment_db.get_assignments_by_dates(
-                    team_id, start_date, end_date
-                )
+            assignments = db_collections.assignment_db.get_assignments_by_dates(
+                team_id, start_date, end_date
             )
-        response = [core_to_msg_assignment(a) for a in assignments]
+        response = [a.to_dto() for a in assignments]
         end_time = time_module.time()
         time_taken = round(end_time - start_time)
         print(f"Time taken to get assignments: {time_taken} seconds")
@@ -100,23 +100,19 @@ async def update_assignment(
             raise NotAuthorizedError(
                 "You do not have permission to update an assignment",
             )
-        assignment_data = msg_to_core_assignment(assignment_api)
-        updated_assignment_data = assignment_service.update_assignment(
-            assignment_data
-        )
+        assignment_data = Assignment.from_dto(assignment_api)
+        updated_assignment_data = assignment_service.update_assignment(assignment_data)
         response = {
             "updated_assignment": (
                 core_to_msg_assignment(
-                    updated_assignment_data.get("updated_assignment", None)
+                    updated_assignment_data.get("updated_assignment", None).to_dto()
                 )
                 if updated_assignment_data.get("updated_assignment", None)
                 else None
             ),
             "recuperation_assignments": [
                 core_to_msg_assignment(a)
-                for a in updated_assignment_data.get(
-                    "recuperation_assignments", []
-                )
+                for a in updated_assignment_data.get("recuperation_assignments", [])
             ],
             "deleted_ids": updated_assignment_data.get("deleted_ids", []),
         }
@@ -171,9 +167,7 @@ def core_to_msg_assignment(assignment: Assignment) -> AssignmentDTO:
 # message to core
 def msg_to_core_assignment(msg: AssignmentDTO) -> Assignment:
     data_snake = humps.decamelize(msg.model_dump())
-    data_snake["date"] = datetime.fromtimestamp(
-        data_snake["date"], timezone.utc
-    ).date()
+    data_snake["date"] = datetime.fromtimestamp(data_snake["date"], timezone.utc).date()
     try:
         assignment = Assignment(**data_snake)
     except Exception as e:

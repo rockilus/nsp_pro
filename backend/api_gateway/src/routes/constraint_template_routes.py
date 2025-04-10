@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas import Template
+from shared.schemas.core import Template
 from shared.schemas.errors import UserNotFoundError
 
 from src.dependencies import get_data_fetching_service, get_db_collections

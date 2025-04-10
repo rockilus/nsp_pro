@@ -1,6 +1,6 @@
 from typing import List
 
-from shared.schemas import Assignment, ShiftType
+from shared.schemas.core import Assignment, ShiftType
 
 from src.services.base_service import BaseService
 

@@ -5,7 +5,7 @@ from celery import Celery  # type: ignore
 from celery.result import AsyncResult  # type: ignore
 from openpyxl import Workbook
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import (
+from shared.schemas.core import (
     CoverageSelector,
     DSDSourceType,
     ExportOptions,
