@@ -1,0 +1,75 @@
+.recurrence-edit-container {
+  display: flex;
+  flex-direction: column;
+  padding-left: 0px;
+}
+
+.recurrence-edit-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #3c4043;
+}
+
+.recurrence-edit-section {
+  display: flex;
+  flex-direction: row;
+}
+
+.recurrence-edit-text {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #3c4043;
+}
+
+.recurrence-edit-repeat-every {
+  width: 40px;
+  padding-right: 5px;
+  text-align: right;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #3c4043;
+}
+/* Remove arrows for number input */
+.recurrence-edit-repeat-every::-webkit-inner-spin-button,
+.recurrence-edit-repeat-every::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.recurrence-edit-repeat-every {
+  -moz-appearance: textfield; /* For Firefox */
+}
+
+/* Add styles for weekday buttons */
+.weekday-button {
+  width: 24px;
+  height: 24px;
+  font-size: 0.8rem;
+  font-weight: 400;
+  background-color: gray;
+  color: white;
+  border-radius: 50%;
+  margin: 0 3px;
+  border: none;
+  cursor: pointer;
+}
+
+.weekday-button.selected {
+  background-color: blue;
+}
+
+.recurrence-edit-end-options {
+  display: flex;
+  flex-direction: column;
+}
+
+.recurrence-edit-end-option {
+  display: flex;
+  flex-direction: row;
+}
+
+.recurrence-edit-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}

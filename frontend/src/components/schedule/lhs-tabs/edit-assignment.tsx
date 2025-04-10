@@ -5,12 +5,15 @@ import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import { Button, MenuItem, Select, TextField } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+// Components
+import RecurrenceEdit from "./recurrence-edit/recurrence-edit";
 // Styles
 import "./edit-assignment.css";
 // Types
 import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
 import { AssignmentT } from "../../../types/schedule";
+import { RecurrenceRuleT, RecurrenceType } from "../../../types/recurrence";
 
 dayjs.extend(utc);
 
@@ -60,6 +63,10 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   const [workerError, setWorkerError] = useState(false);
   const [shiftError, setShiftError] = useState(false);
   const [dateError, setDateError] = useState(false);
+
+  const [recurrenceRule, setRecurrenceRule] = useState<RecurrenceRuleT | null>(
+    null
+  );
 
   useEffect(() => {
     setWorkerId(workerSelectedId);
@@ -155,7 +162,6 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
               </MenuItem>
             ))}
         </Select>
-
         <span className="form-title">{t("date")}</span>
         <DatePicker
           className="edit-assignment-datepicker"
@@ -176,7 +182,17 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
             marginBottom: "10px",
           }}
         />
-
+        <RecurrenceEdit
+          isEditing={true}
+          recurrenceType={RecurrenceType.ASSIGNMENT}
+          recurrenceRule={recurrenceRule || undefined}
+          startDate={date || dayjs()}
+          teamId={teamId}
+          lng={lng}
+          // onRecurrenceChange={(updatedRecurrence) =>
+          //   setRecurrenceRule(updatedRecurrence)
+          // }
+        />
         <span className="form-title">{t("shift")}</span>
         <Select
           className="edit-assignment-select"
