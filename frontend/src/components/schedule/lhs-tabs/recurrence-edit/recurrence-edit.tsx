@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../../app/i18n/client";
@@ -44,7 +44,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
     recurrenceRule?.frequencyType || FrequencyType.WEEK
   );
   const [weekDays, setWeekDays] = useState<number[]>(
-    recurrenceRule?.weekDays || [startDate.day()]
+    recurrenceRule?.weekDays || [(startDate.day() + 6) % 7]
   );
   const [monthRepeatType, setMonthRepeatType] =
     useState<MonthRepeatType | null>(recurrenceRule?.monthRepeatType || null);
@@ -57,6 +57,18 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   const [numberOfOccurrences, setNumberOfOccurrences] = useState<number>(
     recurrenceRule?.numberOfOccurrences || 12
   );
+
+  useEffect(() => {
+    setRepeatEvery(recurrenceRule?.repeatEvery || 1);
+    setFrequencyType(recurrenceRule?.frequencyType || FrequencyType.WEEK);
+    setWeekDays(recurrenceRule?.weekDays || [(startDate.day() + 6) % 7]);
+    setMonthRepeatType(recurrenceRule?.monthRepeatType || null);
+    setRecurrenceEndType(
+      recurrenceRule?.recurrenceEndType || RecurrenceEndType.NEVER
+    );
+    setEndDate(recurrenceRule?.endDate || startDate.add(3, "month"));
+    setNumberOfOccurrences(recurrenceRule?.numberOfOccurrences || 12);
+  }, [recurrenceRule, startDate]);
 
   const handleWeekDayToggle = (day: number) => {
     setWeekDays((prev) =>
@@ -117,7 +129,8 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
       label: `${t("Monthly on the")} ${
         ordinalTranslation[Math.ceil(startDate.date() / 7)]
       } ${
-        weekDayOptions.find((day) => day.value === startDate.day())?.fullDayName
+        weekDayOptions.find((day) => day.value === (startDate.day() + 6) % 7)
+          ?.fullDayName
       } `,
     },
   ];
