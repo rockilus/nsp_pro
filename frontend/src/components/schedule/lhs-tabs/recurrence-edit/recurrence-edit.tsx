@@ -22,10 +22,11 @@ interface RecurrenceEditProps {
   lng: string;
   isEditing: boolean;
   recurrenceType: RecurrenceType;
-  recurrenceRule?: RecurrenceRuleT;
+  recurrenceRule?: RecurrenceRuleT | null;
   startDate: dayjs.Dayjs;
   teamId: string;
-  onClose: () => void; // Added onClose method
+  onClose: () => void;
+  onRecurrenceChange: (recurrence: RecurrenceRuleT) => void;
 }
 
 const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
@@ -35,7 +36,8 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   recurrenceRule,
   startDate,
   teamId,
-  onClose, // Destructure onClose from props
+  onClose,
+  onRecurrenceChange,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -60,9 +62,17 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
     recurrenceRule?.numberOfOccurrences || 12
   );
 
+  const [repeatEveryError, setRepeatEveryError] = useState<boolean>(false);
+  const [numberOfOccurrencesError, setNumberOfOccurrencesError] =
+    useState<boolean>(false);
+
   useEffect(() => {
     setRepeatEvery(recurrenceRule?.repeatEvery || 1);
-    setFrequencyType(recurrenceRule?.frequencyType || FrequencyType.WEEK);
+    setFrequencyType(
+      recurrenceRule?.frequencyType !== undefined
+        ? recurrenceRule.frequencyType
+        : FrequencyType.WEEK
+    );
     setWeekDays(recurrenceRule?.weekDays || [(startDate.day() + 6) % 7]);
     setMonthRepeatType(recurrenceRule?.monthRepeatType || null);
     setRecurrenceEndType(
@@ -79,20 +89,53 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   };
 
   const handleSubmit = () => {
-    console.log("Recurrence saved:", {
+    let hasError = false;
+
+    if (!repeatEvery || repeatEvery === 0) {
+      setRepeatEveryError(true);
+      hasError = true;
+    }
+
+    if (
+      recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES &&
+      (!numberOfOccurrences || numberOfOccurrences === 0)
+    ) {
+      setNumberOfOccurrencesError(true);
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    const updatedRecurrence: RecurrenceRuleT = {
+      id: recurrenceRule?.id || "",
+      teamId,
+      recurrenceType,
+      assignment: recurrenceRule?.assignment || null,
+      dailyShiftDemand: recurrenceRule?.dailyShiftDemand || null,
       repeatEvery,
       frequencyType,
       weekDays,
-      monthRepeatType,
+      monthRepeatType:
+        frequencyType === FrequencyType.MONTH
+          ? monthRepeatType
+            ? monthRepeatType
+            : MonthRepeatType.DAY_IN_MONTH
+          : null,
       recurrenceEndType,
-      endDate,
-      numberOfOccurrences,
-    });
+      startDate,
+      endDate:
+        recurrenceEndType === RecurrenceEndType.END_DATE ? endDate : null,
+      numberOfOccurrences:
+        recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES
+          ? numberOfOccurrences
+          : null,
+    };
+
+    onRecurrenceChange(updatedRecurrence);
   };
 
   const handleCancel = () => {
-    console.log("Recurrence editing cancelled");
-    onClose(); // Call the onClose method
+    onClose();
   };
 
   const frequencyOptions = [
@@ -138,8 +181,6 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
     },
   ];
 
-  console.log("monthRepeatType", monthRepeatType);
-
   return (
     <div className="recurrence-edit-container">
       <h2 className="recurrence-edit-title">{t("recurrence")}</h2>
@@ -150,9 +191,13 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
           <TextField
             type="number"
             value={repeatEvery === 0 ? "" : repeatEvery}
-            onChange={(e) =>
-              setRepeatEvery(e.target.value === "" ? 0 : Number(e.target.value))
-            }
+            onChange={(e) => {
+              setRepeatEvery(
+                e.target.value === "" ? 0 : Number(e.target.value)
+              );
+              setRepeatEveryError(false);
+            }}
+            error={repeatEveryError}
             inputProps={{
               min: 1,
               style: {
@@ -333,40 +378,19 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 {t("after")}
               </span>
             </label>
-
-            {/* <TextField
-            type="number"
-            value={repeatEvery === 0 ? "" : repeatEvery}
-            onChange={(e) =>
-              setRepeatEvery(e.target.value === "" ? 0 : Number(e.target.value))
-            }
-            inputProps={{
-              min: 1,
-              style: {
-                height: "30px",
-                fontSize: "0.8rem",
-                color: "#3c4043",
-                padding: "0",
-                textAlign: "right",
-                appearance: "textfield",
-              },
-            }}
-            variant="outlined"
-            size="small"
-            sx={{ width: "50px", marginLeft: "5px" }}
-          /> */}
-
             <TextField
               type="number"
               disabled={
                 recurrenceEndType !== RecurrenceEndType.NUMBER_OF_OCCURRENCES
               }
               value={numberOfOccurrences === 0 ? "" : numberOfOccurrences}
-              onChange={(e) =>
+              onChange={(e) => {
                 setNumberOfOccurrences(
                   e.target.value === "" ? 0 : Number(e.target.value)
-                )
-              }
+                );
+                setNumberOfOccurrencesError(false);
+              }}
+              error={numberOfOccurrencesError}
               inputProps={{
                 min: 1,
                 style: {

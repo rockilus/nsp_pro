@@ -13,7 +13,13 @@ import "./edit-assignment.css";
 import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
 import { AssignmentT } from "../../../types/schedule";
-import { RecurrenceRuleT, RecurrenceType } from "../../../types/recurrence";
+import {
+  RecurrenceRuleT,
+  RecurrenceType,
+  FrequencyType,
+  MonthRepeatType,
+  RecurrenceEndType,
+} from "../../../types/recurrence";
 
 dayjs.extend(utc);
 
@@ -80,6 +86,87 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
     setDateError(false);
     setRecurrenceRuleState(recurrenceRule ?? null);
   }, [workerSelectedId, shiftSelectedId, dateSelected, recurrenceRule]);
+
+  const describeRecurrenceRule = (rule: RecurrenceRuleT): string => {
+    const weekdays = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+
+    let description = "";
+
+    // Frequency description
+    switch (rule.frequencyType) {
+      case FrequencyType.DAY:
+        description =
+          rule.repeatEvery === 1 ? "Daily" : `Every ${rule.repeatEvery} days`;
+        break;
+      case FrequencyType.WEEK:
+        const days = rule.weekDays.map((day) => weekdays[day]).join(", ");
+        description =
+          rule.repeatEvery === 1
+            ? `Weekly on ${days}`
+            : `Every ${rule.repeatEvery} weeks on ${days}`;
+        break;
+      case FrequencyType.MONTH:
+        if (rule.monthRepeatType === MonthRepeatType.DAY_IN_MONTH) {
+          description =
+            rule.repeatEvery === 1
+              ? `Monthly on day ${rule.startDate.date()}`
+              : `Every ${
+                  rule.repeatEvery
+                } months on day ${rule.startDate.date()}`;
+        } else if (rule.monthRepeatType === MonthRepeatType.WEEKDAY) {
+          const weekNumber = Math.ceil(rule.startDate.date() / 7);
+          description =
+            rule.repeatEvery === 1
+              ? `Monthly on ${ordinal(weekNumber)} ${
+                  weekdays[rule.startDate.day()]
+                }`
+              : `Every ${rule.repeatEvery} months on ${ordinal(weekNumber)} ${
+                  weekdays[rule.startDate.day()]
+                }`;
+        }
+        break;
+      case FrequencyType.YEAR:
+        description =
+          rule.repeatEvery === 1
+            ? `Annually on ${rule.startDate.format("MMMM D")}`
+            : `Every ${rule.repeatEvery} years on ${rule.startDate.format(
+                "MMMM D"
+              )}`;
+        break;
+    }
+
+    // End condition
+    if (rule.recurrenceEndType === RecurrenceEndType.END_DATE && rule.endDate) {
+      description += `, until ${rule.endDate.format("D MMM YYYY")}`;
+    } else if (
+      rule.recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES &&
+      rule.numberOfOccurrences
+    ) {
+      description += `, ${rule.numberOfOccurrences} times`;
+    }
+
+    return description;
+  };
+
+  // Helper function to get ordinal suffix
+  const ordinal = (n: number): string => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+
+  const handleRecurrenceChange = (updatedRecurrence: RecurrenceRuleT) => {
+    setRecurrenceRuleState(updatedRecurrence);
+    setShowRecurrenceEdit(false);
+  };
 
   const handleSubmit = async () => {
     if (!workerId) setWorkerError(true);
@@ -177,14 +264,14 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
             <RecurrenceEdit
               isEditing={true}
               recurrenceType={RecurrenceType.ASSIGNMENT}
-              recurrenceRule={recurrenceRuleState || undefined}
+              recurrenceRule={recurrenceRuleState}
               startDate={date || dayjs()}
               teamId={teamId}
               lng={lng}
               onClose={() => {
                 setShowRecurrenceEdit(false);
-                setRecurrenceRuleState(recurrenceRule ?? null);
               }}
+              onRecurrenceChange={handleRecurrenceChange}
             />
             <hr className="separator" />
           </>
@@ -193,7 +280,9 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
             className="recurrence-button"
             onClick={() => setShowRecurrenceEdit(!showRecurrenceEdit)}
           >
-            {recurrenceRule ? t("edit_recurrence") : t("add_recurrence")}
+            {recurrenceRuleState
+              ? describeRecurrenceRule(recurrenceRuleState)
+              : t("add_recurrence")}
           </button>
         )}
         <span className="form-title">{t("shift")}</span>
