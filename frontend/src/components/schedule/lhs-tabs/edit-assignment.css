@@ -69,6 +69,7 @@
   align-self: flex-start;
   width: auto;
   margin-bottom: 10px;
+  text-align: left;
 }
 
 .separator {

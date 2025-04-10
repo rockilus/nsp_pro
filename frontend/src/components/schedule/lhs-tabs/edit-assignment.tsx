@@ -57,6 +57,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   recurrenceRule,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
+  const { t: t_weekdays } = useTranslation(lng, "week_days");
 
   const [workerId, setWorkerId] = useState<string | null>(
     isEditing && assignment ? assignment.workerId : workerSelectedId // Updated to use worker ID state
@@ -89,13 +90,13 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
 
   const describeRecurrenceRule = (rule: RecurrenceRuleT): string => {
     const weekdays = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
+      t_weekdays("sunday"),
+      t_weekdays("monday"),
+      t_weekdays("tuesday"),
+      t_weekdays("wednesday"),
+      t_weekdays("thursday"),
+      t_weekdays("friday"),
+      t_weekdays("saturday"),
     ];
 
     let description = "";
@@ -104,31 +105,39 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
     switch (rule.frequencyType) {
       case FrequencyType.DAY:
         description =
-          rule.repeatEvery === 1 ? "Daily" : `Every ${rule.repeatEvery} days`;
+          rule.repeatEvery === 1
+            ? t("rec_daily")
+            : `${t("rec_every")} ${rule.repeatEvery} ${t(
+                "days"
+              ).toLocaleLowerCase()}`;
         break;
       case FrequencyType.WEEK:
         const days = rule.weekDays.map((day) => weekdays[day]).join(", ");
         description =
           rule.repeatEvery === 1
-            ? `Weekly on ${days}`
-            : `Every ${rule.repeatEvery} weeks on ${days}`;
+            ? `${t("rec_weekly_on")} ${days}`
+            : `${t("rec_every")} ${rule.repeatEvery} ${t(
+                "rec_weeks_on"
+              ).toLocaleLowerCase()} ${days}`;
         break;
       case FrequencyType.MONTH:
         if (rule.monthRepeatType === MonthRepeatType.DAY_IN_MONTH) {
           description =
             rule.repeatEvery === 1
-              ? `Monthly on day ${rule.startDate.date()}`
-              : `Every ${
-                  rule.repeatEvery
-                } months on day ${rule.startDate.date()}`;
+              ? `${t("rec_monthly_on_day")} ${rule.startDate.date()}`
+              : `${t("rec_every")} ${rule.repeatEvery} ${t(
+                  "rec_months_on_day"
+                ).toLocaleLowerCase()} ${rule.startDate.date()}`;
         } else if (rule.monthRepeatType === MonthRepeatType.WEEKDAY) {
           const weekNumber = Math.ceil(rule.startDate.date() / 7);
           description =
             rule.repeatEvery === 1
-              ? `Monthly on ${ordinal(weekNumber)} ${
+              ? `${t("rec_monthly_on")} ${ordinal(weekNumber)} ${
                   weekdays[rule.startDate.day()]
                 }`
-              : `Every ${rule.repeatEvery} months on ${ordinal(weekNumber)} ${
+              : `${t("rec_every")} ${rule.repeatEvery} ${t(
+                  "rec_months_on"
+                ).toLocaleLowerCase()} ${ordinal(weekNumber)} ${
                   weekdays[rule.startDate.day()]
                 }`;
         }
@@ -136,21 +145,25 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
       case FrequencyType.YEAR:
         description =
           rule.repeatEvery === 1
-            ? `Annually on ${rule.startDate.format("MMMM D")}`
-            : `Every ${rule.repeatEvery} years on ${rule.startDate.format(
-                "MMMM D"
-              )}`;
+            ? `${t("rec_annually_on")} ${rule.startDate.format("MMMM D")}`
+            : `${t("rec_every")} ${rule.repeatEvery} ${t(
+                "rec_years_on"
+              ).toLocaleLowerCase()} ${rule.startDate.format("MMMM D")}`;
         break;
     }
 
     // End condition
     if (rule.recurrenceEndType === RecurrenceEndType.END_DATE && rule.endDate) {
-      description += `, until ${rule.endDate.format("D MMM YYYY")}`;
+      description += `, ${t(
+        "rec_until"
+      ).toLocaleLowerCase()} ${rule.endDate.format("D MMM YYYY")}`;
     } else if (
       rule.recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES &&
       rule.numberOfOccurrences
     ) {
-      description += `, ${rule.numberOfOccurrences} times`;
+      description += `, ${rule.numberOfOccurrences} ${t(
+        "rec_times"
+      ).toLocaleLowerCase()}`;
     }
 
     return description;
@@ -158,7 +171,12 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
 
   // Helper function to get ordinal suffix
   const ordinal = (n: number): string => {
-    const s = ["th", "st", "nd", "rd"];
+    const s = [
+      t("ordinal_th"),
+      t("ordinal_st"),
+      t("ordinal_nd"),
+      t("ordinal_rd"),
+    ];
     const v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
   };
