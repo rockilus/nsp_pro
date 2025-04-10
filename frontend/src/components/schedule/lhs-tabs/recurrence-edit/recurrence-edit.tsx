@@ -44,7 +44,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
     recurrenceRule?.frequencyType || FrequencyType.WEEK
   );
   const [weekDays, setWeekDays] = useState<number[]>(
-    recurrenceRule?.weekDays || []
+    recurrenceRule?.weekDays || [startDate.day()]
   );
   const [monthRepeatType, setMonthRepeatType] =
     useState<MonthRepeatType | null>(recurrenceRule?.monthRepeatType || null);
@@ -81,10 +81,10 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   };
 
   const frequencyOptions = [
-    { value: FrequencyType.DAY, label: t("day") },
-    { value: FrequencyType.WEEK, label: t("week") },
-    { value: FrequencyType.MONTH, label: t("month") },
-    { value: FrequencyType.YEAR, label: t("year") },
+    { value: FrequencyType.DAY, label: t("day").toLowerCase() },
+    { value: FrequencyType.WEEK, label: t("week").toLowerCase() },
+    { value: FrequencyType.MONTH, label: t("month").toLowerCase() },
+    { value: FrequencyType.YEAR, label: t("year").toLowerCase() },
   ];
 
   const weekDayOptions = [
@@ -126,82 +126,107 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
 
   return (
     <div className="recurrence-edit-container">
-      <h2 className="recurrence-edit-title">Recurrence</h2>
+      <h2 className="recurrence-edit-title">{t("recurrence")}</h2>
 
       <div className="recurrence-edit-section">
-        <label className="recurrence-edit-text">Repeat every</label>
-        <input
-          className="recurrence-edit-repeat-every"
-          type="number"
-          value={repeatEvery}
-          onChange={(e) => setRepeatEvery(Number(e.target.value))}
-          min={1}
-        />
-        <Select
-          value={frequencyType}
-          onChange={(e) =>
-            setFrequencyType(Number(e.target.value) as FrequencyType)
-          }
-          fullWidth
-          displayEmpty
-          sx={{
-            width: "100px",
-            fontSize: "0.8rem",
-            fontWeight: 400,
-            color: "#3c4043",
-          }}
-        >
-          {frequencyOptions.map((option) => (
-            <MenuItem
-              key={option.value}
-              value={option.value}
-              sx={{
+        <div className="recurrence-edit-sub-section-row">
+          <label className="recurrence-edit-text">{t("repeat_every")}</label>
+          <TextField
+            type="number"
+            value={repeatEvery === 0 ? "" : repeatEvery}
+            onChange={(e) =>
+              setRepeatEvery(e.target.value === "" ? 0 : Number(e.target.value))
+            }
+            inputProps={{
+              min: 1,
+              style: {
+                height: "30px",
                 fontSize: "0.8rem",
-                fontWeight: 400,
                 color: "#3c4043",
-              }}
-            >
-              {option.label}
-            </MenuItem>
-          ))}
-        </Select>
+                padding: "0",
+                textAlign: "right",
+                appearance: "textfield",
+              },
+            }}
+            variant="outlined"
+            size="small"
+            sx={{ width: "50px", marginLeft: "5px" }}
+          />
+          <Select
+            value={frequencyType}
+            onChange={(e) =>
+              setFrequencyType(Number(e.target.value) as FrequencyType)
+            }
+            fullWidth
+            displayEmpty
+            sx={{
+              width: "100px",
+              height: "30px",
+              fontSize: "0.8rem",
+              fontWeight: 400,
+              color: "#3c4043",
+              marginLeft: "5px",
+              "& .MuiSelect-select": {
+                paddingY: "0",
+              },
+            }}
+          >
+            {frequencyOptions.map((option) => (
+              <MenuItem
+                key={option.value}
+                value={option.value}
+                sx={{
+                  fontSize: "0.8rem",
+                  fontWeight: 400,
+                  color: "#3c4043",
+                }}
+              >
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </div>
       </div>
 
       {frequencyType === FrequencyType.WEEK && (
-        <div>
-          <label className="recurrence-edit-text">Repeat on</label>
-          <div>
-            {weekDayOptions.map((day) => (
-              <button
-                key={day.value}
-                onClick={() => handleWeekDayToggle(day.value)}
-                className={`weekday-button ${
-                  weekDays.includes(day.value) ? "selected" : ""
-                }`}
-              >
-                {day.label}
-              </button>
-            ))}
+        <div className="recurrence-edit-section">
+          <div className="recurrence-edit-sub-section">
+            <label className="recurrence-edit-text">{t("repeat_on")}</label>
+            <div className="recurrence-edit-select-weekdays">
+              {weekDayOptions.map((day) => (
+                <button
+                  key={day.value}
+                  onClick={() => handleWeekDayToggle(day.value)}
+                  className={`weekday-button ${
+                    weekDays.includes(day.value) ? "selected" : ""
+                  }`}
+                >
+                  {day.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
       {frequencyType === FrequencyType.MONTH && (
-        <div>
+        <div className="recurrence-edit-section">
           <Select
             value={monthRepeatType || MonthRepeatType.DAY_IN_MONTH}
             onChange={(e) => {
-              console.log("e.target.value", e.target.value);
-
               setMonthRepeatType(Number(e.target.value) as MonthRepeatType);
             }}
             fullWidth
             displayEmpty
             sx={{
               width: "100%",
+              height: "30px",
               fontSize: "0.8rem",
               fontWeight: 400,
               color: "#3c4043",
+              "& .MuiSelect-select": {
+                paddingY: "0",
+              },
             }}
           >
             {monthRepeatOptions.map((option) => (
@@ -221,20 +246,22 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
         </div>
       )}
 
-      <div>
-        <label className="recurrence-edit-text">End</label>
+      <div className="recurrence-edit-section">
+        <label className="recurrence-edit-text">{t("ends")}</label>
         <div className="recurrence-edit-end-options">
-          <label className="recurrence-edit-text">
+          <label>
             <input
               type="radio"
               value={RecurrenceEndType.NEVER}
               checked={recurrenceEndType === RecurrenceEndType.NEVER}
               onChange={() => setRecurrenceEndType(RecurrenceEndType.NEVER)}
             />
-            Never
+            <span className="recurrence-edit-text recurrence-edit-radio-option-label">
+              {t("never")}
+            </span>
           </label>
           <div className="recurrence-edit-end-option">
-            <label className="recurrence-edit-text">
+            <label>
               <input
                 type="radio"
                 value={RecurrenceEndType.END_DATE}
@@ -243,7 +270,9 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                   setRecurrenceEndType(RecurrenceEndType.END_DATE)
                 }
               />
-              End by
+              <span className="recurrence-edit-text recurrence-edit-radio-option-label">
+                {t("on")}
+              </span>
             </label>
             <DatePicker
               disabled={recurrenceEndType !== RecurrenceEndType.END_DATE}
@@ -254,11 +283,26 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 );
               }}
               minDate={startDate}
+              sx={{
+                marginLeft: "5px",
+                width: "130px",
+                color: "#3c4043",
+                "& .MuiInputBase-root": {
+                  height: "30px",
+                },
+                "& .MuiInputBase-input": {
+                  fontSize: "0.8rem",
+                  fontWeight: 400,
+                },
+                "& .MuiSvgIcon-root": {
+                  fontSize: "1rem",
+                },
+              }}
               // renderInput={(params) => <TextField {...params} />}
             />
           </div>
           <div className="recurrence-edit-end-option">
-            <label className="recurrence-edit-text">
+            <label>
               <input
                 type="radio"
                 value={RecurrenceEndType.NUMBER_OF_OCCURRENCES}
@@ -269,42 +313,88 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                   setRecurrenceEndType(RecurrenceEndType.NUMBER_OF_OCCURRENCES)
                 }
               />
-              End after
+              <span className="recurrence-edit-text recurrence-edit-radio-option-label">
+                {t("after")}
+              </span>
             </label>
-            <input
+
+            {/* <TextField
+            type="number"
+            value={repeatEvery === 0 ? "" : repeatEvery}
+            onChange={(e) =>
+              setRepeatEvery(e.target.value === "" ? 0 : Number(e.target.value))
+            }
+            inputProps={{
+              min: 1,
+              style: {
+                height: "30px",
+                fontSize: "0.8rem",
+                color: "#3c4043",
+                padding: "0",
+                textAlign: "right",
+                appearance: "textfield",
+              },
+            }}
+            variant="outlined"
+            size="small"
+            sx={{ width: "50px", marginLeft: "5px" }}
+          /> */}
+
+            <TextField
               type="number"
               disabled={
                 recurrenceEndType !== RecurrenceEndType.NUMBER_OF_OCCURRENCES
               }
-              value={numberOfOccurrences}
-              onChange={(e) => setNumberOfOccurrences(Number(e.target.value))}
-              min={1}
+              value={numberOfOccurrences === 0 ? "" : numberOfOccurrences}
+              onChange={(e) =>
+                setNumberOfOccurrences(
+                  e.target.value === "" ? 0 : Number(e.target.value)
+                )
+              }
+              inputProps={{
+                min: 1,
+                style: {
+                  height: "30px",
+                  fontSize: "0.8rem",
+                  color: "#3c4043",
+                  padding: "0",
+                  textAlign: "right",
+                  appearance: "textfield",
+                },
+              }}
+              variant="outlined"
+              size="small"
+              sx={{ width: "50px", marginLeft: "5px" }}
             />
-            <span className="recurrence-edit-text">occurrences</span>
+            <span className="recurrence-edit-text">
+              {t("occurrences").toLocaleLowerCase()}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="recurrence-edit-actions">
-        <Button
-          variant="outlined"
-          onClick={handleCancel}
-          sx={{
-            marginRight: 1,
-            textTransform: "none",
-            fontSize: "0.8rem",
-            fontWeight: 500,
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          sx={{ textTransform: "none", fontSize: "0.8rem", fontWeight: 500 }}
-        >
-          Done
-        </Button>
+      <div className="recurrence-edit-section">
+        <div className="recurrence-edit-actions">
+          <Button
+            variant="outlined"
+            onClick={handleCancel}
+            sx={{
+              marginRight: 1,
+              textTransform: "none",
+              fontSize: "0.8rem",
+              fontWeight: 500,
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            sx={{ textTransform: "none", fontSize: "0.8rem", fontWeight: 500 }}
+          >
+            Done
+          </Button>
+        </div>
       </div>
     </div>
   );
