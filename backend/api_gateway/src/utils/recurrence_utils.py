@@ -35,16 +35,16 @@ def handle_daily_frequency(
             if offset == 0
             else period_start + timedelta(days=repeat_every - offset)
         )
-        occurrences_count = (period_start - start_date).days // repeat_every + 1
+        occurrences_count = ((current_date - start_date).days) // repeat_every
 
     # Iterate and collect dates
     while current_date <= end_date:
+        # Stop if the number of occurrences is reached
+        if number_of_occurrences and occurrences_count >= number_of_occurrences:
+            break
         if current_date not in excluded_dates:
             dates.append(current_date)
             occurrences_count += 1
-            # Stop if the number of occurrences is reached
-            if number_of_occurrences and occurrences_count >= number_of_occurrences:
-                break
         current_date += timedelta(days=repeat_every)
 
     return dates
