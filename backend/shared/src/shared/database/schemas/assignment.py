@@ -15,6 +15,7 @@ class AssignmentSchema(DocumentBaseSchema):
     shift: str
     reference_assignment_id: Optional[str] = None
     fixed: bool
+    recurrence_rule_id: Optional[str] = None
 
     def to_mongo(self) -> Dict[str, Any]:
         out = super().to_mongo()
@@ -36,6 +37,9 @@ class AssignmentSchema(DocumentBaseSchema):
         doc_dict["reference_assignment_id"] = doc_dict.pop(
             "reference_assignment_id", None
         )
+        doc_dict["recurrence_rule_id"] = doc_dict.pop(
+            "recurrence_rule_id", None
+        )
         return Assignment(**doc_dict)
 
     @classmethod
@@ -53,4 +57,5 @@ class AssignmentSchema(DocumentBaseSchema):
             shift=assignment.shift_id,
             reference_assignment_id=assignment.reference_assignment_id,
             fixed=assignment.fixed,
+            recurrence_rule_id=assignment.recurrence_rule_id,
         )

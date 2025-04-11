@@ -8,10 +8,8 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas.core import Assignment
-
-# from src.routes.api_model import AssignmentDTO
-from shared.schemas.dto import AssignmentDTO
+from shared.schemas.core import Assignment, RecurrenceRule
+from shared.schemas.dto import AssignmentDTO, RecurrenceRuleDTO
 from shared.schemas.errors import handle_create_schema_object_error
 
 from src.dependencies import get_assignment_service, get_db_collections
@@ -35,9 +33,10 @@ router = APIRouter()
 async def create_assignment(
     team_id: str,
     assignment: AssignmentDTO,
+    recurrence_rule: Optional[RecurrenceRuleDTO] = None,
     session: SessionContainerType = Depends(authn_verify_session()),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-) -> List[AssignmentDTO]:
+) -> Dict[str, List[AssignmentDTO] | Optional[RecurrenceRuleDTO]]:
     try:
         if not await authz_check(
             session.get_user_id(), "create-assignment", "team", team_id
@@ -46,8 +45,22 @@ async def create_assignment(
                 "You do not have permission to create an assignment",
             )
         a_data = Assignment.from_dto(assignment)
-        a_created = assignment_service.create_assignment(a_data)
-        response = [a.to_dto() for a in a_created]
+        r_data: Optional[RecurrenceRule] = None
+        if recurrence_rule:
+            r_data = RecurrenceRule.from_dto(recurrence_rule)
+        a_and_r_created = assignment_service.create_assignment(a_data, r_data)
+        created_assignments: List[Assignment] = a_and_r_created.get(  # type: ignore
+            "assignments", []
+        )
+        created_recurrence_rule: Optional[RecurrenceRule] = a_and_r_created.get(
+            "recurrence_rule", None
+        )  # type: ignore
+        response = {
+            "assignments": [a.to_dto() for a in created_assignments],
+            "recurrence_rule": (
+                created_recurrence_rule.to_dto() if created_recurrence_rule else None
+            ),
+        }
     except Exception as e:
         log_info("Failed to create assignment")
         handle_routes_errors(e)

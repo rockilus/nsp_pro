@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import date
 from enum import Enum
 from typing import Dict
 
@@ -47,8 +47,8 @@ class RecurrenceRule:
     week_days: list[int]
     month_repeat_type: MonthRepeatType | None
     recurrence_end_type: RecurrenceEndType
-    start_date: datetime
-    end_date: datetime | None
+    start_date: date
+    end_date: date | None
     number_of_occurrences: int | None
 
     def to_dict(self) -> Dict:
@@ -59,8 +59,8 @@ class RecurrenceRule:
             self.month_repeat_type.value if self.month_repeat_type else None
         )
         out["recurrence_end_type"] = self.recurrence_end_type.value
-        out["start_date"] = self.start_date.timestamp()
-        out["end_date"] = self.end_date.timestamp() if self.end_date else None
+        out["start_date"] = self.start_date.isoformat()
+        out["end_date"] = self.end_date.isoformat() if self.end_date else None
         return out
 
     @classmethod
@@ -80,9 +80,9 @@ class RecurrenceRule:
                 else None
             ),
             recurrence_end_type=RecurrenceEndType(data["recurrence_end_type"]),
-            start_date=datetime.fromtimestamp(data["start_date"], tz=timezone.utc),
+            start_date=date.fromisoformat(data["start_date"]),
             end_date=(
-                datetime.fromtimestamp(data["end_date"], tz=timezone.utc)
+                date.fromisoformat(data["end_date"])
                 if data["end_date"]
                 else None
             ),
@@ -97,8 +97,8 @@ class RecurrenceRule:
             self.month_repeat_type.value if self.month_repeat_type else None
         )
         data["recurrence_end_type"] = self.recurrence_end_type.value
-        data["start_date"] = self.start_date.timestamp()
-        data["end_date"] = self.end_date.timestamp() if self.end_date else None
+        data["start_date"] = self.start_date.isoformat()
+        data["end_date"] = self.end_date.isoformat() if self.end_date else None
         as_dict = humps.camelize(data)
         validator = TypeAdapter(RecurrenceRuleDTO)
         return validator.validate_python(as_dict)
@@ -106,7 +106,9 @@ class RecurrenceRule:
     @classmethod
     def from_dto(cls, data: RecurrenceRuleDTO) -> "RecurrenceRule":
         data_snake = humps.decamelize(data.model_dump())
-        data_snake["recurrence_type"] = RecurrenceType(data_snake["recurrence_type"])
+        data_snake["recurrence_type"] = RecurrenceType(
+            data_snake["recurrence_type"]
+        )
         data_snake["assignment"] = (
             Assignment.from_dto(data_snake["assignment"])
             if data_snake["assignment"]
@@ -117,7 +119,9 @@ class RecurrenceRule:
             if data_snake["daily_shift_demand"]
             else None
         )
-        data_snake["frequency_type"] = FrequencyType(data_snake["frequency_type"])
+        data_snake["frequency_type"] = FrequencyType(
+            data_snake["frequency_type"]
+        )
         data_snake["month_repeat_type"] = (
             MonthRepeatType(data_snake["month_repeat_type"])
             if data_snake["month_repeat_type"]
@@ -126,12 +130,17 @@ class RecurrenceRule:
         data_snake["recurrence_end_type"] = RecurrenceEndType(
             data_snake["recurrence_end_type"]
         )
-        data_snake["start_date"] = datetime.fromtimestamp(
-            data_snake["start_date"], tz=timezone.utc
-        )
+        data_snake["start_date"] = date.fromisoformat(data_snake["start_date"])
         data_snake["end_date"] = (
-            datetime.fromtimestamp(data_snake["end_date"], tz=timezone.utc)
+            date.fromisoformat(data_snake["end_date"])
             if data_snake["end_date"]
             else None
         )
         return cls(**data_snake)
+
+
+@dataclass
+class RecurrenceExclusion:
+    id: str
+    recurrence_rule_id: str
+    excluded_date: date

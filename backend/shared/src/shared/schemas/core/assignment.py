@@ -18,6 +18,7 @@ class Assignment:
     shift_id: str
     fixed: bool
     reference_assignment_id: str | None = None
+    recurrence_rule_id: str | None = None
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -37,6 +38,7 @@ class Assignment:
             shift_id=data["shift_id"],
             reference_assignment_id=data.get("reference_assignment_id", None),
             fixed=data["fixed"],
+            recurrence_rule_id=data.get("recurrence_rule_id", None),
         )
 
     def to_dto(self) -> AssignmentDTO:

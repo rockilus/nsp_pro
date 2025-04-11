@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import date
 
 
 class RecurrenceRuleDTO(BaseModel):
@@ -12,6 +13,6 @@ class RecurrenceRuleDTO(BaseModel):
     weekDays: list[int]
     monthRepeatType: int | None
     recurrenceEndType: int
-    startDate: float
-    endDate: float | None
+    startDate: str
+    endDate: str | None
     numberOfOccurrences: int | None

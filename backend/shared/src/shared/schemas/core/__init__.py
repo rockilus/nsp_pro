@@ -63,6 +63,14 @@ from shared.schemas.core.export_options import (
 )
 from shared.schemas.core.link_shift import LinkShift
 from shared.schemas.core.model_output import ModelOutput, ModelOutputStatus
+from shared.schemas.core.recurrence import (
+    FrequencyType,
+    MonthRepeatType,
+    RecurrenceEndType,
+    RecurrenceExclusion,
+    RecurrenceRule,
+    RecurrenceType,
+)
 from shared.schemas.core.request import (
     Request,
     RequestAugmented,
@@ -166,6 +174,12 @@ __all__ = [
     "ExportPeriodOptions",
     "ModelOutput",
     "ModelOutputStatus",
+    "FrequencyType",
+    "MonthRepeatType",
+    "RecurrenceEndType",
+    "RecurrenceExclusion",
+    "RecurrenceRule",
+    "RecurrenceType",
     "Request",
     "RequestAugmented",
     "RequestStatus",

@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Tuple
+from typing import List, Tuple
 from unittest.mock import MagicMock
 
 import pytest
@@ -187,7 +187,8 @@ def test_create_assignment_with_duty_shift(
     ]
 
     # Call the method
-    created_assignments = service.create_assignment(assignment_new)
+    result = service.create_assignment(assignment_new)
+    created_assignments: List[Assignment] = result["assignments"]  # type: ignore
 
     # Assert both assignments were created
     assert len(created_assignments) == 2

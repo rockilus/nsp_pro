@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
 import { AssignmentT } from "../../types/schedule";
+import { RecurrenceRuleT } from "../../types/recurrence";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -24,16 +25,40 @@ export const fromAssignmentT = (data: AssignmentT): any => {
   };
 };
 
+export const toRecurrenceRuleT = (data: any): RecurrenceRuleT => {
+  return {
+    ...data,
+    startDate: dayjs(data.startDate).utc(),
+    endDate: data.endDate ? dayjs(data.endDate).utc() : null,
+  };
+};
+
+export const fromRecurrenceRuleT = (data: RecurrenceRuleT): any => {
+  return {
+    ...data,
+    startDate: data.startDate.toISOString(),
+    endDate: data.endDate ? data.endDate.toISOString() : null,
+  };
+};
+
 //////////////////////////
 // Assignment //
 //////////////////////////
-export async function addAssignment(assignment: AssignmentT) {
+export async function addAssignment(
+  assignment: AssignmentT,
+  recurrenceRule?: RecurrenceRuleT
+) {
   const options: RequestInit = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(fromAssignmentT(assignment)),
+    body: JSON.stringify({
+      assignment: fromAssignmentT(assignment),
+      recurrenceRule: recurrenceRule
+        ? fromRecurrenceRuleT(recurrenceRule)
+        : null,
+    }),
   };
   try {
     const response = await fetch(
@@ -44,7 +69,12 @@ export async function addAssignment(assignment: AssignmentT) {
     if (!response.ok) {
       throw new Error("Failed to add assignment: " + responseData.detail);
     }
-    return responseData.map(toAssignmentT) as AssignmentT[];
+    return {
+      assignments: responseData.assignments.map(toAssignmentT),
+      recurrenceRule: responseData.recurrence_rule
+        ? toRecurrenceRuleT(responseData.recurrence_rule)
+        : null,
+    };
   } catch (error) {
     console.error("Failed to add assignment:", error);
     throw new Error("Failed to add assignment, please try again later");
