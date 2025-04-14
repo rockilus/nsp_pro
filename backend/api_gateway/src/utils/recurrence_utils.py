@@ -216,13 +216,6 @@ FrequencyHandler = Callable[
     List[date],  # Return type
 ]
 
-FREQUENCY_HANDLERS: Dict[FrequencyType, FrequencyHandler] = {
-    FrequencyType.DAY: handle_daily_frequency,
-    FrequencyType.WEEK: handle_weekly_frequency,
-    FrequencyType.MONTH: handle_monthly_frequency,
-    FrequencyType.YEAR: handle_yearly_frequency,
-}
-
 
 def generate_recurring_dates(
     period_start: date,
@@ -230,6 +223,13 @@ def generate_recurring_dates(
     recurrence_rule: RecurrenceRule,
     exclusions: List[RecurrenceExclusion],
 ) -> List[date]:
+    FREQUENCY_HANDLERS: Dict[FrequencyType, FrequencyHandler] = {
+        FrequencyType.DAY: handle_daily_frequency,
+        FrequencyType.WEEK: handle_weekly_frequency,
+        FrequencyType.MONTH: handle_monthly_frequency,
+        FrequencyType.YEAR: handle_yearly_frequency,
+    }
+
     end_date = min(
         [period_end]
         + (

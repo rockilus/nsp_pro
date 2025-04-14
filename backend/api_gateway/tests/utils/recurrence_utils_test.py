@@ -1,8 +1,17 @@
 from datetime import date
+from unittest.mock import patch
 
-from shared.schemas.core import MonthRepeatType
+from shared.schemas.core import (
+    FrequencyType,
+    MonthRepeatType,
+    RecurrenceEndType,
+    RecurrenceExclusion,
+    RecurrenceRule,
+    RecurrenceType,
+)
 
 from src.utils.recurrence_utils import (
+    generate_recurring_dates,
     handle_daily_frequency,
     handle_monthly_frequency,
     handle_weekly_frequency,
@@ -1121,3 +1130,304 @@ def test_yearly_frequency_scenario_7():
     )
 
     assert result == expected_dates
+
+
+def test_generate_recurring_dates_calls_correct_handler():
+    period_start = date(2025, 1, 1)
+    period_end = date(2026, 1, 31)
+    recurrence_rule = RecurrenceRule(
+        id="rr_0",
+        team_id="team_0",
+        recurrence_type=RecurrenceType.ASSIGNMENT,
+        assignment_id=None,
+        daily_shift_demand_id=None,
+        repeat_every=1,
+        frequency_type=FrequencyType.DAY,
+        week_days=[],
+        month_repeat_type=None,
+        recurrence_end_type=RecurrenceEndType.NUMBER_OF_OCCURRENCES,
+        start_date=date(2025, 1, 1),
+        end_date=date(2025, 1, 31),
+        number_of_occurrences=None,
+    )
+    exclusions = []
+
+    with patch(
+        "src.utils.recurrence_utils.handle_daily_frequency",
+        return_value=[date(2025, 1, 1)],
+    ) as mock_handler:
+
+        result = generate_recurring_dates(
+            period_start, period_end, recurrence_rule, exclusions
+        )
+
+        mock_handler.assert_called_once_with(
+            period_start,
+            recurrence_rule.start_date,
+            period_end,
+            set(),
+            recurrence_rule.repeat_every,
+            recurrence_rule.week_days,
+            recurrence_rule.month_repeat_type,
+            recurrence_rule.number_of_occurrences,
+        )
+
+        assert result == [date(2025, 1, 1)]
+
+
+def test_generate_recurring_dates_scenario_1():
+    period_start = date(2025, 1, 1)
+    period_end = date(2026, 1, 31)
+    recurrence_rule = RecurrenceRule(
+        id="rr_0",
+        team_id="team_0",
+        recurrence_type=RecurrenceType.ASSIGNMENT,
+        assignment_id=None,
+        daily_shift_demand_id=None,
+        repeat_every=1,
+        frequency_type=FrequencyType.DAY,
+        week_days=[],
+        month_repeat_type=None,
+        recurrence_end_type=RecurrenceEndType.END_DATE,
+        start_date=date(2025, 1, 1),
+        end_date=date(2025, 1, 31),
+        number_of_occurrences=None,
+    )
+    exclusions = []
+
+    with patch(
+        "src.utils.recurrence_utils.handle_daily_frequency", return_value=[]
+    ) as mock_handler:
+        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        mock_handler.assert_called_once_with(
+            period_start,
+            recurrence_rule.start_date,
+            recurrence_rule.end_date,
+            set(),
+            recurrence_rule.repeat_every,
+            recurrence_rule.week_days,
+            recurrence_rule.month_repeat_type,
+            recurrence_rule.number_of_occurrences,
+        )
+
+
+def test_generate_recurring_dates_scenario_2():
+    period_start = date(2025, 1, 1)
+    period_end = date(2026, 1, 31)
+    recurrence_rule = RecurrenceRule(
+        id="rr_0",
+        team_id="team_0",
+        recurrence_type=RecurrenceType.ASSIGNMENT,
+        assignment_id=None,
+        daily_shift_demand_id=None,
+        repeat_every=1,
+        frequency_type=FrequencyType.DAY,
+        week_days=[],
+        month_repeat_type=None,
+        recurrence_end_type=RecurrenceEndType.NEVER,
+        start_date=date(2025, 1, 1),
+        end_date=date(2025, 1, 31),
+        number_of_occurrences=2,
+    )
+    exclusions = []
+
+    with patch(
+        "src.utils.recurrence_utils.handle_daily_frequency", return_value=[]
+    ) as mock_handler:
+        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        mock_handler.assert_called_once_with(
+            period_start,
+            recurrence_rule.start_date,
+            period_end,
+            set(),
+            recurrence_rule.repeat_every,
+            recurrence_rule.week_days,
+            recurrence_rule.month_repeat_type,
+            None,
+        )
+
+
+def test_generate_recurring_dates_scenario_3():
+    period_start = date(2025, 1, 1)
+    period_end = date(2026, 1, 31)
+    recurrence_rule = RecurrenceRule(
+        id="rr_0",
+        team_id="team_0",
+        recurrence_type=RecurrenceType.ASSIGNMENT,
+        assignment_id=None,
+        daily_shift_demand_id=None,
+        repeat_every=1,
+        frequency_type=FrequencyType.DAY,
+        week_days=[],
+        month_repeat_type=None,
+        recurrence_end_type=RecurrenceEndType.NUMBER_OF_OCCURRENCES,
+        start_date=date(2025, 1, 1),
+        end_date=date(2025, 1, 31),
+        number_of_occurrences=2,
+    )
+    exclusions = []
+
+    with patch(
+        "src.utils.recurrence_utils.handle_daily_frequency", return_value=[]
+    ) as mock_handler:
+        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        mock_handler.assert_called_once_with(
+            period_start,
+            recurrence_rule.start_date,
+            period_end,
+            set(),
+            recurrence_rule.repeat_every,
+            recurrence_rule.week_days,
+            recurrence_rule.month_repeat_type,
+            recurrence_rule.number_of_occurrences,
+        )
+
+
+def test_generate_recurring_dates_scenario_4():
+    period_start = date(2025, 1, 1)
+    period_end = date(2026, 1, 31)
+    recurrence_rule = RecurrenceRule(
+        id="rr_0",
+        team_id="team_0",
+        recurrence_type=RecurrenceType.ASSIGNMENT,
+        assignment_id=None,
+        daily_shift_demand_id=None,
+        repeat_every=1,
+        frequency_type=FrequencyType.DAY,
+        week_days=[],
+        month_repeat_type=None,
+        recurrence_end_type=RecurrenceEndType.NEVER,
+        start_date=date(2025, 1, 1),
+        end_date=date(2025, 1, 31),
+        number_of_occurrences=None,
+    )
+    exclusions = [
+        RecurrenceExclusion(
+            id="exclusion_0",
+            recurrence_rule_id="rr_0",
+            excluded_date=date(2025, 1, 1),
+        )
+    ]
+
+    with patch(
+        "src.utils.recurrence_utils.handle_daily_frequency", return_value=[]
+    ) as mock_handler:
+        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        mock_handler.assert_called_once_with(
+            period_start,
+            recurrence_rule.start_date,
+            period_end,
+            {date(2025, 1, 1)},
+            recurrence_rule.repeat_every,
+            recurrence_rule.week_days,
+            recurrence_rule.month_repeat_type,
+            recurrence_rule.number_of_occurrences,
+        )
+
+
+def test_generate_recurring_dates_scenario_5():
+    period_start = date(2025, 1, 1)
+    period_end = date(2026, 1, 31)
+    recurrence_rule = RecurrenceRule(
+        id="rr_0",
+        team_id="team_0",
+        recurrence_type=RecurrenceType.ASSIGNMENT,
+        assignment_id=None,
+        daily_shift_demand_id=None,
+        repeat_every=1,
+        frequency_type=FrequencyType.WEEK,
+        week_days=[],
+        month_repeat_type=None,
+        recurrence_end_type=RecurrenceEndType.NEVER,
+        start_date=date(2025, 1, 1),
+        end_date=date(2025, 1, 31),
+        number_of_occurrences=None,
+    )
+    exclusions = []
+
+    with patch(
+        "src.utils.recurrence_utils.handle_weekly_frequency", return_value=[]
+    ) as mock_handler:
+        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        mock_handler.assert_called_once_with(
+            period_start,
+            recurrence_rule.start_date,
+            period_end,
+            set(),
+            recurrence_rule.repeat_every,
+            recurrence_rule.week_days,
+            recurrence_rule.month_repeat_type,
+            recurrence_rule.number_of_occurrences,
+        )
+
+
+def test_generate_recurring_dates_scenario_6():
+    period_start = date(2025, 1, 1)
+    period_end = date(2026, 1, 31)
+    recurrence_rule = RecurrenceRule(
+        id="rr_0",
+        team_id="team_0",
+        recurrence_type=RecurrenceType.ASSIGNMENT,
+        assignment_id=None,
+        daily_shift_demand_id=None,
+        repeat_every=1,
+        frequency_type=FrequencyType.MONTH,
+        week_days=[],
+        month_repeat_type=None,
+        recurrence_end_type=RecurrenceEndType.NEVER,
+        start_date=date(2025, 1, 1),
+        end_date=date(2025, 1, 31),
+        number_of_occurrences=None,
+    )
+    exclusions = []
+
+    with patch(
+        "src.utils.recurrence_utils.handle_monthly_frequency", return_value=[]
+    ) as mock_handler:
+        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        mock_handler.assert_called_once_with(
+            period_start,
+            recurrence_rule.start_date,
+            period_end,
+            set(),
+            recurrence_rule.repeat_every,
+            recurrence_rule.week_days,
+            recurrence_rule.month_repeat_type,
+            recurrence_rule.number_of_occurrences,
+        )
+
+
+def test_generate_recurring_dates_scenario_7():
+    period_start = date(2025, 1, 1)
+    period_end = date(2026, 1, 31)
+    recurrence_rule = RecurrenceRule(
+        id="rr_0",
+        team_id="team_0",
+        recurrence_type=RecurrenceType.ASSIGNMENT,
+        assignment_id=None,
+        daily_shift_demand_id=None,
+        repeat_every=1,
+        frequency_type=FrequencyType.YEAR,
+        week_days=[],
+        month_repeat_type=None,
+        recurrence_end_type=RecurrenceEndType.NEVER,
+        start_date=date(2025, 1, 1),
+        end_date=date(2025, 1, 31),
+        number_of_occurrences=None,
+    )
+    exclusions = []
+
+    with patch(
+        "src.utils.recurrence_utils.handle_yearly_frequency", return_value=[]
+    ) as mock_handler:
+        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        mock_handler.assert_called_once_with(
+            period_start,
+            recurrence_rule.start_date,
+            period_end,
+            set(),
+            recurrence_rule.repeat_every,
+            recurrence_rule.week_days,
+            recurrence_rule.month_repeat_type,
+            recurrence_rule.number_of_occurrences,
+        )
