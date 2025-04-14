@@ -6,9 +6,11 @@ from src.utils.recurrence_utils import (
     handle_daily_frequency,
     handle_monthly_frequency,
     handle_weekly_frequency,
+    handle_yearly_frequency,
 )
 
 
+# pylint: disable=too-many-lines
 def test_daily_frequency_no_exclusions():
     period_start = date(2025, 1, 1)
     start_date = date(2025, 1, 1)
@@ -649,6 +651,53 @@ def test_monthly_frequency_day_in_month_with_period_start_and_occurrences():
     assert result == expected_dates
 
 
+def test_monthly_frequency_day_in_month_with_exclusion():
+    period_start = date(2025, 1, 10)
+    start_date = date(2025, 1, 10)
+    end_date = date(2027, 1, 10)
+    excluded_dates = {date(2025, 2, 10)}
+    repeat_every = 1
+    month_repeat_type = MonthRepeatType.DAY_IN_MONTH
+
+    expected_dates = [
+        date(2025, 1, 10),
+        date(2025, 3, 10),
+        date(2025, 4, 10),
+        date(2025, 5, 10),
+        date(2025, 6, 10),
+        date(2025, 7, 10),
+        date(2025, 8, 10),
+        date(2025, 9, 10),
+        date(2025, 10, 10),
+        date(2025, 11, 10),
+        date(2025, 12, 10),
+        date(2026, 1, 10),
+        date(2026, 2, 10),
+        date(2026, 3, 10),
+        date(2026, 4, 10),
+        date(2026, 5, 10),
+        date(2026, 6, 10),
+        date(2026, 7, 10),
+        date(2026, 8, 10),
+        date(2026, 9, 10),
+        date(2026, 10, 10),
+        date(2026, 11, 10),
+        date(2026, 12, 10),
+        date(2027, 1, 10),
+    ]
+
+    result = handle_monthly_frequency(
+        period_start,
+        start_date,
+        end_date,
+        excluded_dates,
+        repeat_every,
+        month_repeat_type=month_repeat_type,
+    )
+
+    assert result == expected_dates
+
+
 def test_monthly_frequency_weekday_scenario_1():
     period_start = date(2025, 1, 10)
     start_date = date(2025, 1, 10)
@@ -845,6 +894,230 @@ def test_monthly_frequency_weekday_scenario_6():
         repeat_every,
         month_repeat_type=month_repeat_type,
         number_of_occurrences=number_of_occurrences,
+    )
+
+    assert result == expected_dates
+
+
+def test_monthly_frequency_weekday_with_exclusion():
+    period_start = date(2025, 1, 10)
+    start_date = date(2025, 1, 10)
+    end_date = date(2027, 1, 10)
+    excluded_dates = {date(2025, 2, 14)}
+    repeat_every = 1
+    month_repeat_type = MonthRepeatType.WEEKDAY
+
+    expected_dates = [
+        date(2025, 1, 10),
+        date(2025, 3, 14),
+        date(2025, 4, 11),
+        date(2025, 5, 9),
+        date(2025, 6, 13),
+        date(2025, 7, 11),
+        date(2025, 8, 8),
+        date(2025, 9, 12),
+        date(2025, 10, 10),
+        date(2025, 11, 14),
+        date(2025, 12, 12),
+        date(2026, 1, 9),
+        date(2026, 2, 13),
+        date(2026, 3, 13),
+        date(2026, 4, 10),
+        date(2026, 5, 8),
+        date(2026, 6, 12),
+        date(2026, 7, 10),
+        date(2026, 8, 14),
+        date(2026, 9, 11),
+        date(2026, 10, 9),
+        date(2026, 11, 13),
+        date(2026, 12, 11),
+        date(2027, 1, 8),
+    ]
+
+    result = handle_monthly_frequency(
+        period_start,
+        start_date,
+        end_date,
+        excluded_dates,
+        repeat_every,
+        month_repeat_type=month_repeat_type,
+    )
+
+    assert result == expected_dates
+
+
+def test_yearly_frequency_scenario_1():
+    period_start = date(2025, 1, 1)
+    start_date = date(2025, 1, 1)
+    end_date = date(2030, 1, 1)
+    excluded_dates = set()
+    repeat_every = 1
+
+    expected_dates = [
+        date(2025, 1, 1),
+        date(2026, 1, 1),
+        date(2027, 1, 1),
+        date(2028, 1, 1),
+        date(2029, 1, 1),
+        date(2030, 1, 1),
+    ]
+
+    result = handle_yearly_frequency(
+        period_start,
+        start_date,
+        end_date,
+        excluded_dates,
+        repeat_every,
+    )
+
+    assert result == expected_dates
+
+
+def test_yearly_frequency_scenario_2():
+    period_start = date(2025, 1, 1)
+    start_date = date(2025, 1, 1)
+    end_date = date(2030, 1, 1)
+    excluded_dates = {date(2025, 1, 1)}
+    repeat_every = 1
+
+    expected_dates = [
+        date(2026, 1, 1),
+        date(2027, 1, 1),
+        date(2028, 1, 1),
+        date(2029, 1, 1),
+        date(2030, 1, 1),
+    ]
+
+    result = handle_yearly_frequency(
+        period_start,
+        start_date,
+        end_date,
+        excluded_dates,
+        repeat_every,
+    )
+
+    assert result == expected_dates
+
+
+def test_yearly_frequency_scenario_3():
+    period_start = date(2026, 1, 1)
+    start_date = date(2025, 1, 1)
+    end_date = date(2030, 1, 1)
+    excluded_dates = set()
+    repeat_every = 1
+
+    expected_dates = [
+        date(2026, 1, 1),
+        date(2027, 1, 1),
+        date(2028, 1, 1),
+        date(2029, 1, 1),
+        date(2030, 1, 1),
+    ]
+
+    result = handle_yearly_frequency(
+        period_start,
+        start_date,
+        end_date,
+        excluded_dates,
+        repeat_every,
+    )
+
+    assert result == expected_dates
+
+
+def test_yearly_frequency_scenario_4():
+    period_start = date(2025, 1, 1)
+    start_date = date(2025, 1, 1)
+    end_date = date(2030, 1, 1)
+    excluded_dates = set()
+    repeat_every = 2
+
+    expected_dates = [
+        date(2025, 1, 1),
+        date(2027, 1, 1),
+        date(2029, 1, 1),
+    ]
+
+    result = handle_yearly_frequency(
+        period_start,
+        start_date,
+        end_date,
+        excluded_dates,
+        repeat_every,
+    )
+
+    assert result == expected_dates
+
+
+def test_yearly_frequency_scenario_5():
+    period_start = date(2025, 1, 1)
+    start_date = date(2025, 1, 1)
+    end_date = date(2030, 1, 1)
+    excluded_dates = set()
+    repeat_every = 1
+    number_of_occurrences = 3
+
+    expected_dates = [
+        date(2025, 1, 1),
+        date(2026, 1, 1),
+        date(2027, 1, 1),
+    ]
+
+    result = handle_yearly_frequency(
+        period_start,
+        start_date,
+        end_date,
+        excluded_dates,
+        repeat_every,
+        number_of_occurrences=number_of_occurrences,
+    )
+
+    assert result == expected_dates
+
+
+def test_yearly_frequency_scenario_6():
+    period_start = date(2027, 1, 1)
+    start_date = date(2025, 1, 1)
+    end_date = date(2030, 1, 1)
+    excluded_dates = set()
+    repeat_every = 1
+    number_of_occurrences = 3
+
+    expected_dates = [
+        date(2027, 1, 1),
+    ]
+
+    result = handle_yearly_frequency(
+        period_start,
+        start_date,
+        end_date,
+        excluded_dates,
+        repeat_every,
+        number_of_occurrences=number_of_occurrences,
+    )
+
+    assert result == expected_dates
+
+
+def test_yearly_frequency_scenario_7():
+    period_start = date(2027, 1, 1)
+    start_date = date(2024, 2, 29)
+    end_date = date(2040, 1, 1)
+    excluded_dates = set()
+    repeat_every = 1
+
+    expected_dates = [
+        date(2028, 2, 29),
+        date(2032, 2, 29),
+        date(2036, 2, 29),
+    ]
+
+    result = handle_yearly_frequency(
+        period_start,
+        start_date,
+        end_date,
+        excluded_dates,
+        repeat_every,
     )
 
     assert result == expected_dates

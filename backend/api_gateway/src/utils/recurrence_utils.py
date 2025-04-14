@@ -159,106 +159,6 @@ def handle_monthly_frequency(
         )
     return dates
 
-    # # Initialize current_date and occurrences_count based on conditions
-    # if start_date <= period_start:
-    #     current_date = start_date.replace(day=1)
-    #     occurrences_count = 0
-    # else:
-    #     months_difference = (period_start.year - start_date.year) * 12 + (
-    #         period_start.month - start_date.month
-    #     )
-    #     offset = months_difference % repeat_every
-    #     first_valid_date = period_start
-
-    #     if offset != 0:
-    #         first_valid_date = (
-    #             period_start.replace(day=1)
-    #             + timedelta(days=30 * (repeat_every - offset))
-    #         ).replace(day=1)
-
-    #     if month_repeat_type == MonthRepeatType.DAY_IN_MONTH:
-    #         i = 0
-    #         while True:
-    #             try:
-    #                 new_month = (first_valid_date.month + i - 1) % 12 + 1
-    #                 year_increment = (first_valid_date.month + i - 1) // 12
-    #                 first_valid_date = first_valid_date.replace(
-    #                     year=first_valid_date.year + year_increment,
-    #                     month=new_month,
-    #                     day=start_date.day,
-    #                 )
-    #                 break
-    #             except ValueError:
-    #                 # Handle invalid day (e.g., February 30th)
-    #                 i += 1
-    #     elif month_repeat_type == MonthRepeatType.WEEKDAY:
-    #         first_day_of_month = first_valid_date.replace(day=1)
-    #         weekday_offset = (
-    #             start_date.weekday() - first_day_of_month.weekday() + 7
-    #         ) % 7
-    #         first_valid_date = first_day_of_month + timedelta(
-    #             days=weekday_offset
-    #         )
-    #         week_number = (start_date.day - 1) // 7
-    #         first_valid_date += timedelta(weeks=week_number)
-
-    #     occurrences_count = (
-    #         (first_valid_date.year - start_date.year) * 12
-    #         + (first_valid_date.month - start_date.month)
-    #     ) // repeat_every
-    #     current_date = first_valid_date.replace(day=1)
-
-    # # Iterate and collect dates
-    # while current_date <= end_date:
-    #     candidate_date = None
-    #     if month_repeat_type == MonthRepeatType.DAY_IN_MONTH:
-    #         try:
-    #             candidate_date = current_date.replace(day=start_date.day)
-    #         except ValueError:
-    #             # Handle invalid day (e.g., February 30th)
-    #             candidate_date = None
-    #     elif month_repeat_type == MonthRepeatType.WEEKDAY:
-    #         first_day_of_month = current_date.replace(day=1)
-    #         weekday_offset = (
-    #             start_date.weekday() - first_day_of_month.weekday() + 7
-    #         ) % 7
-    #         candidate_date = first_day_of_month + timedelta(
-    #             days=weekday_offset
-    #         )
-    #         week_number = (start_date.day - 1) // 7
-    #         candidate_date += timedelta(weeks=week_number)
-
-    #         if (
-    #             candidate_date.year != current_date.year
-    #             or candidate_date.month != current_date.month
-    #         ):
-    #             candidate_date = None
-
-    #     if (
-    #         candidate_date
-    #         and period_start <= candidate_date <= end_date
-    #         and candidate_date not in excluded_dates
-    #     ):
-    #         dates.append(candidate_date)
-    #         occurrences_count += 1
-    #         if (
-    #             number_of_occurrences
-    #             and occurrences_count >= number_of_occurrences
-    #         ):
-    #             break
-
-    #     # Move to the next month based on repeat_every
-    #     next_month = current_date.month + repeat_every
-    #     year_increment = (next_month - 1) // 12
-    #     next_month = (next_month - 1) % 12 + 1
-    #     current_date = current_date.replace(
-    #         year=current_date.year + year_increment,
-    #         month=next_month,
-    #         day=1,
-    #     )
-
-    # return dates
-
 
 def handle_yearly_frequency(
     period_start: date,
@@ -271,37 +171,15 @@ def handle_yearly_frequency(
     number_of_occurrences: Optional[int] = None,
 ) -> List[date]:
     dates = []
-
-    # Initialize current_date and occurrences_count based on conditions
-    if start_date >= period_start:
-        current_date = start_date
-        occurrences_count = 0
-    else:
-        years_difference = period_start.year - start_date.year
-        offset = years_difference % repeat_every
-        first_valid_year = (
-            period_start.year
-            if offset == 0
-            else period_start.year + (repeat_every - offset)
-        )
-        try:
-            current_date = start_date.replace(year=first_valid_year)
-        except ValueError:
-            # Handle February 29th for non-leap years by moving to the next valid year
-            while True:
-                first_valid_year += 1
-                try:
-                    current_date = start_date.replace(year=first_valid_year)
-                    break
-                except ValueError:
-                    continue
-        occurrences_count = years_difference // repeat_every + 1
+    current_date = start_date
+    occurrences_count = 0
 
     # Iterate and collect dates
     while current_date <= end_date:
-        if current_date >= period_start and current_date not in excluded_dates:
-            dates.append(current_date)
+        if current_date not in excluded_dates:
             occurrences_count += 1
+            if current_date >= period_start:
+                dates.append(current_date)
             if number_of_occurrences and occurrences_count >= number_of_occurrences:
                 break
 
@@ -310,10 +188,16 @@ def handle_yearly_frequency(
             current_date = current_date.replace(year=current_date.year + repeat_every)
         except ValueError:
             # Handle February 29th for non-leap years by moving to the next valid year
+            increment_count = 1
             while True:
-                current_date = current_date.replace(year=current_date.year + 1)
-                if current_date.month == 2 and current_date.day == 29:
+                try:
+                    current_date = current_date.replace(
+                        year=current_date.year + repeat_every * increment_count
+                    )
                     break
+                except ValueError:
+                    increment_count += 1
+                    continue
 
     return dates
 
