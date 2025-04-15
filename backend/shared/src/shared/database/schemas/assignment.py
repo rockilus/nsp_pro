@@ -37,9 +37,7 @@ class AssignmentSchema(DocumentBaseSchema):
         doc_dict["reference_assignment_id"] = doc_dict.pop(
             "reference_assignment_id", None
         )
-        doc_dict["recurrence_rule_id"] = doc_dict.pop(
-            "recurrence_rule_id", None
-        )
+        doc_dict["recurrence_rule_id"] = doc_dict.pop("recurrence_rule_id", None)
         return Assignment(**doc_dict)
 
     @classmethod

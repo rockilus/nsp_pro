@@ -82,9 +82,7 @@ class RecurrenceRule:
             recurrence_end_type=RecurrenceEndType(data["recurrence_end_type"]),
             start_date=date.fromisoformat(data["start_date"]),
             end_date=(
-                date.fromisoformat(data["end_date"])
-                if data["end_date"]
-                else None
+                date.fromisoformat(data["end_date"]) if data["end_date"] else None
             ),
             number_of_occurrences=data["number_of_occurrences"],
         )
@@ -106,9 +104,7 @@ class RecurrenceRule:
     @classmethod
     def from_dto(cls, data: RecurrenceRuleDTO) -> "RecurrenceRule":
         data_snake = humps.decamelize(data.model_dump())
-        data_snake["recurrence_type"] = RecurrenceType(
-            data_snake["recurrence_type"]
-        )
+        data_snake["recurrence_type"] = RecurrenceType(data_snake["recurrence_type"])
         data_snake["assignment"] = (
             Assignment.from_dto(data_snake["assignment"])
             if data_snake["assignment"]
@@ -119,9 +115,7 @@ class RecurrenceRule:
             if data_snake["daily_shift_demand"]
             else None
         )
-        data_snake["frequency_type"] = FrequencyType(
-            data_snake["frequency_type"]
-        )
+        data_snake["frequency_type"] = FrequencyType(data_snake["frequency_type"])
         data_snake["month_repeat_type"] = (
             MonthRepeatType(data_snake["month_repeat_type"])
             if data_snake["month_repeat_type"]
@@ -144,3 +138,10 @@ class RecurrenceExclusion:
     id: str
     recurrence_rule_id: str
     excluded_date: date
+
+
+class RecurrenceUpdateScope(Enum):
+    NONE = 0
+    SINGLE = 1
+    FUTURE = 2
+    ALL = 3

@@ -70,6 +70,7 @@ from shared.schemas.core.recurrence import (
     RecurrenceExclusion,
     RecurrenceRule,
     RecurrenceType,
+    RecurrenceUpdateScope,
 )
 from shared.schemas.core.request import (
     Request,
@@ -180,6 +181,7 @@ __all__ = [
     "RecurrenceExclusion",
     "RecurrenceRule",
     "RecurrenceType",
+    "RecurrenceUpdateScope",
     "Request",
     "RequestAugmented",
     "RequestStatus",

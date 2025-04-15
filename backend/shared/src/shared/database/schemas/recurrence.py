@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, time, timezone
 from typing import List, Optional
 
 from pydantic import field_validator
@@ -105,10 +105,14 @@ class RecurrenceRuleSchema(DocumentBaseSchema):
                 else None
             ),
             recurrence_end_type=recurrence_rule.recurrence_end_type.value,
-            start_date=recurrence_rule.start_date.timestamp(),
+            start_date=datetime.combine(
+                recurrence_rule.start_date, time.min, timezone.utc
+            ).timestamp(),
             end_date=(
-                recurrence_rule.end_date.timestamp()
-                if recurrence_rule.end_date is not None
+                datetime.combine(
+                    recurrence_rule.end_date, time.min, timezone.utc
+                ).timestamp()
+                if recurrence_rule.end_date
                 else None
             ),
             number_of_occurrences=recurrence_rule.number_of_occurrences,

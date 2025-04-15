@@ -8,7 +8,11 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas.core import Assignment, RecurrenceRule
+from shared.schemas.core import (
+    Assignment,
+    RecurrenceRule,
+    RecurrenceUpdateScope,
+)
 from shared.schemas.dto import AssignmentDTO, RecurrenceRuleDTO
 from shared.schemas.errors import handle_create_schema_object_error
 
@@ -48,17 +52,23 @@ async def create_assignment(
         r_data: Optional[RecurrenceRule] = None
         if recurrence_rule:
             r_data = RecurrenceRule.from_dto(recurrence_rule)
-        a_and_r_created = assignment_service.create_assignment(a_data, r_data)
+        a_and_r_created = assignment_service.create_assignment_and_recurrence(
+            a_data, r_data
+        )
         created_assignments: List[Assignment] = a_and_r_created.get(  # type: ignore
             "assignments", []
         )
-        created_recurrence_rule: Optional[RecurrenceRule] = a_and_r_created.get(
-            "recurrence_rule", None
+        created_recurrence_rule: Optional[
+            RecurrenceRule
+        ] = a_and_r_created.get(
+            "recurrences", None
         )  # type: ignore
         response = {
             "assignments": [a.to_dto() for a in created_assignments],
-            "recurrence_rule": (
-                created_recurrence_rule.to_dto() if created_recurrence_rule else None
+            "recurrences": (
+                created_recurrence_rule.to_dto()
+                if created_recurrence_rule
+                else None
             ),
         }
     except Exception as e:
@@ -74,6 +84,9 @@ async def get_assignments(
     end_date: Optional[date] = Query(None, alias="end_date"),
     session: SessionContainerType = Depends(authn_verify_session()),
     db_collections: DatabaseCollections = Depends(get_db_collections),
+    assignment_service: AssignmentService = Depends(
+        get_assignment_service,
+    ),
 ) -> List[AssignmentDTO]:
     try:
         if not await authz_check(
@@ -83,13 +96,17 @@ async def get_assignments(
                 "You do not have permission to get assignments",
             )
         start_time = time_module.time()
-        if start_date is None or end_date is None:
-            assignments = db_collections.assignment_db.get_assignments(team_id)
-        else:
-            assignments = db_collections.assignment_db.get_assignments_by_dates(
-                team_id, start_date, end_date
-            )
-        response = [a.to_dto() for a in assignments]
+        a_and_r = assignment_service.get_assignments_and_recurrences(
+            team_id,
+            start_date,
+            end_date,
+        )
+        assignments: List[Assignment] = a_and_r.get("assignments", [])
+        recurrences: List[RecurrenceRule] = a_and_r.get("recurrences", [])
+        response = {
+            "assignments": [a.to_dto() for a in assignments],
+            "recurrences": [r.to_dto() for r in recurrences],
+        }
         end_time = time_module.time()
         time_taken = round(end_time - start_time)
         print(f"Time taken to get assignments: {time_taken} seconds")
@@ -103,6 +120,8 @@ async def get_assignments(
 async def update_assignment(
     team_id: str,
     assignment_api: AssignmentDTO,
+    recurrence_update_scope: RecurrenceUpdateScope,
+    recurrence_rule: Optional[RecurrenceRuleDTO] = None,
     session: SessionContainerType = Depends(authn_verify_session()),
     assignment_service: AssignmentService = Depends(get_assignment_service),
 ) -> Dict:
@@ -114,18 +133,26 @@ async def update_assignment(
                 "You do not have permission to update an assignment",
             )
         assignment_data = Assignment.from_dto(assignment_api)
-        updated_assignment_data = assignment_service.update_assignment(assignment_data)
+        updated_assignment_data = (
+            assignment_service.update_assignment_and_recurrence(
+                assignment_data
+            )
+        )
         response = {
             "updated_assignment": (
                 core_to_msg_assignment(
-                    updated_assignment_data.get("updated_assignment", None).to_dto()
+                    updated_assignment_data.get(
+                        "updated_assignment", None
+                    ).to_dto()
                 )
                 if updated_assignment_data.get("updated_assignment", None)
                 else None
             ),
             "recuperation_assignments": [
                 core_to_msg_assignment(a)
-                for a in updated_assignment_data.get("recuperation_assignments", [])
+                for a in updated_assignment_data.get(
+                    "recuperation_assignments", []
+                )
             ],
             "deleted_ids": updated_assignment_data.get("deleted_ids", []),
         }
@@ -175,15 +202,3 @@ def core_to_msg_assignment(assignment: Assignment) -> AssignmentDTO:
         log_info("Failed to convert Assignment to AssignmentMessage")
         handle_message_errors(e)
     return a_msg
-
-
-# message to core
-def msg_to_core_assignment(msg: AssignmentDTO) -> Assignment:
-    data_snake = humps.decamelize(msg.model_dump())
-    data_snake["date"] = datetime.fromtimestamp(data_snake["date"], timezone.utc).date()
-    try:
-        assignment = Assignment(**data_snake)
-    except Exception as e:
-        log_info("Failed to convert AssignmentMessage to Assignment")
-        handle_create_schema_object_error(e)
-    return assignment

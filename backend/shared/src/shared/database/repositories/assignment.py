@@ -216,3 +216,42 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         self.collection.delete_many({"reference_assignment_id": reference_id})
 
         return deleted_ids
+
+    def delete_assignments_by_recurrence_rule_id_from_date(
+        self, recurrence_rule_id: str, from_date: date
+    ) -> List[str]:
+        start_of_day = datetime.combine(from_date, time.min, tzinfo=timezone.utc)
+
+        # Find the matching assignments and get their IDs
+        matching_assignments = self.collection.find(
+            {
+                "recurrence_rule_id": recurrence_rule_id,
+                "date": {"$gte": start_of_day},
+            },
+            {"_id": 1},  # Only retrieve the `_id` field
+        )
+        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+
+        # Delete the matching assignments
+        self.collection.delete_many(
+            {
+                "recurrence_rule_id": recurrence_rule_id,
+                "date": {"$gte": start_of_day},
+            }
+        )
+
+        return deleted_ids
+
+    def delete_assignments_by_recurrence_rule_id(
+        self, recurrence_rule_id: str
+    ) -> List[str]:
+        # Find the matching assignments and get their IDs
+        matching_assignments = self.collection.find(
+            {"recurrence_rule_id": recurrence_rule_id}, {"_id": 1}
+        )
+        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+
+        # Delete the matching assignments
+        self.collection.delete_many({"recurrence_rule_id": recurrence_rule_id})
+
+        return deleted_ids

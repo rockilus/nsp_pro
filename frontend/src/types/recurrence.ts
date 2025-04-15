@@ -47,8 +47,9 @@ export type RecurrenceExclusionT = {
   excludedDate: dayjs.Dayjs;
 };
 
-export enum UpdateScope {
-  SINGLE = 0,
-  FUTURE = 1,
-  ALL = 2,
+export enum RecurrenceUpdateScope {
+  NONE = 0,
+  SINGLE = 1,
+  FUTURE = 2,
+  ALL = 3,
 }
