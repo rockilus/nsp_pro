@@ -20,13 +20,10 @@ import "./assignment-options.css";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
-import {
-  AssignmentT,
-  AssignmentDataDictT,
-  ObjectiveCategory,
-  ScheduleT,
-  ScheduleStatus,
-} from "../../../types/schedule";
+import { ScheduleT, ScheduleStatus } from "../../../types/schedule";
+import { ObjectiveCategory } from "@/types/breach";
+import { AssignmentDataDictT } from "@/types/assignment";
+import { AssignmentT } from "@/types/assignment";
 import { RequestStatus } from "../../../types/request";
 
 export default function AssignmentOptions({

@@ -1,5 +1,6 @@
 import { WorkerT } from "../../../../types/worker";
-import { AssignmentT, ScheduleT } from "../../../../types/schedule";
+import { ScheduleT } from "../../../../types/schedule";
+import { AssignmentT } from "@/types/assignment";
 
 export const getRelevantWorkers = (
   workers: WorkerT[],

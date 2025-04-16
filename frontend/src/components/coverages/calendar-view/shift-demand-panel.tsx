@@ -11,7 +11,7 @@ import Select from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
 import WorkIcon from "@mui/icons-material/Work";
 // Types
-import { ShiftDemandT } from "../../../types/coverage";
+import { ShiftDemandT } from "@/types/shift-demand";
 import { ShiftT } from "../../../types/shift";
 
 export default function ShiftDemandPanel({

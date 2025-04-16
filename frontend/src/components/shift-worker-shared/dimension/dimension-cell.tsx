@@ -11,7 +11,8 @@ import UpdateDimensionForm from "./update-dimension-form";
 // Styles
 import "../../../styles/table-styles.css";
 //Types
-import { DimEntryT, DimensionT, DimensionType } from "../../../types/dimension";
+import { DimensionT, DimensionType } from "../../../types/dimension";
+import { DimEntryT } from "@/types/dim-entry";
 
 export default function DimensionCell({
   lng,

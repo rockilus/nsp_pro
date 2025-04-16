@@ -8,7 +8,8 @@ import "../../../styles/text-styles.css";
 import "../../../styles/tab-container-styles.css";
 import "./coverage-menu.css";
 // Types
-import { CoverageT, ShiftDemandT } from "../../../types/coverage";
+import { CoverageT } from "../../../types/coverage";
+import { ShiftDemandT } from "@/types/shift-demand";
 import { ShiftT } from "../../../types/shift";
 
 export default function CoverageMenu({

@@ -6,11 +6,8 @@ import TextField from "@mui/material/TextField";
 // Components
 import AttributeCellDimEntries from "./attribute-cell-dim-entries";
 // Types
-import {
-  DimensionEntryType,
-  DimEntryT,
-  DimensionT,
-} from "../../../types/dimension";
+import { DimensionEntryType, DimensionT } from "../../../types/dimension";
+import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT } from "@/types/attribute";
 
 export default function AttributeCell({

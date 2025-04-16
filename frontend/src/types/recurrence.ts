@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
-import { AssignmentT } from "./schedule";
-import { DailyShiftDemandT } from "./schedule";
+import { AssignmentT } from "./assignment";
+import { DailyShiftDemandT } from "./daily-shift-demand";
 
 export enum RecurrenceType {
   ASSIGNMENT = 0,

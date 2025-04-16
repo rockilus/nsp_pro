@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { DailyShiftDemandT } from "../../types/schedule";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 // Env Vars
 import { API_URL } from "./env";
 

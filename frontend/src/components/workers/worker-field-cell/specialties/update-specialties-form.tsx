@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 // Component
 import UpdateSpecialtiesInput from "./update-specialties-input";
 // Types
-import { SpecialtyT } from "../../../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 
 export default function UpdateSpecialtiesForm({
   lng,

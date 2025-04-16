@@ -5,11 +5,8 @@ import Chip from "@mui/material/Chip";
 import DimEntryTypeCellEdit from "./dim-entry-type-cell-edit";
 import PopoverAnchorElOver from "../../inputs/popover-anchor-el-over";
 // Types
-import {
-  DimensionEntryType,
-  DimEntryT,
-  DimensionT,
-} from "../../../types/dimension";
+import { DimensionEntryType, DimensionT } from "../../../types/dimension";
+import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT } from "@/types/attribute";
 
 export default function AttributeCellDimEntries({

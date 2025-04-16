@@ -25,12 +25,12 @@ import "../../styles/table-styles.css";
 import { WorkerT } from "../../types/worker";
 import {
   DimensionT,
-  DimEntryT,
   DimensionType,
   DimensionEntryType,
 } from "../../types/dimension";
+import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT, AttributeOwnerType } from "../../types/attribute";
-import { SpecialtyT } from "../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 
 export default function WorkerTable({
   lng,

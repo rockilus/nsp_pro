@@ -1,10 +1,8 @@
 import dayjs from "dayjs";
 // Types
-import {
-  AssignmentT,
-  BreachT,
-  AssignmentDictT,
-} from "../../../../types/schedule";
+import { BreachT } from "@/types/breach";
+import { AssignmentDictT } from "@/types/assignment";
+import { AssignmentT } from "@/types/assignment";
 import { WorkerT } from "../../../../types/worker";
 import { ShiftT, ShiftRestType } from "../../../../types/shift";
 import { RequestT } from "../../../../types/request";

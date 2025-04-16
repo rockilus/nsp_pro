@@ -12,7 +12,7 @@ import ShiftFieldCellEndTime from "./shift-field-cell-end-time";
 import ShiftStaffingCell from "./staffing/shift-staffing-cell";
 // Types
 import { ShiftT } from "../../../types/shift";
-import { SpecialtyT } from "../../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 
 export default function ShiftFieldCell({
   lng,

@@ -6,7 +6,7 @@ import TableCell from "@mui/material/TableCell";
 import WorkerSpecialtyCellEdit from "./worker-specialty-cell-edit";
 import PopoverAnchorElOver from "../../../inputs/popover-anchor-el-over";
 // Types
-import { SpecialtyT } from "../../../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 import { WorkerT } from "../../../../types/worker";
 
 export default function WorkerSpecialtyCell({

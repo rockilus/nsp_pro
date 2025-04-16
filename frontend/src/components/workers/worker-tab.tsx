@@ -36,9 +36,10 @@ import "../../styles/text-styles.css";
 import "../../styles/tab-container-styles.css";
 // Types
 import { WorkerT } from "../../types/worker";
-import { DimensionT, DimEntryT } from "../../types/dimension";
+import { DimensionT } from "../../types/dimension";
+import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT } from "../../types/attribute";
-import { SpecialtyT } from "../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 import { log } from "console";
 
 dayjs.extend(utc);

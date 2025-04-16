@@ -6,16 +6,16 @@ import ScheduleTableShift from "./shift-table/schedule-table-shift";
 import ScheduleTableWorker from "./worker-table/schedule-table-worker";
 // Types
 import {
-  AssignmentT,
   ScheduleT,
-  BreachT,
-  AssignmentDataDictT,
-  DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
   periodDateT,
-  CreateAssignmentT,
 } from "../../../types/schedule";
+import { BreachT } from "@/types/breach";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { CreateAssignmentT } from "@/types/assignment";
+import { AssignmentDataDictT } from "@/types/assignment";
+import { AssignmentT } from "@/types/assignment";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 import { RequestT } from "../../../types/request";

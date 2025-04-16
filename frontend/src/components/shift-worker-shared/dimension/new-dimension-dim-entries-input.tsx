@@ -6,7 +6,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
 // Types
-import { DimEntryT } from "@/types/dimension";
+import { DimEntryT } from "@/types/dim-entry";
 
 export default function NewDimensionDimEntriesInput({
   lng,

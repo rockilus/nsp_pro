@@ -1,5 +1,5 @@
 // Types
-import { BreachT } from "../../types/schedule";
+import { BreachT } from "@/types/breach";
 
 export const getBreachType = (breaches: BreachT[]): string => {
   if (breaches.length === 0) {

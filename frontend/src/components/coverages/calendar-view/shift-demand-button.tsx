@@ -5,7 +5,7 @@ import Menu from "@mui/material/Menu";
 // Components
 import ShiftDemandPanel from "./shift-demand-panel";
 // Types
-import { ShiftDemandT } from "../../../types/coverage";
+import { ShiftDemandT } from "@/types/shift-demand";
 import { ShiftT } from "../../../types/shift";
 
 export default function ShiftDemandButton({

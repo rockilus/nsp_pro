@@ -6,7 +6,8 @@ import { useTranslation } from "../../../../app/i18n/client";
 import "../../../../styles/text-styles.css";
 import "./shift-demand-quick-add.css";
 // Types
-import { CoverageT, ShiftDemandT } from "../../../../types/coverage";
+import { CoverageT } from "../../../../types/coverage";
+import { ShiftDemandT } from "@/types/shift-demand";
 import { ShiftT } from "../../../../types/shift";
 
 dayjs.extend(utc);

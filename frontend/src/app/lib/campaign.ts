@@ -6,7 +6,7 @@ import { getSchedules } from "./schedule";
 import { getCoverages } from "./coverage";
 import { getConstraints } from "./constraint";
 // Types
-import { CoverageSelectorT } from "../../types/campaign";
+import { CoverageSelectorT } from "../../types/coverage-selector";
 import { ScheduleStatus } from "../../types/schedule";
 // Env Vars
 import { API_URL } from "./env";

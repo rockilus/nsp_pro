@@ -7,7 +7,7 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 // Types
-import { SpecialtyT } from "../../../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 import { ConstraintDefaultColors } from "../../../../constants/constants";
 
 export default function WorkerSpecialtyCellEdit({

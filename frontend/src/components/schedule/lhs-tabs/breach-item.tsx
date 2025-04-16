@@ -4,7 +4,7 @@ import minMax from "dayjs/plugin/minMax";
 // MUI
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 // Types
-import { BreachT } from "../../../types/schedule";
+import { BreachT } from "@/types/breach";
 
 dayjs.extend(minMax);
 

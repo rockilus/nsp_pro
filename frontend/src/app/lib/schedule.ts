@@ -16,14 +16,14 @@ import { toCoverageSelectorT } from "./campaign";
 // Types
 import {
   ScheduleT,
-  AssignmentT,
-  BreachT,
   ExportOptionsT,
   SolveDetailsT,
   SolveDetailsStatus,
   WorkTimeTableDataT,
   WorkTimeTableT,
 } from "../../types/schedule";
+import { BreachT } from "@/types/breach";
+import { AssignmentT } from "@/types/assignment";
 import { RequestT } from "../../types/request";
 import {
   StatsOptionsT,
@@ -32,7 +32,7 @@ import {
   StatsTimeFrameOptions,
 } from "../../types/stats";
 import { ShiftT } from "../../types/shift";
-import { CoverageSelectorT } from "../../types/campaign";
+import { CoverageSelectorT } from "../../types/coverage-selector";
 // Env Vars
 import { API_URL } from "./env";
 

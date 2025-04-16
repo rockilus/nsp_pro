@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { AssignmentT } from "../../types/schedule";
+import { AssignmentT } from "@/types/assignment";
 import { RecurrenceRuleT } from "../../types/recurrence";
 // Env Vars
 import { API_URL } from "./env";

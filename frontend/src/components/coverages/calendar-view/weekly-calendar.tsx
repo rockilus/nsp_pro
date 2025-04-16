@@ -12,9 +12,11 @@ import shiftDemandsToEvents from "./sds-to-events";
 // Styles
 import "./weekly-calendar.css";
 // Types
-import { CoverageT, EventT, ShiftDemandT } from "../../../types/coverage";
+import { CoverageT } from "../../../types/coverage";
+import { EventT } from "@/types/shift-demand";
+import { ShiftDemandT } from "@/types/shift-demand";
 import { ShiftT } from "../../../types/shift";
-import { SpecialtyT } from "../../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 
 dayjs.extend(utc);
 

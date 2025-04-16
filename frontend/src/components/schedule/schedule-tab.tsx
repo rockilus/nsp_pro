@@ -48,17 +48,17 @@ import { ShiftT } from "../../types/shift";
 import { WorkerT } from "../../types/worker";
 import {
   ScheduleT,
-  BreachT,
-  AssignmentT,
-  AssignmentDataDictT,
-  DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
   SolveDetailsStatus,
   LHSTabContentT,
   periodDateT,
-  CreateAssignmentT,
 } from "../../types/schedule";
+import { BreachT } from "@/types/breach";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { CreateAssignmentT } from "@/types/assignment";
+import { AssignmentDataDictT } from "@/types/assignment";
+import { AssignmentT } from "@/types/assignment";
 import { RequestT } from "../../types/request";
 import {
   StatsT,

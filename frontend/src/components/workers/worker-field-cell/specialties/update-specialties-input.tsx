@@ -11,7 +11,7 @@ import TextField from "@mui/material/TextField";
 // Styles
 import "./update-specialties-input.css";
 // Types
-import { SpecialtyT } from "../../../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 
 export default function UpdateSpecialtiesInput({
   lng,

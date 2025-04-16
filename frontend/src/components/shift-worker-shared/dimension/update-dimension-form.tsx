@@ -10,10 +10,10 @@ import DialogDimensionDel from "./dialog-dimension-del";
 // Types
 import {
   DimensionEntryType,
-  DimEntryT,
   DimensionT,
   DimensionType,
 } from "../../../types/dimension";
+import { DimEntryT } from "@/types/dim-entry";
 
 export default function UpdateDimensionForm({
   lng,

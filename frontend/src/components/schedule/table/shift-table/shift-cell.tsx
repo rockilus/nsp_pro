@@ -14,15 +14,15 @@ import "./shift-cell.css";
 import { ShiftT } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
 import {
-  AssignmentT,
-  BreachT,
-  AssignmentDataDictT,
   ScheduleT,
   ScheduleStatus,
-  AssignmentDictT,
   periodDateT,
-  CreateAssignmentT,
 } from "../../../../types/schedule";
+import { BreachT } from "@/types/breach";
+import { CreateAssignmentT } from "@/types/assignment";
+import { AssignmentDictT } from "@/types/assignment";
+import { AssignmentDataDictT } from "@/types/assignment";
+import { AssignmentT } from "@/types/assignment";
 import { RequestT, RequestStatus } from "../../../../types/request";
 
 dayjs.extend(isSameOrAfter);

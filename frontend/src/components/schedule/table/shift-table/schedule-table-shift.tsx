@@ -18,16 +18,16 @@ import { getRelevantShifts } from "./shift-table-utils";
 import { ShiftT } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
 import {
-  AssignmentT,
   ScheduleT,
-  BreachT,
-  AssignmentDataDictT,
-  DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
   periodDateT,
-  CreateAssignmentT,
 } from "../../../../types/schedule";
+import { BreachT } from "@/types/breach";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { CreateAssignmentT } from "@/types/assignment";
+import { AssignmentDataDictT } from "@/types/assignment";
+import { AssignmentT } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
 

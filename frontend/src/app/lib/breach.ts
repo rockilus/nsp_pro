@@ -2,7 +2,8 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { BreachT, VariableT } from "../../types/schedule";
+import { BreachT } from "@/types/breach";
+import { VariableT } from "@/types/breach";
 // Env Vars
 import { API_URL } from "./env";
 

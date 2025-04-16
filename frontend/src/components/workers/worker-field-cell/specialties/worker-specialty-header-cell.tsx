@@ -8,7 +8,7 @@ import UpdateSpecialtiesForm from "./update-specialties-form";
 // Styles
 import "../../../../styles/table-styles.css";
 //Types
-import { SpecialtyT } from "../../../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 
 export default function WorkerSpecialtyHeaderCell({
   lng,

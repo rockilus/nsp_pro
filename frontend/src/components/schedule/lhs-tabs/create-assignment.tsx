@@ -10,7 +10,7 @@ import "./create-assignment.css";
 // Types
 import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
-import { AssignmentT } from "../../../types/schedule";
+import { AssignmentT } from "@/types/assignment";
 
 dayjs.extend(utc);
 

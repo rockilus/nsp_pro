@@ -16,11 +16,11 @@ import { WorkerT } from "../../../../types/worker";
 import {
   ScheduleT,
   ScheduleStatus,
-  AssignmentDictT,
-  AssignmentDataDictT,
   periodDateT,
-  CreateAssignmentT,
 } from "../../../../types/schedule";
+import { CreateAssignmentT } from "@/types/assignment";
+import { AssignmentDictT } from "@/types/assignment";
+import { AssignmentDataDictT } from "@/types/assignment";
 import { RequestStatus } from "../../../../types/request";
 
 dayjs.extend(isSameOrAfter);
