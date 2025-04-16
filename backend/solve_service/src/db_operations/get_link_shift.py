@@ -1,7 +1,7 @@
 from typing import List
 
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import LinkShift, Shift
+from shared.schemas.core import LinkShift, Shift
 
 
 def get_link_shifts(

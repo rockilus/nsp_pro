@@ -6,8 +6,6 @@ from typing import Dict
 import humps
 from pydantic import TypeAdapter
 
-from shared.schemas.core.assignment import Assignment
-from shared.schemas.core.daily_shift_demand import DailyShiftDemand
 from shared.schemas.dto.recurrence import RecurrenceRuleDTO
 
 
@@ -105,16 +103,6 @@ class RecurrenceRule:
     def from_dto(cls, data: RecurrenceRuleDTO) -> "RecurrenceRule":
         data_snake = humps.decamelize(data.model_dump())
         data_snake["recurrence_type"] = RecurrenceType(data_snake["recurrence_type"])
-        data_snake["assignment"] = (
-            Assignment.from_dto(data_snake["assignment"])
-            if data_snake["assignment"]
-            else None
-        )
-        data_snake["daily_shift_demand"] = (
-            DailyShiftDemand.from_dto(data_snake["daily_shift_demand"])
-            if data_snake["daily_shift_demand"]
-            else None
-        )
         data_snake["frequency_type"] = FrequencyType(data_snake["frequency_type"])
         data_snake["month_repeat_type"] = (
             MonthRepeatType(data_snake["month_repeat_type"])

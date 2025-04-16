@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import List, Tuple
 
-from shared.schemas import (
+from shared.schemas.core import (
     Assignment,
     Breach,
     DailyShiftDemand,
@@ -17,7 +17,9 @@ from shared.schemas import (
 from engine import Outputs as OutputsEngine
 from engine import ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches import build_breaches
-from engine_to_core_service.build_campaign_assignments import build_campaign_assignments
+from engine_to_core_service.build_campaign_assignments import (
+    build_campaign_assignments,
+)
 from engine_to_core_service.update_requests import (
     update_requests_and_build_request_breaches,
 )

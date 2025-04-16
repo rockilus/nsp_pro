@@ -42,10 +42,12 @@ class ShiftService(BaseService):
             if shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
             else [DimensionType.REST_SHIFT]
         )
-        d_bool = self.collection.dimension_db.get_dimensions_by_dim_types_and_entry_type(
-            dim_types,
-            DimensionEntryType.BOOL,
-            shift_created.team_id,
+        d_bool = (
+            self.collection.dimension_db.get_dimensions_by_dim_types_and_entry_type(
+                dim_types,
+                DimensionEntryType.BOOL,
+                shift_created.team_id,
+            )
         )
         attributes: List[Attribute] = []
         attributes_saved: List[Attribute] = []
@@ -60,9 +62,7 @@ class ShiftService(BaseService):
                     dim_entry_ids=[],
                 )
             )
-        attributes_saved = self.collection.attribute_db.create_attributes(
-            attributes
-        )
+        attributes_saved = self.collection.attribute_db.create_attributes(attributes)
         if shift_created.shift_type == ShiftType.DUTY:
             self.create_or_update_duty_recuperation_shift(shift_created)
         return shift_created, attributes_saved
@@ -73,9 +73,7 @@ class ShiftService(BaseService):
     ) -> Shift | None:
         if shift_duty.shift_type != ShiftType.DUTY:
             return None
-        recup_existing = self.collection.shift_db.get_recuperation_shift(
-            shift_duty.id
-        )
+        recup_existing = self.collection.shift_db.get_recuperation_shift(shift_duty.id)
         recup_start_time = datetime(
             shift_duty.start_time.year,
             shift_duty.start_time.month,
@@ -477,9 +475,7 @@ class ShiftService(BaseService):
             raise ValueError("Cannot update or delete a leave shift")
         return shift
 
-    def _handle_acronym_update(
-        self, shift_new: Shift, shift_old: Shift
-    ) -> None:
+    def _handle_acronym_update(self, shift_new: Shift, shift_old: Shift) -> None:
         # If acronym changed, then set custom acronym to True
         if shift_new.acronym != shift_old.acronym:
             shift_new.acronym_custom = True
@@ -487,9 +483,7 @@ class ShiftService(BaseService):
         # If name changed and acronym is not custom, then generate a new acronym
         # based on the new name and existing acronyms
         if shift_new.name != shift_old.name and not shift_new.acronym_custom:
-            shifts = self.collection.shift_db.get_shifts_not_deleted(
-                shift_new.team_id
-            )
+            shifts = self.collection.shift_db.get_shifts_not_deleted(shift_new.team_id)
             acronyms = [s.acronym for s in shifts if s.id != shift_new.id]
             shift_new.acronym = generate_acronym(shift_new.name, acronyms)
 
@@ -539,22 +533,19 @@ class ShiftService(BaseService):
             self.create_or_update_duty_recuperation_shift(shift_saved)
 
     def _handle_normal_to_duty_shift_update(self, shift_saved: Shift) -> None:
-        shift_recup = self.create_or_update_duty_recuperation_shift(
-            shift_saved
-        )
+        shift_recup = self.create_or_update_duty_recuperation_shift(shift_saved)
         if shift_recup is not None:
-            self.assignment_service.create_recuperation_assignments_upon_shift_duty_creation(
-                shift_duty_id=shift_saved.id,
-                shift_recup_id=shift_recup.id,
-                team_id=shift_saved.team_id,
-            )
+            # fmt: off
+            self.assignment_service\
+                .create_recuperation_assignments_upon_shift_duty_creation(
+                    shift_duty_id=shift_saved.id,
+                    shift_recup_id=shift_recup.id,
+                    team_id=shift_saved.team_id,
+                )
+            # fmt: on
 
-    def _handle_delete_recup_shift_and_its_assignments(
-        self, shift_duty: Shift
-    ) -> None:
-        shift_recup = self.collection.shift_db.get_recuperation_shift(
-            shift_duty.id
-        )
+    def _handle_delete_recup_shift_and_its_assignments(self, shift_duty: Shift) -> None:
+        shift_recup = self.collection.shift_db.get_recuperation_shift(shift_duty.id)
         if shift_recup is not None:
             self.collection.shift_db.logical_delete_shift(shift_recup.id)
             # fmt: off
@@ -566,13 +557,9 @@ class ShiftService(BaseService):
 
     def delete_shift(self, shift_id: str) -> Dict:
         shift = self._validate_shift_update(shift_id)
-        ls_change = (
-            self.link_shift_service.update_link_shift_upon_shift_delete(shift)
-        )
+        ls_change = self.link_shift_service.update_link_shift_upon_shift_delete(shift)
         self._delete_shift_from_schedule_quick_staffing(shift_id)
-        self.collection.shift_demand_db.delete_shift_demands_by_shift_id(
-            shift_id
-        )
+        self.collection.shift_demand_db.delete_shift_demands_by_shift_id(shift_id)
         self.collection.daily_shift_demand_db.delete_daily_shift_demands_by_shift_id(
             shift_id
         )
@@ -594,17 +581,15 @@ class ShiftService(BaseService):
             ob.variables = new_vars
             self.collection.breach_db.update_breach(ob)
 
-    def _delete_shift_from_schedule_quick_staffing(
-        self, shift_id: str
-    ) -> None:
-        schedules = self.collection.schedule_db.get_schedule_quick_staffing_contain_shift_id(
-            shift_id
+    def _delete_shift_from_schedule_quick_staffing(self, shift_id: str) -> None:
+        schedules = (
+            self.collection.schedule_db.get_schedule_quick_staffing_contain_shift_id(
+                shift_id
+            )
         )
         for schedule in schedules:
             new_quick_staffings = [
-                qs
-                for qs in schedule.quick_staffings
-                if qs.shift_id != shift_id
+                qs for qs in schedule.quick_staffings if qs.shift_id != shift_id
             ]
             schedule.quick_staffings = new_quick_staffings
             self.collection.schedule_db.update_schedule(schedule)

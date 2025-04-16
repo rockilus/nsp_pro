@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import List
 
-from shared.schemas import Assignment, Request, RequestStatus
+from shared.schemas.core import Assignment, Request, RequestStatus
 
 
 def update_requests_and_build_request_breaches(

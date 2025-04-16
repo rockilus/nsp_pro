@@ -1,7 +1,13 @@
 from datetime import date
 from typing import Dict, List, Tuple
 
-from shared.schemas import DailyShiftDemand, LinkShift, Shift, Worker, WorkerDates
+from shared.schemas.core import (
+    DailyShiftDemand,
+    LinkShift,
+    Shift,
+    Worker,
+    WorkerDates,
+)
 
 
 # pylint: disable=too-many-arguments

@@ -279,7 +279,7 @@ export default function ScheduleTab({
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const newAssignments = await addAssignment(assignment);
+    const { assignments: newAssignments } = await addAssignment(assignment);
     setAssignments([...assignments, ...newAssignments]);
     setSelectedTab("selection");
     const assignDict = getAssignmentsDataByOwnerAndDate(

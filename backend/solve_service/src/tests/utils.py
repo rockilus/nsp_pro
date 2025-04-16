@@ -2,7 +2,7 @@ import json
 import os
 from typing import Dict
 
-from shared.schemas import (
+from shared.schemas.core import (
     EngineInputs,
     EngineInputsAugmented,
     ModelConfig,

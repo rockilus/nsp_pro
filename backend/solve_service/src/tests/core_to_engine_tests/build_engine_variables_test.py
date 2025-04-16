@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from typing import List
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     EngineInputsAugmented,
     Shift,
     ShiftRestType,
@@ -11,7 +11,9 @@ from shared.schemas import (
 )
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
-from core_to_engine_service.build_engine_variables import build_engine_variables
+from core_to_engine_service.build_engine_variables import (
+    build_engine_variables,
+)
 from core_to_engine_service.core_to_engine_inputs import (
     _build_shift_id_to_duration_dict,
 )

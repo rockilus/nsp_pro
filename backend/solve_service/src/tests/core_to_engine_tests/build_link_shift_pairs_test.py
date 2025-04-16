@@ -1,10 +1,18 @@
 from datetime import date, timedelta
 from typing import List
 
-from shared.schemas import EngineInputsAugmented, LinkShift, Shift, Worker, WorkerDates
+from shared.schemas.core import (
+    EngineInputsAugmented,
+    LinkShift,
+    Shift,
+    Worker,
+    WorkerDates,
+)
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
-from core_to_engine_service.build_link_shift_pairs import build_link_shift_pairs
+from core_to_engine_service.build_link_shift_pairs import (
+    build_link_shift_pairs,
+)
 
 # pylint: disable=unused-import
 from tests.sample_data import sample_data_fixture  # noqa: F401

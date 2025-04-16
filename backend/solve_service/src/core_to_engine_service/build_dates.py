@@ -1,7 +1,13 @@
 from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
-from shared.schemas import Assignment, Schedule, Shift, Worker, WorkerDates
+from shared.schemas.core import (
+    Assignment,
+    Schedule,
+    Shift,
+    Worker,
+    WorkerDates,
+)
 
 
 def build_dates(

@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     Assignment,
     EngineInputsAugmented,
     Schedule,

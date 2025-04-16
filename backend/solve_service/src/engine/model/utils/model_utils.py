@@ -3,7 +3,7 @@ from dataclasses import asdict
 from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
-from shared.schemas import Constraint
+from shared.schemas.core import Constraint
 
 from engine.types import ObjectiveCategory, Request, VarName
 

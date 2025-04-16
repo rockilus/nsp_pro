@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta
 from typing import Dict, List
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     Attribute,
     ConstraintBuildAugmented,
     DailyShiftDemand,

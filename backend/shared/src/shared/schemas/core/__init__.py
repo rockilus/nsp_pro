@@ -1,4 +1,7 @@
-from shared.schemas.core.assignment import Assignment
+from shared.schemas.core.assignment import (
+    Assignment,
+    AssignmentsRecurrencesResult,
+)
 from shared.schemas.core.attribute import Attribute, AttributeOwnerType
 from shared.schemas.core.breach import Breach, ObjectiveCategory, Variable
 from shared.schemas.core.config import Config
@@ -120,6 +123,7 @@ from shared.schemas.core.worker import Worker, WorkerDates
 # pylint: disable=R0801
 __all__ = [
     "Attribute",
+    "AssignmentsRecurrencesResult",
     "AttributeOwnerType",
     "Config",
     "Assignment",

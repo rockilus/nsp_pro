@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Dict, List, Set, Tuple
 
-from shared.schemas import (
+from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
     Dimension,

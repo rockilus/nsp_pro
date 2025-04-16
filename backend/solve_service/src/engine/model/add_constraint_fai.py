@@ -1,4 +1,4 @@
-from shared.schemas import ConstraintFai
+from shared.schemas.core import ConstraintFai
 
 from engine.model.add_constraint import AddConstraint
 

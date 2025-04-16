@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import List
 
-from shared.schemas import (
+from shared.schemas.core import (
     Breach,
     EngineInputsAugmented,
     LinkShift,

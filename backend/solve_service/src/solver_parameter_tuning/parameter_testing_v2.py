@@ -6,7 +6,7 @@ import time
 from dataclasses import asdict
 from typing import Dict, List, Type
 
-from shared.schemas import SolverParams
+from shared.schemas.core import SolverParams
 
 from engine import Engine
 from engine import Inputs as InputsEngine

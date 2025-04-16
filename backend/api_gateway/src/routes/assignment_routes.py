@@ -1,22 +1,24 @@
 import time as time_module
 from dataclasses import asdict
 from datetime import date, datetime, time, timezone
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import humps
 from fastapi import APIRouter, Depends, Query
 from pydantic import TypeAdapter
-from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import (
     Assignment,
     RecurrenceRule,
     RecurrenceUpdateScope,
 )
-from shared.schemas.dto import AssignmentDTO, RecurrenceRuleDTO
-from shared.schemas.errors import handle_create_schema_object_error
+from shared.schemas.dto import (
+    AssignmentDTO,
+    AssignmentsRecurrencesResultDTO,
+    RecurrenceRuleDTO,
+)
 
-from src.dependencies import get_assignment_service, get_db_collections
+from src.dependencies import get_assignment_service
 from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
@@ -40,7 +42,7 @@ async def create_assignment(
     recurrence_rule: Optional[RecurrenceRuleDTO] = None,
     session: SessionContainerType = Depends(authn_verify_session()),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-) -> Dict[str, List[AssignmentDTO] | Optional[RecurrenceRuleDTO]]:
+) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
             session.get_user_id(), "create-assignment", "team", team_id
@@ -52,25 +54,8 @@ async def create_assignment(
         r_data: Optional[RecurrenceRule] = None
         if recurrence_rule:
             r_data = RecurrenceRule.from_dto(recurrence_rule)
-        a_and_r_created = assignment_service.create_assignment_and_recurrence(
-            a_data, r_data
-        )
-        created_assignments: List[Assignment] = a_and_r_created.get(  # type: ignore
-            "assignments", []
-        )
-        created_recurrence_rule: Optional[
-            RecurrenceRule
-        ] = a_and_r_created.get(
-            "recurrences", None
-        )  # type: ignore
-        response = {
-            "assignments": [a.to_dto() for a in created_assignments],
-            "recurrences": (
-                created_recurrence_rule.to_dto()
-                if created_recurrence_rule
-                else None
-            ),
-        }
+        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
+        response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
         handle_routes_errors(e)
@@ -83,11 +68,10 @@ async def get_assignments(
     start_date: Optional[date] = Query(None, alias="start_date"),
     end_date: Optional[date] = Query(None, alias="end_date"),
     session: SessionContainerType = Depends(authn_verify_session()),
-    db_collections: DatabaseCollections = Depends(get_db_collections),
     assignment_service: AssignmentService = Depends(
         get_assignment_service,
     ),
-) -> List[AssignmentDTO]:
+) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
             session.get_user_id(), "read-assignments", "team", team_id
@@ -96,17 +80,12 @@ async def get_assignments(
                 "You do not have permission to get assignments",
             )
         start_time = time_module.time()
-        a_and_r = assignment_service.get_assignments_and_recurrences(
+        ar_result = assignment_service.get_assignments_and_recurrences(
             team_id,
             start_date,
             end_date,
         )
-        assignments: List[Assignment] = a_and_r.get("assignments", [])
-        recurrences: List[RecurrenceRule] = a_and_r.get("recurrences", [])
-        response = {
-            "assignments": [a.to_dto() for a in assignments],
-            "recurrences": [r.to_dto() for r in recurrences],
-        }
+        response = ar_result.to_dto()
         end_time = time_module.time()
         time_taken = round(end_time - start_time)
         print(f"Time taken to get assignments: {time_taken} seconds")
@@ -116,15 +95,16 @@ async def get_assignments(
     return response
 
 
+# pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
 @router.put("/assignments/{assignment_id}/teams/{team_id}")
 async def update_assignment(
     team_id: str,
     assignment_api: AssignmentDTO,
-    recurrence_update_scope: RecurrenceUpdateScope,
+    recurrence_update_scope: Optional[int] = None,
     recurrence_rule: Optional[RecurrenceRuleDTO] = None,
     session: SessionContainerType = Depends(authn_verify_session()),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-) -> Dict:
+) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
             session.get_user_id(), "update-assignment", "team", team_id
@@ -133,29 +113,16 @@ async def update_assignment(
                 "You do not have permission to update an assignment",
             )
         assignment_data = Assignment.from_dto(assignment_api)
-        updated_assignment_data = (
-            assignment_service.update_assignment_and_recurrence(
-                assignment_data
-            )
+        recurrence_update_scope_data = RecurrenceUpdateScope(recurrence_update_scope)
+        recurrence_data = (
+            RecurrenceRule.from_dto(recurrence_rule) if recurrence_rule else None
         )
-        response = {
-            "updated_assignment": (
-                core_to_msg_assignment(
-                    updated_assignment_data.get(
-                        "updated_assignment", None
-                    ).to_dto()
-                )
-                if updated_assignment_data.get("updated_assignment", None)
-                else None
-            ),
-            "recuperation_assignments": [
-                core_to_msg_assignment(a)
-                for a in updated_assignment_data.get(
-                    "recuperation_assignments", []
-                )
-            ],
-            "deleted_ids": updated_assignment_data.get("deleted_ids", []),
-        }
+        ar_result = assignment_service.update_assignment_and_recurrence(
+            assignment_new=assignment_data,
+            recurrence_update_scope=recurrence_update_scope_data,
+            recurrence=recurrence_data,
+        )
+        response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to update assignment")
         handle_routes_errors(e)

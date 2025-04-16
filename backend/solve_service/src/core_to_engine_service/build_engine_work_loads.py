@@ -2,7 +2,7 @@ from datetime import date
 from typing import Dict, List, Tuple
 
 from shared.logger import log_info
-from shared.schemas import Penalties, Shift, Worker, WorkerDates
+from shared.schemas.core import Penalties, Shift, Worker, WorkerDates
 
 from engine import NbDuties as NbDutiesEngine
 from engine import WorkLoads as WorkLoadsEngine

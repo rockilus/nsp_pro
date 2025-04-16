@@ -47,7 +47,10 @@ export const fromRecurrenceRuleT = (data: RecurrenceRuleT): any => {
 export async function addAssignment(
   assignment: AssignmentT,
   recurrenceRule?: RecurrenceRuleT
-) {
+): Promise<{
+  assignments: AssignmentT[];
+  recurrenceRule: RecurrenceRuleT | null;
+}> {
   const options: RequestInit = {
     method: "POST",
     headers: {

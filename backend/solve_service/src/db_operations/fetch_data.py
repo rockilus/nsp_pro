@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import (
+from shared.schemas.core import (
     Attribute,
     Dimension,
     DimEntry,

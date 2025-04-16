@@ -2,7 +2,7 @@ from copy import deepcopy
 from datetime import date
 from typing import Callable, Tuple
 
-from shared.schemas import (
+from shared.schemas.core import (
     ConstraintBuildAugmented,
     ConstraintFai,
     ConstraintFil,

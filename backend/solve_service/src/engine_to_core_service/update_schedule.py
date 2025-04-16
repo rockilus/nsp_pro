@@ -1,6 +1,6 @@
 from typing import List
 
-from shared.schemas import Breach, Schedule, ScheduleSolveStatus
+from shared.schemas.core import Breach, Schedule, ScheduleSolveStatus
 
 
 def update_schedule_status(

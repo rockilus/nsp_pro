@@ -1,7 +1,7 @@
 from typing import Callable, Tuple
 
 import pytest
-from shared.schemas import EngineInputsAugmented
+from shared.schemas.core import EngineInputsAugmented
 
 from engine import Inputs as InputsEngine
 from engine import Outputs, ProcessingCache

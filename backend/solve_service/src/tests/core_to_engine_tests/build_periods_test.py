@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from typing import List
 
 import pytest
-from shared.schemas import EngineInputsAugmented
+from shared.schemas.core import EngineInputsAugmented
 
 from core_to_engine_service.build_periods import (
     build_periods_monthly,

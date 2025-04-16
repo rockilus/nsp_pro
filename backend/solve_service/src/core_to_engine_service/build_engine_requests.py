@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Dict, List
 
-from shared.schemas import Penalty, Request, WorkerDates
+from shared.schemas.core import Penalty, Request, WorkerDates
 
 from engine import Request as RequestEngine
 

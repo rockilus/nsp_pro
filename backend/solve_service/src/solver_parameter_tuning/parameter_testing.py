@@ -6,7 +6,7 @@ from dataclasses import asdict
 from typing import Callable, Dict, List, Tuple, Type
 
 # pylint: disable=R0801
-from shared.schemas import (
+from shared.schemas.core import (
     EngineInputs,
     EngineInputsAugmented,
     ModelConfig,

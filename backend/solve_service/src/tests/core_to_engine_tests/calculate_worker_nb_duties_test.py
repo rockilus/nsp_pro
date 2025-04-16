@@ -2,7 +2,7 @@ import math
 from datetime import date, datetime, timedelta, timezone
 from typing import Dict, List
 
-from shared.schemas import (
+from shared.schemas.core import (
     EngineInputsAugmented,
     Request,
     RequestStatus,

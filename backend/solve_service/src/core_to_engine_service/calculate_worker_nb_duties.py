@@ -3,7 +3,7 @@ import math
 from datetime import date
 from typing import Dict, List, Tuple
 
-from shared.schemas import (
+from shared.schemas.core import (
     DailyShiftDemand,
     Request,
     Schedule,

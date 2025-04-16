@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple
 
-from shared.schemas import Assignment, WorkerDates
+from shared.schemas.core import Assignment, WorkerDates
 
 
 def core_to_engine_sol_hint(

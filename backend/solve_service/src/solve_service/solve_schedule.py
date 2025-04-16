@@ -2,7 +2,11 @@
 # import os
 import time
 
-from shared.schemas import EngineInputs, EngineInputsAugmented, EngineOutputs
+from shared.schemas.core import (
+    EngineInputs,
+    EngineInputsAugmented,
+    EngineOutputs,
+)
 
 from core_to_engine_service import core_to_engine_inputs
 from engine import Engine

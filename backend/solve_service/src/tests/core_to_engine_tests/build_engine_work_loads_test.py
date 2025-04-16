@@ -4,15 +4,19 @@ from datetime import date, timedelta
 from typing import List
 
 import pytest
-from shared.schemas import EngineInputsAugmented, Shift, ShiftType, Worker
+from shared.schemas.core import EngineInputsAugmented, Shift, ShiftType, Worker
 
 from core_to_engine_service.build_dates import build_ws_ids_to_dates
-from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
+from core_to_engine_service.build_engine_work_loads import (
+    build_engine_work_loads,
+)
 from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
-from core_to_engine_service.calculate_worker_nb_duties import calculate_worker_nb_duties
+from core_to_engine_service.calculate_worker_nb_duties import (
+    calculate_worker_nb_duties,
+)
 from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
 )

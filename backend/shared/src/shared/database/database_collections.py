@@ -20,6 +20,9 @@ from shared.database.repositories.dimension import DimensionRepository
 from shared.database.repositories.link_shift import LinkShiftRepository
 from shared.database.repositories.model_output import ModelOutputRepository
 from shared.database.repositories.recurrence import RecurrenceRepository
+from shared.database.repositories.recurrence_exclusion import (
+    RecurrenceExclusionRepository,
+)
 from shared.database.repositories.request import RequestRepository
 from shared.database.repositories.schedule import ScheduleRepository
 from shared.database.repositories.shift import ShiftRepository
@@ -47,6 +50,7 @@ class DatabaseCollections:
     link_shift_db: LinkShiftRepository
     model_output_db: ModelOutputRepository
     recurrence_db: RecurrenceRepository
+    recurrence_exclusion_db: RecurrenceExclusionRepository
     request_db: RequestRepository
     schedule_db: ScheduleRepository
     shift_db: ShiftRepository
@@ -73,6 +77,7 @@ class DatabaseCollections:
         self.link_shift_db = LinkShiftRepository()
         self.model_output_db = ModelOutputRepository()
         self.recurrence_db = RecurrenceRepository()
+        self.recurrence_exclusion_db = RecurrenceExclusionRepository()
         self.request_db = RequestRepository()
         self.schedule_db = ScheduleRepository()
         self.shift_db = ShiftRepository()

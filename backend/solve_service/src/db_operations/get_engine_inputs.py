@@ -1,7 +1,7 @@
 import time
 
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import EngineInputs, Schedule
+from shared.schemas.core import EngineInputs, Schedule
 
 from db_operations.assignment_services import get_fixed_assignments
 from db_operations.fetch_data import fetch_workers_shifts_dim_attributes_spe

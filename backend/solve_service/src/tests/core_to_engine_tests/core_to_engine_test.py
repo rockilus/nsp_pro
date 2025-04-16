@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     EngineInputsAugmented,
     Shift,
     ShiftLeaveType,

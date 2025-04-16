@@ -2,7 +2,7 @@ from typing import Callable, Tuple
 
 import pytest
 from shared.constraint_parser import parse_constraints
-from shared.schemas import (
+from shared.schemas.core import (
     ConstraintBuildAugmented,
     ConstraintFai,
     ConstraintFil,
