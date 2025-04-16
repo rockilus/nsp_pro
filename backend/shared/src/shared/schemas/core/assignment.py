@@ -73,6 +73,7 @@ class AssignmentsRecurrencesResult:
     recurrence_created: RecurrenceRule | None
     recurrences_read: List[RecurrenceRule]
     recurrence_updated: RecurrenceRule | None
+    recurrences_deleted_ids: List[str]
 
     def to_dto(self) -> AssignmentsRecurrencesResultDTO:
         data = asdict(self)

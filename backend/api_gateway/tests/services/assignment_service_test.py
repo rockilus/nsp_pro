@@ -362,7 +362,7 @@ def test_delete_assignment_with_no_recuperation_assignments(
     mock_collection.assignment_db.delete_assignments_by_reference_id.return_value = []
 
     # Call the method
-    deleted_ids = service.delete_assignment(assignment_id)
+    ar_result = service.delete_assignment(assignment_id)
 
     # Assert the main assignment was deleted
     mock_collection.assignment_db.delete_assignment.assert_called_once_with(
@@ -370,7 +370,7 @@ def test_delete_assignment_with_no_recuperation_assignments(
     )
 
     # Assert the deleted IDs list contains only the main assignment ID
-    assert deleted_ids == [assignment_id]
+    assert ar_result.assignments_deleted_ids == [assignment_id]
 
 
 def test_delete_assignment_with_recuperation_assignments(
@@ -388,7 +388,7 @@ def test_delete_assignment_with_recuperation_assignments(
     )
 
     # Call the method
-    deleted_ids = service.delete_assignment(assignment_id)
+    ar_result = service.delete_assignment(assignment_id)
 
     # Assert the main assignment was deleted
     mock_collection.assignment_db.delete_assignment.assert_called_once_with(
@@ -396,4 +396,6 @@ def test_delete_assignment_with_recuperation_assignments(
     )
 
     # Assert the deleted IDs list contains both recuperation and main assignment IDs
-    assert sorted(deleted_ids) == sorted(recuperation_ids)
+    assert sorted(ar_result.assignments_deleted_ids) == sorted(
+        [assignment_id] + recuperation_ids
+    )

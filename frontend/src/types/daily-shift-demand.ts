@@ -16,3 +16,17 @@ export type DailyShiftDemandT = {
   shiftId: string;
   count: number;
 };
+
+export const toDailyShiftDemandT = (data: any): DailyShiftDemandT => {
+  return {
+    ...data,
+    date: dayjs.unix(data.date).utc(),
+  };
+};
+
+export const fromDailyShiftDemandT = (data: DailyShiftDemandT): any => {
+  return {
+    ...data,
+    date: data.date.unix(),
+  };
+};

@@ -2,27 +2,17 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import {
+  DailyShiftDemandT,
+  fromDailyShiftDemandT,
+  toDailyShiftDemandT,
+} from "@/types/daily-shift-demand";
 // Env Vars
 import { API_URL } from "./env";
 
 dayjs.extend(utc);
 
 const apiUrlDailyShiftDemand = API_URL + "/daily-shift-demands";
-
-export const toDailyShiftDemandT = (data: any): DailyShiftDemandT => {
-  return {
-    ...data,
-    date: dayjs.unix(data.date).utc(),
-  };
-};
-
-export const fromDailyShiftDemandT = (data: DailyShiftDemandT): any => {
-  return {
-    ...data,
-    date: data.date.unix(),
-  };
-};
 
 //////////////////////////
 // DailyShiftDemand //

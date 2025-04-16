@@ -1,11 +1,8 @@
 import time as time_module
-from dataclasses import asdict
-from datetime import date, datetime, time, timezone
-from typing import Dict, Optional
+from datetime import date
+from typing import Optional
 
-import humps
 from fastapi import APIRouter, Depends, Query
-from pydantic import TypeAdapter
 from shared.logger import log_info
 from shared.schemas.core import (
     Assignment,
@@ -20,9 +17,7 @@ from shared.schemas.dto import (
 
 from src.dependencies import get_assignment_service
 from src.errors import (
-    MessageTypeError,
     NotAuthorizedError,
-    handle_message_errors,
     handle_routes_errors,
 )
 from src.integrations.authentication import (
@@ -133,9 +128,11 @@ async def update_assignment(
 async def delete_assignment(
     assignment_id: str,
     team_id: str,
+    recurrence_id: Optional[str] = None,
+    recurrence_update_scope: Optional[int] = None,
     session: SessionContainerType = Depends(authn_verify_session()),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-) -> Dict:
+) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
             session.get_user_id(), "delete-assignment", "team", team_id
@@ -143,29 +140,18 @@ async def delete_assignment(
             raise NotAuthorizedError(
                 "You do not have permission to delete an assignment",
             )
-        deleted_ids = assignment_service.delete_assignment(assignment_id)
+        recurrence_update_scope_data = (
+            RecurrenceUpdateScope(recurrence_update_scope)
+            if recurrence_update_scope
+            else None
+        )
+        ar_result = assignment_service.delete_assignment(
+            assignment_id=assignment_id,
+            recurrence_id=recurrence_id,
+            recurrence_update_scope=recurrence_update_scope_data,
+        )
+        response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to delete assignment")
         handle_routes_errors(e)
-    return {"message": "Assignment deleted", "deleted_ids": deleted_ids}
-
-
-# Mappers
-# core to message
-def core_to_msg_assignment(assignment: Assignment) -> AssignmentDTO:
-    try:
-        data = asdict(assignment)
-    except Exception as e:
-        log_info("Failed to convert Assignment to dictionary")
-        raise MessageTypeError(str(e)) from e
-    data["date"] = datetime.combine(
-        assignment.date, time.min, tzinfo=timezone.utc
-    ).timestamp()
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(AssignmentDTO)
-    try:
-        a_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert Assignment to AssignmentMessage")
-        handle_message_errors(e)
-    return a_msg
+    return response

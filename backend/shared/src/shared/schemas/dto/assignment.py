@@ -24,3 +24,4 @@ class AssignmentsRecurrencesResultDTO(BaseModel):
     recurrenceCreated: RecurrenceRuleDTO | None
     recurrencesRead: List[RecurrenceRuleDTO]
     recurrenceUpdated: RecurrenceRuleDTO | None
+    recurrencesDeletedIds: List[str]

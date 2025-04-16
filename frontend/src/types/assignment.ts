@@ -3,6 +3,7 @@ import { RequestT } from "./request";
 import { BreachT } from "./breach";
 import { ShiftT } from "./shift";
 import { WorkerT } from "./worker";
+import { RecurrenceRuleT, toRecurrenceRuleT } from "./recurrence";
 
 export type AssignmentT = {
   id: string;
@@ -32,4 +33,56 @@ export type CreateAssignmentT = {
   workerId: string | null;
   shiftId: string | null;
   date: dayjs.Dayjs | null;
+};
+
+export type AssignmentsRecurrencesResultT = {
+  assignmentsCreated: AssignmentT[];
+  assignmentsRead: AssignmentT[];
+  assignmentsUpdated: AssignmentT[];
+  assignmentsDeletedIds: string[];
+  recurrenceCreated: RecurrenceRuleT | null;
+  recurrencesRead: RecurrenceRuleT[];
+  recurrenceUpdated: RecurrenceRuleT | null;
+  recurrencesDeletedIds: string[];
+};
+
+export const toAssignmentT = (data: any): AssignmentT => {
+  return {
+    ...data,
+    date: dayjs.unix(data.date).utc(),
+  };
+};
+
+export const fromAssignmentT = (data: AssignmentT): any => {
+  return {
+    ...data,
+    date: data.date.unix(),
+  };
+};
+
+export const toAssignmentsRecurrencesResultT = (
+  data: any
+): AssignmentsRecurrencesResultT => {
+  return {
+    assignmentsCreated: data.assignmentsCreated.map((assignment: any) =>
+      toAssignmentT(assignment)
+    ),
+    assignmentsRead: data.assignmentsRead.map((assignment: any) =>
+      toAssignmentT(assignment)
+    ),
+    assignmentsUpdated: data.assignmentsUpdated.map((assignment: any) =>
+      toAssignmentT(assignment)
+    ),
+    assignmentsDeletedIds: data.assignmentsDeletedIds || [],
+    recurrenceCreated: data.recurrenceCreated
+      ? toRecurrenceRuleT(data.recurrenceCreated)
+      : null,
+    recurrencesRead: data.recurrencesRead.map((recurrence: any) =>
+      toRecurrenceRuleT(recurrence)
+    ),
+    recurrenceUpdated: data.recurrenceUpdated
+      ? toRecurrenceRuleT(data.recurrenceUpdated)
+      : null,
+    recurrencesDeletedIds: data.recurrencesDeletedIds || [],
+  };
 };

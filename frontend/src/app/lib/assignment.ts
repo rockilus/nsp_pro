@@ -2,8 +2,19 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { AssignmentT } from "@/types/assignment";
-import { RecurrenceRuleT } from "../../types/recurrence";
+import {
+  AssignmentT,
+  fromAssignmentT,
+  toAssignmentT,
+  AssignmentsRecurrencesResultT,
+  toAssignmentsRecurrencesResultT,
+} from "@/types/assignment";
+import {
+  fromRecurrenceRuleT,
+  RecurrenceRuleT,
+  RecurrenceUpdateScope,
+  toRecurrenceRuleT,
+} from "../../types/recurrence";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -11,46 +22,13 @@ dayjs.extend(utc);
 
 const apiUrlAssignment = API_URL + "/assignments";
 
-export const toAssignmentT = (data: any): AssignmentT => {
-  return {
-    ...data,
-    date: dayjs.unix(data.date).utc(),
-  };
-};
-
-export const fromAssignmentT = (data: AssignmentT): any => {
-  return {
-    ...data,
-    date: data.date.unix(),
-  };
-};
-
-export const toRecurrenceRuleT = (data: any): RecurrenceRuleT => {
-  return {
-    ...data,
-    startDate: dayjs(data.startDate).utc(),
-    endDate: data.endDate ? dayjs(data.endDate).utc() : null,
-  };
-};
-
-export const fromRecurrenceRuleT = (data: RecurrenceRuleT): any => {
-  return {
-    ...data,
-    startDate: data.startDate.toISOString(),
-    endDate: data.endDate ? data.endDate.toISOString() : null,
-  };
-};
-
 //////////////////////////
 // Assignment //
 //////////////////////////
-export async function addAssignment(
+export async function addAssignmentAndRecurrence(
   assignment: AssignmentT,
   recurrenceRule?: RecurrenceRuleT
-): Promise<{
-  assignments: AssignmentT[];
-  recurrenceRule: RecurrenceRuleT | null;
-}> {
+): Promise<AssignmentsRecurrencesResultT> {
   const options: RequestInit = {
     method: "POST",
     headers: {
@@ -72,12 +50,7 @@ export async function addAssignment(
     if (!response.ok) {
       throw new Error("Failed to add assignment: " + responseData.detail);
     }
-    return {
-      assignments: responseData.assignments.map(toAssignmentT),
-      recurrenceRule: responseData.recurrence_rule
-        ? toRecurrenceRuleT(responseData.recurrence_rule)
-        : null,
-    };
+    return toAssignmentsRecurrencesResultT(responseData);
   } catch (error) {
     console.error("Failed to add assignment:", error);
     throw new Error("Failed to add assignment, please try again later");
@@ -88,7 +61,7 @@ export async function getAssignmentsByDates(
   teamId: string,
   startDate?: dayjs.Dayjs,
   endDate?: dayjs.Dayjs
-) {
+): Promise<AssignmentsRecurrencesResultT> {
   noStore();
   const options: RequestInit = {
     method: "GET",
@@ -111,23 +84,31 @@ export async function getAssignmentsByDates(
     if (!response.ok) {
       throw new Error("Failed to fetch assignments: " + responseData.detail);
     }
-    return responseData.map(toAssignmentT) as AssignmentT[];
+    return toAssignmentsRecurrencesResultT(responseData);
   } catch (error) {
     console.error("Failed to fetch assignments:", error);
     throw new Error("Failed to fetch assignments, please try again later");
   }
 }
 
-export async function updateAssignment(
+export async function updateAssignmentAndRecurrence(
   assignment: AssignmentT,
-  teamId: string
-) {
+  teamId: string,
+  recurrenceRule: RecurrenceRuleT | null = null,
+  recurrenceUpdateScope: RecurrenceUpdateScope | null = null
+): Promise<AssignmentsRecurrencesResultT> {
   const options: RequestInit = {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(fromAssignmentT(assignment)),
+    body: JSON.stringify({
+      assignment: fromAssignmentT(assignment),
+      recurrence_rule: recurrenceRule
+        ? fromRecurrenceRuleT(recurrenceRule)
+        : null,
+      recurrence_update_scope: recurrenceUpdateScope,
+    }),
   };
   try {
     const response = await fetch(
@@ -138,25 +119,28 @@ export async function updateAssignment(
     if (!response.ok) {
       throw new Error("Failed to update assignment: " + responseData.detail);
     }
-    return {
-      updatedAssignment: toAssignmentT(responseData.updated_assignment),
-      recuperationAssignments: responseData.recuperation_assignments
-        ? responseData.recuperation_assignments.map(toAssignmentT)
-        : [],
-      deletedIds: responseData.deleted_ids || [],
-    };
+    return toAssignmentsRecurrencesResultT(responseData);
   } catch (error) {
     console.error("Failed to update assignment:", error);
     throw new Error("Failed to update assignment, please try again later");
   }
 }
 
-export async function deleteAssignment(assignmentId: string, teamId: string) {
+export async function deleteAssignment(
+  assignmentId: string,
+  teamId: string,
+  recurrenceId: string | null = null,
+  recurrenceUpdateScope: RecurrenceUpdateScope | null = null
+): Promise<AssignmentsRecurrencesResultT> {
   const options: RequestInit = {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      recurrence_id: recurrenceId,
+      recurrence_update_scope: recurrenceUpdateScope,
+    }),
   };
   try {
     const response = await fetch(
@@ -167,7 +151,7 @@ export async function deleteAssignment(assignmentId: string, teamId: string) {
     if (!response.ok) {
       throw new Error("Failed to delete assignment: " + responseData.detail);
     }
-    return { deletedIds: responseData.deleted_ids || [] };
+    return toAssignmentsRecurrencesResultT(responseData);
   } catch (error) {
     console.error("Failed to delete assignment:", error);
     throw new Error("Failed to delete assignment, please try again later");

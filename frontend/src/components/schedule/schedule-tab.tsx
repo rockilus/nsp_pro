@@ -29,8 +29,8 @@ import {
   getScheduleLHSData,
 } from "../../app/lib/schedule";
 import {
-  addAssignment,
-  updateAssignment,
+  addAssignmentAndRecurrence,
+  updateAssignmentAndRecurrence,
   deleteAssignment,
 } from "../../app/lib/assignment";
 import { getStats } from "../../app/lib/stats";
@@ -56,9 +56,12 @@ import {
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
-import { CreateAssignmentT } from "@/types/assignment";
-import { AssignmentDataDictT } from "@/types/assignment";
-import { AssignmentT } from "@/types/assignment";
+import {
+  AssignmentT,
+  AssignmentDataDictT,
+  AssignmentsRecurrencesResultT,
+  CreateAssignmentT,
+} from "@/types/assignment";
 import { RequestT } from "../../types/request";
 import {
   StatsT,
@@ -67,6 +70,7 @@ import {
   HeaderUnitOptions,
 } from "../../types/stats";
 import { AttributeOwnerType } from "../../types/attribute";
+import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -94,6 +98,7 @@ export default function ScheduleTab({
     null
   );
   const [assignments, setAssignments] = useState<AssignmentT[]>([]);
+  const [recurrences, setRecurrences] = useState<RecurrenceRuleT[]>([]);
   const [dailyShiftDemands, setDailyShiftDemands] = useState<
     DailyShiftDemandT[]
   >([]);
@@ -262,6 +267,63 @@ export default function ScheduleTab({
   // Assignment Actions
   //////////////////////////
 
+  const updateAssignmentsAndRecurrencesStates = (
+    ARResult: AssignmentsRecurrencesResultT
+  ) => {
+    setAssignments((prev) => {
+      let updatedAssignments = prev.map(
+        (a) =>
+          ARResult.assignmentsUpdated.find((updated) => updated.id === a.id) ||
+          a
+      );
+
+      if (ARResult.assignmentsCreated.length > 0) {
+        updatedAssignments = [
+          ...updatedAssignments,
+          ...ARResult.assignmentsCreated,
+        ];
+      }
+
+      if (ARResult.assignmentsDeletedIds.length > 0) {
+        updatedAssignments = updatedAssignments.filter(
+          (a) => !ARResult.assignmentsDeletedIds.includes(a.id)
+        );
+      }
+
+      return updatedAssignments;
+    });
+
+    setRecurrences((prev) => {
+      let updatedRecurrences = [...prev];
+
+      if (ARResult.recurrenceCreated) {
+        updatedRecurrences = [
+          ...updatedRecurrences,
+          ARResult.recurrenceCreated,
+        ];
+      }
+
+      if (ARResult.recurrenceUpdated) {
+        updatedRecurrences = updatedRecurrences.map((recurrence) =>
+          ARResult.recurrenceUpdated
+            ? recurrence.id === ARResult.recurrenceUpdated.id
+              ? ARResult.recurrenceUpdated
+              : recurrence
+            : recurrence
+        );
+      }
+
+      if (ARResult.recurrencesDeletedIds.length > 0) {
+        updatedRecurrences = updatedRecurrences.filter(
+          (recurrence) =>
+            !ARResult.recurrencesDeletedIds.includes(recurrence.id)
+        );
+      }
+
+      return updatedRecurrences;
+    });
+  };
+
   const handleOpenCreateAssignment = (
     createAssignmentData: CreateAssignmentT
   ) => {
@@ -279,12 +341,15 @@ export default function ScheduleTab({
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const { assignments: newAssignments } = await addAssignment(assignment);
-    setAssignments([...assignments, ...newAssignments]);
+    const ARResult = await addAssignmentAndRecurrence(assignment);
+    setAssignments([...assignments, ...ARResult.assignmentsCreated]);
+    if (ARResult.recurrenceCreated) {
+      setRecurrences([...recurrences, ARResult.recurrenceCreated]);
+    }
     setSelectedTab("selection");
     const assignDict = getAssignmentsDataByOwnerAndDate(
       AttributeOwnerType.WORKER,
-      [newAssignments[0]], // Feed only the first assignment
+      [ARResult.assignmentsCreated[0]], // Feed only the first assignment
       workers,
       shifts,
       breaches,
@@ -295,37 +360,26 @@ export default function ScheduleTab({
     setCreateAssignmentData(null);
   };
 
-  const handleUpdateAssignment = async (assignment: AssignmentT) => {
+  const handleUpdateAssignment = async (
+    assignment: AssignmentT,
+    recurrence: RecurrenceRuleT | null = null,
+    recurrenceUpdateScope: RecurrenceUpdateScope | null = null
+  ) => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const { updatedAssignment, recuperationAssignments, deletedIds } =
-      await updateAssignment(assignment, selectedTeamId);
+    const ARResult = await updateAssignmentAndRecurrence(
+      assignment,
+      selectedTeamId,
+      recurrence,
+      recurrenceUpdateScope
+    );
 
-    setAssignments((prev) => {
-      let updatedAssignments = prev.map((a) =>
-        a.id === updatedAssignment.id ? updatedAssignment : a
-      );
-
-      if (recuperationAssignments.length > 0) {
-        updatedAssignments = [
-          ...updatedAssignments,
-          ...recuperationAssignments,
-        ];
-      }
-
-      if (deletedIds.length > 0) {
-        updatedAssignments = updatedAssignments.filter(
-          (a) => !deletedIds.includes(a.id)
-        );
-      }
-
-      return updatedAssignments;
-    });
+    updateAssignmentsAndRecurrencesStates(ARResult);
 
     const assignDict = getAssignmentsDataByOwnerAndDate(
       AttributeOwnerType.WORKER,
-      [updatedAssignment],
+      [ARResult.assignmentsUpdated[0]], // Feed only the first updated assignment
       workers,
       shifts,
       breaches,
@@ -337,12 +391,21 @@ export default function ScheduleTab({
     setCreateAssignmentData(null);
   };
 
-  const handleDeleteAssignment = async (assignmentId: string) => {
+  const handleDeleteAssignment = async (
+    assignmentId: string,
+    recurrenceId: string | null = null,
+    recurrenceUpdateScope: RecurrenceUpdateScope | null = null
+  ) => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const { deletedIds } = await deleteAssignment(assignmentId, selectedTeamId);
-    setAssignments(assignments.filter((a) => !deletedIds.includes(a.id)));
+    const ARResult = await deleteAssignment(
+      assignmentId,
+      selectedTeamId,
+      recurrenceId,
+      recurrenceUpdateScope
+    );
+    updateAssignmentsAndRecurrencesStates(ARResult);
     setSelectedCell(null);
   };
 
@@ -578,11 +641,13 @@ export default function ScheduleTab({
           // Fetch assignment data
           const {
             assignments: fetchedAssignments,
+            recurrences: fetchedRecurrences,
             workers: fetchedWorkers,
             shifts: fetchedShifts,
             dailyShiftDemands: fetchedDailyShiftDemands,
           } = await getScheduleAssignmentsData(selectedTeamId);
           setAssignments(fetchedAssignments);
+          setRecurrences(fetchedRecurrences);
           setWorkers(fetchedWorkers);
           setShifts(fetchedShifts);
           setDailyShiftDemands(fetchedDailyShiftDemands);
