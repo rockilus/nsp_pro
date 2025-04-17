@@ -102,17 +102,23 @@ export async function updateAssignmentAndRecurrence(
     },
     body: JSON.stringify({
       assignment: fromAssignmentT(assignment),
-      recurrence_rule: recurrenceRule
-        ? fromRecurrenceRuleT(recurrenceRule)
-        : null,
+      recurrence: recurrenceRule ? fromRecurrenceRuleT(recurrenceRule) : null,
       recurrence_update_scope: recurrenceUpdateScope,
     }),
   };
   try {
-    const response = await fetch(
-      `${apiUrlAssignment}/${assignment.id}/teams/${teamId}`,
-      options
-    );
+    const queryParams = new URLSearchParams();
+    if (recurrenceUpdateScope !== null) {
+      queryParams.append(
+        "recurrence_update_scope",
+        recurrenceUpdateScope.toString()
+      );
+    }
+
+    const url = `${apiUrlAssignment}/${assignment.id}/teams/${teamId}${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+    const response = await fetch(url, options);
     const responseData = await response.json();
     if (!response.ok) {
       throw new Error("Failed to update assignment: " + responseData.detail);
@@ -135,15 +141,8 @@ export async function deleteAssignment(
     headers: {
       "Content-Type": "application/json",
     },
-    // body: JSON.stringify({
-    //   recurrence_id: recurrenceId,
-    //   recurrence_update_scope: recurrenceUpdateScope,
-    // }),
   };
   try {
-    // console.log("recurrenceId", recurrenceId);
-    // console.log("recurrenceUpdateScope", recurrenceUpdateScope);
-
     const queryParams = new URLSearchParams();
     if (recurrenceId) {
       queryParams.append("recurrence_id", recurrenceId);
@@ -159,14 +158,7 @@ export async function deleteAssignment(
       queryParams.toString() ? `?${queryParams.toString()}` : ""
     }`;
 
-    const response = await fetch(
-      // `${apiUrlAssignment}/${assignmentId}/teams/${teamId}`,
-      // `${apiUrlAssignment}/${assignmentId}/teams/${teamId}` +
-      //   `?recurrence_id=${recurrenceId}` +
-      //   `&recurrence_update_scope=${recurrenceUpdateScope}`,
-      url,
-      options
-    );
+    const response = await fetch(url, options);
     const responseData = await response.json();
     if (!response.ok) {
       throw new Error("Failed to delete assignment: " + responseData.detail);

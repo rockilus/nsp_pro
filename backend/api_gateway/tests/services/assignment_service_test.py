@@ -154,12 +154,14 @@ def test_create_assignment_with_duty_shift(
 
     # Mock the shift and recuperation shift
     shift = MagicMock()
+    shift.id = "shift_id"
     shift.shift_type = ShiftType.DUTY
     shift_recup = MagicMock()
     shift_recup.id = "recup_shift_id"
+    shift_recup.recuperation_duty_id = shift.id
 
     mock_collection.shift_db.get_shift_by_id.return_value = shift
-    mock_collection.shift_db.get_recuperation_shift.return_value = shift_recup
+    mock_collection.shift_db.get_recuperation_shifts.return_value = [shift_recup]
 
     assignment_new = Assignment(
         id="",
@@ -172,8 +174,8 @@ def test_create_assignment_with_duty_shift(
     )
 
     # Mock the database response for saving assignments
-    mock_collection.assignment_db.create_assignment.side_effect = [
-        assignment_new,  # First call returns the main assignment
+    mock_collection.assignment_db.create_assignment.return_value = assignment_new
+    mock_collection.assignment_db.create_assignments.return_value = [
         Assignment(
             id="recup_assignment_id",
             team_id=assignment_new.team_id,
@@ -183,7 +185,7 @@ def test_create_assignment_with_duty_shift(
             shift_id=shift_recup.id,
             fixed=assignment_new.fixed,
             reference_assignment_id=assignment_new.id,
-        ),  # Second call returns the recuperation assignment
+        ),
     ]
 
     # Call the method

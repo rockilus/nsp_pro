@@ -40,7 +40,11 @@ interface EditAssignmentProps {
   ) => void;
   isEditing?: boolean;
   assignment?: AssignmentT;
-  handleUpdateAssignment?: (assignment: AssignmentT) => void;
+  handleUpdateAssignment?: (
+    assignment: AssignmentT,
+    recurrence: RecurrenceRuleT | null,
+    recurrenceUpdateScope: RecurrenceUpdateScope | null
+  ) => void;
   handleDeleteAssignment?: (
     assignmentId: string,
     recurrenceId: string | null,
@@ -89,6 +93,9 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteScope, setDeleteScope] = useState<RecurrenceUpdateScope | null>(
+    null
+  );
+  const [dialogAction, setDialogAction] = useState<"delete" | "update" | null>(
     null
   );
 
@@ -199,20 +206,14 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
 
   const handleDeleteClick = () => {
     if (assignment && assignment.recurrenceRuleId) {
+      setDialogAction("delete");
       setIsDialogOpen(true);
     } else if (assignment && handleDeleteAssignment) {
       handleDeleteAssignment(assignment.id, null, null);
     }
   };
 
-  const handleDialogConfirm = (scope: RecurrenceUpdateScope) => {
-    if (assignment && handleDeleteAssignment) {
-      handleDeleteAssignment(assignment.id, assignment.recurrenceRuleId, scope);
-    }
-    setIsDialogOpen(false);
-  };
-
-  const handleSubmit = async () => {
+  const handleSaveClick = async () => {
     if (!workerId) setWorkerError(true);
     if (!shiftId) setShiftError(true);
     if (!date) setDateError(true);
@@ -233,19 +234,44 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
       recurrenceRuleId: recurrenceState ? recurrenceState.id : null,
     };
 
-    try {
-      setIsSubmitting(true);
-      if (isEditing && assignment && handleUpdateAssignment) {
-        await handleUpdateAssignment(newAssignment);
-      } else if (handleCreateAssignment) {
-        await handleCreateAssignment(newAssignment, recurrenceState);
+    if (isEditing && assignment && assignment.recurrenceRuleId) {
+      setDialogAction("update");
+      setIsDialogOpen(true);
+    } else {
+      try {
+        setIsSubmitting(true);
+        if (isEditing && assignment && handleUpdateAssignment) {
+          await handleUpdateAssignment(newAssignment, recurrenceState, null);
+        } else if (handleCreateAssignment) {
+          await handleCreateAssignment(newAssignment, recurrenceState);
+        }
+      } catch (error) {
+        console.error("Failed to save assignment:", error);
+        alert("Failed to save assignment. Please try again.");
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      console.error("Failed to create assignment:", error);
-      alert("Failed to create assignment. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
+  };
+
+  const handleDialogConfirm = (scope: RecurrenceUpdateScope) => {
+    if (dialogAction === "delete" && assignment && handleDeleteAssignment) {
+      handleDeleteAssignment(assignment.id, assignment.recurrenceRuleId, scope);
+    } else if (
+      dialogAction === "update" &&
+      assignment &&
+      handleUpdateAssignment
+    ) {
+      const updatedAssignment: AssignmentT = {
+        ...assignment,
+        workerId: workerId || assignment.workerId,
+        shiftId: shiftId || assignment.shiftId,
+        date: date || assignment.date,
+      };
+      handleUpdateAssignment(updatedAssignment, recurrenceState, scope);
+    }
+    setIsDialogOpen(false);
+    setDialogAction(null);
   };
 
   return (
@@ -369,7 +395,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           <Button
             variant="contained"
             color="primary"
-            onClick={handleSubmit}
+            onClick={handleSaveClick}
             disabled={isSubmitting}
             className="create-button"
           >
@@ -388,7 +414,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
             <Button
               variant="contained"
               color="primary"
-              onClick={handleSubmit}
+              onClick={handleSaveClick}
               disabled={isSubmitting}
               className="save-button"
             >

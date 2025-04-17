@@ -49,9 +49,7 @@ async def create_assignment(
         r_data: Optional[RecurrenceRule] = None
         if recurrence:
             r_data = RecurrenceRule.from_dto(recurrence)
-        ar_result = assignment_service.create_assignment_and_recurrence(
-            a_data, r_data
-        )
+        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
@@ -96,9 +94,11 @@ async def get_assignments(
 @router.put("/assignments/{assignment_id}/teams/{team_id}")
 async def update_assignment(
     team_id: str,
-    assignment_api: AssignmentDTO,
-    recurrence_update_scope: Optional[int] = None,
-    recurrence_rule: Optional[RecurrenceRuleDTO] = None,
+    assignment: AssignmentDTO,
+    recurrence: Optional[RecurrenceRuleDTO] = None,
+    recurrence_update_scope: Optional[int] = Query(
+        None, alias="recurrence_update_scope"
+    ),
     session: SessionContainerType = Depends(authn_verify_session()),
     assignment_service: AssignmentService = Depends(get_assignment_service),
 ) -> AssignmentsRecurrencesResultDTO:
@@ -109,15 +109,13 @@ async def update_assignment(
             raise NotAuthorizedError(
                 "You do not have permission to update an assignment",
             )
-        assignment_data = Assignment.from_dto(assignment_api)
-        recurrence_update_scope_data = RecurrenceUpdateScope(
-            recurrence_update_scope
-        )
-        recurrence_data = (
-            RecurrenceRule.from_dto(recurrence_rule)
-            if recurrence_rule
+        assignment_data = Assignment.from_dto(assignment)
+        recurrence_update_scope_data = (
+            RecurrenceUpdateScope(recurrence_update_scope)
+            if recurrence_update_scope
             else None
         )
+        recurrence_data = RecurrenceRule.from_dto(recurrence) if recurrence else None
         ar_result = assignment_service.update_assignment_and_recurrence(
             assignment_new=assignment_data,
             recurrence_update_scope=recurrence_update_scope_data,
