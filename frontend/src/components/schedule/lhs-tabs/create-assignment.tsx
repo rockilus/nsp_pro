@@ -11,6 +11,7 @@ import "./create-assignment.css";
 import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
 import { AssignmentT } from "@/types/assignment";
+import { RecurrenceRuleT } from "@/types/recurrence";
 
 dayjs.extend(utc);
 
@@ -24,7 +25,10 @@ interface CreateAssignmentProps {
   shifts: ShiftT[];
   dateSelected: Dayjs | null;
   onClose: () => void;
-  handleCreateAssignment?: (newAssignment: AssignmentT) => void;
+  handleCreateAssignment?: (
+    newAssignment: AssignmentT,
+    newRecurrence: RecurrenceRuleT | null
+  ) => void;
 }
 
 const CreateAssignment: React.FC<CreateAssignmentProps> = ({

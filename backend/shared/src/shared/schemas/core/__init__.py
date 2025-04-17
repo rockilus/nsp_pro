@@ -69,10 +69,11 @@ from shared.schemas.core.model_output import ModelOutput, ModelOutputStatus
 from shared.schemas.core.recurrence import (
     FrequencyType,
     MonthRepeatType,
+    OccurrenceInfo,
+    OccurrenceType,
     RecurrenceEndType,
     RecurrenceExclusion,
     RecurrenceRule,
-    RecurrenceType,
     RecurrenceUpdateScope,
 )
 from shared.schemas.core.request import (
@@ -181,10 +182,11 @@ __all__ = [
     "ModelOutputStatus",
     "FrequencyType",
     "MonthRepeatType",
+    "OccurrenceInfo",
     "RecurrenceEndType",
     "RecurrenceExclusion",
     "RecurrenceRule",
-    "RecurrenceType",
+    "OccurrenceType",
     "RecurrenceUpdateScope",
     "Request",
     "RequestAugmented",

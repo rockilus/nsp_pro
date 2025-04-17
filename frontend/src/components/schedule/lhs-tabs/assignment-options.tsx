@@ -140,6 +140,7 @@ export default function AssignmentOptions({
             isEditing={true}
             handleUpdateAssignment={handleUpdateAssignment}
             handleDeleteAssignment={handleDeleteAssignment}
+            recurrence={selectedCell.recurrence}
           />
         ) : (
           <span className="assignment-options-no-assignment-selected-msg">

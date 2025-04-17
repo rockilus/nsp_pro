@@ -7,6 +7,7 @@ import { WorkerT } from "../../../../types/worker";
 import { ShiftT, ShiftRestType } from "../../../../types/shift";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
+import { RecurrenceRuleT } from "@/types/recurrence";
 
 export const generateOwnerIdDateKey = (
   ownerId: string,
@@ -18,12 +19,19 @@ export const generateOwnerIdDateKey = (
 export const getAssignmentsDataByOwnerAndDate = (
   ownerType: AttributeOwnerType,
   assignments: AssignmentT[],
+  recurrences: RecurrenceRuleT[],
   workers: WorkerT[],
   shifts: ShiftT[],
   breaches: BreachT[],
   requests: RequestT[]
 ): AssignmentDictT => {
   const assignmentDict: AssignmentDictT = {};
+
+  // Precompute a map of recurrences by recurrenceId
+  const recurrenceMap = new Map<string, RecurrenceRuleT>();
+  recurrences.forEach((recurrence) => {
+    recurrenceMap.set(recurrence.id, recurrence);
+  });
 
   // Precompute a map of breaches by shiftId and date
   const breachMap = new Map<string, BreachT[]>();
@@ -56,20 +64,10 @@ export const getAssignmentsDataByOwnerAndDate = (
       ownerType === AttributeOwnerType.WORKER ? worker.id : shift.id;
     const ownerDateKey = generateOwnerIdDateKey(ownerId, assignment.date);
 
-    // const associatedBreaches = breaches.filter((breach) =>
-    //   breach.variables.some(
-    //     (variable) =>
-    //       variable.shiftId === shift.id &&
-    //       variable.date.isSame(assignment.date, "day")
-    //   )
-    // );
-
-    // const associatedRequests = requests.filter(
-    //   (request) =>
-    //     request.shiftId === shift.id &&
-    //     request.startDate.isSameOrBefore(assignment.date, "day") &&
-    //     request.endDate.isSameOrAfter(assignment.date, "day")
-    // );
+    // Get the recurrence for the assignment
+    const recurrence = assignment.recurrenceRuleId
+      ? recurrenceMap.get(assignment.recurrenceRuleId) || null
+      : null;
 
     // Get associated breaches using the precomputed map
     const breachKey = `${shift.id}-${assignment.date.format("YYYY-MM-DD")}`;
@@ -105,6 +103,7 @@ export const getAssignmentsDataByOwnerAndDate = (
           worker,
           shift,
           assignment,
+          recurrence,
           breaches: associatedBreaches,
           requests: associatedRequests,
         });
@@ -119,6 +118,7 @@ export const getAssignmentsDataByOwnerAndDate = (
       worker,
       shift,
       assignment,
+      recurrence,
       breaches: associatedBreaches,
       requests: associatedRequests,
     });

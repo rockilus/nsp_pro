@@ -4,12 +4,16 @@ import pytest
 
 from shared.database.database import MongoDB
 from shared.database.repositories.recurrence import RecurrenceRepository
-from shared.database.schemas.recurrence import RecurrenceRuleSchema
+from shared.database.schemas.recurrence import (
+    OccurrenceInfoSchema,
+    RecurrenceRuleSchema,
+)
 from shared.schemas.core.recurrence import (
     FrequencyType,
+    OccurrenceInfo,
+    OccurrenceType,
     RecurrenceEndType,
     RecurrenceRule,
-    RecurrenceType,
 )
 
 
@@ -36,9 +40,12 @@ class TestRecurrenceRepository:
         recurrence = RecurrenceRule(
             id=None,
             team_id="team1",
-            recurrence_type=RecurrenceType.ASSIGNMENT,
-            assignment_id="assignment1",
-            daily_shift_demand_id=None,
+            occurrence_type=OccurrenceType.ASSIGNMENT,
+            occurrence_info=OccurrenceInfo(
+                worker_id=None,
+                shift_id="shift1",
+                count=None,
+            ),
             repeat_every=1,
             frequency_type=FrequencyType.WEEK,
             week_days=[1, 3, 5],
@@ -53,7 +60,7 @@ class TestRecurrenceRepository:
 
         assert result.id is not None
         assert result.team_id == "team1"
-        assert result.recurrence_type == RecurrenceType.ASSIGNMENT
+        assert result.occurrence_type == OccurrenceType.ASSIGNMENT
 
         saved_doc = self.repo.collection.find_one({"_id": result.id})
         assert saved_doc is not None
@@ -63,9 +70,12 @@ class TestRecurrenceRepository:
         """Test getting a recurrence rule by ID."""
         recurrence = RecurrenceRuleSchema(
             team_id="team1",
-            recurrence_type=RecurrenceType.ASSIGNMENT.value,
-            assignment_id="assignment1",
-            daily_shift_demand_id=None,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift1",
+                count=None,
+            ),
             repeat_every=1,
             frequency_type=FrequencyType.WEEK.value,
             week_days=[1, 3, 5],
@@ -87,9 +97,12 @@ class TestRecurrenceRepository:
         """Test updating a recurrence rule."""
         recurrence = RecurrenceRuleSchema(
             team_id="team1",
-            recurrence_type=RecurrenceType.ASSIGNMENT.value,
-            assignment_id="assignment1",
-            daily_shift_demand_id=None,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift1",
+                count=None,
+            ),
             repeat_every=1,
             frequency_type=FrequencyType.WEEK.value,
             week_days=[1, 3, 5],
@@ -104,9 +117,12 @@ class TestRecurrenceRepository:
         updated_recurrence = RecurrenceRule(
             id=created.id,
             team_id="team1",
-            recurrence_type=RecurrenceType.DAILY_SHIFT_DEMAND,
-            assignment_id=None,
-            daily_shift_demand_id="demand1",
+            occurrence_type=OccurrenceType.DAILY_SHIFT_DEMAND,
+            occurrence_info=OccurrenceInfo(
+                worker_id=None,
+                shift_id="shift2",
+                count=None,
+            ),
             repeat_every=2,
             frequency_type=FrequencyType.DAY,
             week_days=[],
@@ -119,20 +135,29 @@ class TestRecurrenceRepository:
 
         result = self.repo.update_recurrence(updated_recurrence)
 
-        assert result.recurrence_type == RecurrenceType.DAILY_SHIFT_DEMAND
-        assert result.daily_shift_demand_id == "demand1"
+        assert result.occurrence_type == OccurrenceType.DAILY_SHIFT_DEMAND
+        assert (
+            result.occurrence_info.shift_id
+            == updated_recurrence.occurrence_info.shift_id
+        )
         assert result.repeat_every == 2
 
         from_db = self.repo.collection.find_one({"_id": created.id})
-        assert from_db["daily_shift_demand_id"] == "demand1"
+        assert (
+            from_db["occurrence_info"]["shift_id"]
+            == updated_recurrence.occurrence_info.shift_id
+        )
 
     def test_delete_recurrence(self):
         """Test deleting a recurrence rule."""
         recurrence = RecurrenceRuleSchema(
             team_id="team1",
-            recurrence_type=RecurrenceType.ASSIGNMENT.value,
-            assignment_id="assignment1",
-            daily_shift_demand_id=None,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift1",
+                count=None,
+            ),
             repeat_every=1,
             frequency_type=FrequencyType.WEEK.value,
             week_days=[1, 3, 5],
@@ -152,9 +177,12 @@ class TestRecurrenceRepository:
         """Test retrieving all recurrence rules for a team."""
         recurrence1 = RecurrenceRuleSchema(
             team_id="team1",
-            recurrence_type=RecurrenceType.ASSIGNMENT.value,
-            assignment_id="assignment1",
-            daily_shift_demand_id=None,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift1",
+                count=None,
+            ),
             repeat_every=1,
             frequency_type=FrequencyType.WEEK.value,
             week_days=[1, 3, 5],
@@ -166,9 +194,12 @@ class TestRecurrenceRepository:
         )
         recurrence2 = RecurrenceRuleSchema(
             team_id="team1",
-            recurrence_type=RecurrenceType.DAILY_SHIFT_DEMAND.value,
-            assignment_id=None,
-            daily_shift_demand_id="demand1",
+            occurrence_type=OccurrenceType.DAILY_SHIFT_DEMAND.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift1",
+                count=None,
+            ),
             repeat_every=2,
             frequency_type=FrequencyType.DAY.value,
             week_days=[],

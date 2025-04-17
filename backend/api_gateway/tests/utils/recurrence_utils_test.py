@@ -4,10 +4,11 @@ from unittest.mock import patch
 from shared.schemas.core import (
     FrequencyType,
     MonthRepeatType,
+    OccurrenceInfo,
+    OccurrenceType,
     RecurrenceEndType,
     RecurrenceExclusion,
     RecurrenceRule,
-    RecurrenceType,
 )
 
 from src.utils.recurrence_utils import (
@@ -1138,9 +1139,8 @@ def test_generate_recurring_dates_calls_correct_handler():
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
-        recurrence_type=RecurrenceType.ASSIGNMENT,
-        assignment_id=None,
-        daily_shift_demand_id=None,
+        occurrence_type=OccurrenceType.ASSIGNMENT,
+        occurrence_info=OccurrenceInfo(shift_id="shift_0"),
         repeat_every=1,
         frequency_type=FrequencyType.DAY,
         week_days=[],
@@ -1181,9 +1181,8 @@ def test_generate_recurring_dates_scenario_1():
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
-        recurrence_type=RecurrenceType.ASSIGNMENT,
-        assignment_id=None,
-        daily_shift_demand_id=None,
+        occurrence_type=OccurrenceType.ASSIGNMENT,
+        occurrence_info=OccurrenceInfo(shift_id="shift_0"),
         repeat_every=1,
         frequency_type=FrequencyType.DAY,
         week_days=[],
@@ -1217,9 +1216,8 @@ def test_generate_recurring_dates_scenario_2():
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
-        recurrence_type=RecurrenceType.ASSIGNMENT,
-        assignment_id=None,
-        daily_shift_demand_id=None,
+        occurrence_type=OccurrenceType.ASSIGNMENT,
+        occurrence_info=OccurrenceInfo(shift_id="shift_0"),
         repeat_every=1,
         frequency_type=FrequencyType.DAY,
         week_days=[],
@@ -1253,9 +1251,8 @@ def test_generate_recurring_dates_scenario_3():
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
-        recurrence_type=RecurrenceType.ASSIGNMENT,
-        assignment_id=None,
-        daily_shift_demand_id=None,
+        occurrence_type=OccurrenceType.ASSIGNMENT,
+        occurrence_info=OccurrenceInfo(shift_id="shift_0"),
         repeat_every=1,
         frequency_type=FrequencyType.DAY,
         week_days=[],
@@ -1289,9 +1286,8 @@ def test_generate_recurring_dates_scenario_4():
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
-        recurrence_type=RecurrenceType.ASSIGNMENT,
-        assignment_id=None,
-        daily_shift_demand_id=None,
+        occurrence_type=OccurrenceType.ASSIGNMENT,
+        occurrence_info=OccurrenceInfo(shift_id="shift_0"),
         repeat_every=1,
         frequency_type=FrequencyType.DAY,
         week_days=[],
@@ -1331,9 +1327,8 @@ def test_generate_recurring_dates_scenario_5():
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
-        recurrence_type=RecurrenceType.ASSIGNMENT,
-        assignment_id=None,
-        daily_shift_demand_id=None,
+        occurrence_type=OccurrenceType.ASSIGNMENT,
+        occurrence_info=OccurrenceInfo(shift_id="shift_0"),
         repeat_every=1,
         frequency_type=FrequencyType.WEEK,
         week_days=[],
@@ -1367,9 +1362,8 @@ def test_generate_recurring_dates_scenario_6():
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
-        recurrence_type=RecurrenceType.ASSIGNMENT,
-        assignment_id=None,
-        daily_shift_demand_id=None,
+        occurrence_type=OccurrenceType.ASSIGNMENT,
+        occurrence_info=OccurrenceInfo(shift_id="shift_0"),
         repeat_every=1,
         frequency_type=FrequencyType.MONTH,
         week_days=[],
@@ -1403,9 +1397,8 @@ def test_generate_recurring_dates_scenario_7():
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
-        recurrence_type=RecurrenceType.ASSIGNMENT,
-        assignment_id=None,
-        daily_shift_demand_id=None,
+        occurrence_type=OccurrenceType.ASSIGNMENT,
+        occurrence_info=OccurrenceInfo(shift_id="shift_0"),
         repeat_every=1,
         frequency_type=FrequencyType.YEAR,
         week_days=[],

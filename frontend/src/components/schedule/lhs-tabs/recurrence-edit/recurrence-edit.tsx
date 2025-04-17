@@ -9,11 +9,12 @@ import { DatePicker } from "@mui/x-date-pickers";
 import "./recurrence-edit.css";
 // Types
 import {
-  RecurrenceType,
+  OccurrenceType,
   FrequencyType,
   MonthRepeatType,
   RecurrenceEndType,
   RecurrenceRuleT,
+  OccurrenceInfoT,
 } from "../../../../types/recurrence";
 
 dayjs.extend(utc);
@@ -21,7 +22,7 @@ dayjs.extend(utc);
 interface RecurrenceEditProps {
   lng: string;
   isEditing: boolean;
-  recurrenceType: RecurrenceType;
+  occurrenceType: OccurrenceType;
   recurrenceRule?: RecurrenceRuleT | null;
   startDate: dayjs.Dayjs;
   teamId: string;
@@ -32,7 +33,7 @@ interface RecurrenceEditProps {
 const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   lng,
   isEditing,
-  recurrenceType,
+  occurrenceType,
   recurrenceRule,
   startDate,
   teamId,
@@ -110,9 +111,12 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
     const updatedRecurrence: RecurrenceRuleT = {
       id: recurrenceRule?.id || "",
       teamId,
-      recurrenceType,
-      assignmentId: recurrenceRule?.assignmentId || null,
-      dailyShiftDemandId: recurrenceRule?.dailyShiftDemandId || null,
+      occurrenceType,
+      occurrenceInfo: {
+        shiftId: null,
+        workerId: null,
+        count: null,
+      } as OccurrenceInfoT,
       repeatEvery,
       frequencyType,
       weekDays,

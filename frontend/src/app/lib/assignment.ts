@@ -27,7 +27,7 @@ const apiUrlAssignment = API_URL + "/assignments";
 //////////////////////////
 export async function addAssignmentAndRecurrence(
   assignment: AssignmentT,
-  recurrenceRule?: RecurrenceRuleT
+  recurrence: RecurrenceRuleT | null = null
 ): Promise<AssignmentsRecurrencesResultT> {
   const options: RequestInit = {
     method: "POST",
@@ -36,9 +36,7 @@ export async function addAssignmentAndRecurrence(
     },
     body: JSON.stringify({
       assignment: fromAssignmentT(assignment),
-      recurrenceRule: recurrenceRule
-        ? fromRecurrenceRuleT(recurrenceRule)
-        : null,
+      recurrence: recurrence ? fromRecurrenceRuleT(recurrence) : null,
     }),
   };
   try {
@@ -137,14 +135,36 @@ export async function deleteAssignment(
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      recurrence_id: recurrenceId,
-      recurrence_update_scope: recurrenceUpdateScope,
-    }),
+    // body: JSON.stringify({
+    //   recurrence_id: recurrenceId,
+    //   recurrence_update_scope: recurrenceUpdateScope,
+    // }),
   };
   try {
+    // console.log("recurrenceId", recurrenceId);
+    // console.log("recurrenceUpdateScope", recurrenceUpdateScope);
+
+    const queryParams = new URLSearchParams();
+    if (recurrenceId) {
+      queryParams.append("recurrence_id", recurrenceId);
+    }
+    if (recurrenceUpdateScope !== null) {
+      queryParams.append(
+        "recurrence_update_scope",
+        recurrenceUpdateScope.toString()
+      );
+    }
+
+    const url = `${apiUrlAssignment}/${assignmentId}/teams/${teamId}${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+
     const response = await fetch(
-      `${apiUrlAssignment}/${assignmentId}/teams/${teamId}`,
+      // `${apiUrlAssignment}/${assignmentId}/teams/${teamId}`,
+      // `${apiUrlAssignment}/${assignmentId}/teams/${teamId}` +
+      //   `?recurrence_id=${recurrenceId}` +
+      //   `&recurrence_update_scope=${recurrenceUpdateScope}`,
+      url,
       options
     );
     const responseData = await response.json();

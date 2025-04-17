@@ -14,12 +14,14 @@ export type AssignmentT = {
   shiftId: string;
   fixed: boolean;
   referenceAssignmentId: string | null;
+  recurrenceRuleId: string | null;
 };
 
 export type AssignmentDataDictT = {
   worker: WorkerT;
   shift: ShiftT;
   assignment: AssignmentT;
+  recurrence: RecurrenceRuleT | null;
   breaches: BreachT[];
   requests: RequestT[];
 };

@@ -337,11 +337,14 @@ export default function ScheduleTab({
     setSelectedCell(null);
   };
 
-  const handleCreateAssignment = async (assignment: AssignmentT) => {
+  const handleCreateAssignment = async (
+    assignment: AssignmentT,
+    recurrence: RecurrenceRuleT | null = null
+  ) => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    const ARResult = await addAssignmentAndRecurrence(assignment);
+    const ARResult = await addAssignmentAndRecurrence(assignment, recurrence);
     setAssignments([...assignments, ...ARResult.assignmentsCreated]);
     if (ARResult.recurrenceCreated) {
       setRecurrences([...recurrences, ARResult.recurrenceCreated]);
@@ -350,6 +353,7 @@ export default function ScheduleTab({
     const assignDict = getAssignmentsDataByOwnerAndDate(
       AttributeOwnerType.WORKER,
       [ARResult.assignmentsCreated[0]], // Feed only the first assignment
+      recurrences,
       workers,
       shifts,
       breaches,
@@ -380,6 +384,7 @@ export default function ScheduleTab({
     const assignDict = getAssignmentsDataByOwnerAndDate(
       AttributeOwnerType.WORKER,
       [ARResult.assignmentsUpdated[0]], // Feed only the first updated assignment
+      recurrences,
       workers,
       shifts,
       breaches,
@@ -850,6 +855,7 @@ export default function ScheduleTab({
               periodDates={periodDates}
               assignments={assignments}
               dailyShiftDemands={dailyShiftDemands}
+              recurrences={recurrences}
               breaches={breaches}
               workers={workers}
               shifts={shifts}

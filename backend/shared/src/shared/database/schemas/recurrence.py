@@ -3,25 +3,44 @@ from typing import List, Optional
 
 from pydantic import field_validator
 
-from shared.database.schemas.base import (
-    DocumentBaseSchema,
-)
+from shared.database.schemas.base import BaseSchema, DocumentBaseSchema
 from shared.schemas.core.recurrence import (
     FrequencyType,
     MonthRepeatType,
+    OccurrenceInfo,
+    OccurrenceType,
     RecurrenceEndType,
     RecurrenceRule,
-    RecurrenceType,
 )
+
+
+class OccurrenceInfoSchema(BaseSchema):
+    worker_id: Optional[str] = None
+    shift_id: Optional[str] = None
+    count: Optional[int] = None
+
+    def to_core(self) -> OccurrenceInfo:
+        return OccurrenceInfo(
+            worker_id=self.worker_id,
+            shift_id=self.shift_id,
+            count=self.count,
+        )
+
+    @classmethod
+    def from_core(cls, occurrence_info: OccurrenceInfo) -> "OccurrenceInfoSchema":
+        return cls(
+            worker_id=occurrence_info.worker_id,
+            shift_id=occurrence_info.shift_id,
+            count=occurrence_info.count,
+        )
 
 
 class RecurrenceRuleSchema(DocumentBaseSchema):
     """Recurrence Rule schema for validation."""
 
     team_id: str
-    recurrence_type: int
-    assignment_id: Optional[str] = None
-    daily_shift_demand_id: Optional[str] = None
+    occurrence_type: int
+    occurrence_info: OccurrenceInfoSchema
     repeat_every: int
     frequency_type: int
     week_days: List[int]
@@ -31,11 +50,11 @@ class RecurrenceRuleSchema(DocumentBaseSchema):
     end_date: Optional[float] = None
     number_of_occurrences: Optional[int] = None
 
-    @field_validator("recurrence_type")
+    @field_validator("occurrence_type")
     @classmethod
     def validate_recurrence_type(cls, v: int) -> int:
-        """Validate recurrence_type is a valid enum value."""
-        if v not in [e.value for e in RecurrenceType]:
+        """Validate occurrence_type is a valid enum value."""
+        if v not in [e.value for e in OccurrenceType]:
             raise ValueError(f"Invalid recurrence type: {v}")
         return v
 
@@ -67,9 +86,8 @@ class RecurrenceRuleSchema(DocumentBaseSchema):
         return RecurrenceRule(
             id=self.id or "",
             team_id=self.team_id,
-            recurrence_type=RecurrenceType(self.recurrence_type),
-            assignment_id=self.assignment_id,
-            daily_shift_demand_id=self.daily_shift_demand_id,
+            occurrence_type=OccurrenceType(self.occurrence_type),
+            occurrence_info=self.occurrence_info.to_core(),
             repeat_every=self.repeat_every,
             frequency_type=FrequencyType(self.frequency_type),
             week_days=self.week_days,
@@ -79,9 +97,9 @@ class RecurrenceRuleSchema(DocumentBaseSchema):
                 else None
             ),
             recurrence_end_type=RecurrenceEndType(self.recurrence_end_type),
-            start_date=datetime.fromtimestamp(self.start_date, tz=timezone.utc),
+            start_date=datetime.fromtimestamp(self.start_date, tz=timezone.utc).date(),
             end_date=(
-                datetime.fromtimestamp(self.end_date, tz=timezone.utc)
+                datetime.fromtimestamp(self.end_date, tz=timezone.utc).date()
                 if self.end_date is not None
                 else None
             ),
@@ -93,9 +111,10 @@ class RecurrenceRuleSchema(DocumentBaseSchema):
         return cls(
             id=recurrence_rule.id,
             team_id=recurrence_rule.team_id,
-            recurrence_type=recurrence_rule.recurrence_type.value,
-            assignment_id=recurrence_rule.assignment_id,
-            daily_shift_demand_id=recurrence_rule.daily_shift_demand_id,
+            occurrence_type=recurrence_rule.occurrence_type.value,
+            occurrence_info=OccurrenceInfoSchema.from_core(
+                recurrence_rule.occurrence_info
+            ),
             repeat_every=recurrence_rule.repeat_every,
             frequency_type=recurrence_rule.frequency_type.value,
             week_days=recurrence_rule.week_days,

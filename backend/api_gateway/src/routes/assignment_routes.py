@@ -34,7 +34,7 @@ router = APIRouter()
 async def create_assignment(
     team_id: str,
     assignment: AssignmentDTO,
-    recurrence_rule: Optional[RecurrenceRuleDTO] = None,
+    recurrence: Optional[RecurrenceRuleDTO] = None,
     session: SessionContainerType = Depends(authn_verify_session()),
     assignment_service: AssignmentService = Depends(get_assignment_service),
 ) -> AssignmentsRecurrencesResultDTO:
@@ -47,9 +47,11 @@ async def create_assignment(
             )
         a_data = Assignment.from_dto(assignment)
         r_data: Optional[RecurrenceRule] = None
-        if recurrence_rule:
-            r_data = RecurrenceRule.from_dto(recurrence_rule)
-        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
+        if recurrence:
+            r_data = RecurrenceRule.from_dto(recurrence)
+        ar_result = assignment_service.create_assignment_and_recurrence(
+            a_data, r_data
+        )
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
@@ -108,9 +110,13 @@ async def update_assignment(
                 "You do not have permission to update an assignment",
             )
         assignment_data = Assignment.from_dto(assignment_api)
-        recurrence_update_scope_data = RecurrenceUpdateScope(recurrence_update_scope)
+        recurrence_update_scope_data = RecurrenceUpdateScope(
+            recurrence_update_scope
+        )
         recurrence_data = (
-            RecurrenceRule.from_dto(recurrence_rule) if recurrence_rule else None
+            RecurrenceRule.from_dto(recurrence_rule)
+            if recurrence_rule
+            else None
         )
         ar_result = assignment_service.update_assignment_and_recurrence(
             assignment_new=assignment_data,
@@ -128,8 +134,10 @@ async def update_assignment(
 async def delete_assignment(
     assignment_id: str,
     team_id: str,
-    recurrence_id: Optional[str] = None,
-    recurrence_update_scope: Optional[int] = None,
+    recurrence_id: Optional[str] = Query(None, alias="recurrence_id"),
+    recurrence_update_scope: Optional[int] = Query(
+        None, alias="recurrence_update_scope"
+    ),
     session: SessionContainerType = Depends(authn_verify_session()),
     assignment_service: AssignmentService = Depends(get_assignment_service),
 ) -> AssignmentsRecurrencesResultDTO:

@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-export enum RecurrenceType {
+export enum OccurrenceType {
   ASSIGNMENT = 0,
   DAILY_SHIFT_DEMAND = 1,
 }
@@ -23,12 +23,17 @@ export enum RecurrenceEndType {
   NUMBER_OF_OCCURRENCES = 2,
 }
 
+export type OccurrenceInfoT = {
+  shiftId: string | null;
+  workerId: string | null;
+  count: number | null;
+};
+
 export type RecurrenceRuleT = {
   id: string;
   teamId: string;
-  recurrenceType: RecurrenceType;
-  assignmentId: string | null;
-  dailyShiftDemandId: string | null;
+  occurrenceType: OccurrenceType;
+  occurrenceInfo: OccurrenceInfoT;
   repeatEvery: number;
   frequencyType: FrequencyType;
   weekDays: number[];
@@ -55,15 +60,15 @@ export enum RecurrenceUpdateScope {
 export const toRecurrenceRuleT = (data: any): RecurrenceRuleT => {
   return {
     ...data,
-    startDate: dayjs(data.startDate).utc(),
-    endDate: data.endDate ? dayjs(data.endDate).utc() : null,
+    startDate: dayjs.unix(data.startDate).utc(),
+    endDate: data.endDate ? dayjs.unix(data.endDate).utc() : null,
   };
 };
 
 export const fromRecurrenceRuleT = (data: RecurrenceRuleT): any => {
   return {
     ...data,
-    startDate: data.startDate.toISOString(),
-    endDate: data.endDate ? data.endDate.toISOString() : null,
+    startDate: data.startDate.unix(),
+    endDate: data.endDate ? data.endDate.unix() : null,
   };
 };

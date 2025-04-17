@@ -14,6 +14,7 @@ class AssignmentDTO(BaseModel):
     shiftId: str
     fixed: bool
     referenceAssignmentId: str | None
+    recurrenceRuleId: str | None
 
 
 class AssignmentsRecurrencesResultDTO(BaseModel):

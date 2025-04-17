@@ -30,6 +30,7 @@ import { AssignmentDataDictT } from "@/types/assignment";
 import { AssignmentT } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
+import { RecurrenceRuleT } from "@/types/recurrence";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -41,7 +42,9 @@ export default function ScheduleTableShift({
   workers,
   requests,
   assignments,
+  // scheduleId,
   dailyShiftDemands,
+  recurrences,
   scheduleCampaign,
   periodDates,
   breaches,
@@ -60,6 +63,7 @@ export default function ScheduleTableShift({
   requests: RequestT[];
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
+  recurrences: RecurrenceRuleT[];
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
   breaches: BreachT[];
@@ -75,6 +79,7 @@ export default function ScheduleTableShift({
   const shiftIdDateToAssignData = getAssignmentsDataByOwnerAndDate(
     AttributeOwnerType.SHIFT,
     assignments,
+    recurrences,
     workers,
     shifts,
     breaches,
