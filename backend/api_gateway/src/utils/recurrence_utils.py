@@ -22,31 +22,19 @@ def handle_daily_frequency(
     number_of_occurrences: Optional[int] = None,
 ) -> List[date]:
     dates = []
+    current_date = start_date
+    occurrences_count = 0
 
-    # Initialize current_date based on the conditions
-    if start_date >= period_start:
-        current_date = start_date
-        occurrences_count = 0
-    else:
-        days_difference = (period_start - start_date).days
-        offset = days_difference % repeat_every
-        current_date = (
-            period_start
-            if offset == 0
-            else period_start + timedelta(days=repeat_every - offset)
-        )
-        occurrences_count = ((current_date - start_date).days) // repeat_every
-
-    # Iterate and collect dates
     while current_date <= end_date:
-        # Stop if the number of occurrences is reached
+        occurrences_count += 1
+        if (
+            period_start <= current_date <= end_date
+            and current_date not in excluded_dates
+        ):
+            dates.append(current_date)
         if number_of_occurrences and occurrences_count >= number_of_occurrences:
             break
-        if current_date not in excluded_dates:
-            dates.append(current_date)
-            occurrences_count += 1
         current_date += timedelta(days=repeat_every)
-
     return dates
 
 
@@ -81,10 +69,10 @@ def handle_weekly_frequency(
         for day in current_week:
             if day < start_date:
                 continue
-            if day.weekday() in week_days and day not in excluded_dates:
-                if day >= period_start:
-                    dates.append(day)
+            if day.weekday() in week_days:
                 occurrences_count += 1
+                if day >= period_start and day not in excluded_dates:
+                    dates.append(day)
                 # Stop if the number of occurrences is reached
                 if number_of_occurrences and occurrences_count >= number_of_occurrences:
                     return dates
@@ -137,13 +125,9 @@ def handle_monthly_frequency(
             ):
                 candidate_date = None
 
-        if (
-            candidate_date
-            and start_date <= candidate_date <= end_date
-            and candidate_date not in excluded_dates
-        ):
+        if candidate_date and start_date <= candidate_date <= end_date:
             occurrences_count += 1
-            if period_start <= candidate_date:
+            if period_start <= candidate_date and candidate_date not in excluded_dates:
                 dates.append(candidate_date)
             if number_of_occurrences and occurrences_count >= number_of_occurrences:
                 break
@@ -176,10 +160,9 @@ def handle_yearly_frequency(
 
     # Iterate and collect dates
     while current_date <= end_date:
-        if current_date not in excluded_dates:
-            occurrences_count += 1
-            if current_date >= period_start:
-                dates.append(current_date)
+        occurrences_count += 1
+        if current_date >= period_start and current_date not in excluded_dates:
+            dates.append(current_date)
             if number_of_occurrences and occurrences_count >= number_of_occurrences:
                 break
 

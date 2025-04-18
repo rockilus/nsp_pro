@@ -364,7 +364,7 @@ def test_delete_assignment_with_no_recuperation_assignments(
     mock_collection.assignment_db.delete_assignments_by_reference_id.return_value = []
 
     # Call the method
-    ar_result = service.delete_assignment(assignment_id)
+    ar_result = service.delete_assignment_and_recurrence(assignment_id)
 
     # Assert the main assignment was deleted
     mock_collection.assignment_db.delete_assignment.assert_called_once_with(
@@ -390,7 +390,7 @@ def test_delete_assignment_with_recuperation_assignments(
     )
 
     # Call the method
-    ar_result = service.delete_assignment(assignment_id)
+    ar_result = service.delete_assignment_and_recurrence(assignment_id)
 
     # Assert the main assignment was deleted
     mock_collection.assignment_db.delete_assignment.assert_called_once_with(

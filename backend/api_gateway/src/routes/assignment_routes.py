@@ -151,7 +151,7 @@ async def delete_assignment(
             if recurrence_update_scope
             else None
         )
-        ar_result = assignment_service.delete_assignment(
+        ar_result = assignment_service.delete_assignment_and_recurrence(
             assignment_id=assignment_id,
             recurrence_id=recurrence_id,
             recurrence_update_scope=recurrence_update_scope_data,
