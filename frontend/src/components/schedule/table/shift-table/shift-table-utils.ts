@@ -1,6 +1,7 @@
 // Types
 import { ShiftT, ShiftType } from "../../../../types/shift";
-import { AssignmentT, DailyShiftDemandT } from "../../../../types/schedule";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { AssignmentT } from "@/types/assignment";
 
 // Sorts an array of shifts with the following order:
 // 1. Duty shifts (`ShiftType.DUTY`), ordered by start time.

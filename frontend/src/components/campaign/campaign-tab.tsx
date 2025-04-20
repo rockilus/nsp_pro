@@ -23,7 +23,7 @@ import {
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
-import { CoverageSelectorT } from "../../types/campaign";
+import { CoverageSelectorT } from "../../types/coverage-selector";
 import { CoverageT } from "../../types/coverage";
 import { ScheduleT, WorkTimeTableT } from "../../types/schedule";
 import { ConstraintT } from "../../types/constraint";

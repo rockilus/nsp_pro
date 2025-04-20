@@ -18,6 +18,9 @@ RUN poetry build
 WORKDIR /app
 RUN poetry install
 
+# Add /app to PYTHONPATH
+ENV PYTHONPATH=/app
+
 EXPOSE 4000
 
 CMD ["poetry", "run", "python", "src/main.py"]

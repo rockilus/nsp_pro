@@ -5,7 +5,7 @@ from shared.database.repositories.specialty import (
     SpecialtyRepository,
 )
 from shared.database.schemas.specialty import SpecialtySchema
-from shared.schemas.schemas.specialty import Specialty
+from shared.schemas.core.specialty import Specialty
 
 
 class TestSpecialtyRepository:

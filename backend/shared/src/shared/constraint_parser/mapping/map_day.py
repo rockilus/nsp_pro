@@ -2,7 +2,7 @@ from datetime import date
 from typing import List, Tuple
 
 from shared.constraint_parser.mapping.utils import find_block_by_name
-from shared.schemas import (
+from shared.schemas.core import (
     Block,
     BlockNameOptions,
     ConstraintBuildAugmented,

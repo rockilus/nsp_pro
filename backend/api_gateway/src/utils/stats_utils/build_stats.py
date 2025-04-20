@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 
 from shared.augment import build_missing_attributes_and_active_owner
 from shared.constraint_parser import parse_selected_shifts
-from shared.schemas import (
+from shared.schemas.core import (
     Assignment,
     Attribute,
     AttributeOwnerType,

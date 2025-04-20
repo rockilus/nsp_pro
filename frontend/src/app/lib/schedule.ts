@@ -2,28 +2,27 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Actions
-import { toAssignmentT, getAssignmentsByDates } from "./assignment";
+import { getAssignmentsByDates } from "./assignment";
+import { toAssignmentT } from "@/types/assignment";
 import { toBreachT, getBreaches } from "./breach";
 import { toRequestT, getRequests } from "./request";
 import { getAllWorkers } from "./worker";
 import { getAllShifts, toShiftT } from "./shift";
 import { getStats } from "./stats";
-import {
-  getDailyShiftDemands,
-  toDailyShiftDemandT,
-} from "./daily-shift-demand";
+import { getDailyShiftDemands } from "./daily-shift-demand";
+import { toDailyShiftDemandT } from "@/types/daily-shift-demand";
 import { toCoverageSelectorT } from "./campaign";
 // Types
 import {
   ScheduleT,
-  AssignmentT,
-  BreachT,
   ExportOptionsT,
   SolveDetailsT,
   SolveDetailsStatus,
   WorkTimeTableDataT,
   WorkTimeTableT,
 } from "../../types/schedule";
+import { BreachT } from "@/types/breach";
+import { AssignmentT } from "@/types/assignment";
 import { RequestT } from "../../types/request";
 import {
   StatsOptionsT,
@@ -32,7 +31,10 @@ import {
   StatsTimeFrameOptions,
 } from "../../types/stats";
 import { ShiftT } from "../../types/shift";
-import { CoverageSelectorT } from "../../types/campaign";
+import { CoverageSelectorT } from "../../types/coverage-selector";
+import { WorkerT } from "@/types/worker";
+import { RecurrenceRuleT } from "@/types/recurrence";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 // Env Vars
 import { API_URL } from "./env";
 
@@ -330,7 +332,13 @@ export async function getScheduleTabData(teamId: string) {
   }
 }
 
-export async function getScheduleAssignmentsData(teamId: string) {
+export async function getScheduleAssignmentsData(teamId: string): Promise<{
+  assignments: AssignmentT[];
+  recurrences: RecurrenceRuleT[];
+  shifts: ShiftT[];
+  workers: WorkerT[];
+  dailyShiftDemands: DailyShiftDemandT[];
+}> {
   try {
     const statsOptions: StatsOptionsT = {
       timeFrame: StatsTimeFrameOptions.CAMPAING,
@@ -348,7 +356,8 @@ export async function getScheduleAssignmentsData(teamId: string) {
       getDailyShiftDemands(teamId),
     ]);
     return {
-      assignments: campaignTabData[0],
+      assignments: campaignTabData[0].assignmentsRead,
+      recurrences: campaignTabData[0].recurrencesRead,
       shifts: campaignTabData[1],
       workers: campaignTabData[2],
       dailyShiftDemands: campaignTabData[3],

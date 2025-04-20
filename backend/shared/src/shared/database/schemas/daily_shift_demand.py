@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.daily_shift_demand import (
+from shared.schemas.core.daily_shift_demand import (
     DailyShiftDemand,
     DSDSourceType,
 )

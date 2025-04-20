@@ -4,7 +4,7 @@ from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.model_output import (
     ModelOutputSchema,
 )
-from shared.schemas.schemas.model_output import ModelOutput
+from shared.schemas.core.model_output import ModelOutput
 
 
 class ModelOutputRepository(BaseRepository[ModelOutputSchema]):

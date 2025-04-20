@@ -1,5 +1,5 @@
 import boto3  # type: ignore
-from shared.schemas import User
+from shared.schemas.core import User
 
 from src.config import config
 

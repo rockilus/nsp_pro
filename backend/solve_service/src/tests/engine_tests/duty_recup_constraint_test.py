@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 import pytest
-from shared.schemas import EngineInputsAugmented, ShiftRestType, ShiftType
+from shared.schemas.core import EngineInputsAugmented, ShiftRestType, ShiftType
 
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 from tests.sample_data import test_data_set_1

@@ -10,7 +10,7 @@ import "./link-dimension-list.css";
 // Types
 import { DimensionType } from "@/types/dimension";
 import { DimensionEntryType } from "@/types/dimension";
-import { DimEntryT } from "@/types/dimension";
+import { DimEntryT } from "@/types/dim-entry";
 import { DimensionT } from "@/types/dimension";
 
 export default function LinkDimensionList({

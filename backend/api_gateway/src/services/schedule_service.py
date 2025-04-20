@@ -5,7 +5,7 @@ from celery import Celery  # type: ignore
 from celery.result import AsyncResult  # type: ignore
 from openpyxl import Workbook
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import (
+from shared.schemas.core import (
     CoverageSelector,
     DSDSourceType,
     ExportOptions,
@@ -21,6 +21,7 @@ from shared.schemas import (
 )
 
 from src.config import config
+from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
 from src.utils.excel_utils import core_to_excel_schedule
 
@@ -31,10 +32,12 @@ class ScheduleService(BaseService):
         collection: DatabaseCollections,
         celery_app: Celery,
         submit_solve_problem_task: Callable[[Schedule], str],
+        assignment_service: AssignmentService,
     ) -> None:
         super().__init__(collection)
         self.celery_app = celery_app
         self.submit_solve_problem_task = submit_solve_problem_task
+        self.assignment_service = assignment_service
 
     def get_schedule_campaign(self, team_id: str) -> Schedule:
         schedules = self.collection.schedule_db.get_schedules(team_id)
@@ -52,7 +55,7 @@ class ScheduleService(BaseService):
         )
         end_date = start_date + timedelta(days=30)
         cbs = self.collection.constraint_build_db.get_constraint_builds(team_id)
-        return self.collection.schedule_db.create_schedule(
+        campaign_created = self.collection.schedule_db.create_schedule(
             Schedule(
                 id="",
                 team_id=team_id,
@@ -68,6 +71,10 @@ class ScheduleService(BaseService):
                 last_updated_dsds=None,
             )
         )
+        self.assignment_service.update_assignments_for_schedule_dates_change(
+            schedule_new=campaign_created, schedule_old=None
+        )
+        return campaign_created
 
     def solve_schedule(self, schedule_id: str) -> Schedule:
         schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
@@ -143,6 +150,9 @@ class ScheduleService(BaseService):
         schedule_new: Schedule,
     ) -> Tuple[Schedule, List[CoverageSelector]]:
         schedule_old = self.collection.schedule_db.get_schedule_by_id(schedule_new.id)
+        self.assignment_service.update_assignments_for_schedule_dates_change(
+            schedule_new=schedule_new, schedule_old=schedule_old
+        )
         css_updated: List[CoverageSelector] = []
         if (
             schedule_old.start_date != schedule_new.start_date

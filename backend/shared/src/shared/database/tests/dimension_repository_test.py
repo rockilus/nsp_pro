@@ -5,7 +5,7 @@ from shared.database.repositories.dimension import (
     DimensionRepository,
 )
 from shared.database.schemas.dimension import DimensionSchema
-from shared.schemas.schemas.dimension import (
+from shared.schemas.core.dimension import (
     Dimension,
     DimensionEntryType,
     DimensionType,

@@ -1,6 +1,6 @@
 import os
 
-from shared.schemas import (
+from shared.schemas.core import (
     ConfigurationConstraints,
     CustomSolverParams,
     ModelConfig,

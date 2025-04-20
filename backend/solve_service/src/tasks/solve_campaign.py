@@ -1,7 +1,7 @@
 from typing import Dict
 
 import redis
-from shared.schemas import Schedule, TaskServices
+from shared.schemas.core import Schedule, TaskServices
 
 from app import celery_app
 from config import config

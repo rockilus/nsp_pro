@@ -4,7 +4,7 @@ from pymongo import UpdateOne
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.daily_shift_demand import DailyShiftDemandSchema
-from shared.schemas.schemas.daily_shift_demand import (
+from shared.schemas.core.daily_shift_demand import (
     DailyShiftDemand,
     DSDSourceType,
 )

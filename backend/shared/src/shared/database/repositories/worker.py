@@ -2,7 +2,7 @@ from typing import List
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.worker import WorkerSchema
-from shared.schemas.schemas.worker import Worker
+from shared.schemas.core.worker import Worker
 
 
 class WorkerRepository(BaseRepository[WorkerSchema]):

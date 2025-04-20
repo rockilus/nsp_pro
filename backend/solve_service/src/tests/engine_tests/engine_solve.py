@@ -1,4 +1,4 @@
-from shared.schemas import EngineInputsAugmented
+from shared.schemas.core import EngineInputsAugmented
 
 from core_to_engine_service import core_to_engine_inputs
 from engine.engine import Engine, Outputs

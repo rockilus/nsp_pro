@@ -1,11 +1,8 @@
 import dayjs from "dayjs";
 // Types
-import {
-  AssignmentT,
-  DailyShiftDemandT,
-  ScheduleStatus,
-  periodDateT,
-} from "../../../../types/schedule";
+import { ScheduleStatus, periodDateT } from "../../../../types/schedule";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { AssignmentT } from "@/types/assignment";
 import { ShiftT, ShiftType } from "../../../../types/shift";
 
 export const countShifts = (

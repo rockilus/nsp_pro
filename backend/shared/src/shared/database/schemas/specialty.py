@@ -1,7 +1,7 @@
 from pydantic import Field
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.specialty import Specialty
+from shared.schemas.core.specialty import Specialty
 
 
 class SpecialtySchema(DocumentBaseSchema):

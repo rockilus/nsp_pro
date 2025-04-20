@@ -2,7 +2,7 @@ from typing import List
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.coverage import CoverageSchema
-from shared.schemas.schemas.coverage import Coverage
+from shared.schemas.core.coverage import Coverage
 
 
 class CoverageRepository(BaseRepository[CoverageSchema]):

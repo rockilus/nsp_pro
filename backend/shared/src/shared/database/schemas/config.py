@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.config import Config as CoreConfig
+from shared.schemas.core.config import Config as CoreConfig
 
 
 class ConfigSchema(DocumentBaseSchema):

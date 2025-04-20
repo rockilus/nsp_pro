@@ -35,9 +35,10 @@ import {
   ShiftRestType,
   LinkShiftT,
 } from "../../types/shift";
-import { DimEntryT, DimensionT } from "../../types/dimension";
+import { DimensionT } from "../../types/dimension";
+import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT } from "../../types/attribute";
-import { SpecialtyT } from "../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 
 dayjs.extend(utc);
 

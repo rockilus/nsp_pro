@@ -8,15 +8,15 @@ import ShiftCell from "./shift-cell";
 // Types
 import { ShiftT } from "../../../../types/shift";
 import {
-  AssignmentT,
   ScheduleT,
-  AssignmentDataDictT,
-  DailyShiftDemandT,
   ScheduleStatus,
-  AssignmentDictT,
   periodDateT,
-  CreateAssignmentT,
 } from "../../../../types/schedule";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { CreateAssignmentT } from "@/types/assignment";
+import { AssignmentDictT } from "@/types/assignment";
+import { AssignmentDataDictT } from "@/types/assignment";
+import { AssignmentT } from "@/types/assignment";
 import { WorkerT } from "../../../../types/worker";
 
 export default function ShiftTableRow({

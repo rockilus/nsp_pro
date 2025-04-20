@@ -40,11 +40,11 @@ import {
 } from "../../types/shift";
 import { DimensionType } from "../../types/dimension";
 import { DimensionEntryType } from "../../types/dimension";
-import { DimEntryT } from "../../types/dimension";
+import { DimEntryT } from "@/types/dim-entry";
 import { DimensionT } from "../../types/dimension";
 import { AttributeOwnerType } from "../../types/attribute";
 import { AttributeT } from "../../types/attribute";
-import { SpecialtyT } from "../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 
 dayjs.extend(utc);
 

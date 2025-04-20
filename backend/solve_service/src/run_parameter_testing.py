@@ -2,7 +2,11 @@ import json
 import os
 from typing import Dict, List
 
-from shared.schemas import EngineInputs, EngineInputsAugmented, SolverParams
+from shared.schemas.core import (
+    EngineInputs,
+    EngineInputsAugmented,
+    SolverParams,
+)
 
 from core_to_engine_service import core_to_engine_inputs
 from engine import Engine

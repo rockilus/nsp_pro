@@ -6,7 +6,7 @@ from openpyxl.drawing.image import Image
 from openpyxl.styles import Alignment, Border, Font, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
-from shared.schemas import Assignment, Shift, ShiftType, Worker
+from shared.schemas.core import Assignment, Shift, ShiftType, Worker
 
 
 def core_to_excel_schedule(

@@ -10,14 +10,14 @@ import WorkerCell from "./worker-cell";
 import { ShiftT } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
 import {
-  AssignmentT,
   ScheduleT,
-  AssignmentDataDictT,
   ScheduleStatus,
-  AssignmentDictT,
   periodDateT,
-  CreateAssignmentT,
 } from "../../../../types/schedule";
+import { CreateAssignmentT } from "@/types/assignment";
+import { AssignmentDictT } from "@/types/assignment";
+import { AssignmentDataDictT } from "@/types/assignment";
+import { AssignmentT } from "@/types/assignment";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);

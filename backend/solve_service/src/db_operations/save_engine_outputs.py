@@ -2,7 +2,7 @@ import time
 from datetime import datetime, timezone
 
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import (
+from shared.schemas.core import (
     EngineInputs,
     EngineOutputs,
     EngineOutputsAugmented,

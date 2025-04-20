@@ -7,11 +7,9 @@ import { countShiftsTotalPeriod } from "../shared/assignment-count-methods";
 import "./shift-row-header-cell.css";
 // Types
 import { ShiftT, ShiftType } from "../../../../types/shift";
-import {
-  AssignmentT,
-  DailyShiftDemandT,
-  ScheduleT,
-} from "../../../../types/schedule";
+import { ScheduleT } from "../../../../types/schedule";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { AssignmentT } from "@/types/assignment";
 
 export default function ShiftRowHeaderCell({
   shift,

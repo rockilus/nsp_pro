@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import field_validator
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.user import Language, User
+from shared.schemas.core.user import Language, User
 
 
 class UserSchema(DocumentBaseSchema):

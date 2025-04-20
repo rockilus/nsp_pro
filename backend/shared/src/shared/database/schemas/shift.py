@@ -7,7 +7,7 @@ from shared.database.schemas.base import (
     BaseSchema,
     DocumentBaseSchema,
 )
-from shared.schemas.schemas.shift import (
+from shared.schemas.core.shift import (
     Shift,
     ShiftLeaveType,
     ShiftRestType,

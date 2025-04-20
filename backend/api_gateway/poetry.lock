@@ -2766,7 +2766,7 @@ crt = ["botocore[crt] (>=1.37.4,<2.0a.0)"]
 
 [[package]]
 name = "shared"
-version = "0.1.155"
+version = "0.1.185"
 description = ""
 optional = false
 python-versions = ">=3.12,<=3.14"
@@ -2784,6 +2784,7 @@ isort = "^6.0.1"
 loguru = "^0.7.2"
 mongo-types = "^0.15.1"
 mypy = "^1.13.0"
+pyhumps = "^3.8.0"
 pylint = "^3.3.2"
 pymongo = {version = "^4.11.3", extras = ["aws"]}
 pytest = "^8.3.5"

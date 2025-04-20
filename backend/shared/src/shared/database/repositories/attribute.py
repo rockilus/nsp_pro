@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Mapping, Sequence
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.attribute import AttributeSchema
-from shared.schemas.schemas.attribute import Attribute
+from shared.schemas.core.attribute import Attribute
 
 
 class AttributeRepository(BaseRepository[AttributeSchema]):

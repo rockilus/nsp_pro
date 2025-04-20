@@ -1,6 +1,11 @@
 from typing import Dict, List, Tuple
 
-from shared.schemas import EngineInputsAugmented, Shift, ShiftRestType, ShiftType
+from shared.schemas.core import (
+    EngineInputsAugmented,
+    Shift,
+    ShiftRestType,
+    ShiftType,
+)
 
 from core_to_engine_service.build_dates import (
     build_dates,
@@ -10,19 +15,35 @@ from core_to_engine_service.build_dates import (
 from core_to_engine_service.build_dim_to_attr_value_to_owner import (
     build_dim_to_attr_value_to_owner,
 )
-from core_to_engine_service.build_duty_recup_pairs import build_duty_recup_pairs
-from core_to_engine_service.build_engine_constraints import build_engine_constraints
-from core_to_engine_service.build_engine_fixed_values import core_to_engine_fixed_values
+from core_to_engine_service.build_duty_recup_pairs import (
+    build_duty_recup_pairs,
+)
+from core_to_engine_service.build_engine_constraints import (
+    build_engine_constraints,
+)
+from core_to_engine_service.build_engine_fixed_values import (
+    core_to_engine_fixed_values,
+)
 from core_to_engine_service.build_engine_requests import build_engine_requests
-from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
-from core_to_engine_service.build_engine_variables import build_engine_variables
-from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
-from core_to_engine_service.build_link_shift_pairs import build_link_shift_pairs
+from core_to_engine_service.build_engine_shift_demands import (
+    build_engine_shift_demands,
+)
+from core_to_engine_service.build_engine_variables import (
+    build_engine_variables,
+)
+from core_to_engine_service.build_engine_work_loads import (
+    build_engine_work_loads,
+)
+from core_to_engine_service.build_link_shift_pairs import (
+    build_link_shift_pairs,
+)
 from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
-from core_to_engine_service.build_worker_shift_filter import build_worker_shift_filters
+from core_to_engine_service.build_worker_shift_filter import (
+    build_worker_shift_filters,
+)
 from core_to_engine_service.calculate_worker_nb_duties import (
     build_nb_duties_constraints,
     calculate_worker_nb_duties,

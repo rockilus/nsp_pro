@@ -1,7 +1,7 @@
 import time
 from typing import List
 
-from shared.schemas import Team
+from shared.schemas.core import Team
 
 from src.integrations.authorization import (
     authz_role_assignment_get_user_team_ids,

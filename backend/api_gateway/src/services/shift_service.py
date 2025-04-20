@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Tuple
 
-from shared.schemas import (
+from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
     DimensionEntryType,
@@ -535,11 +535,14 @@ class ShiftService(BaseService):
     def _handle_normal_to_duty_shift_update(self, shift_saved: Shift) -> None:
         shift_recup = self.create_or_update_duty_recuperation_shift(shift_saved)
         if shift_recup is not None:
-            self.assignment_service.create_recuperation_assignments(
-                shift_duty_id=shift_saved.id,
-                shift_recup_id=shift_recup.id,
-                team_id=shift_saved.team_id,
-            )
+            # fmt: off
+            self.assignment_service\
+                .create_recuperation_assignments_upon_shift_duty_creation(
+                    shift_duty_id=shift_saved.id,
+                    shift_recup_id=shift_recup.id,
+                    team_id=shift_saved.team_id,
+                )
+            # fmt: on
 
     def _handle_delete_recup_shift_and_its_assignments(self, shift_duty: Shift) -> None:
         shift_recup = self.collection.shift_db.get_recuperation_shift(shift_duty.id)

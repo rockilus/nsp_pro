@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 from typing import Callable, List, Tuple
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     Breach,
     DailyShiftDemand,
     DSDSourceType,

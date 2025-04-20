@@ -7,7 +7,7 @@ from shared.database.repositories.assignment import (
     AssignmentRepository,
 )
 from shared.database.schemas.assignment import AssignmentSchema
-from shared.schemas.schemas.assignment import Assignment
+from shared.schemas.core.assignment import Assignment
 
 
 class TestAssignmentRepository:
@@ -577,3 +577,151 @@ class TestAssignmentRepository:
             self.repo.collection.find({"reference_assignment_id": reference_id})
         )
         assert len(remaining) == 0
+
+    def test_delete_assignments_by_recurrence_rule_id_from_date(self):
+        """Test deleting assignments by recurrence rule ID from a specific date."""
+        recurrence_rule_id = "rule123"
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=today,
+                shift="shift1",
+                fixed=False,
+                recurrence_rule_id=recurrence_rule_id,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=today + timedelta(days=1),
+                shift="shift2",
+                fixed=True,
+                recurrence_rule_id=recurrence_rule_id,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker3",
+                schedule="schedule3",
+                date=today - timedelta(days=1),
+                shift="shift3",
+                fixed=False,
+                recurrence_rule_id=recurrence_rule_id,
+            ),
+            AssignmentSchema(
+                team="team2",
+                worker="worker4",
+                schedule="schedule4",
+                date=today,
+                shift="shift4",
+                fixed=False,
+                recurrence_rule_id="rule456",
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        deleted_ids = self.repo.delete_assignments_by_recurrence_rule_id_from_date(
+            recurrence_rule_id, today.date()
+        )
+
+        assert len(deleted_ids) == 2
+        assert all(isinstance(id, str) for id in deleted_ids)
+
+        remaining = list(
+            self.repo.collection.find({"recurrence_rule_id": recurrence_rule_id})
+        )
+        assert len(remaining) == 1
+        assert remaining[0]["date"] < today
+
+    def test_delete_assignments_by_recurrence_rule_id(self):
+        """Test deleting assignments by recurrence rule ID."""
+        recurrence_rule_id = "rule123"
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+                recurrence_rule_id=recurrence_rule_id,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+                recurrence_rule_id=recurrence_rule_id,
+            ),
+            AssignmentSchema(
+                team="team2",
+                worker="worker3",
+                schedule="schedule3",
+                date=datetime(2023, 1, 3, tzinfo=timezone.utc),
+                shift="shift3",
+                fixed=False,
+                recurrence_rule_id="rule456",
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        deleted_ids = self.repo.delete_assignments_by_recurrence_rule_id(
+            recurrence_rule_id
+        )
+
+        assert len(deleted_ids) == 2
+        assert all(isinstance(id, str) for id in deleted_ids)
+
+        remaining = list(
+            self.repo.collection.find({"recurrence_rule_id": recurrence_rule_id})
+        )
+        assert len(remaining) == 0
+
+        unrelated = list(self.repo.collection.find({"recurrence_rule_id": "rule456"}))
+        assert len(unrelated) == 1
+
+    def test_delete_assignments_by_schedule_id_and_dates(self):
+        """Test deleting assignments by schedule ID and dates."""
+        schedule_id = "schedule1"
+        dates = [
+            datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
+            datetime(2023, 1, 2, tzinfo=timezone.utc).date(),
+        ]
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule1",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker3",
+                schedule="schedule1",
+                date=datetime(2023, 1, 3, tzinfo=timezone.utc),
+                shift="shift3",
+                fixed=False,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        self.repo.delete_assignments_by_schedule_id_and_dates(schedule_id, dates)
+
+        remaining = list(self.repo.collection.find({"schedule": schedule_id}))
+
+        assert len(remaining) == 1
+        assert remaining[0]["date"] == datetime(2023, 1, 3, 0, 0)

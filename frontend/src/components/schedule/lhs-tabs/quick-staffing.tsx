@@ -20,11 +20,8 @@ import "./quick-staffing.css";
 // Types
 import { ShiftT, ShiftType } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
-import {
-  AssignmentT,
-  ScheduleT,
-  QuickStaffingT,
-} from "../../../types/schedule";
+import { ScheduleT, QuickStaffingT } from "../../../types/schedule";
+import { AssignmentT } from "@/types/assignment";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);

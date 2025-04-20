@@ -1,7 +1,7 @@
 from dataclasses import asdict
 from typing import List
 
-from shared.schemas import Assignment, Schedule
+from shared.schemas.core import Assignment, Schedule
 
 from engine import Assignment as AssignmentEngine
 

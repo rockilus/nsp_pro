@@ -5,7 +5,7 @@ import pytest
 from shared.database.database import MongoDB
 from shared.database.repositories.worker import WorkerRepository
 from shared.database.schemas.worker import WorkerSchema
-from shared.schemas.schemas.worker import Worker
+from shared.schemas.core.worker import Worker
 
 
 class TestWorkerRepository:

@@ -12,12 +12,12 @@ import "./daily-shift-demand-row.css";
 // Types
 import { ShiftT } from "../../../../types/shift";
 import {
-  AssignmentT,
   ScheduleT,
-  DailyShiftDemandT,
   ScheduleStatus,
   periodDateT,
 } from "../../../../types/schedule";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { AssignmentT } from "@/types/assignment";
 
 export default function DailyShiftDemandRow({
   lng,

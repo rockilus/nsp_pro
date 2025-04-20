@@ -1,9 +1,16 @@
 {
     "monday": "Monday",
+    "monday_short": "M",
     "tuesday": "Tuesday",
+    "tuesday_short": "T",
     "wednesday": "Wednesday",
+    "wednesday_short": "W",
     "thursday": "Thursday",
+    "thursday_short": "T",
     "friday": "Friday",
+    "friday_short": "F",
     "saturday": "Saturday",
-    "sunday": "Sunday"
+    "saturday_short": "S",
+    "sunday": "Sunday",
+    "sunday_short": "S"
 }

@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.user import UserSchema
-from shared.schemas.schemas.user import User
+from shared.schemas.core.user import User
 
 
 class UserRepository(BaseRepository[UserSchema]):

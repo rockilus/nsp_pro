@@ -10,12 +10,12 @@ import "./daily-shift-demand-cell.css";
 import "../../../../styles/text-styles.css";
 // Types
 import {
-  DailyShiftDemandT,
-  DSDSourceType,
   ScheduleT,
   ScheduleStatus,
   periodDateT,
 } from "../../../../types/schedule";
+import { DSDSourceType } from "@/types/daily-shift-demand";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 import { ShiftT, ShiftType } from "../../../../types/shift";
 
 dayjs.extend(utc);

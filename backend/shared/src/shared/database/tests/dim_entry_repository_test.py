@@ -5,7 +5,7 @@ from shared.database.repositories.dim_entry import (
     DimEntryRepository,
 )
 from shared.database.schemas.dim_entry import DimEntrySchema
-from shared.schemas.schemas.dim_entry import DimEntry
+from shared.schemas.core.dim_entry import DimEntry
 
 
 class TestDimEntryRepository:

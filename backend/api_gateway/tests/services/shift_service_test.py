@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, call, patch
 
 import pytest
-from shared.schemas import Shift, ShiftLeaveType, ShiftRestType, ShiftType
+from shared.schemas.core import Shift, ShiftLeaveType, ShiftRestType, ShiftType
 
 from src.services.assignment_service import AssignmentService
 from src.services.link_shift_service import LinkShiftService
@@ -269,7 +269,9 @@ def test_update_shift_normal_to_duty(
         shift_saved_mock,
         shift_recup_mock,
     ]
-    mock_assignment_service.create_recuperation_assignments = MagicMock()
+    mock_assignment_service.create_recuperation_assignments_upon_shift_duty_creation = (
+        MagicMock()
+    )
 
     with patch.object(
         shift_service,
@@ -284,11 +286,15 @@ def test_update_shift_normal_to_duty(
         assert result == shift_new_input
         assert mock_collection.shift_db.update_shift.call_count == 1
         mock_collection.shift_db.update_shift.assert_any_call(shift_new_input)
-        mock_assignment_service.create_recuperation_assignments.assert_called_once_with(
-            shift_duty_id=shift_new_input.id,
-            shift_recup_id=shift_recup_mock.id,
-            team_id=shift_new_input.team_id,
-        )
+        # fmt: off
+        mock_assignment_service\
+            .create_recuperation_assignments_upon_shift_duty_creation\
+            .assert_called_once_with(
+                shift_duty_id=shift_new_input.id,
+                shift_recup_id=shift_recup_mock.id,
+                team_id=shift_new_input.team_id,
+            )
+        # fmt: on
 
 
 def test_update_shift_duty_to_normal(

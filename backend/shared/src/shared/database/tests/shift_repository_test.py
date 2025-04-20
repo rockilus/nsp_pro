@@ -8,7 +8,7 @@ from shared.database.schemas.shift import (
     ShiftSchema,
     StaffingSchema,
 )
-from shared.schemas.schemas.shift import (
+from shared.schemas.core.shift import (
     Shift,
     ShiftLeaveType,
     ShiftRestType,
@@ -489,3 +489,83 @@ class TestShiftRepository:
 
         from_db = self.repo.collection.find_one({"recuperation_duty": created_duty.id})
         assert from_db["deleted"] is True
+
+    def test_get_recuperation_shifts(self):
+        """Test retrieving recuperation shifts by a list of shift IDs."""
+        duty_shift_1 = ShiftSchema(
+            team="team1",
+            name="Duty Shift 1",
+            acronym="DS1",
+            acronym_custom=False,
+            start_time=1672560000.0,
+            end_time=1672588800.0,
+            staffing=[StaffingSchema(specialty="spec1", staffing=2)],
+            color="#FF0000",
+            shift_type=ShiftType.DUTY.value,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=0,
+            recuperation_duty=None,
+            deleted=False,
+        )
+        duty_shift_2 = ShiftSchema(
+            team="team1",
+            name="Duty Shift 2",
+            acronym="DS2",
+            acronym_custom=False,
+            start_time=1672560000.0,
+            end_time=1672588800.0,
+            staffing=[StaffingSchema(specialty="spec2", staffing=3)],
+            color="#00FF00",
+            shift_type=ShiftType.DUTY.value,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=0,
+            recuperation_duty=None,
+            deleted=False,
+        )
+        created_duty_1 = self.repo.create(duty_shift_1)
+        created_duty_2 = self.repo.create(duty_shift_2)
+
+        recuperation_shift_1 = ShiftSchema(
+            team="team1",
+            name="Recuperation Shift 1",
+            acronym="RS1",
+            acronym_custom=False,
+            start_time=1672590000.0,
+            end_time=1672618800.0,
+            staffing=[StaffingSchema(specialty="spec1", staffing=1)],
+            color="#0000FF",
+            shift_type=ShiftType.REST.value,
+            rest_type=ShiftRestType.RECUPERATION.value,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=8,
+            recuperation_duty=created_duty_1.id,
+            deleted=False,
+        )
+        recuperation_shift_2 = ShiftSchema(
+            team="team1",
+            name="Recuperation Shift 2",
+            acronym="RS2",
+            acronym_custom=False,
+            start_time=1672590000.0,
+            end_time=1672618800.0,
+            staffing=[StaffingSchema(specialty="spec2", staffing=1)],
+            color="#FFFF00",
+            shift_type=ShiftType.REST.value,
+            rest_type=ShiftRestType.RECUPERATION.value,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=8,
+            recuperation_duty=created_duty_2.id,
+            deleted=False,
+        )
+        self.repo.create(recuperation_shift_1)
+        self.repo.create(recuperation_shift_2)
+
+        result = self.repo.get_recuperation_shifts(
+            [created_duty_1.id, created_duty_2.id]
+        )
+
+        assert len(result) == 2
+        assert result[0].name == "Recuperation Shift 1"
+        assert result[1].name == "Recuperation Shift 2"

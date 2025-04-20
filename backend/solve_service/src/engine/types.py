@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Dict, List, Tuple
 
 from ortools.sat.python import cp_model  # type: ignore
-from shared.schemas import Constraints, ModelConfig
+from shared.schemas.core import Constraints, ModelConfig
 
 ##############################
 # Inputs

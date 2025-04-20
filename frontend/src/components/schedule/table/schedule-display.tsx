@@ -6,19 +6,20 @@ import ScheduleTableShift from "./shift-table/schedule-table-shift";
 import ScheduleTableWorker from "./worker-table/schedule-table-worker";
 // Types
 import {
-  AssignmentT,
   ScheduleT,
-  BreachT,
-  AssignmentDataDictT,
-  DailyShiftDemandT,
   ExportOptionsT,
   ScheduleStatus,
   periodDateT,
-  CreateAssignmentT,
 } from "../../../types/schedule";
+import { BreachT } from "@/types/breach";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { CreateAssignmentT } from "@/types/assignment";
+import { AssignmentDataDictT } from "@/types/assignment";
+import { AssignmentT } from "@/types/assignment";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 import { RequestT } from "../../../types/request";
+import { RecurrenceRuleT } from "@/types/recurrence";
 
 dayjs.extend(utc);
 
@@ -29,6 +30,7 @@ export default function ScheduleDisplay({
   periodDates,
   assignments,
   dailyShiftDemands,
+  recurrences,
   breaches,
   workers,
   shifts,
@@ -47,6 +49,7 @@ export default function ScheduleDisplay({
   periodDates: periodDateT[];
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
+  recurrences: RecurrenceRuleT[];
   breaches: BreachT[];
   workers: WorkerT[];
   shifts: ShiftT[];
@@ -69,6 +72,7 @@ export default function ScheduleDisplay({
         requests={requests}
         assignments={assignments}
         dailyShiftDemands={dailyShiftDemands}
+        recurrences={recurrences}
         scheduleCampaign={scheduleCampaign}
         periodDates={periodDates}
         breaches={breaches}
@@ -90,6 +94,7 @@ export default function ScheduleDisplay({
         requests={requests}
         assignments={assignments}
         dailyShiftDemands={dailyShiftDemands}
+        recurrences={recurrences}
         scheduleCampaign={scheduleCampaign}
         periodDates={periodDates}
         breaches={breaches}

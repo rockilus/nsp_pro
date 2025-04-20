@@ -1,7 +1,11 @@
 from typing import List
 
-from shared.schemas import UserAuth
-from supertokens_python.asyncio import delete_user, get_user, get_users_newest_first
+from shared.schemas.core import UserAuth
+from supertokens_python.asyncio import (
+    delete_user,
+    get_user,
+    get_users_newest_first,
+)
 from supertokens_python.types import User
 
 # Supertokens API doc:

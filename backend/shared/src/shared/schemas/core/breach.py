@@ -3,6 +3,11 @@ from datetime import date, datetime, time, timezone
 from enum import Enum
 from typing import Dict, List
 
+import humps
+from pydantic import TypeAdapter
+
+from shared.schemas.dto.breach import BreachDTO, VariableDTO
+
 
 @dataclass
 class Variable:
@@ -24,6 +29,23 @@ class Variable:
             date=datetime.fromtimestamp(data["date"], tz=timezone.utc).date(),
             shift_id=data["shift_id"],
         )
+
+    def to_dto(self) -> VariableDTO:
+        data = asdict(self)
+        data["date"] = datetime.combine(
+            self.date, time.min, tzinfo=timezone.utc
+        ).timestamp()
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(VariableDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: VariableDTO) -> "Variable":
+        data_snake = humps.decamelize(data.model_dump())
+        data_snake["date"] = datetime.fromtimestamp(
+            data_snake["date"], tz=timezone.utc
+        ).date()
+        return Variable(**data_snake)
 
 
 class ObjectiveCategory(Enum):
@@ -66,3 +88,22 @@ class Breach:
             description=data["description"],
             hard_to_soft=data["hard_to_soft"],
         )
+
+    def to_dto(self) -> BreachDTO:
+        data = asdict(self)
+        data["objective_category"] = self.objective_category.value
+        data["variables"] = [var.to_dto() for var in self.variables]
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(BreachDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: BreachDTO) -> "Breach":
+        data_snake = humps.decamelize(data.model_dump())
+        data_snake["objective_category"] = ObjectiveCategory(
+            data_snake["objective_category"]
+        )
+        data_snake["variables"] = [
+            Variable.from_dto(var) for var in data_snake["variables"]
+        ]
+        return cls(**data_snake)

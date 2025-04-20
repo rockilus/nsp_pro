@@ -2,7 +2,7 @@ import json
 from datetime import date
 from typing import Dict, List
 
-from shared.schemas import (
+from shared.schemas.core import (
     Assignment,
     Breach,
     ConstraintFai,

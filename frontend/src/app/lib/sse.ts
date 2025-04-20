@@ -1,5 +1,5 @@
 // Actions
-import { toAssignmentT } from "./assignment";
+import { toAssignmentT } from "@/types/assignment";
 import { toBreachT } from "./breach";
 import { toRequestT } from "./request";
 import { toScheduleT } from "./schedule";

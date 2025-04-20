@@ -21,7 +21,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import "./coverage-selector.css";
 import "../../styles/text-styles.css";
 // Types
-import { CoverageSelectorT } from "../../types/campaign";
+import { CoverageSelectorT } from "../../types/coverage-selector";
 import { CoverageT } from "../../types/coverage";
 import { ScheduleT } from "../../types/schedule";
 

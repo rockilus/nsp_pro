@@ -2,7 +2,7 @@ from typing import List
 
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.breach import BreachSchema
-from shared.schemas.schemas.breach import Breach
+from shared.schemas.core.breach import Breach
 
 
 class BreachRepository(BaseRepository[BreachSchema]):

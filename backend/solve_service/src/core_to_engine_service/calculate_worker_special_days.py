@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import Dict, List
 
-from shared.schemas import (
+from shared.schemas.core import (
     Assignment,
     DailyShiftDemand,
     Request,
@@ -11,7 +11,9 @@ from shared.schemas import (
     WorkerDates,
 )
 
-from core_to_engine_service.calculate_worker_work_times import round_proportional_times
+from core_to_engine_service.calculate_worker_work_times import (
+    round_proportional_times,
+)
 from engine import GroupsAssignmentsTargetConstraint
 
 

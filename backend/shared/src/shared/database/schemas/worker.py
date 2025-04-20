@@ -2,7 +2,7 @@ from datetime import datetime, time, timezone
 from typing import Any, Dict, List, Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.worker import Worker
+from shared.schemas.core.worker import Worker
 
 
 class WorkerSchema(DocumentBaseSchema):

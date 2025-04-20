@@ -1,6 +1,12 @@
 from typing import Dict, List, Tuple
 
-from shared.schemas import Shift, ShiftRestType, ShiftType, Worker, WorkerDates
+from shared.schemas.core import (
+    Shift,
+    ShiftRestType,
+    ShiftType,
+    Worker,
+    WorkerDates,
+)
 
 
 def build_duty_recup_pairs(

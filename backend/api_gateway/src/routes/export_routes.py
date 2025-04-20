@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from shared.logger import log_info
-from shared.schemas import ExportOptions, ExportPeriodOptions
+from shared.schemas.core import ExportOptions, ExportPeriodOptions
 from shared.schemas.errors import handle_create_schema_object_error
 
 from src.dependencies import get_schedule_service

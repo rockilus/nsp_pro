@@ -1,7 +1,7 @@
 from typing import List
 
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import Breach, Schedule
+from shared.schemas.core import Breach, Schedule
 
 
 def save_breaches(

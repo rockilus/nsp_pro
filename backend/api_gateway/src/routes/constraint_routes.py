@@ -5,7 +5,7 @@ import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 from shared.logger import log_info
-from shared.schemas import (
+from shared.schemas.core import (
     Block,
     BlockNameOptions,
     BlockTypeOptions,

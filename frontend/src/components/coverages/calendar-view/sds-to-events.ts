@@ -1,10 +1,8 @@
 import dayjs from "dayjs";
 // Types
-import {
-  ShiftDemandT,
-  EventT,
-  ShiftDemandCalendarT,
-} from "../../../types/coverage";
+import { EventT } from "@/types/shift-demand";
+import { ShiftDemandCalendarT } from "@/types/shift-demand";
+import { ShiftDemandT } from "@/types/shift-demand";
 import { ShiftT } from "../../../types/shift";
 
 const shiftDemandsToEvents = (

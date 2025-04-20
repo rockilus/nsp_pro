@@ -2,66 +2,9 @@ import { ReactNode } from "react";
 import dayjs from "dayjs";
 // Types
 import { ShiftT } from "./shift";
-import { WorkerT } from "./worker";
 import { RequestT } from "./request";
-
-// Assignment
-export type AssignmentT = {
-  id: string;
-  teamId: string;
-  scheduleId: string | null;
-  workerId: string;
-  date: dayjs.Dayjs;
-  shiftId: string;
-  fixed: boolean;
-  referenceAssignmentId: string | null;
-};
-
-// Daily Shift Demand
-export enum DSDSourceType {
-  SHIFT_DEMAND = 0,
-  DIRECT_REQUIREMENT = 1,
-}
-
-export type DailyShiftDemandT = {
-  id: string;
-  teamId: string;
-  scheduleId: string;
-  shiftDemandId: string | null;
-  coverageSelectorId: string | null;
-  sourceType: DSDSourceType;
-  date: dayjs.Dayjs;
-  shiftId: string;
-  count: number;
-};
-
-// Breach
-export type VariableT = {
-  workerId: string | null;
-  date: dayjs.Dayjs;
-  shiftId: string;
-};
-
-export enum ObjectiveCategory {
-  CONSTRAINT = 0,
-  REQUEST = 1,
-  DAILY_SHIFT_DEMAND = 2,
-  DAILY_SHIFT_DEMAND_SPE = 3,
-  WORK_TIME_CONTRACT = 4,
-  WORK_TIME_DESIRED = 5,
-  DUTIES_PER_MONTH = 6,
-  LINK_SHIFT = 7,
-}
-
-export type BreachT = {
-  id: string;
-  scheduleId: string;
-  objectiveId: string | null;
-  objectiveCategory: ObjectiveCategory;
-  variables: VariableT[];
-  description: string;
-  hardToSoft: boolean | null;
-};
+import { AssignmentT } from "./assignment";
+import { BreachT } from "./breach";
 
 // Schedule
 export type QuickStaffingT = {
@@ -158,25 +101,6 @@ export type LHSTabContentT = {
   name: string;
   label: string;
   content: ReactNode | null;
-};
-
-export type AssignmentDataDictT = {
-  worker: WorkerT;
-  shift: ShiftT;
-  assignment: AssignmentT;
-  breaches: BreachT[];
-  requests: RequestT[];
-};
-
-export type AssignmentDictT = {
-  [key: string]: AssignmentDataDictT[];
-};
-
-export type CreateAssignmentT = {
-  scheduleId: string | null;
-  workerId: string | null;
-  shiftId: string | null;
-  date: dayjs.Dayjs | null;
 };
 
 export type periodDateT = {

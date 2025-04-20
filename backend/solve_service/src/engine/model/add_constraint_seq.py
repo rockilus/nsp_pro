@@ -1,10 +1,13 @@
 from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
-from shared.schemas import ConstraintOperator, ConstraintSeq
+from shared.schemas.core import ConstraintOperator, ConstraintSeq
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import build_var_name_constraint, build_var_name_seq
+from engine.model.utils.model_utils import (
+    build_var_name_constraint,
+    build_var_name_seq,
+)
 from engine.types import ObjectiveCategory
 
 

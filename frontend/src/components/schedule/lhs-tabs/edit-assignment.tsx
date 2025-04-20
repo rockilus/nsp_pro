@@ -5,12 +5,23 @@ import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import { Button, MenuItem, Select, TextField } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+// Components
+import RecurrenceEdit from "./recurrence-edit/recurrence-edit";
+import RecurrenceDeleteDialog from "./recurrence-delete-dialog";
 // Styles
 import "./edit-assignment.css";
 // Types
 import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
-import { AssignmentT } from "../../../types/schedule";
+import { AssignmentT } from "@/types/assignment";
+import {
+  RecurrenceRuleT,
+  OccurrenceType,
+  FrequencyType,
+  MonthRepeatType,
+  RecurrenceEndType,
+  RecurrenceUpdateScope,
+} from "../../../types/recurrence";
 
 dayjs.extend(utc);
 
@@ -23,11 +34,23 @@ interface EditAssignmentProps {
   workers: WorkerT[];
   shifts: ShiftT[];
   dateSelected: Dayjs | null;
-  handleCreateAssignment?: (newAssignment: AssignmentT) => void;
+  handleCreateAssignment?: (
+    newAssignment: AssignmentT,
+    newRecurrence: RecurrenceRuleT | null
+  ) => void;
   isEditing?: boolean;
   assignment?: AssignmentT;
-  handleUpdateAssignment?: (assignment: AssignmentT) => void;
-  handleDeleteAssignment?: (assignmentId: string) => void;
+  handleUpdateAssignment?: (
+    assignment: AssignmentT,
+    recurrence: RecurrenceRuleT | null,
+    recurrenceUpdateScope: RecurrenceUpdateScope | null
+  ) => void;
+  handleDeleteAssignment?: (
+    assignmentId: string,
+    recurrenceId: string | null,
+    recurrenceUpdateScope: RecurrenceUpdateScope | null
+  ) => void;
+  recurrence?: RecurrenceRuleT | null;
 }
 
 const EditAssignment: React.FC<EditAssignmentProps> = ({
@@ -44,14 +67,16 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   assignment,
   handleUpdateAssignment,
   handleDeleteAssignment,
+  recurrence,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
+  const { t: t_weekdays } = useTranslation(lng, "week_days");
 
   const [workerId, setWorkerId] = useState<string | null>(
-    isEditing && assignment ? assignment.workerId : workerSelectedId // Updated to use worker ID state
+    isEditing && assignment ? assignment.workerId : workerSelectedId
   );
   const [shiftId, setShiftId] = useState<string | null>(
-    isEditing && assignment ? assignment.shiftId : shiftSelectedId // Updated to use shift ID state
+    isEditing && assignment ? assignment.shiftId : shiftSelectedId
   );
   const [date, setDate] = useState<Dayjs | null>(
     isEditing && assignment ? assignment.date : dateSelected
@@ -61,28 +86,134 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
   const [shiftError, setShiftError] = useState(false);
   const [dateError, setDateError] = useState(false);
 
+  const [recurrenceState, setRecurrenceState] =
+    useState<RecurrenceRuleT | null>(recurrence ?? null);
+
+  const [showRecurrenceEdit, setShowRecurrenceEdit] = useState(false);
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteScope, setDeleteScope] = useState<RecurrenceUpdateScope | null>(
+    null
+  );
+  const [dialogAction, setDialogAction] = useState<"delete" | "update" | null>(
+    null
+  );
+
   useEffect(() => {
     setWorkerId(workerSelectedId);
-    setWorkerError(false);
-    setShiftError(false);
-    setDateError(false);
-  }, [workerSelectedId]);
-
-  useEffect(() => {
     setShiftId(shiftSelectedId);
-    setWorkerError(false);
-    setShiftError(false);
-    setDateError(false);
-  }, [shiftSelectedId]);
-
-  useEffect(() => {
     setDate(dateSelected);
     setWorkerError(false);
     setShiftError(false);
     setDateError(false);
-  }, [dateSelected]);
+    setRecurrenceState(recurrence ?? null);
+  }, [workerSelectedId, shiftSelectedId, dateSelected, recurrence]);
 
-  const handleSubmit = async () => {
+  const describeRecurrenceRule = (rule: RecurrenceRuleT): string => {
+    const weekdays = [
+      t_weekdays("sunday"),
+      t_weekdays("monday"),
+      t_weekdays("tuesday"),
+      t_weekdays("wednesday"),
+      t_weekdays("thursday"),
+      t_weekdays("friday"),
+      t_weekdays("saturday"),
+    ];
+
+    let description = "";
+
+    switch (rule.frequencyType) {
+      case FrequencyType.DAY:
+        description =
+          rule.repeatEvery === 1
+            ? t("rec_daily")
+            : `${t("rec_every")} ${rule.repeatEvery} ${t(
+                "days"
+              ).toLocaleLowerCase()}`;
+        break;
+      case FrequencyType.WEEK:
+        const days = rule.weekDays.map((day) => weekdays[day]).join(", ");
+        description =
+          rule.repeatEvery === 1
+            ? `${t("rec_weekly_on")} ${days}`
+            : `${t("rec_every")} ${rule.repeatEvery} ${t(
+                "rec_weeks_on"
+              ).toLocaleLowerCase()} ${days}`;
+        break;
+      case FrequencyType.MONTH:
+        if (rule.monthRepeatType === MonthRepeatType.DAY_IN_MONTH) {
+          description =
+            rule.repeatEvery === 1
+              ? `${t("rec_monthly_on_day")} ${rule.startDate.date()}`
+              : `${t("rec_every")} ${rule.repeatEvery} ${t(
+                  "rec_months_on_day"
+                ).toLocaleLowerCase()} ${rule.startDate.date()}`;
+        } else if (rule.monthRepeatType === MonthRepeatType.WEEKDAY) {
+          const weekNumber = Math.ceil(rule.startDate.date() / 7);
+          description =
+            rule.repeatEvery === 1
+              ? `${t("rec_monthly_on")} ${ordinal(weekNumber)} ${
+                  weekdays[rule.startDate.day()]
+                }`
+              : `${t("rec_every")} ${rule.repeatEvery} ${t(
+                  "rec_months_on"
+                ).toLocaleLowerCase()} ${ordinal(weekNumber)} ${
+                  weekdays[rule.startDate.day()]
+                }`;
+        }
+        break;
+      case FrequencyType.YEAR:
+        description =
+          rule.repeatEvery === 1
+            ? `${t("rec_annually_on")} ${rule.startDate.format("MMMM D")}`
+            : `${t("rec_every")} ${rule.repeatEvery} ${t(
+                "rec_years_on"
+              ).toLocaleLowerCase()} ${rule.startDate.format("MMMM D")}`;
+        break;
+    }
+
+    if (rule.recurrenceEndType === RecurrenceEndType.END_DATE && rule.endDate) {
+      description += `, ${t(
+        "rec_until"
+      ).toLocaleLowerCase()} ${rule.endDate.format("D MMM YYYY")}`;
+    } else if (
+      rule.recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES &&
+      rule.numberOfOccurrences
+    ) {
+      description += `, ${rule.numberOfOccurrences} ${t(
+        "rec_times"
+      ).toLocaleLowerCase()}`;
+    }
+
+    return description;
+  };
+
+  const ordinal = (n: number): string => {
+    const s = [
+      t("ordinal_th"),
+      t("ordinal_st"),
+      t("ordinal_nd"),
+      t("ordinal_rd"),
+    ];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+
+  const handleRecurrenceChange = (updatedRecurrence: RecurrenceRuleT) => {
+    setRecurrenceState(updatedRecurrence);
+    setShowRecurrenceEdit(false);
+  };
+
+  const handleDeleteClick = () => {
+    if (assignment && assignment.recurrenceRuleId) {
+      setDialogAction("delete");
+      setIsDialogOpen(true);
+    } else if (assignment && handleDeleteAssignment) {
+      handleDeleteAssignment(assignment.id, null, null);
+    }
+  };
+
+  const handleSaveClick = async () => {
     if (!workerId) setWorkerError(true);
     if (!shiftId) setShiftError(true);
     if (!date) setDateError(true);
@@ -100,21 +231,47 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
       shiftId: shiftId,
       fixed: true,
       referenceAssignmentId: null,
+      recurrenceRuleId: recurrenceState ? recurrenceState.id : null,
     };
 
-    try {
-      setIsSubmitting(true);
-      if (isEditing && assignment && handleUpdateAssignment) {
-        await handleUpdateAssignment(newAssignment);
-      } else if (handleCreateAssignment) {
-        await handleCreateAssignment(newAssignment);
+    if (isEditing && assignment && assignment.recurrenceRuleId) {
+      setDialogAction("update");
+      setIsDialogOpen(true);
+    } else {
+      try {
+        setIsSubmitting(true);
+        if (isEditing && assignment && handleUpdateAssignment) {
+          await handleUpdateAssignment(newAssignment, recurrenceState, null);
+        } else if (handleCreateAssignment) {
+          await handleCreateAssignment(newAssignment, recurrenceState);
+        }
+      } catch (error) {
+        console.error("Failed to save assignment:", error);
+        alert("Failed to save assignment. Please try again.");
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      console.error("Failed to create assignment:", error);
-      alert("Failed to create assignment. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
+  };
+
+  const handleDialogConfirm = (scope: RecurrenceUpdateScope) => {
+    if (dialogAction === "delete" && assignment && handleDeleteAssignment) {
+      handleDeleteAssignment(assignment.id, assignment.recurrenceRuleId, scope);
+    } else if (
+      dialogAction === "update" &&
+      assignment &&
+      handleUpdateAssignment
+    ) {
+      const updatedAssignment: AssignmentT = {
+        ...assignment,
+        workerId: workerId || assignment.workerId,
+        shiftId: shiftId || assignment.shiftId,
+        date: date || assignment.date,
+      };
+      handleUpdateAssignment(updatedAssignment, recurrenceState, scope);
+    }
+    setIsDialogOpen(false);
+    setDialogAction(null);
   };
 
   return (
@@ -155,7 +312,6 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
               </MenuItem>
             ))}
         </Select>
-
         <span className="form-title">{t("date")}</span>
         <DatePicker
           className="edit-assignment-datepicker"
@@ -172,11 +328,34 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
               helperText: dateError ? t("edit-assignment.date-error") : "",
             },
           }}
-          sx={{
-            marginBottom: "10px",
-          }}
         />
-
+        {showRecurrenceEdit ? (
+          <>
+            <hr className="separator" />
+            <RecurrenceEdit
+              lng={lng}
+              isEditing={true}
+              occurrenceType={OccurrenceType.ASSIGNMENT}
+              recurrenceRule={recurrenceState}
+              startDate={date || dayjs()}
+              teamId={teamId}
+              onClose={() => {
+                setShowRecurrenceEdit(false);
+              }}
+              onRecurrenceChange={handleRecurrenceChange}
+            />
+            <hr className="separator" />
+          </>
+        ) : (
+          <button
+            className="recurrence-button"
+            onClick={() => setShowRecurrenceEdit(!showRecurrenceEdit)}
+          >
+            {recurrenceState
+              ? describeRecurrenceRule(recurrenceState)
+              : t("add_recurrence")}
+          </button>
+        )}
         <span className="form-title">{t("shift")}</span>
         <Select
           className="edit-assignment-select"
@@ -216,7 +395,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           <Button
             variant="contained"
             color="primary"
-            onClick={handleSubmit}
+            onClick={handleSaveClick}
             disabled={isSubmitting}
             className="create-button"
           >
@@ -227,11 +406,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
             <Button
               variant="outlined"
               color="error"
-              onClick={() => {
-                if (assignment && handleDeleteAssignment) {
-                  handleDeleteAssignment(assignment.id);
-                }
-              }}
+              onClick={handleDeleteClick}
               className="delete-button"
             >
               {t("delete")}
@@ -239,7 +414,7 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
             <Button
               variant="contained"
               color="primary"
-              onClick={handleSubmit}
+              onClick={handleSaveClick}
               disabled={isSubmitting}
               className="save-button"
             >
@@ -248,6 +423,11 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
           </>
         )}
       </div>
+      <RecurrenceDeleteDialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onConfirm={handleDialogConfirm}
+      />
     </div>
   );
 };

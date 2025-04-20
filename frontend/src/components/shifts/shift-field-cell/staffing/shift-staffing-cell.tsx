@@ -7,7 +7,7 @@ import PopoverAnchorElOver from "../../../inputs/popover-anchor-el-over";
 // Styles
 import "./shift-staffing-cell.css";
 // Types
-import { SpecialtyT } from "../../../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 import { ShiftT, StaffingT } from "../../../../types/shift";
 
 export default function ShiftStaffingCell({

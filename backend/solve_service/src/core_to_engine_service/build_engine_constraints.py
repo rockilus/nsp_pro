@@ -2,7 +2,7 @@ from datetime import date
 from typing import Dict, List, Tuple
 
 from shared.constraint_parser.parse_constraints import parse_constraints
-from shared.schemas import (
+from shared.schemas.core import (
     ConstraintBuildAugmented,
     ConstraintOperator,
     Constraints,

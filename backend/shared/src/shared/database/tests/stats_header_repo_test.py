@@ -7,8 +7,8 @@ from shared.database.repositories.stats_header import (
 from shared.database.schemas.stats_header import (
     StatsHeaderSchema,
 )
-from shared.schemas.schemas.constraint import ShiftWorkerOption, SWOIdTypes
-from shared.schemas.schemas.stats import (
+from shared.schemas.core.constraint import ShiftWorkerOption, SWOIdTypes
+from shared.schemas.core.stats import (
     HeaderUnitOptions,
     StatsHeader,
     StatsUnitOptions,

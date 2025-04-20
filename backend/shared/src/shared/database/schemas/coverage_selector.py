@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.coverage_selector import CoverageSelector
+from shared.schemas.core.coverage_selector import CoverageSelector
 
 
 class CoverageSelectorSchema(DocumentBaseSchema):

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     DailyShiftDemand,
     DSDSourceType,
     EngineInputsAugmented,

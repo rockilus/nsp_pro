@@ -2,10 +2,12 @@ from datetime import date, timedelta
 from typing import List
 
 import pytest
-from shared.schemas import EngineInputsAugmented, Shift, Worker
+from shared.schemas.core import EngineInputsAugmented, Shift, Worker
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
-from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
+from core_to_engine_service.build_engine_shift_demands import (
+    build_engine_shift_demands,
+)
 from engine import ShiftDemand as ShiftDemandEngine
 
 # pylint: disable=unused-import

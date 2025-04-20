@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Coroutine, Dict, List
 
-from shared.schemas import Team, User
+from shared.schemas.core import Team, User
 from supertokens_python.recipe.emailpassword.constants import (
     FORM_FIELD_EMAIL_ID,
 )

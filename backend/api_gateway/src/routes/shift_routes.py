@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas import (
+from shared.schemas.core import (
     Attribute,
     LinkShift,
     Shift,

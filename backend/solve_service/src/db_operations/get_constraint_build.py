@@ -2,7 +2,7 @@ from typing import List
 
 from shared.augment.cb_to_cb_augmented import cb_to_cb_augmented
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import (
+from shared.schemas.core import (
     Attribute,
     ConstraintBuildAugmented,
     Dimension,

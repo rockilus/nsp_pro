@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from celery import signature  # type: ignore
-from shared.schemas import Schedule
+from shared.schemas.core import Schedule
 
 from src.celery_tasks.celery_app import celery_app
 from src.config import config

@@ -1,5 +1,5 @@
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.dim_entry import (
+from shared.schemas.core.dim_entry import (
     DimEntry,
 )
 

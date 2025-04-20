@@ -6,7 +6,8 @@ import BreachItem from "./breach-item";
 import "../../../styles/text-styles.css";
 import "./breach-list.css";
 // Types
-import { BreachT, ObjectiveCategory } from "../../../types/schedule";
+import { BreachT } from "@/types/breach";
+import { ObjectiveCategory } from "@/types/breach";
 
 export default function BreachList({
   lng,

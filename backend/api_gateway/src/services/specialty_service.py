@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from shared.schemas import Attribute, Worker
+from shared.schemas.core import Attribute, Worker
 
 from src.services.base_service import BaseService
 

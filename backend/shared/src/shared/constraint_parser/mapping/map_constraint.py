@@ -5,7 +5,7 @@ from shared.constraint_parser.mapping.map_day import MapDay
 from shared.constraint_parser.mapping.map_shift import MapShift
 from shared.constraint_parser.mapping.map_worker import MapWorker
 from shared.constraint_parser.mapping.utils import find_block_by_name
-from shared.schemas import (
+from shared.schemas.core import (
     Block,
     BlockNameOptions,
     ConstraintBuildAugmented,

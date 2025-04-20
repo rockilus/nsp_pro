@@ -3,7 +3,7 @@ from typing import List
 from permit import PermitApiError  # type: ignore
 from permit import Permit, PermitConnectionError, UserRead  # type: ignore
 from shared.logger import log_debug, log_info
-from shared.schemas import Team, User, UserAuth
+from shared.schemas.core import Team, User, UserAuth
 
 from src.config import config
 from src.errors import AuthzConnectionError, handle_permit_errors

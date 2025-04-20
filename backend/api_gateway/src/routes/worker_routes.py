@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas import Attribute, Worker
+from shared.schemas.core import Attribute, Worker
 from shared.schemas.errors import handle_create_schema_object_error
 
 from src.dependencies import get_db_collections, get_worker_service

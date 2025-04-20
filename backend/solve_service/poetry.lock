@@ -1589,6 +1589,18 @@ files = [
 windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
+name = "pyhumps"
+version = "3.8.0"
+description = "🐫  Convert strings (and dictionary keys) between snake case, camel case and pascal case in Python. Inspired by Humps for Node"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "pyhumps-3.8.0-py3-none-any.whl", hash = "sha256:060e1954d9069f428232a1adda165db0b9d8dfdce1d265d36df7fbff540acfd6"},
+    {file = "pyhumps-3.8.0.tar.gz", hash = "sha256:498026258f7ee1a8e447c2e28526c0bea9407f9a59c03260aee4bd6c04d681a3"},
+]
+
+[[package]]
 name = "pylint"
 version = "3.3.5"
 description = "python code static checker"
@@ -1945,7 +1957,7 @@ crt = ["botocore[crt] (>=1.37.4,<2.0a.0)"]
 
 [[package]]
 name = "shared"
-version = "0.1.155"
+version = "0.1.175"
 description = ""
 optional = false
 python-versions = ">=3.12,<=3.14"
@@ -1963,6 +1975,7 @@ isort = "^6.0.1"
 loguru = "^0.7.2"
 mongo-types = "^0.15.1"
 mypy = "^1.13.0"
+pyhumps = "^3.8.0"
 pylint = "^3.3.2"
 pymongo = {version = "^4.11.3", extras = ["aws"]}
 pytest = "^8.3.5"

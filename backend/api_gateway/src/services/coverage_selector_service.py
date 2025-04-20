@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from shared.schemas import CoverageSelector
+from shared.schemas.core import CoverageSelector
 
 from src.services.base_service import BaseService
 

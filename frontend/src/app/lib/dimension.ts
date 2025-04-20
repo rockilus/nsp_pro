@@ -2,7 +2,8 @@ import { unstable_noStore as noStore } from "next/cache";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { DimEntryT, DimensionT, DimensionType } from "../../types/dimension";
+import { DimensionT, DimensionType } from "../../types/dimension";
+import { DimEntryT } from "@/types/dim-entry";
 import { AttributeT } from "@/types/attribute";
 // Env Vars
 import { API_URL } from "./env";

@@ -6,7 +6,7 @@ from ortools.sat.python import cp_model  # type: ignore
 
 # pylint: disable=no-name-in-module
 from ortools.sat.sat_parameters_pb2 import SatParameters  # type: ignore
-from shared.schemas import SolverParams, SolveStrategy
+from shared.schemas.core import SolverParams, SolveStrategy
 
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.solver_solution_callback import SolverSolutionCallback

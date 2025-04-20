@@ -20,14 +20,12 @@ import "./assignment-options.css";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
-import {
-  AssignmentT,
-  AssignmentDataDictT,
-  ObjectiveCategory,
-  ScheduleT,
-  ScheduleStatus,
-} from "../../../types/schedule";
+import { ScheduleT, ScheduleStatus } from "../../../types/schedule";
+import { ObjectiveCategory } from "@/types/breach";
+import { AssignmentDataDictT } from "@/types/assignment";
+import { AssignmentT } from "@/types/assignment";
 import { RequestStatus } from "../../../types/request";
+import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 
 export default function AssignmentOptions({
   lng,
@@ -45,8 +43,16 @@ export default function AssignmentOptions({
   schedules: ScheduleT[];
   selectedCell: AssignmentDataDictT | null;
   onClose: () => void;
-  handleUpdateAssignment: (assignment: AssignmentT) => void;
-  handleDeleteAssignment: (assignmentId: string) => void;
+  handleUpdateAssignment: (
+    assignment: AssignmentT,
+    recurrence: RecurrenceRuleT | null,
+    recurrenceUpdateScope: RecurrenceUpdateScope | null
+  ) => void;
+  handleDeleteAssignment: (
+    assignmentId: string,
+    recurrenceId: string | null,
+    recurrenceUpdateScope: RecurrenceUpdateScope | null
+  ) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -57,10 +63,14 @@ export default function AssignmentOptions({
 
   const handleChangeAssignmentFixed = () => {
     if (!selectedAssignment) return;
-    handleUpdateAssignment({
-      ...selectedAssignment,
-      fixed: !selectedAssignment.fixed,
-    });
+    handleUpdateAssignment(
+      {
+        ...selectedAssignment,
+        fixed: !selectedAssignment.fixed,
+      },
+      null,
+      null
+    );
   };
 
   const breachesNoRequests =
@@ -143,6 +153,7 @@ export default function AssignmentOptions({
             isEditing={true}
             handleUpdateAssignment={handleUpdateAssignment}
             handleDeleteAssignment={handleDeleteAssignment}
+            recurrence={selectedCell.recurrence}
           />
         ) : (
           <span className="assignment-options-no-assignment-selected-msg">

@@ -20,9 +20,10 @@ import {
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
-import { CoverageT, ShiftDemandT } from "../../types/coverage";
+import { CoverageT } from "../../types/coverage";
+import { ShiftDemandT } from "@/types/shift-demand";
 import { ShiftT } from "../../types/shift";
-import { SpecialtyT } from "../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 
 export default function CoverageTab({
   lng,

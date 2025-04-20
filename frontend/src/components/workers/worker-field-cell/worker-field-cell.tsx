@@ -13,7 +13,7 @@ import WorkerFieldEmploymentStart from "./worker-field-employment-start";
 import WorkerFieldEmploymentEnd from "./worker-field-employment-end";
 // Types
 import { WorkerT } from "../../../types/worker";
-import { SpecialtyT } from "../../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 
 export default function WorkerFieldCell({
   lng,

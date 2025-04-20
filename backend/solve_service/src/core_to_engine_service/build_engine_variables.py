@@ -1,7 +1,13 @@
 from datetime import timedelta
 from typing import Dict, List, Tuple
 
-from shared.schemas import Shift, ShiftRestType, ShiftType, Worker, WorkerDates
+from shared.schemas.core import (
+    Shift,
+    ShiftRestType,
+    ShiftType,
+    Worker,
+    WorkerDates,
+)
 
 from engine import Variables as VariablesEngine
 from utils.constants import Constants

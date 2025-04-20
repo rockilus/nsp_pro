@@ -9,7 +9,7 @@ from shared.database.repositories.coverage_selector import (
 from shared.database.schemas.coverage_selector import (
     CoverageSelectorSchema,
 )
-from shared.schemas.schemas.coverage_selector import CoverageSelector
+from shared.schemas.core.coverage_selector import CoverageSelector
 
 
 class TestCoverageSelectorRepository:

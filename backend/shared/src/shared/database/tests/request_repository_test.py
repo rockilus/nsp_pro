@@ -7,7 +7,7 @@ from shared.database.repositories.request import (
     RequestRepository,
 )
 from shared.database.schemas.request import RequestSchema
-from shared.schemas.schemas.request import Request, RequestStatus
+from shared.schemas.core.request import Request, RequestStatus
 
 
 # pylint: disable=R0801

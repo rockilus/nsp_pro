@@ -4,7 +4,7 @@ from datetime import date
 from typing import Callable, List, Tuple
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     ConstraintBuildAugmented,
     ConstraintFai,
     ConstraintFil,

@@ -1,7 +1,7 @@
 from re import fullmatch
 from typing import List
 
-from shared.schemas import User, UserAuth, UserDashboard
+from shared.schemas.core import User, UserAuth, UserDashboard
 
 
 def build_user_dashboard(

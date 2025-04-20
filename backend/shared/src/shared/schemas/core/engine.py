@@ -2,22 +2,22 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Dict, List
 
-from shared.schemas.schemas.assignment import Assignment
-from shared.schemas.schemas.attribute import Attribute
-from shared.schemas.schemas.breach import Breach
-from shared.schemas.schemas.constraint import (
+from shared.schemas.core.assignment import Assignment
+from shared.schemas.core.attribute import Attribute
+from shared.schemas.core.breach import Breach
+from shared.schemas.core.constraint import (
     ConstraintBuildAugmented,
     Penalties,
 )
-from shared.schemas.schemas.daily_shift_demand import DailyShiftDemand
-from shared.schemas.schemas.dim_entry import DimEntry
-from shared.schemas.schemas.dimension import Dimension
-from shared.schemas.schemas.link_shift import LinkShift
-from shared.schemas.schemas.model_output import ModelOutput
-from shared.schemas.schemas.request import Request, RequestAugmented
-from shared.schemas.schemas.schedule import Schedule
-from shared.schemas.schemas.shift import Shift
-from shared.schemas.schemas.worker import Worker
+from shared.schemas.core.daily_shift_demand import DailyShiftDemand
+from shared.schemas.core.dim_entry import DimEntry
+from shared.schemas.core.dimension import Dimension
+from shared.schemas.core.link_shift import LinkShift
+from shared.schemas.core.model_output import ModelOutput
+from shared.schemas.core.request import Request, RequestAugmented
+from shared.schemas.core.schedule import Schedule
+from shared.schemas.core.shift import Shift
+from shared.schemas.core.worker import Worker
 
 ##############################
 # Model Config

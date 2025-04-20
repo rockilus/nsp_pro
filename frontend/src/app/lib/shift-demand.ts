@@ -1,5 +1,5 @@
 // Types
-import { ShiftDemandT } from "../../types/coverage";
+import { ShiftDemandT } from "@/types/shift-demand";
 // Env Vars
 import { API_URL } from "./env";
 

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Dict
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.model_output import ModelOutput, ModelOutputStatus
+from shared.schemas.core.model_output import ModelOutput, ModelOutputStatus
 
 
 class ModelOutputSchema(DocumentBaseSchema):

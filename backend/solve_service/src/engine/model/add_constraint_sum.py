@@ -1,7 +1,7 @@
 from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
-from shared.schemas import ConstraintOperator, ConstraintSum
+from shared.schemas.core import ConstraintOperator, ConstraintSum
 
 from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import build_var_name_constraint

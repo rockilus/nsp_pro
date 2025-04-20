@@ -1,4 +1,8 @@
-from shared.schemas import DimensionEntryType, DimensionType, EngineInputsAugmented
+from shared.schemas.core import (
+    DimensionEntryType,
+    DimensionType,
+    EngineInputsAugmented,
+)
 
 from core_to_engine_service.build_dim_to_attr_value_to_owner import (
     build_dim_to_attr_value_to_owner,

@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Types
-import { SpecialtyT } from "../../types/team";
+import { SpecialtyT } from "@/types/specialty";
 import { WorkerT } from "../../types/worker";
 // Env Vars
 import { API_URL } from "./env";
