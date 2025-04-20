@@ -12,7 +12,7 @@ from shared.schemas.core import (
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
 def handle_daily_frequency(
-    period_start: date,
+    period_dates: List[date],
     start_date: date,
     end_date: date,
     excluded_dates: Set[date],
@@ -27,10 +27,7 @@ def handle_daily_frequency(
 
     while current_date <= end_date:
         occurrences_count += 1
-        if (
-            period_start <= current_date <= end_date
-            and current_date not in excluded_dates
-        ):
+        if current_date in period_dates and current_date not in excluded_dates:
             dates.append(current_date)
         if number_of_occurrences and occurrences_count >= number_of_occurrences:
             break
@@ -40,7 +37,7 @@ def handle_daily_frequency(
 
 # pylint: disable=too-many-locals
 def handle_weekly_frequency(
-    period_start: date,
+    period_dates: List[date],
     start_date: date,
     end_date: date,
     excluded_dates: Set[date],
@@ -71,7 +68,7 @@ def handle_weekly_frequency(
                 continue
             if day.weekday() in week_days:
                 occurrences_count += 1
-                if day >= period_start and day not in excluded_dates:
+                if day in period_dates and day not in excluded_dates:
                     dates.append(day)
                 # Stop if the number of occurrences is reached
                 if number_of_occurrences and occurrences_count >= number_of_occurrences:
@@ -85,7 +82,7 @@ def handle_weekly_frequency(
 
 # pylint: disable=too-many-branches, too-many-statements
 def handle_monthly_frequency(
-    period_start: date,
+    period_dates: List[date],
     start_date: date,
     end_date: date,
     excluded_dates: Set[date],
@@ -127,7 +124,7 @@ def handle_monthly_frequency(
 
         if candidate_date and start_date <= candidate_date <= end_date:
             occurrences_count += 1
-            if period_start <= candidate_date and candidate_date not in excluded_dates:
+            if candidate_date in period_dates and candidate_date not in excluded_dates:
                 dates.append(candidate_date)
             if number_of_occurrences and occurrences_count >= number_of_occurrences:
                 break
@@ -145,7 +142,7 @@ def handle_monthly_frequency(
 
 
 def handle_yearly_frequency(
-    period_start: date,
+    period_dates: List[date],
     start_date: date,
     end_date: date,
     excluded_dates: Set[date],
@@ -161,7 +158,7 @@ def handle_yearly_frequency(
     # Iterate and collect dates
     while current_date <= end_date:
         occurrences_count += 1
-        if current_date >= period_start and current_date not in excluded_dates:
+        if current_date in period_dates and current_date not in excluded_dates:
             dates.append(current_date)
             if number_of_occurrences and occurrences_count >= number_of_occurrences:
                 break
@@ -187,7 +184,7 @@ def handle_yearly_frequency(
 
 FrequencyHandler = Callable[
     [
-        date,  # period_start
+        List[date],  # period_dates
         date,  # start_date
         date,  # end_date
         Set[date],  # excluded_dates
@@ -201,8 +198,7 @@ FrequencyHandler = Callable[
 
 
 def generate_recurring_dates(
-    period_start: date,
-    period_end: date,
+    period_dates: List[date],
     recurrence_rule: RecurrenceRule,
     exclusions: List[RecurrenceExclusion],
 ) -> List[date]:
@@ -214,7 +210,7 @@ def generate_recurring_dates(
     }
 
     end_date = min(
-        [period_end]
+        [max(period_dates)]
         + (
             [recurrence_rule.end_date]
             if recurrence_rule.end_date
@@ -235,7 +231,7 @@ def generate_recurring_dates(
         raise ValueError(f"Invalid frequency type: {recurrence_rule.frequency_type}")
 
     return handler(
-        period_start,
+        period_dates,
         recurrence_rule.start_date,
         end_date,
         excluded_dates,

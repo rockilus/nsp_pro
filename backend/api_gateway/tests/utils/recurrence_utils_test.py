@@ -11,6 +11,7 @@ from shared.schemas.core import (
     RecurrenceRule,
 )
 
+from src.utils.date_utils import build_dates_list
 from src.utils.recurrence_utils import (
     generate_recurring_dates,
     handle_daily_frequency,
@@ -23,8 +24,9 @@ from src.utils.recurrence_utils import (
 # pylint: disable=too-many-lines
 def test_daily_frequency_no_exclusions():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
 
@@ -42,7 +44,7 @@ def test_daily_frequency_no_exclusions():
     ]
 
     result = handle_daily_frequency(
-        period_start, start_date, end_date, excluded_dates, repeat_every
+        period_dates, start_date, end_date, excluded_dates, repeat_every
     )
 
     assert result == expected_dates
@@ -50,8 +52,9 @@ def test_daily_frequency_no_exclusions():
 
 def test_daily_frequency_with_exclusions():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = {date(2025, 1, 3), date(2025, 1, 7)}
     repeat_every = 1
 
@@ -67,7 +70,7 @@ def test_daily_frequency_with_exclusions():
     ]
 
     result = handle_daily_frequency(
-        period_start, start_date, end_date, excluded_dates, repeat_every
+        period_dates, start_date, end_date, excluded_dates, repeat_every
     )
 
     assert result == expected_dates
@@ -75,8 +78,9 @@ def test_daily_frequency_with_exclusions():
 
 def test_daily_frequency_with_period_start():
     period_start = date(2025, 1, 5)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
 
@@ -90,7 +94,7 @@ def test_daily_frequency_with_period_start():
     ]
 
     result = handle_daily_frequency(
-        period_start, start_date, end_date, excluded_dates, repeat_every
+        period_dates, start_date, end_date, excluded_dates, repeat_every
     )
 
     assert result == expected_dates
@@ -98,8 +102,9 @@ def test_daily_frequency_with_period_start():
 
 def test_daily_frequency_with_end_date():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 5)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
 
@@ -112,7 +117,7 @@ def test_daily_frequency_with_end_date():
     ]
 
     result = handle_daily_frequency(
-        period_start, start_date, end_date, excluded_dates, repeat_every
+        period_dates, start_date, end_date, excluded_dates, repeat_every
     )
 
     assert result == expected_dates
@@ -120,8 +125,9 @@ def test_daily_frequency_with_end_date():
 
 def test_daily_frequency_repeat_every_three_days():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 3
 
@@ -133,7 +139,7 @@ def test_daily_frequency_repeat_every_three_days():
     ]
 
     result = handle_daily_frequency(
-        period_start, start_date, end_date, excluded_dates, repeat_every
+        period_dates, start_date, end_date, excluded_dates, repeat_every
     )
 
     assert result == expected_dates
@@ -141,8 +147,9 @@ def test_daily_frequency_repeat_every_three_days():
 
 def test_daily_frequency_start_period_offset():
     period_start = date(2025, 1, 5)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 25)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 10
 
@@ -152,7 +159,7 @@ def test_daily_frequency_start_period_offset():
     ]
 
     result = handle_daily_frequency(
-        period_start, start_date, end_date, excluded_dates, repeat_every
+        period_dates, start_date, end_date, excluded_dates, repeat_every
     )
 
     assert result == expected_dates
@@ -160,8 +167,9 @@ def test_daily_frequency_start_period_offset():
 
 def test_daily_frequency_with_number_of_occurrences():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
     number_of_occurrences = 5
@@ -175,7 +183,7 @@ def test_daily_frequency_with_number_of_occurrences():
     ]
 
     result = handle_daily_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -188,8 +196,9 @@ def test_daily_frequency_with_number_of_occurrences():
 
 def test_daily_frequency_with_start_period_offset_and_occurrences():
     period_start = date(2025, 1, 3)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
     number_of_occurrences = 5
@@ -201,7 +210,7 @@ def test_daily_frequency_with_start_period_offset_and_occurrences():
     ]
 
     result = handle_daily_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -214,8 +223,9 @@ def test_daily_frequency_with_start_period_offset_and_occurrences():
 
 def test_daily_frequency_with_large_occurrences():
     period_start = date(2025, 1, 14)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 30)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 3
     number_of_occurrences = 20
@@ -229,7 +239,7 @@ def test_daily_frequency_with_large_occurrences():
     ]
 
     result = handle_daily_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -242,8 +252,9 @@ def test_daily_frequency_with_large_occurrences():
 
 def test_daily_frequency_with_start_period_offset_and_limited_occurrences():
     period_start = date(2025, 1, 14)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 30)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 3
     number_of_occurrences = 5
@@ -251,7 +262,7 @@ def test_daily_frequency_with_start_period_offset_and_limited_occurrences():
     expected_dates = []
 
     result = handle_daily_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -264,8 +275,9 @@ def test_daily_frequency_with_start_period_offset_and_limited_occurrences():
 
 def test_weekly_frequency_no_exclusions():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
     week_days = [0]  # Mondays
@@ -278,7 +290,7 @@ def test_weekly_frequency_no_exclusions():
     ]
 
     result = handle_weekly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -291,8 +303,9 @@ def test_weekly_frequency_no_exclusions():
 
 def test_weekly_frequency_with_exclusions():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = {date(2025, 1, 13), date(2025, 1, 14), date(2025, 1, 27)}
     repeat_every = 1
     week_days = [0]  # Mondays
@@ -303,7 +316,7 @@ def test_weekly_frequency_with_exclusions():
     ]
 
     result = handle_weekly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -316,8 +329,9 @@ def test_weekly_frequency_with_exclusions():
 
 def test_weekly_frequency_repeat_every_two():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 2
     week_days = [0]  # Mondays
@@ -328,7 +342,7 @@ def test_weekly_frequency_repeat_every_two():
     ]
 
     result = handle_weekly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -341,8 +355,9 @@ def test_weekly_frequency_repeat_every_two():
 
 def test_weekly_frequency_multiple_weekdays():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 2
     week_days = [0, 4]  # Mondays and Fridays
@@ -356,7 +371,7 @@ def test_weekly_frequency_multiple_weekdays():
     ]
 
     result = handle_weekly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -369,8 +384,9 @@ def test_weekly_frequency_multiple_weekdays():
 
 def test_weekly_frequency_multiple_weekdays_with_occurrences():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 2
     week_days = [0, 4]  # Mondays and Fridays
@@ -384,7 +400,7 @@ def test_weekly_frequency_multiple_weekdays_with_occurrences():
     ]
 
     result = handle_weekly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -398,8 +414,9 @@ def test_weekly_frequency_multiple_weekdays_with_occurrences():
 
 def test_weekly_frequency_with_period_start():
     period_start = date(2025, 1, 7)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
     week_days = [0]  # Mondays
@@ -411,7 +428,7 @@ def test_weekly_frequency_with_period_start():
     ]
 
     result = handle_weekly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -424,8 +441,9 @@ def test_weekly_frequency_with_period_start():
 
 def test_weekly_frequency_with_occurrences_and_period_start():
     period_start = date(2025, 1, 7)
-    start_date = date(2025, 1, 1)
     end_date = date(2025, 2, 28)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
     week_days = [0]  # Mondays
@@ -438,7 +456,7 @@ def test_weekly_frequency_with_occurrences_and_period_start():
     ]
 
     result = handle_weekly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -452,8 +470,9 @@ def test_weekly_frequency_with_occurrences_and_period_start():
 
 def test_monthly_frequency_day_in_month():
     period_start = date(2025, 1, 10)
-    start_date = date(2025, 1, 10)
     end_date = date(2027, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 10)
     excluded_dates = set()
     repeat_every = 1
     month_repeat_type = MonthRepeatType.DAY_IN_MONTH
@@ -487,7 +506,7 @@ def test_monthly_frequency_day_in_month():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -500,8 +519,9 @@ def test_monthly_frequency_day_in_month():
 
 def test_monthly_frequency_day_in_month_end_of_month_31_days():
     period_start = date(2025, 1, 10)
-    start_date = date(2025, 1, 31)
     end_date = date(2027, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 31)
     excluded_dates = set()
     repeat_every = 1
     month_repeat_type = MonthRepeatType.DAY_IN_MONTH
@@ -525,7 +545,7 @@ def test_monthly_frequency_day_in_month_end_of_month_31_days():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -538,8 +558,9 @@ def test_monthly_frequency_day_in_month_end_of_month_31_days():
 
 def test_monthly_frequency_day_in_month_every_two_months():
     period_start = date(2025, 1, 10)
-    start_date = date(2025, 1, 10)
     end_date = date(2027, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 10)
     excluded_dates = set()
     repeat_every = 2
     month_repeat_type = MonthRepeatType.DAY_IN_MONTH
@@ -561,7 +582,7 @@ def test_monthly_frequency_day_in_month_every_two_months():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -574,8 +595,9 @@ def test_monthly_frequency_day_in_month_every_two_months():
 
 def test_monthly_frequency_day_in_month_with_period_start():
     period_start = date(2025, 11, 10)
-    start_date = date(2025, 1, 31)
     end_date = date(2027, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 31)
     excluded_dates = set()
     repeat_every = 1
     month_repeat_type = MonthRepeatType.DAY_IN_MONTH
@@ -593,7 +615,7 @@ def test_monthly_frequency_day_in_month_with_period_start():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -606,8 +628,9 @@ def test_monthly_frequency_day_in_month_with_period_start():
 
 def test_monthly_frequency_day_in_month_with_occurrences():
     period_start = date(2025, 1, 10)
-    start_date = date(2025, 1, 10)
     end_date = date(2027, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 10)
     excluded_dates = set()
     repeat_every = 1
     month_repeat_type = MonthRepeatType.DAY_IN_MONTH
@@ -622,7 +645,7 @@ def test_monthly_frequency_day_in_month_with_occurrences():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -636,8 +659,9 @@ def test_monthly_frequency_day_in_month_with_occurrences():
 
 def test_monthly_frequency_day_in_month_with_period_start_and_occurrences():
     period_start = date(2025, 4, 10)
-    start_date = date(2025, 1, 10)
     end_date = date(2027, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 10)
     excluded_dates = set()
     repeat_every = 1
     month_repeat_type = MonthRepeatType.DAY_IN_MONTH
@@ -649,7 +673,7 @@ def test_monthly_frequency_day_in_month_with_period_start_and_occurrences():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -663,8 +687,9 @@ def test_monthly_frequency_day_in_month_with_period_start_and_occurrences():
 
 def test_monthly_frequency_day_in_month_with_exclusion():
     period_start = date(2025, 1, 10)
-    start_date = date(2025, 1, 10)
     end_date = date(2027, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 10)
     excluded_dates = {date(2025, 2, 10)}
     repeat_every = 1
     month_repeat_type = MonthRepeatType.DAY_IN_MONTH
@@ -697,7 +722,7 @@ def test_monthly_frequency_day_in_month_with_exclusion():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -710,8 +735,9 @@ def test_monthly_frequency_day_in_month_with_exclusion():
 
 def test_monthly_frequency_weekday_scenario_1():
     period_start = date(2025, 1, 10)
-    start_date = date(2025, 1, 10)
     end_date = date(2027, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 10)
     excluded_dates = set()
     repeat_every = 1
     month_repeat_type = MonthRepeatType.WEEKDAY
@@ -745,7 +771,7 @@ def test_monthly_frequency_weekday_scenario_1():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -758,8 +784,9 @@ def test_monthly_frequency_weekday_scenario_1():
 
 def test_monthly_frequency_weekday_scenario_2():
     period_start = date(2025, 1, 10)
-    start_date = date(2025, 1, 31)
     end_date = date(2027, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 31)
     excluded_dates = set()
     repeat_every = 1
     month_repeat_type = MonthRepeatType.WEEKDAY
@@ -777,7 +804,7 @@ def test_monthly_frequency_weekday_scenario_2():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -790,8 +817,9 @@ def test_monthly_frequency_weekday_scenario_2():
 
 def test_monthly_frequency_weekday_scenario_3():
     period_start = date(2025, 1, 10)
-    start_date = date(2025, 1, 10)
     end_date = date(2027, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 10)
     excluded_dates = set()
     repeat_every = 2
     month_repeat_type = MonthRepeatType.WEEKDAY
@@ -813,7 +841,7 @@ def test_monthly_frequency_weekday_scenario_3():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -826,8 +854,9 @@ def test_monthly_frequency_weekday_scenario_3():
 
 def test_monthly_frequency_weekday_scenario_4():
     period_start = date(2025, 11, 10)
-    start_date = date(2025, 1, 31)
     end_date = date(2027, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 31)
     excluded_dates = set()
     repeat_every = 1
     month_repeat_type = MonthRepeatType.WEEKDAY
@@ -841,7 +870,7 @@ def test_monthly_frequency_weekday_scenario_4():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -854,8 +883,9 @@ def test_monthly_frequency_weekday_scenario_4():
 
 def test_monthly_frequency_weekday_scenario_5():
     period_start = date(2025, 1, 10)
-    start_date = date(2025, 1, 10)
     end_date = date(2027, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 10)
     excluded_dates = set()
     repeat_every = 1
     month_repeat_type = MonthRepeatType.WEEKDAY
@@ -870,7 +900,7 @@ def test_monthly_frequency_weekday_scenario_5():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -884,8 +914,9 @@ def test_monthly_frequency_weekday_scenario_5():
 
 def test_monthly_frequency_weekday_scenario_6():
     period_start = date(2025, 4, 10)
-    start_date = date(2025, 1, 10)
     end_date = date(2027, 1, 31)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 10)
     excluded_dates = set()
     repeat_every = 1
     month_repeat_type = MonthRepeatType.WEEKDAY
@@ -897,7 +928,7 @@ def test_monthly_frequency_weekday_scenario_6():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -911,8 +942,9 @@ def test_monthly_frequency_weekday_scenario_6():
 
 def test_monthly_frequency_weekday_with_exclusion():
     period_start = date(2025, 1, 10)
-    start_date = date(2025, 1, 10)
     end_date = date(2027, 1, 10)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 10)
     excluded_dates = {date(2025, 2, 14)}
     repeat_every = 1
     month_repeat_type = MonthRepeatType.WEEKDAY
@@ -945,7 +977,7 @@ def test_monthly_frequency_weekday_with_exclusion():
     ]
 
     result = handle_monthly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -958,8 +990,9 @@ def test_monthly_frequency_weekday_with_exclusion():
 
 def test_yearly_frequency_scenario_1():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2030, 1, 1)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
 
@@ -973,7 +1006,7 @@ def test_yearly_frequency_scenario_1():
     ]
 
     result = handle_yearly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -985,8 +1018,9 @@ def test_yearly_frequency_scenario_1():
 
 def test_yearly_frequency_scenario_2():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2030, 1, 1)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = {date(2025, 1, 1)}
     repeat_every = 1
 
@@ -999,7 +1033,7 @@ def test_yearly_frequency_scenario_2():
     ]
 
     result = handle_yearly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -1011,8 +1045,9 @@ def test_yearly_frequency_scenario_2():
 
 def test_yearly_frequency_scenario_3():
     period_start = date(2026, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2030, 1, 1)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
 
@@ -1025,7 +1060,7 @@ def test_yearly_frequency_scenario_3():
     ]
 
     result = handle_yearly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -1037,8 +1072,9 @@ def test_yearly_frequency_scenario_3():
 
 def test_yearly_frequency_scenario_4():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2030, 1, 1)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 2
 
@@ -1049,7 +1085,7 @@ def test_yearly_frequency_scenario_4():
     ]
 
     result = handle_yearly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -1061,8 +1097,9 @@ def test_yearly_frequency_scenario_4():
 
 def test_yearly_frequency_scenario_5():
     period_start = date(2025, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2030, 1, 1)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
     number_of_occurrences = 3
@@ -1074,7 +1111,7 @@ def test_yearly_frequency_scenario_5():
     ]
 
     result = handle_yearly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -1087,8 +1124,9 @@ def test_yearly_frequency_scenario_5():
 
 def test_yearly_frequency_scenario_6():
     period_start = date(2027, 1, 1)
-    start_date = date(2025, 1, 1)
     end_date = date(2030, 1, 1)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2025, 1, 1)
     excluded_dates = set()
     repeat_every = 1
     number_of_occurrences = 3
@@ -1098,7 +1136,7 @@ def test_yearly_frequency_scenario_6():
     ]
 
     result = handle_yearly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -1111,8 +1149,9 @@ def test_yearly_frequency_scenario_6():
 
 def test_yearly_frequency_scenario_7():
     period_start = date(2027, 1, 1)
-    start_date = date(2024, 2, 29)
     end_date = date(2040, 1, 1)
+    period_dates = build_dates_list(period_start, end_date)
+    start_date = date(2024, 2, 29)
     excluded_dates = set()
     repeat_every = 1
 
@@ -1123,7 +1162,7 @@ def test_yearly_frequency_scenario_7():
     ]
 
     result = handle_yearly_frequency(
-        period_start,
+        period_dates,
         start_date,
         end_date,
         excluded_dates,
@@ -1136,6 +1175,7 @@ def test_yearly_frequency_scenario_7():
 def test_generate_recurring_dates_calls_correct_handler():
     period_start = date(2025, 1, 1)
     period_end = date(2026, 1, 31)
+    period_dates = build_dates_list(period_start, period_end)
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
@@ -1157,12 +1197,10 @@ def test_generate_recurring_dates_calls_correct_handler():
         return_value=[date(2025, 1, 1)],
     ) as mock_handler:
 
-        result = generate_recurring_dates(
-            period_start, period_end, recurrence_rule, exclusions
-        )
+        result = generate_recurring_dates(period_dates, recurrence_rule, exclusions)
 
         mock_handler.assert_called_once_with(
-            period_start,
+            period_dates,
             recurrence_rule.start_date,
             period_end,
             set(),
@@ -1178,6 +1216,7 @@ def test_generate_recurring_dates_calls_correct_handler():
 def test_generate_recurring_dates_scenario_1():
     period_start = date(2025, 1, 1)
     period_end = date(2026, 1, 31)
+    period_dates = build_dates_list(period_start, period_end)
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
@@ -1197,9 +1236,9 @@ def test_generate_recurring_dates_scenario_1():
     with patch(
         "src.utils.recurrence_utils.handle_daily_frequency", return_value=[]
     ) as mock_handler:
-        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        generate_recurring_dates(period_dates, recurrence_rule, exclusions)
         mock_handler.assert_called_once_with(
-            period_start,
+            period_dates,
             recurrence_rule.start_date,
             recurrence_rule.end_date,
             set(),
@@ -1213,6 +1252,7 @@ def test_generate_recurring_dates_scenario_1():
 def test_generate_recurring_dates_scenario_2():
     period_start = date(2025, 1, 1)
     period_end = date(2026, 1, 31)
+    period_dates = build_dates_list(period_start, period_end)
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
@@ -1232,9 +1272,9 @@ def test_generate_recurring_dates_scenario_2():
     with patch(
         "src.utils.recurrence_utils.handle_daily_frequency", return_value=[]
     ) as mock_handler:
-        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        generate_recurring_dates(period_dates, recurrence_rule, exclusions)
         mock_handler.assert_called_once_with(
-            period_start,
+            period_dates,
             recurrence_rule.start_date,
             period_end,
             set(),
@@ -1248,6 +1288,7 @@ def test_generate_recurring_dates_scenario_2():
 def test_generate_recurring_dates_scenario_3():
     period_start = date(2025, 1, 1)
     period_end = date(2026, 1, 31)
+    period_dates = build_dates_list(period_start, period_end)
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
@@ -1267,9 +1308,9 @@ def test_generate_recurring_dates_scenario_3():
     with patch(
         "src.utils.recurrence_utils.handle_daily_frequency", return_value=[]
     ) as mock_handler:
-        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        generate_recurring_dates(period_dates, recurrence_rule, exclusions)
         mock_handler.assert_called_once_with(
-            period_start,
+            period_dates,
             recurrence_rule.start_date,
             period_end,
             set(),
@@ -1283,6 +1324,7 @@ def test_generate_recurring_dates_scenario_3():
 def test_generate_recurring_dates_scenario_4():
     period_start = date(2025, 1, 1)
     period_end = date(2026, 1, 31)
+    period_dates = build_dates_list(period_start, period_end)
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
@@ -1308,9 +1350,9 @@ def test_generate_recurring_dates_scenario_4():
     with patch(
         "src.utils.recurrence_utils.handle_daily_frequency", return_value=[]
     ) as mock_handler:
-        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        generate_recurring_dates(period_dates, recurrence_rule, exclusions)
         mock_handler.assert_called_once_with(
-            period_start,
+            period_dates,
             recurrence_rule.start_date,
             period_end,
             {date(2025, 1, 1)},
@@ -1324,6 +1366,7 @@ def test_generate_recurring_dates_scenario_4():
 def test_generate_recurring_dates_scenario_5():
     period_start = date(2025, 1, 1)
     period_end = date(2026, 1, 31)
+    period_dates = build_dates_list(period_start, period_end)
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
@@ -1343,9 +1386,9 @@ def test_generate_recurring_dates_scenario_5():
     with patch(
         "src.utils.recurrence_utils.handle_weekly_frequency", return_value=[]
     ) as mock_handler:
-        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        generate_recurring_dates(period_dates, recurrence_rule, exclusions)
         mock_handler.assert_called_once_with(
-            period_start,
+            period_dates,
             recurrence_rule.start_date,
             period_end,
             set(),
@@ -1359,6 +1402,7 @@ def test_generate_recurring_dates_scenario_5():
 def test_generate_recurring_dates_scenario_6():
     period_start = date(2025, 1, 1)
     period_end = date(2026, 1, 31)
+    period_dates = build_dates_list(period_start, period_end)
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
@@ -1378,9 +1422,9 @@ def test_generate_recurring_dates_scenario_6():
     with patch(
         "src.utils.recurrence_utils.handle_monthly_frequency", return_value=[]
     ) as mock_handler:
-        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        generate_recurring_dates(period_dates, recurrence_rule, exclusions)
         mock_handler.assert_called_once_with(
-            period_start,
+            period_dates,
             recurrence_rule.start_date,
             period_end,
             set(),
@@ -1394,6 +1438,7 @@ def test_generate_recurring_dates_scenario_6():
 def test_generate_recurring_dates_scenario_7():
     period_start = date(2025, 1, 1)
     period_end = date(2026, 1, 31)
+    period_dates = build_dates_list(period_start, period_end)
     recurrence_rule = RecurrenceRule(
         id="rr_0",
         team_id="team_0",
@@ -1413,9 +1458,9 @@ def test_generate_recurring_dates_scenario_7():
     with patch(
         "src.utils.recurrence_utils.handle_yearly_frequency", return_value=[]
     ) as mock_handler:
-        generate_recurring_dates(period_start, period_end, recurrence_rule, exclusions)
+        generate_recurring_dates(period_dates, recurrence_rule, exclusions)
         mock_handler.assert_called_once_with(
-            period_start,
+            period_dates,
             recurrence_rule.start_date,
             period_end,
             set(),

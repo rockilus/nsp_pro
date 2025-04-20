@@ -255,3 +255,22 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         self.collection.delete_many({"recurrence_rule_id": recurrence_rule_id})
 
         return deleted_ids
+
+    def delete_assignments_by_schedule_id_and_dates(
+        self, schedule_id: str, dates: List[date]
+    ) -> None:
+        """Delete assignments by a schedule ID and a list of dates."""
+        if not schedule_id or not dates:
+            return
+
+        # Convert dates to datetime objects
+        date_filters = [
+            datetime(d.year, d.month, d.day, tzinfo=timezone.utc) for d in dates
+        ]
+
+        self.collection.delete_many(
+            {
+                "schedule": schedule_id,
+                "date": {"$in": date_filters},
+            }
+        )

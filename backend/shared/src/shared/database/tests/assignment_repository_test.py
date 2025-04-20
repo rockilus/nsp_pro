@@ -683,3 +683,45 @@ class TestAssignmentRepository:
 
         unrelated = list(self.repo.collection.find({"recurrence_rule_id": "rule456"}))
         assert len(unrelated) == 1
+
+    def test_delete_assignments_by_schedule_id_and_dates(self):
+        """Test deleting assignments by schedule ID and dates."""
+        schedule_id = "schedule1"
+        dates = [
+            datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
+            datetime(2023, 1, 2, tzinfo=timezone.utc).date(),
+        ]
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule1",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker3",
+                schedule="schedule1",
+                date=datetime(2023, 1, 3, tzinfo=timezone.utc),
+                shift="shift3",
+                fixed=False,
+            ),
+        ]
+        self.repo.create_many(assignments)
+
+        self.repo.delete_assignments_by_schedule_id_and_dates(schedule_id, dates)
+
+        remaining = list(self.repo.collection.find({"schedule": schedule_id}))
+
+        assert len(remaining) == 1
+        assert remaining[0]["date"] == datetime(2023, 1, 3, 0, 0)

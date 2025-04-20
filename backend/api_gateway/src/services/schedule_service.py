@@ -21,6 +21,7 @@ from shared.schemas.core import (
 )
 
 from src.config import config
+from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
 from src.utils.excel_utils import core_to_excel_schedule
 
@@ -31,10 +32,12 @@ class ScheduleService(BaseService):
         collection: DatabaseCollections,
         celery_app: Celery,
         submit_solve_problem_task: Callable[[Schedule], str],
+        assignment_service: AssignmentService,
     ) -> None:
         super().__init__(collection)
         self.celery_app = celery_app
         self.submit_solve_problem_task = submit_solve_problem_task
+        self.assignment_service = assignment_service
 
     def get_schedule_campaign(self, team_id: str) -> Schedule:
         schedules = self.collection.schedule_db.get_schedules(team_id)

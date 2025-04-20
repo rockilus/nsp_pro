@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from shared.schemas.core import (
     Assignment,
@@ -9,11 +9,13 @@ from shared.schemas.core import (
     RecurrenceExclusion,
     RecurrenceRule,
     RecurrenceUpdateScope,
+    Schedule,
     Shift,
     ShiftType,
 )
 
 from src.services.base_service import BaseService
+from src.utils.date_utils import build_dates_list
 from src.utils.recurrence_utils import generate_recurring_dates
 
 
@@ -172,9 +174,12 @@ class AssignmentService(BaseService):
                     "Recurrence must have a worker ID and a shift ID to create "
                     + "assignments."
                 )
+            period_dates = build_dates_list(
+                start_date=schedule_wip.start_date,
+                end_date=schedule_wip.end_date,
+            )
             dates_recurring = generate_recurring_dates(
-                period_start=schedule_wip.start_date,
-                period_end=schedule_wip.end_date,
+                period_dates=period_dates,
                 recurrence_rule=recurrence,
                 exclusions=[],
             )
@@ -243,6 +248,50 @@ class AssignmentService(BaseService):
 
         if new_assignments:
             self.collection.assignment_db.create_assignments(new_assignments)
+
+    def update_assignments_for_schedule_dates_change(
+        self, schedule_new: Schedule, schedule_old: Schedule
+    ) -> None:
+        dates_old = build_dates_list(
+            start_date=schedule_old.start_date,
+            end_date=schedule_old.end_date,
+        )
+        dates_new = build_dates_list(
+            start_date=schedule_new.start_date,
+            end_date=schedule_new.end_date,
+        )
+        # Get dates in old schedule that are not in new schedule
+        dates_removed = [d for d in dates_old if d not in dates_new]
+        # Get dates in new schedule that are not in old schedule
+        # dates_added = [d for d in dates_new if d not in dates_old]
+        # Delete schedule assignments for dates removed
+        self.collection.assignment_db.delete_assignments_by_schedule_id_and_dates(
+            schedule_id=schedule_new.id, dates=dates_removed
+        )
+        # Get the schedule recurrences
+        recurrences = (
+            self.collection.recurrence_db.get_recurrences_by_team_and_date_range(
+                team_id=schedule_new.team_id,
+                start_date=schedule_new.start_date,
+                end_date=schedule_new.end_date,
+            )
+        )
+        # Get the recurrences exclusions
+        # fmt: off
+        exclusions = self.collection.recurrence_exclusion_db\
+            .get_recurrence_exclusions_by_rule_ids(
+                rule_ids=[r.id for r in recurrences]
+            )
+        # fmt: on
+
+        rec_id_to_exclusions: Dict[str, List[RecurrenceExclusion]] = {}
+        for e in exclusions:
+            if e.recurrence_rule_id not in rec_id_to_exclusions:
+                rec_id_to_exclusions[e.recurrence_rule_id] = []
+            rec_id_to_exclusions[e.recurrence_rule_id].append(e)
+        # Get the recurrences assignments
+
+        # Create the recurrences assignments on the schedule period
 
     def get_assignments_and_recurrences(
         self,
@@ -480,9 +529,12 @@ class AssignmentService(BaseService):
                 and recurrence_new.number_of_occurrences
                 == recurrence_old.number_of_occurrences
             ):
+                period_dates = build_dates_list(
+                    start_date=recurrence_old.start_date,
+                    end_date=assignment.date,
+                )
                 dates_original_rec = generate_recurring_dates(
-                    period_start=recurrence_old.start_date,
-                    period_end=assignment.date,
+                    period_dates=period_dates,
                     recurrence_rule=recurrence_old,
                     exclusions=[],
                 )

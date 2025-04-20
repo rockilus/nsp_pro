@@ -1,3 +1,4 @@
+from datetime import date, datetime, time, timezone
 from typing import List
 
 from shared.database.repositories.base import BaseRepository
@@ -27,6 +28,25 @@ class RecurrenceRepository(BaseRepository[RecurrenceRuleSchema]):
     def get_recurrences_by_team_id(self, team_id: str) -> List[RecurrenceRule]:
         """Get all recurrence rules for a team."""
         recurrences = self.find_all({"team_id": team_id})
+        return [recurrence.to_core() for recurrence in recurrences]
+
+    def get_recurrences_by_team_and_date_range(
+        self, team_id: str, start_date: date, end_date: date
+    ) -> List[RecurrenceRule]:
+        """Get recurrence rules by team ID and date range."""
+        start_timestamp = datetime.combine(
+            start_date, time.min, timezone.utc
+        ).timestamp()
+        end_timestamp = datetime.combine(end_date, time.max, timezone.utc).timestamp()
+        query = {
+            "team_id": team_id,
+            "start_date": {"$lte": end_timestamp},
+            "$or": [
+                {"end_date": {"$gte": start_timestamp}},
+                {"end_date": None},
+            ],
+        }
+        recurrences = self.find_all(query)
         return [recurrence.to_core() for recurrence in recurrences]
 
     def update_recurrence(self, recurrence: RecurrenceRule) -> RecurrenceRule:

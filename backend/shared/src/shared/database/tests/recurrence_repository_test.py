@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -215,3 +215,230 @@ class TestRecurrenceRepository:
         assert len(recurrences) == 2
         assert recurrences[0].team_id == "team1"
         assert recurrences[1].team_id == "team1"
+
+    # pylint: disable=too-many-locals
+    def test_get_recurrences_by_team_and_date_range(self):
+        """Test retrieving recurrence rules by team ID and date range."""
+
+        # Request
+        team_id = "team1"
+        start_date_request = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        end_date_request = datetime(2025, 12, 31, tzinfo=timezone.utc)
+
+        # Recurrences
+        # recurrence.team_id not same team id - OK
+        team_id_other = "team2"
+        # recurrence.start_date after end date and recurrence.end_date is None - OK
+        # recurrence.start_date and recurrence.end_date after end date - OK
+        start_date_after = end_date_request + timedelta(days=1)
+        end_date_after = end_date_request + timedelta(days=2)
+        # recurrence.end_date before start date - OK
+        # recurrence.start_date before end date, and recurrence.end_date is None - OK
+        start_date_before = start_date_request - timedelta(days=2)
+        end_date_before = start_date_request - timedelta(days=1)
+        # recurrence.start_date before end date, and recurrence.end in period - OK
+        # recurrence.start_date in, and recurrence.end in period - OK
+        # recurrence.start_date in, and recurrence.end after end date - OK
+        # recurrence.start_date in, and recurrence.end None - OK
+        start_date_in = start_date_request + timedelta(days=1)
+        end_date_in = start_date_request + timedelta(days=2)
+
+        # recurrence.team_id not same team id
+        recurrence_team_id_other = RecurrenceRuleSchema(
+            team_id=team_id_other,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift1",
+                count=None,
+            ),
+            repeat_every=1,
+            frequency_type=FrequencyType.WEEK.value,
+            week_days=[1, 3, 5],
+            month_repeat_type=None,
+            recurrence_end_type=RecurrenceEndType.NEVER.value,
+            start_date=start_date_in.timestamp(),
+            end_date=end_date_in.timestamp(),
+            number_of_occurrences=None,
+        )
+
+        # recurrence.start_date after end date and recurrence.end_date is None
+        recurrence_after_none = RecurrenceRuleSchema(
+            team_id=team_id,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift2",
+                count=None,
+            ),
+            repeat_every=1,
+            frequency_type=FrequencyType.WEEK.value,
+            week_days=[1, 3, 5],
+            month_repeat_type=None,
+            recurrence_end_type=RecurrenceEndType.NEVER.value,
+            start_date=start_date_after.timestamp(),
+            end_date=None,
+            number_of_occurrences=None,
+        )
+
+        # recurrence.start_date and recurrence.end_date after end date
+        recurrence_after_after = RecurrenceRuleSchema(
+            team_id=team_id,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift3",
+                count=None,
+            ),
+            repeat_every=1,
+            frequency_type=FrequencyType.WEEK.value,
+            week_days=[1, 3, 5],
+            month_repeat_type=None,
+            recurrence_end_type=RecurrenceEndType.END_DATE.value,
+            start_date=start_date_after.timestamp(),
+            end_date=end_date_after.timestamp(),
+            number_of_occurrences=None,
+        )
+
+        # recurrence.end_date before start date
+        recurrence_before_before = RecurrenceRuleSchema(
+            team_id=team_id,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift4",
+                count=None,
+            ),
+            repeat_every=1,
+            frequency_type=FrequencyType.WEEK.value,
+            week_days=[1, 3, 5],
+            month_repeat_type=None,
+            recurrence_end_type=RecurrenceEndType.END_DATE.value,
+            start_date=start_date_before.timestamp(),
+            end_date=end_date_before.timestamp(),
+            number_of_occurrences=None,
+        )
+
+        # recurrence.start_date before end date, and recurrence.end_date is None
+        recurrence_before_none = RecurrenceRuleSchema(
+            team_id=team_id,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift5",
+                count=None,
+            ),
+            repeat_every=1,
+            frequency_type=FrequencyType.WEEK.value,
+            week_days=[1, 3, 5],
+            month_repeat_type=None,
+            recurrence_end_type=RecurrenceEndType.END_DATE.value,
+            start_date=start_date_before.timestamp(),
+            end_date=None,
+            number_of_occurrences=None,
+        )
+
+        # recurrence.start_date before end date, and recurrence.end in period
+        recurrence_before_in = RecurrenceRuleSchema(
+            team_id=team_id,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift6",
+                count=None,
+            ),
+            repeat_every=1,
+            frequency_type=FrequencyType.WEEK.value,
+            week_days=[1, 3, 5],
+            month_repeat_type=None,
+            recurrence_end_type=RecurrenceEndType.NEVER.value,
+            start_date=start_date_before.timestamp(),
+            end_date=end_date_in.timestamp(),
+            number_of_occurrences=None,
+        )
+
+        # recurrence.start_date in, and recurrence.end in period
+        recurrence_in_in = RecurrenceRuleSchema(
+            team_id=team_id,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift7",
+                count=None,
+            ),
+            repeat_every=1,
+            frequency_type=FrequencyType.WEEK.value,
+            week_days=[1, 3, 5],
+            month_repeat_type=None,
+            recurrence_end_type=RecurrenceEndType.NEVER.value,
+            start_date=start_date_in.timestamp(),
+            end_date=end_date_in.timestamp(),
+            number_of_occurrences=None,
+        )
+
+        # recurrence.start_date in, and recurrence.end after end date
+        recurrence_in_after = RecurrenceRuleSchema(
+            team_id=team_id,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift8",
+                count=None,
+            ),
+            repeat_every=1,
+            frequency_type=FrequencyType.WEEK.value,
+            week_days=[1, 3, 5],
+            month_repeat_type=None,
+            recurrence_end_type=RecurrenceEndType.NEVER.value,
+            start_date=start_date_in.timestamp(),
+            end_date=end_date_after.timestamp(),
+            number_of_occurrences=None,
+        )
+
+        # recurrence.start_date in, and recurrence.end None
+        recurrence_in_none = RecurrenceRuleSchema(
+            team_id=team_id,
+            occurrence_type=OccurrenceType.ASSIGNMENT.value,
+            occurrence_info=OccurrenceInfoSchema(
+                worker_id=None,
+                shift_id="shift9",
+                count=None,
+            ),
+            repeat_every=1,
+            frequency_type=FrequencyType.WEEK.value,
+            week_days=[1, 3, 5],
+            month_repeat_type=None,
+            recurrence_end_type=RecurrenceEndType.NEVER.value,
+            start_date=start_date_in.timestamp(),
+            end_date=None,
+            number_of_occurrences=None,
+        )
+
+        _ = self.repo.create_many(
+            [
+                recurrence_team_id_other,
+                recurrence_after_none,
+                recurrence_after_after,
+                recurrence_before_before,
+            ]
+        )
+        recurrences_in = self.repo.create_many(
+            [
+                recurrence_before_none,
+                recurrence_before_in,
+                recurrence_in_in,
+                recurrence_in_after,
+                recurrence_in_none,
+            ]
+        )
+
+        recurrences = self.repo.get_recurrences_by_team_and_date_range(
+            team_id=team_id,
+            start_date=start_date_request,
+            end_date=end_date_request,
+        )
+
+        recurrence_in_ids = [recurrence.id for recurrence in recurrences_in]
+
+        assert len(recurrences) == len(recurrences_in)
+        assert all(recurrence.id in recurrence_in_ids for recurrence in recurrences)
