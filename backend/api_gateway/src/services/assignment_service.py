@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from shared.schemas.core import (
     Assignment,
@@ -55,7 +55,11 @@ class AssignmentService(BaseService):
             assignments_recup = self._create_recuperation_assignments(
                 assignments_duty=out.assignments_created
             )
-            out.assignments_created.extend(assignments_recup)
+            if assignments_recup:
+                assignments_recup_saved = (
+                    self.collection.assignment_db.create_assignments(assignments_recup)
+                )
+                out.assignments_created.extend(assignments_recup_saved)
         return out
 
     def _create_recuperation_assignments(
@@ -80,7 +84,7 @@ class AssignmentService(BaseService):
                         recurrence_rule_id=assignment.recurrence_rule_id,
                     )
                 )
-        return self.collection.assignment_db.create_assignments(assignments_recup)
+        return assignments_recup
 
     def _get_duty_id_to_recup_shift_mapping(
         self, assignments_duty: List[Assignment]
@@ -119,11 +123,28 @@ class AssignmentService(BaseService):
             recurrence.occurrence_info.shift_id = assignment.shift_id
             recurrence = self.collection.recurrence_db.create_recurrence(recurrence)
             out.recurrence_created = recurrence
-        assignments_recurrence = self._handle_recurrence_assignments_creation(
-            recurrence=recurrence,
-            create_first_assignment=create_first_assignment,
+        schedule_wip = self.collection.schedule_db.get_schedule_campaign(
+            team_id=recurrence.team_id
         )
-        out.assignments_created.extend(assignments_recurrence)
+        assignments_recurrence = []
+        if schedule_wip:
+            period_dates = build_dates_list(
+                start_date=schedule_wip.start_date,
+                end_date=schedule_wip.end_date,
+            )
+            assignments_recurrence = self._handle_recurrence_assignments_creation(
+                recurrence=recurrence,
+                period_dates=period_dates,
+                schedule_id=schedule_wip.id,
+                create_first_assignment=create_first_assignment,
+            )
+            if assignments_recurrence:
+                assignments_recurrence_saved = (
+                    self.collection.assignment_db.create_assignments(
+                        assignments_recurrence
+                    )
+                )
+                out.assignments_created.extend(assignments_recurrence_saved)
 
         if create_first_assignment:
             existing_assignment = next(
@@ -146,65 +167,50 @@ class AssignmentService(BaseService):
             assignments_recup = self._create_recuperation_assignments(
                 assignments_duty=out.assignments_created
             )
-            out.assignments_created.extend(assignments_recup)
+            if assignments_recup:
+                assignments_recup_saved = (
+                    self.collection.assignment_db.create_assignments(assignments_recup)
+                )
+                out.assignments_created.extend(assignments_recup_saved)
         return out
 
-    def _handle_recurrence_creation(
-        self, recurrence: RecurrenceRule
-    ) -> Tuple[RecurrenceRule, List[Assignment]]:
-        recurrence_saved = self.collection.recurrence_db.create_recurrence(recurrence)
-        assignments_recurrence = self._handle_recurrence_assignments_creation(
-            recurrence=recurrence_saved
-        )
-        return (recurrence_saved, assignments_recurrence)
-
+    @staticmethod
     def _handle_recurrence_assignments_creation(
-        self, recurrence: RecurrenceRule, create_first_assignment: bool = True
+        recurrence: RecurrenceRule,
+        period_dates: List[date],
+        schedule_id: str,
+        create_first_assignment: bool = True,
     ) -> List[Assignment]:
-        out: List[Assignment] = []
-        schedule_wip = self.collection.schedule_db.get_schedule_campaign(
-            team_id=recurrence.team_id
+        if (
+            recurrence.occurrence_info.worker_id is None
+            or recurrence.occurrence_info.shift_id is None
+        ):
+            raise ValueError(
+                "Recurrence must have a worker ID and a shift ID to create "
+                + "assignments."
+            )
+        dates_recurring = generate_recurring_dates(
+            period_dates=period_dates,
+            recurrence_rule=recurrence,
+            exclusions=[],
         )
-        if schedule_wip:
-            if (
-                recurrence.occurrence_info.worker_id is None
-                or recurrence.occurrence_info.shift_id is None
-            ):
-                raise ValueError(
-                    "Recurrence must have a worker ID and a shift ID to create "
-                    + "assignments."
-                )
-            period_dates = build_dates_list(
-                start_date=schedule_wip.start_date,
-                end_date=schedule_wip.end_date,
+        if not create_first_assignment:
+            dates_recurring = [d for d in dates_recurring if d != recurrence.start_date]
+        assignments_rec_campaign = [
+            Assignment(
+                id="",  # ID will be generated by the database
+                team_id=recurrence.team_id,
+                schedule_id=schedule_id,
+                worker_id=recurrence.occurrence_info.worker_id,
+                date=date,
+                shift_id=recurrence.occurrence_info.shift_id,
+                fixed=True,
+                reference_assignment_id=None,
+                recurrence_rule_id=recurrence.id,
             )
-            dates_recurring = generate_recurring_dates(
-                period_dates=period_dates,
-                recurrence_rule=recurrence,
-                exclusions=[],
-            )
-            if not create_first_assignment:
-                dates_recurring = [
-                    d for d in dates_recurring if d != recurrence.start_date
-                ]
-            assignments_rec_campaign = [
-                Assignment(
-                    id="",  # ID will be generated by the database
-                    team_id=recurrence.team_id,
-                    schedule_id=schedule_wip.id,
-                    worker_id=recurrence.occurrence_info.worker_id,
-                    date=date,
-                    shift_id=recurrence.occurrence_info.shift_id,
-                    fixed=True,
-                    reference_assignment_id=None,
-                    recurrence_rule_id=recurrence.id,
-                )
-                for date in dates_recurring
-            ]
-            out = self.collection.assignment_db.create_assignments(
-                assignments_rec_campaign
-            )
-        return out
+            for date in dates_recurring
+        ]
+        return assignments_rec_campaign
 
     def create_recuperation_assignments_upon_shift_duty_creation(
         self, shift_duty_id: str, shift_recup_id: str, team_id: str
@@ -249,25 +255,28 @@ class AssignmentService(BaseService):
         if new_assignments:
             self.collection.assignment_db.create_assignments(new_assignments)
 
+    # pylint: disable=too-many-locals
     def update_assignments_for_schedule_dates_change(
-        self, schedule_new: Schedule, schedule_old: Schedule
+        self, schedule_new: Schedule, schedule_old: Optional[Schedule] = None
     ) -> None:
-        dates_old = build_dates_list(
-            start_date=schedule_old.start_date,
-            end_date=schedule_old.end_date,
-        )
         dates_new = build_dates_list(
             start_date=schedule_new.start_date,
             end_date=schedule_new.end_date,
         )
-        # Get dates in old schedule that are not in new schedule
-        dates_removed = [d for d in dates_old if d not in dates_new]
+        dates_old: List[date] = []
+        if schedule_old is not None:
+            dates_old = build_dates_list(
+                start_date=schedule_old.start_date,
+                end_date=schedule_old.end_date,
+            )
+            # Get dates in old schedule that are not in new schedule
+            dates_removed = [d for d in dates_old if d not in dates_new]
+            # Delete schedule assignments for dates removed
+            self.collection.assignment_db.delete_assignments_by_schedule_id_and_dates(
+                schedule_id=schedule_new.id, dates=dates_removed
+            )
         # Get dates in new schedule that are not in old schedule
-        # dates_added = [d for d in dates_new if d not in dates_old]
-        # Delete schedule assignments for dates removed
-        self.collection.assignment_db.delete_assignments_by_schedule_id_and_dates(
-            schedule_id=schedule_new.id, dates=dates_removed
-        )
+        dates_added = [d for d in dates_new if d not in dates_old]
         # Get the schedule recurrences
         recurrences = (
             self.collection.recurrence_db.get_recurrences_by_team_and_date_range(
@@ -289,9 +298,43 @@ class AssignmentService(BaseService):
             if e.recurrence_rule_id not in rec_id_to_exclusions:
                 rec_id_to_exclusions[e.recurrence_rule_id] = []
             rec_id_to_exclusions[e.recurrence_rule_id].append(e)
-        # Get the recurrences assignments
-
+        # Get the recurrences assignments shifts
+        shift_rec_ids: Set[str] = {
+            r.occurrence_info.shift_id
+            for r in recurrences
+            if r.occurrence_info.shift_id is not None
+        }
+        shifts_rec = self.collection.shift_db.get_shifts_by_ids(
+            shift_ids=list(shift_rec_ids)
+        )
+        shift_id_to_shift: Dict[str, Shift] = {shift.id: shift for shift in shifts_rec}
         # Create the recurrences assignments on the schedule period
+        assignnments_created = []
+        for recurrence in recurrences:
+            assignments_recurrence = self._handle_recurrence_assignments_creation(
+                recurrence=recurrence,
+                period_dates=dates_added,
+                schedule_id=schedule_new.id,
+                create_first_assignment=True,
+            )
+            shift_rec = (
+                shift_id_to_shift.get(recurrence.occurrence_info.shift_id, None)
+                if recurrence.occurrence_info.shift_id
+                else None
+            )
+            if shift_rec is None:
+                raise ValueError(
+                    f"Shift with ID {recurrence.occurrence_info.shift_id} does "
+                    + "not exist."
+                )
+            assignments_recup = []
+            if shift_rec.shift_type == ShiftType.DUTY:
+                assignments_recup = self._create_recuperation_assignments(
+                    assignments_duty=assignments_recurrence
+                )
+            assignnments_created.extend(assignments_recurrence + assignments_recup)
+        if assignnments_created:
+            self.collection.assignment_db.create_assignments(assignnments_created)
 
     def get_assignments_and_recurrences(
         self,
