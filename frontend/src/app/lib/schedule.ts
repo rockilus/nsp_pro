@@ -20,9 +20,10 @@ import {
   SolveDetailsStatus,
   WorkTimeTableDataT,
   WorkTimeTableT,
+  DuplicateRequestT,
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
-import { AssignmentT } from "@/types/assignment";
+import { AssignmentT, AssignmentsRecurrencesResultT } from "@/types/assignment";
 import { RequestT } from "../../types/request";
 import {
   StatsOptionsT,
@@ -396,5 +397,33 @@ export async function getScheduleLHSData(teamId: string) {
     throw new Error(
       "Failed to fetch schedule LHS data, please try again later"
     );
+  }
+}
+
+export async function duplicatePeriod(
+  duplicateRequest: DuplicateRequestT,
+  campaignId: string,
+  teamId: string
+): Promise<AssignmentsRecurrencesResultT> {
+  const options: RequestInit = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(duplicateRequest),
+  };
+  try {
+    const response = await fetch(
+      `${apiUrlSchedule}/${campaignId}/duplicate-period/teams/${teamId}`,
+      options
+    );
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error("Failed to duplicate period: " + responseData.detail);
+    }
+    return responseData as AssignmentsRecurrencesResultT;
+  } catch (error) {
+    console.error("Failed to duplicate period:", error);
+    throw new Error("Failed to duplicate period, please try again later");
   }
 }

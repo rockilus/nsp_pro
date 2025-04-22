@@ -27,6 +27,7 @@ import {
   getSchedules,
   getScheduleAssignmentsData,
   getScheduleLHSData,
+  duplicatePeriod,
 } from "../../app/lib/schedule";
 import {
   addAssignmentAndRecurrence,
@@ -53,6 +54,7 @@ import {
   SolveDetailsStatus,
   LHSTabContentT,
   periodDateT,
+  DuplicateRequestT,
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
@@ -237,6 +239,18 @@ export default function ScheduleTab({
     setScheduleCampaign(null);
     setSchedulesValidated([...schedulesValidated, newSchedule]);
     setBreaches([]);
+  };
+
+  const handleSendDuplicateRequest = async (
+    request: DuplicateRequestT,
+    campaignId: string,
+    teamId: string
+  ) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    const ARResult = await duplicatePeriod(request, campaignId, teamId);
+    updateAssignmentsAndRecurrencesStates(ARResult);
   };
 
   //////////////////////////
@@ -819,6 +833,7 @@ export default function ScheduleTab({
             switchShowBreaches={() => setShowBreaches(!showBreaches)}
             handleSolveSchedule={handleSolveSchedule}
             handleValidateSchedule={handleValidateSchedule}
+            handleSendDuplicateRequest={handleSendDuplicateRequest}
           />
         )}
         <div style={{ display: "flex", flexDirection: "row" }}>

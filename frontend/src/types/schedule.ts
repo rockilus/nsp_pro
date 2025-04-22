@@ -5,6 +5,7 @@ import { ShiftT } from "./shift";
 import { RequestT } from "./request";
 import { AssignmentT } from "./assignment";
 import { BreachT } from "./breach";
+import { OccurrenceType } from "./recurrence";
 
 // Schedule
 export type QuickStaffingT = {
@@ -107,4 +108,19 @@ export type periodDateT = {
   date: dayjs.Dayjs;
   scheduleId: string | null;
   scheduleStatus: ScheduleStatus | null;
+};
+
+export type PeriodT = {
+  startDate: dayjs.Dayjs;
+  endDate: dayjs.Dayjs;
+};
+
+export type DuplicateOptionsT = {
+  occurrenceType: OccurrenceType;
+};
+
+export type DuplicateRequestT = {
+  sourcePeriod: PeriodT;
+  targetPeriod: PeriodT;
+  options: DuplicateOptionsT;
 };
