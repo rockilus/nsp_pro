@@ -82,6 +82,9 @@ from shared.schemas.core.request import (
     RequestStatus,
 )
 from shared.schemas.core.schedule import (
+    DuplicateOptions,
+    DuplicateRequest,
+    Period,
     QuickStaffing,
     Schedule,
     ScheduleSolveStatus,
@@ -193,6 +196,9 @@ __all__ = [
     "RequestStatus",
     "Breach",
     "ObjectiveCategory",
+    "DuplicateOptions",
+    "DuplicateRequest",
+    "Period",
     "QuickStaffing",
     "Schedule",
     "SolveDetailsStatus",
