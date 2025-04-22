@@ -7,11 +7,13 @@ from openpyxl import Workbook
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
     CoverageSelector,
+    AssignmentsRecurrencesResult,
     DSDSourceType,
     ExportOptions,
     ExportPeriodOptions,
     Schedule,
     ScheduleSolveStatus,
+    DuplicateRequest,
     ScheduleStatus,
     ShiftType,
     SolveDetails,
@@ -54,7 +56,9 @@ class ScheduleService(BaseService):
             else last_date + timedelta(days=1)
         )
         end_date = start_date + timedelta(days=30)
-        cbs = self.collection.constraint_build_db.get_constraint_builds(team_id)
+        cbs = self.collection.constraint_build_db.get_constraint_builds(
+            team_id
+        )
         campaign_created = self.collection.schedule_db.create_schedule(
             Schedule(
                 id="",
@@ -149,7 +153,9 @@ class ScheduleService(BaseService):
         self,
         schedule_new: Schedule,
     ) -> Tuple[Schedule, List[CoverageSelector]]:
-        schedule_old = self.collection.schedule_db.get_schedule_by_id(schedule_new.id)
+        schedule_old = self.collection.schedule_db.get_schedule_by_id(
+            schedule_new.id
+        )
         self.assignment_service.update_assignments_for_schedule_dates_change(
             schedule_new=schedule_new, schedule_old=schedule_old
         )
@@ -199,7 +205,7 @@ class ScheduleService(BaseService):
         solve_details = SolveDetails(
             task_id=task_id,
             status=SolveDetailsStatus.SUCCESS,
-            updated_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(tz=timezone.utc),
             result={"output": result},
         )
         schedule.solve_details = solve_details
@@ -209,9 +215,13 @@ class ScheduleService(BaseService):
     # pylint: disable=too-many-locals
     def build_worktime_data(self, schedule_id: str) -> WorkTimeTable:
         schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
-        workers = self.collection.worker_db.get_workers_not_deleted(schedule.team_id)
+        workers = self.collection.worker_db.get_workers_not_deleted(
+            schedule.team_id
+        )
         coverage_selectors = (
-            self.collection.coverage_selector_db.get_coverage_selectors(schedule.id)
+            self.collection.coverage_selector_db.get_coverage_selectors(
+                schedule.id
+            )
         )
         shift_demands = (
             self.collection.shift_demand_db.get_shift_demands_by_coverage_ids(
@@ -236,7 +246,8 @@ class ScheduleService(BaseService):
         # Workers
         workers_data = WorkTimeTableData(
             hours=round(
-                sum(worker.weekly_hours_desired for worker in workers) * nb_weeks
+                sum(worker.weekly_hours_desired for worker in workers)
+                * nb_weeks
             ),
             count=len(workers),
         )
@@ -274,7 +285,9 @@ class ScheduleService(BaseService):
                 shift_count[dsd.shift_id] += dsd.count
 
         # Shifts
-        shifts = self.collection.shift_db.get_shifts_by_ids(list(shift_count.keys()))
+        shifts = self.collection.shift_db.get_shifts_by_ids(
+            list(shift_count.keys())
+        )
         shifts_work_not_deleted = [
             shift
             for shift in shifts
@@ -282,7 +295,8 @@ class ScheduleService(BaseService):
             and not shift.deleted
         ]
         shifts_duration = {
-            shift.id: (shift.end_time - shift.start_time).total_seconds() / 3600
+            shift.id: (shift.end_time - shift.start_time).total_seconds()
+            / 3600
             for shift in shifts_work_not_deleted
         }
         # Duties
@@ -325,7 +339,9 @@ class ScheduleService(BaseService):
         )
 
     def delete_schedule(self, schedule_id: str) -> None:
-        self.collection.assignment_db.delete_assignments_by_schedule_id(schedule_id)
+        self.collection.assignment_db.delete_assignments_by_schedule_id(
+            schedule_id
+        )
         self.collection.breach_db.delete_breaches_by_schedule_id(schedule_id)
         self.collection.daily_shift_demand_db.delete_daily_shift_demands_by_schedule_id(
             schedule_id
@@ -338,7 +354,9 @@ class ScheduleService(BaseService):
         workers = self.collection.worker_db.get_workers(team_id)
         shifts = self.collection.shift_db.get_shifts(team_id)
         if export_options.period_option == ExportPeriodOptions.ALL:
-            assignments = self.collection.assignment_db.get_assignments(team_id)
+            assignments = self.collection.assignment_db.get_assignments(
+                team_id
+            )
             start_date = min(assignment.date for assignment in assignments)
             end_date = max(assignment.date for assignment in assignments)
             dates = [
@@ -346,15 +364,56 @@ class ScheduleService(BaseService):
                 for i in range((end_date - start_date).days + 1)
             ]
         else:
-            assignments = self.collection.assignment_db.get_assignments_by_dates(
-                team_id, export_options.start_date, export_options.end_date
+            assignments = (
+                self.collection.assignment_db.get_assignments_by_dates(
+                    team_id, export_options.start_date, export_options.end_date
+                )
             )
             dates = [
                 export_options.start_date + timedelta(days=i)
                 for i in range(
-                    (export_options.end_date - export_options.start_date).days + 1
+                    (export_options.end_date - export_options.start_date).days
+                    + 1
                 )
             ]
         wb = core_to_excel_schedule(workers, shifts, assignments, dates)
 
         return wb
+
+    def duplicate_period(
+        self, schedule_id: str, duplicate: DuplicateRequest
+    ) -> AssignmentsRecurrencesResult:
+        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
+        if not schedule:
+            raise ValueError(f"Schedule with id {schedule_id} not found")
+        if schedule.status != ScheduleStatus.CAMPAIGN:
+            raise ValueError(
+                f"Schedule with id {schedule_id} is not in campaign status"
+            )
+        if not (
+            duplicate.target_period.start_date
+            <= duplicate.target_period.end_date
+            and duplicate.target_period.start_date >= schedule.start_date
+            and duplicate.target_period.end_date <= schedule.end_date
+        ):
+            raise ValueError(
+                "The target period is outside the campaign period"
+            )
+
+        # Check that the target period is at most 7 days long
+        if (
+            duplicate.target_period.end_date
+            - duplicate.target_period.start_date
+        ).days > 7:
+            raise ValueError("The target period must be at most 7 days long")
+
+        # Check that the source period is exactly 7 days long and starts on a Monday
+        if (
+            duplicate.source_period.end_date
+            - duplicate.source_period.start_date
+        ).days != 7 or duplicate.source_period.start_date.weekday() != 0:
+            raise ValueError(
+                "The source period must be exactly 7 days long and start on a Monday"
+            )
+
+        print(duplicate)
