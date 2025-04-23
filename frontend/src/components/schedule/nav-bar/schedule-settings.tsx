@@ -71,7 +71,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
     handleClosePopover();
   };
 
-  const handleConfirmDuplicate = () => {
+  const handleConfirmDuplicate = async () => {
     if (!targetWeek || !campaign) return;
 
     const duplicateRequest: DuplicateRequestT = {
@@ -88,7 +88,11 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
       },
     };
 
-    handleSendDuplicateRequest(duplicateRequest, campaign.id, campaign.teamId);
+    await handleSendDuplicateRequest(
+      duplicateRequest,
+      campaign.id,
+      campaign.teamId
+    );
     setWarningDialogOpen(false);
     setDuplicateDialogOpen(false);
     setTargetWeek(null);

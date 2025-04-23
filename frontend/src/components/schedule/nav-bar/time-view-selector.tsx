@@ -25,7 +25,7 @@ export default function TimeViewSelector({
   handleToday: () => void;
   handlePreviousPeriod: () => void;
   handleNextPeriod: () => void;
-  handleChangeSelectedTimeView: (newSelectedTimeView: string) => void;
+  handleChangeSelectedTimeView: (newSelectedTimeView: "week" | "month") => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -109,7 +109,9 @@ export default function TimeViewSelector({
       </span>
       <select
         value={selectedTimeView}
-        onChange={(e) => handleChangeSelectedTimeView(e.target.value)}
+        onChange={(e) =>
+          handleChangeSelectedTimeView(e.target.value as "week" | "month")
+        }
         style={{
           borderRadius: "4px",
           border: "1px solid #e5e7eb",

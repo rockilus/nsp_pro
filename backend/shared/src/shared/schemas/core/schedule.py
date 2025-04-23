@@ -76,9 +76,7 @@ class SolveDetails:
         return cls(
             task_id=data["task_id"],
             status=SolveDetailsStatus(data["status"]),
-            updated_at=datetime.fromtimestamp(
-                data["updated_at"], tz=timezone.utc
-            ),
+            updated_at=datetime.fromtimestamp(data["updated_at"], tz=timezone.utc),
             result=data["result"],
         )
 
@@ -144,12 +142,8 @@ class Schedule:
         return cls(
             id=data["id"],
             team_id=data["team_id"],
-            start_date=datetime.fromtimestamp(
-                data["start_date"], timezone.utc
-            ).date(),
-            end_date=datetime.fromtimestamp(
-                data["end_date"], timezone.utc
-            ).date(),
+            start_date=datetime.fromtimestamp(data["start_date"], timezone.utc).date(),
+            end_date=datetime.fromtimestamp(data["end_date"], timezone.utc).date(),
             last_modified_dates=datetime.fromtimestamp(
                 data["last_modified_dates"], timezone.utc
             ),
@@ -165,9 +159,7 @@ class Schedule:
                 for ts in data["missing_coverage_dates"]
             ],
             constraint_build_ids=data["constraint_build_ids"],
-            quick_staffings=[
-                QuickStaffing(**qs) for qs in data["quick_staffings"]
-            ],
+            quick_staffings=[QuickStaffing(**qs) for qs in data["quick_staffings"]],
             last_updated_dsds=(
                 datetime.fromtimestamp(data["last_updated_dsds"], timezone.utc)
                 if data.get("last_updated_dsds", None) is not None
@@ -214,21 +206,17 @@ class Schedule:
             data_snake["last_modified_dates"], timezone.utc
         )
         if data_snake.get("solve_details", None) is not None:
-            data_snake["solve_details"] = SolveDetails.from_dto(
-                data.solveDetails
+            data_snake["solve_details"] = (
+                SolveDetails.from_dto(data.solveDetails) if data.solveDetails else None
             )
-        data_snake["solve_status"] = ScheduleSolveStatus(
-            data_snake["solve_status"]
-        )
+        data_snake["solve_status"] = ScheduleSolveStatus(data_snake["solve_status"])
         data_snake["status"] = ScheduleStatus(data_snake["status"])
         data_snake["missing_coverage_dates"] = [
             datetime.fromtimestamp(ts, timezone.utc).date()
             for ts in data_snake["missing_coverage_dates"]
         ]
         data_snake["last_updated_dsds"] = (
-            datetime.fromtimestamp(
-                data_snake["last_updated_dsds"], timezone.utc
-            )
+            datetime.fromtimestamp(data_snake["last_updated_dsds"], timezone.utc)
             if data_snake.get("last_updated_dsds", None) is not None
             else None
         )
@@ -259,9 +247,7 @@ class Solution:
     def to_dict(self) -> Dict:
         out = asdict(self)
         out["schedule"] = self.schedule.to_dict()
-        out["assignments"] = [
-            assignment.to_dict() for assignment in self.assignments
-        ]
+        out["assignments"] = [assignment.to_dict() for assignment in self.assignments]
         out["breaches"] = [breach.to_dict() for breach in self.breaches]
         out["requests"] = [request.to_dict() for request in self.requests]
         return out
@@ -270,12 +256,9 @@ class Solution:
     def from_dict(cls, data: Dict) -> "Solution":
         data["schedule"] = Schedule.from_dict(data["schedule"])
         data["assignments"] = [
-            Assignment.from_dict(assignment)
-            for assignment in data["assignments"]
+            Assignment.from_dict(assignment) for assignment in data["assignments"]
         ]
-        data["breaches"] = [
-            Breach.from_dict(breach) for breach in data["breaches"]
-        ]
+        data["breaches"] = [Breach.from_dict(breach) for breach in data["breaches"]]
         data["requests"] = [
             RequestAugmented.from_dict(request) for request in data["requests"]
         ]
@@ -284,9 +267,7 @@ class Solution:
     def to_dto(self) -> SolutionDTO:
         data = asdict(self)
         data["schedule"] = self.schedule.to_dto()
-        data["assignments"] = [
-            assignment.to_dto() for assignment in self.assignments
-        ]
+        data["assignments"] = [assignment.to_dto() for assignment in self.assignments]
         data["breaches"] = [breach.to_dto() for breach in self.breaches]
         data["requests"] = [request.to_dto() for request in self.requests]
         as_dict = humps.camelize(data)
@@ -298,15 +279,13 @@ class Solution:
         data_snake = humps.decamelize(data.model_dump())
         data_snake["schedule"] = Schedule.from_dto(data_snake["schedule"])
         data_snake["assignments"] = [
-            Assignment.from_dto(assignment)
-            for assignment in data_snake["assignments"]
+            Assignment.from_dto(assignment) for assignment in data_snake["assignments"]
         ]
         data_snake["breaches"] = [
             Breach.from_dto(breach) for breach in data_snake["breaches"]
         ]
         data_snake["requests"] = [
-            RequestAugmented.from_dto(request)
-            for request in data_snake["requests"]
+            RequestAugmented.from_dto(request) for request in data_snake["requests"]
         ]
         return Solution(**data_snake)
 
@@ -376,8 +355,6 @@ class DuplicateRequest:
             ).date(),
         )
         data_dict["options"] = DuplicateOptions(
-            occurrence_type=OccurrenceType(
-                data_dict["options"]["occurrence_type"]
-            )
+            occurrence_type=OccurrenceType(data_dict["options"]["occurrence_type"])
         )
         return cls(**data_dict)

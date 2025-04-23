@@ -43,7 +43,7 @@ export default function ScheduleNavBar({
   handleToday: () => void;
   handlePreviousPeriod: () => void;
   handleNextPeriod: () => void;
-  handleChangeSelectedTimeView: (newSelectedTimeView: string) => void;
+  handleChangeSelectedTimeView: (newSelectedTimeView: "week" | "month") => void;
   setSelectedDisplay: (newSelectedDisplay: string) => void;
   switchShowBreaches: () => void;
   handleSolveSchedule: (scheduleId: string) => void;

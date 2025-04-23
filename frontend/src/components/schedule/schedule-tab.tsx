@@ -252,6 +252,9 @@ export default function ScheduleTab({
     }
     const ARResult = await duplicatePeriod(request, campaignId, teamId);
     updateAssignmentsAndRecurrencesStates(ARResult);
+    const newPeriodStart = request.targetPeriod.startDate.startOf("isoWeek");
+    const newPeriodEnd = request.targetPeriod.startDate.endOf("isoWeek");
+    updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   //////////////////////////
@@ -429,6 +432,15 @@ export default function ScheduleTab({
     setSelectedCell(null);
   };
 
+  const updateSelectedPeriod = (
+    newPeriodStart: dayjs.Dayjs,
+    newPeriodEnd: dayjs.Dayjs
+  ) => {
+    setPeriodStartDate(newPeriodStart);
+    setPeriodEndDate(newPeriodEnd);
+    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
+  };
+
   const handleToday = async () => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
@@ -445,9 +457,7 @@ export default function ScheduleTab({
         : selectedTimeView === "month"
         ? dayjs.utc().endOf("month")
         : dayjs.utc(); // Default to current time if neither "week" nor "month"
-    setPeriodStartDate(newPeriodStart);
-    setPeriodEndDate(newPeriodEnd);
-    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
+    updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   const handlePreviousPeriod = async () => {
@@ -462,9 +472,7 @@ export default function ScheduleTab({
       1,
       selectedTimeView === "month" ? "month" : "week"
     );
-    setPeriodStartDate(newPeriodStart);
-    setPeriodEndDate(newPeriodEnd);
-    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
+    updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   const handleNextPeriod = async () => {
@@ -479,9 +487,7 @@ export default function ScheduleTab({
       1,
       selectedTimeView === "month" ? "month" : "week"
     );
-    setPeriodStartDate(newPeriodStart);
-    setPeriodEndDate(newPeriodEnd);
-    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
+    updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   const handleChangeSelectedTimeView = async (
@@ -499,9 +505,7 @@ export default function ScheduleTab({
         periodStartDate,
         periodEndDate
       );
-    setPeriodStartDate(newPeriodStart);
-    setPeriodEndDate(newPeriodEnd);
-    setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
+    updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   //////////////////////////
