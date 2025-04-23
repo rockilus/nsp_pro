@@ -3,28 +3,29 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // Actions
 import { getAssignmentsByDates } from "./assignment";
-import { toAssignmentT } from "@/types/assignment";
-import { toBreachT, getBreaches } from "./breach";
-import { toRequestT, getRequests } from "./request";
+import { getBreaches } from "./breach";
+import { getRequests } from "./request";
 import { getAllWorkers } from "./worker";
-import { getAllShifts, toShiftT } from "./shift";
+import { getAllShifts } from "./shift";
 import { getStats } from "./stats";
 import { getDailyShiftDemands } from "./daily-shift-demand";
-import { toDailyShiftDemandT } from "@/types/daily-shift-demand";
 import { toCoverageSelectorT } from "./campaign";
 // Types
 import {
   ScheduleT,
   ExportOptionsT,
-  SolveDetailsT,
-  SolveDetailsStatus,
-  WorkTimeTableDataT,
   WorkTimeTableT,
   DuplicateRequestT,
+  toScheduleT,
+  fromScheduleT,
+  fromExportOptionsT,
+  fromDuplicateRequestT,
 } from "../../types/schedule";
-import { BreachT } from "@/types/breach";
-import { AssignmentT, AssignmentsRecurrencesResultT } from "@/types/assignment";
-import { RequestT } from "../../types/request";
+import {
+  AssignmentT,
+  AssignmentsRecurrencesResultT,
+  toAssignmentsRecurrencesResultT,
+} from "@/types/assignment";
 import {
   StatsOptionsT,
   StatsUnitOptions,
@@ -42,54 +43,6 @@ import { API_URL } from "./env";
 dayjs.extend(utc);
 
 const apiUrlSchedule = API_URL + "/schedules";
-
-export const toSolveDetailsT = (data: any): SolveDetailsT => {
-  return {
-    ...data,
-    updatedAt: dayjs.unix(data.updatedAt).utc(),
-  };
-};
-
-export const fromSolveDetailsT = (data: SolveDetailsT): any => {
-  return {
-    ...data,
-    updatedAt: data.updatedAt.unix(),
-  };
-};
-
-export const toScheduleT = (data: any): ScheduleT => {
-  return {
-    ...data,
-    startDate: dayjs.unix(data.startDate).utc(),
-    endDate: dayjs.unix(data.endDate).utc(),
-    solveDetails: data.solveDetails ? toSolveDetailsT(data.solveDetails) : null,
-    missingCoverageDates: data.missingCoverageDates.map((timeStamp: number) =>
-      dayjs.unix(timeStamp).utc()
-    ),
-  };
-};
-
-export const fromScheduleT = (data: ScheduleT): any => {
-  return {
-    ...data,
-    startDate: data.startDate.unix(),
-    endDate: data.endDate.unix(),
-    solveDetails: data.solveDetails
-      ? fromSolveDetailsT(data.solveDetails)
-      : null,
-    missingCoverageDates: data.missingCoverageDates.map((date: dayjs.Dayjs) =>
-      date.unix()
-    ),
-  };
-};
-
-export const fromExportOptionsT = (data: ExportOptionsT): any => {
-  return {
-    ...data,
-    startDate: data.startDate.unix(),
-    endDate: data.endDate.unix(),
-  };
-};
 
 //////////////////////////
 // Schedule //
@@ -410,7 +363,7 @@ export async function duplicatePeriod(
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(duplicateRequest),
+    body: JSON.stringify(fromDuplicateRequestT(duplicateRequest)),
   };
   try {
     const response = await fetch(
@@ -421,7 +374,9 @@ export async function duplicatePeriod(
     if (!response.ok) {
       throw new Error("Failed to duplicate period: " + responseData.detail);
     }
-    return responseData as AssignmentsRecurrencesResultT;
+    return toAssignmentsRecurrencesResultT(
+      responseData
+    ) as AssignmentsRecurrencesResultT;
   } catch (error) {
     console.error("Failed to duplicate period:", error);
     throw new Error("Failed to duplicate period, please try again later");

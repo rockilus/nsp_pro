@@ -2,9 +2,8 @@
 import { toAssignmentT } from "@/types/assignment";
 import { toBreachT } from "./breach";
 import { toRequestT } from "./request";
-import { toScheduleT } from "./schedule";
 // Types
-import { SolveDetailsStatus } from "../../types/schedule";
+import { SolveDetailsStatus, toScheduleT } from "../../types/schedule";
 // Env Vars
 import { API_URL } from "./env";
 

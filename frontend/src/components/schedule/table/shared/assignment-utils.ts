@@ -13,6 +13,9 @@ export const generateOwnerIdDateKey = (
   ownerId: string,
   date: dayjs.Dayjs
 ): string => {
+  // console.log("generateOwnerIdDateKey", ownerId, date);
+  // console.log("date type", typeof date);
+
   return `${ownerId}-${date.format("YYYY-MM-DD")}`;
 };
 

@@ -54,8 +54,6 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
     OccurrenceType.ASSIGNMENT
   );
 
-  console.log("targetWeek", targetWeek);
-
   const handleOpenPopover = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -88,6 +86,10 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
 
     handleSendDuplicateRequest(duplicateRequest, campaign.id, campaign.teamId);
     setWarningDialogOpen(false);
+    setDuplicateDialogOpen(false);
+    setTargetWeek(null);
+    setOccurrenceType(OccurrenceType.ASSIGNMENT);
+    setAnchorEl(null);
   };
 
   const handleCloseWarningDialog = () => {
@@ -101,8 +103,6 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
     const campaignStart = campaign.startDate.startOf("day");
     const campaignEnd = campaign.endDate.endOf("day");
     const test = campaignStart.endOf("week").add(1, "day");
-    console.log("campaignStart", campaignStart.format("YYYY-MM-DD"));
-    console.log("test", test.format("YYYY-MM-DD"));
 
     const weeks = [];
     let currentStart = campaignStart;
@@ -112,18 +112,20 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
         currentStart.endOf("week").add(1, "day"),
         campaignEnd
       );
-      weeks.push({
-        label: `${currentStart.format("D MMMM YYYY")} - ${currentEnd.format(
-          "D MMMM YYYY"
-        )}`,
-        startDate: currentStart,
-        endDate: currentEnd,
-      });
+      if (!(currentStart.isBefore(endDate) && currentEnd.isAfter(startDate))) {
+        weeks.push({
+          label: `${currentStart.format("D MMMM YYYY")} - ${currentEnd.format(
+            "D MMMM YYYY"
+          )}`,
+          startDate: currentStart,
+          endDate: currentEnd,
+        });
+      }
       currentStart = currentEnd.add(1, "day");
     }
 
     return weeks;
-  }, [campaign]);
+  }, [campaign, startDate, endDate]);
 
   return (
     <div>
@@ -197,7 +199,11 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
             Cancel
           </Button>
           <Button
-            onClick={handleConfirmDuplicate}
+            onClick={() => {
+              if (targetWeek) {
+                setWarningDialogOpen(true);
+              }
+            }}
             color="primary"
             variant="contained"
             disabled={!targetWeek}
@@ -216,7 +222,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
         <DialogActions>
           <Button onClick={handleCloseWarningDialog}>Cancel</Button>
           <Button
-            onClick={handleCloseWarningDialog}
+            onClick={handleConfirmDuplicate}
             color="primary"
             variant="contained"
           >
