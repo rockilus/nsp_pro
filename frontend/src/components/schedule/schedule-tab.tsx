@@ -16,6 +16,7 @@ import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
 import { getAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
+import { getPeriodStartEndDates } from "./schedule-utils";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
@@ -483,24 +484,23 @@ export default function ScheduleTab({
     setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
   };
 
-  const handleChangeSelectedTimeView = async (newSelectedTimeView: string) => {
+  const handleChangeSelectedTimeView = async (
+    newSelectedTimeView: "week" | "month"
+  ) => {
     console.log("handleChangeSelectedTimeView called", newSelectedTimeView);
 
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
     setSelectedTimeView(newSelectedTimeView);
-    let newPeriodStart = periodStartDate;
-    let newPeriodEnd = periodEndDate;
-    if (newSelectedTimeView === "month") {
-      newPeriodStart = periodEndDate.startOf("month");
-      newPeriodEnd = periodEndDate.endOf("month");
-    } else if (newSelectedTimeView === "week") {
-      newPeriodStart = periodStartDate.startOf("isoWeek");
-      newPeriodEnd = periodStartDate.endOf("isoWeek");
-    }
-    setPeriodStartDate(periodStartDate.startOf("month"));
-    setPeriodEndDate(periodEndDate.endOf("month"));
+    const { firstDate: newPeriodStart, lastDate: newPeriodEnd } =
+      getPeriodStartEndDates(
+        newSelectedTimeView,
+        periodStartDate,
+        periodEndDate
+      );
+    setPeriodStartDate(newPeriodStart);
+    setPeriodEndDate(newPeriodEnd);
     setPeriodDates(buildDates(newPeriodStart, newPeriodEnd));
   };
 
