@@ -1,4 +1,7 @@
 import React, { useState, useMemo } from "react";
+import dayjs from "dayjs";
+import { useTranslation } from "../../../app/i18n/client";
+// MUI
 import {
   IconButton,
   Popover,
@@ -16,19 +19,16 @@ import {
   Radio,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
-import {
-  ScheduleT,
-  DuplicateRequestT,
-  DuplicateOptionsT,
-  PeriodT,
-} from "../../../types/schedule";
+// Types
+import { ScheduleT, DuplicateRequestT } from "../../../types/schedule";
 import { OccurrenceType } from "@/types/recurrence";
-import dayjs from "dayjs";
 
 interface ScheduleSettingsProps {
+  lng: string;
   campaign: ScheduleT | null;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
+  selectedTimeView: string;
   handleSendDuplicateRequest: (
     request: DuplicateRequestT,
     campaignId: string,
@@ -37,11 +37,15 @@ interface ScheduleSettingsProps {
 }
 
 const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
+  lng,
   campaign,
   startDate,
   endDate,
+  selectedTimeView,
   handleSendDuplicateRequest,
 }) => {
+  const { t } = useTranslation(lng, "schedule-page");
+
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [isDuplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [isWarningDialogOpen, setWarningDialogOpen] = useState(false);
@@ -139,8 +143,16 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
       >
-        <MenuItem onClick={handleDuplicateWeek} disabled={!campaign}>
-          Duplicate Week
+        <MenuItem
+          onClick={handleDuplicateWeek}
+          disabled={
+            !campaign ||
+            selectedTimeView !== "week" ||
+            endDate.diff(startDate, "day") + 1 !== 7 ||
+            startDate.day() !== 1
+          }
+        >
+          {t("duplicate_week")}
         </MenuItem>
       </Popover>
 
@@ -148,10 +160,10 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
         open={isDuplicateDialogOpen}
         onClose={() => setDuplicateDialogOpen(false)}
       >
-        <DialogTitle>Select Target Week</DialogTitle>
+        <DialogTitle>{t("duplicate_week")}</DialogTitle>
         <DialogContent>
           <FormControl fullWidth>
-            <InputLabel>Target Week</InputLabel>
+            <InputLabel>{t("target_week")}</InputLabel>
             <Select
               value={targetWeek?.label || ""}
               onChange={(e) => {
@@ -160,6 +172,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
                 );
                 setTargetWeek(selectedWeek || null);
               }}
+              placeholder="Select a week"
               style={{ minWidth: "300px" }}
             >
               {weekOptions.map((week, index) => (
@@ -177,13 +190,17 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
             <FormControlLabel
               value={OccurrenceType.ASSIGNMENT}
               control={<Radio size="small" />}
-              label={<span style={{ fontSize: "0.875rem" }}>Assignment</span>}
+              label={
+                <span style={{ fontSize: "0.875rem" }}>{t("assignment")}</span>
+              }
             />
             <FormControlLabel
               value={OccurrenceType.DAILY_SHIFT_DEMAND}
               control={<Radio size="small" />}
               label={
-                <span style={{ fontSize: "0.875rem" }}>Daily Shift Demand</span>
+                <span style={{ fontSize: "0.875rem" }}>
+                  {t("shift_demand")}
+                </span>
               }
               disabled={true}
             />
@@ -195,8 +212,9 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
               setTargetWeek(null);
               setDuplicateDialogOpen(false);
             }}
+            sx={{ textTransform: "none" }}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             onClick={() => {
@@ -207,26 +225,33 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
             color="primary"
             variant="contained"
             disabled={!targetWeek}
+            sx={{ textTransform: "none" }}
           >
-            Duplicate
+            {t("duplicate")}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={isWarningDialogOpen} onClose={handleCloseWarningDialog}>
-        <DialogTitle>Duplicate to week {targetWeek?.label}</DialogTitle>
+        <DialogTitle>{t("duplicate_week")}</DialogTitle>
         <DialogContent>
-          Assignments in the target week will be deleted. Do you want to
-          proceed?
+          {t("duplicate_warning_part_1")} <b>{targetWeek?.label}</b>{" "}
+          {t("duplicate_warning_part_2")}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseWarningDialog}>Cancel</Button>
+          <Button
+            onClick={handleCloseWarningDialog}
+            sx={{ textTransform: "none" }}
+          >
+            {t("cancel")}
+          </Button>
           <Button
             onClick={handleConfirmDuplicate}
             color="primary"
             variant="contained"
+            sx={{ textTransform: "none" }}
           >
-            Confirm
+            {t("confirm")}
           </Button>
         </DialogActions>
       </Dialog>

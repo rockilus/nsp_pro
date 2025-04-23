@@ -84,9 +84,11 @@ export default function ScheduleNavBar({
         switchShowBreaches={switchShowBreaches}
       />
       <ScheduleSettings
+        lng={lng}
         campaign={scheduleCampaign}
         startDate={currentPeriodStart}
         endDate={currentPeriodEnd}
+        selectedTimeView={selectedTimeView}
         handleSendDuplicateRequest={handleSendDuplicateRequest}
       />
       {scheduleCampaign ? (
