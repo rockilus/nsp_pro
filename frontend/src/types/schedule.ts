@@ -5,6 +5,7 @@ import { ShiftT } from "./shift";
 import { RequestT } from "./request";
 import { AssignmentT } from "./assignment";
 import { BreachT } from "./breach";
+import { OccurrenceType } from "./recurrence";
 
 // Schedule
 export type QuickStaffingT = {
@@ -107,4 +108,83 @@ export type periodDateT = {
   date: dayjs.Dayjs;
   scheduleId: string | null;
   scheduleStatus: ScheduleStatus | null;
+};
+
+export type PeriodT = {
+  startDate: dayjs.Dayjs;
+  endDate: dayjs.Dayjs;
+};
+
+export type DuplicateOptionsT = {
+  occurrenceType: OccurrenceType;
+};
+
+export type DuplicateRequestT = {
+  sourcePeriod: PeriodT;
+  targetPeriod: PeriodT;
+  options: DuplicateOptionsT;
+};
+
+export const toSolveDetailsT = (data: any): SolveDetailsT => {
+  return {
+    ...data,
+    updatedAt: dayjs.unix(data.updatedAt).utc(),
+  };
+};
+
+export const fromSolveDetailsT = (data: SolveDetailsT): any => {
+  return {
+    ...data,
+    updatedAt: data.updatedAt.unix(),
+  };
+};
+
+export const toScheduleT = (data: any): ScheduleT => {
+  return {
+    ...data,
+    startDate: dayjs.unix(data.startDate).utc(),
+    endDate: dayjs.unix(data.endDate).utc(),
+    solveDetails: data.solveDetails ? toSolveDetailsT(data.solveDetails) : null,
+    missingCoverageDates: data.missingCoverageDates.map((timeStamp: number) =>
+      dayjs.unix(timeStamp).utc()
+    ),
+  };
+};
+
+export const fromScheduleT = (data: ScheduleT): any => {
+  return {
+    ...data,
+    startDate: data.startDate.unix(),
+    endDate: data.endDate.unix(),
+    solveDetails: data.solveDetails
+      ? fromSolveDetailsT(data.solveDetails)
+      : null,
+    missingCoverageDates: data.missingCoverageDates.map((date: dayjs.Dayjs) =>
+      date.unix()
+    ),
+  };
+};
+
+export const fromExportOptionsT = (data: ExportOptionsT): any => {
+  return {
+    ...data,
+    startDate: data.startDate.unix(),
+    endDate: data.endDate.unix(),
+  };
+};
+
+export const fromPeriodT = (data: PeriodT): any => {
+  return {
+    ...data,
+    startDate: data.startDate.unix(),
+    endDate: data.endDate.unix(),
+  };
+};
+
+export const fromDuplicateRequestT = (data: DuplicateRequestT): any => {
+  return {
+    ...data,
+    sourcePeriod: fromPeriodT(data.sourcePeriod),
+    targetPeriod: fromPeriodT(data.targetPeriod),
+  };
 };

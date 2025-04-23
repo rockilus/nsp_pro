@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Set, Tuple
 from shared.schemas.core import (
     Assignment,
     AssignmentsRecurrencesResult,
+    DuplicateRequest,
     OccurrenceInfo,
     RecurrenceEndType,
     RecurrenceExclusion,
@@ -19,6 +20,7 @@ from src.utils.date_utils import build_dates_list
 from src.utils.recurrence_utils import generate_recurring_dates
 
 
+# pylint: disable=too-many-lines
 class AssignmentService(BaseService):
     def create_assignment_and_recurrence(
         self,
@@ -52,8 +54,12 @@ class AssignmentService(BaseService):
         out.assignments_created.append(assignment_saved)
 
         if shift.shift_type == ShiftType.DUTY:
+            shifts_recup = self._get_recup_shifts(
+                shift_ids=[a.shift_id for a in out.assignments_created]
+            )
             assignments_recup = self._create_recuperation_assignments(
-                assignments_duty=out.assignments_created
+                assignments_duty=out.assignments_created,
+                shifts_recup=shifts_recup,
             )
             if assignments_recup:
                 assignments_recup_saved = (
@@ -63,10 +69,10 @@ class AssignmentService(BaseService):
         return out
 
     def _create_recuperation_assignments(
-        self, assignments_duty: List[Assignment]
+        self, assignments_duty: List[Assignment], shifts_recup: List[Shift]
     ) -> List[Assignment]:
-        duty_to_recup_map = self._get_duty_id_to_recup_shift_mapping(
-            assignments_duty=assignments_duty
+        duty_to_recup_map = self._build_duty_id_to_recup_shift_map(
+            shifts_recup=shifts_recup
         )
         assignments_recup = []
         for assignment in assignments_duty:
@@ -86,20 +92,21 @@ class AssignmentService(BaseService):
                 )
         return assignments_recup
 
-    def _get_duty_id_to_recup_shift_mapping(
-        self, assignments_duty: List[Assignment]
-    ) -> dict:
-        shift_duty_ids = {assignment.shift_id for assignment in assignments_duty}
-        shift_recup = self.collection.shift_db.get_recuperation_shifts(
-            shift_ids=list(shift_duty_ids)
+    def _get_recup_shifts(self, shift_ids: List[str]) -> List[Shift]:
+        shift_ids = list(set(shift_ids))
+        return self.collection.shift_db.get_recuperation_shifts(
+            shift_ids=list(shift_ids)
         )
+
+    @staticmethod
+    def _build_duty_id_to_recup_shift_map(shifts_recup: List[Shift]) -> dict:
         duty_to_recup_map = {}
-        for shift in shift_recup:
+        for shift in shifts_recup:
             duty_to_recup_map[shift.recuperation_duty_id] = shift.id
 
         return duty_to_recup_map
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments, too-many-locals
     def _handle_recurrence_and_assignments_creation(
         self,
         recurrence: RecurrenceRule,
@@ -164,8 +171,12 @@ class AssignmentService(BaseService):
                 out.assignments_created.append(assignment_saved)
 
         if shift.shift_type == ShiftType.DUTY:
+            shifts_recup = self._get_recup_shifts(
+                shift_ids=[a.shift_id for a in out.assignments_created]
+            )
             assignments_recup = self._create_recuperation_assignments(
-                assignments_duty=out.assignments_created
+                assignments_duty=out.assignments_created,
+                shifts_recup=shifts_recup,
             )
             if assignments_recup:
                 assignments_recup_saved = (
@@ -329,8 +340,12 @@ class AssignmentService(BaseService):
                 )
             assignments_recup = []
             if shift_rec.shift_type == ShiftType.DUTY:
+                shifts_recup = self._get_recup_shifts(
+                    shift_ids=[a.shift_id for a in assignments_recurrence]
+                )
                 assignments_recup = self._create_recuperation_assignments(
-                    assignments_duty=assignments_recurrence
+                    assignments_duty=assignments_recurrence,
+                    shifts_recup=shifts_recup,
                 )
             assignnments_created.extend(assignments_recurrence + assignments_recup)
         if assignnments_created:
@@ -770,3 +785,260 @@ class AssignmentService(BaseService):
                 recurrences_deleted_ids=[recurrence_rule_id],
             )
         raise ValueError(f"Invalid recurrence update scope: {recurrence_update_scope}")
+
+    def duplicate_period(
+        self, campaign: Schedule, duplicate: DuplicateRequest
+    ) -> AssignmentsRecurrencesResult:
+        date_mapping = self._build_duplicate_date_mapping(duplicate=duplicate)
+        source_period = list(date_mapping.keys())
+        target_period = list(date_mapping.values())
+
+        assignments_source, assignments_target = self._get_assignments_for_periods(
+            source_period=source_period,
+            target_period=target_period,
+            team_id=campaign.team_id,
+        )
+        (
+            a_source_duplicate_ids,
+            a_target_keep_ids,
+            a_target_delete_ids,
+            exclusions_target_create,
+        ) = self._build_assignment_and_exclusion_lists(
+            source_period=source_period,
+            target_period=target_period,
+            date_mapping=date_mapping,
+            assignments_source=assignments_source,
+            assignments_target=assignments_target,
+        )
+
+        self._validate_lists(
+            assignments_source=assignments_source,
+            assignments_target=assignments_target,
+            a_source_duplicate_ids=a_source_duplicate_ids,
+            a_target_keep_ids=a_target_keep_ids,
+            a_target_delete_ids=a_target_delete_ids,
+        )
+
+        a_to_create = self._build_duplicate_assignments(
+            assignments_source=assignments_source,
+            date_mapping=date_mapping,
+            a_source_duplicate_ids=a_source_duplicate_ids,
+            campaign_id=campaign.id,
+        )
+
+        ar_result = self._apply_changes_to_database(
+            a_to_create=a_to_create,
+            a_target_delete_ids=a_target_delete_ids,
+            exclusions_target_create=exclusions_target_create,
+        )
+
+        shifts_recup = self._get_recup_shifts(
+            shift_ids=[a.shift_id for a in ar_result.assignments_created]
+        )
+        assignments_recup = self._create_recuperation_assignments(
+            assignments_duty=ar_result.assignments_created,
+            shifts_recup=shifts_recup,
+        )
+        if assignments_recup:
+            assignments_recup_saved = self.collection.assignment_db.create_assignments(
+                assignments_recup
+            )
+            ar_result.assignments_created.extend(assignments_recup_saved)
+        return ar_result
+
+    @staticmethod
+    def _build_duplicate_date_mapping(
+        duplicate: DuplicateRequest,
+    ) -> Dict[date, date]:
+        source_dates = build_dates_list(
+            duplicate.source_period.start_date,
+            duplicate.source_period.end_date,
+        )
+        target_dates = build_dates_list(
+            duplicate.target_period.start_date,
+            duplicate.target_period.end_date,
+        )
+
+        # Map source and target dates to their weekdays
+        source_date_map = {
+            source_date.weekday(): source_date for source_date in source_dates
+        }
+        target_date_map = {
+            target_date.weekday(): target_date for target_date in target_dates
+        }
+
+        # Build the mapping by iterating through the target date map
+        date_mapping = {
+            source_date_map[weekday]: target_date
+            for weekday, target_date in target_date_map.items()
+            if weekday in source_date_map
+        }
+
+        return date_mapping
+
+    def _get_assignments_for_periods(
+        self,
+        source_period: List[date],
+        target_period: List[date],
+        team_id: str,
+    ) -> Tuple[List[Assignment], List[Assignment]]:
+        assignments_source = self.collection.assignment_db.get_assignments_by_dates(
+            team_id=team_id,
+            start_date=min(source_period),
+            end_date=max(source_period),
+        )
+        assignments_target = self.collection.assignment_db.get_assignments_by_dates(
+            team_id=team_id,
+            start_date=min(target_period),
+            end_date=max(target_period),
+        )
+        return assignments_source, assignments_target
+
+    @staticmethod
+    def _build_assignment_and_exclusion_lists(
+        source_period: List[date],
+        target_period: List[date],
+        date_mapping: Dict[date, date],
+        assignments_source: List[Assignment],
+        assignments_target: List[Assignment],
+    ) -> Tuple[
+        List[str],
+        List[str],
+        List[str],
+        List[RecurrenceExclusion],
+    ]:
+        a_source_duplicate_ids = []
+        a_target_keep_ids = []
+        a_target_delete_ids = []
+        exclusions_target_create = []
+
+        for a_source in assignments_source:
+            if a_source.date not in source_period:
+                continue
+            if a_source.reference_assignment_id:
+                continue
+
+            if a_source.recurrence_rule_id:
+                matching_target_assignment = next(
+                    (
+                        a
+                        for a in assignments_target
+                        if a.date == date_mapping[a_source.date]
+                        and a.worker_id == a_source.worker_id
+                        and a.shift_id == a_source.shift_id
+                        and a.recurrence_rule_id == a_source.recurrence_rule_id
+                    ),
+                    None,
+                )
+                if matching_target_assignment:
+                    a_target_keep_ids.append(matching_target_assignment.id)
+                    continue
+            a_source_duplicate_ids.append(a_source.id)
+
+        for a_target in assignments_target:
+            if a_target.date not in target_period:
+                continue
+            if a_target.id in a_target_keep_ids:
+                continue
+
+            if a_target.recurrence_rule_id:
+                exclusions_target_create.append(
+                    RecurrenceExclusion(
+                        id="",
+                        recurrence_rule_id=a_target.recurrence_rule_id,
+                        excluded_date=a_target.date,
+                    )
+                )
+            a_target_delete_ids.append(a_target.id)
+
+        return (
+            a_source_duplicate_ids,
+            a_target_keep_ids,
+            a_target_delete_ids,
+            exclusions_target_create,
+        )
+
+    @staticmethod
+    def _validate_lists(
+        assignments_source: List[Assignment],
+        assignments_target: List[Assignment],
+        a_source_duplicate_ids: List[str],
+        a_target_keep_ids: List[str],
+        a_target_delete_ids: List[str],
+    ) -> None:
+        source_ids = {a.id for a in assignments_source if not a.reference_assignment_id}
+        target_ids = {a.id for a in assignments_target}
+
+        assert len(set(a_source_duplicate_ids)) == len(
+            a_source_duplicate_ids
+        ), "Duplicate IDs in list of assignments to duplicate"
+        assert len(set(a_target_keep_ids)) == len(
+            a_target_keep_ids
+        ), "Duplicate IDs in list of assignments to keep"
+        assert len(set(a_target_delete_ids)) == len(
+            a_target_delete_ids
+        ), "Duplicate IDs in list of assignments to delete"
+
+        assert len(a_source_duplicate_ids) + len(a_target_keep_ids) == len(
+            source_ids
+        ), "Mismatch in number of assignments to duplicate+keep and source"
+        assert sorted(list(set(a_target_keep_ids + a_target_delete_ids))) == sorted(
+            target_ids
+        ), "Mismatch in target assignments to keep+delete and target"
+
+    @staticmethod
+    def _build_duplicate_assignments(
+        assignments_source: List[Assignment],
+        date_mapping: Dict[date, date],
+        a_source_duplicate_ids: List[str],
+        campaign_id: str,
+    ) -> List[Assignment]:
+        a_to_create = []
+
+        for a_source in assignments_source:
+            if a_source.id not in a_source_duplicate_ids:
+                continue
+            if a_source.reference_assignment_id:
+                continue
+            a_to_create.append(
+                Assignment(
+                    id="",
+                    team_id=a_source.team_id,
+                    schedule_id=campaign_id,
+                    worker_id=a_source.worker_id,
+                    date=date_mapping[a_source.date],
+                    shift_id=a_source.shift_id,
+                    fixed=a_source.fixed,
+                    reference_assignment_id=None,
+                    recurrence_rule_id=None,
+                )
+            )
+
+        return a_to_create
+
+    def _apply_changes_to_database(
+        self,
+        a_to_create: List[Assignment],
+        a_target_delete_ids: List[str],
+        exclusions_target_create: List[RecurrenceExclusion],
+    ) -> AssignmentsRecurrencesResult:
+        # Create the new assignments
+        a_created = self.collection.assignment_db.create_assignments(a_to_create)
+        # Delete the old assignments
+        a_deleted_ids = self.collection.assignment_db.delete_assignments(
+            assignment_ids=a_target_delete_ids
+        )
+        # Create the exclusions
+        self.collection.recurrence_exclusion_db.create_recurrence_exclusions(
+            exclusions=exclusions_target_create
+        )
+        return AssignmentsRecurrencesResult(
+            assignments_created=a_created,
+            assignments_read=[],
+            assignments_updated=[],
+            assignments_deleted_ids=a_deleted_ids,
+            recurrence_created=None,
+            recurrences_read=[],
+            recurrence_updated=None,
+            recurrences_deleted_ids=[],
+        )

@@ -5,8 +5,13 @@ import dayjs from "dayjs";
 import DataViewSelector from "./data-view-selector";
 import TimeViewSelector from "./time-view-selector";
 import CampaignInfo from "./campaign-info";
+import ScheduleSettings from "./schedule-settings";
 // Types
-import { ScheduleT, SolveDetailsStatus } from "../../../types/schedule";
+import {
+  ScheduleT,
+  SolveDetailsStatus,
+  DuplicateRequestT,
+} from "../../../types/schedule";
 
 export default function ScheduleNavBar({
   lng,
@@ -25,6 +30,7 @@ export default function ScheduleNavBar({
   switchShowBreaches,
   handleSolveSchedule,
   handleValidateSchedule,
+  handleSendDuplicateRequest,
 }: {
   lng: string;
   currentPeriodStart: dayjs.Dayjs;
@@ -37,11 +43,16 @@ export default function ScheduleNavBar({
   handleToday: () => void;
   handlePreviousPeriod: () => void;
   handleNextPeriod: () => void;
-  handleChangeSelectedTimeView: (newSelectedTimeView: string) => void;
+  handleChangeSelectedTimeView: (newSelectedTimeView: "week" | "month") => void;
   setSelectedDisplay: (newSelectedDisplay: string) => void;
   switchShowBreaches: () => void;
   handleSolveSchedule: (scheduleId: string) => void;
   handleValidateSchedule: (scheduleId: string) => void;
+  handleSendDuplicateRequest: (
+    request: DuplicateRequestT,
+    campaignId: string,
+    teamId: string
+  ) => void;
 }) {
   const [isHoveredCreateCampaign, setIsHoveredCreateCampaign] =
     useState<boolean>(false);
@@ -71,6 +82,14 @@ export default function ScheduleNavBar({
         showBreaches={showBreaches}
         setSelectedDisplay={setSelectedDisplay}
         switchShowBreaches={switchShowBreaches}
+      />
+      <ScheduleSettings
+        lng={lng}
+        campaign={scheduleCampaign}
+        startDate={currentPeriodStart}
+        endDate={currentPeriodEnd}
+        selectedTimeView={selectedTimeView}
+        handleSendDuplicateRequest={handleSendDuplicateRequest}
       />
       {scheduleCampaign ? (
         <CampaignInfo

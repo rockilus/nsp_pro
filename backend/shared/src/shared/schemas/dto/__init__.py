@@ -6,7 +6,13 @@ from shared.schemas.dto.breach import BreachDTO
 from shared.schemas.dto.daily_shift_demand import DailyShiftDemandDTO
 from shared.schemas.dto.recurrence import OccurrenceInfoDTO, RecurrenceRuleDTO
 from shared.schemas.dto.request import RequestDTO
-from shared.schemas.dto.schedule import ScheduleDTO, SolutionDTO
+from shared.schemas.dto.schedule import (
+    DuplicateOptionsDTO,
+    DuplicateRequestDTO,
+    PeriodDTO,
+    ScheduleDTO,
+    SolutionDTO,
+)
 
 __all__ = [
     "AssignmentDTO",
@@ -16,6 +22,9 @@ __all__ = [
     "OccurrenceInfoDTO",
     "RecurrenceRuleDTO",
     "RequestDTO",
+    "DuplicateOptionsDTO",
+    "DuplicateRequestDTO",
+    "PeriodDTO",
     "ScheduleDTO",
     "SolutionDTO",
 ]

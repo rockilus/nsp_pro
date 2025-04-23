@@ -40,3 +40,23 @@ class SolutionDTO(BaseModel):
     assignments: List[AssignmentDTO]
     breaches: List[BreachDTO]
     requests: List[RequestDTO]
+
+
+class PeriodDTO(BaseModel):
+    startDate: float
+    endDate: float
+
+
+class DuplicateOptionsDTO(BaseModel):
+    occurrenceType: int
+
+
+#     copyTasks: bool
+#     copyNotes: bool
+#     overwriteExisting: bool
+
+
+class DuplicateRequestDTO(BaseModel):
+    sourcePeriod: PeriodDTO
+    targetPeriod: PeriodDTO
+    options: DuplicateOptionsDTO

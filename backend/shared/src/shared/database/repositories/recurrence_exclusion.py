@@ -22,6 +22,16 @@ class RecurrenceExclusionRepository(BaseRepository[RecurrenceExclusionSchema]):
         result = self.create(exclusion_schema)
         return result.to_core()
 
+    def create_recurrence_exclusions(
+        self, exclusions: List[RecurrenceExclusion]
+    ) -> List[RecurrenceExclusion]:
+        """Create multiple recurrence exclusions."""
+        exclusion_schemas = [
+            RecurrenceExclusionSchema.from_core(exclusion) for exclusion in exclusions
+        ]
+        created_schemas = self.create_many(exclusion_schemas)
+        return [schema.to_core() for schema in created_schemas]
+
     def get_recurrence_exclusion_by_id(
         self, exclusion_id: str
     ) -> Optional[RecurrenceExclusion]:

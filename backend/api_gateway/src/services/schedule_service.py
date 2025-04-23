@@ -6,10 +6,13 @@ from celery.result import AsyncResult  # type: ignore
 from openpyxl import Workbook
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
+    AssignmentsRecurrencesResult,
     CoverageSelector,
     DSDSourceType,
+    DuplicateRequest,
     ExportOptions,
     ExportPeriodOptions,
+    OccurrenceType,
     Schedule,
     ScheduleSolveStatus,
     ScheduleStatus,
@@ -199,7 +202,7 @@ class ScheduleService(BaseService):
         solve_details = SolveDetails(
             task_id=task_id,
             status=SolveDetailsStatus.SUCCESS,
-            updated_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(tz=timezone.utc),
             result={"output": result},
         )
         schedule.solve_details = solve_details
@@ -358,3 +361,55 @@ class ScheduleService(BaseService):
         wb = core_to_excel_schedule(workers, shifts, assignments, dates)
 
         return wb
+
+    @staticmethod
+    def _validate_duplicate(duplicate: DuplicateRequest, campaign: Schedule) -> None:
+        if not (
+            duplicate.target_period.start_date <= duplicate.target_period.end_date
+            and duplicate.target_period.start_date >= campaign.start_date
+            and duplicate.target_period.end_date <= campaign.end_date
+        ):
+            raise ValueError("The target period is outside the campaign period")
+
+        # Check that the target period is at most 7 days long
+        if (
+            (duplicate.target_period.end_date - duplicate.target_period.start_date).days
+            + 1
+        ) > 7:
+            raise ValueError("The target period must be at most 7 days long")
+
+        # Check that the source period is exactly 7 days long and starts on a Monday
+        if (
+            (duplicate.source_period.end_date - duplicate.source_period.start_date).days
+            + 1
+        ) != 7 or duplicate.source_period.start_date.weekday() != 0:
+            raise ValueError(
+                "The source period must be exactly 7 days long and start on a Monday"
+            )
+        # Check that the taget period is not in the source period
+        if (
+            duplicate.target_period.start_date <= duplicate.source_period.end_date
+            and duplicate.target_period.end_date >= duplicate.source_period.start_date
+        ):
+            raise ValueError(
+                "The target period must not overlap with the source period"
+            )
+
+    def duplicate_period(
+        self, schedule_id: str, duplicate: DuplicateRequest
+    ) -> AssignmentsRecurrencesResult:
+        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
+        if not schedule:
+            raise ValueError(f"Schedule with id {schedule_id} not found")
+        if schedule.status != ScheduleStatus.CAMPAIGN:
+            raise ValueError(
+                f"Schedule with id {schedule_id} is not in campaign status"
+            )
+        self._validate_duplicate(duplicate=duplicate, campaign=schedule)
+        if duplicate.options.occurrence_type == OccurrenceType.ASSIGNMENT:
+            return self.assignment_service.duplicate_period(
+                campaign=schedule, duplicate=duplicate
+            )
+        raise ValueError(
+            f"Occurrence type {duplicate.options.occurrence_type} not supported"
+        )

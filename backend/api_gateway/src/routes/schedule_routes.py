@@ -7,12 +7,17 @@ from pydantic import TypeAdapter
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import (
+    DuplicateRequest,
     EngineOutputsAugmented,
     Schedule,
     Solution,
     WorkTimeTable,
 )
-from shared.schemas.dto import ScheduleDTO
+from shared.schemas.dto import (
+    AssignmentsRecurrencesResultDTO,
+    DuplicateRequestDTO,
+    ScheduleDTO,
+)
 
 from src.dependencies import get_db_collections, get_schedule_service
 from src.errors import (
@@ -26,10 +31,7 @@ from src.integrations.authentication import (
     authn_verify_session,
 )
 from src.integrations.authorization import authz_check
-from src.routes.api_model import (
-    CoverageSelectorMessage,
-    WorkTimeTableMessage,
-)
+from src.routes.api_model import CoverageSelectorMessage, WorkTimeTableMessage
 from src.routes.coverage_selector_routes import core_to_msg_coverage_selector
 from src.services.schedule_service import ScheduleService
 from src.utils import event_manager
@@ -147,6 +149,38 @@ async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> 
         log_info("Failed to notify solved schedule")
         handle_routes_errors(e)
     return "Task ID"
+
+
+@router.post("/schedules/{schedule_id}/duplicate-period/teams/{team_id}")
+async def duplicate_period(
+    schedule_id: str,
+    team_id: str,
+    duplicate_request: DuplicateRequestDTO,
+    session: SessionContainerType = Depends(authn_verify_session()),
+    schedule_service: ScheduleService = Depends(
+        get_schedule_service,
+    ),
+) -> AssignmentsRecurrencesResultDTO:
+    try:
+        if not await authz_check(
+            # session.get_user_id(), "duplicate-period", "team", team_id
+            session.get_user_id(),
+            "update-schedule",
+            "team",
+            team_id,
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to duplicate a period",
+            )
+        duplicate_data = DuplicateRequest.from_dto(duplicate_request)
+        ar_result = schedule_service.duplicate_period(
+            schedule_id=schedule_id, duplicate=duplicate_data
+        )
+        response = ar_result.to_dto()
+    except Exception as e:
+        log_info("Failed to duplicate period")
+        handle_routes_errors(e)
+    return response
 
 
 @router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)

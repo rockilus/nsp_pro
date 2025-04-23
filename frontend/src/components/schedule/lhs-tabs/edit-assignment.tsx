@@ -111,13 +111,13 @@ const EditAssignment: React.FC<EditAssignmentProps> = ({
 
   const describeRecurrenceRule = (rule: RecurrenceRuleT): string => {
     const weekdays = [
-      t_weekdays("sunday"),
       t_weekdays("monday"),
       t_weekdays("tuesday"),
       t_weekdays("wednesday"),
       t_weekdays("thursday"),
       t_weekdays("friday"),
       t_weekdays("saturday"),
+      t_weekdays("sunday"),
     ];
 
     let description = "";

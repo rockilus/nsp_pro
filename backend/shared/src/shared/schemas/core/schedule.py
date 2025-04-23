@@ -8,8 +8,10 @@ from pydantic import TypeAdapter
 
 from shared.schemas.core.assignment import Assignment
 from shared.schemas.core.breach import Breach
+from shared.schemas.core.recurrence import OccurrenceType
 from shared.schemas.core.request import RequestAugmented
 from shared.schemas.dto.schedule import (
+    DuplicateRequestDTO,
     QuickStaffingDTO,
     ScheduleDTO,
     SolutionDTO,
@@ -204,8 +206,8 @@ class Schedule:
             data_snake["last_modified_dates"], timezone.utc
         )
         if data_snake.get("solve_details", None) is not None:
-            data_snake["solve_details"] = SolveDetails.from_dto(
-                data_snake["solve_details"]
+            data_snake["solve_details"] = (
+                SolveDetails.from_dto(data.solveDetails) if data.solveDetails else None
             )
         data_snake["solve_status"] = ScheduleSolveStatus(data_snake["solve_status"])
         data_snake["status"] = ScheduleStatus(data_snake["status"])
@@ -213,6 +215,11 @@ class Schedule:
             datetime.fromtimestamp(ts, timezone.utc).date()
             for ts in data_snake["missing_coverage_dates"]
         ]
+        data_snake["last_updated_dsds"] = (
+            datetime.fromtimestamp(data_snake["last_updated_dsds"], timezone.utc)
+            if data_snake.get("last_updated_dsds", None) is not None
+            else None
+        )
         return Schedule(**data_snake)
 
 
@@ -281,3 +288,73 @@ class Solution:
             RequestAugmented.from_dto(request) for request in data_snake["requests"]
         ]
         return Solution(**data_snake)
+
+
+@dataclass
+class Period:
+    start_date: date
+    end_date: date
+
+
+@dataclass
+class DuplicateOptions:
+    occurrence_type: OccurrenceType
+    # copy_tasks: bool
+    # copy_notes: bool
+    # overwrite_existing: bool
+
+
+@dataclass
+class DuplicateRequest:
+    source_period: Period
+    target_period: Period
+    options: DuplicateOptions
+
+    def to_dto(self) -> DuplicateRequestDTO:
+        data = asdict(self)
+        data["source_period"] = {
+            "start_date": datetime.combine(
+                self.source_period.start_date, time.min, tzinfo=timezone.utc
+            ).timestamp(),
+            "end_date": datetime.combine(
+                self.source_period.end_date, time.min, tzinfo=timezone.utc
+            ).timestamp(),
+        }
+        data["target_period"] = {
+            "start_date": datetime.combine(
+                self.target_period.start_date, time.min, tzinfo=timezone.utc
+            ).timestamp(),
+            "end_date": datetime.combine(
+                self.target_period.end_date, time.min, tzinfo=timezone.utc
+            ).timestamp(),
+        }
+        data["options"] = {
+            "occurrence_type": self.options.occurrence_type.value,
+        }
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(DuplicateRequestDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(cls, data: DuplicateRequestDTO) -> "DuplicateRequest":
+        data_dict = humps.decamelize(data.model_dump())
+        data_dict["source_period"] = Period(
+            start_date=datetime.fromtimestamp(
+                data_dict["source_period"]["start_date"], tz=timezone.utc
+            ).date(),
+            end_date=datetime.fromtimestamp(
+                data_dict["source_period"]["end_date"], tz=timezone.utc
+            ).date(),
+        )
+        data_dict["target_period"] = Period(
+            start_date=datetime.fromtimestamp(
+                data_dict["target_period"]["start_date"], tz=timezone.utc
+            ).date(),
+            end_date=datetime.fromtimestamp(
+                data_dict["target_period"]["end_date"], tz=timezone.utc
+            ).date(),
+        )
+        data_dict["options"] = DuplicateOptions(
+            occurrence_type=OccurrenceType(data_dict["options"]["occurrence_type"])
+        )
+        return cls(**data_dict)

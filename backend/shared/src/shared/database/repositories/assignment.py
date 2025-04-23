@@ -149,6 +149,10 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
                 f"Assignment with id {assignment_id} not found or already deleted"
             )
 
+    def delete_assignments(self, assignment_ids: List[str]) -> List[str]:
+        result = self.collection.delete_many({"_id": {"$in": assignment_ids}})
+        return assignment_ids if result.deleted_count > 0 else []
+
     def delete_assignments_by_schedule_id(self, schedule_id: str) -> None:
         """Delete all assignments for a specific schedule."""
         self.collection.delete_many({"schedule": schedule_id})
