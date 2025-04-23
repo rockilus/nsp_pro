@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Set, Tuple
 from shared.schemas.core import (
     Assignment,
     AssignmentsRecurrencesResult,
+    DuplicateRequest,
     OccurrenceInfo,
     RecurrenceEndType,
     RecurrenceExclusion,
@@ -12,7 +13,6 @@ from shared.schemas.core import (
     Schedule,
     Shift,
     ShiftType,
-    DuplicateRequest,
 )
 
 from src.services.base_service import BaseService
@@ -20,19 +20,16 @@ from src.utils.date_utils import build_dates_list
 from src.utils.recurrence_utils import generate_recurring_dates
 
 
+# pylint: disable=too-many-lines
 class AssignmentService(BaseService):
     def create_assignment_and_recurrence(
         self,
         assignment_new: Assignment,
         recurrence_new: Optional[RecurrenceRule] = None,
     ) -> AssignmentsRecurrencesResult:
-        shift = self.collection.shift_db.get_shift_by_id(
-            assignment_new.shift_id
-        )
+        shift = self.collection.shift_db.get_shift_by_id(assignment_new.shift_id)
         if shift is None:
-            raise ValueError(
-                f"Shift with ID {assignment_new.shift_id} does not exist."
-            )
+            raise ValueError(f"Shift with ID {assignment_new.shift_id} does not exist.")
         if recurrence_new:
             return self._handle_recurrence_and_assignments_creation(
                 recurrence=recurrence_new,
@@ -57,23 +54,25 @@ class AssignmentService(BaseService):
         out.assignments_created.append(assignment_saved)
 
         if shift.shift_type == ShiftType.DUTY:
+            shifts_recup = self._get_recup_shifts(
+                shift_ids=[a.shift_id for a in out.assignments_created]
+            )
             assignments_recup = self._create_recuperation_assignments(
-                assignments_duty=out.assignments_created
+                assignments_duty=out.assignments_created,
+                shifts_recup=shifts_recup,
             )
             if assignments_recup:
                 assignments_recup_saved = (
-                    self.collection.assignment_db.create_assignments(
-                        assignments_recup
-                    )
+                    self.collection.assignment_db.create_assignments(assignments_recup)
                 )
                 out.assignments_created.extend(assignments_recup_saved)
         return out
 
     def _create_recuperation_assignments(
-        self, assignments_duty: List[Assignment]
+        self, assignments_duty: List[Assignment], shifts_recup: List[Shift]
     ) -> List[Assignment]:
-        duty_to_recup_map = self._get_duty_id_to_recup_shift_mapping(
-            assignments_duty=assignments_duty
+        duty_to_recup_map = self._build_duty_id_to_recup_shift_map(
+            shifts_recup=shifts_recup
         )
         assignments_recup = []
         for assignment in assignments_duty:
@@ -93,22 +92,21 @@ class AssignmentService(BaseService):
                 )
         return assignments_recup
 
-    def _get_duty_id_to_recup_shift_mapping(
-        self, assignments_duty: List[Assignment]
-    ) -> dict:
-        shift_duty_ids = {
-            assignment.shift_id for assignment in assignments_duty
-        }
-        shift_recup = self.collection.shift_db.get_recuperation_shifts(
-            shift_ids=list(shift_duty_ids)
+    def _get_recup_shifts(self, shift_ids: List[str]) -> List[Shift]:
+        shift_ids = list(set(shift_ids))
+        return self.collection.shift_db.get_recuperation_shifts(
+            shift_ids=list(shift_ids)
         )
+
+    @staticmethod
+    def _build_duty_id_to_recup_shift_map(shifts_recup: List[Shift]) -> dict:
         duty_to_recup_map = {}
-        for shift in shift_recup:
+        for shift in shifts_recup:
             duty_to_recup_map[shift.recuperation_duty_id] = shift.id
 
         return duty_to_recup_map
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments, too-many-locals
     def _handle_recurrence_and_assignments_creation(
         self,
         recurrence: RecurrenceRule,
@@ -130,9 +128,7 @@ class AssignmentService(BaseService):
         if create_recurrence:
             recurrence.occurrence_info.worker_id = assignment.worker_id
             recurrence.occurrence_info.shift_id = assignment.shift_id
-            recurrence = self.collection.recurrence_db.create_recurrence(
-                recurrence
-            )
+            recurrence = self.collection.recurrence_db.create_recurrence(recurrence)
             out.recurrence_created = recurrence
         schedule_wip = self.collection.schedule_db.get_schedule_campaign(
             team_id=recurrence.team_id
@@ -143,13 +139,11 @@ class AssignmentService(BaseService):
                 start_date=schedule_wip.start_date,
                 end_date=schedule_wip.end_date,
             )
-            assignments_recurrence = (
-                self._handle_recurrence_assignments_creation(
-                    recurrence=recurrence,
-                    period_dates=period_dates,
-                    schedule_id=schedule_wip.id,
-                    create_first_assignment=create_first_assignment,
-                )
+            assignments_recurrence = self._handle_recurrence_assignments_creation(
+                recurrence=recurrence,
+                period_dates=period_dates,
+                schedule_id=schedule_wip.id,
+                create_first_assignment=create_first_assignment,
             )
             if assignments_recurrence:
                 assignments_recurrence_saved = (
@@ -171,20 +165,22 @@ class AssignmentService(BaseService):
                 None,
             )
             if not existing_assignment:
-                assignment_saved = (
-                    self.collection.assignment_db.create_assignment(assignment)
+                assignment_saved = self.collection.assignment_db.create_assignment(
+                    assignment
                 )
                 out.assignments_created.append(assignment_saved)
 
         if shift.shift_type == ShiftType.DUTY:
+            shifts_recup = self._get_recup_shifts(
+                shift_ids=[a.shift_id for a in out.assignments_created]
+            )
             assignments_recup = self._create_recuperation_assignments(
-                assignments_duty=out.assignments_created
+                assignments_duty=out.assignments_created,
+                shifts_recup=shifts_recup,
             )
             if assignments_recup:
                 assignments_recup_saved = (
-                    self.collection.assignment_db.create_assignments(
-                        assignments_recup
-                    )
+                    self.collection.assignment_db.create_assignments(assignments_recup)
                 )
                 out.assignments_created.extend(assignments_recup_saved)
         return out
@@ -210,9 +206,7 @@ class AssignmentService(BaseService):
             exclusions=[],
         )
         if not create_first_assignment:
-            dates_recurring = [
-                d for d in dates_recurring if d != recurrence.start_date
-            ]
+            dates_recurring = [d for d in dates_recurring if d != recurrence.start_date]
         assignments_rec_campaign = [
             Assignment(
                 id="",  # ID will be generated by the database
@@ -295,10 +289,12 @@ class AssignmentService(BaseService):
         # Get dates in new schedule that are not in old schedule
         dates_added = [d for d in dates_new if d not in dates_old]
         # Get the schedule recurrences
-        recurrences = self.collection.recurrence_db.get_recurrences_by_team_and_date_range(
-            team_id=schedule_new.team_id,
-            start_date=schedule_new.start_date,
-            end_date=schedule_new.end_date,
+        recurrences = (
+            self.collection.recurrence_db.get_recurrences_by_team_and_date_range(
+                team_id=schedule_new.team_id,
+                start_date=schedule_new.start_date,
+                end_date=schedule_new.end_date,
+            )
         )
         # Get the recurrences exclusions
         # fmt: off
@@ -322,24 +318,18 @@ class AssignmentService(BaseService):
         shifts_rec = self.collection.shift_db.get_shifts_by_ids(
             shift_ids=list(shift_rec_ids)
         )
-        shift_id_to_shift: Dict[str, Shift] = {
-            shift.id: shift for shift in shifts_rec
-        }
+        shift_id_to_shift: Dict[str, Shift] = {shift.id: shift for shift in shifts_rec}
         # Create the recurrences assignments on the schedule period
         assignnments_created = []
         for recurrence in recurrences:
-            assignments_recurrence = (
-                self._handle_recurrence_assignments_creation(
-                    recurrence=recurrence,
-                    period_dates=dates_added,
-                    schedule_id=schedule_new.id,
-                    create_first_assignment=True,
-                )
+            assignments_recurrence = self._handle_recurrence_assignments_creation(
+                recurrence=recurrence,
+                period_dates=dates_added,
+                schedule_id=schedule_new.id,
+                create_first_assignment=True,
             )
             shift_rec = (
-                shift_id_to_shift.get(
-                    recurrence.occurrence_info.shift_id, None
-                )
+                shift_id_to_shift.get(recurrence.occurrence_info.shift_id, None)
                 if recurrence.occurrence_info.shift_id
                 else None
             )
@@ -350,16 +340,16 @@ class AssignmentService(BaseService):
                 )
             assignments_recup = []
             if shift_rec.shift_type == ShiftType.DUTY:
-                assignments_recup = self._create_recuperation_assignments(
-                    assignments_duty=assignments_recurrence
+                shifts_recup = self._get_recup_shifts(
+                    shift_ids=[a.shift_id for a in assignments_recurrence]
                 )
-            assignnments_created.extend(
-                assignments_recurrence + assignments_recup
-            )
+                assignments_recup = self._create_recuperation_assignments(
+                    assignments_duty=assignments_recurrence,
+                    shifts_recup=shifts_recup,
+                )
+            assignnments_created.extend(assignments_recurrence + assignments_recup)
         if assignnments_created:
-            self.collection.assignment_db.create_assignments(
-                assignnments_created
-            )
+            self.collection.assignment_db.create_assignments(assignnments_created)
 
     def get_assignments_and_recurrences(
         self,
@@ -368,14 +358,10 @@ class AssignmentService(BaseService):
         end_date: Optional[date] = None,
     ) -> AssignmentsRecurrencesResult:
         if start_date is None or end_date is None:
-            assignments = self.collection.assignment_db.get_assignments(
-                team_id
-            )
+            assignments = self.collection.assignment_db.get_assignments(team_id)
         else:
-            assignments = (
-                self.collection.assignment_db.get_assignments_by_dates(
-                    team_id, start_date, end_date
-                )
+            assignments = self.collection.assignment_db.get_assignments_by_dates(
+                team_id, start_date, end_date
             )
         recurrences = self.collection.recurrence_db.get_recurrences_by_team_id(
             team_id=team_id
@@ -431,9 +417,7 @@ class AssignmentService(BaseService):
                     + assignments_recup_updated
                 )
 
-            ar_result_rec_update.assignments_created.extend(
-                assignments_recup_created
-            )
+            ar_result_rec_update.assignments_created.extend(assignments_recup_created)
             ar_result_rec_update.assignments_updated.extend(
                 [assignment_updated] + assignments_recup_updated
             )
@@ -444,8 +428,7 @@ class AssignmentService(BaseService):
         return AssignmentsRecurrencesResult(
             assignments_created=assignments_recup_created,
             assignments_read=[],
-            assignments_updated=[assignment_updated]
-            + assignments_recup_updated,
+            assignments_updated=[assignment_updated] + assignments_recup_updated,
             assignments_deleted_ids=assignments_recup_deleted_ids,
             recurrence_created=None,
             recurrences_read=[],
@@ -461,9 +444,7 @@ class AssignmentService(BaseService):
             assignment_new.id
         )
         if not assignment_old:
-            raise ValueError(
-                f"Assignment with ID {assignment_new.id} does not exist."
-            )
+            raise ValueError(f"Assignment with ID {assignment_new.id} does not exist.")
         assignment_updated = self.collection.assignment_db.update_assignment(
             assignment=assignment_new
         )
@@ -477,15 +458,15 @@ class AssignmentService(BaseService):
         assignments_recup_deleted_ids: List[str] = []
         if assignment_old.shift_id == assignment_new.shift_id:
             if assignment_old.fixed != assignment_new.fixed:
-                assignment_recup_old = self.collection.assignment_db.get_assignments_by_reference_id(
-                    reference_id=assignment_old.id
+                assignment_recup_old = (
+                    self.collection.assignment_db.get_assignments_by_reference_id(
+                        reference_id=assignment_old.id
+                    )
                 )
                 for assignment in assignment_recup_old:
                     assignment.fixed = assignment_new.fixed
                     assignments_recup_updated.append(
-                        self.collection.assignment_db.update_assignment(
-                            assignment
-                        )
+                        self.collection.assignment_db.update_assignment(assignment)
                     )
             return (
                 assignments_recup_created,
@@ -494,19 +475,17 @@ class AssignmentService(BaseService):
             )
 
         # Check if the shift type is changing
-        shift_old = self.collection.shift_db.get_shift_by_id(
-            assignment_old.shift_id
-        )
-        shift_new = self.collection.shift_db.get_shift_by_id(
-            assignment_new.shift_id
-        )
+        shift_old = self.collection.shift_db.get_shift_by_id(assignment_old.shift_id)
+        shift_new = self.collection.shift_db.get_shift_by_id(assignment_new.shift_id)
 
         if not shift_old or not shift_new:
             raise ValueError("Invalid shift ID provided.")
 
         if shift_old.shift_type == ShiftType.DUTY:
-            assignments_recup_deleted_ids = self.collection.assignment_db.delete_assignments_by_reference_id(
-                reference_id=assignment_old.id
+            assignments_recup_deleted_ids = (
+                self.collection.assignment_db.delete_assignments_by_reference_id(
+                    reference_id=assignment_old.id
+                )
             )
 
         if shift_new.shift_type == ShiftType.DUTY:
@@ -544,13 +523,9 @@ class AssignmentService(BaseService):
         if recurrence_update_scope == RecurrenceUpdateScope.NONE:
             # Assignment did not have a recurrence, so we just update it
             # Do not create the assignment for the start date
-            shift = self.collection.shift_db.get_shift_by_id(
-                assignment.shift_id
-            )
+            shift = self.collection.shift_db.get_shift_by_id(assignment.shift_id)
             if shift is None:
-                raise ValueError(
-                    f"Shift with ID {assignment.shift_id} does not exist."
-                )
+                raise ValueError(f"Shift with ID {assignment.shift_id} does not exist.")
             return self._handle_recurrence_and_assignments_creation(
                 recurrence=recurrence_new,
                 assignment=assignment,
@@ -600,10 +575,8 @@ class AssignmentService(BaseService):
                 end_date=recurrence_new.end_date,
                 number_of_occurrences=recurrence_new.number_of_occurrences,
             )
-            recurrence_old = (
-                self.collection.recurrence_db.get_recurrence_by_id(
-                    recurrence_id=recurrence_new.id
-                )
+            recurrence_old = self.collection.recurrence_db.get_recurrence_by_id(
+                recurrence_id=recurrence_new.id
             )
             if (
                 recurrence_old.recurrence_end_type
@@ -627,16 +600,15 @@ class AssignmentService(BaseService):
                     [d for d in dates_original_rec if d < assignment.date]
                 )
                 recurrence_created.number_of_occurrences = max(
-                    recurrence_old.number_of_occurrences
-                    - past_occurrence_count,
+                    recurrence_old.number_of_occurrences - past_occurrence_count,
                     0,
                 )
 
             # Update recurrence to end at date of assignment
             recurrence_old.recurrence_end_type = RecurrenceEndType.END_DATE
             recurrence_old.end_date = assignment.date + timedelta(days=-1)
-            recurrence_updated = (
-                self.collection.recurrence_db.update_recurrence(recurrence_old)
+            recurrence_updated = self.collection.recurrence_db.update_recurrence(
+                recurrence_old
             )
             # Delete all future assignments for this recurrence
             # fmt: off
@@ -647,13 +619,9 @@ class AssignmentService(BaseService):
                 )
             # fmt: on
             # Create new assignments for the new recurrence
-            shift = self.collection.shift_db.get_shift_by_id(
-                assignment.shift_id
-            )
+            shift = self.collection.shift_db.get_shift_by_id(assignment.shift_id)
             if shift is None:
-                raise ValueError(
-                    f"Shift with ID {assignment.shift_id} does not exist."
-                )
+                raise ValueError(f"Shift with ID {assignment.shift_id} does not exist.")
             ar_result = self._handle_recurrence_and_assignments_creation(
                 recurrence=recurrence_created,
                 assignment=assignment,
@@ -665,29 +633,25 @@ class AssignmentService(BaseService):
             ar_result.recurrence_updated = recurrence_updated
             return ar_result
         if recurrence_update_scope == RecurrenceUpdateScope.ALL:
-            recurrence_old = (
-                self.collection.recurrence_db.get_recurrence_by_id(
-                    recurrence_id=recurrence_new.id
-                )
+            recurrence_old = self.collection.recurrence_db.get_recurrence_by_id(
+                recurrence_id=recurrence_new.id
             )
             # Update the recurrence
             recurrence_new.start_date = recurrence_old.start_date
             recurrence_new.occurrence_info.worker_id = assignment.worker_id
             recurrence_new.occurrence_info.shift_id = assignment.shift_id
-            recurrence_updated = (
-                self.collection.recurrence_db.update_recurrence(recurrence_new)
+            recurrence_updated = self.collection.recurrence_db.update_recurrence(
+                recurrence_new
             )
             # Update all assignments for this recurrence (delete and create)
-            assignments_deleted_ids = self.collection.assignment_db.delete_assignments_by_recurrence_rule_id(
-                recurrence_rule_id=recurrence_updated.id
-            )
-            shift = self.collection.shift_db.get_shift_by_id(
-                assignment.shift_id
-            )
-            if shift is None:
-                raise ValueError(
-                    f"Shift with ID {assignment.shift_id} does not exist."
+            assignments_deleted_ids = (
+                self.collection.assignment_db.delete_assignments_by_recurrence_rule_id(
+                    recurrence_rule_id=recurrence_updated.id
                 )
+            )
+            shift = self.collection.shift_db.get_shift_by_id(assignment.shift_id)
+            if shift is None:
+                raise ValueError(f"Shift with ID {assignment.shift_id} does not exist.")
             assignment.date = recurrence_updated.start_date
             ar_result = self._handle_recurrence_and_assignments_creation(
                 recurrence=recurrence_updated,
@@ -699,9 +663,7 @@ class AssignmentService(BaseService):
             ar_result.assignments_deleted_ids.extend(assignments_deleted_ids)
             ar_result.recurrence_updated = recurrence_updated
             return ar_result
-        raise ValueError(
-            f"Invalid recurrence update scope: {recurrence_update_scope}"
-        )
+        raise ValueError(f"Invalid recurrence update scope: {recurrence_update_scope}")
 
     def delete_assignment_and_recurrence(
         self,
@@ -725,10 +687,8 @@ class AssignmentService(BaseService):
                 recurrence_rule_id=recurrence_id,
                 recurrence_update_scope=recurrence_update_scope,
             )
-        deleted_ids = (
-            self.collection.assignment_db.delete_assignments_by_reference_id(
-                reference_id=assignment_id
-            )
+        deleted_ids = self.collection.assignment_db.delete_assignments_by_reference_id(
+            reference_id=assignment_id
         )
         ar_result.assignments_deleted_ids.extend(deleted_ids)
         if assignment_id not in ar_result.assignments_deleted_ids:
@@ -742,13 +702,9 @@ class AssignmentService(BaseService):
         recurrence_rule_id: str,
         recurrence_update_scope: RecurrenceUpdateScope,
     ) -> AssignmentsRecurrencesResult:
-        assignment = self.collection.assignment_db.get_assignment_by_id(
-            assignment_id
-        )
+        assignment = self.collection.assignment_db.get_assignment_by_id(assignment_id)
         if not assignment:
-            raise ValueError(
-                f"Assignment with ID {assignment_id} does not exist."
-            )
+            raise ValueError(f"Assignment with ID {assignment_id} does not exist.")
         if recurrence_update_scope == RecurrenceUpdateScope.SINGLE:
             # Delete single assignment (done outside of this method) and create
             # recurrence exception
@@ -781,8 +737,8 @@ class AssignmentService(BaseService):
                 )
             recurrence.recurrence_end_type = RecurrenceEndType.END_DATE
             recurrence.end_date = assignment.date + timedelta(days=-1)
-            recurrence_updated = (
-                self.collection.recurrence_db.update_recurrence(recurrence)
+            recurrence_updated = self.collection.recurrence_db.update_recurrence(
+                recurrence
             )
             # Delete all future assignments for this recurrence
             # fmt: off
@@ -804,8 +760,10 @@ class AssignmentService(BaseService):
             )
         if recurrence_update_scope == RecurrenceUpdateScope.ALL:
             # Delete all assignments for this recurrence
-            assignments_deleted_ids = self.collection.assignment_db.delete_assignments_by_recurrence_rule_id(
-                recurrence_rule_id=recurrence_rule_id
+            assignments_deleted_ids = (
+                self.collection.assignment_db.delete_assignments_by_recurrence_rule_id(
+                    recurrence_rule_id=recurrence_rule_id
+                )
             )
             # Delete the exclusions for this recurrence
             # fmt: off
@@ -826,9 +784,7 @@ class AssignmentService(BaseService):
                 recurrence_updated=None,
                 recurrences_deleted_ids=[recurrence_rule_id],
             )
-        raise ValueError(
-            f"Invalid recurrence update scope: {recurrence_update_scope}"
-        )
+        raise ValueError(f"Invalid recurrence update scope: {recurrence_update_scope}")
 
     def duplicate_period(
         self, campaign: Schedule, duplicate: DuplicateRequest
@@ -837,19 +793,10 @@ class AssignmentService(BaseService):
         source_period = list(date_mapping.keys())
         target_period = list(date_mapping.values())
 
-        assignments_source, assignments_target = (
-            self._get_assignments_for_periods(
-                source_period=source_period,
-                target_period=target_period,
-                team_id=campaign.team_id,
-            )
-        )
-        recurrences_source, recurrences_target = (
-            self._get_recurrences_for_periods(
-                source_period=source_period,
-                target_period=target_period,
-                team_id=campaign.team_id,
-            )
+        assignments_source, assignments_target = self._get_assignments_for_periods(
+            source_period=source_period,
+            target_period=target_period,
+            team_id=campaign.team_id,
         )
         (
             a_source_duplicate_ids,
@@ -871,22 +818,32 @@ class AssignmentService(BaseService):
             a_target_delete_ids=a_target_delete_ids,
         )
 
-        a_normal_to_create, a_duty_to_create, a_recup_to_create = (
-            self._build_duplicate_assignments(
-                assignments_source=assignments_source,
-                date_mapping=date_mapping,
-                a_source_duplicate_ids=a_source_duplicate_ids,
-                campaign_id=campaign.id,
-            )
+        a_to_create = self._build_duplicate_assignments(
+            assignments_source=assignments_source,
+            date_mapping=date_mapping,
+            a_source_duplicate_ids=a_source_duplicate_ids,
+            campaign_id=campaign.id,
         )
 
-        return self._apply_changes_to_database(
-            a_normal_to_create=a_normal_to_create,
-            a_duty_to_create=a_duty_to_create,
-            a_recup_to_create=a_recup_to_create,
+        ar_result = self._apply_changes_to_database(
+            a_to_create=a_to_create,
             a_target_delete_ids=a_target_delete_ids,
             exclusions_target_create=exclusions_target_create,
         )
+
+        shifts_recup = self._get_recup_shifts(
+            shift_ids=[a.shift_id for a in ar_result.assignments_created]
+        )
+        assignments_recup = self._create_recuperation_assignments(
+            assignments_duty=ar_result.assignments_created,
+            shifts_recup=shifts_recup,
+        )
+        if assignments_recup:
+            assignments_recup_saved = self.collection.assignment_db.create_assignments(
+                assignments_recup
+            )
+            ar_result.assignments_created.extend(assignments_recup_saved)
+        return ar_result
 
     @staticmethod
     def _build_duplicate_date_mapping(
@@ -924,39 +881,17 @@ class AssignmentService(BaseService):
         target_period: List[date],
         team_id: str,
     ) -> Tuple[List[Assignment], List[Assignment]]:
-        assignments_source = (
-            self.collection.assignment_db.get_assignments_by_dates(
-                team_id=team_id,
-                start_date=min(source_period),
-                end_date=max(source_period),
-            )
-        )
-        assignments_target = (
-            self.collection.assignment_db.get_assignments_by_dates(
-                team_id=team_id,
-                start_date=min(target_period),
-                end_date=max(target_period),
-            )
-        )
-        return assignments_source, assignments_target
-
-    def _get_recurrences_for_periods(
-        self,
-        source_period: List[date],
-        target_period: List[date],
-        team_id: str,
-    ):
-        recurrences_source = self.collection.recurrence_db.get_recurrences_by_team_and_date_range(
+        assignments_source = self.collection.assignment_db.get_assignments_by_dates(
             team_id=team_id,
             start_date=min(source_period),
             end_date=max(source_period),
         )
-        recurrences_target = self.collection.recurrence_db.get_recurrences_by_team_and_date_range(
+        assignments_target = self.collection.assignment_db.get_assignments_by_dates(
             team_id=team_id,
             start_date=min(target_period),
             end_date=max(target_period),
         )
-        return recurrences_source, recurrences_target
+        return assignments_source, assignments_target
 
     @staticmethod
     def _build_assignment_and_exclusion_lists(
@@ -1029,9 +964,7 @@ class AssignmentService(BaseService):
         a_target_keep_ids: List[str],
         a_target_delete_ids: List[str],
     ) -> None:
-        source_ids = {
-            a.id for a in assignments_source if not a.reference_assignment_id
-        }
+        source_ids = {a.id for a in assignments_source if not a.reference_assignment_id}
         target_ids = {a.id for a in assignments_target}
 
         assert len(set(a_source_duplicate_ids)) == len(
@@ -1047,9 +980,7 @@ class AssignmentService(BaseService):
         assert len(a_source_duplicate_ids) + len(a_target_keep_ids) == len(
             source_ids
         ), "Mismatch in number of assignments to duplicate+keep and source"
-        assert sorted(
-            list(set(a_target_keep_ids + a_target_delete_ids))
-        ) == sorted(
+        assert sorted(list(set(a_target_keep_ids + a_target_delete_ids))) == sorted(
             target_ids
         ), "Mismatch in target assignments to keep+delete and target"
 
@@ -1059,53 +990,15 @@ class AssignmentService(BaseService):
         date_mapping: Dict[date, date],
         a_source_duplicate_ids: List[str],
         campaign_id: str,
-    ) -> Tuple[List[Assignment], List[Assignment], List[Assignment]]:
-        a_normal_to_create = []
-        a_duty_to_create = []
-        a_recup_to_create = []
-
-        a_recup_map = {
-            a.reference_assignment_id: a
-            for a in assignments_source
-            if a.reference_assignment_id
-        }
+    ) -> List[Assignment]:
+        a_to_create = []
 
         for a_source in assignments_source:
             if a_source.id not in a_source_duplicate_ids:
                 continue
             if a_source.reference_assignment_id:
                 continue
-
-            if a_source.id in a_recup_map:
-                a_recup = a_recup_map[a_source.id]
-                a_duty_to_create.append(
-                    Assignment(
-                        id="",
-                        team_id=a_source.team_id,
-                        schedule_id=campaign_id,
-                        worker_id=a_source.worker_id,
-                        date=date_mapping[a_source.date],
-                        shift_id=a_source.shift_id,
-                        fixed=a_source.fixed,
-                        reference_assignment_id=None,
-                        recurrence_rule_id=None,
-                    )
-                )
-                a_recup_to_create.append(
-                    Assignment(
-                        id="",
-                        team_id=a_source.team_id,
-                        schedule_id=campaign_id,
-                        worker_id=a_source.worker_id,
-                        date=date_mapping[a_source.date],
-                        shift_id=a_recup.shift_id,
-                        fixed=a_source.fixed,
-                        reference_assignment_id=None,
-                        recurrence_rule_id=None,
-                    )
-                )
-                continue
-            a_normal_to_create.append(
+            a_to_create.append(
                 Assignment(
                     id="",
                     team_id=a_source.team_id,
@@ -1119,22 +1012,31 @@ class AssignmentService(BaseService):
                 )
             )
 
-        return a_normal_to_create, a_duty_to_create, a_recup_to_create
+        return a_to_create
 
     def _apply_changes_to_database(
         self,
-        a_normal_to_create: List[Assignment],
-        a_duty_to_create: List[Assignment],
-        a_recup_to_create: List[Assignment],
+        a_to_create: List[Assignment],
         a_target_delete_ids: List[str],
         exclusions_target_create: List[RecurrenceExclusion],
     ) -> AssignmentsRecurrencesResult:
-        self.collection.assignment_db.create_assignments_by_ids(create_list)
-        self.collection.assignment_db.delete_assignments_by_ids(delete_list)
-        self.collection.assignment_db.keep_assignments_by_ids(keep_list)
-        self.collection.recurrence_exclusion_db.create_exclusions(
-            exclusions_to_create
+        # Create the new assignments
+        a_created = self.collection.assignment_db.create_assignments(a_to_create)
+        # Delete the old assignments
+        a_deleted_ids = self.collection.assignment_db.delete_assignments(
+            assignment_ids=a_target_delete_ids
         )
-
-
-# _create_recuperation_assignments
+        # Create the exclusions
+        self.collection.recurrence_exclusion_db.create_recurrence_exclusions(
+            exclusions=exclusions_target_create
+        )
+        return AssignmentsRecurrencesResult(
+            assignments_created=a_created,
+            assignments_read=[],
+            assignments_updated=[],
+            assignments_deleted_ids=a_deleted_ids,
+            recurrence_created=None,
+            recurrences_read=[],
+            recurrence_updated=None,
+            recurrences_deleted_ids=[],
+        )

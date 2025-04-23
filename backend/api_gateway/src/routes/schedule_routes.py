@@ -131,9 +131,7 @@ async def solve_schedule(
 
 
 @router.post("/schedules/{schedule_id}/notifify-solved/teams/{team_id}")
-async def notify_solved_schedule(
-    schedule_id: str, team_id: str, data: Dict
-) -> str:
+async def notify_solved_schedule(schedule_id: str, team_id: str, data: Dict) -> str:
     try:
         if "eo_augmented" not in data:
             raise MessageTypeError("eo_augmented not in data")
@@ -185,9 +183,7 @@ async def duplicate_period(
     return response
 
 
-@router.post(
-    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
-)
+@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -228,9 +224,7 @@ async def update_schedule(
                 "You do not have permission to update a schedule",
             )
         schedule_data = Schedule.from_dto(schedule_api)
-        schedule_updated, css_updated = schedule_service.update_schedule(
-            schedule_data
-        )
+        schedule_updated, css_updated = schedule_service.update_schedule(schedule_data)
         response = (
             schedule_updated.to_dto(),
             [core_to_msg_coverage_selector(cs) for cs in css_updated],

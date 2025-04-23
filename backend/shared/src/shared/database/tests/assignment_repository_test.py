@@ -725,3 +725,35 @@ class TestAssignmentRepository:
 
         assert len(remaining) == 1
         assert remaining[0]["date"] == datetime(2023, 1, 3, 0, 0)
+
+    def test_delete_assignments(self):
+        """Test deleting multiple assignments by their IDs."""
+        assignments = [
+            AssignmentSchema(
+                team="team1",
+                worker="worker1",
+                schedule="schedule1",
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                shift="shift1",
+                fixed=False,
+            ),
+            AssignmentSchema(
+                team="team1",
+                worker="worker2",
+                schedule="schedule2",
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc),
+                shift="shift2",
+                fixed=True,
+            ),
+        ]
+        created_assignments = self.repo.create_many(assignments)
+
+        assignment_ids = [assignment.id for assignment in created_assignments]
+
+        deleted_ids = self.repo.delete_assignments(assignment_ids)
+
+        assert len(deleted_ids) == len(assignment_ids)
+        assert all(isinstance(id, str) for id in deleted_ids)
+
+        remaining = list(self.repo.collection.find({"_id": {"$in": assignment_ids}}))
+        assert len(remaining) == 0

@@ -52,6 +52,44 @@ class TestRecurrenceExclusionRepository:
             == datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp()
         )
 
+    def test_create_recurrence_exclusions(self):
+        """Test creating multiple recurrence exclusions."""
+        exclusions = [
+            RecurrenceExclusion(
+                id=None,
+                recurrence_rule_id="rule1",
+                excluded_date=date(2025, 4, 15),
+            ),
+            RecurrenceExclusion(
+                id=None,
+                recurrence_rule_id="rule2",
+                excluded_date=date(2025, 4, 16),
+            ),
+        ]
+
+        results = self.repo.create_recurrence_exclusions(exclusions)
+
+        assert len(results) == 2
+        assert results[0].id is not None
+        assert results[1].id is not None
+        assert results[0].recurrence_rule_id == "rule1"
+        assert results[1].recurrence_rule_id == "rule2"
+        assert results[0].excluded_date == date(2025, 4, 15)
+        assert results[1].excluded_date == date(2025, 4, 16)
+
+        saved_docs = list(self.repo.collection.find())
+        assert len(saved_docs) == 2
+        assert saved_docs[0]["recurrence_rule_id"] in ["rule1", "rule2"]
+        assert saved_docs[1]["recurrence_rule_id"] in ["rule1", "rule2"]
+        assert saved_docs[0]["excluded_date"] in [
+            datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
+            datetime(2025, 4, 16, tzinfo=timezone.utc).timestamp(),
+        ]
+        assert saved_docs[1]["excluded_date"] in [
+            datetime(2025, 4, 15, tzinfo=timezone.utc).timestamp(),
+            datetime(2025, 4, 16, tzinfo=timezone.utc).timestamp(),
+        ]
+
     def test_get_recurrence_exclusion_by_id(self):
         """Test getting a recurrence exclusion by ID."""
         exclusion = RecurrenceExclusionSchema(
