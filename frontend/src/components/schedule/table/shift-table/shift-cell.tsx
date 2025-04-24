@@ -12,18 +12,15 @@ import { generateOwnerIdDateKey } from "../shared/assignment-utils";
 import "./shift-cell.css";
 // Types
 import { ShiftT } from "../../../../types/shift";
-import { WorkerT } from "../../../../types/worker";
 import {
   ScheduleT,
-  ScheduleStatus,
   periodDateT,
+  AssignmentDataT,
+  AssignmentsDictT,
+  ScheduleCellDataT,
 } from "../../../../types/schedule";
-import { BreachT } from "@/types/breach";
 import { CreateAssignmentT } from "@/types/assignment";
-import { AssignmentDictT } from "@/types/assignment";
-import { AssignmentDataDictT } from "@/types/assignment";
-import { AssignmentT } from "@/types/assignment";
-import { RequestT, RequestStatus } from "../../../../types/request";
+import { RequestStatus } from "../../../../types/request";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -33,6 +30,7 @@ export default function ShiftCell({
   scheduleCampaign,
   shift,
   shiftIdDateToAssignData,
+  scheduleCellData,
   showBreaches,
   handleCellSelection,
   handleOpenCreateAssignment,
@@ -40,16 +38,17 @@ export default function ShiftCell({
   periodDate: periodDateT;
   scheduleCampaign: ScheduleT | null;
   shift: ShiftT;
-  shiftIdDateToAssignData: AssignmentDictT;
+  shiftIdDateToAssignData: AssignmentsDictT;
+  scheduleCellData: ScheduleCellDataT;
   showBreaches: boolean;
-  handleCellSelection: (seletedCell: AssignmentDataDictT) => void;
+  handleCellSelection: (seletedCell: AssignmentDataT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   const AssignmentDiv = ({
     aDataDict,
     isLastAssignment,
   }: {
-    aDataDict: AssignmentDataDictT;
+    aDataDict: AssignmentDataT;
     isLastAssignment: boolean;
   }) => {
     const assignmentFixed =
@@ -89,7 +88,7 @@ export default function ShiftCell({
 
   const CellContent = ({}) => {
     const shiftDateKey = generateOwnerIdDateKey(shift.id, periodDate.date);
-    const aDataDicts: AssignmentDataDictT[] =
+    const aDataDicts: AssignmentDataT[] =
       shiftIdDateToAssignData[shiftDateKey] || [];
 
     return (

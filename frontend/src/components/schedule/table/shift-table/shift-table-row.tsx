@@ -5,19 +5,19 @@ import TableRow from "@mui/material/TableRow";
 // Components
 import ShiftRowHeaderCell from "./shift-row-header-cell";
 import ShiftCell from "./shift-cell";
+import { generateOwnerIdDateKey } from "../shared/assignment-utils";
 // Types
 import { ShiftT } from "../../../../types/shift";
 import {
   ScheduleT,
-  ScheduleStatus,
   periodDateT,
+  AssignmentsDictT,
+  AssignmentDataT,
+  ScheduleCellsDictT,
 } from "../../../../types/schedule";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 import { CreateAssignmentT } from "@/types/assignment";
-import { AssignmentDictT } from "@/types/assignment";
-import { AssignmentDataDictT } from "@/types/assignment";
 import { AssignmentT } from "@/types/assignment";
-import { WorkerT } from "../../../../types/worker";
 
 export default function ShiftTableRow({
   shift,
@@ -26,6 +26,7 @@ export default function ShiftTableRow({
   periodDates,
   scheduleCampaign,
   shiftIdDateToAssignData,
+  scheduleCellsDict,
   showBreaches,
   handleCellSelection,
   handleOpenCreateAssignment,
@@ -35,9 +36,10 @@ export default function ShiftTableRow({
   dailyShiftDemands: DailyShiftDemandT[];
   periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
-  shiftIdDateToAssignData: AssignmentDictT;
+  shiftIdDateToAssignData: AssignmentsDictT;
+  scheduleCellsDict: ScheduleCellsDictT;
   showBreaches: boolean;
-  handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
+  handleCellSelection: (selectedCell: AssignmentDataT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   return (
@@ -48,18 +50,26 @@ export default function ShiftTableRow({
         dailyShiftDemands={dailyShiftDemands}
         scheduleCampaign={scheduleCampaign}
       />
-      {periodDates.map((pDate, dateIndex) => (
-        <ShiftCell
-          key={dateIndex}
-          periodDate={pDate}
-          scheduleCampaign={scheduleCampaign}
-          shift={shift}
-          shiftIdDateToAssignData={shiftIdDateToAssignData}
-          showBreaches={showBreaches}
-          handleCellSelection={handleCellSelection}
-          handleOpenCreateAssignment={handleOpenCreateAssignment}
-        />
-      ))}
+      {periodDates.map((pDate, dateIndex) => {
+        const scheduleCellDataKey = generateOwnerIdDateKey(
+          shift.id,
+          pDate.date
+        );
+        const scheduleCellData = scheduleCellsDict[scheduleCellDataKey] || null;
+        return (
+          <ShiftCell
+            key={dateIndex}
+            periodDate={pDate}
+            scheduleCampaign={scheduleCampaign}
+            shift={shift}
+            shiftIdDateToAssignData={shiftIdDateToAssignData}
+            scheduleCellData={scheduleCellData}
+            showBreaches={showBreaches}
+            handleCellSelection={handleCellSelection}
+            handleOpenCreateAssignment={handleOpenCreateAssignment}
+          />
+        );
+      })}
     </TableRow>
   );
 }
