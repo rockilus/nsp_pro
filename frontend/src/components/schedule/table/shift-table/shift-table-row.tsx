@@ -14,6 +14,7 @@ import {
   AssignmentsDictT,
   AssignmentDataT,
   ScheduleCellsDictT,
+  ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 import { CreateAssignmentT } from "@/types/assignment";
@@ -28,6 +29,7 @@ export default function ShiftTableRow({
   shiftIdDateToAssignData,
   scheduleCellsDict,
   showBreaches,
+  scheduleViewSettings,
   handleCellSelection,
   handleOpenCreateAssignment,
 }: {
@@ -39,6 +41,7 @@ export default function ShiftTableRow({
   shiftIdDateToAssignData: AssignmentsDictT;
   scheduleCellsDict: ScheduleCellsDictT;
   showBreaches: boolean;
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleCellSelection: (selectedCell: AssignmentDataT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -65,6 +68,7 @@ export default function ShiftTableRow({
             shiftIdDateToAssignData={shiftIdDateToAssignData}
             scheduleCellData={scheduleCellData}
             showBreaches={showBreaches}
+            scheduleViewSettings={scheduleViewSettings}
             handleCellSelection={handleCellSelection}
             handleOpenCreateAssignment={handleOpenCreateAssignment}
           />

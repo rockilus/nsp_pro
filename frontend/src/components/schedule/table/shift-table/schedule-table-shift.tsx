@@ -25,6 +25,7 @@ import {
   ExportOptionsT,
   periodDateT,
   AssignmentDataT,
+  ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { BreachT } from "@/types/breach";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
@@ -51,6 +52,7 @@ export default function ScheduleTableShift({
   breaches,
   showBreaches,
   selectedDisplay,
+  scheduleViewSettings,
   handleCellSelection,
   handleCreateDSD,
   handleUpdateDSD,
@@ -70,6 +72,7 @@ export default function ScheduleTableShift({
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleCellSelection: (selectedCell: AssignmentDataT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
@@ -142,6 +145,7 @@ export default function ScheduleTableShift({
               shiftIdDateToAssignData={shiftIdDateToAssignData}
               scheduleCellsDict={scheduleCellDict}
               showBreaches={showBreaches}
+              scheduleViewSettings={scheduleViewSettings}
               handleCellSelection={handleCellSelection}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />

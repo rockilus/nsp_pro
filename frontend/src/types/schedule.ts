@@ -160,6 +160,12 @@ export type ScheduleCellsDictT = {
   [key: string]: ScheduleCellDataT;
 };
 
+export type ScheduleViewSettingsT = {
+  timeFrame: "week" | "month";
+  groupBy: "shift" | "worker";
+  showBreaches: boolean;
+};
+
 export const toSolveDetailsT = (data: any): SolveDetailsT => {
   return {
     ...data,

@@ -7,6 +7,8 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import IconButton from "@mui/material/IconButton";
 import TableCell from "@mui/material/TableCell";
 // Components
+import AssignmentCell from "./assignment-cell";
+import DailyShiftDemandCell from "./daily-shift-demand-cell";
 import { generateOwnerIdDateKey } from "../shared/assignment-utils";
 // Styles
 import "./shift-cell.css";
@@ -18,6 +20,7 @@ import {
   AssignmentDataT,
   AssignmentsDictT,
   ScheduleCellDataT,
+  ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { CreateAssignmentT } from "@/types/assignment";
 import { RequestStatus } from "../../../../types/request";
@@ -32,6 +35,7 @@ export default function ShiftCell({
   shiftIdDateToAssignData,
   scheduleCellData,
   showBreaches,
+  scheduleViewSettings,
   handleCellSelection,
   handleOpenCreateAssignment,
 }: {
@@ -39,8 +43,9 @@ export default function ShiftCell({
   scheduleCampaign: ScheduleT | null;
   shift: ShiftT;
   shiftIdDateToAssignData: AssignmentsDictT;
-  scheduleCellData: ScheduleCellDataT;
+  scheduleCellData: ScheduleCellDataT | null;
   showBreaches: boolean;
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleCellSelection: (seletedCell: AssignmentDataT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -116,7 +121,25 @@ export default function ShiftCell({
         position: "relative",
       }}
     >
-      <CellContent />
+      {scheduleCellData?.assignmentsData.map((aData) => {
+        return (
+          <AssignmentCell
+            key={aData.assignment.id}
+            assignmentData={aData}
+            scheduleViewSettings={scheduleViewSettings}
+            handleCellSelection={handleCellSelection}
+          />
+        );
+      })}
+      {scheduleCellData?.dailyShiftDemandsData && (
+        <DailyShiftDemandCell
+          dailyShiftDemandsData={scheduleCellData.dailyShiftDemandsData}
+          countActual={scheduleCellData.assignmentsData.length}
+          scheduleViewSettings={scheduleViewSettings}
+          handleCellSelection={handleCellSelection}
+        />
+      )}
+      {/* <CellContent /> */}
       <IconButton
         className="add-icon-button"
         sx={{

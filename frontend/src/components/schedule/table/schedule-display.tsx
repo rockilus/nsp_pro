@@ -10,6 +10,7 @@ import {
   ExportOptionsT,
   periodDateT,
   AssignmentDataT,
+  ScheduleViewSettingsT,
 } from "../../../types/schedule";
 import { BreachT } from "@/types/breach";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
@@ -35,6 +36,7 @@ export default function ScheduleDisplay({
   requests,
   selectedDisplay,
   showBreaches,
+  scheduleViewSettings,
   handleCellSelection,
   handleCreateDSD,
   handleUpdateDSD,
@@ -54,6 +56,7 @@ export default function ScheduleDisplay({
   requests: RequestT[];
   selectedDisplay: string;
   showBreaches: boolean;
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleCellSelection: (selectedCell: AssignmentDataT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
@@ -76,6 +79,7 @@ export default function ScheduleDisplay({
         breaches={breaches}
         showBreaches={showBreaches}
         selectedDisplay={selectedDisplay}
+        scheduleViewSettings={scheduleViewSettings}
         handleCellSelection={handleCellSelection}
         handleCreateDSD={handleCreateDSD}
         handleUpdateDSD={handleUpdateDSD}

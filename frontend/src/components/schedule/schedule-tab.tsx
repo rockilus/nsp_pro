@@ -57,6 +57,7 @@ import {
   periodDateT,
   DuplicateRequestT,
   AssignmentDataT,
+  ScheduleViewSettingsT,
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
@@ -108,6 +109,12 @@ export default function ScheduleTab({
   const [breaches, setBreaches] = useState<BreachT[]>([]);
   const [stats, setStats] = useState<StatsT | null>(null);
 
+  const [scheduleViewSettings, setScheduleViewSettings] =
+    useState<ScheduleViewSettingsT>({
+      timeFrame: "week",
+      groupBy: "shift",
+      showBreaches: true,
+    });
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
   const [selectedCell, setSelectedCell] = useState<AssignmentDataT | null>(
@@ -881,6 +888,7 @@ export default function ScheduleTab({
               requests={requests}
               selectedDisplay={selectedDisplay}
               showBreaches={showBreaches}
+              scheduleViewSettings={scheduleViewSettings}
               handleCellSelection={handleCellSelection}
               handleCreateDSD={handleCreateDSD}
               handleUpdateDSD={handleUpdateDSD}
