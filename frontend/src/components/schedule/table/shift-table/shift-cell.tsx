@@ -34,7 +34,6 @@ export default function ShiftCell({
   shift,
   shiftIdDateToAssignData,
   scheduleCellData,
-  showBreaches,
   scheduleViewSettings,
   handleCellSelection,
   handleOpenCreateAssignment,
@@ -44,7 +43,6 @@ export default function ShiftCell({
   shift: ShiftT;
   shiftIdDateToAssignData: AssignmentsDictT;
   scheduleCellData: ScheduleCellDataT | null;
-  showBreaches: boolean;
   scheduleViewSettings: ScheduleViewSettingsT;
   handleCellSelection: (seletedCell: AssignmentDataT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
@@ -76,9 +74,9 @@ export default function ShiftCell({
         className={`assignment-div-container ${
           isLastAssignment ? "last" : ""
         } ${
-          showBreaches && breachHard
+          scheduleViewSettings.showBreaches && breachHard
             ? "hard-breach"
-            : showBreaches && breachSoft
+            : scheduleViewSettings.showBreaches && breachSoft
             ? "soft-breach"
             : ""
         }`}
@@ -121,24 +119,26 @@ export default function ShiftCell({
         position: "relative",
       }}
     >
-      {scheduleCellData?.assignmentsData.map((aData) => {
-        return (
-          <AssignmentCell
-            key={aData.assignment.id}
-            assignmentData={aData}
+      {scheduleViewSettings.showAssignments &&
+        scheduleCellData?.assignmentsData.map((aData) => {
+          return (
+            <AssignmentCell
+              key={aData.assignment.id}
+              assignmentData={aData}
+              scheduleViewSettings={scheduleViewSettings}
+              handleCellSelection={handleCellSelection}
+            />
+          );
+        })}
+      {scheduleViewSettings.showDailyShiftDemands &&
+        scheduleCellData?.dailyShiftDemandsData && (
+          <DailyShiftDemandCell
+            dailyShiftDemandsData={scheduleCellData.dailyShiftDemandsData}
+            countActual={scheduleCellData.assignmentsData.length}
             scheduleViewSettings={scheduleViewSettings}
             handleCellSelection={handleCellSelection}
           />
-        );
-      })}
-      {scheduleCellData?.dailyShiftDemandsData && (
-        <DailyShiftDemandCell
-          dailyShiftDemandsData={scheduleCellData.dailyShiftDemandsData}
-          countActual={scheduleCellData.assignmentsData.length}
-          scheduleViewSettings={scheduleViewSettings}
-          handleCellSelection={handleCellSelection}
-        />
-      )}
+        )}
       {/* <CellContent /> */}
       <IconButton
         className="add-icon-button"

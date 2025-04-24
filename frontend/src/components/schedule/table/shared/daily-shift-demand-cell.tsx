@@ -13,6 +13,7 @@ import {
   ScheduleT,
   ScheduleStatus,
   periodDateT,
+  ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { DSDSourceType } from "@/types/daily-shift-demand";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
@@ -22,18 +23,17 @@ dayjs.extend(utc);
 
 export default function DailyShiftDemandCell({
   lng,
-  selectedDisplay,
   teamId,
   scheduleCampaign,
   periodDate,
   dailyShiftDemands,
   shifts,
   counts,
+  scheduleViewSettings,
   handleCreateDSD,
   handleUpdateDSD,
 }: {
   lng: string;
-  selectedDisplay: string;
   teamId: string;
   scheduleCampaign: ScheduleT | null;
   periodDate: periodDateT;
@@ -51,6 +51,7 @@ export default function DailyShiftDemandCell({
       staffingTotal: number;
     };
   };
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
 }) {
@@ -186,7 +187,9 @@ export default function DailyShiftDemandCell({
     return (
       <div>
         <span className="subtitle">
-          {selectedDisplay === "shift" ? t("shift_count") : t("worker_count")}
+          {scheduleViewSettings.groupBy === "shift"
+            ? t("shift_count")
+            : t("worker_count")}
         </span>
         <div className="divider-popover" />
         {shiftsWorkNotDeleted.map((shift) => {
@@ -199,7 +202,7 @@ export default function DailyShiftDemandCell({
                 }`}
               >
                 <div className="shift-name">{shift.name}</div>
-                {selectedDisplay === "worker" && (
+                {scheduleViewSettings.groupBy === "worker" && (
                   <span className="dsd-stats staffing-count">{`(${
                     counts[shift.id].staffingTotal
                   })`}</span>

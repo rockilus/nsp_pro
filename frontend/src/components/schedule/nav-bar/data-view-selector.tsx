@@ -3,28 +3,30 @@ import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+// Types
+import { ScheduleViewSettingsT } from "../../../types/schedule";
 
 export default function DataViewSelector({
   lng,
-  selectedDisplay,
-  showBreaches,
-  setSelectedDisplay,
-  switchShowBreaches,
+  scheduleViewSettings,
+  updateScheduleViewSettings,
 }: {
   lng: string;
-  selectedDisplay: string;
-  showBreaches: boolean;
-  setSelectedDisplay: (newSelectedDisplay: string) => void;
-  switchShowBreaches: () => void;
+  scheduleViewSettings: ScheduleViewSettingsT;
+  updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
-    newAlignment: string
+    newAlignment: "shift" | "worker" | null
   ) => {
     if (newAlignment !== null) {
-      setSelectedDisplay(newAlignment);
+      const newSettings = {
+        ...scheduleViewSettings,
+        groupBy: newAlignment,
+      };
+      updateScheduleViewSettings(newSettings);
     }
   };
 
@@ -39,7 +41,7 @@ export default function DataViewSelector({
     >
       <ToggleButtonGroup
         color="primary"
-        value={selectedDisplay}
+        value={scheduleViewSettings.groupBy}
         exclusive
         onChange={handleChange}
         aria-label="Platform"
@@ -73,8 +75,13 @@ export default function DataViewSelector({
           fontSize: "0.9rem",
           marginLeft: "8px",
         }}
-        selected={showBreaches}
-        onClick={switchShowBreaches}
+        selected={scheduleViewSettings.showBreaches}
+        onClick={() => {
+          updateScheduleViewSettings({
+            ...scheduleViewSettings,
+            showBreaches: !scheduleViewSettings.showBreaches,
+          });
+        }}
       >
         {t("breaches")}
       </ToggleButton>

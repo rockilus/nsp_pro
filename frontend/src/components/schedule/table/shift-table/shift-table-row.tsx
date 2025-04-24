@@ -28,7 +28,6 @@ export default function ShiftTableRow({
   scheduleCampaign,
   shiftIdDateToAssignData,
   scheduleCellsDict,
-  showBreaches,
   scheduleViewSettings,
   handleCellSelection,
   handleOpenCreateAssignment,
@@ -40,7 +39,6 @@ export default function ShiftTableRow({
   scheduleCampaign: ScheduleT | null;
   shiftIdDateToAssignData: AssignmentsDictT;
   scheduleCellsDict: ScheduleCellsDictT;
-  showBreaches: boolean;
   scheduleViewSettings: ScheduleViewSettingsT;
   handleCellSelection: (selectedCell: AssignmentDataT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
@@ -67,7 +65,6 @@ export default function ShiftTableRow({
             shift={shift}
             shiftIdDateToAssignData={shiftIdDateToAssignData}
             scheduleCellData={scheduleCellData}
-            showBreaches={showBreaches}
             scheduleViewSettings={scheduleViewSettings}
             handleCellSelection={handleCellSelection}
             handleOpenCreateAssignment={handleOpenCreateAssignment}

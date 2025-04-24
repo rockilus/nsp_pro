@@ -34,8 +34,6 @@ export default function ScheduleDisplay({
   workers,
   shifts,
   requests,
-  selectedDisplay,
-  showBreaches,
   scheduleViewSettings,
   handleCellSelection,
   handleCreateDSD,
@@ -54,8 +52,6 @@ export default function ScheduleDisplay({
   workers: WorkerT[];
   shifts: ShiftT[];
   requests: RequestT[];
-  selectedDisplay: string;
-  showBreaches: boolean;
   scheduleViewSettings: ScheduleViewSettingsT;
   handleCellSelection: (selectedCell: AssignmentDataT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
@@ -77,8 +73,6 @@ export default function ScheduleDisplay({
         scheduleCampaign={scheduleCampaign}
         periodDates={periodDates}
         breaches={breaches}
-        showBreaches={showBreaches}
-        selectedDisplay={selectedDisplay}
         scheduleViewSettings={scheduleViewSettings}
         handleCellSelection={handleCellSelection}
         handleCreateDSD={handleCreateDSD}
@@ -100,8 +94,7 @@ export default function ScheduleDisplay({
         scheduleCampaign={scheduleCampaign}
         periodDates={periodDates}
         breaches={breaches}
-        showBreaches={showBreaches}
-        selectedDisplay={selectedDisplay}
+        scheduleViewSettings={scheduleViewSettings}
         handleCellSelection={handleCellSelection}
         handleCreateDSD={handleCreateDSD}
         handleUpdateDSD={handleUpdateDSD}
@@ -111,5 +104,5 @@ export default function ScheduleDisplay({
     ),
   };
 
-  return scheduleDisplays[selectedDisplay];
+  return scheduleDisplays[scheduleViewSettings.groupBy];
 }

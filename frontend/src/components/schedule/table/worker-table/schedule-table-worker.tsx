@@ -19,8 +19,8 @@ import { WorkerT } from "../../../../types/worker";
 import {
   ScheduleT,
   ExportOptionsT,
-  ScheduleStatus,
   periodDateT,
+  ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { BreachT } from "@/types/breach";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
@@ -46,8 +46,7 @@ export default function ScheduleTableWorker({
   scheduleCampaign,
   periodDates,
   breaches,
-  showBreaches,
-  selectedDisplay,
+  scheduleViewSettings,
   handleCellSelection,
   handleCreateDSD,
   handleUpdateDSD,
@@ -65,8 +64,7 @@ export default function ScheduleTableWorker({
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
   breaches: BreachT[];
-  showBreaches: boolean;
-  selectedDisplay: string;
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
@@ -111,13 +109,13 @@ export default function ScheduleTableWorker({
           />
           <DailyShiftDemandRow
             lng={lng}
-            selectedDisplay={selectedDisplay}
             teamId={teamId}
             shifts={shifts}
             assignments={assignments}
             dailyShiftDemands={dailyShiftDemands}
             scheduleCampaign={scheduleCampaign}
             periodDates={periodDates}
+            scheduleViewSettings={scheduleViewSettings}
             handleCreateDSD={handleCreateDSD}
             handleUpdateDSD={handleUpdateDSD}
           />
@@ -133,7 +131,7 @@ export default function ScheduleTableWorker({
               workerIdDateToAssignData={workerIdDateToAssignData}
               scheduleCampaign={scheduleCampaign}
               periodDates={periodDates}
-              showBreaches={showBreaches}
+              scheduleViewSettings={scheduleViewSettings}
               handleCellSelection={handleCellSelection}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />

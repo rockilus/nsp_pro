@@ -15,8 +15,8 @@ import { ShiftT, ShiftType, ShiftRestType } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
 import {
   ScheduleT,
-  ScheduleStatus,
   periodDateT,
+  ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentDictT } from "@/types/assignment";
@@ -32,7 +32,7 @@ export default function WorkerCell({
   worker,
   shifts,
   workerIdDateToAssignData,
-  showBreaches,
+  scheduleViewSettings,
   handleCellSelection,
   handleOpenCreateAssignment,
 }: {
@@ -41,7 +41,7 @@ export default function WorkerCell({
   worker: WorkerT;
   shifts: ShiftT[];
   workerIdDateToAssignData: AssignmentDictT;
-  showBreaches: boolean;
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleCellSelection: (seletedCell: AssignmentDataDictT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -83,9 +83,9 @@ export default function WorkerCell({
         className={`assignment-div-container ${
           isLastAssignment ? "last" : ""
         } ${
-          showBreaches && breachHard
+          scheduleViewSettings.showBreaches && breachHard
             ? "hard-breach"
-            : showBreaches && breachSoft
+            : scheduleViewSettings.showBreaches && breachSoft
             ? "soft-breach"
             : ""
         }`}

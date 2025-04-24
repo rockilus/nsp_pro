@@ -114,9 +114,10 @@ export default function ScheduleTab({
       timeFrame: "week",
       groupBy: "shift",
       showBreaches: true,
+      showAssignments: true,
+      showDailyShiftDemands: true,
+      showRequests: true,
     });
-  const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
-  const [showBreaches, setShowBreaches] = useState<boolean>(true);
   const [selectedCell, setSelectedCell] = useState<AssignmentDataT | null>(
     null
   );
@@ -169,13 +170,12 @@ export default function ScheduleTab({
     [getScheduleFromDate]
   );
 
-  const [selectedTimeView, setSelectedTimeView] = useState<string>("week");
   const initialStartDate = dayjs
     .utc()
-    .startOf(selectedTimeView === "month" ? "month" : "isoWeek");
+    .startOf(scheduleViewSettings.timeFrame === "month" ? "month" : "isoWeek");
   const initialEndDate = dayjs
     .utc()
-    .endOf(selectedTimeView === "month" ? "month" : "isoWeek");
+    .endOf(scheduleViewSettings.timeFrame === "month" ? "month" : "isoWeek");
   const intialPeriodDates = buildDates(initialStartDate, initialEndDate);
   const [periodStartDate, setPeriodStartDate] =
     useState<dayjs.Dayjs>(initialStartDate);
@@ -202,6 +202,12 @@ export default function ScheduleTab({
   const handleCellSelection = (selectedCell: AssignmentDataT) => {
     setSelectedCell(selectedCell);
     setSelectedTab("selection");
+  };
+
+  const updateScheduleViewSettings = (
+    updates: Partial<ScheduleViewSettingsT>
+  ) => {
+    setScheduleViewSettings((prev) => ({ ...prev, ...updates }));
   };
 
   //////////////////////////
@@ -453,15 +459,15 @@ export default function ScheduleTab({
       throw new Error("No team selected");
     }
     const newPeriodStart =
-      selectedTimeView === "week"
+      scheduleViewSettings.timeFrame === "week"
         ? dayjs.utc().startOf("isoWeek")
-        : selectedTimeView === "month"
+        : scheduleViewSettings.timeFrame === "month"
         ? dayjs.utc().startOf("month")
         : dayjs.utc(); // Default to current time if neither "week" nor "month"
     const newPeriodEnd =
-      selectedTimeView === "week"
+      scheduleViewSettings.timeFrame === "week"
         ? dayjs.utc().endOf("isoWeek")
-        : selectedTimeView === "month"
+        : scheduleViewSettings.timeFrame === "month"
         ? dayjs.utc().endOf("month")
         : dayjs.utc(); // Default to current time if neither "week" nor "month"
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
@@ -473,11 +479,11 @@ export default function ScheduleTab({
     }
     const newPeriodStart = periodStartDate.subtract(
       1,
-      selectedTimeView === "month" ? "month" : "week"
+      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
     );
     const newPeriodEnd = periodEndDate.subtract(
       1,
-      selectedTimeView === "month" ? "month" : "week"
+      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
@@ -488,30 +494,25 @@ export default function ScheduleTab({
     }
     const newPeriodStart = periodStartDate.add(
       1,
-      selectedTimeView === "month" ? "month" : "week"
+      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
     );
     const newPeriodEnd = periodEndDate.add(
       1,
-      selectedTimeView === "month" ? "month" : "week"
+      scheduleViewSettings.timeFrame === "month" ? "month" : "week"
     );
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
-  const handleChangeSelectedTimeView = async (
-    newSelectedTimeView: "week" | "month"
-  ) => {
-    console.log("handleChangeSelectedTimeView called", newSelectedTimeView);
-
+  const handleChangeTimeFrame = async (newTimeFrame: "week" | "month") => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    setSelectedTimeView(newSelectedTimeView);
+    setScheduleViewSettings({
+      ...scheduleViewSettings,
+      timeFrame: newTimeFrame,
+    });
     const { firstDate: newPeriodStart, lastDate: newPeriodEnd } =
-      getPeriodStartEndDates(
-        newSelectedTimeView,
-        periodStartDate,
-        periodEndDate
-      );
+      getPeriodStartEndDates(newTimeFrame, periodStartDate, periodEndDate);
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
@@ -831,20 +832,17 @@ export default function ScheduleTab({
             lng={lng}
             currentPeriodStart={periodStartDate}
             currentPeriodEnd={periodEndDate}
-            selectedTimeView={selectedTimeView}
-            selectedDisplay={selectedDisplay}
-            showBreaches={showBreaches}
             scheduleCampaign={scheduleCampaign}
             solveStatus={solveStatus}
+            scheduleViewSettings={scheduleViewSettings}
             handleToday={handleToday}
             handlePreviousPeriod={handlePreviousPeriod}
             handleNextPeriod={handleNextPeriod}
-            handleChangeSelectedTimeView={handleChangeSelectedTimeView}
-            setSelectedDisplay={setSelectedDisplay}
-            switchShowBreaches={() => setShowBreaches(!showBreaches)}
             handleSolveSchedule={handleSolveSchedule}
             handleValidateSchedule={handleValidateSchedule}
             handleSendDuplicateRequest={handleSendDuplicateRequest}
+            updateScheduleViewSettings={updateScheduleViewSettings}
+            handleChangeTimeFrame={handleChangeTimeFrame}
           />
         )}
         <div style={{ display: "flex", flexDirection: "row" }}>
@@ -886,8 +884,6 @@ export default function ScheduleTab({
               workers={workers}
               shifts={shifts}
               requests={requests}
-              selectedDisplay={selectedDisplay}
-              showBreaches={showBreaches}
               scheduleViewSettings={scheduleViewSettings}
               handleCellSelection={handleCellSelection}
               handleCreateDSD={handleCreateDSD}

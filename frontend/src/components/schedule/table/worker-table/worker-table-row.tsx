@@ -11,8 +11,8 @@ import { ShiftT } from "../../../../types/shift";
 import { WorkerT } from "../../../../types/worker";
 import {
   ScheduleT,
-  ScheduleStatus,
   periodDateT,
+  ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentDictT } from "@/types/assignment";
@@ -30,7 +30,7 @@ export default function WorkerTableRow({
   workerIdDateToAssignData,
   scheduleCampaign,
   periodDates,
-  showBreaches,
+  scheduleViewSettings,
   handleCellSelection,
   handleOpenCreateAssignment,
 }: {
@@ -41,7 +41,7 @@ export default function WorkerTableRow({
   workerIdDateToAssignData: AssignmentDictT;
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
-  showBreaches: boolean;
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
@@ -62,7 +62,7 @@ export default function WorkerTableRow({
           worker={worker}
           shifts={shifts}
           workerIdDateToAssignData={workerIdDateToAssignData}
-          showBreaches={showBreaches}
+          scheduleViewSettings={scheduleViewSettings}
           handleCellSelection={handleCellSelection}
           handleOpenCreateAssignment={handleOpenCreateAssignment}
         />
