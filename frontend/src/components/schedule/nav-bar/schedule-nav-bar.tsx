@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import dayjs from "dayjs";
+import { useTranslation } from "../../../app/i18n/client";
 // Components
 import DataViewSelector from "./data-view-selector";
 import TimeViewSelector from "./time-view-selector";
@@ -11,41 +12,34 @@ import {
   ScheduleT,
   SolveDetailsStatus,
   DuplicateRequestT,
+  ScheduleViewSettingsT,
 } from "../../../types/schedule";
 
 export default function ScheduleNavBar({
   lng,
   currentPeriodStart,
   currentPeriodEnd,
-  selectedTimeView,
-  selectedDisplay,
-  showBreaches,
   scheduleCampaign,
   solveStatus,
+  scheduleViewSettings,
   handleToday,
   handlePreviousPeriod,
   handleNextPeriod,
-  handleChangeSelectedTimeView,
-  setSelectedDisplay,
-  switchShowBreaches,
   handleSolveSchedule,
   handleValidateSchedule,
   handleSendDuplicateRequest,
+  updateScheduleViewSettings,
+  handleChangeTimeFrame,
 }: {
   lng: string;
   currentPeriodStart: dayjs.Dayjs;
   currentPeriodEnd: dayjs.Dayjs;
-  selectedTimeView: string;
-  selectedDisplay: string;
-  showBreaches: boolean;
   scheduleCampaign: ScheduleT | null;
   solveStatus: SolveDetailsStatus | null | "error";
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleToday: () => void;
   handlePreviousPeriod: () => void;
   handleNextPeriod: () => void;
-  handleChangeSelectedTimeView: (newSelectedTimeView: "week" | "month") => void;
-  setSelectedDisplay: (newSelectedDisplay: string) => void;
-  switchShowBreaches: () => void;
   handleSolveSchedule: (scheduleId: string) => void;
   handleValidateSchedule: (scheduleId: string) => void;
   handleSendDuplicateRequest: (
@@ -53,7 +47,11 @@ export default function ScheduleNavBar({
     campaignId: string,
     teamId: string
   ) => void;
+  updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
+  handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
 }) {
+  const { t } = useTranslation(lng, "schedule-page");
+
   const [isHoveredCreateCampaign, setIsHoveredCreateCampaign] =
     useState<boolean>(false);
 
@@ -70,25 +68,23 @@ export default function ScheduleNavBar({
         lng={lng}
         currentPeriodStart={currentPeriodStart}
         currentPeriodEnd={currentPeriodEnd}
-        selectedTimeView={selectedTimeView}
+        scheduleViewSettings={scheduleViewSettings}
         handleToday={handleToday}
         handlePreviousPeriod={handlePreviousPeriod}
         handleNextPeriod={handleNextPeriod}
-        handleChangeSelectedTimeView={handleChangeSelectedTimeView}
+        handleChangeTimeFrame={handleChangeTimeFrame}
       />
       <DataViewSelector
         lng={lng}
-        selectedDisplay={selectedDisplay}
-        showBreaches={showBreaches}
-        setSelectedDisplay={setSelectedDisplay}
-        switchShowBreaches={switchShowBreaches}
+        scheduleViewSettings={scheduleViewSettings}
+        updateScheduleViewSettings={updateScheduleViewSettings}
       />
       <ScheduleSettings
         lng={lng}
         campaign={scheduleCampaign}
         startDate={currentPeriodStart}
         endDate={currentPeriodEnd}
-        selectedTimeView={selectedTimeView}
+        scheduleViewSettings={scheduleViewSettings}
         handleSendDuplicateRequest={handleSendDuplicateRequest}
       />
       {scheduleCampaign ? (
@@ -123,7 +119,7 @@ export default function ScheduleNavBar({
               onMouseEnter={() => setIsHoveredCreateCampaign(true)}
               onMouseLeave={() => setIsHoveredCreateCampaign(false)}
             >
-              Create campaign
+              {t("create_campaign")}
             </button>
           </Link>
         </div>

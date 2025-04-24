@@ -50,8 +50,6 @@ export default function ScheduleTableShift({
   scheduleCampaign,
   periodDates,
   breaches,
-  showBreaches,
-  selectedDisplay,
   scheduleViewSettings,
   handleCellSelection,
   handleCreateDSD,
@@ -70,8 +68,6 @@ export default function ScheduleTableShift({
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
   breaches: BreachT[];
-  showBreaches: boolean;
-  selectedDisplay: string;
   scheduleViewSettings: ScheduleViewSettingsT;
   handleCellSelection: (selectedCell: AssignmentDataT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
@@ -122,13 +118,13 @@ export default function ScheduleTableShift({
           />
           <DailyShiftDemandRow
             lng={lng}
-            selectedDisplay={selectedDisplay}
             teamId={teamId}
             shifts={shifts}
             assignments={assignments}
             dailyShiftDemands={dailyShiftDemands}
             scheduleCampaign={scheduleCampaign}
             periodDates={periodDates}
+            scheduleViewSettings={scheduleViewSettings}
             handleCreateDSD={handleCreateDSD}
             handleUpdateDSD={handleUpdateDSD}
           />
@@ -144,7 +140,6 @@ export default function ScheduleTableShift({
               scheduleCampaign={scheduleCampaign}
               shiftIdDateToAssignData={shiftIdDateToAssignData}
               scheduleCellsDict={scheduleCellDict}
-              showBreaches={showBreaches}
               scheduleViewSettings={scheduleViewSettings}
               handleCellSelection={handleCellSelection}
               handleOpenCreateAssignment={handleOpenCreateAssignment}

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import dayjs from "dayjs";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import TableCell from "@mui/material/TableCell";
@@ -13,32 +12,32 @@ import "./daily-shift-demand-row.css";
 import { ShiftT } from "../../../../types/shift";
 import {
   ScheduleT,
-  ScheduleStatus,
   periodDateT,
+  ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 import { AssignmentT } from "@/types/assignment";
 
 export default function DailyShiftDemandRow({
   lng,
-  selectedDisplay,
   teamId,
   shifts,
   assignments,
   dailyShiftDemands,
   scheduleCampaign,
   periodDates,
+  scheduleViewSettings,
   handleCreateDSD,
   handleUpdateDSD,
 }: {
   lng: string;
-  selectedDisplay: string;
   teamId: string;
   shifts: ShiftT[];
   assignments: AssignmentT[];
   dailyShiftDemands: DailyShiftDemandT[];
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
 }) {
@@ -61,11 +60,17 @@ export default function DailyShiftDemandRow({
 
   useEffect(() => {
     const newCounts =
-      selectedDisplay === "shift"
+      scheduleViewSettings.groupBy === "shift"
         ? countShifts(shifts, assignments, dailyShiftDemands, periodDates)
         : countStaffings(shifts, assignments, dailyShiftDemands, periodDates);
     setCounts(newCounts);
-  }, [shifts, assignments, dailyShiftDemands, periodDates, selectedDisplay]);
+  }, [
+    shifts,
+    assignments,
+    dailyShiftDemands,
+    periodDates,
+    scheduleViewSettings,
+  ]);
 
   return (
     <TableRow
@@ -86,7 +91,9 @@ export default function DailyShiftDemandRow({
       >
         <div className="dsd-row-label-container">
           <span className="dsd-row-label">
-            {selectedDisplay === "shift" ? t("shift_count") : t("worker_count")}
+            {scheduleViewSettings.groupBy === "shift"
+              ? t("shift_count")
+              : t("worker_count")}
           </span>
         </div>
       </TableCell>
@@ -99,7 +106,6 @@ export default function DailyShiftDemandRow({
           <DailyShiftDemandCell
             key={dateIndex}
             lng={lng}
-            selectedDisplay={selectedDisplay}
             teamId={teamId}
             scheduleCampaign={scheduleCampaign}
             periodDate={pDate}
@@ -110,6 +116,7 @@ export default function DailyShiftDemandRow({
                 total: { actual: 0, target: 0, staffingTotal: 0 },
               }
             }
+            scheduleViewSettings={scheduleViewSettings}
             handleCreateDSD={handleCreateDSD}
             handleUpdateDSD={handleUpdateDSD}
           />

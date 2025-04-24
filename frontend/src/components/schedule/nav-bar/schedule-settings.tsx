@@ -20,7 +20,11 @@ import {
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 // Types
-import { ScheduleT, DuplicateRequestT } from "../../../types/schedule";
+import {
+  ScheduleT,
+  DuplicateRequestT,
+  ScheduleViewSettingsT,
+} from "../../../types/schedule";
 import { OccurrenceType } from "@/types/recurrence";
 
 interface ScheduleSettingsProps {
@@ -28,7 +32,7 @@ interface ScheduleSettingsProps {
   campaign: ScheduleT | null;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
-  selectedTimeView: string;
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleSendDuplicateRequest: (
     request: DuplicateRequestT,
     campaignId: string,
@@ -41,7 +45,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   campaign,
   startDate,
   endDate,
-  selectedTimeView,
+  scheduleViewSettings,
   handleSendDuplicateRequest,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
@@ -151,7 +155,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
           onClick={handleDuplicateWeek}
           disabled={
             !campaign ||
-            selectedTimeView !== "week" ||
+            scheduleViewSettings.timeFrame !== "week" ||
             endDate.diff(startDate, "day") + 1 !== 7 ||
             startDate.day() !== 1
           }

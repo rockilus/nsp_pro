@@ -5,6 +5,8 @@ import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+// Types
+import { ScheduleViewSettingsT } from "../../../types/schedule";
 
 dayjs.extend(utc);
 
@@ -12,20 +14,20 @@ export default function TimeViewSelector({
   lng,
   currentPeriodStart,
   currentPeriodEnd,
-  selectedTimeView,
+  scheduleViewSettings,
   handleToday,
   handlePreviousPeriod,
   handleNextPeriod,
-  handleChangeSelectedTimeView,
+  handleChangeTimeFrame,
 }: {
   lng: string;
   currentPeriodStart: dayjs.Dayjs;
   currentPeriodEnd: dayjs.Dayjs;
-  selectedTimeView: string;
+  scheduleViewSettings: ScheduleViewSettingsT;
   handleToday: () => void;
   handlePreviousPeriod: () => void;
   handleNextPeriod: () => void;
-  handleChangeSelectedTimeView: (newSelectedTimeView: "week" | "month") => void;
+  handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -108,9 +110,9 @@ export default function TimeViewSelector({
         {getPeriodLabel(currentPeriodStart, currentPeriodEnd)}
       </span>
       <select
-        value={selectedTimeView}
+        value={scheduleViewSettings.timeFrame}
         onChange={(e) =>
-          handleChangeSelectedTimeView(e.target.value as "week" | "month")
+          handleChangeTimeFrame(e.target.value as "week" | "month")
         }
         style={{
           borderRadius: "4px",
