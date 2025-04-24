@@ -119,24 +119,26 @@ export default function ShiftCell({
         position: "relative",
       }}
     >
-      {scheduleCellData?.assignmentsData.map((aData) => {
-        return (
-          <AssignmentCell
-            key={aData.assignment.id}
-            assignmentData={aData}
+      {scheduleViewSettings.showAssignments &&
+        scheduleCellData?.assignmentsData.map((aData) => {
+          return (
+            <AssignmentCell
+              key={aData.assignment.id}
+              assignmentData={aData}
+              scheduleViewSettings={scheduleViewSettings}
+              handleCellSelection={handleCellSelection}
+            />
+          );
+        })}
+      {scheduleViewSettings.showDailyShiftDemands &&
+        scheduleCellData?.dailyShiftDemandsData && (
+          <DailyShiftDemandCell
+            dailyShiftDemandsData={scheduleCellData.dailyShiftDemandsData}
+            countActual={scheduleCellData.assignmentsData.length}
             scheduleViewSettings={scheduleViewSettings}
             handleCellSelection={handleCellSelection}
           />
-        );
-      })}
-      {scheduleCellData?.dailyShiftDemandsData && (
-        <DailyShiftDemandCell
-          dailyShiftDemandsData={scheduleCellData.dailyShiftDemandsData}
-          countActual={scheduleCellData.assignmentsData.length}
-          scheduleViewSettings={scheduleViewSettings}
-          handleCellSelection={handleCellSelection}
-        />
-      )}
+        )}
       {/* <CellContent /> */}
       <IconButton
         className="add-icon-button"

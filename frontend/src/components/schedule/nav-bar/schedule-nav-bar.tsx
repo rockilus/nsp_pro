@@ -86,6 +86,8 @@ export default function ScheduleNavBar({
         endDate={currentPeriodEnd}
         scheduleViewSettings={scheduleViewSettings}
         handleSendDuplicateRequest={handleSendDuplicateRequest}
+        updateScheduleViewSettings={updateScheduleViewSettings}
+        handleChangeTimeFrame={handleChangeTimeFrame}
       />
       {scheduleCampaign ? (
         <CampaignInfo

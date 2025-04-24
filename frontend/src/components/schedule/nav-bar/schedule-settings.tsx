@@ -19,6 +19,8 @@ import {
   Radio,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
+// Components
+import ScheduleSettingsView from "./schedule-settings-view";
 // Types
 import {
   ScheduleT,
@@ -38,6 +40,8 @@ interface ScheduleSettingsProps {
     campaignId: string,
     teamId: string
   ) => void;
+  updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
+  handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
 }
 
 const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
@@ -47,6 +51,8 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   endDate,
   scheduleViewSettings,
   handleSendDuplicateRequest,
+  updateScheduleViewSettings,
+  handleChangeTimeFrame,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -114,7 +120,6 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
 
     const campaignStart = campaign.startDate.startOf("day");
     const campaignEnd = campaign.endDate.endOf("day");
-    const test = campaignStart.endOf("week").add(1, "day");
 
     const weeks = [];
     let currentStart = campaignStart;
@@ -151,17 +156,30 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
       >
-        <MenuItem
-          onClick={handleDuplicateWeek}
-          disabled={
-            !campaign ||
-            scheduleViewSettings.timeFrame !== "week" ||
-            endDate.diff(startDate, "day") + 1 !== 7 ||
-            startDate.day() !== 1
-          }
-        >
-          {t("duplicate_week")}
-        </MenuItem>
+        <div style={{ padding: "16px", minWidth: "300px" }}>
+          <ScheduleSettingsView
+            lng={lng}
+            scheduleViewSettings={scheduleViewSettings}
+            updateScheduleViewSettings={updateScheduleViewSettings}
+            handleChangeTimeFrame={handleChangeTimeFrame}
+          />
+
+          {/* Tools Section */}
+          <div>
+            <h4 style={{ margin: "0 0 8px 0" }}>{t("tools")}</h4>
+            <MenuItem
+              onClick={handleDuplicateWeek}
+              disabled={
+                !campaign ||
+                scheduleViewSettings.timeFrame !== "week" ||
+                endDate.diff(startDate, "day") + 1 !== 7 ||
+                startDate.day() !== 1
+              }
+            >
+              {t("duplicate_week")}
+            </MenuItem>
+          </div>
+        </div>
       </Popover>
 
       <Dialog

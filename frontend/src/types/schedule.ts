@@ -164,6 +164,9 @@ export type ScheduleViewSettingsT = {
   timeFrame: "week" | "month";
   groupBy: "shift" | "worker";
   showBreaches: boolean;
+  showAssignments: boolean;
+  showDailyShiftDemands: boolean;
+  showRequests: boolean;
 };
 
 export const toSolveDetailsT = (data: any): SolveDetailsT => {

@@ -114,6 +114,9 @@ export default function ScheduleTab({
       timeFrame: "week",
       groupBy: "shift",
       showBreaches: true,
+      showAssignments: true,
+      showDailyShiftDemands: true,
+      showRequests: true,
     });
   const [selectedCell, setSelectedCell] = useState<AssignmentDataT | null>(
     null
