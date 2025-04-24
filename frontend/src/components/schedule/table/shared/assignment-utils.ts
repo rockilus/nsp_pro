@@ -1,25 +1,27 @@
 import dayjs from "dayjs";
 // Types
 import { BreachT } from "@/types/breach";
-import { AssignmentDictT } from "@/types/assignment";
 import { AssignmentT } from "@/types/assignment";
 import { WorkerT } from "../../../../types/worker";
 import { ShiftT, ShiftRestType } from "../../../../types/shift";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
 import { RecurrenceRuleT } from "@/types/recurrence";
+import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import {
+  AssignmentsDictT,
+  DailyShiftDemandsDictT,
+  ScheduleCellsDictT,
+} from "@/types/schedule";
 
 export const generateOwnerIdDateKey = (
   ownerId: string,
   date: dayjs.Dayjs
 ): string => {
-  // console.log("generateOwnerIdDateKey", ownerId, date);
-  // console.log("date type", typeof date);
-
   return `${ownerId}-${date.format("YYYY-MM-DD")}`;
 };
 
-export const getAssignmentsDataByOwnerAndDate = (
+export const buildAssignmentsDataByOwnerAndDate = (
   ownerType: AttributeOwnerType,
   assignments: AssignmentT[],
   recurrences: RecurrenceRuleT[],
@@ -27,8 +29,8 @@ export const getAssignmentsDataByOwnerAndDate = (
   shifts: ShiftT[],
   breaches: BreachT[],
   requests: RequestT[]
-): AssignmentDictT => {
-  const assignmentDict: AssignmentDictT = {};
+): AssignmentsDictT => {
+  const assignmentDict: AssignmentsDictT = {};
 
   // Precompute a map of recurrences by recurrenceId
   const recurrenceMap = new Map<string, RecurrenceRuleT>();
@@ -128,4 +130,117 @@ export const getAssignmentsDataByOwnerAndDate = (
   });
 
   return assignmentDict;
+};
+
+export const buildDailyShiftDemandsDataByShiftAndDate = (
+  dailyShiftDemands: DailyShiftDemandT[],
+  shifts: ShiftT[]
+): DailyShiftDemandsDictT => {
+  const dailyShiftDemandDict: DailyShiftDemandsDictT = {};
+
+  // Precompute a map of shifts by shiftId
+  const shiftMap = new Map<string, ShiftT>();
+  shifts.forEach((shift) => {
+    shiftMap.set(shift.id, shift);
+  });
+
+  dailyShiftDemands.forEach((dailyShiftDemand) => {
+    const shift = shiftMap.get(dailyShiftDemand.shiftId);
+    if (!shift) return;
+
+    const ownerDateKey = generateOwnerIdDateKey(
+      shift.id,
+      dailyShiftDemand.date
+    );
+
+    if (!dailyShiftDemandDict[ownerDateKey]) {
+      dailyShiftDemandDict[ownerDateKey] = {
+        dailyShiftDemands: [dailyShiftDemand],
+        shift: shift,
+      };
+    } else {
+      dailyShiftDemandDict[ownerDateKey].dailyShiftDemands.push(
+        dailyShiftDemand
+      );
+    }
+  });
+
+  return dailyShiftDemandDict;
+};
+
+export const buildRequestsByWorkerAndDate = (
+  requests: RequestT[]
+): { [key: string]: RequestT[] } => {
+  const requestDict: { [key: string]: RequestT[] } = {};
+
+  requests.forEach((request) => {
+    let currentDate = request.startDate;
+
+    while (currentDate.isSameOrBefore(request.endDate, "day")) {
+      const ownerDateKey = generateOwnerIdDateKey(
+        request.workerId,
+        currentDate
+      );
+
+      if (!requestDict[ownerDateKey]) {
+        requestDict[ownerDateKey] = [];
+      }
+      requestDict[ownerDateKey].push(request);
+
+      currentDate = currentDate.add(1, "day");
+    }
+  });
+
+  return requestDict;
+};
+
+export const buildScheduleCellDict = (
+  ownerType: AttributeOwnerType,
+  assignments: AssignmentT[],
+  dailyShiftDemands: DailyShiftDemandT[],
+  recurrences: RecurrenceRuleT[],
+  requests: RequestT[],
+  workers: WorkerT[],
+  shifts: ShiftT[],
+  breaches: BreachT[]
+): ScheduleCellsDictT => {
+  const assignmentDict = buildAssignmentsDataByOwnerAndDate(
+    ownerType,
+    assignments,
+    recurrences,
+    workers,
+    shifts,
+    breaches,
+    requests
+  );
+
+  let dailyShiftDemandDict: DailyShiftDemandsDictT = {};
+  let requestDict: { [key: string]: RequestT[] } = {};
+
+  if (ownerType === AttributeOwnerType.SHIFT) {
+    dailyShiftDemandDict = buildDailyShiftDemandsDataByShiftAndDate(
+      dailyShiftDemands,
+      shifts
+    );
+  } else if (ownerType === AttributeOwnerType.WORKER) {
+    requestDict = buildRequestsByWorkerAndDate(requests);
+  }
+
+  const allKeys = new Set([
+    ...Object.keys(assignmentDict),
+    ...Object.keys(dailyShiftDemandDict),
+    ...Object.keys(requestDict),
+  ]);
+
+  const scheduleCellDict: ScheduleCellsDictT = {};
+
+  allKeys.forEach((key) => {
+    scheduleCellDict[key] = {
+      assignmentsData: assignmentDict[key] || [],
+      dailyShiftDemandsData: dailyShiftDemandDict[key] || null,
+      requests: requestDict[key] || [],
+    };
+  });
+
+  return scheduleCellDict;
 };

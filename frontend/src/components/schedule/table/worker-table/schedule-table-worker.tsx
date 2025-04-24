@@ -11,7 +11,7 @@ import TableHead from "@mui/material/TableHead";
 import DatesHeaderRow from "../shared/dates-header-row";
 import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
 import WorkerTableRow from "./worker-table-row";
-import { getAssignmentsDataByOwnerAndDate } from "../shared/assignment-utils";
+import { buildAssignmentsDataByOwnerAndDate } from "../shared/assignment-utils";
 import { getRelevantWorkers } from "./worker-table-utils";
 // Types
 import { ShiftT } from "../../../../types/shift";
@@ -79,7 +79,7 @@ export default function ScheduleTableWorker({
     scheduleCampaign
   );
 
-  const workerIdDateToAssignData = getAssignmentsDataByOwnerAndDate(
+  const workerIdDateToAssignData = buildAssignmentsDataByOwnerAndDate(
     AttributeOwnerType.WORKER,
     assignments,
     recurrences,

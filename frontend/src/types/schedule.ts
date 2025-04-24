@@ -6,6 +6,9 @@ import { RequestT } from "./request";
 import { AssignmentT } from "./assignment";
 import { BreachT } from "./breach";
 import { OccurrenceType } from "./recurrence";
+import { DailyShiftDemandT } from "./daily-shift-demand";
+import { WorkerT } from "./worker";
+import { RecurrenceRuleT } from "./recurrence";
 
 // Schedule
 export type QuickStaffingT = {
@@ -123,6 +126,44 @@ export type DuplicateRequestT = {
   sourcePeriod: PeriodT;
   targetPeriod: PeriodT;
   options: DuplicateOptionsT;
+};
+
+export type AssignmentDataT = {
+  worker: WorkerT;
+  shift: ShiftT;
+  assignment: AssignmentT;
+  recurrence: RecurrenceRuleT | null;
+  breaches: BreachT[];
+  requests: RequestT[];
+};
+
+export type AssignmentsDictT = {
+  [key: string]: AssignmentDataT[];
+};
+
+export type DailyShiftDemandsDataT = {
+  dailyShiftDemands: DailyShiftDemandT[];
+  shift: ShiftT;
+};
+
+export type DailyShiftDemandsDictT = {
+  [key: string]: DailyShiftDemandsDataT;
+};
+
+export type ScheduleCellDataT = {
+  assignmentsData: AssignmentDataT[];
+  dailyShiftDemandsData: DailyShiftDemandsDataT | null;
+  requests: RequestT[];
+};
+
+export type ScheduleCellsDictT = {
+  [key: string]: ScheduleCellDataT;
+};
+
+export type ScheduleViewSettingsT = {
+  timeFrame: "week" | "month";
+  groupBy: "shift" | "worker";
+  showBreaches: boolean;
 };
 
 export const toSolveDetailsT = (data: any): SolveDetailsT => {

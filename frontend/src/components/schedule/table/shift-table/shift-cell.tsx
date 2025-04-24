@@ -7,23 +7,23 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import IconButton from "@mui/material/IconButton";
 import TableCell from "@mui/material/TableCell";
 // Components
+import AssignmentCell from "./assignment-cell";
+import DailyShiftDemandCell from "./daily-shift-demand-cell";
 import { generateOwnerIdDateKey } from "../shared/assignment-utils";
 // Styles
 import "./shift-cell.css";
 // Types
 import { ShiftT } from "../../../../types/shift";
-import { WorkerT } from "../../../../types/worker";
 import {
   ScheduleT,
-  ScheduleStatus,
   periodDateT,
+  AssignmentDataT,
+  AssignmentsDictT,
+  ScheduleCellDataT,
+  ScheduleViewSettingsT,
 } from "../../../../types/schedule";
-import { BreachT } from "@/types/breach";
 import { CreateAssignmentT } from "@/types/assignment";
-import { AssignmentDictT } from "@/types/assignment";
-import { AssignmentDataDictT } from "@/types/assignment";
-import { AssignmentT } from "@/types/assignment";
-import { RequestT, RequestStatus } from "../../../../types/request";
+import { RequestStatus } from "../../../../types/request";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -33,23 +33,27 @@ export default function ShiftCell({
   scheduleCampaign,
   shift,
   shiftIdDateToAssignData,
+  scheduleCellData,
   showBreaches,
+  scheduleViewSettings,
   handleCellSelection,
   handleOpenCreateAssignment,
 }: {
   periodDate: periodDateT;
   scheduleCampaign: ScheduleT | null;
   shift: ShiftT;
-  shiftIdDateToAssignData: AssignmentDictT;
+  shiftIdDateToAssignData: AssignmentsDictT;
+  scheduleCellData: ScheduleCellDataT | null;
   showBreaches: boolean;
-  handleCellSelection: (seletedCell: AssignmentDataDictT) => void;
+  scheduleViewSettings: ScheduleViewSettingsT;
+  handleCellSelection: (seletedCell: AssignmentDataT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   const AssignmentDiv = ({
     aDataDict,
     isLastAssignment,
   }: {
-    aDataDict: AssignmentDataDictT;
+    aDataDict: AssignmentDataT;
     isLastAssignment: boolean;
   }) => {
     const assignmentFixed =
@@ -89,7 +93,7 @@ export default function ShiftCell({
 
   const CellContent = ({}) => {
     const shiftDateKey = generateOwnerIdDateKey(shift.id, periodDate.date);
-    const aDataDicts: AssignmentDataDictT[] =
+    const aDataDicts: AssignmentDataT[] =
       shiftIdDateToAssignData[shiftDateKey] || [];
 
     return (
@@ -117,7 +121,25 @@ export default function ShiftCell({
         position: "relative",
       }}
     >
-      <CellContent />
+      {scheduleCellData?.assignmentsData.map((aData) => {
+        return (
+          <AssignmentCell
+            key={aData.assignment.id}
+            assignmentData={aData}
+            scheduleViewSettings={scheduleViewSettings}
+            handleCellSelection={handleCellSelection}
+          />
+        );
+      })}
+      {scheduleCellData?.dailyShiftDemandsData && (
+        <DailyShiftDemandCell
+          dailyShiftDemandsData={scheduleCellData.dailyShiftDemandsData}
+          countActual={scheduleCellData.assignmentsData.length}
+          scheduleViewSettings={scheduleViewSettings}
+          handleCellSelection={handleCellSelection}
+        />
+      )}
+      {/* <CellContent /> */}
       <IconButton
         className="add-icon-button"
         sx={{

@@ -15,7 +15,7 @@ import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
-import { getAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
+import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
@@ -56,12 +56,13 @@ import {
   LHSTabContentT,
   periodDateT,
   DuplicateRequestT,
+  AssignmentDataT,
+  ScheduleViewSettingsT,
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
 import {
   AssignmentT,
-  AssignmentDataDictT,
   AssignmentsRecurrencesResultT,
   CreateAssignmentT,
 } from "@/types/assignment";
@@ -108,9 +109,15 @@ export default function ScheduleTab({
   const [breaches, setBreaches] = useState<BreachT[]>([]);
   const [stats, setStats] = useState<StatsT | null>(null);
 
+  const [scheduleViewSettings, setScheduleViewSettings] =
+    useState<ScheduleViewSettingsT>({
+      timeFrame: "week",
+      groupBy: "shift",
+      showBreaches: true,
+    });
   const [selectedDisplay, setSelectedDisplay] = useState<string>("shift"); // ["shift", "worker", "week"]
   const [showBreaches, setShowBreaches] = useState<boolean>(true);
-  const [selectedCell, setSelectedCell] = useState<AssignmentDataDictT | null>(
+  const [selectedCell, setSelectedCell] = useState<AssignmentDataT | null>(
     null
   );
 
@@ -192,7 +199,7 @@ export default function ScheduleTab({
     }
   };
 
-  const handleCellSelection = (selectedCell: AssignmentDataDictT) => {
+  const handleCellSelection = (selectedCell: AssignmentDataT) => {
     setSelectedCell(selectedCell);
     setSelectedTab("selection");
   };
@@ -368,7 +375,7 @@ export default function ScheduleTab({
       setRecurrences([...recurrences, ARResult.recurrenceCreated]);
     }
     setSelectedTab("selection");
-    const assignDict = getAssignmentsDataByOwnerAndDate(
+    const assignDict = buildAssignmentsDataByOwnerAndDate(
       AttributeOwnerType.WORKER,
       [ARResult.assignmentsCreated[0]], // Feed only the first assignment
       recurrences,
@@ -399,7 +406,7 @@ export default function ScheduleTab({
 
     updateAssignmentsAndRecurrencesStates(ARResult);
 
-    const assignDict = getAssignmentsDataByOwnerAndDate(
+    const assignDict = buildAssignmentsDataByOwnerAndDate(
       AttributeOwnerType.WORKER,
       [ARResult.assignmentsUpdated[0]], // Feed only the first updated assignment
       recurrences,
@@ -881,6 +888,7 @@ export default function ScheduleTab({
               requests={requests}
               selectedDisplay={selectedDisplay}
               showBreaches={showBreaches}
+              scheduleViewSettings={scheduleViewSettings}
               handleCellSelection={handleCellSelection}
               handleCreateDSD={handleCreateDSD}
               handleUpdateDSD={handleUpdateDSD}

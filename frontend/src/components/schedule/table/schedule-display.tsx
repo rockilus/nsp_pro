@@ -8,14 +8,13 @@ import ScheduleTableWorker from "./worker-table/schedule-table-worker";
 import {
   ScheduleT,
   ExportOptionsT,
-  ScheduleStatus,
   periodDateT,
+  AssignmentDataT,
+  ScheduleViewSettingsT,
 } from "../../../types/schedule";
 import { BreachT } from "@/types/breach";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
-import { CreateAssignmentT } from "@/types/assignment";
-import { AssignmentDataDictT } from "@/types/assignment";
-import { AssignmentT } from "@/types/assignment";
+import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
 import { RequestT } from "../../../types/request";
@@ -37,6 +36,7 @@ export default function ScheduleDisplay({
   requests,
   selectedDisplay,
   showBreaches,
+  scheduleViewSettings,
   handleCellSelection,
   handleCreateDSD,
   handleUpdateDSD,
@@ -56,7 +56,8 @@ export default function ScheduleDisplay({
   requests: RequestT[];
   selectedDisplay: string;
   showBreaches: boolean;
-  handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
+  scheduleViewSettings: ScheduleViewSettingsT;
+  handleCellSelection: (selectedCell: AssignmentDataT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
@@ -78,6 +79,7 @@ export default function ScheduleDisplay({
         breaches={breaches}
         showBreaches={showBreaches}
         selectedDisplay={selectedDisplay}
+        scheduleViewSettings={scheduleViewSettings}
         handleCellSelection={handleCellSelection}
         handleCreateDSD={handleCreateDSD}
         handleUpdateDSD={handleUpdateDSD}

@@ -12,7 +12,10 @@ import TableHead from "@mui/material/TableHead";
 import DatesHeaderRow from "../shared/dates-header-row";
 import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
 import ShiftTableRow from "./shift-table-row";
-import { getAssignmentsDataByOwnerAndDate } from "../shared/assignment-utils";
+import {
+  buildAssignmentsDataByOwnerAndDate,
+  buildScheduleCellDict,
+} from "../shared/assignment-utils";
 import { getRelevantShifts } from "./shift-table-utils";
 // Types
 import { ShiftT } from "../../../../types/shift";
@@ -20,14 +23,13 @@ import { WorkerT } from "../../../../types/worker";
 import {
   ScheduleT,
   ExportOptionsT,
-  ScheduleStatus,
   periodDateT,
+  AssignmentDataT,
+  ScheduleViewSettingsT,
 } from "../../../../types/schedule";
 import { BreachT } from "@/types/breach";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
-import { CreateAssignmentT } from "@/types/assignment";
-import { AssignmentDataDictT } from "@/types/assignment";
-import { AssignmentT } from "@/types/assignment";
+import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
 import { RecurrenceRuleT } from "@/types/recurrence";
@@ -50,6 +52,7 @@ export default function ScheduleTableShift({
   breaches,
   showBreaches,
   selectedDisplay,
+  scheduleViewSettings,
   handleCellSelection,
   handleCreateDSD,
   handleUpdateDSD,
@@ -69,14 +72,15 @@ export default function ScheduleTableShift({
   breaches: BreachT[];
   showBreaches: boolean;
   selectedDisplay: string;
-  handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
+  scheduleViewSettings: ScheduleViewSettingsT;
+  handleCellSelection: (selectedCell: AssignmentDataT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   const shiftsForHeader = getRelevantShifts(shifts, assignments);
-  const shiftIdDateToAssignData = getAssignmentsDataByOwnerAndDate(
+  const shiftIdDateToAssignData = buildAssignmentsDataByOwnerAndDate(
     AttributeOwnerType.SHIFT,
     assignments,
     recurrences,
@@ -84,6 +88,16 @@ export default function ScheduleTableShift({
     shifts,
     breaches,
     requests
+  );
+  const scheduleCellDict = buildScheduleCellDict(
+    AttributeOwnerType.SHIFT,
+    assignments,
+    dailyShiftDemands,
+    recurrences,
+    requests,
+    workers,
+    shifts,
+    breaches
   );
 
   return (
@@ -129,7 +143,9 @@ export default function ScheduleTableShift({
               periodDates={periodDates}
               scheduleCampaign={scheduleCampaign}
               shiftIdDateToAssignData={shiftIdDateToAssignData}
+              scheduleCellsDict={scheduleCellDict}
               showBreaches={showBreaches}
+              scheduleViewSettings={scheduleViewSettings}
               handleCellSelection={handleCellSelection}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />
