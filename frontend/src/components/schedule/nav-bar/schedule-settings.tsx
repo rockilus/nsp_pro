@@ -21,6 +21,8 @@ import {
 import SettingsIcon from "@mui/icons-material/Settings";
 // Components
 import ScheduleSettingsView from "./schedule-settings-view";
+// Styles
+import "../../../styles/text-styles.css";
 // Types
 import {
   ScheduleT,
@@ -166,7 +168,12 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
 
           {/* Tools Section */}
           <div>
-            <h4 style={{ margin: "0 0 8px 0" }}>{t("tools")}</h4>
+            <h4
+              className="subtitle settings-view-title"
+              style={{ margin: "0 0 8px 0" }}
+            >
+              {t("tools")}
+            </h4>
             <MenuItem
               onClick={handleDuplicateWeek}
               disabled={
@@ -175,6 +182,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
                 endDate.diff(startDate, "day") + 1 !== 7 ||
                 startDate.day() !== 1
               }
+              sx={{ fontSize: "0.8rem" }}
             >
               {t("duplicate_week")}
             </MenuItem>
