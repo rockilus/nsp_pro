@@ -15,7 +15,10 @@ import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
-import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
+import {
+  buildAssignmentsDataByOwnerAndDate,
+  buildDailyShiftDemandsDataByShiftAndDate,
+} from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
@@ -291,6 +294,25 @@ export default function ScheduleTab({
     }
     const newDailyShiftDemand = await addDailyShiftDemand(dailyShiftDemand);
     setDailyShiftDemands([...dailyShiftDemands, newDailyShiftDemand]);
+    if (selectedDemand) {
+      const newDSDList = [
+        ...(
+          selectedDemand.dailyShiftDemandsData?.dailyShiftDemands || []
+        ).filter((dsd) => dsd.id !== newDailyShiftDemand.id),
+        newDailyShiftDemand,
+      ];
+
+      const demandDict = buildDailyShiftDemandsDataByShiftAndDate(
+        newDSDList,
+        shifts
+      );
+      const newDailyShiftDemandsData = Object.values(demandDict)[0];
+      const newSelectedDemand = {
+        ...selectedDemand,
+        dailyShiftDemandsData: newDailyShiftDemandsData,
+      };
+      setSelectedDemand(newSelectedDemand);
+    }
   };
 
   const handleUpdateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {
@@ -303,6 +325,25 @@ export default function ScheduleTab({
         dsd.id === newDailyShiftDemand.id ? newDailyShiftDemand : dsd
       )
     );
+    if (selectedDemand) {
+      const newDSDList = [
+        ...(
+          selectedDemand.dailyShiftDemandsData?.dailyShiftDemands || []
+        ).filter((dsd) => dsd.id !== newDailyShiftDemand.id),
+        newDailyShiftDemand,
+      ];
+
+      const demandDict = buildDailyShiftDemandsDataByShiftAndDate(
+        newDSDList,
+        shifts
+      );
+      const newDailyShiftDemandsData = Object.values(demandDict)[0];
+      const newSelectedDemand = {
+        ...selectedDemand,
+        dailyShiftDemandsData: newDailyShiftDemandsData,
+      };
+      setSelectedDemand(newSelectedDemand);
+    }
   };
 
   //////////////////////////
