@@ -33,7 +33,7 @@ export default function WorkerCell({
   shifts,
   workerIdDateToAssignData,
   scheduleViewSettings,
-  handleCellSelection,
+  handleAssignmentSelection,
   handleOpenCreateAssignment,
 }: {
   periodDate: periodDateT;
@@ -42,7 +42,7 @@ export default function WorkerCell({
   shifts: ShiftT[];
   workerIdDateToAssignData: AssignmentDictT;
   scheduleViewSettings: ScheduleViewSettingsT;
-  handleCellSelection: (seletedCell: AssignmentDataDictT) => void;
+  handleAssignmentSelection: (seletedCell: AssignmentDataDictT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   const AssignmentDiv = ({
@@ -89,7 +89,7 @@ export default function WorkerCell({
             ? "soft-breach"
             : ""
         }`}
-        onClick={() => handleCellSelection(aDataDict)}
+        onClick={() => handleAssignmentSelection(aDataDict)}
       >
         <span className={`shift-name-cell ${assignmentFixed ? "fix" : ""}`}>
           {shiftNameDisplayed}
@@ -166,6 +166,7 @@ export default function WorkerCell({
             workerId: worker.id,
             shiftId: null,
             date: periodDate.date,
+            haveDemand: false,
           })
         }
       >

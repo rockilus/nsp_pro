@@ -13,6 +13,7 @@ import {
   periodDateT,
   AssignmentsDictT,
   AssignmentDataT,
+  ScheduleCellDataT,
   ScheduleCellsDictT,
   ScheduleViewSettingsT,
 } from "../../../../types/schedule";
@@ -29,7 +30,8 @@ export default function ShiftTableRow({
   shiftIdDateToAssignData,
   scheduleCellsDict,
   scheduleViewSettings,
-  handleCellSelection,
+  handleAssignmentSelection,
+  handleDemandSelection,
   handleOpenCreateAssignment,
 }: {
   shift: ShiftT;
@@ -40,7 +42,8 @@ export default function ShiftTableRow({
   shiftIdDateToAssignData: AssignmentsDictT;
   scheduleCellsDict: ScheduleCellsDictT;
   scheduleViewSettings: ScheduleViewSettingsT;
-  handleCellSelection: (selectedCell: AssignmentDataT) => void;
+  handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
+  handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   return (
@@ -66,7 +69,8 @@ export default function ShiftTableRow({
             shiftIdDateToAssignData={shiftIdDateToAssignData}
             scheduleCellData={scheduleCellData}
             scheduleViewSettings={scheduleViewSettings}
-            handleCellSelection={handleCellSelection}
+            handleAssignmentSelection={handleAssignmentSelection}
+            handleDemandSelection={handleDemandSelection}
             handleOpenCreateAssignment={handleOpenCreateAssignment}
           />
         );

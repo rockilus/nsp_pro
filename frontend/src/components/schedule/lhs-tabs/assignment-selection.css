@@ -1,17 +1,3 @@
-.assignment-options-container {
-  display: flex;
-  flex-direction: column;
-  align-self: flex-start;
-  width: 100%;
-  padding: 10px 10px 5px 10px;
-}
-
-.assignment-options-container {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #3c4043;
-}
-
 .assignment-options-assignment-container {
   margin-top: 10px;
 }

@@ -2,6 +2,9 @@ import React from "react";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../app/i18n/client";
+// MUI
+import { Button } from "@mui/material";
+
 // Components
 import EditAssignment from "./edit-assignment";
 import LHSHEader from "./lhs-header";
@@ -24,6 +27,7 @@ interface CreateAssignmentProps {
   workers: WorkerT[];
   shifts: ShiftT[];
   dateSelected: Dayjs | null;
+  addDemandActive: boolean;
   onClose: () => void;
   handleCreateAssignment?: (
     newAssignment: AssignmentT,
@@ -40,6 +44,7 @@ const CreateAssignment: React.FC<CreateAssignmentProps> = ({
   workers,
   shifts,
   dateSelected,
+  addDemandActive,
   onClose,
   handleCreateAssignment,
 }) => {
@@ -48,6 +53,21 @@ const CreateAssignment: React.FC<CreateAssignmentProps> = ({
   return (
     <div className="create-assignment-container">
       <LHSHEader lhsHeaderTitle={t("create_assignment")} onClose={onClose} />
+      {addDemandActive && (
+        <Button
+          variant="contained"
+          color="info"
+          // onClick={handleSaveClick}
+          sx={{
+            height: "20px",
+            width: "130px",
+            fontSize: "0.8rem",
+            textTransform: "none",
+          }}
+        >
+          Add demand
+        </Button>
+      )}
       <EditAssignment
         lng={lng}
         teamId={teamId}

@@ -7,7 +7,7 @@ import { useTranslation } from "../../app/i18n/client";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 // Components
-import AssignmentOptions from "./lhs-tabs/assignment-options";
+import CurrentSelectionLHSTab from "./lhs-tabs/current-selection-lhs-tab";
 import BreachList from "./lhs-tabs/breach-list";
 import QuickStaffingTable from "./lhs-tabs/quick-staffing";
 import QuickStatsTable from "./lhs-tabs/quick-stats";
@@ -57,6 +57,7 @@ import {
   periodDateT,
   DuplicateRequestT,
   AssignmentDataT,
+  ScheduleCellDataT,
   ScheduleViewSettingsT,
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
@@ -118,9 +119,10 @@ export default function ScheduleTab({
       showDailyShiftDemands: true,
       showRequests: true,
     });
-  const [selectedCell, setSelectedCell] = useState<AssignmentDataT | null>(
-    null
-  );
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<AssignmentDataT | null>(null);
+  const [selectedDemand, setSelectedDemand] =
+    useState<ScheduleCellDataT | null>(null);
 
   const [solveStatus, setSolveStatus] = useState<
     SolveDetailsStatus | null | "error"
@@ -199,8 +201,17 @@ export default function ScheduleTab({
     }
   };
 
-  const handleCellSelection = (selectedCell: AssignmentDataT) => {
-    setSelectedCell(selectedCell);
+  const handleAssignmentSelection = (selectedAssignment: AssignmentDataT) => {
+    setSelectedAssignment(selectedAssignment);
+    setSelectedDemand(null);
+    setSelectedTab("selection");
+  };
+
+  const handleDemandSelection = (
+    selectedScheduleCellData: ScheduleCellDataT
+  ) => {
+    setSelectedDemand(selectedScheduleCellData);
+    setSelectedAssignment(null);
     setSelectedTab("selection");
   };
 
@@ -365,7 +376,7 @@ export default function ScheduleTab({
   const handleCloseLHS = () => {
     setCreateAssignmentData(null);
     setSelectedTab(null);
-    setSelectedCell(null);
+    setSelectedAssignment(null);
   };
 
   const handleCreateAssignment = async (
@@ -391,7 +402,7 @@ export default function ScheduleTab({
       requests
     );
     const newSelectedCell = Object.values(assignDict)[0][0];
-    setSelectedCell(newSelectedCell);
+    setSelectedAssignment(newSelectedCell);
     setCreateAssignmentData(null);
   };
 
@@ -422,7 +433,7 @@ export default function ScheduleTab({
       requests
     );
     const newSelectedCell = Object.values(assignDict)[0][0];
-    setSelectedCell(newSelectedCell);
+    setSelectedAssignment(newSelectedCell);
     setSelectedTab("selection");
     setCreateAssignmentData(null);
   };
@@ -442,7 +453,7 @@ export default function ScheduleTab({
       recurrenceUpdateScope
     );
     updateAssignmentsAndRecurrencesStates(ARResult);
-    setSelectedCell(null);
+    setSelectedAssignment(null);
   };
 
   const updateSelectedPeriod = (
@@ -785,18 +796,23 @@ export default function ScheduleTab({
       name: "selection",
       label: t("selection"),
       content: (
-        <AssignmentOptions
+        <CurrentSelectionLHSTab
           lng={lng}
+          teamId={selectedTeamId as string}
           workers={workers.filter((w) => !w.deleted)}
           shifts={shifts.filter((s) => !s.deleted)}
           schedules={[
             ...(scheduleCampaign ? [scheduleCampaign] : []),
             ...schedulesValidated,
           ]}
-          selectedCell={selectedCell}
+          campaign={scheduleCampaign}
+          selectedAssignment={selectedAssignment}
+          selectedDemand={selectedDemand}
           onClose={handleCloseLHS}
           handleUpdateAssignment={handleUpdateAssignment}
           handleDeleteAssignment={handleDeleteAssignment}
+          handleCreateDSD={handleCreateDSD}
+          handleUpdateDSD={handleUpdateDSD}
         />
       ),
     },
@@ -813,6 +829,10 @@ export default function ScheduleTab({
           dateSelected={createAssignmentData.date}
           workers={workers}
           shifts={shifts}
+          addDemandActive={
+            !createAssignmentData.haveDemand &&
+            scheduleViewSettings.groupBy === "shift"
+          }
           onClose={handleCloseLHS}
           handleCreateAssignment={handleCreateAssignment}
         />
@@ -885,7 +905,8 @@ export default function ScheduleTab({
               shifts={shifts}
               requests={requests}
               scheduleViewSettings={scheduleViewSettings}
-              handleCellSelection={handleCellSelection}
+              handleAssignmentSelection={handleAssignmentSelection}
+              handleDemandSelection={handleDemandSelection}
               handleCreateDSD={handleCreateDSD}
               handleUpdateDSD={handleUpdateDSD}
               handleExportSchedule={handleExportSchedule}

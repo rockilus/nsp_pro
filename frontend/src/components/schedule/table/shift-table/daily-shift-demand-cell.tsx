@@ -1,39 +1,27 @@
 import React from "react";
-import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 // Styles
 import "./daily-shift-demand-cell.css";
 // Types
-import {
-  AssignmentDataT,
-  DailyShiftDemandsDataT,
-  ScheduleViewSettingsT,
-} from "../../../../types/schedule";
-
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
+import { ScheduleCellDataT } from "../../../../types/schedule";
 
 export default function DailyShiftDemandCell({
-  dailyShiftDemandsData,
-  countActual,
-  scheduleViewSettings,
-  handleCellSelection,
+  scheduleCellData,
+  handleDemandSelection,
 }: {
-  dailyShiftDemandsData: DailyShiftDemandsDataT;
-  countActual: number;
-  scheduleViewSettings: ScheduleViewSettingsT;
-  handleCellSelection: (seletedCell: AssignmentDataT) => void;
+  scheduleCellData: ScheduleCellDataT;
+  handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
 }) {
-  const countTarget = dailyShiftDemandsData.dailyShiftDemands.reduce(
-    (sum, demand) => sum + demand.count,
-    0
-  );
+  const countActual = scheduleCellData.assignmentsData.length;
+  const countTarget =
+    scheduleCellData.dailyShiftDemandsData?.dailyShiftDemands.reduce(
+      (sum, demand) => sum + demand.count,
+      0
+    ) || 0;
 
   return (
     <div
       className="dsd-cell-container"
-      //   onClick={() => handleCellSelection(assignmentData)}
+      onClick={() => handleDemandSelection(scheduleCellData)}
     >
       <div className="dsd-cell-stats">
         <span className="dsd-stats dsd-stats-actual">{countActual}</span>

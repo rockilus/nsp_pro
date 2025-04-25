@@ -1,22 +1,17 @@
-import dayjs from "dayjs";
 import React, { useState, useEffect } from "react";
+import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import FormControl from "@mui/material/FormControl";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import LockOutlineIcon from "@mui/icons-material/LockOutlined";
-import MenuItem from "@mui/material/MenuItem";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
 // Components
 import EditAssignment from "./edit-assignment";
-import LHSHEader from "./lhs-header";
 // Styles
-import "./assignment-options.css";
+import "./assignment-selection.css";
 // Types
 import { ShiftT } from "../../../types/shift";
 import { WorkerT } from "../../../types/worker";
@@ -27,13 +22,12 @@ import { AssignmentT } from "@/types/assignment";
 import { RequestStatus } from "../../../types/request";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 
-export default function AssignmentOptions({
+export default function AssignmentSelection({
   lng,
   workers,
   shifts,
   schedules,
-  selectedCell,
-  onClose,
+  selectedAssignment,
   handleUpdateAssignment,
   handleDeleteAssignment,
 }: {
@@ -41,8 +35,7 @@ export default function AssignmentOptions({
   workers: WorkerT[];
   shifts: ShiftT[];
   schedules: ScheduleT[];
-  selectedCell: AssignmentDataDictT | null;
-  onClose: () => void;
+  selectedAssignment: AssignmentDataDictT | null;
   handleUpdateAssignment: (
     assignment: AssignmentT,
     recurrence: RecurrenceRuleT | null,
@@ -56,17 +49,17 @@ export default function AssignmentOptions({
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  const [selectedAssignment, setSelectedAssignment] =
-    useState<AssignmentT | null>(selectedCell?.assignment || null);
+  const [selectedAssignmentState, setSelectedAssignmentState] =
+    useState<AssignmentT | null>(selectedAssignment?.assignment || null);
   const [selectedAssignSchedule, setSelectedAssignSchedule] =
     useState<ScheduleT | null>(null);
 
   const handleChangeAssignmentFixed = () => {
-    if (!selectedAssignment) return;
+    if (!selectedAssignmentState) return;
     handleUpdateAssignment(
       {
-        ...selectedAssignment,
-        fixed: !selectedAssignment.fixed,
+        ...selectedAssignmentState,
+        fixed: !selectedAssignmentState.fixed,
       },
       null,
       null
@@ -74,39 +67,41 @@ export default function AssignmentOptions({
   };
 
   const breachesNoRequests =
-    selectedCell?.breaches.filter(
+    selectedAssignment?.breaches.filter(
       (b) => b.objectiveCategory !== ObjectiveCategory.REQUEST
     ) || [];
 
   useEffect(() => {
-    setSelectedAssignment(selectedCell?.assignment || null);
+    setSelectedAssignmentState(selectedAssignment?.assignment || null);
     setSelectedAssignSchedule(
-      selectedCell
-        ? schedules.find((s) => s.id === selectedCell.assignment.scheduleId) ||
-            null
+      selectedAssignment
+        ? schedules.find(
+            (s) => s.id === selectedAssignment.assignment.scheduleId
+          ) || null
         : null
     );
-  }, [selectedCell, schedules]);
+  }, [selectedAssignment, schedules]);
 
   return (
-    <div className="assignment-options-container">
-      <LHSHEader lhsHeaderTitle={t("selection")} onClose={onClose} />
+    <div>
       <div className="assignment-options-assignment-container">
         <div className="assignment-options-assignment-title-container">
-          {selectedAssignment && (
+          {selectedAssignmentState && (
             <>
               <span className="assignment-options-assignment-title">
                 {t("assignment")}
               </span>
               <Chip
                 icon={
-                  selectedAssignment.fixed ? (
+                  selectedAssignmentState.fixed ? (
                     <LockOutlineIcon sx={{ fontSize: "0.8rem" }} />
                   ) : (
                     <LockOpenIcon sx={{ fontSize: "0.8rem" }} />
                   )
                 }
-                label={selectedAssignment.fixed ? t("locked") : t("unlocked")}
+                label={
+                  selectedAssignmentState.fixed ? t("locked") : t("unlocked")
+                }
                 variant="outlined"
                 size="small"
                 sx={{
@@ -118,18 +113,22 @@ export default function AssignmentOptions({
                   width: "110px",
                   paddingLeft: "4px",
                   "& .MuiChip-icon": {
-                    color: selectedAssignment.fixed ? "#d32f2f" : "#616161",
+                    color: selectedAssignmentState.fixed
+                      ? "#d32f2f"
+                      : "#616161",
                   },
                   "& .MuiChip-label": {
-                    color: selectedAssignment.fixed ? "#d32f2f" : "#616161",
+                    color: selectedAssignmentState.fixed
+                      ? "#d32f2f"
+                      : "#616161",
                   },
                   "&:hover": {
-                    backgroundColor: selectedAssignment.fixed
+                    backgroundColor: selectedAssignmentState.fixed
                       ? "#ef5350"
                       : "#f0f0f0",
                   },
                   "&.MuiChip-outlined": {
-                    borderColor: selectedAssignment.fixed
+                    borderColor: selectedAssignmentState.fixed
                       ? "#d32f2f"
                       : "#e5e7eb",
                   },
@@ -139,21 +138,21 @@ export default function AssignmentOptions({
             </>
           )}
         </div>
-        {selectedCell?.assignment ? (
+        {selectedAssignment?.assignment ? (
           <EditAssignment
             lng={lng}
-            teamId={selectedCell.assignment.teamId}
-            scheduleId={selectedCell.assignment.scheduleId}
-            workerSelectedId={selectedCell.assignment.workerId}
-            shiftSelectedId={selectedCell.assignment.shiftId}
+            teamId={selectedAssignment.assignment.teamId}
+            scheduleId={selectedAssignment.assignment.scheduleId}
+            workerSelectedId={selectedAssignment.assignment.workerId}
+            shiftSelectedId={selectedAssignment.assignment.shiftId}
             workers={workers}
             shifts={shifts}
-            dateSelected={selectedCell.assignment.date}
-            assignment={selectedCell.assignment}
+            dateSelected={selectedAssignment.assignment.date}
+            assignment={selectedAssignment.assignment}
             isEditing={true}
             handleUpdateAssignment={handleUpdateAssignment}
             handleDeleteAssignment={handleDeleteAssignment}
-            recurrence={selectedCell.recurrence}
+            recurrence={selectedAssignment.recurrence}
           />
         ) : (
           <span className="assignment-options-no-assignment-selected-msg">
@@ -161,9 +160,11 @@ export default function AssignmentOptions({
           </span>
         )}
       </div>
-      {selectedAssignment &&
-        selectedCell &&
-        selectedAssignment.date.isAfter(dayjs.utc(dayjs().startOf("day"))) && (
+      {selectedAssignmentState &&
+        selectedAssignment &&
+        selectedAssignmentState.date.isAfter(
+          dayjs.utc(dayjs().startOf("day"))
+        ) && (
           <div style={{ marginTop: "10px" }}>
             <span
               style={{
@@ -174,7 +175,7 @@ export default function AssignmentOptions({
             >
               {t("requests")}
             </span>
-            {selectedCell.requests.length === 0 ? (
+            {selectedAssignment.requests.length === 0 ? (
               <Typography
                 align="left"
                 sx={{
@@ -186,7 +187,7 @@ export default function AssignmentOptions({
                 {t("no_requests")}
               </Typography>
             ) : (
-              selectedCell.requests.map((request, index) => (
+              selectedAssignment.requests.map((request, index) => (
                 <Box
                   key={index}
                   sx={{
