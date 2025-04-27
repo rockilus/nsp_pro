@@ -117,12 +117,16 @@ class DailyShiftDemandService(BaseService):
 
     def get_daily_shift_demands(self, team_id: str) -> List[DailyShiftDemand]:
         # Get data from database
-        schedule_campaign = self.collection.schedule_db.get_schedule_campaign(team_id)
+        schedule_campaign = self.collection.schedule_db.get_schedule_campaign(
+            team_id
+        )
         if schedule_campaign:
             shifts_work_not_deleted = (
                 self.collection.shift_db.get_work_shifts_not_deleted(team_id)
             )
-            shift_work_not_deleted_ids = [s.id for s in shifts_work_not_deleted]
+            shift_work_not_deleted_ids = [
+                s.id for s in shifts_work_not_deleted
+            ]
             coverage_selectors = (
                 self.collection.coverage_selector_db.get_coverage_selectors(
                     schedule_campaign.id
@@ -131,18 +135,20 @@ class DailyShiftDemandService(BaseService):
             coverage_ids = list(
                 set(c.coverage_id for c in coverage_selectors if c.coverage_id)
             )
-            shift_demands = (
-                self.collection.shift_demand_db.get_shift_demands_by_coverage_ids(
-                    coverage_ids
-                )
+            shift_demands = self.collection.shift_demand_db.get_shift_demands_by_coverage_ids(
+                coverage_ids
             )
             shift_demands_shift_not_deleted = [
-                sd for sd in shift_demands if sd.shift_id in shift_work_not_deleted_ids
+                sd
+                for sd in shift_demands
+                if sd.shift_id in shift_work_not_deleted_ids
             ]
-            dsds_new, update_info = self.generate_daily_shift_demands_for_schedule(
-                schedule_campaign,
-                coverage_selectors,
-                shift_demands_shift_not_deleted,
+            dsds_new, update_info = (
+                self.generate_daily_shift_demands_for_schedule(
+                    schedule_campaign,
+                    coverage_selectors,
+                    shift_demands_shift_not_deleted,
+                )
             )
 
             if update_info.get("schedule", None):
@@ -168,11 +174,15 @@ class DailyShiftDemandService(BaseService):
                                 schedule_campaign.id, cs_sd_pairs
                             )
                     # fmt: on
-            self.collection.daily_shift_demand_db.create_daily_shift_demands(dsds_new)
+            self.collection.daily_shift_demand_db.create_daily_shift_demands(
+                dsds_new
+            )
             schedule_campaign.last_updated_dsds = datetime.now(timezone.utc)
             self.collection.schedule_db.update_schedule(schedule_campaign)
         # Get daily shift demands
-        dsds = self.collection.daily_shift_demand_db.get_daily_shift_demands(team_id)
+        dsds = self.collection.daily_shift_demand_db.get_daily_shift_demands(
+            team_id
+        )
         dsds, dsds_updated = self.remove_net_negative_daily_shift_demands(dsds)
         if dsds_updated:
             self.collection.daily_shift_demand_db.update_daily_shift_demands(
@@ -203,3 +213,9 @@ class DailyShiftDemandService(BaseService):
                     demands_updated.append(demand)
 
         return daily_shift_demands, demands_updated
+
+    def delete_daily_shift_demands(self, demand_ids: List[str]) -> None:
+        # Delete daily shift demands by shift demand ids
+        self.collection.daily_shift_demand_db.delete_daily_shift_demands(
+            demand_ids
+        )

@@ -127,6 +127,16 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
                 + "or already deleted"
             )
 
+    def delete_daily_shift_demands(
+        self, daily_shift_demand_ids: List[str]
+    ) -> List[str]:
+        result = self.collection.delete_many({"_id": {"$in": daily_shift_demand_ids}})
+
+        if not result.acknowledged:
+            raise Exception("Failed to delete documents")
+
+        return daily_shift_demand_ids
+
     def delete_daily_shift_demands_by_schedule_id(self, schedule_id: str) -> None:
         """Delete all daily shift demands for a schedule."""
         self.collection.delete_many({"schedule": schedule_id})

@@ -611,3 +611,37 @@ class TestDailyShiftDemandRepository:
         from_db = list(self.repo.collection.find({"team": "team1"}))
         assert from_db[0]["count"] == 10
         assert from_db[1]["count"] == 6
+
+    def test_delete_shift_demands(self):
+        """Test deleting multiple daily shift demands by their IDs."""
+        demands = [
+            DailyShiftDemandSchema(
+                team="team1",
+                schedule="schedule1",
+                shift_demand="shift_demand1",
+                coverage_selector="coverage_selector1",
+                source_type=DSDSourceType.SHIFT_DEMAND.value,
+                date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+                shift="shift1",
+                count=5,
+            ),
+            DailyShiftDemandSchema(
+                team="team1",
+                schedule="schedule1",
+                shift_demand="shift_demand2",
+                coverage_selector="coverage_selector2",
+                source_type=DSDSourceType.SHIFT_DEMAND.value,
+                date=datetime(2023, 1, 2, tzinfo=timezone.utc).timestamp(),
+                shift="shift2",
+                count=3,
+            ),
+        ]
+        created_demands = self.repo.create_many(demands)
+
+        deleted_ids = self.repo.delete_daily_shift_demands(
+            [d.id for d in created_demands]
+        )
+
+        assert len(deleted_ids) == 2
+        assert self.repo.collection.find_one({"_id": created_demands[0].id}) is None
+        assert self.repo.collection.find_one({"_id": created_demands[1].id}) is None

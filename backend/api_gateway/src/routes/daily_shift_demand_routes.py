@@ -1,7 +1,7 @@
 import time as time_module
 from typing import Dict, List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import DailyShiftDemand
@@ -18,6 +18,7 @@ from src.integrations.authentication import (
 )
 from src.integrations.authorization import authz_check
 from src.services.daily_shift_demand_service import DailyShiftDemandService
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -38,8 +39,10 @@ async def create_daily_shift_demand(
                 "You do not have permission to create an daily_shift_demand",
             )
         dsd_data = DailyShiftDemand.from_dto(daily_shift_demand)
-        dsd_created = db_collections.daily_shift_demand_db.create_daily_shift_demand(
-            dsd_data
+        dsd_created = (
+            db_collections.daily_shift_demand_db.create_daily_shift_demand(
+                dsd_data
+            )
         )
         response = dsd_created.to_dto()
     except Exception as e:
@@ -91,8 +94,10 @@ async def update_daily_shift_demand(
                 "You do not have permission to update an daily_shift_demand",
             )
         dsd_data = DailyShiftDemand.from_dto(daily_shift_demand)
-        updated_dsd = db_collections.daily_shift_demand_db.update_daily_shift_demand(
-            dsd_data
+        updated_dsd = (
+            db_collections.daily_shift_demand_db.update_daily_shift_demand(
+                dsd_data
+            )
         )
         response = updated_dsd.to_dto()
     except Exception as e:
@@ -101,13 +106,19 @@ async def update_daily_shift_demand(
     return response
 
 
+class DeleteDailyShiftDemandRequest(BaseModel):
+    daily_shift_demand_ids: List[str]
+
+
 # pylint: disable=R0801
-@router.delete("/daily-shift-demands/{daily_shift_demand_id}/teams/{team_id}")
-async def delete_daily_shift_demand(
-    daily_shift_demand_id: str,
+@router.delete("/daily-shift-demands/teams/{team_id}")
+async def delete_daily_shift_demands(
     team_id: str,
+    request: DeleteDailyShiftDemandRequest = Body(...),
     session: SessionContainerType = Depends(authn_verify_session()),
-    db_collections: DatabaseCollections = Depends(get_db_collections),
+    daily_shift_demand_service: DailyShiftDemandService = Depends(
+        get_daily_shift_demand_service
+    ),
 ) -> Dict:
     try:
         if not await authz_check(
@@ -116,8 +127,8 @@ async def delete_daily_shift_demand(
             raise NotAuthorizedError(
                 "You do not have permission to delete an daily_shift_demand",
             )
-        db_collections.daily_shift_demand_db.delete_daily_shift_demand(
-            daily_shift_demand_id
+        daily_shift_demand_service.delete_daily_shift_demands(
+            demand_ids=request.daily_shift_demand_ids
         )
     except Exception as e:
         log_info("Failed to delete daily_shift_demand")

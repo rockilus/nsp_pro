@@ -34,6 +34,7 @@ export default function CurrentSelectionLHSTab({
   handleDeleteAssignment,
   handleCreateDSD,
   handleUpdateDSD,
+  handleDeleteDSDs,
 }: {
   lng: string;
   teamId: string;
@@ -57,6 +58,7 @@ export default function CurrentSelectionLHSTab({
   ) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  handleDeleteDSDs: (dsdIds: string[], teamId: string) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -83,6 +85,7 @@ export default function CurrentSelectionLHSTab({
           specialties={specialties}
           handleCreateDSD={handleCreateDSD}
           handleUpdateDSD={handleUpdateDSD}
+          handleDeleteDSDs={handleDeleteDSDs}
         />
       )}
     </div>

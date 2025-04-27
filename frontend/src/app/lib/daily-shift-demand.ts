@@ -99,16 +99,20 @@ export async function updateDailyShiftDemand(
   }
 }
 
-export async function deleteDailyShiftDemand(dsdId: string, teamId: string) {
+export async function deleteDailyShiftDemands(
+  demandIds: string[],
+  teamId: string
+) {
   const options: RequestInit = {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({ daily_shift_demand_ids: demandIds }),
   };
   try {
     const response = await fetch(
-      `${apiUrlDailyShiftDemand}/${dsdId}/teams/${teamId}`,
+      `${apiUrlDailyShiftDemand}/teams/${teamId}`,
       options
     );
     const responseData = await response.json();

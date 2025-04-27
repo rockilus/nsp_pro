@@ -43,6 +43,7 @@ import { getStats } from "../../app/lib/stats";
 import {
   addDailyShiftDemand,
   updateDailyShiftDemand,
+  deleteDailyShiftDemands,
 } from "../../app/lib/daily-shift-demand";
 import { exportSchedule } from "../../app/lib/export-schedule";
 import { SSEManager } from "../../app/lib/sse";
@@ -347,6 +348,17 @@ export default function ScheduleTab({
       };
       setSelectedDemand(newSelectedDemand);
     }
+  };
+
+  const handleDeleteDSDs = async (demandIds: string[], teamId: string) => {
+    if (!selectedTeamId) {
+      throw new Error("No team selected");
+    }
+    await deleteDailyShiftDemands(demandIds, teamId);
+    setDailyShiftDemands(
+      dailyShiftDemands.filter((dsd) => !demandIds.includes(dsd.id))
+    );
+    setSelectedDemand(null);
   };
 
   //////////////////////////
@@ -860,6 +872,7 @@ export default function ScheduleTab({
           handleDeleteAssignment={handleDeleteAssignment}
           handleCreateDSD={handleCreateDSD}
           handleUpdateDSD={handleUpdateDSD}
+          handleDeleteDSDs={handleDeleteDSDs}
         />
       ),
     },
