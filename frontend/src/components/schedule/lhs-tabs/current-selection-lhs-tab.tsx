@@ -17,6 +17,7 @@ import {
 import { AssignmentT } from "@/types/assignment";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 import { DailyShiftDemandT } from "@/types/daily-shift-demand";
+import { SpecialtyT } from "@/types/specialty";
 
 export default function CurrentSelectionLHSTab({
   lng,
@@ -27,6 +28,7 @@ export default function CurrentSelectionLHSTab({
   campaign,
   selectedAssignment,
   selectedDemand,
+  specialties,
   onClose,
   handleUpdateAssignment,
   handleDeleteAssignment,
@@ -41,6 +43,7 @@ export default function CurrentSelectionLHSTab({
   campaign: ScheduleT | null;
   selectedAssignment: AssignmentDataT | null;
   selectedDemand: ScheduleCellDataT | null;
+  specialties: SpecialtyT[];
   onClose: () => void;
   handleUpdateAssignment: (
     assignment: AssignmentT,
@@ -77,6 +80,7 @@ export default function CurrentSelectionLHSTab({
           teamId={teamId}
           campaign={campaign}
           selectedDemand={selectedDemand}
+          specialties={specialties}
           handleCreateDSD={handleCreateDSD}
           handleUpdateDSD={handleUpdateDSD}
         />

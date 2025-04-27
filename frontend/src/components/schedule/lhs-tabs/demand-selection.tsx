@@ -14,12 +14,14 @@ import "./demand-selection.css";
 import { ScheduleT, ScheduleCellDataT } from "../../../types/schedule";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 import { DailyShiftDemandT, DSDSourceType } from "@/types/daily-shift-demand";
+import { SpecialtyT } from "@/types/specialty";
 
 export default function DemandSelection({
   lng,
   teamId,
   campaign,
   selectedDemand,
+  specialties,
   handleCreateDSD,
   handleUpdateDSD,
 }: {
@@ -27,6 +29,7 @@ export default function DemandSelection({
   teamId: string;
   campaign: ScheduleT | null;
   selectedDemand: ScheduleCellDataT;
+  specialties: SpecialtyT[];
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
 }) {
@@ -202,7 +205,10 @@ export default function DemandSelection({
                     className="demand-selection-staffing-required-item"
                   >
                     <span className="demand-selection-staffing-required-name">
-                      {staffing.specialtyId ? staffing.specialtyId : t("any")}
+                      {staffing.specialtyId
+                        ? specialties.find((s) => s.id == staffing.specialtyId)
+                            ?.name
+                        : t("any")}
                     </span>
                     <span className="demand-selection-staffing-required-count-per-shift">
                       {`(${staffing.staffing})`}

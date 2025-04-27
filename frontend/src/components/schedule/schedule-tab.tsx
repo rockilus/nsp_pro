@@ -80,7 +80,7 @@ import {
 } from "../../types/stats";
 import { AttributeOwnerType } from "../../types/attribute";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
-import { fileURLToPath } from "url";
+import { SpecialtyT } from "@/types/specialty";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -114,6 +114,7 @@ export default function ScheduleTab({
   >([]);
   const [breaches, setBreaches] = useState<BreachT[]>([]);
   const [stats, setStats] = useState<StatsT | null>(null);
+  const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
 
   const [scheduleViewSettings, setScheduleViewSettings] =
     useState<ScheduleViewSettingsT>({
@@ -744,10 +745,12 @@ export default function ScheduleTab({
             breaches: fetchedBreaches,
             requests: fetchedRequests,
             stats: fetchedStats,
+            specialties: fetchedSpecialties,
           } = await getScheduleLHSData(selectedTeamId);
           setBreaches(fetchedBreaches);
           setRequests(fetchedRequests);
           setStats(fetchedStats);
+          setSpecialties(fetchedSpecialties);
 
           setIsLoadingLHS(false);
 
@@ -851,6 +854,7 @@ export default function ScheduleTab({
           campaign={scheduleCampaign}
           selectedAssignment={selectedAssignment}
           selectedDemand={selectedDemand}
+          specialties={specialties}
           onClose={handleCloseLHS}
           handleUpdateAssignment={handleUpdateAssignment}
           handleDeleteAssignment={handleDeleteAssignment}

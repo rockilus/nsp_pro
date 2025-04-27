@@ -10,6 +10,7 @@ import { getAllShifts } from "./shift";
 import { getStats } from "./stats";
 import { getDailyShiftDemands } from "./daily-shift-demand";
 import { toCoverageSelectorT } from "./campaign";
+import { getSpecialties } from "./specialty";
 // Types
 import {
   ScheduleT,
@@ -339,11 +340,13 @@ export async function getScheduleLHSData(teamId: string) {
       getBreaches(teamId),
       getRequests(teamId),
       getStats(statsOptions, teamId),
+      getSpecialties(teamId),
     ]);
     return {
       breaches: campaignTabData[0],
       requests: campaignTabData[1],
       stats: campaignTabData[2],
+      specialties: campaignTabData[3],
     };
   } catch (error) {
     console.error("Failed to fetch schedule LHS data:", error);
