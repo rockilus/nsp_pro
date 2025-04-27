@@ -1,0 +1,11 @@
+.create-demand-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.create-demand-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: right;
+  margin-top: 10px;
+}

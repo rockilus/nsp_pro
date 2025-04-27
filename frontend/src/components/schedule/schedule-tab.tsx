@@ -18,6 +18,7 @@ import CreateAssignment from "./lhs-tabs/create-assignment";
 import {
   buildAssignmentsDataByOwnerAndDate,
   buildDailyShiftDemandsDataByShiftAndDate,
+  buildScheduleCellDict,
 } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 // Skeletons
@@ -79,6 +80,7 @@ import {
 } from "../../types/stats";
 import { AttributeOwnerType } from "../../types/attribute";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
+import { fileURLToPath } from "url";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -294,25 +296,25 @@ export default function ScheduleTab({
     }
     const newDailyShiftDemand = await addDailyShiftDemand(dailyShiftDemand);
     setDailyShiftDemands([...dailyShiftDemands, newDailyShiftDemand]);
-    if (selectedDemand) {
-      const newDSDList = [
-        ...(
-          selectedDemand.dailyShiftDemandsData?.dailyShiftDemands || []
-        ).filter((dsd) => dsd.id !== newDailyShiftDemand.id),
-        newDailyShiftDemand,
-      ];
-
-      const demandDict = buildDailyShiftDemandsDataByShiftAndDate(
-        newDSDList,
-        shifts
-      );
-      const newDailyShiftDemandsData = Object.values(demandDict)[0];
-      const newSelectedDemand = {
-        ...selectedDemand,
-        dailyShiftDemandsData: newDailyShiftDemandsData,
-      };
-      setSelectedDemand(newSelectedDemand);
-    }
+    setSelectedTab("selection");
+    const newDSDList = [
+      ...(
+        selectedDemand?.dailyShiftDemandsData?.dailyShiftDemands || []
+      ).filter((dsd) => dsd.id !== newDailyShiftDemand.id),
+      newDailyShiftDemand,
+    ];
+    const scheduleCellDict = buildScheduleCellDict(
+      AttributeOwnerType.SHIFT,
+      assignments.filter((a) => a.date === newDailyShiftDemand.date),
+      newDSDList,
+      recurrences,
+      requests,
+      workers,
+      shifts,
+      breaches
+    );
+    const newSelectedDemand = Object.values(scheduleCellDict)[0];
+    setSelectedDemand(newSelectedDemand);
   };
 
   const handleUpdateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {
@@ -876,6 +878,7 @@ export default function ScheduleTab({
           }
           onClose={handleCloseLHS}
           handleCreateAssignment={handleCreateAssignment}
+          handleCreateDSD={handleCreateDSD}
         />
       ) : null,
     },
