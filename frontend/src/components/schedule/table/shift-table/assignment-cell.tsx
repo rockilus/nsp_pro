@@ -16,16 +16,16 @@ dayjs.extend(isSameOrBefore);
 export default function AssignmentCell({
   assignmentData,
   scheduleViewSettings,
-  handleCellSelection,
+  handleAssignmentSelection,
 }: {
   assignmentData: AssignmentDataT;
   scheduleViewSettings: ScheduleViewSettingsT;
-  handleCellSelection: (seletedCell: AssignmentDataT) => void;
+  handleAssignmentSelection: (seletedCell: AssignmentDataT) => void;
 }) {
   return (
     <div
       className="assignment-cell-container"
-      onClick={() => handleCellSelection(assignmentData)}
+      onClick={() => handleAssignmentSelection(assignmentData)}
     >
       <span className="a-cell-title">
         {scheduleViewSettings.groupBy === "worker"
@@ -76,7 +76,7 @@ export default function AssignmentCell({
 //   shiftIdDateToAssignData,
 //   scheduleCellData,
 //   showBreaches,
-//   handleCellSelection,
+//   handleAssignmentSelection,
 //   handleOpenCreateAssignment,
 // }: {
 //   periodDate: periodDateT;
@@ -85,7 +85,7 @@ export default function AssignmentCell({
 //   shiftIdDateToAssignData: AssignmentsDictT;
 //   scheduleCellData: ScheduleCellDataT;
 //   showBreaches: boolean;
-//   handleCellSelection: (seletedCell: AssignmentDataT) => void;
+//   handleAssignmentSelection: (seletedCell: AssignmentDataT) => void;
 //   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 // }) {
 //   const AssignmentDiv = ({
@@ -121,7 +121,7 @@ export default function AssignmentCell({
 //             ? "soft-breach"
 //             : ""
 //         }`}
-//         onClick={() => handleCellSelection(aDataDict)}
+//         onClick={() => handleAssignmentSelection(aDataDict)}
 //       >
 //         <span className={`worker-name-cell ${assignmentFixed ? "fix" : ""}`}>
 //           {aDataDict.worker.acronym}

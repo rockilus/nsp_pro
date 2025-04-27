@@ -47,7 +47,7 @@ export default function ScheduleTableWorker({
   periodDates,
   breaches,
   scheduleViewSettings,
-  handleCellSelection,
+  handleAssignmentSelection,
   handleCreateDSD,
   handleUpdateDSD,
   handleExportSchedule,
@@ -65,7 +65,7 @@ export default function ScheduleTableWorker({
   periodDates: periodDateT[];
   breaches: BreachT[];
   scheduleViewSettings: ScheduleViewSettingsT;
-  handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
+  handleAssignmentSelection: (selectedCell: AssignmentDataDictT) => void;
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
@@ -132,7 +132,7 @@ export default function ScheduleTableWorker({
               scheduleCampaign={scheduleCampaign}
               periodDates={periodDates}
               scheduleViewSettings={scheduleViewSettings}
-              handleCellSelection={handleCellSelection}
+              handleAssignmentSelection={handleAssignmentSelection}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
             />
           ))}

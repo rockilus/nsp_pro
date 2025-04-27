@@ -35,6 +35,7 @@ export type CreateAssignmentT = {
   workerId: string | null;
   shiftId: string | null;
   date: dayjs.Dayjs | null;
+  haveDemand: boolean;
 };
 
 export type AssignmentsRecurrencesResultT = {

@@ -31,7 +31,7 @@ export default function WorkerTableRow({
   scheduleCampaign,
   periodDates,
   scheduleViewSettings,
-  handleCellSelection,
+  handleAssignmentSelection,
   handleOpenCreateAssignment,
 }: {
   lng: string;
@@ -42,7 +42,7 @@ export default function WorkerTableRow({
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
   scheduleViewSettings: ScheduleViewSettingsT;
-  handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
+  handleAssignmentSelection: (selectedCell: AssignmentDataDictT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   return (
@@ -63,7 +63,7 @@ export default function WorkerTableRow({
           shifts={shifts}
           workerIdDateToAssignData={workerIdDateToAssignData}
           scheduleViewSettings={scheduleViewSettings}
-          handleCellSelection={handleCellSelection}
+          handleAssignmentSelection={handleAssignmentSelection}
           handleOpenCreateAssignment={handleOpenCreateAssignment}
         />
       ))}

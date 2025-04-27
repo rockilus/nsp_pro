@@ -35,7 +35,8 @@ export default function ShiftCell({
   shiftIdDateToAssignData,
   scheduleCellData,
   scheduleViewSettings,
-  handleCellSelection,
+  handleAssignmentSelection,
+  handleDemandSelection,
   handleOpenCreateAssignment,
 }: {
   periodDate: periodDateT;
@@ -44,7 +45,8 @@ export default function ShiftCell({
   shiftIdDateToAssignData: AssignmentsDictT;
   scheduleCellData: ScheduleCellDataT | null;
   scheduleViewSettings: ScheduleViewSettingsT;
-  handleCellSelection: (seletedCell: AssignmentDataT) => void;
+  handleAssignmentSelection: (seletedAssignment: AssignmentDataT) => void;
+  handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
 }) {
   const AssignmentDiv = ({
@@ -80,7 +82,7 @@ export default function ShiftCell({
             ? "soft-breach"
             : ""
         }`}
-        onClick={() => handleCellSelection(aDataDict)}
+        onClick={() => handleAssignmentSelection(aDataDict)}
       >
         <span className={`worker-name-cell ${assignmentFixed ? "fix" : ""}`}>
           {aDataDict.worker.acronym}
@@ -126,17 +128,15 @@ export default function ShiftCell({
               key={aData.assignment.id}
               assignmentData={aData}
               scheduleViewSettings={scheduleViewSettings}
-              handleCellSelection={handleCellSelection}
+              handleAssignmentSelection={handleAssignmentSelection}
             />
           );
         })}
       {scheduleViewSettings.showDailyShiftDemands &&
         scheduleCellData?.dailyShiftDemandsData && (
           <DailyShiftDemandCell
-            dailyShiftDemandsData={scheduleCellData.dailyShiftDemandsData}
-            countActual={scheduleCellData.assignmentsData.length}
-            scheduleViewSettings={scheduleViewSettings}
-            handleCellSelection={handleCellSelection}
+            scheduleCellData={scheduleCellData}
+            handleDemandSelection={handleDemandSelection}
           />
         )}
       {/* <CellContent /> */}
@@ -159,6 +159,11 @@ export default function ShiftCell({
             workerId: null,
             shiftId: shift.id,
             date: periodDate.date,
+            haveDemand: scheduleCellData?.dailyShiftDemandsData
+              ?.dailyShiftDemands?.length
+              ? scheduleCellData?.dailyShiftDemandsData?.dailyShiftDemands
+                  ?.length > 0
+              : false || false,
           })
         }
       >

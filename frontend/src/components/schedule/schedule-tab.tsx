@@ -7,7 +7,7 @@ import { useTranslation } from "../../app/i18n/client";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 // Components
-import AssignmentOptions from "./lhs-tabs/assignment-options";
+import CurrentSelectionLHSTab from "./lhs-tabs/current-selection-lhs-tab";
 import BreachList from "./lhs-tabs/breach-list";
 import QuickStaffingTable from "./lhs-tabs/quick-staffing";
 import QuickStatsTable from "./lhs-tabs/quick-stats";
@@ -15,7 +15,11 @@ import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
 import LHSTab from "./lhs-tabs/lhs-tab";
 import CreateAssignment from "./lhs-tabs/create-assignment";
-import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
+import {
+  buildAssignmentsDataByOwnerAndDate,
+  buildDailyShiftDemandsDataByShiftAndDate,
+  buildScheduleCellDict,
+} from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
@@ -57,6 +61,7 @@ import {
   periodDateT,
   DuplicateRequestT,
   AssignmentDataT,
+  ScheduleCellDataT,
   ScheduleViewSettingsT,
 } from "../../types/schedule";
 import { BreachT } from "@/types/breach";
@@ -75,6 +80,7 @@ import {
 } from "../../types/stats";
 import { AttributeOwnerType } from "../../types/attribute";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
+import { SpecialtyT } from "@/types/specialty";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -108,6 +114,7 @@ export default function ScheduleTab({
   >([]);
   const [breaches, setBreaches] = useState<BreachT[]>([]);
   const [stats, setStats] = useState<StatsT | null>(null);
+  const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
 
   const [scheduleViewSettings, setScheduleViewSettings] =
     useState<ScheduleViewSettingsT>({
@@ -118,9 +125,10 @@ export default function ScheduleTab({
       showDailyShiftDemands: true,
       showRequests: true,
     });
-  const [selectedCell, setSelectedCell] = useState<AssignmentDataT | null>(
-    null
-  );
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<AssignmentDataT | null>(null);
+  const [selectedDemand, setSelectedDemand] =
+    useState<ScheduleCellDataT | null>(null);
 
   const [solveStatus, setSolveStatus] = useState<
     SolveDetailsStatus | null | "error"
@@ -199,8 +207,17 @@ export default function ScheduleTab({
     }
   };
 
-  const handleCellSelection = (selectedCell: AssignmentDataT) => {
-    setSelectedCell(selectedCell);
+  const handleAssignmentSelection = (selectedAssignment: AssignmentDataT) => {
+    setSelectedAssignment(selectedAssignment);
+    setSelectedDemand(null);
+    setSelectedTab("selection");
+  };
+
+  const handleDemandSelection = (
+    selectedScheduleCellData: ScheduleCellDataT
+  ) => {
+    setSelectedDemand(selectedScheduleCellData);
+    setSelectedAssignment(null);
     setSelectedTab("selection");
   };
 
@@ -280,6 +297,25 @@ export default function ScheduleTab({
     }
     const newDailyShiftDemand = await addDailyShiftDemand(dailyShiftDemand);
     setDailyShiftDemands([...dailyShiftDemands, newDailyShiftDemand]);
+    setSelectedTab("selection");
+    const newDSDList = [
+      ...(
+        selectedDemand?.dailyShiftDemandsData?.dailyShiftDemands || []
+      ).filter((dsd) => dsd.id !== newDailyShiftDemand.id),
+      newDailyShiftDemand,
+    ];
+    const scheduleCellDict = buildScheduleCellDict(
+      AttributeOwnerType.SHIFT,
+      assignments.filter((a) => a.date === newDailyShiftDemand.date),
+      newDSDList,
+      recurrences,
+      requests,
+      workers,
+      shifts,
+      breaches
+    );
+    const newSelectedDemand = Object.values(scheduleCellDict)[0];
+    setSelectedDemand(newSelectedDemand);
   };
 
   const handleUpdateDSD = async (dailyShiftDemand: DailyShiftDemandT) => {
@@ -292,6 +328,25 @@ export default function ScheduleTab({
         dsd.id === newDailyShiftDemand.id ? newDailyShiftDemand : dsd
       )
     );
+    if (selectedDemand) {
+      const newDSDList = [
+        ...(
+          selectedDemand.dailyShiftDemandsData?.dailyShiftDemands || []
+        ).filter((dsd) => dsd.id !== newDailyShiftDemand.id),
+        newDailyShiftDemand,
+      ];
+
+      const demandDict = buildDailyShiftDemandsDataByShiftAndDate(
+        newDSDList,
+        shifts
+      );
+      const newDailyShiftDemandsData = Object.values(demandDict)[0];
+      const newSelectedDemand = {
+        ...selectedDemand,
+        dailyShiftDemandsData: newDailyShiftDemandsData,
+      };
+      setSelectedDemand(newSelectedDemand);
+    }
   };
 
   //////////////////////////
@@ -365,7 +420,7 @@ export default function ScheduleTab({
   const handleCloseLHS = () => {
     setCreateAssignmentData(null);
     setSelectedTab(null);
-    setSelectedCell(null);
+    setSelectedAssignment(null);
   };
 
   const handleCreateAssignment = async (
@@ -391,7 +446,7 @@ export default function ScheduleTab({
       requests
     );
     const newSelectedCell = Object.values(assignDict)[0][0];
-    setSelectedCell(newSelectedCell);
+    setSelectedAssignment(newSelectedCell);
     setCreateAssignmentData(null);
   };
 
@@ -422,7 +477,7 @@ export default function ScheduleTab({
       requests
     );
     const newSelectedCell = Object.values(assignDict)[0][0];
-    setSelectedCell(newSelectedCell);
+    setSelectedAssignment(newSelectedCell);
     setSelectedTab("selection");
     setCreateAssignmentData(null);
   };
@@ -442,7 +497,7 @@ export default function ScheduleTab({
       recurrenceUpdateScope
     );
     updateAssignmentsAndRecurrencesStates(ARResult);
-    setSelectedCell(null);
+    setSelectedAssignment(null);
   };
 
   const updateSelectedPeriod = (
@@ -690,10 +745,12 @@ export default function ScheduleTab({
             breaches: fetchedBreaches,
             requests: fetchedRequests,
             stats: fetchedStats,
+            specialties: fetchedSpecialties,
           } = await getScheduleLHSData(selectedTeamId);
           setBreaches(fetchedBreaches);
           setRequests(fetchedRequests);
           setStats(fetchedStats);
+          setSpecialties(fetchedSpecialties);
 
           setIsLoadingLHS(false);
 
@@ -785,18 +842,24 @@ export default function ScheduleTab({
       name: "selection",
       label: t("selection"),
       content: (
-        <AssignmentOptions
+        <CurrentSelectionLHSTab
           lng={lng}
+          teamId={selectedTeamId as string}
           workers={workers.filter((w) => !w.deleted)}
           shifts={shifts.filter((s) => !s.deleted)}
           schedules={[
             ...(scheduleCampaign ? [scheduleCampaign] : []),
             ...schedulesValidated,
           ]}
-          selectedCell={selectedCell}
+          campaign={scheduleCampaign}
+          selectedAssignment={selectedAssignment}
+          selectedDemand={selectedDemand}
+          specialties={specialties}
           onClose={handleCloseLHS}
           handleUpdateAssignment={handleUpdateAssignment}
           handleDeleteAssignment={handleDeleteAssignment}
+          handleCreateDSD={handleCreateDSD}
+          handleUpdateDSD={handleUpdateDSD}
         />
       ),
     },
@@ -813,8 +876,13 @@ export default function ScheduleTab({
           dateSelected={createAssignmentData.date}
           workers={workers}
           shifts={shifts}
+          addDemandActive={
+            !createAssignmentData.haveDemand &&
+            scheduleViewSettings.groupBy === "shift"
+          }
           onClose={handleCloseLHS}
           handleCreateAssignment={handleCreateAssignment}
+          handleCreateDSD={handleCreateDSD}
         />
       ) : null,
     },
@@ -885,7 +953,8 @@ export default function ScheduleTab({
               shifts={shifts}
               requests={requests}
               scheduleViewSettings={scheduleViewSettings}
-              handleCellSelection={handleCellSelection}
+              handleAssignmentSelection={handleAssignmentSelection}
+              handleDemandSelection={handleDemandSelection}
               handleCreateDSD={handleCreateDSD}
               handleUpdateDSD={handleUpdateDSD}
               handleExportSchedule={handleExportSchedule}
