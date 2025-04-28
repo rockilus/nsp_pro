@@ -1,3 +1,4 @@
+from datetime import date, datetime, timezone
 from typing import List
 
 from pymongo import UpdateOne
@@ -78,6 +79,27 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
     ) -> List[DailyShiftDemand]:
         """Get all daily shift demands for a shift demand."""
         dsds = self.find_all({"shift_demand": {"$in": shift_demand_id}})
+        return [dsd.to_core() for dsd in dsds]
+
+    def get_daily_shift_demands_by_team_shift_date(
+        self, team_id: str, shift_id: str, target_date: date
+    ) -> List[DailyShiftDemand]:
+        # Convert date to a datetime object with timezone
+        date_start = datetime.combine(
+            target_date, datetime.min.time(), timezone.utc
+        ).timestamp()
+        date_end = datetime.combine(
+            target_date, datetime.max.time(), timezone.utc
+        ).timestamp()
+
+        dsds = self.find_all(
+            {
+                "team": team_id,
+                "shift": shift_id,
+                "date": {"$gte": date_start, "$lte": date_end},
+                "source_type": DSDSourceType.SHIFT_DEMAND.value,
+            }
+        )
         return [dsd.to_core() for dsd in dsds]
 
     def update_daily_shift_demand(
@@ -209,3 +231,35 @@ class DailyShiftDemandRepository(BaseRepository[DailyShiftDemandSchema]):
     ) -> None:
         """Delete all daily shift demands for a shift demand ID."""
         self.collection.delete_many({"shift_demand": shift_demand_id})
+
+    def delete_daily_shift_demands_by_team_shift_date(
+        self, team_id: str, shift_id: str, target_date: date
+    ) -> List[str]:
+        # Convert date to a datetime object with timezone
+        date_start = datetime.combine(
+            target_date, datetime.min.time(), timezone.utc
+        ).timestamp()
+        date_end = datetime.combine(
+            target_date, datetime.max.time(), timezone.utc
+        ).timestamp()
+
+        deleted_documents = self.collection.find(
+            {
+                "team": team_id,
+                "shift": shift_id,
+                "date": {"$gte": date_start, "$lte": date_end},
+            },
+            {"_id": 1},
+        )
+
+        deleted_ids = [str(doc["_id"]) for doc in deleted_documents]
+
+        self.collection.delete_many(
+            {
+                "team": team_id,
+                "shift": shift_id,
+                "date": {"$gte": date_start, "$lte": date_end},
+            }
+        )
+
+        return deleted_ids

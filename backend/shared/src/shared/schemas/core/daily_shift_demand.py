@@ -6,7 +6,10 @@ from typing import Dict
 import humps
 from pydantic import TypeAdapter
 
-from shared.schemas.dto.daily_shift_demand import DailyShiftDemandDTO
+from shared.schemas.dto.daily_shift_demand import (
+    DailyShiftDemandDTO,
+    DeleteDailyShiftDemandRequestDTO,
+)
 
 
 class DSDSourceType(Enum):
@@ -66,4 +69,31 @@ class DailyShiftDemand:
         ).date()
         data_dict = humps.decamelize(data_dict)
         data_dict["source_type"] = DSDSourceType(data_dict["source_type"])
+        return cls(**data_dict)
+
+
+@dataclass
+class DeleteDailyShiftDemandRequest:
+    team_id: str
+    shift_id: str
+    date: date
+
+    def to_dto(self) -> DeleteDailyShiftDemandRequestDTO:
+        data = asdict(self)
+        data["date"] = datetime.combine(
+            self.date, time.min, tzinfo=timezone.utc
+        ).timestamp()
+        as_dict = humps.camelize(data)
+        validator = TypeAdapter(DeleteDailyShiftDemandRequestDTO)
+        return validator.validate_python(as_dict)
+
+    @classmethod
+    def from_dto(
+        cls, data: DeleteDailyShiftDemandRequestDTO
+    ) -> "DeleteDailyShiftDemandRequest":
+        data_dict = data.model_dump()
+        data_dict["date"] = datetime.fromtimestamp(
+            data_dict["date"], tz=timezone.utc
+        ).date()
+        data_dict = humps.decamelize(data_dict)
         return cls(**data_dict)

@@ -100,15 +100,16 @@ export async function updateDailyShiftDemand(
 }
 
 export async function deleteDailyShiftDemands(
-  demandIds: string[],
-  teamId: string
+  teamId: string,
+  shiftId: string,
+  date: dayjs.Dayjs
 ) {
   const options: RequestInit = {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ daily_shift_demand_ids: demandIds }),
+    body: JSON.stringify({ teamId, shiftId, date: date.unix() }),
   };
   try {
     const response = await fetch(
@@ -121,6 +122,7 @@ export async function deleteDailyShiftDemands(
         "Failed to delete daily shift demand: " + responseData.detail
       );
     }
+    return responseData as string[];
   } catch (error) {
     console.error("Failed to delete daily shift demand:", error);
     throw new Error(

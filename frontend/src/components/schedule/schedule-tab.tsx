@@ -350,13 +350,17 @@ export default function ScheduleTab({
     }
   };
 
-  const handleDeleteDSDs = async (demandIds: string[], teamId: string) => {
+  const handleDeleteDSDs = async (
+    teamId: string,
+    shiftId: string,
+    date: dayjs.Dayjs
+  ) => {
     if (!selectedTeamId) {
       throw new Error("No team selected");
     }
-    await deleteDailyShiftDemands(demandIds, teamId);
+    const dsdDeletedIds = await deleteDailyShiftDemands(teamId, shiftId, date);
     setDailyShiftDemands(
-      dailyShiftDemands.filter((dsd) => !demandIds.includes(dsd.id))
+      dailyShiftDemands.filter((dsd) => !dsdDeletedIds.includes(dsd.id))
     );
     setSelectedDemand(null);
   };

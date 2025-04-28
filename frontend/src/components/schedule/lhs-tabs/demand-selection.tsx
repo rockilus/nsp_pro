@@ -28,7 +28,11 @@ export default function DemandSelection({
   specialties: SpecialtyT[];
   handleCreateDSD: (dsd: DailyShiftDemandT) => void;
   handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
-  handleDeleteDSDs: (dsdIds: string[], teamId: string) => void;
+  handleDeleteDSDs: (
+    teamId: string,
+    shiftId: string,
+    date: dayjs.Dayjs
+  ) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -138,17 +142,17 @@ export default function DemandSelection({
 
   const handleDeleteDemands = () => {
     if (
+      !date ||
       !selectedDemand.dailyShiftDemandsData ||
       !selectedDemand.dailyShiftDemandsData.dailyShiftDemands
     ) {
       return;
     }
-    const dsdIds = selectedDemand.dailyShiftDemandsData.dailyShiftDemands.map(
-      (dsd) => dsd.id
+    handleDeleteDSDs(
+      teamId,
+      selectedDemand.dailyShiftDemandsData.shift.id,
+      date
     );
-    if (dsdIds.length > 0) {
-      handleDeleteDSDs(dsdIds, teamId);
-    }
   };
 
   const AdjustStaffingButtons = () => {
